@@ -6,16 +6,16 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 	mock_cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager/mocks"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	"go.uber.org/zap/zapcore"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("snapshot listener", func() {
@@ -52,22 +52,22 @@ var _ = Describe("snapshot listener", func() {
 
 	It("will process all create events in order", func() {
 		vm1 := &zephyr_networking.VirtualMesh{
-			TypeMeta:   metav1.TypeMeta{},
-			ObjectMeta: metav1.ObjectMeta{},
-			Spec:       networking_types.VirtualMeshSpec{},
-			Status: networking_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.Status{
-					State: core_types.Status_ACCEPTED,
+			TypeMeta:   k8s_meta_types.TypeMeta{},
+			ObjectMeta: k8s_meta_types.ObjectMeta{},
+			Spec:       zephyr_networking_types.VirtualMeshSpec{},
+			Status: zephyr_networking_types.VirtualMeshStatus{
+				CertificateStatus: &zephyr_core_types.Status{
+					State: zephyr_core_types.Status_ACCEPTED,
 				},
 			},
 		}
 		vm2 := &zephyr_networking.VirtualMesh{
-			TypeMeta:   metav1.TypeMeta{},
-			ObjectMeta: metav1.ObjectMeta{},
-			Spec:       networking_types.VirtualMeshSpec{},
-			Status: networking_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.Status{
-					State: core_types.Status_INVALID,
+			TypeMeta:   k8s_meta_types.TypeMeta{},
+			ObjectMeta: k8s_meta_types.ObjectMeta{},
+			Spec:       zephyr_networking_types.VirtualMeshSpec{},
+			Status: zephyr_networking_types.VirtualMeshStatus{
+				CertificateStatus: &zephyr_core_types.Status{
+					State: zephyr_core_types.Status_INVALID,
 				},
 			},
 		}

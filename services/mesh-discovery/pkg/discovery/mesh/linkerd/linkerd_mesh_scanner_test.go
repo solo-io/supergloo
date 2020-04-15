@@ -13,16 +13,16 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/docker/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/linkerd"
-	appsv1 "k8s.io/api/apps/v1"
-	kubev1 "k8s.io/api/core/v1"
-	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_apps_types "k8s.io/api/apps/v1"
+	k8s_core_types "k8s.io/api/core/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("Linkerd Mesh Scanner", func() {
@@ -49,12 +49,12 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 
 		scanner := linkerd.NewLinkerdMeshScanner(imageParser)
 
-		deployment := &appsv1.Deployment{
-			ObjectMeta: k8s_meta_v1.ObjectMeta{Namespace: linkerdNs, Name: "name doesn't matter in this context"},
-			Spec: appsv1.DeploymentSpec{
-				Template: kubev1.PodTemplateSpec{
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{
+		deployment := &k8s_apps_types.Deployment{
+			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: linkerdNs, Name: "name doesn't matter in this context"},
+			Spec: k8s_apps_types.DeploymentSpec{
+				Template: k8s_core_types.PodTemplateSpec{
+					Spec: k8s_core_types.PodSpec{
+						Containers: []k8s_core_types.Container{
 							{
 								Image: "test-image",
 							},
@@ -71,7 +71,7 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 
 	It("discovers linkerd", func() {
 
-		linkerdConfigMap := func() *kubev1.ConfigMap {
+		linkerdConfigMap := func() *k8s_core_types.ConfigMap {
 			cfg := &linkerdconfig.All{
 				Global: &linkerdconfig.Global{
 					ClusterDomain: "applebees.com",
@@ -81,8 +81,8 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 			}
 			global, proxy, install, err := config.ToJSON(cfg)
 			Expect(err).NotTo(HaveOccurred())
-			return &kubev1.ConfigMap{
-				ObjectMeta: k8s_meta_v1.ObjectMeta{Name: linkerd.LinkerdConfigMapName, Namespace: linkerdNs},
+			return &k8s_core_types.ConfigMap{
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: linkerd.LinkerdConfigMapName, Namespace: linkerdNs},
 				Data: map[string]string{
 					"global":  global,
 					"proxy":   proxy,
@@ -98,12 +98,12 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 
 		scanner := linkerd.NewLinkerdMeshScanner(imageParser)
 
-		deployment := &appsv1.Deployment{
-			ObjectMeta: k8s_meta_v1.ObjectMeta{Namespace: linkerdNs, ClusterName: "test-cluster", Name: "name doesn't matter in this context"},
-			Spec: appsv1.DeploymentSpec{
-				Template: kubev1.PodTemplateSpec{
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{
+		deployment := &k8s_apps_types.Deployment{
+			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: linkerdNs, ClusterName: "test-cluster", Name: "name doesn't matter in this context"},
+			Spec: k8s_apps_types.DeploymentSpec{
+				Template: k8s_core_types.PodTemplateSpec{
+					Spec: k8s_core_types.PodSpec{
+						Containers: []k8s_core_types.Container{
 							{
 								Image: "linkerd-io/controller:0.6.9",
 							},
@@ -122,23 +122,23 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 				Tag:    "0.6.9",
 			}, nil)
 
-		expectedMesh := &discoveryv1alpha1.Mesh{
-			ObjectMeta: k8s_meta_v1.ObjectMeta{
+		expectedMesh := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "linkerd-linkerd-test-cluster",
 				Namespace: env.GetWriteNamespace(),
 				Labels:    linkerd.DiscoveryLabels,
 			},
-			Spec: discovery_types.MeshSpec{
-				MeshType: &discovery_types.MeshSpec_Linkerd{
-					Linkerd: &discovery_types.MeshSpec_LinkerdMesh{
-						Installation: &discovery_types.MeshSpec_MeshInstallation{
+			Spec: zephyr_discovery_types.MeshSpec{
+				MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{
+					Linkerd: &zephyr_discovery_types.MeshSpec_LinkerdMesh{
+						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               "0.6.9",
 						},
 						ClusterDomain: "applebees.com",
 					},
 				},
-				Cluster: &core_types.ResourceRef{
+				Cluster: &zephyr_core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -155,12 +155,12 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 
 		scanner := linkerd.NewLinkerdMeshScanner(imageParser)
 
-		deployment := &appsv1.Deployment{
-			ObjectMeta: k8s_meta_v1.ObjectMeta{Namespace: linkerdNs, ClusterName: "test-cluster", Name: "name doesn't matter in this context"},
-			Spec: appsv1.DeploymentSpec{
-				Template: kubev1.PodTemplateSpec{
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{
+		deployment := &k8s_apps_types.Deployment{
+			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: linkerdNs, ClusterName: "test-cluster", Name: "name doesn't matter in this context"},
+			Spec: k8s_apps_types.DeploymentSpec{
+				Template: k8s_core_types.PodTemplateSpec{
+					Spec: k8s_core_types.PodSpec{
+						Containers: []k8s_core_types.Container{
 							{
 								Image: "linkerd-io/controller:0.6.9",
 							},

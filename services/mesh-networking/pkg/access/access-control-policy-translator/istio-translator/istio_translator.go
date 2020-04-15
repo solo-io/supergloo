@@ -7,18 +7,18 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/stringutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
-	security_v1beta1 "istio.io/api/security/v1beta1"
-	"istio.io/api/type/v1beta1"
-	client_security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	istio_security_types "istio.io/api/security/v1beta1"
+	istio_types "istio.io/api/type/v1beta1"
+	istio_security_client_types "istio.io/client-go/pkg/apis/security/v1beta1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -29,11 +29,11 @@ var (
 	ACPProcessingError = func(err error, acp *zephyr_networking.AccessControlPolicy) error {
 		return eris.Wrapf(err, "Error processing AccessControlPolicy: %+v", acp)
 	}
-	AuthPolicyUpsertError = func(err error, authPolicy *client_security_v1beta1.AuthorizationPolicy) error {
+	AuthPolicyUpsertError = func(err error, authPolicy *istio_security_client_types.AuthorizationPolicy) error {
 		return eris.Wrapf(err, "Error while upserting AuthorizationPolicy: %s.%s",
 			authPolicy.Name, authPolicy.Namespace)
 	}
-	EmptyTrustDomainForMeshError = func(mesh *zephyr_discovery.Mesh, info *discovery_types.MeshSpec_IstioMesh_CitadelInfo) error {
+	EmptyTrustDomainForMeshError = func(mesh *zephyr_discovery.Mesh, info *zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo) error {
 		return eris.Errorf("Empty trust domain for Istio Mesh: %s.%s, (%+v)", mesh.Name, mesh.Namespace, info)
 	}
 	EmptyTrustDomainForCluster = func(clusterName string) error {
@@ -74,11 +74,11 @@ func (i *istioTranslator) Translate(
 	ctx context.Context,
 	targetServices []access_control_policy.TargetService,
 	acp *zephyr_networking.AccessControlPolicy,
-) *networking_types.AccessControlPolicyStatus_TranslatorError {
+) *zephyr_networking_types.AccessControlPolicyStatus_TranslatorError {
 	authPoliciesWithClients := make([]authPolicyClientPair, 0, len(targetServices))
 	fromSources, err := i.buildSources(ctx, acp.Spec.GetSourceSelector())
 	if err != nil {
-		return &networking_types.AccessControlPolicyStatus_TranslatorError{
+		return &zephyr_networking_types.AccessControlPolicyStatus_TranslatorError{
 			TranslatorId: TranslatorId,
 			ErrorMessage: ACPProcessingError(err, acp).Error(),
 		}
@@ -93,7 +93,7 @@ func (i *istioTranslator) Translate(
 		}
 		client, err := i.dynamicClientGetter.GetClientForCluster(ctx, targetService.Mesh.Spec.GetCluster().GetName())
 		if err != nil {
-			return &networking_types.AccessControlPolicyStatus_TranslatorError{
+			return &zephyr_networking_types.AccessControlPolicyStatus_TranslatorError{
 				TranslatorId: TranslatorId,
 				ErrorMessage: err.Error(),
 			}
@@ -108,7 +108,7 @@ func (i *istioTranslator) Translate(
 	for _, authPolicyWithClient := range authPoliciesWithClients {
 		err := authPolicyWithClient.client.UpsertAuthorizationPolicySpec(ctx, authPolicyWithClient.authPolicy)
 		if err != nil {
-			return &networking_types.AccessControlPolicyStatus_TranslatorError{
+			return &zephyr_networking_types.AccessControlPolicyStatus_TranslatorError{
 				TranslatorId: TranslatorId,
 				ErrorMessage: AuthPolicyUpsertError(err, authPolicyWithClient.authPolicy).Error(),
 			}
@@ -118,10 +118,10 @@ func (i *istioTranslator) Translate(
 }
 
 func (i *istioTranslator) translateForDestination(
-	fromSources *security_v1beta1.Rule_From,
+	fromSources *istio_security_types.Rule_From,
 	acp *zephyr_networking.AccessControlPolicy,
 	meshService *zephyr_discovery.MeshService,
-) *client_security_v1beta1.AuthorizationPolicy {
+) *istio_security_client_types.AuthorizationPolicy {
 	allowedMethods := methodsToString(acp.Spec.GetAllowedMethods())
 	// Istio considers AuthorizationPolicies without at least one defined To.Operation invalid,
 	// The workaround is to populate a dummy "*" for METHOD if not user specified. This guarantees existence of at least
@@ -129,23 +129,23 @@ func (i *istioTranslator) translateForDestination(
 	if len(allowedMethods) < 1 {
 		allowedMethods = []string{"*"}
 	}
-	authPolicy := &client_security_v1beta1.AuthorizationPolicy{
-		ObjectMeta: v1.ObjectMeta{
+	authPolicy := &istio_security_client_types.AuthorizationPolicy{
+		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      buildAuthPolicyName(acp, meshService),
 			Namespace: meshService.Spec.GetKubeService().GetRef().GetNamespace(),
 		},
-		Spec: security_v1beta1.AuthorizationPolicy{
-			Selector: &v1beta1.WorkloadSelector{
+		Spec: istio_security_types.AuthorizationPolicy{
+			Selector: &istio_types.WorkloadSelector{
 				MatchLabels: meshService.Spec.GetKubeService().GetWorkloadSelectorLabels(),
 			},
-			Rules: []*security_v1beta1.Rule{
+			Rules: []*istio_security_types.Rule{
 				{
-					From: []*security_v1beta1.Rule_From{
+					From: []*istio_security_types.Rule_From{
 						fromSources,
 					},
-					To: []*security_v1beta1.Rule_To{
+					To: []*istio_security_types.Rule_To{
 						{
-							Operation: &security_v1beta1.Operation{
+							Operation: &istio_security_types.Operation{
 								Ports:   intToString(acp.Spec.GetAllowedPorts()),
 								Methods: allowedMethods,
 								Paths:   acp.Spec.GetAllowedPaths(),
@@ -154,7 +154,7 @@ func (i *istioTranslator) translateForDestination(
 					},
 				},
 			},
-			Action: security_v1beta1.AuthorizationPolicy_ALLOW,
+			Action: istio_security_types.AuthorizationPolicy_ALLOW,
 		},
 	}
 	return authPolicy
@@ -164,20 +164,20 @@ func (i *istioTranslator) translateForDestination(
 // Reference: https://istio.io/docs/reference/config/security/authorization-policy/#Source
 func (i *istioTranslator) buildSources(
 	ctx context.Context,
-	source *core_types.IdentitySelector,
-) (*security_v1beta1.Rule_From, error) {
+	source *zephyr_core_types.IdentitySelector,
+) (*istio_security_types.Rule_From, error) {
 	var principals []string
 	var namespaces []string
 	if source.GetIdentitySelectorType() == nil {
 		// allow any source identity
-		return &security_v1beta1.Rule_From{
-			Source: &security_v1beta1.Source{
+		return &istio_security_types.Rule_From{
+			Source: &istio_security_types.Source{
 				Principals: []string{"*"},
 			},
 		}, nil
 	}
 	switch selectorType := source.GetIdentitySelectorType().(type) {
-	case *core_types.IdentitySelector_Matcher_:
+	case *zephyr_core_types.IdentitySelector_Matcher_:
 		if len(source.GetMatcher().GetClusters()) > 0 {
 			// select by clusters and specifiedNamespaces
 			trustDomains, err := i.getTrustDomainForClusters(ctx, source.GetMatcher().GetClusters())
@@ -203,7 +203,7 @@ func (i *istioTranslator) buildSources(
 			// select by namespaces, permit any cluster
 			namespaces = source.GetMatcher().GetNamespaces()
 		}
-	case *core_types.IdentitySelector_ServiceAccountRefs_:
+	case *zephyr_core_types.IdentitySelector_ServiceAccountRefs_:
 		// select by direct reference to ServiceAccounts
 		for _, serviceAccountRef := range source.GetServiceAccountRefs().GetServiceAccounts() {
 			trustDomains, err := i.getTrustDomainForClusters(ctx, []string{serviceAccountRef.GetCluster()})
@@ -220,8 +220,8 @@ func (i *istioTranslator) buildSources(
 	default:
 		return nil, eris.Errorf("IdentitySelector has unexpected type %T", selectorType)
 	}
-	return &security_v1beta1.Rule_From{
-		Source: &security_v1beta1.Source{
+	return &istio_security_types.Rule_From{
+		Source: &istio_security_types.Source{
 			Principals: principals,
 			Namespaces: namespaces,
 		},
@@ -252,7 +252,7 @@ func (i *istioTranslator) getTrustDomainForClusters(ctx context.Context, cluster
 	return trustDomains, nil
 }
 
-func methodsToString(methodEnums []core_types.HttpMethodValue) []string {
+func methodsToString(methodEnums []zephyr_core_types.HttpMethodValue) []string {
 	var methods []string
 	for _, methodEnum := range methodEnums {
 		methods = append(methods, methodEnum.String())
@@ -262,7 +262,7 @@ func methodsToString(methodEnums []core_types.HttpMethodValue) []string {
 
 // Pair of AuthorizationPolicy with client scoped to the target k8s Service's cluster
 type authPolicyClientPair struct {
-	authPolicy *client_security_v1beta1.AuthorizationPolicy
+	authPolicy *istio_security_client_types.AuthorizationPolicy
 	client     istio_security.AuthorizationPolicyClient
 }
 

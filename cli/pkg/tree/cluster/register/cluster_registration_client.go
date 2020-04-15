@@ -14,7 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
@@ -36,7 +36,7 @@ var (
 	FailedLoadingRemoteConfig = func(err error) error {
 		return eris.Wrap(err, "Failed to load the kube config for the remote cluster")
 	}
-	FailedToCreateAuthToken = func(saRef *core_types.ResourceRef, remoteKubeConfig, remoteContext string) string {
+	FailedToCreateAuthToken = func(saRef *zephyr_core_types.ResourceRef, remoteKubeConfig, remoteContext string) string {
 		return fmt.Sprintf("Failed to create an auth token for service account %s.%s in cluster "+
 			"pointed to by kube config %s with context %s. This operation is not atomic, so the service account may "+
 			"have been created and left in the cluster while a later step failed. \n",
@@ -319,7 +319,7 @@ func writeKubeClusterToMaster(
 			Namespace: writeNamespace,
 		},
 		Spec: zephyr_discovery_types.KubernetesClusterSpec{
-			SecretRef: &core_types.ResourceRef{
+			SecretRef: &zephyr_core_types.ResourceRef{
 				Name:      secret.GetName(),
 				Namespace: secret.GetNamespace(),
 			},
@@ -342,7 +342,7 @@ func generateServiceAccountConfig(
 ) (*rest.Config, error) {
 
 	// the new cluster name doubles as the name for the service account we will auth as
-	serviceAccountRef := &core_types.ResourceRef{
+	serviceAccountRef := &zephyr_core_types.ResourceRef{
 		Name:      registerOpts.RemoteClusterName,
 		Namespace: registerOpts.RemoteWriteNamespace,
 	}

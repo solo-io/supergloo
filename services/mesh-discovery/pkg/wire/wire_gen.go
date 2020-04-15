@@ -9,8 +9,8 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
@@ -35,15 +35,15 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	imageNameParser := docker.NewImageNameParser()
-	configMapClientFactory := kubernetes_core.ConfigMapClientFactoryProvider()
+	configMapClientFactory := v1.ConfigMapClientFactoryProvider()
 	istioMeshScanner := istio.NewIstioMeshScanner(imageNameParser, configMapClientFactory)
 	consulConnectInstallationScanner := consul.NewConsulConnectInstallationScanner(imageNameParser)
 	consulConnectMeshScanner := consul.NewConsulMeshScanner(imageNameParser, consulConnectInstallationScanner)
 	linkerdMeshScanner := linkerd.NewLinkerdMeshScanner(imageNameParser)
-	replicaSetClientFactory := kubernetes_apps.ReplicaSetClientFactoryProvider()
-	deploymentClientFactory := kubernetes_apps.DeploymentClientFactoryProvider()
+	replicaSetClientFactory := v1_2.ReplicaSetClientFactoryProvider()
+	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
 	ownerFetcherFactory := mesh_workload.OwnerFetcherFactoryProvider()
-	serviceClientFactory := kubernetes_core.ServiceClientFactoryProvider()
+	serviceClientFactory := v1.ServiceClientFactoryProvider()
 	meshServiceClientFactory := v1alpha1.MeshServiceClientFactoryProvider()
 	meshWorkloadClientFactory := v1alpha1.MeshWorkloadClientFactoryProvider()
 	podEventWatcherFactory := controllers.NewPodEventWatcherFactory()

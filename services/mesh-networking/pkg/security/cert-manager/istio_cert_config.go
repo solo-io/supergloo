@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
@@ -62,6 +62,6 @@ func (i *istioCertConfigProducer) ConfigureCertificateInfo(
 		// TODO: Make citadel namespace discoverable
 		Hosts:    []string{BuildSpiffeURI(trustDomain, citadelNamespace, citadelServiceAccount)},
 		Org:      DefaultIstioOrg,
-		MeshType: core_types.MeshType_ISTIO,
+		MeshType: zephyr_core_types.MeshType_ISTIO,
 	}, nil
 }

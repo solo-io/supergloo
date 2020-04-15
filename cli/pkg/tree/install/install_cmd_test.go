@@ -18,7 +18,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	mock_csr "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
@@ -163,7 +163,7 @@ var _ = Describe("Install", func() {
 
 		configVerifier.EXPECT().Verify("", "").Return(nil)
 
-		serviceAccountRef := &core_types.ResourceRef{
+		serviceAccountRef := &zephyr_core_types.ResourceRef{
 			Name:      "test-cluster-name",
 			Namespace: env.GetWriteNamespace(),
 		}
@@ -258,7 +258,7 @@ users:
 				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.KubernetesClusterSpec{
-				SecretRef: &core_types.ResourceRef{
+				SecretRef: &zephyr_core_types.ResourceRef{
 					Name:      secret.GetName(),
 					Namespace: secret.GetNamespace(),
 				},

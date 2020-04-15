@@ -6,7 +6,7 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
@@ -163,7 +163,7 @@ func (i *istioFederationClient) setUpDestinationRule(
 	serviceMulticlusterName string,
 	installNamespace string,
 ) error {
-	destinationRuleRef := &core_types.ResourceRef{
+	destinationRuleRef := &zephyr_core_types.ResourceRef{
 		Name:      serviceMulticlusterName,
 		Namespace: installNamespace,
 	}
@@ -198,7 +198,7 @@ func (i *istioFederationClient) setUpServiceEntry(
 ) error {
 	serviceEntryClient := i.serviceEntryClientFactory(clientForWorkloadMesh)
 
-	computedRef := &core_types.ResourceRef{
+	computedRef := &zephyr_core_types.ResourceRef{
 		Name:      meshService.Spec.GetFederation().GetMulticlusterDnsName(),
 		Namespace: installNamespace,
 	}
@@ -288,7 +288,7 @@ func (i *istioFederationClient) ensureEnvoyFilterExists(
 ) error {
 
 	envoyFilterClient := i.envoyFilterClientFactory(dynamicClient)
-	computedRef := &core_types.ResourceRef{
+	computedRef := &zephyr_core_types.ResourceRef{
 		Name:      fmt.Sprintf("smh-%s-filter", vmName),
 		Namespace: installNamespace,
 	}
@@ -339,7 +339,7 @@ func (i *istioFederationClient) ensureGatewayExists(
 
 	gatewayClient := i.gatewayClientFactory(dynamicClient)
 
-	computedGatewayRef := &core_types.ResourceRef{
+	computedGatewayRef := &zephyr_core_types.ResourceRef{
 		Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMeshName),
 		Namespace: installNamespace,
 	}
@@ -414,7 +414,7 @@ func BuildMatchingMultiClusterHostName(federationInfo *discovery_types.MeshServi
 	return fmt.Sprintf("*.%s", federationInfo.GetMulticlusterDnsName())
 }
 
-func (i *istioFederationClient) getClientForMesh(ctx context.Context, meshRef *core_types.ResourceRef) (*zephyr_discovery.Mesh, client.Client, error) {
+func (i *istioFederationClient) getClientForMesh(ctx context.Context, meshRef *zephyr_core_types.ResourceRef) (*zephyr_discovery.Mesh, client.Client, error) {
 	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef))
 	if err != nil {
 		return nil, nil, err

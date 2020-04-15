@@ -9,13 +9,13 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("mesh ref finder", func() {
@@ -60,7 +60,7 @@ var _ = Describe("mesh ref finder", func() {
 
 	It("will return an error containing all invalid refs", func() {
 		meshList := &zephyr_discovery.MeshList{}
-		refs := []*core_types.ResourceRef{
+		refs := []*zephyr_core_types.ResourceRef{
 			{
 				Name:      "name1",
 				Namespace: "namespace1",
@@ -71,7 +71,7 @@ var _ = Describe("mesh ref finder", func() {
 			},
 		}
 		vm := &zephyr_networking.VirtualMesh{
-			Spec: types.VirtualMeshSpec{
+			Spec: zephyr_networking_types.VirtualMeshSpec{
 				Meshes: refs,
 			},
 		}
@@ -90,20 +90,20 @@ var _ = Describe("mesh ref finder", func() {
 		meshList := &zephyr_discovery.MeshList{
 			Items: []zephyr_discovery.Mesh{
 				{
-					ObjectMeta: metav1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "name1",
 						Namespace: "namespace1",
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "name2",
 						Namespace: "namespace2",
 					},
 				},
 			},
 		}
-		refs := []*core_types.ResourceRef{
+		refs := []*zephyr_core_types.ResourceRef{
 			{
 				Name:      "name1",
 				Namespace: "namespace1",
@@ -114,7 +114,7 @@ var _ = Describe("mesh ref finder", func() {
 			},
 		}
 		vm := &zephyr_networking.VirtualMesh{
-			Spec: types.VirtualMeshSpec{
+			Spec: zephyr_networking_types.VirtualMeshSpec{
 				Meshes: refs,
 			},
 		}

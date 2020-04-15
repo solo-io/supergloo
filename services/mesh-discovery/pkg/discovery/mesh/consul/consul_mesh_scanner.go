@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
@@ -106,7 +106,7 @@ func (c *consulMeshScanner) buildConsulMeshObject(
 					},
 				},
 			},
-			Cluster: &core_types.ResourceRef{
+			Cluster: &zephyr_core_types.ResourceRef{
 				Name:      deployment.GetClusterName(),
 				Namespace: env.GetWriteNamespace(),
 			},

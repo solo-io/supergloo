@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
@@ -107,7 +107,7 @@ func mergeTrafficPoliciesByMeshService(
 		var mergeableHttpTrafficPolicies []*MergeableHttpTrafficPolicy
 		for _, trafficPolicy := range trafficPolicies {
 			// ignore TrafficPolicy with bad statuses
-			if trafficPolicy.Status.GetTranslationStatus().GetState() == core_types.Status_ACCEPTED {
+			if trafficPolicy.Status.GetTranslationStatus().GetState() == zephyr_core_types.Status_ACCEPTED {
 				mergedHttpTrafficPolicies, conflictErr := mergeHttpTrafficPolicies(trafficPolicy, mergeableHttpTrafficPolicies)
 				mergeableHttpTrafficPolicies = mergedHttpTrafficPolicies
 				if conflictErr != nil {
@@ -309,6 +309,6 @@ func areTrafficPolicyActionsEqual(
 
 type MergeableHttpTrafficPolicy struct {
 	HttpMatcher       *zephyr_networking_types.TrafficPolicySpec_HttpMatcher
-	SourceSelector    *core_types.WorkloadSelector
+	SourceSelector    *zephyr_core_types.WorkloadSelector
 	TrafficPolicySpec *zephyr_networking_types.TrafficPolicySpec
 }

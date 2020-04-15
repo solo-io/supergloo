@@ -6,7 +6,7 @@ import (
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	"go.uber.org/zap"
@@ -39,7 +39,7 @@ func NewVMCSRSnapshotListener(
 
 			for _, virtualMesh := range snap.VirtualMeshes {
 				status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, virtualMesh)
-				if status.CertificateStatus.State != types.Status_ACCEPTED {
+				if status.CertificateStatus.State != zephyr_core_types.Status_ACCEPTED {
 					logger.Debugw("csr processor failed", zap.Error(eris.New(status.CertificateStatus.Message)))
 				}
 				virtualMesh.Status = status

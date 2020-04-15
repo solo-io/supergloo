@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/security/certgen/mocks"
@@ -17,7 +17,7 @@ import (
 	mock_cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer/mocks"
 	. "github.com/solo-io/service-mesh-hub/test/logging"
 	mock_security_config "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.zephyr.solo.io/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("csr processor", func() {
@@ -90,7 +90,7 @@ var _ = Describe("csr processor", func() {
 			obj := &zephyr_security.VirtualMeshCertificateSigningRequest{
 				Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
 					CsrData:        []byte("hello"),
-					VirtualMeshRef: &core_types.ResourceRef{},
+					VirtualMeshRef: &zephyr_core_types.ResourceRef{},
 				},
 				Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
 					ThirdPartyApproval: &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
@@ -112,7 +112,7 @@ var _ = Describe("csr processor", func() {
 		It("will return an error if root ca bundle cannot be found", func() {
 			csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
 				Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
-					VirtualMeshRef: &core_types.ResourceRef{},
+					VirtualMeshRef: &zephyr_core_types.ResourceRef{},
 					CsrData:        []byte("csr-data"),
 				},
 			}
@@ -123,8 +123,8 @@ var _ = Describe("csr processor", func() {
 
 			status := csrProcessor.Sign(ctx, csr)
 			Expect(status).To(Equal(&zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &core_types.Status{
-					State:   core_types.Status_INVALID,
+				ComputedStatus: &zephyr_core_types.Status{
+					State:   zephyr_core_types.Status_INVALID,
 					Message: cert_signer.VirtualMeshTrustBundleNotFoundMsg(testErr, csr.Spec.GetVirtualMeshRef()).Error(),
 				},
 			}))
@@ -132,10 +132,10 @@ var _ = Describe("csr processor", func() {
 
 		It("will return an error if cert cannot be generated from CSR", func() {
 			csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
-				TypeMeta:   metav1.TypeMeta{},
-				ObjectMeta: metav1.ObjectMeta{},
+				TypeMeta:   k8s_meta_types.TypeMeta{},
+				ObjectMeta: k8s_meta_types.ObjectMeta{},
 				Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
-					VirtualMeshRef: &core_types.ResourceRef{},
+					VirtualMeshRef: &zephyr_core_types.ResourceRef{},
 					CsrData:        []byte("csr-data"),
 				},
 				Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{},
@@ -162,8 +162,8 @@ var _ = Describe("csr processor", func() {
 
 			status := csrProcessor.Sign(ctx, csr)
 			Expect(status).To(Equal(&zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &core_types.Status{
-					State:   core_types.Status_INVALID,
+				ComputedStatus: &zephyr_core_types.Status{
+					State:   zephyr_core_types.Status_INVALID,
 					Message: cert_signer.FailedToSignCertError(testErr).Error(),
 				},
 			}))
@@ -171,10 +171,10 @@ var _ = Describe("csr processor", func() {
 
 		It("will return an error if cert cannot be generated from CSR", func() {
 			csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
-				TypeMeta:   metav1.TypeMeta{},
-				ObjectMeta: metav1.ObjectMeta{},
+				TypeMeta:   k8s_meta_types.TypeMeta{},
+				ObjectMeta: k8s_meta_types.ObjectMeta{},
 				Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
-					VirtualMeshRef: &core_types.ResourceRef{},
+					VirtualMeshRef: &zephyr_core_types.ResourceRef{},
 					CsrData:        []byte("csr-data"),
 				},
 				Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{},
@@ -206,8 +206,8 @@ var _ = Describe("csr processor", func() {
 					CaCertificate:   newCert,
 					RootCertificate: rootCaData.RootCert,
 				},
-				ComputedStatus: &core_types.Status{
-					State: core_types.Status_ACCEPTED,
+				ComputedStatus: &zephyr_core_types.Status{
+					State: zephyr_core_types.Status_ACCEPTED,
 				},
 			}))
 		})

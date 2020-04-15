@@ -7,14 +7,14 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("Resource describer", func() {
@@ -38,22 +38,22 @@ var _ = Describe("Resource describer", func() {
 			accessControlPolicyClient := mock_zephyr_networking.NewMockAccessControlPolicyClient(ctrl)
 			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
 			serviceName, serviceNs, serviceCluster := "test-svc", "test-ns", "test-cluster"
-			correctServiceSelector := &core_types.ServiceSelector{
-				ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-					ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-						Services: []*core_types.ResourceRef{{Name: serviceName, Namespace: serviceNs, Cluster: serviceCluster}},
+			correctServiceSelector := &zephyr_core_types.ServiceSelector{
+				ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+					ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+						Services: []*zephyr_core_types.ResourceRef{{Name: serviceName, Namespace: serviceNs, Cluster: serviceCluster}},
 					},
 				},
 			}
-			wrongServiceSelector := &core_types.ServiceSelector{
-				ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-					ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-						Services: []*core_types.ResourceRef{{Name: "other-name", Namespace: "other-ns", Cluster: serviceCluster}},
+			wrongServiceSelector := &zephyr_core_types.ServiceSelector{
+				ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+					ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+						Services: []*zephyr_core_types.ResourceRef{{Name: "other-name", Namespace: "other-ns", Cluster: serviceCluster}},
 					},
 				},
 			}
 			describedMeshService := &zephyr_discovery.MeshService{
-				ObjectMeta: metav1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "expected-mesh-service",
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -62,14 +62,14 @@ var _ = Describe("Resource describer", func() {
 			accessControlPolices := &zephyr_networking.AccessControlPolicyList{
 				Items: []zephyr_networking.AccessControlPolicy{
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "acp-1"},
-						Spec: types.AccessControlPolicySpec{
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "acp-1"},
+						Spec: zephyr_networking_types.AccessControlPolicySpec{
 							DestinationSelector: wrongServiceSelector,
 						},
 					},
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "acp-2"},
-						Spec: types.AccessControlPolicySpec{
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "acp-2"},
+						Spec: zephyr_networking_types.AccessControlPolicySpec{
 							DestinationSelector: correctServiceSelector,
 						},
 					},
@@ -78,14 +78,14 @@ var _ = Describe("Resource describer", func() {
 			trafficPolicies := &zephyr_networking.TrafficPolicyList{
 				Items: []zephyr_networking.TrafficPolicy{
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "tp-1"},
-						Spec: types.TrafficPolicySpec{
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp-1"},
+						Spec: zephyr_networking_types.TrafficPolicySpec{
 							DestinationSelector: wrongServiceSelector,
 						},
 					},
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "tp-2"},
-						Spec: types.TrafficPolicySpec{
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp-2"},
+						Spec: zephyr_networking_types.TrafficPolicySpec{
 							DestinationSelector: correctServiceSelector,
 						},
 					},
@@ -134,30 +134,30 @@ var _ = Describe("Resource describer", func() {
 
 			controllerName, controllerNs, controllerCluster := "controller-name", "controller-ns", "controller-cluster"
 			describedMeshWorkload := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: metav1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload",
 					Namespace: env.GetWriteNamespace(),
 				},
 			}
-			wrongIdentitySelector := &core_types.IdentitySelector{}
-			correctIdentitySelector := &core_types.IdentitySelector{
-				IdentitySelectorType: &core_types.IdentitySelector_ServiceAccountRefs_{},
+			wrongIdentitySelector := &zephyr_core_types.IdentitySelector{}
+			correctIdentitySelector := &zephyr_core_types.IdentitySelector{
+				IdentitySelectorType: &zephyr_core_types.IdentitySelector_ServiceAccountRefs_{},
 			}
-			wrongWorkloadSelector := &core_types.WorkloadSelector{}
-			correctWorkloadSelector := &core_types.WorkloadSelector{
+			wrongWorkloadSelector := &zephyr_core_types.WorkloadSelector{}
+			correctWorkloadSelector := &zephyr_core_types.WorkloadSelector{
 				Namespaces: []string{"doesn't-matter"},
 			}
 			accessControlPolices := &zephyr_networking.AccessControlPolicyList{
 				Items: []zephyr_networking.AccessControlPolicy{
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "acp-1"},
-						Spec: types.AccessControlPolicySpec{
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "acp-1"},
+						Spec: zephyr_networking_types.AccessControlPolicySpec{
 							SourceSelector: wrongIdentitySelector,
 						},
 					},
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "acp-2"},
-						Spec: types.AccessControlPolicySpec{
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "acp-2"},
+						Spec: zephyr_networking_types.AccessControlPolicySpec{
 							SourceSelector: correctIdentitySelector,
 						},
 					},
@@ -166,14 +166,14 @@ var _ = Describe("Resource describer", func() {
 			trafficPolicies := &zephyr_networking.TrafficPolicyList{
 				Items: []zephyr_networking.TrafficPolicy{
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "tp-1"},
-						Spec: types.TrafficPolicySpec{
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp-1"},
+						Spec: zephyr_networking_types.TrafficPolicySpec{
 							SourceSelector: wrongWorkloadSelector,
 						},
 					},
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "tp-2"},
-						Spec: types.TrafficPolicySpec{
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp-2"},
+						Spec: zephyr_networking_types.TrafficPolicySpec{
 							SourceSelector: correctWorkloadSelector,
 						},
 					},

@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
@@ -16,8 +16,8 @@ import (
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	mock_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_apps "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/apps/v1"
-	apps_v1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_apps_types "k8s.io/api/apps/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -71,10 +71,10 @@ var _ = Describe("ResourceSelector", func() {
 			namespace1 = "namespace1"
 			namespace2 = "namespace2"
 			meshService1 = zephyr_discovery.MeshService{
-				ObjectMeta: v1.ObjectMeta{Name: "mesh-service-1"},
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-service-1"},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-service-1",
 							Namespace: namespace1,
 							Cluster:   cluster1,
@@ -83,10 +83,10 @@ var _ = Describe("ResourceSelector", func() {
 					},
 				}}
 			meshService2 = zephyr_discovery.MeshService{
-				ObjectMeta: v1.ObjectMeta{Name: "mesh-service-2"},
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-service-2"},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-service-2",
 							Namespace: namespace1,
 							Cluster:   cluster2,
@@ -95,10 +95,10 @@ var _ = Describe("ResourceSelector", func() {
 					},
 				}}
 			meshService3 = zephyr_discovery.MeshService{
-				ObjectMeta: v1.ObjectMeta{Name: "mesh-service-3"},
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-service-3"},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-service-3",
 							Namespace: namespace2,
 							Cluster:   cluster1,
@@ -107,10 +107,10 @@ var _ = Describe("ResourceSelector", func() {
 					},
 				}}
 			meshService4 = zephyr_discovery.MeshService{
-				ObjectMeta: v1.ObjectMeta{Name: "mesh-service-4"},
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-service-4"},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-service-4",
 							Namespace: "other-namespace",
 							Cluster:   cluster2,
@@ -119,10 +119,10 @@ var _ = Describe("ResourceSelector", func() {
 					},
 				}}
 			meshService5 = zephyr_discovery.MeshService{
-				ObjectMeta: v1.ObjectMeta{Name: "mesh-service-5"},
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-service-5"},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-service-5",
 							Namespace: namespace1,
 							Cluster:   cluster2,
@@ -139,9 +139,9 @@ var _ = Describe("ResourceSelector", func() {
 		})
 
 		It("should select Destinations by labels and namespaces", func() {
-			selector := &core_types.ServiceSelector{
-				ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-					Matcher: &core_types.ServiceSelector_Matcher{
+			selector := &zephyr_core_types.ServiceSelector{
+				ServiceSelectorType: &zephyr_core_types.ServiceSelector_Matcher_{
+					Matcher: &zephyr_core_types.ServiceSelector_Matcher{
 						Labels:     map[string]string{"k1": "v1"},
 						Namespaces: []string{namespace1, namespace2},
 						Clusters:   []string{cluster1},
@@ -164,10 +164,10 @@ var _ = Describe("ResourceSelector", func() {
 				Name:      meshService3.Spec.GetKubeService().GetRef().GetName(),
 				Namespace: meshService3.Spec.GetKubeService().GetRef().GetNamespace(),
 			}
-			selector := &core_types.ServiceSelector{
-				ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-					ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-						Services: []*core_types.ResourceRef{
+			selector := &zephyr_core_types.ServiceSelector{
+				ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+					ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+						Services: []*zephyr_core_types.ResourceRef{
 							{Name: objKey1.Name, Namespace: objKey1.Namespace, Cluster: cluster1},
 							{Name: objKey2.Name, Namespace: objKey2.Namespace, Cluster: cluster1},
 						},
@@ -184,10 +184,10 @@ var _ = Describe("ResourceSelector", func() {
 			name := "non-existent-name"
 			namespace := "non-existent-namespace"
 			cluster := "non-existent-cluster"
-			selector := &core_types.ServiceSelector{
-				ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-					ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-						Services: []*core_types.ResourceRef{
+			selector := &zephyr_core_types.ServiceSelector{
+				ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+					ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+						Services: []*zephyr_core_types.ResourceRef{
 							{Name: name, Namespace: namespace, Cluster: cluster},
 						},
 					},
@@ -198,9 +198,9 @@ var _ = Describe("ResourceSelector", func() {
 		})
 
 		It("should select across all namespaces and clusters", func() {
-			selector := &core_types.ServiceSelector{
-				ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-					Matcher: &core_types.ServiceSelector_Matcher{
+			selector := &zephyr_core_types.ServiceSelector{
+				ServiceSelectorType: &zephyr_core_types.ServiceSelector_Matcher_{
+					Matcher: &zephyr_core_types.ServiceSelector_Matcher{
 						Labels: map[string]string{"k1": "v1"},
 					},
 				},
@@ -212,7 +212,7 @@ var _ = Describe("ResourceSelector", func() {
 		})
 
 		It("should select all services if selector ommitted", func() {
-			selector := &core_types.ServiceSelector{}
+			selector := &zephyr_core_types.ServiceSelector{}
 			expectedMeshServices := []*zephyr_discovery.MeshService{&meshService1, &meshService2, &meshService3, &meshService4, &meshService5}
 			meshServices, err := resourceSelector.GetMeshServicesByServiceSelector(ctx, selector)
 			Expect(err).ToNot(HaveOccurred())
@@ -223,12 +223,12 @@ var _ = Describe("ResourceSelector", func() {
 	Describe("GetMeshWorkloadsByIdentitySelector", func() {
 		It("selects everything when the given selector is nil", func() {
 			workload1 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 				},
 			}
 			workload2 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 				},
 			}
@@ -247,24 +247,24 @@ var _ = Describe("ResourceSelector", func() {
 
 		It("can select by matcher - namespace", func() {
 			workload1 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns1",
 						},
 					},
 				},
 			}
 			workload2 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns2",
 						},
 					},
@@ -276,9 +276,9 @@ var _ = Describe("ResourceSelector", func() {
 					Items: []zephyr_discovery.MeshWorkload{*workload1, *workload2},
 				}, nil)
 
-			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, &core_types.IdentitySelector{
-				IdentitySelectorType: &core_types.IdentitySelector_Matcher_{
-					Matcher: &core_types.IdentitySelector_Matcher{
+			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, &zephyr_core_types.IdentitySelector{
+				IdentitySelectorType: &zephyr_core_types.IdentitySelector_Matcher_{
+					Matcher: &zephyr_core_types.IdentitySelector_Matcher{
 						Namespaces: []string{"ns2"},
 					},
 				},
@@ -290,12 +290,12 @@ var _ = Describe("ResourceSelector", func() {
 
 		It("can select by matcher - cluster", func() {
 			workload1 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns1",
 							Cluster:   "cluster-1",
 						},
@@ -303,12 +303,12 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			workload2 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns2",
 							Cluster:   "cluster-2",
 						},
@@ -321,9 +321,9 @@ var _ = Describe("ResourceSelector", func() {
 					Items: []zephyr_discovery.MeshWorkload{*workload1, *workload2},
 				}, nil)
 
-			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, &core_types.IdentitySelector{
-				IdentitySelectorType: &core_types.IdentitySelector_Matcher_{
-					Matcher: &core_types.IdentitySelector_Matcher{
+			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, &zephyr_core_types.IdentitySelector{
+				IdentitySelectorType: &zephyr_core_types.IdentitySelector_Matcher_{
+					Matcher: &zephyr_core_types.IdentitySelector_Matcher{
 						Clusters: []string{"cluster-2"},
 					},
 				},
@@ -335,12 +335,12 @@ var _ = Describe("ResourceSelector", func() {
 
 		It("can select by matcher - both namespace and cluster", func() {
 			workload1 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns1",
 							Cluster:   "cluster-1",
 						},
@@ -348,12 +348,12 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			workload2 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns2",
 							Cluster:   "cluster-2",
 						},
@@ -366,9 +366,9 @@ var _ = Describe("ResourceSelector", func() {
 					Items: []zephyr_discovery.MeshWorkload{*workload1, *workload2},
 				}, nil)
 
-			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, &core_types.IdentitySelector{
-				IdentitySelectorType: &core_types.IdentitySelector_Matcher_{
-					Matcher: &core_types.IdentitySelector_Matcher{
+			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, &zephyr_core_types.IdentitySelector{
+				IdentitySelectorType: &zephyr_core_types.IdentitySelector_Matcher_{
+					Matcher: &zephyr_core_types.IdentitySelector_Matcher{
 						Clusters:   []string{"cluster-2"},
 						Namespaces: []string{"fake-namespace", "ns2"},
 					},
@@ -381,12 +381,12 @@ var _ = Describe("ResourceSelector", func() {
 
 		It("can select by refs", func() {
 			workload1 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns1",
 							Cluster:   "cluster-1",
 						},
@@ -394,12 +394,12 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			workload2 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns2",
 							Cluster:   "cluster-2",
 						},
@@ -412,10 +412,10 @@ var _ = Describe("ResourceSelector", func() {
 					Items: []zephyr_discovery.MeshWorkload{*workload1, *workload2},
 				}, nil)
 
-			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, &core_types.IdentitySelector{
-				IdentitySelectorType: &core_types.IdentitySelector_ServiceAccountRefs_{
-					ServiceAccountRefs: &core_types.IdentitySelector_ServiceAccountRefs{
-						ServiceAccounts: []*core_types.ResourceRef{{
+			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, &zephyr_core_types.IdentitySelector{
+				IdentitySelectorType: &zephyr_core_types.IdentitySelector_ServiceAccountRefs_{
+					ServiceAccountRefs: &zephyr_core_types.IdentitySelector_ServiceAccountRefs{
+						ServiceAccounts: []*zephyr_core_types.ResourceRef{{
 							Namespace: "ns2",
 							Cluster:   "cluster-2",
 						}},
@@ -431,12 +431,12 @@ var _ = Describe("ResourceSelector", func() {
 	Describe("GetMeshWorkloadsByWorkloadSelector", func() {
 		It("returns everything if the selector is nil", func() {
 			workload1 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns1",
 							Cluster:   "cluster-1",
 						},
@@ -444,12 +444,12 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			workload2 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns2",
 							Cluster:   "cluster-2",
 						},
@@ -471,12 +471,12 @@ var _ = Describe("ResourceSelector", func() {
 
 		It("selects everything if neither labels nor namespaces is set", func() {
 			workload1 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns1",
 							Cluster:   "cluster-1",
 						},
@@ -484,12 +484,12 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			workload2 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns2",
 							Cluster:   "cluster-2",
 						},
@@ -502,7 +502,7 @@ var _ = Describe("ResourceSelector", func() {
 					Items: []zephyr_discovery.MeshWorkload{*workload1, *workload2},
 				}, nil)
 
-			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByWorkloadSelector(ctx, &core_types.WorkloadSelector{
+			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByWorkloadSelector(ctx, &zephyr_core_types.WorkloadSelector{
 				// intentionally empty
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -513,7 +513,7 @@ var _ = Describe("ResourceSelector", func() {
 
 		It("can select by labels", func() {
 			workload1 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 					Labels: map[string]string{
 						constants.CLUSTER: "cluster-1",
@@ -521,7 +521,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns1",
 							Cluster:   "cluster-1",
 							Name:      "controller-1",
@@ -529,8 +529,8 @@ var _ = Describe("ResourceSelector", func() {
 					},
 				},
 			}
-			workload1Controller := &apps_v1.Deployment{
-				ObjectMeta: v1.ObjectMeta{
+			workload1Controller := &k8s_apps_types.Deployment{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "controller-1",
 					Namespace: "ns1",
 					Labels: map[string]string{
@@ -539,12 +539,12 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			cluster1 := &zephyr_discovery.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "cluster-1",
 				},
 			}
 			workload2 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 					Labels: map[string]string{
 						constants.CLUSTER: "cluster-2",
@@ -552,7 +552,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns2",
 							Cluster:   "cluster-2",
 							Name:      "controller-2",
@@ -561,12 +561,12 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			cluster2 := &zephyr_discovery.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "cluster-2",
 				},
 			}
-			workload2Controller := &apps_v1.Deployment{
-				ObjectMeta: v1.ObjectMeta{
+			workload2Controller := &k8s_apps_types.Deployment{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "controller-2",
 					Namespace: "ns2",
 					Labels: map[string]string{
@@ -593,7 +593,7 @@ var _ = Describe("ResourceSelector", func() {
 				GetDeployment(ctx, client.ObjectKey{Name: workload2Controller.GetName(), Namespace: workload2Controller.GetNamespace()}).
 				Return(workload2Controller, nil)
 
-			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByWorkloadSelector(ctx, &core_types.WorkloadSelector{
+			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByWorkloadSelector(ctx, &zephyr_core_types.WorkloadSelector{
 				Labels: workload2Controller.Labels,
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -603,7 +603,7 @@ var _ = Describe("ResourceSelector", func() {
 
 		It("can select by namespaces", func() {
 			workload1 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 					Labels: map[string]string{
 						constants.CLUSTER: "cluster-1",
@@ -611,7 +611,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns1",
 							Cluster:   "cluster-1",
 							Name:      "controller-1",
@@ -619,8 +619,8 @@ var _ = Describe("ResourceSelector", func() {
 					},
 				},
 			}
-			workload1Controller := &apps_v1.Deployment{
-				ObjectMeta: v1.ObjectMeta{
+			workload1Controller := &k8s_apps_types.Deployment{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "controller-1",
 					Namespace: "ns1",
 					Labels: map[string]string{
@@ -629,12 +629,12 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			cluster1 := &zephyr_discovery.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "cluster-1",
 				},
 			}
 			workload2 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 					Labels: map[string]string{
 						constants.CLUSTER: "cluster-2",
@@ -642,7 +642,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef: &core_types.ResourceRef{
+						KubeControllerRef: &zephyr_core_types.ResourceRef{
 							Namespace: "ns2",
 							Cluster:   "cluster-2",
 							Name:      "controller-2",
@@ -651,12 +651,12 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			cluster2 := &zephyr_discovery.KubernetesCluster{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "cluster-2",
 				},
 			}
-			workload2Controller := &apps_v1.Deployment{
-				ObjectMeta: v1.ObjectMeta{
+			workload2Controller := &k8s_apps_types.Deployment{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "controller-2",
 					Namespace: "ns2",
 					Labels: map[string]string{
@@ -683,7 +683,7 @@ var _ = Describe("ResourceSelector", func() {
 				GetDeployment(ctx, client.ObjectKey{Name: workload2Controller.GetName(), Namespace: workload2Controller.GetNamespace()}).
 				Return(workload2Controller, nil)
 
-			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByWorkloadSelector(ctx, &core_types.WorkloadSelector{
+			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByWorkloadSelector(ctx, &zephyr_core_types.WorkloadSelector{
 				Namespaces: []string{"ns2"},
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -748,7 +748,7 @@ var _ = Describe("ResourceSelector", func() {
 		It("errors if the cluster name is not provided", func() {
 			meshWorkload, err := resourceSelector.GetMeshWorkloadByRefSelector(ctx, "test-name", "test-namespace", "")
 			Expect(meshWorkload).To(BeNil())
-			Expect(err).To(testutils.HaveInErrorChain(networking_selector.MustProvideClusterName(&core_types.ResourceRef{
+			Expect(err).To(testutils.HaveInErrorChain(networking_selector.MustProvideClusterName(&zephyr_core_types.ResourceRef{
 				Name:      "test-name",
 				Namespace: "test-namespace",
 			})))
@@ -757,7 +757,7 @@ var _ = Describe("ResourceSelector", func() {
 		It("can find a meshworkload", func() {
 			controllerName, controllerNamespace, cluster := "test-name", "test-namespace", "test-cluster"
 			expectedWorkload := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload",
 				},
 			}
@@ -779,12 +779,12 @@ var _ = Describe("ResourceSelector", func() {
 		It("returns an error if more than one mesh workload is found", func() {
 			controllerName, controllerNamespace, cluster := "test-name", "test-namespace", "test-cluster"
 			workload1 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 				},
 			}
 			workload2 := &zephyr_discovery.MeshWorkload{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 				},
 			}

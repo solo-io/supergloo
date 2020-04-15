@@ -3,9 +3,9 @@ package strategies
 import (
 	"context"
 
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 )
@@ -33,7 +33,7 @@ func (p *permissiveFederation) WriteFederationToServices(
 
 		servicesInMesh := serverMeshMetadata.MeshServices
 
-		var federatedToWorkloads []*core_types.ResourceRef
+		var federatedToWorkloads []*zephyr_core_types.ResourceRef
 		for _, clientMesh := range vm.Spec.Meshes {
 			// skip `serverMeshRef` - we don't want to federate a service to the same mesh that it's in
 			if clientMesh.GetName() == serverMeshRef.GetName() && clientMesh.GetNamespace() == serverMeshRef.GetNamespace() {
@@ -47,7 +47,7 @@ func (p *permissiveFederation) WriteFederationToServices(
 
 			// get the workloads belonging to this mesh (the mesh that the clients are in)
 			for _, workload := range clientMeshMetadata.MeshWorkloads {
-				federatedToWorkloads = append(federatedToWorkloads, &core_types.ResourceRef{
+				federatedToWorkloads = append(federatedToWorkloads, &zephyr_core_types.ResourceRef{
 					Name:      workload.GetName(),
 					Namespace: workload.GetNamespace(),
 				})
@@ -57,7 +57,7 @@ func (p *permissiveFederation) WriteFederationToServices(
 		for _, service := range servicesInMesh {
 			serviceClusterName := serverMeshMetadata.ClusterName
 
-			service.Spec.Federation = &discovery_types.MeshServiceSpec_Federation{
+			service.Spec.Federation = &zephyr_discovery_types.MeshServiceSpec_Federation{
 				MulticlusterDnsName:  dns.BuildMulticlusterDnsName(service.Spec.GetKubeService().GetRef(), serviceClusterName),
 				FederatedToWorkloads: federatedToWorkloads,
 			}

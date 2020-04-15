@@ -4,17 +4,17 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 )
 
 var (
-	FailedToFindMeshServicesBySelector = func(err error, selector *core_types.ServiceSelector) error {
+	FailedToFindMeshServicesBySelector = func(err error, selector *zephyr_core_types.ServiceSelector) error {
 		return eris.Wrapf(err, "Failed to find services for selector %+v", selector)
 	}
-	FailedToFindMeshWorkloadsByIdentity = func(err error, selector *core_types.IdentitySelector) error {
+	FailedToFindMeshWorkloadsByIdentity = func(err error, selector *zephyr_core_types.IdentitySelector) error {
 		return eris.Wrapf(err, "Failed to find workloads with identity %+v", selector)
 	}
 	FailedToListAccessControlPolicies = func(err error) error {

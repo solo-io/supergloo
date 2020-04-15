@@ -5,7 +5,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
@@ -69,8 +69,8 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *zephyr_networki
 	// TODO: Currently we are listing meshes from all namespaces, however, the namespace(s) should be configurable.
 	matchingMeshes, err := m.meshFinder.GetMeshesForVirtualMesh(ctx, vm)
 	if err != nil {
-		vm.Status.ConfigStatus = &core_types.Status{
-			State:   core_types.Status_INVALID,
+		vm.Status.ConfigStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_INVALID,
 			Message: err.Error(),
 		}
 		return err
@@ -78,8 +78,8 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *zephyr_networki
 	for _, v := range matchingMeshes {
 		if v.Spec.GetIstio() == nil {
 			wrapped := OnlyIstioSupportedError(v.GetName())
-			vm.Status.ConfigStatus = &core_types.Status{
-				State:   core_types.Status_INVALID,
+			vm.Status.ConfigStatus = &zephyr_core_types.Status{
+				State:   zephyr_core_types.Status_INVALID,
 				Message: wrapped.Error(),
 			}
 			return wrapped

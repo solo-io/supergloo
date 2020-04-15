@@ -6,9 +6,9 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
@@ -19,7 +19,7 @@ import (
 	"istio.io/api/type/v1beta1"
 	client_security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -54,13 +54,13 @@ var _ = Describe("IstioEnforcer", func() {
 		installationNamespace := []string{"istio-system-1", "istio-system-2"}
 		return []*zephyr_discovery.Mesh{
 			{
-				Spec: discovery_types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterNames[0],
 					},
-					MeshType: &discovery_types.MeshSpec_Istio{
-						Istio: &discovery_types.MeshSpec_IstioMesh{
-							Installation: &discovery_types.MeshSpec_MeshInstallation{
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: installationNamespace[0],
 							},
 						},
@@ -68,13 +68,13 @@ var _ = Describe("IstioEnforcer", func() {
 				},
 			},
 			{
-				Spec: discovery_types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterNames[1],
 					},
-					MeshType: &discovery_types.MeshSpec_Istio{
-						Istio: &discovery_types.MeshSpec_IstioMesh{
-							Installation: &discovery_types.MeshSpec_MeshInstallation{
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: installationNamespace[1],
 							},
 						},
@@ -92,7 +92,7 @@ var _ = Describe("IstioEnforcer", func() {
 				GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName()).
 				Return(nil, nil)
 			globalAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      istio_enforcer.GlobalAccessControlAuthPolicyName,
 					Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
 					Labels:    constants.OwnedBySMHLabel,
@@ -104,7 +104,7 @@ var _ = Describe("IstioEnforcer", func() {
 				UpsertAuthorizationPolicySpec(ctx, globalAuthPolicy).
 				Return(nil)
 			ingressAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      istio_enforcer.IngressGatewayAuthPolicy,
 					Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
 					Labels:    constants.OwnedBySMHLabel,

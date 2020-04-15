@@ -8,11 +8,11 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	corev1 "k8s.io/api/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -66,7 +66,7 @@ type ipAssigner struct {
 }
 
 func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) (string, error) {
-	ipRecordRef := &core_types.ResourceRef{
+	ipRecordRef := &zephyr_core_types.ResourceRef{
 		Name:      IpRecordName,
 		Namespace: env.GetWriteNamespace(),
 	}
@@ -80,7 +80,7 @@ func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) 
 			return "", err
 		}
 
-		return newIp, i.configMapClient.CreateConfigMap(ctx, &corev1.ConfigMap{
+		return newIp, i.configMapClient.CreateConfigMap(ctx, &k8s_core_types.ConfigMap{
 			ObjectMeta: clients.ResourceRefToObjectMeta(ipRecordRef),
 			Data:       newIpRecord,
 		})
@@ -104,12 +104,12 @@ func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) 
 }
 
 func (i *ipAssigner) UnAssignIPOnCluster(ctx context.Context, clusterName, ipToUnassign string) error {
-	ipRecordRef := &core_types.ResourceRef{
+	ipRecordRef := &zephyr_core_types.ResourceRef{
 		Name:      IpRecordName,
 		Namespace: env.GetWriteNamespace(),
 	}
 
-	var ipRecordConfigMap *corev1.ConfigMap
+	var ipRecordConfigMap *k8s_core_types.ConfigMap
 	err := retry.Do(func() error {
 		cm, err := i.configMapClient.GetConfigMap(ctx, clients.ResourceRefToObjectKey(ipRecordRef))
 		if err != nil {

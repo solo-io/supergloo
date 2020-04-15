@@ -8,11 +8,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
@@ -20,7 +20,7 @@ import (
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
 	mock_discovery_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -46,13 +46,13 @@ var _ = Describe("Federation Decider", func() {
 	It("doesn't federate anything for a virtual mesh with only one member", func() {
 		snapshot := snapshot.MeshNetworkingSnapshot{
 			VirtualMeshes: []*zephyr_networking.VirtualMesh{{
-				Spec: networking_types.VirtualMeshSpec{
-					Meshes: []*core_types.ResourceRef{{
+				Spec: zephyr_networking_types.VirtualMeshSpec{
+					Meshes: []*zephyr_core_types.ResourceRef{{
 						Name:      "mesh-1",
 						Namespace: env.GetWriteNamespace(),
 					}},
-					Federation: &networking_types.VirtualMeshSpec_Federation{
-						Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
+					Federation: &zephyr_networking_types.VirtualMeshSpec_Federation{
+						Mode: zephyr_networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
 					},
 				},
 			}},
@@ -62,8 +62,8 @@ var _ = Describe("Federation Decider", func() {
 
 		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 		vmCopy := *snapshot.VirtualMeshes[0]
-		vmCopy.Status.FederationStatus = &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		vmCopy.Status.FederationStatus = &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
 		virtualMeshClient.EXPECT().
 			UpdateVirtualMeshStatus(ctx, &vmCopy).
@@ -76,13 +76,13 @@ var _ = Describe("Federation Decider", func() {
 				Namespace: env.GetWriteNamespace(),
 			}).
 			Return(&zephyr_discovery.Mesh{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:        "mesh-1",
 					ClusterName: "cluster-name",
 				},
 			}, nil)
 
-		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, func(mode networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient zephyr_discovery.MeshServiceClient) (strategies.FederationStrategy, error) {
+		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, func(mode zephyr_networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient zephyr_discovery.MeshServiceClient) (strategies.FederationStrategy, error) {
 			return strategies.NewPermissiveFederation(meshServiceClient), nil
 		})
 		decider.DecideFederation(ctx, &snapshot)
@@ -101,17 +101,17 @@ var _ = Describe("Federation Decider", func() {
 	*************************/
 	It("federates each service to every other mesh in a vm, and not to meshes outside the vm (permissive federation end to end)", func() {
 		meshService1 := &zephyr_discovery.MeshService{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "mesh-service-1-mesh-1",
 				Namespace: env.GetWriteNamespace(),
 			},
-			Spec: types.MeshServiceSpec{
-				Mesh: &core_types.ResourceRef{
+			Spec: zephyr_discovery_types.MeshServiceSpec{
+				Mesh: &zephyr_core_types.ResourceRef{
 					Name:      "mesh-1",
 					Namespace: env.GetWriteNamespace(),
 				},
-				KubeService: &types.MeshServiceSpec_KubeService{
-					Ref: &core_types.ResourceRef{
+				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+					Ref: &zephyr_core_types.ResourceRef{
 						Name:      "application-svc1",
 						Namespace: "application-ns1",
 					},
@@ -119,17 +119,17 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshService2 := &zephyr_discovery.MeshService{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "mesh-service-2-mesh-2",
 				Namespace: env.GetWriteNamespace(),
 			},
-			Spec: types.MeshServiceSpec{
-				Mesh: &core_types.ResourceRef{
+			Spec: zephyr_discovery_types.MeshServiceSpec{
+				Mesh: &zephyr_core_types.ResourceRef{
 					Name:      "mesh-2",
 					Namespace: env.GetWriteNamespace(),
 				},
-				KubeService: &types.MeshServiceSpec_KubeService{
-					Ref: &core_types.ResourceRef{
+				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+					Ref: &zephyr_core_types.ResourceRef{
 						Name:      "application-svc2",
 						Namespace: "application-ns2",
 					},
@@ -137,17 +137,17 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshService3 := &zephyr_discovery.MeshService{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "mesh-service-3-mesh-3",
 				Namespace: env.GetWriteNamespace(),
 			},
-			Spec: types.MeshServiceSpec{
-				Mesh: &core_types.ResourceRef{
+			Spec: zephyr_discovery_types.MeshServiceSpec{
+				Mesh: &zephyr_core_types.ResourceRef{
 					Name:      "mesh-3",
 					Namespace: env.GetWriteNamespace(),
 				},
-				KubeService: &types.MeshServiceSpec_KubeService{
-					Ref: &core_types.ResourceRef{
+				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+					Ref: &zephyr_core_types.ResourceRef{
 						Name:      "application-svc3",
 						Namespace: "application-ns3",
 					},
@@ -155,17 +155,17 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshService4 := &zephyr_discovery.MeshService{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "mesh-service-4-mesh-4",
 				Namespace: env.GetWriteNamespace(),
 			},
-			Spec: types.MeshServiceSpec{
-				Mesh: &core_types.ResourceRef{
+			Spec: zephyr_discovery_types.MeshServiceSpec{
+				Mesh: &zephyr_core_types.ResourceRef{
 					Name:      "mesh-4",
 					Namespace: env.GetWriteNamespace(),
 				},
-				KubeService: &types.MeshServiceSpec_KubeService{
-					Ref: &core_types.ResourceRef{
+				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+					Ref: &zephyr_core_types.ResourceRef{
 						Name:      "application-svc4",
 						Namespace: "application-ns4",
 					},
@@ -176,8 +176,8 @@ var _ = Describe("Federation Decider", func() {
 		snapshot := snapshot.MeshNetworkingSnapshot{
 			VirtualMeshes: []*zephyr_networking.VirtualMesh{
 				{
-					Spec: networking_types.VirtualMeshSpec{
-						Meshes: []*core_types.ResourceRef{
+					Spec: zephyr_networking_types.VirtualMeshSpec{
+						Meshes: []*zephyr_core_types.ResourceRef{
 							{
 								Name:      "mesh-1",
 								Namespace: env.GetWriteNamespace(),
@@ -195,13 +195,13 @@ var _ = Describe("Federation Decider", func() {
 					},
 				},
 				{
-					Spec: networking_types.VirtualMeshSpec{
-						Meshes: []*core_types.ResourceRef{{
+					Spec: zephyr_networking_types.VirtualMeshSpec{
+						Meshes: []*zephyr_core_types.ResourceRef{{
 							Name:      "mesh-4",
 							Namespace: env.GetWriteNamespace(),
 						}},
-						Federation: &networking_types.VirtualMeshSpec_Federation{
-							Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
+						Federation: &zephyr_networking_types.VirtualMeshSpec_Federation{
+							Mode: zephyr_networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
 						},
 					},
 				},
@@ -209,48 +209,48 @@ var _ = Describe("Federation Decider", func() {
 			MeshServices: []*zephyr_discovery.MeshService{meshService1, meshService2, meshService3, meshService4},
 			MeshWorkloads: []*zephyr_discovery.MeshWorkload{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-workload-1-mesh-1",
 						Namespace: env.GetWriteNamespace(),
 					},
-					Spec: types.MeshWorkloadSpec{
-						Mesh: &core_types.ResourceRef{
+					Spec: zephyr_discovery_types.MeshWorkloadSpec{
+						Mesh: &zephyr_core_types.ResourceRef{
 							Name:      "mesh-1",
 							Namespace: env.GetWriteNamespace(),
 						},
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-workload-2-mesh-2",
 						Namespace: env.GetWriteNamespace(),
 					},
-					Spec: types.MeshWorkloadSpec{
-						Mesh: &core_types.ResourceRef{
+					Spec: zephyr_discovery_types.MeshWorkloadSpec{
+						Mesh: &zephyr_core_types.ResourceRef{
 							Name:      "mesh-2",
 							Namespace: env.GetWriteNamespace(),
 						},
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-workload-3-mesh-3",
 						Namespace: env.GetWriteNamespace(),
 					},
-					Spec: types.MeshWorkloadSpec{
-						Mesh: &core_types.ResourceRef{
+					Spec: zephyr_discovery_types.MeshWorkloadSpec{
+						Mesh: &zephyr_core_types.ResourceRef{
 							Name:      "mesh-3",
 							Namespace: env.GetWriteNamespace(),
 						},
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-workload-4-mesh-4",
 						Namespace: env.GetWriteNamespace(),
 					},
-					Spec: types.MeshWorkloadSpec{
-						Mesh: &core_types.ResourceRef{
+					Spec: zephyr_discovery_types.MeshWorkloadSpec{
+						Mesh: &zephyr_core_types.ResourceRef{
 							Name:      "mesh-4",
 							Namespace: env.GetWriteNamespace(),
 						},
@@ -265,8 +265,8 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for vm 1
 		vm1Copy := *snapshot.VirtualMeshes[0]
-		vm1Copy.Status.FederationStatus = &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		vm1Copy.Status.FederationStatus = &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
 		virtualMeshClient.EXPECT().
 			UpdateVirtualMeshStatus(ctx, &vm1Copy).
@@ -274,8 +274,8 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for vm 2
 		vm2Copy := *snapshot.VirtualMeshes[1]
-		vm2Copy.Status.FederationStatus = &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		vm2Copy.Status.FederationStatus = &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
 		virtualMeshClient.EXPECT().
 			UpdateVirtualMeshStatus(ctx, &vm2Copy).
@@ -288,11 +288,11 @@ var _ = Describe("Federation Decider", func() {
 				Namespace: env.GetWriteNamespace(),
 			}).
 			Return(&zephyr_discovery.Mesh{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "mesh-1",
 				},
-				Spec: types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "cluster-1",
 					},
 				},
@@ -303,11 +303,11 @@ var _ = Describe("Federation Decider", func() {
 				Namespace: env.GetWriteNamespace(),
 			}).
 			Return(&zephyr_discovery.Mesh{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "mesh-2",
 				},
-				Spec: types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "cluster-2",
 					},
 				},
@@ -318,11 +318,11 @@ var _ = Describe("Federation Decider", func() {
 				Namespace: env.GetWriteNamespace(),
 			}).
 			Return(&zephyr_discovery.Mesh{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "mesh-3",
 				},
-				Spec: types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "cluster-3",
 					},
 				},
@@ -333,11 +333,11 @@ var _ = Describe("Federation Decider", func() {
 				Namespace: env.GetWriteNamespace(),
 			}).
 			Return(&zephyr_discovery.Mesh{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "mesh-4",
 				},
-				Spec: types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "cluster-4",
 					},
 				},
@@ -345,9 +345,9 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for meshService1
 		meshService1Copy := *meshService1
-		meshService1Copy.Spec.Federation = &types.MeshServiceSpec_Federation{
+		meshService1Copy.Spec.Federation = &zephyr_discovery_types.MeshServiceSpec_Federation{
 			MulticlusterDnsName: "application-svc1.application-ns1.cluster-1",
-			FederatedToWorkloads: []*core_types.ResourceRef{
+			FederatedToWorkloads: []*zephyr_core_types.ResourceRef{
 				{
 					Name:      "mesh-workload-2-mesh-2",
 					Namespace: env.GetWriteNamespace(),
@@ -364,9 +364,9 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for meshService2
 		meshService2Copy := *meshService2
-		meshService2Copy.Spec.Federation = &types.MeshServiceSpec_Federation{
+		meshService2Copy.Spec.Federation = &zephyr_discovery_types.MeshServiceSpec_Federation{
 			MulticlusterDnsName: "application-svc2.application-ns2.cluster-2",
-			FederatedToWorkloads: []*core_types.ResourceRef{
+			FederatedToWorkloads: []*zephyr_core_types.ResourceRef{
 				{
 					Name:      "mesh-workload-1-mesh-1",
 					Namespace: env.GetWriteNamespace(),
@@ -383,9 +383,9 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for meshService3
 		meshService3Copy := *meshService3
-		meshService3Copy.Spec.Federation = &types.MeshServiceSpec_Federation{
+		meshService3Copy.Spec.Federation = &zephyr_discovery_types.MeshServiceSpec_Federation{
 			MulticlusterDnsName: "application-svc3.application-ns3.cluster-3",
-			FederatedToWorkloads: []*core_types.ResourceRef{
+			FederatedToWorkloads: []*zephyr_core_types.ResourceRef{
 				{
 					Name:      "mesh-workload-1-mesh-1",
 					Namespace: env.GetWriteNamespace(),
@@ -402,7 +402,7 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for meshService4
 		meshService4Copy := *meshService4
-		meshService4Copy.Spec.Federation = &types.MeshServiceSpec_Federation{
+		meshService4Copy.Spec.Federation = &zephyr_discovery_types.MeshServiceSpec_Federation{
 			MulticlusterDnsName: "application-svc4.application-ns4.cluster-4",
 		}
 		meshServiceClient.EXPECT().
@@ -415,11 +415,11 @@ var _ = Describe("Federation Decider", func() {
 
 	It("marks all virtual meshes in the snapshot as having a processing error if we can't set up the precomputed data", func() {
 		vm1 := &zephyr_networking.VirtualMesh{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name: "virtual-mesh-1",
 			},
-			Spec: networking_types.VirtualMeshSpec{
-				Meshes: []*core_types.ResourceRef{
+			Spec: zephyr_networking_types.VirtualMeshSpec{
+				Meshes: []*zephyr_core_types.ResourceRef{
 					{
 						Name:      "mesh-1",
 						Namespace: env.GetWriteNamespace(),
@@ -437,16 +437,16 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		vm2 := &zephyr_networking.VirtualMesh{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name: "virtual-mesh-2",
 			},
-			Spec: networking_types.VirtualMeshSpec{
-				Meshes: []*core_types.ResourceRef{{
+			Spec: zephyr_networking_types.VirtualMeshSpec{
+				Meshes: []*zephyr_core_types.ResourceRef{{
 					Name:      "mesh-4",
 					Namespace: env.GetWriteNamespace(),
 				}},
-				Federation: &networking_types.VirtualMeshSpec_Federation{
-					Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
+				Federation: &zephyr_networking_types.VirtualMeshSpec_Federation{
+					Mode: zephyr_networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
 				},
 			},
 		}
@@ -474,8 +474,8 @@ var _ = Describe("Federation Decider", func() {
 		}
 
 		vm1Copy := *vm1
-		vm1Copy.Status.FederationStatus = &core_types.Status{
-			State:   core_types.Status_PROCESSING_ERROR,
+		vm1Copy.Status.FederationStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: decider.ErrorLoadingMeshMetadata(vm1MultiErr),
 		}
 		virtualMeshClient.EXPECT().
@@ -483,15 +483,15 @@ var _ = Describe("Federation Decider", func() {
 			Return(nil)
 
 		vm2Copy := *vm2
-		vm2Copy.Status.FederationStatus = &core_types.Status{
-			State:   core_types.Status_PROCESSING_ERROR,
+		vm2Copy.Status.FederationStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: decider.ErrorLoadingMeshMetadata(vm2MultiErr),
 		}
 		virtualMeshClient.EXPECT().
 			UpdateVirtualMeshStatus(ctx, &vm2Copy).
 			Return(nil)
 
-		strategyDecider := func(mode networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient zephyr_discovery.MeshServiceClient) (strategies.FederationStrategy, error) {
+		strategyDecider := func(mode zephyr_networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient zephyr_discovery.MeshServiceClient) (strategies.FederationStrategy, error) {
 			// these don't matter, we'll bail out before this point
 			return nil, nil
 		}

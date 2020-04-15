@@ -7,17 +7,17 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -67,50 +67,50 @@ var _ = Describe("Merger", func() {
 		destLabels1 := map[string]string{"k1": "v1"}
 		destNamespaces2 := []string{"namespace2"}
 		destLabels2 := map[string]string{"k2": "v2"}
-		httpMatcher1 := &networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{
-			Method: &networking_v1alpha1_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
+		httpMatcher1 := &zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+			Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
 		}
-		httpMatcher2 := &networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{
-			Method: &networking_v1alpha1_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_POST},
+		httpMatcher2 := &zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+			Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_POST},
 		}
-		httpMatcher3 := &networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{
-			Method: &networking_v1alpha1_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_PUT},
+		httpMatcher3 := &zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+			Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_PUT},
 		}
 		tp1 := zephyr_networking.TrafficPolicy{
-			Spec: networking_v1alpha1_types.TrafficPolicySpec{
-				SourceSelector: &core_types.WorkloadSelector{
+			Spec: zephyr_networking_types.TrafficPolicySpec{
+				SourceSelector: &zephyr_core_types.WorkloadSelector{
 					Namespaces: destNamespaces1,
 					Labels:     destLabels1,
 				},
-				DestinationSelector: &core_types.ServiceSelector{
-					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-						ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-							Services: []*core_types.ResourceRef{
+				DestinationSelector: &zephyr_core_types.ServiceSelector{
+					ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+						ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+							Services: []*zephyr_core_types.ResourceRef{
 								{Name: meshServiceName1, Namespace: meshServiceNamespace1},
 							},
 						},
 					},
 				},
 				RequestTimeout:      &types1.Duration{Seconds: 1},
-				HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher1},
+				HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{httpMatcher1},
 			},
-			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.Status{
-					State:   core_types.Status_ACCEPTED,
+			Status: zephyr_networking_types.TrafficPolicyStatus{
+				TranslationStatus: &zephyr_core_types.Status{
+					State:   zephyr_core_types.Status_ACCEPTED,
 					Message: "",
 				},
 			},
 		}
 		tp2 := zephyr_networking.TrafficPolicy{
-			Spec: networking_v1alpha1_types.TrafficPolicySpec{
-				SourceSelector: &core_types.WorkloadSelector{
+			Spec: zephyr_networking_types.TrafficPolicySpec{
+				SourceSelector: &zephyr_core_types.WorkloadSelector{
 					Namespaces: destNamespaces2,
 					Labels:     destLabels2,
 				},
-				DestinationSelector: &core_types.ServiceSelector{
-					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-						ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-							Services: []*core_types.ResourceRef{
+				DestinationSelector: &zephyr_core_types.ServiceSelector{
+					ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+						ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+							Services: []*zephyr_core_types.ResourceRef{
 								{Name: meshServiceName1, Namespace: meshServiceNamespace1},
 								{Name: meshServiceName2, Namespace: meshServiceNamespace2},
 							},
@@ -118,100 +118,100 @@ var _ = Describe("Merger", func() {
 					},
 				},
 				RequestTimeout:      &types1.Duration{Seconds: 1},
-				HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher2},
+				HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{httpMatcher2},
 			},
-			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.Status{
-					State:   core_types.Status_ACCEPTED,
+			Status: zephyr_networking_types.TrafficPolicyStatus{
+				TranslationStatus: &zephyr_core_types.Status{
+					State:   zephyr_core_types.Status_ACCEPTED,
 					Message: "",
 				},
 			},
 		}
 		tp3 := zephyr_networking.TrafficPolicy{
-			Spec: networking_v1alpha1_types.TrafficPolicySpec{
-				SourceSelector: &core_types.WorkloadSelector{
+			Spec: zephyr_networking_types.TrafficPolicySpec{
+				SourceSelector: &zephyr_core_types.WorkloadSelector{
 					Namespaces: destNamespaces1,
 					Labels:     destLabels1,
 				},
-				DestinationSelector: &core_types.ServiceSelector{
-					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-						ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-							Services: []*core_types.ResourceRef{
+				DestinationSelector: &zephyr_core_types.ServiceSelector{
+					ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+						ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+							Services: []*zephyr_core_types.ResourceRef{
 								{Name: meshServiceName2, Namespace: meshServiceNamespace2},
 							},
 						},
 					},
 				},
-				Retries:             &networking_v1alpha1_types.TrafficPolicySpec_RetryPolicy{Attempts: 2},
-				HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
+				Retries:             &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{Attempts: 2},
+				HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
 			},
-			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.Status{
-					State:   core_types.Status_ACCEPTED,
+			Status: zephyr_networking_types.TrafficPolicyStatus{
+				TranslationStatus: &zephyr_core_types.Status{
+					State:   zephyr_core_types.Status_ACCEPTED,
 					Message: "",
 				},
 			},
 		}
 		tp4 := zephyr_networking.TrafficPolicy{
-			Spec: networking_v1alpha1_types.TrafficPolicySpec{
-				SourceSelector: &core_types.WorkloadSelector{
+			Spec: zephyr_networking_types.TrafficPolicySpec{
+				SourceSelector: &zephyr_core_types.WorkloadSelector{
 					Namespaces: destNamespaces1,
 					Labels:     destLabels1,
 				},
-				DestinationSelector: &core_types.ServiceSelector{
-					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-						ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-							Services: []*core_types.ResourceRef{
+				DestinationSelector: &zephyr_core_types.ServiceSelector{
+					ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+						ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+							Services: []*zephyr_core_types.ResourceRef{
 								{Name: meshServiceName1, Namespace: meshServiceNamespace1},
 							},
 						},
 					},
 				},
-				FaultInjection: &networking_v1alpha1_types.TrafficPolicySpec_FaultInjection{
+				FaultInjection: &zephyr_networking_types.TrafficPolicySpec_FaultInjection{
 					Percentage: 50,
 				},
-				HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher3},
+				HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{httpMatcher3},
 			},
-			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.Status{
-					State:   core_types.Status_ACCEPTED,
+			Status: zephyr_networking_types.TrafficPolicyStatus{
+				TranslationStatus: &zephyr_core_types.Status{
+					State:   zephyr_core_types.Status_ACCEPTED,
 					Message: "",
 				},
 			},
 		}
 		tp5 := zephyr_networking.TrafficPolicy{
-			Spec: networking_v1alpha1_types.TrafficPolicySpec{
-				SourceSelector: &core_types.WorkloadSelector{
+			Spec: zephyr_networking_types.TrafficPolicySpec{
+				SourceSelector: &zephyr_core_types.WorkloadSelector{
 					Namespaces: destNamespaces1,
 					Labels:     destLabels1,
 				},
-				DestinationSelector: &core_types.ServiceSelector{
-					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-						ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-							Services: []*core_types.ResourceRef{
+				DestinationSelector: &zephyr_core_types.ServiceSelector{
+					ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+						ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+							Services: []*zephyr_core_types.ResourceRef{
 								{Name: meshServiceName1, Namespace: meshServiceNamespace1},
 							},
 						},
 					},
 				},
-				FaultInjection: &networking_v1alpha1_types.TrafficPolicySpec_FaultInjection{
+				FaultInjection: &zephyr_networking_types.TrafficPolicySpec_FaultInjection{
 					Percentage: 50,
 				},
-				HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher1},
+				HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{httpMatcher1},
 			},
-			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.Status{
-					State:   core_types.Status_ACCEPTED,
+			Status: zephyr_networking_types.TrafficPolicyStatus{
+				TranslationStatus: &zephyr_core_types.Status{
+					State:   zephyr_core_types.Status_ACCEPTED,
 					Message: "",
 				},
 			},
 		}
 		ignoredTP := zephyr_networking.TrafficPolicy{
-			Spec: networking_v1alpha1_types.TrafficPolicySpec{
-				DestinationSelector: &core_types.ServiceSelector{
-					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-						ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-							Services: []*core_types.ResourceRef{
+			Spec: zephyr_networking_types.TrafficPolicySpec{
+				DestinationSelector: &zephyr_core_types.ServiceSelector{
+					ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+						ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+							Services: []*zephyr_core_types.ResourceRef{
 								{Name: meshServiceName1, Namespace: meshServiceNamespace1},
 								{Name: meshServiceName2, Namespace: meshServiceNamespace2},
 							},
@@ -219,9 +219,9 @@ var _ = Describe("Merger", func() {
 					},
 				},
 			},
-			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.Status{
-					State:   core_types.Status_CONFLICT,
+			Status: zephyr_networking_types.TrafficPolicyStatus{
+				TranslationStatus: &zephyr_core_types.Status{
+					State:   zephyr_core_types.Status_CONFLICT,
 					Message: "",
 				},
 			},
@@ -238,26 +238,26 @@ var _ = Describe("Merger", func() {
 		}
 		meshServices := []*zephyr_discovery.MeshService{
 			{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:        meshServiceName1,
 					Namespace:   meshServiceNamespace1,
 					ClusterName: clusterName1,
 				},
-				Spec: types.MeshServiceSpec{
-					Mesh: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      meshName1,
 						Namespace: meshNamespace1,
 					},
 				},
 			},
 			{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:        meshServiceName2,
 					Namespace:   meshServiceNamespace2,
 					ClusterName: clusterName2,
 				},
-				Spec: types.MeshServiceSpec{
-					Mesh: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      meshName2,
 						Namespace: meshNamespace2,
 					},
@@ -281,42 +281,42 @@ var _ = Describe("Merger", func() {
 		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, ignoredTP.Spec.GetDestinationSelector()).
 			Return([]*zephyr_discovery.MeshService{meshServices[0], meshServices[1]}, nil)
 		/*** buildKeyForMeshService ***/
-		mesh1 := &zephyr_discovery.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName1}}}
-		mesh2 := &zephyr_discovery.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName2}}}
+		mesh1 := &zephyr_discovery.Mesh{Spec: zephyr_discovery_types.MeshSpec{Cluster: &zephyr_core_types.ResourceRef{Name: meshClusterName1}}}
+		mesh2 := &zephyr_discovery.Mesh{Spec: zephyr_discovery_types.MeshSpec{Cluster: &zephyr_core_types.ResourceRef{Name: meshClusterName2}}}
 		mockMeshClient.EXPECT().GetMesh(ctx, client.ObjectKey{Name: meshName1, Namespace: meshNamespace1}).Return(mesh1, nil).Times(6)
 		mockMeshClient.EXPECT().GetMesh(ctx, client.ObjectKey{Name: meshName2, Namespace: meshNamespace2}).Return(mesh2, nil).Times(4)
 		mergedTrafficPolicy1 := []*zephyr_networking.TrafficPolicy{
 			{
-				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					SourceSelector: &core_types.WorkloadSelector{
+				Spec: zephyr_networking_types.TrafficPolicySpec{
+					SourceSelector: &zephyr_core_types.WorkloadSelector{
 						Namespaces: destNamespaces1,
 						Labels:     destLabels1,
 					},
-					HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher1},
+					HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{httpMatcher1},
 					RequestTimeout:      &types1.Duration{Seconds: 1},
-					FaultInjection: &networking_v1alpha1_types.TrafficPolicySpec_FaultInjection{
+					FaultInjection: &zephyr_networking_types.TrafficPolicySpec_FaultInjection{
 						Percentage: 50,
 					},
 				},
 			},
 			{
-				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					SourceSelector: &core_types.WorkloadSelector{
+				Spec: zephyr_networking_types.TrafficPolicySpec{
+					SourceSelector: &zephyr_core_types.WorkloadSelector{
 						Namespaces: destNamespaces2,
 						Labels:     destLabels2,
 					},
-					HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher2},
+					HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{httpMatcher2},
 					RequestTimeout:      &types1.Duration{Seconds: 1},
 				},
 			},
 			{
-				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					SourceSelector: &core_types.WorkloadSelector{
+				Spec: zephyr_networking_types.TrafficPolicySpec{
+					SourceSelector: &zephyr_core_types.WorkloadSelector{
 						Namespaces: destNamespaces1,
 						Labels:     destLabels1,
 					},
-					HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher3},
-					FaultInjection: &networking_v1alpha1_types.TrafficPolicySpec_FaultInjection{
+					HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{httpMatcher3},
+					FaultInjection: &zephyr_networking_types.TrafficPolicySpec_FaultInjection{
 						Percentage: 50,
 					},
 				},
@@ -324,23 +324,23 @@ var _ = Describe("Merger", func() {
 		}
 		mergedTrafficPolicy2 := []*zephyr_networking.TrafficPolicy{
 			{
-				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					SourceSelector: &core_types.WorkloadSelector{
+				Spec: zephyr_networking_types.TrafficPolicySpec{
+					SourceSelector: &zephyr_core_types.WorkloadSelector{
 						Namespaces: destNamespaces2,
 						Labels:     destLabels2,
 					},
-					HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher2},
+					HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{httpMatcher2},
 					RequestTimeout:      &types1.Duration{Seconds: 1},
 				},
 			},
 			{
-				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					SourceSelector: &core_types.WorkloadSelector{
+				Spec: zephyr_networking_types.TrafficPolicySpec{
+					SourceSelector: &zephyr_core_types.WorkloadSelector{
 						Namespaces: destNamespaces1,
 						Labels:     destLabels1,
 					},
-					HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
-					Retries:             &networking_v1alpha1_types.TrafficPolicySpec_RetryPolicy{Attempts: 2},
+					HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
+					Retries:             &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{Attempts: 2},
 				},
 			},
 		}

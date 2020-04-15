@@ -8,18 +8,18 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/security/certgen/mocks"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -44,7 +44,7 @@ var _ = Describe("virtual mesh cert client", func() {
 	})
 
 	It("will fail if virtualMesh cannot be found", func() {
-		meshRef := &core_types.ResourceRef{
+		meshRef := &zephyr_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
@@ -55,20 +55,20 @@ var _ = Describe("virtual mesh cert client", func() {
 	})
 
 	It("will use user provided trust bundle in vm if set", func() {
-		meshRef := &core_types.ResourceRef{
+		meshRef := &zephyr_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
 		vm := &zephyr_networking.VirtualMesh{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
 			},
-			Spec: v1alpha1_types.VirtualMeshSpec{
-				CertificateAuthority: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority{
-					Type: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Provided_{
-						Provided: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Provided{
-							Certificate: &core_types.ResourceRef{
+			Spec: zephyr_networking_types.VirtualMeshSpec{
+				CertificateAuthority: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_{
+						Provided: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided{
+							Certificate: &zephyr_core_types.ResourceRef{
 								Name:      "tb_name",
 								Namespace: "tb_namespace",
 							},
@@ -91,20 +91,20 @@ var _ = Describe("virtual mesh cert client", func() {
 	})
 
 	It("will return proper CA data", func() {
-		meshRef := &core_types.ResourceRef{
+		meshRef := &zephyr_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
 		vm := &zephyr_networking.VirtualMesh{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
 			},
-			Spec: v1alpha1_types.VirtualMeshSpec{
-				CertificateAuthority: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority{
-					Type: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Provided_{
-						Provided: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Provided{
-							Certificate: &core_types.ResourceRef{
+			Spec: zephyr_networking_types.VirtualMeshSpec{
+				CertificateAuthority: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_{
+						Provided: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided{
+							Certificate: &zephyr_core_types.ResourceRef{
 								Name:      "tb_name",
 								Namespace: "tb_namespace",
 							},
@@ -117,8 +117,8 @@ var _ = Describe("virtual mesh cert client", func() {
 			PrivateKey: []byte("private_key"),
 			RootCert:   []byte("root_cert"),
 		}
-		matchSecret := &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
+		matchSecret := &k8s_core_types.Secret{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      vm.Spec.GetCertificateAuthority().GetProvided().GetCertificate().GetName(),
 				Namespace: vm.Spec.GetCertificateAuthority().GetProvided().GetCertificate().GetNamespace(),
 			},
@@ -143,19 +143,19 @@ var _ = Describe("virtual mesh cert client", func() {
 	})
 
 	It("will create auto-generated root cert if CertificateAuthority is not user provided", func() {
-		meshRef := &core_types.ResourceRef{
+		meshRef := &zephyr_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
 		vm := &zephyr_networking.VirtualMesh{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
 			},
-			Spec: v1alpha1_types.VirtualMeshSpec{
-				CertificateAuthority: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority{
-					Type: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
-						Builtin: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Builtin{},
+			Spec: zephyr_networking_types.VirtualMeshSpec{
+				CertificateAuthority: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
+						Builtin: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{},
 					},
 				},
 			},
@@ -164,7 +164,7 @@ var _ = Describe("virtual mesh cert client", func() {
 		secretClient.
 			EXPECT().
 			GetSecret(ctx, client.ObjectKey{Name: cert_signer.DefaultRootCaName(vm), Namespace: env.GetWriteNamespace()}).
-			Return(nil, errors.NewNotFound(corev1.Resource("secret"), "non-extant-secret"))
+			Return(nil, errors.NewNotFound(k8s_core_types.Resource("secret"), "non-extant-secret"))
 		expectedRootCaData := &cert_secrets.RootCAData{}
 		rootCertGenerator.
 			EXPECT().
@@ -180,19 +180,19 @@ var _ = Describe("virtual mesh cert client", func() {
 	})
 
 	It("will get auto-generated root cert if CertificateAuthority is not user provided and already exists", func() {
-		meshRef := &core_types.ResourceRef{
+		meshRef := &zephyr_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
 		vm := &zephyr_networking.VirtualMesh{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
 			},
-			Spec: v1alpha1_types.VirtualMeshSpec{
-				CertificateAuthority: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority{
-					Type: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
-						Builtin: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Builtin{},
+			Spec: zephyr_networking_types.VirtualMeshSpec{
+				CertificateAuthority: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
+						Builtin: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{},
 					},
 				},
 			},
@@ -209,16 +209,16 @@ var _ = Describe("virtual mesh cert client", func() {
 	})
 
 	It("will default to using builtin cert", func() {
-		meshRef := &core_types.ResourceRef{
+		meshRef := &zephyr_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
 		vm := &zephyr_networking.VirtualMesh{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
 			},
-			Spec: v1alpha1_types.VirtualMeshSpec{},
+			Spec: zephyr_networking_types.VirtualMeshSpec{},
 		}
 		virtualMeshClient.EXPECT().GetVirtualMesh(ctx, client.ObjectKey{Name: meshRef.Name, Namespace: meshRef.Namespace}).Return(vm, nil)
 		expectedRootCaData := &cert_secrets.RootCAData{}

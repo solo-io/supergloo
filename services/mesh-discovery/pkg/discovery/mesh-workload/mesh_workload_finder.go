@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-multierror"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"go.uber.org/zap"
-	corev1 "k8s.io/api/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -55,7 +55,7 @@ func (d *meshWorkloadFinder) StartDiscovery(podEventWatcher k8s_core_controller.
 	)
 }
 
-func (d *meshWorkloadFinder) CreatePod(pod *corev1.Pod) error {
+func (d *meshWorkloadFinder) CreatePod(pod *k8s_core_types.Pod) error {
 	pod.SetClusterName(d.clusterName)
 	logger := logging.BuildEventLogger(d.ctx, logging.CreateEvent, pod)
 
@@ -73,7 +73,7 @@ func (d *meshWorkloadFinder) CreatePod(pod *corev1.Pod) error {
 	return d.createOrUpdateWorkload(discoveredMeshWorkload)
 }
 
-func (d *meshWorkloadFinder) UpdatePod(old, new *corev1.Pod) error {
+func (d *meshWorkloadFinder) UpdatePod(old, new *k8s_core_types.Pod) error {
 	old.SetClusterName(d.clusterName)
 	new.SetClusterName(d.clusterName)
 	logger := logging.BuildEventLogger(d.ctx, logging.UpdateEvent, new)
@@ -112,19 +112,19 @@ func (d *meshWorkloadFinder) UpdatePod(old, new *corev1.Pod) error {
 	}
 }
 
-func (d *meshWorkloadFinder) DeletePod(pod *corev1.Pod) error {
+func (d *meshWorkloadFinder) DeletePod(pod *k8s_core_types.Pod) error {
 	logger := logging.BuildEventLogger(d.ctx, logging.DeleteEvent, pod)
 	logger.Error("Deletion of MeshWorkloads is currently not supported")
 	return nil
 }
 
-func (d *meshWorkloadFinder) GenericPod(pod *corev1.Pod) error {
+func (d *meshWorkloadFinder) GenericPod(pod *k8s_core_types.Pod) error {
 	logger := logging.BuildEventLogger(d.ctx, logging.GenericEvent, pod)
 	logger.Error("MeshWorkload generic events are not currently supported")
 	return nil
 }
 
-func (d *meshWorkloadFinder) attachGeneralDiscoveryLabels(controllerRef *core_types.ResourceRef, meshWorkload *zephyr_discovery.MeshWorkload) {
+func (d *meshWorkloadFinder) attachGeneralDiscoveryLabels(controllerRef *zephyr_core_types.ResourceRef, meshWorkload *zephyr_discovery.MeshWorkload) {
 	if meshWorkload.Labels == nil {
 		meshWorkload.Labels = map[string]string{}
 	}
@@ -134,11 +134,11 @@ func (d *meshWorkloadFinder) attachGeneralDiscoveryLabels(controllerRef *core_ty
 	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAMESPACE] = controllerRef.GetNamespace()
 }
 
-func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*zephyr_discovery.MeshWorkload, error) {
+func (d *meshWorkloadFinder) discoverMeshWorkload(pod *k8s_core_types.Pod) (*zephyr_discovery.MeshWorkload, error) {
 	var (
 		multiErr               *multierror.Error
 		discoveredMeshWorkload *zephyr_discovery.MeshWorkload
-		controllerRef          *core_types.ResourceRef
+		controllerRef          *zephyr_core_types.ResourceRef
 	)
 	for _, meshWorkloadScanner := range d.meshWorkloadScanners {
 		discoveredControllerRef, discoveredMeshWorkloadObjectMeta, err := meshWorkloadScanner.ScanPod(d.ctx, pod)
@@ -194,7 +194,7 @@ func (d *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *zephyr_d
 	return d.localMeshWorkloadClient.UpdateMeshWorkload(d.ctx, mw)
 }
 
-func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context) (*core_types.ResourceRef, error) {
+func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context) (*zephyr_core_types.ResourceRef, error) {
 	meshList, err := d.localMeshClient.ListMesh(ctx, &client.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -202,7 +202,7 @@ func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context) (*core_t
 	// assume at most one instance of Istio per cluster, thus it must be the Mesh for the MeshWorkload if it exists
 	for _, mesh := range meshList.Items {
 		if mesh.Spec.Cluster.Name == d.clusterName {
-			return &core_types.ResourceRef{
+			return &zephyr_core_types.ResourceRef{
 				Name:      mesh.Name,
 				Namespace: mesh.Namespace,
 				Cluster:   d.clusterName,

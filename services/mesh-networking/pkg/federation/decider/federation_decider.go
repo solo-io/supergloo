@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
@@ -66,8 +66,8 @@ func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnap
 	// log and update the status just for the ones that failed, then continue
 	if len(errorReports) > 0 {
 		for _, failedVirtualMeshReport := range errorReports {
-			failedVirtualMeshReport.VirtualMesh.Status.FederationStatus = &core_types.Status{
-				State:   core_types.Status_PROCESSING_ERROR,
+			failedVirtualMeshReport.VirtualMesh.Status.FederationStatus = &zephyr_core_types.Status{
+				State:   zephyr_core_types.Status_PROCESSING_ERROR,
 				Message: ErrorLoadingMeshMetadata(failedVirtualMeshReport.Err),
 			}
 
@@ -101,8 +101,8 @@ func (f *federationDecider) federateVirtualMesh(
 	// determine what strategy we should use to federate
 	federationStrategy, err := f.federationStrategyChooser(federationMode, f.meshServiceClient)
 	if err != nil {
-		vm.Status.FederationStatus = &core_types.Status{
-			State:   core_types.Status_INVALID,
+		vm.Status.FederationStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_INVALID,
 			Message: UnsupportedFederationMode,
 		}
 		f.updateVirtualMeshStatus(ctx, vm)
@@ -112,13 +112,13 @@ func (f *federationDecider) federateVirtualMesh(
 	// actually write our federation decision to the mesh services
 	err = federationStrategy.WriteFederationToServices(ctx, vm, perMeshMetadata.MeshNameToMetadata)
 	if err == nil {
-		vm.Status.FederationStatus = &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		vm.Status.FederationStatus = &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
 	} else {
 		logger.Debugf("Recording error to virtual mesh %s.%s", vm.Name, vm.Namespace, zap.Error(err))
-		vm.Status.FederationStatus = &core_types.Status{
-			State:   core_types.Status_PROCESSING_ERROR,
+		vm.Status.FederationStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: ErrorUpdatingMeshServices(err),
 		}
 	}

@@ -18,11 +18,11 @@ import (
 
 	linkerd_config "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	linkerd_client "github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
@@ -33,13 +33,13 @@ const (
 )
 
 var (
-	SubsetsNotSupportedErr = func(dest *networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination) error {
+	SubsetsNotSupportedErr = func(dest *zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination) error {
 		return eris.Errorf("Subsets are currently not supported, found one on destination: %+v", dest)
 	}
 
 	CrossNamespaceSplitNotSupportedErr = eris.Errorf("Traffic Shifts are currently not supported across namespaces in Linkerd")
 
-	TrafficShiftRedefinedErr = func(meshService *zephyr_discovery.MeshService, trafficPoliciesWithTrafficShifts []core_types.ResourceRef) error {
+	TrafficShiftRedefinedErr = func(meshService *zephyr_discovery.MeshService, trafficPoliciesWithTrafficShifts []zephyr_core_types.ResourceRef) error {
 		return eris.Errorf("multiple traffic policies with traffic shifts (%+v) defined for a single mesh service (%s)", trafficPoliciesWithTrafficShifts, meshService.Name)
 	}
 )
@@ -83,7 +83,7 @@ func (i *linkerdTrafficPolicyTranslator) TranslateTrafficPolicy(
 	meshService *zephyr_discovery.MeshService,
 	mesh *zephyr_discovery.Mesh,
 	mergedTrafficPolicies []*zephyr_networking.TrafficPolicy,
-) *networking_types.TrafficPolicyStatus_TranslatorError {
+) *zephyr_networking_types.TrafficPolicyStatus_TranslatorError {
 	if mesh.Spec.GetLinkerd() == nil {
 		return nil
 	}
@@ -185,8 +185,8 @@ func makeRoutes(
 		matchers := policy.Spec.GetHttpRequestMatchers()
 		if len(matchers) == 0 {
 			// use catch-all matcher
-			matchers = []*networking_types.TrafficPolicySpec_HttpMatcher{{
-				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{Prefix: "/"},
+			matchers = []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{{
+				PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{Prefix: "/"},
 			}}
 		}
 		var timeout string
@@ -213,7 +213,7 @@ func hasRelevantConfig(tp *zephyr_networking.TrafficPolicy) bool {
 		len(tp.Spec.HttpRequestMatchers) != 0
 }
 
-func getMatchCondition(ctx context.Context, matches []*networking_types.TrafficPolicySpec_HttpMatcher) *linkerd_config.RequestMatch {
+func getMatchCondition(ctx context.Context, matches []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher) *linkerd_config.RequestMatch {
 	var conditions []*linkerd_config.RequestMatch
 	for _, match := range matches {
 		conditions = append(conditions, getMatch(ctx, match))
@@ -223,14 +223,14 @@ func getMatchCondition(ctx context.Context, matches []*networking_types.TrafficP
 	}
 }
 
-func getMatch(ctx context.Context, match *networking_types.TrafficPolicySpec_HttpMatcher) *linkerd_config.RequestMatch {
+func getMatch(ctx context.Context, match *zephyr_networking_types.TrafficPolicySpec_HttpMatcher) *linkerd_config.RequestMatch {
 	pathRegex := func() string {
 		switch match.GetPathSpecifier().(type) {
-		case *networking_types.TrafficPolicySpec_HttpMatcher_Exact:
+		case *zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact:
 			return match.GetExact()
-		case *networking_types.TrafficPolicySpec_HttpMatcher_Regex:
+		case *zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Regex:
 			return match.GetRegex()
-		case *networking_types.TrafficPolicySpec_HttpMatcher_Prefix:
+		case *zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix:
 			return match.GetPrefix() + ".*"
 		}
 		contextutils.LoggerFrom(ctx).DPanicf("path specifier not implemented")
@@ -248,8 +248,8 @@ func getMatch(ctx context.Context, match *networking_types.TrafficPolicySpec_Htt
 	}
 }
 
-func errorToStatus(err error) *networking_types.TrafficPolicyStatus_TranslatorError {
-	return &networking_types.TrafficPolicyStatus_TranslatorError{
+func errorToStatus(err error) *zephyr_networking_types.TrafficPolicyStatus_TranslatorError {
+	return &zephyr_networking_types.TrafficPolicyStatus_TranslatorError{
 		TranslatorId: TranslatorId,
 		ErrorMessage: err.Error(),
 	}
@@ -310,11 +310,11 @@ func (i *linkerdTrafficPolicyTranslator) makeBackends(
 	policies []*zephyr_networking.TrafficPolicy,
 ) ([]smi_config.TrafficSplitBackend, error) {
 
-	var trafficShift *networking_types.TrafficPolicySpec_MultiDestination
-	var policiesWithTrafficShifts []core_types.ResourceRef
+	var trafficShift *zephyr_networking_types.TrafficPolicySpec_MultiDestination
+	var policiesWithTrafficShifts []zephyr_core_types.ResourceRef
 	for _, policy := range policies {
 		if policy.Spec.TrafficShift != nil {
-			policiesWithTrafficShifts = append(policiesWithTrafficShifts, core_types.ResourceRef{
+			policiesWithTrafficShifts = append(policiesWithTrafficShifts, zephyr_core_types.ResourceRef{
 				Name:      policy.Name,
 				Namespace: policy.Namespace,
 				Cluster:   policy.ClusterName,
@@ -352,7 +352,7 @@ func metaForMeshService(svc *types.MeshServiceSpec_KubeService, linkerd *types.M
 }
 
 // convert a destination weight to a kube resource.Quantity
-func convertWeightQuantity(destinations []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination, relativeWeight uint32) *resource.Quantity {
+func convertWeightQuantity(destinations []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination, relativeWeight uint32) *resource.Quantity {
 	var total uint32
 	for _, dest := range destinations {
 		total += dest.GetWeight()

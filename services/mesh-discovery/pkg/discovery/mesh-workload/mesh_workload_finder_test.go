@@ -11,7 +11,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/testutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
@@ -20,9 +20,9 @@ import (
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/mocks"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -36,7 +36,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockMeshWorkloadScanner     *mock_mesh_workload.MockMeshWorkloadScanner
 		clusterName                 = "clusterName"
 		meshWorkloadFinder          k8s_core_controller.PodEventHandler
-		pod                         = &corev1.Pod{}
+		pod                         = &k8s_core_types.Pod{}
 		discoveredMeshWorkload      *zephyr_discovery.MeshWorkload
 		testLogger                  = test_logging.NewTestLogger()
 		notFoundErr                 = k8s_errs.NewNotFound(schema.GroupResource{}, "test-not-found-err")
@@ -56,13 +56,13 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			mockLocalMeshClient,
 			[]mesh_workload.MeshWorkloadScanner{mockMeshWorkloadScanner})
 		discoveredMeshWorkload = &zephyr_discovery.MeshWorkload{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
 				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-					KubeControllerRef: &core_types.ResourceRef{
+					KubeControllerRef: &zephyr_core_types.ResourceRef{
 						Namespace: "controller-namespace",
 					},
 				},
@@ -79,12 +79,12 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		meshNamespace := "meshNamespace"
 		mesh := zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &core_types.ResourceRef{Name: clusterName},
+				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
 			},
-			ObjectMeta: metav1.ObjectMeta{Name: meshName, Namespace: meshNamespace},
+			ObjectMeta: k8s_meta_types.ObjectMeta{Name: meshName, Namespace: meshNamespace},
 		}
 		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}
-		meshSpec := &core_types.ResourceRef{
+		meshSpec := &zephyr_core_types.ResourceRef{
 			Name:      mesh.Name,
 			Namespace: meshNamespace,
 			Cluster:   clusterName,
@@ -118,7 +118,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	It("should return error if fatal error while scanning workloads", func() {
 		expectedErr := eris.New("error")
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, metav1.ObjectMeta{}, expectedErr)
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, k8s_meta_types.ObjectMeta{}, expectedErr)
 		err := meshWorkloadFinder.CreatePod(pod)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
@@ -130,11 +130,11 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	It("should log warning if non-fatal error while scanning workloads", func() {
 		mesh := zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &core_types.ResourceRef{Name: clusterName},
+				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
 			},
-			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
+			ObjectMeta: k8s_meta_types.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
-		meshSpec := &core_types.ResourceRef{
+		meshSpec := &zephyr_core_types.ResourceRef{
 			Name:      mesh.Name,
 			Namespace: mesh.Namespace,
 			Cluster:   clusterName,
@@ -181,24 +181,24 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	It("should create new MeshWorkload if Istio injected workload updated", func() {
 		newDiscoveredMeshWorkload := &zephyr_discovery.MeshWorkload{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
 				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-					KubeControllerRef: &core_types.ResourceRef{
+					KubeControllerRef: &zephyr_core_types.ResourceRef{
 						Namespace: "controller-namespace",
 					},
 				},
 			},
 		}
-		newPod := &corev1.Pod{}
+		newPod := &k8s_core_types.Pod{}
 		mesh := zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &core_types.ResourceRef{Name: clusterName},
+				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
 			},
-			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
+			ObjectMeta: k8s_meta_types.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
 		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
@@ -216,24 +216,24 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	It("should do nothing if MeshWorkload unchanged", func() {
 		newDiscoveredMeshWorkload := &zephyr_discovery.MeshWorkload{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
 				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-					KubeControllerRef: &core_types.ResourceRef{
+					KubeControllerRef: &zephyr_core_types.ResourceRef{
 						Namespace: "controller-namespace",
 					},
 				},
 			},
 		}
-		newPod := &corev1.Pod{}
+		newPod := &k8s_core_types.Pod{}
 		mesh := zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &core_types.ResourceRef{Name: clusterName},
+				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
 			},
-			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
+			ObjectMeta: k8s_meta_types.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
 		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
@@ -250,26 +250,26 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	It("should update MeshWorkload if changed", func() {
 		newNamespace := "new-controller-namespace"
 		newDiscoveredMeshWorkload := &zephyr_discovery.MeshWorkload{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
 				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-					KubeControllerRef: &core_types.ResourceRef{
+					KubeControllerRef: &zephyr_core_types.ResourceRef{
 						Namespace: newNamespace,
 					},
 				},
 			},
 		}
-		newPod := &corev1.Pod{}
+		newPod := &k8s_core_types.Pod{}
 		mesh := zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &core_types.ResourceRef{Name: clusterName},
+				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
 			},
-			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
+			ObjectMeta: k8s_meta_types.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
-		meshSpec := &core_types.ResourceRef{
+		meshSpec := &zephyr_core_types.ResourceRef{
 			Name:      mesh.Name,
 			Namespace: mesh.Namespace,
 			Cluster:   clusterName,
@@ -301,8 +301,8 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	It("should return error if error processing old pod", func() {
 		expectedErr := eris.New("error")
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, metav1.ObjectMeta{}, expectedErr)
-		err := meshWorkloadFinder.UpdatePod(pod, &corev1.Pod{})
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, k8s_meta_types.ObjectMeta{}, expectedErr)
+		err := meshWorkloadFinder.UpdatePod(pod, &k8s_core_types.Pod{})
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(HaveLen(1))
@@ -311,10 +311,10 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("should return error if error processing new pod", func() {
-		newPod := &corev1.Pod{}
+		newPod := &k8s_core_types.Pod{}
 		expectedErr := eris.New("error")
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, metav1.ObjectMeta{}, nil)
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, newPod).Return(nil, metav1.ObjectMeta{}, expectedErr)
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, k8s_meta_types.ObjectMeta{}, nil)
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, newPod).Return(nil, k8s_meta_types.ObjectMeta{}, expectedErr)
 		err := meshWorkloadFinder.UpdatePod(pod, newPod)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
@@ -324,20 +324,20 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("should return nil if old and new Pods are not mesh injected", func() {
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, metav1.ObjectMeta{}, nil).Times(2)
-		err := meshWorkloadFinder.UpdatePod(pod, &corev1.Pod{})
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, k8s_meta_types.ObjectMeta{}, nil).Times(2)
+		err := meshWorkloadFinder.UpdatePod(pod, &k8s_core_types.Pod{})
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should create new MeshWorkload if pod is now Istio injected", func() {
-		newPod := &corev1.Pod{}
+		newPod := &k8s_core_types.Pod{}
 		mesh := zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &core_types.ResourceRef{Name: clusterName},
+				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
 			},
-			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
+			ObjectMeta: k8s_meta_types.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
-		meshSpec := &core_types.ResourceRef{
+		meshSpec := &zephyr_core_types.ResourceRef{
 			Name:      mesh.Name,
 			Namespace: mesh.Namespace,
 			Cluster:   clusterName,
@@ -345,7 +345,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, pod).
-			Return(nil, metav1.ObjectMeta{}, nil)
+			Return(nil, k8s_meta_types.ObjectMeta{}, nil)
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, pod).
 			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
@@ -372,24 +372,24 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	It("should log warnings for non-fatal errors on update", func() {
 		newDiscoveredMeshWorkload := &zephyr_discovery.MeshWorkload{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
 				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-					KubeControllerRef: &core_types.ResourceRef{
+					KubeControllerRef: &zephyr_core_types.ResourceRef{
 						Namespace: "controller-namespace",
 					},
 				},
 			},
 		}
-		newPod := &corev1.Pod{}
+		newPod := &k8s_core_types.Pod{}
 		mesh := zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &core_types.ResourceRef{Name: clusterName},
+				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
 			},
-			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
+			ObjectMeta: k8s_meta_types.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
 		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().

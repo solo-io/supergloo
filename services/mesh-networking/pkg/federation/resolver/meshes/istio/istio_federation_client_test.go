@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -26,11 +26,11 @@ import (
 	mock_istio_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/istio/networking/v1beta1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
-	alpha3 "istio.io/api/networking/v1alpha3"
-	"istio.io/client-go/pkg/apis/networking/v1alpha3"
-	corev1 "k8s.io/api/core/v1"
+	istio_networking_types "istio.io/api/networking/v1alpha3"
+	istio_client_networking_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -85,31 +85,31 @@ var _ = Describe("Istio Federation Decider", func() {
 				externalAccessPointGetter,
 			)
 
-			nonIstioMeshRef := &core_types.ResourceRef{
+			nonIstioMeshRef := &zephyr_core_types.ResourceRef{
 				Name:      "linkerd-mesh",
 				Namespace: env.GetWriteNamespace(),
 			}
 			nonIstioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(nonIstioMeshRef),
-				Spec: types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "linkerd",
 					},
-					MeshType: &types.MeshSpec_Linkerd{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 			nonIstioMeshService := &zephyr_discovery.MeshService{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "linkerd-svc",
 					Namespace: "application-ns",
 				},
-				Spec: types.MeshServiceSpec{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
 					Mesh: nonIstioMeshRef,
 				},
 			}
 			virtualMesh := &zephyr_networking.VirtualMesh{
 				Spec: zephyr_networking_types.VirtualMeshSpec{
-					Meshes: []*core_types.ResourceRef{nonIstioMeshRef},
+					Meshes: []*zephyr_core_types.ResourceRef{nonIstioMeshRef},
 				},
 			}
 			meshClient.EXPECT().
@@ -156,51 +156,51 @@ var _ = Describe("Istio Federation Decider", func() {
 			)
 
 			clusterName := "istio-cluster"
-			istioMeshRef := &core_types.ResourceRef{
+			istioMeshRef := &zephyr_core_types.ResourceRef{
 				Name:      "istio-mesh",
 				Namespace: env.GetWriteNamespace(),
 			}
 			istioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
-				Spec: types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &types.MeshSpec_Istio{
-						Istio: &types.MeshSpec_IstioMesh{
-							Installation: &types.MeshSpec_MeshInstallation{
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
 					},
 				},
 			}
-			backingKubeService := &core_types.ResourceRef{
+			backingKubeService := &zephyr_core_types.ResourceRef{
 				Name:      "k8s-svc",
 				Namespace: "application-ns",
 			}
 			istioMeshService := &zephyr_discovery.MeshService{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
 				},
-				Spec: types.MeshServiceSpec{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
 					Mesh: istioMeshRef,
-					Federation: &types.MeshServiceSpec_Federation{
+					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, clusterName),
 					},
-					KubeService: &types.MeshServiceSpec_KubeService{
+					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: backingKubeService,
 					},
 				},
 			}
 			virtualMesh := &zephyr_networking.VirtualMesh{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "virtual-mesh-1",
 					Namespace: env.GetWriteNamespace(),
 				},
 				Spec: zephyr_networking_types.VirtualMeshSpec{
-					Meshes: []*core_types.ResourceRef{istioMeshRef},
+					Meshes: []*zephyr_core_types.ResourceRef{istioMeshRef},
 				},
 			}
 			meshClient.EXPECT().
@@ -216,14 +216,14 @@ var _ = Describe("Istio Federation Decider", func() {
 				}).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 			gatewayClient.EXPECT().
-				CreateGateway(ctx, &v1alpha3.Gateway{
-					ObjectMeta: v1.ObjectMeta{
+				CreateGateway(ctx, &istio_client_networking_types.Gateway{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 						Namespace: "istio-system",
 					},
-					Spec: alpha3.Gateway{
-						Servers: []*alpha3.Server{{
-							Port: &alpha3.Port{
+					Spec: istio_networking_types.Gateway{
+						Servers: []*istio_networking_types.Server{{
+							Port: &istio_networking_types.Port{
 								Number:   istio_federation.DefaultGatewayPort,
 								Protocol: istio_federation.DefaultGatewayProtocol,
 								Name:     istio_federation.DefaultGatewayPortName,
@@ -232,8 +232,8 @@ var _ = Describe("Istio Federation Decider", func() {
 								// initially create the gateway with just the one service's host
 								istio_federation.BuildMatchingMultiClusterHostName(istioMeshService.Spec.GetFederation()),
 							},
-							Tls: &alpha3.Server_TLSOptions{
-								Mode: alpha3.Server_TLSOptions_AUTO_PASSTHROUGH,
+							Tls: &istio_networking_types.Server_TLSOptions{
+								Mode: istio_networking_types.Server_TLSOptions_AUTO_PASSTHROUGH,
 							},
 						}},
 						Selector: istio_federation.BuildGatewayWorkloadSelector(),
@@ -241,33 +241,33 @@ var _ = Describe("Istio Federation Decider", func() {
 				}).
 				Return(nil)
 
-			envoyFilter := &v1alpha3.EnvoyFilter{
-				ObjectMeta: v1.ObjectMeta{
+			envoyFilter := &istio_client_networking_types.EnvoyFilter{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      fmt.Sprintf("smh-%s-filter", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				},
-				Spec: alpha3.EnvoyFilter{
-					ConfigPatches: []*alpha3.EnvoyFilter_EnvoyConfigObjectPatch{{
-						ApplyTo: alpha3.EnvoyFilter_NETWORK_FILTER,
-						Match: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch{
-							Context: alpha3.EnvoyFilter_GATEWAY,
-							ObjectTypes: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-								Listener: &alpha3.EnvoyFilter_ListenerMatch{
+				Spec: istio_networking_types.EnvoyFilter{
+					ConfigPatches: []*istio_networking_types.EnvoyFilter_EnvoyConfigObjectPatch{{
+						ApplyTo: istio_networking_types.EnvoyFilter_NETWORK_FILTER,
+						Match: &istio_networking_types.EnvoyFilter_EnvoyConfigObjectMatch{
+							Context: istio_networking_types.EnvoyFilter_GATEWAY,
+							ObjectTypes: &istio_networking_types.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+								Listener: &istio_networking_types.EnvoyFilter_ListenerMatch{
 									PortNumber: istio_federation.DefaultGatewayPort,
-									FilterChain: &alpha3.EnvoyFilter_ListenerMatch_FilterChainMatch{
-										Filter: &alpha3.EnvoyFilter_ListenerMatch_FilterMatch{
+									FilterChain: &istio_networking_types.EnvoyFilter_ListenerMatch_FilterChainMatch{
+										Filter: &istio_networking_types.EnvoyFilter_ListenerMatch_FilterMatch{
 											Name: istio_federation.EnvoySniClusterFilterName,
 										},
 									},
 								},
 							},
 						},
-						Patch: &alpha3.EnvoyFilter_Patch{
-							Operation: alpha3.EnvoyFilter_Patch_INSERT_AFTER,
+						Patch: &istio_networking_types.EnvoyFilter_Patch{
+							Operation: istio_networking_types.EnvoyFilter_Patch_INSERT_AFTER,
 							Value:     mustBuildFilterPatch(clusterName),
 						},
 					}},
-					WorkloadSelector: &alpha3.WorkloadSelector{
+					WorkloadSelector: &istio_networking_types.WorkloadSelector{
 						Labels: istio_federation.BuildGatewayWorkloadSelector(),
 					},
 				},
@@ -277,16 +277,16 @@ var _ = Describe("Istio Federation Decider", func() {
 				Return(nil)
 
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
-			service := corev1.Service{
-				Spec: corev1.ServiceSpec{
-					Ports: []corev1.ServicePort{{
+			service := k8s_core_types.Service{
+				Spec: k8s_core_types.ServiceSpec{
+					Ports: []k8s_core_types.ServicePort{{
 						Name: istio_federation.DefaultGatewayPortName,
 						Port: 3000,
 					}},
 				},
-				Status: corev1.ServiceStatus{
-					LoadBalancer: corev1.LoadBalancerStatus{
-						Ingress: []corev1.LoadBalancerIngress{{
+				Status: k8s_core_types.ServiceStatus{
+					LoadBalancer: k8s_core_types.LoadBalancerStatus{
+						Ingress: []k8s_core_types.LoadBalancerIngress{{
 							Hostname: "externally-resolvable-hostname.com",
 						}},
 					},
@@ -294,8 +294,8 @@ var _ = Describe("Istio Federation Decider", func() {
 			}
 			serviceClient.EXPECT().
 				ListService(ctx, labels).
-				Return(&corev1.ServiceList{
-					Items: []corev1.Service{service},
+				Return(&k8s_core_types.ServiceList{
+					Items: []k8s_core_types.Service{service},
 				}, nil)
 
 			externalAccessPointGetter.EXPECT().
@@ -343,51 +343,51 @@ var _ = Describe("Istio Federation Decider", func() {
 			)
 
 			clusterName := "istio-cluster"
-			istioMeshRef := &core_types.ResourceRef{
+			istioMeshRef := &zephyr_core_types.ResourceRef{
 				Name:      "istio-mesh",
 				Namespace: env.GetWriteNamespace(),
 			}
 			istioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
-				Spec: types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &types.MeshSpec_Istio{
-						Istio: &types.MeshSpec_IstioMesh{
-							Installation: &types.MeshSpec_MeshInstallation{
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
 					},
 				},
 			}
-			backingKubeService := &core_types.ResourceRef{
+			backingKubeService := &zephyr_core_types.ResourceRef{
 				Name:      "k8s-svc",
 				Namespace: "application-ns",
 			}
 			istioMeshService := &zephyr_discovery.MeshService{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
 				},
-				Spec: types.MeshServiceSpec{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
 					Mesh: istioMeshRef,
-					Federation: &types.MeshServiceSpec_Federation{
+					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, "istio-cluster"),
 					},
-					KubeService: &types.MeshServiceSpec_KubeService{
+					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: backingKubeService,
 					},
 				},
 			}
 			virtualMesh := &zephyr_networking.VirtualMesh{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "virtual-mesh-1",
 					Namespace: env.GetWriteNamespace(),
 				},
 				Spec: zephyr_networking_types.VirtualMeshSpec{
-					Meshes: []*core_types.ResourceRef{istioMeshRef},
+					Meshes: []*zephyr_core_types.ResourceRef{istioMeshRef},
 				},
 			}
 			meshClient.EXPECT().
@@ -396,14 +396,14 @@ var _ = Describe("Istio Federation Decider", func() {
 			clientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName).
 				Return(nil, nil)
-			gateway := &v1alpha3.Gateway{
-				ObjectMeta: v1.ObjectMeta{
+			gateway := &istio_client_networking_types.Gateway{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				},
-				Spec: alpha3.Gateway{
-					Servers: []*alpha3.Server{{
-						Port: &alpha3.Port{
+				Spec: istio_networking_types.Gateway{
+					Servers: []*istio_networking_types.Server{{
+						Port: &istio_networking_types.Port{
 							Number:   istio_federation.DefaultGatewayPort,
 							Protocol: istio_federation.DefaultGatewayProtocol,
 							Name:     istio_federation.DefaultGatewayPortName,
@@ -412,8 +412,8 @@ var _ = Describe("Istio Federation Decider", func() {
 							// initially create the gateway with just the one service's host
 							istioMeshService.Spec.GetFederation().GetMulticlusterDnsName(),
 						},
-						Tls: &alpha3.Server_TLSOptions{
-							Mode: alpha3.Server_TLSOptions_AUTO_PASSTHROUGH,
+						Tls: &istio_networking_types.Server_TLSOptions{
+							Mode: istio_networking_types.Server_TLSOptions_AUTO_PASSTHROUGH,
 						},
 					}},
 					Selector: istio_federation.BuildGatewayWorkloadSelector(),
@@ -429,33 +429,33 @@ var _ = Describe("Istio Federation Decider", func() {
 				UpdateGateway(ctx, gateway).
 				Return(nil)
 
-			envoyFilter := &v1alpha3.EnvoyFilter{
-				ObjectMeta: v1.ObjectMeta{
+			envoyFilter := &istio_client_networking_types.EnvoyFilter{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      fmt.Sprintf("smh-%s-filter", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				},
-				Spec: alpha3.EnvoyFilter{
-					ConfigPatches: []*alpha3.EnvoyFilter_EnvoyConfigObjectPatch{{
-						ApplyTo: alpha3.EnvoyFilter_NETWORK_FILTER,
-						Match: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch{
-							Context: alpha3.EnvoyFilter_GATEWAY,
-							ObjectTypes: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-								Listener: &alpha3.EnvoyFilter_ListenerMatch{
+				Spec: istio_networking_types.EnvoyFilter{
+					ConfigPatches: []*istio_networking_types.EnvoyFilter_EnvoyConfigObjectPatch{{
+						ApplyTo: istio_networking_types.EnvoyFilter_NETWORK_FILTER,
+						Match: &istio_networking_types.EnvoyFilter_EnvoyConfigObjectMatch{
+							Context: istio_networking_types.EnvoyFilter_GATEWAY,
+							ObjectTypes: &istio_networking_types.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+								Listener: &istio_networking_types.EnvoyFilter_ListenerMatch{
 									PortNumber: istio_federation.DefaultGatewayPort,
-									FilterChain: &alpha3.EnvoyFilter_ListenerMatch_FilterChainMatch{
-										Filter: &alpha3.EnvoyFilter_ListenerMatch_FilterMatch{
+									FilterChain: &istio_networking_types.EnvoyFilter_ListenerMatch_FilterChainMatch{
+										Filter: &istio_networking_types.EnvoyFilter_ListenerMatch_FilterMatch{
 											Name: istio_federation.EnvoySniClusterFilterName,
 										},
 									},
 								},
 							},
 						},
-						Patch: &alpha3.EnvoyFilter_Patch{
-							Operation: alpha3.EnvoyFilter_Patch_INSERT_AFTER,
+						Patch: &istio_networking_types.EnvoyFilter_Patch{
+							Operation: istio_networking_types.EnvoyFilter_Patch_INSERT_AFTER,
 							Value:     mustBuildFilterPatch(clusterName),
 						},
 					}},
-					WorkloadSelector: &alpha3.WorkloadSelector{
+					WorkloadSelector: &istio_networking_types.WorkloadSelector{
 						Labels: istio_federation.BuildGatewayWorkloadSelector(),
 					},
 				},
@@ -464,16 +464,16 @@ var _ = Describe("Istio Federation Decider", func() {
 				UpsertEnvoyFilterSpec(ctx, envoyFilter).
 				Return(nil)
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
-			service := corev1.Service{
-				Spec: corev1.ServiceSpec{
-					Ports: []corev1.ServicePort{{
+			service := k8s_core_types.Service{
+				Spec: k8s_core_types.ServiceSpec{
+					Ports: []k8s_core_types.ServicePort{{
 						Name: istio_federation.DefaultGatewayPortName,
 						Port: 3000,
 					}},
 				},
-				Status: corev1.ServiceStatus{
-					LoadBalancer: corev1.LoadBalancerStatus{
-						Ingress: []corev1.LoadBalancerIngress{{
+				Status: k8s_core_types.ServiceStatus{
+					LoadBalancer: k8s_core_types.LoadBalancerStatus{
+						Ingress: []k8s_core_types.LoadBalancerIngress{{
 							Hostname: "externally-resolvable-hostname.com",
 						}},
 					},
@@ -481,8 +481,8 @@ var _ = Describe("Istio Federation Decider", func() {
 			}
 			serviceClient.EXPECT().
 				ListService(ctx, labels).
-				Return(&corev1.ServiceList{
-					Items: []corev1.Service{service},
+				Return(&k8s_core_types.ServiceList{
+					Items: []k8s_core_types.Service{service},
 				}, nil)
 
 			externalAccessPointGetter.EXPECT().
@@ -530,51 +530,51 @@ var _ = Describe("Istio Federation Decider", func() {
 			)
 
 			clusterName := "istio-cluster"
-			istioMeshRef := &core_types.ResourceRef{
+			istioMeshRef := &zephyr_core_types.ResourceRef{
 				Name:      "istio-mesh",
 				Namespace: env.GetWriteNamespace(),
 			}
 			istioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
-				Spec: types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &types.MeshSpec_Istio{
-						Istio: &types.MeshSpec_IstioMesh{
-							Installation: &types.MeshSpec_MeshInstallation{
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
 					},
 				},
 			}
-			backingKubeService := &core_types.ResourceRef{
+			backingKubeService := &zephyr_core_types.ResourceRef{
 				Name:      "k8s-svc",
 				Namespace: "application-ns",
 			}
 			istioMeshService := &zephyr_discovery.MeshService{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
 				},
-				Spec: types.MeshServiceSpec{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
 					Mesh: istioMeshRef,
-					Federation: &types.MeshServiceSpec_Federation{
+					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, clusterName),
 					},
-					KubeService: &types.MeshServiceSpec_KubeService{
+					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: backingKubeService,
 					},
 				},
 			}
 			virtualMesh := &zephyr_networking.VirtualMesh{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "virtual-mesh-1",
 					Namespace: env.GetWriteNamespace(),
 				},
 				Spec: zephyr_networking_types.VirtualMeshSpec{
-					Meshes: []*core_types.ResourceRef{istioMeshRef},
+					Meshes: []*zephyr_core_types.ResourceRef{istioMeshRef},
 				},
 			}
 			meshClient.EXPECT().
@@ -583,21 +583,21 @@ var _ = Describe("Istio Federation Decider", func() {
 			clientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName).
 				Return(nil, nil)
-			gateway := &v1alpha3.Gateway{
-				ObjectMeta: v1.ObjectMeta{
+			gateway := &istio_client_networking_types.Gateway{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				},
-				Spec: alpha3.Gateway{
-					Servers: []*alpha3.Server{{
-						Port: &alpha3.Port{
+				Spec: istio_networking_types.Gateway{
+					Servers: []*istio_networking_types.Server{{
+						Port: &istio_networking_types.Port{
 							Number:   istio_federation.DefaultGatewayPort,
 							Protocol: istio_federation.DefaultGatewayProtocol,
 							Name:     istio_federation.DefaultGatewayPortName,
 						},
 						Hosts: []string{},
-						Tls: &alpha3.Server_TLSOptions{
-							Mode: alpha3.Server_TLSOptions_AUTO_PASSTHROUGH,
+						Tls: &istio_networking_types.Server_TLSOptions{
+							Mode: istio_networking_types.Server_TLSOptions_AUTO_PASSTHROUGH,
 						},
 					}},
 					Selector: istio_federation.BuildGatewayWorkloadSelector(),
@@ -610,48 +610,48 @@ var _ = Describe("Istio Federation Decider", func() {
 				}).
 				Return(gateway, nil)
 			updatedGateway := *gateway
-			updatedGateway.Spec.Servers = []*alpha3.Server{{
-				Port: &alpha3.Port{
+			updatedGateway.Spec.Servers = []*istio_networking_types.Server{{
+				Port: &istio_networking_types.Port{
 					Number:   istio_federation.DefaultGatewayPort,
 					Protocol: istio_federation.DefaultGatewayProtocol,
 					Name:     istio_federation.DefaultGatewayPortName,
 				},
 				Hosts: []string{istio_federation.BuildMatchingMultiClusterHostName(istioMeshService.Spec.GetFederation())},
-				Tls: &alpha3.Server_TLSOptions{
-					Mode: alpha3.Server_TLSOptions_AUTO_PASSTHROUGH,
+				Tls: &istio_networking_types.Server_TLSOptions{
+					Mode: istio_networking_types.Server_TLSOptions_AUTO_PASSTHROUGH,
 				},
 			}}
 			gatewayClient.EXPECT().
 				UpdateGateway(ctx, &updatedGateway).
 				Return(nil)
 
-			envoyFilter := &v1alpha3.EnvoyFilter{
-				ObjectMeta: v1.ObjectMeta{
+			envoyFilter := &istio_client_networking_types.EnvoyFilter{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      fmt.Sprintf("smh-%s-filter", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				},
-				Spec: alpha3.EnvoyFilter{
-					ConfigPatches: []*alpha3.EnvoyFilter_EnvoyConfigObjectPatch{{
-						ApplyTo: alpha3.EnvoyFilter_NETWORK_FILTER,
-						Match: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch{
-							Context: alpha3.EnvoyFilter_GATEWAY,
-							ObjectTypes: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-								Listener: &alpha3.EnvoyFilter_ListenerMatch{
+				Spec: istio_networking_types.EnvoyFilter{
+					ConfigPatches: []*istio_networking_types.EnvoyFilter_EnvoyConfigObjectPatch{{
+						ApplyTo: istio_networking_types.EnvoyFilter_NETWORK_FILTER,
+						Match: &istio_networking_types.EnvoyFilter_EnvoyConfigObjectMatch{
+							Context: istio_networking_types.EnvoyFilter_GATEWAY,
+							ObjectTypes: &istio_networking_types.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+								Listener: &istio_networking_types.EnvoyFilter_ListenerMatch{
 									PortNumber: istio_federation.DefaultGatewayPort,
-									FilterChain: &alpha3.EnvoyFilter_ListenerMatch_FilterChainMatch{
-										Filter: &alpha3.EnvoyFilter_ListenerMatch_FilterMatch{
+									FilterChain: &istio_networking_types.EnvoyFilter_ListenerMatch_FilterChainMatch{
+										Filter: &istio_networking_types.EnvoyFilter_ListenerMatch_FilterMatch{
 											Name: istio_federation.EnvoySniClusterFilterName,
 										},
 									},
 								},
 							},
 						},
-						Patch: &alpha3.EnvoyFilter_Patch{
-							Operation: alpha3.EnvoyFilter_Patch_INSERT_AFTER,
+						Patch: &istio_networking_types.EnvoyFilter_Patch{
+							Operation: istio_networking_types.EnvoyFilter_Patch_INSERT_AFTER,
 							Value:     mustBuildFilterPatch(clusterName),
 						},
 					}},
-					WorkloadSelector: &alpha3.WorkloadSelector{
+					WorkloadSelector: &istio_networking_types.WorkloadSelector{
 						Labels: istio_federation.BuildGatewayWorkloadSelector(),
 					},
 				},
@@ -660,16 +660,16 @@ var _ = Describe("Istio Federation Decider", func() {
 				UpsertEnvoyFilterSpec(ctx, envoyFilter).
 				Return(nil)
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
-			service := corev1.Service{
-				Spec: corev1.ServiceSpec{
-					Ports: []corev1.ServicePort{{
+			service := k8s_core_types.Service{
+				Spec: k8s_core_types.ServiceSpec{
+					Ports: []k8s_core_types.ServicePort{{
 						Name: istio_federation.DefaultGatewayPortName,
 						Port: 3000,
 					}},
 				},
-				Status: corev1.ServiceStatus{
-					LoadBalancer: corev1.LoadBalancerStatus{
-						Ingress: []corev1.LoadBalancerIngress{{
+				Status: k8s_core_types.ServiceStatus{
+					LoadBalancer: k8s_core_types.LoadBalancerStatus{
+						Ingress: []k8s_core_types.LoadBalancerIngress{{
 							Hostname: "externally-resolvable-hostname.com",
 						}},
 					},
@@ -677,8 +677,8 @@ var _ = Describe("Istio Federation Decider", func() {
 			}
 			serviceClient.EXPECT().
 				ListService(ctx, labels).
-				Return(&corev1.ServiceList{
-					Items: []corev1.Service{service},
+				Return(&k8s_core_types.ServiceList{
+					Items: []k8s_core_types.Service{service},
 				}, nil)
 
 			externalAccessPointGetter.EXPECT().
@@ -724,30 +724,30 @@ var _ = Describe("Istio Federation Decider", func() {
 				externalAccessPointGetter,
 			)
 
-			nonIstioMeshRef := &core_types.ResourceRef{
+			nonIstioMeshRef := &zephyr_core_types.ResourceRef{
 				Name:      "linkerd-mesh",
 				Namespace: env.GetWriteNamespace(),
 			}
 			nonIstioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(nonIstioMeshRef),
-				Spec: types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "linkerd",
 					},
-					MeshType: &types.MeshSpec_Linkerd{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 			nonIstioMeshWorkload := &zephyr_discovery.MeshWorkload{
-				Spec: types.MeshWorkloadSpec{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					Mesh: nonIstioMeshRef,
 				},
 			}
 			istioMeshService := &zephyr_discovery.MeshService{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
 				},
-				Spec: types.MeshServiceSpec{},
+				Spec: zephyr_discovery_types.MeshServiceSpec{},
 			}
 			meshClient.EXPECT().
 				GetMesh(ctx, clients.ResourceRefToObjectKey(nonIstioMeshRef)).
@@ -793,23 +793,23 @@ var _ = Describe("Istio Federation Decider", func() {
 				externalAccessPointGetter,
 			)
 
-			istioMeshRefService := &core_types.ResourceRef{
+			istioMeshRefService := &zephyr_core_types.ResourceRef{
 				Name:      "istio-mesh-1",
 				Namespace: env.GetWriteNamespace(),
 			}
-			istioMeshRefWorkload := &core_types.ResourceRef{
+			istioMeshRefWorkload := &zephyr_core_types.ResourceRef{
 				Name:      "istio-mesh-2",
 				Namespace: env.GetWriteNamespace(),
 			}
 			istioMeshForService := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRefService),
-				Spec: types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "istio-cluster-svc",
 					},
-					MeshType: &types.MeshSpec_Istio{
-						Istio: &types.MeshSpec_IstioMesh{
-							Installation: &types.MeshSpec_MeshInstallation{
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
@@ -818,13 +818,13 @@ var _ = Describe("Istio Federation Decider", func() {
 			}
 			istioMeshForWorkload := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRefWorkload),
-				Spec: types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "istio-cluster-workload",
 					},
-					MeshType: &types.MeshSpec_Istio{
-						Istio: &types.MeshSpec_IstioMesh{
-							Installation: &types.MeshSpec_MeshInstallation{
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
@@ -832,33 +832,33 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			meshWorkload := &zephyr_discovery.MeshWorkload{
-				Spec: types.MeshWorkloadSpec{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					Mesh: istioMeshRefWorkload,
 				},
 			}
-			backingKubeSvc := &core_types.ResourceRef{
+			backingKubeSvc := &zephyr_core_types.ResourceRef{
 				Name:      "application-svc",
 				Namespace: "application-ns",
 			}
 			serviceMulticlusterDnsName := dns.BuildMulticlusterDnsName(backingKubeSvc, istioMeshForService.Spec.Cluster.Name)
-			svcPort := &types.MeshServiceSpec_KubeService_KubeServicePort{
+			svcPort := &zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 				Port:     9080,
 				Name:     "http1",
 				Protocol: "http",
 			}
 			meshService := &zephyr_discovery.MeshService{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
 				},
-				Spec: types.MeshServiceSpec{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
 					Mesh: istioMeshRefService,
-					Federation: &types.MeshServiceSpec_Federation{
+					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: serviceMulticlusterDnsName,
 					},
-					KubeService: &types.MeshServiceSpec_KubeService{
+					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: backingKubeSvc,
-						Ports: []*types.MeshServiceSpec_KubeService_KubeServicePort{
+						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 							svcPort,
 						},
 					},
@@ -874,7 +874,7 @@ var _ = Describe("Istio Federation Decider", func() {
 
 			externalAddress := "externally-resolvable-hostname.com"
 			port := uint32(32000)
-			serviceEntryRef := &core_types.ResourceRef{
+			serviceEntryRef := &zephyr_core_types.ResourceRef{
 				Name:      serviceMulticlusterDnsName,
 				Namespace: "istio-system",
 			}
@@ -884,44 +884,44 @@ var _ = Describe("Istio Federation Decider", func() {
 			ipAssigner.EXPECT().
 				AssignIPOnCluster(ctx, istioMeshForWorkload.Spec.Cluster.Name).
 				Return("255.255.255.255", nil)
-			serviceEntry := &v1alpha3.ServiceEntry{
+			serviceEntry := &istio_client_networking_types.ServiceEntry{
 				ObjectMeta: clients.ResourceRefToObjectMeta(serviceEntryRef),
-				Spec: alpha3.ServiceEntry{
+				Spec: istio_networking_types.ServiceEntry{
 					Addresses: []string{"255.255.255.255"},
-					Endpoints: []*alpha3.ServiceEntry_Endpoint{{
+					Endpoints: []*istio_networking_types.ServiceEntry_Endpoint{{
 						Address: externalAddress,
 						Ports: map[string]uint32{
 							svcPort.Name: port,
 						},
 					}},
 					Hosts:    []string{serviceMulticlusterDnsName},
-					Location: alpha3.ServiceEntry_MESH_INTERNAL,
-					Ports: []*alpha3.Port{{
+					Location: istio_networking_types.ServiceEntry_MESH_INTERNAL,
+					Ports: []*istio_networking_types.Port{{
 						Name:     svcPort.Name,
 						Number:   svcPort.Port,
 						Protocol: svcPort.Protocol,
 					}},
-					Resolution: alpha3.ServiceEntry_DNS,
+					Resolution: istio_networking_types.ServiceEntry_DNS,
 				},
 			}
 			serviceEntryClient.EXPECT().
 				CreateServiceEntry(ctx, serviceEntry).
 				Return(nil)
-			destinationRuleRef := &core_types.ResourceRef{
+			destinationRuleRef := &zephyr_core_types.ResourceRef{
 				Name:      serviceMulticlusterDnsName,
 				Namespace: "istio-system",
 			}
 			destinationRuleClient.EXPECT().
 				GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destinationRuleRef)).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
-			destinationRuleClient.EXPECT().CreateDestinationRule(ctx, &v1alpha3.DestinationRule{
+			destinationRuleClient.EXPECT().CreateDestinationRule(ctx, &istio_client_networking_types.DestinationRule{
 				ObjectMeta: clients.ResourceRefToObjectMeta(destinationRuleRef),
-				Spec: alpha3.DestinationRule{
+				Spec: istio_networking_types.DestinationRule{
 					Host: serviceMulticlusterDnsName,
-					TrafficPolicy: &alpha3.TrafficPolicy{
-						Tls: &alpha3.TLSSettings{
+					TrafficPolicy: &istio_networking_types.TrafficPolicy{
+						Tls: &istio_networking_types.TLSSettings{
 							// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/242
-							Mode: alpha3.TLSSettings_ISTIO_MUTUAL,
+							Mode: istio_networking_types.TLSSettings_ISTIO_MUTUAL,
 						},
 					},
 				},

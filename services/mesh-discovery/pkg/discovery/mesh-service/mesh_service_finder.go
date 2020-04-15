@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -24,7 +24,7 @@ var (
 	DiscoveryLabels = func(cluster, kubeServiceName, kubeServiceNamespace string) map[string]string {
 		return map[string]string{
 			constants.DISCOVERED_BY:          constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_TYPE:              core_types.MeshType_ISTIO.String(),
+			constants.MESH_TYPE:              zephyr_core_types.MeshType_ISTIO.String(),
 			constants.KUBE_SERVICE_NAME:      kubeServiceName,
 			constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
 			constants.CLUSTER:                cluster,
@@ -223,7 +223,7 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(
 
 func (m *meshServiceFinder) buildMeshService(
 	service *k8s_core_types.Service,
-	meshRef *core_types.ResourceRef,
+	meshRef *zephyr_core_types.ResourceRef,
 	subsets map[string]*zephyr_discovery_types.MeshServiceSpec_Subset,
 	clusterName string,
 ) *zephyr_discovery.MeshService {
@@ -235,7 +235,7 @@ func (m *meshServiceFinder) buildMeshService(
 		},
 		Spec: zephyr_discovery_types.MeshServiceSpec{
 			KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-				Ref: &core_types.ResourceRef{
+				Ref: &zephyr_core_types.ResourceRef{
 					Name:      service.GetName(),
 					Namespace: service.GetNamespace(),
 					Cluster:   clusterName,
@@ -263,7 +263,7 @@ func (m *meshServiceFinder) convertPorts(service *k8s_core_types.Service) (ports
 
 func (m *meshServiceFinder) upsertMeshService(
 	service *k8s_core_types.Service,
-	meshRef *core_types.ResourceRef,
+	meshRef *zephyr_core_types.ResourceRef,
 	subsets map[string]*zephyr_discovery_types.MeshServiceSpec_Subset,
 	clusterName string,
 ) error {
