@@ -7,7 +7,7 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 )
 
 func NewAccessControlPolicyPrinter(tableBuilder TableBuilder) AccessControlPolicyPrinter {
@@ -20,7 +20,7 @@ type accessControlPolicyPrinter struct {
 	tableBuilder TableBuilder
 }
 
-func (a *accessControlPolicyPrinter) Print(out io.Writer, printMode PrintMode, accessControlPolicies []*networking_v1alpha1.AccessControlPolicy) error {
+func (a *accessControlPolicyPrinter) Print(out io.Writer, printMode PrintMode, accessControlPolicies []*zephyr_networking.AccessControlPolicy) error {
 	if len(accessControlPolicies) == 0 {
 		return nil
 	}

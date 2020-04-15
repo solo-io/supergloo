@@ -6,32 +6,32 @@ import (
 	"time"
 
 	"github.com/solo-io/go-utils/contextutils"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_controllers "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"go.uber.org/zap"
 )
 
 type MeshNetworkingSnapshot struct {
-	MeshServices  []*discovery_v1alpha1.MeshService
-	VirtualMeshes []*networking_v1alpha1.VirtualMesh
-	MeshWorkloads []*discovery_v1alpha1.MeshWorkload
+	MeshServices  []*zephyr_discovery.MeshService
+	VirtualMeshes []*zephyr_networking.VirtualMesh
+	MeshWorkloads []*zephyr_discovery.MeshWorkload
 }
 
 type UpdatedMeshService struct {
-	Old *discovery_v1alpha1.MeshService
-	New *discovery_v1alpha1.MeshService
+	Old *zephyr_discovery.MeshService
+	New *zephyr_discovery.MeshService
 }
 
 type UpdatedVirtualMesh struct {
-	Old *networking_v1alpha1.VirtualMesh
-	New *networking_v1alpha1.VirtualMesh
+	Old *zephyr_networking.VirtualMesh
+	New *zephyr_networking.VirtualMesh
 }
 
 type UpdatedMeshWorkload struct {
-	Old *discovery_v1alpha1.MeshWorkload
-	New *discovery_v1alpha1.MeshWorkload
+	Old *zephyr_discovery.MeshWorkload
+	New *zephyr_discovery.MeshWorkload
 }
 
 type UpdatedResources struct {
@@ -55,11 +55,11 @@ func NewMeshNetworkingSnapshotGenerator(
 	}
 
 	err := MeshServiceEventWatcher.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
-		OnCreate: func(obj *discovery_v1alpha1.MeshService) error {
+		OnCreate: func(obj *zephyr_discovery.MeshService) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			updatedMeshServices := append([]*discovery_v1alpha1.MeshService{}, generator.snapshot.MeshServices...)
+			updatedMeshServices := append([]*zephyr_discovery.MeshService{}, generator.snapshot.MeshServices...)
 			updatedMeshServices = append(updatedMeshServices, obj)
 
 			updatedSnapshot := generator.snapshot
@@ -71,11 +71,11 @@ func NewMeshNetworkingSnapshotGenerator(
 
 			return nil
 		},
-		OnUpdate: func(old, new *discovery_v1alpha1.MeshService) error {
+		OnUpdate: func(old, new *zephyr_discovery.MeshService) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			var updatedMeshServices []*discovery_v1alpha1.MeshService
+			var updatedMeshServices []*zephyr_discovery.MeshService
 			for _, existingMeshService := range generator.snapshot.MeshServices {
 				if existingMeshService.GetName() == old.GetName() && existingMeshService.GetNamespace() == old.GetNamespace() {
 					updatedMeshServices = append(updatedMeshServices, new)
@@ -94,11 +94,11 @@ func NewMeshNetworkingSnapshotGenerator(
 
 			return nil
 		},
-		OnDelete: func(obj *discovery_v1alpha1.MeshService) error {
+		OnDelete: func(obj *zephyr_discovery.MeshService) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			var updatedMeshServices []*discovery_v1alpha1.MeshService
+			var updatedMeshServices []*zephyr_discovery.MeshService
 			for _, meshService := range generator.snapshot.MeshServices {
 				if meshService.GetName() == obj.GetName() && meshService.GetNamespace() == obj.GetNamespace() {
 					continue
@@ -117,7 +117,7 @@ func NewMeshNetworkingSnapshotGenerator(
 
 			return nil
 		},
-		OnGeneric: func(obj *discovery_v1alpha1.MeshService) error {
+		OnGeneric: func(obj *zephyr_discovery.MeshService) error {
 			return nil
 		},
 	})
@@ -126,11 +126,11 @@ func NewMeshNetworkingSnapshotGenerator(
 	}
 
 	err = virtualMeshEventWatcher.AddEventHandler(ctx, &networking_controllers.VirtualMeshEventHandlerFuncs{
-		OnCreate: func(obj *networking_v1alpha1.VirtualMesh) error {
+		OnCreate: func(obj *zephyr_networking.VirtualMesh) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			updatedVirtualMeshes := append([]*networking_v1alpha1.VirtualMesh{}, generator.snapshot.VirtualMeshes...)
+			updatedVirtualMeshes := append([]*zephyr_networking.VirtualMesh{}, generator.snapshot.VirtualMeshes...)
 			updatedVirtualMeshes = append(updatedVirtualMeshes, obj)
 
 			updatedSnapshot := generator.snapshot
@@ -143,11 +143,11 @@ func NewMeshNetworkingSnapshotGenerator(
 
 			return nil
 		},
-		OnUpdate: func(old, new *networking_v1alpha1.VirtualMesh) error {
+		OnUpdate: func(old, new *zephyr_networking.VirtualMesh) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			var updatedVirtualMeshes []*networking_v1alpha1.VirtualMesh
+			var updatedVirtualMeshes []*zephyr_networking.VirtualMesh
 			for _, existingVirtualMesh := range generator.snapshot.VirtualMeshes {
 				if existingVirtualMesh.GetName() == old.GetName() && existingVirtualMesh.GetNamespace() == old.GetNamespace() {
 					updatedVirtualMeshes = append(updatedVirtualMeshes, new)
@@ -166,11 +166,11 @@ func NewMeshNetworkingSnapshotGenerator(
 
 			return nil
 		},
-		OnDelete: func(obj *networking_v1alpha1.VirtualMesh) error {
+		OnDelete: func(obj *zephyr_networking.VirtualMesh) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			var updatedVirtualMeshes []*networking_v1alpha1.VirtualMesh
+			var updatedVirtualMeshes []*zephyr_networking.VirtualMesh
 			for _, virtualMesh := range generator.snapshot.VirtualMeshes {
 				if virtualMesh.GetName() == obj.GetName() && virtualMesh.GetNamespace() == obj.GetNamespace() {
 					continue
@@ -189,7 +189,7 @@ func NewMeshNetworkingSnapshotGenerator(
 
 			return nil
 		},
-		OnGeneric: func(obj *networking_v1alpha1.VirtualMesh) error {
+		OnGeneric: func(obj *zephyr_networking.VirtualMesh) error {
 			return nil
 		},
 	})
@@ -198,11 +198,11 @@ func NewMeshNetworkingSnapshotGenerator(
 	}
 
 	err = meshWorkloadEventWatcher.AddEventHandler(ctx, &discovery_controllers.MeshWorkloadEventHandlerFuncs{
-		OnCreate: func(obj *discovery_v1alpha1.MeshWorkload) error {
+		OnCreate: func(obj *zephyr_discovery.MeshWorkload) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			updatedMeshWorkloads := append([]*discovery_v1alpha1.MeshWorkload{}, generator.snapshot.MeshWorkloads...)
+			updatedMeshWorkloads := append([]*zephyr_discovery.MeshWorkload{}, generator.snapshot.MeshWorkloads...)
 			updatedMeshWorkloads = append(updatedMeshWorkloads, obj)
 
 			updatedSnapshot := generator.snapshot
@@ -215,11 +215,11 @@ func NewMeshNetworkingSnapshotGenerator(
 
 			return nil
 		},
-		OnUpdate: func(old, new *discovery_v1alpha1.MeshWorkload) error {
+		OnUpdate: func(old, new *zephyr_discovery.MeshWorkload) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			var updatedMeshWorkloads []*discovery_v1alpha1.MeshWorkload
+			var updatedMeshWorkloads []*zephyr_discovery.MeshWorkload
 			for _, existingMeshWorkload := range generator.snapshot.MeshWorkloads {
 				if existingMeshWorkload.GetName() == old.GetName() && existingMeshWorkload.GetNamespace() == old.GetNamespace() {
 					updatedMeshWorkloads = append(updatedMeshWorkloads, new)
@@ -238,11 +238,11 @@ func NewMeshNetworkingSnapshotGenerator(
 
 			return nil
 		},
-		OnDelete: func(obj *discovery_v1alpha1.MeshWorkload) error {
+		OnDelete: func(obj *zephyr_discovery.MeshWorkload) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			var updatedMeshWorkloads []*discovery_v1alpha1.MeshWorkload
+			var updatedMeshWorkloads []*zephyr_discovery.MeshWorkload
 			for _, meshWorkload := range generator.snapshot.MeshWorkloads {
 				if meshWorkload.GetName() == obj.GetName() && meshWorkload.GetNamespace() == obj.GetNamespace() {
 					continue
@@ -261,7 +261,7 @@ func NewMeshNetworkingSnapshotGenerator(
 
 			return nil
 		},
-		OnGeneric: func(obj *discovery_v1alpha1.MeshWorkload) error {
+		OnGeneric: func(obj *zephyr_discovery.MeshWorkload) error {
 			return nil
 		},
 	})

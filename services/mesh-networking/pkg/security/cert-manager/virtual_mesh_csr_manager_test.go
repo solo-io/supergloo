@@ -8,11 +8,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
@@ -73,7 +72,7 @@ var _ = Describe("csr manager", func() {
 	Context("create", func() {
 
 		It("will return an error if mesh finder fails", func() {
-			vm := &networking_v1alpha1.VirtualMesh{
+			vm := &zephyr_networking.VirtualMesh{
 				Spec: networking_types.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{},
 				},
@@ -93,13 +92,13 @@ var _ = Describe("csr manager", func() {
 		})
 
 		It("will return an error if mesh is not type istio", func() {
-			vm := &networking_v1alpha1.VirtualMesh{
+			vm := &zephyr_networking.VirtualMesh{
 				Spec: networking_types.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{},
 				},
 			}
 
-			mesh := &discovery_v1alpha1.Mesh{
+			mesh := &zephyr_discovery.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "namespace",
 					Name:      "name",
@@ -114,7 +113,7 @@ var _ = Describe("csr manager", func() {
 
 			meshRefFinder.EXPECT().
 				GetMeshesForVirtualMesh(ctx, vm).
-				Return([]*discovery_v1alpha1.Mesh{mesh}, nil)
+				Return([]*zephyr_discovery.Mesh{mesh}, nil)
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
@@ -126,13 +125,13 @@ var _ = Describe("csr manager", func() {
 		})
 
 		It("will return an error if cert config fails", func() {
-			vm := &networking_v1alpha1.VirtualMesh{
+			vm := &zephyr_networking.VirtualMesh{
 				Spec: networking_types.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{},
 				},
 			}
 
-			mesh := &discovery_v1alpha1.Mesh{
+			mesh := &zephyr_discovery.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "namespace",
 					Name:      "name",
@@ -150,7 +149,7 @@ var _ = Describe("csr manager", func() {
 
 			meshRefFinder.EXPECT().
 				GetMeshesForVirtualMesh(ctx, vm).
-				Return([]*discovery_v1alpha1.Mesh{mesh}, nil)
+				Return([]*zephyr_discovery.Mesh{mesh}, nil)
 
 			certConfigProducer.EXPECT().
 				ConfigureCertificateInfo(vm, mesh).
@@ -166,13 +165,13 @@ var _ = Describe("csr manager", func() {
 		})
 
 		It("will return an error multicluster clientset cannot be found", func() {
-			vm := &networking_v1alpha1.VirtualMesh{
+			vm := &zephyr_networking.VirtualMesh{
 				Spec: networking_types.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{},
 				},
 			}
 
-			mesh := &discovery_v1alpha1.Mesh{
+			mesh := &zephyr_discovery.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "namespace",
 					Name:      "name",
@@ -190,7 +189,7 @@ var _ = Describe("csr manager", func() {
 
 			meshRefFinder.EXPECT().
 				GetMeshesForVirtualMesh(ctx, vm).
-				Return([]*discovery_v1alpha1.Mesh{mesh}, nil)
+				Return([]*zephyr_discovery.Mesh{mesh}, nil)
 
 			certConfigProducer.EXPECT().
 				ConfigureCertificateInfo(vm, mesh).
@@ -210,7 +209,7 @@ var _ = Describe("csr manager", func() {
 		})
 
 		It("will return an error multicluster clientset cannot be found", func() {
-			vm := &networking_v1alpha1.VirtualMesh{
+			vm := &zephyr_networking.VirtualMesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
@@ -220,7 +219,7 @@ var _ = Describe("csr manager", func() {
 				},
 			}
 
-			mesh := &discovery_v1alpha1.Mesh{
+			mesh := &zephyr_discovery.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "namespace",
 					Name:      "name",
@@ -238,7 +237,7 @@ var _ = Describe("csr manager", func() {
 
 			meshRefFinder.EXPECT().
 				GetMeshesForVirtualMesh(ctx, vm).
-				Return([]*discovery_v1alpha1.Mesh{mesh}, nil)
+				Return([]*zephyr_discovery.Mesh{mesh}, nil)
 
 			certConfigProducer.EXPECT().
 				ConfigureCertificateInfo(vm, mesh).
@@ -262,7 +261,7 @@ var _ = Describe("csr manager", func() {
 		})
 
 		It("will return if csr creation fails", func() {
-			vm := &networking_v1alpha1.VirtualMesh{
+			vm := &zephyr_networking.VirtualMesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
@@ -272,7 +271,7 @@ var _ = Describe("csr manager", func() {
 				},
 			}
 
-			mesh := &discovery_v1alpha1.Mesh{
+			mesh := &zephyr_discovery.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "namespace",
 					Name:      "name",
@@ -300,7 +299,7 @@ var _ = Describe("csr manager", func() {
 
 			meshRefFinder.EXPECT().
 				GetMeshesForVirtualMesh(ctx, vm).
-				Return([]*discovery_v1alpha1.Mesh{mesh}, nil)
+				Return([]*zephyr_discovery.Mesh{mesh}, nil)
 
 			dynamicClientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName, gomock.Any()).
@@ -311,7 +310,7 @@ var _ = Describe("csr manager", func() {
 				Return(nil, statusErr)
 
 			csrClient.EXPECT().
-				CreateVirtualMeshCertificateSigningRequest(ctx, &v1alpha1.VirtualMeshCertificateSigningRequest{
+				CreateVirtualMeshCertificateSigningRequest(ctx, &zephyr_security.VirtualMeshCertificateSigningRequest{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "istio-name-cert-request",
 						Namespace: env.GetWriteNamespace(),
@@ -342,7 +341,7 @@ var _ = Describe("csr manager", func() {
 		})
 
 		It("will return nil if csr creation passes", func() {
-			vm := &networking_v1alpha1.VirtualMesh{
+			vm := &zephyr_networking.VirtualMesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
@@ -352,7 +351,7 @@ var _ = Describe("csr manager", func() {
 				},
 			}
 
-			mesh := &discovery_v1alpha1.Mesh{
+			mesh := &zephyr_discovery.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "namespace",
 					Name:      "name",
@@ -380,7 +379,7 @@ var _ = Describe("csr manager", func() {
 
 			meshRefFinder.EXPECT().
 				GetMeshesForVirtualMesh(ctx, vm).
-				Return([]*discovery_v1alpha1.Mesh{mesh}, nil)
+				Return([]*zephyr_discovery.Mesh{mesh}, nil)
 
 			dynamicClientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName, gomock.Any()).
@@ -391,7 +390,7 @@ var _ = Describe("csr manager", func() {
 				Return(nil, statusErr)
 
 			csrClient.EXPECT().
-				CreateVirtualMeshCertificateSigningRequest(ctx, &v1alpha1.VirtualMeshCertificateSigningRequest{
+				CreateVirtualMeshCertificateSigningRequest(ctx, &zephyr_security.VirtualMeshCertificateSigningRequest{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "istio-name-cert-request",
 						Namespace: env.GetWriteNamespace(),

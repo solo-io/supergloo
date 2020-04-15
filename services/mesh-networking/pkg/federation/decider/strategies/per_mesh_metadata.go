@@ -5,8 +5,8 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -18,8 +18,8 @@ var (
 )
 
 type MeshMetadata struct {
-	MeshWorkloads []*discovery_v1alpha1.MeshWorkload
-	MeshServices  []*discovery_v1alpha1.MeshService
+	MeshWorkloads []*zephyr_discovery.MeshWorkload
+	MeshServices  []*zephyr_discovery.MeshService
 	ClusterName   string
 }
 
@@ -31,7 +31,7 @@ type PerMeshMetadata struct {
 
 	// all virtual meshes included here will have all their relevant data populated above
 	// i.e., if a virtual mesh is included here, you can safely query the map above for its member meshes' data
-	ResolvedVirtualMeshs []*networking_v1alpha1.VirtualMesh
+	ResolvedVirtualMeshs []*zephyr_networking.VirtualMesh
 }
 
 func (p PerMeshMetadata) GetOrInitialize(meshName string) *MeshMetadata {
@@ -46,14 +46,14 @@ func (p PerMeshMetadata) GetOrInitialize(meshName string) *MeshMetadata {
 }
 
 type ErrorReport struct {
-	VirtualMesh *networking_v1alpha1.VirtualMesh
+	VirtualMesh *zephyr_networking.VirtualMesh
 	Err         error
 }
 
 func BuildPerMeshMetadataFromSnapshot(
 	ctx context.Context,
 	snapshot *snapshot.MeshNetworkingSnapshot,
-	meshClient discovery_v1alpha1.MeshClient,
+	meshClient zephyr_discovery.MeshClient,
 ) (PerMeshMetadata, []ErrorReport) {
 	var errors []ErrorReport
 

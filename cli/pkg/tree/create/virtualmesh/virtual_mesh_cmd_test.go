@@ -15,7 +15,7 @@ import (
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -86,7 +86,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 					},
 				},
 			}
-			expectedVM := &networking_v1alpha1.VirtualMesh{
+			expectedVM := &zephyr_networking.VirtualMesh{
 				TypeMeta: metav1.TypeMeta{Kind: "VirtualMesh"},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      displayName,
@@ -159,7 +159,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 					},
 				},
 			}
-			expectedVM := &networking_v1alpha1.VirtualMesh{
+			expectedVM := &zephyr_networking.VirtualMesh{
 				TypeMeta: metav1.TypeMeta{Kind: "VirtualMesh"},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      displayName,
@@ -232,7 +232,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 					},
 				},
 			}
-			expectedVM := &networking_v1alpha1.VirtualMesh{
+			expectedVM := &zephyr_networking.VirtualMesh{
 				TypeMeta: metav1.TypeMeta{Kind: "VirtualMesh"},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      displayName,

@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
 	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -46,7 +46,7 @@ var _ = Describe("JSONPrinter", func() {
 		}
 	}
 
-	vm := &networking_v1alpha1.VirtualMesh{
+	vm := &zephyr_networking.VirtualMesh{
 		TypeMeta: metav1.TypeMeta{Kind: "VirtualMesh"},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-vm",

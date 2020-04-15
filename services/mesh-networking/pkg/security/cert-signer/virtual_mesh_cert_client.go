@@ -6,7 +6,6 @@ import (
 
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
@@ -18,7 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func DefaultRootCaName(vm *networking_v1alpha1.VirtualMesh) string {
+func DefaultRootCaName(vm *zephyr_networking.VirtualMesh) string {
 	return fmt.Sprintf("%s-ca-certs", vm.GetName())
 }
 
@@ -70,7 +69,7 @@ func (v *virtualMeshCertClient) GetRootCaBundle(
 
 func (v *virtualMeshCertClient) getOrCreateBuiltinRootCert(
 	ctx context.Context,
-	vm *networking_v1alpha1.VirtualMesh,
+	vm *zephyr_networking.VirtualMesh,
 ) (*core_v1.Secret, error) {
 	// auto-generated cert lives in fixed location
 	rootCaName := DefaultRootCaName(vm)

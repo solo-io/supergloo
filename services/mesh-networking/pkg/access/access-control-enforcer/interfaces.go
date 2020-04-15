@@ -3,7 +3,7 @@ package access_policy_enforcer
 import (
 	"context"
 
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
@@ -17,6 +17,6 @@ type AccessPolicyEnforcerLoop interface {
 type AccessPolicyMeshEnforcer interface {
 	// The name which will be used to identify the enforcer in the logs
 	Name() string
-	StartEnforcing(ctx context.Context, meshes []*discovery_v1alpha1.Mesh) error
-	StopEnforcing(ctx context.Context, meshes []*discovery_v1alpha1.Mesh) error
+	StartEnforcing(ctx context.Context, meshes []*zephyr_discovery.Mesh) error
+	StopEnforcing(ctx context.Context, meshes []*zephyr_discovery.Mesh) error
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/security/certgen/mocks"
@@ -59,7 +59,7 @@ var _ = Describe("virtual mesh cert client", func() {
 			Name:      "name",
 			Namespace: "namespace",
 		}
-		vm := &v1alpha1.VirtualMesh{
+		vm := &zephyr_networking.VirtualMesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
@@ -95,7 +95,7 @@ var _ = Describe("virtual mesh cert client", func() {
 			Name:      "name",
 			Namespace: "namespace",
 		}
-		vm := &v1alpha1.VirtualMesh{
+		vm := &zephyr_networking.VirtualMesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
@@ -147,7 +147,7 @@ var _ = Describe("virtual mesh cert client", func() {
 			Name:      "name",
 			Namespace: "namespace",
 		}
-		vm := &v1alpha1.VirtualMesh{
+		vm := &zephyr_networking.VirtualMesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
@@ -184,7 +184,7 @@ var _ = Describe("virtual mesh cert client", func() {
 			Name:      "name",
 			Namespace: "namespace",
 		}
-		vm := &v1alpha1.VirtualMesh{
+		vm := &zephyr_networking.VirtualMesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
@@ -213,7 +213,7 @@ var _ = Describe("virtual mesh cert client", func() {
 			Name:      "name",
 			Namespace: "namespace",
 		}
-		vm := &v1alpha1.VirtualMesh{
+		vm := &zephyr_networking.VirtualMesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,

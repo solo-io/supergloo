@@ -9,10 +9,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	access_control_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
@@ -56,7 +56,7 @@ var _ = Describe("IstioTranslator", func() {
 	})
 
 	type testData struct {
-		accessControlPolicy *networking_v1alpha1.AccessControlPolicy
+		accessControlPolicy *zephyr_networking.AccessControlPolicy
 		targetServices      []access_control_policy_translator.TargetService
 		clusterNames        []string
 		acpClusterNames     []string
@@ -85,7 +85,7 @@ var _ = Describe("IstioTranslator", func() {
 		allowedMethods := []core_types.HttpMethodValue{core_types.HttpMethodValue_GET, core_types.HttpMethodValue_POST}
 		allowedPortsInts := []uint32{8080, 9080}
 		allowedPortsString := []string{"8080", "9080"}
-		istioMesh1 := &discovery_v1alpha1.Mesh{
+		istioMesh1 := &zephyr_discovery.Mesh{
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Istio{
 					Istio: &discovery_types.MeshSpec_IstioMesh{
@@ -95,7 +95,7 @@ var _ = Describe("IstioTranslator", func() {
 				Cluster: &core_types.ResourceRef{Name: clusterNames[0]},
 			},
 		}
-		istioMesh2 := &discovery_v1alpha1.Mesh{
+		istioMesh2 := &zephyr_discovery.Mesh{
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Istio{
 					Istio: &discovery_types.MeshSpec_IstioMesh{
@@ -105,7 +105,7 @@ var _ = Describe("IstioTranslator", func() {
 				Cluster: &core_types.ResourceRef{Name: clusterNames[1]},
 			},
 		}
-		acp := &networking_v1alpha1.AccessControlPolicy{
+		acp := &zephyr_networking.AccessControlPolicy{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "acp-name",
 				Namespace: "acp-namespace",
@@ -126,7 +126,7 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		targetServices := []access_control_policy_translator.TargetService{
 			{
-				MeshService: &discovery_v1alpha1.MeshService{
+				MeshService: &zephyr_discovery.MeshService{
 					Spec: discovery_types.MeshServiceSpec{
 						KubeService: &discovery_types.MeshServiceSpec_KubeService{
 							WorkloadSelectorLabels: map[string]string{
@@ -139,7 +139,7 @@ var _ = Describe("IstioTranslator", func() {
 				Mesh: istioMesh1,
 			},
 			{
-				MeshService: &discovery_v1alpha1.MeshService{
+				MeshService: &zephyr_discovery.MeshService{
 					ObjectMeta: v1.ObjectMeta{
 						Namespace: "namespace2",
 					},
@@ -158,8 +158,8 @@ var _ = Describe("IstioTranslator", func() {
 		meshClient.
 			EXPECT().
 			ListMesh(ctx).
-			Return(&discovery_v1alpha1.MeshList{
-				Items: []discovery_v1alpha1.Mesh{*istioMesh1, *istioMesh2},
+			Return(&zephyr_discovery.MeshList{
+				Items: []zephyr_discovery.Mesh{*istioMesh1, *istioMesh2},
 			}, nil)
 		return testData{
 			accessControlPolicy: acp,
@@ -286,7 +286,7 @@ var _ = Describe("IstioTranslator", func() {
 	It("should use principal wildcard if user omits source selector", func() {
 		clusterNames := []string{"cluster-name1", "cluster-name2"}
 		trustDomains := []string{"cluster.local1", "cluster.local2"}
-		acp := &networking_v1alpha1.AccessControlPolicy{
+		acp := &zephyr_networking.AccessControlPolicy{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "acp-name",
 				Namespace: "acp-namespace",
@@ -295,7 +295,7 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		targetServices := []access_control_policy_translator.TargetService{
 			{
-				MeshService: &discovery_v1alpha1.MeshService{
+				MeshService: &zephyr_discovery.MeshService{
 					Spec: discovery_types.MeshServiceSpec{
 						KubeService: &discovery_types.MeshServiceSpec_KubeService{
 							WorkloadSelectorLabels: map[string]string{
@@ -305,7 +305,7 @@ var _ = Describe("IstioTranslator", func() {
 						},
 					},
 				},
-				Mesh: &discovery_v1alpha1.Mesh{
+				Mesh: &zephyr_discovery.Mesh{
 					Spec: discovery_types.MeshSpec{
 						MeshType: &discovery_types.MeshSpec_Istio{
 							Istio: &discovery_types.MeshSpec_IstioMesh{
@@ -356,7 +356,7 @@ var _ = Describe("IstioTranslator", func() {
 	It("should use From.Source.Namespaces if only Matcher.Namespaces specified (and cluster omitted)", func() {
 		clusterNames := []string{"cluster-name1", "cluster-name2"}
 		trustDomains := []string{"cluster.local1", "cluster.local2"}
-		acp := &networking_v1alpha1.AccessControlPolicy{
+		acp := &zephyr_networking.AccessControlPolicy{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "acp-name",
 				Namespace: "acp-namespace",
@@ -373,7 +373,7 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		targetServices := []access_control_policy_translator.TargetService{
 			{
-				MeshService: &discovery_v1alpha1.MeshService{
+				MeshService: &zephyr_discovery.MeshService{
 					Spec: discovery_types.MeshServiceSpec{
 						KubeService: &discovery_types.MeshServiceSpec_KubeService{
 							WorkloadSelectorLabels: map[string]string{
@@ -383,7 +383,7 @@ var _ = Describe("IstioTranslator", func() {
 						},
 					},
 				},
-				Mesh: &discovery_v1alpha1.Mesh{
+				Mesh: &zephyr_discovery.Mesh{
 					Spec: discovery_types.MeshSpec{
 						MeshType: &discovery_types.MeshSpec_Istio{
 							Istio: &discovery_types.MeshSpec_IstioMesh{
@@ -455,8 +455,8 @@ var _ = Describe("IstioTranslator", func() {
 		meshClient.
 			EXPECT().
 			ListMesh(ctx).
-			Return(&discovery_v1alpha1.MeshList{
-				Items: []discovery_v1alpha1.Mesh{*testData.targetServices[0].Mesh, *testData.targetServices[1].Mesh},
+			Return(&zephyr_discovery.MeshList{
+				Items: []zephyr_discovery.Mesh{*testData.targetServices[0].Mesh, *testData.targetServices[1].Mesh},
 			}, nil)
 		var expectedPrincipals []string
 		for i, serviceAccount := range testData.accessControlPolicy.Spec.SourceSelector.GetServiceAccountRefs().GetServiceAccounts() {
@@ -508,7 +508,7 @@ var _ = Describe("IstioTranslator", func() {
 	})
 
 	It("should return ACP processing error", func() {
-		acp := &networking_v1alpha1.AccessControlPolicy{
+		acp := &zephyr_networking.AccessControlPolicy{
 			Spec: networking_types.AccessControlPolicySpec{
 				SourceSelector: &core_types.IdentitySelector{
 					IdentitySelectorType: &core_types.IdentitySelector_Matcher_{

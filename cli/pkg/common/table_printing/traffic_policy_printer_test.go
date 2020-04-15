@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -23,7 +23,7 @@ var UPDATE_TRAFFIC_POLICY_GOLDENS = false
 
 var _ = Describe("Traffic Policy Table Printer", func() {
 	const tpGoldenDirectory = "traffic_policy"
-	var runTest = func(fileName string, printMode table_printing.PrintMode, trafficPolicies []*v1alpha1.TrafficPolicy) {
+	var runTest = func(fileName string, printMode table_printing.PrintMode, trafficPolicies []*zephyr_networking.TrafficPolicy) {
 		goldenFilename := test_goldens.GoldenFilePath(tpGoldenDirectory, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
@@ -46,7 +46,7 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 			"can print multiple complex traffic policies",
 			"multiple_complex_traffic_policies",
 			table_printing.ServicePrintMode,
-			[]*v1alpha1.TrafficPolicy{
+			[]*zephyr_networking.TrafficPolicy{
 				{
 					ObjectMeta: v1.ObjectMeta{
 						Name: "simple",

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
 func NewMeshWorkloadPrinter(tableBuilder TableBuilder) MeshWorkloadPrinter {
@@ -22,7 +22,7 @@ type meshWorkloadPrintner struct {
 
 func (m *meshWorkloadPrintner) Print(
 	out io.Writer,
-	meshWorkloads []*discovery_v1alpha1.MeshWorkload,
+	meshWorkloads []*zephyr_discovery.MeshWorkload,
 ) error {
 	if len(meshWorkloads) == 0 {
 		return nil

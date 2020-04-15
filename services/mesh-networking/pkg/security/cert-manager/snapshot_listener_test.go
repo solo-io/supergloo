@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
@@ -51,7 +51,7 @@ var _ = Describe("snapshot listener", func() {
 	})
 
 	It("will process all create events in order", func() {
-		vm1 := &networking_v1alpha1.VirtualMesh{
+		vm1 := &zephyr_networking.VirtualMesh{
 			TypeMeta:   metav1.TypeMeta{},
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec:       networking_types.VirtualMeshSpec{},
@@ -61,7 +61,7 @@ var _ = Describe("snapshot listener", func() {
 				},
 			},
 		}
-		vm2 := &networking_v1alpha1.VirtualMesh{
+		vm2 := &zephyr_networking.VirtualMesh{
 			TypeMeta:   metav1.TypeMeta{},
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec:       networking_types.VirtualMeshSpec{},
@@ -72,7 +72,7 @@ var _ = Describe("snapshot listener", func() {
 			},
 		}
 		snap := &snapshot.MeshNetworkingSnapshot{
-			VirtualMeshes: []*networking_v1alpha1.VirtualMesh{vm1, vm2},
+			VirtualMeshes: []*zephyr_networking.VirtualMesh{vm1, vm2},
 		}
 		csrProcessor.EXPECT().InitializeCertificateForVirtualMesh(ctx, vm1).Return(vm1.Status)
 		csrProcessor.EXPECT().InitializeCertificateForVirtualMesh(ctx, vm2).Return(vm2.Status)

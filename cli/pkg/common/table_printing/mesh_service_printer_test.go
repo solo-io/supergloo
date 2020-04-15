@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 )
 
@@ -21,7 +21,7 @@ var UPDATE_MESH_SERVICE_GOLDENS = false
 
 var _ = Describe("Mesh Service Table Printer", func() {
 	const serviceGoldenDirectory = "service"
-	var runTest = func(fileName string, meshServices []*discovery_v1alpha1.MeshService) {
+	var runTest = func(fileName string, meshServices []*zephyr_discovery.MeshService) {
 		goldenFilename := test_goldens.GoldenFilePath(serviceGoldenDirectory, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
@@ -44,7 +44,7 @@ var _ = Describe("Mesh Service Table Printer", func() {
 		Entry(
 			"can print multiple mesh services",
 			"services",
-			[]*discovery_v1alpha1.MeshService{
+			[]*zephyr_discovery.MeshService{
 				{
 					Spec: discovery_types.MeshServiceSpec{
 						KubeService: &discovery_types.MeshServiceSpec_KubeService{

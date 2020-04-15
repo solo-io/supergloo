@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
 	helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/discovery"
@@ -56,7 +56,7 @@ type clusterDeregistrationClient struct {
 	kubeConfigLookup             config_lookup.KubeConfigLookup
 }
 
-func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *discovery_v1alpha1.KubernetesCluster) error {
+func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *zephyr_discovery.KubernetesCluster) error {
 	config, err := c.kubeConfigLookup.FromCluster(ctx, kubeCluster.GetName())
 	if err != nil {
 		return FailedToFindClusterCredentials(err, kubeCluster.GetName())

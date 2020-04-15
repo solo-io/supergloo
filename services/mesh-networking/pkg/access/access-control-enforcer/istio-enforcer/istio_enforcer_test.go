@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
@@ -49,10 +49,10 @@ var _ = Describe("IstioEnforcer", func() {
 		ctrl.Finish()
 	})
 
-	var buildMeshes = func() []*discovery_v1alpha1.Mesh {
+	var buildMeshes = func() []*zephyr_discovery.Mesh {
 		clusterNames := []string{"cluster1", "cluster2"}
 		installationNamespace := []string{"istio-system-1", "istio-system-2"}
-		return []*discovery_v1alpha1.Mesh{
+		return []*zephyr_discovery.Mesh{
 			{
 				Spec: discovery_types.MeshSpec{
 					Cluster: &core_types.ResourceRef{

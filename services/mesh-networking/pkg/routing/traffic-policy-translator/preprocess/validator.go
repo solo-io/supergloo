@@ -9,9 +9,8 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/stringutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 )
@@ -29,7 +28,7 @@ var (
 	DestinationsNotFound = func(selector *core_types.ServiceSelector) error {
 		return eris.Errorf("No destinations found with Selector %+v", selector)
 	}
-	SubsetSelectorNotFound = func(meshService *discovery_v1alpha1.MeshService, subsetKey string, subsetValue string) error {
+	SubsetSelectorNotFound = func(meshService *zephyr_discovery.MeshService, subsetKey string, subsetValue string) error {
 		return eris.Errorf("Subset selector with key: %s, value: %s not found on k8s service of name: %s, namespace: %s",
 			subsetKey, subsetValue, meshService.GetName(), meshService.GetNamespace())
 	}
@@ -52,7 +51,7 @@ func NewTrafficPolicyValidator(
 	}
 }
 
-func (t *trafficPolicyValidator) Validate(ctx context.Context, trafficPolicy *networking_v1alpha1.TrafficPolicy) error {
+func (t *trafficPolicyValidator) Validate(ctx context.Context, trafficPolicy *zephyr_networking.TrafficPolicy) error {
 	var multiErr *multierror.Error
 	if err := t.validateDestination(ctx, trafficPolicy.Spec.GetDestinationSelector()); err != nil {
 		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in Destination"))
@@ -201,7 +200,7 @@ func (t *trafficPolicyValidator) validateDuration(duration *types.Duration) erro
 func (t *trafficPolicyValidator) validateKubeService(
 	ctx context.Context,
 	ref *core_types.ResourceRef,
-) (*discovery_v1alpha1.MeshService, error) {
+) (*zephyr_discovery.MeshService, error) {
 	if ref == nil {
 		return nil, NilDestinationRef
 	}
@@ -213,7 +212,7 @@ func (t *trafficPolicyValidator) validateKubeService(
 }
 
 func (t *trafficPolicyValidator) validateSubsetSelectors(
-	meshService *discovery_v1alpha1.MeshService,
+	meshService *zephyr_discovery.MeshService,
 	subsetSelectors map[string]string,
 ) error {
 	for subsetKey, subsetValue := range subsetSelectors {

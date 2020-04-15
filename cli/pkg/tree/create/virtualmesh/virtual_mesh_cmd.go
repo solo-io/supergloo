@@ -14,7 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/validate"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
@@ -75,7 +75,7 @@ func createVirtualMesh(
 func populateVirtualMeshInteractive(
 	allMeshNames []string,
 	interactivePrompt interactive.InteractivePrompt,
-) (*networking_v1alpha1.VirtualMesh, error) {
+) (*zephyr_networking.VirtualMesh, error) {
 	var err error
 	var displayName string
 	var selectedMeshes []*core_types.ResourceRef
@@ -89,7 +89,7 @@ func populateVirtualMeshInteractive(
 	if certificateAuthority, err = selectCertificateAuthority(interactivePrompt); err != nil {
 		return nil, err
 	}
-	vm := &networking_v1alpha1.VirtualMesh{
+	vm := &zephyr_networking.VirtualMesh{
 		TypeMeta: v1.TypeMeta{Kind: "VirtualMesh"}, // k8s resource printers will complain unless this is set
 		ObjectMeta: v1.ObjectMeta{
 			Name:      displayName,

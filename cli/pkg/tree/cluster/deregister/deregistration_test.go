@@ -15,7 +15,7 @@ import (
 	helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
 	mock_helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm/mocks"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
@@ -56,7 +56,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
-		clusterToDeregister := &discovery_v1alpha1.KubernetesCluster{
+		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: env.GetWriteNamespace(),
@@ -105,7 +105,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		}
 		remoteWriteNamespace := "remote-write-namespace"
 		remoteClusterName := "remote-cluster-name"
-		clusterToDeregister := &discovery_v1alpha1.KubernetesCluster{
+		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: env.GetWriteNamespace(),
@@ -149,7 +149,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
-		clusterToDeregister := &discovery_v1alpha1.KubernetesCluster{
+		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: env.GetWriteNamespace(),
@@ -196,7 +196,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
-		clusterToDeregister := &discovery_v1alpha1.KubernetesCluster{
+		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: env.GetWriteNamespace(),

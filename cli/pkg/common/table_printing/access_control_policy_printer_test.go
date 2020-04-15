@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -25,7 +25,7 @@ var _ = Describe("Access Control Printer", func() {
 	var runTest = func(
 		fileName string,
 		printMode table_printing.PrintMode,
-		accessControlPolicies []*v1alpha1.AccessControlPolicy,
+		accessControlPolicies []*zephyr_networking.AccessControlPolicy,
 	) {
 		goldenFilename := test_goldens.GoldenFilePath(acpGoldenDirectory, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
@@ -50,7 +50,7 @@ var _ = Describe("Access Control Printer", func() {
 			"can print multiple complex AC policies",
 			"multiple_complex_access_control_policies",
 			table_printing.ServicePrintMode,
-			[]*v1alpha1.AccessControlPolicy{
+			[]*zephyr_networking.AccessControlPolicy{
 				{
 					ObjectMeta: v1.ObjectMeta{
 						Name: "simple",

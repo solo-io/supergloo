@@ -7,9 +7,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
@@ -37,7 +37,7 @@ var _ = Describe("Permissive Federation", func() {
 			Name:      "mesh-1",
 			Namespace: env.GetWriteNamespace(),
 		}
-		vm := &networking_v1alpha1.VirtualMesh{
+		vm := &zephyr_networking.VirtualMesh{
 			Spec: networking_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{meshRef},
 				Federation: &networking_types.VirtualMeshSpec_Federation{
@@ -46,7 +46,7 @@ var _ = Describe("Permissive Federation", func() {
 			},
 		}
 
-		service := &discovery_v1alpha1.MeshService{
+		service := &zephyr_discovery.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name: "svc-1",
 			},
@@ -62,7 +62,7 @@ var _ = Describe("Permissive Federation", func() {
 		}
 		perMeshResources := map[string]*strategies.MeshMetadata{
 			"mesh-1": {
-				MeshServices: []*discovery_v1alpha1.MeshService{service},
+				MeshServices: []*zephyr_discovery.MeshService{service},
 				ClusterName:  "application-cluster",
 			},
 		}

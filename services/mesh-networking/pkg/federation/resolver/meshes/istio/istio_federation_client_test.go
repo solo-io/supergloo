@@ -10,12 +10,12 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	types2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
@@ -89,7 +89,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Name:      "linkerd-mesh",
 				Namespace: env.GetWriteNamespace(),
 			}
-			nonIstioMesh := &discovery_v1alpha1.Mesh{
+			nonIstioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(nonIstioMeshRef),
 				Spec: types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
@@ -98,7 +98,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					MeshType: &types.MeshSpec_Linkerd{},
 				},
 			}
-			nonIstioMeshService := &discovery_v1alpha1.MeshService{
+			nonIstioMeshService := &zephyr_discovery.MeshService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "linkerd-svc",
 					Namespace: "application-ns",
@@ -107,8 +107,8 @@ var _ = Describe("Istio Federation Decider", func() {
 					Mesh: nonIstioMeshRef,
 				},
 			}
-			virtualMesh := &networking_v1alpha1.VirtualMesh{
-				Spec: types2.VirtualMeshSpec{
+			virtualMesh := &zephyr_networking.VirtualMesh{
+				Spec: zephyr_networking_types.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{nonIstioMeshRef},
 				},
 			}
@@ -160,7 +160,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Name:      "istio-mesh",
 				Namespace: env.GetWriteNamespace(),
 			}
-			istioMesh := &discovery_v1alpha1.Mesh{
+			istioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
 				Spec: types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
@@ -179,7 +179,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Name:      "k8s-svc",
 				Namespace: "application-ns",
 			}
-			istioMeshService := &discovery_v1alpha1.MeshService{
+			istioMeshService := &zephyr_discovery.MeshService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
@@ -194,12 +194,12 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			virtualMesh := &networking_v1alpha1.VirtualMesh{
+			virtualMesh := &zephyr_networking.VirtualMesh{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "virtual-mesh-1",
 					Namespace: env.GetWriteNamespace(),
 				},
-				Spec: types2.VirtualMeshSpec{
+				Spec: zephyr_networking_types.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{istioMeshRef},
 				},
 			}
@@ -347,7 +347,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Name:      "istio-mesh",
 				Namespace: env.GetWriteNamespace(),
 			}
-			istioMesh := &discovery_v1alpha1.Mesh{
+			istioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
 				Spec: types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
@@ -366,7 +366,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Name:      "k8s-svc",
 				Namespace: "application-ns",
 			}
-			istioMeshService := &discovery_v1alpha1.MeshService{
+			istioMeshService := &zephyr_discovery.MeshService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
@@ -381,12 +381,12 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			virtualMesh := &networking_v1alpha1.VirtualMesh{
+			virtualMesh := &zephyr_networking.VirtualMesh{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "virtual-mesh-1",
 					Namespace: env.GetWriteNamespace(),
 				},
-				Spec: types2.VirtualMeshSpec{
+				Spec: zephyr_networking_types.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{istioMeshRef},
 				},
 			}
@@ -534,7 +534,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Name:      "istio-mesh",
 				Namespace: env.GetWriteNamespace(),
 			}
-			istioMesh := &discovery_v1alpha1.Mesh{
+			istioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
 				Spec: types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
@@ -553,7 +553,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Name:      "k8s-svc",
 				Namespace: "application-ns",
 			}
-			istioMeshService := &discovery_v1alpha1.MeshService{
+			istioMeshService := &zephyr_discovery.MeshService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
@@ -568,12 +568,12 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			virtualMesh := &networking_v1alpha1.VirtualMesh{
+			virtualMesh := &zephyr_networking.VirtualMesh{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "virtual-mesh-1",
 					Namespace: env.GetWriteNamespace(),
 				},
-				Spec: types2.VirtualMeshSpec{
+				Spec: zephyr_networking_types.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{istioMeshRef},
 				},
 			}
@@ -728,7 +728,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Name:      "linkerd-mesh",
 				Namespace: env.GetWriteNamespace(),
 			}
-			nonIstioMesh := &discovery_v1alpha1.Mesh{
+			nonIstioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(nonIstioMeshRef),
 				Spec: types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
@@ -737,12 +737,12 @@ var _ = Describe("Istio Federation Decider", func() {
 					MeshType: &types.MeshSpec_Linkerd{},
 				},
 			}
-			nonIstioMeshWorkload := &discovery_v1alpha1.MeshWorkload{
+			nonIstioMeshWorkload := &zephyr_discovery.MeshWorkload{
 				Spec: types.MeshWorkloadSpec{
 					Mesh: nonIstioMeshRef,
 				},
 			}
-			istioMeshService := &discovery_v1alpha1.MeshService{
+			istioMeshService := &zephyr_discovery.MeshService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
@@ -801,7 +801,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Name:      "istio-mesh-2",
 				Namespace: env.GetWriteNamespace(),
 			}
-			istioMeshForService := &discovery_v1alpha1.Mesh{
+			istioMeshForService := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRefService),
 				Spec: types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
@@ -816,7 +816,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			istioMeshForWorkload := &discovery_v1alpha1.Mesh{
+			istioMeshForWorkload := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRefWorkload),
 				Spec: types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
@@ -831,7 +831,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			meshWorkload := &discovery_v1alpha1.MeshWorkload{
+			meshWorkload := &zephyr_discovery.MeshWorkload{
 				Spec: types.MeshWorkloadSpec{
 					Mesh: istioMeshRefWorkload,
 				},
@@ -846,7 +846,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Name:     "http1",
 				Protocol: "http",
 			}
-			meshService := &discovery_v1alpha1.MeshService{
+			meshService := &zephyr_discovery.MeshService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",

@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
@@ -25,13 +25,13 @@ var _ = Describe("Networking Snapshot", func() {
 		eventuallyTimeout = time.Second
 		pollFrequency     = time.Millisecond
 
-		meshService1 = &discovery_v1alpha1.MeshService{
+		meshService1 = &zephyr_discovery.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "ms-1",
 				Namespace: env.GetWriteNamespace(),
 			},
 		}
-		meshService2 = &discovery_v1alpha1.MeshService{
+		meshService2 = &zephyr_discovery.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "ms-2",
 				Namespace: env.GetWriteNamespace(),
@@ -50,7 +50,7 @@ var _ = Describe("Networking Snapshot", func() {
 
 	It("can receive events", func() {
 		updatedSnapshot := snapshot.MeshNetworkingSnapshot{
-			MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
+			MeshServices: []*zephyr_discovery.MeshService{meshService1},
 		}
 
 		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
@@ -104,7 +104,7 @@ var _ = Describe("Networking Snapshot", func() {
 
 	It("should not push snapshots if nothing has changed", func() {
 		updatedSnapshot := snapshot.MeshNetworkingSnapshot{
-			MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
+			MeshServices: []*zephyr_discovery.MeshService{meshService1},
 		}
 
 		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
@@ -162,7 +162,7 @@ var _ = Describe("Networking Snapshot", func() {
 
 	It("can aggregate multiple events that roll in close to each other", func() {
 		originalSnapshot := &snapshot.MeshNetworkingSnapshot{
-			MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
+			MeshServices: []*zephyr_discovery.MeshService{meshService1},
 		}
 
 		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
@@ -232,7 +232,7 @@ var _ = Describe("Networking Snapshot", func() {
 
 	It("can accurately swap out updated resources from the current state of the world", func() {
 		originalSnapshot := &snapshot.MeshNetworkingSnapshot{
-			MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
+			MeshServices: []*zephyr_discovery.MeshService{meshService1},
 		}
 		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
 		validator.EXPECT().
@@ -274,7 +274,7 @@ var _ = Describe("Networking Snapshot", func() {
 		)
 		Expect(err).NotTo(HaveOccurred())
 
-		updatedService := &discovery_v1alpha1.MeshService{
+		updatedService := &zephyr_discovery.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "ms-2",
 				Namespace: env.GetWriteNamespace(),
@@ -292,7 +292,7 @@ var _ = Describe("Networking Snapshot", func() {
 		generator.RegisterListener(listener)
 
 		newSnapshot := &snapshot.MeshNetworkingSnapshot{
-			MeshServices: []*discovery_v1alpha1.MeshService{
+			MeshServices: []*zephyr_discovery.MeshService{
 				updatedSnapshot.MeshServices[0],
 				updatedService,
 			},

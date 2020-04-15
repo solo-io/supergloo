@@ -8,7 +8,7 @@ import (
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 )
 
@@ -22,7 +22,7 @@ type trafficPolicyPrinter struct {
 	tableBuilder TableBuilder
 }
 
-func (t *trafficPolicyPrinter) Print(out io.Writer, printMode PrintMode, trafficPolicies []*networking_v1alpha1.TrafficPolicy) error {
+func (t *trafficPolicyPrinter) Print(out io.Writer, printMode PrintMode, trafficPolicies []*zephyr_networking.TrafficPolicy) error {
 	if len(trafficPolicies) == 0 {
 		return nil
 	}

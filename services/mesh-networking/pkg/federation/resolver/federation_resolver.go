@@ -7,11 +7,9 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
@@ -26,7 +24,7 @@ const (
 
 var (
 	FailedToFederateServices = func(
-		meshService *discovery_v1alpha1.MeshService,
+		meshService *zephyr_discovery.MeshService,
 		meshWorkloadRefs []*core_types.ResourceRef) string {
 		return fmt.Sprintf("Could not federate service %s.%s to mesh workloads %+v. Check logs for details",
 			meshService.Name,
@@ -73,7 +71,7 @@ type federationResolver struct {
 
 func (f *federationResolver) Start(ctx context.Context) error {
 	return f.MeshServiceEventWatcher.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
-		OnCreate: func(obj *discovery_v1alpha1.MeshService) error {
+		OnCreate: func(obj *zephyr_discovery.MeshService) error {
 			eventCtx := logging.EventContext(ctx, logging.CreateEvent, obj)
 			contextutils.LoggerFrom(eventCtx).Debugw("event handler enter",
 				zap.Any("spec", obj.Spec),
@@ -81,7 +79,7 @@ func (f *federationResolver) Start(ctx context.Context) error {
 			)
 			return f.handleServiceUpsert(eventCtx, obj)
 		},
-		OnUpdate: func(old, new *discovery_v1alpha1.MeshService) error {
+		OnUpdate: func(old, new *zephyr_discovery.MeshService) error {
 			eventCtx := logging.EventContext(ctx, logging.CreateEvent, new)
 			// for status-only updates, do nothing
 			// this is important to ensure that we eventually get into a consistent state, as
@@ -95,7 +93,7 @@ func (f *federationResolver) Start(ctx context.Context) error {
 
 			return f.handleServiceUpsert(eventCtx, new)
 		},
-		OnDelete: func(_ *discovery_v1alpha1.MeshService) error {
+		OnDelete: func(_ *zephyr_discovery.MeshService) error {
 			// ignoring delete
 			// https://github.com/solo-io/service-mesh-hub/issues/169
 			return nil
@@ -105,7 +103,7 @@ func (f *federationResolver) Start(ctx context.Context) error {
 }
 
 // handle services that get created or updated
-func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshService *discovery_v1alpha1.MeshService) error {
+func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshService *zephyr_discovery.MeshService) error {
 	logger := contextutils.LoggerFrom(ctx)
 
 	federationConfig := meshService.Spec.GetFederation()
@@ -159,7 +157,7 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 
 func (f *federationResolver) federateToRemoteWorkload(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
+	meshService *zephyr_discovery.MeshService,
 	meshWorkloadRef *core_types.ResourceRef,
 ) error {
 	workload, err := f.meshWorkloadClient.GetMeshWorkload(ctx, client.ObjectKey{
@@ -233,8 +231,8 @@ func (f *federationResolver) federateToRemoteWorkload(
 
 func (f *federationResolver) getVirtualMeshContainingService(
 	ctx context.Context,
-	meshForService *discovery_v1alpha1.Mesh,
-) (*networking_v1alpha1.VirtualMesh, error) {
+	meshForService *zephyr_discovery.Mesh,
+) (*zephyr_networking.VirtualMesh, error) {
 	virtualMeshs, err := f.virtualMeshClient.ListVirtualMesh(ctx)
 	if err != nil {
 		return nil, err

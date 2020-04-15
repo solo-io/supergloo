@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -22,7 +22,7 @@ var UPDATE_MESH_GOLDENS = false
 
 var _ = Describe("Mesh Table Printer", func() {
 	const meshGoldenDir = "mesh"
-	var runTest = func(fileName string, meshes []*discovery_v1alpha1.Mesh) {
+	var runTest = func(fileName string, meshes []*zephyr_discovery.Mesh) {
 		goldenFilename := test_goldens.GoldenFilePath(meshGoldenDir, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
@@ -44,7 +44,7 @@ var _ = Describe("Mesh Table Printer", func() {
 		Entry(
 			"can print multiple meshes of different types",
 			"multi_mesh",
-			[]*discovery_v1alpha1.Mesh{
+			[]*zephyr_discovery.Mesh{
 				{
 					ObjectMeta: v1.ObjectMeta{
 						Name: "istio-mesh-1",

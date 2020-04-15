@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
@@ -52,15 +52,15 @@ var _ = Describe("Resource describer", func() {
 					},
 				},
 			}
-			describedMeshService := &discovery_v1alpha1.MeshService{
+			describedMeshService := &zephyr_discovery.MeshService{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "expected-mesh-service",
 					Namespace: env.GetWriteNamespace(),
 				},
 			}
 
-			accessControlPolices := &networking_v1alpha1.AccessControlPolicyList{
-				Items: []networking_v1alpha1.AccessControlPolicy{
+			accessControlPolices := &zephyr_networking.AccessControlPolicyList{
+				Items: []zephyr_networking.AccessControlPolicy{
 					{
 						ObjectMeta: metav1.ObjectMeta{Name: "acp-1"},
 						Spec: types.AccessControlPolicySpec{
@@ -75,8 +75,8 @@ var _ = Describe("Resource describer", func() {
 					},
 				},
 			}
-			trafficPolicies := &networking_v1alpha1.TrafficPolicyList{
-				Items: []networking_v1alpha1.TrafficPolicy{
+			trafficPolicies := &zephyr_networking.TrafficPolicyList{
+				Items: []zephyr_networking.TrafficPolicy{
 					{
 						ObjectMeta: metav1.ObjectMeta{Name: "tp-1"},
 						Spec: types.TrafficPolicySpec{
@@ -103,11 +103,11 @@ var _ = Describe("Resource describer", func() {
 				Return(trafficPolicies, nil)
 			resourceSelector.EXPECT().
 				GetMeshServicesByServiceSelector(ctx, wrongServiceSelector).
-				Return([]*discovery_v1alpha1.MeshService{}, nil).
+				Return([]*zephyr_discovery.MeshService{}, nil).
 				Times(2)
 			resourceSelector.EXPECT().
 				GetMeshServicesByServiceSelector(ctx, correctServiceSelector).
-				Return([]*discovery_v1alpha1.MeshService{describedMeshService}, nil).
+				Return([]*zephyr_discovery.MeshService{describedMeshService}, nil).
 				Times(2)
 
 			describer := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
@@ -119,8 +119,8 @@ var _ = Describe("Resource describer", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(explorationResult).To(Equal(&description.DescriptionResult{
 				Policies: &description.Policies{
-					AccessControlPolicies: []*networking_v1alpha1.AccessControlPolicy{&accessControlPolices.Items[1]},
-					TrafficPolicies:       []*networking_v1alpha1.TrafficPolicy{&trafficPolicies.Items[1]},
+					AccessControlPolicies: []*zephyr_networking.AccessControlPolicy{&accessControlPolices.Items[1]},
+					TrafficPolicies:       []*zephyr_networking.TrafficPolicy{&trafficPolicies.Items[1]},
 				},
 			}))
 		})
@@ -133,7 +133,7 @@ var _ = Describe("Resource describer", func() {
 			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
 
 			controllerName, controllerNs, controllerCluster := "controller-name", "controller-ns", "controller-cluster"
-			describedMeshWorkload := &discovery_v1alpha1.MeshWorkload{
+			describedMeshWorkload := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-mesh-workload",
 					Namespace: env.GetWriteNamespace(),
@@ -147,8 +147,8 @@ var _ = Describe("Resource describer", func() {
 			correctWorkloadSelector := &core_types.WorkloadSelector{
 				Namespaces: []string{"doesn't-matter"},
 			}
-			accessControlPolices := &networking_v1alpha1.AccessControlPolicyList{
-				Items: []networking_v1alpha1.AccessControlPolicy{
+			accessControlPolices := &zephyr_networking.AccessControlPolicyList{
+				Items: []zephyr_networking.AccessControlPolicy{
 					{
 						ObjectMeta: metav1.ObjectMeta{Name: "acp-1"},
 						Spec: types.AccessControlPolicySpec{
@@ -163,8 +163,8 @@ var _ = Describe("Resource describer", func() {
 					},
 				},
 			}
-			trafficPolicies := &networking_v1alpha1.TrafficPolicyList{
-				Items: []networking_v1alpha1.TrafficPolicy{
+			trafficPolicies := &zephyr_networking.TrafficPolicyList{
+				Items: []zephyr_networking.TrafficPolicy{
 					{
 						ObjectMeta: metav1.ObjectMeta{Name: "tp-1"},
 						Spec: types.TrafficPolicySpec{
@@ -191,16 +191,16 @@ var _ = Describe("Resource describer", func() {
 				Return(trafficPolicies, nil)
 			resourceSelector.EXPECT().
 				GetMeshWorkloadsByIdentitySelector(ctx, wrongIdentitySelector).
-				Return([]*discovery_v1alpha1.MeshWorkload{}, nil)
+				Return([]*zephyr_discovery.MeshWorkload{}, nil)
 			resourceSelector.EXPECT().
 				GetMeshWorkloadsByIdentitySelector(ctx, correctIdentitySelector).
-				Return([]*discovery_v1alpha1.MeshWorkload{describedMeshWorkload}, nil)
+				Return([]*zephyr_discovery.MeshWorkload{describedMeshWorkload}, nil)
 			resourceSelector.EXPECT().
 				GetMeshWorkloadsByWorkloadSelector(ctx, wrongWorkloadSelector).
-				Return([]*discovery_v1alpha1.MeshWorkload{}, nil)
+				Return([]*zephyr_discovery.MeshWorkload{}, nil)
 			resourceSelector.EXPECT().
 				GetMeshWorkloadsByWorkloadSelector(ctx, correctWorkloadSelector).
-				Return([]*discovery_v1alpha1.MeshWorkload{describedMeshWorkload}, nil)
+				Return([]*zephyr_discovery.MeshWorkload{describedMeshWorkload}, nil)
 
 			describer := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
 			explorationResult, err := describer.DescribeWorkload(ctx, description.FullyQualifiedKubeResource{
@@ -211,8 +211,8 @@ var _ = Describe("Resource describer", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(explorationResult).To(Equal(&description.DescriptionResult{
 				Policies: &description.Policies{
-					AccessControlPolicies: []*networking_v1alpha1.AccessControlPolicy{&accessControlPolices.Items[1]},
-					TrafficPolicies:       []*networking_v1alpha1.TrafficPolicy{&trafficPolicies.Items[1]},
+					AccessControlPolicies: []*zephyr_networking.AccessControlPolicy{&accessControlPolices.Items[1]},
+					TrafficPolicies:       []*zephyr_networking.TrafficPolicy{&trafficPolicies.Items[1]},
 				},
 			}))
 		})

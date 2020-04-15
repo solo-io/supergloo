@@ -3,8 +3,8 @@ package cert_manager
 import (
 	"context"
 
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 )
@@ -17,8 +17,8 @@ import (
 */
 type CertConfigProducer interface {
 	ConfigureCertificateInfo(
-		vm *networking_v1alpha1.VirtualMesh,
-		mesh *discovery_v1alpha1.Mesh,
+		vm *zephyr_networking.VirtualMesh,
+		mesh *zephyr_discovery.Mesh,
 	) (*security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig, error)
 }
 
@@ -26,6 +26,6 @@ type CertConfigProducer interface {
 type VirtualMeshCertificateManager interface {
 	InitializeCertificateForVirtualMesh(
 		ctx context.Context,
-		new *networking_v1alpha1.VirtualMesh,
+		new *zephyr_networking.VirtualMesh,
 	) networking_types.VirtualMeshStatus
 }

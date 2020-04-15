@@ -12,7 +12,7 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
@@ -46,7 +46,7 @@ var _ = Describe("Validator", func() {
 		name := "name"
 		namespace := "namespace"
 		cluster := "cluster"
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				DestinationSelector: &core_types.ServiceSelector{
 					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
@@ -72,7 +72,7 @@ var _ = Describe("Validator", func() {
 	})
 
 	It("should return error for RetryPolicy with negative num attempts", func() {
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				Retries: &networking_types.TrafficPolicySpec_RetryPolicy{Attempts: -1},
 			},
@@ -84,7 +84,7 @@ var _ = Describe("Validator", func() {
 	})
 
 	It("should return error for RetryPolicy with negative per retry timeout", func() {
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				Retries: &networking_types.TrafficPolicySpec_RetryPolicy{PerTryTimeout: &types1.Duration{Seconds: -1}},
 			},
@@ -104,7 +104,7 @@ var _ = Describe("Validator", func() {
 			Namespace: namespace,
 			Cluster:   cluster,
 		}
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				TrafficShift: &networking_types.TrafficPolicySpec_MultiDestination{
 					Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
@@ -136,7 +136,7 @@ var _ = Describe("Validator", func() {
 			Cluster:   cluster,
 		}
 		subset := map[string]string{"env": "dev", "version": "v1"}
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				TrafficShift: &networking_types.TrafficPolicySpec_MultiDestination{
 					Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
@@ -167,7 +167,7 @@ var _ = Describe("Validator", func() {
 
 	It("should return error if FaultInjection Abort has invalid percentage", func() {
 		invalidPct := 101.0
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				FaultInjection: &networking_types.TrafficPolicySpec_FaultInjection{
 					Percentage: invalidPct,
@@ -182,7 +182,7 @@ var _ = Describe("Validator", func() {
 
 	It("should return error if FaultInjection Abort has invalid HTTP status", func() {
 		invalidHttpStatus := int32(432)
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				FaultInjection: &networking_types.TrafficPolicySpec_FaultInjection{
 					FaultInjectionType: &networking_types.TrafficPolicySpec_FaultInjection_Abort_{
@@ -203,7 +203,7 @@ var _ = Describe("Validator", func() {
 	})
 
 	It("should return error if FaultInjection Delay has invalid duration", func() {
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				FaultInjection: &networking_types.TrafficPolicySpec_FaultInjection{
 					FaultInjectionType: &networking_types.TrafficPolicySpec_FaultInjection_Delay_{
@@ -224,7 +224,7 @@ var _ = Describe("Validator", func() {
 	})
 
 	It("should return error if RequestTimeout has an invalid duration", func() {
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				RequestTimeout: &types1.Duration{Seconds: 0, Nanos: 999999},
 			},
@@ -236,7 +236,7 @@ var _ = Describe("Validator", func() {
 	})
 
 	It("should return error if CorsPolicy has an invalid max age duration", func() {
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				CorsPolicy: &networking_types.TrafficPolicySpec_CorsPolicy{
 					MaxAge: &types1.Duration{Seconds: 0, Nanos: 999999},
@@ -256,7 +256,7 @@ var _ = Describe("Validator", func() {
 			Namespace: serviceKey.Namespace,
 		}
 		invalidPct := 101.0
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				Mirror: &networking_types.TrafficPolicySpec_Mirror{
 					Destination: serviceRef,
@@ -280,7 +280,7 @@ var _ = Describe("Validator", func() {
 			Name:      serviceKey.Name,
 			Namespace: serviceKey.Namespace,
 		}
-		tp := &networking_v1alpha1.TrafficPolicy{
+		tp := &zephyr_networking.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
 				Mirror: &networking_types.TrafficPolicySpec_Mirror{
 					Destination: serviceRef,

@@ -16,9 +16,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/prompts"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/validate"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -83,7 +82,7 @@ func createTrafficPolicy(
 	if trafficShift, err = selectTrafficShiftInteractively(meshServiceNames, meshServiceNamesToRefs, interactivePrompt); err != nil {
 		return err
 	}
-	trafficPolicy := &networking_v1alpha1.TrafficPolicy{
+	trafficPolicy := &zephyr_networking.TrafficPolicy{
 		TypeMeta: v1.TypeMeta{
 			Kind: "TrafficPolicy",
 		},
@@ -196,6 +195,6 @@ func fetchMeshServiceRefs(
 	return meshServiceNames, meshServiceNamesToRef, nil
 }
 
-func buildMeshServiceName(meshService *discovery_v1alpha1.MeshService) string {
+func buildMeshServiceName(meshService *zephyr_discovery.MeshService) string {
 	return fmt.Sprintf("%s.%s.%s", meshService.GetName(), meshService.GetNamespace(), meshService.Spec.GetKubeService().GetRef().GetCluster())
 }

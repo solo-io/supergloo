@@ -8,9 +8,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
@@ -76,7 +76,7 @@ var _ = Describe("Merger", func() {
 		httpMatcher3 := &networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{
 			Method: &networking_v1alpha1_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_PUT},
 		}
-		tp1 := networking_v1alpha1.TrafficPolicy{
+		tp1 := zephyr_networking.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
 				SourceSelector: &core_types.WorkloadSelector{
 					Namespaces: destNamespaces1,
@@ -101,7 +101,7 @@ var _ = Describe("Merger", func() {
 				},
 			},
 		}
-		tp2 := networking_v1alpha1.TrafficPolicy{
+		tp2 := zephyr_networking.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
 				SourceSelector: &core_types.WorkloadSelector{
 					Namespaces: destNamespaces2,
@@ -127,7 +127,7 @@ var _ = Describe("Merger", func() {
 				},
 			},
 		}
-		tp3 := networking_v1alpha1.TrafficPolicy{
+		tp3 := zephyr_networking.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
 				SourceSelector: &core_types.WorkloadSelector{
 					Namespaces: destNamespaces1,
@@ -152,7 +152,7 @@ var _ = Describe("Merger", func() {
 				},
 			},
 		}
-		tp4 := networking_v1alpha1.TrafficPolicy{
+		tp4 := zephyr_networking.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
 				SourceSelector: &core_types.WorkloadSelector{
 					Namespaces: destNamespaces1,
@@ -179,7 +179,7 @@ var _ = Describe("Merger", func() {
 				},
 			},
 		}
-		tp5 := networking_v1alpha1.TrafficPolicy{
+		tp5 := zephyr_networking.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
 				SourceSelector: &core_types.WorkloadSelector{
 					Namespaces: destNamespaces1,
@@ -206,7 +206,7 @@ var _ = Describe("Merger", func() {
 				},
 			},
 		}
-		ignoredTP := networking_v1alpha1.TrafficPolicy{
+		ignoredTP := zephyr_networking.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
 				DestinationSelector: &core_types.ServiceSelector{
 					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
@@ -236,7 +236,7 @@ var _ = Describe("Merger", func() {
 			Namespace:   meshServiceNamespace2,
 			ClusterName: meshClusterName2,
 		}
-		meshServices := []*v1alpha1.MeshService{
+		meshServices := []*zephyr_discovery.MeshService{
 			{
 				ObjectMeta: v1.ObjectMeta{
 					Name:        meshServiceName1,
@@ -265,27 +265,27 @@ var _ = Describe("Merger", func() {
 			},
 		}
 		/*** GetMeshServicesByServiceSelector() ***/
-		trafficPolicyList := &networking_v1alpha1.TrafficPolicyList{
-			Items: []networking_v1alpha1.TrafficPolicy{tp1, tp2, tp3, tp4, tp5, ignoredTP}}
+		trafficPolicyList := &zephyr_networking.TrafficPolicyList{
+			Items: []zephyr_networking.TrafficPolicy{tp1, tp2, tp3, tp4, tp5, ignoredTP}}
 		mockTrafficPolicyClient.EXPECT().ListTrafficPolicy(ctx).Return(trafficPolicyList, nil)
 		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp1.Spec.GetDestinationSelector()).
-			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
+			Return([]*zephyr_discovery.MeshService{meshServices[0]}, nil)
 		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp2.Spec.GetDestinationSelector()).
-			Return([]*v1alpha1.MeshService{meshServices[0], meshServices[1]}, nil)
+			Return([]*zephyr_discovery.MeshService{meshServices[0], meshServices[1]}, nil)
 		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp3.Spec.GetDestinationSelector()).
-			Return([]*v1alpha1.MeshService{meshServices[1]}, nil)
+			Return([]*zephyr_discovery.MeshService{meshServices[1]}, nil)
 		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp4.Spec.GetDestinationSelector()).
-			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
+			Return([]*zephyr_discovery.MeshService{meshServices[0]}, nil)
 		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp5.Spec.GetDestinationSelector()).
-			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
+			Return([]*zephyr_discovery.MeshService{meshServices[0]}, nil)
 		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, ignoredTP.Spec.GetDestinationSelector()).
-			Return([]*v1alpha1.MeshService{meshServices[0], meshServices[1]}, nil)
+			Return([]*zephyr_discovery.MeshService{meshServices[0], meshServices[1]}, nil)
 		/*** buildKeyForMeshService ***/
-		mesh1 := &v1alpha1.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName1}}}
-		mesh2 := &v1alpha1.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName2}}}
+		mesh1 := &zephyr_discovery.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName1}}}
+		mesh2 := &zephyr_discovery.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName2}}}
 		mockMeshClient.EXPECT().GetMesh(ctx, client.ObjectKey{Name: meshName1, Namespace: meshNamespace1}).Return(mesh1, nil).Times(6)
 		mockMeshClient.EXPECT().GetMesh(ctx, client.ObjectKey{Name: meshName2, Namespace: meshNamespace2}).Return(mesh2, nil).Times(4)
-		mergedTrafficPolicy1 := []*networking_v1alpha1.TrafficPolicy{
+		mergedTrafficPolicy1 := []*zephyr_networking.TrafficPolicy{
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{
 					SourceSelector: &core_types.WorkloadSelector{
@@ -322,7 +322,7 @@ var _ = Describe("Merger", func() {
 				},
 			},
 		}
-		mergedTrafficPolicy2 := []*networking_v1alpha1.TrafficPolicy{
+		mergedTrafficPolicy2 := []*zephyr_networking.TrafficPolicy{
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{
 					SourceSelector: &core_types.WorkloadSelector{

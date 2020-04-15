@@ -10,7 +10,7 @@ import (
 	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -51,7 +51,7 @@ var _ = Describe("Get Workload Cmd", func() {
 
 	It("will call the mesh workload printer with the proper data", func() {
 
-		meshWorkloads := []*discovery_v1alpha1.MeshWorkload{
+		meshWorkloads := []*zephyr_discovery.MeshWorkload{
 			{
 				ObjectMeta: v1.ObjectMeta{
 					Name: "mesh-1",
@@ -68,8 +68,8 @@ var _ = Describe("Get Workload Cmd", func() {
 			Return(nil, nil)
 		mockWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx).
-			Return(&discovery_v1alpha1.MeshWorkloadList{
-				Items: []discovery_v1alpha1.MeshWorkload{*meshWorkloads[0], *meshWorkloads[1]},
+			Return(&zephyr_discovery.MeshWorkloadList{
+				Items: []zephyr_discovery.MeshWorkload{*meshWorkloads[0], *meshWorkloads[1]},
 			}, nil)
 		mockWorkloadPrinter.EXPECT().
 			Print(gomock.Any(), meshWorkloads).

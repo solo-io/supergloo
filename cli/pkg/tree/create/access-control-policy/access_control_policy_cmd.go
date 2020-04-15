@@ -16,9 +16,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/prompts"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/validate"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/spf13/cobra"
 	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -101,7 +100,7 @@ func createAccessControlPolicy(
 	if allowedPorts, err = selectAllowedPortsInteractively(prompt); err != nil {
 		return err
 	}
-	accessControlPolicy := &v1alpha1.AccessControlPolicy{
+	accessControlPolicy := &zephyr_networking.AccessControlPolicy{
 		TypeMeta: k8s_meta_v1.TypeMeta{
 			Kind: "AccessControlPolicy",
 		},
@@ -297,6 +296,6 @@ func fetchMeshServiceRefs(
 	return meshServiceNames, meshServiceNamesToRef, nil
 }
 
-func buildServiceDisplayName(meshService *discovery_v1alpha1.MeshService) string {
+func buildServiceDisplayName(meshService *zephyr_discovery.MeshService) string {
 	return fmt.Sprintf("%s.%s.%s", meshService.GetName(), meshService.GetNamespace(), meshService.Spec.GetKubeService().GetRef().GetCluster())
 }

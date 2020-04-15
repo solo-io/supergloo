@@ -7,10 +7,9 @@ import (
 
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
@@ -56,7 +55,7 @@ type istioTrafficPolicyTranslator struct {
 }
 
 var (
-	NoSpecifiedPortError = func(svc *discovery_v1alpha1.MeshService) error {
+	NoSpecifiedPortError = func(svc *zephyr_discovery.MeshService) error {
 		return eris.Errorf("Mesh service %s.%s ports list does not include just one entry, so no default can be used. "+
 			"Must specify a destination with a port", svc.Name, svc.Namespace)
 	}
@@ -78,9 +77,9 @@ func (i *istioTrafficPolicyTranslator) Name() string {
 */
 func (i *istioTrafficPolicyTranslator) TranslateTrafficPolicy(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-	mesh *discovery_v1alpha1.Mesh,
-	mergedTrafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	meshService *zephyr_discovery.MeshService,
+	mesh *zephyr_discovery.Mesh,
+	mergedTrafficPolicies []*zephyr_networking.TrafficPolicy,
 ) *networking_types.TrafficPolicyStatus_TranslatorError {
 	if mesh.Spec.GetIstio() == nil {
 		return nil
@@ -103,7 +102,7 @@ func (i *istioTrafficPolicyTranslator) TranslateTrafficPolicy(
 // get DestinationRule and VirtualService clients for MeshService's cluster
 func (i *istioTrafficPolicyTranslator) fetchClientsForMeshService(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
+	meshService *zephyr_discovery.MeshService,
 ) (istio_networking.DestinationRuleClient, istio_networking.VirtualServiceClient, error) {
 	clusterName, err := i.getClusterNameForMeshService(ctx, meshService)
 	if err != nil {
@@ -118,7 +117,7 @@ func (i *istioTrafficPolicyTranslator) fetchClientsForMeshService(
 
 func (i *istioTrafficPolicyTranslator) ensureDestinationRule(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
+	meshService *zephyr_discovery.MeshService,
 	destinationRuleClient istio_networking.DestinationRuleClient,
 ) *networking_types.TrafficPolicyStatus_TranslatorError {
 	destinationRule := &client_v1alpha3.DestinationRule{
@@ -142,8 +141,8 @@ func (i *istioTrafficPolicyTranslator) ensureDestinationRule(
 
 func (i *istioTrafficPolicyTranslator) ensureVirtualService(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-	mergedTrafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	meshService *zephyr_discovery.MeshService,
+	mergedTrafficPolicies []*zephyr_networking.TrafficPolicy,
 	virtualServiceClient istio_networking.VirtualServiceClient,
 ) *networking_types.TrafficPolicyStatus_TranslatorError {
 	computedVirtualService, err := i.translateIntoVirtualService(ctx, meshService, mergedTrafficPolicies)
@@ -166,8 +165,8 @@ func (i *istioTrafficPolicyTranslator) ensureVirtualService(
 
 func (i *istioTrafficPolicyTranslator) translateIntoVirtualService(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-	trafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	meshService *zephyr_discovery.MeshService,
+	trafficPolicies []*zephyr_networking.TrafficPolicy,
 ) (*client_v1alpha3.VirtualService, error) {
 	virtualService := &client_v1alpha3.VirtualService{
 		ObjectMeta: clients.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
@@ -190,8 +189,8 @@ func (i *istioTrafficPolicyTranslator) translateIntoVirtualService(
 
 func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-	trafficPolicy *networking_v1alpha1.TrafficPolicy,
+	meshService *zephyr_discovery.MeshService,
+	trafficPolicy *zephyr_networking.TrafficPolicy,
 ) ([]*api_v1alpha3.HTTPRoute, error) {
 	var err error
 	var faultInjection *api_v1alpha3.HTTPFaultInjection
@@ -256,7 +255,7 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 }
 
 func (i *istioTrafficPolicyTranslator) translateRequestMatchers(
-	trafficPolicy *networking_v1alpha1.TrafficPolicy,
+	trafficPolicy *zephyr_networking.TrafficPolicy,
 ) ([]*api_v1alpha3.HTTPMatchRequest, error) {
 	// Generate HttpMatchRequests for SourceSelector, one per namespace.
 	var sourceMatchers []*api_v1alpha3.HTTPMatchRequest
@@ -419,8 +418,8 @@ func (i *istioTrafficPolicyTranslator) translateSubset(
 // For each Destination, create an Istio HTTPRouteDestination
 func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-	trafficPolicy *networking_v1alpha1.TrafficPolicy,
+	meshService *zephyr_discovery.MeshService,
+	trafficPolicy *zephyr_networking.TrafficPolicy,
 ) ([]*api_v1alpha3.HTTPRouteDestination, error) {
 	var translatedRouteDestinations []*api_v1alpha3.HTTPRouteDestination
 	trafficShift := trafficPolicy.Spec.GetTrafficShift()
@@ -482,7 +481,7 @@ func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 	return translatedRouteDestinations, nil
 }
 
-func (i *istioTrafficPolicyTranslator) translateRetries(trafficPolicy *networking_v1alpha1.TrafficPolicy) *api_v1alpha3.HTTPRetry {
+func (i *istioTrafficPolicyTranslator) translateRetries(trafficPolicy *zephyr_networking.TrafficPolicy) *api_v1alpha3.HTTPRetry {
 	var translatedRetries *api_v1alpha3.HTTPRetry
 	retries := trafficPolicy.Spec.GetRetries()
 	if retries != nil {
@@ -494,7 +493,7 @@ func (i *istioTrafficPolicyTranslator) translateRetries(trafficPolicy *networkin
 	return translatedRetries
 }
 
-func (i *istioTrafficPolicyTranslator) translateFaultInjection(trafficPolicy *networking_v1alpha1.TrafficPolicy) (*api_v1alpha3.HTTPFaultInjection, error) {
+func (i *istioTrafficPolicyTranslator) translateFaultInjection(trafficPolicy *zephyr_networking.TrafficPolicy) (*api_v1alpha3.HTTPFaultInjection, error) {
 	var translatedFaultInjection *api_v1alpha3.HTTPFaultInjection
 	faultInjection := trafficPolicy.Spec.GetFaultInjection()
 	if faultInjection != nil {
@@ -538,8 +537,8 @@ func (i *istioTrafficPolicyTranslator) translateFaultInjection(trafficPolicy *ne
 
 func (i *istioTrafficPolicyTranslator) translateMirror(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-	trafficPolicy *networking_v1alpha1.TrafficPolicy,
+	meshService *zephyr_discovery.MeshService,
+	trafficPolicy *zephyr_networking.TrafficPolicy,
 ) (*api_v1alpha3.Destination, error) {
 	var mirror *api_v1alpha3.Destination
 	if trafficPolicy.Spec.GetMirror() != nil {
@@ -567,7 +566,7 @@ func (i *istioTrafficPolicyTranslator) translateMirror(
 	return mirror, nil
 }
 
-func (i *istioTrafficPolicyTranslator) translateHeaderManipulation(trafficPolicy *networking_v1alpha1.TrafficPolicy) *api_v1alpha3.Headers {
+func (i *istioTrafficPolicyTranslator) translateHeaderManipulation(trafficPolicy *zephyr_networking.TrafficPolicy) *api_v1alpha3.Headers {
 	var translatedHeaderManipulation *api_v1alpha3.Headers
 	headerManipulation := trafficPolicy.Spec.GetHeaderManipulation()
 	if headerManipulation != nil {
@@ -585,7 +584,7 @@ func (i *istioTrafficPolicyTranslator) translateHeaderManipulation(trafficPolicy
 	return translatedHeaderManipulation
 }
 
-func (i *istioTrafficPolicyTranslator) translateCorsPolicy(trafficPolicy *networking_v1alpha1.TrafficPolicy) (*api_v1alpha3.CorsPolicy, error) {
+func (i *istioTrafficPolicyTranslator) translateCorsPolicy(trafficPolicy *zephyr_networking.TrafficPolicy) (*api_v1alpha3.CorsPolicy, error) {
 	var translatedCorsPolicy *api_v1alpha3.CorsPolicy
 	corsPolicy := trafficPolicy.Spec.GetCorsPolicy()
 	if corsPolicy != nil {
@@ -625,7 +624,7 @@ func (i *istioTrafficPolicyTranslator) errorToStatus(err error) *networking_type
 
 func (i *istioTrafficPolicyTranslator) getClusterNameForMeshService(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
+	meshService *zephyr_discovery.MeshService,
 ) (string, error) {
 	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
@@ -638,7 +637,7 @@ func (i *istioTrafficPolicyTranslator) getClusterNameForMeshService(
 // Else, return k8s Service multicluster DNS name
 func (i *istioTrafficPolicyTranslator) getHostnameForKubeService(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
+	meshService *zephyr_discovery.MeshService,
 	destination *core_types.ResourceRef,
 ) (hostname string, isMulticluster bool, err error) {
 	destinationMeshService, err := i.resourceSelector.GetMeshServiceByRefSelector(
@@ -655,7 +654,7 @@ func (i *istioTrafficPolicyTranslator) getHostnameForKubeService(
 	}
 }
 
-func buildServiceHostname(meshService *discovery_v1alpha1.MeshService) string {
+func buildServiceHostname(meshService *zephyr_discovery.MeshService) string {
 	return meshService.Spec.GetKubeService().GetRef().GetName()
 }
 

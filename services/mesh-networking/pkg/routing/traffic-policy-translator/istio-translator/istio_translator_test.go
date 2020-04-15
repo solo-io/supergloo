@@ -9,10 +9,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
@@ -30,9 +30,9 @@ type testContext struct {
 	meshObjKey             client.ObjectKey
 	meshServiceObjKey      client.ObjectKey
 	kubeServiceObjKey      client.ObjectKey
-	mesh                   *discovery_v1alpha1.Mesh
-	meshService            *discovery_v1alpha1.MeshService
-	trafficPolicy          []*v1alpha1.TrafficPolicy
+	mesh                   *zephyr_discovery.Mesh
+	meshService            *zephyr_discovery.MeshService
+	trafficPolicy          []*zephyr_networking.TrafficPolicy
 	computedVirtualService *client_v1alpha3.VirtualService
 	baseMatchRequest       *api_v1alpha3.HTTPMatchRequest
 	defaultRoute           []*api_v1alpha3.HTTPRouteDestination
@@ -84,7 +84,7 @@ var _ = Describe("IstioTranslator", func() {
 			meshServiceObjKey := client.ObjectKey{Name: "mesh-service-name", Namespace: "mesh-service-namespace"}
 			kubeServiceObjKey := client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
 			meshServiceFederationMCDnsName := "multiclusterDNSname"
-			meshService := &discovery_v1alpha1.MeshService{
+			meshService := &zephyr_discovery.MeshService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:        meshServiceObjKey.Name,
 					Namespace:   meshServiceObjKey.Namespace,
@@ -113,7 +113,7 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 			}
-			mesh := &discovery_v1alpha1.Mesh{
+			mesh := &zephyr_discovery.Mesh{
 				Spec: discovery_types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
 						Name: clusterName,
@@ -123,7 +123,7 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 			}
-			trafficPolicy := []*v1alpha1.TrafficPolicy{{
+			trafficPolicy := []*zephyr_networking.TrafficPolicy{{
 				Spec: networking_types.TrafficPolicySpec{
 					SourceSelector: &core_types.WorkloadSelector{
 						Namespaces: []string{sourceNamespace},
@@ -340,7 +340,7 @@ var _ = Describe("IstioTranslator", func() {
 				}
 				httpRoute.MirrorPercentage = &api_v1alpha3.Percent{Value: 50.0}
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
+			backingMeshService := &zephyr_discovery.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
 					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
@@ -383,7 +383,7 @@ var _ = Describe("IstioTranslator", func() {
 				}
 				httpRoute.MirrorPercentage = &api_v1alpha3.Percent{Value: 50.0}
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
+			backingMeshService := &zephyr_discovery.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
 					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
@@ -727,7 +727,7 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				}
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
+			backingMeshService := &zephyr_discovery.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
 					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
@@ -784,7 +784,7 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				}
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
+			backingMeshService := &zephyr_discovery.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
 					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
@@ -839,7 +839,7 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				}
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
+			backingMeshService := &zephyr_discovery.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
 					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
@@ -907,7 +907,7 @@ var _ = Describe("IstioTranslator", func() {
 					destination,
 				},
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
+			backingMeshService := &zephyr_discovery.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
 					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{

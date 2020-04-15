@@ -9,8 +9,8 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
@@ -67,8 +67,8 @@ var _ = Describe("EnforcerLoop", func() {
 		ctrl.Finish()
 	})
 
-	var buildVirtualMesh = func() *networking_v1alpha1.VirtualMesh {
-		return &networking_v1alpha1.VirtualMesh{
+	var buildVirtualMesh = func() *zephyr_networking.VirtualMesh {
+		return &zephyr_networking.VirtualMesh{
 			Spec: networking_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{
 					{Name: "name1", Namespace: "namespace1"},
@@ -78,8 +78,8 @@ var _ = Describe("EnforcerLoop", func() {
 		}
 	}
 
-	var buildMeshes = func() []*discovery_v1alpha1.Mesh {
-		return []*discovery_v1alpha1.Mesh{
+	var buildMeshes = func() []*zephyr_discovery.Mesh {
+		return []*zephyr_discovery.Mesh{
 			{
 				ObjectMeta: v1.ObjectMeta{Name: "name1", Namespace: "namespace1"},
 			},
@@ -109,11 +109,11 @@ var _ = Describe("EnforcerLoop", func() {
 				Name().
 				Return("")
 		}
-		var capturedVM *networking_v1alpha1.VirtualMesh
+		var capturedVM *zephyr_networking.VirtualMesh
 		virtualMeshClient.
 			EXPECT().
 			UpdateVirtualMeshStatus(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) error {
+			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
 			})
@@ -144,11 +144,11 @@ var _ = Describe("EnforcerLoop", func() {
 				Name().
 				Return("")
 		}
-		var capturedVM *networking_v1alpha1.VirtualMesh
+		var capturedVM *zephyr_networking.VirtualMesh
 		virtualMeshClient.
 			EXPECT().
 			UpdateVirtualMeshStatus(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) error {
+			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
 			})
@@ -178,11 +178,11 @@ var _ = Describe("EnforcerLoop", func() {
 			EXPECT().
 			Name().
 			Return("")
-		var capturedVM *networking_v1alpha1.VirtualMesh
+		var capturedVM *zephyr_networking.VirtualMesh
 		virtualMeshClient.
 			EXPECT().
 			UpdateVirtualMeshStatus(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) error {
+			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
 			})

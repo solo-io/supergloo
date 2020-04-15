@@ -10,10 +10,10 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	types2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
@@ -78,7 +78,7 @@ var _ = Describe("Federation Decider", func() {
 			MeshServiceEventWatcher,
 		).Start(ctx)
 
-		oldMeshService := &discovery_v1alpha1.MeshService{
+		oldMeshService := &zephyr_discovery.MeshService{
 			Spec: discovery_types.MeshServiceSpec{
 				Mesh: &core_types.ResourceRef{
 					Name: "doesn't matter",
@@ -130,7 +130,7 @@ var _ = Describe("Federation Decider", func() {
 			MeshServiceEventWatcher,
 		).Start(ctx)
 
-		service1 := &discovery_v1alpha1.MeshService{
+		service1 := &zephyr_discovery.MeshService{
 			Spec: discovery_types.MeshServiceSpec{
 				Mesh: &core_types.ResourceRef{
 					Name: "doesn't matter",
@@ -173,7 +173,7 @@ var _ = Describe("Federation Decider", func() {
 			MeshServiceEventWatcher,
 		).Start(ctx)
 
-		workload1 := &discovery_v1alpha1.MeshWorkload{
+		workload1 := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "workload-1",
 				Namespace: "ns",
@@ -181,7 +181,7 @@ var _ = Describe("Federation Decider", func() {
 			Spec: discovery_types.MeshWorkloadSpec{},
 		}
 
-		workload2 := &discovery_v1alpha1.MeshWorkload{
+		workload2 := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "workload-2",
 				Namespace: "ns",
@@ -189,7 +189,7 @@ var _ = Describe("Federation Decider", func() {
 			Spec: discovery_types.MeshWorkloadSpec{},
 		}
 
-		service1 := &discovery_v1alpha1.MeshService{
+		service1 := &zephyr_discovery.MeshService{
 			Spec: discovery_types.MeshServiceSpec{
 				Mesh: &core_types.ResourceRef{
 					Name: "doesn't matter",
@@ -221,7 +221,7 @@ var _ = Describe("Federation Decider", func() {
 		meshServiceClient.EXPECT().
 			UpdateMeshServiceStatus(
 				eventCtx,
-				&discovery_v1alpha1.MeshService{
+				&zephyr_discovery.MeshService{
 					Spec: service1.Spec,
 					Status: discovery_types.MeshServiceStatus{
 						FederationStatus: &core_types.Status{
@@ -301,7 +301,7 @@ var _ = Describe("Federation Decider", func() {
 		clientClusterRef := &core_types.ResourceRef{
 			Name: "client-cluster",
 		}
-		clientMesh := &discovery_v1alpha1.Mesh{
+		clientMesh := &zephyr_discovery.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "client-mesh",
 				Namespace: env.GetWriteNamespace(),
@@ -317,7 +317,7 @@ var _ = Describe("Federation Decider", func() {
 				},
 			},
 		}
-		serverMesh := &discovery_v1alpha1.Mesh{
+		serverMesh := &zephyr_discovery.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "server-mesh",
 				Namespace: env.GetWriteNamespace(),
@@ -333,7 +333,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 
-		federatedService := &discovery_v1alpha1.MeshService{
+		federatedService := &zephyr_discovery.MeshService{
 			ObjectMeta: clients.ResourceRefToObjectMeta(federatedServiceRef),
 			Spec: discovery_types.MeshServiceSpec{
 				Federation: &discovery_types.MeshServiceSpec_Federation{
@@ -346,12 +346,12 @@ var _ = Describe("Federation Decider", func() {
 				Mesh: clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta),
 			},
 		}
-		federatedToWorkload := &discovery_v1alpha1.MeshWorkload{
+		federatedToWorkload := &zephyr_discovery.MeshWorkload{
 			Spec: discovery_types.MeshWorkloadSpec{
 				Mesh: clients.ObjectMetaToResourceRef(clientMesh.ObjectMeta),
 			},
 		}
-		virtualMeshContainingService := &networking_v1alpha1.VirtualMesh{
+		virtualMeshContainingService := &zephyr_networking.VirtualMesh{
 			Spec: types2.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta)},
 			},
@@ -371,8 +371,8 @@ var _ = Describe("Federation Decider", func() {
 			Return(serverMesh, nil)
 		virtualMeshClient.EXPECT().
 			ListVirtualMesh(eventCtx).
-			Return(&networking_v1alpha1.VirtualMeshList{
-				Items: []networking_v1alpha1.VirtualMesh{*virtualMeshContainingService},
+			Return(&zephyr_networking.VirtualMeshList{
+				Items: []zephyr_networking.VirtualMesh{*virtualMeshContainingService},
 			}, nil)
 		eap := dns.ExternalAccessPoint{
 			Address: externalAddress,

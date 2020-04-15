@@ -19,10 +19,9 @@ import (
 	linkerd_config "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	linkerd_client "github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
@@ -40,7 +39,7 @@ var (
 
 	CrossNamespaceSplitNotSupportedErr = eris.Errorf("Traffic Shifts are currently not supported across namespaces in Linkerd")
 
-	TrafficShiftRedefinedErr = func(meshService *discovery_v1alpha1.MeshService, trafficPoliciesWithTrafficShifts []core_types.ResourceRef) error {
+	TrafficShiftRedefinedErr = func(meshService *zephyr_discovery.MeshService, trafficPoliciesWithTrafficShifts []core_types.ResourceRef) error {
 		return eris.Errorf("multiple traffic policies with traffic shifts (%+v) defined for a single mesh service (%s)", trafficPoliciesWithTrafficShifts, meshService.Name)
 	}
 )
@@ -81,9 +80,9 @@ func (i *linkerdTrafficPolicyTranslator) Name() string {
 */
 func (i *linkerdTrafficPolicyTranslator) TranslateTrafficPolicy(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-	mesh *discovery_v1alpha1.Mesh,
-	mergedTrafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	meshService *zephyr_discovery.MeshService,
+	mesh *zephyr_discovery.Mesh,
+	mergedTrafficPolicies []*zephyr_networking.TrafficPolicy,
 ) *networking_types.TrafficPolicyStatus_TranslatorError {
 	if mesh.Spec.GetLinkerd() == nil {
 		return nil
@@ -107,7 +106,7 @@ func (i *linkerdTrafficPolicyTranslator) TranslateTrafficPolicy(
 // get ServiceProfile and ServiceProfile clients for MeshService's cluster
 func (i *linkerdTrafficPolicyTranslator) fetchClientsForMeshService(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
+	meshService *zephyr_discovery.MeshService,
 ) (linkerd_client.ServiceProfileClient, smi_networking.TrafficSplitClient, error) {
 	mesh, err := i.getMesh(ctx, meshService)
 	if err != nil {
@@ -122,8 +121,8 @@ func (i *linkerdTrafficPolicyTranslator) fetchClientsForMeshService(
 
 func (i *linkerdTrafficPolicyTranslator) getMesh(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-) (*discovery_v1alpha1.Mesh, error) {
+	meshService *zephyr_discovery.MeshService,
+) (*zephyr_discovery.Mesh, error) {
 	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return nil, err
@@ -133,9 +132,9 @@ func (i *linkerdTrafficPolicyTranslator) getMesh(
 
 func (i *linkerdTrafficPolicyTranslator) ensureServiceProfile(
 	ctx context.Context,
-	mesh *discovery_v1alpha1.Mesh,
-	meshService *discovery_v1alpha1.MeshService,
-	mergedTrafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	mesh *zephyr_discovery.Mesh,
+	meshService *zephyr_discovery.MeshService,
+	mergedTrafficPolicies []*zephyr_networking.TrafficPolicy,
 	serviceProfileClient linkerd_client.ServiceProfileClient,
 ) error {
 	computedServiceProfile := i.translateIntoServiceProfile(ctx, mesh, meshService, mergedTrafficPolicies)
@@ -156,9 +155,9 @@ func (i *linkerdTrafficPolicyTranslator) ensureServiceProfile(
 
 func (i *linkerdTrafficPolicyTranslator) translateIntoServiceProfile(
 	ctx context.Context,
-	mesh *discovery_v1alpha1.Mesh,
-	meshService *discovery_v1alpha1.MeshService,
-	trafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	mesh *zephyr_discovery.Mesh,
+	meshService *zephyr_discovery.MeshService,
+	trafficPolicies []*zephyr_networking.TrafficPolicy,
 ) *linkerd_config.ServiceProfile {
 
 	serviceProfile := &linkerd_config.ServiceProfile{
@@ -173,7 +172,7 @@ func (i *linkerdTrafficPolicyTranslator) translateIntoServiceProfile(
 
 func makeRoutes(
 	ctx context.Context,
-	trafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	trafficPolicies []*zephyr_networking.TrafficPolicy,
 ) []*linkerd_config.RouteSpec {
 	var routes []*linkerd_config.RouteSpec
 	for _, policy := range trafficPolicies {
@@ -208,7 +207,7 @@ func makeRoutes(
 }
 
 // returns true if the traffic policy has config relevant to Linkerd
-func hasRelevantConfig(tp *networking_v1alpha1.TrafficPolicy) bool {
+func hasRelevantConfig(tp *zephyr_networking.TrafficPolicy) bool {
 	return tp.Spec.RequestTimeout != nil ||
 		tp.Spec.TrafficShift != nil ||
 		len(tp.Spec.HttpRequestMatchers) != 0
@@ -258,9 +257,9 @@ func errorToStatus(err error) *networking_types.TrafficPolicyStatus_TranslatorEr
 
 func (i *linkerdTrafficPolicyTranslator) ensureTrafficSplit(
 	ctx context.Context,
-	mesh *discovery_v1alpha1.Mesh,
-	meshService *discovery_v1alpha1.MeshService,
-	mergedTrafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	mesh *zephyr_discovery.Mesh,
+	meshService *zephyr_discovery.MeshService,
+	mergedTrafficPolicies []*zephyr_networking.TrafficPolicy,
 	trafficSplitClient smi_networking.TrafficSplitClient,
 ) error {
 	computedTrafficSplit, err := i.translateIntoTrafficSplit(mesh, meshService, mergedTrafficPolicies)
@@ -282,9 +281,9 @@ func (i *linkerdTrafficPolicyTranslator) ensureTrafficSplit(
 }
 
 func (i *linkerdTrafficPolicyTranslator) translateIntoTrafficSplit(
-	mesh *discovery_v1alpha1.Mesh,
-	meshService *discovery_v1alpha1.MeshService,
-	trafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	mesh *zephyr_discovery.Mesh,
+	meshService *zephyr_discovery.MeshService,
+	trafficPolicies []*zephyr_networking.TrafficPolicy,
 ) (*smi_config.TrafficSplit, error) {
 
 	var errs error
@@ -307,8 +306,8 @@ func (i *linkerdTrafficPolicyTranslator) translateIntoTrafficSplit(
 
 // For each Destination, create an Linkerd HTTPRouteDestination
 func (i *linkerdTrafficPolicyTranslator) makeBackends(
-	meshService *discovery_v1alpha1.MeshService,
-	policies []*networking_v1alpha1.TrafficPolicy,
+	meshService *zephyr_discovery.MeshService,
+	policies []*zephyr_networking.TrafficPolicy,
 ) ([]smi_config.TrafficSplitBackend, error) {
 
 	var trafficShift *networking_types.TrafficPolicySpec_MultiDestination

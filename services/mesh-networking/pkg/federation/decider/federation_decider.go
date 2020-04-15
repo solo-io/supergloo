@@ -7,7 +7,6 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
@@ -89,7 +88,7 @@ func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnap
 
 func (f *federationDecider) federateVirtualMesh(
 	ctx context.Context,
-	vm *networking_v1alpha1.VirtualMesh,
+	vm *zephyr_networking.VirtualMesh,
 	perMeshMetadata strategies.PerMeshMetadata,
 ) {
 	logger := contextutils.LoggerFrom(ctx)
@@ -128,7 +127,7 @@ func (f *federationDecider) federateVirtualMesh(
 }
 
 // once the virtual mesh has had its federation status updated, call this function to write it into the cluster
-func (f *federationDecider) updateVirtualMeshStatus(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) {
+func (f *federationDecider) updateVirtualMeshStatus(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) {
 	logger := contextutils.LoggerFrom(ctx)
 
 	err := f.virtualMeshClient.UpdateVirtualMeshStatus(ctx, virtualMesh)

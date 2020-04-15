@@ -10,7 +10,7 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networkingv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
@@ -48,7 +48,7 @@ var _ = Describe("validator", func() {
 			Name:      "incorrect",
 			Namespace: "ref",
 		}
-		vm := &networkingv1alpha1.VirtualMesh{
+		vm := &zephyr_networking.VirtualMesh{
 			Spec: v1alpha1_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{ref},
 			},
@@ -85,7 +85,7 @@ var _ = Describe("validator", func() {
 				MeshType: &discovery_types.MeshSpec_ConsulConnect{},
 			},
 		}
-		vm := &networkingv1alpha1.VirtualMesh{
+		vm := &zephyr_networking.VirtualMesh{
 			Spec: v1alpha1_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{ref},
 			},
@@ -125,7 +125,7 @@ var _ = Describe("validator", func() {
 				},
 			},
 		}
-		vm := &networkingv1alpha1.VirtualMesh{
+		vm := &zephyr_networking.VirtualMesh{
 			Spec: v1alpha1_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{ref},
 			},

@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -22,7 +22,7 @@ var UPDATE_VIRTUAL_MESH_GOLDENS = false
 
 var _ = Describe("Virtual Mesh Table Printer", func() {
 	const tpGoldenDirectory = "virtual_mesh"
-	var runTest = func(fileName string, virtualMeshes []*networking_v1alpha1.VirtualMesh) {
+	var runTest = func(fileName string, virtualMeshes []*zephyr_networking.VirtualMesh) {
 		goldenFilename := test_goldens.GoldenFilePath(tpGoldenDirectory, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
@@ -44,7 +44,7 @@ var _ = Describe("Virtual Mesh Table Printer", func() {
 		Entry(
 			"can print different kinds of virtual meshes",
 			"virtual_mesh",
-			[]*networking_v1alpha1.VirtualMesh{
+			[]*zephyr_networking.VirtualMesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "vm-1",

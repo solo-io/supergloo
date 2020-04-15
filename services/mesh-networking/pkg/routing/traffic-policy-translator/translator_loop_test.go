@@ -8,10 +8,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	discovery_v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	networking_v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
@@ -86,11 +86,11 @@ var _ = Describe("Translator", func() {
 
 	Describe("should handle TrafficPolicy events", func() {
 		var (
-			triggeringTP *networking_v1alpha1.TrafficPolicy
+			triggeringTP *zephyr_networking.TrafficPolicy
 		)
 
 		BeforeEach(func() {
-			triggeringTP = &networking_v1alpha1.TrafficPolicy{
+			triggeringTP = &zephyr_networking.TrafficPolicy{
 				Status: networking_v1alpha1_types.TrafficPolicyStatus{
 					TranslationStatus: &core_types.Status{
 						State:   core_types.Status_ACCEPTED,
@@ -105,12 +105,12 @@ var _ = Describe("Translator", func() {
 				Name:      "name",
 				Namespace: "namespace",
 			}
-			mergedTPsByMeshService := map[selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy{
+			mergedTPsByMeshService := map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy{
 				meshServiceMCKey: {},
 			}
 			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
-			meshService := &discovery_v1alpha1.MeshService{
+			meshService := &zephyr_discovery.MeshService{
 				Spec: discovery_v1alpha1_types.MeshServiceSpec{
 					Mesh: &core_types.ResourceRef{
 						Name:      meshObjKey.Name,
@@ -118,7 +118,7 @@ var _ = Describe("Translator", func() {
 					},
 				},
 			}
-			mesh := &discovery_v1alpha1.Mesh{
+			mesh := &zephyr_discovery.Mesh{
 				Spec: discovery_v1alpha1_types.MeshSpec{
 					MeshType: &discovery_v1alpha1_types.MeshSpec_Istio{},
 				},
@@ -152,12 +152,12 @@ var _ = Describe("Translator", func() {
 				Name:      "name",
 				Namespace: "namespace",
 			}
-			mergedTPsByMeshService := map[selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy{
+			mergedTPsByMeshService := map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy{
 				meshServiceMCKey: {},
 			}
 			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
-			meshService := &discovery_v1alpha1.MeshService{
+			meshService := &zephyr_discovery.MeshService{
 				Spec: discovery_v1alpha1_types.MeshServiceSpec{
 					Mesh: &core_types.ResourceRef{
 						Name:      meshObjKey.Name,
@@ -165,7 +165,7 @@ var _ = Describe("Translator", func() {
 					},
 				},
 			}
-			mesh := &discovery_v1alpha1.Mesh{
+			mesh := &zephyr_discovery.Mesh{
 				Spec: discovery_v1alpha1_types.MeshSpec{
 					MeshType: &discovery_v1alpha1_types.MeshSpec_Istio{},
 				},
@@ -196,7 +196,7 @@ var _ = Describe("Translator", func() {
 				Return("")
 			expectedMeshTypeStatuses := []*networking_v1alpha1_types.TrafficPolicyStatus_TranslatorError{translatorError}
 
-			expectedTP := &networking_v1alpha1.TrafficPolicy{}
+			expectedTP := &zephyr_networking.TrafficPolicy{}
 			expectedTP.Status.TranslationStatus = &core_types.Status{
 				State:   core_types.Status_PROCESSING_ERROR,
 				Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
@@ -210,11 +210,11 @@ var _ = Describe("Translator", func() {
 
 	Describe("should handle MeshService events", func() {
 		var (
-			triggerMeshService *discovery_v1alpha1.MeshService
+			triggerMeshService *zephyr_discovery.MeshService
 		)
 
 		BeforeEach(func() {
-			triggerMeshService = &discovery_v1alpha1.MeshService{
+			triggerMeshService = &zephyr_discovery.MeshService{
 				Status: discovery_v1alpha1_types.MeshServiceStatus{
 					FederationStatus: &core_types.Status{
 						State:   core_types.Status_ACCEPTED,
@@ -230,9 +230,9 @@ var _ = Describe("Translator", func() {
 				Namespace: "namespace",
 			}
 			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
-			mergedTPsByMeshService := map[selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy{meshServiceMCKey: {}}
+			mergedTPsByMeshService := map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy{meshServiceMCKey: {}}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
-			meshService := &discovery_v1alpha1.MeshService{
+			meshService := &zephyr_discovery.MeshService{
 				Spec: discovery_v1alpha1_types.MeshServiceSpec{
 					Mesh: &core_types.ResourceRef{
 						Name:      meshObjKey.Name,
@@ -240,7 +240,7 @@ var _ = Describe("Translator", func() {
 					},
 				},
 			}
-			mesh := &discovery_v1alpha1.Mesh{
+			mesh := &zephyr_discovery.Mesh{
 				Spec: discovery_v1alpha1_types.MeshSpec{
 					MeshType: &discovery_v1alpha1_types.MeshSpec_Istio{},
 				},

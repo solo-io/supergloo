@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
@@ -41,9 +41,9 @@ func NewMeshServiceFinder(
 	ctx context.Context,
 	clusterName, writeNamespace string,
 	serviceClient kubernetes_core.ServiceClient,
-	meshServiceClient discovery_v1alpha1.MeshServiceClient,
-	meshWorkloadClient discovery_v1alpha1.MeshWorkloadClient,
-	meshClient discovery_v1alpha1.MeshClient,
+	meshServiceClient zephyr_discovery.MeshServiceClient,
+	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
+	meshClient zephyr_discovery.MeshClient,
 ) MeshServiceFinder {
 	return &meshServiceFinder{
 		ctx:                ctx,
@@ -80,9 +80,9 @@ type meshServiceFinder struct {
 	writeNamespace     string
 	clusterName        string
 	serviceClient      kubernetes_core.ServiceClient
-	meshServiceClient  discovery_v1alpha1.MeshServiceClient
-	meshWorkloadClient discovery_v1alpha1.MeshWorkloadClient
-	meshClient         discovery_v1alpha1.MeshClient
+	meshServiceClient  zephyr_discovery.MeshServiceClient
+	meshWorkloadClient zephyr_discovery.MeshWorkloadClient
+	meshClient         zephyr_discovery.MeshClient
 }
 
 // handle non-delete events
@@ -120,7 +120,7 @@ func (m *meshServiceFinder) handleServiceUpsert(service *corev1.Service) error {
 }
 
 // handle non-delete events
-func (m *meshServiceFinder) handleMeshWorkloadUpsert(meshWorkload *discovery_v1alpha1.MeshWorkload) error {
+func (m *meshServiceFinder) handleMeshWorkloadUpsert(meshWorkload *zephyr_discovery.MeshWorkload) error {
 	podLabels := meshWorkload.Spec.GetKubeController().GetLabels()
 
 	// the `AreLabelsInWhiteList` check later on has undesirable behavior when the "whitelist" is empty,
@@ -159,8 +159,8 @@ func (m *meshServiceFinder) handleMeshWorkloadUpsert(meshWorkload *discovery_v1a
 
 func (m *meshServiceFinder) findSubsets(
 	service *corev1.Service,
-	meshWorkloads *discovery_v1alpha1.MeshWorkloadList,
-	mesh *discovery_v1alpha1.Mesh,
+	meshWorkloads *zephyr_discovery.MeshWorkloadList,
+	mesh *zephyr_discovery.Mesh,
 ) map[string]*discovery_types.MeshServiceSpec_Subset {
 
 	uniqueLabels := make(map[string]sets.String)
@@ -200,8 +200,8 @@ func (m *meshServiceFinder) findSubsets(
 
 func (m *meshServiceFinder) isServiceBackedByWorkload(
 	service *corev1.Service,
-	meshWorkload *discovery_v1alpha1.MeshWorkload,
-	mesh *discovery_v1alpha1.Mesh,
+	meshWorkload *zephyr_discovery.MeshWorkload,
+	mesh *zephyr_discovery.Mesh,
 ) bool {
 
 	// If the meshworkload is not on the same cluster as the service, it can be skipped safely
@@ -226,8 +226,8 @@ func (m *meshServiceFinder) buildMeshService(
 	meshRef *core_types.ResourceRef,
 	subsets map[string]*discovery_types.MeshServiceSpec_Subset,
 	clusterName string,
-) *discovery_v1alpha1.MeshService {
-	return &discovery_v1alpha1.MeshService{
+) *zephyr_discovery.MeshService {
+	return &zephyr_discovery.MeshService{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.buildMeshServiceName(service, clusterName),
 			Namespace: m.writeNamespace,

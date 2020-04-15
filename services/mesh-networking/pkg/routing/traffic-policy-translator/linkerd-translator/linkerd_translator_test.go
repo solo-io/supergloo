@@ -17,10 +17,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	linkerd_networking "github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	smi_networking "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
@@ -42,7 +42,7 @@ var _ = Describe("LinkerdTranslator", func() {
 		meshObjKey        = client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 		meshServiceObjKey = client.ObjectKey{Name: "mesh-service-name", Namespace: "mesh-service-namespace"}
 		kubeServiceObjKey = client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
-		meshService       = &discovery_v1alpha1.MeshService{
+		meshService       = &zephyr_discovery.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:        meshServiceObjKey.Name,
 				Namespace:   meshServiceObjKey.Namespace,
@@ -68,7 +68,7 @@ var _ = Describe("LinkerdTranslator", func() {
 				},
 			},
 		}
-		mesh = &discovery_v1alpha1.Mesh{
+		mesh = &zephyr_discovery.Mesh{
 			Spec: discovery_types.MeshSpec{
 				Cluster: &core_types.ResourceRef{
 					Name: clusterName,
@@ -109,7 +109,7 @@ var _ = Describe("LinkerdTranslator", func() {
 	})
 	Context("no relevant config provided", func() {
 
-		trafficPolicy := []*v1alpha1.TrafficPolicy{{
+		trafficPolicy := []*zephyr_networking.TrafficPolicy{{
 			Spec: networking_types.TrafficPolicySpec{
 				FaultInjection: &networking_types.TrafficPolicySpec_FaultInjection{
 					Percentage: 100,
@@ -135,7 +135,7 @@ var _ = Describe("LinkerdTranslator", func() {
 	})
 
 	Context("basic traffic policy", func() {
-		trafficPolicy := []*v1alpha1.TrafficPolicy{
+		trafficPolicy := []*zephyr_networking.TrafficPolicy{
 			{
 				Spec: networking_types.TrafficPolicySpec{
 					HttpRequestMatchers: []*networking_types.TrafficPolicySpec_HttpMatcher{
@@ -166,7 +166,7 @@ var _ = Describe("LinkerdTranslator", func() {
 
 	Context("prefix matcher provided", func() {
 
-		trafficPolicy := []*v1alpha1.TrafficPolicy{
+		trafficPolicy := []*zephyr_networking.TrafficPolicy{
 			{
 				ObjectMeta: v1.ObjectMeta{Namespace: "ns", Name: "tp"},
 				Spec: networking_types.TrafficPolicySpec{
@@ -214,7 +214,7 @@ var _ = Describe("LinkerdTranslator", func() {
 
 	Context("traffic shift provided", func() {
 
-		trafficPolicy := []*v1alpha1.TrafficPolicy{
+		trafficPolicy := []*zephyr_networking.TrafficPolicy{
 			{
 				ObjectMeta: v1.ObjectMeta{Namespace: "ns", Name: "tp"},
 				Spec: networking_types.TrafficPolicySpec{
@@ -271,7 +271,7 @@ var _ = Describe("LinkerdTranslator", func() {
 
 	Context("timeout provided", func() {
 
-		trafficPolicy := []*v1alpha1.TrafficPolicy{
+		trafficPolicy := []*zephyr_networking.TrafficPolicy{
 			{
 				ObjectMeta: v1.ObjectMeta{Namespace: "ns", Name: "tp"},
 				Spec: networking_types.TrafficPolicySpec{
@@ -313,7 +313,7 @@ var _ = Describe("LinkerdTranslator", func() {
 
 	Context("multiple policies defined", func() {
 
-		trafficPolicy := []*v1alpha1.TrafficPolicy{
+		trafficPolicy := []*zephyr_networking.TrafficPolicy{
 			{
 				ObjectMeta: v1.ObjectMeta{Namespace: "ns", Name: "tp1"},
 				Spec: networking_types.TrafficPolicySpec{
@@ -388,7 +388,7 @@ var _ = Describe("LinkerdTranslator", func() {
 			Destination: &core_types.ResourceRef{Namespace: "another-namespace"},
 			Subset:      map[string]string{},
 		}
-		trafficPolicy := []*v1alpha1.TrafficPolicy{
+		trafficPolicy := []*zephyr_networking.TrafficPolicy{
 			{
 				ObjectMeta: v1.ObjectMeta{Namespace: "ns", Name: "tp"},
 				Spec: networking_types.TrafficPolicySpec{
@@ -417,7 +417,7 @@ var _ = Describe("LinkerdTranslator", func() {
 			Destination: &core_types.ResourceRef{Namespace: meshService.Spec.KubeService.Ref.Namespace},
 			Subset:      map[string]string{},
 		}
-		trafficPolicy := []*v1alpha1.TrafficPolicy{
+		trafficPolicy := []*zephyr_networking.TrafficPolicy{
 			{
 				ObjectMeta: v1.ObjectMeta{Namespace: "ns", Name: "tp"},
 				Spec: networking_types.TrafficPolicySpec{
@@ -442,7 +442,7 @@ var _ = Describe("LinkerdTranslator", func() {
 	})
 	Context("multiple policies defined with traffic shift", func() {
 
-		trafficPolicy := []*v1alpha1.TrafficPolicy{
+		trafficPolicy := []*zephyr_networking.TrafficPolicy{
 			{
 				ObjectMeta: v1.ObjectMeta{Namespace: "ns", Name: "tp1"},
 				Spec: networking_types.TrafficPolicySpec{

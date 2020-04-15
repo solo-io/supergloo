@@ -7,7 +7,7 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 )
@@ -24,7 +24,7 @@ type virtualMeshPrinter struct {
 
 func (m *virtualMeshPrinter) Print(
 	out io.Writer,
-	virtualMeshes []*networking_v1alpha1.VirtualMesh,
+	virtualMeshes []*zephyr_networking.VirtualMesh,
 ) error {
 	if len(virtualMeshes) == 0 {
 		return nil
@@ -64,7 +64,7 @@ func (m *virtualMeshPrinter) Print(
 	return nil
 }
 
-func (m *virtualMeshPrinter) buildMetadataCell(virtualMesh *networking_v1alpha1.VirtualMesh) string {
+func (m *virtualMeshPrinter) buildMetadataCell(virtualMesh *zephyr_networking.VirtualMesh) string {
 	var items []string
 
 	items = append(items, fmt.Sprintf("Name: %s", virtualMesh.GetName()))

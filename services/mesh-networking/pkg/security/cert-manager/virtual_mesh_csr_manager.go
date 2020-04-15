@@ -8,12 +8,10 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
@@ -25,13 +23,13 @@ import (
 )
 
 var (
-	UnsupportedMeshTypeError = func(mesh *discovery_v1alpha1.Mesh) error {
+	UnsupportedMeshTypeError = func(mesh *zephyr_discovery.Mesh) error {
 		return eris.Errorf("unsupported mesh type: %T found", mesh.Spec.GetMeshType())
 	}
 	UnableToGatherCertConfigInfo = func(
 		err error,
-		mesh *discovery_v1alpha1.Mesh,
-		vm *networking_v1alpha1.VirtualMesh,
+		mesh *zephyr_discovery.Mesh,
+		vm *zephyr_networking.VirtualMesh,
 	) error {
 		return eris.Wrapf(err, "unable to produce cert config info for mesh %s in virtual mesh %s",
 			mesh.GetName(), vm.GetName())
@@ -64,7 +62,7 @@ func NewVirtualMeshCsrProcessor(
 
 func (m *virtualMeshCsrManager) InitializeCertificateForVirtualMesh(
 	ctx context.Context,
-	vm *networking_v1alpha1.VirtualMesh,
+	vm *zephyr_networking.VirtualMesh,
 ) networking_types.VirtualMeshStatus {
 	meshes, err := m.meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 	if err != nil {
@@ -89,8 +87,8 @@ func (m *virtualMeshCsrManager) InitializeCertificateForVirtualMesh(
 
 func (m *virtualMeshCsrManager) attemptCsrCreate(
 	ctx context.Context,
-	vm *networking_v1alpha1.VirtualMesh,
-	meshes []*discovery_v1alpha1.Mesh,
+	vm *zephyr_networking.VirtualMesh,
+	meshes []*zephyr_discovery.Mesh,
 ) error {
 	for _, mesh := range meshes {
 		var (
@@ -132,7 +130,7 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 			continue
 		}
 
-		if err = csrClient.CreateVirtualMeshCertificateSigningRequest(ctx, &security_v1alpha1.VirtualMeshCertificateSigningRequest{
+		if err = csrClient.CreateVirtualMeshCertificateSigningRequest(ctx, &zephyr_security.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()),
 				Namespace: env.GetWriteNamespace(),

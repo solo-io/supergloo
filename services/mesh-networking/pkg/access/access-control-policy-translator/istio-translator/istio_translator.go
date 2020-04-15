@@ -8,11 +8,10 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/stringutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
@@ -27,14 +26,14 @@ const (
 )
 
 var (
-	ACPProcessingError = func(err error, acp *networking_v1alpha1.AccessControlPolicy) error {
+	ACPProcessingError = func(err error, acp *zephyr_networking.AccessControlPolicy) error {
 		return eris.Wrapf(err, "Error processing AccessControlPolicy: %+v", acp)
 	}
 	AuthPolicyUpsertError = func(err error, authPolicy *client_security_v1beta1.AuthorizationPolicy) error {
 		return eris.Wrapf(err, "Error while upserting AuthorizationPolicy: %s.%s",
 			authPolicy.Name, authPolicy.Namespace)
 	}
-	EmptyTrustDomainForMeshError = func(mesh *discovery_v1alpha1.Mesh, info *discovery_types.MeshSpec_IstioMesh_CitadelInfo) error {
+	EmptyTrustDomainForMeshError = func(mesh *zephyr_discovery.Mesh, info *discovery_types.MeshSpec_IstioMesh_CitadelInfo) error {
 		return eris.Errorf("Empty trust domain for Istio Mesh: %s.%s, (%+v)", mesh.Name, mesh.Namespace, info)
 	}
 	EmptyTrustDomainForCluster = func(clusterName string) error {
@@ -74,7 +73,7 @@ in the case of processing errors.
 func (i *istioTranslator) Translate(
 	ctx context.Context,
 	targetServices []access_control_policy.TargetService,
-	acp *networking_v1alpha1.AccessControlPolicy,
+	acp *zephyr_networking.AccessControlPolicy,
 ) *networking_types.AccessControlPolicyStatus_TranslatorError {
 	authPoliciesWithClients := make([]authPolicyClientPair, 0, len(targetServices))
 	fromSources, err := i.buildSources(ctx, acp.Spec.GetSourceSelector())
@@ -120,8 +119,8 @@ func (i *istioTranslator) Translate(
 
 func (i *istioTranslator) translateForDestination(
 	fromSources *security_v1beta1.Rule_From,
-	acp *networking_v1alpha1.AccessControlPolicy,
-	meshService *discovery_v1alpha1.MeshService,
+	acp *zephyr_networking.AccessControlPolicy,
+	meshService *zephyr_discovery.MeshService,
 ) *client_security_v1beta1.AuthorizationPolicy {
 	allowedMethods := methodsToString(acp.Spec.GetAllowedMethods())
 	// Istio considers AuthorizationPolicies without at least one defined To.Operation invalid,
@@ -267,7 +266,7 @@ type authPolicyClientPair struct {
 	client     istio_security.AuthorizationPolicyClient
 }
 
-func buildAuthPolicyName(acp *networking_v1alpha1.AccessControlPolicy, svc *discovery_v1alpha1.MeshService) string {
+func buildAuthPolicyName(acp *zephyr_networking.AccessControlPolicy, svc *zephyr_discovery.MeshService) string {
 	return fmt.Sprintf("%s-%s", acp.GetName(), svc.GetName())
 }
 

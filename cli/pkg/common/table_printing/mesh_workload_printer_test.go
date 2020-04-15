@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -22,7 +22,7 @@ var UPDATE_MESH_WORKLOAD_GOLDENS = false
 
 var _ = Describe("Mesh Workload Table Printer", func() {
 	const workloadGoldenDirectory = "workload"
-	var runTest = func(fileName string, meshWorkloads []*discovery_v1alpha1.MeshWorkload) {
+	var runTest = func(fileName string, meshWorkloads []*zephyr_discovery.MeshWorkload) {
 		goldenFilename := test_goldens.GoldenFilePath(workloadGoldenDirectory, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
@@ -45,7 +45,7 @@ var _ = Describe("Mesh Workload Table Printer", func() {
 		Entry(
 			"can print multiple mesh workloads",
 			"workloads",
-			[]*discovery_v1alpha1.MeshWorkload{
+			[]*zephyr_discovery.MeshWorkload{
 				{
 					ObjectMeta: v1.ObjectMeta{
 						Name: "istio-mesh-1",

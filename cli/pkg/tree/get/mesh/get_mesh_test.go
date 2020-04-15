@@ -10,7 +10,7 @@ import (
 	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -51,7 +51,7 @@ var _ = Describe("Get Mesh Cmd", func() {
 
 	It("will call the Mesh Printer with the proper data", func() {
 
-		meshes := []*discovery_v1alpha1.Mesh{
+		meshes := []*zephyr_discovery.Mesh{
 			{
 				ObjectMeta: v1.ObjectMeta{
 					Name: "mesh-1",
@@ -68,8 +68,8 @@ var _ = Describe("Get Mesh Cmd", func() {
 			Return(nil, nil)
 		mockMeshClient.EXPECT().
 			ListMesh(ctx).
-			Return(&discovery_v1alpha1.MeshList{
-				Items: []discovery_v1alpha1.Mesh{*meshes[0], *meshes[1]},
+			Return(&zephyr_discovery.MeshList{
+				Items: []zephyr_discovery.Mesh{*meshes[0], *meshes[1]},
 			}, nil)
 		mockMeshPrinter.EXPECT().
 			Print(gomock.Any(), meshes).
