@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
-	smi_networking "github.com/solo-io/service-mesh-hub/pkg/clients/smi/split/v1alpha1"
+	smi_networking "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 
 	"github.com/solo-io/go-utils/contextutils"
 
@@ -21,10 +21,10 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	linkerd_client "github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	linkerd_client "github.com/solo-io/service-mesh-hub/pkg/clients/linkerd/v1alpha2"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 )
@@ -147,7 +147,7 @@ func (i *linkerdTrafficPolicyTranslator) ensureServiceProfile(
 	}
 
 	// Upsert computed ServiceProfile
-	err := serviceProfileClient.UpsertSpec(ctx, computedServiceProfile)
+	err := serviceProfileClient.UpsertServiceProfileSpec(ctx, computedServiceProfile)
 	if err != nil {
 		return err
 	}
@@ -274,7 +274,7 @@ func (i *linkerdTrafficPolicyTranslator) ensureTrafficSplit(
 	}
 
 	// Upsert computed TrafficSplit
-	err = trafficSplitClient.UpsertSpec(ctx, computedTrafficSplit)
+	err = trafficSplitClient.UpsertTrafficSplitSpec(ctx, computedTrafficSplit)
 	if err != nil {
 		return err
 	}

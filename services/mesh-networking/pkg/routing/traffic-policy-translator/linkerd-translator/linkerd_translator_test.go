@@ -19,10 +19,10 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	linkerd_networking "github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	linkerd_networking "github.com/solo-io/service-mesh-hub/pkg/clients/linkerd/v1alpha2"
-	smi_networking "github.com/solo-io/service-mesh-hub/pkg/clients/smi/split/v1alpha1"
+	smi_networking "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	linkerd_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/linkerd-translator"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -128,7 +128,7 @@ var _ = Describe("LinkerdTranslator", func() {
 				trafficPolicy)
 			Expect(translatorError).To(BeNil())
 
-			serviceProfiles, err := serviceProfileClient.List(ctx)
+			serviceProfiles, err := serviceProfileClient.ListServiceProfile(ctx)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(serviceProfiles.Items).To(BeEmpty())
 		})
@@ -153,7 +153,7 @@ var _ = Describe("LinkerdTranslator", func() {
 				trafficPolicy)
 			Expect(translatorError).To(BeNil())
 
-			serviceProfiles, err := serviceProfileClient.List(ctx)
+			serviceProfiles, err := serviceProfileClient.ListServiceProfile(ctx)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(serviceProfiles.Items).To(HaveLen(1))
 
@@ -190,7 +190,7 @@ var _ = Describe("LinkerdTranslator", func() {
 				trafficPolicy)
 			Expect(translatorError).To(BeNil())
 
-			serviceProfiles, err := serviceProfileClient.List(ctx)
+			serviceProfiles, err := serviceProfileClient.ListServiceProfile(ctx)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(serviceProfiles.Items).To(HaveLen(1))
 
@@ -243,7 +243,7 @@ var _ = Describe("LinkerdTranslator", func() {
 				trafficPolicy)
 			Expect(translatorError).To(BeNil())
 
-			trafficSplits, err := trafficSplitClient.List(ctx)
+			trafficSplits, err := trafficSplitClient.ListTrafficSplit(ctx)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(trafficSplits.Items).To(HaveLen(1))
 
@@ -288,7 +288,7 @@ var _ = Describe("LinkerdTranslator", func() {
 				trafficPolicy)
 			Expect(translatorError).To(BeNil())
 
-			serviceProfiles, err := serviceProfileClient.List(ctx)
+			serviceProfiles, err := serviceProfileClient.ListServiceProfile(ctx)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(serviceProfiles.Items).To(HaveLen(1))
 
@@ -350,7 +350,7 @@ var _ = Describe("LinkerdTranslator", func() {
 				trafficPolicy)
 			Expect(translatorError).To(BeNil())
 
-			serviceProfiles, err := serviceProfileClient.List(ctx)
+			serviceProfiles, err := serviceProfileClient.ListServiceProfile(ctx)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(serviceProfiles.Items).To(HaveLen(1))
 
