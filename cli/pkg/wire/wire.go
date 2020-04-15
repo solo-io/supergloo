@@ -41,12 +41,12 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
-	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
@@ -70,7 +70,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		kubernetes_apps.ClientsetFromConfigProvider,
 		kubernetes_apps.DeploymentClientFromClientsetProvider,
 		kubernetes_apps.DeploymentClientFactoryProvider,
-		kubernetes_apiext.NewCrdClientFromConfigFactory,
+		kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactoryProvider,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
 		auth.NewRemoteAuthorityManager,

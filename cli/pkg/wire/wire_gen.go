@@ -57,12 +57,12 @@ import (
 	version2 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
-	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
@@ -109,8 +109,8 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	deploymentClient := v1_2.DeploymentClientFromClientsetProvider(v1Clientset)
 	imageNameParser := docker.NewImageNameParser()
 	deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
-	crdClientFactory := kubernetes_apiext.NewCrdClientFromConfigFactory()
-	crdRemover := crd_uninstall.NewCrdRemover(crdClientFactory)
+	customResourceDefinitionClientFromConfigFactory := v1beta1.CustomResourceDefinitionClientFromConfigFactoryProvider()
+	crdRemover := crd_uninstall.NewCrdRemover(customResourceDefinitionClientFromConfigFactory)
 	secretToConfigConverter := kubeconfig.SecretToConfigConverterProvider()
 	uninstallClients := common.UninstallClientsProvider(crdRemover, secretToConfigConverter)
 	inMemoryRESTClientGetterFactory := common_config.NewInMemoryRESTClientGetterFactory()
@@ -135,7 +135,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	dynamicClientGetter := config_lookup.NewDynamicClientGetter(kubeConfigLookup)
 	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
 	resourceDescriber := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, crdClientFactory, secretClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCertificateSigningRequestClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient)
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, customResourceDefinitionClientFromConfigFactory, secretClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCertificateSigningRequestClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient)
 	return kubeClients, nil
 }
 

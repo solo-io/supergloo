@@ -22,11 +22,11 @@ import (
 	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
-	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
@@ -53,7 +53,7 @@ type KubeClients struct {
 	VirtualMeshClient               zephyr_networking.VirtualMeshClient
 	VirtualMeshCSRClient            zephyr_security.VirtualMeshCertificateSigningRequestClient
 	DeployedVersionFinder           version.DeployedVersionFinder
-	CrdClientFactory                kubernetes_apiext.CrdClientFactory
+	CrdClientFactory                kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactory
 	HealthCheckClients              healthcheck_types.Clients
 	SecretClient                    kubernetes_core.SecretClient
 	NamespaceClient                 kubernetes_core.NamespaceClient
@@ -158,7 +158,7 @@ func KubeClientsProvider(
 	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
 	healthCheckClients healthcheck_types.Clients,
 	deployedVersionFinder version.DeployedVersionFinder,
-	crdClientFactory kubernetes_apiext.CrdClientFactory,
+	crdClientFactory kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactory,
 	secretClient kubernetes_core.SecretClient,
 	namespaceClient kubernetes_core.NamespaceClient,
 	uninstallClients UninstallClients,
