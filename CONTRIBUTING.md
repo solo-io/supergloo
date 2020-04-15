@@ -19,9 +19,14 @@ In those cases, best judgement should be used.
         * [Test Package Layout](#test-package-layout)
         * [Test Design](#test-design)
         * [Coverage](#coverage)
+        * [Test Initialization](#test-initialization)
     - [Code Style](#code-style)
         * [Line Breaks](#line-breaks)
         * [Context Parameters](#context-parameters)
+- [Development](#development)
+    - [Logging](#logging)
+    - [Running Tests](#running-tests)
+    
 
 ## Style Guideline
 
@@ -167,6 +172,21 @@ While code coverage is important, we do not strive for 100%. Much of the code we
 per-kind clients. Since they just forward on the operations to the underlying dynamic client, there is no real reason
 to test them because no business logic is being exercised.
 
+#### Test Initialization
+
+Say you're working in directory `dir/` and writing a test for component `bar.go`. You can get test files bootstrapped in 
+an idiomatic shape by running the following commands:
+
+```bash
+cd dir/
+ginkgo bootstrap       # if you haven't done this already- creates a dir_suite_test.go file
+ginkgo generate bar.go # initializes a test file for covering bar
+```
+
+Ensure that the string constants generated into those files make sense. Feel free to change them to something more meaningful.
+I.e., we shouldn't have test code that says `Describe("translator")`. Something like `Describe("Istio Traffic Policy Translator")`
+may be better.
+
 ### Code Style
 
 #### Line Breaks
@@ -197,3 +217,40 @@ mainly serve as receivers of callbacks that do not pass along a `context`, but t
 kubernetes client actions that require a `context`. This is not ideal. Those long-lived `context` references
 also often serve as contexts backing `controller-runtime` managers; when those contexts are stopped, that
 indicates that the associated cluster has gone offline.  
+
+## Development
+
+### Logging
+Logging in Service Mesh Hub uses [zap](https://github.com/uber-go/zap). By default the log level will be set to info,
+and the encoder will be a JSON encoder. This means that debug level logs will not be shown, and logs will be outputted 
+to `os.Stderr` in a machine readable format.
+
+For debugging purposes this can be controlled with the following ENV variables:
+1. `LOG_LEVEL`
+    * Must be set to a valid `zapcore.Level`. Options can be found [here](https://pkg.go.dev/go.uber.org/zap/zapcore?tab=doc#Level)
+    * If none is provided, or the option is invalid, `Info` will be used by default
+2. `DEBUG_MODE`
+    * If set, the log encoder will be switched to a human readable format. This means it will not be valid JSON anymore.
+    More information on how the data will be formatted can be found [here](https://pkg.go.dev/go.uber.org/zap/zapcore?tab=doc#NewConsoleEncoder)
+    * Note: If set, this will override the logging level to `debug`, no matter what `LOG_LEVEL` is set to.
+
+### Running Tests
+
+You can run tests through Goland configurations, but ultimately that will not be how our CI runs the tests, which is through `ginkgo`. Deviations in behavior
+can occur in Goland as opposed to `ginkgo`. For example, Goland does not require a `_suite_test.go` file, while `ginkgo` will
+refuse to run any of the test cases without a `_suite_test.go` file.
+
+We normally run the tests with:
+
+```bash
+ginkgo -r -race -progress -randomizeAllSpecs -randomizeSuites -compilers=4 -failOnPending -p
+```
+
+These args ensure that:
+* Race detection is turned on
+* Test progress is printed out
+* Test spec order is randomized, eliminating the possibility of inter-dependence of one spec on another
+* Test suite is randomized for the same reason
+* Turn down the number of compilers to speed up execution
+* Fail on specs marked as pending with `XIt` or `FIt` or similar
+* Parallelize the whole thing
