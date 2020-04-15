@@ -119,6 +119,218 @@ func (h genericSecretHandler) Generic(object runtime.Object) error {
 	return h.handler.GenericSecret(obj)
 }
 
+// Handle events for the ServiceAccount Resource
+type ServiceAccountEventHandler interface {
+	CreateServiceAccount(obj *core_v1.ServiceAccount) error
+	UpdateServiceAccount(old, new *core_v1.ServiceAccount) error
+	DeleteServiceAccount(obj *core_v1.ServiceAccount) error
+	GenericServiceAccount(obj *core_v1.ServiceAccount) error
+}
+
+type ServiceAccountEventHandlerFuncs struct {
+	OnCreate  func(obj *core_v1.ServiceAccount) error
+	OnUpdate  func(old, new *core_v1.ServiceAccount) error
+	OnDelete  func(obj *core_v1.ServiceAccount) error
+	OnGeneric func(obj *core_v1.ServiceAccount) error
+}
+
+func (f *ServiceAccountEventHandlerFuncs) CreateServiceAccount(obj *core_v1.ServiceAccount) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *ServiceAccountEventHandlerFuncs) DeleteServiceAccount(obj *core_v1.ServiceAccount) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *ServiceAccountEventHandlerFuncs) UpdateServiceAccount(objOld, objNew *core_v1.ServiceAccount) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *ServiceAccountEventHandlerFuncs) GenericServiceAccount(obj *core_v1.ServiceAccount) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type ServiceAccountEventWatcher interface {
+	AddEventHandler(ctx context.Context, h ServiceAccountEventHandler, predicates ...predicate.Predicate) error
+}
+
+type serviceAccountEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewServiceAccountEventWatcher(name string, mgr manager.Manager) ServiceAccountEventWatcher {
+	return &serviceAccountEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &core_v1.ServiceAccount{}),
+	}
+}
+
+func (c *serviceAccountEventWatcher) AddEventHandler(ctx context.Context, h ServiceAccountEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericServiceAccountHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericServiceAccountHandler implements a generic events.EventHandler
+type genericServiceAccountHandler struct {
+	handler ServiceAccountEventHandler
+}
+
+func (h genericServiceAccountHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*core_v1.ServiceAccount)
+	if !ok {
+		return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
+	}
+	return h.handler.CreateServiceAccount(obj)
+}
+
+func (h genericServiceAccountHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*core_v1.ServiceAccount)
+	if !ok {
+		return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
+	}
+	return h.handler.DeleteServiceAccount(obj)
+}
+
+func (h genericServiceAccountHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*core_v1.ServiceAccount)
+	if !ok {
+		return errors.Errorf("internal error: ServiceAccount handler received event for %T", old)
+	}
+	objNew, ok := new.(*core_v1.ServiceAccount)
+	if !ok {
+		return errors.Errorf("internal error: ServiceAccount handler received event for %T", new)
+	}
+	return h.handler.UpdateServiceAccount(objOld, objNew)
+}
+
+func (h genericServiceAccountHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*core_v1.ServiceAccount)
+	if !ok {
+		return errors.Errorf("internal error: ServiceAccount handler received event for %T", object)
+	}
+	return h.handler.GenericServiceAccount(obj)
+}
+
+// Handle events for the ConfigMap Resource
+type ConfigMapEventHandler interface {
+	CreateConfigMap(obj *core_v1.ConfigMap) error
+	UpdateConfigMap(old, new *core_v1.ConfigMap) error
+	DeleteConfigMap(obj *core_v1.ConfigMap) error
+	GenericConfigMap(obj *core_v1.ConfigMap) error
+}
+
+type ConfigMapEventHandlerFuncs struct {
+	OnCreate  func(obj *core_v1.ConfigMap) error
+	OnUpdate  func(old, new *core_v1.ConfigMap) error
+	OnDelete  func(obj *core_v1.ConfigMap) error
+	OnGeneric func(obj *core_v1.ConfigMap) error
+}
+
+func (f *ConfigMapEventHandlerFuncs) CreateConfigMap(obj *core_v1.ConfigMap) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *ConfigMapEventHandlerFuncs) DeleteConfigMap(obj *core_v1.ConfigMap) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *ConfigMapEventHandlerFuncs) UpdateConfigMap(objOld, objNew *core_v1.ConfigMap) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *ConfigMapEventHandlerFuncs) GenericConfigMap(obj *core_v1.ConfigMap) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type ConfigMapEventWatcher interface {
+	AddEventHandler(ctx context.Context, h ConfigMapEventHandler, predicates ...predicate.Predicate) error
+}
+
+type configMapEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewConfigMapEventWatcher(name string, mgr manager.Manager) ConfigMapEventWatcher {
+	return &configMapEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &core_v1.ConfigMap{}),
+	}
+}
+
+func (c *configMapEventWatcher) AddEventHandler(ctx context.Context, h ConfigMapEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericConfigMapHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericConfigMapHandler implements a generic events.EventHandler
+type genericConfigMapHandler struct {
+	handler ConfigMapEventHandler
+}
+
+func (h genericConfigMapHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*core_v1.ConfigMap)
+	if !ok {
+		return errors.Errorf("internal error: ConfigMap handler received event for %T", object)
+	}
+	return h.handler.CreateConfigMap(obj)
+}
+
+func (h genericConfigMapHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*core_v1.ConfigMap)
+	if !ok {
+		return errors.Errorf("internal error: ConfigMap handler received event for %T", object)
+	}
+	return h.handler.DeleteConfigMap(obj)
+}
+
+func (h genericConfigMapHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*core_v1.ConfigMap)
+	if !ok {
+		return errors.Errorf("internal error: ConfigMap handler received event for %T", old)
+	}
+	objNew, ok := new.(*core_v1.ConfigMap)
+	if !ok {
+		return errors.Errorf("internal error: ConfigMap handler received event for %T", new)
+	}
+	return h.handler.UpdateConfigMap(objOld, objNew)
+}
+
+func (h genericConfigMapHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*core_v1.ConfigMap)
+	if !ok {
+		return errors.Errorf("internal error: ConfigMap handler received event for %T", object)
+	}
+	return h.handler.GenericConfigMap(obj)
+}
+
 // Handle events for the Service Resource
 type ServiceEventHandler interface {
 	CreateService(obj *core_v1.Service) error
@@ -329,4 +541,216 @@ func (h genericPodHandler) Generic(object runtime.Object) error {
 		return errors.Errorf("internal error: Pod handler received event for %T", object)
 	}
 	return h.handler.GenericPod(obj)
+}
+
+// Handle events for the Namespace Resource
+type NamespaceEventHandler interface {
+	CreateNamespace(obj *core_v1.Namespace) error
+	UpdateNamespace(old, new *core_v1.Namespace) error
+	DeleteNamespace(obj *core_v1.Namespace) error
+	GenericNamespace(obj *core_v1.Namespace) error
+}
+
+type NamespaceEventHandlerFuncs struct {
+	OnCreate  func(obj *core_v1.Namespace) error
+	OnUpdate  func(old, new *core_v1.Namespace) error
+	OnDelete  func(obj *core_v1.Namespace) error
+	OnGeneric func(obj *core_v1.Namespace) error
+}
+
+func (f *NamespaceEventHandlerFuncs) CreateNamespace(obj *core_v1.Namespace) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *NamespaceEventHandlerFuncs) DeleteNamespace(obj *core_v1.Namespace) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *NamespaceEventHandlerFuncs) UpdateNamespace(objOld, objNew *core_v1.Namespace) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *NamespaceEventHandlerFuncs) GenericNamespace(obj *core_v1.Namespace) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type NamespaceEventWatcher interface {
+	AddEventHandler(ctx context.Context, h NamespaceEventHandler, predicates ...predicate.Predicate) error
+}
+
+type namespaceEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewNamespaceEventWatcher(name string, mgr manager.Manager) NamespaceEventWatcher {
+	return &namespaceEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &core_v1.Namespace{}),
+	}
+}
+
+func (c *namespaceEventWatcher) AddEventHandler(ctx context.Context, h NamespaceEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericNamespaceHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericNamespaceHandler implements a generic events.EventHandler
+type genericNamespaceHandler struct {
+	handler NamespaceEventHandler
+}
+
+func (h genericNamespaceHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*core_v1.Namespace)
+	if !ok {
+		return errors.Errorf("internal error: Namespace handler received event for %T", object)
+	}
+	return h.handler.CreateNamespace(obj)
+}
+
+func (h genericNamespaceHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*core_v1.Namespace)
+	if !ok {
+		return errors.Errorf("internal error: Namespace handler received event for %T", object)
+	}
+	return h.handler.DeleteNamespace(obj)
+}
+
+func (h genericNamespaceHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*core_v1.Namespace)
+	if !ok {
+		return errors.Errorf("internal error: Namespace handler received event for %T", old)
+	}
+	objNew, ok := new.(*core_v1.Namespace)
+	if !ok {
+		return errors.Errorf("internal error: Namespace handler received event for %T", new)
+	}
+	return h.handler.UpdateNamespace(objOld, objNew)
+}
+
+func (h genericNamespaceHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*core_v1.Namespace)
+	if !ok {
+		return errors.Errorf("internal error: Namespace handler received event for %T", object)
+	}
+	return h.handler.GenericNamespace(obj)
+}
+
+// Handle events for the Node Resource
+type NodeEventHandler interface {
+	CreateNode(obj *core_v1.Node) error
+	UpdateNode(old, new *core_v1.Node) error
+	DeleteNode(obj *core_v1.Node) error
+	GenericNode(obj *core_v1.Node) error
+}
+
+type NodeEventHandlerFuncs struct {
+	OnCreate  func(obj *core_v1.Node) error
+	OnUpdate  func(old, new *core_v1.Node) error
+	OnDelete  func(obj *core_v1.Node) error
+	OnGeneric func(obj *core_v1.Node) error
+}
+
+func (f *NodeEventHandlerFuncs) CreateNode(obj *core_v1.Node) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *NodeEventHandlerFuncs) DeleteNode(obj *core_v1.Node) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *NodeEventHandlerFuncs) UpdateNode(objOld, objNew *core_v1.Node) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *NodeEventHandlerFuncs) GenericNode(obj *core_v1.Node) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type NodeEventWatcher interface {
+	AddEventHandler(ctx context.Context, h NodeEventHandler, predicates ...predicate.Predicate) error
+}
+
+type nodeEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewNodeEventWatcher(name string, mgr manager.Manager) NodeEventWatcher {
+	return &nodeEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &core_v1.Node{}),
+	}
+}
+
+func (c *nodeEventWatcher) AddEventHandler(ctx context.Context, h NodeEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericNodeHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericNodeHandler implements a generic events.EventHandler
+type genericNodeHandler struct {
+	handler NodeEventHandler
+}
+
+func (h genericNodeHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*core_v1.Node)
+	if !ok {
+		return errors.Errorf("internal error: Node handler received event for %T", object)
+	}
+	return h.handler.CreateNode(obj)
+}
+
+func (h genericNodeHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*core_v1.Node)
+	if !ok {
+		return errors.Errorf("internal error: Node handler received event for %T", object)
+	}
+	return h.handler.DeleteNode(obj)
+}
+
+func (h genericNodeHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*core_v1.Node)
+	if !ok {
+		return errors.Errorf("internal error: Node handler received event for %T", old)
+	}
+	objNew, ok := new.(*core_v1.Node)
+	if !ok {
+		return errors.Errorf("internal error: Node handler received event for %T", new)
+	}
+	return h.handler.UpdateNode(objOld, objNew)
+}
+
+func (h genericNodeHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*core_v1.Node)
+	if !ok {
+		return errors.Errorf("internal error: Node handler received event for %T", object)
+	}
+	return h.handler.GenericNode(obj)
 }

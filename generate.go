@@ -26,6 +26,10 @@ import (
 //go:generate mockgen -package mock_zephyr_networking -destination ./test/mocks/zephyr/networking/mock_virtual_mesh_controller.go github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller VirtualMeshEventWatcher,TrafficPolicyEventWatcher,AccessControlPolicyEventWatcher
 
 // Generate mock clients
+// K8s clients
+//go:generate mockgen -package mock_k8s_core_custom_clients -destination ./test/mocks/clients/kubernetes/core/v1/custom_clients/clients.go github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/custom_clients ServiceClient,PodClient,NamespaceClient,NodeClient
+//go:generate mockgen -package mock_k8s_core_clients -destination ./test/mocks/clients/kubernetes/core/v1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1 ServiceAccountClient,SecretClient,ConfigMapClient
+//go:generate mockgen -package mock_k8s_apps_clients -destination ./test/mocks/clients/kubernetes/apps/v1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1 DeploymentClient,ReplicaSetClient
 // Zephyr clients
 //go:generate mockgen -package mock_zephyr_discovery_clients -destination ./test/mocks/clients/discovery.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1 KubernetesClusterClient,MeshClient,MeshServiceClient,MeshWorkloadClient
 //go:generate mockgen -package mock_zephyr_networking_clients -destination ./test/mocks/clients/networking.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1 TrafficPolicyClient,AccessControlPolicyClient,VirtualMeshClient
@@ -221,13 +225,29 @@ func main() {
 						Kind: "Secret",
 					},
 					{
+						Kind: "ServiceAccount",
+					},
+					{
+						Kind: "ConfigMap",
+					},
+					{
 						Kind: "Service",
 					},
 					{
 						Kind: "Pod",
 					},
+					{
+						Kind: "Namespace",
+					},
+					{
+						Kind: "Node",
+					},
 				},
-				RenderController:      true,
+				RenderController: true,
+				RenderClients:    true,
+				CustomTemplates: map[string]string{
+					"client_providers.go": customClientProviders,
+				},
 				CustomTypesImportPath: "k8s.io/api/core/v1",
 				ApiRoot:               "pkg/api/kubernetes",
 			},
@@ -241,8 +261,15 @@ func main() {
 					{
 						Kind: "Deployment",
 					},
+					{
+						Kind: "ReplicaSet",
+					},
 				},
-				RenderController:      true,
+				RenderController: true,
+				RenderClients:    true,
+				CustomTemplates: map[string]string{
+					"client_providers.go": customClientProviders,
+				},
 				CustomTypesImportPath: "k8s.io/api/apps/v1",
 				ApiRoot:               "pkg/api/kubernetes",
 			},

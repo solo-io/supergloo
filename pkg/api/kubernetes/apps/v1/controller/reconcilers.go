@@ -127,3 +127,118 @@ func (r genericDeploymentFinalizer) Finalize(object ezkube.Object) error {
 	}
 	return r.finalizingReconciler.FinalizeDeployment(obj)
 }
+
+// Reconcile Upsert events for the ReplicaSet Resource.
+// implemented by the user
+type ReplicaSetReconciler interface {
+	ReconcileReplicaSet(obj *apps_v1.ReplicaSet) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the ReplicaSet Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type ReplicaSetDeletionReconciler interface {
+	ReconcileReplicaSetDeletion(req reconcile.Request)
+}
+
+type ReplicaSetReconcilerFuncs struct {
+	OnReconcileReplicaSet         func(obj *apps_v1.ReplicaSet) (reconcile.Result, error)
+	OnReconcileReplicaSetDeletion func(req reconcile.Request)
+}
+
+func (f *ReplicaSetReconcilerFuncs) ReconcileReplicaSet(obj *apps_v1.ReplicaSet) (reconcile.Result, error) {
+	if f.OnReconcileReplicaSet == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileReplicaSet(obj)
+}
+
+func (f *ReplicaSetReconcilerFuncs) ReconcileReplicaSetDeletion(req reconcile.Request) {
+	if f.OnReconcileReplicaSetDeletion == nil {
+		return
+	}
+	f.OnReconcileReplicaSetDeletion(req)
+}
+
+// Reconcile and finalize the ReplicaSet Resource
+// implemented by the user
+type ReplicaSetFinalizer interface {
+	ReplicaSetReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	ReplicaSetFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeReplicaSet(obj *apps_v1.ReplicaSet) error
+}
+
+type ReplicaSetReconcileLoop interface {
+	RunReplicaSetReconciler(ctx context.Context, rec ReplicaSetReconciler, predicates ...predicate.Predicate) error
+}
+
+type replicaSetReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewReplicaSetReconcileLoop(name string, mgr manager.Manager) ReplicaSetReconcileLoop {
+	return &replicaSetReconcileLoop{
+		loop: reconcile.NewLoop(name, mgr, &apps_v1.ReplicaSet{}),
+	}
+}
+
+func (c *replicaSetReconcileLoop) RunReplicaSetReconciler(ctx context.Context, reconciler ReplicaSetReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericReplicaSetReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(ReplicaSetFinalizer); ok {
+		reconcilerWrapper = genericReplicaSetFinalizer{
+			genericReplicaSetReconciler: genericReconciler,
+			finalizingReconciler:        finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericReplicaSetHandler implements a generic reconcile.Reconciler
+type genericReplicaSetReconciler struct {
+	reconciler ReplicaSetReconciler
+}
+
+func (r genericReplicaSetReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*apps_v1.ReplicaSet)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: ReplicaSet handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileReplicaSet(obj)
+}
+
+func (r genericReplicaSetReconciler) ReconcileDeletion(request reconcile.Request) {
+	if deletionReconciler, ok := r.reconciler.(ReplicaSetDeletionReconciler); ok {
+		deletionReconciler.ReconcileReplicaSetDeletion(request)
+	}
+}
+
+// genericReplicaSetFinalizer implements a generic reconcile.FinalizingReconciler
+type genericReplicaSetFinalizer struct {
+	genericReplicaSetReconciler
+	finalizingReconciler ReplicaSetFinalizer
+}
+
+func (r genericReplicaSetFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.ReplicaSetFinalizerName()
+}
+
+func (r genericReplicaSetFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*apps_v1.ReplicaSet)
+	if !ok {
+		return errors.Errorf("internal error: ReplicaSet handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeReplicaSet(obj)
+}

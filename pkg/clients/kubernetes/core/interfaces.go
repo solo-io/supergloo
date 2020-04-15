@@ -3,6 +3,7 @@ package kubernetes_core
 import (
 	"context"
 
+	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -26,13 +27,9 @@ type NodeClient interface {
 	List(ctx context.Context, options ...client.ListOption) (*corev1.NodeList, error)
 }
 
-type SecretClient interface {
-	Create(ctx context.Context, secret *corev1.Secret, opts ...client.CreateOption) error
-	Update(ctx context.Context, secret *corev1.Secret, opts ...client.UpdateOption) error
+type ExtendedSecretClient interface {
+	v1.SecretClient
 	UpsertData(ctx context.Context, secret *corev1.Secret) error
-	Get(ctx context.Context, name, namespace string) (*corev1.Secret, error)
-	List(ctx context.Context, namespace string, labels map[string]string) (*corev1.SecretList, error)
-	Delete(ctx context.Context, secret *corev1.Secret) error
 }
 
 type ServiceAccountClient interface {
