@@ -11,16 +11,17 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/security/certgen/mocks"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	mock_csr_agent_controller "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator/mocks"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_security_config "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.zephyr.solo.io/v1alpha1"
 	pki_util "istio.io/istio/security/pkg/pki/util"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("csr processor", func() {
@@ -206,7 +207,7 @@ var _ = Describe("csr processor", func() {
 				Return(certData, nil)
 
 			secretClient.EXPECT().
-				Get(ctx, csr_generator.IstioCaSecretName, "istio-system").
+				GetSecret(ctx, client.ObjectKey{Name: csr_generator.IstioCaSecretName, Namespace: "istio-system"}).
 				Return(nil, testErr)
 
 			matchErr := csr_generator.FailedToUpdateCaError(testErr)
@@ -238,14 +239,14 @@ var _ = Describe("csr processor", func() {
 				Return(certData, nil)
 
 			secretClient.EXPECT().
-				Get(ctx, csr_generator.IstioCaSecretName, "istio-system").
+				GetSecret(ctx, client.ObjectKey{Name: csr_generator.IstioCaSecretName, Namespace: "istio-system"}).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
 			certData.RootCert = csr.Status.GetResponse().GetRootCertificate()
 			certData.CaCert = csr.Status.GetResponse().GetCaCertificate()
 			certData.CertChain = certgen.AppendRootCerts(certData.CaCert, certData.RootCert)
 			secretClient.EXPECT().
-				Create(ctx, certData.BuildSecret(csr_generator.IstioCaSecretName, "istio-system")).
+				CreateSecret(ctx, certData.BuildSecret(csr_generator.IstioCaSecretName, "istio-system")).
 				Return(testErr)
 
 			matchErr := csr_generator.FailedToUpdateCaError(testErr)
@@ -280,7 +281,7 @@ var _ = Describe("csr processor", func() {
 			certData.CaCert = csr.Status.GetResponse().GetCaCertificate()
 			certData.CertChain = certgen.AppendRootCerts(certData.CaCert, certData.RootCert)
 			secretClient.EXPECT().
-				Get(ctx, csr_generator.IstioCaSecretName, "istio-system").
+				GetSecret(ctx, client.ObjectKey{Name: csr_generator.IstioCaSecretName, Namespace: "istio-system"}).
 				Return(certData.BuildSecret(csr_generator.IstioCaSecretName, "istio-system"), nil)
 
 			status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)
@@ -314,7 +315,7 @@ var _ = Describe("csr processor", func() {
 			certData.CertChain = certgen.AppendRootCerts(certData.CaCert, certData.RootCert)
 
 			secretClient.EXPECT().
-				Get(ctx, csr_generator.IstioCaSecretName, "istio-system").
+				GetSecret(ctx, client.ObjectKey{Name: csr_generator.IstioCaSecretName, Namespace: "istio-system"}).
 				Return(certData.BuildSecret(csr_generator.IstioCaSecretName, "istio-system"), nil)
 
 			matchCert := &cert_secrets.IntermediateCAData{
@@ -327,7 +328,7 @@ var _ = Describe("csr processor", func() {
 				CaCert: csr.Status.GetResponse().GetCaCertificate(),
 			}
 			secretClient.EXPECT().
-				Update(ctx, matchCert.BuildSecret(csr_generator.IstioCaSecretName, "istio-system")).
+				UpdateSecret(ctx, matchCert.BuildSecret(csr_generator.IstioCaSecretName, "istio-system")).
 				Return(nil)
 
 			status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)

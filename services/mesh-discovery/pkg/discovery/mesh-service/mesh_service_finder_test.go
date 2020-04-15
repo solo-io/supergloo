@@ -10,10 +10,10 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mesh_service "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service"
 	discovery_mocks "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_corev1 "github.com/solo-io/service-mesh-hub/test/mocks/corev1"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
 	corev1 "k8s.io/api/core/v1"
@@ -203,7 +203,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.serviceClient.
 				EXPECT().
-				List(ctx).
+				ListService(ctx).
 				Return(&corev1.ServiceList{
 					Items: []corev1.Service{wrongService, rightService},
 				}, nil)
@@ -311,7 +311,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.serviceClient.
 				EXPECT().
-				List(ctx).
+				ListService(ctx).
 				Return(&corev1.ServiceList{
 					Items: []corev1.Service{wrongService, wrongService},
 				}, nil)
@@ -388,7 +388,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.serviceClient.
 				EXPECT().
-				List(ctx).
+				ListService(ctx).
 				Return(&corev1.ServiceList{
 					Items: []corev1.Service{wrongService, wrongService},
 				}, nil)
@@ -467,7 +467,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.serviceClient.
 				EXPECT().
-				List(ctx).
+				ListService(ctx).
 				Return(&corev1.ServiceList{
 					Items: []corev1.Service{wrongService, rightService},
 				}, nil)

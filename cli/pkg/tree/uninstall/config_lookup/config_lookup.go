@@ -6,8 +6,9 @@ import (
 	"github.com/rotisserie/eris"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -58,7 +59,7 @@ func (k *kubeConfigLookup) FromCluster(ctx context.Context, clusterName string) 
 	}
 
 	cfgSecretRef := kubeCluster.Spec.GetSecretRef()
-	secret, err := k.secretsClient.Get(ctx, cfgSecretRef.GetName(), cfgSecretRef.GetNamespace())
+	secret, err := k.secretsClient.GetSecret(ctx, client.ObjectKey{Name: cfgSecretRef.GetName(), Namespace: cfgSecretRef.GetNamespace()})
 	if err != nil {
 		return nil, FailedToFindKubeConfigSecret(err, kubeCluster.GetName())
 	}

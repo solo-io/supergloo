@@ -9,7 +9,7 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
@@ -130,7 +130,7 @@ func (i *istioMeshScanner) getTrustDomain(
 	namespace string,
 ) (string, error) {
 	configMapClient := i.configMapClientFactory(clusterScopedClient)
-	configMap, err := configMapClient.Get(ctx, client.ObjectKey{Name: IstioConfigMapName, Namespace: namespace})
+	configMap, err := configMapClient.GetConfigMap(ctx, client.ObjectKey{Name: IstioConfigMapName, Namespace: namespace})
 	if err != nil {
 		return "", err
 	}

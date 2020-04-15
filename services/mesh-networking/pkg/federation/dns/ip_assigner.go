@@ -9,8 +9,8 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -71,7 +71,7 @@ func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) 
 		Namespace: env.GetWriteNamespace(),
 	}
 
-	ipRecordConfigMap, err := i.configMapClient.Get(ctx, clients.ResourceRefToObjectKey(ipRecordRef))
+	ipRecordConfigMap, err := i.configMapClient.GetConfigMap(ctx, clients.ResourceRefToObjectKey(ipRecordRef))
 
 	if errors.IsNotFound(err) {
 		newIpRecord := map[string]string{}
@@ -80,7 +80,7 @@ func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) 
 			return "", err
 		}
 
-		return newIp, i.configMapClient.Create(ctx, &corev1.ConfigMap{
+		return newIp, i.configMapClient.CreateConfigMap(ctx, &corev1.ConfigMap{
 			ObjectMeta: clients.ResourceRefToObjectMeta(ipRecordRef),
 			Data:       newIpRecord,
 		})
@@ -99,7 +99,7 @@ func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) 
 
 		ipRecordConfigMap.Data = ipRecord
 
-		return newIp, i.configMapClient.Update(ctx, ipRecordConfigMap)
+		return newIp, i.configMapClient.UpdateConfigMap(ctx, ipRecordConfigMap)
 	}
 }
 
@@ -111,7 +111,7 @@ func (i *ipAssigner) UnAssignIPOnCluster(ctx context.Context, clusterName, ipToU
 
 	var ipRecordConfigMap *corev1.ConfigMap
 	err := retry.Do(func() error {
-		cm, err := i.configMapClient.Get(ctx, clients.ResourceRefToObjectKey(ipRecordRef))
+		cm, err := i.configMapClient.GetConfigMap(ctx, clients.ResourceRefToObjectKey(ipRecordRef))
 		if err != nil {
 			return err
 		}
@@ -142,7 +142,7 @@ func (i *ipAssigner) UnAssignIPOnCluster(ctx context.Context, clusterName, ipToU
 	updatedIpList, _ := json.Marshal(storedIps)
 	ipRecordConfigMap.Data[clusterName] = string(updatedIpList)
 
-	return i.configMapClient.Update(ctx, ipRecordConfigMap)
+	return i.configMapClient.UpdateConfigMap(ctx, ipRecordConfigMap)
 }
 
 func generateNewIp(cmData map[string]string, clusterName string) (string, error) {

@@ -5,16 +5,17 @@ import (
 	"fmt"
 
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func DefaultRootCaName(vm *networking_v1alpha1.VirtualMesh) string {
@@ -53,7 +54,8 @@ func (v *virtualMeshCertClient) GetRootCaBundle(
 	switch vm.Spec.GetCertificateAuthority().GetType().(type) {
 	case *types.VirtualMeshSpec_CertificateAuthority_Provided_:
 		trustBundleSecretRef = vm.Spec.GetCertificateAuthority().GetProvided().GetCertificate()
-		caSecret, err = v.localSecretClient.Get(ctx, trustBundleSecretRef.GetName(), trustBundleSecretRef.GetNamespace())
+		caSecret, err = v.localSecretClient.GetSecret(
+			ctx, client.ObjectKey{Name: trustBundleSecretRef.GetName(), Namespace: trustBundleSecretRef.GetNamespace()})
 		if err != nil {
 			return nil, err
 		}
@@ -73,14 +75,14 @@ func (v *virtualMeshCertClient) getOrCreateBuiltinRootCert(
 	// auto-generated cert lives in fixed location
 	rootCaName := DefaultRootCaName(vm)
 	rootCaNamespace := env.GetWriteNamespace()
-	caSecret, err := v.localSecretClient.Get(ctx, rootCaName, rootCaNamespace)
+	caSecret, err := v.localSecretClient.GetSecret(ctx, client.ObjectKey{Name: rootCaName, Namespace: rootCaNamespace})
 	if errors.IsNotFound(err) {
 		rootCaData, err := v.rootCertGenerator.GenRootCertAndKey(vm.Spec.GetCertificateAuthority().GetBuiltin())
 		if err != nil {
 			return nil, err
 		}
 		caSecret := rootCaData.BuildSecret(rootCaName, rootCaNamespace)
-		if err = v.localSecretClient.Create(ctx, caSecret); err != nil {
+		if err = v.localSecretClient.CreateSecret(ctx, caSecret); err != nil {
 			return nil, err
 		}
 		return caSecret, nil

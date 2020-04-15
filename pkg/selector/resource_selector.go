@@ -9,8 +9,8 @@ import (
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -223,7 +223,7 @@ func (b *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 
 		deploymentClient := b.deploymentClientFactory(dynamicClient)
 
-		workloadController, err := deploymentClient.Get(ctx, clients.ResourceRefToObjectKey(meshWorkload.Spec.GetKubeController().GetKubeControllerRef()))
+		workloadController, err := deploymentClient.GetDeployment(ctx, clients.ResourceRefToObjectKey(meshWorkload.Spec.GetKubeController().GetKubeControllerRef()))
 		if err != nil {
 			return nil, err
 		}

@@ -27,8 +27,7 @@ import (
 
 // Generate mock clients
 // K8s clients
-//go:generate mockgen -package mock_k8s_core_custom_clients -destination ./test/mocks/clients/kubernetes/core/v1/custom_clients/clients.go github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/custom_clients ServiceClient,PodClient,NamespaceClient,NodeClient
-//go:generate mockgen -package mock_k8s_core_clients -destination ./test/mocks/clients/kubernetes/core/v1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1 ServiceAccountClient,SecretClient,ConfigMapClient
+//go:generate mockgen -package mock_k8s_core_clients -destination ./test/mocks/clients/kubernetes/core/v1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1 ServiceClient,PodClient,NamespaceClient,NodeClient,ServiceAccountClient,SecretClient,ConfigMapClient
 //go:generate mockgen -package mock_k8s_apps_clients -destination ./test/mocks/clients/kubernetes/apps/v1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1 DeploymentClient,ReplicaSetClient
 // Zephyr clients
 //go:generate mockgen -package mock_zephyr_discovery_clients -destination ./test/mocks/clients/discovery.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1 KubernetesClusterClient,MeshClient,MeshServiceClient,MeshWorkloadClient

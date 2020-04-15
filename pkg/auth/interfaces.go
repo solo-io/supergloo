@@ -4,7 +4,7 @@ import (
 	"context"
 
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8sapiv1 "k8s.io/api/core/v1"
 	rbactypes "k8s.io/api/rbac/v1"
 	"k8s.io/client-go/rest"

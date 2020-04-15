@@ -23,11 +23,11 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -138,6 +138,18 @@ users:
 			}
 		)
 
+		var expectUpsertSecretData = func(ctx context.Context, secret *v1.Secret) {
+			existing := &v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{Name: "existing"},
+			}
+			secretClient.
+				EXPECT().
+				GetSecret(ctx, client.ObjectKey{Name: secret.Name, Namespace: secret.Namespace}).
+				Return(existing, nil)
+			existing.Data = secret.Data
+			secretClient.EXPECT().UpdateSecret(ctx, existing).Return(nil)
+		}
+
 		It("works", func() {
 			localKubeConfig := "~/.kube/master-config"
 			remoteKubeConfig := "~/.kube/target-config"
@@ -166,14 +178,11 @@ users:
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			csrAgentInstaller.EXPECT().
@@ -258,14 +267,11 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			csrAgentInstaller.
@@ -352,14 +358,11 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			csrAgentInstaller.
@@ -459,7 +462,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			clusterClient.EXPECT().GetKubernetesCluster(ctx,
@@ -498,11 +501,11 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 			namespaceClient.
 				EXPECT().
-				Create(ctx, &v1.Namespace{
+				CreateNamespace(ctx, &v1.Namespace{
 					ObjectMeta: metav1.ObjectMeta{Name: env.GetWriteNamespace()},
 				}).
 				Return(nil)
@@ -624,7 +627,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			_, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
@@ -689,14 +692,11 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			testErr := eris.New("test")
@@ -766,14 +766,11 @@ Successfully wrote kube config secret to master cluster...
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			csrAgentInstaller.
@@ -840,14 +837,11 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			csrAgentInstaller.EXPECT().

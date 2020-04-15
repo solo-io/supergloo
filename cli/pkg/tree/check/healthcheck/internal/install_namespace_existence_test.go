@@ -10,10 +10,11 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	controllerruntime "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Install namespace existence check", func() {
@@ -34,7 +35,7 @@ var _ = Describe("Install namespace existence check", func() {
 	It("reports an error if the namespace does not exist", func() {
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			Get(ctx, env.GetWriteNamespace()).
+			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 			Return(nil, errors.NewNotFound(controllerruntime.GroupResource{}, "test-resource"))
 
 		check := internal.NewInstallNamespaceExistenceCheck()
@@ -53,7 +54,7 @@ var _ = Describe("Install namespace existence check", func() {
 		testErr := eris.New("test-err")
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			Get(ctx, env.GetWriteNamespace()).
+			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 			Return(nil, testErr)
 
 		check := internal.NewInstallNamespaceExistenceCheck()
@@ -71,7 +72,7 @@ var _ = Describe("Install namespace existence check", func() {
 	It("reports success if the namespace exists", func() {
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			Get(ctx, env.GetWriteNamespace()).
+			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 			Return(nil, nil)
 
 		runFailure, checkApplies := internal.NewInstallNamespaceExistenceCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{

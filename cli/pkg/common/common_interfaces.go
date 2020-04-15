@@ -22,11 +22,11 @@ import (
 	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
@@ -159,7 +159,7 @@ func KubeClientsProvider(
 	healthCheckClients healthcheck_types.Clients,
 	deployedVersionFinder version.DeployedVersionFinder,
 	crdClientFactory kubernetes_apiext.CrdClientFactory,
-	secretsClient kubernetes_core.SecretClient,
+	secretClient kubernetes_core.SecretClient,
 	namespaceClient kubernetes_core.NamespaceClient,
 	uninstallClients UninstallClients,
 	inMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory,
@@ -185,7 +185,7 @@ func KubeClientsProvider(
 		DeployedVersionFinder:           deployedVersionFinder,
 		CrdClientFactory:                crdClientFactory,
 		HealthCheckClients:              healthCheckClients,
-		SecretClient:                    secretsClient,
+		SecretClient:                    secretClient,
 		NamespaceClient:                 namespaceClient,
 		UninstallClients:                uninstallClients,
 		InMemoryRESTClientGetterFactory: inMemoryRESTClientGetterFactory,

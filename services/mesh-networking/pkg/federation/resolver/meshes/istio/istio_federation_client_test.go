@@ -13,11 +13,10 @@ import (
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	types2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
@@ -25,6 +24,7 @@ import (
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_istio_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/istio/networking/v1beta1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	alpha3 "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -293,7 +293,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			serviceClient.EXPECT().
-				List(ctx, labels).
+				ListService(ctx, labels).
 				Return(&corev1.ServiceList{
 					Items: []corev1.Service{service},
 				}, nil)
@@ -480,7 +480,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			serviceClient.EXPECT().
-				List(ctx, labels).
+				ListService(ctx, labels).
 				Return(&corev1.ServiceList{
 					Items: []corev1.Service{service},
 				}, nil)
@@ -676,7 +676,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			serviceClient.EXPECT().
-				List(ctx, labels).
+				ListService(ctx, labels).
 				Return(&corev1.ServiceList{
 					Items: []corev1.Service{service},
 				}, nil)

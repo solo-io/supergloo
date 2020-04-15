@@ -23,7 +23,7 @@ func (*smhComponentsHealthCheck) GetDescription() string {
 }
 
 func (s *smhComponentsHealthCheck) Run(ctx context.Context, installNamespace string, clients healthcheck_types.Clients) (runFailure *healthcheck_types.RunFailure, checkApplies bool) {
-	smhPods, err := clients.PodClient.List(ctx, client.InNamespace(installNamespace))
+	smhPods, err := clients.PodClient.ListPod(ctx, client.InNamespace(installNamespace))
 	if err != nil {
 		return &healthcheck_types.RunFailure{
 			ErrorMessage: GenericCheckFailed(err).Error(),

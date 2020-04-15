@@ -22,11 +22,11 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -223,14 +223,22 @@ users:
 			Type: v1.SecretTypeOpaque,
 		}
 
-		secretClient.
-			EXPECT().
-			UpsertData(ctx, secret).
-			Return(nil)
+		var expectUpsertSecretData = func(ctx context.Context, secret *v1.Secret) {
+			existing := &v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{Name: "existing"},
+			}
+			secretClient.
+				EXPECT().
+				GetSecret(ctx, client.ObjectKey{Name: secret.Name, Namespace: secret.Namespace}).
+				Return(existing, nil)
+			existing.Data = secret.Data
+			secretClient.EXPECT().UpdateSecret(ctx, existing).Return(nil)
+		}
+		expectUpsertSecretData(ctx, secret)
 
 		namespaceClient.
 			EXPECT().
-			Get(ctx, env.GetWriteNamespace()).
+			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 			Return(nil, nil)
 
 		csrAgentInstaller.EXPECT().

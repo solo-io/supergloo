@@ -10,9 +10,9 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/proto_conversion"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
@@ -256,7 +256,7 @@ func (i *istioFederationClient) determineExternalIpForGateway(
 
 	// implicitly convert the map[string]string to a client.MatchingLabels
 	var labels client.MatchingLabels = BuildGatewayWorkloadSelector()
-	gatewayServiceList, err := i.serviceClientFactory(dynamicClient).List(ctx, labels)
+	gatewayServiceList, err := i.serviceClientFactory(dynamicClient).ListService(ctx, labels)
 
 	if err != nil {
 		return eap, err

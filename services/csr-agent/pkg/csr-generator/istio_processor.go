@@ -8,14 +8,15 @@ import (
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	pki_util "istio.io/istio/security/pkg/pki/util"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -155,12 +156,12 @@ func (i *istioCSRGenerator) updateCa(
 	secretName, secretNamespace := IstioCaSecretName, "istio-system"
 
 	certSecret := intermediateCAData.BuildSecret(secretName, secretNamespace)
-	existing, err := i.secretClient.Get(ctx, secretName, secretNamespace)
+	existing, err := i.secretClient.GetSecret(ctx, client.ObjectKey{Name: secretName, Namespace: secretNamespace})
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
-		return i.secretClient.Create(ctx, certSecret)
+		return i.secretClient.CreateSecret(ctx, certSecret)
 	}
 
 	if i.certsAreEqual(existing.Data, certSecret.Data) {
@@ -168,7 +169,7 @@ func (i *istioCSRGenerator) updateCa(
 	}
 
 	existing.Data = certSecret.Data
-	return i.secretClient.Update(ctx, existing)
+	return i.secretClient.UpdateSecret(ctx, existing)
 }
 
 func (i *istioCSRGenerator) certsAreEqual(

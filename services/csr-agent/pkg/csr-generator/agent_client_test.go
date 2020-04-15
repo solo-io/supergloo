@@ -9,15 +9,16 @@ import (
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/security/certgen/mocks"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	mock_csr_agent_controller "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator/mocks"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("agent client", func() {
@@ -52,7 +53,7 @@ var _ = Describe("agent client", func() {
 			},
 		}
 		secretClient.EXPECT().
-			Get(ctx, csr.GetName()+csr_generator.PrivateKeyNameSuffix, csr.GetNamespace()).
+			GetSecret(ctx, client.ObjectKey{Name: csr.GetName() + csr_generator.PrivateKeyNameSuffix, Namespace: csr.GetNamespace()}).
 			Return(nil, testErr)
 
 		_, err := certClient.EnsureSecretKey(ctx, csr)
@@ -68,7 +69,7 @@ var _ = Describe("agent client", func() {
 		}
 		secret := &v1.Secret{}
 		secretClient.EXPECT().
-			Get(ctx, csr.GetName()+csr_generator.PrivateKeyNameSuffix, csr.GetNamespace()).
+			GetSecret(ctx, client.ObjectKey{Name: csr.GetName() + csr_generator.PrivateKeyNameSuffix, Namespace: csr.GetNamespace()}).
 			Return(secret, nil)
 
 		_, err := certClient.EnsureSecretKey(ctx, csr)
@@ -92,7 +93,7 @@ var _ = Describe("agent client", func() {
 			},
 		}
 		secretClient.EXPECT().
-			Get(ctx, csr.GetName()+csr_generator.PrivateKeyNameSuffix, csr.GetNamespace()).
+			GetSecret(ctx, client.ObjectKey{Name: csr.GetName() + csr_generator.PrivateKeyNameSuffix, Namespace: csr.GetNamespace()}).
 			Return(secret, nil)
 
 		caData, err := certClient.EnsureSecretKey(ctx, csr)
@@ -111,7 +112,7 @@ var _ = Describe("agent client", func() {
 		}
 
 		secretClient.EXPECT().
-			Get(ctx, csr.GetName()+csr_generator.PrivateKeyNameSuffix, csr.GetNamespace()).
+			GetSecret(ctx, client.ObjectKey{Name: csr.GetName() + csr_generator.PrivateKeyNameSuffix, Namespace: csr.GetNamespace()}).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
 		key := []byte{'a', 'b', 'c'}
@@ -126,7 +127,7 @@ var _ = Describe("agent client", func() {
 		expectedSecret := intermediateCAData.BuildSecret(csr.GetName()+csr_generator.PrivateKeyNameSuffix, csr.GetNamespace())
 		secretClient.
 			EXPECT().
-			Create(ctx, expectedSecret).
+			CreateSecret(ctx, expectedSecret).
 			Return(nil)
 		_, err := certClient.EnsureSecretKey(ctx, csr)
 		Expect(err).ToNot(HaveOccurred())

@@ -8,9 +8,9 @@ import (
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	corev1_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -134,7 +134,7 @@ func (m *meshServiceFinder) handleMeshWorkloadUpsert(meshWorkload *discovery_v1a
 		return err
 	}
 
-	services, err := m.serviceClient.List(m.ctx)
+	services, err := m.serviceClient.ListService(m.ctx)
 	if err != nil {
 		return err
 	}

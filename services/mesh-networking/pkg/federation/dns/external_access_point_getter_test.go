@@ -7,12 +7,12 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -152,7 +152,7 @@ var _ = Describe("external access point getter", func() {
 				Return(nil, nil)
 
 			podClient.EXPECT().
-				List(ctx, &client.ListOptions{
+				ListPod(ctx, &client.ListOptions{
 					LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 					Namespace:     svc.Namespace,
 				}).
@@ -185,7 +185,7 @@ var _ = Describe("external access point getter", func() {
 
 			nodeName := "test-node"
 			podClient.EXPECT().
-				List(ctx, &client.ListOptions{
+				ListPod(ctx, &client.ListOptions{
 					LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 					Namespace:     svc.Namespace,
 				}).
@@ -199,7 +199,7 @@ var _ = Describe("external access point getter", func() {
 
 			node := &corev1.Node{}
 			nodeClient.EXPECT().
-				Get(ctx, nodeName).
+				GetNode(ctx, client.ObjectKey{Name: nodeName}).
 				Return(node, nil)
 
 			_, err := externalAccessPointGetter.GetExternalAccessPointForService(ctx, svc, istio_federation.DefaultGatewayPortName, clusterName)
@@ -230,7 +230,7 @@ var _ = Describe("external access point getter", func() {
 
 			nodeName := "test-node"
 			podClient.EXPECT().
-				List(ctx, &client.ListOptions{
+				ListPod(ctx, &client.ListOptions{
 					LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 					Namespace:     svc.Namespace,
 				}).
@@ -252,7 +252,7 @@ var _ = Describe("external access point getter", func() {
 				},
 			}
 			nodeClient.EXPECT().
-				Get(ctx, nodeName).
+				GetNode(ctx, client.ObjectKey{Name: nodeName}).
 				Return(node, nil)
 
 			eap, err := externalAccessPointGetter.GetExternalAccessPointForService(ctx, svc, istio_federation.DefaultGatewayPortName, clusterName)

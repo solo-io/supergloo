@@ -7,9 +7,10 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8sapiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -73,10 +74,9 @@ func (r *remoteAuthorityConfigCreator) waitForSecret(
 ) (foundSecret *k8sapiv1.Secret, err error) {
 
 	err = retry.Do(func() error {
-		serviceAccount, err := r.serviceAccountClient.Get(
+		serviceAccount, err := r.serviceAccountClient.GetServiceAccount(
 			ctx,
-			serviceAccountRef.Name,
-			serviceAccountRef.Namespace,
+			client.ObjectKey{Name: serviceAccountRef.Name, Namespace: serviceAccountRef.Namespace},
 		)
 		if err != nil {
 			return err
@@ -91,7 +91,7 @@ func (r *remoteAuthorityConfigCreator) waitForSecret(
 
 		secretName := serviceAccount.Secrets[0].Name
 
-		secret, err := r.secretClient.Get(ctx, secretName, serviceAccountRef.Namespace)
+		secret, err := r.secretClient.GetSecret(ctx, client.ObjectKey{Name: secretName, Namespace: serviceAccountRef.Namespace})
 		if err != nil {
 			return err
 		}

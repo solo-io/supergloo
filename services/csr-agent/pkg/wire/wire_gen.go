@@ -8,8 +8,8 @@ package wire
 import (
 	"context"
 
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"

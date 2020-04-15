@@ -17,6 +17,7 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
@@ -181,9 +182,9 @@ func RegisterCluster(
 }
 
 func ensureRemoteNamespace(ctx context.Context, writeNamespace string, remote *common.KubeClients) error {
-	_, err := remote.NamespaceClient.Get(ctx, writeNamespace)
+	_, err := remote.NamespaceClient.GetNamespace(ctx, client.ObjectKey{Name: writeNamespace})
 	if errors.IsNotFound(err) {
-		return remote.NamespaceClient.Create(ctx, &corev1.Namespace{
+		return remote.NamespaceClient.CreateNamespace(ctx, &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: writeNamespace,
 			},
@@ -296,7 +297,7 @@ func writeKubeConfigToMaster(
 		return nil, FailedToConvertToSecret(err)
 	}
 
-	err = masterKubeClients.SecretClient.UpsertData(ctx, secret)
+	err = upsertSecretData(ctx, secret, masterKubeClients.SecretClient)
 	if err != nil {
 		return nil, FailedToWriteSecret(err)
 	}
@@ -390,4 +391,17 @@ func hackClusterConfigForLocalTestingInKIND(
 	}
 
 	return nil
+}
+
+func upsertSecretData(ctx context.Context, secret *corev1.Secret, secretClient v1.SecretClient) error {
+	existing, err := secretClient.GetSecret(ctx, client.ObjectKey{Name: secret.Name, Namespace: secret.Namespace})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return secretClient.CreateSecret(ctx, secret)
+		}
+		return err
+	}
+	existing.Data = secret.Data
+	existing.StringData = secret.StringData
+	return secretClient.UpdateSecret(ctx, existing)
 }

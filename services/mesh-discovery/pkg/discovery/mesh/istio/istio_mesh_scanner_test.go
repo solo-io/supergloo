@@ -12,12 +12,12 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/docker/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/istio"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -154,7 +154,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		}
 		mockConfigMapClient.
 			EXPECT().
-			Get(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
+			GetConfigMap(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
 			Return(configMap, nil)
 		mesh, err := istioMeshScanner.ScanDeployment(ctx, deployment, clusterScopedClient)
 		Expect(err).NotTo(HaveOccurred())
@@ -220,7 +220,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		}
 		mockConfigMapClient.
 			EXPECT().
-			Get(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
+			GetConfigMap(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
 			Return(configMap, nil)
 		mesh, err := istioMeshScanner.ScanDeployment(ctx, deployment, clusterScopedClient)
 		Expect(err).NotTo(HaveOccurred())

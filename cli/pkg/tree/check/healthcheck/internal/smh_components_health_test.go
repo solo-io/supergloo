@@ -10,8 +10,8 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,7 +36,7 @@ var _ = Describe("SMH components check", func() {
 		testErr := eris.New("test-err")
 		podClient := mock_kubernetes_core.NewMockPodClient(ctrl)
 		podClient.EXPECT().
-			List(ctx, client.InNamespace(env.GetWriteNamespace())).
+			ListPod(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(nil, testErr)
 
 		check := internal.NewSmhComponentsHealthCheck()
@@ -53,7 +53,7 @@ var _ = Describe("SMH components check", func() {
 	It("reports an error if SMH is not installed", func() {
 		podClient := mock_kubernetes_core.NewMockPodClient(ctrl)
 		podClient.EXPECT().
-			List(ctx, client.InNamespace(env.GetWriteNamespace())).
+			ListPod(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(&v1.PodList{}, nil)
 
 		check := internal.NewSmhComponentsHealthCheck()
@@ -71,7 +71,7 @@ var _ = Describe("SMH components check", func() {
 	It("reports an error if a pod is failing, and provides a helpful hint", func() {
 		podClient := mock_kubernetes_core.NewMockPodClient(ctrl)
 		podClient.EXPECT().
-			List(ctx, client.InNamespace(env.GetWriteNamespace())).
+			ListPod(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(&v1.PodList{
 				Items: []v1.Pod{{
 					ObjectMeta: metav1.ObjectMeta{

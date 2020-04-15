@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	mock_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps/mocks"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
+	mock_apps "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/apps/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -74,8 +74,8 @@ var _ = Describe("OwnerFetcher", func() {
 
 	It("should get deployment", func() {
 		expectedDeployment := &appsv1.Deployment{}
-		mockReplicaSetClient.EXPECT().Get(ctx, replicaSetObjKey).Return(replicaSet, nil)
-		mockDeploymentClient.EXPECT().Get(ctx, deploymentObjKey).Return(expectedDeployment, nil)
+		mockReplicaSetClient.EXPECT().GetReplicaSet(ctx, replicaSetObjKey).Return(replicaSet, nil)
+		mockDeploymentClient.EXPECT().GetDeployment(ctx, deploymentObjKey).Return(expectedDeployment, nil)
 		deployment, err := ownerFetcher.GetDeployment(ctx, pod)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(expectedDeployment).To(Equal(deployment))
@@ -97,7 +97,7 @@ var _ = Describe("OwnerFetcher", func() {
 
 	It("should return error if can't fetch ReplicaSet for Pod", func() {
 		expectedErr := errors.New("can't fetch ReplicaSet")
-		mockReplicaSetClient.EXPECT().Get(ctx, replicaSetObjKey).Return(nil, expectedErr)
+		mockReplicaSetClient.EXPECT().GetReplicaSet(ctx, replicaSetObjKey).Return(nil, expectedErr)
 		_, err := ownerFetcher.GetDeployment(ctx, pod)
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
 	})
@@ -111,7 +111,7 @@ var _ = Describe("OwnerFetcher", func() {
 				Name:       replicaSetName,
 			},
 		}
-		mockReplicaSetClient.EXPECT().Get(ctx, replicaSetObjKey).Return(&replicaSetWithoutOwner, nil)
+		mockReplicaSetClient.EXPECT().GetReplicaSet(ctx, replicaSetObjKey).Return(&replicaSetWithoutOwner, nil)
 		_, err := ownerFetcher.GetDeployment(ctx, pod)
 		Expect(err).To(testutils.HaveInErrorChain(
 			mesh_workload.ControllerOwnerNotFound(namespace, replicaSetWithoutOwner.Name, replicaSetWithoutOwner.TypeMeta.Kind)))
@@ -119,8 +119,8 @@ var _ = Describe("OwnerFetcher", func() {
 
 	It("should return error if can't fetch Deployment for ReplicaSet", func() {
 		expectedErr := errors.New("can't fetch Deployment")
-		mockReplicaSetClient.EXPECT().Get(ctx, replicaSetObjKey).Return(replicaSet, nil)
-		mockDeploymentClient.EXPECT().Get(ctx, deploymentObjKey).Return(nil, expectedErr)
+		mockReplicaSetClient.EXPECT().GetReplicaSet(ctx, replicaSetObjKey).Return(replicaSet, nil)
+		mockDeploymentClient.EXPECT().GetDeployment(ctx, deploymentObjKey).Return(nil, expectedErr)
 		_, err := ownerFetcher.GetDeployment(ctx, pod)
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
 	})

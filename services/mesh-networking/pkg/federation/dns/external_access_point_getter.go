@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -119,7 +119,7 @@ func (f *externalAccessPointGetter) getNodeIp(ctx context.Context, svc *corev1.S
 	}
 
 	podClient := f.podClientFactory(dynamicClient)
-	pods, err := podClient.List(ctx, &client.ListOptions{
+	pods, err := podClient.ListPod(ctx, &client.ListOptions{
 		LabelSelector: labels.SelectorFromSet(svc.Spec.Selector),
 		Namespace:     svc.Namespace,
 	})
@@ -138,7 +138,7 @@ func (f *externalAccessPointGetter) getNodeIp(ctx context.Context, svc *corev1.S
 	}
 
 	nodeClient := f.nodeClientFactory(dynamicClient)
-	node, err := nodeClient.Get(ctx, nodeName)
+	node, err := nodeClient.GetNode(ctx, client.ObjectKey{Name: nodeName})
 	if err != nil {
 		return "", err
 	}

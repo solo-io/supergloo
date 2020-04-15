@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
+	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,7 +39,7 @@ func (d *ownerFetcher) GetDeployment(ctx context.Context, pod *corev1.Pod) (*app
 	if err != nil {
 		return nil, err
 	}
-	replicaSet, err := d.replicaSetClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: replicaName})
+	replicaSet, err := d.replicaSetClient.GetReplicaSet(ctx, client.ObjectKey{Namespace: namespace, Name: replicaName})
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (d *ownerFetcher) GetDeployment(ctx context.Context, pod *corev1.Pod) (*app
 	if err != nil {
 		return nil, err
 	}
-	deployment, err := d.deploymentClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: deploymentName})
+	deployment, err := d.deploymentClient.GetDeployment(ctx, client.ObjectKey{Namespace: namespace, Name: deploymentName})
 	if err != nil {
 		return nil, err
 	}

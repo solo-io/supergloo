@@ -11,10 +11,10 @@ import (
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
+	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/linkerd/v1alpha2"
 	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/clients/smi/split/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
@@ -60,7 +60,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	virtualMeshCertificateSigningRequestClientFactory := v1alpha1.VirtualMeshCertificateSigningRequestClientFactoryProvider()
 	clientFactories := NewClientFactories(virtualMeshCertificateSigningRequestClientFactory)
 	client := mc_wire.DynamicClientProvider(asyncManager)
-	secretClient := kubernetes_core.NewSecretClient(client)
+	secretClient := v1.SecretClientProvider(client)
 	virtualMeshClient := v1alpha1_2.VirtualMeshClientProvider(client)
 	rootCertGenerator := certgen.NewRootCertGenerator()
 	virtualMeshCertClient := cert_signer.NewVirtualMeshCertClient(secretClient, virtualMeshClient, rootCertGenerator)
@@ -72,7 +72,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	}
 	meshServiceClient := v1alpha1_3.MeshServiceClientProvider(client)
 	meshWorkloadClient := v1alpha1_3.MeshWorkloadClientProvider(client)
-	deploymentClientFactory := kubernetes_apps.DeploymentClientFactoryProvider()
+	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
 	dynamicClientGetter := mc_wire.DynamicClientGetterProvider(asyncManagerController)
 	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
 	meshClient := v1alpha1_3.MeshClientProvider(client)
@@ -113,11 +113,11 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	gatewayClientFactory := v1alpha3.GatewayClientFactoryProvider()
 	envoyFilterClientFactory := v1alpha3.EnvoyFilterClientFactoryProvider()
 	serviceEntryClientFactory := v1alpha3.ServiceEntryClientFactoryProvider()
-	serviceClientFactory := kubernetes_core.ServiceClientFactoryProvider()
-	configMapClient := kubernetes_core.NewConfigMapClient(client)
+	serviceClientFactory := v1.ServiceClientFactoryProvider()
+	configMapClient := v1.ConfigMapClientProvider(client)
 	ipAssigner := dns.NewIpAssigner(configMapClient)
-	podClientFactory := kubernetes_core.NewPodClientFactory()
-	nodeClientFactory := kubernetes_core.NewNodeClientFactory()
+	podClientFactory := v1.PodClientFactoryProvider()
+	nodeClientFactory := v1.NodeClientFactoryProvider()
 	externalAccessPointGetter := dns.NewExternalAccessPointGetter(dynamicClientGetter, podClientFactory, nodeClientFactory)
 	istioFederationClient := istio_federation.NewIstioFederationClient(dynamicClientGetter, meshClient, gatewayClientFactory, envoyFilterClientFactory, destinationRuleClientFactory, serviceEntryClientFactory, serviceClientFactory, ipAssigner, externalAccessPointGetter)
 	perMeshFederationClients := resolver.NewPerMeshFederationClients(istioFederationClient)

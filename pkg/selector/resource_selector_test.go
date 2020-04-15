@@ -10,12 +10,12 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
-	mock_kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps/mocks"
+	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	networking_selector "github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	mock_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_kubernetes_apps "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/apps/v1"
 	apps_v1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -587,10 +587,10 @@ var _ = Describe("ResourceSelector", func() {
 				GetClientForCluster(ctx, cluster2.GetName()).
 				Return(nil, nil)
 			mockDeploymentClient.EXPECT().
-				Get(ctx, client.ObjectKey{Name: workload1Controller.GetName(), Namespace: workload1Controller.GetNamespace()}).
+				GetDeployment(ctx, client.ObjectKey{Name: workload1Controller.GetName(), Namespace: workload1Controller.GetNamespace()}).
 				Return(workload1Controller, nil)
 			mockDeploymentClient.EXPECT().
-				Get(ctx, client.ObjectKey{Name: workload2Controller.GetName(), Namespace: workload2Controller.GetNamespace()}).
+				GetDeployment(ctx, client.ObjectKey{Name: workload2Controller.GetName(), Namespace: workload2Controller.GetNamespace()}).
 				Return(workload2Controller, nil)
 
 			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByWorkloadSelector(ctx, &core_types.WorkloadSelector{
@@ -677,10 +677,10 @@ var _ = Describe("ResourceSelector", func() {
 				GetClientForCluster(ctx, cluster2.GetName()).
 				Return(nil, nil)
 			mockDeploymentClient.EXPECT().
-				Get(ctx, client.ObjectKey{Name: workload1Controller.GetName(), Namespace: workload1Controller.GetNamespace()}).
+				GetDeployment(ctx, client.ObjectKey{Name: workload1Controller.GetName(), Namespace: workload1Controller.GetNamespace()}).
 				Return(workload1Controller, nil)
 			mockDeploymentClient.EXPECT().
-				Get(ctx, client.ObjectKey{Name: workload2Controller.GetName(), Namespace: workload2Controller.GetNamespace()}).
+				GetDeployment(ctx, client.ObjectKey{Name: workload2Controller.GetName(), Namespace: workload2Controller.GetNamespace()}).
 				Return(workload2Controller, nil)
 
 			foundWorkloads, err := resourceSelector.GetMeshWorkloadsByWorkloadSelector(ctx, &core_types.WorkloadSelector{

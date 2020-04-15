@@ -57,12 +57,12 @@ import (
 	version2 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
@@ -76,44 +76,37 @@ import (
 // Injectors from wire.go:
 
 func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string) (*common.KubeClients, error) {
-	secretClient, err := kubernetes_core.NewSecretsClientForConfig(masterConfig)
+	clientset, err := v1.ClientsetFromConfigProvider(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	serviceAccountClient, err := kubernetes_core.NewServiceAccountClientForConfig(masterConfig)
-	if err != nil {
-		return nil, err
-	}
+	secretClient := v1.SecretClientFromClientsetProvider(clientset)
+	serviceAccountClient := v1.ServiceAccountClientFromClientsetProvider(clientset)
 	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, serviceAccountClient)
-	clientset, err := kubernetes.NewForConfig(masterConfig)
+	kubernetesClientset, err := kubernetes.NewForConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	rbacClient := auth.RbacClientProvider(clientset)
+	rbacClient := auth.RbacClientProvider(kubernetesClientset)
 	remoteAuthorityManager := auth.NewRemoteAuthorityManager(serviceAccountClient, rbacClient)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
 	helmClient := helminstall.DefaultHelmClient()
-	installer := install.HelmInstallerProvider(helmClient, clientset)
+	installer := install.HelmInstallerProvider(helmClient, kubernetesClientset)
 	v1alpha1Clientset, err := v1alpha1.ClientsetFromConfigProvider(masterConfig)
 	if err != nil {
 		return nil, err
 	}
 	kubernetesClusterClient := v1alpha1.KubernetesClusterClientFromClientsetProvider(v1alpha1Clientset)
-	namespaceClient, err := kubernetes_core.NewNamespaceClientForConfig(masterConfig)
-	if err != nil {
-		return nil, err
-	}
-	serverVersionClient := kubernetes_discovery.NewGeneratedServerVersionClient(clientset)
-	podClient, err := kubernetes_core.NewPodClientForConfig(masterConfig)
-	if err != nil {
-		return nil, err
-	}
+	namespaceClient := v1.NamespaceClientFromClientsetProvider(clientset)
+	serverVersionClient := kubernetes_discovery.NewGeneratedServerVersionClient(kubernetesClientset)
+	podClient := v1.PodClientFromClientsetProvider(clientset)
 	meshServiceClient := v1alpha1.MeshServiceClientFromClientsetProvider(v1alpha1Clientset)
 	clients := healthcheck.ClientsProvider(namespaceClient, serverVersionClient, podClient, meshServiceClient)
-	deploymentClient, err := kubernetes_apps.NewDeploymentClientForConfig(masterConfig)
+	v1Clientset, err := v1_2.ClientsetFromConfigProvider(masterConfig)
 	if err != nil {
 		return nil, err
 	}
+	deploymentClient := v1_2.DeploymentClientFromClientsetProvider(v1Clientset)
 	imageNameParser := docker.NewImageNameParser()
 	deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
 	crdClientFactory := kubernetes_apiext.NewCrdClientFromConfigFactory()
@@ -138,7 +131,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	trafficPolicyClient := v1alpha1_3.TrafficPolicyClientFromClientsetProvider(clientset3)
 	accessControlPolicyClient := v1alpha1_3.AccessControlPolicyClientFromClientsetProvider(clientset3)
 	meshWorkloadClient := v1alpha1.MeshWorkloadClientFromClientsetProvider(v1alpha1Clientset)
-	deploymentClientFactory := kubernetes_apps.DeploymentClientFactoryProvider()
+	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
 	dynamicClientGetter := config_lookup.NewDynamicClientGetter(kubeConfigLookup)
 	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
 	resourceDescriber := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)

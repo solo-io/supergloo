@@ -17,9 +17,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
 	mock_crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -163,10 +163,10 @@ Service Mesh Hub has been uninstalled
 			},
 		}
 		namespaceClient.EXPECT().
-			Get(ctx, env.GetWriteNamespace()).
+			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 			Return(ns, nil)
 		namespaceClient.EXPECT().
-			Delete(ctx, ns).
+			DeleteNamespace(ctx, client.ObjectKey{Name: ns.GetName()}).
 			Return(nil)
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
@@ -223,7 +223,7 @@ Service Mesh Hub has been uninstalled
 			ListKubernetesCluster(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 		namespaceClient.EXPECT().
-			Get(ctx, env.GetWriteNamespace()).
+			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
@@ -283,7 +283,7 @@ Service Mesh Hub has been uninstalled
 			ListKubernetesCluster(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(nil, generateNewErr())
 		namespaceClient.EXPECT().
-			Get(ctx, env.GetWriteNamespace()).
+			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 			Return(nil, generateNewErr())
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
@@ -363,7 +363,7 @@ Service Mesh Hub has been uninstalled with errors
 			Run(ctx, cluster1).
 			Return(generateNewErr())
 		namespaceClient.EXPECT().
-			Get(ctx, env.GetWriteNamespace()).
+			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 			Return(nil, generateNewErr())
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
@@ -448,10 +448,10 @@ Service Mesh Hub has been uninstalled with errors
 			},
 		}
 		namespaceClient.EXPECT().
-			Get(ctx, smhInstallNamespace).
+			GetNamespace(ctx, client.ObjectKey{Name: smhInstallNamespace}).
 			Return(ns, nil)
 		namespaceClient.EXPECT().
-			Delete(ctx, ns).
+			DeleteNamespace(ctx, client.ObjectKey{Name: ns.GetName()}).
 			Return(nil)
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).

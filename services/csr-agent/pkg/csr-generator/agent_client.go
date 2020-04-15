@@ -3,11 +3,12 @@ package csr_generator
 import (
 	"context"
 
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	securityv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -38,7 +39,7 @@ func (c *certClient) EnsureSecretKey(
 	ctx context.Context,
 	obj *securityv1alpha1.VirtualMeshCertificateSigningRequest,
 ) (*cert_secrets.IntermediateCAData, error) {
-	secret, err := c.secretClient.Get(ctx, buildSecretName(obj), obj.GetNamespace())
+	secret, err := c.secretClient.GetSecret(ctx, client.ObjectKey{Name: buildSecretName(obj), Namespace: obj.GetNamespace()})
 	if err != nil {
 		if !kubeerrs.IsNotFound(err) {
 			return nil, err
@@ -51,7 +52,7 @@ func (c *certClient) EnsureSecretKey(
 			CaPrivateKey: privateKey,
 		}
 		newSecret := certData.BuildSecret(buildSecretName(obj), obj.GetNamespace())
-		if err = c.secretClient.Create(ctx, newSecret); err != nil {
+		if err = c.secretClient.CreateSecret(ctx, newSecret); err != nil {
 			return nil, err
 		}
 		return certData, nil
