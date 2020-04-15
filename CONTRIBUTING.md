@@ -47,8 +47,9 @@ A package should have a single file named `interfaces.go`, in which all the expo
 
 ```go
 // go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
-NOTE: there is a space before the `go:generate` in the line above; that is to prevent the line 
-from being run by the actual build, but should be removed in real usage 
+NOTE: there is a space before the `go:generate` in the line above;
+that is to prevent the build from running this specific line in this file (CONTRIBUTING.md), which will fail
+In real usage, you would remove the space between // and go:generate
 ``` 
 
 #### Common Clients
