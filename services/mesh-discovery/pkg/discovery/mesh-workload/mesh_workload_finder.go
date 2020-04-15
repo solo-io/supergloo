@@ -94,7 +94,8 @@ func (d *meshWorkloadFinder) StartDiscovery(
 }
 
 func (d *meshWorkloadFinder) handleMeshCreate(mesh *discoveryv1alpha1.Mesh) error {
-	contextutils.LoggerFrom(d.ctx).Debugf("mesh create event for %s", mesh.Name)
+	logger := contextutils.LoggerFrom(d.ctx)
+	logger.Debugf("mesh create event for %s", mesh.Name)
 
 	// first, register in our stateful representation that we have seen this mesh
 	// this allows us to use the mesh workload scanner implementation later on
@@ -108,8 +109,9 @@ func (d *meshWorkloadFinder) handleMeshCreate(mesh *discoveryv1alpha1.Mesh) erro
 	case *discovery_types.MeshSpec_AwsAppMesh_:
 		d.discoveredMeshTypes.Insert(int32(core_types.MeshType_APPMESH))
 	default:
-		// intentionally panicking; this is a programmer error and we need to quickly notice that we have missed this case
-		panic("Unhandled mesh type in mesh workload discovery")
+		message := fmt.Sprintf("Unexpected error: unhandled mesh type in mesh workload discovery: %+v", mesh.Spec)
+		logger.Error(message)
+		return nil // don't want to requeue this event
 	}
 
 	allPods, err := d.podClient.List(d.ctx)
@@ -231,8 +233,7 @@ func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*discoveryv1
 	for _, discoveredMeshType := range d.discoveredMeshTypes.List() {
 		meshWorkloadScanner, ok := d.meshWorkloadScannerImplementations[core_types.MeshType(discoveredMeshType)]
 		if !ok {
-			// intentionally panicking; this indicates a programmer issue that should be caught earlier rather than later
-			panic(fmt.Sprintf("Missing mesh workload scanner implementation for mesh type %d", discoveredMeshType))
+			return nil, eris.Errorf("Missing mesh workload scanner implementation for mesh type %d", discoveredMeshType)
 		}
 
 		discoveredControllerRef, discoveredMeshWorkloadObjectMeta, err := meshWorkloadScanner.ScanPod(d.ctx, pod)
