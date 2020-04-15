@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	apps_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
-	core_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	k8s_apps_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
+	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
@@ -14,18 +14,18 @@ import (
 
 // given a manager that can talk to a cluster and a name for that cluster, produce a `DeploymentEventWatcher`
 type DeploymentEventWatcherFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) apps_controllers.DeploymentEventWatcher
+	Build(mgr mc_manager.AsyncManager, clusterName string) k8s_apps_controller.DeploymentEventWatcher
 }
 
 // given a manager that can talk to a cluster and a name for that cluster, produce a `PodEventWatcher`
 type PodEventWatcherFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) core_controllers.PodEventWatcher
+	Build(mgr mc_manager.AsyncManager, clusterName string) k8s_core_controller.PodEventWatcher
 }
 
 type MeshWorkloadEventWatcherFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) discovery_controller.MeshWorkloadEventWatcher
+	Build(mgr mc_manager.AsyncManager, clusterName string) zephyr_discovery_controller.MeshWorkloadEventWatcher
 }
 
 type ServiceEventWatcherFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) core_controllers.ServiceEventWatcher
+	Build(mgr mc_manager.AsyncManager, clusterName string) k8s_core_controller.ServiceEventWatcher
 }

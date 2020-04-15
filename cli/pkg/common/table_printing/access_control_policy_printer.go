@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 )
 
@@ -92,7 +92,7 @@ func (a *accessControlPolicyPrinter) allowedPortsToCell(allowedPorts []uint32) s
 	return strings.Join(portStrings, "\n")
 }
 
-func (a *accessControlPolicyPrinter) allowedMethodsToCell(allowedMethods []core_types.HttpMethodValue) string {
+func (a *accessControlPolicyPrinter) allowedMethodsToCell(allowedMethods []zephyr_core_types.HttpMethodValue) string {
 	allowedMethodStrings := []string{}
 	for _, method := range allowedMethods {
 		allowedMethodStrings = append(allowedMethodStrings, method.String())
@@ -104,6 +104,6 @@ func (a *accessControlPolicyPrinter) allowedPathsToCell(allowedPaths []string) s
 	return strings.Join(allowedPaths, "\n")
 }
 
-func (a *accessControlPolicyPrinter) identitySelectorToCell(identitySelector *core_types.IdentitySelector) string {
+func (a *accessControlPolicyPrinter) identitySelectorToCell(identitySelector *zephyr_core_types.IdentitySelector) string {
 	return "TODO" // TODO
 }

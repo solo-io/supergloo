@@ -10,10 +10,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // if you need to update the golden files programmatically, change this to `true` to write the
@@ -46,23 +46,23 @@ var _ = Describe("Virtual Mesh Table Printer", func() {
 			"virtual_mesh",
 			[]*zephyr_networking.VirtualMesh{
 				{
-					ObjectMeta: metav1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "vm-1",
 						Namespace: "service-mesh-hub",
 					},
-					Spec: networking_types.VirtualMeshSpec{
+					Spec: zephyr_networking_types.VirtualMeshSpec{
 						DisplayName: "my favorite virtual mesh",
-						Meshes: []*core_types.ResourceRef{
+						Meshes: []*zephyr_core_types.ResourceRef{
 							{Name: "mesh-1"},
 							{Name: "mesh-2"},
 							{Name: "mesh-3"},
 						},
-						TrustModel: &networking_types.VirtualMeshSpec_Limited{
-							Limited: &networking_types.VirtualMeshSpec_LimitedTrust{},
+						TrustModel: &zephyr_networking_types.VirtualMeshSpec_Limited{
+							Limited: &zephyr_networking_types.VirtualMeshSpec_LimitedTrust{},
 						},
-						CertificateAuthority: &networking_types.VirtualMeshSpec_CertificateAuthority{
-							Type: &networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
-								Builtin: &networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{
+						CertificateAuthority: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
+							Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
+								Builtin: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{
 									RsaKeySizeBytes: 2048,
 									OrgName:         "my-org",
 								},
@@ -70,33 +70,33 @@ var _ = Describe("Virtual Mesh Table Printer", func() {
 						},
 						EnforceAccessControl: true,
 					},
-					Status: networking_types.VirtualMeshStatus{
-						FederationStatus: &core_types.Status{
-							State:   core_types.Status_CONFLICT,
+					Status: zephyr_networking_types.VirtualMeshStatus{
+						FederationStatus: &zephyr_core_types.Status{
+							State:   zephyr_core_types.Status_CONFLICT,
 							Message: "This is a conflict",
 						},
-						ConfigStatus: &core_types.Status{
-							State:   core_types.Status_ACCEPTED,
+						ConfigStatus: &zephyr_core_types.Status{
+							State:   zephyr_core_types.Status_ACCEPTED,
 							Message: "This should not be printed",
 						},
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "vm-2",
 						Namespace: "service-mesh-hub",
 					},
-					Spec: networking_types.VirtualMeshSpec{
+					Spec: zephyr_networking_types.VirtualMeshSpec{
 						DisplayName: "not as cool of a virtual mesh",
-						Meshes: []*core_types.ResourceRef{
+						Meshes: []*zephyr_core_types.ResourceRef{
 							{Name: "mesh-1"},
 							{Name: "mesh-2"},
 							{Name: "mesh-3"},
 						},
-						CertificateAuthority: &networking_types.VirtualMeshSpec_CertificateAuthority{
-							Type: &networking_types.VirtualMeshSpec_CertificateAuthority_Provided_{
-								Provided: &networking_types.VirtualMeshSpec_CertificateAuthority_Provided{
-									Certificate: &core_types.ResourceRef{
+						CertificateAuthority: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
+							Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_{
+								Provided: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided{
+									Certificate: &zephyr_core_types.ResourceRef{
 										Name:      "my-magic-cert",
 										Namespace: "default",
 									},
@@ -105,13 +105,13 @@ var _ = Describe("Virtual Mesh Table Printer", func() {
 						},
 						EnforceAccessControl: false,
 					},
-					Status: networking_types.VirtualMeshStatus{
-						CertificateStatus: &core_types.Status{
-							State:   core_types.Status_INVALID,
+					Status: zephyr_networking_types.VirtualMeshStatus{
+						CertificateStatus: &zephyr_core_types.Status{
+							State:   zephyr_core_types.Status_INVALID,
 							Message: "This is invalid",
 						},
-						AccessControlEnforcementStatus: &core_types.Status{
-							State:   core_types.Status_PROCESSING_ERROR,
+						AccessControlEnforcementStatus: &zephyr_core_types.Status{
+							State:   zephyr_core_types.Status_PROCESSING_ERROR,
 							Message: "This is a processing error",
 						},
 					},

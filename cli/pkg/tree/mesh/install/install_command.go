@@ -11,7 +11,7 @@ import (
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	install_istio "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/spf13/cobra"
 )
@@ -23,7 +23,7 @@ var (
 		MeshInstallRootCmd,
 	)
 	validMeshTypes = []string{
-		strings.ToLower(types.MeshType_ISTIO.String()),
+		strings.ToLower(zephyr_core_types.MeshType_ISTIO.String()),
 	}
 	UnsupportedMeshTypeError = func(meshType string) error {
 		return eris.Errorf(
@@ -53,7 +53,7 @@ func MeshInstallRootCmd(
 			meshType := args[0]
 
 			switch strings.ToUpper(meshType) {
-			case types.MeshType_ISTIO.String():
+			case zephyr_core_types.MeshType_ISTIO.String():
 				istioInstaller, err := install_istio.NewIstioInstaller(
 					out,
 					in,

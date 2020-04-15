@@ -10,10 +10,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // if you need to update the golden files programmatically, change this to `true` to write the
@@ -46,11 +46,11 @@ var _ = Describe("KubernetesCluster Table Printer", func() {
 			"multi_cluster",
 			[]*zephyr_discovery.KubernetesCluster{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "management-plane",
 					},
 					Spec: zephyr_discovery_types.KubernetesClusterSpec{
-						SecretRef: &core_types.ResourceRef{
+						SecretRef: &zephyr_core_types.ResourceRef{
 							Name:      "management-plane",
 							Namespace: "service-mesh-hub",
 						},
@@ -59,11 +59,11 @@ var _ = Describe("KubernetesCluster Table Printer", func() {
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "remote-cluster",
 					},
 					Spec: zephyr_discovery_types.KubernetesClusterSpec{
-						SecretRef: &core_types.ResourceRef{
+						SecretRef: &zephyr_core_types.ResourceRef{
 							Name:      "remote-cluster",
 							Namespace: "service-mesh-hub",
 						},

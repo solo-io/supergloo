@@ -15,12 +15,12 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/prompts"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/validate"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/spf13/cobra"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 )
 
@@ -59,10 +59,10 @@ func createTrafficPolicy(
 	var masterCfg *rest.Config
 	var masterKubeClients *common.KubeClients
 	var meshServiceNames []string
-	var meshServiceNamesToRefs map[string]*core_types.ResourceRef
-	var sourceSelector *core_types.WorkloadSelector
-	var targetSelector *core_types.ServiceSelector
-	var trafficShift *networking_types.TrafficPolicySpec_MultiDestination
+	var meshServiceNamesToRefs map[string]*zephyr_core_types.ResourceRef
+	var sourceSelector *zephyr_core_types.WorkloadSelector
+	var targetSelector *zephyr_core_types.ServiceSelector
+	var trafficShift *zephyr_networking_types.TrafficPolicySpec_MultiDestination
 	if masterCfg, err = kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext); err != nil {
 		return err
 	}
@@ -83,10 +83,10 @@ func createTrafficPolicy(
 		return err
 	}
 	trafficPolicy := &zephyr_networking.TrafficPolicy{
-		TypeMeta: v1.TypeMeta{
+		TypeMeta: k8s_meta_types.TypeMeta{
 			Kind: "TrafficPolicy",
 		},
-		Spec: networking_types.TrafficPolicySpec{
+		Spec: zephyr_networking_types.TrafficPolicySpec{
 			SourceSelector:      sourceSelector,
 			DestinationSelector: targetSelector,
 			TrafficShift:        trafficShift,
@@ -99,7 +99,7 @@ func createTrafficPolicy(
 	}
 }
 
-func selectSourcesInteractively(interactivePrompt interactive.InteractivePrompt) (*core_types.WorkloadSelector, error) {
+func selectSourcesInteractively(interactivePrompt interactive.InteractivePrompt) (*zephyr_core_types.WorkloadSelector, error) {
 	labelSet, err := prompts.PromptLabels("Specify source workloads labels in the format (key1=value1, key2=value2), omit to permit workloads of with any labels", interactivePrompt)
 	if err != nil {
 		return nil, err
@@ -108,22 +108,22 @@ func selectSourcesInteractively(interactivePrompt interactive.InteractivePrompt)
 	if err != nil {
 		return nil, err
 	}
-	return &core_types.WorkloadSelector{Labels: labelSet, Namespaces: namespaces}, nil
+	return &zephyr_core_types.WorkloadSelector{Labels: labelSet, Namespaces: namespaces}, nil
 }
 
 func selectTrafficShiftInteractively(
 	meshServiceNames []string,
-	meshServiceNamesToRef map[string]*core_types.ResourceRef,
+	meshServiceNamesToRef map[string]*zephyr_core_types.ResourceRef,
 	interactivePrompt interactive.InteractivePrompt,
-) (*networking_types.TrafficPolicySpec_MultiDestination, error) {
+) (*zephyr_networking_types.TrafficPolicySpec_MultiDestination, error) {
 	var err error
 	var meshServiceName, weightString, portString string
 	var subsetLabels map[string]string
-	var weightedDestinations []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination
+	var weightedDestinations []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination
 	// Add select all option
 	meshServiceNames = append([]string{DoneSelectingOption}, meshServiceNames...)
 	for {
-		weightedDest := &networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{}
+		weightedDest := &zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{}
 		if meshServiceName, err = interactivePrompt.SelectValue(
 			"Select a Service to shift traffic to",
 			meshServiceNames); err != nil {
@@ -167,26 +167,26 @@ func selectTrafficShiftInteractively(
 		weightedDest.Weight = uint32(weight)
 		weightedDestinations = append(weightedDestinations, weightedDest)
 	}
-	return &networking_types.TrafficPolicySpec_MultiDestination{Destinations: weightedDestinations}, nil
+	return &zephyr_networking_types.TrafficPolicySpec_MultiDestination{Destinations: weightedDestinations}, nil
 }
 
 func fetchMeshServiceRefs(
 	ctx context.Context,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 ) ([]string,
-	map[string]*core_types.ResourceRef,
+	map[string]*zephyr_core_types.ResourceRef,
 	error) {
 	meshServices, err := meshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
 	var meshServiceNames []string
-	meshServiceNamesToRef := map[string]*core_types.ResourceRef{}
+	meshServiceNamesToRef := map[string]*zephyr_core_types.ResourceRef{}
 	for _, meshService := range meshServices.Items {
 		meshService := meshService
 		meshServiceName := buildMeshServiceName(&meshService)
 		meshServiceNames = append(meshServiceNames, meshServiceName)
-		meshServiceNamesToRef[meshServiceName] = &core_types.ResourceRef{
+		meshServiceNamesToRef[meshServiceName] = &zephyr_core_types.ResourceRef{
 			Name:      meshService.GetName(),
 			Namespace: meshService.GetNamespace(),
 			Cluster:   meshService.GetClusterName(),

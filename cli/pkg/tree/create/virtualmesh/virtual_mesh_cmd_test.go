@@ -13,8 +13,8 @@ import (
 	mock_resource_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing/mocks"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
@@ -68,12 +68,12 @@ var _ = Describe("VirtualMeshCmd", func() {
 		It("should interactively create client", func() {
 			displayName := "display-name"
 			targetRestConfig := &rest.Config{}
-			meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{
+			meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{
 				{ObjectMeta: metav1.ObjectMeta{Name: "name1"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name2"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name3"}},
 			}}
-			expectedMeshRefs := []*types.ResourceRef{
+			expectedMeshRefs := []*zephyr_core_types.ResourceRef{
 				{Name: meshList.Items[0].GetName(), Namespace: env.GetWriteNamespace()},
 				{Name: meshList.Items[2].GetName(), Namespace: env.GetWriteNamespace()},
 			}
@@ -141,12 +141,12 @@ var _ = Describe("VirtualMeshCmd", func() {
 		It("should interactively generate client and output for dry-run", func() {
 			displayName := "display-name"
 			targetRestConfig := &rest.Config{}
-			meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{
+			meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{
 				{ObjectMeta: metav1.ObjectMeta{Name: "name1"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name2"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name3"}},
 			}}
-			expectedMeshRefs := []*types.ResourceRef{
+			expectedMeshRefs := []*zephyr_core_types.ResourceRef{
 				{Name: meshList.Items[0].GetName(), Namespace: env.GetWriteNamespace()},
 				{Name: meshList.Items[2].GetName(), Namespace: env.GetWriteNamespace()},
 			}
@@ -214,12 +214,12 @@ var _ = Describe("VirtualMeshCmd", func() {
 		It("should interactively generate client and output for dry-run", func() {
 			displayName := "display-name"
 			targetRestConfig := &rest.Config{}
-			meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{
+			meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{
 				{ObjectMeta: metav1.ObjectMeta{Name: "name1"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name2"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name3"}},
 			}}
-			expectedMeshRefs := []*types.ResourceRef{
+			expectedMeshRefs := []*zephyr_core_types.ResourceRef{
 				{Name: meshList.Items[0].GetName(), Namespace: env.GetWriteNamespace()},
 				{Name: meshList.Items[2].GetName(), Namespace: env.GetWriteNamespace()},
 			}

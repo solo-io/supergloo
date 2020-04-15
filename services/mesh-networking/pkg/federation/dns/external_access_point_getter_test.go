@@ -7,14 +7,14 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	corev1 "k8s.io/api/core/v1"
-	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -39,10 +39,10 @@ var _ = Describe("external access point getter", func() {
 		dynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
 		externalAccessPointGetter = dns.NewExternalAccessPointGetter(
 			dynamicClientGetter,
-			func(client client.Client) kubernetes_core.PodClient {
+			func(client client.Client) k8s_core.PodClient {
 				return podClient
 			},
-			func(client client.Client) kubernetes_core.NodeClient {
+			func(client client.Client) k8s_core.NodeClient {
 				return nodeClient
 			},
 		)
@@ -54,7 +54,7 @@ var _ = Describe("external access point getter", func() {
 
 	It("will return an error if service has no ports", func() {
 		svc := &corev1.Service{
-			ObjectMeta: k8s_meta_v1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
@@ -66,7 +66,7 @@ var _ = Describe("external access point getter", func() {
 
 	It("will return an error if no port can be found with the given name", func() {
 		svc := &corev1.Service{
-			ObjectMeta: k8s_meta_v1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
@@ -86,7 +86,7 @@ var _ = Describe("external access point getter", func() {
 	It("will return an error if service does not match the given types", func() {
 
 		svc := &corev1.Service{
-			ObjectMeta: k8s_meta_v1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
@@ -109,7 +109,7 @@ var _ = Describe("external access point getter", func() {
 		It("will return an error if dynamicClient cannot be found", func() {
 
 			svc := &corev1.Service{
-				ObjectMeta: k8s_meta_v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
 				},
@@ -134,7 +134,7 @@ var _ = Describe("external access point getter", func() {
 		It("will return an error if no pods are scheduled", func() {
 
 			svc := &corev1.Service{
-				ObjectMeta: k8s_meta_v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
 				},
@@ -166,7 +166,7 @@ var _ = Describe("external access point getter", func() {
 		It("will return an error if the node has no valid addresses", func() {
 
 			svc := &corev1.Service{
-				ObjectMeta: k8s_meta_v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
 				},
@@ -210,7 +210,7 @@ var _ = Describe("external access point getter", func() {
 		It("will return address from node, and port from svc", func() {
 
 			svc := &corev1.Service{
-				ObjectMeta: k8s_meta_v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
 				},
@@ -268,7 +268,7 @@ var _ = Describe("external access point getter", func() {
 		It("will return an error if no load balancers are available", func() {
 
 			svc := &corev1.Service{
-				ObjectMeta: k8s_meta_v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
 				},
@@ -289,7 +289,7 @@ var _ = Describe("external access point getter", func() {
 		It("will return an error if no externally resolvable IP is available", func() {
 
 			svc := &corev1.Service{
-				ObjectMeta: k8s_meta_v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
 				},
@@ -315,7 +315,7 @@ var _ = Describe("external access point getter", func() {
 		It("will return an error if no fqdn is available on the ingress", func() {
 
 			svc := &corev1.Service{
-				ObjectMeta: k8s_meta_v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
 				},
@@ -341,7 +341,7 @@ var _ = Describe("external access point getter", func() {
 		It("will return ingress ip and port", func() {
 			ip := "0.0.0.0"
 			svc := &corev1.Service{
-				ObjectMeta: k8s_meta_v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
 				},
@@ -371,7 +371,7 @@ var _ = Describe("external access point getter", func() {
 		It("will return ingress hostname and port", func() {
 			hostName := "test.host.com"
 			svc := &corev1.Service{
-				ObjectMeta: k8s_meta_v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "name",
 					Namespace: "namespace",
 				},

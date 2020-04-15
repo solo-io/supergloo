@@ -7,7 +7,7 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	"istio.io/istio/pkg/spiffe"
 )
 
@@ -39,7 +39,7 @@ func BuildSpiffeURI(trustDomain, namespace, sa string) string {
 func (i *istioCertConfigProducer) ConfigureCertificateInfo(
 	vm *zephyr_networking.VirtualMesh,
 	mesh *zephyr_discovery.Mesh,
-) (*security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig, error) {
+) (*zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig, error) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
 		return nil, IncorrectMeshTypeError(mesh)
@@ -58,7 +58,7 @@ func (i *istioCertConfigProducer) ConfigureCertificateInfo(
 	if istioMesh.GetCitadelInfo().GetCitadelServiceAccount() != "" {
 		citadelServiceAccount = istioMesh.GetCitadelInfo().GetCitadelServiceAccount()
 	}
-	return &security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
+	return &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 		// TODO: Make citadel namespace discoverable
 		Hosts:    []string{BuildSpiffeURI(trustDomain, citadelNamespace, citadelServiceAccount)},
 		Org:      DefaultIstioOrg,

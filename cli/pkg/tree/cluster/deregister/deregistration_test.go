@@ -14,14 +14,14 @@ import (
 	mock_crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd/mocks"
 	helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
 	mock_helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm/mocks"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	mock_cli_runtime "github.com/solo-io/service-mesh-hub/test/mocks/cli_runtime"
 	"helm.sh/helm/v3/pkg/action"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/rest"
@@ -50,18 +50,18 @@ var _ = Describe("Cluster Deregistration", func() {
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		restClientGetter := mock_cli_runtime.NewMockRESTClientGetter(ctrl)
 		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
-		kubeConfigSecretRef := &core_types.ResourceRef{
+		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: env.GetWriteNamespace(),
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
 		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: env.GetWriteNamespace(),
 			},
-			Spec: types.KubernetesClusterSpec{
+			Spec: zephyr_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
 				WriteNamespace: remoteWriteNamespace,
 			},
@@ -99,18 +99,18 @@ var _ = Describe("Cluster Deregistration", func() {
 		testErr := eris.New("test-err")
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
-		kubeConfigSecretRef := &core_types.ResourceRef{
+		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: env.GetWriteNamespace(),
 		}
 		remoteWriteNamespace := "remote-write-namespace"
 		remoteClusterName := "remote-cluster-name"
 		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: env.GetWriteNamespace(),
 			},
-			Spec: types.KubernetesClusterSpec{
+			Spec: zephyr_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
 				WriteNamespace: remoteWriteNamespace,
 			},
@@ -143,18 +143,18 @@ var _ = Describe("Cluster Deregistration", func() {
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		restClientGetter := mock_cli_runtime.NewMockRESTClientGetter(ctrl)
 		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
-		kubeConfigSecretRef := &core_types.ResourceRef{
+		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: env.GetWriteNamespace(),
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
 		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: env.GetWriteNamespace(),
 			},
-			Spec: types.KubernetesClusterSpec{
+			Spec: zephyr_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
 				WriteNamespace: remoteWriteNamespace,
 			},
@@ -190,18 +190,18 @@ var _ = Describe("Cluster Deregistration", func() {
 		restClientGetter := mock_cli_runtime.NewMockRESTClientGetter(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
-		kubeConfigSecretRef := &core_types.ResourceRef{
+		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: env.GetWriteNamespace(),
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
 		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: env.GetWriteNamespace(),
 			},
-			Spec: types.KubernetesClusterSpec{
+			Spec: zephyr_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
 				WriteNamespace: remoteWriteNamespace,
 			},

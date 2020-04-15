@@ -4,7 +4,7 @@ import (
 	"context"
 
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	cert_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
+	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
@@ -41,7 +41,7 @@ type meshNetworkingClusterHandler struct {
 }
 
 type clusterDependentDeps struct {
-	csrController cert_controller.VirtualMeshCertificateSigningRequestEventWatcher
+	csrController zephyr_security_controller.VirtualMeshCertificateSigningRequestEventWatcher
 	csrClient     zephyr_security.VirtualMeshCertificateSigningRequestClient
 }
 

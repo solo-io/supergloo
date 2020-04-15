@@ -6,9 +6,9 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	k8sapiv1 "k8s.io/api/core/v1"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -28,8 +28,8 @@ var (
 )
 
 func NewRemoteAuthorityConfigCreator(
-	secretClient kubernetes_core.SecretClient,
-	serviceAccountClient kubernetes_core.ServiceAccountClient,
+	secretClient k8s_core.SecretClient,
+	serviceAccountClient k8s_core.ServiceAccountClient,
 ) RemoteAuthorityConfigCreator {
 	return &remoteAuthorityConfigCreator{
 		serviceAccountClient: serviceAccountClient,
@@ -38,14 +38,14 @@ func NewRemoteAuthorityConfigCreator(
 }
 
 type remoteAuthorityConfigCreator struct {
-	secretClient         kubernetes_core.SecretClient
-	serviceAccountClient kubernetes_core.ServiceAccountClient
+	secretClient         k8s_core.SecretClient
+	serviceAccountClient k8s_core.ServiceAccountClient
 }
 
 func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 	ctx context.Context,
 	targetClusterCfg *rest.Config,
-	serviceAccountRef *core_types.ResourceRef,
+	serviceAccountRef *zephyr_core_types.ResourceRef,
 ) (*rest.Config, error) {
 
 	tokenSecret, err := r.waitForSecret(ctx, serviceAccountRef)
@@ -70,8 +70,8 @@ func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 
 func (r *remoteAuthorityConfigCreator) waitForSecret(
 	ctx context.Context,
-	serviceAccountRef *core_types.ResourceRef,
-) (foundSecret *k8sapiv1.Secret, err error) {
+	serviceAccountRef *zephyr_core_types.ResourceRef,
+) (foundSecret *k8s_core_types.Secret, err error) {
 
 	err = retry.Do(func() error {
 		serviceAccount, err := r.serviceAccountClient.GetServiceAccount(

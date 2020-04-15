@@ -9,12 +9,12 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("Federation decision health check", func() {
@@ -36,7 +36,7 @@ var _ = Describe("Federation decision health check", func() {
 		meshServiceClient := mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
 		meshServiceClient.EXPECT().
 			ListMeshService(ctx).
-			Return(&v1alpha1.MeshServiceList{}, nil)
+			Return(&zephyr_discovery.MeshServiceList{}, nil)
 
 		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
 			MeshServiceClient: meshServiceClient,
@@ -50,13 +50,13 @@ var _ = Describe("Federation decision health check", func() {
 		meshServiceClient := mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
 		meshServiceClient.EXPECT().
 			ListMeshService(ctx).
-			Return(&v1alpha1.MeshServiceList{
-				Items: []v1alpha1.MeshService{
+			Return(&zephyr_discovery.MeshServiceList{
+				Items: []zephyr_discovery.MeshService{
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "test-1"},
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-1"},
 					},
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "test-2"},
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-2"},
 					},
 				},
 			}, nil)
@@ -73,21 +73,21 @@ var _ = Describe("Federation decision health check", func() {
 		meshServiceClient := mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
 		meshServiceClient.EXPECT().
 			ListMeshService(ctx).
-			Return(&v1alpha1.MeshServiceList{
-				Items: []v1alpha1.MeshService{
+			Return(&zephyr_discovery.MeshServiceList{
+				Items: []zephyr_discovery.MeshService{
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "test-1"},
-						Status: discovery_types.MeshServiceStatus{
-							FederationStatus: &core_types.Status{
-								State: core_types.Status_ACCEPTED,
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-1"},
+						Status: zephyr_discovery_types.MeshServiceStatus{
+							FederationStatus: &zephyr_core_types.Status{
+								State: zephyr_core_types.Status_ACCEPTED,
 							},
 						},
 					},
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "test-2"},
-						Status: discovery_types.MeshServiceStatus{
-							FederationStatus: &core_types.Status{
-								State: core_types.Status_ACCEPTED,
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-2"},
+						Status: zephyr_discovery_types.MeshServiceStatus{
+							FederationStatus: &zephyr_core_types.Status{
+								State: zephyr_core_types.Status_ACCEPTED,
 							},
 						},
 					},
@@ -106,21 +106,21 @@ var _ = Describe("Federation decision health check", func() {
 		meshServiceClient := mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
 		meshServiceClient.EXPECT().
 			ListMeshService(ctx).
-			Return(&v1alpha1.MeshServiceList{
-				Items: []v1alpha1.MeshService{
+			Return(&zephyr_discovery.MeshServiceList{
+				Items: []zephyr_discovery.MeshService{
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "test-1", Namespace: env.GetWriteNamespace()},
-						Status: discovery_types.MeshServiceStatus{
-							FederationStatus: &core_types.Status{
-								State: core_types.Status_ACCEPTED,
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-1", Namespace: env.GetWriteNamespace()},
+						Status: zephyr_discovery_types.MeshServiceStatus{
+							FederationStatus: &zephyr_core_types.Status{
+								State: zephyr_core_types.Status_ACCEPTED,
 							},
 						},
 					},
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "test-2", Namespace: env.GetWriteNamespace()},
-						Status: discovery_types.MeshServiceStatus{
-							FederationStatus: &core_types.Status{
-								State: core_types.Status_INVALID,
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-2", Namespace: env.GetWriteNamespace()},
+						Status: zephyr_discovery_types.MeshServiceStatus{
+							FederationStatus: &zephyr_core_types.Status{
+								State: zephyr_core_types.Status_INVALID,
 							},
 						},
 					},
@@ -135,7 +135,7 @@ var _ = Describe("Federation decision health check", func() {
 
 		Expect(checkApplies).To(BeTrue())
 		Expect(runFailure).NotTo(BeNil())
-		Expect(runFailure.ErrorMessage).To(Equal(internal.FederationRecordingHasFailed("test-2", env.GetWriteNamespace(), core_types.Status_INVALID).Error()))
+		Expect(runFailure.ErrorMessage).To(Equal(internal.FederationRecordingHasFailed("test-2", env.GetWriteNamespace(), zephyr_core_types.Status_INVALID).Error()))
 		Expect(runFailure.Hint).To(Equal(fmt.Sprintf("get details from the failing MeshService: `kubectl -n %s get meshservice %s -oyaml`", env.GetWriteNamespace(), "test-2")))
 	})
 })

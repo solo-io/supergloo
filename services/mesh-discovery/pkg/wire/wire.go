@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/wire"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
@@ -23,9 +23,9 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		multicluster_wire.MulticlusterProviderSet,
 		docker.NewImageNameParser,
 		mesh_workload.OwnerFetcherFactoryProvider,
-		kubernetes_apps.DeploymentClientFactoryProvider,
-		kubernetes_apps.ReplicaSetClientFactoryProvider,
-		kubernetes_core.ServiceClientFactoryProvider,
+		k8s_apps.DeploymentClientFactoryProvider,
+		k8s_apps.ReplicaSetClientFactoryProvider,
+		k8s_core.ServiceClientFactoryProvider,
 		zephyr_discovery.MeshServiceClientFactoryProvider,
 		zephyr_discovery.MeshWorkloadClientFactoryProvider,
 		controllers.NewDeploymentEventWatcherFactory,
@@ -33,7 +33,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		controllers.NewServiceEventWatcherFactory,
 		controllers.NewMeshWorkloadEventWatcherFactory,
 		zephyr_discovery.MeshClientFactoryProvider,
-		kubernetes_core.ConfigMapClientFactoryProvider,
+		k8s_core.ConfigMapClientFactoryProvider,
 		mesh_istio.WireProviderSet,
 		mesh_consul.WireProviderSet,
 		mesh_linkerd.WireProviderSet,

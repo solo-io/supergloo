@@ -4,39 +4,39 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
-	corev1 "k8s.io/api/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
-	UnsupportedServiceType = func(svc *corev1.Service, clusterName string) error {
+	UnsupportedServiceType = func(svc *k8s_core_types.Service, clusterName string) error {
 		return eris.Errorf("Unsupported service type (%s) found for gateway service (%s.%s) on cluster (%s)",
 			svc.Spec.Type, svc.GetName(), svc.GetNamespace(), clusterName)
 	}
-	NoExternallyResolvableIp = func(svc *corev1.Service, clusterName string) error {
+	NoExternallyResolvableIp = func(svc *k8s_core_types.Service, clusterName string) error {
 		return eris.Errorf("Service (%s.%s) of type LoadBalancer on cluster (%s) is not yet externally accessible",
 			svc.GetName(), svc.GetNamespace(), clusterName)
 	}
-	NoAvailableIngresses = func(svc *corev1.Service, clusterName string) error {
+	NoAvailableIngresses = func(svc *k8s_core_types.Service, clusterName string) error {
 		return eris.Errorf("Service (%s.%s) of type LoadBalancer on cluster (%s) has no ingress",
 			svc.GetName(), svc.GetNamespace(), clusterName)
 	}
-	NoScheduledPods = func(svc *corev1.Service, clusterName string) error {
+	NoScheduledPods = func(svc *k8s_core_types.Service, clusterName string) error {
 		return eris.Errorf("no node found for the service's pods. ensure at least one pod has been deployed "+
 			"for the (%s.%s) service on cluster (%s)", svc.GetName(), svc.GetNamespace(), clusterName)
 	}
-	NoActiveAddressesForNode = func(node *corev1.Node, clusterName string) error {
+	NoActiveAddressesForNode = func(node *k8s_core_types.Node, clusterName string) error {
 		return eris.Errorf("no active addresses found for node (%s) on cluster (%s)",
 			node.GetName(), clusterName)
 	}
-	NoAvailablePorts = func(svc *corev1.Service, clusterName string) error {
+	NoAvailablePorts = func(svc *k8s_core_types.Service, clusterName string) error {
 		return eris.Errorf("Service (%s.%s) on cluster (%s) has no ports set",
 			svc.GetName(), svc.GetNamespace(), clusterName)
 	}
-	NamedPortNotFound = func(svc *corev1.Service, clusterName, portName string) error {
+	NamedPortNotFound = func(svc *k8s_core_types.Service, clusterName, portName string) error {
 		return eris.Errorf("Service (%s.%s) on cluster (%s) has no ports named %s",
 			svc.GetName(), svc.GetNamespace(), clusterName, portName)
 	}
@@ -44,8 +44,8 @@ var (
 
 func NewExternalAccessPointGetter(
 	dynamicClientGetter mc_manager.DynamicClientGetter,
-	podClientFactory kubernetes_core.PodClientFactory,
-	nodeClientFactory kubernetes_core.NodeClientFactory,
+	podClientFactory k8s_core.PodClientFactory,
+	nodeClientFactory k8s_core.NodeClientFactory,
 ) ExternalAccessPointGetter {
 	return &externalAccessPointGetter{
 		dynamicClientGetter: dynamicClientGetter,
@@ -56,20 +56,20 @@ func NewExternalAccessPointGetter(
 
 type externalAccessPointGetter struct {
 	dynamicClientGetter mc_manager.DynamicClientGetter
-	podClientFactory    kubernetes_core.PodClientFactory
-	nodeClientFactory   kubernetes_core.NodeClientFactory
+	podClientFactory    k8s_core.PodClientFactory
+	nodeClientFactory   k8s_core.NodeClientFactory
 }
 
 func (f *externalAccessPointGetter) GetExternalAccessPointForService(
 	ctx context.Context,
-	svc *corev1.Service,
+	svc *k8s_core_types.Service,
 	portName, clusterName string,
 ) (eap ExternalAccessPoint, err error) {
 	if len(svc.Spec.Ports) == 0 {
 		return eap, NoAvailablePorts(svc, clusterName)
 	}
 
-	var servicePort *corev1.ServicePort
+	var servicePort *k8s_core_types.ServicePort
 	for _, p := range svc.Spec.Ports {
 		if p.Name == portName {
 			servicePort = &p
@@ -82,7 +82,7 @@ func (f *externalAccessPointGetter) GetExternalAccessPointForService(
 	}
 
 	switch svc.Spec.Type {
-	case corev1.ServiceTypeLoadBalancer:
+	case k8s_core_types.ServiceTypeLoadBalancer:
 		ingress := svc.Status.LoadBalancer.Ingress
 		if len(ingress) == 0 {
 			return eap, NoAvailableIngresses(svc, clusterName)
@@ -99,7 +99,7 @@ func (f *externalAccessPointGetter) GetExternalAccessPointForService(
 		}
 
 		eap.Port = uint32(servicePort.Port)
-	case corev1.ServiceTypeNodePort:
+	case k8s_core_types.ServiceTypeNodePort:
 		eap.Address, err = f.getNodeIp(ctx, svc, clusterName)
 		if err != nil {
 			return eap, err
@@ -112,7 +112,7 @@ func (f *externalAccessPointGetter) GetExternalAccessPointForService(
 	return eap, nil
 }
 
-func (f *externalAccessPointGetter) getNodeIp(ctx context.Context, svc *corev1.Service, clusterName string) (string, error) {
+func (f *externalAccessPointGetter) getNodeIp(ctx context.Context, svc *k8s_core_types.Service, clusterName string) (string, error) {
 	dynamicClient, err := f.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
 	if err != nil {
 		return "", err

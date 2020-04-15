@@ -12,8 +12,8 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/mocks"
@@ -57,14 +57,14 @@ var _ = Describe("MeshWorkloadScanner", func() {
 	})
 
 	It("should scan pod", func() {
-		expectedMeshWorkload := &discoveryv1alpha1.MeshWorkload{
+		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("linkerd-%s-%s-%s", deploymentName, namespace, clusterName),
 				Namespace: env.GetWriteNamespace(),
 				Labels:    linkerd.DiscoveryLabels(),
 			},
-			Spec: discovery_types.MeshWorkloadSpec{
-				KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			Spec: zephyr_discovery_types.MeshWorkloadSpec{
+				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 					KubeControllerRef: &core_types.ResourceRef{
 						Name:      deployment.Name,
 						Namespace: deployment.Namespace,

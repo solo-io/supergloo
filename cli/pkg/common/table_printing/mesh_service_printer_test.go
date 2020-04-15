@@ -10,9 +10,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 )
 
 // if you need to update the golden files programmatically, change this to `true` to write the
@@ -46,9 +46,9 @@ var _ = Describe("Mesh Service Table Printer", func() {
 			"services",
 			[]*zephyr_discovery.MeshService{
 				{
-					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.MeshServiceSpec_KubeService{
-							Ref: &core_types.ResourceRef{
+					Spec: zephyr_discovery_types.MeshServiceSpec{
+						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &zephyr_core_types.ResourceRef{
 								Name:      "mesh-service-1",
 								Namespace: "default",
 								Cluster:   "cluster-1",
@@ -59,7 +59,7 @@ var _ = Describe("Mesh Service Table Printer", func() {
 							Labels: map[string]string{
 								"foo": "bar",
 							},
-							Ports: []*discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
+							Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "fake",
@@ -72,35 +72,35 @@ var _ = Describe("Mesh Service Table Printer", func() {
 								},
 							},
 						},
-						Mesh: &core_types.ResourceRef{
+						Mesh: &zephyr_core_types.ResourceRef{
 							Name: "istio-mesh-1",
 						},
-						Subsets: map[string]*discovery_types.MeshServiceSpec_Subset{
+						Subsets: map[string]*zephyr_discovery_types.MeshServiceSpec_Subset{
 							"subset-1": {
 								Values: []string{"1", "2", "3"},
 							},
 						},
-						Federation: &discovery_types.MeshServiceSpec_Federation{
+						Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
 							MulticlusterDnsName: "mcDNSname",
 						},
 					},
-					Status: discovery_types.MeshServiceStatus{
-						FederationStatus: &core_types.Status{
-							State:   core_types.Status_INVALID,
+					Status: zephyr_discovery_types.MeshServiceStatus{
+						FederationStatus: &zephyr_core_types.Status{
+							State:   zephyr_core_types.Status_INVALID,
 							Message: "Should be printed",
 						},
 					},
 				},
 				{
-					Status: discovery_types.MeshServiceStatus{
-						FederationStatus: &core_types.Status{
-							State:   core_types.Status_ACCEPTED,
+					Status: zephyr_discovery_types.MeshServiceStatus{
+						FederationStatus: &zephyr_core_types.Status{
+							State:   zephyr_core_types.Status_ACCEPTED,
 							Message: "Should be ignored",
 						},
 					},
-					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.MeshServiceSpec_KubeService{
-							Ref: &core_types.ResourceRef{
+					Spec: zephyr_discovery_types.MeshServiceSpec{
+						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &zephyr_core_types.ResourceRef{
 								Name:      "mesh-service-2",
 								Namespace: "bookunfo",
 								Cluster:   "cluster-2",
@@ -110,7 +110,7 @@ var _ = Describe("Mesh Service Table Printer", func() {
 								"multiple": "selector",
 								"labels":   "wooho",
 							},
-							Ports: []*discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
+							Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 								{
 									Port:     15443,
 									Name:     "https",
@@ -118,17 +118,17 @@ var _ = Describe("Mesh Service Table Printer", func() {
 								},
 							},
 						},
-						Mesh: &core_types.ResourceRef{
+						Mesh: &zephyr_core_types.ResourceRef{
 							Name: "istio-mesh-1",
 						},
-						Subsets: map[string]*discovery_types.MeshServiceSpec_Subset{
+						Subsets: map[string]*zephyr_discovery_types.MeshServiceSpec_Subset{
 							"subset-2": {
 								Values: []string{"4", "5", "6"},
 							},
 						},
-						Federation: &discovery_types.MeshServiceSpec_Federation{
+						Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
 							MulticlusterDnsName: "mcDNSname",
-							FederatedToWorkloads: []*core_types.ResourceRef{
+							FederatedToWorkloads: []*zephyr_core_types.ResourceRef{
 								{
 									Name:      "service-1",
 									Namespace: "namespace-1",

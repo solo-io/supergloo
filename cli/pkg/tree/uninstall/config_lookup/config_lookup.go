@@ -5,7 +5,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -24,7 +24,7 @@ var (
 
 func NewKubeConfigLookup(
 	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
-	secrestClient kubernetes_core.SecretClient,
+	secrestClient k8s_core.SecretClient,
 	secretToConfigConverter kubeconfig.SecretToConfigConverter,
 ) KubeConfigLookup {
 	return &kubeConfigLookup{
@@ -35,7 +35,7 @@ func NewKubeConfigLookup(
 }
 
 type kubeConfigLookup struct {
-	secretsClient           kubernetes_core.SecretClient
+	secretsClient           k8s_core.SecretClient
 	secretToConfigConverter kubeconfig.SecretToConfigConverter
 	kubeClusterClient       zephyr_discovery.KubernetesClusterClient
 }

@@ -10,10 +10,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // if you need to update the golden files programmatically, change this to `true` to write the
@@ -52,25 +52,25 @@ var _ = Describe("Access Control Printer", func() {
 			table_printing.ServicePrintMode,
 			[]*zephyr_networking.AccessControlPolicy{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "simple",
 					},
-					Spec: types.AccessControlPolicySpec{
+					Spec: zephyr_networking_types.AccessControlPolicySpec{
 						AllowedPorts: []uint32{8080, 8443},
-						AllowedMethods: []core_types.HttpMethodValue{
-							core_types.HttpMethodValue_GET,
-							core_types.HttpMethodValue_POST,
+						AllowedMethods: []zephyr_core_types.HttpMethodValue{
+							zephyr_core_types.HttpMethodValue_GET,
+							zephyr_core_types.HttpMethodValue_POST,
 						},
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "simple",
 					},
-					Spec: types.AccessControlPolicySpec{
-						SourceSelector: &core_types.IdentitySelector{
-							IdentitySelectorType: &core_types.IdentitySelector_Matcher_{
-								Matcher: &core_types.IdentitySelector_Matcher{
+					Spec: zephyr_networking_types.AccessControlPolicySpec{
+						SourceSelector: &zephyr_core_types.IdentitySelector{
+							IdentitySelectorType: &zephyr_core_types.IdentitySelector_Matcher_{
+								Matcher: &zephyr_core_types.IdentitySelector_Matcher{
 									Namespaces: []string{"ns1", "ns2"},
 								},
 							},

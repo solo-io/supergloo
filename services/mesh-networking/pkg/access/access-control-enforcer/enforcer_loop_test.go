@@ -8,18 +8,18 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	global_ac_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	mock_global_access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking2 "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/networking"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("EnforcerLoop", func() {
@@ -32,7 +32,7 @@ var _ = Describe("EnforcerLoop", func() {
 		meshEnforcers         []*mock_global_access_control_enforcer.MockAccessPolicyMeshEnforcer
 		enforcerLoop          global_ac_enforcer.AccessPolicyEnforcerLoop
 		// captured event handler
-		virtualMeshHandler *networking_controller.VirtualMeshEventHandlerFuncs
+		virtualMeshHandler *zephyr_networking_controller.VirtualMeshEventHandlerFuncs
 	)
 
 	BeforeEach(func() {
@@ -56,7 +56,7 @@ var _ = Describe("EnforcerLoop", func() {
 		virtualMeshController.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandler *networking_controller.VirtualMeshEventHandlerFuncs) error {
+			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_networking_controller.VirtualMeshEventHandlerFuncs) error {
 				virtualMeshHandler = eventHandler
 				return nil
 			})
@@ -69,8 +69,8 @@ var _ = Describe("EnforcerLoop", func() {
 
 	var buildVirtualMesh = func() *zephyr_networking.VirtualMesh {
 		return &zephyr_networking.VirtualMesh{
-			Spec: networking_types.VirtualMeshSpec{
-				Meshes: []*core_types.ResourceRef{
+			Spec: zephyr_networking_types.VirtualMeshSpec{
+				Meshes: []*zephyr_core_types.ResourceRef{
 					{Name: "name1", Namespace: "namespace1"},
 					{Name: "name2", Namespace: "namespace2"},
 				},
@@ -81,10 +81,10 @@ var _ = Describe("EnforcerLoop", func() {
 	var buildMeshes = func() []*zephyr_discovery.Mesh {
 		return []*zephyr_discovery.Mesh{
 			{
-				ObjectMeta: v1.ObjectMeta{Name: "name1", Namespace: "namespace1"},
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "name1", Namespace: "namespace1"},
 			},
 			{
-				ObjectMeta: v1.ObjectMeta{Name: "name2", Namespace: "namespace2"},
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "name2", Namespace: "namespace2"},
 			},
 		}
 	}
@@ -117,8 +117,8 @@ var _ = Describe("EnforcerLoop", func() {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		expectedVMStatus := &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
 		err := virtualMeshHandler.CreateVirtualMesh(vm)
 		Expect(err).ToNot(HaveOccurred())
@@ -152,8 +152,8 @@ var _ = Describe("EnforcerLoop", func() {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		expectedVMStatus := &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
 		err := virtualMeshHandler.CreateVirtualMesh(vm)
 		Expect(err).ToNot(HaveOccurred())
@@ -186,8 +186,8 @@ var _ = Describe("EnforcerLoop", func() {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &core_types.Status{
-			State:   core_types.Status_PROCESSING_ERROR,
+		expectedVMStatus := &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: testErr.Error(),
 		}
 		err := virtualMeshHandler.CreateVirtualMesh(vm)

@@ -11,10 +11,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // if you need to update the golden files programmatically, change this to `true` to write the
@@ -48,14 +48,14 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 			table_printing.ServicePrintMode,
 			[]*zephyr_networking.TrafficPolicy{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "simple",
 					},
-					Spec: types.TrafficPolicySpec{
-						DestinationSelector: &core_types.ServiceSelector{
-							ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-								ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-									Services: []*core_types.ResourceRef{{
+					Spec: zephyr_networking_types.TrafficPolicySpec{
+						DestinationSelector: &zephyr_core_types.ServiceSelector{
+							ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+								ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+									Services: []*zephyr_core_types.ResourceRef{{
 										Cluster:   "management-plane-cluster",
 										Name:      "reviews",
 										Namespace: "default",
@@ -63,10 +63,10 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 								},
 							},
 						},
-						TrafficShift: &types.TrafficPolicySpec_MultiDestination{
-							Destinations: []*types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+						TrafficShift: &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
+							Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 								{
-									Destination: &core_types.ResourceRef{
+									Destination: &zephyr_core_types.ResourceRef{
 										Cluster:   "target-cluster",
 										Name:      "reviews",
 										Namespace: "default",
@@ -74,7 +74,7 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 									Weight: 80,
 								},
 								{
-									Destination: &core_types.ResourceRef{
+									Destination: &zephyr_core_types.ResourceRef{
 										Cluster:   "management-plane-cluster",
 										Name:      "reviews",
 										Namespace: "default",
@@ -86,12 +86,12 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 								},
 							},
 						},
-						HttpRequestMatchers: []*types.TrafficPolicySpec_HttpMatcher{
+						HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
 							{
-								PathSpecifier: &types.TrafficPolicySpec_HttpMatcher_Prefix{
+								PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 									Prefix: "/static",
 								},
-								QueryParameters: []*types.TrafficPolicySpec_QueryParameterMatcher{
+								QueryParameters: []*zephyr_networking_types.TrafficPolicySpec_QueryParameterMatcher{
 									{
 										Name:  "param1",
 										Value: "value1",
@@ -102,7 +102,7 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 										Regex: true,
 									},
 								},
-								Headers: []*types.TrafficPolicySpec_HeaderMatcher{
+								Headers: []*zephyr_networking_types.TrafficPolicySpec_HeaderMatcher{
 									{
 										Name:        "header1",
 										Value:       "value1",
@@ -117,11 +117,11 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 								},
 							},
 						},
-						FaultInjection: &types.TrafficPolicySpec_FaultInjection{
+						FaultInjection: &zephyr_networking_types.TrafficPolicySpec_FaultInjection{
 							Percentage: 25,
-							FaultInjectionType: &types.TrafficPolicySpec_FaultInjection_Delay_{
-								Delay: &types.TrafficPolicySpec_FaultInjection_Delay{
-									HttpDelayType: &types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay{
+							FaultInjectionType: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay_{
+								Delay: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay{
+									HttpDelayType: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay{
 										FixedDelay: &types2.Duration{
 											Seconds: 3,
 										},
@@ -132,24 +132,24 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 						RequestTimeout: &types2.Duration{
 							Seconds: 4,
 						},
-						Retries: &types.TrafficPolicySpec_RetryPolicy{
+						Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
 							Attempts: 10,
 						},
-						CorsPolicy: &types.TrafficPolicySpec_CorsPolicy{
+						CorsPolicy: &zephyr_networking_types.TrafficPolicySpec_CorsPolicy{
 							AllowHeaders: []string{"x-auth"},
 							AllowMethods: []string{"get"},
 						},
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "simple",
 					},
-					Spec: types.TrafficPolicySpec{
-						DestinationSelector: &core_types.ServiceSelector{
-							ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-								ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-									Services: []*core_types.ResourceRef{{
+					Spec: zephyr_networking_types.TrafficPolicySpec{
+						DestinationSelector: &zephyr_core_types.ServiceSelector{
+							ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+								ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+									Services: []*zephyr_core_types.ResourceRef{{
 										Cluster:   "management-plane-cluster",
 										Name:      "reviews",
 										Namespace: "default",
@@ -157,10 +157,10 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 								},
 							},
 						},
-						TrafficShift: &types.TrafficPolicySpec_MultiDestination{
-							Destinations: []*types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+						TrafficShift: &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
+							Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 								{
-									Destination: &core_types.ResourceRef{
+									Destination: &zephyr_core_types.ResourceRef{
 										Cluster:   "target-cluster",
 										Name:      "reviews",
 										Namespace: "default",
@@ -168,7 +168,7 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 									Weight: 80,
 								},
 								{
-									Destination: &core_types.ResourceRef{
+									Destination: &zephyr_core_types.ResourceRef{
 										Cluster:   "management-plane-cluster",
 										Name:      "reviews",
 										Namespace: "default",
@@ -180,12 +180,12 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 								},
 							},
 						},
-						HttpRequestMatchers: []*types.TrafficPolicySpec_HttpMatcher{
+						HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
 							{
-								PathSpecifier: &types.TrafficPolicySpec_HttpMatcher_Prefix{
+								PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 									Prefix: "/static",
 								},
-								QueryParameters: []*types.TrafficPolicySpec_QueryParameterMatcher{
+								QueryParameters: []*zephyr_networking_types.TrafficPolicySpec_QueryParameterMatcher{
 									{
 										Name:  "param1",
 										Value: "value1",
@@ -196,7 +196,7 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 										Regex: true,
 									},
 								},
-								Headers: []*types.TrafficPolicySpec_HeaderMatcher{
+								Headers: []*zephyr_networking_types.TrafficPolicySpec_HeaderMatcher{
 									{
 										Name:        "header1",
 										Value:       "value1",
@@ -211,9 +211,9 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 								},
 							},
 						},
-						Mirror: &types.TrafficPolicySpec_Mirror{
+						Mirror: &zephyr_networking_types.TrafficPolicySpec_Mirror{
 							Percentage: 10,
-							Destination: &core_types.ResourceRef{
+							Destination: &zephyr_core_types.ResourceRef{
 								Name:      "other-svc",
 								Namespace: "other-ns",
 								Cluster:   "other-cluster",

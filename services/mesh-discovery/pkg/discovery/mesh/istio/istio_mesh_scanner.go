@@ -6,18 +6,18 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
 	"istio.io/api/mesh/v1alpha1"
 	"istio.io/istio/pkg/util/gogoprotomarshal"
-	k8s_apps_v1 "k8s.io/api/apps/v1"
-	core_v1 "k8s.io/api/core/v1"
-	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_apps_types "k8s.io/api/apps/v1"
+	k8s_core_types "k8s.io/api/core/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -46,7 +46,7 @@ type IstioMeshScanner mesh.MeshScanner
 
 func NewIstioMeshScanner(
 	imageNameParser docker.ImageNameParser,
-	configMapClientFactory kubernetes_core.ConfigMapClientFactory,
+	configMapClientFactory k8s_core.ConfigMapClientFactory,
 ) IstioMeshScanner {
 	return &istioMeshScanner{
 		imageNameParser:        imageNameParser,
@@ -56,10 +56,10 @@ func NewIstioMeshScanner(
 
 type istioMeshScanner struct {
 	imageNameParser        docker.ImageNameParser
-	configMapClientFactory kubernetes_core.ConfigMapClientFactory
+	configMapClientFactory k8s_core.ConfigMapClientFactory
 }
 
-func (i *istioMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s_apps_v1.Deployment, client client.Client) (*discoveryv1alpha1.Mesh, error) {
+func (i *istioMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s_apps_types.Deployment, client client.Client) (*zephyr_discovery.Mesh, error) {
 	istioDeployment, err := i.detectIstioDeployment(deployment)
 	if err != nil {
 		return nil, err
@@ -70,20 +70,20 @@ func (i *istioMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s_a
 	if err != nil {
 		return nil, err
 	}
-	return &discoveryv1alpha1.Mesh{
-		ObjectMeta: k8s_meta_v1.ObjectMeta{
+	return &zephyr_discovery.Mesh{
+		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      istioDeployment.Name(),
 			Namespace: env.GetWriteNamespace(),
 			Labels:    DiscoveryLabels,
 		},
-		Spec: discovery_types.MeshSpec{
-			MeshType: &discovery_types.MeshSpec_Istio{
-				Istio: &discovery_types.MeshSpec_IstioMesh{
-					Installation: &discovery_types.MeshSpec_MeshInstallation{
+		Spec: zephyr_discovery_types.MeshSpec{
+			MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+				Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
+					Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 						InstallationNamespace: deployment.GetNamespace(),
 						Version:               istioDeployment.Version,
 					},
-					CitadelInfo: &discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+					CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
 						TrustDomain:      trustDomain,
 						CitadelNamespace: deployment.GetNamespace(),
 						// This assumes that the istiod deployment is the cert provider
@@ -91,7 +91,7 @@ func (i *istioMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s_a
 					},
 				},
 			},
-			Cluster: &core_types.ResourceRef{
+			Cluster: &zephyr_core_types.ResourceRef{
 				Name:      deployment.GetClusterName(),
 				Namespace: env.GetWriteNamespace(),
 			},
@@ -105,7 +105,7 @@ func isCitadelDeployment(deploymentName string) bool {
 	return deploymentName == CitadelDeploymentName
 }
 
-func (i *istioMeshScanner) detectIstioDeployment(deployment *k8s_apps_v1.Deployment) (*istioDeployment, error) {
+func (i *istioMeshScanner) detectIstioDeployment(deployment *k8s_apps_types.Deployment) (*istioDeployment, error) {
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		// Detect either istiod deployment (for Istio versions >= 1.5) or istio-citadel deployment (for Istio versions < 1.5)
 		if isIstiod(deployment, &container) || isCitadelDeployment(deployment.GetName()) {
@@ -147,7 +147,7 @@ func (i *istioMeshScanner) getTrustDomain(
 }
 
 // Return true if deployment is inferred to be an Istiod deployment
-func isIstiod(deployment *k8s_apps_v1.Deployment, container *core_v1.Container) bool {
+func isIstiod(deployment *k8s_apps_types.Deployment, container *k8s_core_types.Container) bool {
 	return deployment.GetName() == IstiodDeploymentName &&
 		strings.Contains(container.Image, IstioContainerKeyword) &&
 		strings.Contains(container.Image, PilotContainerKeyword)

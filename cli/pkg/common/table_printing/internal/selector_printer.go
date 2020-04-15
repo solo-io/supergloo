@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 )
 
-func WorkloadSelectorToCell(selector *core_types.WorkloadSelector) string {
+func WorkloadSelectorToCell(selector *zephyr_core_types.WorkloadSelector) string {
 	var namespaceField string
 	if len(selector.GetNamespaces()) > 0 {
 		namespaceField = fmt.Sprintf("Namespaces:\n%s\n", strings.Join(selector.GetNamespaces(), ","))
@@ -25,9 +25,9 @@ func WorkloadSelectorToCell(selector *core_types.WorkloadSelector) string {
 	return fmt.Sprintf("%s%s", namespaceField, labelsField)
 }
 
-func ServiceSelectorToCell(selector *core_types.ServiceSelector) string {
+func ServiceSelectorToCell(selector *zephyr_core_types.ServiceSelector) string {
 	switch selector.GetServiceSelectorType().(type) {
-	case *core_types.ServiceSelector_Matcher_:
+	case *zephyr_core_types.ServiceSelector_Matcher_:
 		namespaces := selector.GetMatcher().GetNamespaces()
 		labels := selector.GetMatcher().GetLabels()
 		clusters := selector.GetMatcher().GetClusters()
@@ -52,7 +52,7 @@ func ServiceSelectorToCell(selector *core_types.ServiceSelector) string {
 		}
 
 		return fmt.Sprintf("%s%s%s", namespaceField, labelsField, clusterField)
-	case *core_types.ServiceSelector_ServiceRefs_:
+	case *zephyr_core_types.ServiceSelector_ServiceRefs_:
 		serviceRefs := selector.GetServiceRefs().GetServices()
 		if len(serviceRefs) > 0 {
 			var refs []string

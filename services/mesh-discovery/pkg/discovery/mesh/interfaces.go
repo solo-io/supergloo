@@ -3,7 +3,7 @@ package mesh
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	k8s_apps_v1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -23,5 +23,5 @@ type MeshFinder interface {
 // check a deployment to see if it represents a mesh installation
 // if it does, produce the appropriate Mesh CR instance corresponding to it
 type MeshScanner interface {
-	ScanDeployment(context.Context, *k8s_apps_v1.Deployment, client.Client) (*v1alpha1.Mesh, error)
+	ScanDeployment(context.Context, *k8s_apps_v1.Deployment, client.Client) (*zephyr_discovery.Mesh, error)
 }

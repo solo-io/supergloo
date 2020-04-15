@@ -22,8 +22,8 @@ import (
 	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_apiextensions "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
@@ -53,10 +53,10 @@ type KubeClients struct {
 	VirtualMeshClient               zephyr_networking.VirtualMeshClient
 	VirtualMeshCSRClient            zephyr_security.VirtualMeshCertificateSigningRequestClient
 	DeployedVersionFinder           version.DeployedVersionFinder
-	CrdClientFactory                kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactory
+	CrdClientFactory                k8s_apiextensions.CustomResourceDefinitionClientFromConfigFactory
 	HealthCheckClients              healthcheck_types.Clients
-	SecretClient                    kubernetes_core.SecretClient
-	NamespaceClient                 kubernetes_core.NamespaceClient
+	SecretClient                    k8s_core.SecretClient
+	NamespaceClient                 k8s_core.NamespaceClient
 	UninstallClients                UninstallClients
 	InMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory
 	ClusterDeregistrationClient     deregister.ClusterDeregistrationClient
@@ -158,9 +158,9 @@ func KubeClientsProvider(
 	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
 	healthCheckClients healthcheck_types.Clients,
 	deployedVersionFinder version.DeployedVersionFinder,
-	crdClientFactory kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactory,
-	secretClient kubernetes_core.SecretClient,
-	namespaceClient kubernetes_core.NamespaceClient,
+	crdClientFactory k8s_apiextensions.CustomResourceDefinitionClientFromConfigFactory,
+	secretClient k8s_core.SecretClient,
+	namespaceClient k8s_core.NamespaceClient,
 	uninstallClients UninstallClients,
 	inMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory,
 	clusterDeregistrationClient deregister.ClusterDeregistrationClient,

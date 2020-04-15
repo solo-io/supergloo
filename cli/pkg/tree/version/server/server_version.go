@@ -6,8 +6,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	v1 "k8s.io/api/apps/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_apps "k8s.io/api/apps/v1"
+	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -25,7 +25,7 @@ type ImageMeta struct {
 }
 
 type DeploymentClient interface {
-	GetDeployments(namespace string, labelSelector string) (*v1.DeploymentList, error)
+	GetDeployments(namespace string, labelSelector string) (*k8s_apps.DeploymentList, error)
 }
 
 type defaultDeploymentClient struct {
@@ -40,7 +40,7 @@ func NewDeploymentClient(loader common_config.KubeLoader, opts *options.Options)
 	}
 }
 
-func (k *defaultDeploymentClient) GetDeployments(namespace string, labelSelector string) (*v1.DeploymentList, error) {
+func (k *defaultDeploymentClient) GetDeployments(namespace string, labelSelector string) (*k8s_apps.DeploymentList, error) {
 	cfg, err := k.loader.GetRestConfigForContext(k.opts.Root.KubeConfig, k.opts.Root.KubeContext)
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (k *defaultDeploymentClient) GetDeployments(namespace string, labelSelector
 	if err != nil {
 		return nil, err
 	}
-	deployments, err := client.AppsV1().Deployments(namespace).List(metav1.ListOptions{
+	deployments, err := client.AppsV1().Deployments(namespace).List(k8s_meta.ListOptions{
 		// search only for smh deployments based on labels
 		LabelSelector: labelSelector,
 	})

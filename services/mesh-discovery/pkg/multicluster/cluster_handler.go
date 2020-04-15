@@ -4,10 +4,10 @@ import (
 	"context"
 
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	apps_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	k8s_apps_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	mc_predicate "github.com/solo-io/service-mesh-hub/services/common/multicluster/predicate"
@@ -72,7 +72,7 @@ type discoveryClusterHandler struct {
 	localMeshServiceClient  zephyr_discovery.MeshServiceClient
 
 	// controllers that operate against the local cluster
-	localMeshWorkloadEventWatcher discovery_controllers.MeshWorkloadEventWatcher
+	localMeshWorkloadEventWatcher zephyr_discovery_controller.MeshWorkloadEventWatcher
 
 	// scanners
 	meshScanners                 []mesh.MeshScanner
@@ -80,11 +80,11 @@ type discoveryClusterHandler struct {
 }
 
 type clusterDependentDeps struct {
-	deploymentEventWatcher apps_controller.DeploymentEventWatcher
-	podEventWatcher        core_controller.PodEventWatcher
+	deploymentEventWatcher k8s_apps_controller.DeploymentEventWatcher
+	podEventWatcher        k8s_core_controller.PodEventWatcher
 	meshWorkloadScanners   []mesh_workload.MeshWorkloadScanner
-	serviceEventWatcher    core_controller.ServiceEventWatcher
-	serviceClient          kubernetes_core.ServiceClient
+	serviceEventWatcher    k8s_core_controller.ServiceEventWatcher
+	serviceClient          k8s_core.ServiceClient
 }
 
 func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {

@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
@@ -18,8 +18,8 @@ import (
 )
 
 func NewAcpTranslatorLoop(
-	acpController networking_controller.AccessControlPolicyEventWatcher,
-	MeshServiceEventWatcher discovery_controller.MeshServiceEventWatcher,
+	acpController zephyr_networking_controller.AccessControlPolicyEventWatcher,
+	MeshServiceEventWatcher zephyr_discovery_controller.MeshServiceEventWatcher,
 	meshClient zephyr_discovery.MeshClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
 	resourceSelector selector.ResourceSelector,
@@ -36,8 +36,8 @@ func NewAcpTranslatorLoop(
 }
 
 type translatorLoop struct {
-	acpController             networking_controller.AccessControlPolicyEventWatcher
-	MeshServiceEventWatcher   discovery_controller.MeshServiceEventWatcher
+	acpController             zephyr_networking_controller.AccessControlPolicyEventWatcher
+	MeshServiceEventWatcher   zephyr_discovery_controller.MeshServiceEventWatcher
 	meshClient                zephyr_discovery.MeshClient
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient
 	meshTranslators           []AcpMeshTranslator
@@ -45,7 +45,7 @@ type translatorLoop struct {
 }
 
 func (t *translatorLoop) Start(ctx context.Context) error {
-	err := t.acpController.AddEventHandler(ctx, &networking_controller.AccessControlPolicyEventHandlerFuncs{
+	err := t.acpController.AddEventHandler(ctx, &zephyr_networking_controller.AccessControlPolicyEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_networking.AccessControlPolicy) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
 			logger.Debugw("event handler enter",
@@ -96,7 +96,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return t.MeshServiceEventWatcher.AddEventHandler(ctx, &discovery_controller.MeshServiceEventHandlerFuncs{
+	return t.MeshServiceEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshServiceEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_discovery.MeshService) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
 			logger.Debugw("event handler enter",
@@ -156,12 +156,12 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 func (t *translatorLoop) translateAccessControlPolicy(
 	ctx context.Context,
 	acp *zephyr_networking.AccessControlPolicy,
-) ([]*types.AccessControlPolicyStatus_TranslatorError, error) {
+) ([]*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError, error) {
 	targetServices, err := t.getTargetServices(ctx, acp)
 	if err != nil {
 		return nil, err
 	}
-	var translatorErrors []*types.AccessControlPolicyStatus_TranslatorError
+	var translatorErrors []*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError
 	for _, meshTranslator := range t.meshTranslators {
 
 		translatorError := meshTranslator.Translate(
@@ -196,7 +196,7 @@ func (t *translatorLoop) translateACPsForMeshService(
 	}
 	var translatorErrorsForACPs []translatorErrorForACP
 	for _, acp := range acps {
-		var translatorErrors []*types.AccessControlPolicyStatus_TranslatorError
+		var translatorErrors []*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError
 		for _, meshTranslator := range t.meshTranslators {
 			translatorError := meshTranslator.Translate(
 				contextutils.WithLogger(ctx, meshTranslator.Name()),
@@ -273,24 +273,24 @@ func (t *translatorLoop) getApplicableAccessControlPolicies(
 // translatorErrors represent errors during translation to mesh-specific config
 func (t *translatorLoop) setStatus(
 	err error,
-	translatorErrors []*types.AccessControlPolicyStatus_TranslatorError,
+	translatorErrors []*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError,
 	acp *zephyr_networking.AccessControlPolicy) {
 	if err != nil {
-		acp.Status.TranslationStatus = &core_types.Status{
-			State:   core_types.Status_PROCESSING_ERROR,
+		acp.Status.TranslationStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: fmt.Sprintf("Error while processing TrafficPolicy: %s", err.Error()),
 		}
 		// Clear any prior TranslatorErrors
 		acp.Status.TranslatorErrors = nil
 	} else if translatorErrors != nil {
-		acp.Status.TranslationStatus = &core_types.Status{
-			State:   core_types.Status_PROCESSING_ERROR,
+		acp.Status.TranslationStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
 		}
 		acp.Status.TranslatorErrors = translatorErrors
 	} else {
-		acp.Status.TranslationStatus = &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		acp.Status.TranslationStatus = &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
 		// Clear any prior TranslatorErrors
 		acp.Status.TranslatorErrors = nil
@@ -306,5 +306,5 @@ type TargetService struct {
 // Struct that pairs TranslatorErrors with the AccessControlPolicy they apply to
 type translatorErrorForACP struct {
 	accessControlPolicy *zephyr_networking.AccessControlPolicy
-	translatorErrors    []*types.AccessControlPolicyStatus_TranslatorError
+	translatorErrors    []*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError
 }

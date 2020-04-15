@@ -3,10 +3,9 @@ package csr_generator
 import (
 	"context"
 
-	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
-	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
+	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 )
 
@@ -21,7 +20,7 @@ type CertClient interface {
 	*/
 	EnsureSecretKey(
 		ctx context.Context,
-		obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+		obj *zephyr_security.VirtualMeshCertificateSigningRequest,
 	) (secret *cert_secrets.IntermediateCAData, err error)
 }
 
@@ -33,15 +32,15 @@ type PrivateKeyGenerator interface {
 type IstioCSRGenerator interface {
 	GenerateIstioCSR(
 		ctx context.Context,
-		obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	) *security_types.VirtualMeshCertificateSigningRequestStatus
+		obj *zephyr_security.VirtualMeshCertificateSigningRequest,
+	) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus
 }
 
 type VirtualMeshCSRDataSourceFactory func(
 	ctx context.Context,
 	csrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
 	processor VirtualMeshCSRProcessor,
-) controller.VirtualMeshCertificateSigningRequestEventHandler
+) zephyr_security_controller.VirtualMeshCertificateSigningRequestEventHandler
 
 /*
 	VirtualMeshCSRProcessor is meant to be an extension to the autopilot handler pattern.
@@ -53,29 +52,29 @@ type VirtualMeshCSRDataSourceFactory func(
 type VirtualMeshCSRProcessor interface {
 	ProcessUpsert(
 		ctx context.Context,
-		csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	) *security_types.VirtualMeshCertificateSigningRequestStatus
+		csr *zephyr_security.VirtualMeshCertificateSigningRequest,
+	) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus
 	ProcessDelete(
 		ctx context.Context,
-		csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	) *security_types.VirtualMeshCertificateSigningRequestStatus
+		csr *zephyr_security.VirtualMeshCertificateSigningRequest,
+	) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus
 }
 
 type VirtualMeshCSRProcessorFuncs struct {
 	OnProcessUpsert func(
 		ctx context.Context,
-		csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	) *security_types.VirtualMeshCertificateSigningRequestStatus
+		csr *zephyr_security.VirtualMeshCertificateSigningRequest,
+	) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus
 	OnProcessDelete func(
 		ctx context.Context,
-		csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	) *security_types.VirtualMeshCertificateSigningRequestStatus
+		csr *zephyr_security.VirtualMeshCertificateSigningRequest,
+	) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus
 }
 
 func (m *VirtualMeshCSRProcessorFuncs) ProcessUpsert(
 	ctx context.Context,
-	csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-) *security_types.VirtualMeshCertificateSigningRequestStatus {
+	csr *zephyr_security.VirtualMeshCertificateSigningRequest,
+) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
 	if m.OnProcessUpsert != nil {
 		return m.OnProcessUpsert(ctx, csr)
 	}
@@ -84,8 +83,8 @@ func (m *VirtualMeshCSRProcessorFuncs) ProcessUpsert(
 
 func (m *VirtualMeshCSRProcessorFuncs) ProcessDelete(
 	ctx context.Context,
-	csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-) *security_types.VirtualMeshCertificateSigningRequestStatus {
+	csr *zephyr_security.VirtualMeshCertificateSigningRequest,
+) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
 	if m.OnProcessDelete != nil {
 		return m.OnProcessDelete(ctx, csr)
 	}

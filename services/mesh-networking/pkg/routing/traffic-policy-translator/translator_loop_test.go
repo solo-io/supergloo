@@ -7,13 +7,13 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	discovery_v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	networking_v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
@@ -37,8 +37,8 @@ var _ = Describe("Translator", func() {
 		mockTrafficPolicyClient       *mock_zephyr_networking_clients.MockTrafficPolicyClient
 		mockTrafficPolicyEventWatcher *mock_zephyr_networking.MockTrafficPolicyEventWatcher
 		mockMeshServiceEventWatcher   *mock_zephyr_discovery.MockMeshServiceEventWatcher
-		trafficPolicyEventHandler     *networking_controller.TrafficPolicyEventHandlerFuncs
-		meshServiceEventHandler       *discovery_controller.MeshServiceEventHandlerFuncs
+		trafficPolicyEventHandler     *zephyr_networking_controller.TrafficPolicyEventHandlerFuncs
+		meshServiceEventHandler       *zephyr_discovery_controller.MeshServiceEventHandlerFuncs
 		translator                    traffic_policy_translator.TrafficPolicyTranslatorLoop
 	)
 
@@ -66,14 +66,14 @@ var _ = Describe("Translator", func() {
 		mockTrafficPolicyEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandler *networking_controller.TrafficPolicyEventHandlerFuncs) error {
+			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_networking_controller.TrafficPolicyEventHandlerFuncs) error {
 				trafficPolicyEventHandler = eventHandler
 				return nil
 			})
 		mockMeshServiceEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandler *discovery_controller.MeshServiceEventHandlerFuncs) error {
+			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs) error {
 				meshServiceEventHandler = eventHandler
 				return nil
 			})
@@ -91,9 +91,9 @@ var _ = Describe("Translator", func() {
 
 		BeforeEach(func() {
 			triggeringTP = &zephyr_networking.TrafficPolicy{
-				Status: networking_v1alpha1_types.TrafficPolicyStatus{
-					TranslationStatus: &core_types.Status{
-						State:   core_types.Status_ACCEPTED,
+				Status: zephyr_networking_types.TrafficPolicyStatus{
+					TranslationStatus: &zephyr_core_types.Status{
+						State:   zephyr_core_types.Status_ACCEPTED,
 						Message: "",
 					},
 				},
@@ -111,16 +111,16 @@ var _ = Describe("Translator", func() {
 			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshService := &zephyr_discovery.MeshService{
-				Spec: discovery_v1alpha1_types.MeshServiceSpec{
-					Mesh: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      meshObjKey.Name,
 						Namespace: meshObjKey.Namespace,
 					},
 				},
 			}
 			mesh := &zephyr_discovery.Mesh{
-				Spec: discovery_v1alpha1_types.MeshSpec{
-					MeshType: &discovery_v1alpha1_types.MeshSpec_Istio{},
+				Spec: zephyr_discovery_types.MeshSpec{
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				},
 			}
 			mockMeshServiceClient.
@@ -158,16 +158,16 @@ var _ = Describe("Translator", func() {
 			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshService := &zephyr_discovery.MeshService{
-				Spec: discovery_v1alpha1_types.MeshServiceSpec{
-					Mesh: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      meshObjKey.Name,
 						Namespace: meshObjKey.Namespace,
 					},
 				},
 			}
 			mesh := &zephyr_discovery.Mesh{
-				Spec: discovery_v1alpha1_types.MeshSpec{
-					MeshType: &discovery_v1alpha1_types.MeshSpec_Istio{},
+				Spec: zephyr_discovery_types.MeshSpec{
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				},
 			}
 			mockMeshServiceClient.
@@ -182,7 +182,7 @@ var _ = Describe("Translator", func() {
 				EXPECT().
 				PreprocessTrafficPolicy(ctx, triggeringTP).
 				Return(mergedTPsByMeshService, nil)
-			translatorError := &networking_v1alpha1_types.TrafficPolicyStatus_TranslatorError{
+			translatorError := &zephyr_networking_types.TrafficPolicyStatus_TranslatorError{
 				TranslatorId: istio_translator.TranslatorId,
 				ErrorMessage: "error message",
 			}
@@ -194,11 +194,11 @@ var _ = Describe("Translator", func() {
 				EXPECT().
 				Name().
 				Return("")
-			expectedMeshTypeStatuses := []*networking_v1alpha1_types.TrafficPolicyStatus_TranslatorError{translatorError}
+			expectedMeshTypeStatuses := []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{translatorError}
 
 			expectedTP := &zephyr_networking.TrafficPolicy{}
-			expectedTP.Status.TranslationStatus = &core_types.Status{
-				State:   core_types.Status_PROCESSING_ERROR,
+			expectedTP.Status.TranslationStatus = &zephyr_core_types.Status{
+				State:   zephyr_core_types.Status_PROCESSING_ERROR,
 				Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
 			}
 			expectedTP.Status.TranslatorErrors = expectedMeshTypeStatuses
@@ -215,9 +215,9 @@ var _ = Describe("Translator", func() {
 
 		BeforeEach(func() {
 			triggerMeshService = &zephyr_discovery.MeshService{
-				Status: discovery_v1alpha1_types.MeshServiceStatus{
-					FederationStatus: &core_types.Status{
-						State:   core_types.Status_ACCEPTED,
+				Status: zephyr_discovery_types.MeshServiceStatus{
+					FederationStatus: &zephyr_core_types.Status{
+						State:   zephyr_core_types.Status_ACCEPTED,
 						Message: "",
 					},
 				},
@@ -233,16 +233,16 @@ var _ = Describe("Translator", func() {
 			mergedTPsByMeshService := map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy{meshServiceMCKey: {}}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshService := &zephyr_discovery.MeshService{
-				Spec: discovery_v1alpha1_types.MeshServiceSpec{
-					Mesh: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      meshObjKey.Name,
 						Namespace: meshObjKey.Namespace,
 					},
 				},
 			}
 			mesh := &zephyr_discovery.Mesh{
-				Spec: discovery_v1alpha1_types.MeshSpec{
-					MeshType: &discovery_v1alpha1_types.MeshSpec_Istio{},
+				Spec: zephyr_discovery_types.MeshSpec{
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				},
 			}
 			mockMeshServiceClient.

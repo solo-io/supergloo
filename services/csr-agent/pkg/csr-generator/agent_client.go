@@ -3,11 +3,11 @@ package csr_generator
 import (
 	"context"
 
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	securityv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
-	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
+	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -17,13 +17,13 @@ const (
 )
 
 type certClient struct {
-	secretClient        kubernetes_core.SecretClient
+	secretClient        k8s_core.SecretClient
 	signer              certgen.Signer
 	privateKeyGenerator PrivateKeyGenerator
 }
 
 func NewCertClient(
-	secretClient kubernetes_core.SecretClient,
+	secretClient k8s_core.SecretClient,
 	signer certgen.Signer,
 	privateKeyGenerator PrivateKeyGenerator,
 ) CertClient {
@@ -37,11 +37,11 @@ func NewCertClient(
 // Persist the intermediate cert's private key as a secret of type cert_secrets.IntermediateCertSecretType
 func (c *certClient) EnsureSecretKey(
 	ctx context.Context,
-	obj *securityv1alpha1.VirtualMeshCertificateSigningRequest,
+	obj *zephyr_security.VirtualMeshCertificateSigningRequest,
 ) (*cert_secrets.IntermediateCAData, error) {
 	secret, err := c.secretClient.GetSecret(ctx, client.ObjectKey{Name: buildSecretName(obj), Namespace: obj.GetNamespace()})
 	if err != nil {
-		if !kubeerrs.IsNotFound(err) {
+		if !k8s_errs.IsNotFound(err) {
 			return nil, err
 		}
 		privateKey, err := c.privateKeyGenerator.GenerateRSA(PrivateKeySizeBytes)
@@ -63,6 +63,6 @@ func (c *certClient) EnsureSecretKey(
 
 // suffix the name of the CSR with "-private-key" to avoid confusion, since we're reusing the
 // cert_secrets.IntermediateCertSecretType secret type
-func buildSecretName(obj *securityv1alpha1.VirtualMeshCertificateSigningRequest) string {
+func buildSecretName(obj *zephyr_security.VirtualMeshCertificateSigningRequest) string {
 	return obj.GetName() + PrivateKeyNameSuffix
 }

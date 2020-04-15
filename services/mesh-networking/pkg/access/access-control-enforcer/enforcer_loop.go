@@ -4,24 +4,24 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"go.uber.org/zap"
 )
 
 type enforcerLoop struct {
-	virtualMeshController networking_controller.VirtualMeshEventWatcher
+	virtualMeshController zephyr_networking_controller.VirtualMeshEventWatcher
 	virtualMeshClient     zephyr_networking.VirtualMeshClient
 	meshClient            zephyr_discovery.MeshClient
 	meshEnforcers         []AccessPolicyMeshEnforcer
 }
 
 func NewEnforcerLoop(
-	virtualMeshController networking_controller.VirtualMeshEventWatcher,
+	virtualMeshController zephyr_networking_controller.VirtualMeshEventWatcher,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	meshClient zephyr_discovery.MeshClient,
 	meshEnforcers []AccessPolicyMeshEnforcer,
@@ -35,7 +35,7 @@ func NewEnforcerLoop(
 }
 
 func (e *enforcerLoop) Start(ctx context.Context) error {
-	return e.virtualMeshController.AddEventHandler(ctx, &networking_controller.VirtualMeshEventHandlerFuncs{
+	return e.virtualMeshController.AddEventHandler(ctx, &zephyr_networking_controller.VirtualMeshEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_networking.VirtualMesh) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
 			logger.Debugw("event handler enter",
@@ -126,13 +126,13 @@ func (e *enforcerLoop) setStatus(
 	err error,
 ) error {
 	if err != nil {
-		virtualMesh.Status.AccessControlEnforcementStatus = &core_types.Status{
-			State:   core_types.Status_PROCESSING_ERROR,
+		virtualMesh.Status.AccessControlEnforcementStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
 		}
 	} else {
-		virtualMesh.Status.AccessControlEnforcementStatus = &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		virtualMesh.Status.AccessControlEnforcementStatus = &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
 	}
 	return e.virtualMeshClient.UpdateVirtualMeshStatus(ctx, virtualMesh)

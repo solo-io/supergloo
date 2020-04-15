@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/rest"
@@ -80,7 +80,7 @@ func UninstallCmd(
 				fmt.Fprintf(out, "Failed to find registered clusters - Continuing...\n\t(%s)\n", err.Error())
 
 				// failed to find the clusters, but continue through to the other steps, making this one a no-op
-				kubeClusters = &v1alpha1.KubernetesClusterList{}
+				kubeClusters = &zephyr_discovery.KubernetesClusterList{}
 				uninstallErrorOccured = true
 			} else {
 				// can only do this step if we definitely have kube clusters to read from
@@ -163,7 +163,7 @@ func cleanUpManagementPlaneComponents(out io.Writer, masterKubeClients *common.K
 	return nil
 }
 
-func deregisterClusters(ctx context.Context, out io.Writer, kubeClusters *v1alpha1.KubernetesClusterList, masterKubeClients *common.KubeClients) error {
+func deregisterClusters(ctx context.Context, out io.Writer, kubeClusters *zephyr_discovery.KubernetesClusterList, masterKubeClients *common.KubeClients) error {
 	if len(kubeClusters.Items) == 0 {
 		// don't want to print anything out in this case
 		return nil

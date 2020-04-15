@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 )
 
 func NewFederationDecisionCheck() healthcheck_types.HealthCheck {
@@ -40,7 +40,7 @@ func (s *federationDecisionCheck) Run(ctx context.Context, installNamespace stri
 		}
 
 		federatedServiceExists = true
-		if federationStatus.GetState() != types.Status_ACCEPTED {
+		if federationStatus.GetState() != zephyr_core_types.Status_ACCEPTED {
 			return &healthcheck_types.RunFailure{
 				ErrorMessage: FederationRecordingHasFailed(meshService.GetName(), meshService.GetNamespace(), federationStatus.State).Error(),
 				Hint:         fmt.Sprintf("get details from the failing MeshService: `kubectl -n %s get meshservice %s -oyaml`", installNamespace, meshService.GetName()),

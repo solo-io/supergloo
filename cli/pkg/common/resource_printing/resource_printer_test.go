@@ -9,10 +9,10 @@ import (
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
@@ -47,14 +47,14 @@ var _ = Describe("JSONPrinter", func() {
 	}
 
 	vm := &zephyr_networking.VirtualMesh{
-		TypeMeta: metav1.TypeMeta{Kind: "VirtualMesh"},
-		ObjectMeta: metav1.ObjectMeta{
+		TypeMeta: k8s_meta_types.TypeMeta{Kind: "VirtualMesh"},
+		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      "test-vm",
 			Namespace: "service-mesh-hub",
 		},
-		Spec: networking_types.VirtualMeshSpec{
+		Spec: zephyr_networking_types.VirtualMeshSpec{
 			DisplayName: "test-vm",
-			Meshes: []*types.ResourceRef{
+			Meshes: []*zephyr_core_types.ResourceRef{
 				{
 					Name:      "istio-istio-system-management-plane-cluster",
 					Namespace: "service-mesh-hub",
@@ -64,20 +64,20 @@ var _ = Describe("JSONPrinter", func() {
 					Namespace: "service-mesh-hub",
 				},
 			},
-			CertificateAuthority: &networking_types.VirtualMeshSpec_CertificateAuthority{
-				Type: &networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
-					Builtin: &networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{
+			CertificateAuthority: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
+				Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
+					Builtin: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{
 						TtlDays:         365,
 						RsaKeySizeBytes: 4096,
 						OrgName:         "solo.io",
 					},
 				},
 			},
-			Federation: &networking_types.VirtualMeshSpec_Federation{
-				Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
+			Federation: &zephyr_networking_types.VirtualMeshSpec_Federation{
+				Mode: zephyr_networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
 			},
-			TrustModel: &networking_types.VirtualMeshSpec_Shared{
-				Shared: &networking_types.VirtualMeshSpec_SharedTrust{},
+			TrustModel: &zephyr_networking_types.VirtualMeshSpec_Shared{
+				Shared: &zephyr_networking_types.VirtualMeshSpec_SharedTrust{},
 			},
 		},
 	}

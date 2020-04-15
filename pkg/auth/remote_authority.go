@@ -3,16 +3,16 @@ package auth
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	k8sapiv1 "k8s.io/api/core/v1"
-	rbactypes "k8s.io/api/rbac/v1"
-	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
+	k8s_rbac_types "k8s.io/api/rbac/v1"
+	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
+	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func NewRemoteAuthorityManager(
-	serviceAccountClient kubernetes_core.ServiceAccountClient,
+	serviceAccountClient k8s_core.ServiceAccountClient,
 	rbacClient RbacClient,
 ) RemoteAuthorityManager {
 
@@ -23,18 +23,18 @@ func NewRemoteAuthorityManager(
 }
 
 type remoteAuthorityManager struct {
-	serviceAccountClient kubernetes_core.ServiceAccountClient
+	serviceAccountClient k8s_core.ServiceAccountClient
 	rbacClient           RbacClient
 }
 
 func (r *remoteAuthorityManager) ApplyRemoteServiceAccount(
 	ctx context.Context,
-	newServiceAccountRef *types.ResourceRef,
-	roles []*rbactypes.ClusterRole,
-) (*k8sapiv1.ServiceAccount, error) {
+	newServiceAccountRef *zephyr_core_types.ResourceRef,
+	roles []*k8s_rbac_types.ClusterRole,
+) (*k8s_core_types.ServiceAccount, error) {
 
-	saToCreate := &k8sapiv1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
+	saToCreate := &k8s_core_types.ServiceAccount{
+		ObjectMeta: k8s_meta.ObjectMeta{
 			Name:      newServiceAccountRef.GetName(),
 			Namespace: newServiceAccountRef.GetNamespace(),
 		},
@@ -42,7 +42,7 @@ func (r *remoteAuthorityManager) ApplyRemoteServiceAccount(
 
 	err := r.serviceAccountClient.CreateServiceAccount(ctx, saToCreate)
 	if err != nil {
-		if kubeerrs.IsAlreadyExists(err) {
+		if k8s_errs.IsAlreadyExists(err) {
 			err = r.serviceAccountClient.UpdateServiceAccount(ctx, saToCreate)
 			if err != nil {
 				return nil, err

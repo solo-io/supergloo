@@ -7,9 +7,9 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_controllers "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"go.uber.org/zap"
 )
 
@@ -45,16 +45,16 @@ type UpdatedResources struct {
 func NewMeshNetworkingSnapshotGenerator(
 	ctx context.Context,
 	snapshotValidator MeshNetworkingSnapshotValidator,
-	MeshServiceEventWatcher discovery_controllers.MeshServiceEventWatcher,
-	virtualMeshEventWatcher networking_controllers.VirtualMeshEventWatcher,
-	meshWorkloadEventWatcher discovery_controllers.MeshWorkloadEventWatcher,
+	MeshServiceEventWatcher zephyr_discovery_controller.MeshServiceEventWatcher,
+	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher,
+	meshWorkloadEventWatcher zephyr_discovery_controller.MeshWorkloadEventWatcher,
 ) (MeshNetworkingSnapshotGenerator, error) {
 	generator := &networkingSnapshotGenerator{
 		snapshotValidator: snapshotValidator,
 		snapshot:          MeshNetworkingSnapshot{},
 	}
 
-	err := MeshServiceEventWatcher.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
+	err := MeshServiceEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshServiceEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_discovery.MeshService) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
@@ -125,7 +125,7 @@ func NewMeshNetworkingSnapshotGenerator(
 		return nil, err
 	}
 
-	err = virtualMeshEventWatcher.AddEventHandler(ctx, &networking_controllers.VirtualMeshEventHandlerFuncs{
+	err = virtualMeshEventWatcher.AddEventHandler(ctx, &zephyr_networking_controller.VirtualMeshEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_networking.VirtualMesh) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
@@ -197,7 +197,7 @@ func NewMeshNetworkingSnapshotGenerator(
 		return nil, err
 	}
 
-	err = meshWorkloadEventWatcher.AddEventHandler(ctx, &discovery_controllers.MeshWorkloadEventHandlerFuncs{
+	err = meshWorkloadEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshWorkloadEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_discovery.MeshWorkload) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
