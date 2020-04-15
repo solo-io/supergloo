@@ -29,6 +29,7 @@ import (
 // K8s clients
 //go:generate mockgen -package mock_k8s_core_clients -destination ./test/mocks/clients/kubernetes/core/v1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1 ServiceClient,PodClient,NamespaceClient,NodeClient,ServiceAccountClient,SecretClient,ConfigMapClient
 //go:generate mockgen -package mock_k8s_apps_clients -destination ./test/mocks/clients/kubernetes/apps/v1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1 DeploymentClient,ReplicaSetClient
+//go:generate mockgen -package mock_k8s_extension_clients -destination ./test/mocks/clients/kubernetes/apiextensions.k8s.io/v1beta1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1 CustomResourceDefinitionClient
 // Zephyr clients
 //go:generate mockgen -package mock_zephyr_discovery_clients -destination ./test/mocks/clients/discovery.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1 KubernetesClusterClient,MeshClient,MeshServiceClient,MeshWorkloadClient
 //go:generate mockgen -package mock_zephyr_networking_clients -destination ./test/mocks/clients/networking.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1 TrafficPolicyClient,AccessControlPolicyClient,VirtualMeshClient
@@ -41,13 +42,13 @@ func main() {
 	log.Println("starting generate")
 
 	// load custom client template
-	customClientTemplateBytes, err := ioutil.ReadFile("custom_client.gotmpl")
+	customClientTemplateBytes, err := ioutil.ReadFile("gotemplates/custom_client.gotmpl")
 	customClientTemplate := string(customClientTemplateBytes)
 	if err != nil {
 		log.Fatal(err)
 	}
 	// load custom client providers template
-	customClientProvidersBytes, err := ioutil.ReadFile("custom_client_providers.gotmpl")
+	customClientProvidersBytes, err := ioutil.ReadFile("gotemplates/custom_client_providers.gotmpl")
 	customClientProviders := string(customClientProvidersBytes)
 	if err != nil {
 		log.Fatal(err)
@@ -270,6 +271,24 @@ func main() {
 					"client_providers.go": customClientProviders,
 				},
 				CustomTypesImportPath: "k8s.io/api/apps/v1",
+				ApiRoot:               "pkg/api/kubernetes",
+			},
+			{
+				GroupVersion: schema.GroupVersion{
+					Group:   "apiextensions.k8s.io",
+					Version: "v1beta1",
+				},
+				Module: "k8s.io/apiextensions-apiserver",
+				Resources: []model.Resource{
+					{
+						Kind: "CustomResourceDefinition",
+					},
+				},
+				RenderClients: true,
+				CustomTemplates: map[string]string{
+					"client_providers.go": customClientProviders,
+				},
+				CustomTypesImportPath: "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
 				ApiRoot:               "pkg/api/kubernetes",
 			},
 			{
