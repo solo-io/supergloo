@@ -65,13 +65,13 @@ var _ = Describe("Networking Snapshot", func() {
 				return eventHandler.OnCreate(meshService1)
 			})
 
-		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
-		virtualMeshController.EXPECT().
+		virtualMeshEventWatcher := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
+		virtualMeshEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
-		meshWorkloadController.EXPECT().
+		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
+		meshWorkloadEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
@@ -79,8 +79,8 @@ var _ = Describe("Networking Snapshot", func() {
 			ctx,
 			validator,
 			MeshServiceEventWatcher,
-			virtualMeshController,
-			meshWorkloadController,
+			virtualMeshEventWatcher,
+			meshWorkloadEventWatcher,
 		)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -119,13 +119,13 @@ var _ = Describe("Networking Snapshot", func() {
 				return eventHandler.OnCreate(meshService1)
 			})
 
-		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
-		virtualMeshController.EXPECT().
+		virtualMeshEventWatcher := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
+		virtualMeshEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
-		meshWorkloadController.EXPECT().
+		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
+		meshWorkloadEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
@@ -133,8 +133,8 @@ var _ = Describe("Networking Snapshot", func() {
 			ctx,
 			validator,
 			MeshServiceEventWatcher,
-			virtualMeshController,
-			meshWorkloadController,
+			virtualMeshEventWatcher,
+			meshWorkloadEventWatcher,
 		)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -186,13 +186,13 @@ var _ = Describe("Networking Snapshot", func() {
 				return nil
 			})
 
-		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
-		virtualMeshController.EXPECT().
+		virtualMeshEventWatcher := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
+		virtualMeshEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
-		meshWorkloadController.EXPECT().
+		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
+		meshWorkloadEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
@@ -200,8 +200,8 @@ var _ = Describe("Networking Snapshot", func() {
 			ctx,
 			validator,
 			MeshServiceEventWatcher,
-			virtualMeshController,
-			meshWorkloadController,
+			virtualMeshEventWatcher,
+			meshWorkloadEventWatcher,
 		)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -255,13 +255,13 @@ var _ = Describe("Networking Snapshot", func() {
 				return nil
 			})
 
-		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
-		virtualMeshController.EXPECT().
+		virtualMeshEventWatcher := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
+		virtualMeshEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
-		meshWorkloadController.EXPECT().
+		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
+		meshWorkloadEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
@@ -269,8 +269,8 @@ var _ = Describe("Networking Snapshot", func() {
 			ctx,
 			validator,
 			MeshServiceEventWatcher,
-			virtualMeshController,
-			meshWorkloadController,
+			virtualMeshEventWatcher,
+			meshWorkloadEventWatcher,
 		)
 		Expect(err).NotTo(HaveOccurred())
 

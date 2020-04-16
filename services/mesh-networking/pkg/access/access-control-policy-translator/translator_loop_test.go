@@ -30,7 +30,7 @@ var _ = Describe("Translator", func() {
 	var (
 		ctrl                      *gomock.Controller
 		ctx                       context.Context
-		acpController             *mock_zephyr_networking2.MockAccessControlPolicyEventWatcher
+		acpEventWatcher           *mock_zephyr_networking2.MockAccessControlPolicyEventWatcher
 		MeshServiceEventWatcher   *mock_zephyr_discovery.MockMeshServiceEventWatcher
 		meshClient                *mock_core.MockMeshClient
 		accessControlPolicyClient *mock_zephyr_networking.MockAccessControlPolicyClient
@@ -48,7 +48,7 @@ var _ = Describe("Translator", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		acpController = mock_zephyr_networking2.NewMockAccessControlPolicyEventWatcher(ctrl)
+		acpEventWatcher = mock_zephyr_networking2.NewMockAccessControlPolicyEventWatcher(ctrl)
 		MeshServiceEventWatcher = mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		meshClient = mock_core.NewMockMeshClient(ctrl)
 		accessControlPolicyClient = mock_zephyr_networking.NewMockAccessControlPolicyClient(ctrl)
@@ -60,7 +60,7 @@ var _ = Describe("Translator", func() {
 			mockMeshTranslator2,
 		}
 		acpTranslator = access_control_policy_translator.NewAcpTranslatorLoop(
-			acpController,
+			acpEventWatcher,
 			MeshServiceEventWatcher,
 			meshClient,
 			accessControlPolicyClient,
@@ -69,7 +69,7 @@ var _ = Describe("Translator", func() {
 				mockMeshTranslator1, mockMeshTranslator2,
 			},
 		)
-		acpController.
+		acpEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_networking_controller.AccessControlPolicyEventHandlerFuncs) error {

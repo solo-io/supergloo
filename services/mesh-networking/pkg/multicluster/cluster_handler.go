@@ -41,8 +41,8 @@ type meshNetworkingClusterHandler struct {
 }
 
 type clusterDependentDeps struct {
-	csrController zephyr_security_controller.VirtualMeshCertificateSigningRequestEventWatcher
-	csrClient     zephyr_security.VirtualMeshCertificateSigningRequestClient
+	csrEventWatcher zephyr_security_controller.VirtualMeshCertificateSigningRequestEventWatcher
+	csrClient       zephyr_security.VirtualMeshCertificateSigningRequestClient
 }
 
 func (m *meshNetworkingClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {
@@ -53,7 +53,7 @@ func (m *meshNetworkingClusterHandler) ClusterAdded(ctx context.Context, mgr mc_
 
 	certSigner := cert_signer.NewVirtualMeshCSRSigner(m.virtualMeshCertClient, clusterDeps.csrClient, m.signer)
 	mgcsrHandler := m.csrDataSourceFactory(ctx, clusterDeps.csrClient, cert_signer.NewVirtualMeshCSRSigningProcessor(certSigner))
-	if err = clusterDeps.csrController.AddEventHandler(ctx, mgcsrHandler); err != nil {
+	if err = clusterDeps.csrEventWatcher.AddEventHandler(ctx, mgcsrHandler); err != nil {
 		return err
 	}
 
@@ -73,7 +73,7 @@ func (m *meshNetworkingClusterHandler) initializeClusterScopedDeps(
 	csrClient := m.clientFactories.VirtualMeshCSRClientFactory(mgr.Manager().GetClient())
 
 	return &clusterDependentDeps{
-		csrController: csrController,
-		csrClient:     csrClient,
+		csrEventWatcher: csrController,
+		csrClient:       csrClient,
 	}, nil
 }

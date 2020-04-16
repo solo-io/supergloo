@@ -14,28 +14,28 @@ import (
 )
 
 type enforcerLoop struct {
-	virtualMeshController zephyr_networking_controller.VirtualMeshEventWatcher
-	virtualMeshClient     zephyr_networking.VirtualMeshClient
-	meshClient            zephyr_discovery.MeshClient
-	meshEnforcers         []AccessPolicyMeshEnforcer
+	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher
+	virtualMeshClient       zephyr_networking.VirtualMeshClient
+	meshClient              zephyr_discovery.MeshClient
+	meshEnforcers           []AccessPolicyMeshEnforcer
 }
 
 func NewEnforcerLoop(
-	virtualMeshController zephyr_networking_controller.VirtualMeshEventWatcher,
+	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	meshClient zephyr_discovery.MeshClient,
 	meshEnforcers []AccessPolicyMeshEnforcer,
 ) AccessPolicyEnforcerLoop {
 	return &enforcerLoop{
-		virtualMeshController: virtualMeshController,
-		virtualMeshClient:     virtualMeshClient,
-		meshClient:            meshClient,
-		meshEnforcers:         meshEnforcers,
+		virtualMeshEventWatcher: virtualMeshEventWatcher,
+		virtualMeshClient:       virtualMeshClient,
+		meshClient:              meshClient,
+		meshEnforcers:           meshEnforcers,
 	}
 }
 
 func (e *enforcerLoop) Start(ctx context.Context) error {
-	return e.virtualMeshController.AddEventHandler(ctx, &zephyr_networking_controller.VirtualMeshEventHandlerFuncs{
+	return e.virtualMeshEventWatcher.AddEventHandler(ctx, &zephyr_networking_controller.VirtualMeshEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_networking.VirtualMesh) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
 			logger.Debugw("event handler enter",

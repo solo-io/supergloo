@@ -18,7 +18,7 @@ import (
 )
 
 func NewAcpTranslatorLoop(
-	acpController zephyr_networking_controller.AccessControlPolicyEventWatcher,
+	acpEventWatcher zephyr_networking_controller.AccessControlPolicyEventWatcher,
 	MeshServiceEventWatcher zephyr_discovery_controller.MeshServiceEventWatcher,
 	meshClient zephyr_discovery.MeshClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
@@ -26,7 +26,7 @@ func NewAcpTranslatorLoop(
 	meshTranslators []AcpMeshTranslator,
 ) AcpTranslatorLoop {
 	return &translatorLoop{
-		acpController:             acpController,
+		acpEventWatcher:           acpEventWatcher,
 		MeshServiceEventWatcher:   MeshServiceEventWatcher,
 		meshClient:                meshClient,
 		accessControlPolicyClient: accessControlPolicyClient,
@@ -36,7 +36,7 @@ func NewAcpTranslatorLoop(
 }
 
 type translatorLoop struct {
-	acpController             zephyr_networking_controller.AccessControlPolicyEventWatcher
+	acpEventWatcher           zephyr_networking_controller.AccessControlPolicyEventWatcher
 	MeshServiceEventWatcher   zephyr_discovery_controller.MeshServiceEventWatcher
 	meshClient                zephyr_discovery.MeshClient
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient
@@ -45,7 +45,7 @@ type translatorLoop struct {
 }
 
 func (t *translatorLoop) Start(ctx context.Context) error {
-	err := t.acpController.AddEventHandler(ctx, &zephyr_networking_controller.AccessControlPolicyEventHandlerFuncs{
+	err := t.acpEventWatcher.AddEventHandler(ctx, &zephyr_networking_controller.AccessControlPolicyEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_networking.AccessControlPolicy) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
 			logger.Debugw("event handler enter",

@@ -58,7 +58,7 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshWorkloadClient := discovery_mocks.NewMockMeshWorkloadClient(ctrl)
 		meshClient := discovery_mocks.NewMockMeshClient(ctrl)
 		serviceEventWatcher := mock_corev1.NewMockServiceEventWatcher(ctrl)
-		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
+		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 
 		var serviceCallback func(service *k8s_core_types.Service) error
 		var meshWorkloadCallback func(meshWorkload *zephyr_discovery.MeshWorkload) error
@@ -72,7 +72,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				return nil
 			})
 
-		meshWorkloadController.
+		meshWorkloadEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, mwEventHandler *mesh_service.MeshWorkloadEventHandler) error {
@@ -92,7 +92,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 		err := meshServiceFinder.StartDiscovery(
 			serviceEventWatcher,
-			meshWorkloadController,
+			meshWorkloadEventWatcher,
 		)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -100,7 +100,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			serviceClient:            serviceClient,
 			meshServiceClient:        meshServiceClient,
 			serviceEventWatcher:      serviceEventWatcher,
-			meshWorkloadEventWatcher: meshWorkloadController,
+			meshWorkloadEventWatcher: meshWorkloadEventWatcher,
 			meshWorkloadClient:       meshWorkloadClient,
 			meshClient:               meshClient,
 

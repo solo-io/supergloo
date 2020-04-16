@@ -58,7 +58,7 @@ func NewMeshServiceFinder(
 
 func (m *meshServiceFinder) StartDiscovery(
 	serviceEventWatcher k8s_core_controller.ServiceEventWatcher,
-	meshWorkloadController zephyr_discovery_controller.MeshWorkloadEventWatcher,
+	meshWorkloadEventWatcher zephyr_discovery_controller.MeshWorkloadEventWatcher,
 ) error {
 
 	err := serviceEventWatcher.AddEventHandler(m.ctx, &ServiceEventHandler{
@@ -69,7 +69,7 @@ func (m *meshServiceFinder) StartDiscovery(
 		return err
 	}
 
-	return meshWorkloadController.AddEventHandler(m.ctx, &MeshWorkloadEventHandler{
+	return meshWorkloadEventWatcher.AddEventHandler(m.ctx, &MeshWorkloadEventHandler{
 		Ctx:                      m.ctx,
 		HandleMeshWorkloadUpsert: m.handleMeshWorkloadUpsert,
 	})

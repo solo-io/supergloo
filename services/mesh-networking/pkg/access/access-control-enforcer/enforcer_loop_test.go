@@ -24,13 +24,13 @@ import (
 
 var _ = Describe("EnforcerLoop", func() {
 	var (
-		ctrl                  *gomock.Controller
-		ctx                   context.Context
-		virtualMeshController *mock_zephyr_networking2.MockVirtualMeshEventWatcher
-		virtualMeshClient     *mock_zephyr_networking.MockVirtualMeshClient
-		meshClient            *mock_core.MockMeshClient
-		meshEnforcers         []*mock_global_access_control_enforcer.MockAccessPolicyMeshEnforcer
-		enforcerLoop          global_ac_enforcer.AccessPolicyEnforcerLoop
+		ctrl                    *gomock.Controller
+		ctx                     context.Context
+		virtualMeshEventWatcher *mock_zephyr_networking2.MockVirtualMeshEventWatcher
+		virtualMeshClient       *mock_zephyr_networking.MockVirtualMeshClient
+		meshClient              *mock_core.MockMeshClient
+		meshEnforcers           []*mock_global_access_control_enforcer.MockAccessPolicyMeshEnforcer
+		enforcerLoop            global_ac_enforcer.AccessPolicyEnforcerLoop
 		// captured event handler
 		virtualMeshHandler *zephyr_networking_controller.VirtualMeshEventHandlerFuncs
 	)
@@ -40,20 +40,20 @@ var _ = Describe("EnforcerLoop", func() {
 		ctx = context.TODO()
 		virtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 		meshClient = mock_core.NewMockMeshClient(ctrl)
-		virtualMeshController = mock_zephyr_networking2.NewMockVirtualMeshEventWatcher(ctrl)
+		virtualMeshEventWatcher = mock_zephyr_networking2.NewMockVirtualMeshEventWatcher(ctrl)
 		meshEnforcers = []*mock_global_access_control_enforcer.MockAccessPolicyMeshEnforcer{
 			mock_global_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
 			mock_global_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
 		}
 		enforcerLoop = global_ac_enforcer.NewEnforcerLoop(
-			virtualMeshController,
+			virtualMeshEventWatcher,
 			virtualMeshClient,
 			meshClient,
 			[]global_ac_enforcer.AccessPolicyMeshEnforcer{
 				meshEnforcers[0], meshEnforcers[1],
 			},
 		)
-		virtualMeshController.
+		virtualMeshEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_networking_controller.VirtualMeshEventHandlerFuncs) error {

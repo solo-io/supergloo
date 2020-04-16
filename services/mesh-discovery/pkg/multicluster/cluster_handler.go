@@ -45,7 +45,7 @@ func NewDiscoveryClusterHandler(
 	localMeshWorkloadClient := discoveryContext.ClientFactories.MeshWorkloadClientFactory(localClient)
 	localMeshClient := discoveryContext.ClientFactories.MeshClientFactory(localClient)
 
-	localMeshWorkloadController := discoveryContext.EventWatcherFactories.MeshWorkloadEventWatcherFactory.Build(localManager, "mesh-workload-apps_controller")
+	localMeshWorkloadEventWatcher := discoveryContext.EventWatcherFactories.MeshWorkloadEventWatcherFactory.Build(localManager, "mesh-workload-apps_controller")
 
 	// we don't store the local manager on the struct to avoid mistakenly conflating the local manager with the remote manager
 	handler := &discoveryClusterHandler{
@@ -56,7 +56,7 @@ func NewDiscoveryClusterHandler(
 		meshWorkloadScannerFactories:  meshWorkloadScannerFactories,
 		discoveryContext:              discoveryContext,
 		localMeshServiceClient:        localMeshServiceClient,
-		localMeshWorkloadEventWatcher: localMeshWorkloadController,
+		localMeshWorkloadEventWatcher: localMeshWorkloadEventWatcher,
 	}
 
 	return handler, nil
