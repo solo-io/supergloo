@@ -22,6 +22,10 @@ type PodEventWatcherFactory interface {
 	Build(mgr mc_manager.AsyncManager, clusterName string) k8s_core_controller.PodEventWatcher
 }
 
+type MeshEventWatcherFactory interface {
+	Build(mgr mc_manager.AsyncManager, clusterName string) zephyr_discovery_controller.MeshEventWatcher
+}
+
 type MeshWorkloadEventWatcherFactory interface {
 	Build(mgr mc_manager.AsyncManager, clusterName string) zephyr_discovery_controller.MeshWorkloadEventWatcher
 }

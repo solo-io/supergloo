@@ -28,6 +28,7 @@ type ClientFactories struct {
 	MeshServiceClientFactory  zephyr_discovery.MeshServiceClientFactory
 	MeshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory
 	MeshClientFactory         zephyr_discovery.MeshClientFactory
+	PodClientFactory          k8s_core.PodClientFactory
 }
 
 type EventWatcherFactories struct {
@@ -35,6 +36,7 @@ type EventWatcherFactories struct {
 	PodEventWatcherFactory          controllers.PodEventWatcherFactory
 	ServiceEventWatcherFactory      controllers.ServiceEventWatcherFactory
 	MeshWorkloadEventWatcherFactory controllers.MeshWorkloadEventWatcherFactory
+	MeshControllerFactory           controllers.MeshEventWatcherFactory
 }
 
 type MeshDiscovery struct {
@@ -59,6 +61,8 @@ func DiscoveryContextProvider(
 	meshWorkloadControllerFactory controllers.MeshWorkloadEventWatcherFactory,
 	deploymentEventWatcherFactory controllers.DeploymentEventWatcherFactory,
 	meshClientFactory zephyr_discovery.MeshClientFactory,
+	podClientFactory k8s_core.PodClientFactory,
+	meshControllerFactory controllers.MeshEventWatcherFactory,
 ) DiscoveryContext {
 
 	return DiscoveryContext{
@@ -71,12 +75,14 @@ func DiscoveryContextProvider(
 			MeshServiceClientFactory:  meshServiceClientFactory,
 			MeshWorkloadClientFactory: meshWorkloadClientFactory,
 			MeshClientFactory:         meshClientFactory,
+			PodClientFactory:          podClientFactory,
 		},
 		EventWatcherFactories: EventWatcherFactories{
 			DeploymentEventWatcherFactory:   deploymentEventWatcherFactory,
 			PodEventWatcherFactory:          podEventWatcherFactory,
 			ServiceEventWatcherFactory:      serviceEventWatcherFactory,
 			MeshWorkloadEventWatcherFactory: meshWorkloadControllerFactory,
+			MeshControllerFactory:           meshControllerFactory,
 		},
 		MeshDiscovery: MeshDiscovery{
 			IstioMeshScanner:         istioMeshScanner,

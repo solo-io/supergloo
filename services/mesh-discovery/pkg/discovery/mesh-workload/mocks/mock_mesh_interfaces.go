@@ -10,11 +10,11 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	v1 "k8s.io/api/apps/v1"
 	v10 "k8s.io/api/core/v1"
 	v11 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // MockMeshWorkloadFinder is a mock of MeshWorkloadFinder interface.
@@ -41,73 +41,17 @@ func (m *MockMeshWorkloadFinder) EXPECT() *MockMeshWorkloadFinderMockRecorder {
 }
 
 // StartDiscovery mocks base method.
-func (m *MockMeshWorkloadFinder) StartDiscovery(podEventWatcher controller.PodEventWatcher, predicates []predicate.Predicate) error {
+func (m *MockMeshWorkloadFinder) StartDiscovery(podEventWatcher controller0.PodEventWatcher, meshController controller.MeshEventWatcher) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartDiscovery", podEventWatcher, predicates)
+	ret := m.ctrl.Call(m, "StartDiscovery", podEventWatcher, meshController)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartDiscovery indicates an expected call of StartDiscovery.
-func (mr *MockMeshWorkloadFinderMockRecorder) StartDiscovery(podEventWatcher, predicates interface{}) *gomock.Call {
+func (mr *MockMeshWorkloadFinderMockRecorder) StartDiscovery(podEventWatcher, meshController interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).StartDiscovery), podEventWatcher, predicates)
-}
-
-// CreatePod mocks base method.
-func (m *MockMeshWorkloadFinder) CreatePod(obj *v10.Pod) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatePod", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreatePod indicates an expected call of CreatePod.
-func (mr *MockMeshWorkloadFinderMockRecorder) CreatePod(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePod", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).CreatePod), obj)
-}
-
-// UpdatePod mocks base method.
-func (m *MockMeshWorkloadFinder) UpdatePod(old, new *v10.Pod) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdatePod", old, new)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdatePod indicates an expected call of UpdatePod.
-func (mr *MockMeshWorkloadFinderMockRecorder) UpdatePod(old, new interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePod", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).UpdatePod), old, new)
-}
-
-// DeletePod mocks base method.
-func (m *MockMeshWorkloadFinder) DeletePod(obj *v10.Pod) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletePod", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeletePod indicates an expected call of DeletePod.
-func (mr *MockMeshWorkloadFinderMockRecorder) DeletePod(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePod", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).DeletePod), obj)
-}
-
-// GenericPod mocks base method.
-func (m *MockMeshWorkloadFinder) GenericPod(obj *v10.Pod) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenericPod", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// GenericPod indicates an expected call of GenericPod.
-func (mr *MockMeshWorkloadFinderMockRecorder) GenericPod(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericPod", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).GenericPod), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).StartDiscovery), podEventWatcher, meshController)
 }
 
 // MockOwnerFetcher is a mock of OwnerFetcher interface.

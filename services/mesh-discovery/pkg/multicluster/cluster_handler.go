@@ -23,19 +23,16 @@ var (
 	MeshPredicates = []predicate.Predicate{
 		mc_predicate.BlacklistedNamespacePredicateProvider(mc_predicate.KubeBlacklistedNamespaces),
 	}
-	MeshWorkloadPredicates = []predicate.Predicate{
-		mc_predicate.BlacklistedNamespacePredicateProvider(
-			mc_predicate.IstioBlackListedNamespaces.Union(mc_predicate.KubeBlacklistedNamespaces),
-		),
-	}
 )
+
+type MeshWorkloadScannerFactoryImplementations map[core_types.MeshType]mesh_workload.MeshWorkloadScannerFactory
 
 // this is the main entrypoint for discovery
 // when a cluster is registered, we handle that event and spin up new resource controllers for that cluster
 func NewDiscoveryClusterHandler(
 	localManager mc_manager.AsyncManager,
 	meshScanners []mesh.MeshScanner,
-	meshWorkloadScannerFactories []mesh_workload.MeshWorkloadScannerFactory,
+	meshWorkloadScannerFactories MeshWorkloadScannerFactoryImplementations,
 	discoveryContext wire.DiscoveryContext,
 ) (mc_manager.AsyncManagerHandler, error) {
 
@@ -47,6 +44,11 @@ func NewDiscoveryClusterHandler(
 
 	localMeshWorkloadEventWatcher := discoveryContext.EventWatcherFactories.MeshWorkloadEventWatcherFactory.Build(localManager, "mesh-workload-apps_controller")
 
+	localMeshController, err := discoveryContext.ControllerFactories.MeshControllerFactory.Build(localManager, "mesh-controller")
+	if err != nil {
+		return nil, err
+	}
+
 	// we don't store the local manager on the struct to avoid mistakenly conflating the local manager with the remote manager
 	handler := &discoveryClusterHandler{
 		localMeshClient:               localMeshClient,
@@ -57,6 +59,7 @@ func NewDiscoveryClusterHandler(
 		discoveryContext:              discoveryContext,
 		localMeshServiceClient:        localMeshServiceClient,
 		localMeshWorkloadEventWatcher: localMeshWorkloadEventWatcher,
+		localMeshController:           localMeshController,
 	}
 
 	return handler, nil
@@ -72,19 +75,21 @@ type discoveryClusterHandler struct {
 	localMeshServiceClient  zephyr_discovery.MeshServiceClient
 
 	// controllers that operate against the local cluster
-	localMeshWorkloadEventWatcher zephyr_discovery_controller.MeshWorkloadEventWatcher
+	localMeshWorkloadController zephyr_discovery_controller.MeshWorkloadEventWatcher
+	localMeshController         zephyr_discovery_controller.MeshEventWatcher
 
 	// scanners
 	meshScanners                 []mesh.MeshScanner
-	meshWorkloadScannerFactories []mesh_workload.MeshWorkloadScannerFactory
+	meshWorkloadScannerFactories MeshWorkloadScannerFactoryImplementations
 }
 
 type clusterDependentDeps struct {
 	deploymentEventWatcher k8s_apps_controller.DeploymentEventWatcher
 	podEventWatcher        k8s_core_controller.PodEventWatcher
-	meshWorkloadScanners   []mesh_workload.MeshWorkloadScanner
+	meshWorkloadScanners   mesh_workload.MeshWorkloadScannerImplementations
 	serviceEventWatcher    k8s_core_controller.ServiceEventWatcher
 	serviceClient          k8s_core.ServiceClient
+	podClient              k8s_core.PodClient
 }
 
 func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {
@@ -106,6 +111,7 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		m.localMeshWorkloadClient,
 		m.localMeshClient,
 		initializedDeps.meshWorkloadScanners,
+		initializedDeps.podClient,
 	)
 
 	meshServiceFinder := mesh_service.NewMeshServiceFinder(
@@ -123,7 +129,7 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		return err
 	}
 
-	err = meshWorkloadFinder.StartDiscovery(initializedDeps.podEventWatcher, MeshWorkloadPredicates)
+	err = meshWorkloadFinder.StartDiscovery(initializedDeps.podEventWatcher, m.localMeshController)
 	if err != nil {
 		return err
 	}
@@ -147,17 +153,18 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 	serviceEventWatcher := m.discoveryContext.EventWatcherFactories.ServiceEventWatcherFactory.Build(mgr, clusterName)
 
 	remoteClient := mgr.Manager().GetClient()
-	var meshWorkloadScanners []mesh_workload.MeshWorkloadScanner
-	for _, scannerFactory := range m.meshWorkloadScannerFactories {
+	meshWorkloadScanners := make(mesh_workload.MeshWorkloadScannerImplementations)
+	for meshType, scannerFactory := range m.meshWorkloadScannerFactories {
 		ownerFetcher := m.discoveryContext.ClientFactories.OwnerFetcherClientFactory(
 			m.discoveryContext.ClientFactories.DeploymentClientFactory(remoteClient),
 			m.discoveryContext.ClientFactories.ReplicaSetClientFactory(remoteClient),
 		)
 
-		meshWorkloadScanners = append(meshWorkloadScanners, scannerFactory(ownerFetcher))
+		meshWorkloadScanners[meshType] = scannerFactory(ownerFetcher)
 	}
 
 	serviceClient := m.discoveryContext.ClientFactories.ServiceClientFactory(remoteClient)
+	podClient := m.discoveryContext.ClientFactories.PodClientFactory(remoteClient)
 
 	return &clusterDependentDeps{
 		deploymentEventWatcher: deploymentEventWatcher,
@@ -165,5 +172,6 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 		meshWorkloadScanners:   meshWorkloadScanners,
 		serviceEventWatcher:    serviceEventWatcher,
 		serviceClient:          serviceClient,
+		podClient:              podClient,
 	}, nil
 }

@@ -51,6 +51,8 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	meshWorkloadEventWatcherFactory := controllers.NewMeshWorkloadEventWatcherFactory()
 	deploymentEventWatcherFactory := controllers.NewDeploymentEventWatcherFactory()
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
-	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podEventWatcherFactory, serviceEventWatcherFactory, meshWorkloadEventWatcherFactory, deploymentEventWatcherFactory, meshClientFactory)
+	podClientFactory := v1.PodClientFactoryProvider()
+	meshEventWatcherFactory := controllers.NewMeshControllerFactory()
+	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podEventWatcherFactory, serviceEventWatcherFactory, meshWorkloadEventWatcherFactory, deploymentEventWatcherFactory, meshClientFactory, podClientFactory, meshEventWatcherFactory)
 	return discoveryContext, nil
 }
