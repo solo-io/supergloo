@@ -3,6 +3,7 @@ package mesh_service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
@@ -11,6 +12,7 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -21,10 +23,10 @@ import (
 )
 
 var (
-	DiscoveryLabels = func(cluster, kubeServiceName, kubeServiceNamespace string) map[string]string {
+	DiscoveryLabels = func(meshType zephyr_core_types.MeshType, cluster, kubeServiceName, kubeServiceNamespace string) map[string]string {
 		return map[string]string{
 			constants.DISCOVERED_BY:          constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_TYPE:              zephyr_core_types.MeshType_ISTIO.String(),
+			constants.MESH_TYPE:              strings.ToLower(meshType.String()),
 			constants.KUBE_SERVICE_NAME:      kubeServiceName,
 			constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
 			constants.CLUSTER:                cluster,
@@ -108,7 +110,7 @@ func (m *meshServiceFinder) handleServiceUpsert(service *k8s_core_types.Service)
 		if m.isServiceBackedByWorkload(service, &meshWorkload, mesh) {
 			return m.upsertMeshService(
 				service,
-				meshWorkload.Spec.Mesh,
+				mesh,
 				m.findSubsets(service, meshWorkloads, mesh),
 				m.clusterName,
 			)
@@ -147,7 +149,7 @@ func (m *meshServiceFinder) handleMeshWorkloadUpsert(meshWorkload *zephyr_discov
 			}
 			return m.upsertMeshService(
 				&service,
-				meshWorkload.Spec.Mesh,
+				workloadMesh,
 				m.findSubsets(&service, meshWorkloads, workloadMesh),
 				m.clusterName,
 			)
@@ -223,7 +225,8 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(
 
 func (m *meshServiceFinder) buildMeshService(
 	service *k8s_core_types.Service,
-	meshRef *zephyr_core_types.ResourceRef,
+	meshType zephyr_core_types.MeshType,
+	meshObjectMeta k8s_meta_types.ObjectMeta,
 	subsets map[string]*zephyr_discovery_types.MeshServiceSpec_Subset,
 	clusterName string,
 ) *zephyr_discovery.MeshService {
@@ -231,7 +234,7 @@ func (m *meshServiceFinder) buildMeshService(
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      m.buildMeshServiceName(service, clusterName),
 			Namespace: m.writeNamespace,
-			Labels:    DiscoveryLabels(clusterName, service.GetName(), service.GetNamespace()),
+			Labels:    DiscoveryLabels(meshType, clusterName, service.GetName(), service.GetNamespace()),
 		},
 		Spec: zephyr_discovery_types.MeshServiceSpec{
 			KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
@@ -244,7 +247,7 @@ func (m *meshServiceFinder) buildMeshService(
 				Labels:                 service.GetLabels(),
 				Ports:                  m.convertPorts(service),
 			},
-			Mesh:    meshRef,
+			Mesh:    clients.ObjectMetaToResourceRef(meshObjectMeta),
 			Subsets: subsets,
 		},
 	}
@@ -263,11 +266,16 @@ func (m *meshServiceFinder) convertPorts(service *k8s_core_types.Service) (ports
 
 func (m *meshServiceFinder) upsertMeshService(
 	service *k8s_core_types.Service,
-	meshRef *zephyr_core_types.ResourceRef,
+	mesh *zephyr_discovery.Mesh,
 	subsets map[string]*zephyr_discovery_types.MeshServiceSpec_Subset,
 	clusterName string,
 ) error {
-	computedMeshService := m.buildMeshService(service, meshRef, subsets, clusterName)
+	meshType, err := enum_conversion.MeshToMeshType(mesh)
+	if err != nil {
+		return err
+	}
+
+	computedMeshService := m.buildMeshService(service, meshType, mesh.ObjectMeta, subsets, clusterName)
 
 	existingMeshService, err := m.meshServiceClient.GetMeshService(m.ctx, client.ObjectKey{
 		Name:      computedMeshService.GetName(),

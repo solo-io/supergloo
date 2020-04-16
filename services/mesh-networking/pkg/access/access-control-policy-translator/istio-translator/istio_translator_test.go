@@ -507,6 +507,24 @@ var _ = Describe("IstioTranslator", func() {
 		Expect(translatorError).To(BeNil())
 	})
 
+	It("should error if a service account ref doesn't match a real service account", func() {
+		testData := initTestData()
+		fakeRef := &zephyr_core_types.ResourceRef{
+			Name:      "name1",
+			Namespace: "namespace1",
+			Cluster:   "fake-cluster-name",
+		}
+		testData.accessControlPolicy.Spec.SourceSelector = &zephyr_core_types.IdentitySelector{
+			IdentitySelectorType: &zephyr_core_types.IdentitySelector_ServiceAccountRefs_{
+				ServiceAccountRefs: &zephyr_core_types.IdentitySelector_ServiceAccountRefs{
+					ServiceAccounts: []*zephyr_core_types.ResourceRef{fakeRef},
+				},
+			},
+		}
+		translatorError := istioTranslator.Translate(ctx, testData.targetServices, testData.accessControlPolicy)
+		Expect(translatorError.ErrorMessage).To(ContainSubstring(istio_translator.ServiceAccountRefNonexistent(fakeRef).Error()))
+	})
+
 	It("should return ACP processing error", func() {
 		acp := &zephyr_networking.AccessControlPolicy{
 			Spec: zephyr_networking_types.AccessControlPolicySpec{

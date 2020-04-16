@@ -16,7 +16,7 @@ import (
 var (
 	DiscoveryLabels = func() map[string]string {
 		return map[string]string{
-			constants.MESH_TYPE: zephyr_core_types.MeshType_ISTIO.String(),
+			constants.MESH_TYPE: strings.ToLower(zephyr_core_types.MeshType_ISTIO.String()),
 		}
 	}
 )

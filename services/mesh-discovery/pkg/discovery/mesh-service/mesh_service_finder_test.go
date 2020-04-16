@@ -124,6 +124,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
@@ -235,7 +236,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      meshServiceName,
 						Namespace: env.GetWriteNamespace(),
-						Labels:    mesh_service.DiscoveryLabels(clusterName, rightService.GetName(), rightService.GetNamespace()),
+						Labels:    mesh_service.DiscoveryLabels(zephyr_core_types.MeshType_LINKERD, clusterName, rightService.GetName(), rightService.GetNamespace()),
 					},
 					Spec: zephyr_discovery_types.MeshServiceSpec{
 						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
@@ -279,6 +280,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
@@ -358,6 +360,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
@@ -415,6 +418,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
@@ -530,6 +534,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
@@ -638,7 +643,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      meshServiceName,
 						Namespace: env.GetWriteNamespace(),
-						Labels:    mesh_service.DiscoveryLabels(clusterName, serviceEvent.GetName(), serviceEvent.GetNamespace()),
+						Labels:    mesh_service.DiscoveryLabels(zephyr_core_types.MeshType_LINKERD, clusterName, serviceEvent.GetName(), serviceEvent.GetNamespace()),
 					},
 					Spec: zephyr_discovery_types.MeshServiceSpec{
 						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
@@ -682,6 +687,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
@@ -763,6 +769,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "incorrect-cluster-name",
 					},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 

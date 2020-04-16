@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	ConflictingControlPlaneSettings   = eris.New("Cannot both use a pre-configured Mesh profile and provide an IstioOperator Custom Resource")
+	ConflictingControlPlaneSettings   = eris.New("Cannot both use a pre-configured Istio profile and provide an IstioOperator Custom Resource")
 	FailedToParseControlPlaneSettings = func(err error) error {
 		return eris.Wrap(err, "Failed to parse the provided IstioOperator resource")
 	}
@@ -145,19 +145,19 @@ func (i *istioInstaller) Install() error {
 func (i *istioInstaller) installOperator(namespace string) error {
 	installNeeded, err := i.operatorManager.ValidateOperatorNamespace(i.clusterName)
 	if err != nil {
-		return eris.Wrapf(err, "Mesh operator namespace validation failed for cluster '%s' in namespace '%s'", i.clusterName, namespace)
+		return eris.Wrapf(err, "Istio operator namespace validation failed for cluster '%s' in namespace '%s'", i.clusterName, namespace)
 	}
 
 	// install the operator if it didn't exist already
 	if installNeeded {
-		fmt.Fprintf(i.out, "Installing the Mesh operator to cluster '%s' in namespace '%s'\n", i.clusterName, namespace)
+		fmt.Fprintf(i.out, "Installing the Istio operator to cluster '%s' in namespace '%s'\n", i.clusterName, namespace)
 
 		err := i.operatorManager.Install()
 		if err != nil {
 			return err
 		}
 	} else {
-		fmt.Fprintf(i.out, "The Mesh operator is already installed to cluster '%s' in namespace '%s' and is suitable for use. Continuing with the Mesh installation.\n", i.clusterName, namespace)
+		fmt.Fprintf(i.out, "The Istio operator is already installed to cluster '%s' in namespace '%s' and is suitable for use. Continuing with the Istio installation.\n", i.clusterName, namespace)
 	}
 
 	return nil
@@ -221,7 +221,7 @@ func (i *istioInstaller) loadControlPlaneFromUserFlagConfig() (string, error) {
 func (i *istioInstaller) writeControlPlaneResource(namespace, istioControlPlaneToWrite string) error {
 	if istioControlPlaneToWrite == "" {
 		fmt.Fprintf(i.out,
-			"\nThe Mesh operator has been installed to cluster '%s' in namespace '%s'. No IstioOperator custom resource was provided to meshctl, so Mesh is currently not fully installed yet. Write a IstioOperator CR to cluster '%s' to complete your installation\n",
+			"\nThe Istio operator has been installed to cluster '%s' in namespace '%s'. No IstioOperator custom resource was provided to meshctl, so Istio is not fully installed yet. Write an IstioOperator CR to cluster '%s' to complete your installation\n",
 			i.clusterName,
 			namespace,
 			i.clusterName,
@@ -250,6 +250,6 @@ func (i *istioInstaller) writeControlPlaneResource(namespace, istioControlPlaneT
 		return FailedToWriteControlPlane(err)
 	}
 
-	fmt.Fprintf(i.out, "\nThe IstioOperator has been written to cluster '%s' in namespace '%s'. The Mesh operator should process it momentarily and install Mesh.\n", i.clusterName, namespace)
+	fmt.Fprintf(i.out, "\nThe IstioOperator has been written to cluster '%s' in namespace '%s'. The Istio operator should process it momentarily and install Istio.\n", i.clusterName, namespace)
 	return nil
 }

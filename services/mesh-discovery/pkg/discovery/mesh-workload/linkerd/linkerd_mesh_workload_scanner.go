@@ -3,6 +3,7 @@ package linkerd
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
@@ -15,7 +16,7 @@ import (
 var (
 	DiscoveryLabels = func() map[string]string {
 		return map[string]string{
-			constants.MESH_TYPE: zephyr_core_types.MeshType_LINKERD.String(),
+			constants.MESH_TYPE: strings.ToLower(zephyr_core_types.MeshType_LINKERD.String()),
 		}
 	}
 )
