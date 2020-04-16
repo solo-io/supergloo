@@ -41,6 +41,13 @@ discouraged; instead, there should be an effort to put things in a package whose
 For example, if a client implementation is used in several places, it should be put in a `clients` package, for
 example, rather than a `common`.
 
+**Package import aliases**
+
+Importing libraries with Kubernetes native or custom clients, types, controllers, etc. should adopt the following alias naming
+convention, `<org_name>_<group>_<suffix>`, where `org_name` is the organization that owns the library, `group` is the Kubernetes 
+group of the related type, and `suffix` is an optional string to further qualify the semantics imported package (e.g. "type", "controller",
+"client"). For instance, all SMH networking related Kubernetes library imports are aliased as `zephyr_networking_<suffix>`.
+
 #### Interfaces and Mocks
 A package should have a single file named `interfaces.go`, in which all the exported interfaces are placed along with the
 `go:generate mockgen` invocation to generate the accompanying mocks. That will normally look something like:
