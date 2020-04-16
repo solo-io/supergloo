@@ -93,7 +93,7 @@ func (i *istioTranslator) Translate(
 		if targetService.Mesh.Spec.GetIstio() == nil {
 			continue
 		}
-		client, err := i.dynamicClientGetter.GetClientForCluster(targetService.Mesh.Spec.GetCluster().GetName())
+		client, err := i.dynamicClientGetter.GetClientForCluster(ctx, targetService.Mesh.Spec.GetCluster().GetName())
 		if err != nil {
 			return &networking_types.AccessControlPolicyStatus_TranslatorError{
 				TranslatorId: TranslatorId,

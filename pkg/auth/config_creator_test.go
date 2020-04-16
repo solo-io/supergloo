@@ -50,7 +50,7 @@ var _ = Describe("Config creator", func() {
 
 	It("works when the service account is immediately ready", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
-		secretClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
+		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
 		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
@@ -75,7 +75,7 @@ var _ = Describe("Config creator", func() {
 
 	It("works when the service account eventually has a secret attached to it", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
-		secretClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
+		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
 		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
@@ -109,7 +109,7 @@ var _ = Describe("Config creator", func() {
 
 	It("returns an error when the secret is malformed", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
-		secretClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
+		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
 		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
@@ -134,7 +134,7 @@ var _ = Describe("Config creator", func() {
 
 	It("returns an error if the secret never appears", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
-		secretClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
+		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
 		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 

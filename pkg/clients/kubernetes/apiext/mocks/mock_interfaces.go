@@ -5,6 +5,7 @@
 package mock_kubernetes_apiext
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -74,45 +75,45 @@ func (m *MockCustomResourceDefinitionClient) EXPECT() *MockCustomResourceDefinit
 }
 
 // Get mocks base method.
-func (m *MockCustomResourceDefinitionClient) Get(name string) (*v1beta1.CustomResourceDefinition, error) {
+func (m *MockCustomResourceDefinitionClient) Get(ctx context.Context, name string) (*v1beta1.CustomResourceDefinition, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", name)
+	ret := m.ctrl.Call(m, "Get", ctx, name)
 	ret0, _ := ret[0].(*v1beta1.CustomResourceDefinition)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockCustomResourceDefinitionClientMockRecorder) Get(name interface{}) *gomock.Call {
+func (mr *MockCustomResourceDefinitionClientMockRecorder) Get(ctx, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).Get), name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).Get), ctx, name)
 }
 
 // List mocks base method.
-func (m *MockCustomResourceDefinitionClient) List() (*v1beta1.CustomResourceDefinitionList, error) {
+func (m *MockCustomResourceDefinitionClient) List(ctx context.Context) (*v1beta1.CustomResourceDefinitionList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	ret := m.ctrl.Call(m, "List", ctx)
 	ret0, _ := ret[0].(*v1beta1.CustomResourceDefinitionList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockCustomResourceDefinitionClientMockRecorder) List() *gomock.Call {
+func (mr *MockCustomResourceDefinitionClientMockRecorder) List(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).List), ctx)
 }
 
 // Delete mocks base method.
-func (m *MockCustomResourceDefinitionClient) Delete(name string) error {
+func (m *MockCustomResourceDefinitionClient) Delete(ctx context.Context, crd *v1beta1.CustomResourceDefinition) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", name)
+	ret := m.ctrl.Call(m, "Delete", ctx, crd)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockCustomResourceDefinitionClientMockRecorder) Delete(name interface{}) *gomock.Call {
+func (mr *MockCustomResourceDefinitionClientMockRecorder) Delete(ctx, crd interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).Delete), name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).Delete), ctx, crd)
 }

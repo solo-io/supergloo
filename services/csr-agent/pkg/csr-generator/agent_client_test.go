@@ -24,7 +24,7 @@ var _ = Describe("agent client", func() {
 	var (
 		ctrl                    *gomock.Controller
 		ctx                     context.Context
-		secretClient            *mock_kubernetes_core.MockSecretsClient
+		secretClient            *mock_kubernetes_core.MockSecretClient
 		signer                  *mock_certgen.MockSigner
 		certClient              csr_generator.CertClient
 		mockPrivateKeyGenerator *mock_csr_agent_controller.MockPrivateKeyGenerator
@@ -34,7 +34,7 @@ var _ = Describe("agent client", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		secretClient = mock_kubernetes_core.NewMockSecretsClient(ctrl)
+		secretClient = mock_kubernetes_core.NewMockSecretClient(ctrl)
 		signer = mock_certgen.NewMockSigner(ctrl)
 		mockPrivateKeyGenerator = mock_csr_agent_controller.NewMockPrivateKeyGenerator(ctrl)
 		certClient = csr_generator.NewCertClient(secretClient, signer, mockPrivateKeyGenerator)

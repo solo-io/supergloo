@@ -49,7 +49,7 @@ func (i *istioEnforcer) StartEnforcing(ctx context.Context, meshes []*discovery_
 		if mesh.Spec.GetIstio() == nil {
 			continue
 		}
-		clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(mesh.Spec.GetCluster().GetName())
+		clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
 		if err != nil {
 			return err
 		}
@@ -126,7 +126,7 @@ func (i *istioEnforcer) stopEnforcingForMesh(
 	ctx context.Context,
 	mesh *discovery_v1alpha1.Mesh,
 ) error {
-	clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(mesh.Spec.GetCluster().GetName())
+	clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
 	if err != nil {
 		return err
 	}

@@ -5,6 +5,7 @@
 package mock_crd_uninstall
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,16 +36,16 @@ func (m *MockCrdRemover) EXPECT() *MockCrdRemoverMockRecorder {
 }
 
 // RemoveZephyrCrds mocks base method.
-func (m *MockCrdRemover) RemoveZephyrCrds(clusterName string, remoteKubeConfig *rest.Config) (bool, error) {
+func (m *MockCrdRemover) RemoveZephyrCrds(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveZephyrCrds", clusterName, remoteKubeConfig)
+	ret := m.ctrl.Call(m, "RemoveZephyrCrds", ctx, clusterName, remoteKubeConfig)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RemoveZephyrCrds indicates an expected call of RemoveZephyrCrds.
-func (mr *MockCrdRemoverMockRecorder) RemoveZephyrCrds(clusterName, remoteKubeConfig interface{}) *gomock.Call {
+func (mr *MockCrdRemoverMockRecorder) RemoveZephyrCrds(ctx, clusterName, remoteKubeConfig interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveZephyrCrds", reflect.TypeOf((*MockCrdRemover)(nil).RemoveZephyrCrds), clusterName, remoteKubeConfig)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveZephyrCrds", reflect.TypeOf((*MockCrdRemover)(nil).RemoveZephyrCrds), ctx, clusterName, remoteKubeConfig)
 }

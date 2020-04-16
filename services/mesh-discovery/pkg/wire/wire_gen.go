@@ -41,7 +41,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	consulConnectMeshScanner := consul.NewConsulMeshScanner(imageNameParser, consulConnectInstallationScanner)
 	linkerdMeshScanner := linkerd.NewLinkerdMeshScanner(imageNameParser)
 	replicaSetClientFactory := kubernetes_apps.ReplicaSetClientFactoryProvider()
-	deploymentClientFactory := kubernetes_apps.ControllerRuntimeDeploymentClientFactoryProvider()
+	deploymentClientFactory := kubernetes_apps.DeploymentClientFactoryProvider()
 	ownerFetcherFactory := mesh_workload.OwnerFetcherFactoryProvider()
 	serviceClientFactory := kubernetes_core.ServiceClientFactoryProvider()
 	meshServiceClientFactory := zephyr_discovery.MeshServiceClientFactoryProvider()

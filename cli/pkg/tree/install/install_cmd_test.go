@@ -154,7 +154,7 @@ var _ = Describe("Install", func() {
 		clusterDEF := "clusterDEF"
 		testServerDEF := "test-server-def"
 
-		secretClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
+		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		authClient := mock_auth.NewMockClusterAuthorization(ctrl)
 		configVerifier := cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)

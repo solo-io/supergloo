@@ -26,7 +26,7 @@ var _ = Describe("virtual mesh cert client", func() {
 	var (
 		ctrl                  *gomock.Controller
 		ctx                   context.Context
-		secretClient          *mock_kubernetes_core.MockSecretsClient
+		secretClient          *mock_kubernetes_core.MockSecretClient
 		virtualMeshClient     *mock_zephyr_networking.MockVirtualMeshClient
 		virtualMeshCertClient cert_signer.VirtualMeshCertClient
 		rootCertGenerator     *mock_certgen.MockRootCertGenerator
@@ -36,7 +36,7 @@ var _ = Describe("virtual mesh cert client", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		secretClient = mock_kubernetes_core.NewMockSecretsClient(ctrl)
+		secretClient = mock_kubernetes_core.NewMockSecretClient(ctrl)
 		virtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 		rootCertGenerator = mock_certgen.NewMockRootCertGenerator(ctrl)
 		virtualMeshCertClient = cert_signer.NewVirtualMeshCertClient(secretClient, virtualMeshClient, rootCertGenerator)

@@ -78,7 +78,7 @@ func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *disc
 		return FailedToUninstallCsrAgent(err, kubeCluster.GetName())
 	}
 
-	_, err = c.crdRemover.RemoveZephyrCrds(kubeCluster.GetName(), config.RestConfig)
+	_, err = c.crdRemover.RemoveZephyrCrds(ctx, kubeCluster.GetName(), config.RestConfig)
 	if err != nil {
 		return FailedToRemoveCrds(err, kubeCluster.GetName())
 	}

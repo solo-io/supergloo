@@ -61,5 +61,5 @@ type AsyncManagerFactory interface {
 // Simple map get interface to expose the map of dynamic clients to the local controller
 type DynamicClientGetter interface {
 	// Return (client, true) if found, otherwise (nil, false)
-	GetClientForCluster(clusterName string, opts ...retry.Option) (client.Client, error)
+	GetClientForCluster(ctx context.Context, clusterName string, opts ...retry.Option) (client.Client, error)
 }

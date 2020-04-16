@@ -123,7 +123,7 @@ var _ = Describe("external access point getter", func() {
 				},
 			}
 			dynamicClientGetter.EXPECT().
-				GetClientForCluster(clusterName).
+				GetClientForCluster(ctx, clusterName).
 				Return(nil, mc_manager.NoClientForClusterError(clusterName))
 
 			_, err := externalAccessPointGetter.GetExternalAccessPointForService(ctx, svc, istio_federation.DefaultGatewayPortName, clusterName)
@@ -148,7 +148,7 @@ var _ = Describe("external access point getter", func() {
 				},
 			}
 			dynamicClientGetter.EXPECT().
-				GetClientForCluster(clusterName).
+				GetClientForCluster(ctx, clusterName).
 				Return(nil, nil)
 
 			podClient.EXPECT().
@@ -180,7 +180,7 @@ var _ = Describe("external access point getter", func() {
 				},
 			}
 			dynamicClientGetter.EXPECT().
-				GetClientForCluster(clusterName).
+				GetClientForCluster(ctx, clusterName).
 				Return(nil, nil)
 
 			nodeName := "test-node"
@@ -225,7 +225,7 @@ var _ = Describe("external access point getter", func() {
 				},
 			}
 			dynamicClientGetter.EXPECT().
-				GetClientForCluster(clusterName).
+				GetClientForCluster(ctx, clusterName).
 				Return(nil, nil)
 
 			nodeName := "test-node"

@@ -3,9 +3,22 @@ package zephyr_networking
 import (
 	"context"
 
-	networkingv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+func NewVirtualMeshClientForConfig(cfg *rest.Config) (VirtualMeshClient, error) {
+	if err := networking_v1alpha1.AddToScheme(scheme.Scheme); err != nil {
+		return nil, err
+	}
+	dynamicClient, err := client.New(cfg, client.Options{})
+	if err != nil {
+		return nil, err
+	}
+	return &virtualMeshClient{dynamicClient: dynamicClient}, nil
+}
 
 func NewVirtualMeshClient(dynamicClient client.Client) VirtualMeshClient {
 	return &virtualMeshClient{dynamicClient: dynamicClient}
@@ -18,9 +31,9 @@ type virtualMeshClient struct {
 func (v *virtualMeshClient) Get(
 	ctx context.Context,
 	name, namespace string,
-) (*networkingv1alpha1.VirtualMesh, error) {
+) (*networking_v1alpha1.VirtualMesh, error) {
 
-	csr := networkingv1alpha1.VirtualMesh{}
+	csr := networking_v1alpha1.VirtualMesh{}
 	err := v.dynamicClient.Get(ctx, client.ObjectKey{
 		Name:      name,
 		Namespace: namespace,
@@ -34,9 +47,9 @@ func (v *virtualMeshClient) Get(
 func (v *virtualMeshClient) List(
 	ctx context.Context,
 	opts ...client.ListOption,
-) (*networkingv1alpha1.VirtualMeshList, error) {
+) (*networking_v1alpha1.VirtualMeshList, error) {
 
-	list := networkingv1alpha1.VirtualMeshList{}
+	list := networking_v1alpha1.VirtualMeshList{}
 	err := v.dynamicClient.List(ctx, &list, opts...)
 	if err != nil {
 		return nil, err
@@ -46,12 +59,12 @@ func (v *virtualMeshClient) List(
 
 func (v *virtualMeshClient) UpdateStatus(
 	ctx context.Context,
-	vm *networkingv1alpha1.VirtualMesh,
+	vm *networking_v1alpha1.VirtualMesh,
 	opts ...client.UpdateOption,
 ) error {
 	return v.dynamicClient.Status().Update(ctx, vm, opts...)
 }
 
-func (v *virtualMeshClient) Create(ctx context.Context, virtualMesh *networkingv1alpha1.VirtualMesh) error {
+func (v *virtualMeshClient) Create(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) error {
 	return v.dynamicClient.Create(ctx, virtualMesh)
 }

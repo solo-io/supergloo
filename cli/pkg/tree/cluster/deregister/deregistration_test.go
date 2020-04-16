@@ -71,7 +71,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			Run(cliconstants.CsrAgentReleaseName).
 			Return(nil, nil)
 		crdRemover.EXPECT().
-			RemoveZephyrCrds(remoteClusterName, remoteRestConfig).
+			RemoveZephyrCrds(ctx, remoteClusterName, remoteRestConfig).
 			Return(true, nil)
 		configLookup.EXPECT().
 			FromCluster(ctx, clusterToDeregister.GetName()).
@@ -213,7 +213,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			FromCluster(ctx, clusterToDeregister.GetName()).
 			Return(&kubeconfig.Config{RestConfig: remoteRestConfig}, nil)
 		crdRemover.EXPECT().
-			RemoveZephyrCrds(remoteClusterName, remoteRestConfig).
+			RemoveZephyrCrds(ctx, remoteClusterName, remoteRestConfig).
 			Return(false, testErr)
 
 		clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(

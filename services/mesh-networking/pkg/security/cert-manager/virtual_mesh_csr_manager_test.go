@@ -197,7 +197,7 @@ var _ = Describe("csr manager", func() {
 				Return(nil, nil)
 
 			dynamicClientGetter.EXPECT().
-				GetClientForCluster(clusterName, gomock.Any()).
+				GetClientForCluster(ctx, clusterName, gomock.Any()).
 				Return(nil, mc_manager.ClientNotFoundError(clusterName))
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
@@ -245,7 +245,7 @@ var _ = Describe("csr manager", func() {
 				Return(nil, nil)
 
 			dynamicClientGetter.EXPECT().
-				GetClientForCluster(clusterName, gomock.Any()).
+				GetClientForCluster(ctx, clusterName, gomock.Any()).
 				Return(nil, nil)
 
 			csrClient.EXPECT().
@@ -303,7 +303,7 @@ var _ = Describe("csr manager", func() {
 				Return([]*discovery_v1alpha1.Mesh{mesh}, nil)
 
 			dynamicClientGetter.EXPECT().
-				GetClientForCluster(clusterName, gomock.Any()).
+				GetClientForCluster(ctx, clusterName, gomock.Any()).
 				Return(nil, nil)
 			statusErr := errors.NewNotFound(schema.GroupResource{}, "")
 			csrClient.EXPECT().
@@ -383,7 +383,7 @@ var _ = Describe("csr manager", func() {
 				Return([]*discovery_v1alpha1.Mesh{mesh}, nil)
 
 			dynamicClientGetter.EXPECT().
-				GetClientForCluster(clusterName, gomock.Any()).
+				GetClientForCluster(ctx, clusterName, gomock.Any()).
 				Return(nil, nil)
 			statusErr := errors.NewNotFound(schema.GroupResource{}, "")
 			csrClient.EXPECT().
