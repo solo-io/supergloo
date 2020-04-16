@@ -3,6 +3,7 @@ package linkerd
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
 
@@ -16,7 +17,7 @@ import (
 var (
 	DiscoveryLabels = func() map[string]string {
 		return map[string]string{
-			constants.MESH_TYPE: core_types.MeshType_LINKERD.String(),
+			constants.MESH_TYPE: strings.ToLower(core_types.MeshType_LINKERD.String()),
 		}
 	}
 )
