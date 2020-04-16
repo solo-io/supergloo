@@ -3,6 +3,7 @@ package multicluster
 import (
 	"context"
 
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	k8s_apps_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
@@ -44,10 +45,7 @@ func NewDiscoveryClusterHandler(
 
 	localMeshWorkloadEventWatcher := discoveryContext.EventWatcherFactories.MeshWorkloadEventWatcherFactory.Build(localManager, "mesh-workload-apps_controller")
 
-	localMeshController, err := discoveryContext.ControllerFactories.MeshControllerFactory.Build(localManager, "mesh-controller")
-	if err != nil {
-		return nil, err
-	}
+	localMeshController := discoveryContext.EventWatcherFactories.MeshControllerFactory.Build(localManager, "mesh-controller")
 
 	// we don't store the local manager on the struct to avoid mistakenly conflating the local manager with the remote manager
 	handler := &discoveryClusterHandler{
@@ -59,7 +57,7 @@ func NewDiscoveryClusterHandler(
 		discoveryContext:              discoveryContext,
 		localMeshServiceClient:        localMeshServiceClient,
 		localMeshWorkloadEventWatcher: localMeshWorkloadEventWatcher,
-		localMeshController:           localMeshController,
+		localMeshEventWatcher:         localMeshController,
 	}
 
 	return handler, nil
@@ -75,8 +73,8 @@ type discoveryClusterHandler struct {
 	localMeshServiceClient  zephyr_discovery.MeshServiceClient
 
 	// controllers that operate against the local cluster
-	localMeshWorkloadController zephyr_discovery_controller.MeshWorkloadEventWatcher
-	localMeshController         zephyr_discovery_controller.MeshEventWatcher
+	localMeshWorkloadEventWatcher zephyr_discovery_controller.MeshWorkloadEventWatcher
+	localMeshEventWatcher         zephyr_discovery_controller.MeshEventWatcher
 
 	// scanners
 	meshScanners                 []mesh.MeshScanner
@@ -129,7 +127,7 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		return err
 	}
 
-	err = meshWorkloadFinder.StartDiscovery(initializedDeps.podEventWatcher, m.localMeshController)
+	err = meshWorkloadFinder.StartDiscovery(initializedDeps.podEventWatcher, m.localMeshEventWatcher)
 	if err != nil {
 		return err
 	}
