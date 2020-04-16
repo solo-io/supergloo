@@ -7,9 +7,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/linkerd"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/service-mesh-hub/pkg/bootstrap"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
-	"github.com/solo-io/service-mesh-hub/services/internal/config"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
 	md_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster"
@@ -18,7 +18,7 @@ import (
 )
 
 func Run(rootCtx context.Context) {
-	ctx := config.CreateRootContext(rootCtx, "mesh-discovery")
+	ctx := bootstrap.CreateRootContext(rootCtx, "mesh-discovery")
 
 	logger := contextutils.LoggerFrom(ctx)
 

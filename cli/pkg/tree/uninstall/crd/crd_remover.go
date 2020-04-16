@@ -1,6 +1,7 @@
 package crd_uninstall
 
 import (
+	"context"
 	"strings"
 
 	"github.com/rotisserie/eris"
@@ -23,7 +24,7 @@ var (
 )
 
 func NewCrdRemover(
-	crdClientFactory kubernetes_apiext.GeneratedCrdClientFactory,
+	crdClientFactory kubernetes_apiext.CrdClientFactory,
 ) CrdRemover {
 	return &crdRemover{
 		crdClientFactory: crdClientFactory,
@@ -31,16 +32,16 @@ func NewCrdRemover(
 }
 
 type crdRemover struct {
-	crdClientFactory kubernetes_apiext.GeneratedCrdClientFactory
+	crdClientFactory kubernetes_apiext.CrdClientFactory
 }
 
-func (c *crdRemover) RemoveZephyrCrds(clusterName string, remoteKubeConfig *rest.Config) (crdsDeleted bool, err error) {
+func (c *crdRemover) RemoveZephyrCrds(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config) (crdsDeleted bool, err error) {
 	crdClient, err := c.crdClientFactory(remoteKubeConfig)
 	if err != nil {
 		return false, FailedToBuildCrdClient(err, clusterName)
 	}
 
-	crds, err := crdClient.List()
+	crds, err := crdClient.List(ctx)
 	if err != nil {
 		return false, FailedToListCrds(err, clusterName)
 	}
@@ -48,11 +49,16 @@ func (c *crdRemover) RemoveZephyrCrds(clusterName string, remoteKubeConfig *rest
 	for _, crd := range crds.Items {
 		if strings.HasSuffix(crd.GetName(), cliconstants.ServiceMeshHubApiGroupSuffix) {
 			crdsDeleted = true
-			err := crdClient.Delete(crd.GetName())
-			if errors.IsNotFound(err) {
-				// may be a race condition elsewhere; the CRD was removed between when we listed it and when we came here to actually delete it
-				continue
-			} else if err != nil {
+			existing, err := crdClient.Get(ctx, crd.GetName())
+			if err != nil {
+				if errors.IsNotFound(err) {
+					// may be a race condition elsewhere; the CRD was removed between when we listed it and when we came here to actually delete it
+					continue
+				}
+				return false, FailedToDeleteCrd(err, clusterName, crd.GetName())
+			}
+			err = crdClient.Delete(ctx, existing)
+			if err != nil {
 				return false, FailedToDeleteCrd(err, clusterName, crd.GetName())
 			}
 		}

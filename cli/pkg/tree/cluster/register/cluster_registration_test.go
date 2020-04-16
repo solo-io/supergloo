@@ -42,7 +42,7 @@ var _ = Describe("Cluster Operations", func() {
 	var (
 		ctrl              *gomock.Controller
 		ctx               context.Context
-		secretClient      *mock_kubernetes_core.MockSecretsClient
+		secretClient      *mock_kubernetes_core.MockSecretClient
 		namespaceClient   *mock_kubernetes_core.MockNamespaceClient
 		authClient        *mock_auth.MockClusterAuthorization
 		kubeLoader        *cli_mocks.MockKubeLoader
@@ -56,7 +56,7 @@ var _ = Describe("Cluster Operations", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 
-		secretClient = mock_kubernetes_core.NewMockSecretsClient(ctrl)
+		secretClient = mock_kubernetes_core.NewMockSecretClient(ctrl)
 		namespaceClient = mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		authClient = mock_auth.NewMockClusterAuthorization(ctrl)
 		kubeLoader = cli_mocks.NewMockKubeLoader(ctrl)

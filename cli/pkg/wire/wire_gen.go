@@ -56,9 +56,6 @@ import (
 	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	version2 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/clientset/versioned"
-	versioned3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/clientset/versioned"
-	versioned2 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
@@ -79,63 +76,85 @@ import (
 // Injectors from wire.go:
 
 func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string) (*common.KubeClients, error) {
+	secretClient, err := kubernetes_core.NewSecretsClientForConfig(masterConfig)
+	if err != nil {
+		return nil, err
+	}
+	serviceAccountClient, err := kubernetes_core.NewServiceAccountClientForConfig(masterConfig)
+	if err != nil {
+		return nil, err
+	}
+	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, serviceAccountClient)
 	clientset, err := kubernetes.NewForConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	secretsClient := kubernetes_core.NewGeneratedSecretsClient(clientset)
-	serviceAccountClient := kubernetes_core.NewGeneratedServiceAccountClient(clientset)
-	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretsClient, serviceAccountClient)
 	rbacClient := auth.RbacClientProvider(clientset)
 	remoteAuthorityManager := auth.NewRemoteAuthorityManager(serviceAccountClient, rbacClient)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
 	helmClient := helminstall.DefaultHelmClient()
 	installer := install.HelmInstallerProvider(helmClient, clientset)
-	versionedClientset, err := versioned.NewForConfig(masterConfig)
+	kubernetesClusterClient, err := zephyr_discovery.NewKubernetesClusterClientForConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	kubernetesClusterClient, err := zephyr_discovery.NewGeneratedKubernetesClusterClient(versionedClientset)
+	namespaceClient, err := kubernetes_core.NewNamespaceClientForConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	namespaceClient := kubernetes_core.NewGeneratedNamespaceClient(clientset)
 	serverVersionClient := kubernetes_discovery.NewGeneratedServerVersionClient(clientset)
-	podClient := kubernetes_core.NewGeneratedPodClient(clientset)
-	meshServiceClient := zephyr_discovery.NewGeneratedMeshServiceClient(versionedClientset)
+	podClient, err := kubernetes_core.NewPodClientForConfig(masterConfig)
+	if err != nil {
+		return nil, err
+	}
+	meshServiceClient, err := zephyr_discovery.NewMeshServiceClientForConfig(masterConfig)
+	if err != nil {
+		return nil, err
+	}
 	clients := healthcheck.ClientsProvider(namespaceClient, serverVersionClient, podClient, meshServiceClient)
-	deploymentClient, err := kubernetes_apps.NewGeneratedDeploymentClient(masterConfig)
+	deploymentClient, err := kubernetes_apps.NewDeploymentClientForConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
 	imageNameParser := docker.NewImageNameParser()
 	deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
-	generatedCrdClientFactory := kubernetes_apiext.NewGeneratedCrdClientFactory()
-	crdRemover := crd_uninstall.NewCrdRemover(generatedCrdClientFactory)
+	crdClientFactory := kubernetes_apiext.NewCrdClientFromConfigFactory()
+	crdRemover := crd_uninstall.NewCrdRemover(crdClientFactory)
 	secretToConfigConverter := kubeconfig.SecretToConfigConverterProvider()
 	uninstallClients := common.UninstallClientsProvider(crdRemover, secretToConfigConverter)
 	inMemoryRESTClientGetterFactory := common_config.NewInMemoryRESTClientGetterFactory()
 	uninstallerFactory := helm_uninstall.NewUninstallerFactory()
-	kubeConfigLookup := config_lookup.NewKubeConfigLookup(kubernetesClusterClient, secretsClient, secretToConfigConverter)
+	kubeConfigLookup := config_lookup.NewKubeConfigLookup(kubernetesClusterClient, secretClient, secretToConfigConverter)
 	clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(crdRemover, inMemoryRESTClientGetterFactory, uninstallerFactory, kubeConfigLookup)
-	clientset2, err := versioned2.NewForConfig(masterConfig)
+	virtualMeshCSRClient, err := zephyr_security.NewVirtualMeshCSRClientForConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	virtualMeshCSRClient := zephyr_security.NewGeneratedVirtualMeshCSRClient(clientset2)
-	meshClient := zephyr_discovery.NewGeneratedMeshClient(versionedClientset)
-	virtualMeshClient := zephyr_networking.NewGeneratedVirtualMeshClient(masterConfig)
-	clientset3, err := versioned3.NewForConfig(masterConfig)
+	meshClient, err := zephyr_discovery.NewMeshClientForConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	trafficPolicyClient := zephyr_networking.NewGeneratedTrafficPolicyClient(clientset3)
-	accessControlPolicyClient := zephyr_networking.NewGeneratedAccessControlPolicyClient(clientset3)
-	meshWorkloadClient := zephyr_discovery.NewGeneratedMeshWorkloadClient(versionedClientset)
-	generatedDeploymentClientFactory := kubernetes_apps.GeneratedDeploymentClientFactoryProvider()
-	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, generatedDeploymentClientFactory, kubeConfigLookup)
+	virtualMeshClient, err := zephyr_networking.NewVirtualMeshClientForConfig(masterConfig)
+	if err != nil {
+		return nil, err
+	}
+	trafficPolicyClient, err := zephyr_networking.NewTrafficPolicyClientForConfig(masterConfig)
+	if err != nil {
+		return nil, err
+	}
+	accessControlPolicyClient, err := zephyr_networking.NewAccessControlPolicyClientForConfig(masterConfig)
+	if err != nil {
+		return nil, err
+	}
+	meshWorkloadClient, err := zephyr_discovery.NewMeshWorkloadClientForConfig(masterConfig)
+	if err != nil {
+		return nil, err
+	}
+	deploymentClientFactory := kubernetes_apps.DeploymentClientFactoryProvider()
+	dynamicClientGetter := config_lookup.NewDynamicClientGetter(kubeConfigLookup)
+	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
 	resourceDescriber := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, generatedCrdClientFactory, secretsClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCSRClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient)
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, crdClientFactory, secretClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCSRClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient)
 	return kubeClients, nil
 }
 

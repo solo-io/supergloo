@@ -116,7 +116,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Get(ctx, clients.ResourceRefToObjectKey(nonIstioMeshRef)).
 				Return(nonIstioMesh, nil)
 			clientGetter.EXPECT().
-				GetClientForCluster("linkerd").
+				GetClientForCluster(ctx, "linkerd").
 				Return(nil, nil)
 
 			_, err := federationClient.FederateServiceSide(ctx, virtualMesh, nonIstioMeshService)
@@ -207,7 +207,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Get(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
-				GetClientForCluster(clusterName).
+				GetClientForCluster(ctx, clusterName).
 				Return(nil, nil)
 			gatewayClient.EXPECT().
 				Get(ctx, client.ObjectKey{
@@ -394,7 +394,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Get(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
-				GetClientForCluster(clusterName).
+				GetClientForCluster(ctx, clusterName).
 				Return(nil, nil)
 			gateway := &v1alpha3.Gateway{
 				ObjectMeta: v1.ObjectMeta{
@@ -581,7 +581,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Get(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
-				GetClientForCluster(clusterName).
+				GetClientForCluster(ctx, clusterName).
 				Return(nil, nil)
 			gateway := &v1alpha3.Gateway{
 				ObjectMeta: v1.ObjectMeta{
@@ -753,7 +753,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Get(ctx, clients.ResourceRefToObjectKey(nonIstioMeshRef)).
 				Return(nonIstioMesh, nil)
 			clientGetter.EXPECT().
-				GetClientForCluster("linkerd").
+				GetClientForCluster(ctx, "linkerd").
 				Return(nil, nil)
 			eap := dns.ExternalAccessPoint{
 				Address: "abc.com",
@@ -869,7 +869,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Return(istioMeshForWorkload, nil)
 			workloadClient := mock_controller_runtime.NewMockClient(ctrl)
 			clientGetter.EXPECT().
-				GetClientForCluster("istio-cluster-workload").
+				GetClientForCluster(ctx, "istio-cluster-workload").
 				Return(workloadClient, nil)
 
 			externalAddress := "externally-resolvable-hostname.com"

@@ -421,7 +421,7 @@ func (i *istioFederationClient) getClientForMesh(ctx context.Context, meshRef *c
 		return nil, nil, err
 	}
 
-	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(mesh.Spec.GetCluster().GetName())
+	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
 	if err != nil {
 		return nil, nil, ClusterNotReady(mesh.Spec.GetCluster().GetName())
 	}

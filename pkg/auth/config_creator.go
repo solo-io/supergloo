@@ -27,7 +27,7 @@ var (
 )
 
 func NewRemoteAuthorityConfigCreator(
-	secretClient kubernetes_core.SecretsClient,
+	secretClient kubernetes_core.SecretClient,
 	serviceAccountClient kubernetes_core.ServiceAccountClient,
 ) RemoteAuthorityConfigCreator {
 	return &remoteAuthorityConfigCreator{
@@ -37,7 +37,7 @@ func NewRemoteAuthorityConfigCreator(
 }
 
 type remoteAuthorityConfigCreator struct {
-	secretClient         kubernetes_core.SecretsClient
+	secretClient         kubernetes_core.SecretClient
 	serviceAccountClient kubernetes_core.ServiceAccountClient
 }
 

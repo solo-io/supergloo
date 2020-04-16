@@ -4,6 +4,7 @@ import (
 	"context"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -11,6 +12,14 @@ type PodClientFactory func(client client.Client) PodClient
 
 func NewPodClientFactory() PodClientFactory {
 	return NewPodClient
+}
+
+func NewPodClientForConfig(cfg *rest.Config) (PodClient, error) {
+	dynamicClient, err := client.New(cfg, client.Options{})
+	if err != nil {
+		return nil, err
+	}
+	return &podClient{client: dynamicClient}, nil
 }
 
 func NewPodClient(client client.Client) PodClient {

@@ -113,7 +113,7 @@ func (f *externalAccessPointGetter) GetExternalAccessPointForService(
 }
 
 func (f *externalAccessPointGetter) getNodeIp(ctx context.Context, svc *corev1.Service, clusterName string) (string, error) {
-	dynamicClient, err := f.dynamicClientGetter.GetClientForCluster(clusterName)
+	dynamicClient, err := f.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
 	if err != nil {
 		return "", err
 	}

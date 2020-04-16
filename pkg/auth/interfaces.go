@@ -59,5 +59,5 @@ type RemoteAuthorityManager interface {
 type Clients struct {
 	ServiceAccountClient kubernetes_core.ServiceAccountClient
 	RbacClient           RbacClient
-	SecretClient         kubernetes_core.SecretsClient
+	SecretClient         kubernetes_core.SecretClient
 }

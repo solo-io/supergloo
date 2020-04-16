@@ -4,15 +4,15 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/service-mesh-hub/pkg/bootstrap"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
-	"github.com/solo-io/service-mesh-hub/services/internal/config"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/wire"
 	"go.uber.org/zap"
 )
 
 func Run(ctx context.Context) {
-	ctx = config.CreateRootContext(ctx, "mesh-networking")
+	ctx = bootstrap.CreateRootContext(ctx, "mesh-networking")
 	logger := contextutils.LoggerFrom(ctx)
 
 	// build all the objects needed for multicluster operations

@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/service-mesh-hub/pkg/bootstrap"
 	"github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/wire"
-	"github.com/solo-io/service-mesh-hub/services/internal/config"
 	"go.uber.org/zap"
 )
 
 func Run(ctx context.Context) {
-	ctx = config.CreateRootContext(ctx, "csr-agent")
+	ctx = bootstrap.CreateRootContext(ctx, "csr-agent")
 	logger := contextutils.LoggerFrom(ctx)
 
 	// build all the objects needed for multicluster operations

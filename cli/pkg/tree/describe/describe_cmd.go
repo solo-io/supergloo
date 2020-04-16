@@ -59,7 +59,7 @@ func DescribeCmd(
 			if err != nil {
 				return err
 			}
-			var explorationResult *description.ExplorationResult
+			var explorationResult *description.DescriptionResult
 			var printMode table_printing.PrintMode
 			switch resourceType {
 			case validResources.List()[0]:

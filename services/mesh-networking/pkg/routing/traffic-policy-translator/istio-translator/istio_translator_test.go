@@ -168,7 +168,7 @@ var _ = Describe("IstioTranslator", func() {
 				},
 			}
 			mockMeshClient.EXPECT().Get(ctx, meshObjKey).Return(mesh, nil)
-			mockDynamicClientGetter.EXPECT().GetClientForCluster(clusterName).Return(nil, nil)
+			mockDynamicClientGetter.EXPECT().GetClientForCluster(ctx, clusterName).Return(nil, nil)
 			// computed DestinationRule
 			computedDestinationRule := &client_v1alpha3.DestinationRule{
 				ObjectMeta: v1.ObjectMeta{
@@ -867,7 +867,7 @@ var _ = Describe("IstioTranslator", func() {
 
 			mockDynamicClientGetter.
 				EXPECT().
-				GetClientForCluster(testContext.clusterName).
+				GetClientForCluster(ctx, testContext.clusterName).
 				Return(nil, nil)
 			mockDestinationRuleClient.
 				EXPECT().

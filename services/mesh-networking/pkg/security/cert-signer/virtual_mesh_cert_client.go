@@ -21,13 +21,13 @@ func DefaultRootCaName(vm *networking_v1alpha1.VirtualMesh) string {
 }
 
 type virtualMeshCertClient struct {
-	localSecretClient      kubernetes_core.SecretsClient
+	localSecretClient      kubernetes_core.SecretClient
 	localVirtualMeshClient zephyr_networking.VirtualMeshClient
 	rootCertGenerator      certgen.RootCertGenerator
 }
 
 func NewVirtualMeshCertClient(
-	localSecretClient kubernetes_core.SecretsClient,
+	localSecretClient kubernetes_core.SecretClient,
 	localVirtualMeshClient zephyr_networking.VirtualMeshClient,
 	rootCertGenerator certgen.RootCertGenerator,
 ) VirtualMeshCertClient {

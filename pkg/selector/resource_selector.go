@@ -5,7 +5,6 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/stringutils"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -13,6 +12,7 @@ import (
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -55,22 +55,22 @@ var (
 func NewResourceSelector(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
-	deploymentClientFactory kubernetes_apps.GeneratedDeploymentClientFactory,
-	kubeConfigLookup config_lookup.KubeConfigLookup,
+	deploymentClientFactory kubernetes_apps.DeploymentClientFactory,
+	dynamicClientGetter mc_manager.DynamicClientGetter,
 ) ResourceSelector {
 	return &resourceSelector{
 		meshServiceClient:       meshServiceClient,
 		meshWorkloadClient:      meshWorkloadClient,
 		deploymentClientFactory: deploymentClientFactory,
-		kubeConfigLookup:        kubeConfigLookup,
+		dynamicClientGetter:     dynamicClientGetter,
 	}
 }
 
 type resourceSelector struct {
 	meshServiceClient       zephyr_discovery.MeshServiceClient
 	meshWorkloadClient      zephyr_discovery.MeshWorkloadClient
-	deploymentClientFactory kubernetes_apps.GeneratedDeploymentClientFactory
-	kubeConfigLookup        config_lookup.KubeConfigLookup
+	deploymentClientFactory kubernetes_apps.DeploymentClientFactory
+	dynamicClientGetter     mc_manager.DynamicClientGetter
 }
 
 func (b *resourceSelector) GetMeshServiceByRefSelector(
@@ -216,15 +216,12 @@ func (b *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 			return nil, MissingClusterLabel(meshWorkload.GetName())
 		}
 
-		config, err := b.kubeConfigLookup.FromCluster(ctx, clusterName)
+		dynamicClient, err := b.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
 		if err != nil {
 			return nil, err
 		}
 
-		deploymentClient, err := b.deploymentClientFactory(config.RestConfig)
-		if err != nil {
-			return nil, err
-		}
+		deploymentClient := b.deploymentClientFactory(dynamicClient)
 
 		workloadController, err := deploymentClient.Get(ctx, clients.ResourceRefToObjectKey(meshWorkload.Spec.GetKubeController().GetKubeControllerRef()))
 		if err != nil {

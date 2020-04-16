@@ -101,7 +101,7 @@ var _ = Describe("LinkerdTranslator", func() {
 			},
 		)
 		mockMeshClient.EXPECT().Get(ctx, meshObjKey).Return(mesh, nil)
-		mockDynamicClientGetter.EXPECT().GetClientForCluster(clusterName).Return(nil, nil)
+		mockDynamicClientGetter.EXPECT().GetClientForCluster(ctx, clusterName).Return(nil, nil)
 
 	})
 	AfterEach(func() {

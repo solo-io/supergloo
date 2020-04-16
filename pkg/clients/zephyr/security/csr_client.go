@@ -4,9 +4,8 @@ import (
 	"context"
 
 	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned"
-	v1alpha12 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned/typed/security.zephyr.solo.io/v1alpha1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -18,6 +17,17 @@ func VirtualMeshCSRClientFactoryProvider() VirtualMeshCSRClientFactory {
 
 func NewVirtualMeshCSRClient(dynamicClient client.Client) VirtualMeshCSRClient {
 	return &virtualMeshCSRClient{dynamicClient: dynamicClient}
+}
+
+func NewVirtualMeshCSRClientForConfig(cfg *rest.Config) (VirtualMeshCSRClient, error) {
+	if err := security_v1alpha1.AddToScheme(scheme.Scheme); err != nil {
+		return nil, err
+	}
+	dynamicClient, err := client.New(cfg, client.Options{})
+	if err != nil {
+		return nil, err
+	}
+	return &virtualMeshCSRClient{dynamicClient: dynamicClient}, nil
 }
 
 type virtualMeshCSRClient struct {
@@ -83,82 +93,4 @@ func (m *virtualMeshCSRClient) List(
 		return nil, err
 	}
 	return &list, nil
-}
-
-func NewGeneratedVirtualMeshCSRClient(client versioned.Interface) VirtualMeshCSRClient {
-	return &generatedVirtualMeshClient{client: client.SecurityV1alpha1()}
-}
-
-type generatedVirtualMeshClient struct {
-	client v1alpha12.SecurityV1alpha1Interface
-}
-
-func (g *generatedVirtualMeshClient) Create(
-	ctx context.Context,
-	csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	opts ...client.CreateOption,
-) error {
-	returned, err := g.client.VirtualMeshCertificateSigningRequests(csr.Namespace).Create(csr)
-	if err != nil {
-		return err
-	}
-	*csr = *returned
-	return nil
-}
-
-func (g *generatedVirtualMeshClient) Update(
-	ctx context.Context,
-	csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	opts ...client.UpdateOption,
-) error {
-	returned, err := g.client.VirtualMeshCertificateSigningRequests(csr.Namespace).Create(csr)
-	if err != nil {
-		return err
-	}
-	*csr = *returned
-	return nil
-}
-
-func (g *generatedVirtualMeshClient) Delete(
-	ctx context.Context,
-	csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	opts ...client.DeleteOption,
-) error {
-	metaOpts := &client.DeleteOptions{}
-	metaOpts.ApplyOptions(opts)
-	return g.client.VirtualMeshCertificateSigningRequests(csr.Namespace).Delete(csr.Name, metaOpts.AsDeleteOptions())
-}
-
-func (g *generatedVirtualMeshClient) Get(
-	ctx context.Context,
-	name, namespace string,
-) (*security_v1alpha1.VirtualMeshCertificateSigningRequest, error) {
-	return g.client.VirtualMeshCertificateSigningRequests(namespace).Get(name, v1.GetOptions{})
-}
-
-func (g *generatedVirtualMeshClient) List(
-	ctx context.Context,
-	opts ...client.ListOption,
-) (*security_v1alpha1.VirtualMeshCertificateSigningRequestList, error) {
-	listOptions := &client.ListOptions{}
-	listOptions.ApplyOptions(opts)
-	raw := v1.ListOptions{}
-	if converted := listOptions.AsListOptions(); converted != nil {
-		raw = *converted
-	}
-	return g.client.VirtualMeshCertificateSigningRequests(listOptions.Namespace).List(raw)
-
-}
-
-func (g *generatedVirtualMeshClient) UpdateStatus(
-	ctx context.Context,
-	vm *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	opts ...client.UpdateOption,
-) error {
-	updated, err := g.client.VirtualMeshCertificateSigningRequests(vm.Namespace).UpdateStatus(vm)
-	if err != nil {
-		return err
-	}
-	*vm = *updated
-	return nil
 }

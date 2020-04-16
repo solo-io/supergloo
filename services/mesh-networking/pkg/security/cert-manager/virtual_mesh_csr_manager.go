@@ -110,7 +110,7 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 
 		clusterName := mesh.Spec.GetCluster().GetName()
 		// TODO: check KubernetesCluster resource to see if this retry is worth it
-		dynamicClient, err := m.dynamicClientGetter.GetClientForCluster(clusterName, retry.Attempts(6))
+		dynamicClient, err := m.dynamicClientGetter.GetClientForCluster(ctx, clusterName, retry.Attempts(6))
 		if err != nil {
 			return err
 		}

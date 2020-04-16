@@ -340,9 +340,9 @@ func (m *MockDynamicClientGetter) EXPECT() *MockDynamicClientGetterMockRecorder 
 }
 
 // GetClientForCluster mocks base method.
-func (m *MockDynamicClientGetter) GetClientForCluster(clusterName string, opts ...retry.Option) (client.Client, error) {
+func (m *MockDynamicClientGetter) GetClientForCluster(ctx context.Context, clusterName string, opts ...retry.Option) (client.Client, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{clusterName}
+	varargs := []interface{}{ctx, clusterName}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
@@ -353,8 +353,8 @@ func (m *MockDynamicClientGetter) GetClientForCluster(clusterName string, opts .
 }
 
 // GetClientForCluster indicates an expected call of GetClientForCluster.
-func (mr *MockDynamicClientGetterMockRecorder) GetClientForCluster(clusterName interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockDynamicClientGetterMockRecorder) GetClientForCluster(ctx, clusterName interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{clusterName}, opts...)
+	varargs := append([]interface{}{ctx, clusterName}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClientForCluster", reflect.TypeOf((*MockDynamicClientGetter)(nil).GetClientForCluster), varargs...)
 }
