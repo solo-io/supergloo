@@ -13,7 +13,7 @@ require (
 	github.com/go-logr/zapr v0.1.1
 	github.com/go-test/deep v1.0.3 // indirect
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/mock v1.4.0
+	github.com/golang/mock v1.4.3
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/wire v0.4.0

@@ -49,8 +49,10 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	podControllerFactory := controllers.NewPodControllerFactory()
 	serviceControllerFactory := controllers.NewServiceControllerFactory()
 	meshWorkloadControllerFactory := controllers.NewMeshWorkloadControllerFactory()
+	meshControllerFactory := controllers.NewMeshControllerFactory()
 	deploymentControllerFactory := controllers.NewDeploymentControllerFactory()
 	meshClientFactory := zephyr_discovery.NewMeshClientFactoryProvider()
-	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podControllerFactory, serviceControllerFactory, meshWorkloadControllerFactory, deploymentControllerFactory, meshClientFactory)
+	podClientFactory := kubernetes_core.NewPodClientFactory()
+	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podControllerFactory, serviceControllerFactory, meshWorkloadControllerFactory, meshControllerFactory, deploymentControllerFactory, meshClientFactory, podClientFactory)
 	return discoveryContext, nil
 }

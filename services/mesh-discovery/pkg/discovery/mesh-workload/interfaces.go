@@ -4,21 +4,22 @@ import (
 	"context"
 
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	core_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_mesh_interfaces.go -package mock_mesh_workload
 
-// once StartDiscovery is invoked, MeshWorkloadFinder's PodEventHandler callbacks will start receiving PodEvents
-type MeshWorkloadFinder interface {
-	// an event is only received by our callbacks if all the given predicates return true
-	StartDiscovery(podController controller.PodController, predicates []predicate.Predicate) error
+type MeshWorkloadScannerImplementations map[core_types.MeshType]MeshWorkloadScanner
 
-	controller.PodEventHandler
+type MeshWorkloadFinder interface {
+	StartDiscovery(
+		podController core_controllers.PodController,
+		meshController discovery_controllers.MeshController,
+	) error
 }
 
 // get a resource's controller- i.e., in the case of a pod, get its deployment

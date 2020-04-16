@@ -3,6 +3,7 @@ package mesh_discovery
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/istio"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/linkerd"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
-	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
 	md_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/wire"
 	"go.uber.org/zap"
@@ -40,9 +40,9 @@ func Run(rootCtx context.Context) {
 			discoveryContext.MeshDiscovery.ConsulConnectMeshScanner,
 			discoveryContext.MeshDiscovery.LinkerdMeshScanner,
 		},
-		[]mesh_workload.MeshWorkloadScannerFactory{
-			istio.NewIstioMeshWorkloadScanner,
-			linkerd.NewLinkerdMeshWorkloadScanner,
+		md_multicluster.MeshWorkloadScannerFactoryImplementations{
+			types.MeshType_ISTIO:   istio.NewIstioMeshWorkloadScanner,
+			types.MeshType_LINKERD: linkerd.NewLinkerdMeshWorkloadScanner,
 		},
 		discoveryContext,
 	)
