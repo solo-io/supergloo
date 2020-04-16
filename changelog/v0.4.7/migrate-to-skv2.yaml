@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Migrate from Autopilot dev branch to graduated skv2.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/574
