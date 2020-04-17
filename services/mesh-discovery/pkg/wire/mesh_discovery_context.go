@@ -1,9 +1,9 @@
 package wire
 
 import (
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
 	mesh_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/consul"
@@ -14,29 +14,29 @@ import (
 
 // just used to package everything up for wire
 type DiscoveryContext struct {
-	MultiClusterDeps    multicluster.MultiClusterDependencies
-	ClientFactories     ClientFactories
-	ControllerFactories ControllerFactories
-	MeshDiscovery       MeshDiscovery
+	MultiClusterDeps      multicluster.MultiClusterDependencies
+	ClientFactories       ClientFactories
+	EventWatcherFactories EventWatcherFactories
+	MeshDiscovery         MeshDiscovery
 }
 
 type ClientFactories struct {
-	ReplicaSetClientFactory   kubernetes_apps.ReplicaSetClientFactory
-	DeploymentClientFactory   kubernetes_apps.DeploymentClientFactory
+	ReplicaSetClientFactory   k8s_apps.ReplicaSetClientFactory
+	DeploymentClientFactory   k8s_apps.DeploymentClientFactory
 	OwnerFetcherClientFactory mesh_workload.OwnerFetcherFactory
-	ServiceClientFactory      kubernetes_core.ServiceClientFactory
-	MeshServiceClientFactory  discovery_core.MeshServiceClientFactory
-	MeshWorkloadClientFactory discovery_core.MeshWorkloadClientFactory
-	MeshClientFactory         discovery_core.MeshClientFactory
-	PodClientFactory          kubernetes_core.PodClientFactory
+	ServiceClientFactory      k8s_core.ServiceClientFactory
+	MeshServiceClientFactory  zephyr_discovery.MeshServiceClientFactory
+	MeshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory
+	MeshClientFactory         zephyr_discovery.MeshClientFactory
+	PodClientFactory          k8s_core.PodClientFactory
 }
 
-type ControllerFactories struct {
-	DeploymentControllerFactory   controllers.DeploymentControllerFactory
-	PodControllerFactory          controllers.PodControllerFactory
-	ServiceControllerFactory      controllers.ServiceControllerFactory
-	MeshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory
-	MeshControllerFactory         controllers.MeshControllerFactory
+type EventWatcherFactories struct {
+	DeploymentEventWatcherFactory   controllers.DeploymentEventWatcherFactory
+	PodEventWatcherFactory          controllers.PodEventWatcherFactory
+	ServiceEventWatcherFactory      controllers.ServiceEventWatcherFactory
+	MeshWorkloadEventWatcherFactory controllers.MeshWorkloadEventWatcherFactory
+	MeshControllerFactory           controllers.MeshEventWatcherFactory
 }
 
 type MeshDiscovery struct {
@@ -50,19 +50,19 @@ func DiscoveryContextProvider(
 	istioMeshScanner mesh_istio.IstioMeshScanner,
 	consulConnectMeshScanner mesh_consul.ConsulConnectMeshScanner,
 	linkerdMeshScanner mesh_linkerd.LinkerdMeshScanner,
-	replicaSetClientFactory kubernetes_apps.ReplicaSetClientFactory,
-	deploymentClientFactory kubernetes_apps.DeploymentClientFactory,
+	replicaSetClientFactory k8s_apps.ReplicaSetClientFactory,
+	deploymentClientFactory k8s_apps.DeploymentClientFactory,
 	ownerFetcherClientFactory mesh_workload.OwnerFetcherFactory,
-	serviceClientFactory kubernetes_core.ServiceClientFactory,
-	meshServiceClientFactory discovery_core.MeshServiceClientFactory,
-	meshWorkloadClientFactory discovery_core.MeshWorkloadClientFactory,
-	podControllerFactory controllers.PodControllerFactory,
-	serviceControllerFactory controllers.ServiceControllerFactory,
-	meshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory,
-	meshControllerFactory controllers.MeshControllerFactory,
-	deploymentControllerFactory controllers.DeploymentControllerFactory,
-	meshClientFactory discovery_core.MeshClientFactory,
-	podClientFactory kubernetes_core.PodClientFactory,
+	serviceClientFactory k8s_core.ServiceClientFactory,
+	meshServiceClientFactory zephyr_discovery.MeshServiceClientFactory,
+	meshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory,
+	podEventWatcherFactory controllers.PodEventWatcherFactory,
+	serviceEventWatcherFactory controllers.ServiceEventWatcherFactory,
+	meshWorkloadControllerFactory controllers.MeshWorkloadEventWatcherFactory,
+	deploymentEventWatcherFactory controllers.DeploymentEventWatcherFactory,
+	meshClientFactory zephyr_discovery.MeshClientFactory,
+	podClientFactory k8s_core.PodClientFactory,
+	meshControllerFactory controllers.MeshEventWatcherFactory,
 ) DiscoveryContext {
 
 	return DiscoveryContext{
@@ -77,12 +77,12 @@ func DiscoveryContextProvider(
 			MeshClientFactory:         meshClientFactory,
 			PodClientFactory:          podClientFactory,
 		},
-		ControllerFactories: ControllerFactories{
-			DeploymentControllerFactory:   deploymentControllerFactory,
-			PodControllerFactory:          podControllerFactory,
-			ServiceControllerFactory:      serviceControllerFactory,
-			MeshWorkloadControllerFactory: meshWorkloadControllerFactory,
-			MeshControllerFactory:         meshControllerFactory,
+		EventWatcherFactories: EventWatcherFactories{
+			DeploymentEventWatcherFactory:   deploymentEventWatcherFactory,
+			PodEventWatcherFactory:          podEventWatcherFactory,
+			ServiceEventWatcherFactory:      serviceEventWatcherFactory,
+			MeshWorkloadEventWatcherFactory: meshWorkloadControllerFactory,
+			MeshControllerFactory:           meshControllerFactory,
 		},
 		MeshDiscovery: MeshDiscovery{
 			IstioMeshScanner:         istioMeshScanner,

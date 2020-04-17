@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	appsv1 "k8s.io/api/apps/v1"
+	k8s_apps "k8s.io/api/apps/v1"
 )
 
 var (
@@ -155,7 +155,7 @@ func (m *manager) ValidateOperatorNamespace(clusterName string) (installNeeded b
 	return true, nil
 }
 
-func (m *manager) validateExistingOperatorDeployment(clusterName string, installerOptions *options.MeshInstallationConfig, deployment appsv1.Deployment) error {
+func (m *manager) validateExistingOperatorDeployment(clusterName string, installerOptions *options.MeshInstallationConfig, deployment k8s_apps.Deployment) error {
 	containers := deployment.Spec.Template.Spec.Containers
 	if len(containers) != 1 {
 		return UnrecognizedOperatorInstance

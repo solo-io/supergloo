@@ -8,20 +8,20 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
-	mock_istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking/mock"
-	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_istio_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/istio/networking/v1beta1"
 	api_v1alpha3 "istio.io/api/networking/v1alpha3"
 	client_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -30,9 +30,9 @@ type testContext struct {
 	meshObjKey             client.ObjectKey
 	meshServiceObjKey      client.ObjectKey
 	kubeServiceObjKey      client.ObjectKey
-	mesh                   *discovery_v1alpha1.Mesh
-	meshService            *discovery_v1alpha1.MeshService
-	trafficPolicy          []*v1alpha1.TrafficPolicy
+	mesh                   *zephyr_discovery.Mesh
+	meshService            *zephyr_discovery.MeshService
+	trafficPolicy          []*zephyr_networking.TrafficPolicy
 	computedVirtualService *client_v1alpha3.VirtualService
 	baseMatchRequest       *api_v1alpha3.HTTPMatchRequest
 	defaultRoute           []*api_v1alpha3.HTTPRouteDestination
@@ -84,51 +84,51 @@ var _ = Describe("IstioTranslator", func() {
 			meshServiceObjKey := client.ObjectKey{Name: "mesh-service-name", Namespace: "mesh-service-namespace"}
 			kubeServiceObjKey := client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
 			meshServiceFederationMCDnsName := "multiclusterDNSname"
-			meshService := &discovery_v1alpha1.MeshService{
-				ObjectMeta: v1.ObjectMeta{
+			meshService := &zephyr_discovery.MeshService{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:        meshServiceObjKey.Name,
 					Namespace:   meshServiceObjKey.Namespace,
 					ClusterName: clusterName,
 				},
-				Spec: discovery_types.MeshServiceSpec{
-					Mesh: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      meshObjKey.Name,
 						Namespace: meshObjKey.Namespace,
 					},
-					KubeService: &discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      kubeServiceObjKey.Name,
 							Namespace: kubeServiceObjKey.Namespace,
 							Cluster:   clusterName,
 						},
-						Ports: []*discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
+						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 							{
 								Port: 9080,
 								Name: "http",
 							},
 						},
 					},
-					Federation: &discovery_types.MeshServiceSpec_Federation{
+					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: meshServiceFederationMCDnsName,
 					},
 				},
 			}
-			mesh := &discovery_v1alpha1.Mesh{
-				Spec: discovery_types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+			mesh := &zephyr_discovery.Mesh{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &discovery_types.MeshSpec_Istio{
-						Istio: &discovery_types.MeshSpec_IstioMesh{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
 					},
 				},
 			}
-			trafficPolicy := []*v1alpha1.TrafficPolicy{{
-				Spec: networking_types.TrafficPolicySpec{
-					SourceSelector: &core_types.WorkloadSelector{
+			trafficPolicy := []*zephyr_networking.TrafficPolicy{{
+				Spec: zephyr_networking_types.TrafficPolicySpec{
+					SourceSelector: &zephyr_core_types.WorkloadSelector{
 						Namespaces: []string{sourceNamespace},
 					},
-					HttpRequestMatchers: []*networking_types.TrafficPolicySpec_HttpMatcher{
+					HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
 						{}, {}, {},
 					},
 				}},
@@ -145,7 +145,7 @@ var _ = Describe("IstioTranslator", func() {
 				},
 			}
 			computedVirtualService := &client_v1alpha3.VirtualService{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      meshService.Spec.GetKubeService().GetRef().GetName(),
 					Namespace: meshService.Spec.GetKubeService().GetRef().GetNamespace(),
 				},
@@ -167,11 +167,11 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 			}
-			mockMeshClient.EXPECT().Get(ctx, meshObjKey).Return(mesh, nil)
+			mockMeshClient.EXPECT().GetMesh(ctx, meshObjKey).Return(mesh, nil)
 			mockDynamicClientGetter.EXPECT().GetClientForCluster(ctx, clusterName).Return(nil, nil)
 			// computed DestinationRule
 			computedDestinationRule := &client_v1alpha3.DestinationRule{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      meshService.Spec.GetKubeService().GetRef().GetName(),
 					Namespace: meshService.Spec.GetKubeService().GetRef().GetNamespace(),
 				},
@@ -184,7 +184,7 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 			}
-			mockDestinationRuleClient.EXPECT().Create(ctx, computedDestinationRule).Return(nil)
+			mockDestinationRuleClient.EXPECT().CreateDestinationRule(ctx, computedDestinationRule).Return(nil)
 			return &testContext{
 				clusterName:            clusterName,
 				meshObjKey:             meshObjKey,
@@ -203,7 +203,7 @@ var _ = Describe("IstioTranslator", func() {
 			testContext := setupTestContext()
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx,
@@ -216,7 +216,7 @@ var _ = Describe("IstioTranslator", func() {
 		It("should error if no destination is specified, and multiple ports are available on service", func() {
 			testContext := setupTestContext()
 			testContext.meshService.Spec.KubeService.Ports =
-				append(testContext.meshService.Spec.KubeService.Ports, &discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
+				append(testContext.meshService.Spec.KubeService.Ports, &zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 					Port: 8080,
 					Name: "will fail",
 				})
@@ -231,7 +231,7 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate Retries", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.Retries = &networking_types.TrafficPolicySpec_RetryPolicy{
+			testContext.trafficPolicy[0].Spec.Retries = &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
 				Attempts:      5,
 				PerTryTimeout: &types.Duration{Seconds: 2},
 			}
@@ -243,7 +243,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -252,11 +252,11 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate CorsPolicy", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.CorsPolicy = &networking_types.TrafficPolicySpec_CorsPolicy{
-				AllowOrigins: []*networking_types.TrafficPolicySpec_StringMatch{
-					{MatchType: &networking_types.TrafficPolicySpec_StringMatch_Exact{Exact: "exact"}},
-					{MatchType: &networking_types.TrafficPolicySpec_StringMatch_Prefix{Prefix: "prefix"}},
-					{MatchType: &networking_types.TrafficPolicySpec_StringMatch_Regex{Regex: "regex"}},
+			testContext.trafficPolicy[0].Spec.CorsPolicy = &zephyr_networking_types.TrafficPolicySpec_CorsPolicy{
+				AllowOrigins: []*zephyr_networking_types.TrafficPolicySpec_StringMatch{
+					{MatchType: &zephyr_networking_types.TrafficPolicySpec_StringMatch_Exact{Exact: "exact"}},
+					{MatchType: &zephyr_networking_types.TrafficPolicySpec_StringMatch_Prefix{Prefix: "prefix"}},
+					{MatchType: &zephyr_networking_types.TrafficPolicySpec_StringMatch_Regex{Regex: "regex"}},
 				},
 				AllowMethods:     []string{"GET", "POST"},
 				AllowHeaders:     []string{"Header1", "Header2"},
@@ -280,7 +280,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -289,7 +289,7 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HeaderManipulation", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HeaderManipulation = &networking_types.TrafficPolicySpec_HeaderManipulation{
+			testContext.trafficPolicy[0].Spec.HeaderManipulation = &zephyr_networking_types.TrafficPolicySpec_HeaderManipulation{
 				AppendRequestHeaders:  map[string]string{"a": "b"},
 				RemoveRequestHeaders:  []string{"3", "4"},
 				AppendResponseHeaders: map[string]string{"foo": "bar"},
@@ -309,7 +309,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -322,8 +322,8 @@ var _ = Describe("IstioTranslator", func() {
 			destNamespace := "namespace"
 			port := uint32(9080)
 			destCluster := testContext.clusterName
-			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.TrafficPolicySpec_Mirror{
-				Destination: &core_types.ResourceRef{
+			testContext.trafficPolicy[0].Spec.Mirror = &zephyr_networking_types.TrafficPolicySpec_Mirror{
+				Destination: &zephyr_core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
 					Cluster:   destCluster,
@@ -340,10 +340,10 @@ var _ = Describe("IstioTranslator", func() {
 				}
 				httpRoute.MirrorPercentage = &api_v1alpha3.Percent{Value: 50.0}
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
-				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+			backingMeshService := &zephyr_discovery.MeshService{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 						},
@@ -356,7 +356,7 @@ var _ = Describe("IstioTranslator", func() {
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -369,8 +369,8 @@ var _ = Describe("IstioTranslator", func() {
 			destName := "name"
 			destNamespace := "namespace"
 			remoteClusterName := "remote-cluster"
-			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.TrafficPolicySpec_Mirror{
-				Destination: &core_types.ResourceRef{
+			testContext.trafficPolicy[0].Spec.Mirror = &zephyr_networking_types.TrafficPolicySpec_Mirror{
+				Destination: &zephyr_core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
 					Cluster:   remoteClusterName,
@@ -383,15 +383,15 @@ var _ = Describe("IstioTranslator", func() {
 				}
 				httpRoute.MirrorPercentage = &api_v1alpha3.Percent{Value: 50.0}
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
-				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+			backingMeshService := &zephyr_discovery.MeshService{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 						},
 					},
-					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
+					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
 			mockResourceSelector.
@@ -400,7 +400,7 @@ var _ = Describe("IstioTranslator", func() {
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -409,10 +409,10 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate FaultInjection of type Abort", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.TrafficPolicySpec_FaultInjection{
-				FaultInjectionType: &networking_types.TrafficPolicySpec_FaultInjection_Abort_{
-					Abort: &networking_types.TrafficPolicySpec_FaultInjection_Abort{
-						ErrorType: &networking_types.TrafficPolicySpec_FaultInjection_Abort_HttpStatus{HttpStatus: 404},
+			testContext.trafficPolicy[0].Spec.FaultInjection = &zephyr_networking_types.TrafficPolicySpec_FaultInjection{
+				FaultInjectionType: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Abort_{
+					Abort: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Abort{
+						ErrorType: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Abort_HttpStatus{HttpStatus: 404},
 					},
 				},
 				Percentage: 50,
@@ -427,7 +427,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -436,10 +436,10 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate FaultInjection of type Delay of type Fixed", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.TrafficPolicySpec_FaultInjection{
-				FaultInjectionType: &networking_types.TrafficPolicySpec_FaultInjection_Delay_{
-					Delay: &networking_types.TrafficPolicySpec_FaultInjection_Delay{
-						HttpDelayType: &networking_types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay{
+			testContext.trafficPolicy[0].Spec.FaultInjection = &zephyr_networking_types.TrafficPolicySpec_FaultInjection{
+				FaultInjectionType: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay_{
+					Delay: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay{
+						HttpDelayType: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay{
 							FixedDelay: &types.Duration{Seconds: 2},
 						},
 					},
@@ -456,7 +456,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -465,10 +465,10 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate FaultInjection of type Delay of type Exponential", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.TrafficPolicySpec_FaultInjection{
-				FaultInjectionType: &networking_types.TrafficPolicySpec_FaultInjection_Delay_{
-					Delay: &networking_types.TrafficPolicySpec_FaultInjection_Delay{
-						HttpDelayType: &networking_types.TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay{
+			testContext.trafficPolicy[0].Spec.FaultInjection = &zephyr_networking_types.TrafficPolicySpec_FaultInjection{
+				FaultInjectionType: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay_{
+					Delay: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay{
+						HttpDelayType: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay{
 							ExponentialDelay: &types.Duration{Seconds: 2},
 						},
 					},
@@ -485,7 +485,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -494,7 +494,7 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate Retries", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.Retries = &networking_types.TrafficPolicySpec_RetryPolicy{
+			testContext.trafficPolicy[0].Spec.Retries = &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
 				Attempts:      5,
 				PerTryTimeout: &types.Duration{Seconds: 2},
 			}
@@ -506,7 +506,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -515,9 +515,9 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HeaderMatchers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
-				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
-				Headers: []*networking_types.TrafficPolicySpec_HeaderMatcher{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
+				Headers: []*zephyr_networking_types.TrafficPolicySpec_HeaderMatcher{
 					{
 						Name:        "name1",
 						Value:       "value1",
@@ -539,7 +539,7 @@ var _ = Describe("IstioTranslator", func() {
 				},
 			}
 			expectedMatchRequest := *testContext.baseMatchRequest
-			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: zephyr_core_types.HttpMethodValue_GET.String()}}
 			expectedMatchRequest.Headers = map[string]*api_v1alpha3.StringMatch{
 				"name1": {MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "value1"}},
 				"name2": {MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}},
@@ -550,7 +550,7 @@ var _ = Describe("IstioTranslator", func() {
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -559,19 +559,19 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HttpMatcher exact path specifiers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
-				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
-				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Regex{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
+				PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Regex{
 					Regex: "*",
 				},
 			}
 			expectedMatchRequest := *testContext.baseMatchRequest
-			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: zephyr_core_types.HttpMethodValue_GET.String()}}
 			expectedMatchRequest.Uri = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -580,19 +580,19 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HttpMatcher prefix path specifiers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
-				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
-				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
+				PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 					Prefix: "prefix",
 				},
 			}
 			expectedMatchRequest := *testContext.baseMatchRequest
-			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: zephyr_core_types.HttpMethodValue_GET.String()}}
 			expectedMatchRequest.Uri = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "prefix"}}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -601,9 +601,9 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate QueryParamMatchers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
-				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
-				QueryParameters: []*networking_types.TrafficPolicySpec_QueryParameterMatcher{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
+				QueryParameters: []*zephyr_networking_types.TrafficPolicySpec_QueryParameterMatcher{
 					{
 						Name:  "qp1",
 						Value: "qpv1",
@@ -617,7 +617,7 @@ var _ = Describe("IstioTranslator", func() {
 				},
 			}
 			expectedMatchRequest := *testContext.baseMatchRequest
-			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: zephyr_core_types.HttpMethodValue_GET.String()}}
 			expectedMatchRequest.QueryParams = map[string]*api_v1alpha3.StringMatch{
 				"qp1": {
 					MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "qpv1"},
@@ -629,7 +629,7 @@ var _ = Describe("IstioTranslator", func() {
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -638,19 +638,19 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HttpMatcher regex path specifiers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
-				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
-				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Regex{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
+				PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Regex{
 					Regex: "*",
 				},
 			}
 			expectedMatchRequest := *testContext.baseMatchRequest
-			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: zephyr_core_types.HttpMethodValue_GET.String()}}
 			expectedMatchRequest.Uri = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -659,19 +659,19 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HttpMatcher prefix path specifiers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
-				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
-				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
+				PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 					Prefix: "prefix",
 				},
 			}
 			expectedMatchRequest := *testContext.baseMatchRequest
-			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: zephyr_core_types.HttpMethodValue_GET.String()}}
 			expectedMatchRequest.Uri = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "prefix"}}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -680,19 +680,19 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HttpMatcher exact path specifiers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
-				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
-				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
+				PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 					Exact: "path",
 				},
 			}
 			expectedMatchRequest := *testContext.baseMatchRequest
-			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: zephyr_core_types.HttpMethodValue_GET.String()}}
 			expectedMatchRequest.Uri = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "path"}}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -705,10 +705,10 @@ var _ = Describe("IstioTranslator", func() {
 			destNamespace := "namespace"
 			multiClusterDnsName := "multicluster-dns-name"
 			destCluster := "remote-cluster-1"
-			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.TrafficPolicySpec_MultiDestination{
-				Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+			testContext.trafficPolicy[0].Spec.TrafficShift = &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
+				Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 					{
-						Destination: &core_types.ResourceRef{
+						Destination: &zephyr_core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 							Cluster:   destCluster,
@@ -727,15 +727,15 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				}
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
-				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+			backingMeshService := &zephyr_discovery.MeshService{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 						},
 					},
-					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
+					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
 			mockResourceSelector.
@@ -744,7 +744,7 @@ var _ = Describe("IstioTranslator", func() {
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -758,10 +758,10 @@ var _ = Describe("IstioTranslator", func() {
 			multiClusterDnsName := "multicluster-dns-name"
 			port := uint32(9080)
 			destCluster := "remote-cluster-1"
-			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.TrafficPolicySpec_MultiDestination{
-				Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+			testContext.trafficPolicy[0].Spec.TrafficShift = &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
+				Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 					{
-						Destination: &core_types.ResourceRef{
+						Destination: &zephyr_core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 							Cluster:   destCluster,
@@ -784,15 +784,15 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				}
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
-				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+			backingMeshService := &zephyr_discovery.MeshService{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 						},
 					},
-					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
+					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
 			mockResourceSelector.
@@ -801,7 +801,7 @@ var _ = Describe("IstioTranslator", func() {
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -814,8 +814,8 @@ var _ = Describe("IstioTranslator", func() {
 			destNamespace := "namespace"
 			declaredSubset := map[string]string{"env": "dev", "version": "v1"}
 			expectedSubsetName := "env-dev_version-v1"
-			destination := &networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
-				Destination: &core_types.ResourceRef{
+			destination := &zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+				Destination: &zephyr_core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
 					Cluster:   testContext.clusterName,
@@ -823,8 +823,8 @@ var _ = Describe("IstioTranslator", func() {
 				Subset: declaredSubset,
 				Weight: 50,
 			}
-			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.TrafficPolicySpec_MultiDestination{
-				Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+			testContext.trafficPolicy[0].Spec.TrafficShift = &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
+				Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 					destination,
 				},
 			}
@@ -839,10 +839,10 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				}
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
-				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+			backingMeshService := &zephyr_discovery.MeshService{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 						},
@@ -871,15 +871,15 @@ var _ = Describe("IstioTranslator", func() {
 				Return(nil, nil)
 			mockDestinationRuleClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{Name: destName, Namespace: destNamespace}).
+				GetDestinationRule(ctx, client.ObjectKey{Name: destName, Namespace: destNamespace}).
 				Return(existingDestRule, nil)
 			mockDestinationRuleClient.
 				EXPECT().
-				Update(ctx, computedDestRule).
+				UpdateDestinationRule(ctx, computedDestRule).
 				Return(nil)
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -893,8 +893,8 @@ var _ = Describe("IstioTranslator", func() {
 			multiClusterDnsName := "multicluster-dns-name"
 			destCluster := "remote-cluster-1"
 			declaredSubset := map[string]string{"env": "dev", "version": "v1"}
-			destination := &networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
-				Destination: &core_types.ResourceRef{
+			destination := &zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+				Destination: &zephyr_core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
 					Cluster:   destCluster,
@@ -902,20 +902,20 @@ var _ = Describe("IstioTranslator", func() {
 				Subset: declaredSubset,
 				Weight: 50,
 			}
-			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.TrafficPolicySpec_MultiDestination{
-				Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+			testContext.trafficPolicy[0].Spec.TrafficShift = &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
+				Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 					destination,
 				},
 			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
-				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.MeshServiceSpec_KubeService{
-						Ref: &core_types.ResourceRef{
+			backingMeshService := &zephyr_discovery.MeshService{
+				Spec: zephyr_discovery_types.MeshServiceSpec{
+					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &zephyr_core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 						},
 					},
-					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
+					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
 			mockResourceSelector.
@@ -934,8 +934,8 @@ var _ = Describe("IstioTranslator", func() {
 			destName := "name"
 			destNamespace := "namespace"
 			remoteClusterName := "remote-cluster"
-			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.TrafficPolicySpec_Mirror{
-				Destination: &core_types.ResourceRef{
+			testContext.trafficPolicy[0].Spec.Mirror = &zephyr_networking_types.TrafficPolicySpec_Mirror{
+				Destination: &zephyr_core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
 					Cluster:   remoteClusterName,
@@ -956,19 +956,19 @@ var _ = Describe("IstioTranslator", func() {
 			testContext := setupTestContext()
 			labels := map[string]string{"env": "dev"}
 			namespaces := []string{"n1", "n2"}
-			testContext.trafficPolicy[0].Spec.SourceSelector = &core_types.WorkloadSelector{
+			testContext.trafficPolicy[0].Spec.SourceSelector = &zephyr_core_types.WorkloadSelector{
 				Labels:     labels,
 				Namespaces: namespaces,
 			}
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.TrafficPolicySpec_HttpMatcher{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "path",
 					},
-					Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
+					Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
 				},
 				{
-					Headers: []*networking_types.TrafficPolicySpec_HeaderMatcher{
+					Headers: []*zephyr_networking_types.TrafficPolicySpec_HeaderMatcher{
 						{
 							Name:        "name3",
 							Value:       "[a-z]+",
@@ -976,7 +976,7 @@ var _ = Describe("IstioTranslator", func() {
 							InvertMatch: true,
 						},
 					},
-					Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_POST},
+					Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_POST},
 				},
 			}
 			testContext.computedVirtualService.Spec.Http = []*api_v1alpha3.HTTPRoute{
@@ -1031,7 +1031,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -1040,46 +1040,46 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should deterministically order HTTPRoutes according to decreasing specificity", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.TrafficPolicySpec_HttpMatcher{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "exact-path",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 						Prefix: "/prefix",
 					},
-					Method: &networking_types.TrafficPolicySpec_HttpMethod{
-						Method: core_types.HttpMethodValue_GET,
+					Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{
+						Method: zephyr_core_types.HttpMethodValue_GET,
 					},
 				},
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "exact-path",
 					},
-					Method: &networking_types.TrafficPolicySpec_HttpMethod{
-						Method: core_types.HttpMethodValue_GET,
+					Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{
+						Method: zephyr_core_types.HttpMethodValue_GET,
 					},
 				},
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "exact-path",
 					},
-					Method: &networking_types.TrafficPolicySpec_HttpMethod{
-						Method: core_types.HttpMethodValue_PUT,
+					Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{
+						Method: zephyr_core_types.HttpMethodValue_PUT,
 					},
 				},
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Regex{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Regex{
 						Regex: "www*",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 						Prefix: "/",
 					},
-					Headers: []*networking_types.TrafficPolicySpec_HeaderMatcher{
+					Headers: []*zephyr_networking_types.TrafficPolicySpec_HeaderMatcher{
 						{
 							Name:        "set-cookie",
 							Value:       "foo=bar",
@@ -1088,10 +1088,10 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 						Prefix: "/",
 					},
-					Headers: []*networking_types.TrafficPolicySpec_HeaderMatcher{
+					Headers: []*zephyr_networking_types.TrafficPolicySpec_HeaderMatcher{
 						{
 							Name:        "content-type",
 							Value:       "text/html",
@@ -1176,7 +1176,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -1185,34 +1185,34 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should order longer prefixes, regexes, and exact URI matchers before shorter ones", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.TrafficPolicySpec_HttpMatcher{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "short",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "longer",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 						Prefix: "/short",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 						Prefix: "/longer",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Regex{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Regex{
 						Regex: "short*",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Regex{
+					PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Regex{
 						Regex: "longer*",
 					},
 				},
@@ -1275,7 +1275,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				UpsertSpec(ctx, testContext.computedVirtualService).
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)

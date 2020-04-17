@@ -3,8 +3,8 @@ package networking_multicluster
 import (
 	"context"
 
-	cert_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
@@ -41,8 +41,8 @@ type meshNetworkingClusterHandler struct {
 }
 
 type clusterDependentDeps struct {
-	csrController cert_controller.VirtualMeshCertificateSigningRequestController
-	csrClient     zephyr_security.VirtualMeshCSRClient
+	csrEventWatcher zephyr_security_controller.VirtualMeshCertificateSigningRequestEventWatcher
+	csrClient       zephyr_security.VirtualMeshCertificateSigningRequestClient
 }
 
 func (m *meshNetworkingClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {
@@ -53,7 +53,7 @@ func (m *meshNetworkingClusterHandler) ClusterAdded(ctx context.Context, mgr mc_
 
 	certSigner := cert_signer.NewVirtualMeshCSRSigner(m.virtualMeshCertClient, clusterDeps.csrClient, m.signer)
 	mgcsrHandler := m.csrDataSourceFactory(ctx, clusterDeps.csrClient, cert_signer.NewVirtualMeshCSRSigningProcessor(certSigner))
-	if err = clusterDeps.csrController.AddEventHandler(ctx, mgcsrHandler); err != nil {
+	if err = clusterDeps.csrEventWatcher.AddEventHandler(ctx, mgcsrHandler); err != nil {
 		return err
 	}
 
@@ -68,15 +68,12 @@ func (m *meshNetworkingClusterHandler) initializeClusterScopedDeps(
 	mgr mc_manager.AsyncManager,
 	clusterName string,
 ) (*clusterDependentDeps, error) {
-	csrController, err := m.controllerFactories.VirtualMeshCSRControllerFactory(mgr, clusterName)
-	if err != nil {
-		return nil, err
-	}
+	csrController := m.controllerFactories.VirtualMeshCSRControllerFactory(mgr, clusterName)
 
 	csrClient := m.clientFactories.VirtualMeshCSRClientFactory(mgr.Manager().GetClient())
 
 	return &clusterDependentDeps{
-		csrController: csrController,
-		csrClient:     csrClient,
+		csrEventWatcher: csrController,
+		csrClient:       csrClient,
 	}, nil
 }

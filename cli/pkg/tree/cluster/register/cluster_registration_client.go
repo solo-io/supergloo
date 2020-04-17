@@ -14,14 +14,15 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/spf13/pflag"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_core_types "k8s.io/api/core/v1"
+	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -35,7 +36,7 @@ var (
 	FailedLoadingRemoteConfig = func(err error) error {
 		return eris.Wrap(err, "Failed to load the kube config for the remote cluster")
 	}
-	FailedToCreateAuthToken = func(saRef *core_types.ResourceRef, remoteKubeConfig, remoteContext string) string {
+	FailedToCreateAuthToken = func(saRef *zephyr_core_types.ResourceRef, remoteKubeConfig, remoteContext string) string {
 		return fmt.Sprintf("Failed to create an auth token for service account %s.%s in cluster "+
 			"pointed to by kube config %s with context %s. This operation is not atomic, so the service account may "+
 			"have been created and left in the cluster while a later step failed. \n",
@@ -181,10 +182,10 @@ func RegisterCluster(
 }
 
 func ensureRemoteNamespace(ctx context.Context, writeNamespace string, remote *common.KubeClients) error {
-	_, err := remote.NamespaceClient.Get(ctx, writeNamespace)
-	if errors.IsNotFound(err) {
-		return remote.NamespaceClient.Create(ctx, &corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{
+	_, err := remote.NamespaceClient.GetNamespace(ctx, client.ObjectKey{Name: writeNamespace})
+	if k8s_errs.IsNotFound(err) {
+		return remote.NamespaceClient.CreateNamespace(ctx, &k8s_core_types.Namespace{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name: writeNamespace,
 			},
 		})
@@ -203,14 +204,14 @@ func shouldOverwrite(
 	masterKubeClients *common.KubeClients,
 ) (ok bool, err error) {
 	if !opts.Cluster.Register.Overwrite {
-		_, err = masterKubeClients.KubeClusterClient.Get(
+		_, err = masterKubeClients.KubeClusterClient.GetKubernetesCluster(
 			ctx,
 			client.ObjectKey{
 				Name:      opts.Cluster.Register.RemoteClusterName,
 				Namespace: opts.Root.WriteNamespace,
 			},
 		)
-		if err != nil && !errors.IsNotFound(err) {
+		if err != nil && !k8s_errs.IsNotFound(err) {
 			// if kube cluster does not exist for the given name, continue
 			fmt.Fprintf(out, FailedToCheckForPreviousKubeCluster)
 			return false, err
@@ -240,7 +241,7 @@ func writeKubeConfigToMaster(
 	serviceAccountConfig *rest.Config,
 	masterKubeClients *common.KubeClients,
 	kubeLoader common_config.KubeLoader,
-) (*corev1.Secret, error) {
+) (*k8s_core_types.Secret, error) {
 
 	// now we need the cluster/context information from that config
 	remoteKubeCtx, err := kubeLoader.GetRawConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
@@ -268,7 +269,7 @@ func writeKubeConfigToMaster(
 		&kubeconfig.KubeConfig{
 			Config: api.Config{
 				Kind:        "Secret",
-				APIVersion:  "v1",
+				APIVersion:  "kubernetes_core",
 				Preferences: api.Preferences{},
 				Clusters: map[string]*api.Cluster{
 					registerOpts.RemoteClusterName: remoteCluster,
@@ -296,7 +297,7 @@ func writeKubeConfigToMaster(
 		return nil, FailedToConvertToSecret(err)
 	}
 
-	err = masterKubeClients.SecretsClient.UpsertData(ctx, secret)
+	err = upsertSecretData(ctx, secret, masterKubeClients.SecretClient)
 	if err != nil {
 		return nil, FailedToWriteSecret(err)
 	}
@@ -310,22 +311,22 @@ func writeKubeClusterToMaster(
 	masterKubeClients *common.KubeClients,
 	writeNamespace string,
 	registerOpts options.Register,
-	secret *corev1.Secret,
+	secret *k8s_core_types.Secret,
 ) error {
-	cluster := &discoveryv1alpha1.KubernetesCluster{
-		ObjectMeta: metav1.ObjectMeta{
+	cluster := &zephyr_discovery.KubernetesCluster{
+		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      registerOpts.RemoteClusterName,
 			Namespace: writeNamespace,
 		},
-		Spec: discovery_types.KubernetesClusterSpec{
-			SecretRef: &core_types.ResourceRef{
+		Spec: zephyr_discovery_types.KubernetesClusterSpec{
+			SecretRef: &zephyr_core_types.ResourceRef{
 				Name:      secret.GetName(),
 				Namespace: secret.GetNamespace(),
 			},
 			WriteNamespace: registerOpts.RemoteWriteNamespace,
 		},
 	}
-	err := masterKubeClients.KubeClusterClient.Upsert(ctx, cluster)
+	err := masterKubeClients.KubeClusterClient.UpsertKubernetesClusterSpec(ctx, cluster)
 	if err != nil {
 		return FailedToWriteKubeCluster(err)
 	}
@@ -341,7 +342,7 @@ func generateServiceAccountConfig(
 ) (*rest.Config, error) {
 
 	// the new cluster name doubles as the name for the service account we will auth as
-	serviceAccountRef := &core_types.ResourceRef{
+	serviceAccountRef := &zephyr_core_types.ResourceRef{
 		Name:      registerOpts.RemoteClusterName,
 		Namespace: registerOpts.RemoteWriteNamespace,
 	}
@@ -390,4 +391,17 @@ func hackClusterConfigForLocalTestingInKIND(
 	}
 
 	return nil
+}
+
+func upsertSecretData(ctx context.Context, secret *k8s_core_types.Secret, secretClient k8s_core.SecretClient) error {
+	existing, err := secretClient.GetSecret(ctx, client.ObjectKey{Name: secret.Name, Namespace: secret.Namespace})
+	if err != nil {
+		if k8s_errs.IsNotFound(err) {
+			return secretClient.CreateSecret(ctx, secret)
+		}
+		return err
+	}
+	existing.Data = secret.Data
+	existing.StringData = secret.StringData
+	return secretClient.UpdateSecret(ctx, existing)
 }

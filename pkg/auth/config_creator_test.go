@@ -8,25 +8,26 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
-	kubeapiv1 "k8s.io/api/core/v1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Config creator", func() {
 	var (
 		ctx               context.Context
 		ctrl              *gomock.Controller
-		serviceAccountRef = &types.ResourceRef{
+		serviceAccountRef = &zephyr_core_types.ResourceRef{
 			Name:      "test-sa",
 			Namespace: "test-ns",
 		}
-		tokenSecretRef = kubeapiv1.ObjectReference{
+		tokenSecretRef = k8s_core_types.ObjectReference{
 			Name: "test-secret",
 		}
-		secret = &kubeapiv1.Secret{
+		secret = &k8s_core_types.Secret{
 			Data: map[string][]byte{
 				auth.SecretTokenKey: []byte("my-test-token"),
 			},
@@ -56,14 +57,14 @@ var _ = Describe("Config creator", func() {
 
 		saClient.
 			EXPECT().
-			Get(ctx, serviceAccountRef.Name, serviceAccountRef.Namespace).
-			Return(&kubeapiv1.ServiceAccount{
-				Secrets: []kubeapiv1.ObjectReference{tokenSecretRef},
+			GetServiceAccount(ctx, client.ObjectKey{Name: serviceAccountRef.Name, Namespace: serviceAccountRef.Namespace}).
+			Return(&k8s_core_types.ServiceAccount{
+				Secrets: []k8s_core_types.ObjectReference{tokenSecretRef},
 			}, nil)
 
 		secretClient.
 			EXPECT().
-			Get(ctx, tokenSecretRef.Name, serviceAccountRef.Namespace).
+			GetSecret(ctx, client.ObjectKey{Name: tokenSecretRef.Name, Namespace: serviceAccountRef.Namespace}).
 			Return(secret, nil)
 
 		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, testKubeConfig, serviceAccountRef)
@@ -82,22 +83,22 @@ var _ = Describe("Config creator", func() {
 		attemptsRemaining := 3
 		saClient.
 			EXPECT().
-			Get(ctx, serviceAccountRef.Name, serviceAccountRef.Namespace).
-			DoAndReturn(func(ctx context.Context, serviceAccountName, namespace string) (*kubeapiv1.ServiceAccount, error) {
+			GetServiceAccount(ctx, client.ObjectKey{Name: serviceAccountRef.Name, Namespace: serviceAccountRef.Namespace}).
+			DoAndReturn(func(ctx context.Context, key client.ObjectKey) (*k8s_core_types.ServiceAccount, error) {
 				attemptsRemaining -= 1
 				if attemptsRemaining > 0 {
 					return nil, errors.New("whoops not ready yet")
 				}
 
-				return &kubeapiv1.ServiceAccount{
-					Secrets: []kubeapiv1.ObjectReference{tokenSecretRef},
+				return &k8s_core_types.ServiceAccount{
+					Secrets: []k8s_core_types.ObjectReference{tokenSecretRef},
 				}, nil
 			}).
 			AnyTimes()
 
 		secretClient.
 			EXPECT().
-			Get(ctx, tokenSecretRef.Name, serviceAccountRef.Namespace).
+			GetSecret(ctx, client.ObjectKey{Name: tokenSecretRef.Name, Namespace: serviceAccountRef.Namespace}).
 			Return(secret, nil)
 
 		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, testKubeConfig, serviceAccountRef)
@@ -115,15 +116,15 @@ var _ = Describe("Config creator", func() {
 
 		saClient.
 			EXPECT().
-			Get(ctx, serviceAccountRef.Name, serviceAccountRef.Namespace).
-			Return(&kubeapiv1.ServiceAccount{
-				Secrets: []kubeapiv1.ObjectReference{tokenSecretRef},
+			GetServiceAccount(ctx, client.ObjectKey{Name: serviceAccountRef.Name, Namespace: serviceAccountRef.Namespace}).
+			Return(&k8s_core_types.ServiceAccount{
+				Secrets: []k8s_core_types.ObjectReference{tokenSecretRef},
 			}, nil)
 
 		secretClient.
 			EXPECT().
-			Get(ctx, tokenSecretRef.Name, serviceAccountRef.Namespace).
-			Return(&kubeapiv1.Secret{Data: map[string][]byte{"whoops wrong key": []byte("yikes")}}, nil)
+			GetSecret(ctx, client.ObjectKey{Name: tokenSecretRef.Name, Namespace: serviceAccountRef.Namespace}).
+			Return(&k8s_core_types.Secret{Data: map[string][]byte{"whoops wrong key": []byte("yikes")}}, nil)
 
 		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, testKubeConfig, serviceAccountRef)
 
@@ -140,9 +141,9 @@ var _ = Describe("Config creator", func() {
 
 		saClient.
 			EXPECT().
-			Get(ctx, serviceAccountRef.Name, serviceAccountRef.Namespace).
-			Return(&kubeapiv1.ServiceAccount{
-				Secrets: []kubeapiv1.ObjectReference{tokenSecretRef},
+			GetServiceAccount(ctx, client.ObjectKey{Name: serviceAccountRef.Name, Namespace: serviceAccountRef.Namespace}).
+			Return(&k8s_core_types.ServiceAccount{
+				Secrets: []k8s_core_types.ObjectReference{tokenSecretRef},
 			}, nil).
 			AnyTimes()
 
@@ -150,7 +151,7 @@ var _ = Describe("Config creator", func() {
 
 		secretClient.
 			EXPECT().
-			Get(ctx, tokenSecretRef.Name, serviceAccountRef.Namespace).
+			GetSecret(ctx, client.ObjectKey{Name: tokenSecretRef.Name, Namespace: serviceAccountRef.Namespace}).
 			Return(nil, testErr).
 			AnyTimes()
 

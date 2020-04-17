@@ -10,8 +10,8 @@ import (
 	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking/mocks"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -51,7 +51,7 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 
 	It("will call the VirtualMesh Printer with the proper data", func() {
 
-		virtualMeshes := []*v1alpha1.VirtualMesh{
+		virtualMeshes := []*zephyr_networking.VirtualMesh{
 			{
 				ObjectMeta: v1.ObjectMeta{
 					Name: "mesh-1",
@@ -67,9 +67,9 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 			GetRestConfigForContext("", "").
 			Return(nil, nil)
 		mockVirtualMeshClient.EXPECT().
-			List(ctx).
-			Return(&v1alpha1.VirtualMeshList{
-				Items: []v1alpha1.VirtualMesh{*virtualMeshes[0], *virtualMeshes[1]},
+			ListVirtualMesh(ctx).
+			Return(&zephyr_networking.VirtualMeshList{
+				Items: []zephyr_networking.VirtualMesh{*virtualMeshes[0], *virtualMeshes[1]},
 			}, nil)
 		mockVirtualMeshPrinter.EXPECT().
 			Print(gomock.Any(), virtualMeshes).

@@ -3,16 +3,16 @@ package auth
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	rbacapiv1 "k8s.io/api/rbac/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	k8s_rbac_types "k8s.io/api/rbac/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 )
 
 var (
 	// visible for testing
-	ServiceAccountRoles = []*rbacapiv1.ClusterRole{{
-		ObjectMeta: metav1.ObjectMeta{Name: "cluster-admin"},
+	ServiceAccountRoles = []*k8s_rbac_types.ClusterRole{{
+		ObjectMeta: k8s_meta_types.ObjectMeta{Name: "cluster-admin"},
 	}}
 )
 
@@ -30,7 +30,7 @@ func NewClusterAuthorization(
 func (c *clusterAuthorization) CreateAuthConfigForCluster(
 	ctx context.Context,
 	targetClusterCfg *rest.Config,
-	serviceAccountRef *types.ResourceRef,
+	serviceAccountRef *zephyr_core_types.ResourceRef,
 ) (*rest.Config, error) {
 	_, err := c.remoteAuthorityManager.ApplyRemoteServiceAccount(ctx, serviceAccountRef, ServiceAccountRoles)
 	if err != nil {

@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mc_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher"
 	mock_internal_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal/mocks"
@@ -49,13 +49,13 @@ var _ = Describe("multicluster-watcher", func() {
 		Context("Create", func() {
 			It("will return an error if resync is true", func() {
 				csh.EXPECT().AddMemberCluster(ctx, secret).Return(true, testErr)
-				err := mcHandler.Create(secret)
+				err := mcHandler.CreateSecret(secret)
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(Equal(testErr))
 			})
 			It("will not an error if resync is false", func() {
 				csh.EXPECT().AddMemberCluster(ctx, secret).Return(false, testErr)
-				err := mcHandler.Create(secret)
+				err := mcHandler.CreateSecret(secret)
 				Expect(err).NotTo(HaveOccurred())
 			})
 		})
@@ -63,13 +63,13 @@ var _ = Describe("multicluster-watcher", func() {
 		Context("Delete", func() {
 			It("will return an error if resync is true", func() {
 				csh.EXPECT().DeleteMemberCluster(ctx, secret).Return(true, testErr)
-				err := mcHandler.Delete(secret)
+				err := mcHandler.DeleteSecret(secret)
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(Equal(testErr))
 			})
 			It("will not an error if resync is false", func() {
 				csh.EXPECT().DeleteMemberCluster(ctx, secret).Return(false, testErr)
-				err := mcHandler.Delete(secret)
+				err := mcHandler.DeleteSecret(secret)
 				Expect(err).NotTo(HaveOccurred())
 			})
 		})
@@ -90,13 +90,13 @@ var _ = Describe("multicluster-watcher", func() {
 				})
 				It("will return an error if resync is true", func() {
 					csh.EXPECT().DeleteMemberCluster(ctx, secret).Return(true, testErr)
-					err := mcHandler.Update(oldSecret, secret)
+					err := mcHandler.UpdateSecret(oldSecret, secret)
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(Equal(testErr))
 				})
 				It("will not an error if resync is false", func() {
 					csh.EXPECT().DeleteMemberCluster(ctx, secret).Return(false, testErr)
-					err := mcHandler.Update(oldSecret, secret)
+					err := mcHandler.UpdateSecret(oldSecret, secret)
 					Expect(err).NotTo(HaveOccurred())
 				})
 			})
@@ -112,13 +112,13 @@ var _ = Describe("multicluster-watcher", func() {
 				})
 				It("will return an error if resync is true", func() {
 					csh.EXPECT().AddMemberCluster(ctx, secret).Return(true, testErr)
-					err := mcHandler.Update(oldSecret, secret)
+					err := mcHandler.UpdateSecret(oldSecret, secret)
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(Equal(testErr))
 				})
 				It("will not an error if resync is false", func() {
 					csh.EXPECT().AddMemberCluster(ctx, secret).Return(false, testErr)
-					err := mcHandler.Update(oldSecret, secret)
+					err := mcHandler.UpdateSecret(oldSecret, secret)
 					Expect(err).NotTo(HaveOccurred())
 				})
 			})
@@ -132,7 +132,7 @@ var _ = Describe("multicluster-watcher", func() {
 				}
 				secret.Namespace = env.GetWriteNamespace()
 				secret.Labels = map[string]string{multicluster.MultiClusterLabel: "true"}
-				err := mcHandler.Update(oldSecret, secret)
+				err := mcHandler.UpdateSecret(oldSecret, secret)
 				Expect(err).NotTo(HaveOccurred())
 			})
 		})

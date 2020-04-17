@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
-	smi_networking "github.com/solo-io/service-mesh-hub/pkg/clients/smi/split/v1alpha1"
+	smi_networking "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 
 	"github.com/solo-io/go-utils/contextutils"
 
@@ -18,13 +18,12 @@ import (
 
 	linkerd_config "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	linkerd_client "github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	linkerd_client "github.com/solo-io/service-mesh-hub/pkg/clients/linkerd/v1alpha2"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 )
@@ -34,13 +33,13 @@ const (
 )
 
 var (
-	SubsetsNotSupportedErr = func(dest *networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination) error {
+	SubsetsNotSupportedErr = func(dest *zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination) error {
 		return eris.Errorf("Subsets are currently not supported, found one on destination: %+v", dest)
 	}
 
 	CrossNamespaceSplitNotSupportedErr = eris.Errorf("Traffic Shifts are currently not supported across namespaces in Linkerd")
 
-	TrafficShiftRedefinedErr = func(meshService *discovery_v1alpha1.MeshService, trafficPoliciesWithTrafficShifts []core_types.ResourceRef) error {
+	TrafficShiftRedefinedErr = func(meshService *zephyr_discovery.MeshService, trafficPoliciesWithTrafficShifts []zephyr_core_types.ResourceRef) error {
 		return eris.Errorf("multiple traffic policies with traffic shifts (%+v) defined for a single mesh service (%s)", trafficPoliciesWithTrafficShifts, meshService.Name)
 	}
 )
@@ -81,10 +80,10 @@ func (i *linkerdTrafficPolicyTranslator) Name() string {
 */
 func (i *linkerdTrafficPolicyTranslator) TranslateTrafficPolicy(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-	mesh *discovery_v1alpha1.Mesh,
-	mergedTrafficPolicies []*networking_v1alpha1.TrafficPolicy,
-) *networking_types.TrafficPolicyStatus_TranslatorError {
+	meshService *zephyr_discovery.MeshService,
+	mesh *zephyr_discovery.Mesh,
+	mergedTrafficPolicies []*zephyr_networking.TrafficPolicy,
+) *zephyr_networking_types.TrafficPolicyStatus_TranslatorError {
 	if mesh.Spec.GetLinkerd() == nil {
 		return nil
 	}
@@ -107,7 +106,7 @@ func (i *linkerdTrafficPolicyTranslator) TranslateTrafficPolicy(
 // get ServiceProfile and ServiceProfile clients for MeshService's cluster
 func (i *linkerdTrafficPolicyTranslator) fetchClientsForMeshService(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
+	meshService *zephyr_discovery.MeshService,
 ) (linkerd_client.ServiceProfileClient, smi_networking.TrafficSplitClient, error) {
 	mesh, err := i.getMesh(ctx, meshService)
 	if err != nil {
@@ -122,9 +121,9 @@ func (i *linkerdTrafficPolicyTranslator) fetchClientsForMeshService(
 
 func (i *linkerdTrafficPolicyTranslator) getMesh(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-) (*discovery_v1alpha1.Mesh, error) {
-	mesh, err := i.meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	meshService *zephyr_discovery.MeshService,
+) (*zephyr_discovery.Mesh, error) {
+	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return nil, err
 	}
@@ -133,9 +132,9 @@ func (i *linkerdTrafficPolicyTranslator) getMesh(
 
 func (i *linkerdTrafficPolicyTranslator) ensureServiceProfile(
 	ctx context.Context,
-	mesh *discovery_v1alpha1.Mesh,
-	meshService *discovery_v1alpha1.MeshService,
-	mergedTrafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	mesh *zephyr_discovery.Mesh,
+	meshService *zephyr_discovery.MeshService,
+	mergedTrafficPolicies []*zephyr_networking.TrafficPolicy,
 	serviceProfileClient linkerd_client.ServiceProfileClient,
 ) error {
 	computedServiceProfile := i.translateIntoServiceProfile(ctx, mesh, meshService, mergedTrafficPolicies)
@@ -147,7 +146,7 @@ func (i *linkerdTrafficPolicyTranslator) ensureServiceProfile(
 	}
 
 	// Upsert computed ServiceProfile
-	err := serviceProfileClient.UpsertSpec(ctx, computedServiceProfile)
+	err := serviceProfileClient.UpsertServiceProfileSpec(ctx, computedServiceProfile)
 	if err != nil {
 		return err
 	}
@@ -156,9 +155,9 @@ func (i *linkerdTrafficPolicyTranslator) ensureServiceProfile(
 
 func (i *linkerdTrafficPolicyTranslator) translateIntoServiceProfile(
 	ctx context.Context,
-	mesh *discovery_v1alpha1.Mesh,
-	meshService *discovery_v1alpha1.MeshService,
-	trafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	mesh *zephyr_discovery.Mesh,
+	meshService *zephyr_discovery.MeshService,
+	trafficPolicies []*zephyr_networking.TrafficPolicy,
 ) *linkerd_config.ServiceProfile {
 
 	serviceProfile := &linkerd_config.ServiceProfile{
@@ -173,7 +172,7 @@ func (i *linkerdTrafficPolicyTranslator) translateIntoServiceProfile(
 
 func makeRoutes(
 	ctx context.Context,
-	trafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	trafficPolicies []*zephyr_networking.TrafficPolicy,
 ) []*linkerd_config.RouteSpec {
 	var routes []*linkerd_config.RouteSpec
 	for _, policy := range trafficPolicies {
@@ -186,8 +185,8 @@ func makeRoutes(
 		matchers := policy.Spec.GetHttpRequestMatchers()
 		if len(matchers) == 0 {
 			// use catch-all matcher
-			matchers = []*networking_types.TrafficPolicySpec_HttpMatcher{{
-				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{Prefix: "/"},
+			matchers = []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{{
+				PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{Prefix: "/"},
 			}}
 		}
 		var timeout string
@@ -208,13 +207,13 @@ func makeRoutes(
 }
 
 // returns true if the traffic policy has config relevant to Linkerd
-func hasRelevantConfig(tp *networking_v1alpha1.TrafficPolicy) bool {
+func hasRelevantConfig(tp *zephyr_networking.TrafficPolicy) bool {
 	return tp.Spec.RequestTimeout != nil ||
 		tp.Spec.TrafficShift != nil ||
 		len(tp.Spec.HttpRequestMatchers) != 0
 }
 
-func getMatchCondition(ctx context.Context, matches []*networking_types.TrafficPolicySpec_HttpMatcher) *linkerd_config.RequestMatch {
+func getMatchCondition(ctx context.Context, matches []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher) *linkerd_config.RequestMatch {
 	var conditions []*linkerd_config.RequestMatch
 	for _, match := range matches {
 		conditions = append(conditions, getMatch(ctx, match))
@@ -224,14 +223,14 @@ func getMatchCondition(ctx context.Context, matches []*networking_types.TrafficP
 	}
 }
 
-func getMatch(ctx context.Context, match *networking_types.TrafficPolicySpec_HttpMatcher) *linkerd_config.RequestMatch {
+func getMatch(ctx context.Context, match *zephyr_networking_types.TrafficPolicySpec_HttpMatcher) *linkerd_config.RequestMatch {
 	pathRegex := func() string {
 		switch match.GetPathSpecifier().(type) {
-		case *networking_types.TrafficPolicySpec_HttpMatcher_Exact:
+		case *zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact:
 			return match.GetExact()
-		case *networking_types.TrafficPolicySpec_HttpMatcher_Regex:
+		case *zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Regex:
 			return match.GetRegex()
-		case *networking_types.TrafficPolicySpec_HttpMatcher_Prefix:
+		case *zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix:
 			return match.GetPrefix() + ".*"
 		}
 		contextutils.LoggerFrom(ctx).DPanicf("path specifier not implemented")
@@ -249,8 +248,8 @@ func getMatch(ctx context.Context, match *networking_types.TrafficPolicySpec_Htt
 	}
 }
 
-func errorToStatus(err error) *networking_types.TrafficPolicyStatus_TranslatorError {
-	return &networking_types.TrafficPolicyStatus_TranslatorError{
+func errorToStatus(err error) *zephyr_networking_types.TrafficPolicyStatus_TranslatorError {
+	return &zephyr_networking_types.TrafficPolicyStatus_TranslatorError{
 		TranslatorId: TranslatorId,
 		ErrorMessage: err.Error(),
 	}
@@ -258,9 +257,9 @@ func errorToStatus(err error) *networking_types.TrafficPolicyStatus_TranslatorEr
 
 func (i *linkerdTrafficPolicyTranslator) ensureTrafficSplit(
 	ctx context.Context,
-	mesh *discovery_v1alpha1.Mesh,
-	meshService *discovery_v1alpha1.MeshService,
-	mergedTrafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	mesh *zephyr_discovery.Mesh,
+	meshService *zephyr_discovery.MeshService,
+	mergedTrafficPolicies []*zephyr_networking.TrafficPolicy,
 	trafficSplitClient smi_networking.TrafficSplitClient,
 ) error {
 	computedTrafficSplit, err := i.translateIntoTrafficSplit(mesh, meshService, mergedTrafficPolicies)
@@ -274,7 +273,7 @@ func (i *linkerdTrafficPolicyTranslator) ensureTrafficSplit(
 	}
 
 	// Upsert computed TrafficSplit
-	err = trafficSplitClient.UpsertSpec(ctx, computedTrafficSplit)
+	err = trafficSplitClient.UpsertTrafficSplitSpec(ctx, computedTrafficSplit)
 	if err != nil {
 		return err
 	}
@@ -282,9 +281,9 @@ func (i *linkerdTrafficPolicyTranslator) ensureTrafficSplit(
 }
 
 func (i *linkerdTrafficPolicyTranslator) translateIntoTrafficSplit(
-	mesh *discovery_v1alpha1.Mesh,
-	meshService *discovery_v1alpha1.MeshService,
-	trafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	mesh *zephyr_discovery.Mesh,
+	meshService *zephyr_discovery.MeshService,
+	trafficPolicies []*zephyr_networking.TrafficPolicy,
 ) (*smi_config.TrafficSplit, error) {
 
 	var errs error
@@ -307,15 +306,15 @@ func (i *linkerdTrafficPolicyTranslator) translateIntoTrafficSplit(
 
 // For each Destination, create an Linkerd HTTPRouteDestination
 func (i *linkerdTrafficPolicyTranslator) makeBackends(
-	meshService *discovery_v1alpha1.MeshService,
-	policies []*networking_v1alpha1.TrafficPolicy,
+	meshService *zephyr_discovery.MeshService,
+	policies []*zephyr_networking.TrafficPolicy,
 ) ([]smi_config.TrafficSplitBackend, error) {
 
-	var trafficShift *networking_types.TrafficPolicySpec_MultiDestination
-	var policiesWithTrafficShifts []core_types.ResourceRef
+	var trafficShift *zephyr_networking_types.TrafficPolicySpec_MultiDestination
+	var policiesWithTrafficShifts []zephyr_core_types.ResourceRef
 	for _, policy := range policies {
 		if policy.Spec.TrafficShift != nil {
-			policiesWithTrafficShifts = append(policiesWithTrafficShifts, core_types.ResourceRef{
+			policiesWithTrafficShifts = append(policiesWithTrafficShifts, zephyr_core_types.ResourceRef{
 				Name:      policy.Name,
 				Namespace: policy.Namespace,
 				Cluster:   policy.ClusterName,
@@ -353,7 +352,7 @@ func metaForMeshService(svc *types.MeshServiceSpec_KubeService, linkerd *types.M
 }
 
 // convert a destination weight to a kube resource.Quantity
-func convertWeightQuantity(destinations []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination, relativeWeight uint32) *resource.Quantity {
+func convertWeightQuantity(destinations []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination, relativeWeight uint32) *resource.Quantity {
 	var total uint32
 	for _, dest := range destinations {
 		total += dest.GetWeight()

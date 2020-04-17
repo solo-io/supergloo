@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	internal_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
-	v1 "k8s.io/api/core/v1"
+	core_v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -25,10 +25,7 @@ import (
 */
 func StartLocalManager(handler mc_manager.KubeConfigHandler) mc_manager.AsyncManagerStartOptionsFunc {
 	return func(ctx context.Context, mgr manager.Manager) error {
-		secretCtrl, err := controller.NewSecretController(multicluster.MultiClusterController, mgr)
-		if err != nil {
-			return err
-		}
+		secretCtrl := controller.NewSecretEventWatcher(multicluster.MultiClusterController, mgr)
 
 		mcHandler := &multiClusterHandler{
 			ctx:               ctx,
@@ -52,7 +49,7 @@ func NewMultiClusterHandler(ctx context.Context,
 	return &multiClusterHandler{ctx: ctx, clusterMembership: clusterMembership}
 }
 
-func (c *multiClusterHandler) Create(s *v1.Secret) error {
+func (c *multiClusterHandler) CreateSecret(s *core_v1.Secret) error {
 	resync, err := c.clusterMembership.AddMemberCluster(c.ctx, s)
 	if err != nil {
 		contextutils.LoggerFrom(c.ctx).Errorf("error adding member cluster for secret %s.%s: %s", s.GetName(), s.GetNamespace(), err.Error())
@@ -63,7 +60,7 @@ func (c *multiClusterHandler) Create(s *v1.Secret) error {
 	return nil
 }
 
-func (c *multiClusterHandler) Update(old, new *v1.Secret) error {
+func (c *multiClusterHandler) UpdateSecret(old, new *core_v1.Secret) error {
 	logger := contextutils.LoggerFrom(c.ctx)
 	// If mc label has been removed from secret, remove from remote clusters
 	if internal_watcher.HasRequiredMetadata(old.GetObjectMeta()) && !internal_watcher.HasRequiredMetadata(new.GetObjectMeta()) {
@@ -90,7 +87,7 @@ func (c *multiClusterHandler) Update(old, new *v1.Secret) error {
 	return nil
 }
 
-func (c *multiClusterHandler) Delete(s *v1.Secret) error {
+func (c *multiClusterHandler) DeleteSecret(s *core_v1.Secret) error {
 	resync, err := c.clusterMembership.DeleteMemberCluster(c.ctx, s)
 	if err != nil {
 		contextutils.LoggerFrom(c.ctx).Errorf("error deleting member cluster for "+
@@ -102,7 +99,7 @@ func (c *multiClusterHandler) Delete(s *v1.Secret) error {
 	return nil
 }
 
-func (c *multiClusterHandler) Generic(obj *v1.Secret) error {
+func (c *multiClusterHandler) GenericSecret(obj *core_v1.Secret) error {
 	contextutils.LoggerFrom(c.ctx).Warn("should never be called as generic events are not configured for secrets")
 	return nil
 }

@@ -4,20 +4,19 @@ import (
 	"context"
 	"strings"
 
+	"github.com/google/wire"
 	linkerdconfig "github.com/linkerd/linkerd2/controller/gen/config"
 	"github.com/linkerd/linkerd2/pkg/config"
 	linkerdk8s "github.com/linkerd/linkerd2/pkg/k8s"
-	v1 "k8s.io/api/core/v1"
-
-	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
 	k8s_apps_v1 "k8s.io/api/apps/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -50,7 +49,7 @@ type linkerdMeshScanner struct {
 }
 
 func getLinkerdConfig(ctx context.Context, name, namespace string, kube client.Client) (*linkerdconfig.All, error) {
-	cm := &v1.ConfigMap{}
+	cm := &k8s_core_types.ConfigMap{}
 	key := client.ObjectKey{Name: name, Namespace: namespace}
 	if err := kube.Get(ctx, key, cm); err != nil {
 		return nil, err
@@ -62,7 +61,7 @@ func getLinkerdConfig(ctx context.Context, name, namespace string, kube client.C
 	return cfg, nil
 }
 
-func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s_apps_v1.Deployment, kube client.Client) (*discoveryv1alpha1.Mesh, error) {
+func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s_apps_v1.Deployment, kube client.Client) (*zephyr_discovery.Mesh, error) {
 
 	linkerdController, err := l.detectLinkerdController(deployment)
 
@@ -84,23 +83,23 @@ func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s
 		clusterDomain = DefaultClusterDomain
 	}
 
-	return &discoveryv1alpha1.Mesh{
+	return &zephyr_discovery.Mesh{
 		ObjectMeta: k8s_meta_v1.ObjectMeta{
 			Name:      linkerdController.name(),
 			Namespace: env.GetWriteNamespace(),
 			Labels:    DiscoveryLabels,
 		},
-		Spec: discovery_types.MeshSpec{
-			MeshType: &discovery_types.MeshSpec_Linkerd{
-				Linkerd: &discovery_types.MeshSpec_LinkerdMesh{
-					Installation: &discovery_types.MeshSpec_MeshInstallation{
+		Spec: zephyr_discovery_types.MeshSpec{
+			MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{
+				Linkerd: &zephyr_discovery_types.MeshSpec_LinkerdMesh{
+					Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 						InstallationNamespace: deployment.GetNamespace(),
 						Version:               linkerdController.version,
 					},
 					ClusterDomain: clusterDomain,
 				},
 			},
-			Cluster: &core_types.ResourceRef{
+			Cluster: &zephyr_core_types.ResourceRef{
 				Name:      deployment.GetClusterName(),
 				Namespace: env.GetWriteNamespace(),
 			},

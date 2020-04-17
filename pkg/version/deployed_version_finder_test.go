@@ -9,11 +9,11 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	mock_kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/docker/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
+	mock_kubernetes_apps "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/apps/v1"
 	v1 "k8s.io/api/apps/v1"
 	v12 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -46,7 +46,7 @@ var _ = Describe("Federation Decider", func() {
 			deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
 
 			deploymentClient.EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetDeployment(ctx, client.ObjectKey{
 					Name:      containerAndDeploymentName,
 					Namespace: env.GetWriteNamespace(),
 				}).
@@ -81,7 +81,7 @@ var _ = Describe("Federation Decider", func() {
 			deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
 
 			deploymentClient.EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetDeployment(ctx, client.ObjectKey{
 					Name:      containerAndDeploymentName,
 					Namespace: env.GetWriteNamespace(),
 				}).
@@ -116,7 +116,7 @@ var _ = Describe("Federation Decider", func() {
 			deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
 
 			deploymentClient.EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetDeployment(ctx, client.ObjectKey{
 					Name:      containerAndDeploymentName,
 					Namespace: env.GetWriteNamespace(),
 				}).
@@ -135,7 +135,7 @@ var _ = Describe("Federation Decider", func() {
 			reflect.DeepEqual(map[string]string{}, map[string]string{})
 
 			deploymentClient.EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetDeployment(ctx, client.ObjectKey{
 					Name:      containerAndDeploymentName,
 					Namespace: env.GetWriteNamespace(),
 				}).
@@ -153,7 +153,7 @@ var _ = Describe("Federation Decider", func() {
 			deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
 
 			deploymentClient.EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetDeployment(ctx, client.ObjectKey{
 					Name:      containerAndDeploymentName,
 					Namespace: env.GetWriteNamespace(),
 				}).

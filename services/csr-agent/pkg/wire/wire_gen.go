@@ -8,8 +8,8 @@ package wire
 import (
 	"context"
 
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
@@ -26,19 +26,16 @@ func InitializeCsrAgent(ctx context.Context) (CsrAgentContext, error) {
 	if err != nil {
 		return CsrAgentContext{}, err
 	}
-	virtualMeshCertificateSigningRequestController, err := csr_generator.CsrControllerProviderLocal(asyncManager)
-	if err != nil {
-		return CsrAgentContext{}, err
-	}
+	virtualMeshCertificateSigningRequestEventWatcher := csr_generator.CsrControllerProviderLocal(asyncManager)
 	virtualMeshCSRDataSourceFactory := csr_generator.NewVirtualMeshCSRDataSourceFactory()
 	client := mc_wire.DynamicClientProvider(asyncManager)
-	virtualMeshCSRClient := zephyr_security.NewVirtualMeshCSRClient(client)
-	secretClient := kubernetes_core.NewSecretClient(client)
+	virtualMeshCertificateSigningRequestClient := v1alpha1.VirtualMeshCertificateSigningRequestClientProvider(client)
+	secretClient := v1.SecretClientProvider(client)
 	signer := certgen.NewSigner()
 	privateKeyGenerator := csr_generator.NewPrivateKeyGenerator()
 	certClient := csr_generator.NewCertClient(secretClient, signer, privateKeyGenerator)
-	istioCSRGenerator := csr_generator.NewIstioCSRGenerator(virtualMeshCSRClient, secretClient, certClient, signer)
+	istioCSRGenerator := csr_generator.NewIstioCSRGenerator(virtualMeshCertificateSigningRequestClient, secretClient, certClient, signer)
 	virtualMeshCSRProcessor := csr_generator.NewCsrAgentIstioProcessor(istioCSRGenerator)
-	csrAgentContext := CsrAgentContextProvider(ctx, asyncManager, virtualMeshCertificateSigningRequestController, virtualMeshCSRDataSourceFactory, virtualMeshCSRProcessor, virtualMeshCSRClient)
+	csrAgentContext := CsrAgentContextProvider(ctx, asyncManager, virtualMeshCertificateSigningRequestEventWatcher, virtualMeshCSRDataSourceFactory, virtualMeshCSRProcessor, virtualMeshCertificateSigningRequestClient)
 	return csrAgentContext, nil
 }

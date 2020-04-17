@@ -1,0 +1,120 @@
+// Definitions for the Kubernetes Controllers
+package controller
+
+import (
+	"context"
+
+	security_zephyr_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+
+	"github.com/pkg/errors"
+	"github.com/solo-io/skv2/pkg/events"
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+)
+
+// Handle events for the VirtualMeshCertificateSigningRequest Resource
+type VirtualMeshCertificateSigningRequestEventHandler interface {
+	CreateVirtualMeshCertificateSigningRequest(obj *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error
+	UpdateVirtualMeshCertificateSigningRequest(old, new *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error
+	DeleteVirtualMeshCertificateSigningRequest(obj *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error
+	GenericVirtualMeshCertificateSigningRequest(obj *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error
+}
+
+type VirtualMeshCertificateSigningRequestEventHandlerFuncs struct {
+	OnCreate  func(obj *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error
+	OnUpdate  func(old, new *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error
+	OnDelete  func(obj *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error
+	OnGeneric func(obj *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error
+}
+
+func (f *VirtualMeshCertificateSigningRequestEventHandlerFuncs) CreateVirtualMeshCertificateSigningRequest(obj *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *VirtualMeshCertificateSigningRequestEventHandlerFuncs) DeleteVirtualMeshCertificateSigningRequest(obj *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *VirtualMeshCertificateSigningRequestEventHandlerFuncs) UpdateVirtualMeshCertificateSigningRequest(objOld, objNew *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *VirtualMeshCertificateSigningRequestEventHandlerFuncs) GenericVirtualMeshCertificateSigningRequest(obj *security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type VirtualMeshCertificateSigningRequestEventWatcher interface {
+	AddEventHandler(ctx context.Context, h VirtualMeshCertificateSigningRequestEventHandler, predicates ...predicate.Predicate) error
+}
+
+type virtualMeshCertificateSigningRequestEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewVirtualMeshCertificateSigningRequestEventWatcher(name string, mgr manager.Manager) VirtualMeshCertificateSigningRequestEventWatcher {
+	return &virtualMeshCertificateSigningRequestEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest{}),
+	}
+}
+
+func (c *virtualMeshCertificateSigningRequestEventWatcher) AddEventHandler(ctx context.Context, h VirtualMeshCertificateSigningRequestEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericVirtualMeshCertificateSigningRequestHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericVirtualMeshCertificateSigningRequestHandler implements a generic events.EventHandler
+type genericVirtualMeshCertificateSigningRequestHandler struct {
+	handler VirtualMeshCertificateSigningRequestEventHandler
+}
+
+func (h genericVirtualMeshCertificateSigningRequestHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest)
+	if !ok {
+		return errors.Errorf("internal error: VirtualMeshCertificateSigningRequest handler received event for %T", object)
+	}
+	return h.handler.CreateVirtualMeshCertificateSigningRequest(obj)
+}
+
+func (h genericVirtualMeshCertificateSigningRequestHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest)
+	if !ok {
+		return errors.Errorf("internal error: VirtualMeshCertificateSigningRequest handler received event for %T", object)
+	}
+	return h.handler.DeleteVirtualMeshCertificateSigningRequest(obj)
+}
+
+func (h genericVirtualMeshCertificateSigningRequestHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest)
+	if !ok {
+		return errors.Errorf("internal error: VirtualMeshCertificateSigningRequest handler received event for %T", old)
+	}
+	objNew, ok := new.(*security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest)
+	if !ok {
+		return errors.Errorf("internal error: VirtualMeshCertificateSigningRequest handler received event for %T", new)
+	}
+	return h.handler.UpdateVirtualMeshCertificateSigningRequest(objOld, objNew)
+}
+
+func (h genericVirtualMeshCertificateSigningRequestHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest)
+	if !ok {
+		return errors.Errorf("internal error: VirtualMeshCertificateSigningRequest handler received event for %T", object)
+	}
+	return h.handler.GenericVirtualMeshCertificateSigningRequest(obj)
+}

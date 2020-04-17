@@ -40,14 +40,14 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
+	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
-	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
-	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
@@ -62,21 +62,15 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		kubernetes.NewForConfig,
 		wire.Bind(new(kubernetes.Interface), new(*kubernetes.Clientset)),
 		kubernetes_discovery.NewGeneratedServerVersionClient,
-		kubernetes_core.NewServiceAccountClientForConfig,
-		kubernetes_core.NewSecretsClientForConfig,
-		kubernetes_core.NewNamespaceClientForConfig,
-		kubernetes_core.NewPodClientForConfig,
-		kubernetes_apps.NewDeploymentClientForConfig,
+		k8s_core.ClientsetFromConfigProvider,
+		k8s_core.ServiceAccountClientFromClientsetProvider,
+		k8s_core.SecretClientFromClientsetProvider,
+		k8s_core.NamespaceClientFromClientsetProvider,
+		k8s_core.PodClientFromClientsetProvider,
+		kubernetes_apps.ClientsetFromConfigProvider,
+		kubernetes_apps.DeploymentClientFromClientsetProvider,
 		kubernetes_apps.DeploymentClientFactoryProvider,
-		kubernetes_apiext.NewCrdClientFromConfigFactory,
-		discovery_core.NewKubernetesClusterClientForConfig,
-		discovery_core.NewMeshClientForConfig,
-		discovery_core.NewMeshServiceClientForConfig,
-		discovery_core.NewMeshWorkloadClientForConfig,
-		zephyr_security.NewVirtualMeshCSRClientForConfig,
-		zephyr_networking.NewVirtualMeshClientForConfig,
-		zephyr_networking.NewAccessControlPolicyClientForConfig,
-		zephyr_networking.NewTrafficPolicyClientForConfig,
+		kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactoryProvider,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
 		auth.NewRemoteAuthorityManager,
@@ -97,6 +91,17 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		common.KubeClientsProvider,
 		description.NewResourceDescriber,
 		selector.NewResourceSelector,
+		zephyr_discovery.ClientsetFromConfigProvider,
+		zephyr_networking.ClientsetFromConfigProvider,
+		zephyr_security.ClientsetFromConfigProvider,
+		zephyr_discovery.KubernetesClusterClientFromClientsetProvider,
+		zephyr_discovery.MeshServiceClientFromClientsetProvider,
+		zephyr_discovery.MeshWorkloadClientFromClientsetProvider,
+		zephyr_discovery.MeshClientFromClientsetProvider,
+		zephyr_networking.TrafficPolicyClientFromClientsetProvider,
+		zephyr_networking.AccessControlPolicyClientFromClientsetProvider,
+		zephyr_networking.VirtualMeshClientFromClientsetProvider,
+		zephyr_security.VirtualMeshCertificateSigningRequestClientFromClientsetProvider,
 	)
 	return nil, nil
 }

@@ -9,6 +9,7 @@ import (
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/wire"
 	"go.uber.org/zap"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 func Run(ctx context.Context) {
@@ -22,39 +23,6 @@ func Run(ctx context.Context) {
 	if err != nil {
 		logger.Fatalw("error initializing mesh networking clients", zap.Error(err))
 	}
-	if err = meshNetworkingContext.MeshNetworkingSnapshotContext.StartListening(
-		contextutils.WithLogger(ctx, "mesh_networking_snapshot_listener"),
-	); err != nil {
-		logger.Fatalw("error initializing mesh networking snapshot listener", zap.Error(err))
-	}
-	// start the TrafficPolicyTranslator
-	err = meshNetworkingContext.TrafficPolicyTranslator.Start(
-		contextutils.WithLogger(ctx, "traffic_policy_translator"),
-	)
-	if err != nil {
-		logger.Fatalw("error initializing TrafficPolicyTranslator", zap.Error(err))
-	}
-
-	err = meshNetworkingContext.AccessControlPolicyTranslator.Start(
-		contextutils.WithLogger(ctx, "access_control_policy_translator"),
-	)
-	if err != nil {
-		logger.Fatalw("error intitializing AccessControlPolicyTranslator", zap.Error(err))
-	}
-
-	err = meshNetworkingContext.GlobalAccessPolicyEnforcer.Start(
-		contextutils.WithLogger(ctx, "global_access_control_policy_enforcer"),
-	)
-	if err != nil {
-		logger.Fatalw("error intitializing GlobalAccessControlPolicyEnforcer", zap.Error(err))
-	}
-
-	err = meshNetworkingContext.FederationResolver.Start(
-		contextutils.WithLogger(ctx, "federation_resolver"),
-	)
-	if err != nil {
-		logger.Fatalw("error intitializing FederationResolver", zap.Error(err))
-	}
 
 	// block until we die; RIP
 	err = multicluster.SetupAndStartLocalManager(
@@ -63,6 +31,7 @@ func Run(ctx context.Context) {
 			multicluster.AddAllV1Alpha1ToScheme,
 			multicluster.AddAllIstioToScheme,
 			multicluster.AddAllLinkerdToScheme,
+			startComponents(meshNetworkingContext),
 		},
 		[]multicluster.NamedAsyncManagerHandler{{
 			Name:                "mesh-networking-multicluster-controller",
@@ -72,5 +41,48 @@ func Run(ctx context.Context) {
 
 	if err != nil {
 		logger.Fatalw("the local manager instance failed to start up or died with an error", zap.Error(err))
+	}
+}
+
+// Controller-runtime Watches require the manager to be started first, otherwise it will block indefinitely
+// Thus we initialize all components (and their associated watches) as an AsyncManagerStartOptionsFunc.
+func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(context.Context, manager.Manager) error {
+	return func(ctx context.Context, m manager.Manager) error {
+		logger := contextutils.LoggerFrom(ctx)
+		var err error
+		if err = meshNetworkingContext.MeshNetworkingSnapshotContext.StartListening(
+			contextutils.WithLogger(ctx, "mesh_networking_snapshot_listener"),
+		); err != nil {
+			logger.Fatalw("error initializing mesh networking snapshot listener", zap.Error(err))
+		}
+		// start the TrafficPolicyTranslator
+		err = meshNetworkingContext.TrafficPolicyTranslator.Start(
+			contextutils.WithLogger(ctx, "traffic_policy_translator"),
+		)
+		if err != nil {
+			logger.Fatalw("error initializing TrafficPolicyTranslator", zap.Error(err))
+		}
+
+		err = meshNetworkingContext.AccessControlPolicyTranslator.Start(
+			contextutils.WithLogger(ctx, "access_control_policy_translator"),
+		)
+		if err != nil {
+			logger.Fatalw("error intitializing AccessControlPolicyTranslator", zap.Error(err))
+		}
+
+		err = meshNetworkingContext.GlobalAccessPolicyEnforcer.Start(
+			contextutils.WithLogger(ctx, "global_access_control_policy_enforcer"),
+		)
+		if err != nil {
+			logger.Fatalw("error intitializing GlobalAccessControlPolicyEnforcer", zap.Error(err))
+		}
+
+		err = meshNetworkingContext.FederationResolver.Start(
+			contextutils.WithLogger(ctx, "federation_resolver"),
+		)
+		if err != nil {
+			logger.Fatalw("error intitializing FederationResolver", zap.Error(err))
+		}
+		return nil
 	}
 }

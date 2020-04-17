@@ -9,18 +9,18 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/docker/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/istio"
-	appsv1 "k8s.io/api/apps/v1"
-	kubev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
+	k8s_apps_types "k8s.io/api/apps/v1"
+	k8s_core_types "k8s.io/api/core/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -41,7 +41,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		mockConfigMapClient = mock_kubernetes_core.NewMockConfigMapClient(ctrl)
 		istioMeshScanner = istio.NewIstioMeshScanner(
 			mockImageNameParser,
-			func(client client.Client) kubernetes_core.ConfigMapClient {
+			func(client client.Client) k8s_core.ConfigMapClient {
 				return mockConfigMapClient
 			})
 	})
@@ -51,12 +51,12 @@ var _ = Describe("Istio Mesh Scanner", func() {
 	})
 
 	It("does not detect Istio when it is not there", func() {
-		deployment := &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Namespace: istioNs, Name: "name doesn't matter in this context"},
-			Spec: appsv1.DeploymentSpec{
-				Template: kubev1.PodTemplateSpec{
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{
+		deployment := &k8s_apps_types.Deployment{
+			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: istioNs, Name: "name doesn't matter in this context"},
+			Spec: k8s_apps_types.DeploymentSpec{
+				Template: k8s_core_types.PodTemplateSpec{
+					Spec: k8s_core_types.PodSpec{
+						Containers: []k8s_core_types.Container{
 							{
 								Image: "test-image",
 							},
@@ -71,12 +71,12 @@ var _ = Describe("Istio Mesh Scanner", func() {
 	})
 
 	It("reports an error when the image name is unparseable", func() {
-		deployment := &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Namespace: istioNs, ClusterName: "test-cluster", Name: istio.IstiodDeploymentName},
-			Spec: appsv1.DeploymentSpec{
-				Template: kubev1.PodTemplateSpec{
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{
+		deployment := &k8s_apps_types.Deployment{
+			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: istioNs, ClusterName: "test-cluster", Name: istio.IstiodDeploymentName},
+			Spec: k8s_apps_types.DeploymentSpec{
+				Template: k8s_core_types.PodTemplateSpec{
+					Spec: k8s_core_types.PodSpec{
+						Containers: []k8s_core_types.Container{
 							{
 								Image: "istio-pilot:latest",
 							},
@@ -98,12 +98,12 @@ var _ = Describe("Istio Mesh Scanner", func() {
 	It("discovers Istiod deployment", func() {
 		serviceAccountName := "service-account-name"
 		trustDomain := "cluster.local"
-		deployment := &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Namespace: istioNs, ClusterName: "test-cluster", Name: istio.IstiodDeploymentName},
-			Spec: appsv1.DeploymentSpec{
-				Template: kubev1.PodTemplateSpec{
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{
+		deployment := &k8s_apps_types.Deployment{
+			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: istioNs, ClusterName: "test-cluster", Name: istio.IstiodDeploymentName},
+			Spec: k8s_apps_types.DeploymentSpec{
+				Template: k8s_core_types.PodTemplateSpec{
+					Spec: k8s_core_types.PodSpec{
+						Containers: []k8s_core_types.Container{
 							{
 								Image: "istio-pilot:latest",
 							},
@@ -113,27 +113,27 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				},
 			},
 		}
-		expectedMesh := &discoveryv1alpha1.Mesh{
-			ObjectMeta: metav1.ObjectMeta{
+		expectedMesh := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "istio-istio-system-test-cluster",
 				Namespace: env.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
-			Spec: discovery_types.MeshSpec{
-				MeshType: &discovery_types.MeshSpec_Istio{
-					Istio: &discovery_types.MeshSpec_IstioMesh{
-						Installation: &discovery_types.MeshSpec_MeshInstallation{
+			Spec: zephyr_discovery_types.MeshSpec{
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
+						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               "latest",
 						},
-						CitadelInfo: &discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+						CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
 							TrustDomain:           trustDomain,
 							CitadelNamespace:      istioNs,
 							CitadelServiceAccount: serviceAccountName,
 						},
 					},
 				},
-				Cluster: &core_types.ResourceRef{
+				Cluster: &zephyr_core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -147,14 +147,14 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				Path:   "istio",
 				Tag:    "latest",
 			}, nil)
-		configMap := &kubev1.ConfigMap{
+		configMap := &k8s_core_types.ConfigMap{
 			Data: map[string]string{
 				"mesh": fmt.Sprintf("trustDomain: \"%s\"", trustDomain),
 			},
 		}
 		mockConfigMapClient.
 			EXPECT().
-			Get(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
+			GetConfigMap(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
 			Return(configMap, nil)
 		mesh, err := istioMeshScanner.ScanDeployment(ctx, deployment, clusterScopedClient)
 		Expect(err).NotTo(HaveOccurred())
@@ -164,12 +164,12 @@ var _ = Describe("Istio Mesh Scanner", func() {
 	It("discovers istio-citadel deployment", func() {
 		serviceAccountName := "service-account-name"
 		trustDomain := "cluster.local"
-		deployment := &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Namespace: istioNs, ClusterName: "test-cluster", Name: istio.CitadelDeploymentName},
-			Spec: appsv1.DeploymentSpec{
-				Template: kubev1.PodTemplateSpec{
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{
+		deployment := &k8s_apps_types.Deployment{
+			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: istioNs, ClusterName: "test-cluster", Name: istio.CitadelDeploymentName},
+			Spec: k8s_apps_types.DeploymentSpec{
+				Template: k8s_core_types.PodTemplateSpec{
+					Spec: k8s_core_types.PodSpec{
+						Containers: []k8s_core_types.Container{
 							{
 								Image: "istio-citadel:latest",
 							},
@@ -179,27 +179,27 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				},
 			},
 		}
-		expectedMesh := &discoveryv1alpha1.Mesh{
-			ObjectMeta: metav1.ObjectMeta{
+		expectedMesh := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "istio-istio-system-test-cluster",
 				Namespace: env.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
-			Spec: discovery_types.MeshSpec{
-				MeshType: &discovery_types.MeshSpec_Istio{
-					Istio: &discovery_types.MeshSpec_IstioMesh{
-						Installation: &discovery_types.MeshSpec_MeshInstallation{
+			Spec: zephyr_discovery_types.MeshSpec{
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
+						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               "latest",
 						},
-						CitadelInfo: &discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+						CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
 							TrustDomain:           trustDomain,
 							CitadelNamespace:      istioNs,
 							CitadelServiceAccount: serviceAccountName,
 						},
 					},
 				},
-				Cluster: &core_types.ResourceRef{
+				Cluster: &zephyr_core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -213,14 +213,14 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				Path:   "istio",
 				Tag:    "latest",
 			}, nil)
-		configMap := &kubev1.ConfigMap{
+		configMap := &k8s_core_types.ConfigMap{
 			Data: map[string]string{
 				"mesh": fmt.Sprintf("trustDomain: \"%s\"", trustDomain),
 			},
 		}
 		mockConfigMapClient.
 			EXPECT().
-			Get(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
+			GetConfigMap(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
 			Return(configMap, nil)
 		mesh, err := istioMeshScanner.ScanDeployment(ctx, deployment, clusterScopedClient)
 		Expect(err).NotTo(HaveOccurred())

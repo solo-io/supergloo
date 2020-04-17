@@ -1,10 +1,10 @@
 package controller_factories
 
 import (
-	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
-func NewLocalVirtualMeshController(mgr mc_manager.AsyncManager) (networking_controller.VirtualMeshController, error) {
-	return networking_controller.NewVirtualMeshController("management-plane-virtual-mesh-controller", mgr.Manager())
+func NewLocalVirtualMeshEventWatcher(mgr mc_manager.AsyncManager) zephyr_networking_controller.VirtualMeshEventWatcher {
+	return zephyr_networking_controller.NewVirtualMeshEventWatcher("management-plane-virtual-mesh-event-watcher", mgr.Manager())
 }

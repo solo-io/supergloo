@@ -8,31 +8,31 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking/mocks"
 	global_ac_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	mock_global_access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/mocks"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking2 "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/networking"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("EnforcerLoop", func() {
 	var (
-		ctrl                  *gomock.Controller
-		ctx                   context.Context
-		virtualMeshController *mock_zephyr_networking2.MockVirtualMeshController
-		virtualMeshClient     *mock_zephyr_networking.MockVirtualMeshClient
-		meshClient            *mock_core.MockMeshClient
-		meshEnforcers         []*mock_global_access_control_enforcer.MockAccessPolicyMeshEnforcer
-		enforcerLoop          global_ac_enforcer.AccessPolicyEnforcerLoop
+		ctrl                    *gomock.Controller
+		ctx                     context.Context
+		virtualMeshEventWatcher *mock_zephyr_networking2.MockVirtualMeshEventWatcher
+		virtualMeshClient       *mock_zephyr_networking.MockVirtualMeshClient
+		meshClient              *mock_core.MockMeshClient
+		meshEnforcers           []*mock_global_access_control_enforcer.MockAccessPolicyMeshEnforcer
+		enforcerLoop            global_ac_enforcer.AccessPolicyEnforcerLoop
 		// captured event handler
-		virtualMeshHandler *networking_controller.VirtualMeshEventHandlerFuncs
+		virtualMeshHandler *zephyr_networking_controller.VirtualMeshEventHandlerFuncs
 	)
 
 	BeforeEach(func() {
@@ -40,23 +40,23 @@ var _ = Describe("EnforcerLoop", func() {
 		ctx = context.TODO()
 		virtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 		meshClient = mock_core.NewMockMeshClient(ctrl)
-		virtualMeshController = mock_zephyr_networking2.NewMockVirtualMeshController(ctrl)
+		virtualMeshEventWatcher = mock_zephyr_networking2.NewMockVirtualMeshEventWatcher(ctrl)
 		meshEnforcers = []*mock_global_access_control_enforcer.MockAccessPolicyMeshEnforcer{
 			mock_global_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
 			mock_global_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
 		}
 		enforcerLoop = global_ac_enforcer.NewEnforcerLoop(
-			virtualMeshController,
+			virtualMeshEventWatcher,
 			virtualMeshClient,
 			meshClient,
 			[]global_ac_enforcer.AccessPolicyMeshEnforcer{
 				meshEnforcers[0], meshEnforcers[1],
 			},
 		)
-		virtualMeshController.
+		virtualMeshEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandler *networking_controller.VirtualMeshEventHandlerFuncs) error {
+			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_networking_controller.VirtualMeshEventHandlerFuncs) error {
 				virtualMeshHandler = eventHandler
 				return nil
 			})
@@ -67,10 +67,10 @@ var _ = Describe("EnforcerLoop", func() {
 		ctrl.Finish()
 	})
 
-	var buildVirtualMesh = func() *networking_v1alpha1.VirtualMesh {
-		return &networking_v1alpha1.VirtualMesh{
-			Spec: networking_types.VirtualMeshSpec{
-				Meshes: []*core_types.ResourceRef{
+	var buildVirtualMesh = func() *zephyr_networking.VirtualMesh {
+		return &zephyr_networking.VirtualMesh{
+			Spec: zephyr_networking_types.VirtualMeshSpec{
+				Meshes: []*zephyr_core_types.ResourceRef{
 					{Name: "name1", Namespace: "namespace1"},
 					{Name: "name2", Namespace: "namespace2"},
 				},
@@ -78,13 +78,13 @@ var _ = Describe("EnforcerLoop", func() {
 		}
 	}
 
-	var buildMeshes = func() []*discovery_v1alpha1.Mesh {
-		return []*discovery_v1alpha1.Mesh{
+	var buildMeshes = func() []*zephyr_discovery.Mesh {
+		return []*zephyr_discovery.Mesh{
 			{
-				ObjectMeta: v1.ObjectMeta{Name: "name1", Namespace: "namespace1"},
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "name1", Namespace: "namespace1"},
 			},
 			{
-				ObjectMeta: v1.ObjectMeta{Name: "name2", Namespace: "namespace2"},
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "name2", Namespace: "namespace2"},
 			},
 		}
 	}
@@ -96,7 +96,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
 				EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		for _, meshEnforcer := range meshEnforcers {
@@ -109,18 +109,18 @@ var _ = Describe("EnforcerLoop", func() {
 				Name().
 				Return("")
 		}
-		var capturedVM *networking_v1alpha1.VirtualMesh
+		var capturedVM *zephyr_networking.VirtualMesh
 		virtualMeshClient.
 			EXPECT().
-			UpdateStatus(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) error {
+			UpdateVirtualMeshStatus(ctx, gomock.Any()).
+			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		expectedVMStatus := &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
-		err := virtualMeshHandler.Create(vm)
+		err := virtualMeshHandler.CreateVirtualMesh(vm)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
 	})
@@ -131,7 +131,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
 				EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		for _, meshEnforcer := range meshEnforcers {
@@ -144,18 +144,18 @@ var _ = Describe("EnforcerLoop", func() {
 				Name().
 				Return("")
 		}
-		var capturedVM *networking_v1alpha1.VirtualMesh
+		var capturedVM *zephyr_networking.VirtualMesh
 		virtualMeshClient.
 			EXPECT().
-			UpdateStatus(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) error {
+			UpdateVirtualMeshStatus(ctx, gomock.Any()).
+			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		expectedVMStatus := &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
-		err := virtualMeshHandler.Create(vm)
+		err := virtualMeshHandler.CreateVirtualMesh(vm)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
 	})
@@ -167,7 +167,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
 				EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		meshEnforcers[0].
@@ -178,19 +178,19 @@ var _ = Describe("EnforcerLoop", func() {
 			EXPECT().
 			Name().
 			Return("")
-		var capturedVM *networking_v1alpha1.VirtualMesh
+		var capturedVM *zephyr_networking.VirtualMesh
 		virtualMeshClient.
 			EXPECT().
-			UpdateStatus(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) error {
+			UpdateVirtualMeshStatus(ctx, gomock.Any()).
+			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &core_types.Status{
-			State:   core_types.Status_PROCESSING_ERROR,
+		expectedVMStatus := &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: testErr.Error(),
 		}
-		err := virtualMeshHandler.Create(vm)
+		err := virtualMeshHandler.CreateVirtualMesh(vm)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
 	})

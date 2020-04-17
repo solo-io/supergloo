@@ -6,17 +6,16 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
-	core_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"go.uber.org/zap"
-	corev1 "k8s.io/api/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,10 +38,10 @@ var (
 func NewMeshWorkloadFinder(
 	ctx context.Context,
 	clusterName string,
-	localMeshWorkloadClient zephyr_core.MeshWorkloadClient,
-	localMeshClient zephyr_core.MeshClient,
+	localMeshWorkloadClient zephyr_discovery.MeshWorkloadClient,
+	localMeshClient zephyr_discovery.MeshClient,
 	meshWorkloadScannerImplementations MeshWorkloadScannerImplementations,
-	podClient kubernetes_core.PodClient,
+	podClient k8s_core.PodClient,
 ) MeshWorkloadFinder {
 
 	return &meshWorkloadFinder{
@@ -60,9 +59,9 @@ type meshWorkloadFinder struct {
 	clusterName                        string
 	ctx                                context.Context
 	meshWorkloadScannerImplementations MeshWorkloadScannerImplementations
-	localMeshWorkloadClient            zephyr_core.MeshWorkloadClient
-	localMeshClient                    zephyr_core.MeshClient
-	podClient                          kubernetes_core.PodClient
+	localMeshWorkloadClient            zephyr_discovery.MeshWorkloadClient
+	localMeshClient                    zephyr_discovery.MeshClient
+	podClient                          k8s_core.PodClient
 
 	// stateful record of the meshes we have discovered on this cluster.
 	// as meshes get discovered, they will get added here and kick off discovery on pods again
@@ -70,12 +69,12 @@ type meshWorkloadFinder struct {
 }
 
 func (d *meshWorkloadFinder) StartDiscovery(
-	podController core_controllers.PodController,
-	meshController discovery_controllers.MeshController,
+	podEventWatcher k8s_core_controller.PodEventWatcher,
+	meshEventWatcher zephyr_discovery_controller.MeshEventWatcher,
 ) error {
-	err := podController.AddEventHandler(
+	err := podEventWatcher.AddEventHandler(
 		d.ctx,
-		&core_controllers.PodEventHandlerFuncs{
+		&k8s_core_controller.PodEventHandlerFuncs{
 			OnCreate: d.handlePodCreate,
 			OnUpdate: d.handlePodUpdate,
 		},
@@ -84,37 +83,37 @@ func (d *meshWorkloadFinder) StartDiscovery(
 		return err
 	}
 
-	err = meshController.AddEventHandler(
+	err = meshEventWatcher.AddEventHandler(
 		d.ctx,
-		&discovery_controllers.MeshEventHandlerFuncs{
+		&zephyr_discovery_controller.MeshEventHandlerFuncs{
 			OnCreate: d.handleMeshCreate,
 		},
 	)
 	return err
 }
 
-func (d *meshWorkloadFinder) handleMeshCreate(mesh *discoveryv1alpha1.Mesh) error {
+func (d *meshWorkloadFinder) handleMeshCreate(mesh *zephyr_discovery.Mesh) error {
 	logger := contextutils.LoggerFrom(d.ctx)
 	logger.Debugf("mesh create event for %s", mesh.Name)
 
 	// first, register in our stateful representation that we have seen this mesh
 	// this allows us to use the mesh workload scanner implementation later on
 	switch mesh.Spec.GetMeshType().(type) {
-	case *discovery_types.MeshSpec_Istio:
-		d.discoveredMeshTypes.Insert(int32(core_types.MeshType_ISTIO))
-	case *discovery_types.MeshSpec_Linkerd:
-		d.discoveredMeshTypes.Insert(int32(core_types.MeshType_LINKERD))
-	case *discovery_types.MeshSpec_ConsulConnect:
-		d.discoveredMeshTypes.Insert(int32(core_types.MeshType_CONSUL))
-	case *discovery_types.MeshSpec_AwsAppMesh_:
-		d.discoveredMeshTypes.Insert(int32(core_types.MeshType_APPMESH))
+	case *zephyr_discovery_types.MeshSpec_Istio:
+		d.discoveredMeshTypes.Insert(int32(zephyr_core_types.MeshType_ISTIO))
+	case *zephyr_discovery_types.MeshSpec_Linkerd:
+		d.discoveredMeshTypes.Insert(int32(zephyr_core_types.MeshType_LINKERD))
+	case *zephyr_discovery_types.MeshSpec_ConsulConnect:
+		d.discoveredMeshTypes.Insert(int32(zephyr_core_types.MeshType_CONSUL))
+	case *zephyr_discovery_types.MeshSpec_AwsAppMesh_:
+		d.discoveredMeshTypes.Insert(int32(zephyr_core_types.MeshType_APPMESH))
 	default:
 		message := fmt.Sprintf("Unexpected error: unhandled mesh type in mesh workload discovery: %+v", mesh.Spec)
 		logger.Error(message)
 		return nil // don't want to requeue this event
 	}
 
-	allPods, err := d.podClient.List(d.ctx)
+	allPods, err := d.podClient.ListPod(d.ctx)
 	if err != nil {
 		contextutils.LoggerFrom(d.ctx).Errorf("Error loading all pods from mesh create event %s", mesh.Name)
 		return FailedToReprocessPods(d.clusterName, err)
@@ -134,7 +133,7 @@ func (d *meshWorkloadFinder) handleMeshCreate(mesh *discoveryv1alpha1.Mesh) erro
 	return nil
 }
 
-func (d *meshWorkloadFinder) handlePodCreate(pod *corev1.Pod) error {
+func (d *meshWorkloadFinder) handlePodCreate(pod *k8s_core_types.Pod) error {
 	pod.SetClusterName(d.clusterName)
 	logger := logging.BuildEventLogger(d.ctx, logging.CreateEvent, pod)
 
@@ -160,7 +159,7 @@ func (d *meshWorkloadFinder) handlePodCreate(pod *corev1.Pod) error {
 	return err
 }
 
-func (d *meshWorkloadFinder) handlePodUpdate(old, new *corev1.Pod) error {
+func (d *meshWorkloadFinder) handlePodUpdate(old, new *k8s_core_types.Pod) error {
 	old.SetClusterName(d.clusterName)
 	new.SetClusterName(d.clusterName)
 	logger := logging.BuildEventLogger(d.ctx, logging.UpdateEvent, new)
@@ -194,24 +193,24 @@ func (d *meshWorkloadFinder) handlePodUpdate(old, new *corev1.Pod) error {
 		if oldMeshWorkload.Spec.Equal(newMeshWorkload.Spec) {
 			return nil
 		} else {
-			return d.localMeshWorkloadClient.Update(d.ctx, newMeshWorkload)
+			return d.localMeshWorkloadClient.UpdateMeshWorkload(d.ctx, newMeshWorkload)
 		}
 	}
 }
 
-func (d *meshWorkloadFinder) Delete(pod *corev1.Pod) error {
+func (d *meshWorkloadFinder) DeletePod(pod *k8s_core_types.Pod) error {
 	logger := logging.BuildEventLogger(d.ctx, logging.DeleteEvent, pod)
 	logger.Error("Deletion of MeshWorkloads is currently not supported")
 	return nil
 }
 
-func (d *meshWorkloadFinder) Generic(pod *corev1.Pod) error {
+func (d *meshWorkloadFinder) GenericPod(pod *k8s_core_types.Pod) error {
 	logger := logging.BuildEventLogger(d.ctx, logging.GenericEvent, pod)
 	logger.Error("MeshWorkload generic events are not currently supported")
 	return nil
 }
 
-func (d *meshWorkloadFinder) attachGeneralDiscoveryLabels(controllerRef *core_types.ResourceRef, meshWorkload *discoveryv1alpha1.MeshWorkload) {
+func (d *meshWorkloadFinder) attachGeneralDiscoveryLabels(controllerRef *zephyr_core_types.ResourceRef, meshWorkload *zephyr_discovery.MeshWorkload) {
 	if meshWorkload.Labels == nil {
 		meshWorkload.Labels = map[string]string{}
 	}
@@ -221,17 +220,17 @@ func (d *meshWorkloadFinder) attachGeneralDiscoveryLabels(controllerRef *core_ty
 	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAMESPACE] = controllerRef.GetNamespace()
 }
 
-func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*discoveryv1alpha1.MeshWorkload, error) {
+func (d *meshWorkloadFinder) discoverMeshWorkload(pod *k8s_core_types.Pod) (*zephyr_discovery.MeshWorkload, error) {
 	var (
-		discoveredMeshWorkload *discoveryv1alpha1.MeshWorkload
-		controllerRef          *core_types.ResourceRef
+		discoveredMeshWorkload *zephyr_discovery.MeshWorkload
+		controllerRef          *zephyr_core_types.ResourceRef
 	)
 
 	// Only run mesh workload scanner implementations for meshes that are known to have been discovered.
 	// This prevents a race condition: If a mesh and its injected pods exist already when mesh-discovery comes online,
 	// then the pods can be discovered first and will end up having a nil mesh reference on them.
 	for _, discoveredMeshType := range d.discoveredMeshTypes.List() {
-		meshWorkloadScanner, ok := d.meshWorkloadScannerImplementations[core_types.MeshType(discoveredMeshType)]
+		meshWorkloadScanner, ok := d.meshWorkloadScannerImplementations[zephyr_core_types.MeshType(discoveredMeshType)]
 		if !ok {
 			return nil, eris.Errorf("Missing mesh workload scanner implementation for mesh type %d", discoveredMeshType)
 		}
@@ -250,10 +249,10 @@ func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*discoveryv1
 			if meshRef == nil {
 				return nil, FailedToComputeMeshRef(discoveredMeshWorkloadObjectMeta.Name, discoveredMeshWorkloadObjectMeta.Namespace, d.clusterName)
 			}
-			discoveredMeshWorkload = &discoveryv1alpha1.MeshWorkload{
+			discoveredMeshWorkload = &zephyr_discovery.MeshWorkload{
 				ObjectMeta: discoveredMeshWorkloadObjectMeta,
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						KubeControllerRef:  controllerRef,
 						Labels:             pod.Labels,
 						ServiceAccountName: pod.Spec.ServiceAccountName,
@@ -272,15 +271,15 @@ func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*discoveryv1
 	return discoveredMeshWorkload, nil
 }
 
-func (d *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *discoveryv1alpha1.MeshWorkload) error {
+func (d *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *zephyr_discovery.MeshWorkload) error {
 	objectKey, err := client.ObjectKeyFromObject(discoveredWorkload)
 	if err != nil {
 		return err
 	}
-	mw, err := d.localMeshWorkloadClient.Get(d.ctx, objectKey)
+	mw, err := d.localMeshWorkloadClient.GetMeshWorkload(d.ctx, objectKey)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			return d.localMeshWorkloadClient.Create(d.ctx, discoveredWorkload)
+			return d.localMeshWorkloadClient.CreateMeshWorkload(d.ctx, discoveredWorkload)
 		}
 		return err
 	}
@@ -288,18 +287,18 @@ func (d *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *discover
 
 	mw.Spec = discoveredWorkload.Spec
 	mw.Labels = discoveredWorkload.Labels
-	return d.localMeshWorkloadClient.Update(d.ctx, mw)
+	return d.localMeshWorkloadClient.UpdateMeshWorkload(d.ctx, mw)
 }
 
-func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context) (*core_types.ResourceRef, error) {
-	meshList, err := d.localMeshClient.List(ctx, &client.ListOptions{})
+func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context) (*zephyr_core_types.ResourceRef, error) {
+	meshList, err := d.localMeshClient.ListMesh(ctx, &client.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 	// assume at most one instance of Istio per cluster, thus it must be the Mesh for the MeshWorkload if it exists
 	for _, mesh := range meshList.Items {
 		if mesh.Spec.Cluster.Name == d.clusterName {
-			return &core_types.ResourceRef{
+			return &zephyr_core_types.ResourceRef{
 				Name:      mesh.Name,
 				Namespace: mesh.Namespace,
 				Cluster:   d.clusterName,

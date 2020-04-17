@@ -1,39 +1,35 @@
 package controllers
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	apps_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/apps/v1/controller"
-	core_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	k8s_apps_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
+	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
-//go:generate mockgen -destination ./mocks/mock_deployment_controller.go -package mock_controllers github.com/solo-io/service-mesh-hub/services/common/cluster/apps/v1/controller DeploymentController
-//go:generate mockgen -destination ./mocks/mock_pod_controller.go -package mock_controllers github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller PodController
+//go:generate mockgen -destination ./mocks/mock_deployment_event_watcher.go -package mock_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller" DeploymentEventWatcher
+//go:generate mockgen -destination ./mocks/mock_pod_event_watcher.go -package mock_controllers github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller PodEventWatcher
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go -package mock_controllers
 
-// given a manager that can talk to a cluster and a name for that cluster, produce a `DeploymentController`
-type DeploymentControllerFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) (apps_controllers.DeploymentController, error)
+// given a manager that can talk to a cluster and a name for that cluster, produce a `DeploymentEventWatcher`
+type DeploymentEventWatcherFactory interface {
+	Build(mgr mc_manager.AsyncManager, clusterName string) k8s_apps_controller.DeploymentEventWatcher
 }
 
-// given a manager that can talk to a cluster and a name for that cluster, produce a `PodController`
-type PodControllerFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) (core_controllers.PodController, error)
+// given a manager that can talk to a cluster and a name for that cluster, produce a `PodEventWatcher`
+type PodEventWatcherFactory interface {
+	Build(mgr mc_manager.AsyncManager, clusterName string) k8s_core_controller.PodEventWatcher
 }
 
-type MeshWorkloadControllerFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshWorkloadController, error)
+type MeshEventWatcherFactory interface {
+	Build(mgr mc_manager.AsyncManager, clusterName string) zephyr_discovery_controller.MeshEventWatcher
 }
 
-type MeshControllerFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshController, error)
+type MeshWorkloadEventWatcherFactory interface {
+	Build(mgr mc_manager.AsyncManager, clusterName string) zephyr_discovery_controller.MeshWorkloadEventWatcher
 }
 
-type MeshServiceControllerFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshServiceController, error)
-}
-
-type ServiceControllerFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) (core_controllers.ServiceController, error)
+type ServiceEventWatcherFactory interface {
+	Build(mgr mc_manager.AsyncManager, clusterName string) k8s_core_controller.ServiceEventWatcher
 }

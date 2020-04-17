@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/url"
 
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 )
 
 type Category struct {
@@ -44,8 +44,8 @@ type RunFailure struct {
 
 // clients that will be passed to every health check to use
 type Clients struct {
-	NamespaceClient     kubernetes_core.NamespaceClient
-	ServerVersionClient kubernetes_discovery.ServerVersionClient
-	PodClient           kubernetes_core.PodClient
+	NamespaceClient     k8s_core.NamespaceClient
+	ServerVersionClient k8s_discovery.ServerVersionClient
+	PodClient           k8s_core.PodClient
 	MeshServiceClient   zephyr_discovery.MeshServiceClient
 }

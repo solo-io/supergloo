@@ -3,13 +3,13 @@ package istio_enforcer
 import (
 	"context"
 
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	global_access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
-	security_v1beta1 "istio.io/api/security/v1beta1"
+	istio_api_security "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	client_security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -25,14 +25,14 @@ const (
 
 type istioEnforcer struct {
 	dynamicClientGetter     mc_manager.DynamicClientGetter
-	authPolicyClientFactory security.AuthorizationPolicyClientFactory
+	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory
 }
 
 type IstioEnforcer global_access_control_enforcer.AccessPolicyMeshEnforcer
 
 func NewIstioEnforcer(
 	dynamicClientGetter mc_manager.DynamicClientGetter,
-	authPolicyClientFactory security.AuthorizationPolicyClientFactory,
+	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory,
 ) IstioEnforcer {
 	return &istioEnforcer{
 		authPolicyClientFactory: authPolicyClientFactory,
@@ -44,7 +44,7 @@ func (i *istioEnforcer) Name() string {
 	return EnforcerId
 }
 
-func (i *istioEnforcer) StartEnforcing(ctx context.Context, meshes []*discovery_v1alpha1.Mesh) error {
+func (i *istioEnforcer) StartEnforcing(ctx context.Context, meshes []*zephyr_discovery.Mesh) error {
 	for _, mesh := range meshes {
 		if mesh.Spec.GetIstio() == nil {
 			continue
@@ -64,7 +64,7 @@ func (i *istioEnforcer) StartEnforcing(ctx context.Context, meshes []*discovery_
 	return nil
 }
 
-func (i *istioEnforcer) StopEnforcing(ctx context.Context, meshes []*discovery_v1alpha1.Mesh) error {
+func (i *istioEnforcer) StopEnforcing(ctx context.Context, meshes []*zephyr_discovery.Mesh) error {
 	for _, mesh := range meshes {
 		if mesh.Spec.GetIstio() == nil {
 			continue
@@ -78,8 +78,8 @@ func (i *istioEnforcer) StopEnforcing(ctx context.Context, meshes []*discovery_v
 
 func (i *istioEnforcer) ensureGlobalAuthPolicy(
 	ctx context.Context,
-	mesh *discovery_v1alpha1.Mesh,
-	authPolicyClient security.AuthorizationPolicyClient,
+	mesh *zephyr_discovery.Mesh,
+	authPolicyClient istio_security.AuthorizationPolicyClient,
 ) error {
 	// The following config denies all traffic in the mesh because it defaults to an ALLOW rule that doesn't match any requests,
 	// thereby denying traffic unless explicitly allowed by the user through additional AuthorizationPolicies.
@@ -90,15 +90,15 @@ func (i *istioEnforcer) ensureGlobalAuthPolicy(
 			Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
 			Labels:    constants.OwnedBySMHLabel,
 		},
-		Spec: security_v1beta1.AuthorizationPolicy{},
+		Spec: istio_api_security.AuthorizationPolicy{},
 	}
-	return authPolicyClient.UpsertSpec(ctx, globalAccessControlAuthPolicy)
+	return authPolicyClient.UpsertAuthorizationPolicySpec(ctx, globalAccessControlAuthPolicy)
 }
 
 func (i *istioEnforcer) ensureIngressGatewayPolicy(
 	ctx context.Context,
-	mesh *discovery_v1alpha1.Mesh,
-	authPolicyClient security.AuthorizationPolicyClient,
+	mesh *zephyr_discovery.Mesh,
+	authPolicyClient istio_security.AuthorizationPolicyClient,
 ) error {
 	// The following config allows all traffic into the "istio-ingressgateway", which in Service Mesh Hub is
 	// the gateway used for multi cluster traffic. Authorization is then handled by the invidual workloads which traffic
@@ -109,22 +109,22 @@ func (i *istioEnforcer) ensureIngressGatewayPolicy(
 			Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
 			Labels:    constants.OwnedBySMHLabel,
 		},
-		Spec: security_v1beta1.AuthorizationPolicy{
-			Action: security_v1beta1.AuthorizationPolicy_ALLOW,
+		Spec: istio_api_security.AuthorizationPolicy{
+			Action: istio_api_security.AuthorizationPolicy_ALLOW,
 			// According to the Istio docs on AuthorizationPolicy a single empty rule allows all traffic
 			// https://istio.io/docs/reference/config/security/authorization-policy/#AuthorizationPolicy
-			Rules: []*security_v1beta1.Rule{{}},
+			Rules: []*istio_api_security.Rule{{}},
 			Selector: &v1beta1.WorkloadSelector{
 				MatchLabels: istio_federation.BuildGatewayWorkloadSelector(),
 			},
 		},
 	}
-	return authPolicyClient.UpsertSpec(ctx, ingressGatewayAllowAllPolicy)
+	return authPolicyClient.UpsertAuthorizationPolicySpec(ctx, ingressGatewayAllowAllPolicy)
 }
 
 func (i *istioEnforcer) stopEnforcingForMesh(
 	ctx context.Context,
-	mesh *discovery_v1alpha1.Mesh,
+	mesh *zephyr_discovery.Mesh,
 ) error {
 	clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
 	if err != nil {
@@ -148,9 +148,9 @@ func (i *istioEnforcer) stopEnforcingForMesh(
 func (i *istioEnforcer) deleteIfExists(
 	ctx context.Context,
 	objKey client.ObjectKey,
-	policyClient security.AuthorizationPolicyClient,
+	policyClient istio_security.AuthorizationPolicyClient,
 ) error {
-	_, err := policyClient.Get(ctx, objKey)
+	_, err := policyClient.GetAuthorizationPolicy(ctx, objKey)
 	if err != nil {
 		// If it cannot be found, do not attempt to delete, and return no error
 		if errors.IsNotFound(err) {
@@ -158,6 +158,6 @@ func (i *istioEnforcer) deleteIfExists(
 		}
 		return err
 	} else {
-		return policyClient.Delete(ctx, objKey)
+		return policyClient.DeleteAuthorizationPolicy(ctx, objKey)
 	}
 }

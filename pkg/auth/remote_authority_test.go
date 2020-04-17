@@ -8,29 +8,29 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
-	kubeapiv1 "k8s.io/api/core/v1"
-	rbacapiv1 "k8s.io/api/rbac/v1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
+	k8s_rbac_types "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("Remote service account client", func() {
 	var (
 		ctx               context.Context
 		ctrl              *gomock.Controller
-		serviceAccountRef = &types.ResourceRef{
+		serviceAccountRef = &zephyr_core_types.ResourceRef{
 			Name:      "test-sa",
 			Namespace: "test-ns",
 		}
-		roles       = append([]*rbacapiv1.ClusterRole{}, auth.ServiceAccountRoles...)
+		roles       = append([]*k8s_rbac_types.ClusterRole{}, auth.ServiceAccountRoles...)
 		testErr     = eris.New("hello")
 		notFoundErr = &errors.StatusError{
-			ErrStatus: v1.Status{
-				Reason: v1.StatusReasonAlreadyExists,
+			ErrStatus: k8s_meta_types.Status{
+				Reason: k8s_meta_types.StatusReasonAlreadyExists,
 			},
 		}
 	)
@@ -50,8 +50,8 @@ var _ = Describe("Remote service account client", func() {
 
 		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
 
-		serviceAccount := &kubeapiv1.ServiceAccount{
-			ObjectMeta: v1.ObjectMeta{
+		serviceAccount := &k8s_core_types.ServiceAccount{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      serviceAccountRef.Name,
 				Namespace: serviceAccountRef.Namespace,
 			},
@@ -59,7 +59,7 @@ var _ = Describe("Remote service account client", func() {
 
 		saClient.
 			EXPECT().
-			Create(ctx, serviceAccount).
+			CreateServiceAccount(ctx, serviceAccount).
 			Return(nil)
 
 		rbacClient.
@@ -78,8 +78,8 @@ var _ = Describe("Remote service account client", func() {
 
 		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
 
-		serviceAccount := &kubeapiv1.ServiceAccount{
-			ObjectMeta: v1.ObjectMeta{
+		serviceAccount := &k8s_core_types.ServiceAccount{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      serviceAccountRef.Name,
 				Namespace: serviceAccountRef.Namespace,
 			},
@@ -87,12 +87,12 @@ var _ = Describe("Remote service account client", func() {
 
 		saClient.
 			EXPECT().
-			Create(ctx, serviceAccount).
+			CreateServiceAccount(ctx, serviceAccount).
 			Return(notFoundErr)
 
 		saClient.
 			EXPECT().
-			Update(ctx, serviceAccount).
+			UpdateServiceAccount(ctx, serviceAccount).
 			Return(testErr)
 
 		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(ctx, serviceAccountRef, roles)
@@ -106,8 +106,8 @@ var _ = Describe("Remote service account client", func() {
 
 		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
 
-		serviceAccount := &kubeapiv1.ServiceAccount{
-			ObjectMeta: v1.ObjectMeta{
+		serviceAccount := &k8s_core_types.ServiceAccount{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      serviceAccountRef.Name,
 				Namespace: serviceAccountRef.Namespace,
 			},
@@ -115,7 +115,7 @@ var _ = Describe("Remote service account client", func() {
 
 		saClient.
 			EXPECT().
-			Create(ctx, serviceAccount).
+			CreateServiceAccount(ctx, serviceAccount).
 			Return(testErr)
 
 		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(ctx, serviceAccountRef, roles)
@@ -129,8 +129,8 @@ var _ = Describe("Remote service account client", func() {
 
 		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
 
-		serviceAccount := &kubeapiv1.ServiceAccount{
-			ObjectMeta: v1.ObjectMeta{
+		serviceAccount := &k8s_core_types.ServiceAccount{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      serviceAccountRef.Name,
 				Namespace: serviceAccountRef.Namespace,
 			},
@@ -138,7 +138,7 @@ var _ = Describe("Remote service account client", func() {
 
 		saClient.
 			EXPECT().
-			Create(ctx, serviceAccount).
+			CreateServiceAccount(ctx, serviceAccount).
 			Return(nil)
 
 		rbacClient.

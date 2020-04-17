@@ -4,10 +4,9 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	securityv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"go.uber.org/zap"
@@ -15,8 +14,8 @@ import (
 
 func CsrControllerProviderLocal(
 	mgr mc_manager.AsyncManager,
-) (controller.VirtualMeshCertificateSigningRequestController, error) {
-	return controller.NewVirtualMeshCertificateSigningRequestController("local-csr-controller", mgr.Manager())
+) zephyr_security_controller.VirtualMeshCertificateSigningRequestEventWatcher {
+	return zephyr_security_controller.NewVirtualMeshCertificateSigningRequestEventWatcher("local-csr-controller", mgr.Manager())
 }
 
 func NewVirtualMeshCSRDataSourceFactory() VirtualMeshCSRDataSourceFactory {
@@ -25,51 +24,51 @@ func NewVirtualMeshCSRDataSourceFactory() VirtualMeshCSRDataSourceFactory {
 
 func NewVirtualMeshCSRDataSource(
 	ctx context.Context,
-	csrClient zephyr_security.VirtualMeshCSRClient,
+	csrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
 	processor VirtualMeshCSRProcessor,
-) controller.VirtualMeshCertificateSigningRequestEventHandler {
-	return &controller.VirtualMeshCertificateSigningRequestEventHandlerFuncs{
-		OnCreate: func(obj *securityv1alpha1.VirtualMeshCertificateSigningRequest) error {
+) zephyr_security_controller.VirtualMeshCertificateSigningRequestEventHandler {
+	return &zephyr_security_controller.VirtualMeshCertificateSigningRequestEventHandlerFuncs{
+		OnCreate: func(obj *zephyr_security.VirtualMeshCertificateSigningRequest) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
 			status := processor.ProcessUpsert(ctx, obj)
 			if status == nil {
 				logger.Debugw("csr event was not processed")
 				return nil
 			}
-			if status.GetComputedStatus().GetState() == core_types.Status_INVALID ||
-				status.GetComputedStatus().GetState() == core_types.Status_PROCESSING_ERROR {
+			if status.GetComputedStatus().GetState() == zephyr_core_types.Status_INVALID ||
+				status.GetComputedStatus().GetState() == zephyr_core_types.Status_PROCESSING_ERROR {
 				logger.Debugw("error handling csr event", zap.Error(eris.New(status.GetComputedStatus().GetMessage())))
 			}
 			obj.Status = *status
-			err := csrClient.UpdateStatus(ctx, obj)
+			err := csrClient.UpdateVirtualMeshCertificateSigningRequestStatus(ctx, obj)
 			if err != nil {
 				logger.Errorw("error updating csr status", zap.Error(err))
 			}
 			return nil
 		},
-		OnUpdate: func(_, new *securityv1alpha1.VirtualMeshCertificateSigningRequest) error {
+		OnUpdate: func(_, new *zephyr_security.VirtualMeshCertificateSigningRequest) error {
 			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
 			status := processor.ProcessUpsert(ctx, new)
 			if status == nil {
 				logger.Debugw("csr event was not processed")
 				return nil
 			}
-			if status.GetComputedStatus().GetState() == core_types.Status_INVALID ||
-				status.GetComputedStatus().GetState() == core_types.Status_PROCESSING_ERROR {
+			if status.GetComputedStatus().GetState() == zephyr_core_types.Status_INVALID ||
+				status.GetComputedStatus().GetState() == zephyr_core_types.Status_PROCESSING_ERROR {
 				logger.Debugw("error handling csr event", zap.Error(eris.New(status.GetComputedStatus().GetMessage())))
 			}
 			new.Status = *status
-			err := csrClient.UpdateStatus(ctx, new)
+			err := csrClient.UpdateVirtualMeshCertificateSigningRequestStatus(ctx, new)
 			if err != nil {
 				logger.Errorw("error updating csr status", zap.Error(err))
 			}
 			return nil
 		},
-		OnDelete: func(obj *securityv1alpha1.VirtualMeshCertificateSigningRequest) error {
+		OnDelete: func(obj *zephyr_security.VirtualMeshCertificateSigningRequest) error {
 			logging.BuildEventLogger(ctx, logging.DeleteEvent, obj).Debugf(UnexpectedEventMsg)
 			return nil
 		},
-		OnGeneric: func(obj *securityv1alpha1.VirtualMeshCertificateSigningRequest) error {
+		OnGeneric: func(obj *zephyr_security.VirtualMeshCertificateSigningRequest) error {
 			logging.BuildEventLogger(ctx, logging.GenericEvent, obj).Debugf(UnexpectedEventMsg)
 			return nil
 		},

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
+	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -42,7 +42,7 @@ type deployedVersionFinder struct {
 }
 
 func (d *deployedVersionFinder) OpenSourceVersion(ctx context.Context, installNamespace string) (string, error) {
-	deployment, err := d.deploymentClient.Get(ctx, client.ObjectKey{
+	deployment, err := d.deploymentClient.GetDeployment(ctx, client.ObjectKey{
 		Name:      meshNetworkingName,
 		Namespace: installNamespace,
 	})

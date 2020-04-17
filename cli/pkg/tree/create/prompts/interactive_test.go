@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 	mock_interactive "github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/prompts"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
@@ -29,7 +29,7 @@ var _ = Describe("Interactive", func() {
 
 	It("should select service selectors", func() {
 		meshServiceNames := []string{"service1", "service2", "service3"}
-		meshServiceNamesToRef := map[string]*core_types.ResourceRef{
+		meshServiceNamesToRef := map[string]*zephyr_core_types.ResourceRef{
 			meshServiceNames[0]: {
 				Name: meshServiceNames[0],
 			},
@@ -45,10 +45,10 @@ var _ = Describe("Interactive", func() {
 			EXPECT().
 			SelectMultipleValues(message, meshServiceNames).
 			Return(selectedNames, nil)
-		expectedServiceSelector := &core_types.ServiceSelector{
-			ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-				ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-					Services: []*core_types.ResourceRef{
+		expectedServiceSelector := &zephyr_core_types.ServiceSelector{
+			ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+				ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+					Services: []*zephyr_core_types.ResourceRef{
 						meshServiceNamesToRef[meshServiceNames[0]],
 						meshServiceNamesToRef[meshServiceNames[2]],
 					},

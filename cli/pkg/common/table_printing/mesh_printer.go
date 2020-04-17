@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 )
 
@@ -27,7 +27,7 @@ type meshPrinter struct {
 	commonHeaderRows []string
 }
 
-func (m *meshPrinter) Print(out io.Writer, meshes []*discovery_v1alpha1.Mesh) error {
+func (m *meshPrinter) Print(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
 
 	meshesByType := GetMeshByType(meshes)
 
@@ -42,7 +42,7 @@ func (m *meshPrinter) Print(out io.Writer, meshes []*discovery_v1alpha1.Mesh) er
 	return nil
 }
 
-func (m *meshPrinter) printIstioMeshes(out io.Writer, meshes []*discovery_v1alpha1.Mesh) error {
+func (m *meshPrinter) printIstioMeshes(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
 	// Do nothing if no meshes exist
 	if len(meshes) == 0 {
 		return nil
@@ -99,7 +99,7 @@ func (m *meshPrinter) buildCitadelInfo(info *types.MeshSpec_IstioMesh_CitadelInf
 	return strings.Join(lines, "\n")
 }
 
-func (m *meshPrinter) printLinkerdMeshes(out io.Writer, meshes []*discovery_v1alpha1.Mesh) error {
+func (m *meshPrinter) printLinkerdMeshes(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
 	// Do nothing if no meshes exist
 	if len(meshes) == 0 {
 		return nil
@@ -140,7 +140,7 @@ func (m *meshPrinter) printLinkerdMeshes(out io.Writer, meshes []*discovery_v1al
 	return nil
 }
 
-func (m *meshPrinter) printConsulConnectMeshes(out io.Writer, meshes []*discovery_v1alpha1.Mesh) error {
+func (m *meshPrinter) printConsulConnectMeshes(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
 	// Do nothing if no meshes exist
 	if len(meshes) == 0 {
 		return nil
@@ -181,7 +181,7 @@ func (m *meshPrinter) printConsulConnectMeshes(out io.Writer, meshes []*discover
 	return nil
 }
 
-func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*discovery_v1alpha1.Mesh) error {
+func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
 	// Do nothing if no meshes exist
 	if len(meshes) == 0 {
 		return nil
@@ -223,13 +223,13 @@ func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*discovery_v
 }
 
 type MeshByType struct {
-	Istio         []*discovery_v1alpha1.Mesh
-	Linkerd       []*discovery_v1alpha1.Mesh
-	ConsulConnect []*discovery_v1alpha1.Mesh
-	AwsAppMesh    []*discovery_v1alpha1.Mesh
+	Istio         []*zephyr_discovery.Mesh
+	Linkerd       []*zephyr_discovery.Mesh
+	ConsulConnect []*zephyr_discovery.Mesh
+	AwsAppMesh    []*zephyr_discovery.Mesh
 }
 
-func GetMeshByType(meshes []*discovery_v1alpha1.Mesh) *MeshByType {
+func GetMeshByType(meshes []*zephyr_discovery.Mesh) *MeshByType {
 	mbt := &MeshByType{}
 	for _, mesh := range meshes {
 		switch mesh.Spec.GetMeshType().(type) {

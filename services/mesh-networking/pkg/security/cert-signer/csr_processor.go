@@ -4,16 +4,15 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 )
 
 var (
-	VirtualMeshTrustBundleNotFoundMsg = func(err error, ref *core_types.ResourceRef) error {
+	VirtualMeshTrustBundleNotFoundMsg = func(err error, ref *zephyr_core_types.ResourceRef) error {
 		return eris.Wrapf(err, "could not get root ca bundle associated with virtual mesh %s.%s", ref.GetName(),
 			ref.GetNamespace())
 	}
@@ -26,8 +25,8 @@ func NewVirtualMeshCSRSigningProcessor(signer VirtualMeshCSRSigner) csr_generato
 	return &csr_generator.VirtualMeshCSRProcessorFuncs{
 		OnProcessUpsert: func(
 			ctx context.Context,
-			csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-		) *security_types.VirtualMeshCertificateSigningRequestStatus {
+			csr *zephyr_security.VirtualMeshCertificateSigningRequest,
+		) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
 			return signer.Sign(ctx, csr)
 		},
 		OnProcessDelete: nil,
@@ -36,13 +35,13 @@ func NewVirtualMeshCSRSigningProcessor(signer VirtualMeshCSRSigner) csr_generato
 
 type certSinger struct {
 	mgCertClient VirtualMeshCertClient
-	csrClient    zephyr_security.VirtualMeshCSRClient
+	csrClient    zephyr_security.VirtualMeshCertificateSigningRequestClient
 	signer       certgen.Signer
 }
 
 func NewVirtualMeshCSRSigner(
 	mgCertClient VirtualMeshCertClient,
-	csrClient zephyr_security.VirtualMeshCSRClient,
+	csrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
 	signer certgen.Signer,
 ) VirtualMeshCSRSigner {
 	return &certSinger{mgCertClient: mgCertClient, csrClient: csrClient, signer: signer}
@@ -50,16 +49,16 @@ func NewVirtualMeshCSRSigner(
 
 func (c *certSinger) Sign(
 	ctx context.Context,
-	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-) *security_types.VirtualMeshCertificateSigningRequestStatus {
+	obj *zephyr_security.VirtualMeshCertificateSigningRequest,
+) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
 	if !c.shouldProcess(obj) {
 		return nil
 	}
 	certData, err := c.mgCertClient.GetRootCaBundle(ctx, obj.Spec.GetVirtualMeshRef())
 	if err != nil {
 		wrapperErr := VirtualMeshTrustBundleNotFoundMsg(err, obj.Spec.GetVirtualMeshRef())
-		obj.Status.ComputedStatus = &core_types.Status{
-			State:   core_types.Status_INVALID,
+		obj.Status.ComputedStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_INVALID,
 			Message: wrapperErr.Error(),
 		}
 		return &obj.Status
@@ -75,30 +74,30 @@ func (c *certSinger) Sign(
 	)
 	if err != nil {
 		wrappedErr := FailedToSignCertError(err)
-		obj.Status.ComputedStatus = &core_types.Status{
-			State:   core_types.Status_INVALID,
+		obj.Status.ComputedStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_INVALID,
 			Message: wrappedErr.Error(),
 		}
 		return &obj.Status
 	}
 
 	// set the cert on the obj object to the cert, and update it
-	obj.Status.Response = &security_types.VirtualMeshCertificateSigningRequestStatus_Response{
+	obj.Status.Response = &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_Response{
 		CaCertificate:   cert,
 		RootCertificate: certData.RootCert,
 	}
-	obj.Status.ComputedStatus = &core_types.Status{
-		State: core_types.Status_ACCEPTED,
+	obj.Status.ComputedStatus = &zephyr_core_types.Status{
+		State: zephyr_core_types.Status_ACCEPTED,
 	}
 	return &obj.Status
 }
 
-func (c *certSinger) shouldProcess(csr *security_v1alpha1.VirtualMeshCertificateSigningRequest) bool {
+func (c *certSinger) shouldProcess(csr *zephyr_security.VirtualMeshCertificateSigningRequest) bool {
 	// TODO: make this configurable so third party workflows can be enabled
 	switch {
 	// Third party approval is not in the correct state
-	case csr.Status.GetThirdPartyApproval().GetApprovalStatus() != security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_APPROVED &&
-		csr.Status.GetThirdPartyApproval().GetApprovalStatus() != security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_PENDING:
+	case csr.Status.GetThirdPartyApproval().GetApprovalStatus() != zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_APPROVED &&
+		csr.Status.GetThirdPartyApproval().GetApprovalStatus() != zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_PENDING:
 		return false
 	// CSR data has not yet been populated
 	case len(csr.Spec.GetCsrData()) == 0:
@@ -117,7 +116,7 @@ func (c *certSinger) shouldProcess(csr *security_v1alpha1.VirtualMeshCertificate
 
 func (c *certSinger) ProcessDelete(
 	ctx context.Context,
-	csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-) (computedStatus *security_types.VirtualMeshCertificateSigningRequestStatus) {
+	csr *zephyr_security.VirtualMeshCertificateSigningRequest,
+) (computedStatus *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus) {
 	return
 }

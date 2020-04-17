@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/rest"
@@ -70,7 +70,7 @@ func UninstallCmd(
 			}
 
 			// find all the kube clusters that we need to de-register
-			kubeClusters, err := masterKubeClients.KubeClusterClient.List(ctx, client.InNamespace(opts.Root.WriteNamespace))
+			kubeClusters, err := masterKubeClients.KubeClusterClient.ListKubernetesCluster(ctx, client.InNamespace(opts.Root.WriteNamespace))
 
 			// List will only return a NotFound error if the CRD is not registered
 			// if there are no resources, then List returns an object with an empty .Items field and a nil error
@@ -80,7 +80,7 @@ func UninstallCmd(
 				fmt.Fprintf(out, "Failed to find registered clusters - Continuing...\n\t(%s)\n", err.Error())
 
 				// failed to find the clusters, but continue through to the other steps, making this one a no-op
-				kubeClusters = &v1alpha1.KubernetesClusterList{}
+				kubeClusters = &zephyr_discovery.KubernetesClusterList{}
 				uninstallErrorOccured = true
 			} else {
 				// can only do this step if we definitely have kube clusters to read from
@@ -163,7 +163,7 @@ func cleanUpManagementPlaneComponents(out io.Writer, masterKubeClients *common.K
 	return nil
 }
 
-func deregisterClusters(ctx context.Context, out io.Writer, kubeClusters *v1alpha1.KubernetesClusterList, masterKubeClients *common.KubeClients) error {
+func deregisterClusters(ctx context.Context, out io.Writer, kubeClusters *zephyr_discovery.KubernetesClusterList, masterKubeClients *common.KubeClients) error {
 	if len(kubeClusters.Items) == 0 {
 		// don't want to print anything out in this case
 		return nil
@@ -185,7 +185,7 @@ func deregisterClusters(ctx context.Context, out io.Writer, kubeClusters *v1alph
 func removeManagementPlaneNamespace(ctx context.Context, out io.Writer, masterKubeClients *common.KubeClients, opts *options.Options) error {
 	if opts.SmhUninstall.RemoveNamespace {
 
-		ns, err := masterKubeClients.NamespaceClient.Get(ctx, opts.Root.WriteNamespace)
+		ns, err := masterKubeClients.NamespaceClient.GetNamespace(ctx, client.ObjectKey{Name: opts.Root.WriteNamespace})
 
 		// if the namespace is already gone then we shouldn't report an error
 		if errors.IsNotFound(err) {
@@ -194,7 +194,7 @@ func removeManagementPlaneNamespace(ctx context.Context, out io.Writer, masterKu
 			return FailedToRemoveNamespace(err, opts.Root.WriteNamespace)
 		}
 
-		if err = masterKubeClients.NamespaceClient.Delete(ctx, ns); err != nil {
+		if err = masterKubeClients.NamespaceClient.DeleteNamespace(ctx, client.ObjectKey{Name: ns.GetName()}); err != nil {
 			return FailedToRemoveNamespace(err, opts.Root.WriteNamespace)
 		}
 

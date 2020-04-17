@@ -10,8 +10,8 @@ import (
 	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -51,7 +51,7 @@ var _ = Describe("Get Cluster Cmd", func() {
 
 	It("will call the kube cluster printer with the proper data", func() {
 
-		clusters := []*discovery_v1alpha1.KubernetesCluster{
+		clusters := []*zephyr_discovery.KubernetesCluster{
 			{
 				ObjectMeta: v1.ObjectMeta{
 					Name: "mesh-1",
@@ -67,9 +67,9 @@ var _ = Describe("Get Cluster Cmd", func() {
 			GetRestConfigForContext("", "").
 			Return(nil, nil)
 		mockClusterClient.EXPECT().
-			List(ctx).
-			Return(&discovery_v1alpha1.KubernetesClusterList{
-				Items: []discovery_v1alpha1.KubernetesCluster{*clusters[0], *clusters[1]},
+			ListKubernetesCluster(ctx).
+			Return(&zephyr_discovery.KubernetesClusterList{
+				Items: []zephyr_discovery.KubernetesCluster{*clusters[0], *clusters[1]},
 			}, nil)
 		mockClusterPrinter.EXPECT().
 			Print(gomock.Any(), clusters).
