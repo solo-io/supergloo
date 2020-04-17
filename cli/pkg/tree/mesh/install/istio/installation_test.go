@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	mock_files "github.com/solo-io/service-mesh-hub/cli/pkg/common/files/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	install_istio "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio"
@@ -39,7 +40,7 @@ type necessaryMocks struct {
 	deploymentClient       *mock_server.MockDeploymentClient
 	imageNameParser        *mock_docker.MockImageNameParser
 	manifestBuilder        *mock_operator.MockInstallerManifestBuilder
-	fileReader             *cli_mocks.MockFileReader
+	fileReader             *mock_files.MockFileReader
 
 	meshctl cli_test.MockMeshctl
 }
@@ -70,7 +71,7 @@ var _ = Describe("Mesh installation", func() {
 			deploymentClient := mock_server.NewMockDeploymentClient(ctrl)
 			imageNameParser := mock_docker.NewMockImageNameParser(ctrl)
 			operatorManifestBuilder := mock_operator.NewMockInstallerManifestBuilder(ctrl)
-			fileReader := cli_mocks.NewMockFileReader(ctrl)
+			fileReader := mock_files.NewMockFileReader(ctrl)
 
 			unstructuredClientFactory := func(_ resource.RESTClientGetter) kube.UnstructuredKubeClient {
 				return unstructuredClient
