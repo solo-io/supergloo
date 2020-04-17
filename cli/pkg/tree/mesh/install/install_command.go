@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	install_istio "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
@@ -41,7 +42,7 @@ func MeshInstallRootCmd(
 	in io.Reader,
 	kubeLoader common_config.KubeLoader,
 	imageNameParser docker.ImageNameParser,
-	fileReader common.FileReader,
+	fileReader files.FileReader,
 ) MeshInstallCommand {
 	installCommand := cliconstants.MeshInstallCommand(validMeshTypes)
 	cmd := &cobra.Command{

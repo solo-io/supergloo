@@ -2,12 +2,14 @@ package auth_test
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
+	mock_files "github.com/solo-io/service-mesh-hub/cli/pkg/common/files/mocks"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -53,7 +55,7 @@ var _ = Describe("Config creator", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient, nil)
 
 		saClient.
 			EXPECT().
@@ -78,7 +80,7 @@ var _ = Describe("Config creator", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient, nil)
 
 		attemptsRemaining := 3
 		saClient.
@@ -108,11 +110,52 @@ var _ = Describe("Config creator", func() {
 		Expect([]byte(newCfg.BearerToken)).To(Equal(secret.Data[auth.SecretTokenKey]))
 	})
 
+	It("works when the service account is immediately ready, and the CA data is in a file", func() {
+		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
+		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
+		fileReader := mock_files.NewMockFileReader(ctrl)
+
+		fileTestKubeConfig := &rest.Config{
+			Host: "www.grahams-a-great-programmer.edu",
+			TLSClientConfig: rest.TLSClientConfig{
+				CAFile:   "path-to-ca-file",
+				CertData: []byte("super secure cert data"),
+			},
+		}
+		caData := []byte("ca-file-data")
+		base64CaData := base64.StdEncoding.EncodeToString(caData)
+
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient, fileReader)
+
+		saClient.
+			EXPECT().
+			GetServiceAccount(ctx, client.ObjectKey{Name: serviceAccountRef.Name, Namespace: serviceAccountRef.Namespace}).
+			Return(&k8s_core_types.ServiceAccount{
+				Secrets: []k8s_core_types.ObjectReference{tokenSecretRef},
+			}, nil)
+
+		secretClient.
+			EXPECT().
+			GetSecret(ctx, client.ObjectKey{Name: tokenSecretRef.Name, Namespace: serviceAccountRef.Namespace}).
+			Return(secret, nil)
+
+		fileReader.EXPECT().
+			Read(fileTestKubeConfig.TLSClientConfig.CAFile).
+			Return(base64CaData, nil)
+
+		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, fileTestKubeConfig, serviceAccountRef)
+
+		Expect(err).NotTo(HaveOccurred())
+		Expect(newCfg.TLSClientConfig.CertData).To(BeEmpty())
+		Expect(newCfg.TLSClientConfig.CAData).To(Equal(caData))
+		Expect([]byte(newCfg.BearerToken)).To(Equal(secret.Data[auth.SecretTokenKey]))
+	})
+
 	It("returns an error when the secret is malformed", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient, nil)
 
 		saClient.
 			EXPECT().
@@ -137,7 +180,7 @@ var _ = Describe("Config creator", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient, nil)
 
 		saClient.
 			EXPECT().

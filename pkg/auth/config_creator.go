@@ -2,11 +2,12 @@ package auth
 
 import (
 	"context"
+	"encoding/base64"
 	"time"
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -31,17 +32,19 @@ var (
 func NewRemoteAuthorityConfigCreator(
 	secretClient k8s_core.SecretClient,
 	serviceAccountClient k8s_core.ServiceAccountClient,
+	fileReader files.FileReader,
 ) RemoteAuthorityConfigCreator {
 	return &remoteAuthorityConfigCreator{
 		serviceAccountClient: serviceAccountClient,
 		secretClient:         secretClient,
+		fileReader:           fileReader,
 	}
 }
 
 type remoteAuthorityConfigCreator struct {
 	secretClient         k8s_core.SecretClient
 	serviceAccountClient k8s_core.ServiceAccountClient
-	fileReader           common.FileReader
+	fileReader           files.FileReader
 }
 
 func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
@@ -68,7 +71,11 @@ func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 	// once in cluster
 	// For context see: https://github.com/solo-io/service-mesh-hub/issues/590
 	if len(newCfg.TLSClientConfig.CAData) == 0 && newCfg.TLSClientConfig.CAFile != "" {
-		data, err := r.fileReader.Read(newCfg.TLSClientConfig.CAFile)
+		bytes, err := r.fileReader.Read(newCfg.TLSClientConfig.CAFile)
+		if err != nil {
+			return nil, err
+		}
+		data, err := base64.StdEncoding.DecodeString(string(bytes))
 		if err != nil {
 			return nil, err
 		}
