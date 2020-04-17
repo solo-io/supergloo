@@ -6,6 +6,7 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -40,6 +41,7 @@ func NewRemoteAuthorityConfigCreator(
 type remoteAuthorityConfigCreator struct {
 	secretClient         k8s_core.SecretClient
 	serviceAccountClient k8s_core.ServiceAccountClient
+	fileReader           common.FileReader
 }
 
 func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
@@ -61,6 +63,17 @@ func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 	// make a copy of the config we were handed, with all user credentials removed
 	// https://github.com/kubernetes/client-go/blob/9bbcc2938d41daa40d3080a1b6524afbe4e27bd9/rest/config.go#L542
 	newCfg := rest.AnonymousClientConfig(targetClusterCfg)
+
+	// If CAData is present in file, rather than bytes, need to transfer it into bytes so it won't need to be read
+	// once in cluster
+	// For context see: https://github.com/solo-io/service-mesh-hub/issues/590
+	if len(newCfg.TLSClientConfig.CAData) == 0 && newCfg.TLSClientConfig.CAFile != "" {
+		data, err := r.fileReader.Read(newCfg.TLSClientConfig.CAFile)
+		if err != nil {
+			return nil, err
+		}
+		newCfg.TLSClientConfig.CAData = data
+	}
 
 	// authorize ourselves as the service account we were given
 	newCfg.BearerToken = string(serviceAccountToken)
