@@ -58,8 +58,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-
-func DefaultKubeClientsFactory(fileReader files.FileReader) func (masterConfig *rest.Config, writeNamespace string) (clients *common.KubeClients, err error) {
+func DefaultKubeClientsFactory(fileReader files.FileReader) func(masterConfig *rest.Config, writeNamespace string) (clients *common.KubeClients, err error) {
 	return func(masterConfig *rest.Config, writeNamespace string) (clients *common.KubeClients, err error) {
 		wire.Build(
 			kubernetes.NewForConfig,
