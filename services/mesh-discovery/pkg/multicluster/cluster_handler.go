@@ -6,24 +6,16 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_apps_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
-	mc_predicate "github.com/solo-io/service-mesh-hub/services/common/multicluster/predicate"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
 	mesh_service "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/wire"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
-)
-
-var (
-	// visible for testing
-	MeshPredicates = []predicate.Predicate{
-		mc_predicate.BlacklistedNamespacePredicateProvider(mc_predicate.KubeBlacklistedNamespaces),
-	}
 )
 
 type MeshWorkloadScannerFactoryImplementations map[core_types.MeshType]mesh_workload.MeshWorkloadScannerFactory
@@ -88,6 +80,7 @@ type clusterDependentDeps struct {
 	serviceEventWatcher    k8s_core_controller.ServiceEventWatcher
 	serviceClient          k8s_core.ServiceClient
 	podClient              k8s_core.PodClient
+	deploymentClient       k8s_apps.DeploymentClient
 }
 
 func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {
@@ -101,6 +94,7 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		m.meshScanners,
 		m.localMeshClient,
 		mgr.Manager().GetClient(),
+		initializedDeps.deploymentClient,
 	)
 
 	meshWorkloadFinder := mesh_workload.NewMeshWorkloadFinder(
@@ -122,7 +116,7 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		m.localMeshClient,
 	)
 
-	err = meshFinder.StartDiscovery(initializedDeps.deploymentEventWatcher, MeshPredicates)
+	err = meshFinder.StartDiscovery(initializedDeps.deploymentEventWatcher)
 	if err != nil {
 		return err
 	}
@@ -151,18 +145,21 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 	serviceEventWatcher := m.discoveryContext.EventWatcherFactories.ServiceEventWatcherFactory.Build(mgr, clusterName)
 
 	remoteClient := mgr.Manager().GetClient()
+
+	serviceClient := m.discoveryContext.ClientFactories.ServiceClientFactory(remoteClient)
+	podClient := m.discoveryContext.ClientFactories.PodClientFactory(remoteClient)
+	deploymentClient := m.discoveryContext.ClientFactories.DeploymentClientFactory(remoteClient)
+	replicaSetClient := m.discoveryContext.ClientFactories.ReplicaSetClientFactory(remoteClient)
+
 	meshWorkloadScanners := make(mesh_workload.MeshWorkloadScannerImplementations)
 	for meshType, scannerFactory := range m.meshWorkloadScannerFactories {
 		ownerFetcher := m.discoveryContext.ClientFactories.OwnerFetcherClientFactory(
-			m.discoveryContext.ClientFactories.DeploymentClientFactory(remoteClient),
-			m.discoveryContext.ClientFactories.ReplicaSetClientFactory(remoteClient),
+			deploymentClient,
+			replicaSetClient,
 		)
 
 		meshWorkloadScanners[meshType] = scannerFactory(ownerFetcher)
 	}
-
-	serviceClient := m.discoveryContext.ClientFactories.ServiceClientFactory(remoteClient)
-	podClient := m.discoveryContext.ClientFactories.PodClientFactory(remoteClient)
 
 	return &clusterDependentDeps{
 		deploymentEventWatcher: deploymentEventWatcher,
@@ -171,5 +168,6 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 		serviceEventWatcher:    serviceEventWatcher,
 		serviceClient:          serviceClient,
 		podClient:              podClient,
+		deploymentClient:       deploymentClient,
 	}, nil
 }

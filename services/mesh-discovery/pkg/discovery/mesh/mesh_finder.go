@@ -3,17 +3,17 @@ package mesh
 import (
 	"context"
 
+	"github.com/hashicorp/go-multierror"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
-
-	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"go.uber.org/zap"
 	apps_v1 "k8s.io/api/apps/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // a `MeshFinder` receives deployment events from a controller that it gets attached to
@@ -25,29 +25,31 @@ func NewMeshFinder(
 	meshScanners []MeshScanner,
 	localMeshClient zephyr_discovery.MeshClient,
 	clusterClient client.Client,
+	deploymentClient k8s_apps.DeploymentClient,
 ) MeshFinder {
 	return &meshFinder{
-		clusterName:     clusterName,
-		meshScanners:    meshScanners,
-		localMeshClient: localMeshClient,
-		ctx:             ctx,
-		clusterClient:   clusterClient,
+		clusterName:      clusterName,
+		meshScanners:     meshScanners,
+		localMeshClient:  localMeshClient,
+		ctx:              ctx,
+		clusterClient:    clusterClient,
+		deploymentClient: deploymentClient,
 	}
 }
 
 type meshFinder struct {
-	clusterName     string
-	meshScanners    []MeshScanner
-	localMeshClient zephyr_discovery.MeshClient
-	ctx             context.Context
-	clusterClient   client.Client
+	clusterName      string
+	meshScanners     []MeshScanner
+	localMeshClient  zephyr_discovery.MeshClient
+	ctx              context.Context
+	clusterClient    client.Client
+	deploymentClient k8s_apps.DeploymentClient
 }
 
-func (m *meshFinder) StartDiscovery(deploymentEventWatcher controller.DeploymentEventWatcher, predicates []predicate.Predicate) error {
+func (m *meshFinder) StartDiscovery(deploymentEventWatcher controller.DeploymentEventWatcher) error {
 	return deploymentEventWatcher.AddEventHandler(
 		m.ctx,
 		m,
-		predicates...,
 	)
 }
 
@@ -71,7 +73,7 @@ func (m *meshFinder) DeleteDeployment(deployment *apps_v1.Deployment) error {
 	}
 
 	if discoveredMesh != nil {
-		err = m.localMeshClient.DeleteMesh(m.ctx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(discoveredMesh.ObjectMeta)))
+		err = m.localMeshClient.DeleteMesh(m.ctx, clients.ObjectMetaToObjectKey(discoveredMesh.ObjectMeta))
 		if err != nil {
 			logger.Errorf("Error while deleting mesh: %+v", err)
 		}
@@ -81,6 +83,30 @@ func (m *meshFinder) DeleteDeployment(deployment *apps_v1.Deployment) error {
 
 func (m *meshFinder) GenericDeployment(deployment *apps_v1.Deployment) error {
 	// not implemented- we haven't implemented generic events for this controller
+	return nil
+}
+
+// When the pod starts up, we reconcile the existing state of discovered resources with a newly-computed set of discovered resources.
+// If the newly-computed set is missing entries from the current state, we must have missed an event, and we must reconcile the two.
+func (m *meshFinder) reconcileExistingState() error {
+	allMeshesOnCluster, err := m.localMeshClient.ListMesh(m.ctx, client.MatchingLabels{constants.CLUSTER: m.clusterName})
+	if err != nil {
+		return err
+	}
+
+	if len(allMeshesOnCluster.Items) == 0 {
+		// we have not discovered anything here yet, nothing to reconcile
+		return nil
+	}
+
+	allDeployments, err := m.deploymentClient.ListDeployment(m.ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, _ = range allDeployments.Items {
+		continue // TODO
+	}
 	return nil
 }
 
@@ -100,6 +126,13 @@ func (m *meshFinder) discoverAndUpsertMesh(deployment *apps_v1.Deployment, logge
 	} else if discoveredMesh == nil {
 		return nil
 	}
+
+	if discoveredMesh.Labels == nil {
+		discoveredMesh.Labels = map[string]string{}
+	}
+
+	discoveredMesh.Labels[constants.CLUSTER] = m.clusterName
+
 	err = m.localMeshClient.UpsertMeshSpec(m.ctx, discoveredMesh)
 	if err != nil {
 		logger.Errorw("could not create Mesh CR for deployment",

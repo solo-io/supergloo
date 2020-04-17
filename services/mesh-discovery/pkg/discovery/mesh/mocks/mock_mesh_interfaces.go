@@ -6,13 +6,13 @@ package mock_mesh
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	v1 "k8s.io/api/apps/v1"
-	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
-	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // MockMeshFinder is a mock of MeshFinder interface
@@ -39,17 +39,17 @@ func (m *MockMeshFinder) EXPECT() *MockMeshFinderMockRecorder {
 }
 
 // StartDiscovery mocks base method
-func (m *MockMeshFinder) StartDiscovery(deploymentEventWatcher controller.DeploymentEventWatcher, predicates []predicate.Predicate) error {
+func (m *MockMeshFinder) StartDiscovery(deploymentEventWatcher controller.DeploymentEventWatcher) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartDiscovery", deploymentEventWatcher, predicates)
+	ret := m.ctrl.Call(m, "StartDiscovery", deploymentEventWatcher)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartDiscovery indicates an expected call of StartDiscovery
-func (mr *MockMeshFinderMockRecorder) StartDiscovery(deploymentEventWatcher, predicates interface{}) *gomock.Call {
+func (mr *MockMeshFinderMockRecorder) StartDiscovery(deploymentEventWatcher interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshFinder)(nil).StartDiscovery), deploymentEventWatcher, predicates)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshFinder)(nil).StartDiscovery), deploymentEventWatcher)
 }
 
 // CreateDeployment mocks base method
