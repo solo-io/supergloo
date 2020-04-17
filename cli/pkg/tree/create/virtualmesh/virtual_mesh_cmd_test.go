@@ -13,13 +13,13 @@ import (
 	mock_resource_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing/mocks"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 )
@@ -68,12 +68,12 @@ var _ = Describe("VirtualMeshCmd", func() {
 		It("should interactively create client", func() {
 			displayName := "display-name"
 			targetRestConfig := &rest.Config{}
-			meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{
+			meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{
 				{ObjectMeta: metav1.ObjectMeta{Name: "name1"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name2"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name3"}},
 			}}
-			expectedMeshRefs := []*types.ResourceRef{
+			expectedMeshRefs := []*zephyr_core_types.ResourceRef{
 				{Name: meshList.Items[0].GetName(), Namespace: env.GetWriteNamespace()},
 				{Name: meshList.Items[2].GetName(), Namespace: env.GetWriteNamespace()},
 			}
@@ -86,7 +86,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 					},
 				},
 			}
-			expectedVM := &networking_v1alpha1.VirtualMesh{
+			expectedVM := &zephyr_networking.VirtualMesh{
 				TypeMeta: metav1.TypeMeta{Kind: "VirtualMesh"},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      displayName,
@@ -106,7 +106,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 			}
 
 			mockKubeLoader.EXPECT().GetRestConfigForContext("", "").Return(targetRestConfig, nil)
-			mockMeshClient.EXPECT().List(ctx).Return(meshList, nil)
+			mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
 			mockInteractivePrompt.
 				EXPECT().
 				PromptValueWithValidator(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -132,7 +132,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 				PromptRequiredValue(gomock.Any()).
 				Return(expectedCA.GetBuiltin().GetOrgName(), nil)
 
-			mockVirtualMeshClient.EXPECT().Create(ctx, expectedVM).Return(nil)
+			mockVirtualMeshClient.EXPECT().CreateVirtualMesh(ctx, expectedVM).Return(nil)
 
 			_, err := meshctl.Invoke("create virtualmesh")
 			Expect(err).ToNot(HaveOccurred())
@@ -141,12 +141,12 @@ var _ = Describe("VirtualMeshCmd", func() {
 		It("should interactively generate client and output for dry-run", func() {
 			displayName := "display-name"
 			targetRestConfig := &rest.Config{}
-			meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{
+			meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{
 				{ObjectMeta: metav1.ObjectMeta{Name: "name1"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name2"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name3"}},
 			}}
-			expectedMeshRefs := []*types.ResourceRef{
+			expectedMeshRefs := []*zephyr_core_types.ResourceRef{
 				{Name: meshList.Items[0].GetName(), Namespace: env.GetWriteNamespace()},
 				{Name: meshList.Items[2].GetName(), Namespace: env.GetWriteNamespace()},
 			}
@@ -159,7 +159,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 					},
 				},
 			}
-			expectedVM := &networking_v1alpha1.VirtualMesh{
+			expectedVM := &zephyr_networking.VirtualMesh{
 				TypeMeta: metav1.TypeMeta{Kind: "VirtualMesh"},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      displayName,
@@ -179,7 +179,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 			}
 
 			mockKubeLoader.EXPECT().GetRestConfigForContext("", "").Return(targetRestConfig, nil)
-			mockMeshClient.EXPECT().List(ctx).Return(meshList, nil)
+			mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
 			mockInteractivePrompt.
 				EXPECT().
 				PromptValueWithValidator(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -214,12 +214,12 @@ var _ = Describe("VirtualMeshCmd", func() {
 		It("should interactively generate client and output for dry-run", func() {
 			displayName := "display-name"
 			targetRestConfig := &rest.Config{}
-			meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{
+			meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{
 				{ObjectMeta: metav1.ObjectMeta{Name: "name1"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name2"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "name3"}},
 			}}
-			expectedMeshRefs := []*types.ResourceRef{
+			expectedMeshRefs := []*zephyr_core_types.ResourceRef{
 				{Name: meshList.Items[0].GetName(), Namespace: env.GetWriteNamespace()},
 				{Name: meshList.Items[2].GetName(), Namespace: env.GetWriteNamespace()},
 			}
@@ -232,7 +232,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 					},
 				},
 			}
-			expectedVM := &networking_v1alpha1.VirtualMesh{
+			expectedVM := &zephyr_networking.VirtualMesh{
 				TypeMeta: metav1.TypeMeta{Kind: "VirtualMesh"},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      displayName,
@@ -252,7 +252,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 			}
 
 			mockKubeLoader.EXPECT().GetRestConfigForContext("", "").Return(targetRestConfig, nil)
-			mockMeshClient.EXPECT().List(ctx).Return(meshList, nil)
+			mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
 			mockInteractivePrompt.
 				EXPECT().
 				PromptValueWithValidator(gomock.Any(), gomock.Any(), gomock.Any()).

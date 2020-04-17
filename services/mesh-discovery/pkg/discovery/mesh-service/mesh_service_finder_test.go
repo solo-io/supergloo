@@ -6,35 +6,35 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
-	discovery_mocks "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mesh_service "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service"
+	discovery_mocks "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_corev1 "github.com/solo-io/service-mesh-hub/test/mocks/corev1"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
-	corev1 "k8s.io/api/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type mocks struct {
-	serviceClient          *mock_kubernetes_core.MockServiceClient
-	meshServiceClient      *discovery_mocks.MockMeshServiceClient
-	meshWorkloadClient     *discovery_mocks.MockMeshWorkloadClient
-	meshClient             *discovery_mocks.MockMeshClient
-	serviceController      *mock_corev1.MockServiceController
-	meshWorkloadController *mock_zephyr_discovery.MockMeshWorkloadController
+	serviceClient            *mock_kubernetes_core.MockServiceClient
+	meshServiceClient        *discovery_mocks.MockMeshServiceClient
+	meshWorkloadClient       *discovery_mocks.MockMeshWorkloadClient
+	meshClient               *discovery_mocks.MockMeshClient
+	serviceEventWatcher      *mock_corev1.MockServiceEventWatcher
+	meshWorkloadEventWatcher *mock_zephyr_discovery.MockMeshWorkloadEventWatcher
 
 	meshServiceFinder mesh_service.MeshServiceFinder
 
-	serviceCallback      func(service *corev1.Service) error
-	meshWorkloadCallback func(meshWorkload *v1alpha1.MeshWorkload) error
+	serviceCallback      func(service *k8s_core_types.Service) error
+	meshWorkloadCallback func(meshWorkload *zephyr_discovery.MeshWorkload) error
 }
 
 var _ = Describe("Mesh Service Finder", func() {
@@ -57,14 +57,14 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshServiceClient := discovery_mocks.NewMockMeshServiceClient(ctrl)
 		meshWorkloadClient := discovery_mocks.NewMockMeshWorkloadClient(ctrl)
 		meshClient := discovery_mocks.NewMockMeshClient(ctrl)
-		serviceController := mock_corev1.NewMockServiceController(ctrl)
-		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadController(ctrl)
+		serviceEventWatcher := mock_corev1.NewMockServiceEventWatcher(ctrl)
+		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 
-		var serviceCallback func(service *corev1.Service) error
-		var meshWorkloadCallback func(meshWorkload *v1alpha1.MeshWorkload) error
+		var serviceCallback func(service *k8s_core_types.Service) error
+		var meshWorkloadCallback func(meshWorkload *zephyr_discovery.MeshWorkload) error
 
 		// need to grab the callbacks so we can hook into them and send events
-		serviceController.
+		serviceEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, serviceEventHandler *mesh_service.ServiceEventHandler) error {
@@ -72,7 +72,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				return nil
 			})
 
-		meshWorkloadController.
+		meshWorkloadEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, mwEventHandler *mesh_service.MeshWorkloadEventHandler) error {
@@ -91,18 +91,18 @@ var _ = Describe("Mesh Service Finder", func() {
 		)
 
 		err := meshServiceFinder.StartDiscovery(
-			serviceController,
-			meshWorkloadController,
+			serviceEventWatcher,
+			meshWorkloadEventWatcher,
 		)
 		Expect(err).NotTo(HaveOccurred())
 
 		return mocks{
-			serviceClient:          serviceClient,
-			meshServiceClient:      meshServiceClient,
-			serviceController:      serviceController,
-			meshWorkloadController: meshWorkloadController,
-			meshWorkloadClient:     meshWorkloadClient,
-			meshClient:             meshClient,
+			serviceClient:            serviceClient,
+			meshServiceClient:        meshServiceClient,
+			serviceEventWatcher:      serviceEventWatcher,
+			meshWorkloadEventWatcher: meshWorkloadEventWatcher,
+			meshWorkloadClient:       meshWorkloadClient,
+			meshClient:               meshClient,
 
 			meshServiceFinder: meshServiceFinder,
 
@@ -115,60 +115,60 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("can associate a mesh workload with an existing service", func() {
 			mocks := setupMocks()
 
-			mesh := &v1alpha1.Mesh{
-				ObjectMeta: metav1.ObjectMeta{
+			mesh := &zephyr_discovery.Mesh{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-test-mesh",
 					Namespace: "isito-system",
 				},
-				Spec: discovery_types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &discovery_types.MeshSpec_Linkerd{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
-			meshWorkloadEvent := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"label":                "value",
 							"version":              "v1",
 							"istio-injected-label": "doesn't matter",
 						},
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      mesh.Name,
 						Namespace: mesh.Namespace,
 					},
 				},
 			}
-			meshWorkloadEventV2 := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			meshWorkloadEventV2 := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"label":                "value",
 							"version":              "v2",
 							"istio-injected-label": "doesn't matter",
 						},
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      mesh.Name,
 						Namespace: mesh.Namespace,
 					},
 				},
 			}
 
-			wrongService := corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
+			wrongService := k8s_core_types.Service{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "wrong-service",
 					Namespace: "ns1",
 				},
-				Spec: corev1.ServiceSpec{
+				Spec: k8s_core_types.ServiceSpec{
 					Selector: map[string]string{
 						"other-label": "value",
 					},
-					Ports: []corev1.ServicePort{{
+					Ports: []k8s_core_types.ServicePort{{
 						Name:       "port-1",
 						Protocol:   "TCP",
 						Port:       80,
@@ -177,8 +177,8 @@ var _ = Describe("Mesh Service Finder", func() {
 					}},
 				},
 			}
-			rightService := corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
+			rightService := k8s_core_types.Service{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "right-service",
 					Namespace: "ns1",
 					Labels: map[string]string{
@@ -186,11 +186,11 @@ var _ = Describe("Mesh Service Finder", func() {
 						"k2": "v2",
 					},
 				},
-				Spec: corev1.ServiceSpec{
+				Spec: k8s_core_types.ServiceSpec{
 					Selector: map[string]string{
 						"label": "value",
 					},
-					Ports: []corev1.ServicePort{{
+					Ports: []k8s_core_types.ServicePort{{
 						Name:       "correct-service-port",
 						Protocol:   "TCP",
 						Port:       443,
@@ -204,57 +204,57 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.serviceClient.
 				EXPECT().
-				List(ctx).
-				Return(&corev1.ServiceList{
-					Items: []corev1.Service{wrongService, rightService},
+				ListService(ctx).
+				Return(&k8s_core_types.ServiceList{
+					Items: []k8s_core_types.Service{wrongService, rightService},
 				}, nil)
 
 			mocks.meshWorkloadClient.
 				EXPECT().
-				List(ctx).
-				Return(&v1alpha1.MeshWorkloadList{Items: []v1alpha1.MeshWorkload{
+				ListMeshWorkload(ctx).
+				Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{
 					*meshWorkloadEvent,
 					*meshWorkloadEventV2,
 				}}, nil)
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
 			mocks.meshServiceClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMeshService(ctx, client.ObjectKey{
 					Name:      meshServiceName,
 					Namespace: env.GetWriteNamespace(),
 				}).
-				Return(nil, errors.NewNotFound(v1alpha1.Resource("meshservice"), meshServiceName))
+				Return(nil, errors.NewNotFound(zephyr_discovery.Resource("meshservice"), meshServiceName))
 
 			mocks.meshServiceClient.
 				EXPECT().
-				Create(ctx, &v1alpha1.MeshService{
-					ObjectMeta: metav1.ObjectMeta{
+				CreateMeshService(ctx, &zephyr_discovery.MeshService{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      meshServiceName,
 						Namespace: env.GetWriteNamespace(),
-						Labels:    mesh_service.DiscoveryLabels(core_types.MeshType_LINKERD, clusterName, rightService.GetName(), rightService.GetNamespace()),
+						Labels:    mesh_service.DiscoveryLabels(zephyr_core_types.MeshType_LINKERD, clusterName, rightService.GetName(), rightService.GetNamespace()),
 					},
-					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.MeshServiceSpec_KubeService{
-							Ref: &core_types.ResourceRef{
+					Spec: zephyr_discovery_types.MeshServiceSpec{
+						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &zephyr_core_types.ResourceRef{
 								Name:      rightService.GetName(),
 								Namespace: rightService.GetNamespace(),
 								Cluster:   clusterName,
 							},
 							WorkloadSelectorLabels: rightService.Spec.Selector,
 							Labels:                 rightService.GetLabels(),
-							Ports: []*discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+							Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 								Name:     "correct-service-port",
 								Port:     443,
 								Protocol: "TCP",
 							}},
 						},
 						Mesh: meshWorkloadEvent.Spec.Mesh,
-						Subsets: map[string]*discovery_types.MeshServiceSpec_Subset{
+						Subsets: map[string]*zephyr_discovery_types.MeshServiceSpec_Subset{
 							"version": {
 								Values: []string{"v1", "v2"},
 							},
@@ -271,40 +271,40 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("does not associate a mesh workload to any service if the labels don't match", func() {
 			mocks := setupMocks()
 
-			mesh := &v1alpha1.Mesh{
-				ObjectMeta: metav1.ObjectMeta{
+			mesh := &zephyr_discovery.Mesh{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-test-mesh",
 					Namespace: "isito-system",
 				},
-				Spec: discovery_types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &discovery_types.MeshSpec_Linkerd{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
-			meshWorkloadEvent := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"label":                "value",
 							"istio-injected-label": "doesn't matter",
 						},
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      mesh.Name,
 						Namespace: mesh.Namespace,
 					},
 				},
 			}
 
-			wrongService := corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
+			wrongService := k8s_core_types.Service{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "wrong-service",
 					Namespace: "ns1",
 				},
-				Spec: corev1.ServiceSpec{
+				Spec: k8s_core_types.ServiceSpec{
 					Selector: map[string]string{
 						"other-label": "value",
 					},
@@ -313,14 +313,14 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.serviceClient.
 				EXPECT().
-				List(ctx).
-				Return(&corev1.ServiceList{
-					Items: []corev1.Service{wrongService, wrongService},
+				ListService(ctx).
+				Return(&k8s_core_types.ServiceList{
+					Items: []k8s_core_types.Service{wrongService, wrongService},
 				}, nil)
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
 			err := mocks.meshWorkloadCallback(meshWorkloadEvent)
@@ -331,12 +331,12 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("bails out early if the mesh workload has no labels to match on", func() {
 			mocks := setupMocks()
 
-			meshWorkloadEvent := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: nil,
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      "istio-test-mesh",
 						Namespace: "isito-system",
 					},
@@ -351,54 +351,54 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("does not match a service with no labels to the mesh workload event", func() {
 			mocks := setupMocks()
 
-			mesh := &v1alpha1.Mesh{
-				ObjectMeta: metav1.ObjectMeta{
+			mesh := &zephyr_discovery.Mesh{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-test-mesh",
 					Namespace: "isito-system",
 				},
-				Spec: discovery_types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &discovery_types.MeshSpec_Linkerd{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
-			meshWorkloadEvent := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"label":                "value",
 							"istio-injected-label": "doesn't matter",
 						},
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      mesh.Name,
 						Namespace: mesh.Namespace,
 					},
 				},
 			}
 
-			wrongService := corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
+			wrongService := k8s_core_types.Service{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "wrong-service",
 					Namespace: "ns1",
 				},
-				Spec: corev1.ServiceSpec{
+				Spec: k8s_core_types.ServiceSpec{
 					Selector: map[string]string{},
 				},
 			}
 
 			mocks.serviceClient.
 				EXPECT().
-				List(ctx).
-				Return(&corev1.ServiceList{
-					Items: []corev1.Service{wrongService, wrongService},
+				ListService(ctx).
+				Return(&k8s_core_types.ServiceList{
+					Items: []k8s_core_types.Service{wrongService, wrongService},
 				}, nil)
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
 			err := mocks.meshWorkloadCallback(meshWorkloadEvent)
@@ -409,55 +409,55 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("does not create a mesh service if it already exists", func() {
 			mocks := setupMocks()
 
-			mesh := &v1alpha1.Mesh{
-				ObjectMeta: metav1.ObjectMeta{
+			mesh := &zephyr_discovery.Mesh{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-test-mesh",
 					Namespace: "isito-system",
 				},
-				Spec: discovery_types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &discovery_types.MeshSpec_Linkerd{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
-			meshWorkloadEvent := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"label":                "value",
 							"istio-injected-label": "doesn't matter",
 						},
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      mesh.Name,
 						Namespace: mesh.Namespace,
 					},
 				},
 			}
 
-			wrongService := corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
+			wrongService := k8s_core_types.Service{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "wrong-service",
 					Namespace: "ns1",
 				},
-				Spec: corev1.ServiceSpec{
+				Spec: k8s_core_types.ServiceSpec{
 					Selector: map[string]string{
 						"other-label": "value",
 					},
 				},
 			}
-			rightService := corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
+			rightService := k8s_core_types.Service{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "right-service",
 					Namespace: "ns1",
 				},
-				Spec: corev1.ServiceSpec{
+				Spec: k8s_core_types.ServiceSpec{
 					Selector: map[string]string{
 						"label": "value",
 					},
-					Ports: []corev1.ServicePort{{
+					Ports: []k8s_core_types.ServicePort{{
 						Name:       "port-1",
 						Protocol:   "TCP",
 						Port:       80,
@@ -471,41 +471,41 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.serviceClient.
 				EXPECT().
-				List(ctx).
-				Return(&corev1.ServiceList{
-					Items: []corev1.Service{wrongService, rightService},
+				ListService(ctx).
+				Return(&k8s_core_types.ServiceList{
+					Items: []k8s_core_types.Service{wrongService, rightService},
 				}, nil)
 
 			mocks.meshWorkloadClient.
 				EXPECT().
-				List(ctx).
-				Return(&v1alpha1.MeshWorkloadList{Items: nil}, nil)
+				ListMeshWorkload(ctx).
+				Return(&zephyr_discovery.MeshWorkloadList{Items: nil}, nil)
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
 			mocks.meshServiceClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMeshService(ctx, client.ObjectKey{
 					Name:      meshServiceName,
 					Namespace: env.GetWriteNamespace(),
 				}).
-				Return(&v1alpha1.MeshService{
-					ObjectMeta: metav1.ObjectMeta{
+				Return(&zephyr_discovery.MeshService{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      meshServiceName,
 						Namespace: env.GetWriteNamespace(),
 					},
-					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.MeshServiceSpec_KubeService{
-							Ref: &core_types.ResourceRef{
+					Spec: zephyr_discovery_types.MeshServiceSpec{
+						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &zephyr_core_types.ResourceRef{
 								Name:      rightService.GetName(),
 								Namespace: rightService.GetNamespace(),
 								Cluster:   clusterName,
 							},
 							WorkloadSelectorLabels: rightService.Spec.Selector,
-							Ports: []*discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+							Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 								Name:     "port-1",
 								Port:     80,
 								Protocol: "TCP",
@@ -525,26 +525,26 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("can associate a service with an existing mesh workload", func() {
 			mocks := setupMocks()
 
-			mesh := &v1alpha1.Mesh{
-				ObjectMeta: metav1.ObjectMeta{
+			mesh := &zephyr_discovery.Mesh{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-test-mesh",
 					Namespace: "isito-system",
 				},
-				Spec: discovery_types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &discovery_types.MeshSpec_Linkerd{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
-			serviceEvent := &corev1.Service{
-				Spec: corev1.ServiceSpec{
+			serviceEvent := &k8s_core_types.Service{
+				Spec: k8s_core_types.ServiceSpec{
 					Selector: map[string]string{
 						"app":   "test-app",
 						"track": "canary",
 					},
-					Ports: []corev1.ServicePort{{
+					Ports: []k8s_core_types.ServicePort{{
 						Name:       "port-1",
 						Protocol:   "TCP",
 						Port:       80,
@@ -552,7 +552,7 @@ var _ = Describe("Mesh Service Finder", func() {
 						NodePort:   32000,
 					}},
 				},
-				ObjectMeta: metav1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "my-svc",
 					Namespace: "my-ns",
 					Labels: map[string]string{
@@ -562,45 +562,45 @@ var _ = Describe("Mesh Service Finder", func() {
 				},
 			}
 
-			wrongWorkload := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			wrongWorkload := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":   "test-app",
 							"track": "production",
 						},
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      "istio-test-mesh",
 						Namespace: "isito-system",
 					},
 				},
 			}
-			rightWorkloadV1 := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			rightWorkloadV1 := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":     "test-app",
 							"track":   "canary",
 							"version": "v1",
 						},
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      "istio-test-mesh",
 						Namespace: "isito-system",
 					},
 				},
 			}
-			rightWorkloadV2 := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			rightWorkloadV2 := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":     "test-app",
 							"track":   "canary",
 							"version": "v2",
 						},
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      "istio-test-mesh",
 						Namespace: "isito-system",
 					},
@@ -611,7 +611,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMesh(ctx, client.ObjectKey{
 					Name:      mesh.Name,
 					Namespace: mesh.Namespace,
 				}).
@@ -620,9 +620,9 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.
 				EXPECT().
-				List(ctx).
-				Return(&v1alpha1.MeshWorkloadList{
-					Items: []v1alpha1.MeshWorkload{
+				ListMeshWorkload(ctx).
+				Return(&zephyr_discovery.MeshWorkloadList{
+					Items: []zephyr_discovery.MeshWorkload{
 						*wrongWorkload,
 						*rightWorkloadV1,
 						*rightWorkloadV2,
@@ -631,37 +631,37 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshServiceClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMeshService(ctx, client.ObjectKey{
 					Name:      meshServiceName,
 					Namespace: env.GetWriteNamespace(),
 				}).
-				Return(nil, errors.NewNotFound(v1alpha1.Resource("meshservice"), meshServiceName))
+				Return(nil, errors.NewNotFound(zephyr_discovery.Resource("meshservice"), meshServiceName))
 
 			mocks.meshServiceClient.
 				EXPECT().
-				Create(ctx, &v1alpha1.MeshService{
-					ObjectMeta: metav1.ObjectMeta{
+				CreateMeshService(ctx, &zephyr_discovery.MeshService{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      meshServiceName,
 						Namespace: env.GetWriteNamespace(),
-						Labels:    mesh_service.DiscoveryLabels(core_types.MeshType_LINKERD, clusterName, serviceEvent.GetName(), serviceEvent.GetNamespace()),
+						Labels:    mesh_service.DiscoveryLabels(zephyr_core_types.MeshType_LINKERD, clusterName, serviceEvent.GetName(), serviceEvent.GetNamespace()),
 					},
-					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.MeshServiceSpec_KubeService{
-							Ref: &core_types.ResourceRef{
+					Spec: zephyr_discovery_types.MeshServiceSpec{
+						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &zephyr_core_types.ResourceRef{
 								Name:      serviceEvent.GetName(),
 								Namespace: serviceEvent.GetNamespace(),
 								Cluster:   clusterName,
 							},
 							WorkloadSelectorLabels: serviceEvent.Spec.Selector,
 							Labels:                 serviceEvent.GetLabels(),
-							Ports: []*discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+							Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 								Name:     "port-1",
 								Port:     80,
 								Protocol: "TCP",
 							}},
 						},
 						Mesh: rightWorkloadV1.Spec.Mesh,
-						Subsets: map[string]*discovery_types.MeshServiceSpec_Subset{
+						Subsets: map[string]*zephyr_discovery_types.MeshServiceSpec_Subset{
 							"version": {
 								Values: []string{"v1", "v2"},
 							},
@@ -678,55 +678,55 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("does not associate a service to any mesh workload if the labels don't match", func() {
 			mocks := setupMocks()
 
-			mesh := &v1alpha1.Mesh{
-				ObjectMeta: metav1.ObjectMeta{
+			mesh := &zephyr_discovery.Mesh{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-test-mesh",
 					Namespace: "isito-system",
 				},
-				Spec: discovery_types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &discovery_types.MeshSpec_Linkerd{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
-			serviceEvent := &corev1.Service{
-				Spec: corev1.ServiceSpec{
+			serviceEvent := &k8s_core_types.Service{
+				Spec: k8s_core_types.ServiceSpec{
 					Selector: map[string]string{
 						"app":   "test-app",
 						"track": "canary",
 					},
 				},
-				ObjectMeta: metav1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "my-svc",
 					Namespace: "my-ns",
 				},
 			}
 
-			wrongWorkload1 := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			wrongWorkload1 := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":   "test-app",
 							"track": "production",
 						},
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      mesh.Name,
 						Namespace: mesh.Namespace,
 					},
 				},
 			}
-			wrongWorkload2 := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			wrongWorkload2 := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":   "test-other-unrelated-app",
 							"track": "canary",
 						},
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      mesh.Name,
 						Namespace: mesh.Namespace,
 					},
@@ -735,9 +735,9 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.
 				EXPECT().
-				List(ctx).
-				Return(&v1alpha1.MeshWorkloadList{
-					Items: []v1alpha1.MeshWorkload{
+				ListMeshWorkload(ctx).
+				Return(&zephyr_discovery.MeshWorkloadList{
+					Items: []zephyr_discovery.MeshWorkload{
 						*wrongWorkload1,
 						*wrongWorkload2,
 					},
@@ -745,7 +745,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMesh(ctx, client.ObjectKey{
 					Name:      mesh.Name,
 					Namespace: mesh.Namespace,
 				}).
@@ -760,41 +760,41 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("will bail out early if the mesh is on a different cluster than the service", func() {
 			mocks := setupMocks()
 
-			mesh := &v1alpha1.Mesh{
-				ObjectMeta: metav1.ObjectMeta{
+			mesh := &zephyr_discovery.Mesh{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-test-mesh",
 					Namespace: "isito-system",
 				},
-				Spec: discovery_types.MeshSpec{
-					Cluster: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.MeshSpec{
+					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "incorrect-cluster-name",
 					},
-					MeshType: &discovery_types.MeshSpec_Linkerd{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
 				},
 			}
 
-			serviceEvent := &corev1.Service{
-				Spec: corev1.ServiceSpec{
+			serviceEvent := &k8s_core_types.Service{
+				Spec: k8s_core_types.ServiceSpec{
 					Selector: map[string]string{
 						"app":   "test-app",
 						"track": "canary",
 					},
 				},
-				ObjectMeta: metav1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "my-svc",
 					Namespace: "my-ns",
 				},
 			}
 
-			wrongWorkload1 := &v1alpha1.MeshWorkload{
-				Spec: discovery_types.MeshWorkloadSpec{
-					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+			wrongWorkload1 := &zephyr_discovery.MeshWorkload{
+				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":   "test-app",
 							"track": "production",
 						},
 					},
-					Mesh: &core_types.ResourceRef{
+					Mesh: &zephyr_core_types.ResourceRef{
 						Name:      mesh.Name,
 						Namespace: mesh.Namespace,
 					},
@@ -803,16 +803,16 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.
 				EXPECT().
-				List(ctx).
-				Return(&v1alpha1.MeshWorkloadList{
-					Items: []v1alpha1.MeshWorkload{
+				ListMeshWorkload(ctx).
+				Return(&zephyr_discovery.MeshWorkloadList{
+					Items: []zephyr_discovery.MeshWorkload{
 						*wrongWorkload1,
 					},
 				}, nil)
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMesh(ctx, client.ObjectKey{
 					Name:      mesh.Name,
 					Namespace: mesh.Namespace,
 				}).
@@ -826,11 +826,11 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("bails out early if the mesh workload has no labels to match on", func() {
 			mocks := setupMocks()
 
-			serviceEvent := &corev1.Service{
-				Spec: corev1.ServiceSpec{
+			serviceEvent := &k8s_core_types.Service{
+				Spec: k8s_core_types.ServiceSpec{
 					Selector: map[string]string{},
 				},
-				ObjectMeta: metav1.ObjectMeta{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "my-svc",
 					Namespace: "my-ns",
 				},

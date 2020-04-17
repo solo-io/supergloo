@@ -18,16 +18,16 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	mock_csr "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
-	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
-	v1 "k8s.io/api/core/v1"
+	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
+	k8s_core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -158,12 +158,12 @@ var _ = Describe("Install", func() {
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		authClient := mock_auth.NewMockClusterAuthorization(ctrl)
 		configVerifier := cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
-		clusterClient := mock_core.NewMockKubernetesClusterClient(ctrl)
+		clusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
 		csrAgentInstaller := mock_csr.NewMockCsrAgentInstaller(ctrl)
 
 		configVerifier.EXPECT().Verify("", "").Return(nil)
 
-		serviceAccountRef := &core_types.ResourceRef{
+		serviceAccountRef := &zephyr_core_types.ResourceRef{
 			Name:      "test-cluster-name",
 			Namespace: env.GetWriteNamespace(),
 		}
@@ -205,13 +205,13 @@ users:
 		authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 		mockKubeLoader.EXPECT().GetRawConfigForContext("", "").Return(cxt, nil)
 		mockKubeLoader.EXPECT().GetRawConfigForContext("", contextABC).Return(cxt, nil)
-		clusterClient.EXPECT().Get(ctx,
+		clusterClient.EXPECT().GetKubernetesCluster(ctx,
 			client.ObjectKey{
 				Name:      clusterName,
 				Namespace: env.GetWriteNamespace(),
 			}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
-		secret := &v1.Secret{
+		secret := &k8s_core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 				Name:      serviceAccountRef.Name,
@@ -220,17 +220,25 @@ users:
 			Data: map[string][]byte{
 				clusterName: []byte(expectedKubeConfig(testServerABC)),
 			},
-			Type: v1.SecretTypeOpaque,
+			Type: k8s_core.SecretTypeOpaque,
 		}
 
-		secretClient.
-			EXPECT().
-			UpsertData(ctx, secret).
-			Return(nil)
+		var expectUpsertSecretData = func(ctx context.Context, secret *k8s_core.Secret) {
+			existing := &k8s_core.Secret{
+				ObjectMeta: metav1.ObjectMeta{Name: "existing"},
+			}
+			secretClient.
+				EXPECT().
+				GetSecret(ctx, client.ObjectKey{Name: secret.Name, Namespace: secret.Namespace}).
+				Return(existing, nil)
+			existing.Data = secret.Data
+			secretClient.EXPECT().UpdateSecret(ctx, existing).Return(nil)
+		}
+		expectUpsertSecretData(ctx, secret)
 
 		namespaceClient.
 			EXPECT().
-			Get(ctx, env.GetWriteNamespace()).
+			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 			Return(nil, nil)
 
 		csrAgentInstaller.EXPECT().
@@ -244,13 +252,13 @@ users:
 			}).
 			Return(nil)
 
-		clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
+		clusterClient.EXPECT().UpsertKubernetesClusterSpec(ctx, &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      clusterName,
 				Namespace: env.GetWriteNamespace(),
 			},
-			Spec: discovery_types.KubernetesClusterSpec{
-				SecretRef: &core_types.ResourceRef{
+			Spec: zephyr_discovery_types.KubernetesClusterSpec{
+				SecretRef: &zephyr_core_types.ResourceRef{
 					Name:      secret.GetName(),
 					Namespace: secret.GetNamespace(),
 				},
@@ -273,7 +281,7 @@ users:
 				HelmInstaller:        mockHelmInstaller,
 				KubeClusterClient:    clusterClient,
 				HealthCheckClients:   healthcheck_types.Clients{},
-				SecretsClient:        secretClient,
+				SecretClient:         secretClient,
 				NamespaceClient:      namespaceClient,
 				UninstallClients:     common.UninstallClients{},
 			},

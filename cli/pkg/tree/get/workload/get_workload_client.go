@@ -8,7 +8,7 @@ import (
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
 func GetMeshWorkloads(
@@ -27,11 +27,11 @@ func GetMeshWorkloads(
 	if err != nil {
 		return err
 	}
-	meshWorkloads, err := kubeClients.MeshWorkloadClient.List(ctx)
+	meshWorkloads, err := kubeClients.MeshWorkloadClient.ListMeshWorkload(ctx)
 	if err != nil {
 		return err
 	}
-	meshWorkloadList := make([]*v1alpha1.MeshWorkload, 0, len(meshWorkloads.Items))
+	meshWorkloadList := make([]*zephyr_discovery.MeshWorkload, 0, len(meshWorkloads.Items))
 	for _, v := range meshWorkloads.Items {
 		v := v
 		meshWorkloadList = append(meshWorkloadList, &v)

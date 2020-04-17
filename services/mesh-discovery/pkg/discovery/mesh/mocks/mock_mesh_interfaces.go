@@ -6,12 +6,11 @@ package mock_mesh
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	controller "github.com/solo-io/service-mesh-hub/services/common/cluster/apps/v1/controller"
+	controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	v1 "k8s.io/api/apps/v1"
+	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -40,73 +39,73 @@ func (m *MockMeshFinder) EXPECT() *MockMeshFinderMockRecorder {
 }
 
 // StartDiscovery mocks base method
-func (m *MockMeshFinder) StartDiscovery(deploymentController controller.DeploymentController, predicates []predicate.Predicate) error {
+func (m *MockMeshFinder) StartDiscovery(deploymentEventWatcher controller.DeploymentEventWatcher, predicates []predicate.Predicate) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartDiscovery", deploymentController, predicates)
+	ret := m.ctrl.Call(m, "StartDiscovery", deploymentEventWatcher, predicates)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartDiscovery indicates an expected call of StartDiscovery
-func (mr *MockMeshFinderMockRecorder) StartDiscovery(deploymentController, predicates interface{}) *gomock.Call {
+func (mr *MockMeshFinderMockRecorder) StartDiscovery(deploymentEventWatcher, predicates interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshFinder)(nil).StartDiscovery), deploymentController, predicates)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshFinder)(nil).StartDiscovery), deploymentEventWatcher, predicates)
 }
 
-// Create mocks base method
-func (m *MockMeshFinder) Create(obj *v1.Deployment) error {
+// CreateDeployment mocks base method
+func (m *MockMeshFinder) CreateDeployment(obj *v1.Deployment) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", obj)
+	ret := m.ctrl.Call(m, "CreateDeployment", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Create indicates an expected call of Create
-func (mr *MockMeshFinderMockRecorder) Create(obj interface{}) *gomock.Call {
+// CreateDeployment indicates an expected call of CreateDeployment
+func (mr *MockMeshFinderMockRecorder) CreateDeployment(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMeshFinder)(nil).Create), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDeployment", reflect.TypeOf((*MockMeshFinder)(nil).CreateDeployment), obj)
 }
 
-// Update mocks base method
-func (m *MockMeshFinder) Update(old, new *v1.Deployment) error {
+// UpdateDeployment mocks base method
+func (m *MockMeshFinder) UpdateDeployment(old, new *v1.Deployment) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", old, new)
+	ret := m.ctrl.Call(m, "UpdateDeployment", old, new)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Update indicates an expected call of Update
-func (mr *MockMeshFinderMockRecorder) Update(old, new interface{}) *gomock.Call {
+// UpdateDeployment indicates an expected call of UpdateDeployment
+func (mr *MockMeshFinderMockRecorder) UpdateDeployment(old, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshFinder)(nil).Update), old, new)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeployment", reflect.TypeOf((*MockMeshFinder)(nil).UpdateDeployment), old, new)
 }
 
-// Delete mocks base method
-func (m *MockMeshFinder) Delete(obj *v1.Deployment) error {
+// DeleteDeployment mocks base method
+func (m *MockMeshFinder) DeleteDeployment(obj *v1.Deployment) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", obj)
+	ret := m.ctrl.Call(m, "DeleteDeployment", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete
-func (mr *MockMeshFinderMockRecorder) Delete(obj interface{}) *gomock.Call {
+// DeleteDeployment indicates an expected call of DeleteDeployment
+func (mr *MockMeshFinderMockRecorder) DeleteDeployment(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshFinder)(nil).Delete), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDeployment", reflect.TypeOf((*MockMeshFinder)(nil).DeleteDeployment), obj)
 }
 
-// Generic mocks base method
-func (m *MockMeshFinder) Generic(obj *v1.Deployment) error {
+// GenericDeployment mocks base method
+func (m *MockMeshFinder) GenericDeployment(obj *v1.Deployment) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generic", obj)
+	ret := m.ctrl.Call(m, "GenericDeployment", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Generic indicates an expected call of Generic
-func (mr *MockMeshFinderMockRecorder) Generic(obj interface{}) *gomock.Call {
+// GenericDeployment indicates an expected call of GenericDeployment
+func (mr *MockMeshFinderMockRecorder) GenericDeployment(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockMeshFinder)(nil).Generic), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericDeployment", reflect.TypeOf((*MockMeshFinder)(nil).GenericDeployment), obj)
 }
 
 // MockMeshScanner is a mock of MeshScanner interface

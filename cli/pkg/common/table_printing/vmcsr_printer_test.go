@@ -10,10 +10,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // if you need to update the golden files programmatically, change this to `true` to write the
@@ -23,7 +23,7 @@ var UPDATE_VMCSR_GOLDENS = false
 var _ = Describe("VMCSR Table Printer", func() {
 	const tpGoldenDirectory = "vmcsr"
 
-	var runTest = func(fileName string, vmcsrs []*security_v1alpha1.VirtualMeshCertificateSigningRequest) {
+	var runTest = func(fileName string, vmcsrs []*zephyr_security.VirtualMeshCertificateSigningRequest) {
 		goldenFilename := test_goldens.GoldenFilePath(tpGoldenDirectory, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
@@ -45,59 +45,59 @@ var _ = Describe("VMCSR Table Printer", func() {
 		Entry(
 			"can print different kinds of virtual mesh certificate signing requestss",
 			"vmcsr",
-			[]*security_v1alpha1.VirtualMeshCertificateSigningRequest{
+			[]*zephyr_security.VirtualMeshCertificateSigningRequest{
 				{
-					ObjectMeta: metav1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "vm-1",
 						Namespace: "service-mesh-hub",
 					},
-					Spec: security_types.VirtualMeshCertificateSigningRequestSpec{
+					Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
 						CsrData: []byte("test-csr"),
-						CertConfig: &security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
+						CertConfig: &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 							Hosts:    []string{"host1", "host2"},
 							Org:      "my-org",
-							MeshType: core_types.MeshType_ISTIO,
+							MeshType: zephyr_core_types.MeshType_ISTIO,
 						},
-						VirtualMeshRef: &core_types.ResourceRef{
+						VirtualMeshRef: &zephyr_core_types.ResourceRef{
 							Name:      "name-1",
 							Namespace: "namespace-1",
 						},
 					},
-					Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-						ThirdPartyApproval: &security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
-							ApprovalStatus: security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_APPROVED,
+					Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
+						ThirdPartyApproval: &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
+							ApprovalStatus: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_APPROVED,
 						},
-						ComputedStatus: &core_types.Status{
-							State: core_types.Status_ACCEPTED,
+						ComputedStatus: &zephyr_core_types.Status{
+							State: zephyr_core_types.Status_ACCEPTED,
 						},
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "vm-2",
 						Namespace: "service-mesh-hub",
 					},
-					Spec: security_types.VirtualMeshCertificateSigningRequestSpec{
+					Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
 						CsrData: nil,
-						CertConfig: &security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
+						CertConfig: &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 							Hosts:    []string{"host2", "host4"},
 							Org:      "linkerd-org",
-							MeshType: core_types.MeshType_LINKERD,
+							MeshType: zephyr_core_types.MeshType_LINKERD,
 						},
-						VirtualMeshRef: &core_types.ResourceRef{
+						VirtualMeshRef: &zephyr_core_types.ResourceRef{
 							Name:      "name-2",
 							Namespace: "namespace-2",
 						},
 					},
-					Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-						ThirdPartyApproval: &security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
-							ApprovalStatus: security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_DENIED,
+					Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
+						ThirdPartyApproval: &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
+							ApprovalStatus: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_DENIED,
 						},
-						ComputedStatus: &core_types.Status{
-							State:   core_types.Status_CONFLICT,
+						ComputedStatus: &zephyr_core_types.Status{
+							State:   zephyr_core_types.Status_CONFLICT,
 							Message: "there was a conflict",
 						},
-						Response: &security_types.VirtualMeshCertificateSigningRequestStatus_Response{},
+						Response: &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_Response{},
 					},
 				},
 			},

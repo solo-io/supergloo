@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
 	"k8s.io/client-go/rest"
@@ -17,7 +17,7 @@ var _ = Describe("Cluster authorization", func() {
 	var (
 		ctrl              *gomock.Controller
 		ctx               context.Context
-		serviceAccountRef = &types.ResourceRef{
+		serviceAccountRef = &zephyr_core_types.ResourceRef{
 			Name:      "test-service-account",
 			Namespace: "test-ns",
 		}

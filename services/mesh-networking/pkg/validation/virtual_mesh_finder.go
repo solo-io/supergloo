@@ -5,9 +5,8 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 )
 
 var (
@@ -24,18 +23,18 @@ func NewVirtualMeshFinder(meshClient zephyr_discovery.MeshClient) VirtualMeshFin
 	return &virtualMeshFinder{meshClient: meshClient}
 }
 
-func (g *virtualMeshFinder) GetMeshesForVirtualMesh(
+func (v *virtualMeshFinder) GetMeshesForVirtualMesh(
 	ctx context.Context,
-	virtualMesh *v1alpha1.VirtualMesh,
-) ([]*discoveryv1alpha1.Mesh, error) {
-	meshList, err := g.meshClient.List(ctx)
+	virtualMesh *zephyr_networking.VirtualMesh,
+) ([]*zephyr_discovery.Mesh, error) {
+	meshList, err := v.meshClient.ListMesh(ctx)
 	if err != nil {
 		return nil, err
 	}
-	var result []*discoveryv1alpha1.Mesh
+	var result []*zephyr_discovery.Mesh
 	var invalidRefs []string
 	for _, ref := range virtualMesh.Spec.GetMeshes() {
-		var foundMesh *discoveryv1alpha1.Mesh
+		var foundMesh *zephyr_discovery.Mesh
 		for _, mesh := range meshList.Items {
 			// thankx rob pike
 			mesh := mesh

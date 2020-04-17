@@ -4,41 +4,39 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"go.uber.org/zap"
 )
 
 type enforcerLoop struct {
-	virtualMeshController controller.VirtualMeshController
-	virtualMeshClient     zephyr_networking.VirtualMeshClient
-	meshClient            zephyr_discovery.MeshClient
-	meshEnforcers         []AccessPolicyMeshEnforcer
+	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher
+	virtualMeshClient       zephyr_networking.VirtualMeshClient
+	meshClient              zephyr_discovery.MeshClient
+	meshEnforcers           []AccessPolicyMeshEnforcer
 }
 
 func NewEnforcerLoop(
-	virtualMeshController controller.VirtualMeshController,
+	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	meshClient zephyr_discovery.MeshClient,
 	meshEnforcers []AccessPolicyMeshEnforcer,
 ) AccessPolicyEnforcerLoop {
 	return &enforcerLoop{
-		virtualMeshController: virtualMeshController,
-		virtualMeshClient:     virtualMeshClient,
-		meshClient:            meshClient,
-		meshEnforcers:         meshEnforcers,
+		virtualMeshEventWatcher: virtualMeshEventWatcher,
+		virtualMeshClient:       virtualMeshClient,
+		meshClient:              meshClient,
+		meshEnforcers:           meshEnforcers,
 	}
 }
 
 func (e *enforcerLoop) Start(ctx context.Context) error {
-	return e.virtualMeshController.AddEventHandler(ctx, &controller.VirtualMeshEventHandlerFuncs{
-		OnCreate: func(obj *networking_v1alpha1.VirtualMesh) error {
+	return e.virtualMeshEventWatcher.AddEventHandler(ctx, &zephyr_networking_controller.VirtualMeshEventHandlerFuncs{
+		OnCreate: func(obj *zephyr_networking.VirtualMesh) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", obj.Spec),
@@ -51,7 +49,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 			}
 			return nil
 		},
-		OnUpdate: func(old, new *networking_v1alpha1.VirtualMesh) error {
+		OnUpdate: func(old, new *zephyr_networking.VirtualMesh) error {
 			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
 			logger.Debugw("event handler enter",
 				zap.Any("old_spec", old.Spec),
@@ -66,12 +64,12 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 			}
 			return nil
 		},
-		OnDelete: func(virtualMesh *networking_v1alpha1.VirtualMesh) error {
+		OnDelete: func(virtualMesh *zephyr_networking.VirtualMesh) error {
 			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, virtualMesh)
 			logger.Debugf("Ignoring event: %+v", virtualMesh)
 			return nil
 		},
-		OnGeneric: func(virtualMesh *networking_v1alpha1.VirtualMesh) error {
+		OnGeneric: func(virtualMesh *zephyr_networking.VirtualMesh) error {
 			logger := logging.BuildEventLogger(ctx, logging.GenericEvent, virtualMesh)
 			logger.Debugf("Ignoring event: %+v", virtualMesh)
 			return nil
@@ -81,7 +79,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 
 func (e *enforcerLoop) enforceGlobalAccessControl(
 	ctx context.Context,
-	virtualMesh *networking_v1alpha1.VirtualMesh,
+	virtualMesh *zephyr_networking.VirtualMesh,
 ) error {
 	meshes, err := e.fetchMeshes(ctx, virtualMesh)
 	if err != nil {
@@ -109,11 +107,11 @@ func (e *enforcerLoop) enforceGlobalAccessControl(
 
 func (e *enforcerLoop) fetchMeshes(
 	ctx context.Context,
-	virtualMesh *networking_v1alpha1.VirtualMesh,
-) ([]*discovery_v1alpha1.Mesh, error) {
-	var meshes []*discovery_v1alpha1.Mesh
+	virtualMesh *zephyr_networking.VirtualMesh,
+) ([]*zephyr_discovery.Mesh, error) {
+	var meshes []*zephyr_discovery.Mesh
 	for _, meshRef := range virtualMesh.Spec.GetMeshes() {
-		mesh, err := e.meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshRef))
+		mesh, err := e.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef))
 		if err != nil {
 			return nil, err
 		}
@@ -124,18 +122,18 @@ func (e *enforcerLoop) fetchMeshes(
 
 func (e *enforcerLoop) setStatus(
 	ctx context.Context,
-	virtualMesh *networking_v1alpha1.VirtualMesh,
+	virtualMesh *zephyr_networking.VirtualMesh,
 	err error,
 ) error {
 	if err != nil {
-		virtualMesh.Status.AccessControlEnforcementStatus = &core_types.Status{
-			State:   core_types.Status_PROCESSING_ERROR,
+		virtualMesh.Status.AccessControlEnforcementStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
 		}
 	} else {
-		virtualMesh.Status.AccessControlEnforcementStatus = &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		virtualMesh.Status.AccessControlEnforcementStatus = &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
 	}
-	return e.virtualMeshClient.UpdateStatus(ctx, virtualMesh)
+	return e.virtualMeshClient.UpdateVirtualMeshStatus(ctx, virtualMesh)
 }

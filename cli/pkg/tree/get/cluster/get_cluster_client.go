@@ -8,7 +8,7 @@ import (
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
 func GetClusters(
@@ -27,11 +27,11 @@ func GetClusters(
 	if err != nil {
 		return err
 	}
-	clusters, err := kubeClients.KubeClusterClient.List(ctx)
+	clusters, err := kubeClients.KubeClusterClient.ListKubernetesCluster(ctx)
 	if err != nil {
 		return err
 	}
-	clusterList := make([]*v1alpha1.KubernetesCluster, 0, len(clusters.Items))
+	clusterList := make([]*zephyr_discovery.KubernetesCluster, 0, len(clusters.Items))
 	for _, v := range clusters.Items {
 		v := v
 		clusterList = append(clusterList, &v)

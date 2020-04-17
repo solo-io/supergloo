@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	"istio.io/istio/pkg/spiffe"
 )
 
@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	IncorrectMeshTypeError = func(mesh *discovery_v1alpha1.Mesh) error {
+	IncorrectMeshTypeError = func(mesh *zephyr_discovery.Mesh) error {
 		return eris.Errorf("invalid mesh type (%T) passed into istio certificate config producer",
 			mesh.Spec.GetMeshType())
 	}
@@ -37,9 +37,9 @@ func BuildSpiffeURI(trustDomain, namespace, sa string) string {
 }
 
 func (i *istioCertConfigProducer) ConfigureCertificateInfo(
-	vm *networking_v1alpha1.VirtualMesh,
-	mesh *discovery_v1alpha1.Mesh,
-) (*security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig, error) {
+	vm *zephyr_networking.VirtualMesh,
+	mesh *zephyr_discovery.Mesh,
+) (*zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig, error) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
 		return nil, IncorrectMeshTypeError(mesh)
@@ -58,10 +58,10 @@ func (i *istioCertConfigProducer) ConfigureCertificateInfo(
 	if istioMesh.GetCitadelInfo().GetCitadelServiceAccount() != "" {
 		citadelServiceAccount = istioMesh.GetCitadelInfo().GetCitadelServiceAccount()
 	}
-	return &security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
+	return &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 		// TODO: Make citadel namespace discoverable
 		Hosts:    []string{BuildSpiffeURI(trustDomain, citadelNamespace, citadelServiceAccount)},
 		Org:      DefaultIstioOrg,
-		MeshType: core_types.MeshType_ISTIO,
+		MeshType: zephyr_core_types.MeshType_ISTIO,
 	}, nil
 }

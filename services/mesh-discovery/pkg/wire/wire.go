@@ -6,9 +6,9 @@ import (
 	"context"
 
 	"github.com/google/wire"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
@@ -23,19 +23,19 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		multicluster_wire.MulticlusterProviderSet,
 		docker.NewImageNameParser,
 		mesh_workload.OwnerFetcherFactoryProvider,
-		kubernetes_apps.DeploymentClientFactoryProvider,
-		kubernetes_apps.ReplicaSetClientFactoryProvider,
-		kubernetes_core.ServiceClientFactoryProvider,
-		discovery_core.MeshServiceClientFactoryProvider,
-		discovery_core.MeshWorkloadClientFactoryProvider,
-		controllers.NewDeploymentControllerFactory,
-		controllers.NewPodControllerFactory,
-		controllers.NewServiceControllerFactory,
-		controllers.NewMeshWorkloadControllerFactory,
+		k8s_apps.DeploymentClientFactoryProvider,
+		k8s_apps.ReplicaSetClientFactoryProvider,
+		k8s_core.ServiceClientFactoryProvider,
+		k8s_core.PodClientFactoryProvider,
+		zephyr_discovery.MeshServiceClientFactoryProvider,
+		zephyr_discovery.MeshWorkloadClientFactoryProvider,
+		controllers.NewDeploymentEventWatcherFactory,
+		controllers.NewPodEventWatcherFactory,
+		controllers.NewServiceEventWatcherFactory,
+		controllers.NewMeshWorkloadEventWatcherFactory,
 		controllers.NewMeshControllerFactory,
-		discovery_core.NewMeshClientFactoryProvider,
-		kubernetes_core.ConfigMapClientFactoryProvider,
-		kubernetes_core.NewPodClientFactory,
+		zephyr_discovery.MeshClientFactoryProvider,
+		k8s_core.ConfigMapClientFactoryProvider,
 		mesh_istio.WireProviderSet,
 		mesh_consul.WireProviderSet,
 		mesh_linkerd.WireProviderSet,

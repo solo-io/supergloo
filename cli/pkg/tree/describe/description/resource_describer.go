@@ -4,18 +4,17 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 )
 
 var (
-	FailedToFindMeshServicesBySelector = func(err error, selector *core_types.ServiceSelector) error {
+	FailedToFindMeshServicesBySelector = func(err error, selector *zephyr_core_types.ServiceSelector) error {
 		return eris.Wrapf(err, "Failed to find services for selector %+v", selector)
 	}
-	FailedToFindMeshWorkloadsByIdentity = func(err error, selector *core_types.IdentitySelector) error {
+	FailedToFindMeshWorkloadsByIdentity = func(err error, selector *zephyr_core_types.IdentitySelector) error {
 		return eris.Wrapf(err, "Failed to find workloads with identity %+v", selector)
 	}
 	FailedToListAccessControlPolicies = func(err error) error {
@@ -51,17 +50,17 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 		return nil, err
 	}
 
-	allAccessControlPolicies, err := r.accessControlPolicyClient.List(ctx)
+	allAccessControlPolicies, err := r.accessControlPolicyClient.ListAccessControlPolicy(ctx)
 	if err != nil {
 		return nil, FailedToListAccessControlPolicies(err)
 	}
 
-	allTrafficControlPolicies, err := r.trafficPolicyClient.List(ctx)
+	allTrafficControlPolicies, err := r.trafficPolicyClient.ListTrafficPolicy(ctx)
 	if err != nil {
 		return nil, FailedToListTrafficPolicies(err)
 	}
 
-	var relevantAccessControlPolicies []*networking_v1alpha1.AccessControlPolicy
+	var relevantAccessControlPolicies []*zephyr_networking.AccessControlPolicy
 	for _, acpIter := range allAccessControlPolicies.Items {
 		acp := acpIter
 		matchingMeshServices, err := r.ResourceSelector.GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
@@ -79,7 +78,7 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 		}
 	}
 
-	var relevantTrafficPolicies []*networking_v1alpha1.TrafficPolicy
+	var relevantTrafficPolicies []*zephyr_networking.TrafficPolicy
 	for _, tpIter := range allTrafficControlPolicies.Items {
 		tp := tpIter
 		matchingMeshServices, err := r.ResourceSelector.GetMeshServicesByServiceSelector(ctx, tp.Spec.GetDestinationSelector())
@@ -111,17 +110,17 @@ func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceId
 		return nil, err
 	}
 
-	allAccessControlPolicies, err := r.accessControlPolicyClient.List(ctx)
+	allAccessControlPolicies, err := r.accessControlPolicyClient.ListAccessControlPolicy(ctx)
 	if err != nil {
 		return nil, FailedToListAccessControlPolicies(err)
 	}
 
-	allTrafficControlPolicies, err := r.trafficPolicyClient.List(ctx)
+	allTrafficControlPolicies, err := r.trafficPolicyClient.ListTrafficPolicy(ctx)
 	if err != nil {
 		return nil, FailedToListTrafficPolicies(err)
 	}
 
-	var relevantAccessControlPolicies []*networking_v1alpha1.AccessControlPolicy
+	var relevantAccessControlPolicies []*zephyr_networking.AccessControlPolicy
 	for _, acpIter := range allAccessControlPolicies.Items {
 		acp := acpIter
 		matchingMeshWorkloads, err := r.ResourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, acp.Spec.GetSourceSelector())
@@ -138,7 +137,7 @@ func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceId
 		}
 	}
 
-	var relevantTrafficPolicies []*networking_v1alpha1.TrafficPolicy
+	var relevantTrafficPolicies []*zephyr_networking.TrafficPolicy
 	for _, tpIter := range allTrafficControlPolicies.Items {
 		tp := tpIter
 		matchingMeshWorkloads, err := r.ResourceSelector.GetMeshWorkloadsByWorkloadSelector(ctx, tp.Spec.GetSourceSelector())

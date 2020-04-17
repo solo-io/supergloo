@@ -7,15 +7,15 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	pki_util "istio.io/istio/security/pkg/pki/util"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -49,23 +49,23 @@ func NewCsrAgentIstioProcessor(
 	return &VirtualMeshCSRProcessorFuncs{
 		OnProcessUpsert: func(
 			ctx context.Context,
-			csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-		) *security_types.VirtualMeshCertificateSigningRequestStatus {
+			csr *zephyr_security.VirtualMeshCertificateSigningRequest,
+		) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
 			return generator.GenerateIstioCSR(ctx, csr)
 		},
 	}
 }
 
 type istioCSRGenerator struct {
-	csrClient    zephyr_security.VirtualMeshCSRClient
-	secretClient kubernetes_core.SecretClient
+	csrClient    zephyr_security.VirtualMeshCertificateSigningRequestClient
+	secretClient k8s_core.SecretClient
 	certClient   CertClient
 	signer       certgen.Signer
 }
 
 func NewIstioCSRGenerator(
-	csrClient zephyr_security.VirtualMeshCSRClient,
-	secretClient kubernetes_core.SecretClient,
+	csrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
+	secretClient k8s_core.SecretClient,
 	certClient CertClient,
 	signer certgen.Signer,
 ) IstioCSRGenerator {
@@ -74,20 +74,20 @@ func NewIstioCSRGenerator(
 
 func (i *istioCSRGenerator) GenerateIstioCSR(
 	ctx context.Context,
-	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-) *security_types.VirtualMeshCertificateSigningRequestStatus {
+	obj *zephyr_security.VirtualMeshCertificateSigningRequest,
+) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
 	return i.process(ctx, obj)
 }
 
 func (i *istioCSRGenerator) process(
 	ctx context.Context,
-	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-) *security_types.VirtualMeshCertificateSigningRequestStatus {
+	obj *zephyr_security.VirtualMeshCertificateSigningRequest,
+) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
 	rootCaData, err := i.certClient.EnsureSecretKey(ctx, obj)
 	if err != nil {
 		wrapped := FailedToRetrievePrivateKeyError(err)
-		obj.Status.ComputedStatus = &core_types.Status{
-			State:   core_types.Status_INVALID,
+		obj.Status.ComputedStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_INVALID,
 			Message: wrapped.Error(),
 		}
 		return &obj.Status
@@ -100,13 +100,13 @@ func (i *istioCSRGenerator) process(
 		// csr data has been saturated, this csr is ready to be reprocessed
 		if err = i.updateCa(ctx, obj, rootCaData); err != nil {
 			wrapped := FailedToUpdateCaError(err)
-			obj.Status.ComputedStatus = &core_types.Status{
-				State:   core_types.Status_INVALID,
+			obj.Status.ComputedStatus = &zephyr_core_types.Status{
+				State:   zephyr_core_types.Status_INVALID,
 				Message: wrapped.Error(),
 			}
 			return &obj.Status
 		}
-		obj.Status.ComputedStatus = &core_types.Status{State: core_types.Status_ACCEPTED}
+		obj.Status.ComputedStatus = &zephyr_core_types.Status{State: zephyr_core_types.Status_ACCEPTED}
 	}
 
 	return &obj.Status
@@ -114,9 +114,9 @@ func (i *istioCSRGenerator) process(
 
 func (i *istioCSRGenerator) generateCsr(
 	ctx context.Context,
-	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+	obj *zephyr_security.VirtualMeshCertificateSigningRequest,
 	intermediateCAData *cert_secrets.IntermediateCAData,
-) *security_types.VirtualMeshCertificateSigningRequestStatus {
+) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
 	csr, err := i.signer.GenCSRWithKey(pki_util.CertOptions{
 		Host:          strings.Join(obj.Spec.GetCertConfig().GetHosts(), ","),
 		Org:           obj.Spec.GetCertConfig().GetOrg(),
@@ -124,29 +124,29 @@ func (i *istioCSRGenerator) generateCsr(
 	})
 	if err != nil {
 		wrapped := FailedToGenerateCSRError(err)
-		obj.Status.ComputedStatus = &core_types.Status{
-			State:   core_types.Status_INVALID,
+		obj.Status.ComputedStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_INVALID,
 			Message: wrapped.Error(),
 		}
 		return &obj.Status
 	}
 
 	obj.Spec.CsrData = csr
-	if err = i.csrClient.Update(ctx, obj); err != nil {
+	if err = i.csrClient.UpdateVirtualMeshCertificateSigningRequest(ctx, obj); err != nil {
 		wrapped := FailesToAddCsrToResource(err)
-		obj.Status.ComputedStatus = &core_types.Status{
-			State:   core_types.Status_INVALID,
+		obj.Status.ComputedStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_INVALID,
 			Message: wrapped.Error(),
 		}
 		return &obj.Status
 	}
-	obj.Status.ComputedStatus = &core_types.Status{State: core_types.Status_ACCEPTED}
+	obj.Status.ComputedStatus = &zephyr_core_types.Status{State: zephyr_core_types.Status_ACCEPTED}
 	return &obj.Status
 }
 
 func (i *istioCSRGenerator) updateCa(
 	ctx context.Context,
-	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+	obj *zephyr_security.VirtualMeshCertificateSigningRequest,
 	intermediateCAData *cert_secrets.IntermediateCAData,
 ) error {
 	intermediateCAData.CaCert = obj.Status.GetResponse().GetCaCertificate()
@@ -155,12 +155,12 @@ func (i *istioCSRGenerator) updateCa(
 	secretName, secretNamespace := IstioCaSecretName, "istio-system"
 
 	certSecret := intermediateCAData.BuildSecret(secretName, secretNamespace)
-	existing, err := i.secretClient.Get(ctx, secretName, secretNamespace)
+	existing, err := i.secretClient.GetSecret(ctx, client.ObjectKey{Name: secretName, Namespace: secretNamespace})
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
-		return i.secretClient.Create(ctx, certSecret)
+		return i.secretClient.CreateSecret(ctx, certSecret)
 	}
 
 	if i.certsAreEqual(existing.Data, certSecret.Data) {
@@ -168,7 +168,7 @@ func (i *istioCSRGenerator) updateCa(
 	}
 
 	existing.Data = certSecret.Data
-	return i.secretClient.Update(ctx, existing)
+	return i.secretClient.UpdateSecret(ctx, existing)
 }
 
 func (i *istioCSRGenerator) certsAreEqual(

@@ -6,13 +6,11 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
@@ -26,8 +24,8 @@ const (
 
 var (
 	FailedToFederateServices = func(
-		meshService *discovery_v1alpha1.MeshService,
-		meshWorkloadRefs []*core_types.ResourceRef) string {
+		meshService *zephyr_discovery.MeshService,
+		meshWorkloadRefs []*zephyr_core_types.ResourceRef) string {
 		return fmt.Sprintf("Could not federate service %s.%s to mesh workloads %+v. Check logs for details",
 			meshService.Name,
 			meshService.Namespace,
@@ -50,7 +48,7 @@ func NewFederationResolver(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	perMeshFederationClients PerMeshFederationClients,
-	meshServiceController discovery_controllers.MeshServiceController,
+	MeshServiceEventWatcher zephyr_discovery_controller.MeshServiceEventWatcher,
 ) FederationResolver {
 	return &federationResolver{
 		meshClient:               meshClient,
@@ -58,12 +56,12 @@ func NewFederationResolver(
 		meshServiceClient:        meshServiceClient,
 		virtualMeshClient:        virtualMeshClient,
 		perMeshFederationClients: perMeshFederationClients,
-		meshServiceController:    meshServiceController,
+		MeshServiceEventWatcher:  MeshServiceEventWatcher,
 	}
 }
 
 type federationResolver struct {
-	meshServiceController    discovery_controllers.MeshServiceController
+	MeshServiceEventWatcher  zephyr_discovery_controller.MeshServiceEventWatcher
 	meshClient               zephyr_discovery.MeshClient
 	meshWorkloadClient       zephyr_discovery.MeshWorkloadClient
 	meshServiceClient        zephyr_discovery.MeshServiceClient
@@ -72,8 +70,8 @@ type federationResolver struct {
 }
 
 func (f *federationResolver) Start(ctx context.Context) error {
-	return f.meshServiceController.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
-		OnCreate: func(obj *discovery_v1alpha1.MeshService) error {
+	return f.MeshServiceEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshServiceEventHandlerFuncs{
+		OnCreate: func(obj *zephyr_discovery.MeshService) error {
 			eventCtx := logging.EventContext(ctx, logging.CreateEvent, obj)
 			contextutils.LoggerFrom(eventCtx).Debugw("event handler enter",
 				zap.Any("spec", obj.Spec),
@@ -81,7 +79,7 @@ func (f *federationResolver) Start(ctx context.Context) error {
 			)
 			return f.handleServiceUpsert(eventCtx, obj)
 		},
-		OnUpdate: func(old, new *discovery_v1alpha1.MeshService) error {
+		OnUpdate: func(old, new *zephyr_discovery.MeshService) error {
 			eventCtx := logging.EventContext(ctx, logging.CreateEvent, new)
 			// for status-only updates, do nothing
 			// this is important to ensure that we eventually get into a consistent state, as
@@ -95,7 +93,7 @@ func (f *federationResolver) Start(ctx context.Context) error {
 
 			return f.handleServiceUpsert(eventCtx, new)
 		},
-		OnDelete: func(_ *discovery_v1alpha1.MeshService) error {
+		OnDelete: func(_ *zephyr_discovery.MeshService) error {
 			// ignoring delete
 			// https://github.com/solo-io/service-mesh-hub/issues/169
 			return nil
@@ -105,14 +103,14 @@ func (f *federationResolver) Start(ctx context.Context) error {
 }
 
 // handle services that get created or updated
-func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshService *discovery_v1alpha1.MeshService) error {
+func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshService *zephyr_discovery.MeshService) error {
 	logger := contextutils.LoggerFrom(ctx)
 
 	federationConfig := meshService.Spec.GetFederation()
 	if federationConfig == nil {
 		return nil
 	}
-	var failedFederations []*core_types.ResourceRef
+	var failedFederations []*zephyr_core_types.ResourceRef
 	for _, federatedToWorkloadRef := range federationConfig.FederatedToWorkloads {
 		if err := f.federateToRemoteWorkload(ctx, meshService, federatedToWorkloadRef); err != nil {
 			failedFederations = append(failedFederations, federatedToWorkloadRef)
@@ -123,15 +121,15 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 		}
 	}
 
-	var federationStatus *core_types.Status
+	var federationStatus *zephyr_core_types.Status
 	if len(failedFederations) > 0 {
-		federationStatus = &core_types.Status{
-			State:   core_types.Status_PROCESSING_ERROR,
+		federationStatus = &zephyr_core_types.Status{
+			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: FailedToFederateServices(meshService, failedFederations),
 		}
 	} else {
-		federationStatus = &core_types.Status{
-			State: core_types.Status_ACCEPTED,
+		federationStatus = &zephyr_core_types.Status{
+			State: zephyr_core_types.Status_ACCEPTED,
 		}
 	}
 
@@ -149,7 +147,7 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 	)
 
 	meshService.Status.FederationStatus = federationStatus
-	err := f.meshServiceClient.UpdateStatus(ctx, meshService)
+	err := f.meshServiceClient.UpdateMeshServiceStatus(ctx, meshService)
 	if err != nil {
 		logger.Warnw("Failed to update service status", zap.Error(err))
 	}
@@ -159,10 +157,10 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 
 func (f *federationResolver) federateToRemoteWorkload(
 	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-	meshWorkloadRef *core_types.ResourceRef,
+	meshService *zephyr_discovery.MeshService,
+	meshWorkloadRef *zephyr_core_types.ResourceRef,
 ) error {
-	workload, err := f.meshWorkloadClient.Get(ctx, client.ObjectKey{
+	workload, err := f.meshWorkloadClient.GetMeshWorkload(ctx, client.ObjectKey{
 		Name:      meshWorkloadRef.GetName(),
 		Namespace: meshWorkloadRef.GetNamespace(),
 	})
@@ -171,7 +169,7 @@ func (f *federationResolver) federateToRemoteWorkload(
 			meshService.GetNamespace(), meshService.GetNamespace())
 	}
 
-	meshForWorkload, err := f.meshClient.Get(ctx, client.ObjectKey{
+	meshForWorkload, err := f.meshClient.GetMesh(ctx, client.ObjectKey{
 		Name:      workload.Spec.GetMesh().GetName(),
 		Namespace: workload.Spec.GetMesh().GetNamespace(),
 	})
@@ -182,7 +180,7 @@ func (f *federationResolver) federateToRemoteWorkload(
 		)
 	}
 
-	meshForService, err := f.meshClient.Get(ctx, client.ObjectKey{
+	meshForService, err := f.meshClient.GetMesh(ctx, client.ObjectKey{
 		Name:      meshService.Spec.GetMesh().GetName(),
 		Namespace: meshService.Spec.GetMesh().GetNamespace(),
 	})
@@ -203,7 +201,7 @@ func (f *federationResolver) federateToRemoteWorkload(
 	)
 	// set up gateway resources on the target cluster
 	switch meshForService.Spec.GetMeshType().(type) {
-	case *types.MeshSpec_Istio:
+	case *zephyr_discovery_types.MeshSpec_Istio:
 		eap, err = f.perMeshFederationClients.Istio.FederateServiceSide(
 			contextutils.WithLogger(ctx, "istio"),
 			virtualMesh,
@@ -219,7 +217,7 @@ func (f *federationResolver) federateToRemoteWorkload(
 
 	// set up gateway resources on the client cluster
 	switch meshForWorkload.Spec.GetMeshType().(type) {
-	case *types.MeshSpec_Istio:
+	case *zephyr_discovery_types.MeshSpec_Istio:
 		return f.perMeshFederationClients.Istio.FederateClientSide(
 			contextutils.WithLogger(ctx, "istio"),
 			eap,
@@ -233,9 +231,9 @@ func (f *federationResolver) federateToRemoteWorkload(
 
 func (f *federationResolver) getVirtualMeshContainingService(
 	ctx context.Context,
-	meshForService *discovery_v1alpha1.Mesh,
-) (*networking_v1alpha1.VirtualMesh, error) {
-	virtualMeshs, err := f.virtualMeshClient.List(ctx)
+	meshForService *zephyr_discovery.Mesh,
+) (*zephyr_networking.VirtualMesh, error) {
+	virtualMeshs, err := f.virtualMeshClient.ListVirtualMesh(ctx)
 	if err != nil {
 		return nil, err
 	}

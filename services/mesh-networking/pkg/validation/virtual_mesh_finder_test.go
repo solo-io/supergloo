@@ -9,13 +9,13 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("mesh ref finder", func() {
@@ -41,26 +41,26 @@ var _ = Describe("mesh ref finder", func() {
 
 	It("will fail if initial mesh list fails", func() {
 		meshClient.EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(nil, testErr)
 
-		_, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &networking_v1alpha1.VirtualMesh{})
+		_, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &zephyr_networking.VirtualMesh{})
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(HaveInErrorChain(testErr))
 	})
 
 	It("will reutrn nil, nil with no refs as input", func() {
 		meshClient.EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(nil, nil)
-		list, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &networking_v1alpha1.VirtualMesh{})
+		list, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &zephyr_networking.VirtualMesh{})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(list).To(BeNil())
 	})
 
 	It("will return an error containing all invalid refs", func() {
-		meshList := &discovery_v1alpha1.MeshList{}
-		refs := []*core_types.ResourceRef{
+		meshList := &zephyr_discovery.MeshList{}
+		refs := []*zephyr_core_types.ResourceRef{
 			{
 				Name:      "name1",
 				Namespace: "namespace1",
@@ -70,13 +70,13 @@ var _ = Describe("mesh ref finder", func() {
 				Namespace: "namespace2",
 			},
 		}
-		vm := &networking_v1alpha1.VirtualMesh{
-			Spec: types.VirtualMeshSpec{
+		vm := &zephyr_networking.VirtualMesh{
+			Spec: zephyr_networking_types.VirtualMeshSpec{
 				Meshes: refs,
 			},
 		}
 		meshClient.EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(meshList, nil)
 		_, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 		Expect(err).To(HaveOccurred())
@@ -87,23 +87,23 @@ var _ = Describe("mesh ref finder", func() {
 	})
 
 	It("will return an error containing all invalid refs", func() {
-		meshList := &discovery_v1alpha1.MeshList{
-			Items: []discovery_v1alpha1.Mesh{
+		meshList := &zephyr_discovery.MeshList{
+			Items: []zephyr_discovery.Mesh{
 				{
-					ObjectMeta: metav1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "name1",
 						Namespace: "namespace1",
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "name2",
 						Namespace: "namespace2",
 					},
 				},
 			},
 		}
-		refs := []*core_types.ResourceRef{
+		refs := []*zephyr_core_types.ResourceRef{
 			{
 				Name:      "name1",
 				Namespace: "namespace1",
@@ -113,13 +113,13 @@ var _ = Describe("mesh ref finder", func() {
 				Namespace: "namespace2",
 			},
 		}
-		vm := &networking_v1alpha1.VirtualMesh{
-			Spec: types.VirtualMeshSpec{
+		vm := &zephyr_networking.VirtualMesh{
+			Spec: zephyr_networking_types.VirtualMeshSpec{
 				Meshes: refs,
 			},
 		}
 		meshClient.EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(meshList, nil)
 		list, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 		Expect(err).NotTo(HaveOccurred())

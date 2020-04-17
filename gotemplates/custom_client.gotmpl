@@ -1,0 +1,174 @@
+package {{.Version}}
+
+import (
+"context"
+
+"k8s.io/apimachinery/pkg/api/errors"
+"k8s.io/client-go/kubernetes/scheme"
+"k8s.io/client-go/rest"
+"sigs.k8s.io/controller-runtime/pkg/client"
+
+{{- if $.CustomTypesImportPath }}
+
+    . "{{ $.CustomTypesImportPath }}"
+{{- end}}
+)
+
+// clienset for the {{.Group}}/{{.Version}} APIs
+type Clientset interface {
+{{- range $resource := $.Resources }}
+    // clienset for the {{.Group}}/{{.Version}} APIs
+    {{ pluralize $resource.Kind }}() {{ $resource.Kind }}Client
+{{- end }}
+}
+
+type clientSet struct {
+client client.Client
+}
+
+func NewClientsetFromConfig(cfg *rest.Config) (*clientSet, error) {
+scheme := scheme.Scheme
+if err := AddToScheme(scheme); err != nil{
+return nil, err
+}
+client, err := client.New(cfg, client.Options{
+Scheme: scheme,
+})
+if err != nil {
+return nil, err
+}
+return NewClientset(client), nil
+}
+
+func NewClientset(client client.Client) *clientSet {
+return &clientSet{client: client}
+}
+
+{{- range $resource := $.Resources }}
+
+    // clienset for the {{.Group}}/{{.Version}} APIs
+    func (c *clientSet) {{ pluralize $resource.Kind }}() {{ $resource.Kind }}Client {
+    return New{{ $resource.Kind }}Client(c.client)
+    }
+{{- end }}
+
+{{- range $resource := $.Resources }}
+
+    {{- $kindLowerCamel := lower_camel $resource.Kind }}
+
+    // Reader knows how to read and list {{ $resource.Kind }}s.
+    type {{ $resource.Kind }}Reader interface {
+    // Get retrieves a {{ $resource.Kind }} for the given object key
+    Get{{ $resource.Kind }}(ctx context.Context, key client.ObjectKey) (*{{ $resource.Kind }}, error)
+
+    // List retrieves list of {{ $resource.Kind }}s for a given namespace and list options.
+    List{{ $resource.Kind }}(ctx context.Context, opts ...client.ListOption) (*{{ $resource.Kind }}List, error)
+    }
+
+    // Writer knows how to create, delete, and update {{ $resource.Kind }}s.
+    type {{ $resource.Kind }}Writer interface {
+    // Create saves the {{ $resource.Kind }} object.
+    Create{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.CreateOption) error
+
+    // Delete deletes the {{ $resource.Kind }} object.
+    Delete{{ $resource.Kind }}(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+    // Update updates the given {{ $resource.Kind }} object.
+    Update{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.UpdateOption) error
+
+    // If the {{ $resource.Kind }} object exists, update its spec. Otherwise, create the {{ $resource.Kind }} object.
+    Upsert{{ $resource.Kind }}Spec(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.UpdateOption) error
+
+    // Patch patches the given {{ $resource.Kind }} object.
+    Patch{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error
+
+    // DeleteAllOf deletes all {{ $resource.Kind }} objects matching the given options.
+    DeleteAllOf{{ $resource.Kind }}(ctx context.Context, opts ...client.DeleteAllOfOption) error
+    }
+
+    // StatusWriter knows how to update status subresource of a {{ $resource.Kind }} object.
+    type {{ $resource.Kind }}StatusWriter interface {
+    // Update updates the fields corresponding to the status subresource for the
+    // given {{ $resource.Kind }} object.
+    Update{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.UpdateOption) error
+
+    // Patch patches the given {{ $resource.Kind }} object's subresource.
+    Patch{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error
+    }
+
+    // Client knows how to perform CRUD operations on {{ $resource.Kind }}s.
+    type {{ $resource.Kind }}Client interface {
+    {{ $resource.Kind }}Reader
+    {{ $resource.Kind }}Writer
+    {{ $resource.Kind }}StatusWriter
+    }
+
+    type {{ $kindLowerCamel }}Client struct {
+    client client.Client
+    }
+
+    func New{{ $resource.Kind }}Client(client client.Client) *{{ $kindLowerCamel }}Client {
+    return &{{ $kindLowerCamel }}Client{client: client}
+    }
+
+    func (c *{{ $kindLowerCamel }}Client) Get{{ $resource.Kind }}(ctx context.Context, key client.ObjectKey) (*{{ $resource.Kind }}, error) {
+    obj := &{{ $resource.Kind }}{}
+    if err := c.client.Get(ctx, key, obj); err != nil {
+    return nil, err
+    }
+    return obj, nil
+    }
+
+    func (c *{{ $kindLowerCamel }}Client) List{{ $resource.Kind }}(ctx context.Context, opts ...client.ListOption) (*{{ $resource.Kind }}List, error) {
+    list := &{{ $resource.Kind }}List{}
+    if err := c.client.List(ctx, list, opts...); err != nil {
+    return nil, err
+    }
+    return list, nil
+    }
+
+    func (c *{{ $kindLowerCamel }}Client) Create{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.CreateOption) error {
+    return c.client.Create(ctx, obj, opts...)
+    }
+
+    func (c *{{ $kindLowerCamel }}Client) Delete{{ $resource.Kind }}(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+    obj := &{{ $resource.Kind }}{}
+    obj.SetName(key.Name)
+    obj.SetNamespace(key.Namespace)
+    return c.client.Delete(ctx, obj, opts...)
+    }
+
+    func (c *{{ $kindLowerCamel }}Client) Update{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.UpdateOption) error {
+    return c.client.Update(ctx, obj, opts...)
+    }
+
+    func (c *{{ $kindLowerCamel }}Client) Upsert{{ $resource.Kind }}Spec(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.UpdateOption) error {
+    existing, err := c.Get{{ $resource.Kind }}(ctx, client.ObjectKey{Name: obj.GetName(), Namespace: obj.GetNamespace()})
+    if err != nil {
+    if errors.IsNotFound(err) {
+    return c.Create{{ $resource.Kind }}(ctx, obj)
+    }
+    return err
+    }
+    existing.Spec = obj.Spec
+    return c.client.Update(ctx, existing, opts...)
+    }
+
+    func (c *{{ $kindLowerCamel }}Client) Patch{{ $resource.Kind }}(ctx context.Context, obj *{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error {
+    return c.client.Patch(ctx, obj, patch, opts...)
+    }
+
+    func (c *{{ $kindLowerCamel }}Client) DeleteAllOf{{ $resource.Kind }}(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+    obj := &{{ $resource.Kind }}{}
+    return c.client.DeleteAllOf(ctx, obj, opts...)
+    }
+
+    func (c *{{ $kindLowerCamel }}Client) Update{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $resource.Kind }}, opts ...client.UpdateOption) error {
+    return c.client.Status().Update(ctx, obj, opts...)
+    }
+
+    func (c *{{ $kindLowerCamel }}Client) Patch{{ $resource.Kind }}Status(ctx context.Context, obj *{{ $resource.Kind }}, patch client.Patch, opts ...client.PatchOption) error {
+    return c.client.Status().Patch(ctx, obj, patch, opts...)
+    }
+
+{{- end }}

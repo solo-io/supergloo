@@ -8,7 +8,7 @@ import (
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
 func GetMeshServices(
@@ -27,11 +27,11 @@ func GetMeshServices(
 	if err != nil {
 		return err
 	}
-	services, err := kubeClients.MeshServiceClient.List(ctx)
+	services, err := kubeClients.MeshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return err
 	}
-	serviceList := make([]*v1alpha1.MeshService, 0, len(services.Items))
+	serviceList := make([]*zephyr_discovery.MeshService, 0, len(services.Items))
 	for _, v := range services.Items {
 		v := v
 		serviceList = append(serviceList, &v)

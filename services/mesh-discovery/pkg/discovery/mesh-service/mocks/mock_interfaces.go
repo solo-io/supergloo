@@ -9,7 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	controller0 "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 )
 
 // MockMeshServiceFinder is a mock of MeshServiceFinder interface.
@@ -36,15 +36,15 @@ func (m *MockMeshServiceFinder) EXPECT() *MockMeshServiceFinderMockRecorder {
 }
 
 // StartDiscovery mocks base method.
-func (m *MockMeshServiceFinder) StartDiscovery(serviceController controller0.ServiceController, meshWorkloadController controller.MeshWorkloadController) error {
+func (m *MockMeshServiceFinder) StartDiscovery(serviceEventWatcher controller0.ServiceEventWatcher, meshWorkloadEventWatcher controller.MeshWorkloadEventWatcher) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartDiscovery", serviceController, meshWorkloadController)
+	ret := m.ctrl.Call(m, "StartDiscovery", serviceEventWatcher, meshWorkloadEventWatcher)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartDiscovery indicates an expected call of StartDiscovery.
-func (mr *MockMeshServiceFinderMockRecorder) StartDiscovery(serviceController, meshWorkloadController interface{}) *gomock.Call {
+func (mr *MockMeshServiceFinderMockRecorder) StartDiscovery(serviceEventWatcher, meshWorkloadEventWatcher interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshServiceFinder)(nil).StartDiscovery), serviceController, meshWorkloadController)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshServiceFinder)(nil).StartDiscovery), serviceEventWatcher, meshWorkloadEventWatcher)
 }

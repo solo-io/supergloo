@@ -3,7 +3,7 @@ package acp_translator
 import (
 	"context"
 
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 )
 
@@ -20,6 +20,6 @@ type AcpMeshTranslator interface {
 	Translate(
 		ctx context.Context,
 		targetServices []TargetService,
-		acp *networking_v1alpha1.AccessControlPolicy,
+		acp *zephyr_networking.AccessControlPolicy,
 	) *networking_types.AccessControlPolicyStatus_TranslatorError
 }

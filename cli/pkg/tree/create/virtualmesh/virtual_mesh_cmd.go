@@ -12,14 +12,14 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/validate"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/spf13/cobra"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type CreateVirtualMeshCmd *cobra.Command
@@ -66,7 +66,7 @@ func createVirtualMesh(
 		return err
 	}
 	if !opts.Create.DryRun {
-		return masterKubeClients.VirtualMeshClient.Create(ctx, vm)
+		return masterKubeClients.VirtualMeshClient.CreateVirtualMesh(ctx, vm)
 	} else {
 		return resourcePrinter.Print(out, vm, resource_printing.OutputFormat(opts.Create.OutputFormat))
 	}
@@ -75,11 +75,11 @@ func createVirtualMesh(
 func populateVirtualMeshInteractive(
 	allMeshNames []string,
 	interactivePrompt interactive.InteractivePrompt,
-) (*networking_v1alpha1.VirtualMesh, error) {
+) (*zephyr_networking.VirtualMesh, error) {
 	var err error
 	var displayName string
-	var selectedMeshes []*core_types.ResourceRef
-	var certificateAuthority *networking_types.VirtualMeshSpec_CertificateAuthority
+	var selectedMeshes []*zephyr_core_types.ResourceRef
+	var certificateAuthority *zephyr_networking_types.VirtualMeshSpec_CertificateAuthority
 	if displayName, err = interactivePrompt.PromptValueWithValidator("Resource Name", "", validate.K8sName); err != nil {
 		return nil, err
 	}
@@ -89,21 +89,21 @@ func populateVirtualMeshInteractive(
 	if certificateAuthority, err = selectCertificateAuthority(interactivePrompt); err != nil {
 		return nil, err
 	}
-	vm := &networking_v1alpha1.VirtualMesh{
-		TypeMeta: v1.TypeMeta{Kind: "VirtualMesh"}, // k8s resource printers will complain unless this is set
-		ObjectMeta: v1.ObjectMeta{
+	vm := &zephyr_networking.VirtualMesh{
+		TypeMeta: k8s_meta_types.TypeMeta{Kind: "VirtualMesh"}, // k8s resource printers will complain unless this is set
+		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      displayName,
 			Namespace: env.GetWriteNamespace(),
 		},
-		Spec: networking_types.VirtualMeshSpec{
+		Spec: zephyr_networking_types.VirtualMeshSpec{
 			DisplayName:          displayName,
 			Meshes:               selectedMeshes,
 			CertificateAuthority: certificateAuthority,
-			Federation: &networking_types.VirtualMeshSpec_Federation{
-				Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
+			Federation: &zephyr_networking_types.VirtualMeshSpec_Federation{
+				Mode: zephyr_networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
 			},
-			TrustModel: &networking_types.VirtualMeshSpec_Shared{
-				Shared: &networking_types.VirtualMeshSpec_SharedTrust{},
+			TrustModel: &zephyr_networking_types.VirtualMeshSpec_Shared{
+				Shared: &zephyr_networking_types.VirtualMeshSpec_SharedTrust{},
 			},
 		},
 	}
@@ -113,14 +113,14 @@ func populateVirtualMeshInteractive(
 func selectVirtualMeshesInteractive(
 	meshNames []string,
 	interactivePrompt interactive.InteractivePrompt,
-) ([]*core_types.ResourceRef, error) {
+) ([]*zephyr_core_types.ResourceRef, error) {
 	selections, err := interactivePrompt.SelectMultipleValues("Select the Meshes to include in the VirtualMesh", meshNames)
 	if err != nil {
 		return nil, err
 	}
-	var selectedMeshNames []*core_types.ResourceRef
+	var selectedMeshNames []*zephyr_core_types.ResourceRef
 	for _, selection := range selections {
-		selectedMeshNames = append(selectedMeshNames, &core_types.ResourceRef{
+		selectedMeshNames = append(selectedMeshNames, &zephyr_core_types.ResourceRef{
 			Name:      selection,
 			Namespace: env.GetWriteNamespace(),
 		})
@@ -128,7 +128,7 @@ func selectVirtualMeshesInteractive(
 	return selectedMeshNames, nil
 }
 
-func selectCertificateAuthority(interactivePrompt interactive.InteractivePrompt) (*networking_types.VirtualMeshSpec_CertificateAuthority, error) {
+func selectCertificateAuthority(interactivePrompt interactive.InteractivePrompt) (*zephyr_networking_types.VirtualMeshSpec_CertificateAuthority, error) {
 	builtin := "builtin"
 	provided := "provided (user-supplied)"
 	value, err := interactivePrompt.SelectValue("Certificate authority", []string{builtin, provided})
@@ -161,9 +161,9 @@ func selectCertificateAuthority(interactivePrompt interactive.InteractivePrompt)
 		if orgName, err = interactivePrompt.PromptRequiredValue("Root certificate organization name"); err != nil {
 			return nil, err
 		}
-		return &networking_types.VirtualMeshSpec_CertificateAuthority{
-			Type: &networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
-				Builtin: &networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{
+		return &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
+			Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
+				Builtin: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{
 					TtlDays:         uint32(ttl),
 					RsaKeySizeBytes: uint32(rsaKeySize),
 					OrgName:         orgName,
@@ -179,10 +179,10 @@ func selectCertificateAuthority(interactivePrompt interactive.InteractivePrompt)
 		if name, err = interactivePrompt.PromptRequiredValue("Root certificate k8s Secret namespace"); err != nil {
 			return nil, err
 		}
-		return &networking_types.VirtualMeshSpec_CertificateAuthority{
-			Type: &networking_types.VirtualMeshSpec_CertificateAuthority_Provided_{
-				Provided: &networking_types.VirtualMeshSpec_CertificateAuthority_Provided{
-					Certificate: &core_types.ResourceRef{
+		return &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
+			Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_{
+				Provided: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided{
+					Certificate: &zephyr_core_types.ResourceRef{
 						Name:      name,
 						Namespace: namespace,
 					},
@@ -193,7 +193,7 @@ func selectCertificateAuthority(interactivePrompt interactive.InteractivePrompt)
 }
 
 func getAllMeshNames(ctx context.Context, meshClient zephyr_discovery.MeshClient) ([]string, error) {
-	meshList, err := meshClient.List(ctx)
+	meshList, err := meshClient.ListMesh(ctx)
 	if err != nil {
 		return nil, err
 	}

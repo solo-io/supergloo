@@ -3,8 +3,8 @@ package traffic_policy_translator
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 )
 
@@ -17,9 +17,9 @@ type TrafficPolicyMeshTranslator interface {
 	// the presence of a TranslatorError indicates an error during translation
 	TranslateTrafficPolicy(
 		ctx context.Context,
-		meshService *v1alpha1.MeshService,
-		mesh *v1alpha1.Mesh,
-		mergedTrafficPolicy []*networking_v1alpha1.TrafficPolicy,
+		meshService *zephyr_discovery.MeshService,
+		mesh *zephyr_discovery.Mesh,
+		mergedTrafficPolicy []*zephyr_networking.TrafficPolicy,
 	) *types.TrafficPolicyStatus_TranslatorError
 }
 

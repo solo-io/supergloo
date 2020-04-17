@@ -9,13 +9,14 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
 	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
-	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
-	mock_kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext/mocks"
+	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
+	mock_k8s_extension_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/apiextensions.k8s.io/v1beta1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Crd Uninstaller", func() {
@@ -27,7 +28,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			Host:        "example.com",
 			BearerToken: "service-account-token",
 		}
-		crdClientFactoryBuilder = func(crdClient kubernetes_apiext.CustomResourceDefinitionClient) kubernetes_apiext.CrdClientFactory {
+		crdClientFactoryBuilder = func(crdClient kubernetes_apiext.CustomResourceDefinitionClient) kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactory {
 			return func(cfg *rest.Config) (client kubernetes_apiext.CustomResourceDefinitionClient, err error) {
 				Expect(cfg).To(Equal(restConfig))
 				return crdClient, nil
@@ -44,7 +45,7 @@ var _ = Describe("Crd Uninstaller", func() {
 	})
 
 	It("only removes zephyr CRDs", func() {
-		crdClient := mock_kubernetes_apiext.NewMockCustomResourceDefinitionClient(ctrl)
+		crdClient := mock_k8s_extension_clients.NewMockCustomResourceDefinitionClient(ctrl)
 
 		crd1 := v1beta1.CustomResourceDefinition{
 			ObjectMeta: v1.ObjectMeta{
@@ -57,7 +58,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			},
 		}
 		crdClient.EXPECT().
-			List(ctx).
+			ListCustomResourceDefinition(ctx).
 			Return(&v1beta1.CustomResourceDefinitionList{
 				Items: []v1beta1.CustomResourceDefinition{
 					crd1,
@@ -71,19 +72,19 @@ var _ = Describe("Crd Uninstaller", func() {
 			}, nil)
 
 		crdClient.EXPECT().
-			Get(ctx, crd1.GetName()).
+			GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd1.GetName()}).
 			Return(&crd1, nil)
 
 		crdClient.EXPECT().
-			Delete(ctx, &crd1).
+			DeleteCustomResourceDefinition(ctx, client.ObjectKey{Name: crd1.GetName()}).
 			Return(nil)
 
 		crdClient.EXPECT().
-			Get(ctx, crd2.GetName()).
+			GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd2.GetName()}).
 			Return(&crd2, nil)
 
 		crdClient.EXPECT().
-			Delete(ctx, &crd2).
+			DeleteCustomResourceDefinition(ctx, client.ObjectKey{Name: crd2.GetName()}).
 			Return(nil)
 
 		deletedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds(ctx, "cluster-1", restConfig)
@@ -93,9 +94,9 @@ var _ = Describe("Crd Uninstaller", func() {
 
 	It("responds with the appropriate error if the list call fails", func() {
 		testErr := eris.New("test-err")
-		crdClient := mock_kubernetes_apiext.NewMockCustomResourceDefinitionClient(ctrl)
+		crdClient := mock_k8s_extension_clients.NewMockCustomResourceDefinitionClient(ctrl)
 		crdClient.EXPECT().
-			List(ctx).
+			ListCustomResourceDefinition(ctx).
 			Return(nil, testErr)
 
 		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds(ctx, "cluster-1", restConfig)
@@ -105,7 +106,7 @@ var _ = Describe("Crd Uninstaller", func() {
 
 	It("responds with the appropriate error if the delete call fails", func() {
 		testErr := eris.New("test-err")
-		crdClient := mock_kubernetes_apiext.NewMockCustomResourceDefinitionClient(ctrl)
+		crdClient := mock_k8s_extension_clients.NewMockCustomResourceDefinitionClient(ctrl)
 
 		crd := v1beta1.CustomResourceDefinition{
 			ObjectMeta: v1.ObjectMeta{
@@ -113,7 +114,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			},
 		}
 		crdClient.EXPECT().
-			List(ctx).
+			ListCustomResourceDefinition(ctx).
 			Return(&v1beta1.CustomResourceDefinitionList{
 				Items: []v1beta1.CustomResourceDefinition{
 					crd,
@@ -131,11 +132,11 @@ var _ = Describe("Crd Uninstaller", func() {
 			}, nil)
 
 		crdClient.EXPECT().
-			Get(ctx, crd.GetName()).
+			GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd.GetName()}).
 			Return(&crd, nil)
 
 		crdClient.EXPECT().
-			Delete(ctx, &crd).
+			DeleteCustomResourceDefinition(ctx, client.ObjectKey{Name: crd.GetName()}).
 			Return(testErr)
 
 		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds(ctx, "cluster-1", restConfig)
@@ -144,7 +145,7 @@ var _ = Describe("Crd Uninstaller", func() {
 	})
 
 	It("does not return an error if the CRDs have been deleted concurrently in the background", func() {
-		crdClient := mock_kubernetes_apiext.NewMockCustomResourceDefinitionClient(ctrl)
+		crdClient := mock_k8s_extension_clients.NewMockCustomResourceDefinitionClient(ctrl)
 		crd1 := v1beta1.CustomResourceDefinition{
 			ObjectMeta: v1.ObjectMeta{
 				Name: "test.abc.zephyr.solo.io",
@@ -156,7 +157,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			},
 		}
 		crdClient.EXPECT().
-			List(ctx).
+			ListCustomResourceDefinition(ctx).
 			Return(&v1beta1.CustomResourceDefinitionList{
 				Items: []v1beta1.CustomResourceDefinition{
 					crd1,
@@ -170,10 +171,10 @@ var _ = Describe("Crd Uninstaller", func() {
 			}, nil)
 
 		crdClient.EXPECT().
-			Get(ctx, crd1.GetName()).
+			GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd1.GetName()}).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, "test-name"))
 		crdClient.EXPECT().
-			Get(ctx, crd2.GetName()).
+			GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd2.GetName()}).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, "test-name"))
 
 		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds(ctx, "cluster-1", restConfig)

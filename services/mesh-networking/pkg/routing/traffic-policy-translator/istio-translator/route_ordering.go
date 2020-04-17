@@ -1,11 +1,11 @@
 package istio_translator
 
 import (
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	api_v1alpha3 "istio.io/api/networking/v1alpha3"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	istio_networking "istio.io/api/networking/v1alpha3"
 )
 
-type SpecificitySortableRoutes []*api_v1alpha3.HTTPRoute
+type SpecificitySortableRoutes []*istio_networking.HTTPRoute
 
 func (b SpecificitySortableRoutes) Len() int {
 	return len(b)
@@ -34,7 +34,7 @@ ordering needs to be changed.
 6. Method, according to ordering declared in HTTPMethodOrdering
 7. WithoutHeaders, number of items decreasing
 */
-func isHttpRouteMatcherMoreSpecific(httpRouteA, httpRouteB *api_v1alpha3.HTTPRoute) bool {
+func isHttpRouteMatcherMoreSpecific(httpRouteA, httpRouteB *istio_networking.HTTPRoute) bool {
 	// each HttpRoute is guaranteed to only have a single HttpMatchRequest
 	a := httpRouteA.GetMatch()[0]
 	b := httpRouteB.GetMatch()[0]
@@ -78,7 +78,7 @@ func isHttpRouteMatcherMoreSpecific(httpRouteA, httpRouteB *api_v1alpha3.HTTPRou
 
 // In decreasing order of specificity: exact, regex, prefix
 // If both StringMatch objects are of same type, compare by length (longer being more specific)
-func isStringMatchMoreSpecific(a, b *api_v1alpha3.StringMatch) bool {
+func isStringMatchMoreSpecific(a, b *istio_networking.StringMatch) bool {
 	if len(a.GetExact()) > len(b.GetExact()) {
 		return true
 	} else if len(a.GetExact()) < len(b.GetExact()) {
@@ -99,7 +99,7 @@ func isStringMatchMoreSpecific(a, b *api_v1alpha3.StringMatch) bool {
 }
 
 // SMH API currently only supports exact method matches
-func isMethodMoreSpecific(a, b *api_v1alpha3.StringMatch) bool {
+func isMethodMoreSpecific(a, b *istio_networking.StringMatch) bool {
 	if a.GetExact() == "" {
 		return false
 	} else if b.GetExact() == "" {
@@ -107,6 +107,6 @@ func isMethodMoreSpecific(a, b *api_v1alpha3.StringMatch) bool {
 	} else {
 		// if both method matchers exist, ordering by specificity is irrelevant because they match in a mutually exclusively manner
 		// we apply an ordering here purely for determinism
-		return core_types.HttpMethodValue_value[a.GetExact()] > core_types.HttpMethodValue_value[b.GetExact()]
+		return zephyr_core_types.HttpMethodValue_value[a.GetExact()] > zephyr_core_types.HttpMethodValue_value[b.GetExact()]
 	}
 }

@@ -7,8 +7,8 @@ import (
 
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
-	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 )
 
 func NewVirtualMeshMCSRPrinter(tableBuilder TableBuilder) VirtualMeshCSRPrinter {
@@ -23,7 +23,7 @@ type vmcsrPrinter struct {
 
 func (m *vmcsrPrinter) Print(
 	out io.Writer,
-	vmcsrs []*security_v1alpha1.VirtualMeshCertificateSigningRequest,
+	vmcsrs []*zephyr_security.VirtualMeshCertificateSigningRequest,
 ) error {
 
 	if len(vmcsrs) == 0 {
@@ -59,7 +59,7 @@ func (m *vmcsrPrinter) Print(
 	return nil
 }
 
-func (m *vmcsrPrinter) buildMetadataCell(virtualMesh *security_v1alpha1.VirtualMeshCertificateSigningRequest) string {
+func (m *vmcsrPrinter) buildMetadataCell(virtualMesh *zephyr_security.VirtualMeshCertificateSigningRequest) string {
 	var items []string
 
 	items = append(items,
@@ -73,7 +73,7 @@ func (m *vmcsrPrinter) buildMetadataCell(virtualMesh *security_v1alpha1.VirtualM
 	return strings.Join(items, "\n")
 }
 
-func (m *vmcsrPrinter) buildCSRCell(spec types.VirtualMeshCertificateSigningRequestSpec) string {
+func (m *vmcsrPrinter) buildCSRCell(spec zephyr_security_types.VirtualMeshCertificateSigningRequestSpec) string {
 	var items []string
 
 	if spec.GetCertConfig() != nil {
@@ -94,7 +94,7 @@ func (m *vmcsrPrinter) buildCSRCell(spec types.VirtualMeshCertificateSigningRequ
 	return strings.Join(items, "\n")
 }
 
-func (m *vmcsrPrinter) buildStatusCell(status types.VirtualMeshCertificateSigningRequestStatus) string {
+func (m *vmcsrPrinter) buildStatusCell(status zephyr_security_types.VirtualMeshCertificateSigningRequestStatus) string {
 	var items []string
 
 	if federationCell := BuildSimpleStatusCell(

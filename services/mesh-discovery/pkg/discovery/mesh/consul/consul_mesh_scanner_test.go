@@ -9,20 +9,18 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/docker/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/consul"
 	mock_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/consul/mocks"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
-	appsv1 "k8s.io/api/apps/v1"
-	k8s_apps_v1 "k8s.io/api/apps/v1"
-	kubev1 "k8s.io/api/core/v1"
-	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_apps "k8s.io/api/apps/v1"
+	k8s_core "k8s.io/api/core/v1"
+	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -54,12 +52,12 @@ var _ = Describe("Consul Mesh Finder", func() {
 
 		consulMeshFinder := consul.NewConsulMeshScanner(imageParser, consulInstallationFinder)
 
-		nonConsulDeployment := &k8s_apps_v1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Namespace: consulNs, Name: "name doesn't matter in this context"},
-			Spec: appsv1.DeploymentSpec{
-				Template: kubev1.PodTemplateSpec{
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{{
+		nonConsulDeployment := &k8s_apps.Deployment{
+			ObjectMeta: k8s_meta.ObjectMeta{Namespace: consulNs, Name: "name doesn't matter in this context"},
+			Spec: k8s_apps.DeploymentSpec{
+				Template: k8s_core.PodTemplateSpec{
+					Spec: k8s_core.PodSpec{
+						Containers: []k8s_core.Container{{
 							Image: "test-image",
 						}},
 					},
@@ -84,12 +82,12 @@ var _ = Describe("Consul Mesh Finder", func() {
 		consulMeshFinder := consul.NewConsulMeshScanner(imageParser, consulInstallationFinder)
 
 		consulContainer := consulDeployment().Spec.Template.Spec.Containers[0]
-		deployment := &k8s_apps_v1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Namespace: consulNs, Name: "name doesn't matter in this context"},
-			Spec: appsv1.DeploymentSpec{
-				Template: kubev1.PodTemplateSpec{
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{
+		deployment := &k8s_apps.Deployment{
+			ObjectMeta: k8s_meta.ObjectMeta{Namespace: consulNs, Name: "name doesn't matter in this context"},
+			Spec: k8s_apps.DeploymentSpec{
+				Template: k8s_core.PodTemplateSpec{
+					Spec: k8s_core.PodSpec{
+						Containers: []k8s_core.Container{
 							{
 								Image: "test-image",
 							},
@@ -119,22 +117,22 @@ var _ = Describe("Consul Mesh Finder", func() {
 				Tag:    consulVersion,
 			}, nil)
 
-		expectedMesh := &discoveryv1alpha1.Mesh{
-			ObjectMeta: k8s_meta_v1.ObjectMeta{
+		expectedMesh := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta.ObjectMeta{
 				Name:      "consul-minidc-consul-ns",
 				Namespace: env.GetWriteNamespace(),
 				Labels:    consul.DiscoveryLabels,
 			},
-			Spec: discovery_types.MeshSpec{
-				MeshType: &discovery_types.MeshSpec_ConsulConnect{
-					ConsulConnect: &discovery_types.MeshSpec_ConsulConnectMesh{
-						Installation: &discovery_types.MeshSpec_MeshInstallation{
+			Spec: zephyr_discovery_types.MeshSpec{
+				MeshType: &zephyr_discovery_types.MeshSpec_ConsulConnect{
+					ConsulConnect: &zephyr_discovery_types.MeshSpec_ConsulConnectMesh{
+						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               consulVersion,
 						},
 					},
 				},
-				Cluster: &core_types.ResourceRef{
+				Cluster: &zephyr_core_types.ResourceRef{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -153,12 +151,12 @@ var _ = Describe("Consul Mesh Finder", func() {
 		consulMeshFinder := consul.NewConsulMeshScanner(imageParser, consulInstallationFinder)
 
 		consulContainer := consulDeployment().Spec.Template.Spec.Containers[0]
-		deployment := &k8s_apps_v1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Namespace: consulNs, Name: "name doesn't matter in this context"},
-			Spec: appsv1.DeploymentSpec{
-				Template: kubev1.PodTemplateSpec{
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{
+		deployment := &k8s_apps.Deployment{
+			ObjectMeta: k8s_meta.ObjectMeta{Namespace: consulNs, Name: "name doesn't matter in this context"},
+			Spec: k8s_apps.DeploymentSpec{
+				Template: k8s_core.PodTemplateSpec{
+					Spec: k8s_core.PodSpec{
+						Containers: []k8s_core.Container{
 							{
 								Image: "test-image",
 							},
@@ -188,13 +186,13 @@ var _ = Describe("Consul Mesh Finder", func() {
 	})
 })
 
-func consulDeployment() *k8s_apps_v1.Deployment {
-	return &k8s_apps_v1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{Namespace: consulNs, Name: "name doesn't matter in this context"},
-		Spec: appsv1.DeploymentSpec{
-			Template: kubev1.PodTemplateSpec{
-				Spec: kubev1.PodSpec{
-					Containers: []kubev1.Container{{
+func consulDeployment() *k8s_apps.Deployment {
+	return &k8s_apps.Deployment{
+		ObjectMeta: k8s_meta.ObjectMeta{Namespace: consulNs, Name: "name doesn't matter in this context"},
+		Spec: k8s_apps.DeploymentSpec{
+			Template: k8s_core.PodTemplateSpec{
+				Spec: k8s_core.PodSpec{
+					Containers: []k8s_core.Container{{
 						Image: fmt.Sprintf("consul:%s", consulVersion),
 						Command: []string{
 							"/bin/sh",

@@ -15,14 +15,14 @@ import (
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	traffic_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	types2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking/mocks"
-	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
 )
@@ -72,27 +72,27 @@ var _ = Describe("TrafficPolicyCmd", func() {
 		meshServiceNames := []string{"ms1", "ms2"}
 		meshServiceDisplayNames := []string{"ms1.namespace1.cluster1", "ms2.namespace2.cluster2"}
 		meshServiceDisplayNamesWithDoneOption := append([]string{traffic_policy.DoneSelectingOption}, meshServiceDisplayNames...)
-		meshServiceList := &v1alpha1.MeshServiceList{
-			Items: []v1alpha1.MeshService{
+		meshServiceList := &zephyr_discovery.MeshServiceList{
+			Items: []zephyr_discovery.MeshService{
 				{
-					ObjectMeta: k8s_meta_v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      meshServiceNames[0],
 						Namespace: "namespace1",
 					},
-					Spec: types2.MeshServiceSpec{
-						KubeService: &types2.MeshServiceSpec_KubeService{
-							Ref: &core_types.ResourceRef{Cluster: "cluster1"},
+					Spec: zephyr_discovery_types.MeshServiceSpec{
+						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &zephyr_core_types.ResourceRef{Cluster: "cluster1"},
 						},
 					},
 				},
 				{
-					ObjectMeta: k8s_meta_v1.ObjectMeta{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      meshServiceNames[1],
 						Namespace: "namespace2",
 					},
-					Spec: types2.MeshServiceSpec{
-						KubeService: &types2.MeshServiceSpec_KubeService{
-							Ref: &core_types.ResourceRef{Cluster: "cluster2"},
+					Spec: zephyr_discovery_types.MeshServiceSpec{
+						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &zephyr_core_types.ResourceRef{Cluster: "cluster2"},
 						},
 					},
 				},
@@ -100,7 +100,7 @@ var _ = Describe("TrafficPolicyCmd", func() {
 		}
 		mockMeshServiceClient.
 			EXPECT().
-			List(ctx).
+			ListMeshService(ctx).
 			Return(meshServiceList, nil)
 		// select sources
 		expectedLabels := labels.Set(map[string]string{"k1": "v1", "k2": "v2"})
@@ -113,16 +113,16 @@ var _ = Describe("TrafficPolicyCmd", func() {
 			EXPECT().
 			PromptValueWithValidator(gomock.Any(), "", gomock.Any()).
 			Return(strings.Join(expectedNamespaces, ","), nil)
-		expectedWorkloadSelector := &core_types.WorkloadSelector{Labels: expectedLabels, Namespaces: expectedNamespaces}
+		expectedWorkloadSelector := &zephyr_core_types.WorkloadSelector{Labels: expectedLabels, Namespaces: expectedNamespaces}
 		// select targets
 		mockInteractivePrompt.
 			EXPECT().
 			SelectMultipleValues(gomock.Any(), meshServiceDisplayNames).
 			Return([]string{meshServiceDisplayNames[0]}, nil)
-		expectedTargetSelector := &core_types.ServiceSelector{
-			ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
-				ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
-					Services: []*core_types.ResourceRef{
+		expectedTargetSelector := &zephyr_core_types.ServiceSelector{
+			ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
+				ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+					Services: []*zephyr_core_types.ResourceRef{
 						{
 							Name:      meshServiceList.Items[0].GetName(),
 							Namespace: meshServiceList.Items[0].GetNamespace(),
@@ -156,10 +156,10 @@ var _ = Describe("TrafficPolicyCmd", func() {
 			EXPECT().
 			SelectValue(gomock.Any(), utils.RemoveString(meshServiceDisplayNamesWithDoneOption, meshServiceDisplayNames[1])).
 			Return(traffic_policy.DoneSelectingOption, nil)
-		expectedTrafficShift := &networking_types.TrafficPolicySpec_MultiDestination{
-			Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+		expectedTrafficShift := &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
+			Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 				{
-					Destination: &core_types.ResourceRef{
+					Destination: &zephyr_core_types.ResourceRef{
 						Name:      meshServiceList.Items[1].GetName(),
 						Namespace: meshServiceList.Items[1].GetNamespace(),
 					},
@@ -168,11 +168,11 @@ var _ = Describe("TrafficPolicyCmd", func() {
 				},
 			},
 		}
-		expectedTrafficPolicy := &networking_v1alpha1.TrafficPolicy{
-			TypeMeta: k8s_meta_v1.TypeMeta{
+		expectedTrafficPolicy := &zephyr_networking.TrafficPolicy{
+			TypeMeta: k8s_meta_types.TypeMeta{
 				Kind: "TrafficPolicy",
 			},
-			Spec: networking_types.TrafficPolicySpec{
+			Spec: zephyr_networking_types.TrafficPolicySpec{
 				SourceSelector:      expectedWorkloadSelector,
 				DestinationSelector: expectedTargetSelector,
 				TrafficShift:        expectedTrafficShift,

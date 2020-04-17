@@ -19,18 +19,18 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	mock_csr "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr/mocks"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
-	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
-	v1 "k8s.io/api/core/v1"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -66,7 +66,7 @@ var _ = Describe("Cluster Operations", func() {
 		meshctl = &cli_test.MockMeshctl{
 			KubeClients: common.KubeClients{
 				ClusterAuthorization: authClient,
-				SecretsClient:        secretClient,
+				SecretClient:         secretClient,
 				NamespaceClient:      namespaceClient,
 				KubeClusterClient:    clusterClient,
 			},
@@ -110,7 +110,7 @@ users:
     token: alphanumericgarbage
 `, server)
 			}
-			serviceAccountRef = &core_types.ResourceRef{
+			serviceAccountRef = &zephyr_core_types.ResourceRef{
 				Name:      "test-cluster-name",
 				Namespace: env.GetWriteNamespace(),
 			}
@@ -138,6 +138,18 @@ users:
 			}
 		)
 
+		var expectUpsertSecretData = func(ctx context.Context, secret *k8s_core_types.Secret) {
+			existing := &k8s_core_types.Secret{
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "existing"},
+			}
+			secretClient.
+				EXPECT().
+				GetSecret(ctx, client.ObjectKey{Name: secret.Name, Namespace: secret.Namespace}).
+				Return(existing, nil)
+			existing.Data = secret.Data
+			secretClient.EXPECT().UpdateSecret(ctx, existing).Return(nil)
+		}
+
 		It("works", func() {
 			localKubeConfig := "~/.kube/master-config"
 			remoteKubeConfig := "~/.kube/target-config"
@@ -148,14 +160,14 @@ users:
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
 			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
 				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
-			secret := &v1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
+			secret := &k8s_core_types.Secret{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
@@ -163,17 +175,14 @@ users:
 				Data: map[string][]byte{
 					clusterName: []byte(expectedKubeConfig(testServerABC)),
 				},
-				Type: v1.SecretTypeOpaque,
+				Type: k8s_core_types.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			csrAgentInstaller.EXPECT().
@@ -187,13 +196,13 @@ users:
 				}).
 				Return(nil)
 
-			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
-				ObjectMeta: metav1.ObjectMeta{
+			clusterClient.EXPECT().UpsertKubernetesClusterSpec(ctx, &zephyr_discovery.KubernetesCluster{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
 				},
-				Spec: discovery_types.KubernetesClusterSpec{
-					SecretRef: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.KubernetesClusterSpec{
+					SecretRef: &zephyr_core_types.ResourceRef{
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
@@ -240,14 +249,14 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				GetRawConfigForContext(remoteKubeConfig, "").
 				Return(cxt, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
 				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
-			secret := &v1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
+			secret := &k8s_core_types.Secret{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
@@ -255,17 +264,14 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Data: map[string][]byte{
 					"test-cluster-name": []byte(expectedKubeConfig(testServerABC)),
 				},
-				Type: v1.SecretTypeOpaque,
+				Type: k8s_core_types.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			csrAgentInstaller.
@@ -280,13 +286,13 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			clusterClient.
 				EXPECT().
-				Upsert(ctx, &v1alpha1.KubernetesCluster{
-					ObjectMeta: metav1.ObjectMeta{
+				UpsertKubernetesClusterSpec(ctx, &zephyr_discovery.KubernetesCluster{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "test-cluster-name",
 						Namespace: env.GetWriteNamespace(),
 					},
-					Spec: discovery_types.KubernetesClusterSpec{
-						SecretRef: &core_types.ResourceRef{
+					Spec: zephyr_discovery_types.KubernetesClusterSpec{
+						SecretRef: &zephyr_core_types.ResourceRef{
 							Name:      secret.GetName(),
 							Namespace: secret.GetNamespace(),
 						},
@@ -334,14 +340,14 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				GetRawConfigForContext(remoteKubeConfig, contextDEF).
 				Return(cxt, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
 				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
-			secret := &v1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
+			secret := &k8s_core_types.Secret{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
@@ -349,17 +355,14 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Data: map[string][]byte{
 					"test-cluster-name": []byte(expectedKubeConfig(testServerDEF)),
 				},
-				Type: v1.SecretTypeOpaque,
+				Type: k8s_core_types.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			csrAgentInstaller.
@@ -375,13 +378,13 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			clusterClient.
 				EXPECT().
-				Upsert(ctx, &v1alpha1.KubernetesCluster{
-					ObjectMeta: metav1.ObjectMeta{
+				UpsertKubernetesClusterSpec(ctx, &zephyr_discovery.KubernetesCluster{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "test-cluster-name",
 						Namespace: env.GetWriteNamespace(),
 					},
-					Spec: discovery_types.KubernetesClusterSpec{
-						SecretRef: &core_types.ResourceRef{
+					Spec: zephyr_discovery_types.KubernetesClusterSpec{
+						SecretRef: &zephyr_core_types.ResourceRef{
 							Name:      secret.GetName(),
 							Namespace: secret.GetNamespace(),
 						},
@@ -459,10 +462,10 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -498,16 +501,16 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 			namespaceClient.
 				EXPECT().
-				Create(ctx, &v1.Namespace{
-					ObjectMeta: metav1.ObjectMeta{Name: env.GetWriteNamespace()},
+				CreateNamespace(ctx, &k8s_core_types.Namespace{
+					ObjectMeta: k8s_meta_types.ObjectMeta{Name: env.GetWriteNamespace()},
 				}).
 				Return(nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -537,7 +540,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				GetRestConfigForContext(remoteKubeConfig, "").
 				Return(targetRestConfig, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -566,7 +569,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				GetRestConfigForContext(remoteKubeConfig, "").
 				Return(targetRestConfig, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -604,7 +607,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
 				Return(configForServiceAccount, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -624,7 +627,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			_, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
@@ -671,14 +674,14 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
 				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
-			secret := &v1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
+			secret := &k8s_core_types.Secret{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
@@ -686,17 +689,14 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				Data: map[string][]byte{
 					clusterName: []byte(expectedKubeConfig(testServerABC)),
 				},
-				Type: v1.SecretTypeOpaque,
+				Type: k8s_core_types.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			testErr := eris.New("test")
@@ -713,13 +713,13 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				}).
 				Return(nil)
 
-			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
-				ObjectMeta: metav1.ObjectMeta{
+			clusterClient.EXPECT().UpsertKubernetesClusterSpec(ctx, &zephyr_discovery.KubernetesCluster{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
 				},
-				Spec: discovery_types.KubernetesClusterSpec{
-					SecretRef: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.KubernetesClusterSpec{
+					SecretRef: &zephyr_core_types.ResourceRef{
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
@@ -748,14 +748,14 @@ Successfully wrote kube config secret to master cluster...
 			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(localKubeConfig, remoteContext).Return(cxt, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
 				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
-			secret := &v1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
+			secret := &k8s_core_types.Secret{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
@@ -763,17 +763,14 @@ Successfully wrote kube config secret to master cluster...
 				Data: map[string][]byte{
 					clusterName: []byte(expectedKubeConfig(testServerDEF)),
 				},
-				Type: v1.SecretTypeOpaque,
+				Type: k8s_core_types.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			csrAgentInstaller.
@@ -787,13 +784,13 @@ Successfully wrote kube config secret to master cluster...
 					RemoteWriteNamespace: env.GetWriteNamespace(),
 				})
 
-			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
-				ObjectMeta: metav1.ObjectMeta{
+			clusterClient.EXPECT().UpsertKubernetesClusterSpec(ctx, &zephyr_discovery.KubernetesCluster{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
 				},
-				Spec: discovery_types.KubernetesClusterSpec{
-					SecretRef: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.KubernetesClusterSpec{
+					SecretRef: &zephyr_core_types.ResourceRef{
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
@@ -822,14 +819,14 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
 			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
 				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
-			secret := &v1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
+			secret := &k8s_core_types.Secret{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
@@ -837,17 +834,14 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Data: map[string][]byte{
 					clusterName: []byte(expectedKubeConfig(testServerABC)),
 				},
-				Type: v1.SecretTypeOpaque,
+				Type: k8s_core_types.SecretTypeOpaque,
 			}
 
-			secretClient.
-				EXPECT().
-				UpsertData(ctx, secret).
-				Return(nil)
+			expectUpsertSecretData(ctx, secret)
 
 			namespaceClient.
 				EXPECT().
-				Get(ctx, env.GetWriteNamespace()).
+				GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
 				Return(nil, nil)
 
 			csrAgentInstaller.EXPECT().
@@ -862,13 +856,13 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				}).
 				Return(nil)
 
-			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
-				ObjectMeta: metav1.ObjectMeta{
+			clusterClient.EXPECT().UpsertKubernetesClusterSpec(ctx, &zephyr_discovery.KubernetesCluster{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
 				},
-				Spec: discovery_types.KubernetesClusterSpec{
-					SecretRef: &core_types.ResourceRef{
+				Spec: zephyr_discovery_types.KubernetesClusterSpec{
+					SecretRef: &zephyr_core_types.ResourceRef{
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},

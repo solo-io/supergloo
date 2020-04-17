@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
@@ -58,7 +58,7 @@ type consulMeshScanner struct {
 	imageNameParser                  docker.ImageNameParser
 }
 
-func (c *consulMeshScanner) ScanDeployment(_ context.Context, clusterName string, deployment *k8s_apps_v1.Deployment, _ client.Client) (*discoveryv1alpha1.Mesh, error) {
+func (c *consulMeshScanner) ScanDeployment(_ context.Context, clusterName string, deployment *k8s_apps_v1.Deployment, _ client.Client) (*zephyr_discovery.Mesh, error) {
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		isConsulInstallation, err := c.consulConnectInstallationScanner.IsConsulConnect(container)
 		if err != nil {
@@ -79,7 +79,7 @@ func (c *consulMeshScanner) ScanDeployment(_ context.Context, clusterName string
 func (c *consulMeshScanner) buildConsulMeshObject(
 	deployment *k8s_apps_v1.Deployment,
 	container k8s_core_v1.Container,
-	clusterName string) (*discoveryv1alpha1.Mesh, error) {
+	clusterName string) (*zephyr_discovery.Mesh, error) {
 
 	parsedImage, err := c.imageNameParser.Parse(container.Image)
 	if err != nil {
@@ -91,22 +91,22 @@ func (c *consulMeshScanner) buildConsulMeshObject(
 		imageVersion = parsedImage.Digest
 	}
 
-	return &discoveryv1alpha1.Mesh{
+	return &zephyr_discovery.Mesh{
 		ObjectMeta: k8s_meta_v1.ObjectMeta{
 			Name:      buildMeshName(clusterName, deployment, container),
 			Namespace: env.GetWriteNamespace(),
 			Labels:    DiscoveryLabels,
 		},
-		Spec: discovery_types.MeshSpec{
-			MeshType: &discovery_types.MeshSpec_ConsulConnect{
-				ConsulConnect: &discovery_types.MeshSpec_ConsulConnectMesh{
-					Installation: &discovery_types.MeshSpec_MeshInstallation{
+		Spec: zephyr_discovery_types.MeshSpec{
+			MeshType: &zephyr_discovery_types.MeshSpec_ConsulConnect{
+				ConsulConnect: &zephyr_discovery_types.MeshSpec_ConsulConnectMesh{
+					Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 						InstallationNamespace: deployment.GetNamespace(),
 						Version:               imageVersion,
 					},
 				},
 			},
-			Cluster: &core_types.ResourceRef{
+			Cluster: &zephyr_core_types.ResourceRef{
 				Name:      clusterName,
 				Namespace: env.GetWriteNamespace(),
 			},

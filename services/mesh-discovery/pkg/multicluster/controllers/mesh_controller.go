@@ -5,12 +5,12 @@ import (
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
-func NewMeshControllerFactory() MeshControllerFactory {
+func NewMeshControllerFactory() MeshEventWatcherFactory {
 	return &meshControllerFactory{}
 }
 
 type meshControllerFactory struct{}
 
-func (d *meshControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (discovery_controllers.MeshController, error) {
-	return discovery_controllers.NewMeshController(clusterName, mgr.Manager())
+func (d *meshControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) discovery_controllers.MeshEventWatcher {
+	return discovery_controllers.NewMeshEventWatcher(clusterName, mgr.Manager())
 }
