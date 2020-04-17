@@ -2,7 +2,6 @@ package auth_test
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 
 	"github.com/golang/mock/gomock"
@@ -123,7 +122,6 @@ var _ = Describe("Config creator", func() {
 			},
 		}
 		caData := []byte("ca-file-data")
-		base64CaData := base64.StdEncoding.EncodeToString(caData)
 
 		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient, fileReader)
 
@@ -141,13 +139,14 @@ var _ = Describe("Config creator", func() {
 
 		fileReader.EXPECT().
 			Read(fileTestKubeConfig.TLSClientConfig.CAFile).
-			Return([]byte(base64CaData), nil)
+			Return(caData, nil)
 
 		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, fileTestKubeConfig, serviceAccountRef)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(newCfg.TLSClientConfig.CertData).To(BeEmpty())
 		Expect(newCfg.TLSClientConfig.CAData).To(Equal(caData))
+		Expect(newCfg.TLSClientConfig.CAFile).To(BeEmpty())
 		Expect([]byte(newCfg.BearerToken)).To(Equal(secret.Data[auth.SecretTokenKey]))
 	})
 

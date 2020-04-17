@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"encoding/base64"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -21,6 +20,10 @@ const (
 )
 
 var (
+	FailedToReadCAFile = func(err error, fileName string) error {
+		return eris.Wrapf(err, "Failed to read kubeconfig CA file: %s", fileName)
+	}
+
 	// exponential backoff retry with an initial period of 0.1s for 7 iterations, which will mean a cumulative retry period of ~6s
 	secretLookupOpts = []retry.Option{
 		retry.Delay(time.Millisecond * 100),
@@ -71,15 +74,13 @@ func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 	// once in cluster
 	// For context see: https://github.com/solo-io/service-mesh-hub/issues/590
 	if len(newCfg.TLSClientConfig.CAData) == 0 && newCfg.TLSClientConfig.CAFile != "" {
-		bytes, err := r.fileReader.Read(newCfg.TLSClientConfig.CAFile)
+		fileContent, err := r.fileReader.Read(newCfg.TLSClientConfig.CAFile)
 		if err != nil {
-			return nil, err
+			return nil, FailedToReadCAFile(err, newCfg.TLSClientConfig.CAFile)
 		}
-		data, err := base64.StdEncoding.DecodeString(string(bytes))
-		if err != nil {
-			return nil, err
-		}
-		newCfg.TLSClientConfig.CAData = data
+
+		newCfg.TLSClientConfig.CAData = fileContent
+		newCfg.TLSClientConfig.CAFile = "" // dont need to record the filename in the config; we have the data present
 	}
 
 	// authorize ourselves as the service account we were given
