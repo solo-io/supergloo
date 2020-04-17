@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
@@ -71,6 +72,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		kubernetes_apps.DeploymentClientFromClientsetProvider,
 		kubernetes_apps.DeploymentClientFactoryProvider,
 		kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactoryProvider,
+		files.NewDefaultFileReader,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
 		auth.NewRemoteAuthorityManager,
@@ -130,7 +132,7 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Command {
 	wire.Build(
 		docker.NewImageNameParser,
-		common.NewDefaultFileReader,
+		files.NewDefaultFileReader,
 		common_config.DefaultKubeLoaderProvider,
 		options.NewOptionsProvider,
 		DefaultKubeClientsFactoryProvider,
@@ -166,7 +168,7 @@ func InitializeCLIWithMocks(
 	clientsFactory common.ClientsFactory,
 	kubeLoader common_config.KubeLoader,
 	imageNameParser docker.ImageNameParser,
-	fileReader common.FileReader,
+	fileReader files.FileReader,
 	secretToConfigConverter kubeconfig.SecretToConfigConverter,
 	printers common.Printers,
 	runner exec.Runner,

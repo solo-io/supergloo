@@ -6,6 +6,7 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -19,6 +20,10 @@ const (
 )
 
 var (
+	FailedToReadCAFile = func(err error, fileName string) error {
+		return eris.Wrapf(err, "Failed to read kubeconfig CA file: %s", fileName)
+	}
+
 	// exponential backoff retry with an initial period of 0.1s for 7 iterations, which will mean a cumulative retry period of ~6s
 	secretLookupOpts = []retry.Option{
 		retry.Delay(time.Millisecond * 100),
@@ -30,16 +35,19 @@ var (
 func NewRemoteAuthorityConfigCreator(
 	secretClient k8s_core.SecretClient,
 	serviceAccountClient k8s_core.ServiceAccountClient,
+	fileReader files.FileReader,
 ) RemoteAuthorityConfigCreator {
 	return &remoteAuthorityConfigCreator{
 		serviceAccountClient: serviceAccountClient,
 		secretClient:         secretClient,
+		fileReader:           fileReader,
 	}
 }
 
 type remoteAuthorityConfigCreator struct {
 	secretClient         k8s_core.SecretClient
 	serviceAccountClient k8s_core.ServiceAccountClient
+	fileReader           files.FileReader
 }
 
 func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
@@ -61,6 +69,19 @@ func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 	// make a copy of the config we were handed, with all user credentials removed
 	// https://github.com/kubernetes/client-go/blob/9bbcc2938d41daa40d3080a1b6524afbe4e27bd9/rest/config.go#L542
 	newCfg := rest.AnonymousClientConfig(targetClusterCfg)
+
+	// If CAData is present in file, rather than bytes, need to transfer it into bytes so it won't need to be read
+	// once in cluster
+	// For context see: https://github.com/solo-io/service-mesh-hub/issues/590
+	if len(newCfg.TLSClientConfig.CAData) == 0 && newCfg.TLSClientConfig.CAFile != "" {
+		fileContent, err := r.fileReader.Read(newCfg.TLSClientConfig.CAFile)
+		if err != nil {
+			return nil, FailedToReadCAFile(err, newCfg.TLSClientConfig.CAFile)
+		}
+
+		newCfg.TLSClientConfig.CAData = fileContent
+		newCfg.TLSClientConfig.CAFile = "" // dont need to record the filename in the config; we have the data present
+	}
 
 	// authorize ourselves as the service account we were given
 	newCfg.BearerToken = string(serviceAccountToken)

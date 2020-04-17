@@ -1,9 +1,6 @@
 package common
 
 import (
-	"io/ioutil"
-	"os"
-
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
@@ -38,8 +35,6 @@ var (
 		return eris.Wrap(err, "Failed to load the kube config for the master cluster")
 	}
 )
-
-//go:generate mockgen -destination ../mocks/mock_common_interfaces.go -package cli_mocks -source ./common_interfaces.go
 
 // a grab bag of various clients that command implementations may use
 type KubeClients struct {
@@ -235,30 +230,4 @@ func PrintersProvider(
 		VirtualMeshCSRPrinter:      vmcsrPrinter,
 		ResourcePrinter:            resourcePrinter,
 	}
-}
-
-type FileReader interface {
-	Read(filePath string) ([]byte, error)
-	Exists(filePath string) (exists bool, err error)
-}
-
-func NewDefaultFileReader() FileReader {
-	return &fileReader{}
-}
-
-type fileReader struct{}
-
-func (f *fileReader) Read(filePath string) ([]byte, error) {
-	return ioutil.ReadFile(filePath)
-}
-
-func (f *fileReader) Exists(filePath string) (exists bool, err error) {
-	_, err = os.Stat(filePath)
-	if os.IsNotExist(err) {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-
-	return true, nil
 }
