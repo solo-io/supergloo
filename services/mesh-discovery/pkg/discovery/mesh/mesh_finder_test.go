@@ -67,7 +67,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment, clusterClient).
+				ScanDeployment(ctx, clusterName, deployment, clusterClient).
 				Return(mesh, nil)
 
 			localMeshClient.
@@ -77,7 +77,6 @@ var _ = Describe("Mesh Finder", func() {
 
 			err := eventHandler.Create(deployment)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(deployment.GetClusterName()).To(Equal(clusterName))
 		})
 
 		It("can go on to discover a mesh if one of the other finders errors out", func() {
@@ -98,7 +97,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment, clusterClient).
+				ScanDeployment(ctx, clusterName, deployment, clusterClient).
 				Return(mesh, nil)
 
 			localMeshClient.
@@ -108,12 +107,12 @@ var _ = Describe("Mesh Finder", func() {
 
 			brokenMeshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment, clusterClient).
+				ScanDeployment(ctx, clusterName, deployment, clusterClient).
 				Return(nil, testErr)
 
 			err := eventHandler.Create(deployment)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(deployment.GetClusterName()).To(Equal(clusterName))
+
 		})
 
 		It("responds with an error if no mesh was found and the finders reported an error", func() {
@@ -131,7 +130,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment, clusterClient).
+				ScanDeployment(ctx, clusterName, deployment, clusterClient).
 				Return(nil, testErr)
 
 			err := eventHandler.Create(deployment)
@@ -139,7 +138,7 @@ var _ = Describe("Mesh Finder", func() {
 			Expect(ok).To(BeTrue())
 			Expect(multierr.Errors).To(HaveLen(1))
 			Expect(multierr.Errors[0]).To(testutils.HaveInErrorChain(testErr))
-			Expect(deployment.GetClusterName()).To(Equal(clusterName))
+
 		})
 
 		It("doesn't do anything if no mesh was discovered", func() {
@@ -157,12 +156,12 @@ var _ = Describe("Mesh Finder", func() {
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment, clusterClient).
+				ScanDeployment(ctx, clusterName, deployment, clusterClient).
 				Return(nil, nil)
 
 			err := eventHandler.Create(deployment)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(deployment.GetClusterName()).To(Equal(clusterName))
+
 		})
 
 		It("performs an upsert if we discovered a mesh that we discovered previously", func() {
@@ -182,7 +181,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment, clusterClient).
+				ScanDeployment(ctx, clusterName, deployment, clusterClient).
 				Return(mesh, nil)
 
 			localMeshClient.
@@ -192,7 +191,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			err := eventHandler.Create(deployment)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(deployment.GetClusterName()).To(Equal(clusterName))
+
 		})
 
 		It("returns error from Upsert if upsert fails", func() {
@@ -212,7 +211,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment, clusterClient).
+				ScanDeployment(ctx, clusterName, deployment, clusterClient).
 				Return(mesh, nil)
 
 			localMeshClient.
@@ -222,7 +221,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			err := eventHandler.Create(deployment)
 			Expect(err).To(Equal(testErr))
-			Expect(deployment.GetClusterName()).To(Equal(clusterName))
+
 		})
 	})
 
@@ -244,7 +243,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, newDeployment, clusterClient).
+				ScanDeployment(ctx, clusterName, newDeployment, clusterClient).
 				Return(mesh, nil)
 
 			localMeshClient.
@@ -254,7 +253,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			err := eventHandler.Update(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(newDeployment.GetClusterName()).To(Equal(clusterName))
+
 		})
 
 		It("doesn't do anything if no mesh was discovered", func() {
@@ -272,12 +271,12 @@ var _ = Describe("Mesh Finder", func() {
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, newDeployment, clusterClient).
+				ScanDeployment(ctx, clusterName, newDeployment, clusterClient).
 				Return(nil, nil)
 
 			err := eventHandler.Update(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(newDeployment.GetClusterName()).To(Equal(clusterName))
+
 		})
 
 		It("writes a new CR if an update event changes the mesh type", func() {
@@ -296,7 +295,7 @@ var _ = Describe("Mesh Finder", func() {
 			)
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, newDeployment, clusterClient).
+				ScanDeployment(ctx, clusterName, newDeployment, clusterClient).
 				Return(newMesh, nil)
 			localMeshClient.
 				EXPECT().
@@ -304,7 +303,7 @@ var _ = Describe("Mesh Finder", func() {
 				Return(nil)
 			err := eventHandler.Update(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(newDeployment.GetClusterName()).To(Equal(clusterName))
+
 		})
 	})
 })

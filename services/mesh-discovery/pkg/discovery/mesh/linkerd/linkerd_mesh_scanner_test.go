@@ -27,10 +27,11 @@ import (
 
 var _ = Describe("Linkerd Mesh Scanner", func() {
 	var (
-		ctrl      *gomock.Controller
-		ctx       context.Context
-		linkerdNs = "linkerd"
-		client    client.Client
+		ctrl        *gomock.Controller
+		ctx         context.Context
+		linkerdNs   = "linkerd"
+		client      client.Client
+		clusterName = "test-cluster-name"
 	)
 
 	BeforeEach(func() {
@@ -64,7 +65,7 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 			},
 		}
 
-		mesh, err := scanner.ScanDeployment(ctx, deployment, client)
+		mesh, err := scanner.ScanDeployment(ctx, clusterName, deployment, client)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(BeNil())
 	})
@@ -99,7 +100,7 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 		scanner := linkerd.NewLinkerdMeshScanner(imageParser)
 
 		deployment := &appsv1.Deployment{
-			ObjectMeta: k8s_meta_v1.ObjectMeta{Namespace: linkerdNs, ClusterName: "test-cluster", Name: "name doesn't matter in this context"},
+			ObjectMeta: k8s_meta_v1.ObjectMeta{Namespace: linkerdNs, Name: "name doesn't matter in this context"},
 			Spec: appsv1.DeploymentSpec{
 				Template: kubev1.PodTemplateSpec{
 					Spec: kubev1.PodSpec{
@@ -124,7 +125,7 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 
 		expectedMesh := &discoveryv1alpha1.Mesh{
 			ObjectMeta: k8s_meta_v1.ObjectMeta{
-				Name:      "linkerd-linkerd-test-cluster",
+				Name:      "linkerd-linkerd-" + clusterName,
 				Namespace: env.GetWriteNamespace(),
 				Labels:    linkerd.DiscoveryLabels,
 			},
@@ -139,13 +140,13 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 					},
 				},
 				Cluster: &core_types.ResourceRef{
-					Name:      deployment.GetClusterName(),
+					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
 				},
 			},
 		}
 
-		mesh, err := scanner.ScanDeployment(ctx, deployment, client)
+		mesh, err := scanner.ScanDeployment(ctx, clusterName, deployment, client)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(Equal(expectedMesh))
 	})
@@ -156,7 +157,7 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 		scanner := linkerd.NewLinkerdMeshScanner(imageParser)
 
 		deployment := &appsv1.Deployment{
-			ObjectMeta: k8s_meta_v1.ObjectMeta{Namespace: linkerdNs, ClusterName: "test-cluster", Name: "name doesn't matter in this context"},
+			ObjectMeta: k8s_meta_v1.ObjectMeta{Namespace: linkerdNs, Name: "name doesn't matter in this context"},
 			Spec: appsv1.DeploymentSpec{
 				Template: kubev1.PodTemplateSpec{
 					Spec: kubev1.PodSpec{
@@ -177,7 +178,7 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 			Parse("linkerd-io/controller:0.6.9").
 			Return(nil, testErr)
 
-		mesh, err := scanner.ScanDeployment(ctx, deployment, client)
+		mesh, err := scanner.ScanDeployment(ctx, clusterName, deployment, client)
 		Expect(mesh).To(BeNil())
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 	})

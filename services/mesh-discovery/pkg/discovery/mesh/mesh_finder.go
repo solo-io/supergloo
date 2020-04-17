@@ -61,7 +61,17 @@ func (m *meshFinder) Update(_, new *apps_v1.Deployment) error {
 }
 
 func (m *meshFinder) Delete(deployment *apps_v1.Deployment) error {
-	// TODO: Not deleting any entities for now
+	logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, deployment)
+
+	discoveredMesh, err := m.discoverMesh(deployment)
+	if err != nil {
+		logger.Errorf("Error while attempting to discover mesh during delete: %v", err)
+		return nil
+	}
+
+	if discoveredMesh != nil {
+		m.localMeshClient.Delete(m.ctx, discoveredMesh)
+	}
 	return nil
 }
 
@@ -71,7 +81,6 @@ func (m *meshFinder) Generic(deployment *apps_v1.Deployment) error {
 }
 
 func (m *meshFinder) discoverAndUpsertMesh(deployment *apps_v1.Deployment, logger *zap.SugaredLogger) error {
-	deployment.SetClusterName(m.clusterName)
 	discoveredMesh, err := m.discoverMesh(deployment)
 	if err != nil && discoveredMesh == nil {
 		logger.Errorw("Error processing deployment for mesh discovery",
@@ -101,7 +110,7 @@ func (m *meshFinder) discoverAndUpsertMesh(deployment *apps_v1.Deployment, logge
 func (m *meshFinder) discoverMesh(deployment *apps_v1.Deployment) (discoveredMesh *discoveryv1alpha1.Mesh, err error) {
 	var multiErr *multierror.Error
 	for _, meshFinder := range m.meshScanners {
-		discoveredMesh, err = meshFinder.ScanDeployment(m.ctx, deployment, m.clusterClient)
+		discoveredMesh, err = meshFinder.ScanDeployment(m.ctx, m.clusterName, deployment, m.clusterClient)
 		if err != nil {
 			multiErr = multierror.Append(multiErr, err)
 		}

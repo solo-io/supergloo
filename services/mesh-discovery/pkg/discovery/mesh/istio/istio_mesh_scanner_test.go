@@ -29,6 +29,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		ctrl                *gomock.Controller
 		ctx                 = context.TODO()
 		istioNs             = "istio-system"
+		clusterName         = "test-cluster-name"
 		clusterScopedClient client.Client
 		mockImageNameParser *mock_docker.MockImageNameParser
 		mockConfigMapClient *mock_kubernetes_core.MockConfigMapClient
@@ -65,14 +66,14 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				},
 			},
 		}
-		mesh, err := istioMeshScanner.ScanDeployment(ctx, deployment, clusterScopedClient)
+		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, clusterScopedClient)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(BeNil())
 	})
 
 	It("reports an error when the image name is unparseable", func() {
 		deployment := &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Namespace: istioNs, ClusterName: "test-cluster", Name: istio.IstiodDeploymentName},
+			ObjectMeta: metav1.ObjectMeta{Namespace: istioNs, Name: istio.IstiodDeploymentName},
 			Spec: appsv1.DeploymentSpec{
 				Template: kubev1.PodTemplateSpec{
 					Spec: kubev1.PodSpec{
@@ -90,7 +91,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			EXPECT().
 			Parse("istio-pilot:latest").
 			Return(nil, testErr)
-		mesh, err := istioMeshScanner.ScanDeployment(ctx, deployment, clusterScopedClient)
+		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, clusterScopedClient)
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 		Expect(mesh).To(BeNil())
 	})
@@ -99,7 +100,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		serviceAccountName := "service-account-name"
 		trustDomain := "cluster.local"
 		deployment := &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Namespace: istioNs, ClusterName: "test-cluster", Name: istio.IstiodDeploymentName},
+			ObjectMeta: metav1.ObjectMeta{Namespace: istioNs, ClusterName: clusterName, Name: istio.IstiodDeploymentName},
 			Spec: appsv1.DeploymentSpec{
 				Template: kubev1.PodTemplateSpec{
 					Spec: kubev1.PodSpec{
@@ -115,7 +116,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		}
 		expectedMesh := &discoveryv1alpha1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "istio-istio-system-test-cluster",
+				Name:      "istio-istio-system-" + clusterName,
 				Namespace: env.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
@@ -156,7 +157,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			EXPECT().
 			Get(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
 			Return(configMap, nil)
-		mesh, err := istioMeshScanner.ScanDeployment(ctx, deployment, clusterScopedClient)
+		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, clusterScopedClient)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(Equal(expectedMesh))
 	})
@@ -165,7 +166,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		serviceAccountName := "service-account-name"
 		trustDomain := "cluster.local"
 		deployment := &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Namespace: istioNs, ClusterName: "test-cluster", Name: istio.CitadelDeploymentName},
+			ObjectMeta: metav1.ObjectMeta{Namespace: istioNs, ClusterName: clusterName, Name: istio.CitadelDeploymentName},
 			Spec: appsv1.DeploymentSpec{
 				Template: kubev1.PodTemplateSpec{
 					Spec: kubev1.PodSpec{
@@ -181,7 +182,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		}
 		expectedMesh := &discoveryv1alpha1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "istio-istio-system-test-cluster",
+				Name:      "istio-istio-system-" + clusterName,
 				Namespace: env.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
@@ -222,7 +223,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			EXPECT().
 			Get(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
 			Return(configMap, nil)
-		mesh, err := istioMeshScanner.ScanDeployment(ctx, deployment, clusterScopedClient)
+		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, clusterScopedClient)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(Equal(expectedMesh))
 	})

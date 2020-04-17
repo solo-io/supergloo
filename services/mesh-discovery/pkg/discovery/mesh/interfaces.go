@@ -23,5 +23,5 @@ type MeshFinder interface {
 // check a deployment to see if it represents a mesh installation
 // if it does, produce the appropriate Mesh CR instance corresponding to it
 type MeshScanner interface {
-	ScanDeployment(context.Context, *k8s_apps_v1.Deployment, client.Client) (*v1alpha1.Mesh, error)
+	ScanDeployment(ctx context.Context, clusterName string, deployment *k8s_apps_v1.Deployment, clusterScopedClient client.Client) (*v1alpha1.Mesh, error)
 }

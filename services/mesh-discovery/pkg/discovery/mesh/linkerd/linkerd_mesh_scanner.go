@@ -62,9 +62,9 @@ func getLinkerdConfig(ctx context.Context, name, namespace string, kube client.C
 	return cfg, nil
 }
 
-func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s_apps_v1.Deployment, kube client.Client) (*discoveryv1alpha1.Mesh, error) {
+func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *k8s_apps_v1.Deployment, clusterScopedClient client.Client) (*discoveryv1alpha1.Mesh, error) {
 
-	linkerdController, err := l.detectLinkerdController(deployment)
+	linkerdController, err := l.detectLinkerdController(clusterName, deployment)
 
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s
 		return nil, nil
 	}
 
-	linkerdConfig, err := getLinkerdConfig(ctx, LinkerdConfigMapName, linkerdController.namespace, kube)
+	linkerdConfig, err := getLinkerdConfig(ctx, LinkerdConfigMapName, linkerdController.namespace, clusterScopedClient)
 	if err != nil {
 		return nil, err
 	}
@@ -101,14 +101,14 @@ func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s
 				},
 			},
 			Cluster: &core_types.ResourceRef{
-				Name:      deployment.GetClusterName(),
+				Name:      clusterName,
 				Namespace: env.GetWriteNamespace(),
 			},
 		},
 	}, nil
 }
 
-func (l *linkerdMeshScanner) detectLinkerdController(deployment *k8s_apps_v1.Deployment) (*linkerdControllerDeployment, error) {
+func (l *linkerdMeshScanner) detectLinkerdController(clusterName string, deployment *k8s_apps_v1.Deployment) (*linkerdControllerDeployment, error) {
 	var linkerdController *linkerdControllerDeployment
 
 	for _, container := range deployment.Spec.Template.Spec.Containers {
@@ -123,7 +123,7 @@ func (l *linkerdMeshScanner) detectLinkerdController(deployment *k8s_apps_v1.Dep
 			if parsedImage.Digest != "" {
 				version = parsedImage.Digest
 			}
-			linkerdController = &linkerdControllerDeployment{version: version, namespace: deployment.Namespace, cluster: deployment.ClusterName}
+			linkerdController = &linkerdControllerDeployment{version: version, namespace: deployment.Namespace, cluster: clusterName}
 		}
 	}
 
