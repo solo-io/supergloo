@@ -7,14 +7,14 @@ package wire
 
 import (
 	"context"
-	"io"
-
+	"github.com/google/wire"
 	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/reporting-client/pkg/client"
-	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
+	"github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
@@ -29,115 +29,52 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create"
-	access_control_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/access-control-policy"
-	traffic_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/access-control-policy"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/virtualmesh"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/cleanup"
-	demo_init "github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/init"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/init"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get"
-	get_cluster "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/cluster"
-	get_mesh "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/mesh"
-	get_service "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/service"
-	get_virtual_mesh "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/virtual_mesh"
-	get_vmcsr "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/vmcsr"
-	get_workload "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/workload"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/cluster"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/mesh"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/service"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/virtual_mesh"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/vmcsr"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/workload"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh"
-	mesh_install "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
-	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
-	helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
-	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
-	version2 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
-	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	"github.com/solo-io/service-mesh-hub/pkg/version"
+	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
 	"github.com/spf13/cobra"
+	"io"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
 // Injectors from wire.go:
-
-func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string) (*common.KubeClients, error) {
-	clientset, err := v1.ClientsetFromConfigProvider(masterConfig)
-	if err != nil {
-		return nil, err
-	}
-	secretClient := v1.SecretClientFromClientsetProvider(clientset)
-	serviceAccountClient := v1.ServiceAccountClientFromClientsetProvider(clientset)
-	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, serviceAccountClient)
-	kubernetesClientset, err := kubernetes.NewForConfig(masterConfig)
-	if err != nil {
-		return nil, err
-	}
-	rbacClient := auth.RbacClientProvider(kubernetesClientset)
-	remoteAuthorityManager := auth.NewRemoteAuthorityManager(serviceAccountClient, rbacClient)
-	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
-	helmClient := helminstall.DefaultHelmClient()
-	installer := install.HelmInstallerProvider(helmClient, kubernetesClientset)
-	v1alpha1Clientset, err := v1alpha1.ClientsetFromConfigProvider(masterConfig)
-	if err != nil {
-		return nil, err
-	}
-	kubernetesClusterClient := v1alpha1.KubernetesClusterClientFromClientsetProvider(v1alpha1Clientset)
-	namespaceClient := v1.NamespaceClientFromClientsetProvider(clientset)
-	serverVersionClient := kubernetes_discovery.NewGeneratedServerVersionClient(kubernetesClientset)
-	podClient := v1.PodClientFromClientsetProvider(clientset)
-	meshServiceClient := v1alpha1.MeshServiceClientFromClientsetProvider(v1alpha1Clientset)
-	clients := healthcheck.ClientsProvider(namespaceClient, serverVersionClient, podClient, meshServiceClient)
-	v1Clientset, err := v1_2.ClientsetFromConfigProvider(masterConfig)
-	if err != nil {
-		return nil, err
-	}
-	deploymentClient := v1_2.DeploymentClientFromClientsetProvider(v1Clientset)
-	imageNameParser := docker.NewImageNameParser()
-	deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
-	customResourceDefinitionClientFromConfigFactory := v1beta1.CustomResourceDefinitionClientFromConfigFactoryProvider()
-	crdRemover := crd_uninstall.NewCrdRemover(customResourceDefinitionClientFromConfigFactory)
-	secretToConfigConverter := kubeconfig.SecretToConfigConverterProvider()
-	uninstallClients := common.UninstallClientsProvider(crdRemover, secretToConfigConverter)
-	inMemoryRESTClientGetterFactory := common_config.NewInMemoryRESTClientGetterFactory()
-	uninstallerFactory := helm_uninstall.NewUninstallerFactory()
-	kubeConfigLookup := config_lookup.NewKubeConfigLookup(kubernetesClusterClient, secretClient, secretToConfigConverter)
-	clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(crdRemover, inMemoryRESTClientGetterFactory, uninstallerFactory, kubeConfigLookup)
-	clientset2, err := v1alpha1_2.ClientsetFromConfigProvider(masterConfig)
-	if err != nil {
-		return nil, err
-	}
-	virtualMeshCertificateSigningRequestClient := v1alpha1_2.VirtualMeshCertificateSigningRequestClientFromClientsetProvider(clientset2)
-	meshClient := v1alpha1.MeshClientFromClientsetProvider(v1alpha1Clientset)
-	clientset3, err := v1alpha1_3.ClientsetFromConfigProvider(masterConfig)
-	if err != nil {
-		return nil, err
-	}
-	virtualMeshClient := v1alpha1_3.VirtualMeshClientFromClientsetProvider(clientset3)
-	trafficPolicyClient := v1alpha1_3.TrafficPolicyClientFromClientsetProvider(clientset3)
-	accessControlPolicyClient := v1alpha1_3.AccessControlPolicyClientFromClientsetProvider(clientset3)
-	meshWorkloadClient := v1alpha1.MeshWorkloadClientFromClientsetProvider(v1alpha1Clientset)
-	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
-	dynamicClientGetter := config_lookup.NewDynamicClientGetter(kubeConfigLookup)
-	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
-	resourceDescriber := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, customResourceDefinitionClientFromConfigFactory, secretClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCertificateSigningRequestClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient)
-	return kubeClients, nil
-}
 
 func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	kubeLoader := common_config.DefaultKubeLoaderProvider(opts)
@@ -162,14 +99,14 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
 	client := usage.DefaultUsageReporterProvider()
-	kubeClientsFactory := DefaultKubeClientsFactoryProvider()
+	fileReader := files.NewDefaultFileReader()
+	kubeClientsFactory := DefaultKubeClientsFactoryProvider(fileReader)
 	clientsFactory := DefaultClientsFactoryProvider()
 	kubeLoader := common_config.DefaultKubeLoaderProvider(optionsOptions)
 	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
-	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
+	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
 	imageNameParser := docker.NewImageNameParser()
-	fileReader := common.NewDefaultFileReader()
 	meshInstallCommand := mesh_install.MeshInstallRootCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
 	meshCommand := mesh.MeshRootCmd(meshInstallCommand)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
@@ -210,11 +147,11 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	return command
 }
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter, printers common.Printers, runner exec.Runner, interactivePrompt interactive.InteractivePrompt) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader files.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter, printers common.Printers, runner exec.Runner, interactivePrompt interactive.InteractivePrompt) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
 	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
-	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
+	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
 	meshInstallCommand := mesh_install.MeshInstallRootCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
 	meshCommand := mesh.MeshRootCmd(meshInstallCommand)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
@@ -240,4 +177,13 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	createRootCmd := create.CreateRootCommand(optionsOptions, createVirtualMeshCmd, createTrafficPolicyCmd, createAccessControlPolicyCmd)
 	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, meshCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, describeCommand, demoCommand, getCommand, createRootCmd)
 	return command
+}
+
+// wire.go:
+
+func DefaultKubeClientsFactory(fileReader files.FileReader) func(masterConfig *rest.Config, writeNamespace string) (clients *common.KubeClients, err error) {
+	return func(masterConfig *rest.Config, writeNamespace string) (clients *common.KubeClients, err error) {
+		wire.Build(kubernetes.NewForConfig, wire.Bind(new(kubernetes.Interface), new(*kubernetes.Clientset)), kubernetes_discovery.NewGeneratedServerVersionClient, v1.ClientsetFromConfigProvider, v1.ServiceAccountClientFromClientsetProvider, v1.SecretClientFromClientsetProvider, v1.NamespaceClientFromClientsetProvider, v1.PodClientFromClientsetProvider, v1_2.ClientsetFromConfigProvider, v1_2.DeploymentClientFromClientsetProvider, v1_2.DeploymentClientFactoryProvider, v1beta1.CustomResourceDefinitionClientFromConfigFactoryProvider, auth.NewRemoteAuthorityConfigCreator, auth.RbacClientProvider, auth.NewRemoteAuthorityManager, auth.NewClusterAuthorization, docker.NewImageNameParser, version2.NewDeployedVersionFinder, helminstall.DefaultHelmClient, install.HelmInstallerProvider, healthcheck.ClientsProvider, crd_uninstall.NewCrdRemover, kubeconfig.SecretToConfigConverterProvider, common.UninstallClientsProvider, common_config.NewInMemoryRESTClientGetterFactory, helm_uninstall.NewUninstallerFactory, config_lookup.NewKubeConfigLookup, config_lookup.NewDynamicClientGetter, deregister.NewClusterDeregistrationClient, common.KubeClientsProvider, description.NewResourceDescriber, selector.NewResourceSelector, v1alpha1.ClientsetFromConfigProvider, v1alpha1_2.ClientsetFromConfigProvider, v1alpha1_3.ClientsetFromConfigProvider, v1alpha1.KubernetesClusterClientFromClientsetProvider, v1alpha1.MeshServiceClientFromClientsetProvider, v1alpha1.MeshWorkloadClientFromClientsetProvider, v1alpha1.MeshClientFromClientsetProvider, v1alpha1_2.TrafficPolicyClientFromClientsetProvider, v1alpha1_2.AccessControlPolicyClientFromClientsetProvider, v1alpha1_2.VirtualMeshClientFromClientsetProvider, v1alpha1_3.VirtualMeshCertificateSigningRequestClientFromClientsetProvider)
+		return nil, nil
+	}
 }

@@ -141,7 +141,7 @@ var _ = Describe("Config creator", func() {
 
 		fileReader.EXPECT().
 			Read(fileTestKubeConfig.TLSClientConfig.CAFile).
-			Return(base64CaData, nil)
+			Return([]byte(base64CaData), nil)
 
 		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, fileTestKubeConfig, serviceAccountRef)
 
