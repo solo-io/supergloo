@@ -18,7 +18,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/k8s_secrets/kubeconfig"
 	mock_cli_runtime "github.com/solo-io/service-mesh-hub/test/mocks/cli_runtime"
 	"helm.sh/helm/v3/pkg/action"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"

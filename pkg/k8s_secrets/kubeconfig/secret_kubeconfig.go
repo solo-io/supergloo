@@ -2,8 +2,8 @@ package kubeconfig
 
 import (
 	"github.com/rotisserie/eris"
-	kubev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_core_types "k8s.io/api/core/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -26,7 +26,7 @@ var (
 	FailedToConvertSecretToKubeConfig = func(err error) error {
 		return eris.Wrapf(err, "Could not deserialize string to KubeConfig while generating KubeConfig")
 	}
-	NoDataInKubeConfigSecret = func(secret *kubev1.Secret) error {
+	NoDataInKubeConfigSecret = func(secret *k8s_core_types.Secret) error {
 		return eris.Errorf("No data in kube config secret %s.%s", secret.ObjectMeta.Name, secret.ObjectMeta.Namespace)
 	}
 	FailedToConvertSecretToClientConfig = func(err error) error {
@@ -34,11 +34,11 @@ var (
 	}
 )
 
-func KubeConfigToSecret(name string, namespace string, kc *KubeConfig) (*kubev1.Secret, error) {
+func KubeConfigToSecret(name string, namespace string, kc *KubeConfig) (*k8s_core_types.Secret, error) {
 	return KubeConfigsToSecret(name, namespace, []*KubeConfig{kc})
 }
 
-func KubeConfigsToSecret(name string, namespace string, kcs []*KubeConfig) (*kubev1.Secret, error) {
+func KubeConfigsToSecret(name string, namespace string, kcs []*KubeConfig) (*k8s_core_types.Secret, error) {
 	secretData := map[string][]byte{}
 	for _, kc := range kcs {
 		rawKubeConfig, err := clientcmd.Write(kc.Config)
@@ -50,18 +50,18 @@ func KubeConfigsToSecret(name string, namespace string, kcs []*KubeConfig) (*kub
 		}
 		secretData[kc.Cluster] = rawKubeConfig
 	}
-	return &kubev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
+	return &k8s_core_types.Secret{
+		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Labels:    map[string]string{KubeConfigSecretLabel: "true"},
 			Name:      name,
 			Namespace: namespace,
 		},
-		Type: kubev1.SecretTypeOpaque,
+		Type: k8s_core_types.SecretTypeOpaque,
 		Data: secretData,
 	}, nil
 }
 
-type SecretToConfigConverter func(secret *kubev1.Secret) (clusterName string, config *Config, err error)
+type SecretToConfigConverter func(secret *k8s_core_types.Secret) (clusterName string, config *Config, err error)
 
 func SecretToConfigConverterProvider() SecretToConfigConverter {
 	return SecretToConfig
@@ -73,7 +73,7 @@ type Config struct {
 	RestConfig   *rest.Config
 }
 
-func SecretToConfig(secret *kubev1.Secret) (clusterName string, config *Config, err error) {
+func SecretToConfig(secret *k8s_core_types.Secret) (clusterName string, config *Config, err error) {
 	if len(secret.Data) > 1 {
 		return "", nil, eris.Errorf("kube config secret %s.%s has multiple keys in its data, this is unexpected",
 			secret.ObjectMeta.Name, secret.ObjectMeta.Namespace)

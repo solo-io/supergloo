@@ -6,7 +6,7 @@ import (
 	"github.com/rotisserie/eris"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/k8s_secrets/kubeconfig"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

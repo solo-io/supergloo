@@ -50,7 +50,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/k8s_secrets/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
 	"github.com/spf13/cobra"
