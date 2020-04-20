@@ -33,7 +33,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -126,7 +125,7 @@ var _ = Describe("Install", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	FIt("should register if flag is set", func() {
+	It("should register if flag is set", func() {
 		chartOverride := "chartOverride.tgz"
 		installNamespace := "service-mesh-hub"
 		installerconfig := &types.InstallerConfig{
@@ -227,36 +226,10 @@ users:
 			Type: k8s_core.SecretTypeOpaque,
 		}
 
-		config, err := clientcmd.Load([]byte(kubeConfigString))
-		Expect(err).NotTo(HaveOccurred())
-
+		// using gomock.Any() here because I don't want to spend time encoding details of cluster registration into the installation test
+		// filed https://github.com/solo-io/service-mesh-hub/issues/547 to decouple these things
 		kubeConverter.EXPECT().
-			ConfigToSecret(serviceAccountRef.Name, env.GetWriteNamespace(), &kube.KubeConfig{
-				Config: api.Config{
-					Kind:        "Secret",
-					APIVersion:  "kubernetes_core",
-					Preferences: api.Preferences{},
-					Clusters: map[string]*api.Cluster{
-						registerOpts.RemoteClusterName: remoteCluster,
-					},
-					AuthInfos: map[string]*api.AuthInfo{
-						registerOpts.RemoteClusterName: {
-							Token: serviceAccountConfig.BearerToken,
-						},
-					},
-					Contexts: map[string]*api.Context{
-						registerOpts.RemoteClusterName: {
-							LocationOfOrigin: remoteContext.LocationOfOrigin,
-							Cluster:          registerOpts.RemoteClusterName,
-							AuthInfo:         registerOpts.RemoteClusterName,
-							Namespace:        remoteContext.Namespace,
-							Extensions:       remoteContext.Extensions,
-						},
-					},
-					CurrentContext: registerOpts.RemoteClusterName,
-				},
-				Cluster: registerOpts.RemoteClusterName,
-			}).
+			ConfigToSecret(serviceAccountRef.Name, env.GetWriteNamespace(), gomock.Any()).
 			Return(secret, nil)
 
 		var expectUpsertSecretData = func(ctx context.Context, secret *k8s_core.Secret) {
@@ -326,7 +299,7 @@ users:
 			Ctx:        ctx,
 		}
 
-		_, err = meshctl.Invoke(
+		_, err := meshctl.Invoke(
 			fmt.Sprintf("install --register --cluster-name %s -f %s", clusterName, chartOverride))
 		Expect(err).NotTo(HaveOccurred())
 
