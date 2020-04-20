@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	rest "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/rest_manager"
+	rest "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/rest_watcher"
 )
 
 // MockRestAPIHandler is a mock of RestAPIHandler interface.
@@ -35,32 +35,32 @@ func (m *MockRestAPIHandler) EXPECT() *MockRestAPIHandlerMockRecorder {
 	return m.recorder
 }
 
-// APIAdded mocks base method.
+// Start mocks base method.
 func (m *MockRestAPIHandler) APIAdded(ctx context.Context, apiProvider rest.RestAPIProvider) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "APIAdded", ctx, apiProvider)
+	ret := m.ctrl.Call(m, "Start", ctx, apiProvider)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// APIAdded indicates an expected call of APIAdded.
+// Start indicates an expected call of Start.
 func (mr *MockRestAPIHandlerMockRecorder) APIAdded(ctx, apiProvider interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "APIAdded", reflect.TypeOf((*MockRestAPIHandler)(nil).APIAdded), ctx, apiProvider)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockRestAPIHandler)(nil).APIAdded), ctx, apiProvider)
 }
 
-// APIRemoved mocks base method.
+// Stop mocks base method.
 func (m *MockRestAPIHandler) APIRemoved(ctx context.Context, apiProvider rest.RestAPIProvider) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "APIRemoved", ctx, apiProvider)
+	ret := m.ctrl.Call(m, "Stop", ctx, apiProvider)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// APIRemoved indicates an expected call of APIRemoved.
+// Stop indicates an expected call of Stop.
 func (mr *MockRestAPIHandlerMockRecorder) APIRemoved(ctx, apiProvider interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "APIRemoved", reflect.TypeOf((*MockRestAPIHandler)(nil).APIRemoved), ctx, apiProvider)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockRestAPIHandler)(nil).APIRemoved), ctx, apiProvider)
 }
 
 // MockRestAPIClientGetter is a mock of RestAPIClientGetter interface.
