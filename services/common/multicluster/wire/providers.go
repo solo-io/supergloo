@@ -10,7 +10,7 @@ import (
 	mc_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	k8s_manager "sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // package up all the dependencies needed to build an instance of `MultiClusterDependencies`,
@@ -39,7 +39,7 @@ func LocalManagerStarterProvider(controller *k8s_manager.AsyncManagerController)
 }
 
 func LocalManagerProvider(ctx context.Context, cfg *rest.Config) (k8s_manager.AsyncManager, error) {
-	mgr, err := k8s_manager.New(cfg, k8s_manager.Options{})
+	mgr, err := manager.New(cfg, manager.Options{})
 	if err != nil {
 		return nil, err
 	}
