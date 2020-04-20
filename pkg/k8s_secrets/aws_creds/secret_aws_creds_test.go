@@ -24,7 +24,7 @@ var _ = Describe("SecretAwsCreds", func() {
 				Name:      "secretName",
 				Namespace: "secretNamespace",
 			},
-			Type:       k8s_core_types.SecretTypeOpaque,
+			Type:       aws_creds.AWSSecretType,
 			StringData: awsCredsMap,
 		}
 		secret, err := secretAwsCredsConverter.CredsFileToSecret(expectedSecret.GetName(), expectedSecret.GetNamespace(), "filename", "default")
@@ -52,7 +52,7 @@ var _ = Describe("SecretAwsCreds", func() {
 				Name:      "secretName",
 				Namespace: "secretNamespace",
 			},
-			Type: k8s_core_types.SecretTypeOpaque,
+			Type: aws_creds.AWSSecretType,
 			Data: awsCredsMap,
 		}
 		creds, err := secretAwsCredsConverter.SecretToCreds(secret)
@@ -76,7 +76,7 @@ var _ = Describe("SecretAwsCreds", func() {
 				Name:      "secretName",
 				Namespace: "secretNamespace",
 			},
-			Type: k8s_core_types.SecretTypeOpaque,
+			Type: aws_creds.AWSSecretType,
 			Data: awsCredsMap,
 		}
 		_, err := secretAwsCredsConverter.SecretToCreds(secret)

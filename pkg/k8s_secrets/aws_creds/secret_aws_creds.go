@@ -8,6 +8,8 @@ import (
 )
 
 const (
+	// TODO unify Secret type naming
+	AWSSecretType = "solo.io/aws-credentials"
 	// Uniquely identifies the AWS account
 	AWSCredsSecretLabel = "solo.io/kubeconfig"
 	AWSAccessKeyID      = "aws_access_key_id"
@@ -58,7 +60,7 @@ func (s *secretAwsCredsConverter) CredsFileToSecret(
 			Name:      secretName,
 			Namespace: secretNamespace,
 		},
-		Type:       k8s_core_types.SecretTypeOpaque,
+		Type:       AWSSecretType,
 		StringData: secretData,
 	}, nil
 }
