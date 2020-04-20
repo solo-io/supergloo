@@ -13,6 +13,7 @@ import (
 	. "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
@@ -24,7 +25,6 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -168,7 +168,7 @@ users:
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -257,7 +257,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -348,7 +348,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -682,7 +682,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -756,7 +756,7 @@ Successfully wrote kube config secret to master cluster...
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -827,7 +827,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},

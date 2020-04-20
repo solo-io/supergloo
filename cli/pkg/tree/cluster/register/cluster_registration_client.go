@@ -11,6 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
@@ -18,7 +19,6 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/spf13/pflag"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
@@ -162,6 +162,7 @@ func RegisterCluster(
 		configForServiceAccount,
 		masterKubeClients,
 		kubeLoader,
+		clients.KubeConverter,
 	)
 	if err != nil {
 		return err
@@ -241,6 +242,7 @@ func writeKubeConfigToMaster(
 	serviceAccountConfig *rest.Config,
 	masterKubeClients *common.KubeClients,
 	kubeLoader common_config.KubeLoader,
+	kubeConverter kube.Converter,
 ) (*k8s_core_types.Secret, error) {
 
 	// now we need the cluster/context information from that config
@@ -263,10 +265,10 @@ func writeKubeConfigToMaster(
 		return nil, err
 	}
 
-	secret, err := kubeconfig.KubeConfigToSecret(
+	secret, err := kubeConverter.ConfigToSecret(
 		registerOpts.RemoteClusterName,
 		writeNamespace,
-		&kubeconfig.KubeConfig{
+		&kube.KubeConfig{
 			Config: api.Config{
 				Kind:        "Secret",
 				APIVersion:  "kubernetes_core",

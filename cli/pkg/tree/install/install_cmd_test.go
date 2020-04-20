@@ -12,6 +12,8 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
+	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
@@ -23,7 +25,6 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -32,6 +33,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -124,7 +126,7 @@ var _ = Describe("Install", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	It("should rergister is flag is sett", func() {
+	FIt("should register if flag is set", func() {
 		chartOverride := "chartOverride.tgz"
 		installNamespace := "service-mesh-hub"
 		installerconfig := &types.InstallerConfig{
@@ -160,6 +162,7 @@ var _ = Describe("Install", func() {
 		configVerifier := cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
 		clusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
 		csrAgentInstaller := mock_csr.NewMockCsrAgentInstaller(ctrl)
+		kubeConverter := mock_kube.NewMockConverter(ctrl)
 
 		configVerifier.EXPECT().Verify("", "").Return(nil)
 
@@ -211,17 +214,50 @@ users:
 				Namespace: env.GetWriteNamespace(),
 			}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
+		kubeConfigString := expectedKubeConfig(testServerABC)
 		secret := &k8s_core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+				Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 				Name:      serviceAccountRef.Name,
 				Namespace: env.GetWriteNamespace(),
 			},
 			Data: map[string][]byte{
-				clusterName: []byte(expectedKubeConfig(testServerABC)),
+				clusterName: []byte(kubeConfigString),
 			},
 			Type: k8s_core.SecretTypeOpaque,
 		}
+
+		config, err := clientcmd.Load([]byte(kubeConfigString))
+		Expect(err).NotTo(HaveOccurred())
+
+		kubeConverter.EXPECT().
+			ConfigToSecret(serviceAccountRef.Name, env.GetWriteNamespace(), &kube.KubeConfig{
+				Config: api.Config{
+					Kind:        "Secret",
+					APIVersion:  "kubernetes_core",
+					Preferences: api.Preferences{},
+					Clusters: map[string]*api.Cluster{
+						registerOpts.RemoteClusterName: remoteCluster,
+					},
+					AuthInfos: map[string]*api.AuthInfo{
+						registerOpts.RemoteClusterName: {
+							Token: serviceAccountConfig.BearerToken,
+						},
+					},
+					Contexts: map[string]*api.Context{
+						registerOpts.RemoteClusterName: {
+							LocationOfOrigin: remoteContext.LocationOfOrigin,
+							Cluster:          registerOpts.RemoteClusterName,
+							AuthInfo:         registerOpts.RemoteClusterName,
+							Namespace:        remoteContext.Namespace,
+							Extensions:       remoteContext.Extensions,
+						},
+					},
+					CurrentContext: registerOpts.RemoteClusterName,
+				},
+				Cluster: registerOpts.RemoteClusterName,
+			}).
+			Return(secret, nil)
 
 		var expectUpsertSecretData = func(ctx context.Context, secret *k8s_core.Secret) {
 			existing := &k8s_core.Secret{
@@ -275,6 +311,7 @@ users:
 						return csrAgentInstaller
 					},
 				},
+				KubeConverter: kubeConverter,
 			},
 			KubeClients: common.KubeClients{
 				ClusterAuthorization: authClient,
@@ -289,7 +326,7 @@ users:
 			Ctx:        ctx,
 		}
 
-		_, err := meshctl.Invoke(
+		_, err = meshctl.Invoke(
 			fmt.Sprintf("install --register --cluster-name %s -f %s", clusterName, chartOverride))
 		Expect(err).NotTo(HaveOccurred())
 

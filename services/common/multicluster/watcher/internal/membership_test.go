@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
 	kubev1 "k8s.io/api/core/v1"
@@ -71,7 +71,7 @@ users:
 			It("returns an error if the secret is malformed", func() {
 				resync, err := cmh.AddMemberCluster(ctx, &kubev1.Secret{})
 				Expect(resync).To(BeFalse(), "resync should be false")
-				Expect(err).To(HaveInErrorChain(kubeconfig.NoDataInKubeConfigSecret(&kubev1.Secret{})))
+				Expect(err).To(HaveInErrorChain(kube.NoDataInKubeConfigSecret(&kubev1.Secret{})))
 			})
 
 			It("returns an error if there is an invalid kube config string", func() {

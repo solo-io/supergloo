@@ -6,7 +6,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	v1 "k8s.io/api/core/v1"
 )
@@ -40,12 +40,14 @@ type ClusterMembershipHandler struct {
 	kubeConfigReceiver mc_manager.KubeConfigHandler
 	lock               sync.RWMutex
 	clusterByName      map[string]*remoteCluster
+	kubeConverter      kube.Converter
 }
 
-func NewClusterMembershipHandler(kubeConfigReceiver mc_manager.KubeConfigHandler) *ClusterMembershipHandler {
+func NewClusterMembershipHandler(kubeConfigReceiver mc_manager.KubeConfigHandler, kubeConverter kube.Converter) *ClusterMembershipHandler {
 	return &ClusterMembershipHandler{
 		kubeConfigReceiver: kubeConfigReceiver,
 		clusterByName:      make(map[string]*remoteCluster),
+		kubeConverter:      kubeConverter,
 	}
 }
 
@@ -57,7 +59,7 @@ type remoteCluster struct {
 
 func (c *ClusterMembershipHandler) AddMemberCluster(ctx context.Context, s *v1.Secret) (resync bool, err error) {
 	logger := contextutils.LoggerFrom(ctx)
-	clusterName, config, err := kubeconfig.SecretToConfig(s)
+	clusterName, config, err := c.kubeConverter.SecretToConfig(s)
 	if err != nil {
 		return false, KubeConfigInvalidFormatError(err, clusterName, s.GetName(), s.GetNamespace())
 	}
