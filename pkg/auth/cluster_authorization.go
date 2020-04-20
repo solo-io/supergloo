@@ -27,15 +27,21 @@ func NewClusterAuthorization(
 	return &clusterAuthorization{configCreator, remoteAuthorityManager}
 }
 
-func (c *clusterAuthorization) CreateAuthConfigForCluster(
+func (c *clusterAuthorization) BuildRemoteBearerToken(
 	ctx context.Context,
 	targetClusterCfg *rest.Config,
 	serviceAccountRef *zephyr_core_types.ResourceRef,
-) (*rest.Config, error) {
-	_, err := c.remoteAuthorityManager.ApplyRemoteServiceAccount(ctx, serviceAccountRef, ServiceAccountRoles)
+) (bearerToken string, err error) {
+	_, err = c.remoteAuthorityManager.ApplyRemoteServiceAccount(ctx, serviceAccountRef, ServiceAccountRoles)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return c.configCreator.ConfigFromRemoteServiceAccount(ctx, targetClusterCfg, serviceAccountRef)
+	saConfig, err := c.configCreator.ConfigFromRemoteServiceAccount(ctx, targetClusterCfg, serviceAccountRef)
+	if err != nil {
+		return "", err
+	}
+
+	// we only want the bearer token for that service account
+	return saConfig.BearerToken, nil
 }
