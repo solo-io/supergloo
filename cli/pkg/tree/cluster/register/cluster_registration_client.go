@@ -123,7 +123,7 @@ func RegisterCluster(
 		return err
 	}
 
-	configForServiceAccount, err := generateServiceAccountConfig(ctx, out, remoteKubeClients, remoteCfg, registerOpts)
+	bearerTokenForServiceAccount, err := generateServiceAccountBearerToken(ctx, out, remoteKubeClients, remoteCfg, registerOpts)
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func RegisterCluster(
 		opts.Root.WriteNamespace,
 		registerOpts,
 		remoteConfigPath,
-		configForServiceAccount,
+		bearerTokenForServiceAccount,
 		masterKubeClients,
 		kubeLoader,
 		clients.KubeConverter,
@@ -239,7 +239,7 @@ func writeKubeConfigToMaster(
 	writeNamespace string,
 	registerOpts options.Register,
 	remoteKubeConfig string,
-	serviceAccountConfig *rest.Config,
+	serviceAccountBearerToken string,
 	masterKubeClients *common.KubeClients,
 	kubeLoader common_config.KubeLoader,
 	kubeConverter kube.Converter,
@@ -278,7 +278,7 @@ func writeKubeConfigToMaster(
 				},
 				AuthInfos: map[string]*api.AuthInfo{
 					registerOpts.RemoteClusterName: {
-						Token: serviceAccountConfig.BearerToken,
+						Token: serviceAccountBearerToken,
 					},
 				},
 				Contexts: map[string]*api.Context{
@@ -335,31 +335,30 @@ func writeKubeClusterToMaster(
 	return nil
 }
 
-func generateServiceAccountConfig(
+func generateServiceAccountBearerToken(
 	ctx context.Context,
 	out io.Writer,
 	kubeClients *common.KubeClients,
 	remoteAuthConfig *rest.Config,
 	registerOpts options.Register,
-) (*rest.Config, error) {
+) (string, error) {
 
 	// the new cluster name doubles as the name for the service account we will auth as
 	serviceAccountRef := &zephyr_core_types.ResourceRef{
 		Name:      registerOpts.RemoteClusterName,
 		Namespace: registerOpts.RemoteWriteNamespace,
 	}
-	configForServiceAccount, err := kubeClients.ClusterAuthorization.
-		CreateAuthConfigForCluster(ctx, remoteAuthConfig, serviceAccountRef)
+	bearerTokenForServiceAccount, err := kubeClients.ClusterAuthorization.BuildRemoteBearerToken(ctx, remoteAuthConfig, serviceAccountRef)
 	if err != nil {
 		fmt.Fprintf(out, FailedToCreateAuthToken(
 			serviceAccountRef,
 			registerOpts.RemoteKubeConfig,
 			registerOpts.RemoteContext,
 		))
-		return nil, err
+		return "", err
 	}
 
-	return configForServiceAccount, nil
+	return bearerTokenForServiceAccount, nil
 }
 
 // if:

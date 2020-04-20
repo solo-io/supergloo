@@ -127,9 +127,9 @@ users:
 			clusterDEF    = "clusterDEF"
 			testServerDEF = "test-server-def"
 
-			targetRestConfig        = &rest.Config{Host: "www.test.com", TLSClientConfig: rest.TLSClientConfig{CertData: []byte("secret!!!")}}
-			configForServiceAccount = &rest.Config{Host: "www.test.com", BearerToken: "alphanumericgarbage"}
-			cxt                     = clientcmdapi.Config{
+			targetRestConfig          = &rest.Config{Host: "www.test.com", TLSClientConfig: rest.TLSClientConfig{CertData: []byte("secret!!!")}}
+			serviceAccountBearerToken = "alphanumericgarbage"
+			cxt                       = clientcmdapi.Config{
 				CurrentContext: "contextABC",
 				Contexts: map[string]*api.Context{
 					contextABC: {Cluster: clusterABC},
@@ -162,7 +162,7 @@ users:
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
-			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			authClient.EXPECT().BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).Return(serviceAccountBearerToken, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
 			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
@@ -274,8 +274,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
-				Return(configForServiceAccount, nil)
+				BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).
+				Return(serviceAccountBearerToken, nil)
 
 			kubeLoader.
 				EXPECT().
@@ -394,8 +394,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
-				Return(configForServiceAccount, nil)
+				BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).
+				Return(serviceAccountBearerToken, nil)
 
 			kubeLoader.
 				EXPECT().
@@ -547,8 +547,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Return(targetRestConfig, nil)
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
-				Return(nil, testErr)
+				BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).
+				Return("", testErr)
 
 			namespaceClient.
 				EXPECT().
@@ -586,8 +586,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Return(targetRestConfig, nil)
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
-				Return(nil, testErr)
+				BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).
+				Return("", testErr)
 
 			namespaceClient.
 				EXPECT().
@@ -694,8 +694,8 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				Return(targetRestConfig, nil)
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
-				Return(configForServiceAccount, nil)
+				BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).
+				Return(serviceAccountBearerToken, nil)
 
 			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
@@ -761,7 +761,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
-			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			authClient.EXPECT().BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).Return(serviceAccountBearerToken, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
 
 			clusterClient.EXPECT().GetKubernetesCluster(ctx,
@@ -863,7 +863,7 @@ Successfully wrote kube config secret to master cluster...
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, remoteContext).Return(targetRestConfig, nil)
-			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			authClient.EXPECT().BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).Return(serviceAccountBearerToken, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(localKubeConfig, remoteContext).Return(cxt, nil)
 
 			clusterClient.EXPECT().GetKubernetesCluster(ctx,
@@ -963,7 +963,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
-			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			authClient.EXPECT().BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).Return(serviceAccountBearerToken, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
 			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{

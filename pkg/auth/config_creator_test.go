@@ -8,7 +8,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	mock_files "github.com/solo-io/service-mesh-hub/cli/pkg/common/files/mocks"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -54,7 +53,7 @@ var _ = Describe("Config creator", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient, nil)
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
 		saClient.
 			EXPECT().
@@ -79,7 +78,7 @@ var _ = Describe("Config creator", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient, nil)
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
 		attemptsRemaining := 3
 		saClient.
@@ -112,7 +111,6 @@ var _ = Describe("Config creator", func() {
 	It("works when the service account is immediately ready, and the CA data is in a file", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
-		fileReader := mock_files.NewMockFileReader(ctrl)
 
 		fileTestKubeConfig := &rest.Config{
 			Host: "www.grahams-a-great-programmer.edu",
@@ -121,9 +119,8 @@ var _ = Describe("Config creator", func() {
 				CertData: []byte("super secure cert data"),
 			},
 		}
-		caData := []byte("ca-file-data")
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient, fileReader)
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
 		saClient.
 			EXPECT().
@@ -137,16 +134,12 @@ var _ = Describe("Config creator", func() {
 			GetSecret(ctx, client.ObjectKey{Name: tokenSecretRef.Name, Namespace: serviceAccountRef.Namespace}).
 			Return(secret, nil)
 
-		fileReader.EXPECT().
-			Read(fileTestKubeConfig.TLSClientConfig.CAFile).
-			Return(caData, nil)
-
 		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, fileTestKubeConfig, serviceAccountRef)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(newCfg.TLSClientConfig.CertData).To(BeEmpty())
-		Expect(newCfg.TLSClientConfig.CAData).To(Equal(caData))
-		Expect(newCfg.TLSClientConfig.CAFile).To(BeEmpty())
+		Expect(newCfg.TLSClientConfig.CAData).To(BeEmpty())
+		Expect(newCfg.TLSClientConfig.CAFile).To(Equal(fileTestKubeConfig.TLSClientConfig.CAFile))
 		Expect([]byte(newCfg.BearerToken)).To(Equal(secret.Data[auth.SecretTokenKey]))
 	})
 
@@ -154,7 +147,7 @@ var _ = Describe("Config creator", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient, nil)
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
 		saClient.
 			EXPECT().
@@ -179,7 +172,7 @@ var _ = Describe("Config creator", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient, nil)
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
 		saClient.
 			EXPECT().

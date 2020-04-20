@@ -35,12 +35,10 @@ var (
 func NewRemoteAuthorityConfigCreator(
 	secretClient k8s_core.SecretClient,
 	serviceAccountClient k8s_core.ServiceAccountClient,
-	fileReader files.FileReader,
 ) RemoteAuthorityConfigCreator {
 	return &remoteAuthorityConfigCreator{
 		serviceAccountClient: serviceAccountClient,
 		secretClient:         secretClient,
-		fileReader:           fileReader,
 	}
 }
 
@@ -69,19 +67,6 @@ func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 	// make a copy of the config we were handed, with all user credentials removed
 	// https://github.com/kubernetes/client-go/blob/9bbcc2938d41daa40d3080a1b6524afbe4e27bd9/rest/config.go#L542
 	newCfg := rest.AnonymousClientConfig(targetClusterCfg)
-
-	// If CAData is present in file, rather than bytes, need to transfer it into bytes so it won't need to be read
-	// once in cluster
-	// For context see: https://github.com/solo-io/service-mesh-hub/issues/590
-	if len(newCfg.TLSClientConfig.CAData) == 0 && newCfg.TLSClientConfig.CAFile != "" {
-		fileContent, err := r.fileReader.Read(newCfg.TLSClientConfig.CAFile)
-		if err != nil {
-			return nil, FailedToReadCAFile(err, newCfg.TLSClientConfig.CAFile)
-		}
-
-		newCfg.TLSClientConfig.CAData = fileContent
-		newCfg.TLSClientConfig.CAFile = "" // dont need to record the filename in the config; we have the data present
-	}
 
 	// authorize ourselves as the service account we were given
 	newCfg.BearerToken = string(serviceAccountToken)

@@ -191,7 +191,7 @@ users:
 `, server)
 		}
 		targetRestConfig := &rest.Config{Host: "www.test.com", TLSClientConfig: rest.TLSClientConfig{CertData: []byte("secret!!!")}}
-		configForServiceAccount := &rest.Config{Host: "www.test.com", BearerToken: "alphanumericgarbage"}
+		bearerToken := "alphanumericgarbage"
 		cxt := clientcmdapi.Config{
 			CurrentContext: contextABC,
 			Contexts: map[string]*api.Context{
@@ -204,7 +204,7 @@ users:
 			},
 		}
 		mockKubeLoader.EXPECT().GetRestConfigForContext("", contextABC).Return(targetRestConfig, nil)
-		authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+		authClient.EXPECT().BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).Return(bearerToken, nil)
 		mockKubeLoader.EXPECT().GetRawConfigForContext("", "").Return(cxt, nil)
 		mockKubeLoader.EXPECT().GetRawConfigForContext("", contextABC).Return(cxt, nil)
 		clusterClient.EXPECT().GetKubernetesCluster(ctx,

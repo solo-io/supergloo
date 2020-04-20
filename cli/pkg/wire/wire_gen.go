@@ -82,8 +82,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	}
 	secretClient := v1.SecretClientFromClientsetProvider(clientset)
 	serviceAccountClient := v1.ServiceAccountClientFromClientsetProvider(clientset)
-	fileReader := files.NewDefaultFileReader()
-	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, serviceAccountClient, fileReader)
+	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, serviceAccountClient)
 	kubernetesClientset, err := kubernetes.NewForConfig(masterConfig)
 	if err != nil {
 		return nil, err
@@ -112,6 +111,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
 	customResourceDefinitionClientFromConfigFactory := v1beta1.CustomResourceDefinitionClientFromConfigFactoryProvider()
 	crdRemover := crd_uninstall.NewCrdRemover(customResourceDefinitionClientFromConfigFactory)
+	fileReader := files.NewDefaultFileReader()
 	converter := kube.NewConverter(fileReader)
 	uninstallClients := common.UninstallClientsProvider(crdRemover, converter)
 	inMemoryRESTClientGetterFactory := common_config.NewInMemoryRESTClientGetterFactory()
