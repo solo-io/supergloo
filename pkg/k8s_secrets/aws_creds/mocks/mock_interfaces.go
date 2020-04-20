@@ -51,10 +51,10 @@ func (mr *MockSecretAwsCredsConverterMockRecorder) CredsFileToSecret(secretName,
 }
 
 // SecretToCreds mocks base method.
-func (m *MockSecretAwsCredsConverter) SecretToCreds(secret *v1.Secret) (*credentials.Value, error) {
+func (m *MockSecretAwsCredsConverter) SecretToCreds(secret *v1.Secret) (*credentials.Credentials, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SecretToCreds", secret)
-	ret0, _ := ret[0].(*credentials.Value)
+	ret0, _ := ret[0].(*credentials.Credentials)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
