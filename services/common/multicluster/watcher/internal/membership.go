@@ -7,7 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -37,13 +37,13 @@ type MeshAPISecretHandler interface {
 }
 
 type MeshAPIMembershipHandler struct {
-	kubeConfigReceiver mc_manager.KubeConfigHandler
+	kubeConfigReceiver k8s_manager.KubeConfigHandler
 	lock               sync.RWMutex
 	clusterByName      map[string]*remoteCluster
 	kubeConverter      kube.Converter
 }
 
-func NewClusterMembershipHandler(kubeConfigReceiver mc_manager.KubeConfigHandler, kubeConverter kube.Converter) *MeshAPIMembershipHandler {
+func NewClusterMembershipHandler(kubeConfigReceiver k8s_manager.KubeConfigHandler, kubeConverter kube.Converter) *MeshAPIMembershipHandler {
 	return &MeshAPIMembershipHandler{
 		kubeConfigReceiver: kubeConfigReceiver,
 		clusterByName:      make(map[string]*remoteCluster),

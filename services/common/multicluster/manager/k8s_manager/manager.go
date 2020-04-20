@@ -1,4 +1,4 @@
-package mc_manager
+package k8s_manager
 
 import (
 	"context"

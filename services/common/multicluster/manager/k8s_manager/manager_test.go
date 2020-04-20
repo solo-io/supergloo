@@ -1,4 +1,4 @@
-package mc_manager_test
+package k8s_manager_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -20,7 +20,7 @@ var _ = Describe("multi cluster manager", func() {
 		mgr   *mock_controller_runtime.MockManager
 		cache *mock_controller_runtime.MockCache
 		ctx   context.Context
-		async AsyncManager
+		async k8s_manager.AsyncManager
 	)
 
 	BeforeEach(func() {
@@ -28,7 +28,7 @@ var _ = Describe("multi cluster manager", func() {
 		mgr = mock_controller_runtime.NewMockManager(ctrl)
 		cache = mock_controller_runtime.NewMockCache(ctrl)
 		ctx = context.TODO()
-		async = NewAsyncManager(ctx, mgr)
+		async = k8s_manager.NewAsyncManager(ctx, mgr)
 	})
 
 	AfterEach(func() {
@@ -60,7 +60,7 @@ var _ = Describe("multi cluster manager", func() {
 			cache.EXPECT().WaitForCacheSync(gomock.Any()).Return(true)
 			Expect(async.Start()).NotTo(HaveOccurred())
 			Eventually(func() error { return async.Error() }, time.Second*1).
-				Should(HaveInErrorChain(ManagerStartError(eris.New("hello"))))
+				Should(HaveInErrorChain(k8s_manager.ManagerStartError(eris.New("hello"))))
 			_, ok := <-async.GotError()
 			Expect(ok).To(BeFalse())
 		})
@@ -72,7 +72,7 @@ var _ = Describe("multi cluster manager", func() {
 			Eventually(func() error { return async.Error() }, time.Second*1).ShouldNot(HaveOccurred())
 			err := async.Start()
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ManagerCacheSyncError))
+			Expect(err).To(Equal(k8s_manager.ManagerCacheSyncError))
 		})
 
 		It("will return an error if a pre start fails", func() {
@@ -83,7 +83,7 @@ var _ = Describe("multi cluster manager", func() {
 			Eventually(func() error { return async.Error() }, time.Second*1).ShouldNot(HaveOccurred())
 			err := async.Start(fakeOptions)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(HaveInErrorChain(ManagerStartOptionsFuncError(eris.New("hello"))))
+			Expect(err).To(HaveInErrorChain(k8s_manager.ManagerStartOptionsFuncError(eris.New("hello"))))
 		})
 	})
 })

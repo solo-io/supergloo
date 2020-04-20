@@ -14,7 +14,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/proto_conversion"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes"
 	alpha3 "istio.io/api/networking/v1alpha3"
@@ -49,7 +49,7 @@ type IstioFederationClient meshes.MeshFederationClient
 
 // istio-specific implementation of federation resolution
 func NewIstioFederationClient(
-	dynamicClientGetter mc_manager.DynamicClientGetter,
+	dynamicClientGetter k8s_manager.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	gatewayClientFactory istio_networking.GatewayClientFactory,
 	envoyFilterClientFactory istio_networking.EnvoyFilterClientFactory,
@@ -73,7 +73,7 @@ func NewIstioFederationClient(
 }
 
 type istioFederationClient struct {
-	dynamicClientGetter          mc_manager.DynamicClientGetter
+	dynamicClientGetter          k8s_manager.DynamicClientGetter
 	meshClient                   zephyr_discovery.MeshClient
 	gatewayClientFactory         istio_networking.GatewayClientFactory
 	envoyFilterClientFactory     istio_networking.EnvoyFilterClientFactory

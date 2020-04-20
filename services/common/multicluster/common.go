@@ -3,7 +3,7 @@ package multicluster
 import (
 	"context"
 
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
 )
 
 const (
@@ -14,16 +14,16 @@ const (
 // associate a name with the async manager handler
 type NamedAsyncManagerHandler struct {
 	Name                string
-	AsyncManagerHandler mc_manager.AsyncManagerHandler
+	AsyncManagerHandler k8s_manager.AsyncManagerHandler
 }
 
 // all the dependencies you should need to start doing multicluster operations
 // commonly used as input to `SetupAndStartLocalManager`
 type MultiClusterDependencies struct {
-	LocalManager         mc_manager.AsyncManager
-	AsyncManagerInformer mc_manager.AsyncManagerInformer
-	KubeConfigHandler    mc_manager.KubeConfigHandler
-	LocalManagerStarter  mc_manager.AsyncManagerStartOptionsFunc
+	LocalManager         k8s_manager.AsyncManager
+	AsyncManagerInformer k8s_manager.AsyncManagerInformer
+	KubeConfigHandler    k8s_manager.KubeConfigHandler
+	LocalManagerStarter  k8s_manager.AsyncManagerStartOptionsFunc
 	Context              context.Context
 }
 
@@ -32,7 +32,7 @@ type MultiClusterDependencies struct {
 // blocks the current goroutine until <-ctx.Done() or until the local manager reports an error
 func SetupAndStartLocalManager(
 	dependencies MultiClusterDependencies,
-	startupFuncs []mc_manager.AsyncManagerStartOptionsFunc,
+	startupFuncs []k8s_manager.AsyncManagerStartOptionsFunc,
 	asyncManagerHandlers []NamedAsyncManagerHandler,
 ) error {
 
@@ -45,7 +45,7 @@ func SetupAndStartLocalManager(
 		}
 	}
 
-	allStartupFuncs := append([]mc_manager.AsyncManagerStartOptionsFunc{}, startupFuncs...)
+	allStartupFuncs := append([]k8s_manager.AsyncManagerStartOptionsFunc{}, startupFuncs...)
 
 	// make sure the local manager gets started last
 	allStartupFuncs = append(startupFuncs, dependencies.LocalManagerStarter)

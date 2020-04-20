@@ -11,7 +11,7 @@ import (
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -55,7 +55,7 @@ func NewResourceSelector(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 	deploymentClientFactory kubernetes_apps.DeploymentClientFactory,
-	dynamicClientGetter mc_manager.DynamicClientGetter,
+	dynamicClientGetter k8s_manager.DynamicClientGetter,
 ) ResourceSelector {
 	return &resourceSelector{
 		meshServiceClient:       meshServiceClient,
@@ -69,7 +69,7 @@ type resourceSelector struct {
 	meshServiceClient       zephyr_discovery.MeshServiceClient
 	meshWorkloadClient      zephyr_discovery.MeshWorkloadClient
 	deploymentClientFactory kubernetes_apps.DeploymentClientFactory
-	dynamicClientGetter     mc_manager.DynamicClientGetter
+	dynamicClientGetter     k8s_manager.DynamicClientGetter
 }
 
 func (b *resourceSelector) GetMeshServiceByRefSelector(
