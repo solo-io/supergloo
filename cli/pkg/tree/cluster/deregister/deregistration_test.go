@@ -9,6 +9,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/deregister"
 	mock_config_lookup "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup/mocks"
 	mock_crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd/mocks"
@@ -18,7 +19,6 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/k8s_secrets/kubeconfig"
 	mock_cli_runtime "github.com/solo-io/service-mesh-hub/test/mocks/cli_runtime"
 	"helm.sh/helm/v3/pkg/action"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,7 +75,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			Return(true, nil)
 		configLookup.EXPECT().
 			FromCluster(ctx, clusterToDeregister.GetName()).
-			Return(&kubeconfig.Config{RestConfig: remoteRestConfig}, nil)
+			Return(&kube.ConvertedConfigs{RestConfig: remoteRestConfig}, nil)
 
 		clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(
 			crdRemover,
@@ -164,7 +164,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			Return(nil, testErr)
 		configLookup.EXPECT().
 			FromCluster(ctx, clusterToDeregister.GetName()).
-			Return(&kubeconfig.Config{RestConfig: remoteRestConfig}, nil)
+			Return(&kube.ConvertedConfigs{RestConfig: remoteRestConfig}, nil)
 
 		clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(
 			crdRemover,
@@ -211,7 +211,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			Return(nil, nil)
 		configLookup.EXPECT().
 			FromCluster(ctx, clusterToDeregister.GetName()).
-			Return(&kubeconfig.Config{RestConfig: remoteRestConfig}, nil)
+			Return(&kube.ConvertedConfigs{RestConfig: remoteRestConfig}, nil)
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(ctx, remoteClusterName, remoteRestConfig).
 			Return(false, testErr)

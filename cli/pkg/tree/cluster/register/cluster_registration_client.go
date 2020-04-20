@@ -11,6 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
@@ -18,7 +19,6 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/k8s_secrets/kubeconfig"
 	"github.com/spf13/pflag"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
@@ -123,7 +123,7 @@ func RegisterCluster(
 		return err
 	}
 
-	configForServiceAccount, err := generateServiceAccountConfig(ctx, out, remoteKubeClients, remoteCfg, registerOpts)
+	bearerTokenForServiceAccount, err := generateServiceAccountBearerToken(ctx, out, remoteKubeClients, remoteCfg, registerOpts)
 	if err != nil {
 		return err
 	}
@@ -159,9 +159,10 @@ func RegisterCluster(
 		opts.Root.WriteNamespace,
 		registerOpts,
 		remoteConfigPath,
-		configForServiceAccount,
+		bearerTokenForServiceAccount,
 		masterKubeClients,
 		kubeLoader,
+		clients.KubeConverter,
 	)
 	if err != nil {
 		return err
@@ -238,9 +239,10 @@ func writeKubeConfigToMaster(
 	writeNamespace string,
 	registerOpts options.Register,
 	remoteKubeConfig string,
-	serviceAccountConfig *rest.Config,
+	serviceAccountBearerToken string,
 	masterKubeClients *common.KubeClients,
 	kubeLoader common_config.KubeLoader,
+	kubeConverter kube.Converter,
 ) (*k8s_core_types.Secret, error) {
 
 	// now we need the cluster/context information from that config
@@ -263,10 +265,10 @@ func writeKubeConfigToMaster(
 		return nil, err
 	}
 
-	secret, err := kubeconfig.KubeConfigToSecret(
+	secret, err := kubeConverter.ConfigToSecret(
 		registerOpts.RemoteClusterName,
 		writeNamespace,
-		&kubeconfig.KubeConfig{
+		&kube.KubeConfig{
 			Config: api.Config{
 				Kind:        "Secret",
 				APIVersion:  "kubernetes_core",
@@ -276,7 +278,7 @@ func writeKubeConfigToMaster(
 				},
 				AuthInfos: map[string]*api.AuthInfo{
 					registerOpts.RemoteClusterName: {
-						Token: serviceAccountConfig.BearerToken,
+						Token: serviceAccountBearerToken,
 					},
 				},
 				Contexts: map[string]*api.Context{
@@ -333,31 +335,30 @@ func writeKubeClusterToMaster(
 	return nil
 }
 
-func generateServiceAccountConfig(
+func generateServiceAccountBearerToken(
 	ctx context.Context,
 	out io.Writer,
 	kubeClients *common.KubeClients,
 	remoteAuthConfig *rest.Config,
 	registerOpts options.Register,
-) (*rest.Config, error) {
+) (string, error) {
 
 	// the new cluster name doubles as the name for the service account we will auth as
 	serviceAccountRef := &zephyr_core_types.ResourceRef{
 		Name:      registerOpts.RemoteClusterName,
 		Namespace: registerOpts.RemoteWriteNamespace,
 	}
-	configForServiceAccount, err := kubeClients.ClusterAuthorization.
-		CreateAuthConfigForCluster(ctx, remoteAuthConfig, serviceAccountRef)
+	bearerTokenForServiceAccount, err := kubeClients.ClusterAuthorization.BuildRemoteBearerToken(ctx, remoteAuthConfig, serviceAccountRef)
 	if err != nil {
 		fmt.Fprintf(out, FailedToCreateAuthToken(
 			serviceAccountRef,
 			registerOpts.RemoteKubeConfig,
 			registerOpts.RemoteContext,
 		))
-		return nil, err
+		return "", err
 	}
 
-	return configForServiceAccount, nil
+	return bearerTokenForServiceAccount, nil
 }
 
 // if:

@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
@@ -29,7 +31,7 @@ func StartLocalManager(handler mc_manager.KubeConfigHandler) mc_manager.AsyncMan
 
 		mcHandler := &multiClusterHandler{
 			ctx:               ctx,
-			clusterMembership: internal_watcher.NewClusterMembershipHandler(handler),
+			clusterMembership: internal_watcher.NewClusterMembershipHandler(handler, kube.NewConverter(files.NewDefaultFileReader())),
 		}
 
 		if err := secretCtrl.AddEventHandler(ctx, mcHandler, &internal_watcher.MultiClusterPredicate{}); err != nil {

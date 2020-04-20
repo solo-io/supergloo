@@ -24,7 +24,6 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
-	"github.com/solo-io/service-mesh-hub/pkg/k8s_secrets/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"k8s.io/client-go/rest"
@@ -72,6 +71,7 @@ type Clients struct {
 	DeploymentClient              server.DeploymentClient
 	StatusClientFactory           status.StatusClientFactory
 	HealthCheckSuite              healthcheck_types.HealthCheckSuite
+	KubeConverter                 kube.Converter
 
 	IstioClients               IstioClients
 	ClusterRegistrationClients ClusterRegistrationClients
@@ -94,12 +94,12 @@ type IstioClients struct {
 
 type UninstallClients struct {
 	CrdRemover              crd_uninstall.CrdRemover
-	SecretToConfigConverter kubeconfig.SecretToConfigConverter
+	SecretToConfigConverter kube.Converter
 }
 
 func UninstallClientsProvider(
 	crdRemover crd_uninstall.CrdRemover,
-	secretToConfigConverter kubeconfig.SecretToConfigConverter,
+	secretToConfigConverter kube.Converter,
 ) UninstallClients {
 	return UninstallClients{
 		CrdRemover:              crdRemover,
@@ -131,6 +131,7 @@ func ClientsProvider(
 	statusClientFactory status.StatusClientFactory,
 	healthCheckSuite healthcheck_types.HealthCheckSuite,
 	clusterRegistrationClients ClusterRegistrationClients,
+	kubeConverter kube.Converter,
 ) *Clients {
 	return &Clients{
 		ServerVersionClient:           serverVersionClient,
@@ -142,6 +143,7 @@ func ClientsProvider(
 		StatusClientFactory:           statusClientFactory,
 		HealthCheckSuite:              healthCheckSuite,
 		ClusterRegistrationClients:    clusterRegistrationClients,
+		KubeConverter:                 kubeConverter,
 	}
 }
 

@@ -13,6 +13,8 @@ import (
 	. "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
+	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
@@ -24,7 +26,6 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/k8s_secrets/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -50,6 +51,7 @@ var _ = Describe("Cluster Operations", func() {
 		configVerifier    *cli_mocks.MockMasterKubeConfigVerifier
 		clusterClient     *mock_core.MockKubernetesClusterClient
 		csrAgentInstaller *mock_csr.MockCsrAgentInstaller
+		kubeConverter     *mock_kube.MockConverter
 	)
 
 	BeforeEach(func() {
@@ -63,6 +65,7 @@ var _ = Describe("Cluster Operations", func() {
 		configVerifier = cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
 		clusterClient = mock_core.NewMockKubernetesClusterClient(ctrl)
 		csrAgentInstaller = mock_csr.NewMockCsrAgentInstaller(ctrl)
+		kubeConverter = mock_kube.NewMockConverter(ctrl)
 		meshctl = &cli_test.MockMeshctl{
 			KubeClients: common.KubeClients{
 				ClusterAuthorization: authClient,
@@ -77,6 +80,7 @@ var _ = Describe("Cluster Operations", func() {
 						return csrAgentInstaller
 					},
 				},
+				KubeConverter: kubeConverter,
 			},
 			MockController: ctrl,
 			KubeLoader:     kubeLoader,
@@ -123,9 +127,9 @@ users:
 			clusterDEF    = "clusterDEF"
 			testServerDEF = "test-server-def"
 
-			targetRestConfig        = &rest.Config{Host: "www.test.com", TLSClientConfig: rest.TLSClientConfig{CertData: []byte("secret!!!")}}
-			configForServiceAccount = &rest.Config{Host: "www.test.com", BearerToken: "alphanumericgarbage"}
-			cxt                     = clientcmdapi.Config{
+			targetRestConfig          = &rest.Config{Host: "www.test.com", TLSClientConfig: rest.TLSClientConfig{CertData: []byte("secret!!!")}}
+			serviceAccountBearerToken = "alphanumericgarbage"
+			cxt                       = clientcmdapi.Config{
 				CurrentContext: "contextABC",
 				Contexts: map[string]*api.Context{
 					contextABC: {Cluster: clusterABC},
@@ -158,7 +162,7 @@ users:
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
-			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			authClient.EXPECT().BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).Return(serviceAccountBearerToken, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
 			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
@@ -168,7 +172,7 @@ users:
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -177,6 +181,34 @@ users:
 				},
 				Type: k8s_core_types.SecretTypeOpaque,
 			}
+
+			kubeConverter.EXPECT().
+				ConfigToSecret(secret.GetName(), secret.GetNamespace(), &kube.KubeConfig{
+					Cluster: clusterName,
+					Config: api.Config{
+						Kind:        "Secret",
+						APIVersion:  "kubernetes_core",
+						Preferences: api.Preferences{},
+						Clusters: map[string]*api.Cluster{
+							clusterName: {
+								Server: testServerABC,
+							},
+						},
+						AuthInfos: map[string]*api.AuthInfo{
+							clusterName: {
+								Token: "alphanumericgarbage",
+							},
+						},
+						Contexts: map[string]*api.Context{
+							clusterName: {
+								Cluster:  clusterName,
+								AuthInfo: clusterName,
+							},
+						},
+						CurrentContext: clusterName,
+					},
+				}).
+				Return(secret, nil)
 
 			expectUpsertSecretData(ctx, secret)
 
@@ -225,6 +257,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 		It("works if you implicitly set master through KUBECONFIG", func() {
 			localKubeConfig := "~/.kube/master-config"
 			remoteKubeConfig := "~/.kube/target-config"
+			clusterName := "test-cluster-name"
 			os.Setenv("KUBECONFIG", localKubeConfig)
 			defer os.Setenv("KUBECONFIG", "")
 
@@ -241,8 +274,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
-				Return(configForServiceAccount, nil)
+				BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).
+				Return(serviceAccountBearerToken, nil)
 
 			kubeLoader.
 				EXPECT().
@@ -257,7 +290,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -266,6 +299,34 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				},
 				Type: k8s_core_types.SecretTypeOpaque,
 			}
+
+			kubeConverter.EXPECT().
+				ConfigToSecret(secret.GetName(), secret.GetNamespace(), &kube.KubeConfig{
+					Cluster: clusterName,
+					Config: api.Config{
+						Kind:        "Secret",
+						APIVersion:  "kubernetes_core",
+						Preferences: api.Preferences{},
+						Clusters: map[string]*api.Cluster{
+							clusterName: {
+								Server: testServerABC,
+							},
+						},
+						AuthInfos: map[string]*api.AuthInfo{
+							clusterName: {
+								Token: "alphanumericgarbage",
+							},
+						},
+						Contexts: map[string]*api.Context{
+							clusterName: {
+								Cluster:  clusterName,
+								AuthInfo: clusterName,
+							},
+						},
+						CurrentContext: clusterName,
+					},
+				}).
+				Return(secret, nil)
 
 			expectUpsertSecretData(ctx, secret)
 
@@ -316,6 +377,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 		It("works if you use a different context for the remote and local config", func() {
 			localKubeConfig := "~/.kube/master-config"
 			remoteKubeConfig := "~/.kube/target-config"
+			clusterName := "test-cluster-name"
 			os.Setenv("KUBECONFIG", localKubeConfig)
 			defer os.Setenv("KUBECONFIG", "")
 
@@ -332,8 +394,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
-				Return(configForServiceAccount, nil)
+				BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).
+				Return(serviceAccountBearerToken, nil)
 
 			kubeLoader.
 				EXPECT().
@@ -348,7 +410,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -357,6 +419,34 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				},
 				Type: k8s_core_types.SecretTypeOpaque,
 			}
+
+			kubeConverter.EXPECT().
+				ConfigToSecret(secret.GetName(), secret.GetNamespace(), &kube.KubeConfig{
+					Cluster: clusterName,
+					Config: api.Config{
+						Kind:        "Secret",
+						APIVersion:  "kubernetes_core",
+						Preferences: api.Preferences{},
+						Clusters: map[string]*api.Cluster{
+							clusterName: {
+								Server: testServerDEF,
+							},
+						},
+						AuthInfos: map[string]*api.AuthInfo{
+							clusterName: {
+								Token: "alphanumericgarbage",
+							},
+						},
+						Contexts: map[string]*api.Context{
+							clusterName: {
+								Cluster:  clusterName,
+								AuthInfo: clusterName,
+							},
+						},
+						CurrentContext: clusterName,
+					},
+				}).
+				Return(secret, nil)
 
 			expectUpsertSecretData(ctx, secret)
 
@@ -457,8 +547,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Return(targetRestConfig, nil)
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
-				Return(nil, testErr)
+				BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).
+				Return("", testErr)
 
 			namespaceClient.
 				EXPECT().
@@ -496,8 +586,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Return(targetRestConfig, nil)
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
-				Return(nil, testErr)
+				BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).
+				Return("", testErr)
 
 			namespaceClient.
 				EXPECT().
@@ -604,8 +694,8 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				Return(targetRestConfig, nil)
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
-				Return(configForServiceAccount, nil)
+				BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).
+				Return(serviceAccountBearerToken, nil)
 
 			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
@@ -671,7 +761,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
-			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			authClient.EXPECT().BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).Return(serviceAccountBearerToken, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
 
 			clusterClient.EXPECT().GetKubernetesCluster(ctx,
@@ -682,7 +772,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -691,6 +781,34 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				},
 				Type: k8s_core_types.SecretTypeOpaque,
 			}
+
+			kubeConverter.EXPECT().
+				ConfigToSecret(secret.GetName(), secret.GetNamespace(), &kube.KubeConfig{
+					Cluster: clusterName,
+					Config: api.Config{
+						Kind:        "Secret",
+						APIVersion:  "kubernetes_core",
+						Preferences: api.Preferences{},
+						Clusters: map[string]*api.Cluster{
+							clusterName: {
+								Server: testServerABC,
+							},
+						},
+						AuthInfos: map[string]*api.AuthInfo{
+							clusterName: {
+								Token: "alphanumericgarbage",
+							},
+						},
+						Contexts: map[string]*api.Context{
+							clusterName: {
+								Cluster:  clusterName,
+								AuthInfo: clusterName,
+							},
+						},
+						CurrentContext: clusterName,
+					},
+				}).
+				Return(secret, nil)
 
 			expectUpsertSecretData(ctx, secret)
 
@@ -745,7 +863,7 @@ Successfully wrote kube config secret to master cluster...
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, remoteContext).Return(targetRestConfig, nil)
-			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			authClient.EXPECT().BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).Return(serviceAccountBearerToken, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(localKubeConfig, remoteContext).Return(cxt, nil)
 
 			clusterClient.EXPECT().GetKubernetesCluster(ctx,
@@ -756,7 +874,7 @@ Successfully wrote kube config secret to master cluster...
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -765,6 +883,34 @@ Successfully wrote kube config secret to master cluster...
 				},
 				Type: k8s_core_types.SecretTypeOpaque,
 			}
+
+			kubeConverter.EXPECT().
+				ConfigToSecret(secret.GetName(), secret.GetNamespace(), &kube.KubeConfig{
+					Cluster: clusterName,
+					Config: api.Config{
+						Kind:        "Secret",
+						APIVersion:  "kubernetes_core",
+						Preferences: api.Preferences{},
+						Clusters: map[string]*api.Cluster{
+							clusterName: {
+								Server: testServerDEF,
+							},
+						},
+						AuthInfos: map[string]*api.AuthInfo{
+							clusterName: {
+								Token: "alphanumericgarbage",
+							},
+						},
+						Contexts: map[string]*api.Context{
+							clusterName: {
+								Cluster:  clusterName,
+								AuthInfo: clusterName,
+							},
+						},
+						CurrentContext: clusterName,
+					},
+				}).
+				Return(secret, nil)
 
 			expectUpsertSecretData(ctx, secret)
 
@@ -817,7 +963,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
-			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			authClient.EXPECT().BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).Return(serviceAccountBearerToken, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
 			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
@@ -827,7 +973,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			secret := &k8s_core_types.Secret{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 					Name:      serviceAccountRef.Name,
 					Namespace: env.GetWriteNamespace(),
 				},
@@ -836,6 +982,34 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				},
 				Type: k8s_core_types.SecretTypeOpaque,
 			}
+
+			kubeConverter.EXPECT().
+				ConfigToSecret(secret.GetName(), secret.GetNamespace(), &kube.KubeConfig{
+					Cluster: clusterName,
+					Config: api.Config{
+						Kind:        "Secret",
+						APIVersion:  "kubernetes_core",
+						Preferences: api.Preferences{},
+						Clusters: map[string]*api.Cluster{
+							clusterName: {
+								Server: testServerABC,
+							},
+						},
+						AuthInfos: map[string]*api.AuthInfo{
+							clusterName: {
+								Token: "alphanumericgarbage",
+							},
+						},
+						Contexts: map[string]*api.Context{
+							clusterName: {
+								Cluster:  clusterName,
+								AuthInfo: clusterName,
+							},
+						},
+						CurrentContext: clusterName,
+					},
+				}).
+				Return(secret, nil)
 
 			expectUpsertSecretData(ctx, secret)
 

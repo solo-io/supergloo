@@ -12,6 +12,8 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
+	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
@@ -23,7 +25,6 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/k8s_secrets/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -124,7 +125,7 @@ var _ = Describe("Install", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	It("should rergister is flag is sett", func() {
+	It("should register if flag is set", func() {
 		chartOverride := "chartOverride.tgz"
 		installNamespace := "service-mesh-hub"
 		installerconfig := &types.InstallerConfig{
@@ -160,6 +161,7 @@ var _ = Describe("Install", func() {
 		configVerifier := cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
 		clusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
 		csrAgentInstaller := mock_csr.NewMockCsrAgentInstaller(ctrl)
+		kubeConverter := mock_kube.NewMockConverter(ctrl)
 
 		configVerifier.EXPECT().Verify("", "").Return(nil)
 
@@ -189,7 +191,7 @@ users:
 `, server)
 		}
 		targetRestConfig := &rest.Config{Host: "www.test.com", TLSClientConfig: rest.TLSClientConfig{CertData: []byte("secret!!!")}}
-		configForServiceAccount := &rest.Config{Host: "www.test.com", BearerToken: "alphanumericgarbage"}
+		bearerToken := "alphanumericgarbage"
 		cxt := clientcmdapi.Config{
 			CurrentContext: contextABC,
 			Contexts: map[string]*api.Context{
@@ -202,7 +204,7 @@ users:
 			},
 		}
 		mockKubeLoader.EXPECT().GetRestConfigForContext("", contextABC).Return(targetRestConfig, nil)
-		authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+		authClient.EXPECT().BuildRemoteBearerToken(ctx, targetRestConfig, serviceAccountRef).Return(bearerToken, nil)
 		mockKubeLoader.EXPECT().GetRawConfigForContext("", "").Return(cxt, nil)
 		mockKubeLoader.EXPECT().GetRawConfigForContext("", contextABC).Return(cxt, nil)
 		clusterClient.EXPECT().GetKubernetesCluster(ctx,
@@ -211,17 +213,24 @@ users:
 				Namespace: env.GetWriteNamespace(),
 			}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
+		kubeConfigString := expectedKubeConfig(testServerABC)
 		secret := &k8s_core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+				Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
 				Name:      serviceAccountRef.Name,
 				Namespace: env.GetWriteNamespace(),
 			},
 			Data: map[string][]byte{
-				clusterName: []byte(expectedKubeConfig(testServerABC)),
+				clusterName: []byte(kubeConfigString),
 			},
 			Type: k8s_core.SecretTypeOpaque,
 		}
+
+		// using gomock.Any() here because I don't want to spend time encoding details of cluster registration into the installation test
+		// filed https://github.com/solo-io/service-mesh-hub/issues/547 to decouple these things
+		kubeConverter.EXPECT().
+			ConfigToSecret(serviceAccountRef.Name, env.GetWriteNamespace(), gomock.Any()).
+			Return(secret, nil)
 
 		var expectUpsertSecretData = func(ctx context.Context, secret *k8s_core.Secret) {
 			existing := &k8s_core.Secret{
@@ -275,6 +284,7 @@ users:
 						return csrAgentInstaller
 					},
 				},
+				KubeConverter: kubeConverter,
 			},
 			KubeClients: common.KubeClients{
 				ClusterAuthorization: authClient,

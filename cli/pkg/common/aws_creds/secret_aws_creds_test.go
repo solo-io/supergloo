@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/pkg/k8s_secrets/aws_creds"
+	aws_creds2 "github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -15,15 +15,15 @@ var _ = Describe("SecretAwsCreds", func() {
 	It("should convert AWS creds file to secret", func() {
 		secretAwsCredsConverter := newSecretAwsCredsConverter()
 		awsCredsMap := map[string]string{
-			aws_creds.AWSAccessKeyID:     "foo",
-			aws_creds.AWSSecretAccessKey: "bar",
+			aws_creds2.AWSAccessKeyID:     "foo",
+			aws_creds2.AWSSecretAccessKey: "bar",
 		}
 		expectedSecret := &k8s_core_types.Secret{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "secretName",
 				Namespace: "secretNamespace",
 			},
-			Type:       aws_creds.AWSSecretType,
+			Type:       aws_creds2.AWSSecretType,
 			StringData: awsCredsMap,
 		}
 		secret, err := secretAwsCredsConverter.CredsFileToSecret(expectedSecret.GetName(), expectedSecret.GetNamespace(), "filename", "default")
@@ -36,21 +36,21 @@ var _ = Describe("SecretAwsCreds", func() {
 		filename := "filename"
 		profile := "default"
 		_, err := secretAwsCredsConverter.CredsFileToSecret("name", "namespace", filename, profile)
-		Expect(err).To(testutils.HaveInErrorChain(aws_creds.UnableToLoadAWSCreds(eris.New(""), filename, profile)))
+		Expect(err).To(testutils.HaveInErrorChain(aws_creds2.UnableToLoadAWSCreds(eris.New(""), filename, profile)))
 	})
 
 	It("should convert secret to AWS creds", func() {
 		secretAwsCredsConverter := newSecretAwsCredsConverter()
 		awsCredsMap := map[string][]byte{
-			aws_creds.AWSAccessKeyID:     []byte("foo"),
-			aws_creds.AWSSecretAccessKey: []byte("bar"),
+			aws_creds2.AWSAccessKeyID:     []byte("foo"),
+			aws_creds2.AWSSecretAccessKey: []byte("bar"),
 		}
 		secret := &k8s_core_types.Secret{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "secretName",
 				Namespace: "secretNamespace",
 			},
-			Type: aws_creds.AWSSecretType,
+			Type: aws_creds2.AWSSecretType,
 			Data: awsCredsMap,
 		}
 		creds, err := secretAwsCredsConverter.SecretToCreds(secret)
@@ -66,31 +66,31 @@ var _ = Describe("SecretAwsCreds", func() {
 	It("should throw error when attempting to convert secret to AWS creds", func() {
 		secretAwsCredsConverter := newSecretAwsCredsConverter()
 		awsCredsMap := map[string][]byte{
-			aws_creds.AWSAccessKeyID: []byte("foo"),
+			aws_creds2.AWSAccessKeyID: []byte("foo"),
 		}
 		secret := &k8s_core_types.Secret{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "secretName",
 				Namespace: "secretNamespace",
 			},
-			Type: aws_creds.AWSSecretType,
+			Type: aws_creds2.AWSSecretType,
 			Data: awsCredsMap,
 		}
 		_, err := secretAwsCredsConverter.SecretToCreds(secret)
-		Expect(err).To(testutils.HaveInErrorChain(aws_creds.MalformedAWSCredsSecret(aws_creds.AWSSecretAccessKey)))
+		Expect(err).To(testutils.HaveInErrorChain(aws_creds2.MalformedAWSCredsSecret(aws_creds2.AWSSecretAccessKey)))
 	})
 })
 
-func newSecretAwsCredsConverter() aws_creds.SecretAwsCredsConverter {
-	return aws_creds.NewSecretAwsCredsConverter(
+func newSecretAwsCredsConverter() aws_creds2.SecretAwsCredsConverter {
+	return aws_creds2.NewSecretAwsCredsConverter(
 		func(filename, profile string) *credentials.Credentials {
 			return credentials.NewCredentials(awsCredsProviderMock{})
 		},
 	)
 }
 
-func newErrorSecretAwsCredsConverter() aws_creds.SecretAwsCredsConverter {
-	return aws_creds.NewSecretAwsCredsConverter(
+func newErrorSecretAwsCredsConverter() aws_creds2.SecretAwsCredsConverter {
+	return aws_creds2.NewSecretAwsCredsConverter(
 		func(filename, profile string) *credentials.Credentials {
 			return credentials.NewCredentials(errAwsCredsProviderMock{})
 		},

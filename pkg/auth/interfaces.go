@@ -32,15 +32,15 @@ type RemoteAuthorityConfigCreator interface {
 	) (*rest.Config, error)
 }
 
-// Given a way to authorize to a cluster, produce a new config that can authorize to that same cluster
+// Given a way to authorize to a cluster, produce a bearer token that can authorize to that same cluster
 // using a newly-created service account token in that cluster.
 // Creates a service account in the target cluster with the name/namespace of `serviceAccountRef` and cluster-admin permissions
 type ClusterAuthorization interface {
-	CreateAuthConfigForCluster(
+	BuildRemoteBearerToken(
 		ctx context.Context,
 		targetClusterCfg *rest.Config,
 		serviceAccountRef *zephyr_core_types.ResourceRef,
-	) (*rest.Config, error)
+	) (bearerToken string, err error)
 }
 
 // Create a service account on a cluster that `targetClusterCfg` can reach

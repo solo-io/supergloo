@@ -27,9 +27,10 @@ var _ = Describe("Cluster authorization", func() {
 				CertData: []byte("super secure cert data"),
 			},
 		}
-		serviceAccountKubeConfig = &rest.Config{
+		serviceAccountBearerToken = "test-token"
+		serviceAccountKubeConfig  = &rest.Config{
 			Host:        "www.grahams-a-great-programmer.edu",
-			BearerToken: "test-token",
+			BearerToken: serviceAccountBearerToken,
 		}
 	)
 
@@ -58,10 +59,10 @@ var _ = Describe("Cluster authorization", func() {
 			ConfigFromRemoteServiceAccount(ctx, testKubeConfig, serviceAccountRef).
 			Return(serviceAccountKubeConfig, nil)
 
-		outputConfig, err := clusterAuthClient.CreateAuthConfigForCluster(ctx, testKubeConfig, serviceAccountRef)
+		outputBearerToken, err := clusterAuthClient.BuildRemoteBearerToken(ctx, testKubeConfig, serviceAccountRef)
 
 		Expect(err).NotTo(HaveOccurred(), "An error should not have occurred")
-		Expect(outputConfig).To(Equal(serviceAccountKubeConfig), "Should have returned the expected kube config")
+		Expect(outputBearerToken).To(Equal(serviceAccountBearerToken), "Should have returned the expected kube config")
 	})
 
 	It("reports an error when the service account can't be created", func() {
@@ -77,9 +78,9 @@ var _ = Describe("Cluster authorization", func() {
 			ApplyRemoteServiceAccount(ctx, serviceAccountRef, auth.ServiceAccountRoles).
 			Return(nil, testErr)
 
-		outputConfig, err := clusterAuthClient.CreateAuthConfigForCluster(ctx, testKubeConfig, serviceAccountRef)
+		outputBearerToken, err := clusterAuthClient.BuildRemoteBearerToken(ctx, testKubeConfig, serviceAccountRef)
 
-		Expect(outputConfig).To(BeNil(), "Should not have created a new config")
+		Expect(outputBearerToken).To(BeEmpty(), "Should not have created a new config")
 		Expect(err).To(Equal(testErr), "Should have reported the expected error")
 	})
 })
