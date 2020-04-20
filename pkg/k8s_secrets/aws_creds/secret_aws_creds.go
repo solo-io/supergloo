@@ -37,7 +37,7 @@ func DefaultSecretAwsCredsConverter() SecretAwsCredsConverter {
 
 type AwsCredentialsLoader func(filename, profile string) *credentials.Credentials
 
-// If "profile" is empty, AWS SDK will default it to "default"
+// If "credsProfile" is empty, AWS SDK will default it to "default"
 func (s *secretAwsCredsConverter) CredsFileToSecret(
 	secretName,
 	secretNamespace,
@@ -48,7 +48,7 @@ func (s *secretAwsCredsConverter) CredsFileToSecret(
 	if err != nil {
 		return nil, UnableToLoadAWSCreds(err, credsFilename, credsProfile)
 	}
-	// Persist AWS secrets as the pair of AWSAccessKeyID and AWSSecretAccessKey kv's, a format easy to manually modify by a user
+	// Persist AWS secrets as the pair of AWSAccessKeyID and AWSSecretAccessKey kv's
 	secretData := map[string][]byte{}
 	secretData[AWSAccessKeyID] = []byte(creds.AccessKeyID)
 	secretData[AWSSecretAccessKey] = []byte(creds.SecretAccessKey)
