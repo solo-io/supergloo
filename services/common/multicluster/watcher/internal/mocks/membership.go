@@ -36,7 +36,7 @@ func (m *MockClusterSecretHandler) EXPECT() *MockClusterSecretHandlerMockRecorde
 }
 
 // AddMemberCluster mocks base method.
-func (m *MockClusterSecretHandler) AddMemberCluster(ctx context.Context, s *v1.Secret) (bool, error) {
+func (m *MockClusterSecretHandler) AddMemberMeshAPI(ctx context.Context, s *v1.Secret) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddMemberCluster", ctx, s)
 	ret0, _ := ret[0].(bool)

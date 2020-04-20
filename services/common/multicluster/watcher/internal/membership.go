@@ -31,20 +31,20 @@ var (
 )
 
 // this interface is meant to abstract the cluster add/delete logic for the secret watcher
-type ClusterSecretHandler interface {
-	AddMemberCluster(ctx context.Context, s *v1.Secret) (resync bool, err error)
+type MeshAPISecretHandler interface {
+	AddMemberMeshAPI(ctx context.Context, s *v1.Secret) (resync bool, err error)
 	DeleteMemberCluster(ctx context.Context, s *v1.Secret) (resync bool, err error)
 }
 
-type ClusterMembershipHandler struct {
+type MeshAPIMembershipHandler struct {
 	kubeConfigReceiver mc_manager.KubeConfigHandler
 	lock               sync.RWMutex
 	clusterByName      map[string]*remoteCluster
 	kubeConverter      kube.Converter
 }
 
-func NewClusterMembershipHandler(kubeConfigReceiver mc_manager.KubeConfigHandler, kubeConverter kube.Converter) *ClusterMembershipHandler {
-	return &ClusterMembershipHandler{
+func NewClusterMembershipHandler(kubeConfigReceiver mc_manager.KubeConfigHandler, kubeConverter kube.Converter) *MeshAPIMembershipHandler {
+	return &MeshAPIMembershipHandler{
 		kubeConfigReceiver: kubeConfigReceiver,
 		clusterByName:      make(map[string]*remoteCluster),
 		kubeConverter:      kubeConverter,
@@ -57,8 +57,13 @@ type remoteCluster struct {
 	kubeContext string
 }
 
-func (c *ClusterMembershipHandler) AddMemberCluster(ctx context.Context, s *v1.Secret) (resync bool, err error) {
+func (c *MeshAPIMembershipHandler) AddMemberMeshAPI(ctx context.Context, s *v1.Secret) (resync bool, err error) {
 	logger := contextutils.LoggerFrom(ctx)
+	// switch AppMesh / Controller here
+
+	// REST API
+
+	// Kubernetes cluster
 	clusterName, config, err := c.kubeConverter.SecretToConfig(s)
 	if err != nil {
 		return false, KubeConfigInvalidFormatError(err, clusterName, s.GetName(), s.GetNamespace())
@@ -83,7 +88,7 @@ func (c *ClusterMembershipHandler) AddMemberCluster(ctx context.Context, s *v1.S
 	return false, nil
 }
 
-func (c *ClusterMembershipHandler) DeleteMemberCluster(ctx context.Context, s *v1.Secret) (resync bool, err error) {
+func (c *MeshAPIMembershipHandler) DeleteMemberCluster(ctx context.Context, s *v1.Secret) (resync bool, err error) {
 	logger := contextutils.LoggerFrom(ctx)
 	for clusterID, cluster := range c.clusters() {
 		if cluster.secretName == s.GetName() {
@@ -103,7 +108,7 @@ func (c *ClusterMembershipHandler) DeleteMemberCluster(ctx context.Context, s *v
 	return false, nil
 }
 
-func (c *ClusterMembershipHandler) clusters() map[string]*remoteCluster {
+func (c *MeshAPIMembershipHandler) clusters() map[string]*remoteCluster {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	result := make(map[string]*remoteCluster)

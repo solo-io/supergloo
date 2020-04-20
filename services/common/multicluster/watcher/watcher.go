@@ -29,9 +29,9 @@ func StartLocalManager(handler mc_manager.KubeConfigHandler) mc_manager.AsyncMan
 	return func(ctx context.Context, mgr manager.Manager) error {
 		secretCtrl := controller.NewSecretEventWatcher(multicluster.MultiClusterController, mgr)
 
-		mcHandler := &multiClusterHandler{
+		mcHandler := &meshAPIHandler{
 			ctx:               ctx,
-			clusterMembership: internal_watcher.NewClusterMembershipHandler(handler, kube.NewConverter(files.NewDefaultFileReader())),
+			meshAPIMembership: internal_watcher.NewClusterMembershipHandler(handler, kube.NewConverter(files.NewDefaultFileReader())),
 		}
 
 		if err := secretCtrl.AddEventHandler(ctx, mcHandler, &internal_watcher.MultiClusterPredicate{}); err != nil {
@@ -41,20 +41,20 @@ func StartLocalManager(handler mc_manager.KubeConfigHandler) mc_manager.AsyncMan
 	}
 }
 
-type multiClusterHandler struct {
+type meshAPIHandler struct {
 	ctx               context.Context
-	clusterMembership internal_watcher.ClusterSecretHandler
+	meshAPIMembership internal_watcher.MeshAPISecretHandler
 }
 
 func NewMultiClusterHandler(ctx context.Context,
-	clusterMembership internal_watcher.ClusterSecretHandler) controller.SecretEventHandler {
-	return &multiClusterHandler{ctx: ctx, clusterMembership: clusterMembership}
+	clusterMembership internal_watcher.MeshAPISecretHandler) controller.SecretEventHandler {
+	return &meshAPIHandler{ctx: ctx, meshAPIMembership: clusterMembership}
 }
 
-func (c *multiClusterHandler) CreateSecret(s *core_v1.Secret) error {
-	resync, err := c.clusterMembership.AddMemberCluster(c.ctx, s)
+func (c *meshAPIHandler) CreateSecret(s *core_v1.Secret) error {
+	resync, err := c.meshAPIMembership.AddMemberMeshAPI(c.ctx, s)
 	if err != nil {
-		contextutils.LoggerFrom(c.ctx).Errorf("error adding member cluster for secret %s.%s: %s", s.GetName(), s.GetNamespace(), err.Error())
+		contextutils.LoggerFrom(c.ctx).Errorf("error adding member mesh API for secret %s.%s: %s", s.GetName(), s.GetNamespace(), err.Error())
 		if resync {
 			return err
 		}
@@ -62,11 +62,11 @@ func (c *multiClusterHandler) CreateSecret(s *core_v1.Secret) error {
 	return nil
 }
 
-func (c *multiClusterHandler) UpdateSecret(old, new *core_v1.Secret) error {
+func (c *meshAPIHandler) UpdateSecret(old, new *core_v1.Secret) error {
 	logger := contextutils.LoggerFrom(c.ctx)
 	// If mc label has been removed from secret, remove from remote clusters
 	if internal_watcher.HasRequiredMetadata(old.GetObjectMeta()) && !internal_watcher.HasRequiredMetadata(new.GetObjectMeta()) {
-		resync, err := c.clusterMembership.DeleteMemberCluster(c.ctx, new)
+		resync, err := c.meshAPIMembership.DeleteMemberCluster(c.ctx, new)
 		if err != nil {
 			logger.Errorf("error deleting member cluster for "+
 				"secret %s.%s", new.GetName(), new.GetNamespace())
@@ -77,7 +77,7 @@ func (c *multiClusterHandler) UpdateSecret(old, new *core_v1.Secret) error {
 	}
 	// if mc label has been added to secret, add to remote cluster list
 	if !internal_watcher.HasRequiredMetadata(old.GetObjectMeta()) && internal_watcher.HasRequiredMetadata(new.GetObjectMeta()) {
-		resync, err := c.clusterMembership.AddMemberCluster(c.ctx, new)
+		resync, err := c.meshAPIMembership.AddMemberMeshAPI(c.ctx, new)
 		if err != nil {
 			logger.Errorf("error adding member cluster for "+
 				"secret %s.%s", new.GetName(), new.GetNamespace())
@@ -89,8 +89,8 @@ func (c *multiClusterHandler) UpdateSecret(old, new *core_v1.Secret) error {
 	return nil
 }
 
-func (c *multiClusterHandler) DeleteSecret(s *core_v1.Secret) error {
-	resync, err := c.clusterMembership.DeleteMemberCluster(c.ctx, s)
+func (c *meshAPIHandler) DeleteSecret(s *core_v1.Secret) error {
+	resync, err := c.meshAPIMembership.DeleteMemberCluster(c.ctx, s)
 	if err != nil {
 		contextutils.LoggerFrom(c.ctx).Errorf("error deleting member cluster for "+
 			"secret %s.%s", s.GetName(), s.GetNamespace())
@@ -101,7 +101,7 @@ func (c *multiClusterHandler) DeleteSecret(s *core_v1.Secret) error {
 	return nil
 }
 
-func (c *multiClusterHandler) GenericSecret(obj *core_v1.Secret) error {
+func (c *meshAPIHandler) GenericSecret(obj *core_v1.Secret) error {
 	contextutils.LoggerFrom(c.ctx).Warn("should never be called as generic events are not configured for secrets")
 	return nil
 }

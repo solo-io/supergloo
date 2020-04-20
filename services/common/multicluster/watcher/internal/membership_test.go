@@ -62,7 +62,7 @@ users:
 		var (
 			receiver      *mock_mc_manager.MockKubeConfigHandler
 			kubeConverter *mock_kube.MockConverter
-			cmh           *ClusterMembershipHandler
+			cmh           *MeshAPIMembershipHandler
 
 			clusterName, secretName = "cluster-name", "secret-name"
 		)
@@ -80,7 +80,7 @@ users:
 					SecretToConfig(secret).
 					Return("", nil, kube.NoDataInKubeConfigSecret(&kubev1.Secret{}))
 
-				resync, err := cmh.AddMemberCluster(ctx, secret)
+				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).To(HaveInErrorChain(kube.NoDataInKubeConfigSecret(&kubev1.Secret{})))
 			})
@@ -99,7 +99,7 @@ users:
 					SecretToConfig(secret).
 					Return("", nil, KubeConfigInvalidFormatError(eris.New("hello"), clusterName, secretName, ""))
 
-				resync, err := cmh.AddMemberCluster(ctx, secret)
+				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(HaveInErrorChain(KubeConfigInvalidFormatError(eris.New("hello"),
@@ -123,7 +123,7 @@ users:
 					}, nil)
 
 				receiver.EXPECT().ClusterAdded(gomock.Any(), clusterName).Return(eris.New("this is an error"))
-				resync, err := cmh.AddMemberCluster(ctx, secret)
+				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
 				Expect(resync).To(BeTrue(), "resync should be true")
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(HaveInErrorChain(ClusterAddError(eris.New("hello"), clusterName)))
@@ -149,7 +149,7 @@ users:
 					}, nil)
 
 				receiver.EXPECT().ClusterAdded(gomock.Any(), clusterName).Return(nil)
-				resync, err := cmh.AddMemberCluster(ctx, secret)
+				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).NotTo(HaveOccurred())
 			})
@@ -181,7 +181,7 @@ users:
 					}, nil)
 
 				receiver.EXPECT().ClusterAdded(gomock.Any(), clusterName).Return(nil)
-				resync, err := cmh.AddMemberCluster(ctx, secret)
+				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).NotTo(HaveOccurred())
 
@@ -215,7 +215,7 @@ users:
 					}, nil)
 
 				receiver.EXPECT().ClusterAdded(gomock.Any(), clusterName).Return(nil)
-				resync, err := cmh.AddMemberCluster(ctx, secret)
+				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).NotTo(HaveOccurred())
 
