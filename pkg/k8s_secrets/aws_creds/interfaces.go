@@ -20,5 +20,5 @@ type SecretAwsCredsConverter interface {
 	) (*k8s_core_types.Secret, error)
 
 	// Convert an SMH secret to AWS credentials
-	SecretToCreds(secret *k8s_core_types.Secret) (*credentials.Value, error)
+	SecretToCreds(secret *k8s_core_types.Secret) (*credentials.Credentials, error)
 }

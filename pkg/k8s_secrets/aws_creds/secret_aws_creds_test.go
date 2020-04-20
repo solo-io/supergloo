@@ -40,7 +40,7 @@ var _ = Describe("SecretAwsCreds", func() {
 		Expect(err).To(testutils.HaveInErrorChain(aws_creds.UnableToLoadAWSCreds(eris.New(""), filename, profile)))
 	})
 
-	It("should convert secret to AWS creds value", func() {
+	It("should convert secret to AWS creds", func() {
 		secretAwsCredsConverter := newSecretAwsCredsConverter()
 		awsCredsMap := map[string][]byte{
 			aws_creds.AWSAccessKeyID:     []byte("foo"),
@@ -57,13 +57,15 @@ var _ = Describe("SecretAwsCreds", func() {
 		}
 		creds, err := secretAwsCredsConverter.SecretToCreds(secret)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(creds).To(Equal(&credentials.Value{
+		credsValue, err := creds.Get()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(credsValue).To(Equal(credentials.Value{
 			AccessKeyID:     "foo",
 			SecretAccessKey: "bar",
 		}))
 	})
 
-	It("should throw error when attempting to convert secret to AWS creds values", func() {
+	It("should throw error when attempting to convert secret to AWS creds", func() {
 		secretAwsCredsConverter := newSecretAwsCredsConverter()
 		awsCredsMap := map[string][]byte{
 			aws_creds.AWSAccessKeyID: []byte("foo"),

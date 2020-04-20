@@ -63,7 +63,7 @@ func (s *secretAwsCredsConverter) CredsFileToSecret(
 	}, nil
 }
 
-func (s *secretAwsCredsConverter) SecretToCreds(secret *k8s_core_types.Secret) (*credentials.Value, error) {
+func (s *secretAwsCredsConverter) SecretToCreds(secret *k8s_core_types.Secret) (*credentials.Credentials, error) {
 	accessKeyID, ok := secret.Data[AWSAccessKeyID]
 	if !ok {
 		return nil, MalformedAWSCredsSecret(AWSAccessKeyID)
@@ -72,8 +72,28 @@ func (s *secretAwsCredsConverter) SecretToCreds(secret *k8s_core_types.Secret) (
 	if !ok {
 		return nil, MalformedAWSCredsSecret(AWSSecretAccessKey)
 	}
-	return &credentials.Value{
-		AccessKeyID:     string(accessKeyID),
-		SecretAccessKey: string(secretAccessKey),
-	}, nil
+
+	return credentials.NewCredentials(newProvider(func() (credentials.Value, error) {
+		return credentials.Value{
+			AccessKeyID:     string(accessKeyID),
+			SecretAccessKey: string(secretAccessKey),
+		}, nil
+	})), nil
+}
+
+func newProvider(retrieveFunc func() (credentials.Value, error)) *provider {
+	return &provider{retrieveFunc: retrieveFunc}
+}
+
+type provider struct {
+	retrieveFunc func() (credentials.Value, error)
+}
+
+func (p provider) Retrieve() (credentials.Value, error) {
+	return p.retrieveFunc()
+}
+
+// User provided AWS credentials are assumed to be valid. If they are expired, the user must re-register the REST API with valid credentials.
+func (p provider) IsExpired() bool {
+	return false
 }
