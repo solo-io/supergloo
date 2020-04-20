@@ -2,7 +2,7 @@ package controllers
 
 import (
 	core_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
 )
 
 func NewPodEventWatcherFactory() PodEventWatcherFactory {
@@ -11,6 +11,6 @@ func NewPodEventWatcherFactory() PodEventWatcherFactory {
 
 type defaultPodEventWatcherFactory struct{}
 
-func (d *defaultPodEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) core_controllers.PodEventWatcher {
+func (d *defaultPodEventWatcherFactory) Build(mgr k8s_manager.AsyncManager, clusterName string) core_controllers.PodEventWatcher {
 	return core_controllers.NewPodEventWatcher(clusterName, mgr.Manager())
 }

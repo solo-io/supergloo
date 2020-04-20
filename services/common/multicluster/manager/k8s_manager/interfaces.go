@@ -1,4 +1,4 @@
-package mc_manager
+package k8s_manager
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-//go:generate mockgen -source kube_interfaces.go -destination ./mocks/kube_interfaces.go
+//go:generate mockgen -source interfaces.go -destination ./mocks/interfaces.go
 
 // these functions are intended to be used as callbacks for a resource watcher, where the
 // resources represent KubeConfigs

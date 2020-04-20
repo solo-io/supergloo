@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/istio"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/linkerd"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/bootstrap"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
 	md_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/wire"
@@ -56,7 +56,7 @@ func Run(rootCtx context.Context) {
 		discoveryContext.MultiClusterDeps,
 
 		// need to be sure to register the v1alpha1 CRDs with the controller runtime
-		[]mc_manager.AsyncManagerStartOptionsFunc{multicluster.AddAllV1Alpha1ToScheme},
+		[]k8s_manager.AsyncManagerStartOptionsFunc{multicluster.AddAllV1Alpha1ToScheme},
 
 		[]multicluster.NamedAsyncManagerHandler{{
 			Name:                "discovery-controller",

@@ -2,7 +2,7 @@ package controllers
 
 import (
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
 )
 
 func NewMeshWorkloadEventWatcherFactory() MeshWorkloadEventWatcherFactory {
@@ -11,6 +11,6 @@ func NewMeshWorkloadEventWatcherFactory() MeshWorkloadEventWatcherFactory {
 
 type meshWorkloadEventWatcherFactory struct{}
 
-func (d *meshWorkloadEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) zephyr_discovery_controller.MeshWorkloadEventWatcher {
+func (d *meshWorkloadEventWatcherFactory) Build(mgr k8s_manager.AsyncManager, clusterName string) zephyr_discovery_controller.MeshWorkloadEventWatcher {
 	return zephyr_discovery_controller.NewMeshWorkloadEventWatcher(clusterName, mgr.Manager())
 }

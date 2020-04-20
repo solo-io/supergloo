@@ -6,7 +6,7 @@ import (
 	"github.com/google/wire"
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
 	mc_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,40 +34,40 @@ func LocalKubeConfigProvider() (*rest.Config, error) {
 	return kubeutils.GetConfig("", "")
 }
 
-func LocalManagerStarterProvider(controller *mc_manager.AsyncManagerController) mc_manager.AsyncManagerStartOptionsFunc {
+func LocalManagerStarterProvider(controller *k8s_manager.AsyncManagerController) k8s_manager.AsyncManagerStartOptionsFunc {
 	return mc_watcher.StartLocalManager(controller)
 }
 
-func LocalManagerProvider(ctx context.Context, cfg *rest.Config) (mc_manager.AsyncManager, error) {
+func LocalManagerProvider(ctx context.Context, cfg *rest.Config) (k8s_manager.AsyncManager, error) {
 	mgr, err := k8s_manager.New(cfg, k8s_manager.Options{})
 	if err != nil {
 		return nil, err
 	}
 
-	return mc_manager.NewAsyncManager(ctx, mgr), nil
+	return k8s_manager.NewAsyncManager(ctx, mgr), nil
 }
 
-func DynamicClientProvider(mgr mc_manager.AsyncManager) client.Client {
+func DynamicClientProvider(mgr k8s_manager.AsyncManager) client.Client {
 	return mgr.Manager().GetClient()
 }
 
-func AsyncManagerFactoryProvider() mc_manager.AsyncManagerFactory {
-	return mc_manager.NewAsyncManagerFactory()
+func AsyncManagerFactoryProvider() k8s_manager.AsyncManagerFactory {
+	return k8s_manager.NewAsyncManagerFactory()
 }
 
-func AsyncManagerControllerProvider(ctx context.Context, localManager mc_manager.AsyncManager) *mc_manager.AsyncManagerController {
-	return mc_manager.NewAsyncManagerControllerFromLocal(ctx, localManager.Manager(), mc_manager.NewAsyncManagerFactory())
+func AsyncManagerControllerProvider(ctx context.Context, localManager k8s_manager.AsyncManager) *k8s_manager.AsyncManagerController {
+	return k8s_manager.NewAsyncManagerControllerFromLocal(ctx, localManager.Manager(), k8s_manager.NewAsyncManagerFactory())
 }
 
-func DynamicClientGetterProvider(controller *mc_manager.AsyncManagerController) mc_manager.DynamicClientGetter {
+func DynamicClientGetterProvider(controller *k8s_manager.AsyncManagerController) k8s_manager.DynamicClientGetter {
 	return controller
 }
 
 func MulticlusterDependenciesProvider(
 	ctx context.Context,
-	localManager mc_manager.AsyncManager,
-	asyncManagerController *mc_manager.AsyncManagerController,
-	localManagerStarter mc_manager.AsyncManagerStartOptionsFunc,
+	localManager k8s_manager.AsyncManager,
+	asyncManagerController *k8s_manager.AsyncManagerController,
+	localManagerStarter k8s_manager.AsyncManagerStartOptionsFunc,
 ) multicluster.MultiClusterDependencies {
 	return multicluster.MultiClusterDependencies{
 		LocalManager:         localManager,

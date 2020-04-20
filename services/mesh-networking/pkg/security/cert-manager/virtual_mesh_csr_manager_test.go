@@ -15,8 +15,8 @@ import (
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager/mocks"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 	mock_cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager/mocks"
 	mock_vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation/mocks"
@@ -197,13 +197,13 @@ var _ = Describe("csr manager", func() {
 
 			dynamicClientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName, gomock.Any()).
-				Return(nil, mc_manager.ClientNotFoundError(clusterName))
+				Return(nil, k8s_manager.ClientNotFoundError(clusterName))
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(zephyr_networking_types.VirtualMeshStatus{
 				CertificateStatus: &zephyr_core_types.Status{
 					State:   zephyr_core_types.Status_PROCESSING_ERROR,
-					Message: mc_manager.ClientNotFoundError(clusterName).Error(),
+					Message: k8s_manager.ClientNotFoundError(clusterName).Error(),
 				},
 			}))
 		})

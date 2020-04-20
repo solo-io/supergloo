@@ -11,7 +11,7 @@ import (
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	smi_networking "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
 	linkerd_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/linkerd-translator"
@@ -39,15 +39,15 @@ var (
 	)
 )
 
-func LocalTrafficPolicyEventWatcherProvider(mgr mc_manager.AsyncManager) zephyr_networking_controller.TrafficPolicyEventWatcher {
+func LocalTrafficPolicyEventWatcherProvider(mgr k8s_manager.AsyncManager) zephyr_networking_controller.TrafficPolicyEventWatcher {
 	return zephyr_networking_controller.NewTrafficPolicyEventWatcher("management-plane-traffic-policy-event-watcher", mgr.Manager())
 }
 
-func LocalMeshServiceEventWatcherProvider(mgr mc_manager.AsyncManager) zephyr_discovery_controller.MeshServiceEventWatcher {
+func LocalMeshServiceEventWatcherProvider(mgr k8s_manager.AsyncManager) zephyr_discovery_controller.MeshServiceEventWatcher {
 	return zephyr_discovery_controller.NewMeshServiceEventWatcher("management-plane-mesh-service-event-watcher", mgr.Manager())
 }
 
-func LocalMeshWorkloadEventWatcherProvider(mgr mc_manager.AsyncManager) zephyr_discovery_controller.MeshWorkloadEventWatcher {
+func LocalMeshWorkloadEventWatcherProvider(mgr k8s_manager.AsyncManager) zephyr_discovery_controller.MeshWorkloadEventWatcher {
 	return zephyr_discovery_controller.NewMeshWorkloadEventWatcher("management-plane-mesh-workload-event-watcher", mgr.Manager())
 }
 
