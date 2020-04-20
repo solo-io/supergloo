@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 )
 
 // MockKubeConfigLookup is a mock of KubeConfigLookup interface.
@@ -36,10 +36,10 @@ func (m *MockKubeConfigLookup) EXPECT() *MockKubeConfigLookupMockRecorder {
 }
 
 // FromCluster mocks base method.
-func (m *MockKubeConfigLookup) FromCluster(ctx context.Context, clusterName string) (*kubeconfig.Config, error) {
+func (m *MockKubeConfigLookup) FromCluster(ctx context.Context, clusterName string) (*kube.ConvertedConfigs, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FromCluster", ctx, clusterName)
-	ret0, _ := ret[0].(*kubeconfig.Config)
+	ret0, _ := ret[0].(*kube.ConvertedConfigs)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

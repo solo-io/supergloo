@@ -50,7 +50,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
 	"github.com/spf13/cobra"
@@ -83,7 +82,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		install.HelmInstallerProvider,
 		healthcheck.ClientsProvider,
 		crd_uninstall.NewCrdRemover,
-		kubeconfig.SecretToConfigConverterProvider,
+		kube.NewConverter,
 		common.UninstallClientsProvider,
 		common_config.NewInMemoryRESTClientGetterFactory,
 		helm_uninstall.NewUninstallerFactory,
@@ -110,6 +109,8 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 
 func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	wire.Build(
+		files.NewDefaultFileReader,
+		kube.NewConverter,
 		upgrade.UpgraderClientSet,
 		docker.NewImageNameParser,
 		common_config.DefaultKubeLoaderProvider,
@@ -169,7 +170,7 @@ func InitializeCLIWithMocks(
 	kubeLoader common_config.KubeLoader,
 	imageNameParser docker.ImageNameParser,
 	fileReader files.FileReader,
-	secretToConfigConverter kubeconfig.SecretToConfigConverter,
+	kubeconfigConverter kube.Converter,
 	printers common.Printers,
 	runner exec.Runner,
 	interactivePrompt interactive.InteractivePrompt,
