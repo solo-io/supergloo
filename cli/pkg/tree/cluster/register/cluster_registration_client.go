@@ -263,6 +263,7 @@ func writeKubeConfigToMaster(
 		return nil, err
 	}
 
+	// NOTE: Cluster de-registration depends on the name of this secret being the same as
 	secret, err := kubeconfig.KubeConfigToSecret(
 		registerOpts.RemoteClusterName,
 		writeNamespace,

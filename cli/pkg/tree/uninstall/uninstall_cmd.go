@@ -15,6 +15,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -72,9 +73,9 @@ func UninstallCmd(
 			// find all the kube clusters that we need to de-register
 			kubeClusters, err := masterKubeClients.KubeClusterClient.ListKubernetesCluster(ctx, client.InNamespace(opts.Root.WriteNamespace))
 
-			// List will only return a NotFound error if the CRD is not registered
+			// List will only return a NoMatch error if the CRD is not registered
 			// if there are no resources, then List returns an object with an empty .Items field and a nil error
-			if errors.IsNotFound(err) {
+			if meta.IsNoMatchError(err) {
 				fmt.Fprintf(out, "No clusters to deregister...\n")
 			} else if err != nil {
 				fmt.Fprintf(out, "Failed to find registered clusters - Continuing...\n\t(%s)\n", err.Error())
