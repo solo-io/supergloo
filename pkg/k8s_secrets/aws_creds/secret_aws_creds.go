@@ -11,8 +11,8 @@ const (
 	// TODO unify Secret type naming
 	AWSSecretType = "solo.io/aws-credentials"
 	// Uniquely identifies the AWS account
-	AWSAccessKeyID      = "aws_access_key_id"
-	AWSSecretAccessKey  = "aws_secret_access_key"
+	AWSAccessKeyID     = "aws_access_key_id"
+	AWSSecretAccessKey = "aws_secret_access_key"
 )
 
 var (
