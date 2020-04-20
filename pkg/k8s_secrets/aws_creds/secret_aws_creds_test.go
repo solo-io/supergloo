@@ -14,9 +14,9 @@ import (
 var _ = Describe("SecretAwsCreds", func() {
 	It("should convert AWS creds file to secret", func() {
 		secretAwsCredsConverter := newSecretAwsCredsConverter()
-		awsCredsMap := map[string][]byte{
-			aws_creds.AWSAccessKeyID:     []byte("foo"),
-			aws_creds.AWSSecretAccessKey: []byte("bar"),
+		awsCredsMap := map[string]string{
+			aws_creds.AWSAccessKeyID:     "foo",
+			aws_creds.AWSSecretAccessKey: "bar",
 		}
 		expectedSecret := &k8s_core_types.Secret{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -24,8 +24,8 @@ var _ = Describe("SecretAwsCreds", func() {
 				Name:      "secretName",
 				Namespace: "secretNamespace",
 			},
-			Type: k8s_core_types.SecretTypeOpaque,
-			Data: awsCredsMap,
+			Type:       k8s_core_types.SecretTypeOpaque,
+			StringData: awsCredsMap,
 		}
 		secret, err := secretAwsCredsConverter.CredsFileToSecret(expectedSecret.GetName(), expectedSecret.GetNamespace(), "filename", "default")
 		Expect(err).ToNot(HaveOccurred())

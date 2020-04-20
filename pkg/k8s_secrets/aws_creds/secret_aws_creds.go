@@ -49,17 +49,17 @@ func (s *secretAwsCredsConverter) CredsFileToSecret(
 		return nil, UnableToLoadAWSCreds(err, credsFilename, credsProfile)
 	}
 	// Persist AWS secrets as the pair of AWSAccessKeyID and AWSSecretAccessKey kv's
-	secretData := map[string][]byte{}
-	secretData[AWSAccessKeyID] = []byte(creds.AccessKeyID)
-	secretData[AWSSecretAccessKey] = []byte(creds.SecretAccessKey)
+	secretData := make(map[string]string)
+	secretData[AWSAccessKeyID] = creds.AccessKeyID
+	secretData[AWSSecretAccessKey] = creds.SecretAccessKey
 	return &k8s_core_types.Secret{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Labels:    map[string]string{AWSCredsSecretLabel: "true"},
 			Name:      secretName,
 			Namespace: secretNamespace,
 		},
-		Type: k8s_core_types.SecretTypeOpaque,
-		Data: secretData,
+		Type:       k8s_core_types.SecretTypeOpaque,
+		StringData: secretData,
 	}, nil
 }
 
