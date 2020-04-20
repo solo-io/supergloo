@@ -20,7 +20,6 @@ var _ = Describe("SecretAwsCreds", func() {
 		}
 		expectedSecret := &k8s_core_types.Secret{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
-				Labels:    map[string]string{aws_creds.AWSCredsSecretLabel: "true"},
 				Name:      "secretName",
 				Namespace: "secretNamespace",
 			},
@@ -48,7 +47,6 @@ var _ = Describe("SecretAwsCreds", func() {
 		}
 		secret := &k8s_core_types.Secret{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
-				Labels:    map[string]string{aws_creds.AWSCredsSecretLabel: "true"},
 				Name:      "secretName",
 				Namespace: "secretNamespace",
 			},
@@ -72,7 +70,6 @@ var _ = Describe("SecretAwsCreds", func() {
 		}
 		secret := &k8s_core_types.Secret{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
-				Labels:    map[string]string{aws_creds.AWSCredsSecretLabel: "true"},
 				Name:      "secretName",
 				Namespace: "secretNamespace",
 			},

@@ -11,7 +11,6 @@ const (
 	// TODO unify Secret type naming
 	AWSSecretType = "solo.io/aws-credentials"
 	// Uniquely identifies the AWS account
-	AWSCredsSecretLabel = "solo.io/kubeconfig"
 	AWSAccessKeyID      = "aws_access_key_id"
 	AWSSecretAccessKey  = "aws_secret_access_key"
 )
@@ -56,7 +55,6 @@ func (s *secretAwsCredsConverter) CredsFileToSecret(
 	secretData[AWSSecretAccessKey] = creds.SecretAccessKey
 	return &k8s_core_types.Secret{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
-			Labels:    map[string]string{AWSCredsSecretLabel: "true"},
 			Name:      secretName,
 			Namespace: secretNamespace,
 		},
