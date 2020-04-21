@@ -6,6 +6,8 @@ We have two main areas that see active development:
 * `mesh-discovery`, the pod that discovers service meshes and workloads. Lives in `./services/mesh-discovery`
 * `mesh-networking`, the pod that handles user-written Service Mesh Hub configuration. Lives in `./services/mesh-networking`
 
+Throughout all of your development, you can also rely on `meshctl check` to see if it can detect any problems with your setup.
+
 ## Important `make` Targets
 
 * `make update-deps` - download Go CLI tools used to generate and format code. Should be run before doing local dev.
