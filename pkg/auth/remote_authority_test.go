@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
@@ -54,6 +55,10 @@ var _ = Describe("Remote service account client", func() {
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      serviceAccountRef.Name,
 				Namespace: serviceAccountRef.Namespace,
+				Labels: map[string]string{
+					cliconstants.ManagedByLabel:     cliconstants.ServiceMeshHubApplicationName,
+					auth.RegistrationServiceAccount: auth.RegistrationServiceAccountValue,
+				},
 			},
 		}
 
@@ -82,6 +87,10 @@ var _ = Describe("Remote service account client", func() {
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      serviceAccountRef.Name,
 				Namespace: serviceAccountRef.Namespace,
+				Labels: map[string]string{
+					cliconstants.ManagedByLabel:     cliconstants.ServiceMeshHubApplicationName,
+					auth.RegistrationServiceAccount: auth.RegistrationServiceAccountValue,
+				},
 			},
 		}
 
@@ -110,6 +119,10 @@ var _ = Describe("Remote service account client", func() {
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      serviceAccountRef.Name,
 				Namespace: serviceAccountRef.Namespace,
+				Labels: map[string]string{
+					cliconstants.ManagedByLabel:     cliconstants.ServiceMeshHubApplicationName,
+					auth.RegistrationServiceAccount: auth.RegistrationServiceAccountValue,
+				},
 			},
 		}
 
@@ -133,6 +146,10 @@ var _ = Describe("Remote service account client", func() {
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      serviceAccountRef.Name,
 				Namespace: serviceAccountRef.Namespace,
+				Labels: map[string]string{
+					cliconstants.ManagedByLabel:     cliconstants.ServiceMeshHubApplicationName,
+					auth.RegistrationServiceAccount: auth.RegistrationServiceAccountValue,
+				},
 			},
 		}
 

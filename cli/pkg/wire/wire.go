@@ -68,6 +68,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		k8s_core.NamespaceClientFromClientsetProvider,
 		k8s_core.PodClientFromClientsetProvider,
 		k8s_core.SecretClientFactoryProvider,
+		k8s_core.ServiceAccountClientFactoryProvider,
 		kubernetes_apps.ClientsetFromConfigProvider,
 		kubernetes_apps.DeploymentClientFromClientsetProvider,
 		kubernetes_apps.DeploymentClientFactoryProvider,

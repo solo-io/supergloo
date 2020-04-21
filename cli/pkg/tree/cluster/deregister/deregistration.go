@@ -11,6 +11,7 @@ import (
 	helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_core_v1_clients "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
@@ -46,6 +47,9 @@ var (
 	FailedToCleanUpCertSecrets = func(err error, clusterName string) error {
 		return eris.Wrapf(err, "Failed to clean up TLS cert data for cluster %s", clusterName)
 	}
+	FailedToCleanUpServiceAccount = func(err error, clusterName string) error {
+		return eris.Wrapf(err, "Failed to clean up Service Mesh Hub service account from cluster %s", clusterName)
+	}
 
 	noOpHelmLogger = func(format string, v ...interface{}) {}
 )
@@ -59,6 +63,7 @@ func NewClusterDeregistrationClient(
 	localSecretClient k8s_core_v1_clients.SecretClient,
 	secretClientFactory k8s_core_v1_clients.SecretClientFactory,
 	dynamicClientGetter mc_manager.DynamicClientGetter,
+	serviceAccountClientFactory k8s_core_v1_clients.ServiceAccountClientFactory,
 ) ClusterDeregistrationClient {
 	return &clusterDeregistrationClient{
 		crdRemover:                   crdRemover,
@@ -69,6 +74,7 @@ func NewClusterDeregistrationClient(
 		localSecretClient:            localSecretClient,
 		secretClientFactory:          secretClientFactory,
 		dynamicClientGetter:          dynamicClientGetter,
+		serviceAccountClientFactory:  serviceAccountClientFactory,
 	}
 }
 
@@ -81,12 +87,15 @@ type clusterDeregistrationClient struct {
 	localkubeClusterClient       zephyr_discovery.KubernetesClusterClient
 	localSecretClient            k8s_core_v1_clients.SecretClient
 	secretClientFactory          k8s_core_v1_clients.SecretClientFactory
+	serviceAccountClientFactory  k8s_core_v1_clients.ServiceAccountClientFactory
 	dynamicClientGetter          mc_manager.DynamicClientGetter
 }
 
 func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *zephyr_discovery.KubernetesCluster) error {
 	config, err := c.kubeConfigLookup.FromCluster(ctx, kubeCluster.GetName())
-	if err != nil {
+	if meta.IsNoMatchError(err) {
+		return nil
+	} else if err != nil {
 		return FailedToFindClusterCredentials(err, kubeCluster.GetName())
 	}
 
@@ -106,7 +115,12 @@ func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *zeph
 		return FailedToUninstallCsrAgent(err, kubeCluster.GetName())
 	}
 
-	err = c.cleanUpCertSecrets(ctx, kubeCluster)
+	clientForCluster, err := c.dynamicClientGetter.GetClientForCluster(ctx, kubeCluster.GetName())
+	if err != nil {
+		return err
+	}
+
+	err = c.cleanUpCertSecrets(ctx, clientForCluster, kubeCluster)
 	if err != nil {
 		return FailedToCleanUpCertSecrets(err, kubeCluster.GetName())
 	}
@@ -121,20 +135,37 @@ func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *zeph
 		return FailedToCleanUpKubeConfigCrd(err, kubeCluster.GetName())
 	}
 
-	_, err = c.crdRemover.RemoveZephyrCrds(ctx, kubeCluster.GetName(), config.RestConfig)
+	err = c.cleanUpServiceAccounts(ctx, clientForCluster, kubeCluster)
 	if err != nil {
+		return FailedToCleanUpServiceAccount(err, kubeCluster.GetName())
+	}
+
+	_, err = c.crdRemover.RemoveZephyrCrds(ctx, kubeCluster.GetName(), config.RestConfig)
+	if err != nil && !meta.IsNoMatchError(err) {
 		return FailedToRemoveCrds(err, kubeCluster.GetName())
 	}
 
 	return nil
 }
 
-func (c *clusterDeregistrationClient) cleanUpCertSecrets(ctx context.Context, kubeCluster *zephyr_discovery.KubernetesCluster) error {
-	clientForCluster, err := c.dynamicClientGetter.GetClientForCluster(ctx, kubeCluster.GetName())
+func (c *clusterDeregistrationClient) cleanUpServiceAccounts(ctx context.Context, clientForCluster client.Client, kubeCluster *zephyr_discovery.KubernetesCluster) error {
+	serviceAccountClient := c.serviceAccountClientFactory(clientForCluster)
+	err := serviceAccountClient.DeleteAllOfServiceAccount(
+		ctx,
+		client.InNamespace(kubeCluster.Spec.GetWriteNamespace()),
+		client.MatchingLabels{
+			cliconstants.ManagedByLabel:     cliconstants.ServiceMeshHubApplicationName,
+			auth.RegistrationServiceAccount: auth.RegistrationServiceAccountValue,
+		},
+	)
 	if err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func (c *clusterDeregistrationClient) cleanUpCertSecrets(ctx context.Context, clientForCluster client.Client, kubeCluster *zephyr_discovery.KubernetesCluster) error {
 	secretClientForCluster := c.secretClientFactory(clientForCluster)
 	allSecrets, err := secretClientForCluster.ListSecret(ctx, client.InNamespace(kubeCluster.Spec.GetWriteNamespace()))
 	if err != nil {

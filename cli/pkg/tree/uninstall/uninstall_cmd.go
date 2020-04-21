@@ -84,12 +84,14 @@ func UninstallCmd(
 				kubeClusters = &zephyr_discovery.KubernetesClusterList{}
 				uninstallErrorOccured = true
 			} else {
+				fmt.Println("De-registering clusters")
 				// can only do this step if we definitely have kube clusters to read from
 				err = deregisterClusters(ctx, out, kubeClusters, masterKubeClients)
 				if err != nil {
 					uninstallErrorOccured = true
 					fmt.Fprintf(out, "Failed to de-register all clusters - Continuing...\n\t(%s)\n", err.Error())
 				}
+				fmt.Println("Done De-registering clusters")
 			}
 
 			// optionally clean up the management plane namespace
@@ -99,6 +101,7 @@ func UninstallCmd(
 				fmt.Fprintf(out, "Failed to remove management plane namespace - Continuing...\n\t(%s)\n", err.Error())
 			}
 
+			fmt.Println("About to remove zephyr CRDs from management plane")
 			// remove SMH CRDs from management plane cluster
 			deletedCrds, err := masterKubeClients.UninstallClients.CrdRemover.RemoveZephyrCrds(ctx, "management plane cluster", masterCfg)
 			if err == nil && deletedCrds {
