@@ -8,10 +8,10 @@ weight: 3
 
 To illustrate the concepts in this guide, we will assume that:
 
-* we have just installed Istio as described in the ["Installing Istio" guide]({{% versioned_link_path fromRoot="/getting_started/guides/installing_istio" %}})
+* we have just installed Istio as described in the ["Installing Istio" guide]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * Service Mesh Hub is running
-* the cluster running Istio has been registered as described in the [top-level intro]({{% versioned_link_path fromRoot="/getting_started/guides" %}})
-* after Istio was installed, you deployed the `bookinfo` app into Istio's cluster as described in the [top-level intro]({{% versioned_link_path fromRoot="/getting_started/guides" %}})
+* the cluster running Istio has been registered as described in the [top-level intro]({{% versioned_link_path fromRoot="/guides" %}})
+* after Istio was installed, you deployed the `bookinfo` app into Istio's cluster as described in the [top-level intro]({{% versioned_link_path fromRoot="/guides" %}})
 
 A relevant definition of a Service Mesh Hub concept that we'll need in this guide:
 

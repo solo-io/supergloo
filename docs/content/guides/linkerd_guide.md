@@ -287,7 +287,7 @@ service/reviews-v3 created
 ```
 
 Once the injected application is deployed, we should be able to see a corresponding 
-[`MeshService` CR]({{< versioned_link_path fromRoot="/reference/api/mesh">}}) created by `mesh-discovery`:
+[`MeshService` CR]({{< versioned_link_path fromRoot="/reference/api/mesh_service/">}}) created by `mesh-discovery`:
 
 
 {{< tabs >}}
@@ -396,7 +396,7 @@ Next We'll set up a Traffic Shifting rule which will force all traffic to the "r
 
 ## Configuring a Traffic Policy
 
-Let's create a [TrafficPolicy](({{< versioned_link_path fromRoot="/reference/api/traffic_policy">}})) CR to instruct
+Let's create a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/traffic_policy/">}}) CR to instruct
 Service Mesh Hub to direct all traffic to the `reviews-v3` version of the reviews service:
 
 

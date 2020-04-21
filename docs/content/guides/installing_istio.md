@@ -7,7 +7,7 @@ weight: 1
 ## Pre-Guide Notes
 
 {{% notice note %}}
-Be sure to satisfy the pre-requisites listed in the top-level page [here]({{% versioned_link_path fromRoot="/getting_started/guides" %}})
+Be sure to satisfy the pre-requisites listed in the top-level page [here]({{% versioned_link_path fromRoot="/guides" %}})
 {{% /notice %}}
 
 We will assume in this guide that we have the following two contexts available in our kubeconfig file.

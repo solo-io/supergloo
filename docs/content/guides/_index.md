@@ -38,7 +38,7 @@ There are several guides available. The complete list can be seen below. A reaso
 introduction to Service Mesh Hub can be obtained by following the guides in the order
 that they appear here, starting from the top and going down.
 
-* [Installing Istio]({{% versioned_link_path fromRoot="/getting_started/guides/installing_istio" %}})
-* [Intro to Discovery]({{% versioned_link_path fromRoot="/getting_started/guides/discovery_intro" %}})
-* [Intro to Access Control]({{% versioned_link_path fromRoot="/getting_started/guides/access_control_intro" %}})
-* [Multicluster Communication]({{% versioned_link_path fromRoot="/getting_started/guides/multicluster_communication" %}})
+* [Installing Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* [Intro to Discovery]({{% versioned_link_path fromRoot="/guides/discovery_intro" %}})
+* [Intro to Access Control]({{% versioned_link_path fromRoot="/guides/access_control_intro" %}})
+* [Multicluster Communication]({{% versioned_link_path fromRoot="/guides/multicluster_communication" %}})

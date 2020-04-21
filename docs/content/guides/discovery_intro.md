@@ -25,8 +25,8 @@ To illustrate these concepts, we will assume that:
 
 * we have just installed Istio as described in the "Installing Istio" guide
 * Service Mesh Hub is running
-* the cluster running Istio has been registered as described in [top-level intro]({{% versioned_link_path fromRoot="/getting_started/guides" %}})
-* after Istio was installed, you deployed the `bookinfo` app into Istio's cluster as described in the [top-level intro]({{% versioned_link_path fromRoot="/getting_started/guides" %}})
+* the cluster running Istio has been registered as described in [top-level intro]({{% versioned_link_path fromRoot="/guides" %}})
+* after Istio was installed, you deployed the `bookinfo` app into Istio's cluster as described in the [top-level intro]({{% versioned_link_path fromRoot="/guides" %}})
 
 ## Guide
 
