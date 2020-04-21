@@ -45,8 +45,8 @@ func main() {
 	log.Println("starting generate")
 
 	var renderTypes bool
-	if os.Getenv("REGENERATE_TYPE ") == "" {
-		log.Println("REGENERATE_TYPE  is not set, skipping autopilot client gen")
+	if os.Getenv("REGENERATE_TYPES") == "" {
+		log.Println("REGENERATE_TYPES is not set, skipping autopilot client gen")
 	} else {
 		renderTypes = true
 	}
