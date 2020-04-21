@@ -2,7 +2,7 @@
 title: "Linkerd Guide"
 menuTitle: Linkerd Guide
 description: Guide for getting started using Service Mesh Hub with Linkerd
-weight: 10
+weight: 100
 ---
 
 # Service Mesh Hub with Linkerd

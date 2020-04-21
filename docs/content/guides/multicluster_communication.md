@@ -1,7 +1,7 @@
 ---
 title: Multicluster Communication
 menuTitle: Multicluster Communication
-weight: 4
+weight: 75
 ---
 
 ## Pre-Guide Notes

@@ -1,30 +1,20 @@
 ---
-title: "Guides"
+title: "Guides Overview"
 menuTitle: Guides
 description: Guides for getting started using Service Mesh Hub
 weight: 40
 ---
 
-# Service Mesh Hub Guides
+We will assume in this guide that we have access to two clusters and the following two contexts available in our `kubeconfig` file. 
 
-Over the course of these guides, we will explore the core
-features of Service Mesh Hub, including:
+Your actual context names will likely be different.
 
-* Discovery
-* Routing
-* Access Control
-* Multicluster Federation
+* `management-plane-context`
+    - kubeconfig context pointing to a cluster where we will install and operate Service Mesh Hub
+* `remote-cluster-context`
+    - kubeconfig context pointing to a cluster where we will install and manage a service mesh using Service Mesh Hub 
 
-We will do that by managing and configuring Istio's `bookinfo` demo, which you can start up by running
-
-```shell
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml
-```
-
-Through that application, we will see how we can use Service Mesh Hub to gain insights into and easily
-control a complex multicluster application.
-
-## Guides Overview
+### Pre-requisites
 
 There are three pre-requisites to following these guides:
 
@@ -32,13 +22,13 @@ There are three pre-requisites to following these guides:
     - https://kubernetes.io/docs/tasks/tools/install-kubectl/
 2. Install `meshctl`
     - https://github.com/solo-io/service-mesh-hub/releases
-3. Have multiple Kubernetes clusters ready to use, accessible in different kubeconfig contexts 
+3. Have multiple Kubernetes clusters ready to use, accessible in different kubeconfig contexts. If you don't have access to multiple Kubernetes clusters, see the [Getting Started Guide]({{% versioned_link_path fromRoot="/getting_started/" %}}) to use Kubernetes in Docker (Kind) to spin up two clusters in containers.
 
 There are several guides available. The complete list can be seen below. A reasonable
 introduction to Service Mesh Hub can be obtained by following the guides in the order
 that they appear here, starting from the top and going down.
 
-* [Installing Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* [Installing Multi-cluster Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * [Intro to Discovery]({{% versioned_link_path fromRoot="/guides/discovery_intro" %}})
 * [Intro to Access Control]({{% versioned_link_path fromRoot="/guides/access_control_intro" %}})
 * [Multicluster Communication]({{% versioned_link_path fromRoot="/guides/multicluster_communication" %}})

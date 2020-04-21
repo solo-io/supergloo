@@ -136,51 +136,6 @@ Cleaning up this demo environment is as simple as running the following:
 meshctl demo cleanup
 ```
 
-## Installing on a single Kubernetes cluster
-
-If you have access to multiple clusters, great! If not, Service Mesh Hub can still be installed on a single cluster and used to manage a single mesh, multiple meshes installed on a single cluster, or multiple remote clusters with meshes installed on them.
-
-The following will install Service Mesh Hub:
-
-```shell
-meshctl install
-```
-
-You can see what components got installed:
-
-```shell
-kubectl get po -n service-mesh-hub
-NAME                               READY   STATUS    RESTARTS   AGE
-mesh-discovery-7796c6bd6c-fwtck    1/1     Running   0          36s
-mesh-networking-68fbf6c455-jrdbx   1/1     Running   0          36s
-```
-
-Running the check command will verify everything was installed correctly:
-
-```shell
-meshctl check
-```
-
-```shell
-✅ Kubernetes API
------------------
-✅ Kubernetes API server is reachable
-✅ running the minimum supported Kubernetes version (required: >=1.13)
-
-
-✅ Service Mesh Hub Management Plane
-------------------------------------
-✅ installation namespace exists
-✅ components are running
-
-
-✅ Service Mesh Hub check found no errors
-```
-
-At this point you're ready to add clusters to the management plane, or discover existing service meshes on the cluster on which we just deployed Service Mesh Hub. 
-
-You should be ready to run the steps in the rest of the [Guides]({{% versioned_link_path fromRoot="/guides/" %}}).
-
 ## Next steps
 
 In this quick-start guide, we installed Service Mesh Hub. If these installation usecases were to simplistic or not representative of your environment, please check out our [Setup Guide]({{% versioned_link_path fromRoot="/setup/" %}}). Otherwise, please check out our [Guides]({{% versioned_link_path fromRoot="/guides/" %}}) to explore the power of Service Mesh Hub.

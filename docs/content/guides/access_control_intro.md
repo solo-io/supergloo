@@ -1,7 +1,7 @@
 ---
 title: Access Control Intro
 menuTitle: Access Control Intro
-weight: 3
+weight: 30
 ---
 
 ## Pre-Guide Notes

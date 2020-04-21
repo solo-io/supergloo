@@ -1,36 +1,36 @@
 ---
-title: Discovery Intro
-menuTitle: Discovery Intro
-weight: 2
+title: Mesh Discovery
+menuTitle: Mesh Discovery
+weight: 20
 ---
 
 ## Pre-Guide Notes
 
 In this guide we will learn about the four main discovery resources:
 
-1. Kubernetes Clusters
+1. **Kubernetes Clusters**
     - representation of a cluster that Service Mesh Hub is aware of and is authorized to
 talk to its Kubernetes API server
     - *note*: not currently discovered, but created by `meshctl` at cluster registration time
-2. Meshes
+2. **Meshes**
     - representation of a service mesh control plane that has been discovered 
-3. Mesh Workloads
+3. **Mesh Workloads**
     - representation of a pod that is a member of a service mesh; this is often determined by the presence of
 an injected proxy sidecar
-4. Mesh Services
+4. **Mesh Services**
     - representation of a kubernetes service that is backed by Mesh Workload pods, e.g.
 pods that are a member of the service mesh
 
 To illustrate these concepts, we will assume that:
 
-* we have just installed Istio as described in the "Installing Istio" guide
+* We have just installed Istio as described in the [Installing Multi-cluster Istio guide]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * Service Mesh Hub is running
-* the cluster running Istio has been registered as described in [top-level intro]({{% versioned_link_path fromRoot="/guides" %}})
-* after Istio was installed, you deployed the `bookinfo` app into Istio's cluster as described in the [top-level intro]({{% versioned_link_path fromRoot="/guides" %}})
+* The cluster running Istio has been registered as described in [top-level intro]({{% versioned_link_path fromRoot="/guides" %}})
+* After Istio was installed, you deployed the `bookinfo` app into Istio's cluster as described in the [top-level intro]({{% versioned_link_path fromRoot="/guides" %}})
 
 ## Guide
 
-Ensure that your kubeconfig has the correct context set as its `currentContext`:
+Ensure that your `kubeconfig` has the correct context set as its `currentContext`:
 
 ```shell
 kubectl config use-context management-plane-context
