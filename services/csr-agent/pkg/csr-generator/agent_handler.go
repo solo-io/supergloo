@@ -8,12 +8,12 @@ import (
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"go.uber.org/zap"
 )
 
 func CsrControllerProviderLocal(
-	mgr k8s_manager.AsyncManager,
+	mgr manager.AsyncManager,
 ) zephyr_security_controller.VirtualMeshCertificateSigningRequestEventWatcher {
 	return zephyr_security_controller.NewVirtualMeshCertificateSigningRequestEventWatcher("local-csr-controller", mgr.Manager())
 }

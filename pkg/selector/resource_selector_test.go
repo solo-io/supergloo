@@ -13,7 +13,7 @@ import (
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	networking_selector "github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager/mocks"
+	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	mock_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_apps "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/apps/v1"
 	k8s_apps_types "k8s.io/api/apps/v1"

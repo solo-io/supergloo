@@ -10,7 +10,7 @@ import (
 
 	retry "github.com/avast/retry-go"
 	gomock "github.com/golang/mock/gomock"
-	k8s_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	manager2 "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	rest "k8s.io/client-go/rest"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 	manager "sigs.k8s.io/controller-runtime/pkg/manager"
@@ -91,7 +91,7 @@ func (m *MockAsyncManagerHandler) EXPECT() *MockAsyncManagerHandlerMockRecorder 
 }
 
 // ClusterAdded mocks base method.
-func (m *MockAsyncManagerHandler) ClusterAdded(ctx context.Context, mgr k8s_manager.AsyncManager, clusterName string) error {
+func (m *MockAsyncManagerHandler) ClusterAdded(ctx context.Context, mgr manager2.AsyncManager, clusterName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClusterAdded", ctx, mgr, clusterName)
 	ret0, _ := ret[0].(error)
@@ -142,7 +142,7 @@ func (m *MockAsyncManagerInformer) EXPECT() *MockAsyncManagerInformerMockRecorde
 }
 
 // AddHandler mocks base method.
-func (m *MockAsyncManagerInformer) AddHandler(informer k8s_manager.AsyncManagerHandler, name string) error {
+func (m *MockAsyncManagerInformer) AddHandler(informer manager2.AsyncManagerHandler, name string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddHandler", informer, name)
 	ret0, _ := ret[0].(error)
@@ -249,7 +249,7 @@ func (mr *MockAsyncManagerMockRecorder) GotError() *gomock.Call {
 }
 
 // Start mocks base method.
-func (m *MockAsyncManager) Start(opts ...k8s_manager.AsyncManagerStartOptionsFunc) error {
+func (m *MockAsyncManager) Start(opts ...manager2.AsyncManagerStartOptionsFunc) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range opts {
@@ -302,10 +302,10 @@ func (m *MockAsyncManagerFactory) EXPECT() *MockAsyncManagerFactoryMockRecorder 
 }
 
 // New mocks base method.
-func (m *MockAsyncManagerFactory) New(parentCtx context.Context, cfg *rest.Config, opts k8s_manager.AsyncManagerOptions) (k8s_manager.AsyncManager, error) {
+func (m *MockAsyncManagerFactory) New(parentCtx context.Context, cfg *rest.Config, opts manager2.AsyncManagerOptions) (manager2.AsyncManager, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "New", parentCtx, cfg, opts)
-	ret0, _ := ret[0].(k8s_manager.AsyncManager)
+	ret0, _ := ret[0].(manager2.AsyncManager)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

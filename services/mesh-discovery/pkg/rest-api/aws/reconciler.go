@@ -1,4 +1,4 @@
-package rest_api
+package aws
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/rest_watcher"
+	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -29,9 +29,9 @@ type appMeshAPIReconciler struct {
 	meshServiceClient       zephyr_discovery.MeshServiceClient
 }
 
-type AppMeshReconcilerFactory func(secret *k8s_core_types.Secret) rest_watcher.RestAPIReconciler
+type AppMeshReconcilerFactory func(secret *k8s_core_types.Secret) rest_api.RestAPIReconciler
 
-func NewAppMeshAPIReconcilerFactory(
+func NewAppMeshReconcilerFactory(
 	secretAwsCredsConverter aws_creds.SecretAwsCredsConverter,
 	masterClient client.Client,
 	meshClientFactory zephyr_discovery.MeshClientFactory,
@@ -40,8 +40,8 @@ func NewAppMeshAPIReconcilerFactory(
 ) AppMeshReconcilerFactory {
 	return func(
 		secret *k8s_core_types.Secret,
-	) rest_watcher.RestAPIReconciler {
-		return NewAppMeshAPIReconciler(
+	) rest_api.RestAPIReconciler {
+		return NewAppMeshReconciler(
 			secretAwsCredsConverter,
 			meshClientFactory(masterClient),
 			meshWorkloadClientFactory(masterClient),
@@ -51,13 +51,13 @@ func NewAppMeshAPIReconcilerFactory(
 	}
 }
 
-func NewAppMeshAPIReconciler(
+func NewAppMeshReconciler(
 	secretAwsCredsConverter aws_creds.SecretAwsCredsConverter,
 	meshClient zephyr_discovery.MeshClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	secret *k8s_core_types.Secret,
-) rest_watcher.RestAPIReconciler {
+) rest_api.RestAPIReconciler {
 	return &appMeshAPIReconciler{
 		secretAwsCredsConverter: secretAwsCredsConverter,
 		meshClient:              meshClient,

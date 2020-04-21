@@ -8,8 +8,8 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/rest_watcher/aws"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -39,7 +39,7 @@ type MeshAPISecretHandler interface {
 }
 
 type MeshAPIMembershipHandler struct {
-	kubeConfigReceiver k8s_manager.KubeConfigHandler
+	kubeConfigReceiver manager.KubeConfigHandler
 	awsCredsHandler    aws.AwsCredsHandler
 	lock               sync.RWMutex
 	clusterByName      map[string]*remoteCluster
@@ -47,7 +47,7 @@ type MeshAPIMembershipHandler struct {
 }
 
 func NewClusterMembershipHandler(
-	kubeConfigReceiver k8s_manager.KubeConfigHandler,
+	kubeConfigReceiver manager.KubeConfigHandler,
 	awsCredsHandler aws.AwsCredsHandler,
 	kubeConverter kube.Converter,
 ) *MeshAPIMembershipHandler {
@@ -73,31 +73,29 @@ func (m *MeshAPIMembershipHandler) AddMemberMeshAPI(ctx context.Context, s *v1.S
 			logger.Errorf("Error initialize AwsCredsHandler for secret %s.%s: %s", s.GetName(), s.GetNamespace(), err.Error())
 		}
 	} else {
+		// Kubernetes cluster
+		clusterName, config, err := m.kubeConverter.SecretToConfig(s)
+		if err != nil {
+			return false, KubeConfigInvalidFormatError(err, clusterName, s.GetName(), s.GetNamespace())
+		}
 
+		err = m.kubeConfigReceiver.ClusterAdded(config.RestConfig, clusterName)
+		if err != nil {
+			return true, ClusterAddError(err, clusterName)
+		}
+
+		logger.Infof("Adding new cluster member: %s", clusterName)
+		m.lock.Lock()
+		m.clusterByName[clusterName] = &remoteCluster{
+			secretName:  s.GetName(),
+			kubeContext: config.ApiConfig.CurrentContext,
+		}
+		m.lock.Unlock()
+
+		m.lock.RLock()
+		logger.Infof("Number of remote clusters: %d", len(m.clusterByName))
+		m.lock.RUnlock()
 	}
-
-	// Kubernetes cluster
-	clusterName, config, err := m.kubeConverter.SecretToConfig(s)
-	if err != nil {
-		return false, KubeConfigInvalidFormatError(err, clusterName, s.GetName(), s.GetNamespace())
-	}
-
-	err = m.kubeConfigReceiver.ClusterAdded(config.RestConfig, clusterName)
-	if err != nil {
-		return true, ClusterAddError(err, clusterName)
-	}
-
-	logger.Infof("Adding new cluster member: %s", clusterName)
-	m.lock.Lock()
-	m.clusterByName[clusterName] = &remoteCluster{
-		secretName:  s.GetName(),
-		kubeContext: config.ApiConfig.CurrentContext,
-	}
-	m.lock.Unlock()
-
-	m.lock.RLock()
-	logger.Infof("Number of remote clusters: %d", len(m.clusterByName))
-	m.lock.RUnlock()
 	return false, nil
 }
 

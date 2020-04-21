@@ -7,7 +7,6 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/rest_watcher"
 	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
 	k8s_core_types "k8s.io/api/core/v1"
 )
@@ -24,14 +23,14 @@ var (
 
 type awsCredsHandler struct {
 	secretConverter          aws_creds.SecretAwsCredsConverter
-	appMeshReconcilerFactory rest_api.AppMeshReconcilerFactory
+	appMeshReconcilerFactory AppMeshReconcilerFactory
 }
 
-type AwsCredsHandler rest_watcher.RestAPICredsHandler
+type AwsCredsHandler rest_api.RestAPICredsHandler
 
 func NewAwsCredsHandler(
 	secretAwsCredsConverter aws_creds.SecretAwsCredsConverter,
-	appMeshReconcilerFactory rest_api.AppMeshReconcilerFactory,
+	appMeshReconcilerFactory AppMeshReconcilerFactory,
 ) AwsCredsHandler {
 	return &awsCredsHandler{
 		secretConverter:          secretAwsCredsConverter,
@@ -62,5 +61,7 @@ func (a *awsCredsHandler) RestAPIAdded(ctx context.Context, secret *k8s_core_typ
 }
 
 func (a *awsCredsHandler) RestAPIRemoved(ctx context.Context, apiName string) error {
-	panic("implement me")
+	logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, nil)
+	logger.Warn("Secret removal not implemented for AwsCredsHandler")
+	return nil
 }

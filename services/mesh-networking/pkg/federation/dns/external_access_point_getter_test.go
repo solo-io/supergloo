@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager/mocks"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -124,11 +124,11 @@ var _ = Describe("external access point getter", func() {
 			}
 			dynamicClientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName).
-				Return(nil, k8s_manager.NoClientForClusterError(clusterName))
+				Return(nil, manager.NoClientForClusterError(clusterName))
 
 			_, err := externalAccessPointGetter.GetExternalAccessPointForService(ctx, svc, istio_federation.DefaultGatewayPortName, clusterName)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(HaveInErrorChain(k8s_manager.NoClientForClusterError(clusterName)))
+			Expect(err).To(HaveInErrorChain(manager.NoClientForClusterError(clusterName)))
 		})
 
 		It("will return an error if no pods are scheduled", func() {

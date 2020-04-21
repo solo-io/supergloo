@@ -10,7 +10,7 @@ import (
 	mesh_istio "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/istio"
 	mesh_linkerd "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/linkerd"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/controllers"
-	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws"
 )
 
 // just used to package everything up for wire
@@ -48,7 +48,7 @@ type MeshDiscovery struct {
 }
 
 type RestAPIReconcilers struct {
-	AppMeshAPIReconcilerFactory rest_api.AppMeshReconcilerFactory
+	AppMeshAPIReconcilerFactory aws.AppMeshReconcilerFactory
 }
 
 func DiscoveryContextProvider(
@@ -69,7 +69,7 @@ func DiscoveryContextProvider(
 	meshClientFactory zephyr_discovery.MeshClientFactory,
 	podClientFactory k8s_core.PodClientFactory,
 	meshControllerFactory controllers.MeshEventWatcherFactory,
-	appMeshAPIReconcilerFactory rest_api.AppMeshReconcilerFactory,
+	appMeshAPIReconcilerFactory aws.AppMeshReconcilerFactory,
 ) DiscoveryContext {
 
 	return DiscoveryContext{

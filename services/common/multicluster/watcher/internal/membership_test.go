@@ -10,7 +10,7 @@ import (
 	. "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager/mocks"
+	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

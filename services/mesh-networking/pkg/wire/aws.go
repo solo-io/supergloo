@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/wire"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/rest_watcher/aws"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws"
 	v1 "k8s.io/api/core/v1"
 )
 

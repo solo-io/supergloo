@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
@@ -47,7 +47,7 @@ var (
 type LinkerdTranslator traffic_policy_translator.TrafficPolicyMeshTranslator
 
 func NewLinkerdTrafficPolicyTranslator(
-	dynamicClientGetter k8s_manager.DynamicClientGetter,
+	dynamicClientGetter manager.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	serviceProfileClientFactory linkerd_client.ServiceProfileClientFactory,
 	trafficSplitClientFactory smi_networking.TrafficSplitClientFactory,
@@ -61,7 +61,7 @@ func NewLinkerdTrafficPolicyTranslator(
 }
 
 type linkerdTrafficPolicyTranslator struct {
-	dynamicClientGetter         k8s_manager.DynamicClientGetter
+	dynamicClientGetter         manager.DynamicClientGetter
 	meshClient                  zephyr_discovery.MeshClient
 	serviceProfileClientFactory linkerd_client.ServiceProfileClientFactory
 	trafficSplitClientFactory   smi_networking.TrafficSplitClientFactory
