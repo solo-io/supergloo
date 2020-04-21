@@ -65,3 +65,12 @@ latest: site-release
 		--build-arg FROM_DIR=./site-latest \
 		-t $(IMAGE_REPO):latest .
 	docker push $(IMAGE_REPO):latest
+
+
+# Uses https://github.com/gjtorikian/html-proofer
+# Does not require running site; just make sure you generate the site and then run it
+# Install with gem install html-proofer
+# Another option we could use is wget: https://www.digitalocean.com/community/tutorials/how-to-find-broken-links-on-your-website-using-wget-on-debian-7
+.PHONY: check-links
+check-links: site-release
+	htmlproofer ./site-latest/ --empty-alt-ignore  --allow-hash-href 

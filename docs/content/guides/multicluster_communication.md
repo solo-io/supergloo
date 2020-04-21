@@ -1,16 +1,16 @@
 ---
 title: Multicluster Communication
 menuTitle: Multicluster Communication
-weight: 4
+weight: 75
 ---
 
 ## Pre-Guide Notes
 
 To illustrate the concepts in this guide, we will assume that:
 
-* we have just installed Istio as described in the ["Installing Istio" guide]({{% versioned_link_path fromRoot="/getting_started/guides/installing_istio" %}})
+* we have just installed Istio as described in the ["Installing Istio" guide]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * Service Mesh Hub is running
-* two clusters running Istio have been registered as described in the [top-level intro]({{% versioned_link_path fromRoot="/getting_started/guides" %}})
+* two clusters running Istio have been registered as described in the [top-level intro]({{% versioned_link_path fromRoot="/guides" %}})
 * the two meshes are grouped together in a *Virtual Mesh*
 
 A relevant definition of a Service Mesh Hub concept that we'll need in this guide:
