@@ -53,12 +53,13 @@ Meshes represent a currently registered service mesh.
 <a name="discovery.zephyr.solo.io.MeshSpec.AwsAppMesh"></a>
 
 ### MeshSpec.AwsAppMesh
-Mesh object representing AWS App Mesh
+Mesh object representing AWS AppMesh
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [MeshSpec.MeshInstallation](#discovery.zephyr.solo.io.MeshSpec.MeshInstallation) |  |  |
+| name | [string](#string) |  | AWS name for the AppMesh instance, must be unique across the AWS account. |
+| apiName | [string](#string) |  | Name for the API that SMH user registered with. Identifies the AWS account within SMH. |
 | region | [string](#string) |  | The AWS region the AWS App Mesh control plane resources exist in. |
 
 

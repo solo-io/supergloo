@@ -2,7 +2,7 @@ package aws
 
 import (
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/pkg/k8s_secrets/aws_creds"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	k8s_core_types "k8s.io/api/core/v1"
 )
 

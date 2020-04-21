@@ -52,11 +52,14 @@ message MeshSpec {
         CitadelInfo citadel_info = 2;
     }
 
-    // Mesh object representing AWS App Mesh
+    // Mesh object representing AWS AppMesh
     message AwsAppMesh {
-        MeshInstallation installation = 1;
+        // AWS name for the AppMesh instance, must be unique across the AWS account.
+        string name = 1;
+        // Name for the API that SMH user registered with. Identifies the AWS account within SMH.
+        string api_name = 2;
         // The AWS region the AWS App Mesh control plane resources exist in.
-        string region = 2;
+        string region = 3;
     }
 
     // Mesh object representing an installed Linkerd control plane
