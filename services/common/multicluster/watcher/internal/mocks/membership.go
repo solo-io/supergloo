@@ -12,46 +12,46 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// MockClusterSecretHandler is a mock of ClusterSecretHandler interface.
-type MockClusterSecretHandler struct {
+// MockMeshAPISecretHandler is a mock of MeshAPISecretHandler interface.
+type MockMeshAPISecretHandler struct {
 	ctrl     *gomock.Controller
-	recorder *MockClusterSecretHandlerMockRecorder
+	recorder *MockMeshAPISecretHandlerMockRecorder
 }
 
-// MockClusterSecretHandlerMockRecorder is the mock recorder for MockClusterSecretHandler.
-type MockClusterSecretHandlerMockRecorder struct {
-	mock *MockClusterSecretHandler
+// MockMeshAPISecretHandlerMockRecorder is the mock recorder for MockMeshAPISecretHandler.
+type MockMeshAPISecretHandlerMockRecorder struct {
+	mock *MockMeshAPISecretHandler
 }
 
-// NewMockClusterSecretHandler creates a new mock instance.
-func NewMockClusterSecretHandler(ctrl *gomock.Controller) *MockClusterSecretHandler {
-	mock := &MockClusterSecretHandler{ctrl: ctrl}
-	mock.recorder = &MockClusterSecretHandlerMockRecorder{mock}
+// NewMockMeshAPISecretHandler creates a new mock instance.
+func NewMockMeshAPISecretHandler(ctrl *gomock.Controller) *MockMeshAPISecretHandler {
+	mock := &MockMeshAPISecretHandler{ctrl: ctrl}
+	mock.recorder = &MockMeshAPISecretHandlerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockClusterSecretHandler) EXPECT() *MockClusterSecretHandlerMockRecorder {
+func (m *MockMeshAPISecretHandler) EXPECT() *MockMeshAPISecretHandlerMockRecorder {
 	return m.recorder
 }
 
-// AddMemberCluster mocks base method.
-func (m *MockClusterSecretHandler) AddMemberMeshAPI(ctx context.Context, s *v1.Secret) (bool, error) {
+// AddMemberMeshAPI mocks base method.
+func (m *MockMeshAPISecretHandler) AddMemberMeshAPI(ctx context.Context, s *v1.Secret) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddMemberCluster", ctx, s)
+	ret := m.ctrl.Call(m, "AddMemberMeshAPI", ctx, s)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AddMemberCluster indicates an expected call of AddMemberCluster.
-func (mr *MockClusterSecretHandlerMockRecorder) AddMemberCluster(ctx, s interface{}) *gomock.Call {
+// AddMemberMeshAPI indicates an expected call of AddMemberMeshAPI.
+func (mr *MockMeshAPISecretHandlerMockRecorder) AddMemberMeshAPI(ctx, s interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMemberCluster", reflect.TypeOf((*MockClusterSecretHandler)(nil).AddMemberCluster), ctx, s)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMemberMeshAPI", reflect.TypeOf((*MockMeshAPISecretHandler)(nil).AddMemberMeshAPI), ctx, s)
 }
 
 // DeleteMemberCluster mocks base method.
-func (m *MockClusterSecretHandler) DeleteMemberCluster(ctx context.Context, s *v1.Secret) (bool, error) {
+func (m *MockMeshAPISecretHandler) DeleteMemberCluster(ctx context.Context, s *v1.Secret) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteMemberCluster", ctx, s)
 	ret0, _ := ret[0].(bool)
@@ -60,7 +60,7 @@ func (m *MockClusterSecretHandler) DeleteMemberCluster(ctx context.Context, s *v
 }
 
 // DeleteMemberCluster indicates an expected call of DeleteMemberCluster.
-func (mr *MockClusterSecretHandlerMockRecorder) DeleteMemberCluster(ctx, s interface{}) *gomock.Call {
+func (mr *MockMeshAPISecretHandlerMockRecorder) DeleteMemberCluster(ctx, s interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMemberCluster", reflect.TypeOf((*MockClusterSecretHandler)(nil).DeleteMemberCluster), ctx, s)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMemberCluster", reflect.TypeOf((*MockMeshAPISecretHandler)(nil).DeleteMemberCluster), ctx, s)
 }
