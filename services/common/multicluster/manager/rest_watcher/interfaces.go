@@ -28,9 +28,9 @@ func (a RestAPIProvider) IsProviderValid() error {
 // that SMH should start managing
 type RestAPICredsHandler interface {
 	// Invoked when user manually registers a new service-mesh REST API with SMH, spawns a RestAPIReconciler and periodically reconcile
-	RestAPIAdded(secret *k8s_core_types.Secret, apiName string) error
+	RestAPIAdded(ctx context.Context, secret *k8s_core_types.Secret) error
 	// Cleans up any state/processes associated with the given REST API
-	RestAPIRemoved(apiName string) error
+	RestAPIRemoved(ctx context.Context, apiName string) error
 }
 
 type RestAPIReconciler interface {

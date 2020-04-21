@@ -40,6 +40,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		mesh_consul.WireProviderSet,
 		mesh_linkerd.WireProviderSet,
 		DiscoveryContextProvider,
+		AwsSet,
 	)
 
 	return DiscoveryContext{}, nil

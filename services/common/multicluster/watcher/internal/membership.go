@@ -6,8 +6,10 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/rest_watcher/aws"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -38,14 +40,20 @@ type MeshAPISecretHandler interface {
 
 type MeshAPIMembershipHandler struct {
 	kubeConfigReceiver k8s_manager.KubeConfigHandler
+	awsCredsHandler    aws.AwsCredsHandler
 	lock               sync.RWMutex
 	clusterByName      map[string]*remoteCluster
 	kubeConverter      kube.Converter
 }
 
-func NewClusterMembershipHandler(kubeConfigReceiver k8s_manager.KubeConfigHandler, kubeConverter kube.Converter) *MeshAPIMembershipHandler {
+func NewClusterMembershipHandler(
+	kubeConfigReceiver k8s_manager.KubeConfigHandler,
+	awsCredsHandler aws.AwsCredsHandler,
+	kubeConverter kube.Converter,
+) *MeshAPIMembershipHandler {
 	return &MeshAPIMembershipHandler{
 		kubeConfigReceiver: kubeConfigReceiver,
+		awsCredsHandler:    awsCredsHandler,
 		clusterByName:      make(map[string]*remoteCluster),
 		kubeConverter:      kubeConverter,
 	}
@@ -57,62 +65,67 @@ type remoteCluster struct {
 	kubeContext string
 }
 
-func (c *MeshAPIMembershipHandler) AddMemberMeshAPI(ctx context.Context, s *v1.Secret) (resync bool, err error) {
+func (m *MeshAPIMembershipHandler) AddMemberMeshAPI(ctx context.Context, s *v1.Secret) (resync bool, err error) {
 	logger := contextutils.LoggerFrom(ctx)
-	// switch AppMesh / Controller here
+	if s.Type == aws_creds.AWSSecretType {
+		err := m.awsCredsHandler.RestAPIAdded(ctx, s)
+		if err != nil {
+			logger.Errorf("Error initialize AwsCredsHandler for secret %s.%s: %s", s.GetName(), s.GetNamespace(), err.Error())
+		}
+	} else {
 
-	// REST API
+	}
 
 	// Kubernetes cluster
-	clusterName, config, err := c.kubeConverter.SecretToConfig(s)
+	clusterName, config, err := m.kubeConverter.SecretToConfig(s)
 	if err != nil {
 		return false, KubeConfigInvalidFormatError(err, clusterName, s.GetName(), s.GetNamespace())
 	}
 
-	err = c.kubeConfigReceiver.ClusterAdded(config.RestConfig, clusterName)
+	err = m.kubeConfigReceiver.ClusterAdded(config.RestConfig, clusterName)
 	if err != nil {
 		return true, ClusterAddError(err, clusterName)
 	}
 
 	logger.Infof("Adding new cluster member: %s", clusterName)
-	c.lock.Lock()
-	c.clusterByName[clusterName] = &remoteCluster{
+	m.lock.Lock()
+	m.clusterByName[clusterName] = &remoteCluster{
 		secretName:  s.GetName(),
 		kubeContext: config.ApiConfig.CurrentContext,
 	}
-	c.lock.Unlock()
+	m.lock.Unlock()
 
-	c.lock.RLock()
-	logger.Infof("Number of remote clusters: %d", len(c.clusterByName))
-	c.lock.RUnlock()
+	m.lock.RLock()
+	logger.Infof("Number of remote clusters: %d", len(m.clusterByName))
+	m.lock.RUnlock()
 	return false, nil
 }
 
-func (c *MeshAPIMembershipHandler) DeleteMemberCluster(ctx context.Context, s *v1.Secret) (resync bool, err error) {
+func (m *MeshAPIMembershipHandler) DeleteMemberCluster(ctx context.Context, s *v1.Secret) (resync bool, err error) {
 	logger := contextutils.LoggerFrom(ctx)
-	for clusterID, cluster := range c.clusters() {
+	for clusterID, cluster := range m.clusters() {
 		if cluster.secretName == s.GetName() {
 			logger.Infof("Deleting cluster member: %s", clusterID)
-			err := c.kubeConfigReceiver.ClusterRemoved(clusterID)
+			err := m.kubeConfigReceiver.ClusterRemoved(clusterID)
 			if err != nil {
 				return true, ClusterDeletionError(err, clusterID)
 			}
-			c.lock.Lock()
-			delete(c.clusterByName, clusterID)
-			c.lock.Unlock()
+			m.lock.Lock()
+			delete(m.clusterByName, clusterID)
+			m.lock.Unlock()
 		}
 	}
-	c.lock.RLock()
-	logger.Infof("Number of remote clusters: %d", len(c.clusterByName))
-	c.lock.RUnlock()
+	m.lock.RLock()
+	logger.Infof("Number of remote clusters: %d", len(m.clusterByName))
+	m.lock.RUnlock()
 	return false, nil
 }
 
-func (c *MeshAPIMembershipHandler) clusters() map[string]*remoteCluster {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
+func (m *MeshAPIMembershipHandler) clusters() map[string]*remoteCluster {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
 	result := make(map[string]*remoteCluster)
-	for k, v := range c.clusterByName {
+	for k, v := range m.clusterByName {
 		result[k] = v
 	}
 	return result

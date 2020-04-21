@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/rest_watcher/aws"
 	internal_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
 	core_v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -25,13 +26,20 @@ import (
 	which this function returns. That way ensuring that this code is called anytime multi cluster watchers
 	are necessary
 */
-func StartLocalManager(handler k8s_manager.KubeConfigHandler) k8s_manager.AsyncManagerStartOptionsFunc {
+func StartLocalManager(
+	handler k8s_manager.KubeConfigHandler,
+	awsCredsHandler aws.AwsCredsHandler,
+) k8s_manager.AsyncManagerStartOptionsFunc {
 	return func(ctx context.Context, mgr manager.Manager) error {
 		secretCtrl := controller.NewSecretEventWatcher(multicluster.MultiClusterController, mgr)
 
 		mcHandler := &meshAPIHandler{
-			ctx:               ctx,
-			meshAPIMembership: internal_watcher.NewClusterMembershipHandler(handler, kube.NewConverter(files.NewDefaultFileReader())),
+			ctx: ctx,
+			meshAPIMembership: internal_watcher.NewClusterMembershipHandler(
+				handler,
+				awsCredsHandler,
+				kube.NewConverter(files.NewDefaultFileReader()),
+			),
 		}
 
 		if err := secretCtrl.AddEventHandler(ctx, mcHandler, &internal_watcher.MultiClusterPredicate{}); err != nil {

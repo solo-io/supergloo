@@ -53,7 +53,8 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		return MeshNetworkingContext{}, err
 	}
 	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
-	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController)
+	awsCredsHandler := NewNetworkingAwsCredsHandler()
+	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController, awsCredsHandler)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	virtualMeshCSRControllerFactory := controller_factories.NewVirtualMeshCSRControllerFactory()
 	controllerFactories := NewControllerFactories(virtualMeshCSRControllerFactory)
