@@ -15,7 +15,7 @@ We use a Kubernetes cluster to host the management plane (Service Mesh Hub) whil
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-3clusters.png" %}})
 
-You can install Service Mesh Hub onto its own cluster and register remote clusters, or you can co-locate Service Mesh Hub onto a cluster with a service mesh. The former (it's own cluster) is a preferred deployment pattern, but for getting started, exploring, or to save resources, you can do the co-located deployment.
+You can install Service Mesh Hub onto its own cluster and register remote clusters, or you can co-locate Service Mesh Hub onto a cluster with a service mesh. The former (its own cluster) is the preferred deployment pattern, but for getting started, exploring, or to save resources, you can use the co-located deployment approach.
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-2clusters.png" %}})
 
