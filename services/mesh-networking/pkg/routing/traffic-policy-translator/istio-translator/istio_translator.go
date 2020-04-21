@@ -13,7 +13,7 @@ import (
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_networking_types "istio.io/api/networking/v1alpha3"
 	istio_client_networking_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -28,7 +28,7 @@ const (
 type IstioTranslator traffic_policy_translator.TrafficPolicyMeshTranslator
 
 func NewIstioTrafficPolicyTranslator(
-	dynamicClientGetter k8s_manager.DynamicClientGetter,
+	dynamicClientGetter manager.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	resourceSelector selector.ResourceSelector,
@@ -46,7 +46,7 @@ func NewIstioTrafficPolicyTranslator(
 }
 
 type istioTrafficPolicyTranslator struct {
-	dynamicClientGetter          k8s_manager.DynamicClientGetter
+	dynamicClientGetter          manager.DynamicClientGetter
 	meshClient                   zephyr_discovery.MeshClient
 	meshServiceClient            zephyr_discovery.MeshServiceClient
 	virtualServiceClientFactory  istio_networking.VirtualServiceClientFactory

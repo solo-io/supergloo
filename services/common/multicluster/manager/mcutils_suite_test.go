@@ -1,4 +1,4 @@
-package k8s_manager_test
+package manager_test
 
 import (
 	"testing"

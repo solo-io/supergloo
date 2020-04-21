@@ -1,4 +1,4 @@
-package k8s_manager_test
+package manager_test
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
-	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager/mocks"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	"k8s.io/client-go/rest"
 )
@@ -22,8 +22,8 @@ var _ = Describe("mc_manager", func() {
 		asyncMgr        *MockAsyncManager
 		asyncMgrFactory *MockAsyncManagerFactory
 		ctx             context.Context
-		informer        k8s_manager.AsyncManagerInformer
-		configHandler   k8s_manager.KubeConfigHandler
+		informer        manager.AsyncManagerInformer
+		configHandler   manager.KubeConfigHandler
 		managerHandler  *MockAsyncManagerHandler
 		cfg             *rest.Config
 
@@ -37,7 +37,7 @@ var _ = Describe("mc_manager", func() {
 		asyncMgr = NewMockAsyncManager(ctrl)
 		asyncMgrFactory = NewMockAsyncManagerFactory(ctrl)
 		ctx = context.TODO()
-		managerController := k8s_manager.NewAsyncManagerControllerFromLocal(ctx, mgr, asyncMgrFactory)
+		managerController := manager.NewAsyncManagerControllerFromLocal(ctx, mgr, asyncMgrFactory)
 		informer, configHandler = managerController, managerController
 		cfg = &rest.Config{}
 	})
@@ -50,7 +50,7 @@ var _ = Describe("mc_manager", func() {
 		It("will throw an error if configHandler exists", func() {
 			err := informer.RemoveHandler("")
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(k8s_manager.InformerNotRegisteredError))
+			Expect(err).To(Equal(manager.InformerNotRegisteredError))
 		})
 
 		It("can properly add a unique receiver", func() {
@@ -73,10 +73,10 @@ var _ = Describe("mc_manager", func() {
 			Context("add", func() {
 				It("will return an error if factory fails", func() {
 					asyncMgrFactory.EXPECT().New(ctx, cfg, gomock.Any()).
-						Return(nil, k8s_manager.AsyncManagerFactoryError(constErr, clusterName))
+						Return(nil, manager.AsyncManagerFactoryError(constErr, clusterName))
 					err := configHandler.ClusterAdded(cfg, clusterName)
 					Expect(err).To(HaveOccurred())
-					Expect(err).To(HaveInErrorChain(k8s_manager.AsyncManagerFactoryError(constErr, clusterName)))
+					Expect(err).To(HaveInErrorChain(manager.AsyncManagerFactoryError(constErr, clusterName)))
 				})
 				It("will return an error if manager fails to start", func() {
 					asyncMgrFactory.EXPECT().New(ctx, cfg, gomock.Any()).
@@ -84,14 +84,14 @@ var _ = Describe("mc_manager", func() {
 					asyncMgr.EXPECT().Start().Return(eris.New("hello"))
 					err := configHandler.ClusterAdded(cfg, clusterName)
 					Expect(err).To(HaveOccurred())
-					Expect(err).To(HaveInErrorChain(k8s_manager.AsyncManagerStartError(constErr, clusterName)))
+					Expect(err).To(HaveInErrorChain(manager.AsyncManagerStartError(constErr, clusterName)))
 				})
 			})
 			Context("delete", func() {
 				It("will return an error if get manager fails", func() {
 					err := configHandler.ClusterRemoved(clusterName)
 					Expect(err).To(HaveOccurred())
-					Expect(err).To(HaveInErrorChain(k8s_manager.NoManagerForClusterError(clusterName)))
+					Expect(err).To(HaveInErrorChain(manager.NoManagerForClusterError(clusterName)))
 				})
 			})
 		})
@@ -113,7 +113,7 @@ var _ = Describe("mc_manager", func() {
 					managerHandler.EXPECT().ClusterAdded(ctx, asyncMgr, clusterName).Return(constErr)
 					err := configHandler.ClusterAdded(cfg, clusterName)
 					Expect(err).To(HaveOccurred())
-					Expect(err).To(HaveInErrorChain(k8s_manager.InformerAddFailedError(constErr, handlerName, clusterName)))
+					Expect(err).To(HaveInErrorChain(manager.InformerAddFailedError(constErr, handlerName, clusterName)))
 				})
 				It("will succeed when all handlers succeed", func() {
 					handler2 := "handler-2"
@@ -130,22 +130,22 @@ var _ = Describe("mc_manager", func() {
 			})
 			Context("delete", func() {
 				var (
-					handlerMap *k8s_manager.AsyncManagerHandlerMap
-					managerMap *k8s_manager.AsyncManagerMap
+					handlerMap *manager.AsyncManagerHandlerMap
+					managerMap *manager.AsyncManagerMap
 				)
 				BeforeEach(func() {
-					handlerMap = k8s_manager.NewAsyncManagerHandler()
+					handlerMap = manager.NewAsyncManagerHandler()
 					err := handlerMap.SetHandler(handlerName, managerHandler)
-					managerMap = k8s_manager.NewAsyncManagerMap()
+					managerMap = manager.NewAsyncManagerMap()
 					Expect(err).NotTo(HaveOccurred())
-					managerController := k8s_manager.NewAsyncManagerController(ctx, handlerMap,
+					managerController := manager.NewAsyncManagerController(ctx, handlerMap,
 						managerMap, asyncMgrFactory)
 					informer, configHandler = managerController, managerController
 				})
 				It("will fail if manager doesn't exist", func() {
 					err := configHandler.ClusterRemoved(clusterName)
 					Expect(err).To(HaveOccurred())
-					Expect(err).To(HaveInErrorChain(k8s_manager.NoManagerForClusterError(clusterName)))
+					Expect(err).To(HaveInErrorChain(manager.NoManagerForClusterError(clusterName)))
 				})
 				It("will fail if any handler fails", func() {
 					Expect(managerMap.SetManager(clusterName, asyncMgr)).NotTo(HaveOccurred())
@@ -153,7 +153,7 @@ var _ = Describe("mc_manager", func() {
 					managerHandler.EXPECT().ClusterRemoved(clusterName).Return(constErr)
 					err := configHandler.ClusterRemoved(clusterName)
 					Expect(err).To(HaveOccurred())
-					Expect(err).To(HaveInErrorChain(k8s_manager.InformerDeleteFailedError(constErr,
+					Expect(err).To(HaveInErrorChain(manager.InformerDeleteFailedError(constErr,
 						handlerName, clusterName)))
 				})
 				It("will succeed, call all handlers, and remove manager", func() {

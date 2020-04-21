@@ -1,4 +1,4 @@
-package rest_watcher
+package rest_api
 
 import (
 	"context"

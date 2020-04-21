@@ -5,13 +5,13 @@ import (
 
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 )
 
 type CsrAgentContext struct {
 	Ctx                             context.Context
-	Manager                         k8s_manager.AsyncManager
+	Manager                         manager.AsyncManager
 	CsrEventWatcher                 zephyr_security_controller.VirtualMeshCertificateSigningRequestEventWatcher
 	CsrClient                       zephyr_security.VirtualMeshCertificateSigningRequestClient
 	VirtualMeshCSRDataSourceFactory csr_generator.VirtualMeshCSRDataSourceFactory
@@ -20,7 +20,7 @@ type CsrAgentContext struct {
 
 func CsrAgentContextProvider(
 	ctx context.Context,
-	mgr k8s_manager.AsyncManager,
+	mgr manager.AsyncManager,
 	csrEventWatcher zephyr_security_controller.VirtualMeshCertificateSigningRequestEventWatcher,
 	virtualMeshCSRDataSourceFactory csr_generator.VirtualMeshCSRDataSourceFactory,
 	csrAgentIstioProcessor csr_generator.VirtualMeshCSRProcessor,

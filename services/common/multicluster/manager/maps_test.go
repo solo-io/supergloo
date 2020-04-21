@@ -1,4 +1,4 @@
-package k8s_manager_test
+package manager_test
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
-	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager/mocks"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 )
 
@@ -25,15 +25,15 @@ var _ = Describe("sync maps", func() {
 	})
 	Context("AsyncManagerMap", func() {
 		var (
-			asyncManagerMap *k8s_manager.AsyncManagerMap
-			asyncManager    k8s_manager.AsyncManager
+			asyncManagerMap *manager.AsyncManagerMap
+			asyncManager    manager.AsyncManager
 			mockManager     *mock_controller_runtime.MockManager
 		)
 
 		BeforeEach(func() {
-			asyncManagerMap = k8s_manager.NewAsyncManagerMap()
+			asyncManagerMap = manager.NewAsyncManagerMap()
 			mockManager = mock_controller_runtime.NewMockManager(ctrl)
-			asyncManager = k8s_manager.NewAsyncManager(context.TODO(), mockManager)
+			asyncManager = manager.NewAsyncManager(context.TODO(), mockManager)
 		})
 
 		It("errors on double add", func() {
@@ -41,7 +41,7 @@ var _ = Describe("sync maps", func() {
 			Expect(err).NotTo(HaveOccurred())
 			err = asyncManagerMap.SetManager("test", asyncManager)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(HaveInErrorChain(k8s_manager.AsyncManagerExistsError("test")))
+			Expect(err).To(HaveInErrorChain(manager.AsyncManagerExistsError("test")))
 
 		})
 
@@ -67,13 +67,13 @@ var _ = Describe("sync maps", func() {
 
 	Context("AsyncManagerHandlerMap", func() {
 		var (
-			managerHandlerMap   *k8s_manager.AsyncManagerHandlerMap
+			managerHandlerMap   *manager.AsyncManagerHandlerMap
 			asyncManagerHandler *MockAsyncManagerHandler
 		)
 
 		BeforeEach(func() {
 			asyncManagerHandler = NewMockAsyncManagerHandler(ctrl)
-			managerHandlerMap = k8s_manager.NewAsyncManagerHandler()
+			managerHandlerMap = manager.NewAsyncManagerHandler()
 		})
 
 		It("get/set", func() {

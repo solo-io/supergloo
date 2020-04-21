@@ -13,7 +13,7 @@ import (
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	istio_security_types "istio.io/api/security/v1beta1"
 	istio_types "istio.io/api/type/v1beta1"
@@ -46,12 +46,12 @@ type IstioTranslator access_control_policy.AcpMeshTranslator
 type istioTranslator struct {
 	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory
 	meshClient              zephyr_discovery.MeshClient
-	dynamicClientGetter     k8s_manager.DynamicClientGetter
+	dynamicClientGetter     manager.DynamicClientGetter
 }
 
 func NewIstioTranslator(
 	meshClient zephyr_discovery.MeshClient,
-	dynamicClientGetter k8s_manager.DynamicClientGetter,
+	dynamicClientGetter manager.DynamicClientGetter,
 	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory,
 ) IstioTranslator {
 	return &istioTranslator{

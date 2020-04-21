@@ -5,7 +5,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -43,7 +43,7 @@ var (
 )
 
 func NewExternalAccessPointGetter(
-	dynamicClientGetter k8s_manager.DynamicClientGetter,
+	dynamicClientGetter manager.DynamicClientGetter,
 	podClientFactory k8s_core.PodClientFactory,
 	nodeClientFactory k8s_core.NodeClientFactory,
 ) ExternalAccessPointGetter {
@@ -55,7 +55,7 @@ func NewExternalAccessPointGetter(
 }
 
 type externalAccessPointGetter struct {
-	dynamicClientGetter k8s_manager.DynamicClientGetter
+	dynamicClientGetter manager.DynamicClientGetter
 	podClientFactory    k8s_core.PodClientFactory
 	nodeClientFactory   k8s_core.NodeClientFactory
 }

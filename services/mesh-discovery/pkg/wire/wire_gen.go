@@ -13,14 +13,13 @@ import (
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/rest_watcher/aws"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/consul"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/istio"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/linkerd"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/controllers"
-	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws"
 )
 
 // Injectors from wire.go:
@@ -40,7 +39,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
 	meshWorkloadClientFactory := v1alpha1.MeshWorkloadClientFactoryProvider()
 	meshServiceClientFactory := v1alpha1.MeshServiceClientFactoryProvider()
-	appMeshReconcilerFactory := rest_api.NewAppMeshAPIReconcilerFactory(secretAwsCredsConverter, client, meshClientFactory, meshWorkloadClientFactory, meshServiceClientFactory)
+	appMeshReconcilerFactory := aws.NewAppMeshReconcilerFactory(secretAwsCredsConverter, client, meshClientFactory, meshWorkloadClientFactory, meshServiceClientFactory)
 	awsCredsHandler := aws.NewAwsCredsHandler(secretAwsCredsConverter, appMeshReconcilerFactory)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController, awsCredsHandler)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)

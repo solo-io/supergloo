@@ -2,7 +2,7 @@ package controllers
 
 import (
 	apps_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
 func NewDeploymentEventWatcherFactory() DeploymentEventWatcherFactory {
@@ -11,7 +11,7 @@ func NewDeploymentEventWatcherFactory() DeploymentEventWatcherFactory {
 
 type defaultDeploymentEventWatcherFactory struct{}
 
-func (d *defaultDeploymentEventWatcherFactory) Build(mgr k8s_manager.AsyncManager, clusterName string) apps_controllers.DeploymentEventWatcher {
+func (d *defaultDeploymentEventWatcherFactory) Build(mgr manager.AsyncManager, clusterName string) apps_controllers.DeploymentEventWatcher {
 	// just directly return the generated autopilot implementation
 	return apps_controllers.NewDeploymentEventWatcher(clusterName, mgr.Manager())
 }
