@@ -1,4 +1,4 @@
-package multicluster
+package rest_api
 
 import (
 	"context"
@@ -22,7 +22,6 @@ var (
 )
 
 type appMeshAPIReconciler struct {
-	apiName                 string
 	secretAwsCredsConverter aws_creds.SecretAwsCredsConverter
 	secret                  *k8s_core_types.Secret
 	meshClient              zephyr_discovery.MeshClient
@@ -30,28 +29,29 @@ type appMeshAPIReconciler struct {
 	meshServiceClient       zephyr_discovery.MeshServiceClient
 }
 
-type AppMeshAPIReconcilerFactory func(secret *k8s_core_types.Secret, apiName string) rest_watcher.RestAPIReconciler
+type AppMeshReconcilerFactory func(secret *k8s_core_types.Secret) rest_watcher.RestAPIReconciler
 
 func NewAppMeshAPIReconcilerFactory(
 	secretAwsCredsConverter aws_creds.SecretAwsCredsConverter,
-	meshClient zephyr_discovery.MeshClient,
-	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
-	meshServiceClient zephyr_discovery.MeshServiceClient,
-) AppMeshAPIReconcilerFactory {
-	return func(secret *k8s_core_types.Secret, apiName string) rest_watcher.RestAPIReconciler {
+	masterClient client.Client,
+	meshClientFactory zephyr_discovery.MeshClientFactory,
+	meshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory,
+	meshServiceClientFactory zephyr_discovery.MeshServiceClientFactory,
+) AppMeshReconcilerFactory {
+	return func(
+		secret *k8s_core_types.Secret,
+	) rest_watcher.RestAPIReconciler {
 		return NewAppMeshAPIReconciler(
-			apiName,
 			secretAwsCredsConverter,
-			meshClient,
-			meshWorkloadClient,
-			meshServiceClient,
+			meshClientFactory(masterClient),
+			meshWorkloadClientFactory(masterClient),
+			meshServiceClientFactory(masterClient),
 			secret,
 		)
 	}
 }
 
 func NewAppMeshAPIReconciler(
-	apiName string,
 	secretAwsCredsConverter aws_creds.SecretAwsCredsConverter,
 	meshClient zephyr_discovery.MeshClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
@@ -59,7 +59,6 @@ func NewAppMeshAPIReconciler(
 	secret *k8s_core_types.Secret,
 ) rest_watcher.RestAPIReconciler {
 	return &appMeshAPIReconciler{
-		apiName:                 apiName,
 		secretAwsCredsConverter: secretAwsCredsConverter,
 		meshClient:              meshClient,
 		meshWorkloadClient:      meshWorkloadClient,
@@ -115,7 +114,7 @@ func (a *appMeshAPIReconciler) reconcileMeshes(ctx context.Context, appMeshClien
 					MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
 						AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
 							Name:    aws.StringValue(appMesh.MeshName),
-							ApiName: a.apiName,
+							ApiName: a.secret.GetName(),
 							// TODO (harvey) remove hardcode
 							Region: "us-east-2",
 						},
@@ -172,5 +171,5 @@ func (a *appMeshAPIReconciler) buildAppMeshClient(secret *k8s_core_types.Secret)
 
 func (a *appMeshAPIReconciler) buildAppMeshName(appmesh *appmesh.MeshRef) string {
 	// TODO: https://github.com/solo-io/service-mesh-hub/issues/141
-	return "appmesh-" + *appmesh.MeshName + a.apiName
+	return "appmesh-" + *appmesh.MeshName + a.secret.GetName()
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/k8s_manager"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/rest_watcher/aws"
 	mc_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,8 +35,11 @@ func LocalKubeConfigProvider() (*rest.Config, error) {
 	return kubeutils.GetConfig("", "")
 }
 
-func LocalManagerStarterProvider(controller *k8s_manager.AsyncManagerController) k8s_manager.AsyncManagerStartOptionsFunc {
-	return mc_watcher.StartLocalManager(controller)
+func LocalManagerStarterProvider(
+	controller *k8s_manager.AsyncManagerController,
+	awsCredsHandler aws.AwsCredsHandler,
+) k8s_manager.AsyncManagerStartOptionsFunc {
+	return mc_watcher.StartLocalManager(controller, awsCredsHandler)
 }
 
 func LocalManagerProvider(ctx context.Context, cfg *rest.Config) (k8s_manager.AsyncManager, error) {
