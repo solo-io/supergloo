@@ -30,7 +30,7 @@ pygmentsStyle = "manni"
 home = [ "HTML", "JSON"]
 
 [markup]
-defaultMarkdownHandler = "blackfriday"
+defaultMarkdownHandler = "goldmark"
 
 [params]
 author = "Solo.io"

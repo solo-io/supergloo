@@ -44,6 +44,13 @@ import (
 func main() {
 	log.Println("starting generate")
 
+	var renderTypes bool
+	if os.Getenv("REGENERATE_TYPES") == "" {
+		log.Println("REGENERATE_TYPES is not set, skipping autopilot client gen")
+	} else {
+		renderTypes = true
+	}
+
 	// load custom client template
 	customClientTemplateBytes, err := ioutil.ReadFile("gotemplates/custom_client.gotmpl")
 	customClientTemplate := string(customClientTemplateBytes)
@@ -85,7 +92,7 @@ func main() {
 					},
 				},
 				RenderManifests:  true,
-				RenderTypes:      true,
+				RenderTypes:      renderTypes,
 				RenderController: true,
 				RenderProtos:     true,
 				CustomTemplates: map[string]string{
@@ -142,7 +149,7 @@ func main() {
 					},
 				},
 				RenderManifests:  true,
-				RenderTypes:      true,
+				RenderTypes:      renderTypes,
 				RenderController: true,
 				RenderProtos:     true,
 				CustomTemplates: map[string]string{
@@ -208,7 +215,7 @@ func main() {
 					},
 				},
 				RenderManifests:  true,
-				RenderTypes:      true,
+				RenderTypes:      renderTypes,
 				RenderController: true,
 				RenderProtos:     true,
 				CustomTemplates: map[string]string{

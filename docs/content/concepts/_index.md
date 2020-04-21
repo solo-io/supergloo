@@ -2,10 +2,12 @@
 title: "Concepts"
 menuTitle: Concepts
 description: Understanding Service Mesh Hub Concepts
-weight: 25
+weight: 20
 ---
 
 Service Mesh Hub is a management plane that simplifies operations and workflows of service mesh installations across multiple clusters and deployment footprints. With Service Mesh Hub, you can install, discover, and operate a service-mesh deployment across your enterprise, deployed on premises, or in the cloud, even across heterogeneous service-mesh implementations.
+
+![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-3clusters.png" %}})
 
 ## Why Service Mesh Hub
 
@@ -34,7 +36,7 @@ Let's take a closer look at the Service Mesh Hub Concepts
 
 ## Concepts
 
-### Discovery
+#### Discovery
 
 When a cluster is registered, Service Mesh Hub starts discovery. The first task of discovery is to find any service meshes that are installed on the cluster. When it finds the control plane for a service mesh, discovery will write a `Mesh` resource to the management plane cluster, linked to the `KubernetesCluster` resource that was written during cluster registration. Currently, Service Mesh Hub discovers and manages [Istio](https://istio.io) and [Linkerd](https://linkerd.io) meshes, with plans to support more in the near future.
 
@@ -44,7 +46,7 @@ Finally, discovery also looks for services that are exposing the workloads of a 
 
 At this point, the management plane has a complete view of the meshes, services, and workloads across your multi-cluster, multi-mesh environment. 
 
-### Virtual Meshes
+#### Virtual Meshes
 
 In order to enable multi-cluster configuration, users will group multiple meshes together into an object called a `VirtualMesh`. The virtual mesh exposes configuration to facilitate cross-cluster communications. 
 
@@ -52,7 +54,7 @@ In order for a virtual mesh to be considered valid, Service Mesh Hub will first 
 
 Once trust has been established, Service Mesh Hub will start federating services so that they are accessible across clusters. Behind the scenes, Service Mesh Hub will handle the networking -- possibly through egress and ingress gateways, and possibly affected by user-defined traffic and access policies -- and ensure requests to the service will resolve and be routed to the right destination. Users can fine-tune which services are federated where by editing the virtual mesh. 
 
-### Traffic and Access Policies
+#### Traffic and Access Policies
 
 Service Mesh Hub enables users to write simple configuration objects to the management plane to enact traffic and access policies between services. It was designed to be translated into the underlying mesh config, while abstracting away the mesh-specific complexity from the user. 
 
@@ -62,7 +64,7 @@ An `AccessControlPolicy` also applies between sources (this time representing id
 
 With traffic and access policies, Service Mesh Hub gives users a powerful language to dictate how services should communicate, even within complex multi-cluster, multi-mesh applications. 
 
-### CLI Tooling
+#### CLI Tooling
 
 Service Mesh Hub is tackling really hard problems related to multi-cluster networking and configuration, so to speed up your learning it comes with a command line tool called `meshctl`. This tool provides interactive commands to make it easier to author your first virtual mesh, register a cluster, or create a traffic or access policy. Once you’ve authored config, it also has a `describe` command to help understand how your workloads and services are affected by your policies. 
 
