@@ -4,6 +4,8 @@ The following is a set of guidelines for contributing to Service Mesh Hub. This 
 hard and fast rules; a particular section of code may not conform to these guidelines because of some extenuating reason.
 In those cases, best judgement should be used.
 
+See BUILD.md in this repo for instructions on getting a local deve environment up and running.
+
 #### Table of Contents
 
 - [Style Guideline](#style-guideline)
