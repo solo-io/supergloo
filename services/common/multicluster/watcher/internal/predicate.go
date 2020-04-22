@@ -1,17 +1,26 @@
 package internal_watcher
 
 import (
+	"strings"
+
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
+	k8s_core_types "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/event"
+)
+
+const (
+	SoloRegistrationSecretPrefix = "solo.io/register/"
 )
 
 // checks that a kubernetes object has the required metadata to be considered
 // as a multicluster secret
-func HasRequiredMetadata(metadata metav1.Object) bool {
+func HasRequiredMetadata(metadata metav1.Object, secret runtime.Object) bool {
+	// TODO move from label to type by using skv2
 	val, ok := metadata.GetLabels()[multicluster.MultiClusterLabel]
-	return ok && val == "true" && metadata.GetNamespace() == env.GetWriteNamespace()
+	return ((ok && val == "true") || strings.HasPrefix(string(secret.(*k8s_core_types.Secret).Type), SoloRegistrationSecretPrefix)) && metadata.GetNamespace() == env.GetWriteNamespace()
 }
 
 // This object is used as a prerdicate interface for the secret event handler above
@@ -19,17 +28,17 @@ func HasRequiredMetadata(metadata metav1.Object) bool {
 type MultiClusterPredicate struct{}
 
 func (m *MultiClusterPredicate) Create(e event.CreateEvent) bool {
-	return HasRequiredMetadata(e.Meta)
+	return HasRequiredMetadata(e.Meta, e.Object)
 }
 
 func (m *MultiClusterPredicate) Delete(e event.DeleteEvent) bool {
-	return HasRequiredMetadata(e.Meta)
+	return HasRequiredMetadata(e.Meta, e.Object)
 }
 
 func (m *MultiClusterPredicate) Update(e event.UpdateEvent) bool {
-	return HasRequiredMetadata(e.MetaNew) || HasRequiredMetadata(e.MetaOld)
+	return HasRequiredMetadata(e.MetaNew, e.ObjectNew) || HasRequiredMetadata(e.MetaOld, e.ObjectOld)
 }
 
 func (m *MultiClusterPredicate) Generic(e event.GenericEvent) bool {
-	return HasRequiredMetadata(e.Meta)
+	return HasRequiredMetadata(e.Meta, e.Object)
 }

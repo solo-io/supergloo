@@ -39,9 +39,13 @@ func NewAwsCredsHandler(
 }
 
 func (a *awsCredsHandler) RestAPIAdded(ctx context.Context, secret *k8s_core_types.Secret) error {
-	logger := logging.BuildEventLogger(ctx, logging.GenericEvent, nil)
+	logger := logging.BuildEventLogger(ctx, logging.GenericEvent, secret)
 	// Periodically run API Reconciler to ensure AppMesh state is consistent with SMH
 	ticker := time.NewTicker(ReconcileIntervalSeconds * time.Second)
+	err := a.appMeshReconcilerFactory(secret).Reconcile(ctx)
+	if err != nil {
+		logger.Error(err)
+	}
 	go func() {
 		for {
 			select {
@@ -61,7 +65,7 @@ func (a *awsCredsHandler) RestAPIAdded(ctx context.Context, secret *k8s_core_typ
 }
 
 func (a *awsCredsHandler) RestAPIRemoved(ctx context.Context, apiName string) error {
-	logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, nil)
-	logger.Warn("Secret removal not implemented for AwsCredsHandler")
+	//logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, nil)
+	//logger.Warn("Secret removal not implemented for AwsCredsHandler")
 	return nil
 }

@@ -73,7 +73,7 @@ func (c *meshAPIHandler) CreateSecret(s *core_v1.Secret) error {
 func (c *meshAPIHandler) UpdateSecret(old, new *core_v1.Secret) error {
 	logger := contextutils.LoggerFrom(c.ctx)
 	// If mc label has been removed from secret, remove from remote clusters
-	if internal_watcher.HasRequiredMetadata(old.GetObjectMeta()) && !internal_watcher.HasRequiredMetadata(new.GetObjectMeta()) {
+	if internal_watcher.HasRequiredMetadata(old.GetObjectMeta(), old) && !internal_watcher.HasRequiredMetadata(new.GetObjectMeta(), new) {
 		resync, err := c.meshAPIMembership.DeleteMemberCluster(c.ctx, new)
 		if err != nil {
 			logger.Errorf("error deleting member cluster for "+
@@ -84,7 +84,7 @@ func (c *meshAPIHandler) UpdateSecret(old, new *core_v1.Secret) error {
 		}
 	}
 	// if mc label has been added to secret, add to remote cluster list
-	if !internal_watcher.HasRequiredMetadata(old.GetObjectMeta()) && internal_watcher.HasRequiredMetadata(new.GetObjectMeta()) {
+	if !internal_watcher.HasRequiredMetadata(old.GetObjectMeta(), old) && internal_watcher.HasRequiredMetadata(new.GetObjectMeta(), new) {
 		resync, err := c.meshAPIMembership.AddMemberMeshAPI(c.ctx, new)
 		if err != nil {
 			logger.Errorf("error adding member cluster for "+
