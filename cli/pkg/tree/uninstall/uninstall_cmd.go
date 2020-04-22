@@ -15,6 +15,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -72,9 +73,9 @@ func UninstallCmd(
 			// find all the kube clusters that we need to de-register
 			kubeClusters, err := masterKubeClients.KubeClusterClient.ListKubernetesCluster(ctx, client.InNamespace(opts.Root.WriteNamespace))
 
-			// List will only return a NotFound error if the CRD is not registered
+			// List will only return a NoMatch error if the CRD is not registered
 			// if there are no resources, then List returns an object with an empty .Items field and a nil error
-			if errors.IsNotFound(err) {
+			if (err == nil && len(kubeClusters.Items) == 0) || meta.IsNoMatchError(err) || errors.IsNotFound(err) {
 				fmt.Fprintf(out, "No clusters to deregister...\n")
 			} else if err != nil {
 				fmt.Fprintf(out, "Failed to find registered clusters - Continuing...\n\t(%s)\n", err.Error())
@@ -98,7 +99,9 @@ func UninstallCmd(
 				fmt.Fprintf(out, "Failed to remove management plane namespace - Continuing...\n\t(%s)\n", err.Error())
 			}
 
-			// remove SMH CRDs from management plane cluster
+			fmt.Println("About to remove zephyr CRDs from management plane")
+
+			// remove all SMH CRDs from management plane cluster
 			deletedCrds, err := masterKubeClients.UninstallClients.CrdRemover.RemoveZephyrCrds(ctx, "management plane cluster", masterCfg)
 			if err == nil && deletedCrds {
 				fmt.Fprintf(out, "Service Mesh Hub CRDs have been de-registered from the management plane...\n")

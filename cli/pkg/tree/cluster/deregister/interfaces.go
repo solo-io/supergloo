@@ -10,5 +10,6 @@ import (
 
 // perform all the steps necessary to de-register this cluster from the SMH installation
 type ClusterDeregistrationClient interface {
+	// results in deleting the kubeCluster that's passed in
 	Run(ctx context.Context, kubeCluster *zephyr_discovery.KubernetesCluster) error
 }

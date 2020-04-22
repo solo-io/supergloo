@@ -81,7 +81,7 @@ check-spelling:
 	./ci/spell.sh check
 
 mockgen:
-	grep -r 'go:generate mockgen' ./ -l | grep -v generate.go | grep -v Makefile | while read -r f; do echo $$f; go generate $$f; done
+	grep -r 'go:generate mockgen' ./ -l | grep -v Makefile | grep -v CONTRIBUTING.md | while read -r f; do echo $$f; go generate $$f; done
 	goimports -w .
 
 #----------------------------------------------------------------------------------
