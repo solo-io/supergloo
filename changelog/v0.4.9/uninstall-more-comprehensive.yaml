@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Ensure that we clean up more resources (specifically, the kubeconfig secrets) on `meshctl uninstall`
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/593
