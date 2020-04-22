@@ -8,6 +8,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
@@ -51,7 +52,7 @@ func NewIstioInstaller(
 	kubeContext string,
 	kubeLoader common_config.KubeLoader,
 	imageNameParser docker.ImageNameParser,
-	fileReader common.FileReader,
+	fileReader files.FileReader,
 ) (IstioInstaller, error) {
 
 	clients, err := clientfactory(opts)
@@ -104,7 +105,7 @@ type istioInstaller struct {
 	in                     io.Reader
 	clusterName            string
 	operatorManager        operator.OperatorManager
-	fileReader             common.FileReader
+	fileReader             files.FileReader
 }
 
 func (i *istioInstaller) Install() error {

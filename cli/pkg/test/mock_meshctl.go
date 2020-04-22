@@ -10,13 +10,14 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/usage"
 	usage_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/common/usage/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/wire"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"k8s.io/client-go/rest"
 )
 
@@ -34,10 +35,10 @@ type MockMeshctl struct {
 
 	KubeClients common.KubeClients
 
-	KubeLoader              common_config.KubeLoader
-	ImageNameParser         docker.ImageNameParser
-	FileReader              common.FileReader
-	SecretToConfigConverter kubeconfig.SecretToConfigConverter
+	KubeLoader      common_config.KubeLoader
+	ImageNameParser docker.ImageNameParser
+	FileReader      files.FileReader
+	KubeConverter   kube.Converter
 
 	Runner            exec.Runner
 	Printers          common.Printers
@@ -76,7 +77,7 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 		m.KubeLoader,
 		m.ImageNameParser,
 		m.FileReader,
-		m.SecretToConfigConverter,
+		m.KubeConverter,
 		m.Printers,
 		m.Runner,
 		m.InteractivePrompt,

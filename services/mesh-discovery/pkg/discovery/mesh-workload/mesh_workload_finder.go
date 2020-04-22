@@ -96,6 +96,16 @@ func (d *meshWorkloadFinder) handleMeshCreate(mesh *zephyr_discovery.Mesh) error
 	logger := contextutils.LoggerFrom(d.ctx)
 	logger.Debugf("mesh create event for %s", mesh.Name)
 
+	// ensure we are only watching for meshes discovered on this same cluster
+	// otherwise we can hit a race where:
+	//  - Istio is discovered on cluster A
+	//  - that mesh is recorded here
+	//  - we start discovering workloads on cluster B using the Istio mesh workload discovery
+	//  - but we haven't yet discovered Istio on this cluster
+	if mesh.Spec.GetCluster().GetName() != d.clusterName {
+		return nil
+	}
+
 	// first, register in our stateful representation that we have seen this mesh
 	// this allows us to use the mesh workload scanner implementation later on
 	switch mesh.Spec.GetMeshType().(type) {

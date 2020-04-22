@@ -108,6 +108,41 @@ var _ = Describe("Config creator", func() {
 		Expect([]byte(newCfg.BearerToken)).To(Equal(secret.Data[auth.SecretTokenKey]))
 	})
 
+	It("works when the service account is immediately ready, and the CA data is in a file", func() {
+		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
+		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)
+
+		fileTestKubeConfig := &rest.Config{
+			Host: "www.grahams-a-great-programmer.edu",
+			TLSClientConfig: rest.TLSClientConfig{
+				CAFile:   "path-to-ca-file",
+				CertData: []byte("super secure cert data"),
+			},
+		}
+
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
+
+		saClient.
+			EXPECT().
+			GetServiceAccount(ctx, client.ObjectKey{Name: serviceAccountRef.Name, Namespace: serviceAccountRef.Namespace}).
+			Return(&k8s_core_types.ServiceAccount{
+				Secrets: []k8s_core_types.ObjectReference{tokenSecretRef},
+			}, nil)
+
+		secretClient.
+			EXPECT().
+			GetSecret(ctx, client.ObjectKey{Name: tokenSecretRef.Name, Namespace: serviceAccountRef.Namespace}).
+			Return(secret, nil)
+
+		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, fileTestKubeConfig, serviceAccountRef)
+
+		Expect(err).NotTo(HaveOccurred())
+		Expect(newCfg.TLSClientConfig.CertData).To(BeEmpty())
+		Expect(newCfg.TLSClientConfig.CAData).To(BeEmpty())
+		Expect(newCfg.TLSClientConfig.CAFile).To(Equal(fileTestKubeConfig.TLSClientConfig.CAFile))
+		Expect([]byte(newCfg.BearerToken)).To(Equal(secret.Data[auth.SecretTokenKey]))
+	})
+
 	It("returns an error when the secret is malformed", func() {
 		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_kubernetes_core.NewMockSecretClient(ctrl)

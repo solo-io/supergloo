@@ -1,0 +1,4 @@
+changelog:
+- type: FIX
+  description: Make sure that mesh workload discovery only notices meshes on the same cluster that it's watching
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/617

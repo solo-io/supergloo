@@ -6,6 +6,7 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -19,6 +20,10 @@ const (
 )
 
 var (
+	FailedToReadCAFile = func(err error, fileName string) error {
+		return eris.Wrapf(err, "Failed to read kubeconfig CA file: %s", fileName)
+	}
+
 	// exponential backoff retry with an initial period of 0.1s for 7 iterations, which will mean a cumulative retry period of ~6s
 	secretLookupOpts = []retry.Option{
 		retry.Delay(time.Millisecond * 100),
@@ -40,6 +45,7 @@ func NewRemoteAuthorityConfigCreator(
 type remoteAuthorityConfigCreator struct {
 	secretClient         k8s_core.SecretClient
 	serviceAccountClient k8s_core.ServiceAccountClient
+	fileReader           files.FileReader
 }
 
 func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(

@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.7
 	github.com/avast/retry-go v2.4.3+incompatible
+	github.com/aws/aws-sdk-go v1.23.20
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/docker/cli v0.0.0-20191017083524-a8ff7f821017 // indirect
 	github.com/docker/distribution v2.7.1+incompatible

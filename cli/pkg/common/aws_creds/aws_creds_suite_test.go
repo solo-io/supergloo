@@ -1,4 +1,4 @@
-package kubeconfig_test
+package aws_creds_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestKubeconfig(t *testing.T) {
+func TestAwsCreds(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Kubeconfig Suite")
+	RunSpecs(t, "AwsCreds Suite")
 }

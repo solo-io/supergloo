@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -25,22 +25,22 @@ var (
 func NewKubeConfigLookup(
 	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
 	secrestClient k8s_core.SecretClient,
-	secretToConfigConverter kubeconfig.SecretToConfigConverter,
+	kubeConverter kube.Converter,
 ) KubeConfigLookup {
 	return &kubeConfigLookup{
-		kubeClusterClient:       kubeClusterClient,
-		secretsClient:           secrestClient,
-		secretToConfigConverter: secretToConfigConverter,
+		kubeClusterClient: kubeClusterClient,
+		secretsClient:     secrestClient,
+		kubeConverter:     kubeConverter,
 	}
 }
 
 type kubeConfigLookup struct {
-	secretsClient           k8s_core.SecretClient
-	secretToConfigConverter kubeconfig.SecretToConfigConverter
-	kubeClusterClient       zephyr_discovery.KubernetesClusterClient
+	secretsClient     k8s_core.SecretClient
+	kubeClusterClient zephyr_discovery.KubernetesClusterClient
+	kubeConverter     kube.Converter
 }
 
-func (k *kubeConfigLookup) FromCluster(ctx context.Context, clusterName string) (config *kubeconfig.Config, err error) {
+func (k *kubeConfigLookup) FromCluster(ctx context.Context, clusterName string) (config *kube.ConvertedConfigs, err error) {
 	var kubeCluster *zephyr_discovery.KubernetesCluster
 	allClusters, err := k.kubeClusterClient.ListKubernetesCluster(ctx)
 	if err != nil {
@@ -63,7 +63,7 @@ func (k *kubeConfigLookup) FromCluster(ctx context.Context, clusterName string) 
 		return nil, FailedToFindKubeConfigSecret(err, kubeCluster.GetName())
 	}
 
-	clusterName, config, err = k.secretToConfigConverter(secret)
+	clusterName, config, err = k.kubeConverter.SecretToConfig(secret)
 	if err != nil {
 		return nil, FailedToConvertSecretToKubeConfig(err, kubeCluster.GetName())
 	}

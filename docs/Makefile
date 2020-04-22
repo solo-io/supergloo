@@ -28,7 +28,7 @@ site-common: clean
 	# this theme is crucial (has the nested scoped short codes: protobuf and versioned_link_path - see dev-portal docs for use demos)
 	if [ ! -d themes/hugo-theme-soloio ]; then git clone https://github.com/solo-io/hugo-theme-soloio themes/hugo-theme-soloio; fi
 	# style updates for putting docs in the dev-portal repo, see details here https://github.com/solo-io/hugo-theme-soloio/commit/e0c50784a92fb7f61c635ff9a6e3a010f636f550
-	git -C themes/hugo-theme-soloio checkout ba9072114c4d82194605de4378c82d42e7b44c2c
+	git -C themes/hugo-theme-soloio checkout 91507dc0e262b5009327a741bc9fd5cc2a949c38
 
 .PHONY: site-test
 site-test: site-common
@@ -65,3 +65,12 @@ latest: site-release
 		--build-arg FROM_DIR=./site-latest \
 		-t $(IMAGE_REPO):latest .
 	docker push $(IMAGE_REPO):latest
+
+
+# Uses https://github.com/gjtorikian/html-proofer
+# Does not require running site; just make sure you generate the site and then run it
+# Install with gem install html-proofer
+# Another option we could use is wget: https://www.digitalocean.com/community/tutorials/how-to-find-broken-links-on-your-website-using-wget-on-debian-7
+.PHONY: check-links
+check-links: site-release
+	htmlproofer ./site-latest/ --empty-alt-ignore  --allow-hash-href 

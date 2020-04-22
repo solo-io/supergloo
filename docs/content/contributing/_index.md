@@ -2,7 +2,7 @@
 title: "Contributing"
 menuTitle: Contributing
 description: How to contribute to Service Mesh Hub.
-weight: 150
+weight: 300
 ---
 
 There are several ways to get involved with Service Mesh Hub as a developer.

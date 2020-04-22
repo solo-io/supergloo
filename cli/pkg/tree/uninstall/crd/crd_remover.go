@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -37,6 +38,15 @@ type crdRemover struct {
 }
 
 func (c *crdRemover) RemoveZephyrCrds(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config) (crdsDeleted bool, err error) {
+	return c.removeCrdsWithNameSuffix(ctx, clusterName, remoteKubeConfig, cliconstants.ServiceMeshHubApiGroupSuffix)
+}
+
+func (c *crdRemover) RemoveCrdGroup(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config, groupVersion schema.GroupVersion) (crdsDeleted bool, err error) {
+	return c.removeCrdsWithNameSuffix(ctx, clusterName, remoteKubeConfig, groupVersion.Group)
+}
+
+// remove all CRDs with the given name suffix
+func (c *crdRemover) removeCrdsWithNameSuffix(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config, crdNameSuffix string) (crdsDeleted bool, err error) {
 	crdClient, err := c.crdClientFactory(remoteKubeConfig)
 	if err != nil {
 		return false, FailedToBuildCrdClient(err, clusterName)
@@ -48,7 +58,7 @@ func (c *crdRemover) RemoveZephyrCrds(ctx context.Context, clusterName string, r
 	}
 
 	for _, crd := range crds.Items {
-		if strings.HasSuffix(crd.GetName(), cliconstants.ServiceMeshHubApiGroupSuffix) {
+		if strings.HasSuffix(crd.GetName(), crdNameSuffix) {
 			crdsDeleted = true
 			existing, err := crdClient.GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd.GetName()})
 			if err != nil {

@@ -1,9 +1,6 @@
 package common
 
 import (
-	"io/ioutil"
-	"os"
-
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
@@ -27,7 +24,6 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"k8s.io/client-go/rest"
@@ -38,8 +34,6 @@ var (
 		return eris.Wrap(err, "Failed to load the kube config for the master cluster")
 	}
 )
-
-//go:generate mockgen -destination ../mocks/mock_common_interfaces.go -package cli_mocks -source ./common_interfaces.go
 
 // a grab bag of various clients that command implementations may use
 type KubeClients struct {
@@ -77,6 +71,7 @@ type Clients struct {
 	DeploymentClient              server.DeploymentClient
 	StatusClientFactory           status.StatusClientFactory
 	HealthCheckSuite              healthcheck_types.HealthCheckSuite
+	KubeConverter                 kube.Converter
 
 	IstioClients               IstioClients
 	ClusterRegistrationClients ClusterRegistrationClients
@@ -99,12 +94,12 @@ type IstioClients struct {
 
 type UninstallClients struct {
 	CrdRemover              crd_uninstall.CrdRemover
-	SecretToConfigConverter kubeconfig.SecretToConfigConverter
+	SecretToConfigConverter kube.Converter
 }
 
 func UninstallClientsProvider(
 	crdRemover crd_uninstall.CrdRemover,
-	secretToConfigConverter kubeconfig.SecretToConfigConverter,
+	secretToConfigConverter kube.Converter,
 ) UninstallClients {
 	return UninstallClients{
 		CrdRemover:              crdRemover,
@@ -136,6 +131,7 @@ func ClientsProvider(
 	statusClientFactory status.StatusClientFactory,
 	healthCheckSuite healthcheck_types.HealthCheckSuite,
 	clusterRegistrationClients ClusterRegistrationClients,
+	kubeConverter kube.Converter,
 ) *Clients {
 	return &Clients{
 		ServerVersionClient:           serverVersionClient,
@@ -147,6 +143,7 @@ func ClientsProvider(
 		StatusClientFactory:           statusClientFactory,
 		HealthCheckSuite:              healthCheckSuite,
 		ClusterRegistrationClients:    clusterRegistrationClients,
+		KubeConverter:                 kubeConverter,
 	}
 }
 
@@ -235,30 +232,4 @@ func PrintersProvider(
 		VirtualMeshCSRPrinter:      vmcsrPrinter,
 		ResourcePrinter:            resourcePrinter,
 	}
-}
-
-type FileReader interface {
-	Read(filePath string) ([]byte, error)
-	Exists(filePath string) (exists bool, err error)
-}
-
-func NewDefaultFileReader() FileReader {
-	return &fileReader{}
-}
-
-type fileReader struct{}
-
-func (f *fileReader) Read(filePath string) ([]byte, error) {
-	return ioutil.ReadFile(filePath)
-}
-
-func (f *fileReader) Exists(filePath string) (exists bool, err error) {
-	_, err = os.Stat(filePath)
-	if os.IsNotExist(err) {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-
-	return true, nil
 }
