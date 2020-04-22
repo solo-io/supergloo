@@ -153,6 +153,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: clusterName,
+				},
 			},
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -206,6 +209,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: clusterName,
+				},
 			},
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -234,6 +240,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: clusterName,
+				},
 			},
 		})
 
@@ -258,6 +267,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: clusterName,
+				},
 			},
 		})
 		Expect(err).To(HaveOccurred())
@@ -302,6 +314,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: clusterName,
+				},
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -349,6 +364,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: clusterName,
+				},
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -413,6 +431,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: clusterName,
+				},
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -432,6 +453,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: clusterName,
+				},
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -455,6 +479,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: clusterName,
+				},
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -475,6 +502,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: clusterName,
+				},
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -528,9 +558,41 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: clusterName,
+				},
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
+
+		err = podEventHandlerFuncs.OnUpdate(pod, newPod)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("does not start discovering if a mesh was discovered on some other cluster", func() {
+		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+			Spec: zephyr_discovery_types.MeshSpec{
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: "some-other-cluster-name",
+				},
+			},
+		})
+		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("does not remember that a mesh was discovered on some other cluster when handling a pod event later", func() {
+		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+			Spec: zephyr_discovery_types.MeshSpec{
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: "some-other-cluster-name",
+				},
+			},
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		newPod := &k8s_core_types.Pod{}
 
 		err = podEventHandlerFuncs.OnUpdate(pod, newPod)
 		Expect(err).ToNot(HaveOccurred())
