@@ -2,3 +2,6 @@ changelog:
   - type: FIX
     description: Ensure that we clean up more resources (specifically, the kubeconfig secrets) on `meshctl uninstall`
     issueLink: https://github.com/solo-io/service-mesh-hub/issues/593
+  - type FIX
+    description: Separate out CSR agent CRDs from the parent CRD chart so that we can clean them up in a more targeted way during `meshctl uninstall`
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/603
