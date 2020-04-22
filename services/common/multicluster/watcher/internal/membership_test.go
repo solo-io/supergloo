@@ -12,6 +12,7 @@ import (
 	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
+	mock_rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/mocks"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
@@ -60,9 +61,10 @@ users:
 	Context("cluster membership", func() {
 
 		var (
-			receiver      *mock_mc_manager.MockKubeConfigHandler
-			kubeConverter *mock_kube.MockConverter
-			cmh           *MeshAPIMembershipHandler
+			receiver           *mock_mc_manager.MockKubeConfigHandler
+			kubeConverter      *mock_kube.MockConverter
+			cmh                *MeshAPIMembershipHandler
+			awsAPICredsHandler *mock_rest_api.MockRestAPICredsHandler
 
 			clusterName, secretName = "cluster-name", "secret-name"
 		)
@@ -70,7 +72,8 @@ users:
 		BeforeEach(func() {
 			receiver = mock_mc_manager.NewMockKubeConfigHandler(ctrl)
 			kubeConverter = mock_kube.NewMockConverter(ctrl)
-			cmh = NewClusterMembershipHandler(receiver, kubeConverter)
+			awsAPICredsHandler = mock_rest_api.NewMockRestAPICredsHandler(ctrl)
+			cmh = NewClusterMembershipHandler(receiver, awsAPICredsHandler, kubeConverter)
 		})
 
 		Context("add cluster", func() {

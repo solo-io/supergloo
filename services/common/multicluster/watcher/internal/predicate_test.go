@@ -6,6 +6,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
+	k8s_core_types "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 )
@@ -13,24 +14,25 @@ import (
 var _ = Describe("common", func() {
 	Context("hasRequiredMetadata", func() {
 		var meta metav1.Object
+		obj := &k8s_core_types.Secret{}
 		It("will not work with just labels", func() {
 			meta = &metav1.ObjectMeta{
 				Labels: map[string]string{multicluster.MultiClusterLabel: "true"},
 			}
-			Expect(HasRequiredMetadata(meta)).To(BeFalse())
+			Expect(HasRequiredMetadata(meta, obj)).To(BeFalse())
 		})
 		It("will not work with just namespace", func() {
 			meta = &metav1.ObjectMeta{
 				Namespace: env.GetWriteNamespace(),
 			}
-			Expect(HasRequiredMetadata(meta)).To(BeFalse())
+			Expect(HasRequiredMetadata(meta, obj)).To(BeFalse())
 		})
 		It("will not work with one condition", func() {
 			meta = &metav1.ObjectMeta{
 				Labels:    map[string]string{multicluster.MultiClusterLabel: "true"},
 				Namespace: env.GetWriteNamespace(),
 			}
-			Expect(HasRequiredMetadata(meta)).To(BeTrue())
+			Expect(HasRequiredMetadata(meta, obj)).To(BeTrue())
 		})
 	})
 	Context("will fire an update event if either new or old matches", func() {
