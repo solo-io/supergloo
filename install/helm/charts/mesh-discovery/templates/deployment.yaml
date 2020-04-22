@@ -28,8 +28,6 @@ spec:
           imagePullPolicy: {{ $image.pullPolicy }}
           name: mesh-discovery
           env:
-            - name: DEBUG_MODE
-              value: "1"
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:
