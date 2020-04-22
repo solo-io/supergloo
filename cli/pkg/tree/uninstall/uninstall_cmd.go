@@ -75,7 +75,7 @@ func UninstallCmd(
 
 			// List will only return a NoMatch error if the CRD is not registered
 			// if there are no resources, then List returns an object with an empty .Items field and a nil error
-			if meta.IsNoMatchError(err) {
+			if (err == nil && len(kubeClusters.Items) == 0) || meta.IsNoMatchError(err) || errors.IsNotFound(err) {
 				fmt.Fprintf(out, "No clusters to deregister...\n")
 			} else if err != nil {
 				fmt.Fprintf(out, "Failed to find registered clusters - Continuing...\n\t(%s)\n", err.Error())

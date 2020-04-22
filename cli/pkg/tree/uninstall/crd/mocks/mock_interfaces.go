@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	rest "k8s.io/client-go/rest"
 )
 
@@ -51,16 +52,16 @@ func (mr *MockCrdRemoverMockRecorder) RemoveZephyrCrds(ctx, clusterName, remoteK
 }
 
 // RemoveCrdGroup mocks base method.
-func (m *MockCrdRemover) RemoveCrdGroup(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config) (bool, error) {
+func (m *MockCrdRemover) RemoveCrdGroup(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config, groupVersion schema.GroupVersion) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveCrdGroup", ctx, clusterName, remoteKubeConfig)
+	ret := m.ctrl.Call(m, "RemoveCrdGroup", ctx, clusterName, remoteKubeConfig, groupVersion)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RemoveCrdGroup indicates an expected call of RemoveCrdGroup.
-func (mr *MockCrdRemoverMockRecorder) RemoveCrdGroup(ctx, clusterName, remoteKubeConfig interface{}) *gomock.Call {
+func (mr *MockCrdRemoverMockRecorder) RemoveCrdGroup(ctx, clusterName, remoteKubeConfig, groupVersion interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveCrdGroup", reflect.TypeOf((*MockCrdRemover)(nil).RemoveCrdGroup), ctx, clusterName, remoteKubeConfig)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveCrdGroup", reflect.TypeOf((*MockCrdRemover)(nil).RemoveCrdGroup), ctx, clusterName, remoteKubeConfig, groupVersion)
 }
