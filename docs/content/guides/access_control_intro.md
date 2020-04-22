@@ -94,7 +94,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-productpage
           namespace: default
-          cluster: management-plane
+          cluster: remote-cluster
   destinationSelector:
     matcher:
       namespaces:
@@ -111,7 +111,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-reviews
           namespace: default
-          cluster: management-plane
+          cluster: remote-cluster
   destinationSelector:
     matcher:
       namespaces:
@@ -121,4 +121,4 @@ spec:
 EOF
 ```
 
-Traffic should be allowed again.
+Observe that "Book Details" and "Book Reviews" (with the ratings stars) are working again because we have enabled traffic to the backing services.
