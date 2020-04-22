@@ -27,25 +27,7 @@ managementPlane=management-plane-$(xxd -l16 -ps /dev/urandom)
 remoteCluster=target-cluster-$(xxd -l16 -ps /dev/urandom)
 
 # set up each cluster
-# Create NodePort for remote cluster so it can be reachable from the management plane.
-# This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
-cat <<EOF | kind create cluster --name $managementPlane --config=-
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  kubeadmConfigPatches:
-  - |
-    kind: InitConfiguration
-    nodeRegistration:
-      kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
-        authorization-mode: "AlwaysAllow"
-  extraPortMappings:
-  - containerPort: 32001
-    hostPort: 32001
-    protocol: TCP
-EOF
+kind create cluster --name $managementPlane
 # Create NodePort for remote cluster so it can be reachable from the management plane.
 # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
 cat <<EOF | kind create cluster --name $remoteCluster --config=-
@@ -208,39 +190,7 @@ spec:
         env:
           - name: PILOT_CERT_PROVIDER
             value: "kubernetes"
-    # Istio Gateway feature
-    ingressGateways:
-    - name: istio-ingressgateway
-      enabled: true
-      k8s:
-        env:
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-        service:
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: 32001
   values:
-    prometheus:
-      enabled: false
-    gateways:
-      istio-ingressgateway:
-        type: NodePort
-        ports:
-          - targetPort: 15443
-            name: tls
-            nodePort: 32001
-            port: 15443
     global:
       pilotCertProvider: kubernetes
       controlPlaneSecurityEnabled: true
@@ -354,7 +304,7 @@ count=0
 ok=false
 until ${ok}; do
     numResources=`kubectl --context kind-$managementPlane -n service-mesh-hub get meshworkloads | grep istio -c`
-    if [[ ${numResources} -eq 14 ]]; then
+    if [[ ${numResources} -eq 13 ]]; then
         ok=true
         continue
     fi
