@@ -1,4 +1,4 @@
-package manager_test
+package mc_manager_test
 
 import (
 	"testing"

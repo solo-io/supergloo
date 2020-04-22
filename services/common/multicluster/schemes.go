@@ -9,7 +9,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	manager2 "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	networking_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	k8s_runtime "k8s.io/apimachinery/pkg/runtime"
@@ -17,7 +17,7 @@ import (
 )
 
 // register the mesh projects v1alpha1 CRDs with manager runtime
-var AddAllV1Alpha1ToScheme manager2.AsyncManagerStartOptionsFunc = func(_ context.Context, mgr manager.Manager) error {
+var AddAllV1Alpha1ToScheme mc_manager.AsyncManagerStartOptionsFunc = func(_ context.Context, mgr manager.Manager) error {
 	addToSchemes := []func(error2 *k8s_runtime.Scheme) error{
 		zephyr_discovery.AddToScheme,
 		zephyr_networking.AddToScheme,
@@ -33,7 +33,7 @@ var AddAllV1Alpha1ToScheme manager2.AsyncManagerStartOptionsFunc = func(_ contex
 	return nil
 }
 
-var AddAllIstioToScheme manager2.AsyncManagerStartOptionsFunc = func(_ context.Context, mgr manager.Manager) error {
+var AddAllIstioToScheme mc_manager.AsyncManagerStartOptionsFunc = func(_ context.Context, mgr manager.Manager) error {
 	addToSchemes := []func(scheme *k8s_runtime.Scheme) error{
 		security_v1beta1.AddToScheme,
 		networking_v1alpha3.AddToScheme,
@@ -49,7 +49,7 @@ var AddAllIstioToScheme manager2.AsyncManagerStartOptionsFunc = func(_ context.C
 	return nil
 }
 
-var AddAllLinkerdToScheme manager2.AsyncManagerStartOptionsFunc = func(_ context.Context, mgr manager.Manager) error {
+var AddAllLinkerdToScheme mc_manager.AsyncManagerStartOptionsFunc = func(_ context.Context, mgr manager.Manager) error {
 	addToSchemes := []func(scheme *k8s_runtime.Scheme) error{
 		linkerd_config.AddToScheme,
 		smi_config.AddToScheme,
