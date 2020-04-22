@@ -10,9 +10,11 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
 	mp_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	mesh_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
 	mock_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_k8s_apps_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/apps/v1"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,6 +55,7 @@ var _ = Describe("Mesh Finder", func() {
 		It("can discover a mesh", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
+			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
 			deployment := BuildDeployment(metav1.ObjectMeta{Name: "test-deployment", Namespace: remoteNamespace})
 			meshObjectMeta := metav1.ObjectMeta{Name: "test-mesh", Namespace: remoteNamespace}
 			mesh := BuildMesh(meshObjectMeta)
@@ -63,6 +66,7 @@ var _ = Describe("Mesh Finder", func() {
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
 				clusterClient,
+				deploymentClient,
 			)
 
 			meshFinder.
@@ -83,6 +87,7 @@ var _ = Describe("Mesh Finder", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			brokenMeshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
+			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
 			deployment := BuildDeployment(metav1.ObjectMeta{Name: "test-deployment", Namespace: remoteNamespace})
 			meshObjectMeta := metav1.ObjectMeta{Name: "test-mesh", Namespace: remoteNamespace}
 			mesh := BuildMesh(meshObjectMeta)
@@ -93,6 +98,7 @@ var _ = Describe("Mesh Finder", func() {
 				[]mesh_discovery.MeshScanner{brokenMeshFinder, meshFinder},
 				localMeshClient,
 				clusterClient,
+				deploymentClient,
 			)
 
 			meshFinder.
@@ -118,6 +124,7 @@ var _ = Describe("Mesh Finder", func() {
 		It("responds with an error if no mesh was found and the finders reported an error", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
+			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
 			deployment := BuildDeployment(metav1.ObjectMeta{Name: "test-deployment", Namespace: remoteNamespace})
 
 			eventHandler := mesh_discovery.NewMeshFinder(
@@ -126,6 +133,7 @@ var _ = Describe("Mesh Finder", func() {
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
 				clusterClient,
+				deploymentClient,
 			)
 
 			meshFinder.
@@ -144,6 +152,7 @@ var _ = Describe("Mesh Finder", func() {
 		It("doesn't do anything if no mesh was discovered", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
+			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
 			deployment := BuildDeployment(metav1.ObjectMeta{Name: "test-deployment", Namespace: remoteNamespace})
 
 			eventHandler := mesh_discovery.NewMeshFinder(
@@ -152,6 +161,7 @@ var _ = Describe("Mesh Finder", func() {
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
 				clusterClient,
+				deploymentClient,
 			)
 
 			meshFinder.
@@ -167,6 +177,7 @@ var _ = Describe("Mesh Finder", func() {
 		It("performs an upsert if we discovered a mesh that we discovered previously", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
+			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
 			deployment := BuildDeployment(metav1.ObjectMeta{Name: "test-deployment", Namespace: remoteNamespace})
 			meshObjectMeta := metav1.ObjectMeta{Name: "test-mesh", Namespace: remoteNamespace}
 			mesh := BuildMesh(meshObjectMeta)
@@ -177,6 +188,7 @@ var _ = Describe("Mesh Finder", func() {
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
 				clusterClient,
+				deploymentClient,
 			)
 
 			meshFinder.
@@ -197,6 +209,7 @@ var _ = Describe("Mesh Finder", func() {
 		It("returns error from Upsert if upsert fails", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
+			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
 			deployment := BuildDeployment(metav1.ObjectMeta{Name: "test-deployment", Namespace: remoteNamespace})
 			meshObjectMeta := metav1.ObjectMeta{Name: "test-mesh", Namespace: remoteNamespace}
 			mesh := BuildMesh(meshObjectMeta)
@@ -207,6 +220,7 @@ var _ = Describe("Mesh Finder", func() {
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
 				clusterClient,
+				deploymentClient,
 			)
 
 			meshFinder.
@@ -229,6 +243,7 @@ var _ = Describe("Mesh Finder", func() {
 		It("can discover a mesh", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
+			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
 			newDeployment := BuildDeployment(metav1.ObjectMeta{Name: "new-deployment", Namespace: remoteNamespace})
 			meshObjectMeta := metav1.ObjectMeta{Name: "test-mesh", Namespace: remoteNamespace}
 			mesh := BuildMesh(meshObjectMeta)
@@ -239,6 +254,7 @@ var _ = Describe("Mesh Finder", func() {
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
 				clusterClient,
+				deploymentClient,
 			)
 
 			meshFinder.
@@ -259,6 +275,7 @@ var _ = Describe("Mesh Finder", func() {
 		It("doesn't do anything if no mesh was discovered", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
+			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
 			newDeployment := BuildDeployment(metav1.ObjectMeta{Name: "new-deployment", Namespace: remoteNamespace})
 
 			eventHandler := mesh_discovery.NewMeshFinder(
@@ -267,6 +284,7 @@ var _ = Describe("Mesh Finder", func() {
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
 				clusterClient,
+				deploymentClient,
 			)
 
 			meshFinder.
@@ -282,6 +300,7 @@ var _ = Describe("Mesh Finder", func() {
 		It("writes a new CR if an update event changes the mesh type", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
+			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
 			newDeployment := BuildDeployment(metav1.ObjectMeta{Name: "new-deployment", Namespace: remoteNamespace})
 			newMeshObjectMeta := metav1.ObjectMeta{Name: "new-test-mesh", Namespace: remoteNamespace}
 			newMesh := BuildMesh(newMeshObjectMeta)
@@ -292,6 +311,7 @@ var _ = Describe("Mesh Finder", func() {
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
 				clusterClient,
+				deploymentClient,
 			)
 			meshFinder.
 				EXPECT().
@@ -304,6 +324,63 @@ var _ = Describe("Mesh Finder", func() {
 			err := eventHandler.UpdateDeployment(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())
 
+		})
+	})
+
+	Context("Delete Event", func() {
+		It("can delete a mesh when appropriate", func() {
+			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
+			localMeshClient := mock_core.NewMockMeshClient(ctrl)
+			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
+			deployment := BuildDeployment(metav1.ObjectMeta{Name: "test-deployment", Namespace: remoteNamespace})
+			meshObjectMeta := metav1.ObjectMeta{Name: "test-mesh", Namespace: remoteNamespace}
+			mesh := BuildMesh(meshObjectMeta)
+
+			eventHandler := mesh_discovery.NewMeshFinder(
+				ctx,
+				clusterName,
+				[]mesh_discovery.MeshScanner{meshFinder},
+				localMeshClient,
+				clusterClient,
+				deploymentClient,
+			)
+
+			meshFinder.
+				EXPECT().
+				ScanDeployment(ctx, clusterName, deployment, clusterClient).
+				Return(mesh, nil)
+
+			localMeshClient.
+				EXPECT().
+				DeleteMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				Return(nil)
+
+			err := eventHandler.DeleteDeployment(deployment)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("does not delete a mesh if the deployment is not a control plane", func() {
+			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
+			localMeshClient := mock_core.NewMockMeshClient(ctrl)
+			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
+			deployment := BuildDeployment(metav1.ObjectMeta{Name: "test-deployment", Namespace: remoteNamespace})
+
+			eventHandler := mesh_discovery.NewMeshFinder(
+				ctx,
+				clusterName,
+				[]mesh_discovery.MeshScanner{meshFinder},
+				localMeshClient,
+				clusterClient,
+				deploymentClient,
+			)
+
+			meshFinder.
+				EXPECT().
+				ScanDeployment(ctx, clusterName, deployment, clusterClient).
+				Return(nil, nil)
+
+			err := eventHandler.DeleteDeployment(deployment)
+			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 })
