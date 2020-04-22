@@ -9,7 +9,7 @@ import (
 
 const (
 	// TODO unify Secret type naming
-	AWSSecretType = "solo.io/aws-credentials"
+	AWSSecretType = "solo.io/register/aws-credentials"
 	// Uniquely identifies the AWS account
 	AWSAccessKeyID     = "aws_access_key_id"
 	AWSSecretAccessKey = "aws_secret_access_key"
@@ -72,7 +72,6 @@ func (s *secretAwsCredsConverter) SecretToCreds(secret *k8s_core_types.Secret) (
 	if !ok {
 		return nil, MalformedAWSCredsSecret(AWSSecretAccessKey)
 	}
-
 	return credentials.NewCredentials(newProvider(func() (credentials.Value, error) {
 		return credentials.Value{
 			AccessKeyID:     string(accessKeyID),

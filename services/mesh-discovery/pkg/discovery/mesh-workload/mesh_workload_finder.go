@@ -242,7 +242,8 @@ func (d *meshWorkloadFinder) discoverMeshWorkload(pod *k8s_core_types.Pod) (*zep
 	for _, discoveredMeshType := range d.discoveredMeshTypes.List() {
 		meshWorkloadScanner, ok := d.meshWorkloadScannerImplementations[zephyr_core_types.MeshType(discoveredMeshType)]
 		if !ok {
-			return nil, eris.Errorf("Missing mesh workload scanner implementation for mesh type %d", discoveredMeshType)
+			// Don't run scanners for Meshes that aren't k8s based (i.e. REST API based), which happen separately
+			continue
 		}
 
 		discoveredControllerRef, discoveredMeshWorkloadObjectMeta, err := meshWorkloadScanner.ScanPod(d.ctx, pod)
@@ -307,7 +308,7 @@ func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context) (*zephyr
 	}
 	// assume at most one instance of Istio per cluster, thus it must be the Mesh for the MeshWorkload if it exists
 	for _, mesh := range meshList.Items {
-		if mesh.Spec.Cluster.Name == d.clusterName {
+		if mesh.Spec.GetCluster().GetName() == d.clusterName {
 			return &zephyr_core_types.ResourceRef{
 				Name:      mesh.Name,
 				Namespace: mesh.Namespace,
