@@ -12,30 +12,30 @@ import (
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
-// MockClusterDeregistrationClient is a mock of ClusterDeregistrationClient interface
+// MockClusterDeregistrationClient is a mock of ClusterDeregistrationClient interface.
 type MockClusterDeregistrationClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterDeregistrationClientMockRecorder
 }
 
-// MockClusterDeregistrationClientMockRecorder is the mock recorder for MockClusterDeregistrationClient
+// MockClusterDeregistrationClientMockRecorder is the mock recorder for MockClusterDeregistrationClient.
 type MockClusterDeregistrationClientMockRecorder struct {
 	mock *MockClusterDeregistrationClient
 }
 
-// NewMockClusterDeregistrationClient creates a new mock instance
+// NewMockClusterDeregistrationClient creates a new mock instance.
 func NewMockClusterDeregistrationClient(ctrl *gomock.Controller) *MockClusterDeregistrationClient {
 	mock := &MockClusterDeregistrationClient{ctrl: ctrl}
 	mock.recorder = &MockClusterDeregistrationClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockClusterDeregistrationClient) EXPECT() *MockClusterDeregistrationClientMockRecorder {
 	return m.recorder
 }
 
-// Run mocks base method
+// Run mocks base method.
 func (m *MockClusterDeregistrationClient) Run(ctx context.Context, kubeCluster *v1alpha1.KubernetesCluster) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Run", ctx, kubeCluster)
@@ -43,7 +43,7 @@ func (m *MockClusterDeregistrationClient) Run(ctx context.Context, kubeCluster *
 	return ret0
 }
 
-// Run indicates an expected call of Run
+// Run indicates an expected call of Run.
 func (mr *MockClusterDeregistrationClientMockRecorder) Run(ctx, kubeCluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockClusterDeregistrationClient)(nil).Run), ctx, kubeCluster)

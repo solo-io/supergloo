@@ -11,6 +11,7 @@ import (
 	helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_core_v1_clients "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	zephyr_security_scheme "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
@@ -140,7 +141,8 @@ func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *zeph
 		return FailedToCleanUpServiceAccount(err, kubeCluster.GetName())
 	}
 
-	_, err = c.crdRemover.RemoveZephyrCrds(ctx, kubeCluster.GetName(), config.RestConfig)
+	// the CSR agent installs only CRDs from the security group. Remove only those
+	_, err = c.crdRemover.RemoveCrdGroup(ctx, kubeCluster.GetName(), config.RestConfig, zephyr_security_scheme.SchemeGroupVersion)
 	if err != nil && !meta.IsNoMatchError(err) {
 		return FailedToRemoveCrds(err, kubeCluster.GetName())
 	}
