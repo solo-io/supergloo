@@ -46,7 +46,7 @@ To spin up two Kubernetes clusters with Kind, run:
 ```shell
 meshctl demo init
 ```
-This will spin up two Kubernetes clusters in Docker with Istio installed on each. This will also set up Service Mesh Hub on the `management-plane` cluster:
+This will spin up two Kubernetes clusters in Docker with Istio installed on each. Additionally, this will install Service Mesh Hub on one of the clusters. Both clusters will be **registered** with Service Mesh Hub under the names `management-plane` and `remote-cluster`, which will be used throughout the documentation.
 
 ```shell
 Creating cluster "management-plane-bdefd91b0749a8854b3af6d7e44a1f53" ...
