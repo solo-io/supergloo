@@ -35,26 +35,26 @@ var _ = Describe("multicluster-watcher", func() {
 	Context("handler", func() {
 		var (
 			mcHandler controller.SecretEventHandler
-			csh       *mock_internal_watcher.MockClusterSecretHandler
+			csh       *mock_internal_watcher.MockMeshAPISecretHandler
 			secret    *kubev1.Secret
 			testErr   = eris.New("this is an error")
 		)
 
 		BeforeEach(func() {
-			csh = mock_internal_watcher.NewMockClusterSecretHandler(ctrl)
+			csh = mock_internal_watcher.NewMockMeshAPISecretHandler(ctrl)
 			mcHandler = mc_watcher.NewMultiClusterHandler(ctx, csh)
 			secret = &kubev1.Secret{}
 		})
 
 		Context("Create", func() {
 			It("will return an error if resync is true", func() {
-				csh.EXPECT().AddMemberCluster(ctx, secret).Return(true, testErr)
+				csh.EXPECT().AddMemberMeshAPI(ctx, secret).Return(true, testErr)
 				err := mcHandler.CreateSecret(secret)
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(Equal(testErr))
 			})
 			It("will not an error if resync is false", func() {
-				csh.EXPECT().AddMemberCluster(ctx, secret).Return(false, testErr)
+				csh.EXPECT().AddMemberMeshAPI(ctx, secret).Return(false, testErr)
 				err := mcHandler.CreateSecret(secret)
 				Expect(err).NotTo(HaveOccurred())
 			})
@@ -111,13 +111,13 @@ var _ = Describe("multicluster-watcher", func() {
 					secret.Labels = map[string]string{multicluster.MultiClusterLabel: "true"}
 				})
 				It("will return an error if resync is true", func() {
-					csh.EXPECT().AddMemberCluster(ctx, secret).Return(true, testErr)
+					csh.EXPECT().AddMemberMeshAPI(ctx, secret).Return(true, testErr)
 					err := mcHandler.UpdateSecret(oldSecret, secret)
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(Equal(testErr))
 				})
 				It("will not an error if resync is false", func() {
-					csh.EXPECT().AddMemberCluster(ctx, secret).Return(false, testErr)
+					csh.EXPECT().AddMemberMeshAPI(ctx, secret).Return(false, testErr)
 					err := mcHandler.UpdateSecret(oldSecret, secret)
 					Expect(err).NotTo(HaveOccurred())
 				})
