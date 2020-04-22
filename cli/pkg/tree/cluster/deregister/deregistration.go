@@ -16,7 +16,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
-	k8s_core_v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/cli-runtime/pkg/resource"
@@ -174,23 +173,16 @@ func (c *clusterDeregistrationClient) cleanUpCertSecrets(ctx context.Context, cl
 		return err
 	}
 
-	var intermediateCerts []*k8s_core_v1.Secret
 	for _, secretIter := range allSecrets.Items {
 		secret := secretIter
 
 		if secret.Type == cert_secrets.IntermediateCertSecretType {
-			intermediateCerts = append(intermediateCerts, &secret)
-		}
-	}
+			err := secretClientForCluster.DeleteSecret(ctx, clients.ObjectMetaToObjectKey(secret.ObjectMeta))
 
-	for _, tlsSecretIter := range intermediateCerts {
-		tlsSecret := tlsSecretIter
-
-		err := secretClientForCluster.DeleteSecret(ctx, clients.ObjectMetaToObjectKey(tlsSecret.ObjectMeta))
-
-		// if we have multiple de-registrations going on at once (potentially in `meshctl uninstall`, ignore the error if something else cleaned up the secret first)
-		if err != nil && !errors.IsNotFound(err) {
-			return err
+			// if we have multiple de-registrations going on at once (potentially in `meshctl uninstall`, ignore the error if something else cleaned up the secret first)
+			if err != nil && !errors.IsNotFound(err) {
+				return err
+			}
 		}
 	}
 

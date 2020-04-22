@@ -1,14 +1,11 @@
 package main
 
 import (
-	"context"
 	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/wire"
-	docgen "github.com/solo-io/service-mesh-hub/docs"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
@@ -338,25 +335,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("Finished generating code\n")
-
-	log.Printf("Started docs generation\n")
-	// generate docs
-	rootCmd := wire.InitializeCLI(context.TODO(), os.Stdin, os.Stdout)
-	docsGen := docgen.Options{
-		Proto: docgen.ProtoOptions{
-			OutputDir: "content/reference/api",
-		},
-		Cli: docgen.CliOptions{
-			RootCmd:   rootCmd,
-			OutputDir: "content/reference/cli",
-		},
-		DocsRoot: "docs",
-	}
-
-	if err := docgen.Execute(docsGen); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Finished generating docs\n")
+	log.Printf("Finished generating Service Mesh Hub parent chart code\n")
 }
