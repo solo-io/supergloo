@@ -11,7 +11,7 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
 	mesh_service "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
@@ -23,11 +23,11 @@ type MeshWorkloadScannerFactoryImplementations map[core_types.MeshType]mesh_work
 // this is the main entrypoint for discovery
 // when a cluster is registered, we handle that event and spin up new resource controllers for that cluster
 func NewDiscoveryClusterHandler(
-	localManager manager.AsyncManager,
+	localManager mc_manager.AsyncManager,
 	meshScanners []mesh.MeshScanner,
 	meshWorkloadScannerFactories MeshWorkloadScannerFactoryImplementations,
 	discoveryContext wire.DiscoveryContext,
-) (manager.AsyncManagerHandler, error) {
+) (mc_manager.AsyncManagerHandler, error) {
 
 	// these clients operate against the local cluster, so we use the local manager's client
 	localClient := localManager.Manager().GetClient()
@@ -56,7 +56,7 @@ func NewDiscoveryClusterHandler(
 }
 
 type discoveryClusterHandler struct {
-	localManager     manager.AsyncManager
+	localManager     mc_manager.AsyncManager
 	discoveryContext wire.DiscoveryContext
 
 	// clients that operate against the local cluster
@@ -83,7 +83,7 @@ type clusterDependentDeps struct {
 	deploymentClient       k8s_apps.DeploymentClient
 }
 
-func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr manager.AsyncManager, clusterName string) error {
+func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {
 	initializedDeps, err := m.initializeClusterDependentDeps(mgr, clusterName)
 	if err != nil {
 		return err
@@ -139,7 +139,7 @@ func (m *discoveryClusterHandler) ClusterRemoved(cluster string) error {
 	return nil
 }
 
-func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr manager.AsyncManager, clusterName string) (*clusterDependentDeps, error) {
+func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.AsyncManager, clusterName string) (*clusterDependentDeps, error) {
 	deploymentEventWatcher := m.discoveryContext.EventWatcherFactories.DeploymentEventWatcherFactory.Build(mgr, clusterName)
 	podEventWatcher := m.discoveryContext.EventWatcherFactories.PodEventWatcherFactory.Build(mgr, clusterName)
 	serviceEventWatcher := m.discoveryContext.EventWatcherFactories.ServiceEventWatcherFactory.Build(mgr, clusterName)

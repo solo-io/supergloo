@@ -8,7 +8,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws"
 	v1 "k8s.io/api/core/v1"
 )
@@ -39,7 +39,7 @@ type MeshAPISecretHandler interface {
 }
 
 type MeshAPIMembershipHandler struct {
-	kubeConfigReceiver manager.KubeConfigHandler
+	kubeConfigReceiver mc_manager.KubeConfigHandler
 	awsCredsHandler    aws.AwsCredsHandler
 	lock               sync.RWMutex
 	clusterByName      map[string]*remoteCluster
@@ -47,7 +47,7 @@ type MeshAPIMembershipHandler struct {
 }
 
 func NewClusterMembershipHandler(
-	kubeConfigReceiver manager.KubeConfigHandler,
+	kubeConfigReceiver mc_manager.KubeConfigHandler,
 	awsCredsHandler aws.AwsCredsHandler,
 	kubeConverter kube.Converter,
 ) *MeshAPIMembershipHandler {

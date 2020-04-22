@@ -6,20 +6,20 @@ import (
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer"
 )
 
 // this is the main entrypoint for all virtual-mesh multi cluster logic
 func NewMeshNetworkingClusterHandler(
-	localManager manager.AsyncManager,
+	localManager mc_manager.AsyncManager,
 	controllerFactories *ControllerFactories,
 	clientFactories *ClientFactories,
 	virtualMeshCertClient cert_signer.VirtualMeshCertClient,
 	signer certgen.Signer,
 	csrDataSourceFactory csr_generator.VirtualMeshCSRDataSourceFactory,
-) (manager.AsyncManagerHandler, error) {
+) (mc_manager.AsyncManagerHandler, error) {
 
 	handler := &meshNetworkingClusterHandler{
 		controllerFactories:   controllerFactories,
@@ -45,7 +45,7 @@ type clusterDependentDeps struct {
 	csrClient       zephyr_security.VirtualMeshCertificateSigningRequestClient
 }
 
-func (m *meshNetworkingClusterHandler) ClusterAdded(ctx context.Context, mgr manager.AsyncManager, clusterName string) error {
+func (m *meshNetworkingClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {
 	clusterDeps, err := m.initializeClusterScopedDeps(mgr, clusterName)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (m *meshNetworkingClusterHandler) ClusterRemoved(clusterName string) error 
 }
 
 func (m *meshNetworkingClusterHandler) initializeClusterScopedDeps(
-	mgr manager.AsyncManager,
+	mgr mc_manager.AsyncManager,
 	clusterName string,
 ) (*clusterDependentDeps, error) {
 	csrController := m.controllerFactories.VirtualMeshCSRControllerFactory(mgr, clusterName)

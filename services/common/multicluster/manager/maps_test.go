@@ -1,4 +1,4 @@
-package manager_test
+package mc_manager_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 )
@@ -25,15 +25,15 @@ var _ = Describe("sync maps", func() {
 	})
 	Context("AsyncManagerMap", func() {
 		var (
-			asyncManagerMap *manager.AsyncManagerMap
-			asyncManager    manager.AsyncManager
+			asyncManagerMap *AsyncManagerMap
+			asyncManager    AsyncManager
 			mockManager     *mock_controller_runtime.MockManager
 		)
 
 		BeforeEach(func() {
-			asyncManagerMap = manager.NewAsyncManagerMap()
+			asyncManagerMap = NewAsyncManagerMap()
 			mockManager = mock_controller_runtime.NewMockManager(ctrl)
-			asyncManager = manager.NewAsyncManager(context.TODO(), mockManager)
+			asyncManager = NewAsyncManager(context.TODO(), mockManager)
 		})
 
 		It("errors on double add", func() {
@@ -41,7 +41,7 @@ var _ = Describe("sync maps", func() {
 			Expect(err).NotTo(HaveOccurred())
 			err = asyncManagerMap.SetManager("test", asyncManager)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(HaveInErrorChain(manager.AsyncManagerExistsError("test")))
+			Expect(err).To(HaveInErrorChain(AsyncManagerExistsError("test")))
 
 		})
 
@@ -67,13 +67,13 @@ var _ = Describe("sync maps", func() {
 
 	Context("AsyncManagerHandlerMap", func() {
 		var (
-			managerHandlerMap   *manager.AsyncManagerHandlerMap
+			managerHandlerMap   *AsyncManagerHandlerMap
 			asyncManagerHandler *MockAsyncManagerHandler
 		)
 
 		BeforeEach(func() {
 			asyncManagerHandler = NewMockAsyncManagerHandler(ctrl)
-			managerHandlerMap = manager.NewAsyncManagerHandler()
+			managerHandlerMap = NewAsyncManagerHandler()
 		})
 
 		It("get/set", func() {

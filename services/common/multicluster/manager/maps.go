@@ -1,4 +1,4 @@
-package manager
+package mc_manager
 
 import (
 	"sync"
