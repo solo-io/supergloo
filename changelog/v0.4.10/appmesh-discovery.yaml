@@ -1,4 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: Add initial AppMesh discovery.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/599
