@@ -12,31 +12,31 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// MockMeshAPISecretHandler is a mock of MeshAPISecretHandler interface.
-type MockMeshAPISecretHandler struct {
+// MockMeshPlatformSecretHandler is a mock of MeshPlatformSecretHandler interface.
+type MockMeshPlatformSecretHandler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshAPISecretHandlerMockRecorder
+	recorder *MockMeshPlatformSecretHandlerMockRecorder
 }
 
-// MockMeshAPISecretHandlerMockRecorder is the mock recorder for MockMeshAPISecretHandler.
-type MockMeshAPISecretHandlerMockRecorder struct {
-	mock *MockMeshAPISecretHandler
+// MockMeshPlatformSecretHandlerMockRecorder is the mock recorder for MockMeshPlatformSecretHandler.
+type MockMeshPlatformSecretHandlerMockRecorder struct {
+	mock *MockMeshPlatformSecretHandler
 }
 
-// NewMockMeshAPISecretHandler creates a new mock instance.
-func NewMockMeshAPISecretHandler(ctrl *gomock.Controller) *MockMeshAPISecretHandler {
-	mock := &MockMeshAPISecretHandler{ctrl: ctrl}
-	mock.recorder = &MockMeshAPISecretHandlerMockRecorder{mock}
+// NewMockMeshPlatformSecretHandler creates a new mock instance.
+func NewMockMeshPlatformSecretHandler(ctrl *gomock.Controller) *MockMeshPlatformSecretHandler {
+	mock := &MockMeshPlatformSecretHandler{ctrl: ctrl}
+	mock.recorder = &MockMeshPlatformSecretHandlerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMeshAPISecretHandler) EXPECT() *MockMeshAPISecretHandlerMockRecorder {
+func (m *MockMeshPlatformSecretHandler) EXPECT() *MockMeshPlatformSecretHandlerMockRecorder {
 	return m.recorder
 }
 
 // AddMemberMeshPlatform mocks base method.
-func (m *MockMeshAPISecretHandler) AddMemberMeshPlatform(ctx context.Context, s *v1.Secret) (bool, error) {
+func (m *MockMeshPlatformSecretHandler) AddMemberMeshPlatform(ctx context.Context, s *v1.Secret) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddMemberMeshPlatform", ctx, s)
 	ret0, _ := ret[0].(bool)
@@ -45,13 +45,13 @@ func (m *MockMeshAPISecretHandler) AddMemberMeshPlatform(ctx context.Context, s 
 }
 
 // AddMemberMeshPlatform indicates an expected call of AddMemberMeshPlatform.
-func (mr *MockMeshAPISecretHandlerMockRecorder) AddMemberMeshAPI(ctx, s interface{}) *gomock.Call {
+func (mr *MockMeshPlatformSecretHandlerMockRecorder) AddMemberMeshPlatform(ctx, s interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMemberMeshPlatform", reflect.TypeOf((*MockMeshAPISecretHandler)(nil).AddMemberMeshPlatform), ctx, s)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMemberMeshPlatform", reflect.TypeOf((*MockMeshPlatformSecretHandler)(nil).AddMemberMeshPlatform), ctx, s)
 }
 
 // DeleteMemberMeshPlatform mocks base method.
-func (m *MockMeshAPISecretHandler) DeleteMemberMeshPlatform(ctx context.Context, s *v1.Secret) (bool, error) {
+func (m *MockMeshPlatformSecretHandler) DeleteMemberMeshPlatform(ctx context.Context, s *v1.Secret) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteMemberMeshPlatform", ctx, s)
 	ret0, _ := ret[0].(bool)
@@ -60,7 +60,7 @@ func (m *MockMeshAPISecretHandler) DeleteMemberMeshPlatform(ctx context.Context,
 }
 
 // DeleteMemberMeshPlatform indicates an expected call of DeleteMemberMeshPlatform.
-func (mr *MockMeshAPISecretHandlerMockRecorder) DeleteMemberCluster(ctx, s interface{}) *gomock.Call {
+func (mr *MockMeshPlatformSecretHandlerMockRecorder) DeleteMemberMeshPlatform(ctx, s interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMemberMeshPlatform", reflect.TypeOf((*MockMeshAPISecretHandler)(nil).DeleteMemberMeshPlatform), ctx, s)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMemberMeshPlatform", reflect.TypeOf((*MockMeshPlatformSecretHandler)(nil).DeleteMemberMeshPlatform), ctx, s)
 }

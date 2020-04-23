@@ -59,7 +59,7 @@ Mesh object representing AWS AppMesh
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | [string](#string) |  | AWS name for the AppMesh instance, must be unique across the AWS account. |
-| apiName | [string](#string) |  | Name for the API that SMH user registered with. Identifies the AWS account within SMH. |
+| awsAccountName | [string](#string) |  | Name for the API that SMH user supplied at registration time. Identifies the AWS account within the context of SMH. |
 | region | [string](#string) |  | The AWS region the AWS App Mesh control plane resources exist in. |
 
 
