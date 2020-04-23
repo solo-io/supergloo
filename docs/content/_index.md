@@ -30,39 +30,9 @@ debugging tools.
 
 Service Mesh Hub can be run in its own cluster (or co-located with an existing mesh) and remotely operates and drives the configuration for specific service-mesh control planes. This allows Service Mesh Hub to discover meshes/workloads, establish federated identity, enable global traffic routing and load balancing, access control policy, centralized observability and more. We walk through each of these components in the following videos:
 
-#### Part One
+### Videos: Take a dive into Service Mesh Hub
 
-In this video, we take a look at installing Service Mesh Hub, registering some clusters, and discovering Istio meshes, workloads and services. 
-
-<br><br>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/4sWikVELr5M" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-
-#### Part Two
-
-In this video, we look at federating shared identity across the two clusters we registered in the previous video. We look at all the steps that Service Mesh Hub to securely establish a root trust domain including creating intermediate certificates, signing them, and never distributing keys across the network:
-
-<br><br>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/djcDaIsqIl8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-
-#### Part Three
-
-In this video we 
-
-<br><br>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/cG1VCx9G408" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-
-#### Part Four
-
-<br><br>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/HAr1Mw1bxB4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-
-
-
----
+We've put together [a handful of videos](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK) detailing the features of Service Mesh Hub.
 
 ## Thanks
 
