@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/service/appmesh"
+	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -35,7 +36,7 @@ var _ = Describe("CredsHandler", func() {
 		mockRestAPIDiscoveryReconciler = mock_rest_api.NewMockRestAPIDiscoveryReconciler(ctrl)
 		awsCredsHandler = aws.NewAwsCredsHandler(
 			mockAppMeshClientFactory,
-			func(_ string, _ *appmesh.AppMesh) rest_api.RestAPIDiscoveryReconciler {
+			func(_ string, _ appmeshiface.AppMeshAPI) rest_api.RestAPIDiscoveryReconciler {
 				return mockRestAPIDiscoveryReconciler
 			})
 		secret = &k8s_core_types.Secret{
