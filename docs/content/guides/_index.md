@@ -36,7 +36,7 @@ Your actual context names will likely be different.
 * `remote-cluster-context`
     - kubeconfig context pointing to a cluster where we will install and manage a service mesh using Service Mesh Hub 
 
-We assume you've [installed Service Mesh Hub]({{% versioned_link_path fromRoot="/setup/#installing-with-meshctl" %}}) into the cluster represented by `management-plane-context` the context.
+We assume you've [installed Service Mesh Hub]({{% versioned_link_path fromRoot="/setup/#installing-with-meshctl" %}}) into the cluster represented by the context `management-plane-context`.
 
 
 #### Two registered clusters
