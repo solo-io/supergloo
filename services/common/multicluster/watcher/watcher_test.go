@@ -35,26 +35,26 @@ var _ = Describe("multicluster-watcher", func() {
 	Context("handler", func() {
 		var (
 			mcHandler controller.SecretEventHandler
-			csh       *mock_internal_watcher.MockMeshAPISecretHandler
+			csh       *mock_internal_watcher.MockMeshPlatformSecretHandler
 			secret    *kubev1.Secret
 			testErr   = eris.New("this is an error")
 		)
 
 		BeforeEach(func() {
-			csh = mock_internal_watcher.NewMockMeshAPISecretHandler(ctrl)
+			csh = mock_internal_watcher.NewMockMeshPlatformSecretHandler(ctrl)
 			mcHandler = mc_watcher.NewMeshPlatformHandler(ctx, csh)
 			secret = &kubev1.Secret{}
 		})
 
 		Context("Create", func() {
 			It("will return an error if resync is true", func() {
-				csh.EXPECT().AddMemberMeshAPI(ctx, secret).Return(true, testErr)
+				csh.EXPECT().AddMemberMeshPlatform(ctx, secret).Return(true, testErr)
 				err := mcHandler.CreateSecret(secret)
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(Equal(testErr))
 			})
 			It("will not an error if resync is false", func() {
-				csh.EXPECT().AddMemberMeshAPI(ctx, secret).Return(false, testErr)
+				csh.EXPECT().AddMemberMeshPlatform(ctx, secret).Return(false, testErr)
 				err := mcHandler.CreateSecret(secret)
 				Expect(err).NotTo(HaveOccurred())
 			})
@@ -62,13 +62,13 @@ var _ = Describe("multicluster-watcher", func() {
 
 		Context("Delete", func() {
 			It("will return an error if resync is true", func() {
-				csh.EXPECT().DeleteMemberCluster(ctx, secret).Return(true, testErr)
+				csh.EXPECT().DeleteMemberMeshPlatform(ctx, secret).Return(true, testErr)
 				err := mcHandler.DeleteSecret(secret)
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(Equal(testErr))
 			})
 			It("will not an error if resync is false", func() {
-				csh.EXPECT().DeleteMemberCluster(ctx, secret).Return(false, testErr)
+				csh.EXPECT().DeleteMemberMeshPlatform(ctx, secret).Return(false, testErr)
 				err := mcHandler.DeleteSecret(secret)
 				Expect(err).NotTo(HaveOccurred())
 			})
@@ -89,13 +89,13 @@ var _ = Describe("multicluster-watcher", func() {
 					secret.Namespace = env.GetWriteNamespace()
 				})
 				It("will return an error if resync is true", func() {
-					csh.EXPECT().DeleteMemberCluster(ctx, secret).Return(true, testErr)
+					csh.EXPECT().DeleteMemberMeshPlatform(ctx, secret).Return(true, testErr)
 					err := mcHandler.UpdateSecret(oldSecret, secret)
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(Equal(testErr))
 				})
 				It("will not an error if resync is false", func() {
-					csh.EXPECT().DeleteMemberCluster(ctx, secret).Return(false, testErr)
+					csh.EXPECT().DeleteMemberMeshPlatform(ctx, secret).Return(false, testErr)
 					err := mcHandler.UpdateSecret(oldSecret, secret)
 					Expect(err).NotTo(HaveOccurred())
 				})
@@ -111,13 +111,13 @@ var _ = Describe("multicluster-watcher", func() {
 					secret.Labels = map[string]string{multicluster.MultiClusterLabel: "true"}
 				})
 				It("will return an error if resync is true", func() {
-					csh.EXPECT().AddMemberMeshAPI(ctx, secret).Return(true, testErr)
+					csh.EXPECT().AddMemberMeshPlatform(ctx, secret).Return(true, testErr)
 					err := mcHandler.UpdateSecret(oldSecret, secret)
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(Equal(testErr))
 				})
 				It("will not an error if resync is false", func() {
-					csh.EXPECT().AddMemberMeshAPI(ctx, secret).Return(false, testErr)
+					csh.EXPECT().AddMemberMeshPlatform(ctx, secret).Return(false, testErr)
 					err := mcHandler.UpdateSecret(oldSecret, secret)
 					Expect(err).NotTo(HaveOccurred())
 				})
