@@ -104,6 +104,40 @@ spec:
       serviceAccounts:
         - name: bookinfo-productpage
           namespace: default
+          cluster: management-plane
+  destinationSelector:
+    matcher:
+      namespaces:
+        - default       
+EOF
+{{< /tab >}}
+{{< /tabs >}}
+
+If you have this YAML saved to a file called `product-details-access.yaml`, you can apply it to take effect:
+
+```yaml
+kubectl --context management-plane-context \
+ apply -f product-details-access.yaml
+```
+
+
+In this configuration, we select sources (in this case the `productpage` service account) and allow traffic the any service in the `default` namespace.
+
+In this next configuration, we enable traffic from `reviews` to `ratings`:
+
+{{< tabs >}}
+{{< tab name="YAML file" codelang="shell">}}
+apiVersion: networking.zephyr.solo.io/v1alpha1
+kind: AccessControlPolicy
+metadata:
+  namespace: service-mesh-hub
+  name: reviews
+spec:
+  sourceSelector:
+    serviceAccountRefs:
+      serviceAccounts:
+        - name: bookinfo-reviews
+          namespace: default
           cluster: remote-cluster
   destinationSelector:
     matcher:
@@ -157,7 +191,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-reviews
           namespace: default
-          cluster: remote-cluster
+          cluster: management-plane
   destinationSelector:
     matcher:
       namespaces:
