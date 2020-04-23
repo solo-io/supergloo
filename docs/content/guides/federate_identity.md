@@ -14,9 +14,9 @@ In this guide, we'll explore the *shared trust* model between two Istio clusters
 To illustrate these concepts, we will assume that:
 
 * Service Mesh Hub is [installed and running on the `management-plane-context`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
-* Istio [installed on both `management-plane-context` and `remote-cluster-context`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
-* Both `management-plane-context` and `remote-cluster-context` clusters [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
-* The `bookinfo` app [installed into two Istio cluster]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
+* Istio is [installed on both `management-plane-context` and `remote-cluster-context`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
+* Both `management-plane-context` and `remote-cluster-context` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* The `bookinfo` app is [installed into two Istio clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
 {{% notice note %}}
@@ -130,7 +130,7 @@ In the first highlighted section, we can see the parameters to establishing shar
         namespace: root-ca-namespace
 ```
 
-We also specify the federation mode to be `PERMISSIVE`. This means we'll make services available between services. You can control this later by specifying different global service properties. 
+We also specify the federation mode to be `PERMISSIVE`. This means we'll make services available between meshes. You can control this later by specifying different global service properties. 
 
 Lastly, we are creating the VirtualMesh with two different service meshes: `istio-istio-system-management-plane` and `istio-istio-system-new-remote-cluster`. We can have any meshes defined here that should be part of this virtual grouping and federation.
 
@@ -140,6 +140,27 @@ If you saved this VirtualMesh CR to a file named `demo-virtual-mesh.yaml`, you c
 ```shell
 kubectl --context management-plane-context apply -f demo-virtual-mesh.yaml
 ```
+
+At this point **we need to bounce the `istiod` control plane**. This is because the Istio control plane picks up the CA for Citadel and does not rotate it often enough. This is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993). 
+
+```shell
+kubectl --context management-plane-context \
+delete pod -n istio-system -l app=istiod 
+```
+
+```shell
+kubectl --context remote-cluster-context \
+delete pod -n istio-system -l app=istiod 
+```
+
+{{% notice note %}}
+Note, after you bounce the control plane, it may still take time for the workload certs to get re-issued with the new CA. You can force the workloads to re-load by bouncing them. For example, for the bookinfo sample running in the `default` namespace:
+
+```shell
+kubectl --context management-plane-context delete po --all
+kubectl --context remote-cluster-context delete po --all
+```
+{{% /notice %}}
 
 Creating this resource will instruct Service Mesh to establish a shared root identity across the clusters in the Virtual Mesh as well as federate the services. The next sections of this document help you understand some of the pieces of how this works.
 
@@ -181,26 +202,8 @@ NAME      TYPE                      DATA   AGE
 cacerts   solo.io/ca-intermediate   5      8m34s
 ```
 
-At this point **we need to bounce the `istiod` control plane**. This is because the Istio control plane picks up the CA for Citadel and does not rotate it often enough. This is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993). 
+In the previous section, we bounced the Istio control plane to pick up these intermediate certs. Again, this is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993). 
 
-```shell
-kubectl --context management-plane-context \
-delete pod -n istio-system -l app=istiod 
-```
-
-```shell
-kubectl --context remote-cluster-context \
-delete pod -n istio-system -l app=istiod 
-```
-
-{{% notice note %}}
-Note, after you bounce the control plane, it may still take time for the workload certs to get re-issued with the new CA. You can force the workloads to re-load by bouncing them. For example, for the bookinfo sample running in the `default` namespace:
-
-```shell
-kubectl --context management-plane-context delete po --all
-kubectl --context remote-cluster-context delete po --all
-```
-{{% /notice %}}
 
 ##### Multi-cluster mesh federation
 

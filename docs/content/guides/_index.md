@@ -57,9 +57,20 @@ meshctl cluster register \
 
 At this point we have two clusters, `management-plane-context` and `remote-cluster-context` both registered with Service Mesh Hub which happens to be installed on the `management-plane-context` cluster.
 
+## Next steps
+
+At this point we have two clusters registered with Service Mesh Hub. You should now [Install Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) and then install the Bookinfo demo (see below). 
+
 #### Bookinfo deployed on two clusters
 
-We deploy parts of the [Bookinfo]() demo to two clusters. The core components, including reviews-v1 and reviews-v2, are deployed to `management-plane-cluster`, while `reviews-v3` is deployed on the `remote-cluster-context` cluster.
+For some parts of the guide, you'll want to have the [Bookinfo](https://istio.io/docs/examples/bookinfo/) demo deployed to two clusters. 
+
+
+{{% notice note %}}
+You'll want to first have [Istio installed for multi-cluster]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) **before** installing the Bookinfo demo. 
+{{% /notice %}}
+
+The core components, including reviews-v1 and reviews-v2, are deployed to `management-plane-cluster`, while `reviews-v3` is deployed on the `remote-cluster-context` cluster.
 
 Deploy part of the bookinfo application to the `management-plane-context` cluster:
 
@@ -93,3 +104,5 @@ kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/sampl
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app=ratings' 
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account=ratings' 
 ```
+
+Now you have Bookinfo demo set up for the rest of the guides. From here you can [federate]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}) your two clusters, or start configuring [multi-cluster access]({{% versioned_link_path fromRoot="/guides/access_control_intro" %}}) and [traffic policy]({{% versioned_link_path fromRoot="/guides/multicluster_communication" %}}).

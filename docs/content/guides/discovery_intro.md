@@ -175,4 +175,4 @@ Check out "Part One" of the ["Dive into Service Mesh Hub" video series](https://
 
 ## Next Steps
 
-Now that we have Istio installed, and we've see Service Mesh Hub discover the meshes across different clusters, we can now unify them into a single [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}). See the guide on [establishing shared trust domain for multiple meshes]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}).
+Now that we have Istio installed, and we've seen Service Mesh Hub discover the meshes across different clusters, we can now unify them into a single [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}). See the guide on [establishing shared trust domain for multiple meshes]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}).
