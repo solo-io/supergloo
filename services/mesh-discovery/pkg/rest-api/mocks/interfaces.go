@@ -36,17 +36,17 @@ func (m *MockRestAPICredsHandler) EXPECT() *MockRestAPICredsHandlerMockRecorder 
 }
 
 // RestAPIAdded mocks base method.
-func (m *MockRestAPICredsHandler) RestAPIAdded(ctx context.Context, secret *v1.Secret) error {
+func (m *MockRestAPICredsHandler) RestAPIAdded(parentCtx context.Context, secret *v1.Secret) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RestAPIAdded", ctx, secret)
+	ret := m.ctrl.Call(m, "RestAPIAdded", parentCtx, secret)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RestAPIAdded indicates an expected call of RestAPIAdded.
-func (mr *MockRestAPICredsHandlerMockRecorder) RestAPIAdded(ctx, secret interface{}) *gomock.Call {
+func (mr *MockRestAPICredsHandlerMockRecorder) RestAPIAdded(parentCtx, secret interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestAPIAdded", reflect.TypeOf((*MockRestAPICredsHandler)(nil).RestAPIAdded), ctx, secret)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestAPIAdded", reflect.TypeOf((*MockRestAPICredsHandler)(nil).RestAPIAdded), parentCtx, secret)
 }
 
 // RestAPIRemoved mocks base method.
@@ -58,36 +58,36 @@ func (m *MockRestAPICredsHandler) RestAPIRemoved(ctx context.Context, secret *v1
 }
 
 // RestAPIRemoved indicates an expected call of RestAPIRemoved.
-func (mr *MockRestAPICredsHandlerMockRecorder) RestAPIRemoved(ctx, apiName interface{}) *gomock.Call {
+func (mr *MockRestAPICredsHandlerMockRecorder) RestAPIRemoved(ctx, secret interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestAPIRemoved", reflect.TypeOf((*MockRestAPICredsHandler)(nil).RestAPIRemoved), ctx, apiName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestAPIRemoved", reflect.TypeOf((*MockRestAPICredsHandler)(nil).RestAPIRemoved), ctx, secret)
 }
 
-// MockRestAPIReconciler is a mock of RestAPIReconciler interface.
-type MockRestAPIReconciler struct {
+// MockRestAPIDiscoveryReconciler is a mock of RestAPIDiscoveryReconciler interface.
+type MockRestAPIDiscoveryReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockRestAPIReconcilerMockRecorder
+	recorder *MockRestAPIDiscoveryReconcilerMockRecorder
 }
 
-// MockRestAPIReconcilerMockRecorder is the mock recorder for MockRestAPIReconciler.
-type MockRestAPIReconcilerMockRecorder struct {
-	mock *MockRestAPIReconciler
+// MockRestAPIDiscoveryReconcilerMockRecorder is the mock recorder for MockRestAPIDiscoveryReconciler.
+type MockRestAPIDiscoveryReconcilerMockRecorder struct {
+	mock *MockRestAPIDiscoveryReconciler
 }
 
-// NewMockRestAPIReconciler creates a new mock instance.
-func NewMockRestAPIReconciler(ctrl *gomock.Controller) *MockRestAPIReconciler {
-	mock := &MockRestAPIReconciler{ctrl: ctrl}
-	mock.recorder = &MockRestAPIReconcilerMockRecorder{mock}
+// NewMockRestAPIDiscoveryReconciler creates a new mock instance.
+func NewMockRestAPIDiscoveryReconciler(ctrl *gomock.Controller) *MockRestAPIDiscoveryReconciler {
+	mock := &MockRestAPIDiscoveryReconciler{ctrl: ctrl}
+	mock.recorder = &MockRestAPIDiscoveryReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRestAPIReconciler) EXPECT() *MockRestAPIReconcilerMockRecorder {
+func (m *MockRestAPIDiscoveryReconciler) EXPECT() *MockRestAPIDiscoveryReconcilerMockRecorder {
 	return m.recorder
 }
 
 // Reconcile mocks base method.
-func (m *MockRestAPIReconciler) Reconcile(ctx context.Context) error {
+func (m *MockRestAPIDiscoveryReconciler) Reconcile(ctx context.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Reconcile", ctx)
 	ret0, _ := ret[0].(error)
@@ -95,7 +95,7 @@ func (m *MockRestAPIReconciler) Reconcile(ctx context.Context) error {
 }
 
 // Reconcile indicates an expected call of Reconcile.
-func (mr *MockRestAPIReconcilerMockRecorder) Reconcile(ctx interface{}) *gomock.Call {
+func (mr *MockRestAPIDiscoveryReconcilerMockRecorder) Reconcile(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reconcile", reflect.TypeOf((*MockRestAPIReconciler)(nil).Reconcile), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reconcile", reflect.TypeOf((*MockRestAPIDiscoveryReconciler)(nil).Reconcile), ctx)
 }
