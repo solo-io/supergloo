@@ -20,6 +20,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/linkerd"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/controllers"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws"
+	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws/appmesh-client"
 )
 
 // Injectors from wire.go:
@@ -35,12 +36,13 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	}
 	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
 	secretAwsCredsConverter := aws_creds.DefaultSecretAwsCredsConverter()
+	appMeshClientFactory := appmesh_client.NewAppMeshClientFactory(secretAwsCredsConverter)
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
 	meshWorkloadClientFactory := v1alpha1.MeshWorkloadClientFactoryProvider()
 	meshServiceClientFactory := v1alpha1.MeshServiceClientFactoryProvider()
 	appMeshDiscoveryReconcilerFactory := aws.NewAppMeshDiscoveryReconcilerFactory(client, meshClientFactory, meshWorkloadClientFactory, meshServiceClientFactory)
-	awsCredsHandler := aws.NewAwsCredsHandler(secretAwsCredsConverter, appMeshDiscoveryReconcilerFactory)
+	awsCredsHandler := aws.NewAwsCredsHandler(appMeshClientFactory, appMeshDiscoveryReconcilerFactory)
 	v := RestAPIHandlersProvider(awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController, v)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
