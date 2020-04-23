@@ -35,7 +35,7 @@ jobs:
       run: make update-deps
 
     - name: Generate Docs
-      run: go run generate.go
+      run: go run codegen/docs/docsgen.go
 
     - name: Docker Login
       run : docker login quay.io --username "solo-io+solobot" --password ${{ secrets.QUAY_IO_PASSWORD }}
