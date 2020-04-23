@@ -281,7 +281,7 @@ func (a *appMeshDiscoveryReconciler) convertAppMeshVirtualService(
 			Mesh: &zephyr_core_types.ResourceRef{
 				Name:      parentMesh.GetName(),
 				Namespace: parentMesh.GetNamespace(),
-				Cluster:   parentMesh.Spec.GetAwsAppMesh().GetApiName(),
+				Cluster:   parentMesh.Spec.GetAwsAppMesh().GetAws,
 			},
 		},
 	}
@@ -301,7 +301,7 @@ func (a *appMeshDiscoveryReconciler) convertAppMeshVirtualNode(
 			Mesh: &zephyr_core_types.ResourceRef{
 				Name:      parentMesh.GetName(),
 				Namespace: parentMesh.GetNamespace(),
-				Cluster:   parentMesh.Spec.GetAwsAppMesh().GetApiName(), // TODO this should be renamed to capture the broader semantics introduced by AppMesh
+				Cluster:   parentMesh.Spec.GetAwsAppMesh().GetAwsAccountName(), // TODO this should be renamed to capture the broader semantics introduced by AppMesh
 			},
 		},
 	}
