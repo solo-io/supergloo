@@ -258,9 +258,9 @@ func (a *appMeshDiscoveryReconciler) convertAppMeshMesh(appMeshMesh *appmesh.Mes
 		Spec: zephyr_discovery_types.MeshSpec{
 			MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
 				AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
-					Name:    aws.StringValue(appMeshMesh.MeshName),
-					ApiName: a.meshPlatformName,
-					Region:  Region,
+					Name:           aws.StringValue(appMeshMesh.MeshName),
+					AwsAccountName: a.meshPlatformName,
+					Region:         Region,
 				},
 			},
 		},
@@ -281,7 +281,7 @@ func (a *appMeshDiscoveryReconciler) convertAppMeshVirtualService(
 			Mesh: &zephyr_core_types.ResourceRef{
 				Name:      parentMesh.GetName(),
 				Namespace: parentMesh.GetNamespace(),
-				Cluster:   parentMesh.Spec.GetAwsAppMesh().GetAws,
+				Cluster:   parentMesh.Spec.GetAwsAppMesh().GetAwsAccountName(),
 			},
 		},
 	}
