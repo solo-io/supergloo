@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/appmesh"
+	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -28,12 +29,12 @@ type appMeshDiscoveryReconciler struct {
 	meshClient         zephyr_discovery.MeshClient
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient
 	meshServiceClient  zephyr_discovery.MeshServiceClient
-	appMeshClient      *appmesh.AppMesh
+	appMeshClient      appmeshiface.AppMeshAPI
 }
 
 type AppMeshDiscoveryReconcilerFactory func(
 	meshPlatformName string,
-	appMeshClient *appmesh.AppMesh,
+	appMeshClient appmeshiface.AppMeshAPI,
 ) rest_api.RestAPIDiscoveryReconciler
 
 func NewAppMeshDiscoveryReconcilerFactory(
@@ -44,7 +45,7 @@ func NewAppMeshDiscoveryReconcilerFactory(
 ) AppMeshDiscoveryReconcilerFactory {
 	return func(
 		meshPlatformName string,
-		appMeshClient *appmesh.AppMesh,
+		appMeshClient appmeshiface.AppMeshAPI,
 	) rest_api.RestAPIDiscoveryReconciler {
 		return NewAppMeshDiscoveryReconciler(
 			meshClientFactory(masterClient),
@@ -60,7 +61,7 @@ func NewAppMeshDiscoveryReconciler(
 	meshClient zephyr_discovery.MeshClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
-	appMeshClient *appmesh.AppMesh,
+	appMeshClient appmeshiface.AppMeshAPI,
 	meshPlatformName string,
 ) rest_api.RestAPIDiscoveryReconciler {
 	return &appMeshDiscoveryReconciler{
@@ -81,15 +82,15 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
 	if err = a.reconcileMeshServices(ctx, a.appMeshClient, smhMeshNames, meshes); err != nil {
 		return err
 	}
-	if err = a.reconcileMeshWorkloads(ctx, a.appMeshClient, smhMeshNames, meshes); err != nil {
-		return err
-	}
+	//if err = a.reconcileMeshWorkloads(ctx, a.appMeshClient, smhMeshNames, meshes); err != nil {
+	//	return err
+	//}
 	return nil
 }
 
 func (a *appMeshDiscoveryReconciler) reconcileMeshes(
 	ctx context.Context,
-	appMeshClient *appmesh.AppMesh,
+	appMeshClient appmeshiface.AppMeshAPI,
 ) (map[string]*zephyr_discovery.Mesh, sets.String, error) {
 	var nextToken *string
 	input := &appmesh.ListMeshesInput{
@@ -140,7 +141,7 @@ func (a *appMeshDiscoveryReconciler) reconcileMeshes(
 
 func (a *appMeshDiscoveryReconciler) reconcileMeshServices(
 	ctx context.Context,
-	appMeshClient *appmesh.AppMesh,
+	appMeshClient appmeshiface.AppMeshAPI,
 	smhMeshNames sets.String,
 	meshes map[string]*zephyr_discovery.Mesh,
 ) error {
@@ -195,7 +196,7 @@ func (a *appMeshDiscoveryReconciler) reconcileMeshServices(
 
 func (a *appMeshDiscoveryReconciler) reconcileMeshWorkloads(
 	ctx context.Context,
-	appMeshClient *appmesh.AppMesh,
+	appMeshClient appmeshiface.AppMeshAPI,
 	smhMeshNames sets.String,
 	meshes map[string]*zephyr_discovery.Mesh,
 ) error {
@@ -317,19 +318,19 @@ func (a *appMeshDiscoveryReconciler) buildAppMeshMeshName(mesh *appmesh.MeshRef)
 		a.meshPlatformName)
 }
 
-func (a *appMeshDiscoveryReconciler) buildAppMeshVirtualNodeName(virtualNode *appmesh.VirtualNodeRef) string {
-	return fmt.Sprintf("%s-%s-%s-%s",
-		ObjectNamePrefix,
-		aws.StringValue(virtualNode.VirtualNodeName),
-		convertToKubeName(aws.StringValue(virtualNode.MeshName)),
-		a.meshPlatformName)
-}
-
 func (a *appMeshDiscoveryReconciler) buildAppMeshVirtualServiceName(virtualService *appmesh.VirtualServiceRef) string {
 	return fmt.Sprintf("%s-%s-%s-%s",
 		ObjectNamePrefix,
 		aws.StringValue(virtualService.VirtualServiceName),
 		convertToKubeName(aws.StringValue(virtualService.MeshName)),
+		a.meshPlatformName)
+}
+
+func (a *appMeshDiscoveryReconciler) buildAppMeshVirtualNodeName(virtualNode *appmesh.VirtualNodeRef) string {
+	return fmt.Sprintf("%s-%s-%s-%s",
+		ObjectNamePrefix,
+		aws.StringValue(virtualNode.VirtualNodeName),
+		convertToKubeName(aws.StringValue(virtualNode.MeshName)),
 		a.meshPlatformName)
 }
 
