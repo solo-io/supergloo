@@ -207,7 +207,7 @@ func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*zephyr_disc
 		newRow = append(
 			newRow,
 			awsAppMesh.GetName(),
-			awsAppMesh.GetApiName(),
+			awsAppMesh.GetAwsAccountName(),
 			awsAppMesh.GetRegion(),
 		)
 
