@@ -5,12 +5,13 @@
 package mock_controller_runtime
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	meta "k8s.io/apimachinery/pkg/api/meta"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	rest "k8s.io/client-go/rest"
 	record "k8s.io/client-go/tools/record"
-	reflect "reflect"
 	cache "sigs.k8s.io/controller-runtime/pkg/cache"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 	healthz "sigs.k8s.io/controller-runtime/pkg/healthz"
