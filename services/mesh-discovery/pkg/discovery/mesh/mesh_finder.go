@@ -25,28 +25,34 @@ func NewMeshFinder(
 	meshScanners []MeshScanner,
 	localMeshClient zephyr_discovery.MeshClient,
 	clusterClient client.Client,
-	deploymentClient k8s_apps.DeploymentClient,
+	clusterScopedDeploymentClient k8s_apps.DeploymentClient,
 ) MeshFinder {
 	return &meshFinder{
-		clusterName:      clusterName,
-		meshScanners:     meshScanners,
-		localMeshClient:  localMeshClient,
-		ctx:              ctx,
-		clusterClient:    clusterClient,
-		deploymentClient: deploymentClient,
+		clusterName:                   clusterName,
+		meshScanners:                  meshScanners,
+		localMeshClient:               localMeshClient,
+		ctx:                           ctx,
+		clusterClient:                 clusterClient,
+		clusterScopedDeploymentClient: clusterScopedDeploymentClient,
 	}
 }
 
 type meshFinder struct {
-	clusterName      string
-	meshScanners     []MeshScanner
-	localMeshClient  zephyr_discovery.MeshClient
-	ctx              context.Context
-	clusterClient    client.Client
-	deploymentClient k8s_apps.DeploymentClient
+	clusterName                   string
+	meshScanners                  []MeshScanner
+	localMeshClient               zephyr_discovery.MeshClient
+	ctx                           context.Context
+	clusterClient                 client.Client
+	clusterScopedDeploymentClient k8s_apps.DeploymentClient
 }
 
 func (m *meshFinder) StartDiscovery(deploymentEventWatcher controller.DeploymentEventWatcher) error {
+	// reconcile before adding the event handler
+	err := m.reconcileExistingState()
+	if err != nil {
+		return err
+	}
+
 	return deploymentEventWatcher.AddEventHandler(
 		m.ctx,
 		m,
@@ -99,14 +105,53 @@ func (m *meshFinder) reconcileExistingState() error {
 		return nil
 	}
 
-	allDeployments, err := m.deploymentClient.ListDeployment(m.ctx)
+	allDeployments, err := m.clusterScopedDeploymentClient.ListDeployment(m.ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, _ = range allDeployments.Items {
-		continue // TODO
+	var recomputedMeshes []*discoveryv1alpha1.Mesh
+	for _, deployment := range allDeployments.Items {
+		discoveredMesh, err := m.discoverMesh(&deployment)
+		if err != nil {
+			return err
+		}
+		if discoveredMesh != nil {
+			recomputedMeshes = append(recomputedMeshes, discoveredMesh)
+		}
 	}
+
+	// ignore meshes that are in "newly computed" but not "recorded meshes"
+	// those will be picked up by Create events rolling in when we start the handler after this function call
+	for _, recordedMesh := range allMeshesOnCluster.Items {
+		shouldDelete := true
+		shouldUpdate := false
+		for _, newlyComputedMesh := range recomputedMeshes {
+			if newlyComputedMesh.GetName() == recordedMesh.GetName() {
+				shouldDelete = false
+
+				if !newlyComputedMesh.Spec.Equal(recordedMesh.Spec) {
+					shouldUpdate = true
+					recordedMesh.Spec = newlyComputedMesh.Spec
+				}
+			}
+		}
+
+		if shouldDelete {
+			// we missed a delete event - clean up the state
+			err := m.localMeshClient.DeleteMesh(m.ctx, clients.ObjectMetaToObjectKey(recordedMesh.ObjectMeta))
+			if err != nil {
+				return err
+			}
+		} else if shouldUpdate {
+			// we missed an update event - reconcile the Mesh
+			err := m.localMeshClient.UpdateMesh(m.ctx, &recordedMesh)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
