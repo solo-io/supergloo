@@ -21,6 +21,21 @@ Note that these contexts need not be different. You may install and manage a ser
 
 ## Installing a mesh 
 
+{{% notice warning %}}
+We do not yet support automatically upgrading Istio in-place from versions 1.4 and earlier to 1.5, due to a number of
+breaking changes across that version change. If you are currently running Istio prior to 1.5, you may have to
+fully uninstall the mesh before attempting an installation of 1.5. 
+
+<br/>
+
+Users have reported seeing the following when attempting to upgrade in-place:
+
+<br/>
+
+https://discuss.istio.io/t/istio-upgrade-from-1-4-6-1-5-0-throws-istiod-errors-remote-error-tls-error-decrypting-message/5727
+
+{{% /notice %}}
+
 We can use `meshctl mesh` command to easily install a service mesh. This is accomplished by installing the
 [Istio Operator](https://istio.io/blog/2019/introducing-istio-operator/) to the cluster and letting it handle the complex Istio installation process.
 
