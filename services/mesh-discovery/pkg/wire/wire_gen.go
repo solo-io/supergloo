@@ -39,9 +39,10 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
 	meshWorkloadClientFactory := v1alpha1.MeshWorkloadClientFactoryProvider()
 	meshServiceClientFactory := v1alpha1.MeshServiceClientFactoryProvider()
-	appMeshReconcilerFactory := aws.NewAppMeshReconcilerFactory(secretAwsCredsConverter, client, meshClientFactory, meshWorkloadClientFactory, meshServiceClientFactory)
-	awsCredsHandler := aws.NewAwsCredsHandler(secretAwsCredsConverter, appMeshReconcilerFactory)
-	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController, awsCredsHandler)
+	appMeshDiscoveryReconcilerFactory := aws.NewAppMeshDiscoveryReconcilerFactory(client, meshClientFactory, meshWorkloadClientFactory, meshServiceClientFactory)
+	awsCredsHandler := aws.NewAwsCredsHandler(secretAwsCredsConverter, appMeshDiscoveryReconcilerFactory)
+	v := RestAPIHandlersProvider(awsCredsHandler)
+	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController, v)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	imageNameParser := docker.NewImageNameParser()
 	configMapClientFactory := v1.ConfigMapClientFactoryProvider()
@@ -59,6 +60,6 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	deploymentEventWatcherFactory := controllers.NewDeploymentEventWatcherFactory()
 	podClientFactory := v1.PodClientFactoryProvider()
 	meshEventWatcherFactory := controllers.NewMeshControllerFactory()
-	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podEventWatcherFactory, serviceEventWatcherFactory, meshWorkloadEventWatcherFactory, deploymentEventWatcherFactory, meshClientFactory, podClientFactory, meshEventWatcherFactory, appMeshReconcilerFactory)
+	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podEventWatcherFactory, serviceEventWatcherFactory, meshWorkloadEventWatcherFactory, deploymentEventWatcherFactory, meshClientFactory, podClientFactory, meshEventWatcherFactory, appMeshDiscoveryReconcilerFactory)
 	return discoveryContext, nil
 }

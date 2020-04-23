@@ -50,9 +50,9 @@ func (mr *MockRestAPICredsHandlerMockRecorder) RestAPIAdded(ctx, secret interfac
 }
 
 // RestAPIRemoved mocks base method.
-func (m *MockRestAPICredsHandler) RestAPIRemoved(ctx context.Context, apiName string) error {
+func (m *MockRestAPICredsHandler) RestAPIRemoved(ctx context.Context, secret *v1.Secret) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RestAPIRemoved", ctx, apiName)
+	ret := m.ctrl.Call(m, "RestAPIRemoved", ctx, secret)
 	ret0, _ := ret[0].(error)
 	return ret0
 }

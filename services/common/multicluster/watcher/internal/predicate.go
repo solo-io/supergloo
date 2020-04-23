@@ -18,7 +18,7 @@ const (
 // checks that a kubernetes object has the required metadata to be considered
 // as a multicluster secret
 func HasRequiredMetadata(metadata metav1.Object, secret runtime.Object) bool {
-	// TODO move from label to type by using skv2
+	// TODO Choose a consistent secret filtering approach once migrated to skv2
 	val, ok := metadata.GetLabels()[multicluster.MultiClusterLabel]
 	return ((ok && val == "true") || strings.HasPrefix(string(secret.(*k8s_core_types.Secret).Type), SoloRegistrationSecretPrefix)) && metadata.GetNamespace() == env.GetWriteNamespace()
 }

@@ -56,8 +56,8 @@ message MeshSpec {
     message AwsAppMesh {
         // AWS name for the AppMesh instance, must be unique across the AWS account.
         string name = 1;
-        // Name for the API that SMH user registered with. Identifies the AWS account within SMH.
-        string api_name = 2;
+        // Name for the API that SMH user supplied at registration time. Identifies the AWS account within the context of SMH.
+        string aws_account_name = 2;
         // The AWS region the AWS App Mesh control plane resources exist in.
         string region = 3;
     }

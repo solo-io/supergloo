@@ -48,7 +48,7 @@ type MeshDiscovery struct {
 }
 
 type RestAPIReconcilers struct {
-	AppMeshAPIReconcilerFactory aws.AppMeshReconcilerFactory
+	AppMeshAPIReconcilerFactory aws.AppMeshDiscoveryReconcilerFactory
 }
 
 func DiscoveryContextProvider(
@@ -69,7 +69,7 @@ func DiscoveryContextProvider(
 	meshClientFactory zephyr_discovery.MeshClientFactory,
 	podClientFactory k8s_core.PodClientFactory,
 	meshControllerFactory controllers.MeshEventWatcherFactory,
-	appMeshAPIReconcilerFactory aws.AppMeshReconcilerFactory,
+	appMeshAPIReconcilerFactory aws.AppMeshDiscoveryReconcilerFactory,
 ) DiscoveryContext {
 
 	return DiscoveryContext{

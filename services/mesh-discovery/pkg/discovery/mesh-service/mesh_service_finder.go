@@ -29,7 +29,7 @@ var (
 			constants.MESH_TYPE:              strings.ToLower(meshType.String()),
 			constants.KUBE_SERVICE_NAME:      kubeServiceName,
 			constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
-			constants.CLUSTER:                cluster,
+			constants.MESH_PLATFORM:          cluster,
 		}
 	}
 
