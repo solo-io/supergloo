@@ -19,6 +19,9 @@ You can install Service Mesh Hub onto its own cluster and register remote cluste
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-2clusters.png" %}})
 
+
+## Assumptions for setup
+
 We will assume in this guide that we have access to two clusters and the following two contexts available in our `kubeconfig` file. 
 
 Your actual context names will likely be different.
@@ -57,6 +60,21 @@ Once you have the `meshctl` tool, you can install Service Mesh Hub onto a cluste
 
 ```shell
 meshctl install
+```
+
+If you're not connected to the `management-plane-context` cluster, you can explicitly speficy it like this:
+
+```shell
+meshctl install --context management-plane-context
+```
+
+You should see output similar to this:
+
+```shell
+Creating namespace service-mesh-hub... Done.
+Starting Service Mesh Hub installation...
+Service Mesh Hub successfully installed!
+Service Mesh Hub has been installed to namespace service-mesh-hub
 ```
 
 To undo the installation, run `uninstall`:
