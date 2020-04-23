@@ -8,13 +8,15 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
+	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
 	mock_rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/mocks"
-	kubev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8s_core_types "k8s.io/api/core/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
@@ -65,33 +67,39 @@ users:
 			kubeConverter      *mock_kube.MockConverter
 			cmh                *MeshPlatformMembershipHandler
 			awsAPICredsHandler *mock_rest_api.MockRestAPICredsHandler
-
-			clusterName, secretName = "cluster-name", "secret-name"
+			clusterName        = "cluster-name"
 		)
 
 		BeforeEach(func() {
 			receiver = mock_mc_manager.NewMockKubeConfigHandler(ctrl)
 			kubeConverter = mock_kube.NewMockConverter(ctrl)
 			awsAPICredsHandler = mock_rest_api.NewMockRestAPICredsHandler(ctrl)
-			cmh = NewMeshPlatformMembershipHandler(receiver, awsAPICredsHandler, kubeConverter)
+			cmh = NewMeshPlatformMembershipHandler(
+				receiver,
+				[]rest_api.RestAPICredsHandler{awsAPICredsHandler},
+				kubeConverter,
+			)
 		})
 
 		Context("add cluster", func() {
 			It("returns an error if the secret is malformed", func() {
-				secret := &kubev1.Secret{}
+				secret := &k8s_core_types.Secret{
+					Type: k8s_core_types.SecretTypeOpaque,
+				}
 				kubeConverter.EXPECT().
 					SecretToConfig(secret).
-					Return("", nil, kube.NoDataInKubeConfigSecret(&kubev1.Secret{}))
+					Return("", nil, kube.NoDataInKubeConfigSecret(&k8s_core_types.Secret{}))
 
 				resync, err := cmh.AddMemberMeshPlatform(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
-				Expect(err).To(HaveInErrorChain(kube.NoDataInKubeConfigSecret(&kubev1.Secret{})))
+				Expect(err).To(HaveInErrorChain(kube.NoDataInKubeConfigSecret(&k8s_core_types.Secret{})))
 			})
 
 			It("returns an error if there is an invalid kube config string", func() {
-				secret := &kubev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: secretName,
+				secret := &k8s_core_types.Secret{
+					Type: k8s_core_types.SecretTypeOpaque,
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: clusterName,
 					},
 					Data: map[string][]byte{
 						clusterName: []byte("failing config"),
@@ -100,19 +108,19 @@ users:
 
 				kubeConverter.EXPECT().
 					SecretToConfig(secret).
-					Return("", nil, KubeConfigInvalidFormatError(eris.New("hello"), clusterName, secretName, ""))
+					Return("", nil, KubeConfigInvalidFormatError(eris.New("hello"), clusterName, clusterName, ""))
 
 				resync, err := cmh.AddMemberMeshPlatform(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
-				Expect(err).To(HaveOccurred())
 				Expect(err).To(HaveInErrorChain(KubeConfigInvalidFormatError(eris.New("hello"),
-					clusterName, secretName, "")))
+					clusterName, clusterName, "")))
 			})
 
 			It("returns an error if the receiver returns an error", func() {
-				secret := &kubev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: secretName,
+				secret := &k8s_core_types.Secret{
+					Type: k8s_core_types.SecretTypeOpaque,
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: clusterName,
 					},
 					Data: map[string][]byte{
 						clusterName: byteConfig,
@@ -125,17 +133,18 @@ users:
 						RestConfig: restConfig,
 					}, nil)
 
-				receiver.EXPECT().ClusterAdded(gomock.Any(), clusterName).Return(eris.New("this is an error"))
+				receiverError := eris.New("this is an error")
+				receiver.EXPECT().ClusterAdded(gomock.Any(), clusterName).Return(receiverError)
 				resync, err := cmh.AddMemberMeshPlatform(ctx, secret)
-				Expect(resync).To(BeTrue(), "resync should be true")
-				Expect(err).To(HaveOccurred())
-				Expect(err).To(HaveInErrorChain(PlatformAddError(eris.New("hello"), clusterName)))
+				Expect(resync).To(BeFalse())
+				Expect(err).To(HaveInErrorChain(PlatformAddError(receiverError, clusterName)))
 			})
 
 			It("can successfully add a cluster", func() {
-				secret := &kubev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: secretName,
+				secret := &k8s_core_types.Secret{
+					Type: k8s_core_types.SecretTypeOpaque,
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: clusterName,
 					},
 					Data: map[string][]byte{
 						clusterName: byteConfig,
@@ -159,16 +168,11 @@ users:
 		})
 
 		Context("delete cluster", func() {
-			It("deleting a non-existent cluster will do nothing", func() {
-				resync, err := cmh.DeleteMemberMeshPlatform(ctx, &kubev1.Secret{})
-				Expect(resync).To(BeFalse(), "resync should be false")
-				Expect(err).NotTo(HaveOccurred())
-			})
-
 			It("will return an error if the receiver is called and errors", func() {
-				secret := &kubev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: secretName,
+				secret := &k8s_core_types.Secret{
+					Type: k8s_core_types.SecretTypeOpaque,
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: clusterName,
 					},
 					Data: map[string][]byte{
 						clusterName: byteConfig,
@@ -189,20 +193,21 @@ users:
 				Expect(err).NotTo(HaveOccurred())
 
 				receiver.EXPECT().ClusterRemoved(clusterName).Return(eris.New("this is an error"))
-				resync, err = cmh.DeleteMemberMeshPlatform(ctx, &kubev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: secretName,
+				resync, err = cmh.DeleteMemberMeshPlatform(ctx, &k8s_core_types.Secret{
+					Type: k8s_core_types.SecretTypeOpaque,
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: clusterName,
 					},
 				})
-				Expect(resync).To(BeTrue(), "resync should be true")
-				Expect(err).To(HaveOccurred())
+				Expect(resync).To(BeFalse())
 				Expect(err).To(HaveInErrorChain(PlatformDeletionError(eris.New("hello"), clusterName)))
 			})
 
 			It("will return nil and delete cluster if return is nil", func() {
-				secret := &kubev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: secretName,
+				secret := &k8s_core_types.Secret{
+					Type: k8s_core_types.SecretTypeOpaque,
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: clusterName,
 					},
 					Data: map[string][]byte{
 						clusterName: byteConfig,
@@ -223,13 +228,80 @@ users:
 				Expect(err).NotTo(HaveOccurred())
 
 				receiver.EXPECT().ClusterRemoved(clusterName).Return(nil)
-				resync, err = cmh.DeleteMemberMeshPlatform(ctx, &kubev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: secretName,
+				resync, err = cmh.DeleteMemberMeshPlatform(ctx, &k8s_core_types.Secret{
+					Type: k8s_core_types.SecretTypeOpaque,
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: clusterName,
 					},
 				})
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("will handle adding new REST API mesh platform", func() {
+				secret := &k8s_core_types.Secret{
+					Type: aws_creds.AWSSecretType,
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: clusterName,
+					},
+					Data: map[string][]byte{
+						clusterName: byteConfig,
+					},
+				}
+				awsAPICredsHandler.EXPECT().RestAPIAdded(ctx, secret).Return(nil)
+				resync, err := cmh.AddMemberMeshPlatform(ctx, secret)
+				Expect(resync).To(BeFalse())
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("will handle adding new REST API mesh platform and resync if error occurred", func() {
+				secret := &k8s_core_types.Secret{
+					Type: aws_creds.AWSSecretType,
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: clusterName,
+					},
+					Data: map[string][]byte{
+						clusterName: byteConfig,
+					},
+				}
+				err := eris.New("some error")
+				awsAPICredsHandler.EXPECT().RestAPIAdded(ctx, secret).Return(err)
+				resync, err := cmh.AddMemberMeshPlatform(ctx, secret)
+				Expect(resync).To(BeFalse())
+				Expect(err).To(HaveInErrorChain(PlatformAddError(err, secret.GetName())))
+			})
+
+			It("will handle removing REST API mesh platform", func() {
+				secret := &k8s_core_types.Secret{
+					Type: aws_creds.AWSSecretType,
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: clusterName,
+					},
+					Data: map[string][]byte{
+						clusterName: byteConfig,
+					},
+				}
+				awsAPICredsHandler.EXPECT().RestAPIRemoved(ctx, secret).Return(nil)
+				resync, err := cmh.DeleteMemberMeshPlatform(ctx, secret)
+				Expect(resync).To(BeFalse())
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("will handle removing REST API mesh platform and resync if error occurred", func() {
+				secret := &k8s_core_types.Secret{
+					Type: aws_creds.AWSSecretType,
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: clusterName,
+					},
+					Data: map[string][]byte{
+						clusterName: byteConfig,
+					},
+				}
+				err := eris.New("some error")
+				awsAPICredsHandler.EXPECT().RestAPIRemoved(ctx, secret).Return(err)
+				resync, err := cmh.DeleteMemberMeshPlatform(ctx, secret)
+				Expect(resync).To(BeFalse())
+				Expect(err).To(HaveInErrorChain(PlatformDeletionError(err, secret.GetName())))
 			})
 		})
 	})

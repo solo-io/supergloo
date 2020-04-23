@@ -56,7 +56,9 @@ func (m *MeshPlatformMembershipHandler) AddMemberMeshPlatform(ctx context.Contex
 	// TODO change this check when migrating to skv2
 	if s.Type == k8s_core_types.SecretTypeOpaque {
 		// New k8s cluster mesh platform
-		clusterName, config, err := m.kubeConverter.SecretToConfig(s)
+		var clusterName string
+		var config *kube.ConvertedConfigs
+		clusterName, config, err = m.kubeConverter.SecretToConfig(s)
 		if err != nil {
 			return false, KubeConfigInvalidFormatError(err, clusterName, s.GetName(), s.GetNamespace())
 		}
@@ -71,7 +73,7 @@ func (m *MeshPlatformMembershipHandler) AddMemberMeshPlatform(ctx context.Contex
 		}
 	}
 	if err != nil {
-		return true, PlatformAddError(err, s.GetName())
+		return false, PlatformAddError(err, s.GetName())
 	}
 	return false, nil
 }
@@ -85,14 +87,14 @@ func (m *MeshPlatformMembershipHandler) DeleteMemberMeshPlatform(ctx context.Con
 	} else {
 		// New REST API mesh platform
 		for _, restAPICredsHandler := range m.restAPICredsHandlers {
-			err = restAPICredsHandler.RestAPIAdded(ctx, s)
+			err = restAPICredsHandler.RestAPIRemoved(ctx, s)
 			if err != nil {
 				break
 			}
 		}
 	}
 	if err != nil {
-		return true, PlatformDeletionError(err, s.GetName())
+		return false, PlatformDeletionError(err, s.GetName())
 	}
 	return false, nil
 }
