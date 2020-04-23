@@ -35,32 +35,32 @@ func (m *MockMeshAPISecretHandler) EXPECT() *MockMeshAPISecretHandlerMockRecorde
 	return m.recorder
 }
 
-// AddMemberMeshAPI mocks base method.
-func (m *MockMeshAPISecretHandler) AddMemberMeshAPI(ctx context.Context, s *v1.Secret) (bool, error) {
+// AddMemberMeshPlatform mocks base method.
+func (m *MockMeshAPISecretHandler) AddMemberMeshPlatform(ctx context.Context, s *v1.Secret) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddMemberMeshAPI", ctx, s)
+	ret := m.ctrl.Call(m, "AddMemberMeshPlatform", ctx, s)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AddMemberMeshAPI indicates an expected call of AddMemberMeshAPI.
+// AddMemberMeshPlatform indicates an expected call of AddMemberMeshPlatform.
 func (mr *MockMeshAPISecretHandlerMockRecorder) AddMemberMeshAPI(ctx, s interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMemberMeshAPI", reflect.TypeOf((*MockMeshAPISecretHandler)(nil).AddMemberMeshAPI), ctx, s)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMemberMeshPlatform", reflect.TypeOf((*MockMeshAPISecretHandler)(nil).AddMemberMeshPlatform), ctx, s)
 }
 
-// DeleteMemberCluster mocks base method.
-func (m *MockMeshAPISecretHandler) DeleteMemberCluster(ctx context.Context, s *v1.Secret) (bool, error) {
+// DeleteMemberMeshPlatform mocks base method.
+func (m *MockMeshAPISecretHandler) DeleteMemberMeshPlatform(ctx context.Context, s *v1.Secret) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteMemberCluster", ctx, s)
+	ret := m.ctrl.Call(m, "DeleteMemberMeshPlatform", ctx, s)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// DeleteMemberCluster indicates an expected call of DeleteMemberCluster.
+// DeleteMemberMeshPlatform indicates an expected call of DeleteMemberMeshPlatform.
 func (mr *MockMeshAPISecretHandlerMockRecorder) DeleteMemberCluster(ctx, s interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMemberCluster", reflect.TypeOf((*MockMeshAPISecretHandler)(nil).DeleteMemberCluster), ctx, s)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMemberMeshPlatform", reflect.TypeOf((*MockMeshAPISecretHandler)(nil).DeleteMemberMeshPlatform), ctx, s)
 }

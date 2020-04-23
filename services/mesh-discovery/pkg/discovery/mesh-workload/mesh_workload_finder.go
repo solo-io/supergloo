@@ -225,7 +225,7 @@ func (d *meshWorkloadFinder) attachGeneralDiscoveryLabels(controllerRef *zephyr_
 		meshWorkload.Labels = map[string]string{}
 	}
 	meshWorkload.Labels[constants.DISCOVERED_BY] = constants.MESH_WORKLOAD_DISCOVERY
-	meshWorkload.Labels[constants.CLUSTER] = d.clusterName
+	meshWorkload.Labels[constants.MESH_PLATFORM] = d.clusterName
 	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAME] = controllerRef.GetName()
 	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAMESPACE] = controllerRef.GetNamespace()
 }

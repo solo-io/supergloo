@@ -63,7 +63,7 @@ users:
 		var (
 			receiver           *mock_mc_manager.MockKubeConfigHandler
 			kubeConverter      *mock_kube.MockConverter
-			cmh                *MeshAPIMembershipHandler
+			cmh                *MeshPlatformMembershipHandler
 			awsAPICredsHandler *mock_rest_api.MockRestAPICredsHandler
 
 			clusterName, secretName = "cluster-name", "secret-name"
@@ -73,7 +73,7 @@ users:
 			receiver = mock_mc_manager.NewMockKubeConfigHandler(ctrl)
 			kubeConverter = mock_kube.NewMockConverter(ctrl)
 			awsAPICredsHandler = mock_rest_api.NewMockRestAPICredsHandler(ctrl)
-			cmh = NewClusterMembershipHandler(receiver, awsAPICredsHandler, kubeConverter)
+			cmh = NewMeshPlatformMembershipHandler(receiver, awsAPICredsHandler, kubeConverter)
 		})
 
 		Context("add cluster", func() {
@@ -83,7 +83,7 @@ users:
 					SecretToConfig(secret).
 					Return("", nil, kube.NoDataInKubeConfigSecret(&kubev1.Secret{}))
 
-				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
+				resync, err := cmh.AddMemberMeshPlatform(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).To(HaveInErrorChain(kube.NoDataInKubeConfigSecret(&kubev1.Secret{})))
 			})
@@ -102,7 +102,7 @@ users:
 					SecretToConfig(secret).
 					Return("", nil, KubeConfigInvalidFormatError(eris.New("hello"), clusterName, secretName, ""))
 
-				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
+				resync, err := cmh.AddMemberMeshPlatform(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(HaveInErrorChain(KubeConfigInvalidFormatError(eris.New("hello"),
@@ -126,10 +126,10 @@ users:
 					}, nil)
 
 				receiver.EXPECT().ClusterAdded(gomock.Any(), clusterName).Return(eris.New("this is an error"))
-				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
+				resync, err := cmh.AddMemberMeshPlatform(ctx, secret)
 				Expect(resync).To(BeTrue(), "resync should be true")
 				Expect(err).To(HaveOccurred())
-				Expect(err).To(HaveInErrorChain(ClusterAddError(eris.New("hello"), clusterName)))
+				Expect(err).To(HaveInErrorChain(PlatformAddError(eris.New("hello"), clusterName)))
 			})
 
 			It("can successfully add a cluster", func() {
@@ -152,7 +152,7 @@ users:
 					}, nil)
 
 				receiver.EXPECT().ClusterAdded(gomock.Any(), clusterName).Return(nil)
-				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
+				resync, err := cmh.AddMemberMeshPlatform(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).NotTo(HaveOccurred())
 			})
@@ -160,7 +160,7 @@ users:
 
 		Context("delete cluster", func() {
 			It("deleting a non-existent cluster will do nothing", func() {
-				resync, err := cmh.DeleteMemberCluster(ctx, &kubev1.Secret{})
+				resync, err := cmh.DeleteMemberMeshPlatform(ctx, &kubev1.Secret{})
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).NotTo(HaveOccurred())
 			})
@@ -184,19 +184,19 @@ users:
 					}, nil)
 
 				receiver.EXPECT().ClusterAdded(gomock.Any(), clusterName).Return(nil)
-				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
+				resync, err := cmh.AddMemberMeshPlatform(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).NotTo(HaveOccurred())
 
 				receiver.EXPECT().ClusterRemoved(clusterName).Return(eris.New("this is an error"))
-				resync, err = cmh.DeleteMemberCluster(ctx, &kubev1.Secret{
+				resync, err = cmh.DeleteMemberMeshPlatform(ctx, &kubev1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: secretName,
 					},
 				})
 				Expect(resync).To(BeTrue(), "resync should be true")
 				Expect(err).To(HaveOccurred())
-				Expect(err).To(HaveInErrorChain(ClusterDeletionError(eris.New("hello"), clusterName)))
+				Expect(err).To(HaveInErrorChain(PlatformDeletionError(eris.New("hello"), clusterName)))
 			})
 
 			It("will return nil and delete cluster if return is nil", func() {
@@ -218,12 +218,12 @@ users:
 					}, nil)
 
 				receiver.EXPECT().ClusterAdded(gomock.Any(), clusterName).Return(nil)
-				resync, err := cmh.AddMemberMeshAPI(ctx, secret)
+				resync, err := cmh.AddMemberMeshPlatform(ctx, secret)
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).NotTo(HaveOccurred())
 
 				receiver.EXPECT().ClusterRemoved(clusterName).Return(nil)
-				resync, err = cmh.DeleteMemberCluster(ctx, &kubev1.Secret{
+				resync, err = cmh.DeleteMemberMeshPlatform(ctx, &kubev1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: secretName,
 					},

@@ -8,9 +8,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
-	manager2 "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	internal_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws"
+	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
 	core_v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -27,17 +27,17 @@ import (
 	are necessary
 */
 func StartLocalManager(
-	handler manager2.KubeConfigHandler,
-	awsCredsHandler aws.AwsCredsHandler,
-) manager2.AsyncManagerStartOptionsFunc {
+	kubeHandlers mc_manager.KubeConfigHandler,
+	restAPIHandlers []rest_api.RestAPICredsHandler,
+) mc_manager.AsyncManagerStartOptionsFunc {
 	return func(ctx context.Context, mgr manager.Manager) error {
 		secretCtrl := controller.NewSecretEventWatcher(multicluster.MultiClusterController, mgr)
 
-		mcHandler := &meshAPIHandler{
+		mcHandler := &meshPlatformHandler{
 			ctx: ctx,
-			meshAPIMembership: internal_watcher.NewClusterMembershipHandler(
-				handler,
-				awsCredsHandler,
+			meshPlatformMembershipHandler: internal_watcher.NewMeshPlatformMembershipHandler(
+				kubeHandlers,
+				restAPIHandlers,
 				kube.NewConverter(files.NewDefaultFileReader()),
 			),
 		}
@@ -49,18 +49,18 @@ func StartLocalManager(
 	}
 }
 
-type meshAPIHandler struct {
-	ctx               context.Context
-	meshAPIMembership internal_watcher.MeshAPISecretHandler
+type meshPlatformHandler struct {
+	ctx                           context.Context
+	meshPlatformMembershipHandler internal_watcher.MeshPlatformSecretHandler
 }
 
-func NewMultiClusterHandler(ctx context.Context,
-	clusterMembership internal_watcher.MeshAPISecretHandler) controller.SecretEventHandler {
-	return &meshAPIHandler{ctx: ctx, meshAPIMembership: clusterMembership}
+func NewMeshPlatformHandler(ctx context.Context,
+	clusterMembership internal_watcher.MeshPlatformSecretHandler) controller.SecretEventHandler {
+	return &meshPlatformHandler{ctx: ctx, meshPlatformMembershipHandler: clusterMembership}
 }
 
-func (c *meshAPIHandler) CreateSecret(s *core_v1.Secret) error {
-	resync, err := c.meshAPIMembership.AddMemberMeshAPI(c.ctx, s)
+func (c *meshPlatformHandler) CreateSecret(s *core_v1.Secret) error {
+	resync, err := c.meshPlatformMembershipHandler.AddMemberMeshPlatform(c.ctx, s)
 	if err != nil {
 		contextutils.LoggerFrom(c.ctx).Errorf("error adding member mesh API for secret %s.%s: %s", s.GetName(), s.GetNamespace(), err.Error())
 		if resync {
@@ -70,11 +70,11 @@ func (c *meshAPIHandler) CreateSecret(s *core_v1.Secret) error {
 	return nil
 }
 
-func (c *meshAPIHandler) UpdateSecret(old, new *core_v1.Secret) error {
+func (c *meshPlatformHandler) UpdateSecret(old, new *core_v1.Secret) error {
 	logger := contextutils.LoggerFrom(c.ctx)
 	// If mc label has been removed from secret, remove from remote clusters
 	if internal_watcher.HasRequiredMetadata(old.GetObjectMeta(), old) && !internal_watcher.HasRequiredMetadata(new.GetObjectMeta(), new) {
-		resync, err := c.meshAPIMembership.DeleteMemberCluster(c.ctx, new)
+		resync, err := c.meshPlatformMembershipHandler.DeleteMemberMeshPlatform(c.ctx, new)
 		if err != nil {
 			logger.Errorf("error deleting member cluster for "+
 				"secret %s.%s", new.GetName(), new.GetNamespace())
@@ -85,7 +85,7 @@ func (c *meshAPIHandler) UpdateSecret(old, new *core_v1.Secret) error {
 	}
 	// if mc label has been added to secret, add to remote cluster list
 	if !internal_watcher.HasRequiredMetadata(old.GetObjectMeta(), old) && internal_watcher.HasRequiredMetadata(new.GetObjectMeta(), new) {
-		resync, err := c.meshAPIMembership.AddMemberMeshAPI(c.ctx, new)
+		resync, err := c.meshPlatformMembershipHandler.AddMemberMeshPlatform(c.ctx, new)
 		if err != nil {
 			logger.Errorf("error adding member cluster for "+
 				"secret %s.%s", new.GetName(), new.GetNamespace())
@@ -97,8 +97,8 @@ func (c *meshAPIHandler) UpdateSecret(old, new *core_v1.Secret) error {
 	return nil
 }
 
-func (c *meshAPIHandler) DeleteSecret(s *core_v1.Secret) error {
-	resync, err := c.meshAPIMembership.DeleteMemberCluster(c.ctx, s)
+func (c *meshPlatformHandler) DeleteSecret(s *core_v1.Secret) error {
+	resync, err := c.meshPlatformMembershipHandler.DeleteMemberMeshPlatform(c.ctx, s)
 	if err != nil {
 		contextutils.LoggerFrom(c.ctx).Errorf("error deleting member cluster for "+
 			"secret %s.%s", s.GetName(), s.GetNamespace())
@@ -109,7 +109,7 @@ func (c *meshAPIHandler) DeleteSecret(s *core_v1.Secret) error {
 	return nil
 }
 
-func (c *meshAPIHandler) GenericSecret(obj *core_v1.Secret) error {
+func (c *meshPlatformHandler) GenericSecret(obj *core_v1.Secret) error {
 	contextutils.LoggerFrom(c.ctx).Warn("should never be called as generic events are not configured for secrets")
 	return nil
 }

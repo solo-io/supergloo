@@ -516,7 +516,7 @@ var _ = Describe("ResourceSelector", func() {
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 					Labels: map[string]string{
-						constants.CLUSTER: "cluster-1",
+						constants.MESH_PLATFORM: "cluster-1",
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -547,7 +547,7 @@ var _ = Describe("ResourceSelector", func() {
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 					Labels: map[string]string{
-						constants.CLUSTER: "cluster-2",
+						constants.MESH_PLATFORM: "cluster-2",
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -606,7 +606,7 @@ var _ = Describe("ResourceSelector", func() {
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 					Labels: map[string]string{
-						constants.CLUSTER: "cluster-1",
+						constants.MESH_PLATFORM: "cluster-1",
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -637,7 +637,7 @@ var _ = Describe("ResourceSelector", func() {
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 					Labels: map[string]string{
-						constants.CLUSTER: "cluster-2",
+						constants.MESH_PLATFORM: "cluster-2",
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -700,7 +700,7 @@ var _ = Describe("ResourceSelector", func() {
 			destinationKey := client.MatchingLabels(map[string]string{
 				constants.KUBE_SERVICE_NAME:      serviceName,
 				constants.KUBE_SERVICE_NAMESPACE: serviceNamespace,
-				constants.CLUSTER:                serviceCluster,
+				constants.MESH_PLATFORM:          serviceCluster,
 			})
 			expectedMeshService := zephyr_discovery.MeshService{}
 			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
@@ -718,7 +718,7 @@ var _ = Describe("ResourceSelector", func() {
 			destinationKey := client.MatchingLabels(map[string]string{
 				constants.KUBE_SERVICE_NAME:      serviceName,
 				constants.KUBE_SERVICE_NAMESPACE: serviceNamespace,
-				constants.CLUSTER:                serviceCluster,
+				constants.MESH_PLATFORM:          serviceCluster,
 			})
 			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
 				&zephyr_discovery.MeshServiceList{
@@ -734,7 +734,7 @@ var _ = Describe("ResourceSelector", func() {
 			destinationKey := client.MatchingLabels(map[string]string{
 				constants.KUBE_SERVICE_NAME:      serviceName,
 				constants.KUBE_SERVICE_NAMESPACE: serviceNamespace,
-				constants.CLUSTER:                serviceCluster,
+				constants.MESH_PLATFORM:          serviceCluster,
 			})
 			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
 				&zephyr_discovery.MeshServiceList{
@@ -765,7 +765,7 @@ var _ = Describe("ResourceSelector", func() {
 				ListMeshWorkload(ctx, client.MatchingLabels{
 					constants.KUBE_CONTROLLER_NAME:      controllerName,
 					constants.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
-					constants.CLUSTER:                   cluster,
+					constants.MESH_PLATFORM:             cluster,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{*expectedWorkload},
@@ -792,7 +792,7 @@ var _ = Describe("ResourceSelector", func() {
 				ListMeshWorkload(ctx, client.MatchingLabels{
 					constants.KUBE_CONTROLLER_NAME:      controllerName,
 					constants.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
-					constants.CLUSTER:                   cluster,
+					constants.MESH_PLATFORM:             cluster,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{*workload1, *workload2},
@@ -809,7 +809,7 @@ var _ = Describe("ResourceSelector", func() {
 				ListMeshWorkload(ctx, client.MatchingLabels{
 					constants.KUBE_CONTROLLER_NAME:      controllerName,
 					constants.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
-					constants.CLUSTER:                   cluster,
+					constants.MESH_PLATFORM:             cluster,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{},

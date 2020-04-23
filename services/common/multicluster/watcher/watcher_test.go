@@ -42,7 +42,7 @@ var _ = Describe("multicluster-watcher", func() {
 
 		BeforeEach(func() {
 			csh = mock_internal_watcher.NewMockMeshAPISecretHandler(ctrl)
-			mcHandler = mc_watcher.NewMultiClusterHandler(ctx, csh)
+			mcHandler = mc_watcher.NewMeshPlatformHandler(ctx, csh)
 			secret = &kubev1.Secret{}
 		})
 

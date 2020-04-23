@@ -53,6 +53,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		cert_manager.VMCSRSnapshotListenerSet,
 		MeshNetworkingSnapshotContextProvider,
 		MeshNetworkingContextProvider,
+		RestAPIHandlersProvider,
 		AwsSet,
 	)
 

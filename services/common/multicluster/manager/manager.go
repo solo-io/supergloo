@@ -38,7 +38,7 @@ func (a *asyncManagerFactory) New(parentCtx context.Context, cfg *rest.Config,
 	}
 	// preload the ctx with the cluster name, as well as preload the logger with the cluster name
 	ctx, cancel := context.WithCancel(contextutils.WithLoggerValues(
-		context.WithValue(parentCtx, constants.CLUSTER, opts.Cluster), zap.String(constants.CLUSTER, opts.Cluster),
+		context.WithValue(parentCtx, constants.MESH_PLATFORM, opts.Cluster), zap.String(constants.MESH_PLATFORM, opts.Cluster),
 	))
 	return &asyncManager{
 		mgr:      mgr,

@@ -129,7 +129,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
-			constants.CLUSTER:                   clusterName,
+			constants.MESH_PLATFORM:             clusterName,
 			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
 			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
@@ -184,7 +184,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
-			constants.CLUSTER:                   clusterName,
+			constants.MESH_PLATFORM:             clusterName,
 			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
 			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
@@ -411,7 +411,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
 		newDiscoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
-			constants.CLUSTER:                   clusterName,
+			constants.MESH_PLATFORM:             clusterName,
 			constants.KUBE_CONTROLLER_NAME:      newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
 			constants.KUBE_CONTROLLER_NAMESPACE: newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
@@ -540,7 +540,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		discoveredMeshWorkload.Spec.Mesh = meshSpec
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
-			constants.CLUSTER:                   clusterName,
+			constants.MESH_PLATFORM:             clusterName,
 			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
 			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
