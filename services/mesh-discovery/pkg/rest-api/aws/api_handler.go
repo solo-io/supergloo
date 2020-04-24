@@ -8,7 +8,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
-	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws/appmesh-client"
+	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws/clients/appmesh"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws/discovery"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
 )
@@ -16,19 +17,20 @@ import (
 const (
 	// TODO make this configurable by user
 	ReconcileIntervalSeconds = 1
+	Region                   = "us-east-2" // TODO remove hardcode and replace with configuration
 )
 
 type awsCredsHandler struct {
 	appMeshClientFactory              appmesh_client.AppMeshClientFactory
-	appMeshDiscoveryReconcilerFactory AppMeshDiscoveryReconcilerFactory
+	appMeshDiscoveryReconcilerFactory discovery.AppMeshDiscoveryReconcilerFactory
 	reconcilerCancelFuncs             map[string]context.CancelFunc // Map of meshPlatformName -> RestAPIDiscoveryReconciler's cancelFunc
 }
 
 type AwsCredsHandler rest_api.RestAPICredsHandler
 
-func NewAwsCredsHandler(
+func NewAwsAPIHandler(
 	appMeshClientFactory appmesh_client.AppMeshClientFactory,
-	appMeshReconcilerFactory AppMeshDiscoveryReconcilerFactory,
+	appMeshReconcilerFactory discovery.AppMeshDiscoveryReconcilerFactory,
 ) AwsCredsHandler {
 	return &awsCredsHandler{
 		appMeshClientFactory:              appMeshClientFactory,
@@ -44,6 +46,7 @@ func (a *awsCredsHandler) RestAPIAdded(ctx context.Context, secret *k8s_core_typ
 	}
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Debugf("New REST API added for meshPlatform %s", secret.GetName())
+
 	// Periodically run API Reconciler to ensure AppMesh state is consistent with SMH
 	ticker := time.NewTicker(ReconcileIntervalSeconds * time.Second)
 	appMeshClient, err := a.appMeshClientFactory.Build(secret, Region)

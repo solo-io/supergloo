@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws"
-	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws/appmesh-client/mocks"
+	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws/clients/appmesh/mocks"
 	mock_rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/mocks"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,7 +34,7 @@ var _ = Describe("CredsHandler", func() {
 		appMeshClient = &appmesh.AppMesh{}
 		mockAppMeshClientFactory = mock_aws.NewMockAppMeshClientFactory(ctrl)
 		mockRestAPIDiscoveryReconciler = mock_rest_api.NewMockRestAPIDiscoveryReconciler(ctrl)
-		awsCredsHandler = aws.NewAwsCredsHandler(
+		awsCredsHandler = aws.NewAwsAPIHandler(
 			mockAppMeshClientFactory,
 			func(_ string, _ appmeshiface.AppMeshAPI) rest_api.RestAPIDiscoveryReconciler {
 				return mockRestAPIDiscoveryReconciler
