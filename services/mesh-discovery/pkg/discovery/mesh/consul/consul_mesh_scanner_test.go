@@ -34,6 +34,7 @@ var _ = Describe("Consul Mesh Finder", func() {
 		ctrl          *gomock.Controller
 		ctx           context.Context
 		clusterClient = mock_controller_runtime.NewMockClient(ctrl)
+		clusterName   = "test-cluster-name"
 	)
 
 	BeforeEach(func() {
@@ -69,7 +70,7 @@ var _ = Describe("Consul Mesh Finder", func() {
 			IsConsulConnect(nonConsulDeployment.Spec.Template.Spec.Containers[0]).
 			Return(false, nil)
 
-		mesh, err := consulMeshFinder.ScanDeployment(ctx, nonConsulDeployment, clusterClient)
+		mesh, err := consulMeshFinder.ScanDeployment(ctx, clusterName, nonConsulDeployment, clusterClient)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(BeNil())
 	})
@@ -132,12 +133,12 @@ var _ = Describe("Consul Mesh Finder", func() {
 					},
 				},
 				Cluster: &zephyr_core_types.ResourceRef{
-					Name:      deployment.GetClusterName(),
+					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
 				},
 			},
 		}
-		mesh, err := consulMeshFinder.ScanDeployment(ctx, deployment, clusterClient)
+		mesh, err := consulMeshFinder.ScanDeployment(ctx, clusterName, deployment, clusterClient)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(Equal(expectedMesh))
@@ -178,7 +179,7 @@ var _ = Describe("Consul Mesh Finder", func() {
 			IsConsulConnect(consulContainer).
 			Return(false, testErr)
 
-		mesh, err := consulMeshFinder.ScanDeployment(ctx, deployment, clusterClient)
+		mesh, err := consulMeshFinder.ScanDeployment(ctx, clusterName, deployment, clusterClient)
 
 		Expect(mesh).To(BeNil())
 		Expect(err).To(testutils.HaveInErrorChain(consul.ErrorDetectingDeployment(testErr)))

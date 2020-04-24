@@ -59,14 +59,14 @@ type istioMeshScanner struct {
 	configMapClientFactory k8s_core.ConfigMapClientFactory
 }
 
-func (i *istioMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s_apps_types.Deployment, client client.Client) (*zephyr_discovery.Mesh, error) {
-	istioDeployment, err := i.detectIstioDeployment(deployment)
+func (i *istioMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *k8s_apps_types.Deployment, clusterScopedClient client.Client) (*zephyr_discovery.Mesh, error) {
+	istioDeployment, err := i.detectIstioDeployment(clusterName, deployment)
 	if err != nil {
 		return nil, err
 	} else if istioDeployment == nil {
 		return nil, nil
 	}
-	trustDomain, err := i.getTrustDomain(ctx, client, deployment.GetNamespace())
+	trustDomain, err := i.getTrustDomain(ctx, clusterScopedClient, deployment.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (i *istioMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s_a
 				},
 			},
 			Cluster: &zephyr_core_types.ResourceRef{
-				Name:      deployment.GetClusterName(),
+				Name:      clusterName,
 				Namespace: env.GetWriteNamespace(),
 			},
 		},
@@ -105,7 +105,7 @@ func isCitadelDeployment(deploymentName string) bool {
 	return deploymentName == CitadelDeploymentName
 }
 
-func (i *istioMeshScanner) detectIstioDeployment(deployment *k8s_apps_types.Deployment) (*istioDeployment, error) {
+func (i *istioMeshScanner) detectIstioDeployment(clusterName string, deployment *k8s_apps_types.Deployment) (*istioDeployment, error) {
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		// Detect either istiod deployment (for Istio versions >= 1.5) or istio-citadel deployment (for Istio versions < 1.5)
 		if isIstiod(deployment, &container) || isCitadelDeployment(deployment.GetName()) {
@@ -117,7 +117,7 @@ func (i *istioMeshScanner) detectIstioDeployment(deployment *k8s_apps_types.Depl
 			if parsedImage.Digest != "" {
 				version = parsedImage.Digest
 			}
-			return &istioDeployment{Version: version, Namespace: deployment.Namespace, Cluster: deployment.ClusterName}, nil
+			return &istioDeployment{Version: version, Namespace: deployment.Namespace, Cluster: clusterName}, nil
 		}
 	}
 

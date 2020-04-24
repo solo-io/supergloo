@@ -13,7 +13,6 @@ import (
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	v1 "k8s.io/api/apps/v1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
-	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // MockMeshFinder is a mock of MeshFinder interface.
@@ -40,17 +39,17 @@ func (m *MockMeshFinder) EXPECT() *MockMeshFinderMockRecorder {
 }
 
 // StartDiscovery mocks base method.
-func (m *MockMeshFinder) StartDiscovery(deploymentEventWatcher controller.DeploymentEventWatcher, predicates []predicate.Predicate) error {
+func (m *MockMeshFinder) StartDiscovery(deploymentEventWatcher controller.DeploymentEventWatcher) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartDiscovery", deploymentEventWatcher, predicates)
+	ret := m.ctrl.Call(m, "StartDiscovery", deploymentEventWatcher)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartDiscovery indicates an expected call of StartDiscovery.
-func (mr *MockMeshFinderMockRecorder) StartDiscovery(deploymentEventWatcher, predicates interface{}) *gomock.Call {
+func (mr *MockMeshFinderMockRecorder) StartDiscovery(deploymentEventWatcher interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshFinder)(nil).StartDiscovery), deploymentEventWatcher, predicates)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshFinder)(nil).StartDiscovery), deploymentEventWatcher)
 }
 
 // CreateDeployment mocks base method.
@@ -133,16 +132,16 @@ func (m *MockMeshScanner) EXPECT() *MockMeshScannerMockRecorder {
 }
 
 // ScanDeployment mocks base method.
-func (m *MockMeshScanner) ScanDeployment(arg0 context.Context, arg1 *v1.Deployment, arg2 client.Client) (*v1alpha1.Mesh, error) {
+func (m *MockMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *v1.Deployment, clusterScopedClient client.Client) (*v1alpha1.Mesh, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ScanDeployment", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ScanDeployment", ctx, clusterName, deployment, clusterScopedClient)
 	ret0, _ := ret[0].(*v1alpha1.Mesh)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ScanDeployment indicates an expected call of ScanDeployment.
-func (mr *MockMeshScannerMockRecorder) ScanDeployment(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockMeshScannerMockRecorder) ScanDeployment(ctx, clusterName, deployment, clusterScopedClient interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDeployment", reflect.TypeOf((*MockMeshScanner)(nil).ScanDeployment), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDeployment", reflect.TypeOf((*MockMeshScanner)(nil).ScanDeployment), ctx, clusterName, deployment, clusterScopedClient)
 }

@@ -58,7 +58,7 @@ type consulMeshScanner struct {
 	imageNameParser                  docker.ImageNameParser
 }
 
-func (c *consulMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_apps_v1.Deployment, _ client.Client) (*zephyr_discovery.Mesh, error) {
+func (c *consulMeshScanner) ScanDeployment(_ context.Context, clusterName string, deployment *k8s_apps_v1.Deployment, _ client.Client) (*zephyr_discovery.Mesh, error) {
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		isConsulInstallation, err := c.consulConnectInstallationScanner.IsConsulConnect(container)
 		if err != nil {
@@ -69,7 +69,7 @@ func (c *consulMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_ap
 			continue
 		}
 
-		return c.buildConsulMeshObject(deployment, container, env.GetWriteNamespace())
+		return c.buildConsulMeshObject(deployment, container, clusterName)
 	}
 
 	return nil, nil
@@ -79,7 +79,7 @@ func (c *consulMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_ap
 func (c *consulMeshScanner) buildConsulMeshObject(
 	deployment *k8s_apps_v1.Deployment,
 	container k8s_core_v1.Container,
-	writeNamespace string) (*zephyr_discovery.Mesh, error) {
+	clusterName string) (*zephyr_discovery.Mesh, error) {
 
 	parsedImage, err := c.imageNameParser.Parse(container.Image)
 	if err != nil {
@@ -93,7 +93,7 @@ func (c *consulMeshScanner) buildConsulMeshObject(
 
 	return &zephyr_discovery.Mesh{
 		ObjectMeta: k8s_meta_v1.ObjectMeta{
-			Name:      buildMeshName(deployment, container),
+			Name:      buildMeshName(clusterName, deployment, container),
 			Namespace: env.GetWriteNamespace(),
 			Labels:    DiscoveryLabels,
 		},
@@ -107,7 +107,7 @@ func (c *consulMeshScanner) buildConsulMeshObject(
 				},
 			},
 			Cluster: &zephyr_core_types.ResourceRef{
-				Name:      deployment.GetClusterName(),
+				Name:      clusterName,
 				Namespace: env.GetWriteNamespace(),
 			},
 		},
@@ -115,7 +115,7 @@ func (c *consulMeshScanner) buildConsulMeshObject(
 }
 
 // returns "consul(-$datacenterName)-$installNamespace(-$clusterName)"
-func buildMeshName(deployment *k8s_apps_v1.Deployment, container k8s_core_v1.Container) string {
+func buildMeshName(clusterName string, deployment *k8s_apps_v1.Deployment, container k8s_core_v1.Container) string {
 	meshName := meshNamePrefix
 
 	cmd := strings.Join(container.Command, " ")
@@ -128,7 +128,7 @@ func buildMeshName(deployment *k8s_apps_v1.Deployment, container k8s_core_v1.Con
 	meshName += fmt.Sprintf("-%s", deployment.Namespace)
 
 	if deployment.ClusterName != "" {
-		meshName += fmt.Sprintf("-%s", deployment.ClusterName)
+		meshName += fmt.Sprintf("-%s", clusterName)
 	}
 
 	return meshName
