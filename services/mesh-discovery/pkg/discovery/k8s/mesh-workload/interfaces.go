@@ -31,7 +31,9 @@ type OwnerFetcher interface {
 // check a pod to see if it represents a mesh workload
 // if it does, produce the appropriate controller reference, and object meta corresponding to it
 type MeshWorkloadScanner interface {
-	ScanPod(context.Context, *k8s_core_types.Pod) (*zephyr_core_types.ResourceRef, k8s_meta_types.ObjectMeta, error)
+	// Return a ResourceRef to the kube Controller (e.g. Deployment), pod object meta,
+	// cluster name for disambiguating parent meshes that support multitenancy (e.g. AppMesh)
+	ScanPod(context.Context, *k8s_core_types.Pod) (*zephyr_core_types.ResourceRef, k8s_meta_types.ObjectMeta, string, error)
 }
 
 // these need to be constructed on the fly when a cluster is added, because the ownerFetcher will need to talk to that cluster

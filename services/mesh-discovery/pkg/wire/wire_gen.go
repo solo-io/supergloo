@@ -19,7 +19,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/istio"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/linkerd"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws"
-	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/clients/appmesh"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/clients/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/discovery"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/controllers"
 )
@@ -37,12 +37,10 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	}
 	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
 	secretAwsCredsConverter := aws_creds.DefaultSecretAwsCredsConverter()
-	appMeshClientFactory := appmesh_client.NewAppMeshClientFactory(secretAwsCredsConverter)
+	appMeshClientFactory := appmesh.NewAppMeshClientFactory(secretAwsCredsConverter)
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
-	meshWorkloadClientFactory := v1alpha1.MeshWorkloadClientFactoryProvider()
-	meshServiceClientFactory := v1alpha1.MeshServiceClientFactoryProvider()
-	appMeshDiscoveryReconcilerFactory := discovery.NewAppMeshDiscoveryReconcilerFactory(client, meshClientFactory, meshWorkloadClientFactory, meshServiceClientFactory)
+	appMeshDiscoveryReconcilerFactory := discovery.NewAppMeshDiscoveryReconcilerFactory(client, meshClientFactory)
 	awsCredsHandler := aws.NewAwsAPIHandler(appMeshClientFactory, appMeshDiscoveryReconcilerFactory)
 	v := RestAPIHandlersProvider(awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController, v)
@@ -57,6 +55,8 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
 	ownerFetcherFactory := mesh_workload.OwnerFetcherFactoryProvider()
 	serviceClientFactory := v1.ServiceClientFactoryProvider()
+	meshServiceClientFactory := v1alpha1.MeshServiceClientFactoryProvider()
+	meshWorkloadClientFactory := v1alpha1.MeshWorkloadClientFactoryProvider()
 	podEventWatcherFactory := controllers.NewPodEventWatcherFactory()
 	serviceEventWatcherFactory := controllers.NewServiceEventWatcherFactory()
 	meshWorkloadEventWatcherFactory := controllers.NewMeshWorkloadEventWatcherFactory()

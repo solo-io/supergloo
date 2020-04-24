@@ -76,7 +76,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 			},
 		}
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)
-		controllerRef, meta, err := meshWorkloadScanner.ScanPod(ctx, pod)
+		controllerRef, meta, _, err := meshWorkloadScanner.ScanPod(ctx, pod)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(controllerRef).To(Equal(expectedMeshWorkload.Spec.KubeController.KubeControllerRef))
 		Expect(meta).To(Equal(expectedMeshWorkload.ObjectMeta))
@@ -91,7 +91,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 			},
 			ObjectMeta: k8s_meta_types.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
 		}
-		meshWorkload, _, err := meshWorkloadScanner.ScanPod(ctx, nonLinkerdPod)
+		meshWorkload, _, _, err := meshWorkloadScanner.ScanPod(ctx, nonLinkerdPod)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshWorkload).To(BeNil())
 	})
@@ -99,7 +99,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 	It("should return error if error fetching deployment", func() {
 		expectedErr := eris.New("error")
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(nil, expectedErr)
-		_, _, err := meshWorkloadScanner.ScanPod(ctx, pod)
+		_, _, _, err := meshWorkloadScanner.ScanPod(ctx, pod)
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
 	})
 })

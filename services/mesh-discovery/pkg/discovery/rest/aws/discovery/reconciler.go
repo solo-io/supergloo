@@ -12,7 +12,6 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest"
-	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -25,6 +24,7 @@ var (
 
 type appMeshDiscoveryReconciler struct {
 	meshPlatformName   string
+	region             string
 	meshClient         zephyr_discovery.MeshClient
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient
 	meshServiceClient  zephyr_discovery.MeshServiceClient
@@ -34,6 +34,7 @@ type appMeshDiscoveryReconciler struct {
 type AppMeshDiscoveryReconcilerFactory func(
 	meshPlatformName string,
 	appMeshClient appmeshiface.AppMeshAPI,
+	region string,
 ) rest.RestAPIDiscoveryReconciler
 
 func NewAppMeshDiscoveryReconcilerFactory(
@@ -43,11 +44,13 @@ func NewAppMeshDiscoveryReconcilerFactory(
 	return func(
 		meshPlatformName string,
 		appMeshClient appmeshiface.AppMeshAPI,
+		region string,
 	) rest.RestAPIDiscoveryReconciler {
 		return NewAppMeshDiscoveryReconciler(
 			meshClientFactory(masterClient),
 			appMeshClient,
 			meshPlatformName,
+			region,
 		)
 	}
 }
@@ -56,11 +59,13 @@ func NewAppMeshDiscoveryReconciler(
 	meshClient zephyr_discovery.MeshClient,
 	appMeshClient appmeshiface.AppMeshAPI,
 	meshPlatformName string,
+	region string,
 ) rest.RestAPIDiscoveryReconciler {
 	return &appMeshDiscoveryReconciler{
 		meshClient:       meshClient,
 		appMeshClient:    appMeshClient,
 		meshPlatformName: meshPlatformName,
+		region:           region,
 	}
 }
 
@@ -131,7 +136,7 @@ func (a *appMeshDiscoveryReconciler) convertAppMeshMesh(appMeshMesh *appmesh.Mes
 				AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
 					Name:           aws.StringValue(appMeshMesh.MeshName),
 					AwsAccountName: a.meshPlatformName,
-					Region:         aws2.Region,
+					Region:         a.region,
 				},
 			},
 		},

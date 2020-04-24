@@ -242,18 +242,17 @@ func (d *meshWorkloadFinder) discoverMeshWorkload(pod *k8s_core_types.Pod) (*zep
 	for _, discoveredMeshType := range d.discoveredMeshTypes.List() {
 		meshWorkloadScanner, ok := d.meshWorkloadScannerImplementations[zephyr_core_types.MeshType(discoveredMeshType)]
 		if !ok {
-			// Don't run scanners for Meshes that aren't k8s based (i.e. REST API based), which happen separately
 			continue
 		}
 
-		discoveredControllerRef, discoveredMeshWorkloadObjectMeta, err := meshWorkloadScanner.ScanPod(d.ctx, pod)
+		discoveredControllerRef, discoveredMeshWorkloadObjectMeta, meshName, err := meshWorkloadScanner.ScanPod(d.ctx, pod)
 		if err != nil {
 			return nil, err
 		}
 		if discoveredControllerRef != nil {
 			controllerRef = discoveredControllerRef
 
-			meshRef, err := d.createMeshResourceRef(d.ctx)
+			meshRef, err := d.createMeshResourceRef(d.ctx, discoveredMeshType, meshName)
 			if err != nil {
 				return nil, err
 			}
@@ -295,25 +294,33 @@ func (d *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *zephyr_d
 		return err
 	}
 	// Need to do this, as we need metadata from previous object, (ResourceVersion), for update
-
 	mw.Spec = discoveredWorkload.Spec
 	mw.Labels = discoveredWorkload.Labels
 	return d.localMeshWorkloadClient.UpdateMeshWorkload(d.ctx, mw)
 }
 
-func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context) (*zephyr_core_types.ResourceRef, error) {
+func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context, discoveredMeshType int32, meshName string) (*zephyr_core_types.ResourceRef, error) {
 	meshList, err := d.localMeshClient.ListMesh(ctx, &client.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
-	// assume at most one instance of Istio per cluster, thus it must be the Mesh for the MeshWorkload if it exists
 	for _, mesh := range meshList.Items {
-		if mesh.Spec.GetCluster().GetName() == d.clusterName {
+		// Disambiguate possibly multitenant AppMeshes by mesh name
+		if discoveredMeshType == int32(zephyr_core_types.MeshType_APPMESH) && meshName == mesh.GetName() {
 			return &zephyr_core_types.ResourceRef{
-				Name:      mesh.Name,
-				Namespace: mesh.Namespace,
+				Name:      mesh.GetName(),
+				Namespace: mesh.GetNamespace(),
 				Cluster:   d.clusterName,
 			}, nil
+		} else {
+			// assume at most one Service Mesh installation per cluster, thus it must be the Mesh for the MeshWorkload if it exists
+			if mesh.Spec.GetCluster().GetName() == d.clusterName {
+				return &zephyr_core_types.ResourceRef{
+					Name:      mesh.GetName(),
+					Namespace: mesh.GetNamespace(),
+					Cluster:   d.clusterName,
+				}, nil
+			}
 		}
 	}
 	return nil, nil

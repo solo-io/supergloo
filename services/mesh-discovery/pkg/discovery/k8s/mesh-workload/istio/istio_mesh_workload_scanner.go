@@ -32,13 +32,13 @@ type istioMeshWorkloadScanner struct {
 	deploymentFetcher mesh_workload.OwnerFetcher
 }
 
-func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod) (*zephyr_core_types.ResourceRef, k8s_meta_types.ObjectMeta, error) {
+func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod) (*zephyr_core_types.ResourceRef, k8s_meta_types.ObjectMeta, string, error) {
 	if !i.isIstioPod(pod) {
-		return nil, k8s_meta_types.ObjectMeta{}, nil
+		return nil, k8s_meta_types.ObjectMeta{}, "", nil
 	}
 	deployment, err := i.deploymentFetcher.GetDeployment(ctx, pod)
 	if err != nil {
-		return nil, k8s_meta_types.ObjectMeta{}, err
+		return nil, k8s_meta_types.ObjectMeta{}, "", err
 	}
 	return &zephyr_core_types.ResourceRef{
 			Name:      deployment.Name,
@@ -48,7 +48,7 @@ func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_ty
 			Name:      i.buildMeshWorkloadName(deployment.Name, deployment.Namespace, pod.ClusterName),
 			Namespace: env.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(),
-		}, nil
+		}, "", nil
 }
 
 // iterate through pod's containers and check for one with name containing "istio" and "proxy"

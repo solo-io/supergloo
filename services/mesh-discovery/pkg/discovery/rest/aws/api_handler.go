@@ -54,7 +54,7 @@ func (a *awsCredsHandler) RestAPIAdded(ctx context.Context, secret *k8s_core_typ
 		return err
 	}
 	reconcilerCtx, cancelFunc := a.buildContext(ctx, secret.GetName())
-	appMeshDiscoveryReconciler := a.appMeshDiscoveryReconcilerFactory(secret.GetName(), appMeshClient)
+	appMeshDiscoveryReconciler := a.appMeshDiscoveryReconcilerFactory(secret.GetName(), appMeshClient, Region)
 	// Store mapping of meshPlatformName to cancelFunc so reconciler can be canceled
 	a.reconcilerCancelFuncs[secret.GetName()] = cancelFunc
 	go func() {

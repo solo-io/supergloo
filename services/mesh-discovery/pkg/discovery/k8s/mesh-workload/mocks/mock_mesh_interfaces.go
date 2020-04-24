@@ -116,13 +116,13 @@ func (m *MockMeshWorkloadScanner) EXPECT() *MockMeshWorkloadScannerMockRecorder 
 }
 
 // ScanPod mocks base method.
-func (m *MockMeshWorkloadScanner) ScanPod(arg0 context.Context, arg1 *v10.Pod) (*types.ResourceRef, v11.ObjectMeta, error) {
+func (m *MockMeshWorkloadScanner) ScanPod(arg0 context.Context, arg1 *v10.Pod) (*types.ResourceRef, v11.ObjectMeta, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanPod", arg0, arg1)
 	ret0, _ := ret[0].(*types.ResourceRef)
 	ret1, _ := ret[1].(v11.ObjectMeta)
 	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	return ret0, ret1, "", ret2
 }
 
 // ScanPod indicates an expected call of ScanPod.
