@@ -12,9 +12,9 @@ import (
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
-	mesh_service "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service"
-	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh"
+	mesh_service "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-service"
+	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/wire"
 )
 

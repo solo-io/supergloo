@@ -14,14 +14,14 @@ import (
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
-	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/consul"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/istio"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/linkerd"
+	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/consul"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/istio"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/linkerd"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws"
+	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/clients/appmesh"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/discovery"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/controllers"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws"
-	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws/clients/appmesh"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws/discovery"
 )
 
 // Injectors from wire.go:

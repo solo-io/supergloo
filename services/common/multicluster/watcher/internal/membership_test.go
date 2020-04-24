@@ -13,8 +13,8 @@ import (
 	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
-	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
-	mock_rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/mocks"
+	rest2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest"
+	mock_rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/mocks"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
@@ -76,7 +76,7 @@ users:
 			awsAPICredsHandler = mock_rest_api.NewMockRestAPICredsHandler(ctrl)
 			cmh = NewMeshPlatformMembershipHandler(
 				receiver,
-				[]rest_api.RestAPICredsHandler{awsAPICredsHandler},
+				[]rest2.RestAPICredsHandler{awsAPICredsHandler},
 				kubeConverter,
 			)
 		})

@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	internal_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
-	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest"
 	core_v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -28,7 +28,7 @@ import (
 */
 func StartLocalManager(
 	kubeHandlers mc_manager.KubeConfigHandler,
-	restAPIHandlers []rest_api.RestAPICredsHandler,
+	restAPIHandlers []rest.RestAPICredsHandler,
 ) mc_manager.AsyncManagerStartOptionsFunc {
 	return func(ctx context.Context, mgr manager.Manager) error {
 		secretCtrl := controller.NewSecretEventWatcher(multicluster.MultiClusterController, mgr)

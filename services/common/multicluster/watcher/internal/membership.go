@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
-	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest"
 	k8s_core_types "k8s.io/api/core/v1"
 )
 
@@ -34,13 +34,13 @@ type MeshPlatformSecretHandler interface {
 
 type MeshPlatformMembershipHandler struct {
 	kubeConfigReceiver   mc_manager.KubeConfigHandler
-	restAPICredsHandlers []rest_api.RestAPICredsHandler
+	restAPICredsHandlers []rest.RestAPICredsHandler
 	kubeConverter        kube.Converter
 }
 
 func NewMeshPlatformMembershipHandler(
 	kubeConfigReceiver mc_manager.KubeConfigHandler,
-	restAPICredsHandlers []rest_api.RestAPICredsHandler,
+	restAPICredsHandlers []rest.RestAPICredsHandler,
 	kubeConverter kube.Converter,
 ) *MeshPlatformMembershipHandler {
 	return &MeshPlatformMembershipHandler{

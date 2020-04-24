@@ -8,7 +8,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	mc_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher"
-	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
+	rest2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	k8s_manager "sigs.k8s.io/controller-runtime/pkg/manager"
@@ -37,7 +37,7 @@ func LocalKubeConfigProvider() (*rest.Config, error) {
 
 func LocalManagerStarterProvider(
 	controller *mc_manager.AsyncManagerController,
-	restAPIHandlers []rest_api.RestAPICredsHandler,
+	restAPIHandlers []rest2.RestAPICredsHandler,
 ) mc_manager.AsyncManagerStartOptionsFunc {
 	return mc_watcher.StartLocalManager(controller, restAPIHandlers)
 }

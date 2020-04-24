@@ -3,10 +3,10 @@ package wire
 import (
 	"github.com/google/wire"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
-	rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws"
-	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws/clients/appmesh"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/rest-api/aws/discovery"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws"
+	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/clients/appmesh"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/discovery"
 )
 
 var AwsSet = wire.NewSet(
@@ -18,8 +18,8 @@ var AwsSet = wire.NewSet(
 
 func RestAPIHandlersProvider(
 	awsHandler aws.AwsCredsHandler,
-) []rest_api.RestAPICredsHandler {
-	return []rest_api.RestAPICredsHandler{
+) []rest.RestAPICredsHandler {
+	return []rest.RestAPICredsHandler{
 		awsHandler,
 	}
 }
