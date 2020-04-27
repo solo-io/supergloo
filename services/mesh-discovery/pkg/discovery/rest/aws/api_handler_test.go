@@ -36,7 +36,7 @@ var _ = Describe("CredsHandler", func() {
 		mockRestAPIDiscoveryReconciler = mock_rest_api.NewMockRestAPIDiscoveryReconciler(ctrl)
 		awsCredsHandler = aws.NewAwsAPIHandler(
 			mockAppMeshClientFactory,
-			func(_ string, _ appmeshiface.AppMeshAPI) rest.RestAPIDiscoveryReconciler {
+			func(_ string, _ appmeshiface.AppMeshAPI, _ string) rest.RestAPIDiscoveryReconciler {
 				return mockRestAPIDiscoveryReconciler
 			})
 		secret = &k8s_core_types.Secret{

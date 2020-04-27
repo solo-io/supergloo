@@ -15,7 +15,7 @@ import (
 	mesh_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/consul"
 	mesh_istio "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/istio"
 	mesh_linkerd "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/linkerd"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/controllers"
+	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/event-watcher-factories"
 )
 
 func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
@@ -29,11 +29,11 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		k8s_core.PodClientFactoryProvider,
 		zephyr_discovery.MeshServiceClientFactoryProvider,
 		zephyr_discovery.MeshWorkloadClientFactoryProvider,
-		controllers.NewDeploymentEventWatcherFactory,
-		controllers.NewPodEventWatcherFactory,
-		controllers.NewServiceEventWatcherFactory,
-		controllers.NewMeshWorkloadEventWatcherFactory,
-		controllers.NewMeshControllerFactory,
+		event_watcher_factories.NewDeploymentEventWatcherFactory,
+		event_watcher_factories.NewPodEventWatcherFactory,
+		event_watcher_factories.NewServiceEventWatcherFactory,
+		event_watcher_factories.NewMeshWorkloadEventWatcherFactory,
+		event_watcher_factories.NewMeshEventWatcherFactory,
 		zephyr_discovery.MeshClientFactoryProvider,
 		k8s_core.ConfigMapClientFactoryProvider,
 		mesh_istio.WireProviderSet,

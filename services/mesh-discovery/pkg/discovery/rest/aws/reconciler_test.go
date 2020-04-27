@@ -1,4 +1,4 @@
-package discovery_test
+package aws_test
 
 import (
 	"context"
@@ -15,7 +15,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/discovery"
 	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,10 +36,11 @@ var _ = Describe("Reconciler", func() {
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		meshPlatformName = "aws-account-name"
 		mockAppMeshClient = mock_appmesh_clients.NewMockAppMeshAPI(ctrl)
-		appMeshDiscoveryReconciler = discovery.NewAppMeshDiscoveryReconciler(
+		appMeshDiscoveryReconciler = aws.NewAppMeshDiscoveryReconciler(
 			mockMeshClient,
 			mockAppMeshClient,
 			meshPlatformName,
+			aws.Region,
 		)
 	})
 
@@ -50,10 +50,10 @@ var _ = Describe("Reconciler", func() {
 
 	var expectReconcileMeshes = func() {
 		page1Input := &appmesh.ListMeshesInput{
-			Limit: discovery.NumItemsPerRequest,
+			Limit: aws.NumItemsPerRequest,
 		}
 		page2Input := &appmesh.ListMeshesInput{
-			Limit:     discovery.NumItemsPerRequest,
+			Limit:     aws.NumItemsPerRequest,
 			NextToken: aws2.String("page-2-token"),
 		}
 		meshRefs := []*appmesh.MeshRef{
@@ -89,7 +89,7 @@ var _ = Describe("Reconciler", func() {
 		for _, meshRef := range meshRefs {
 			mesh := &zephyr_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name:      fmt.Sprintf("%s-%s-%s", discovery.ObjectNamePrefix, *meshRef.MeshName, meshPlatformName),
+					Name:      fmt.Sprintf("%s-%s-%s", aws.ObjectNamePrefix, *meshRef.MeshName, meshPlatformName),
 					Namespace: env.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshSpec{
@@ -107,7 +107,7 @@ var _ = Describe("Reconciler", func() {
 		existingMeshes := &zephyr_discovery.MeshList{
 			Items: []zephyr_discovery.Mesh{
 				{ObjectMeta: k8s_meta_types.ObjectMeta{ // should not be deleted
-					Name: fmt.Sprintf("%s-%s-%s", discovery.ObjectNamePrefix, *meshRefs[0].MeshName, meshPlatformName)},
+					Name: fmt.Sprintf("%s-%s-%s", aws.ObjectNamePrefix, *meshRefs[0].MeshName, meshPlatformName)},
 					Spec: zephyr_discovery_types.MeshSpec{
 						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
 							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}}},

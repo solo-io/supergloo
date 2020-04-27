@@ -1,4 +1,4 @@
-package controllers
+package event_watcher_factories
 
 import (
 	apps_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"

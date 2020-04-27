@@ -9,7 +9,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest"
 	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/clients/appmesh"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/discovery"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
 )
@@ -22,7 +21,7 @@ const (
 
 type awsCredsHandler struct {
 	appMeshClientFactory              appmesh_client.AppMeshClientFactory
-	appMeshDiscoveryReconcilerFactory discovery.AppMeshDiscoveryReconcilerFactory
+	appMeshDiscoveryReconcilerFactory AppMeshDiscoveryReconcilerFactory
 	reconcilerCancelFuncs             map[string]context.CancelFunc // Map of meshPlatformName -> RestAPIDiscoveryReconciler's cancelFunc
 }
 
@@ -30,7 +29,7 @@ type AwsCredsHandler rest.RestAPICredsHandler
 
 func NewAwsAPIHandler(
 	appMeshClientFactory appmesh_client.AppMeshClientFactory,
-	appMeshReconcilerFactory discovery.AppMeshDiscoveryReconcilerFactory,
+	appMeshReconcilerFactory AppMeshDiscoveryReconcilerFactory,
 ) AwsCredsHandler {
 	return &awsCredsHandler{
 		appMeshClientFactory:              appMeshClientFactory,
@@ -46,7 +45,6 @@ func (a *awsCredsHandler) RestAPIAdded(ctx context.Context, secret *k8s_core_typ
 	}
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Debugf("New REST API added for meshPlatform %s", secret.GetName())
-
 	// Periodically run API Reconciler to ensure AppMesh state is consistent with SMH
 	ticker := time.NewTicker(ReconcileIntervalSeconds * time.Second)
 	appMeshClient, err := a.appMeshClientFactory.Build(secret, Region)

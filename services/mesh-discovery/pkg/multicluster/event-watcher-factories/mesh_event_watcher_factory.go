@@ -1,16 +1,16 @@
-package controllers
+package event_watcher_factories
 
 import (
 	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
-func NewMeshControllerFactory() MeshEventWatcherFactory {
-	return &meshControllerFactory{}
+func NewMeshEventWatcherFactory() MeshEventWatcherFactory {
+	return &meshEventWatcherFactory{}
 }
 
-type meshControllerFactory struct{}
+type meshEventWatcherFactory struct{}
 
-func (d *meshControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) discovery_controllers.MeshEventWatcher {
+func (d *meshEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) discovery_controllers.MeshEventWatcher {
 	return discovery_controllers.NewMeshEventWatcher(clusterName, mgr.Manager())
 }

@@ -9,8 +9,8 @@ import (
 	mesh_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/consul"
 	mesh_istio "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/istio"
 	mesh_linkerd "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/linkerd"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/discovery"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/controllers"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws"
+	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/event-watcher-factories"
 )
 
 // just used to package everything up for wire
@@ -34,11 +34,11 @@ type ClientFactories struct {
 }
 
 type EventWatcherFactories struct {
-	DeploymentEventWatcherFactory   controllers.DeploymentEventWatcherFactory
-	PodEventWatcherFactory          controllers.PodEventWatcherFactory
-	ServiceEventWatcherFactory      controllers.ServiceEventWatcherFactory
-	MeshWorkloadEventWatcherFactory controllers.MeshWorkloadEventWatcherFactory
-	MeshControllerFactory           controllers.MeshEventWatcherFactory
+	DeploymentEventWatcherFactory   event_watcher_factories.DeploymentEventWatcherFactory
+	PodEventWatcherFactory          event_watcher_factories.PodEventWatcherFactory
+	ServiceEventWatcherFactory      event_watcher_factories.ServiceEventWatcherFactory
+	MeshWorkloadEventWatcherFactory event_watcher_factories.MeshWorkloadEventWatcherFactory
+	MeshControllerFactory           event_watcher_factories.MeshEventWatcherFactory
 }
 
 type MeshDiscovery struct {
@@ -48,7 +48,7 @@ type MeshDiscovery struct {
 }
 
 type RestAPIReconcilers struct {
-	AppMeshAPIReconcilerFactory discovery.AppMeshDiscoveryReconcilerFactory
+	AppMeshAPIReconcilerFactory aws.AppMeshDiscoveryReconcilerFactory
 }
 
 func DiscoveryContextProvider(
@@ -62,14 +62,14 @@ func DiscoveryContextProvider(
 	serviceClientFactory k8s_core.ServiceClientFactory,
 	meshServiceClientFactory zephyr_discovery.MeshServiceClientFactory,
 	meshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory,
-	podEventWatcherFactory controllers.PodEventWatcherFactory,
-	serviceEventWatcherFactory controllers.ServiceEventWatcherFactory,
-	meshWorkloadControllerFactory controllers.MeshWorkloadEventWatcherFactory,
-	deploymentEventWatcherFactory controllers.DeploymentEventWatcherFactory,
+	podEventWatcherFactory event_watcher_factories.PodEventWatcherFactory,
+	serviceEventWatcherFactory event_watcher_factories.ServiceEventWatcherFactory,
+	meshWorkloadControllerFactory event_watcher_factories.MeshWorkloadEventWatcherFactory,
+	deploymentEventWatcherFactory event_watcher_factories.DeploymentEventWatcherFactory,
 	meshClientFactory zephyr_discovery.MeshClientFactory,
 	podClientFactory k8s_core.PodClientFactory,
-	meshControllerFactory controllers.MeshEventWatcherFactory,
-	appMeshAPIReconcilerFactory discovery.AppMeshDiscoveryReconcilerFactory,
+	meshControllerFactory event_watcher_factories.MeshEventWatcherFactory,
+	appMeshAPIReconcilerFactory aws.AppMeshDiscoveryReconcilerFactory,
 ) DiscoveryContext {
 
 	return DiscoveryContext{
