@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload"
@@ -22,33 +24,52 @@ var (
 )
 
 // visible for testing
-func NewIstioMeshWorkloadScanner(ownerFetcher mesh_workload.OwnerFetcher) mesh_workload.MeshWorkloadScanner {
+func NewIstioMeshWorkloadScanner(
+	ownerFetcher mesh_workload.OwnerFetcher,
+	meshClient zephyr_discovery.MeshClient,
+) mesh_workload.MeshWorkloadScanner {
 	return &istioMeshWorkloadScanner{
 		deploymentFetcher: ownerFetcher,
+		meshClient:        meshClient,
 	}
 }
 
 type istioMeshWorkloadScanner struct {
 	deploymentFetcher mesh_workload.OwnerFetcher
+	meshClient        zephyr_discovery.MeshClient
 }
 
-func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod) (*zephyr_core_types.ResourceRef, k8s_meta_types.ObjectMeta, string, error) {
+func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
 	if !i.isIstioPod(pod) {
-		return nil, k8s_meta_types.ObjectMeta{}, "", nil
+		return nil, nil
 	}
 	deployment, err := i.deploymentFetcher.GetDeployment(ctx, pod)
 	if err != nil {
-		return nil, k8s_meta_types.ObjectMeta{}, "", err
+		return nil, err
 	}
-	return &zephyr_core_types.ResourceRef{
-			Name:      deployment.Name,
-			Namespace: deployment.Namespace,
-			Cluster:   pod.ClusterName,
-		}, k8s_meta_types.ObjectMeta{
-			Name:      i.buildMeshWorkloadName(deployment.Name, deployment.Namespace, pod.ClusterName),
+	meshRef, err := i.getMeshResourceRef(ctx, clusterName)
+	if err != nil {
+		return nil, err
+	}
+	return &zephyr_discovery.MeshWorkload{
+		ObjectMeta: k8s_meta_types.ObjectMeta{
+			Name:      i.buildMeshWorkloadName(deployment.GetName(), deployment.GetNamespace(), pod.GetClusterName()),
 			Namespace: env.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(),
-		}, "", nil
+		},
+		Spec: zephyr_discovery_types.MeshWorkloadSpec{
+			KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
+				KubeControllerRef: &zephyr_core_types.ResourceRef{
+					Name:      deployment.GetName(),
+					Namespace: deployment.GetNamespace(),
+					Cluster:   pod.GetClusterName(),
+				},
+				Labels:             pod.GetLabels(),
+				ServiceAccountName: pod.Spec.ServiceAccountName,
+			},
+			Mesh: meshRef,
+		},
+	}, nil
 }
 
 // iterate through pod's containers and check for one with name containing "istio" and "proxy"
@@ -59,6 +80,24 @@ func (i *istioMeshWorkloadScanner) isIstioPod(pod *k8s_core_types.Pod) bool {
 		}
 	}
 	return false
+}
+
+func (i *istioMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clusterName string) (*zephyr_core_types.ResourceRef, error) {
+	meshList, err := i.meshClient.ListMesh(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, mesh := range meshList.Items {
+		// Assume single tenancy for clusters with Istio mesh
+		if mesh.Spec.GetCluster().GetName() == clusterName {
+			return &zephyr_core_types.ResourceRef{
+				Name:      mesh.GetName(),
+				Namespace: mesh.GetNamespace(),
+				Cluster:   clusterName,
+			}, nil
+		}
+	}
+	return nil, nil
 }
 
 func (i *istioMeshWorkloadScanner) buildMeshWorkloadName(deploymentName string, namespace string, clusterName string) string {

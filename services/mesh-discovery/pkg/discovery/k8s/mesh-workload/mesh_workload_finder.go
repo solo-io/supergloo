@@ -30,16 +30,12 @@ var (
 	FailedToReprocessPods = func(clusterName string, err error) error {
 		return eris.Wrapf(err, "Failed to re-process pods in cluster %s for mesh workload discovery", clusterName)
 	}
-	FailedToComputeMeshRef = func(workloadName, workloadNamespace, clusterName string) error {
-		return eris.Errorf("Failed to compute the owner mesh for mesh workload %s.%s in cluster %s", workloadName, workloadNamespace, clusterName)
-	}
 )
 
 func NewMeshWorkloadFinder(
 	ctx context.Context,
 	clusterName string,
 	localMeshWorkloadClient zephyr_discovery.MeshWorkloadClient,
-	localMeshClient zephyr_discovery.MeshClient,
 	meshWorkloadScannerImplementations MeshWorkloadScannerImplementations,
 	podClient k8s_core.PodClient,
 ) MeshWorkloadFinder {
@@ -49,7 +45,6 @@ func NewMeshWorkloadFinder(
 		clusterName:                        clusterName,
 		meshWorkloadScannerImplementations: meshWorkloadScannerImplementations,
 		localMeshWorkloadClient:            localMeshWorkloadClient,
-		localMeshClient:                    localMeshClient,
 		podClient:                          podClient,
 		discoveredMeshTypes:                sets.NewInt32(),
 	}
@@ -60,7 +55,6 @@ type meshWorkloadFinder struct {
 	ctx                                context.Context
 	meshWorkloadScannerImplementations MeshWorkloadScannerImplementations
 	localMeshWorkloadClient            zephyr_discovery.MeshWorkloadClient
-	localMeshClient                    zephyr_discovery.MeshClient
 	podClient                          k8s_core.PodClient
 
 	// stateful record of the meshes we have discovered on this cluster.
@@ -220,22 +214,19 @@ func (d *meshWorkloadFinder) GenericPod(pod *k8s_core_types.Pod) error {
 	return nil
 }
 
-func (d *meshWorkloadFinder) attachGeneralDiscoveryLabels(controllerRef *zephyr_core_types.ResourceRef, meshWorkload *zephyr_discovery.MeshWorkload) {
+func (d *meshWorkloadFinder) attachGeneralDiscoveryLabels(meshWorkload *zephyr_discovery.MeshWorkload) {
 	if meshWorkload.Labels == nil {
 		meshWorkload.Labels = map[string]string{}
 	}
 	meshWorkload.Labels[constants.DISCOVERED_BY] = constants.MESH_WORKLOAD_DISCOVERY
 	meshWorkload.Labels[constants.MESH_PLATFORM] = d.clusterName
-	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAME] = controllerRef.GetName()
-	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAMESPACE] = controllerRef.GetNamespace()
+	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAME] = meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetName()
+	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAMESPACE] = meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace()
 }
 
 func (d *meshWorkloadFinder) discoverMeshWorkload(pod *k8s_core_types.Pod) (*zephyr_discovery.MeshWorkload, error) {
-	var (
-		discoveredMeshWorkload *zephyr_discovery.MeshWorkload
-		controllerRef          *zephyr_core_types.ResourceRef
-	)
-
+	var discoveredMeshWorkload *zephyr_discovery.MeshWorkload
+	var err error
 	// Only run mesh workload scanner implementations for meshes that are known to have been discovered.
 	// This prevents a race condition: If a mesh and its injected pods exist already when mesh-discovery comes online,
 	// then the pods can be discovered first and will end up having a nil mesh reference on them.
@@ -244,39 +235,17 @@ func (d *meshWorkloadFinder) discoverMeshWorkload(pod *k8s_core_types.Pod) (*zep
 		if !ok {
 			continue
 		}
-
-		discoveredControllerRef, discoveredMeshWorkloadObjectMeta, meshName, err := meshWorkloadScanner.ScanPod(d.ctx, pod)
+		discoveredMeshWorkload, err = meshWorkloadScanner.ScanPod(d.ctx, pod, d.clusterName)
 		if err != nil {
 			return nil, err
 		}
-		if discoveredControllerRef != nil {
-			controllerRef = discoveredControllerRef
-
-			meshRef, err := d.createMeshResourceRef(d.ctx, discoveredMeshType, meshName)
-			if err != nil {
-				return nil, err
-			}
-			if meshRef == nil {
-				return nil, FailedToComputeMeshRef(discoveredMeshWorkloadObjectMeta.Name, discoveredMeshWorkloadObjectMeta.Namespace, d.clusterName)
-			}
-			discoveredMeshWorkload = &zephyr_discovery.MeshWorkload{
-				ObjectMeta: discoveredMeshWorkloadObjectMeta,
-				Spec: zephyr_discovery_types.MeshWorkloadSpec{
-					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-						KubeControllerRef:  controllerRef,
-						Labels:             pod.Labels,
-						ServiceAccountName: pod.Spec.ServiceAccountName,
-					},
-					Mesh: meshRef,
-				},
-			}
+		if discoveredMeshWorkload != nil {
 			break
 		}
 	}
-
 	// the mesh workload needs to have our standard discovery labels attached to it, like cluster name, etc
 	if discoveredMeshWorkload != nil {
-		d.attachGeneralDiscoveryLabels(controllerRef, discoveredMeshWorkload)
+		d.attachGeneralDiscoveryLabels(discoveredMeshWorkload)
 	}
 	return discoveredMeshWorkload, nil
 }
@@ -297,31 +266,4 @@ func (d *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *zephyr_d
 	mw.Spec = discoveredWorkload.Spec
 	mw.Labels = discoveredWorkload.Labels
 	return d.localMeshWorkloadClient.UpdateMeshWorkload(d.ctx, mw)
-}
-
-func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context, discoveredMeshType int32, meshName string) (*zephyr_core_types.ResourceRef, error) {
-	meshList, err := d.localMeshClient.ListMesh(ctx, &client.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-	for _, mesh := range meshList.Items {
-		// Disambiguate possibly multitenant AppMeshes by mesh name
-		if discoveredMeshType == int32(zephyr_core_types.MeshType_APPMESH) && meshName == mesh.GetName() {
-			return &zephyr_core_types.ResourceRef{
-				Name:      mesh.GetName(),
-				Namespace: mesh.GetNamespace(),
-				Cluster:   d.clusterName,
-			}, nil
-		} else {
-			// assume at most one Service Mesh installation per cluster, thus it must be the Mesh for the MeshWorkload if it exists
-			if mesh.Spec.GetCluster().GetName() == d.clusterName {
-				return &zephyr_core_types.ResourceRef{
-					Name:      mesh.GetName(),
-					Namespace: mesh.GetNamespace(),
-					Cluster:   d.clusterName,
-				}, nil
-			}
-		}
-	}
-	return nil, nil
 }

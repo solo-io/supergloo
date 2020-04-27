@@ -20,7 +20,7 @@ var (
 )
 
 // check whether a container from the cluster represents an instance of Consul Connect
-//go:generate mockgen -destination ./mocks/mock_connect_deployment_scanner.go github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/consul ConsulConnectInstallationScanner
+//go:generate mockgen -destination ./mocks/mock_connect_deployment_scanner.go github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/consul ConsulConnectInstallationScanner
 type ConsulConnectInstallationScanner interface {
 	// returns true if:
 	//  * the container is running an image named "consul"

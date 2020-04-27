@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/istio"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/linkerd"
 	md_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster"
@@ -42,6 +43,7 @@ func Run(rootCtx context.Context) {
 		md_multicluster.MeshWorkloadScannerFactoryImplementations{
 			types.MeshType_ISTIO:   istio.NewIstioMeshWorkloadScanner,
 			types.MeshType_LINKERD: linkerd.NewLinkerdMeshWorkloadScanner,
+			types.MeshType_APPMESH: appmesh.NewAppMeshWorkloadScanner,
 		},
 		discoveryContext,
 	)

@@ -158,7 +158,7 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 			replicaSetClient,
 		)
 
-		meshWorkloadScanners[meshType] = scannerFactory(ownerFetcher)
+		meshWorkloadScanners[meshType] = scannerFactory(ownerFetcher, m.localMeshClient)
 	}
 
 	return &clusterDependentDeps{

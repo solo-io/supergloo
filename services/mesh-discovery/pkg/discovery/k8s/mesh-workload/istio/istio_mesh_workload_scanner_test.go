@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/istio"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -28,6 +29,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		ctx                 context.Context
 		mockOwnerFetcher    *mock_mesh_workload.MockOwnerFetcher
 		meshWorkloadScanner mesh_workload.MeshWorkloadScanner
+		mockMeshClient      *mock_core.MockMeshClient
 		namespace           = "namespace"
 		clusterName         = "clusterName"
 		deploymentName      = "deployment-name"
@@ -49,7 +51,8 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockOwnerFetcher = mock_mesh_workload.NewMockOwnerFetcher(ctrl)
-		meshWorkloadScanner = istio.NewIstioMeshWorkloadScanner(mockOwnerFetcher)
+		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
+		meshWorkloadScanner = istio.NewIstioMeshWorkloadScanner(mockOwnerFetcher, mockMeshClient)
 	})
 
 	AfterEach(func() {
@@ -57,6 +60,21 @@ var _ = Describe("MeshWorkloadScanner", func() {
 	})
 
 	It("should scan pod", func() {
+		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)
+		meshList := &zephyr_discovery.MeshList{
+			Items: []zephyr_discovery.Mesh{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "mesh-name",
+						Namespace: "mesh-namespace",
+					},
+					Spec: zephyr_discovery_types.MeshSpec{
+						Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
+					},
+				},
+			},
+		}
+		mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
 		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("istio-%s-%s-%s", deploymentName, namespace, clusterName),
@@ -68,18 +86,21 @@ var _ = Describe("MeshWorkloadScanner", func() {
 					KubeControllerRef: &zephyr_core_types.ResourceRef{
 						Name:      deployment.Name,
 						Namespace: deployment.Namespace,
-						Cluster:   pod.ObjectMeta.ClusterName,
+						Cluster:   clusterName,
 					},
 					Labels:             nil,
 					ServiceAccountName: "",
 				},
+				Mesh: &zephyr_core_types.ResourceRef{
+					Name:      meshList.Items[0].GetName(),
+					Namespace: meshList.Items[0].GetNamespace(),
+					Cluster:   clusterName,
+				},
 			},
 		}
-		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)
-		controllerRef, meta, _, err := meshWorkloadScanner.ScanPod(ctx, pod)
+		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(controllerRef).To(Equal(expectedMeshWorkload.Spec.KubeController.KubeControllerRef))
-		Expect(meta).To(Equal(expectedMeshWorkload.ObjectMeta))
+		Expect(meshWorkload).To(Equal(expectedMeshWorkload))
 	})
 
 	It("should return nil if not istio injected pod", func() {
@@ -91,7 +112,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 			},
 			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
 		}
-		meshWorkload, _, _, err := meshWorkloadScanner.ScanPod(ctx, nonIstioPod)
+		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, nonIstioPod, clusterName)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshWorkload).To(BeNil())
 	})
@@ -99,7 +120,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 	It("should return error if error fetching deployment", func() {
 		expectedErr := eris.New("error")
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(nil, expectedErr)
-		_, _, _, err := meshWorkloadScanner.ScanPod(ctx, pod)
+		_, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
 	})
 })

@@ -35,7 +35,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		ctrl                        *gomock.Controller
 		ctx                         context.Context
 		mockLocalMeshWorkloadClient *mock_core.MockMeshWorkloadClient
-		mockLocalMeshClient         *mock_core.MockMeshClient
 		mockMeshWorkloadScanner     *mock_mesh_workload.MockMeshWorkloadScanner
 		clusterName                 = "clusterName"
 		meshWorkloadFinder          mesh_workload.MeshWorkloadFinder
@@ -54,7 +53,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = contextutils.WithExistingLogger(context.TODO(), testLogger.Logger())
 		mockLocalMeshWorkloadClient = mock_core.NewMockMeshWorkloadClient(ctrl)
-		mockLocalMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockMeshWorkloadScanner = mock_mesh_workload.NewMockMeshWorkloadScanner(ctrl)
 		podClient = mock_kubernetes_core.NewMockPodClient(ctrl)
 		podEventWatcher = mock_controllers.NewMockPodEventWatcher(ctrl)
@@ -78,7 +76,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			ctx,
 			clusterName,
 			mockLocalMeshWorkloadClient,
-			mockLocalMeshClient,
 			mesh_workload.MeshWorkloadScannerImplementations{
 				zephyr_core_types.MeshType_ISTIO: mockMeshWorkloadScanner,
 			},
@@ -107,26 +104,12 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("should create MeshWorkload if Istio injected workload is discovered simultaneously with Istio control plane", func() {
-		meshName := "meshName"
-		meshNamespace := "meshNamespace"
-		mesh := zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
-			},
-			ObjectMeta: k8s_meta_types.ObjectMeta{Name: meshName, Namespace: meshNamespace},
-		}
-		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}
-		meshSpec := &zephyr_core_types.ResourceRef{
-			Name:      mesh.Name,
-			Namespace: meshNamespace,
-			Cluster:   clusterName,
-		}
 
 		podCopy := *pod
 		podCopy.ClusterName = clusterName
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, &podCopy).
-			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			ScanPod(ctx, &podCopy, clusterName).
+			Return(discoveredMeshWorkload, nil)
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
 			constants.MESH_PLATFORM:             clusterName,
@@ -137,10 +120,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshWorkloadClient.EXPECT().
 			GetMeshWorkload(ctx, objKey).
 			Return(nil, notFoundErr)
-		mockLocalMeshClient.EXPECT().
-			ListMesh(ctx, &client.ListOptions{}).
-			Return(meshList, nil)
-		discoveredMeshWorkload.Spec.Mesh = meshSpec
 		mockLocalMeshWorkloadClient.EXPECT().
 			CreateMeshWorkload(ctx, discoveredMeshWorkload).
 			Return(nil)
@@ -162,26 +141,11 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("should create MeshWorkload if Istio injected workload found later after Istio is discovered", func() {
-		meshName := "meshName"
-		meshNamespace := "meshNamespace"
-		mesh := zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
-			},
-			ObjectMeta: k8s_meta_types.ObjectMeta{Name: meshName, Namespace: meshNamespace},
-		}
-		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}
-		meshSpec := &zephyr_core_types.ResourceRef{
-			Name:      mesh.Name,
-			Namespace: meshNamespace,
-			Cluster:   clusterName,
-		}
-
 		podCopy := *pod
 		podCopy.ClusterName = clusterName
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, &podCopy).
-			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			ScanPod(ctx, &podCopy, clusterName).
+			Return(discoveredMeshWorkload, nil)
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
 			constants.MESH_PLATFORM:             clusterName,
@@ -192,10 +156,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshWorkloadClient.EXPECT().
 			GetMeshWorkload(ctx, objKey).
 			Return(nil, notFoundErr)
-		mockLocalMeshClient.EXPECT().
-			ListMesh(ctx, &client.ListOptions{}).
-			Return(meshList, nil)
-		discoveredMeshWorkload.Spec.Mesh = meshSpec
 		mockLocalMeshWorkloadClient.EXPECT().
 			CreateMeshWorkload(ctx, discoveredMeshWorkload).
 			Return(nil)
@@ -231,7 +191,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		expectedErr := eris.New("error")
 		podCopy := *pod
 		podCopy.ClusterName = clusterName
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, &podCopy).Return(nil, k8s_meta_types.ObjectMeta{}, expectedErr)
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, &podCopy, clusterName).Return(nil, expectedErr)
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{*pod}}, nil)
@@ -246,33 +206,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			},
 		})
 
-		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
-		Expect(testLogger.Sink().String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
-	})
-
-	It("should return error if fatal error while populating Mesh resource ref", func() {
-		expectedErr := eris.New("error")
-		pod := &k8s_core_types.Pod{}
-		podCopy := *pod
-		podCopy.ClusterName = clusterName
-		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, &podCopy).
-			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
-		mockLocalMeshClient.EXPECT().ListMesh(ctx, &client.ListOptions{}).Return(nil, expectedErr)
-		podClient.EXPECT().
-			ListPod(ctx).
-			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{*pod}}, nil)
-
-		// Now Istio has been discovered
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
-				Cluster: &zephyr_core_types.ResourceRef{
-					Name: clusterName,
-				},
-			},
-		})
-		Expect(err).To(HaveOccurred())
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
 		Expect(testLogger.Sink().String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
 	})
@@ -292,20 +225,12 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			},
 		}
 		newPod := &k8s_core_types.Pod{}
-		mesh := zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
-			},
-			ObjectMeta: k8s_meta_types.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
-		}
-		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			ScanPod(ctx, pod, clusterName).
+			Return(discoveredMeshWorkload, nil)
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, newPod).
-			Return(newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
-		mockLocalMeshClient.EXPECT().ListMesh(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
+			ScanPod(ctx, newPod, clusterName).
+			Return(newDiscoveredMeshWorkload, nil)
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
@@ -342,20 +267,12 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			},
 		}
 		newPod := &k8s_core_types.Pod{}
-		mesh := zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
-			},
-			ObjectMeta: k8s_meta_types.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
-		}
-		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			ScanPod(ctx, pod, clusterName).
+			Return(discoveredMeshWorkload, nil)
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, newPod).
-			Return(newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
-		mockLocalMeshClient.EXPECT().ListMesh(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
+			ScanPod(ctx, newPod, clusterName).
+			Return(newDiscoveredMeshWorkload, nil)
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
@@ -402,13 +319,12 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Namespace: mesh.Namespace,
 			Cluster:   clusterName,
 		}
-		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			ScanPod(ctx, pod, clusterName).
+			Return(discoveredMeshWorkload, nil)
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, newPod).
-			Return(newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
+			ScanPod(ctx, newPod, clusterName).
+			Return(newDiscoveredMeshWorkload, nil)
 		newDiscoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
 			constants.MESH_PLATFORM:             clusterName,
@@ -416,10 +332,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			constants.KUBE_CONTROLLER_NAMESPACE: newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
 		newDiscoveredMeshWorkload.Spec.Mesh = meshSpec
-		mockLocalMeshClient.EXPECT().
-			ListMesh(ctx, &client.ListOptions{}).
-			Return(meshList, nil).
-			Times(2)
 		mockLocalMeshWorkloadClient.EXPECT().
 			UpdateMeshWorkload(ctx, newDiscoveredMeshWorkload).
 			Return(nil)
@@ -444,7 +356,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	It("should return error if error processing old pod", func() {
 		expectedErr := eris.New("error")
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, k8s_meta_types.ObjectMeta{}, expectedErr)
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod, clusterName).Return(nil, expectedErr)
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
@@ -469,8 +381,8 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	It("should return error if error processing new pod", func() {
 		newPod := &k8s_core_types.Pod{}
 		expectedErr := eris.New("error")
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, k8s_meta_types.ObjectMeta{}, nil)
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, newPod).Return(nil, k8s_meta_types.ObjectMeta{}, expectedErr)
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod, clusterName).Return(nil, nil)
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, newPod, clusterName).Return(nil, expectedErr)
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
@@ -493,7 +405,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("should return nil if old and new Pods are not mesh injected", func() {
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, k8s_meta_types.ObjectMeta{}, nil).Times(2)
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod, clusterName).Return(nil, nil).Times(2)
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
@@ -526,13 +438,12 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Namespace: mesh.Namespace,
 			Cluster:   clusterName,
 		}
-		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, pod).
-			Return(nil, k8s_meta_types.ObjectMeta{}, nil)
+			ScanPod(ctx, pod, clusterName).
+			Return(nil, nil)
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			ScanPod(ctx, pod, clusterName).
+			Return(discoveredMeshWorkload, nil)
 		objKey, _ := client.ObjectKeyFromObject(discoveredMeshWorkload)
 		mockLocalMeshWorkloadClient.EXPECT().
 			GetMeshWorkload(ctx, objKey).
@@ -547,9 +458,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshWorkloadClient.EXPECT().
 			CreateMeshWorkload(ctx, discoveredMeshWorkload).
 			Return(nil)
-		mockLocalMeshClient.EXPECT().
-			ListMesh(ctx, &client.ListOptions{}).
-			Return(meshList, nil)
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)

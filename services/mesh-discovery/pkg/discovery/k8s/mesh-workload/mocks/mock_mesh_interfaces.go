@@ -9,12 +9,11 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	v1 "k8s.io/api/apps/v1"
 	v10 "k8s.io/api/core/v1"
-	v11 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // MockMeshWorkloadFinder is a mock of MeshWorkloadFinder interface.
@@ -116,17 +115,16 @@ func (m *MockMeshWorkloadScanner) EXPECT() *MockMeshWorkloadScannerMockRecorder 
 }
 
 // ScanPod mocks base method.
-func (m *MockMeshWorkloadScanner) ScanPod(arg0 context.Context, arg1 *v10.Pod) (*types.ResourceRef, v11.ObjectMeta, string, error) {
+func (m *MockMeshWorkloadScanner) ScanPod(ctx context.Context, pod *v10.Pod, clusterName string) (*v1alpha1.MeshWorkload, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ScanPod", arg0, arg1)
-	ret0, _ := ret[0].(*types.ResourceRef)
-	ret1, _ := ret[1].(v11.ObjectMeta)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, "", ret2
+	ret := m.ctrl.Call(m, "ScanPod", ctx, pod, clusterName)
+	ret0, _ := ret[0].(*v1alpha1.MeshWorkload)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ScanPod indicates an expected call of ScanPod.
-func (mr *MockMeshWorkloadScannerMockRecorder) ScanPod(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockMeshWorkloadScannerMockRecorder) ScanPod(ctx, pod, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanPod", reflect.TypeOf((*MockMeshWorkloadScanner)(nil).ScanPod), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanPod", reflect.TypeOf((*MockMeshWorkloadScanner)(nil).ScanPod), ctx, pod, clusterName)
 }

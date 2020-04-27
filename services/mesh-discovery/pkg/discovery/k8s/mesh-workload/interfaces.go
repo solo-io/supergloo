@@ -4,11 +4,11 @@ import (
 	"context"
 
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	k8s_apps_types "k8s.io/api/apps/v1"
 	k8s_core_types "k8s.io/api/core/v1"
-	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_mesh_interfaces.go -package mock_mesh_workload
@@ -33,8 +33,8 @@ type OwnerFetcher interface {
 type MeshWorkloadScanner interface {
 	// Return a ResourceRef to the kube Controller (e.g. Deployment), pod object meta,
 	// cluster name for disambiguating parent meshes that support multitenancy (e.g. AppMesh)
-	ScanPod(context.Context, *k8s_core_types.Pod) (*zephyr_core_types.ResourceRef, k8s_meta_types.ObjectMeta, string, error)
+	ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error)
 }
 
 // these need to be constructed on the fly when a cluster is added, because the ownerFetcher will need to talk to that cluster
-type MeshWorkloadScannerFactory func(ownerFetcher OwnerFetcher) MeshWorkloadScanner
+type MeshWorkloadScannerFactory func(ownerFetcher OwnerFetcher, meshClient zephyr_discovery.MeshClient) MeshWorkloadScanner
