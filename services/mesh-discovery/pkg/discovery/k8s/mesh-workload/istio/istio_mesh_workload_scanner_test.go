@@ -70,6 +70,9 @@ var _ = Describe("MeshWorkloadScanner", func() {
 					},
 					Spec: zephyr_discovery_types.MeshSpec{
 						Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
+						MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+							Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+						},
 					},
 				},
 			},

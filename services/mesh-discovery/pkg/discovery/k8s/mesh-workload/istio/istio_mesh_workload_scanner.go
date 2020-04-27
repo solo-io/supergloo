@@ -29,21 +29,21 @@ func NewIstioMeshWorkloadScanner(
 	meshClient zephyr_discovery.MeshClient,
 ) mesh_workload.MeshWorkloadScanner {
 	return &istioMeshWorkloadScanner{
-		deploymentFetcher: ownerFetcher,
-		meshClient:        meshClient,
+		ownerFetcher: ownerFetcher,
+		meshClient:   meshClient,
 	}
 }
 
 type istioMeshWorkloadScanner struct {
-	deploymentFetcher mesh_workload.OwnerFetcher
-	meshClient        zephyr_discovery.MeshClient
+	ownerFetcher mesh_workload.OwnerFetcher
+	meshClient   zephyr_discovery.MeshClient
 }
 
 func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
 	if !i.isIstioPod(pod) {
 		return nil, nil
 	}
-	deployment, err := i.deploymentFetcher.GetDeployment(ctx, pod)
+	deployment, err := i.ownerFetcher.GetDeployment(ctx, pod)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (i *istioMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clust
 	}
 	for _, mesh := range meshList.Items {
 		// Assume single tenancy for clusters with Istio mesh
-		if mesh.Spec.GetCluster().GetName() == clusterName {
+		if mesh.Spec.GetIstio() != nil && mesh.Spec.GetCluster().GetName() == clusterName {
 			return &zephyr_core_types.ResourceRef{
 				Name:      mesh.GetName(),
 				Namespace: mesh.GetNamespace(),

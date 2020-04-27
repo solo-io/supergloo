@@ -1,11 +1,8 @@
-package linkerd_test
+package appmesh_test
 
 import (
 	"context"
 	"fmt"
-
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/linkerd"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -17,13 +14,15 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/appmesh"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/mocks"
-	k8s_apps_types "k8s.io/api/apps/v1"
-	k8s_core_types "k8s.io/api/core/v1"
-	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("MeshWorkloadScanner", func() {
+var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 	var (
 		ctrl                *gomock.Controller
 		ctx                 context.Context
@@ -34,17 +33,31 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		clusterName         = "clusterName"
 		deploymentName      = "deployment-name"
 		deploymentKind      = "deployment-kind"
-		pod                 = &k8s_core_types.Pod{
-			Spec: k8s_core_types.PodSpec{
-				Containers: []k8s_core_types.Container{
-					{Name: "linkerd-proxy"},
+		meshName            = "mesh-name-1"
+		region              = "us-east-1"
+		pod                 = &corev1.Pod{
+			Spec: corev1.PodSpec{
+				Containers: []corev1.Container{
+					{
+						Image: "appmesh-proxy",
+						Env: []corev1.EnvVar{
+							{
+								Name:  appmesh.AppMeshVirtualNodeEnvVarName,
+								Value: fmt.Sprintf("mesh/%s/virtualNode/virtualNodeName", meshName),
+							},
+							{
+								Name:  appmesh.AppMeshRegionEnvVarName,
+								Value: region,
+							},
+						},
+					},
 				},
 			},
-			ObjectMeta: k8s_meta_types.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
+			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
 		}
-		deployment = &k8s_apps_types.Deployment{
-			ObjectMeta: k8s_meta_types.ObjectMeta{Name: deploymentName, Namespace: namespace},
-			TypeMeta:   k8s_meta_types.TypeMeta{Kind: deploymentKind},
+		deployment = &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{Name: deploymentName, Namespace: namespace},
+			TypeMeta:   metav1.TypeMeta{Kind: deploymentKind},
 		}
 	)
 	BeforeEach(func() {
@@ -52,26 +65,44 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		ctx = context.TODO()
 		mockOwnerFetcher = mock_mesh_workload.NewMockOwnerFetcher(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
-		meshWorkloadScanner = linkerd.NewLinkerdMeshWorkloadScanner(mockOwnerFetcher, mockMeshClient)
+		meshWorkloadScanner = appmesh.NewAppMeshWorkloadScanner(mockOwnerFetcher, mockMeshClient)
 	})
 
 	AfterEach(func() {
 		ctrl.Finish()
 	})
 
-	It("should scan pod", func() {
+	It("should scan pod and disambiguate multiple AppMesh Meshes", func() {
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)
 		meshList := &zephyr_discovery.MeshList{
 			Items: []zephyr_discovery.Mesh{
 				{
-					ObjectMeta: k8s_meta_types.ObjectMeta{
-						Name:      "mesh-name",
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      meshName,
 						Namespace: "mesh-namespace",
 					},
 					Spec: zephyr_discovery_types.MeshSpec{
 						Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
-						MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{
-							Linkerd: &zephyr_discovery_types.MeshSpec_LinkerdMesh{},
+						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
+								Name:   meshName,
+								Region: region,
+							},
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "mesh-name-2",
+						Namespace: "mesh-namespace",
+					},
+					Spec: zephyr_discovery_types.MeshSpec{
+						Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
+						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
+								Name:   "some-other-mesh",
+								Region: "some-other-region",
+							},
 						},
 					},
 				},
@@ -79,10 +110,10 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		}
 		mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
 		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
-			ObjectMeta: k8s_meta_types.ObjectMeta{
-				Name:      fmt.Sprintf("linkerd-%s-%s-%s", deploymentName, namespace, clusterName),
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("appmesh-%s-%s-%s", deploymentName, namespace, clusterName),
 				Namespace: env.GetWriteNamespace(),
-				Labels:    linkerd.DiscoveryLabels(),
+				Labels:    appmesh.DiscoveryLabels(),
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
 				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
@@ -106,16 +137,16 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		Expect(meshWorkload).To(Equal(expectedMeshWorkload))
 	})
 
-	It("should return nil if not linkerd injected pod", func() {
-		nonLinkerdPod := &k8s_core_types.Pod{
-			Spec: k8s_core_types.PodSpec{
-				Containers: []k8s_core_types.Container{
+	It("should return nil if not appmesh injected pod", func() {
+		nonAppMeshPod := &corev1.Pod{
+			Spec: corev1.PodSpec{
+				Containers: []corev1.Container{
 					{Image: "random-image"},
 				},
 			},
-			ObjectMeta: k8s_meta_types.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
+			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
 		}
-		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, nonLinkerdPod, clusterName)
+		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, nonAppMeshPod, clusterName)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshWorkload).To(BeNil())
 	})

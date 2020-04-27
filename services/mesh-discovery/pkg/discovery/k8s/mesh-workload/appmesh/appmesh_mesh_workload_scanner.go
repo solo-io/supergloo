@@ -13,12 +13,12 @@ import (
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
 	// Used to infer parent AppMesh Mesh name
 	AppMeshVirtualNodeEnvVarName = "APPMESH_VIRTUAL_NODE_NAME"
+	AppMeshRegionEnvVarName      = "AWS_REGION"
 )
 
 var (
@@ -35,25 +35,26 @@ func NewAppMeshWorkloadScanner(
 	meshClient zephyr_discovery.MeshClient,
 ) mesh_workload.MeshWorkloadScanner {
 	return &appMeshWorkloadScanner{
-		deploymentFetcher: ownerFetcher,
+		ownerFetcher: ownerFetcher,
+		meshClient:   meshClient,
 	}
 }
 
 type appMeshWorkloadScanner struct {
-	meshClient        zephyr_discovery.MeshClient
-	deploymentFetcher mesh_workload.OwnerFetcher
+	meshClient   zephyr_discovery.MeshClient
+	ownerFetcher mesh_workload.OwnerFetcher
 }
 
 func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
-	isAppMeshPod, appMeshName := a.isAppMeshPod(pod)
+	isAppMeshPod, appMeshName, region := a.isAppMeshPod(pod)
 	if !isAppMeshPod {
 		return nil, nil
 	}
-	deployment, err := a.deploymentFetcher.GetDeployment(ctx, pod)
+	deployment, err := a.ownerFetcher.GetDeployment(ctx, pod)
 	if err != nil {
 		return nil, err
 	}
-	meshRef, err := a.getMeshResourceRef(ctx, appMeshName, clusterName)
+	meshRef, err := a.getMeshResourceRef(ctx, appMeshName, region, clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -80,32 +81,38 @@ func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_type
 
 // iterate through pod's containers and check for one with name containing "appmesh" and "proxy"
 // if true, return inferred AppMesh name
-func (a *appMeshWorkloadScanner) isAppMeshPod(pod *k8s_core_types.Pod) (bool, string) {
+func (a *appMeshWorkloadScanner) isAppMeshPod(pod *k8s_core_types.Pod) (bool, string, string) {
 	for _, container := range pod.Spec.Containers {
-		if strings.Contains(container.Image, "appmesh") && strings.Contains(container.Image, "envoy") {
+		if strings.Contains(container.Image, "appmesh") && strings.Contains(container.Image, "proxy") {
 			var appMeshName string
+			var region string
 			for _, env := range container.Env {
 				if env.Name == AppMeshVirtualNodeEnvVarName {
-					// Value takes format mesh/<appmesh-mesh-name>/virtualNode/<virtual-node-name>"
+					// Value takes format "mesh/<appmesh-mesh-name>/virtualNode/<virtual-node-name>"
 					// TODO perhaps record the virtual node name on the CRD because of AWS naming constraints between the Deployment and the correspodning VirtualNode
 					// https://docs.aws.amazon.com/eks/latest/userguide/mesh-k8s-integration.html
 					appMeshName = strings.Split(env.Value, "/")[1]
+				} else if env.Name == AppMeshRegionEnvVarName {
+					region = env.Value
 				}
 			}
-			return true, appMeshName
+			return true, appMeshName, region
 		}
 	}
-	return false, ""
+	return false, "", ""
 }
 
-func (a *appMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, meshName string, clusterName string) (*zephyr_core_types.ResourceRef, error) {
-	meshList, err := a.meshClient.ListMesh(ctx, &client.ListOptions{})
+func (a *appMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, meshName, region, clusterName string) (*zephyr_core_types.ResourceRef, error) {
+	meshList, err := a.meshClient.ListMesh(ctx)
 	if err != nil {
 		return nil, err
 	}
 	for _, mesh := range meshList.Items {
-		// assume at most one Service Mesh installation per cluster, thus it must be the Mesh for the MeshWorkload if it exists
-		if mesh.Spec.GetCluster().GetName() == clusterName {
+		// To support multitenant AppMesh on a single cluster, disambiguate parent mesh with name and region
+		// We assume that the kubernetes cluster is managed by only a single AWS account
+		if mesh.Spec.GetCluster().GetName() == clusterName &&
+			mesh.Spec.GetAwsAppMesh().GetName() == meshName &&
+			mesh.Spec.GetAwsAppMesh().GetRegion() == region {
 			return &zephyr_core_types.ResourceRef{
 				Name:      mesh.GetName(),
 				Namespace: mesh.GetNamespace(),

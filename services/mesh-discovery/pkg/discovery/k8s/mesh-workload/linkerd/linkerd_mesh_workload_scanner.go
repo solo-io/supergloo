@@ -29,21 +29,21 @@ func NewLinkerdMeshWorkloadScanner(
 	meshClient zephyr_discovery.MeshClient,
 ) mesh_workload.MeshWorkloadScanner {
 	return &linkerdMeshWorkloadScanner{
-		deploymentFetcher: ownerFetcher,
-		meshClient:        meshClient,
+		ownerFetcher: ownerFetcher,
+		meshClient:   meshClient,
 	}
 }
 
 type linkerdMeshWorkloadScanner struct {
-	deploymentFetcher mesh_workload.OwnerFetcher
-	meshClient        zephyr_discovery.MeshClient
+	ownerFetcher mesh_workload.OwnerFetcher
+	meshClient   zephyr_discovery.MeshClient
 }
 
 func (l *linkerdMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
 	if !l.isLinkerdPod(pod) {
 		return nil, nil
 	}
-	deployment, err := l.deploymentFetcher.GetDeployment(ctx, pod)
+	deployment, err := l.ownerFetcher.GetDeployment(ctx, pod)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (l *linkerdMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clu
 	}
 	for _, mesh := range meshList.Items {
 		// Assume single tenancy for clusters with Linkerd mesh
-		if mesh.Spec.GetCluster().GetName() == clusterName {
+		if mesh.Spec.GetLinkerd() != nil && mesh.Spec.GetCluster().GetName() == clusterName {
 			return &zephyr_core_types.ResourceRef{
 				Name:      mesh.GetName(),
 				Namespace: mesh.GetNamespace(),
