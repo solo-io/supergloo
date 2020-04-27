@@ -83,7 +83,7 @@ message MeshSpec {
     }
 
     // The cluster on which this mesh resides.
-    repeated core.zephyr.solo.io.ResourceRef clusters = 5;
+    core.zephyr.solo.io.ResourceRef cluster = 5;
 }
 
 message MeshStatus {
