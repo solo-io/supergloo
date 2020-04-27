@@ -27,6 +27,7 @@ var _ = Describe("Reconciler", func() {
 		mockMeshClient             *mock_core.MockMeshClient
 		mockAppMeshClient          *mock_appmesh_clients.MockAppMeshAPI
 		meshPlatformName           string
+		awsAccountID               string
 		appMeshDiscoveryReconciler rest.RestAPIDiscoveryReconciler
 	)
 
@@ -35,6 +36,7 @@ var _ = Describe("Reconciler", func() {
 		ctx = context.TODO()
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		meshPlatformName = "aws-account-name"
+		awsAccountID = "410461945555"
 		mockAppMeshClient = mock_appmesh_clients.NewMockAppMeshAPI(ctrl)
 		appMeshDiscoveryReconciler = aws.NewAppMeshDiscoveryReconciler(
 			mockMeshClient,
@@ -59,21 +61,27 @@ var _ = Describe("Reconciler", func() {
 		meshRefs := []*appmesh.MeshRef{
 			{
 				MeshName: aws2.String("mesh-name-1"),
+				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-1", awsAccountID)),
 			},
 			{
 				MeshName: aws2.String("mesh-name-2"),
+				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-2", awsAccountID)),
 			},
 			{
 				MeshName: aws2.String("mesh-name-3"),
+				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-3", awsAccountID)),
 			},
 			{
 				MeshName: aws2.String("mesh-name-4"),
+				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-4", awsAccountID)),
 			},
 			{
 				MeshName: aws2.String("mesh-name-5"),
+				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-5", awsAccountID)),
 			},
 			{
 				MeshName: aws2.String("mesh-name-6"),
+				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-6", awsAccountID)),
 			},
 		}
 		page1 := &appmesh.ListMeshesOutput{
@@ -95,9 +103,9 @@ var _ = Describe("Reconciler", func() {
 				Spec: zephyr_discovery_types.MeshSpec{
 					MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
 						AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
-							Name:           *meshRef.MeshName,
-							AwsAccountName: meshPlatformName,
-							Region:         aws.Region,
+							Name:         *meshRef.MeshName,
+							AwsAccountId: awsAccountID,
+							Region:       aws.Region,
 						},
 					},
 				},

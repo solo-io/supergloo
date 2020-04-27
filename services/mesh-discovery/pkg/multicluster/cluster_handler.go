@@ -101,7 +101,6 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		ctx,
 		clusterName,
 		m.localMeshWorkloadClient,
-		m.localMeshClient,
 		initializedDeps.meshWorkloadScanners,
 		initializedDeps.podClient,
 	)

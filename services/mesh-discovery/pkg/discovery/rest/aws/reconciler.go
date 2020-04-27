@@ -6,8 +6,10 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
+	"github.com/rotisserie/eris"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
@@ -20,6 +22,9 @@ import (
 var (
 	ObjectNamePrefix   = "appmesh"
 	NumItemsPerRequest = aws.Int64(100)
+	ARNParseError      = func(err error, arn string) error {
+		return eris.Wrapf(err, "Error parsing ARN: %s", arn)
+	}
 )
 
 type appMeshDiscoveryReconciler struct {
@@ -91,9 +96,12 @@ func (a *appMeshDiscoveryReconciler) reconcileMeshes(
 			return err
 		}
 		for _, appMeshRef := range appMeshes.Meshes {
-			discoveredMesh := a.convertAppMeshMesh(appMeshRef)
+			discoveredMesh, err := a.convertAppMeshMesh(appMeshRef)
+			if err != nil {
+				return err
+			}
 			discoveredSMHMeshNames.Insert(discoveredMesh.GetName())
-			err := a.meshClient.UpsertMeshSpec(ctx, discoveredMesh)
+			err = a.meshClient.UpsertMeshSpec(ctx, discoveredMesh)
 			if err != nil {
 				return err
 			}
@@ -124,8 +132,12 @@ func (a *appMeshDiscoveryReconciler) reconcileMeshes(
 	return nil
 }
 
-func (a *appMeshDiscoveryReconciler) convertAppMeshMesh(appMeshMesh *appmesh.MeshRef) *zephyr_discovery.Mesh {
-	meshName := a.buildAppMeshMeshName(appMeshMesh)
+func (a *appMeshDiscoveryReconciler) convertAppMeshMesh(appMeshRef *appmesh.MeshRef) (*zephyr_discovery.Mesh, error) {
+	meshName := a.buildAppMeshMeshName(appMeshRef)
+	awsAccountID, err := a.getAwsAccountID(appMeshRef)
+	if err != nil {
+		return nil, err
+	}
 	return &zephyr_discovery.Mesh{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      meshName,
@@ -134,13 +146,21 @@ func (a *appMeshDiscoveryReconciler) convertAppMeshMesh(appMeshMesh *appmesh.Mes
 		Spec: zephyr_discovery_types.MeshSpec{
 			MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
 				AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
-					Name:           aws.StringValue(appMeshMesh.MeshName),
-					AwsAccountName: a.meshPlatformName,
-					Region:         a.region,
+					Name:         aws.StringValue(appMeshRef.MeshName),
+					AwsAccountId: awsAccountID,
+					Region:       a.region,
 				},
 			},
 		},
+	}, nil
+}
+
+func (a *appMeshDiscoveryReconciler) getAwsAccountID(appMeshRef *appmesh.MeshRef) (string, error) {
+	parse, err := arn.Parse(aws.StringValue(appMeshRef.Arn))
+	if err != nil {
+		return "", ARNParseError(err, aws.StringValue(appMeshRef.Arn))
 	}
+	return parse.AccountID, nil
 }
 
 // TODO: https://github.com/solo-io/service-mesh-hub/issues/141
