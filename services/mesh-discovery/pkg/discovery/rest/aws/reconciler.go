@@ -74,16 +74,9 @@ func NewAppMeshDiscoveryReconciler(
 	}
 }
 
+// Currently Meshes are the only SMH CRD that are discovered through the AWS REST API
+// For EKS, workloads and services are discovered directly from the cluster.
 func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
-	// Currently Meshes are the only SMH CRD that are discovered through the AWS REST API
-	// For EKS, workloads and services are discovered directly from the cluster.
-	return a.reconcileMeshes(ctx, a.appMeshClient)
-}
-
-func (a *appMeshDiscoveryReconciler) reconcileMeshes(
-	ctx context.Context,
-	appMeshClient appmeshiface.AppMeshAPI,
-) error {
 	var nextToken *string
 	input := &appmesh.ListMeshesInput{
 		Limit:     NumItemsPerRequest,
@@ -91,7 +84,7 @@ func (a *appMeshDiscoveryReconciler) reconcileMeshes(
 	}
 	discoveredSMHMeshNames := sets.NewString() // Set containing SMH unique identifiers for AppMesh instances (the Mesh CRD name) for comparison
 	for {
-		appMeshes, err := appMeshClient.ListMeshes(input)
+		appMeshes, err := a.appMeshClient.ListMeshes(input)
 		if err != nil {
 			return err
 		}

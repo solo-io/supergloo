@@ -225,6 +225,7 @@ func (d *meshWorkloadFinder) attachGeneralDiscoveryLabels(meshWorkload *zephyr_d
 }
 
 func (d *meshWorkloadFinder) discoverMeshWorkload(pod *k8s_core_types.Pod) (*zephyr_discovery.MeshWorkload, error) {
+	logger := contextutils.LoggerFrom(d.ctx)
 	var discoveredMeshWorkload *zephyr_discovery.MeshWorkload
 	var err error
 	// Only run mesh workload scanner implementations for meshes that are known to have been discovered.
@@ -233,6 +234,7 @@ func (d *meshWorkloadFinder) discoverMeshWorkload(pod *k8s_core_types.Pod) (*zep
 	for _, discoveredMeshType := range d.discoveredMeshTypes.List() {
 		meshWorkloadScanner, ok := d.meshWorkloadScannerImplementations[zephyr_core_types.MeshType(discoveredMeshType)]
 		if !ok {
+			logger.Warnf("No MeshWorkloadScanner found for mesh type: %s", zephyr_core_types.MeshType(discoveredMeshType).String())
 			continue
 		}
 		discoveredMeshWorkload, err = meshWorkloadScanner.ScanPod(d.ctx, pod, d.clusterName)

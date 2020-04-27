@@ -46,7 +46,7 @@ var (
 	MustProvideClusterName = func(ref *core_types.ResourceRef) error {
 		return eris.Errorf("Must provide cluster name in ref %+v", ref)
 	}
-	MissingClusterLabel = func(resourceName string) error {
+	MissingMeshPlatformLabel = func(resourceName string) error {
 		return eris.Errorf("Resource '%s' does not have a "+constants.MESH_PLATFORM+" label", resourceName)
 	}
 )
@@ -212,7 +212,7 @@ func (b *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 
 		clusterName := meshWorkload.Labels[constants.MESH_PLATFORM]
 		if clusterName == "" {
-			return nil, MissingClusterLabel(meshWorkload.GetName())
+			return nil, MissingMeshPlatformLabel(meshWorkload.GetName())
 		}
 
 		dynamicClient, err := b.dynamicClientGetter.GetClientForCluster(ctx, clusterName)

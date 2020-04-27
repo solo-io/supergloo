@@ -28,11 +28,8 @@ type OwnerFetcher interface {
 	GetDeployment(ctx context.Context, pod *k8s_core_types.Pod) (*k8s_apps_types.Deployment, error)
 }
 
-// check a pod to see if it represents a mesh workload
-// if it does, produce the appropriate controller reference, and object meta corresponding to it
+// Scan a pod to see if it represents a mesh workload and if so return a computed MeshWorkload.
 type MeshWorkloadScanner interface {
-	// Return a ResourceRef to the kube Controller (e.g. Deployment), pod object meta,
-	// cluster name for disambiguating parent meshes that support multitenancy (e.g. AppMesh)
 	ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error)
 }
 
