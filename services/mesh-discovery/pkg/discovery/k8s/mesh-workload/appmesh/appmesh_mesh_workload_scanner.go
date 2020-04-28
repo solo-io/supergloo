@@ -11,14 +11,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload"
+	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws-utils"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
-const (
-	// Used to infer parent AppMesh Mesh name
-	AppMeshVirtualNodeEnvVarName = "APPMESH_VIRTUAL_NODE_NAME"
-	AppMeshRegionEnvVarName      = "AWS_REGION"
 )
 
 var (
@@ -46,15 +41,18 @@ type appMeshWorkloadScanner struct {
 }
 
 func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
-	isAppMeshPod, appMeshName, region := a.isAppMeshPod(pod)
-	if !isAppMeshPod {
+	appMeshPod, err := aws_utils.ScanPodForAppMesh(pod)
+	if err != nil {
+		return nil, err
+	}
+	if appMeshPod == nil {
 		return nil, nil
 	}
 	deployment, err := a.ownerFetcher.GetDeployment(ctx, pod)
 	if err != nil {
 		return nil, err
 	}
-	meshRef, err := a.getMeshResourceRef(ctx, appMeshName, region, clusterName)
+	meshRef, err := a.getMeshResourceRef(ctx, appMeshPod.AppMeshName, appMeshPod.Region, clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -77,29 +75,6 @@ func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_type
 			Mesh: meshRef,
 		},
 	}, nil
-}
-
-// iterate through pod's containers and check for one with name containing "appmesh" and "proxy"
-// if true, return inferred AppMesh name
-func (a *appMeshWorkloadScanner) isAppMeshPod(pod *k8s_core_types.Pod) (bool, string, string) {
-	for _, container := range pod.Spec.Containers {
-		if strings.Contains(container.Image, "appmesh") && strings.Contains(container.Image, "proxy") {
-			var appMeshName string
-			var region string
-			for _, env := range container.Env {
-				if env.Name == AppMeshVirtualNodeEnvVarName {
-					// Value takes format "mesh/<appmesh-mesh-name>/virtualNode/<virtual-node-name>"
-					// TODO perhaps record the virtual node name on the CRD because of AWS naming constraints between the Deployment and the correspodning VirtualNode
-					// https://docs.aws.amazon.com/eks/latest/userguide/mesh-k8s-integration.html
-					appMeshName = strings.Split(env.Value, "/")[1]
-				} else if env.Name == AppMeshRegionEnvVarName {
-					region = env.Value
-				}
-			}
-			return true, appMeshName, region
-		}
-	}
-	return false, "", ""
 }
 
 func (a *appMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, meshName, region, clusterName string) (*zephyr_core_types.ResourceRef, error) {

@@ -15,7 +15,7 @@ import (
 	mesh_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/consul"
 	mesh_istio "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/istio"
 	mesh_linkerd "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/linkerd"
-	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/event-watcher-factories"
+	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/event-watcher-factories"
 )
 
 func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {

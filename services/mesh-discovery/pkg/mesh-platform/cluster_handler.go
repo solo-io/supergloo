@@ -1,4 +1,4 @@
-package multicluster
+package mesh_platform
 
 import (
 	"context"

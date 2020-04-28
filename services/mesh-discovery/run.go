@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/istio"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/linkerd"
-	md_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster"
+	md_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/wire"
 	"go.uber.org/zap"
 )

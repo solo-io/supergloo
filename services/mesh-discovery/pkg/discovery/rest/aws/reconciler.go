@@ -6,14 +6,13 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
-	"github.com/rotisserie/eris"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest"
+	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws-utils"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,9 +21,6 @@ import (
 var (
 	ObjectNamePrefix   = "appmesh"
 	NumItemsPerRequest = aws.Int64(100)
-	ARNParseError      = func(err error, arn string) error {
-		return eris.Wrapf(err, "Error parsing ARN: %s", arn)
-	}
 )
 
 type appMeshDiscoveryReconciler struct {
@@ -127,7 +123,7 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
 
 func (a *appMeshDiscoveryReconciler) convertAppMeshMesh(appMeshRef *appmesh.MeshRef) (*zephyr_discovery.Mesh, error) {
 	meshName := a.buildAppMeshMeshName(appMeshRef)
-	awsAccountID, err := a.getAwsAccountID(appMeshRef)
+	awsAccountID, err := aws_utils.ParseAwsAccountID(aws.StringValue(appMeshRef.Arn))
 	if err != nil {
 		return nil, err
 	}
@@ -146,14 +142,6 @@ func (a *appMeshDiscoveryReconciler) convertAppMeshMesh(appMeshRef *appmesh.Mesh
 			},
 		},
 	}, nil
-}
-
-func (a *appMeshDiscoveryReconciler) getAwsAccountID(appMeshRef *appmesh.MeshRef) (string, error) {
-	parse, err := arn.Parse(aws.StringValue(appMeshRef.Arn))
-	if err != nil {
-		return "", ARNParseError(err, aws.StringValue(appMeshRef.Arn))
-	}
-	return parse.AccountID, nil
 }
 
 // TODO: https://github.com/solo-io/service-mesh-hub/issues/141
