@@ -52,6 +52,71 @@ var _ = Describe("AppmeshParser", func() {
 		Expect(appMeshPod).To(Equal(expectedAppMeshPod))
 	})
 
+	It("should return error if empty env var value", func() {
+		pod := &k8s_core_types.Pod{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
+				Name:      "name",
+				Namespace: "namespace",
+			},
+			Spec: k8s_core_types.PodSpec{
+				Containers: []k8s_core_types.Container{
+					{
+						Image: "840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.12.2.1-prod",
+						Env: []k8s_core_types.EnvVar{
+							{
+								Name:  aws_utils.AppMeshVirtualNodeEnvVarName,
+								Value: "mesh/foo/virtualNode/bar",
+							},
+							{
+								Name:  aws_utils.AppMeshRegionEnvVarName,
+								Value: "",
+							},
+							{
+								Name:  aws_utils.AppMeshRoleArnEnvVarName,
+								Value: "foobar",
+							},
+						},
+					},
+				},
+			},
+		}
+		_, err := aws_utils.ScanPodForAppMesh(pod)
+		Expect(err).To(testutils.HaveInErrorChain(aws_utils.EmptyEnvVarValueError(aws_utils.AppMeshRegionEnvVarName, pod.ObjectMeta)))
+	})
+
+	It("should return error if virtualnode env var has unexpected format", func() {
+		unexpectedValue := "incorrect format"
+		pod := &k8s_core_types.Pod{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
+				Name:      "name",
+				Namespace: "namespace",
+			},
+			Spec: k8s_core_types.PodSpec{
+				Containers: []k8s_core_types.Container{
+					{
+						Image: "840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.12.2.1-prod",
+						Env: []k8s_core_types.EnvVar{
+							{
+								Name:  aws_utils.AppMeshVirtualNodeEnvVarName,
+								Value: unexpectedValue,
+							},
+							{
+								Name:  aws_utils.AppMeshRegionEnvVarName,
+								Value: "asdf",
+							},
+							{
+								Name:  aws_utils.AppMeshRoleArnEnvVarName,
+								Value: "foobar",
+							},
+						},
+					},
+				},
+			},
+		}
+		_, err := aws_utils.ScanPodForAppMesh(pod)
+		Expect(err).To(testutils.HaveInErrorChain(aws_utils.UnexpectedVirtualNodeValue(unexpectedValue)))
+	})
+
 	It("should return nil if not AppMesh injected", func() {
 		pod := &k8s_core_types.Pod{
 			ObjectMeta: k8s_meta_types.ObjectMeta{},

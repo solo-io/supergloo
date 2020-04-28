@@ -11,60 +11,61 @@ import (
 	retry "github.com/avast/retry-go"
 	gomock "github.com/golang/mock/gomock"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	v1 "k8s.io/api/core/v1"
 	rest "k8s.io/client-go/rest"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 	manager "sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-// MockKubeConfigHandler is a mock of KubeConfigHandler interface.
-type MockKubeConfigHandler struct {
+// MockMeshPlatformCredentialsHandler is a mock of MeshPlatformCredentialsHandler interface.
+type MockMeshPlatformCredentialsHandler struct {
 	ctrl     *gomock.Controller
-	recorder *MockKubeConfigHandlerMockRecorder
+	recorder *MockMeshPlatformCredentialsHandlerMockRecorder
 }
 
-// MockKubeConfigHandlerMockRecorder is the mock recorder for MockKubeConfigHandler.
-type MockKubeConfigHandlerMockRecorder struct {
-	mock *MockKubeConfigHandler
+// MockMeshPlatformCredentialsHandlerMockRecorder is the mock recorder for MockMeshPlatformCredentialsHandler.
+type MockMeshPlatformCredentialsHandlerMockRecorder struct {
+	mock *MockMeshPlatformCredentialsHandler
 }
 
-// NewMockKubeConfigHandler creates a new mock instance.
-func NewMockKubeConfigHandler(ctrl *gomock.Controller) *MockKubeConfigHandler {
-	mock := &MockKubeConfigHandler{ctrl: ctrl}
-	mock.recorder = &MockKubeConfigHandlerMockRecorder{mock}
+// NewMockMeshPlatformCredentialsHandler creates a new mock instance.
+func NewMockMeshPlatformCredentialsHandler(ctrl *gomock.Controller) *MockMeshPlatformCredentialsHandler {
+	mock := &MockMeshPlatformCredentialsHandler{ctrl: ctrl}
+	mock.recorder = &MockMeshPlatformCredentialsHandlerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockKubeConfigHandler) EXPECT() *MockKubeConfigHandlerMockRecorder {
+func (m *MockMeshPlatformCredentialsHandler) EXPECT() *MockMeshPlatformCredentialsHandlerMockRecorder {
 	return m.recorder
 }
 
-// ClusterAdded mocks base method.
-func (m *MockKubeConfigHandler) ClusterAdded(cfg *rest.Config, clusterName string) error {
+// MeshPlatformAdded mocks base method.
+func (m *MockMeshPlatformCredentialsHandler) MeshPlatformAdded(ctx context.Context, secret *v1.Secret) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ClusterAdded", cfg, clusterName)
+	ret := m.ctrl.Call(m, "MeshPlatformAdded", ctx, secret)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ClusterAdded indicates an expected call of ClusterAdded.
-func (mr *MockKubeConfigHandlerMockRecorder) ClusterAdded(cfg, clusterName interface{}) *gomock.Call {
+// MeshPlatformAdded indicates an expected call of MeshPlatformAdded.
+func (mr *MockMeshPlatformCredentialsHandlerMockRecorder) MeshPlatformAdded(ctx, secret interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterAdded", reflect.TypeOf((*MockKubeConfigHandler)(nil).ClusterAdded), cfg, clusterName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshPlatformAdded", reflect.TypeOf((*MockMeshPlatformCredentialsHandler)(nil).MeshPlatformAdded), ctx, secret)
 }
 
-// ClusterRemoved mocks base method.
-func (m *MockKubeConfigHandler) ClusterRemoved(cluster string) error {
+// MeshPlatformRemoved mocks base method.
+func (m *MockMeshPlatformCredentialsHandler) MeshPlatformRemoved(ctx context.Context, secret *v1.Secret) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ClusterRemoved", cluster)
+	ret := m.ctrl.Call(m, "MeshPlatformRemoved", ctx, secret)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ClusterRemoved indicates an expected call of ClusterRemoved.
-func (mr *MockKubeConfigHandlerMockRecorder) ClusterRemoved(cluster interface{}) *gomock.Call {
+// MeshPlatformRemoved indicates an expected call of MeshPlatformRemoved.
+func (mr *MockMeshPlatformCredentialsHandlerMockRecorder) MeshPlatformRemoved(ctx, secret interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterRemoved", reflect.TypeOf((*MockKubeConfigHandler)(nil).ClusterRemoved), cluster)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshPlatformRemoved", reflect.TypeOf((*MockMeshPlatformCredentialsHandler)(nil).MeshPlatformRemoved), ctx, secret)
 }
 
 // MockAsyncManagerHandler is a mock of AsyncManagerHandler interface.

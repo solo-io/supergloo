@@ -6,6 +6,8 @@ import (
 	"context"
 
 	"github.com/google/wire"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
@@ -40,8 +42,10 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		mesh_consul.WireProviderSet,
 		mesh_linkerd.WireProviderSet,
 		DiscoveryContextProvider,
-		RestAPIHandlersProvider,
+		MeshPlatformCredentialsHandlersProvider,
 		AwsSet,
+		kube.NewConverter,
+		files.NewDefaultFileReader,
 	)
 
 	return DiscoveryContext{}, nil

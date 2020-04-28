@@ -22,7 +22,7 @@ type NamedAsyncManagerHandler struct {
 type MultiClusterDependencies struct {
 	LocalManager         mc_manager.AsyncManager
 	AsyncManagerInformer mc_manager.AsyncManagerInformer
-	KubeConfigHandler    mc_manager.KubeConfigHandler
+	KubeConfigHandler    mc_manager.MeshPlatformCredentialsHandler
 	LocalManagerStarter  mc_manager.AsyncManagerStartOptionsFunc
 	Context              context.Context
 }

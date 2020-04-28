@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/clients/appmesh"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -25,7 +25,7 @@ type awsCredsHandler struct {
 	reconcilerCancelFuncs             map[string]context.CancelFunc // Map of meshPlatformName -> RestAPIDiscoveryReconciler's cancelFunc
 }
 
-type AwsCredsHandler rest.RestAPICredsHandler
+type AwsCredsHandler mc_manager.MeshPlatformCredentialsHandler
 
 func NewAwsAPIHandler(
 	appMeshClientFactory appmesh_client.AppMeshClientFactory,
@@ -38,7 +38,7 @@ func NewAwsAPIHandler(
 	}
 }
 
-func (a *awsCredsHandler) RestAPIAdded(ctx context.Context, secret *k8s_core_types.Secret) error {
+func (a *awsCredsHandler) MeshPlatformAdded(ctx context.Context, secret *k8s_core_types.Secret) error {
 	// Only handle AWS REST APIs
 	if secret.Type != aws_creds.AWSSecretType {
 		return nil
@@ -73,7 +73,7 @@ func (a *awsCredsHandler) RestAPIAdded(ctx context.Context, secret *k8s_core_typ
 	return nil
 }
 
-func (a *awsCredsHandler) RestAPIRemoved(ctx context.Context, secret *k8s_core_types.Secret) error {
+func (a *awsCredsHandler) MeshPlatformRemoved(ctx context.Context, secret *k8s_core_types.Secret) error {
 	// Only handle AWS REST APIs
 	if secret.Type != aws_creds.AWSSecretType {
 		return nil

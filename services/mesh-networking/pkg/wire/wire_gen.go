@@ -8,6 +8,8 @@ package wire
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
@@ -52,10 +54,12 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	if err != nil {
 		return MeshNetworkingContext{}, err
 	}
-	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
+	fileReader := files.NewDefaultFileReader()
+	converter := kube.NewConverter(fileReader)
+	asyncManagerController := mc_wire.KubeClusterCredentialsHandlerProvider(converter)
 	awsCredsHandler := NewNetworkingAwsCredsHandler()
-	v := RestAPIHandlersProvider(awsCredsHandler)
-	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController, v)
+	v := MeshPlatformCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
+	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	virtualMeshCSRControllerFactory := controller_factories.NewVirtualMeshCSRControllerFactory()
 	controllerFactories := NewControllerFactories(virtualMeshCSRControllerFactory)

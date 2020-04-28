@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/rotisserie/eris"
 	k8s_core_types "k8s.io/api/core/v1"
+	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -18,6 +19,12 @@ const (
 var (
 	ARNParseError = func(err error, arn string) error {
 		return eris.Wrapf(err, "Error parsing ARN: %s", arn)
+	}
+	EmptyEnvVarValueError = func(envVarName string, podMeta k8s_meta_types.ObjectMeta) error {
+		return eris.Errorf("Missing value for env var %s on pod %s, %s", envVarName, podMeta.GetName(), podMeta.GetNamespace())
+	}
+	UnexpectedVirtualNodeValue = func(virtualNodeEnvVarValue string) error {
+		return eris.Errorf("Unexpected value for env var %s: %s", AppMeshVirtualNodeEnvVarName, virtualNodeEnvVarValue)
 	}
 )
 
@@ -40,11 +47,21 @@ func ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod, error) {
 					// Value takes format "mesh/<appmesh-mesh-name>/virtualNode/<virtual-node-name>"
 					// VirtualNodeName value has significance for AppMesh functionality, reference:
 					// https://docs.aws.amazon.com/eks/latest/userguide/mesh-k8s-integration.html
-					appMeshName = strings.Split(env.Value, "/")[1]
-					virtualNodeName = strings.Split(env.Value, "/")[3]
+					split := strings.Split(env.Value, "/")
+					if len(split) != 4 {
+						return nil, UnexpectedVirtualNodeValue(env.Value)
+					}
+					appMeshName = split[1]
+					virtualNodeName = split[3]
 				} else if env.Name == AppMeshRegionEnvVarName {
+					if env.Value == "" {
+						return nil, EmptyEnvVarValueError(env.Name, pod.ObjectMeta)
+					}
 					region = env.Value
 				} else if env.Name == AppMeshRoleArnEnvVarName {
+					if env.Value == "" {
+						return nil, EmptyEnvVarValueError(env.Name, pod.ObjectMeta)
+					}
 					awsAccountID, err = ParseAwsAccountID(env.Value)
 					if err != nil {
 						return nil, err

@@ -9,59 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1 "k8s.io/api/core/v1"
 )
-
-// MockRestAPICredsHandler is a mock of RestAPICredsHandler interface.
-type MockRestAPICredsHandler struct {
-	ctrl     *gomock.Controller
-	recorder *MockRestAPICredsHandlerMockRecorder
-}
-
-// MockRestAPICredsHandlerMockRecorder is the mock recorder for MockRestAPICredsHandler.
-type MockRestAPICredsHandlerMockRecorder struct {
-	mock *MockRestAPICredsHandler
-}
-
-// NewMockRestAPICredsHandler creates a new mock instance.
-func NewMockRestAPICredsHandler(ctrl *gomock.Controller) *MockRestAPICredsHandler {
-	mock := &MockRestAPICredsHandler{ctrl: ctrl}
-	mock.recorder = &MockRestAPICredsHandlerMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRestAPICredsHandler) EXPECT() *MockRestAPICredsHandlerMockRecorder {
-	return m.recorder
-}
-
-// RestAPIAdded mocks base method.
-func (m *MockRestAPICredsHandler) RestAPIAdded(parentCtx context.Context, secret *v1.Secret) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RestAPIAdded", parentCtx, secret)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RestAPIAdded indicates an expected call of RestAPIAdded.
-func (mr *MockRestAPICredsHandlerMockRecorder) RestAPIAdded(parentCtx, secret interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestAPIAdded", reflect.TypeOf((*MockRestAPICredsHandler)(nil).RestAPIAdded), parentCtx, secret)
-}
-
-// RestAPIRemoved mocks base method.
-func (m *MockRestAPICredsHandler) RestAPIRemoved(ctx context.Context, secret *v1.Secret) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RestAPIRemoved", ctx, secret)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RestAPIRemoved indicates an expected call of RestAPIRemoved.
-func (mr *MockRestAPICredsHandlerMockRecorder) RestAPIRemoved(ctx, secret interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestAPIRemoved", reflect.TypeOf((*MockRestAPICredsHandler)(nil).RestAPIRemoved), ctx, secret)
-}
 
 // MockRestAPIDiscoveryReconciler is a mock of RestAPIDiscoveryReconciler interface.
 type MockRestAPIDiscoveryReconciler struct {

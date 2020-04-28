@@ -5,10 +5,10 @@ import (
 
 	"github.com/google/wire"
 	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	mc_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher"
-	rest2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	k8s_manager "sigs.k8s.io/controller-runtime/pkg/manager"
@@ -19,7 +19,7 @@ import (
 var MulticlusterProviderSet = wire.NewSet(
 	ClusterProviderSet,
 	AsyncManagerFactoryProvider,
-	AsyncManagerControllerProvider,
+	KubeClusterCredentialsHandlerProvider,
 	LocalManagerStarterProvider,
 	MulticlusterDependenciesProvider,
 )
@@ -36,10 +36,9 @@ func LocalKubeConfigProvider() (*rest.Config, error) {
 }
 
 func LocalManagerStarterProvider(
-	controller *mc_manager.AsyncManagerController,
-	restAPIHandlers []rest2.RestAPICredsHandler,
+	meshPlatformCredentialsHandlers []mc_manager.MeshPlatformCredentialsHandler,
 ) mc_manager.AsyncManagerStartOptionsFunc {
-	return mc_watcher.StartLocalManager(controller, restAPIHandlers)
+	return mc_watcher.StartLocalManager(meshPlatformCredentialsHandlers)
 }
 
 func LocalManagerProvider(ctx context.Context, cfg *rest.Config) (mc_manager.AsyncManager, error) {
@@ -59,8 +58,10 @@ func AsyncManagerFactoryProvider() mc_manager.AsyncManagerFactory {
 	return mc_manager.NewAsyncManagerFactory()
 }
 
-func AsyncManagerControllerProvider(ctx context.Context, localManager mc_manager.AsyncManager) *mc_manager.AsyncManagerController {
-	return mc_manager.NewAsyncManagerControllerFromLocal(ctx, localManager.Manager(), mc_manager.NewAsyncManagerFactory())
+func KubeClusterCredentialsHandlerProvider(
+	kubeConverter kube.Converter,
+) *mc_manager.AsyncManagerController {
+	return mc_manager.NewAsyncManagerController(mc_manager.NewAsyncManagerFactory(), kubeConverter)
 }
 
 func DynamicClientGetterProvider(controller *mc_manager.AsyncManagerController) mc_manager.DynamicClientGetter {

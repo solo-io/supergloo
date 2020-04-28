@@ -16,6 +16,7 @@ import (
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/appmesh"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload/mocks"
+	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws-utils"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -39,15 +40,19 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{
 					{
-						Image: "appmesh-proxy",
+						Image: "appmesh-envoy",
 						Env: []corev1.EnvVar{
 							{
-								Name:  appmesh.AppMeshVirtualNodeEnvVarName,
+								Name:  aws_utils.AppMeshVirtualNodeEnvVarName,
 								Value: fmt.Sprintf("mesh/%s/virtualNode/virtualNodeName", meshName),
 							},
 							{
-								Name:  appmesh.AppMeshRegionEnvVarName,
+								Name:  aws_utils.AppMeshRegionEnvVarName,
 								Value: region,
+							},
+							{
+								Name:  aws_utils.AppMeshRoleArnEnvVarName,
+								Value: "arn:aws:iam::awsaccountid:role/iamserviceaccount-role",
 							},
 						},
 					},

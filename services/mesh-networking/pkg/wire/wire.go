@@ -6,6 +6,8 @@ import (
 	"context"
 
 	"github.com/google/wire"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
@@ -53,8 +55,10 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		cert_manager.VMCSRSnapshotListenerSet,
 		MeshNetworkingSnapshotContextProvider,
 		MeshNetworkingContextProvider,
-		RestAPIHandlersProvider,
 		AwsSet,
+		MeshPlatformCredentialsHandlersProvider,
+		kube.NewConverter,
+		files.NewDefaultFileReader,
 	)
 
 	return MeshNetworkingContext{}, nil

@@ -5,9 +5,9 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	"k8s.io/client-go/rest"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
+	k8s_core_types "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 const (
@@ -38,7 +38,9 @@ var (
 	ClientNotFoundError = func(clusterName string) error {
 		return eris.Errorf("Client not found for cluster with name: %s", clusterName)
 	}
-	noClientErr = eris.New("no client")
+	KubeConfigInvalidFormatError = func(err error, name, namespace string) error {
+		return eris.Wrapf(err, "invalid kube config in secret %s, %s", name, namespace)
+	}
 )
 
 /*
@@ -47,11 +49,10 @@ var (
 	as they are created.
 */
 type AsyncManagerController struct {
-	ctx     context.Context
-	factory AsyncManagerFactory
-
-	managers *AsyncManagerMap
-	handlers *AsyncManagerHandlerMap
+	factory       AsyncManagerFactory
+	managers      *AsyncManagerMap
+	handlers      *AsyncManagerHandlerMap
+	kubeConverter kube.Converter
 }
 
 /*
@@ -60,60 +61,67 @@ type AsyncManagerController struct {
 
 	The empty string "" is the string ID representation of the local cluster
 */
-func NewAsyncManagerControllerFromLocal(
-	ctx context.Context,
-	mgr manager.Manager,
+func NewAsyncManagerController(
 	factory AsyncManagerFactory,
+	kubeConverter kube.Converter,
 ) *AsyncManagerController {
-
-	ctxMgr := NewAsyncManager(ctx, mgr)
-
 	managers := NewAsyncManagerMap()
-	managers.SetManager("", ctxMgr)
-
 	receivers := NewAsyncManagerHandler()
 	mcMgr := &AsyncManagerController{
-		ctx:      ctx,
-		handlers: receivers,
-		managers: managers,
-		factory:  factory,
+		handlers:      receivers,
+		managers:      managers,
+		factory:       factory,
+		kubeConverter: kubeConverter,
 	}
 	return mcMgr
 }
 
-func (m *AsyncManagerController) AsyncManagerInformer() AsyncManagerInformer {
-	return m
+func (a *AsyncManagerController) AsyncManagerInformer() AsyncManagerInformer {
+	return a
 }
-func (m *AsyncManagerController) KubeConfigHandler() KubeConfigHandler {
-	return m
+func (a *AsyncManagerController) KubeConfigHandler() MeshPlatformCredentialsHandler {
+	return a
 }
 
 // default constructor for AsyncManagerController, mostly used for testing
-func NewAsyncManagerController(ctx context.Context, handlers *AsyncManagerHandlerMap, managers *AsyncManagerMap,
-	factory AsyncManagerFactory) *AsyncManagerController {
+func NewAsyncManagerControllerWithHandlers(
+	handlers *AsyncManagerHandlerMap,
+	managers *AsyncManagerMap,
+	factory AsyncManagerFactory,
+	kubeConverter kube.Converter,
+) *AsyncManagerController {
 	mcMgr := &AsyncManagerController{
-		ctx:      ctx,
-		handlers: handlers,
-		managers: managers,
-		factory:  factory,
+		handlers:      handlers,
+		managers:      managers,
+		factory:       factory,
+		kubeConverter: kubeConverter,
 	}
 	return mcMgr
 }
 
-func (m *AsyncManagerController) AddHandler(informer AsyncManagerHandler, name string) error {
-	return m.handlers.SetHandler(name, informer)
+func (a *AsyncManagerController) AddHandler(informer AsyncManagerHandler, name string) error {
+	return a.handlers.SetHandler(name, informer)
 }
 
-func (m *AsyncManagerController) RemoveHandler(name string) error {
-	if _, ok := m.handlers.GetHandler(name); !ok {
+func (a *AsyncManagerController) RemoveHandler(name string) error {
+	if _, ok := a.handlers.GetHandler(name); !ok {
 		return InformerNotRegisteredError
 	}
-	m.handlers.RemoveHandler(name)
+	a.handlers.RemoveHandler(name)
 	return nil
 }
 
-func (m *AsyncManagerController) ClusterAdded(cfg *rest.Config, clusterName string) error {
-	mgr, err := m.factory.New(m.ctx, cfg, AsyncManagerOptions{
+func (a *AsyncManagerController) MeshPlatformAdded(ctx context.Context, secret *k8s_core_types.Secret) error {
+	// Only handle secrets representing k8s cluster credentials
+	// TODO change this check to the new k8s cluster specific Secret type when migrating to skv2
+	if secret.Type != k8s_core_types.SecretTypeOpaque {
+		return nil
+	}
+	clusterName, config, err := a.kubeConverter.SecretToConfig(secret)
+	if err != nil {
+		return KubeConfigInvalidFormatError(err, secret.GetName(), secret.GetNamespace())
+	}
+	mgr, err := a.factory.New(ctx, config.RestConfig, AsyncManagerOptions{
 		Cluster: clusterName,
 	})
 	if err != nil {
@@ -122,33 +130,36 @@ func (m *AsyncManagerController) ClusterAdded(cfg *rest.Config, clusterName stri
 	if err := mgr.Start(); err != nil {
 		return AsyncManagerStartError(err, clusterName)
 	}
-	for handlerName, handler := range m.handlers.ListHandlersByName() {
+	for handlerName, handler := range a.handlers.ListHandlersByName() {
 		if err := handler.ClusterAdded(mgr.Context(), mgr, clusterName); err != nil {
 			return InformerAddFailedError(err, handlerName, clusterName)
 		}
 	}
-	return m.managers.SetManager(clusterName, mgr)
+	return a.managers.SetManager(clusterName, mgr)
 }
 
-func (m *AsyncManagerController) ClusterRemoved(cluster string) error {
-	mgr, ok := m.managers.GetManager(cluster)
+func (a *AsyncManagerController) MeshPlatformRemoved(_ context.Context, secret *k8s_core_types.Secret) error {
+	// Only handle secrets representing k8s cluster credentials
+	// TODO change this check to the new k8s cluster specific Secret type when migrating to skv2
+	if secret.Type != k8s_core_types.SecretTypeOpaque {
+		return nil
+	}
+	cluster := secret.GetName()
+	mgr, ok := a.managers.GetManager(cluster)
 	if !ok {
 		return NoManagerForClusterError(cluster)
 	}
 	mgr.Stop()
-	for handlerName, handler := range m.handlers.ListHandlersByName() {
+	for handlerName, handler := range a.handlers.ListHandlersByName() {
 		if err := handler.ClusterRemoved(cluster); err != nil {
 			return InformerDeleteFailedError(err, handlerName, cluster)
 		}
 	}
-	m.managers.RemoveManager(cluster)
+	a.managers.RemoveManager(cluster)
 	return nil
 }
 
-// Both "" and common.LocalClusterName refer to the master (i.e. local) cluster.
-// This is due to the fact that internally common.LocalClusterName is used to represent the local cluster,
-// whereas in user-supplied config omission of the cluster name or "" refer to the local cluster.
-func (m *AsyncManagerController) GetClientForCluster(_ context.Context, clusterName string, opts ...retry.Option) (client.Client, error) {
+func (a *AsyncManagerController) GetClientForCluster(_ context.Context, clusterName string, opts ...retry.Option) (client.Client, error) {
 	var mgr AsyncManager
 
 	// prepend default Option so it can be overridden by input opts
@@ -156,9 +167,9 @@ func (m *AsyncManagerController) GetClientForCluster(_ context.Context, clusterN
 
 	err := retry.Do(func() error {
 		var ok bool
-		mgr, ok = m.managers.GetManager(clusterName)
+		mgr, ok = a.managers.GetManager(clusterName)
 		if !ok {
-			return noClientErr
+			return eris.New("")
 		}
 		return nil
 	}, opts...)

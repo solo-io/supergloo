@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/avast/retry-go"
+	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -11,14 +12,16 @@ import (
 
 //go:generate mockgen -source interfaces.go -destination ./mocks/interfaces.go
 
-// these functions are intended to be used as callbacks for a resource watcher, where the
-// resources represent KubeConfigs
-type KubeConfigHandler interface {
-	ClusterAdded(cfg *rest.Config, clusterName string) error
-	ClusterRemoved(cluster string) error
+// Callback invoked upon creation of k8s Secrets representing MeshPlatform credentials,
+// which signals the initialization of a new MeshPlatform that SMH will start managing
+type MeshPlatformCredentialsHandler interface {
+	// Invoked when user manually registers a new service mesh platform with SMH
+	MeshPlatformAdded(ctx context.Context, secret *k8s_core_types.Secret) error
+	// Cleans up any state/processes associated with the specified MeshPlatform
+	MeshPlatformRemoved(ctx context.Context, secret *k8s_core_types.Secret) error
 }
 
-// These functions are intended to be used as an extension to the KubeConfigHandler.
+// These functions are intended to be used as an extension to the MeshPlatformCredentialsHandler.
 // Only one manager needs to be created per cluster, so these callbacks will be
 // called when a manager has been created for a given cluster
 type AsyncManagerHandler interface {

@@ -7,7 +7,7 @@ package mock_appmesh
 import (
 	reflect "reflect"
 
-	appmesh "github.com/aws/aws-sdk-go/service/appmesh"
+	appmeshiface "github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
 	gomock "github.com/golang/mock/gomock"
 	v1 "k8s.io/api/core/v1"
 )
@@ -36,10 +36,10 @@ func (m *MockAppMeshClientFactory) EXPECT() *MockAppMeshClientFactoryMockRecorde
 }
 
 // Build mocks base method.
-func (m *MockAppMeshClientFactory) Build(secret *v1.Secret, region string) (*appmesh.AppMesh, error) {
+func (m *MockAppMeshClientFactory) Build(secret *v1.Secret, region string) (appmeshiface.AppMeshAPI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", secret, region)
-	ret0, _ := ret[0].(*appmesh.AppMesh)
+	ret0, _ := ret[0].(appmeshiface.AppMeshAPI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

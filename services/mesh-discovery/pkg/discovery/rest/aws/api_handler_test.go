@@ -53,29 +53,29 @@ var _ = Describe("CredsHandler", func() {
 	})
 
 	It("should ignore non-AWS secrets when mesh platform added", func() {
-		err := awsCredsHandler.RestAPIAdded(ctx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
+		err := awsCredsHandler.MeshPlatformAdded(ctx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should ignore non-AWS secrets when mesh platform removed", func() {
-		err := awsCredsHandler.RestAPIRemoved(ctx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
+		err := awsCredsHandler.MeshPlatformRemoved(ctx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should handle new API registration", func() {
 		mockAppMeshClientFactory.EXPECT().Build(secret, aws.Region).Return(appMeshClient, nil)
 		//mockRestAPIDiscoveryReconciler.EXPECT().Reconcile(gomock.Any())
-		err := awsCredsHandler.RestAPIAdded(ctx, secret)
+		err := awsCredsHandler.MeshPlatformAdded(ctx, secret)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should handle new API deregistration", func() {
 		// register the API first for cancelFunc map entry
 		mockAppMeshClientFactory.EXPECT().Build(secret, aws.Region).Return(appMeshClient, nil)
-		err := awsCredsHandler.RestAPIAdded(ctx, secret)
+		err := awsCredsHandler.MeshPlatformAdded(ctx, secret)
 		Expect(err).ToNot(HaveOccurred())
 
-		err = awsCredsHandler.RestAPIRemoved(ctx, secret)
+		err = awsCredsHandler.MeshPlatformRemoved(ctx, secret)
 		Expect(err).ToNot(HaveOccurred())
 	})
 })

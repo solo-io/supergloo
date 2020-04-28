@@ -9,6 +9,8 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
@@ -34,15 +36,17 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	if err != nil {
 		return DiscoveryContext{}, err
 	}
-	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
+	fileReader := files.NewDefaultFileReader()
+	converter := kube.NewConverter(fileReader)
+	asyncManagerController := mc_wire.KubeClusterCredentialsHandlerProvider(converter)
 	secretAwsCredsConverter := aws_creds.DefaultSecretAwsCredsConverter()
 	appMeshClientFactory := appmesh.NewAppMeshClientFactory(secretAwsCredsConverter)
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
 	appMeshDiscoveryReconcilerFactory := aws.NewAppMeshDiscoveryReconcilerFactory(client, meshClientFactory)
 	awsCredsHandler := aws.NewAwsAPIHandler(appMeshClientFactory, appMeshDiscoveryReconcilerFactory)
-	v := RestAPIHandlersProvider(awsCredsHandler)
-	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController, v)
+	v := MeshPlatformCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
+	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	imageNameParser := docker.NewImageNameParser()
 	configMapClientFactory := v1.ConfigMapClientFactoryProvider()
