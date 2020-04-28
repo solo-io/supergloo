@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Clean up Mesh Workload CRs when they need to be garbage collected
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/584
+    resolvesIssue: false
