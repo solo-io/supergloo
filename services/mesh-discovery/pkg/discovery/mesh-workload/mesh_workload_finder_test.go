@@ -14,6 +14,7 @@ import (
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/mocks"
@@ -97,9 +98,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 				},
 			},
 		}
-
-		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
-		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 	})
 
 	AfterEach(func() {
@@ -135,6 +133,11 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		}
 		objKey, _ := client.ObjectKeyFromObject(discoveredMeshWorkload)
 		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+		mockLocalMeshWorkloadClient.EXPECT().
 			GetMeshWorkload(ctx, objKey).
 			Return(nil, notFoundErr)
 		mockLocalMeshClient.EXPECT().
@@ -144,13 +147,15 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshWorkloadClient.EXPECT().
 			CreateMeshWorkload(ctx, discoveredMeshWorkload).
 			Return(nil)
-
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{*pod}}, nil)
 
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+
 		// Now Istio has been discovered
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -205,8 +210,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
 
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+
 		// Now Istio has been discovered, but no pods will be found yet
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -222,8 +236,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("discovers no workload if no mesh has been discovered (prevents a race condition)", func() {
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+
 		// no mesh has been discovered
-		err := podEventHandlerFuncs.OnCreate(pod)
+		err = podEventHandlerFuncs.OnCreate(pod)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -235,9 +258,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{*pod}}, nil)
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
 		// Now Istio has been discovered
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -262,9 +293,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{*pod}}, nil)
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
 		// Now Istio has been discovered
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -309,9 +348,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
 		// Now Istio has been discovered
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -359,9 +406,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
 		// Now Istio has been discovered
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -426,9 +481,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
 		// Now Istio has been discovered
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -448,9 +511,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
 		// Now Istio has been discovered
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -474,9 +545,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
 		// Now Istio has been discovered
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -497,9 +576,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
 		// Now Istio has been discovered
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -553,9 +640,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		podClient.EXPECT().
 			ListPod(ctx).
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
 		// Now Istio has been discovered
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -570,7 +665,16 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("does not start discovering if a mesh was discovered on some other cluster", func() {
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -582,7 +686,16 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("does not remember that a mesh was discovered on some other cluster when handling a pod event later", func() {
-		err := meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
 				Cluster: &zephyr_core_types.ResourceRef{
@@ -596,5 +709,127 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 		err = podEventHandlerFuncs.OnUpdate(pod, newPod)
 		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("does nothing on startup if nothing has been discovered yet and no events come in", func() {
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+	})
+
+	It("does nothing on startup if no events on discovered resources have been missed", func() {
+		meshName := "meshName"
+		meshNamespace := "meshNamespace"
+		mesh := zephyr_discovery.Mesh{
+			Spec: zephyr_discovery_types.MeshSpec{
+				Cluster:  &zephyr_core_types.ResourceRef{Name: clusterName},
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+			},
+			ObjectMeta: k8s_meta_types.ObjectMeta{Name: meshName, Namespace: meshNamespace},
+		}
+		meshSpec := &zephyr_core_types.ResourceRef{
+			Name:      mesh.Name,
+			Namespace: mesh.Namespace,
+			Cluster:   clusterName,
+		}
+		discoveredMeshWorkload.Spec.Mesh = meshSpec
+
+		pod := &k8s_core_types.Pod{
+			ObjectMeta: k8s_meta_types.ObjectMeta{},
+		}
+
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*discoveredMeshWorkload}}, nil)
+		podClient.EXPECT().
+			ListPod(ctx).
+			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{*pod}}, nil).
+			Times(2)
+		mockLocalMeshClient.EXPECT().
+			ListMesh(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}, nil)
+		podCopy := *pod
+		podCopy.ObjectMeta = k8s_meta_types.ObjectMeta{
+			Name:        pod.ObjectMeta.Name,
+			Namespace:   pod.ObjectMeta.Namespace,
+			ClusterName: clusterName,
+		}
+		mockMeshWorkloadScanner.EXPECT().
+			ScanPod(ctx, &podCopy).
+			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil).
+			Times(2)
+		mockLocalMeshClient.EXPECT().
+			ListMesh(ctx, &client.ListOptions{}).
+			Return(&zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}, nil).
+			Times(2)
+		objKey, err := client.ObjectKeyFromObject(discoveredMeshWorkload)
+		Expect(err).NotTo(HaveOccurred())
+		mockLocalMeshWorkloadClient.EXPECT().
+			GetMeshWorkload(ctx, objKey).
+			Return(discoveredMeshWorkload, nil)
+
+		err = meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+	})
+
+	It("deletes mesh workloads whose delete events have been missed", func() {
+		meshName := "meshName"
+		meshNamespace := "meshNamespace"
+		mesh := zephyr_discovery.Mesh{
+			Spec: zephyr_discovery_types.MeshSpec{
+				Cluster:  &zephyr_core_types.ResourceRef{Name: clusterName},
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+			},
+			ObjectMeta: k8s_meta_types.ObjectMeta{Name: meshName, Namespace: meshNamespace},
+		}
+		meshSpec := &zephyr_core_types.ResourceRef{
+			Name:      mesh.Name,
+			Namespace: mesh.Namespace,
+			Cluster:   clusterName,
+		}
+		discoveredMeshWorkload.Spec.Mesh = meshSpec
+
+		pod := &k8s_core_types.Pod{
+			ObjectMeta: k8s_meta_types.ObjectMeta{},
+		}
+
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*discoveredMeshWorkload}}, nil)
+		podClient.EXPECT().
+			ListPod(ctx).
+			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{*pod}}, nil).
+			Times(2)
+		mockLocalMeshClient.EXPECT().
+			ListMesh(ctx, client.MatchingLabels{
+				constants.CLUSTER: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}, nil)
+		podCopy := *pod
+		podCopy.ObjectMeta = k8s_meta_types.ObjectMeta{
+			Name:        pod.ObjectMeta.Name,
+			Namespace:   pod.ObjectMeta.Namespace,
+			ClusterName: clusterName,
+		}
+		mockMeshWorkloadScanner.EXPECT().
+			ScanPod(ctx, &podCopy).
+			Return(nil, k8s_meta_types.ObjectMeta{}, nil).
+			Times(2)
+		mockLocalMeshWorkloadClient.EXPECT().
+			DeleteMeshWorkload(ctx, clients.ObjectMetaToObjectKey(discoveredMeshWorkload.ObjectMeta))
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 	})
 })
