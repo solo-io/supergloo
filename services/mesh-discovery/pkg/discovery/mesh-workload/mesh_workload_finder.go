@@ -168,8 +168,7 @@ func (m *meshWorkloadFinder) reconcileExistingState() error {
 		if discoveredWorkload != nil && !existingMeshWorkload.Spec.Equal(discoveredWorkload.Spec) {
 
 			// we missed an update event, make sure the state of the cluster matches what we discovered from the pod
-			existingMeshWorkload.Spec = discoveredWorkload.Spec
-			err := m.localMeshWorkloadClient.UpdateMeshWorkload(m.ctx, &existingMeshWorkload)
+			err := m.localMeshWorkloadClient.UpsertMeshWorkloadSpec(m.ctx, discoveredWorkload)
 			if err != nil {
 				return err
 			}
@@ -185,17 +184,17 @@ func (m *meshWorkloadFinder) reconcileExistingState() error {
 	return nil
 }
 
-func (m *meshWorkloadFinder) handleMeshDelete(meshBeingDeleted *zephyr_discovery.Mesh) error {
-	logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, meshBeingDeleted)
+func (m *meshWorkloadFinder) handleMeshDelete(deletedMesh *zephyr_discovery.Mesh) error {
+	logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, deletedMesh)
 
-	logger.Debugf("Handling delete for mesh %s.%s", meshBeingDeleted.GetName(), meshBeingDeleted.GetNamespace())
+	logger.Debugf("Handling delete for mesh %s.%s", deletedMesh.GetName(), deletedMesh.GetNamespace())
 
 	// ignore meshes that are not running on this cluster
-	if meshBeingDeleted.Spec.GetCluster().GetName() != m.clusterName {
+	if deletedMesh.Spec.GetCluster().GetName() != m.clusterName {
 		return nil
 	}
 
-	meshType, err := enum_conversion.MeshToMeshType(meshBeingDeleted)
+	meshType, err := enum_conversion.MeshToMeshType(deletedMesh)
 	if err != nil {
 		logger.Errorf("%+v", err)
 		return nil
@@ -216,7 +215,7 @@ func (m *meshWorkloadFinder) handleMeshDelete(meshBeingDeleted *zephyr_discovery
 		meshWorkload := meshWorkloadIter
 
 		meshForWorkload := clients.ResourceRefToObjectMeta(meshWorkload.Spec.GetMesh())
-		if clients.SameObject(meshForWorkload, meshBeingDeleted.ObjectMeta) {
+		if clients.SameObject(meshForWorkload, deletedMesh.ObjectMeta) {
 			err = m.localMeshWorkloadClient.DeleteMeshWorkload(m.ctx, clients.ObjectMetaToObjectKey(meshWorkload.ObjectMeta))
 			if err != nil {
 				logger.Errorf("%+v", err)
