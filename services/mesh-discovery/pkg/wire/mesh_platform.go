@@ -6,8 +6,10 @@ import (
 	mesh_platform "github.com/solo-io/service-mesh-hub/services/common/mesh-platform"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
 	"github.com/solo-io/service-mesh-hub/services/common/mesh-platform/rest"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
 	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws/clients/appmesh"
+	meshplatform_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
 )
 
 var AwsSet = wire.NewSet(
@@ -15,6 +17,9 @@ var AwsSet = wire.NewSet(
 	aws_creds.DefaultSecretAwsCredsConverter,
 	appmesh_client.NewAppMeshClientFactory,
 	aws.NewAppMeshDiscoveryReconcilerFactory,
+	meshplatform_aws.NewArnParser,
+	meshplatform_aws.NewAppMeshParser,
+	appmesh.AppMeshWorkloadScannerFactoryProvider,
 )
 
 func MeshPlatformCredentialsHandlersProvider(

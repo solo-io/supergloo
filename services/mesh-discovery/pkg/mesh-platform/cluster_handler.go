@@ -12,13 +12,13 @@ import (
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
-	k8s2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service/k8s"
-	k8s3 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
+	meshservice_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service/k8s"
+	meshworkload_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/wire"
 )
 
-type MeshWorkloadScannerFactoryImplementations map[core_types.MeshType]k8s3.MeshWorkloadScannerFactory
+type MeshWorkloadScannerFactoryImplementations map[core_types.MeshType]meshworkload_discovery.MeshWorkloadScannerFactory
 
 // this is the main entrypoint for discovery
 // when a cluster is registered, we handle that event and spin up new resource controllers for that cluster
@@ -76,7 +76,7 @@ type discoveryClusterHandler struct {
 type clusterDependentDeps struct {
 	deploymentEventWatcher k8s_apps_controller.DeploymentEventWatcher
 	podEventWatcher        k8s_core_controller.PodEventWatcher
-	meshWorkloadScanners   k8s3.MeshWorkloadScannerImplementations
+	meshWorkloadScanners   meshworkload_discovery.MeshWorkloadScannerImplementations
 	serviceEventWatcher    k8s_core_controller.ServiceEventWatcher
 	serviceClient          k8s_core.ServiceClient
 	podClient              k8s_core.PodClient
@@ -97,15 +97,16 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		initializedDeps.deploymentClient,
 	)
 
-	meshWorkloadFinder := k8s3.NewMeshWorkloadFinder(
+	meshWorkloadFinder := meshworkload_discovery.NewMeshWorkloadFinder(
 		ctx,
 		clusterName,
+		m.localMeshClient,
 		m.localMeshWorkloadClient,
 		initializedDeps.meshWorkloadScanners,
 		initializedDeps.podClient,
 	)
 
-	meshServiceFinder := k8s2.NewMeshServiceFinder(
+	meshServiceFinder := meshservice_discovery.NewMeshServiceFinder(
 		ctx,
 		clusterName,
 		env.GetWriteNamespace(),
@@ -150,7 +151,7 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 	deploymentClient := m.discoveryContext.ClientFactories.DeploymentClientFactory(remoteClient)
 	replicaSetClient := m.discoveryContext.ClientFactories.ReplicaSetClientFactory(remoteClient)
 
-	meshWorkloadScanners := make(k8s3.MeshWorkloadScannerImplementations)
+	meshWorkloadScanners := make(meshworkload_discovery.MeshWorkloadScannerImplementations)
 	for meshType, scannerFactory := range m.meshWorkloadScannerFactories {
 		ownerFetcher := m.discoveryContext.ClientFactories.OwnerFetcherClientFactory(
 			deploymentClient,

@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #####################################
 #
@@ -88,7 +88,13 @@ ls install/helm/charts/custom-resource-definitions/crds | while read f; do kubec
 # write the output to a temp file so that we can grab the image names out of it
 # also ensure we clean up the file once we're done
 tempFile=/tmp/images
+
+# don't proceed if the code doesn't compile
+set -e
 make docker -B | tee $tempFile
+
+# allow failures again- this is how the waiting works below
+set +e
 
 function cleanup {
   rm $tempFile

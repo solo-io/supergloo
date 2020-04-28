@@ -11,7 +11,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	rest2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
+	mesh_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -26,6 +26,7 @@ var (
 type appMeshDiscoveryReconciler struct {
 	meshPlatformName   string
 	region             string
+	arnParser          aws_utils.ArnParser
 	meshClient         zephyr_discovery.MeshClient
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient
 	meshServiceClient  zephyr_discovery.MeshServiceClient
@@ -36,18 +37,20 @@ type AppMeshDiscoveryReconcilerFactory func(
 	meshPlatformName string,
 	appMeshClient appmeshiface.AppMeshAPI,
 	region string,
-) rest2.RestAPIDiscoveryReconciler
+) mesh_discovery.RestAPIDiscoveryReconciler
 
 func NewAppMeshDiscoveryReconcilerFactory(
 	masterClient client.Client,
 	meshClientFactory zephyr_discovery.MeshClientFactory,
+	arnParser aws_utils.ArnParser,
 ) AppMeshDiscoveryReconcilerFactory {
 	return func(
 		meshPlatformName string,
 		appMeshClient appmeshiface.AppMeshAPI,
 		region string,
-	) rest2.RestAPIDiscoveryReconciler {
+	) mesh_discovery.RestAPIDiscoveryReconciler {
 		return NewAppMeshDiscoveryReconciler(
+			arnParser,
 			meshClientFactory(masterClient),
 			appMeshClient,
 			meshPlatformName,
@@ -57,12 +60,14 @@ func NewAppMeshDiscoveryReconcilerFactory(
 }
 
 func NewAppMeshDiscoveryReconciler(
+	arnParser aws_utils.ArnParser,
 	meshClient zephyr_discovery.MeshClient,
 	appMeshClient appmeshiface.AppMeshAPI,
 	meshPlatformName string,
 	region string,
-) rest2.RestAPIDiscoveryReconciler {
+) mesh_discovery.RestAPIDiscoveryReconciler {
 	return &appMeshDiscoveryReconciler{
+		arnParser:        arnParser,
 		meshClient:       meshClient,
 		appMeshClient:    appMeshClient,
 		meshPlatformName: meshPlatformName,
@@ -123,7 +128,7 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
 
 func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef) (*zephyr_discovery.Mesh, error) {
 	meshName := a.buildAppMeshMeshName(appMeshRef)
-	awsAccountID, err := aws_utils.ParseAwsAccountID(aws.StringValue(appMeshRef.Arn))
+	awsAccountID, err := a.arnParser.ParseAccountID(aws.StringValue(appMeshRef.Arn))
 	if err != nil {
 		return nil, err
 	}

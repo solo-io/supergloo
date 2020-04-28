@@ -7,23 +7,24 @@ package wire
 
 import (
 	"context"
-
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/services/common/mesh-platform/rest"
-	mc_wire "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/wire"
+	"github.com/solo-io/service-mesh-hub/services/common/mesh-platform/wire"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
+	appmesh2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/consul"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/istio"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/linkerd"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
+	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws/clients/appmesh"
-	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/event-watcher-factories"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/event-watcher-factories"
 )
 
 // Injectors from wire.go:
@@ -44,7 +45,8 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	appMeshClientFactory := appmesh.NewAppMeshClientFactory(secretAwsCredsConverter)
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
-	appMeshDiscoveryReconcilerFactory := aws.NewAppMeshDiscoveryReconcilerFactory(client, meshClientFactory)
+	arnParser := aws.NewArnParser()
+	appMeshDiscoveryReconcilerFactory := aws2.NewAppMeshDiscoveryReconcilerFactory(client, meshClientFactory, arnParser)
 	awsCredsHandler := rest.NewAwsAPIHandler(appMeshClientFactory, appMeshDiscoveryReconcilerFactory)
 	v := MeshPlatformCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
@@ -67,6 +69,8 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	deploymentEventWatcherFactory := event_watcher_factories.NewDeploymentEventWatcherFactory()
 	podClientFactory := v1.PodClientFactoryProvider()
 	meshEventWatcherFactory := event_watcher_factories.NewMeshEventWatcherFactory()
-	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podEventWatcherFactory, serviceEventWatcherFactory, meshWorkloadEventWatcherFactory, deploymentEventWatcherFactory, meshClientFactory, podClientFactory, meshEventWatcherFactory, appMeshDiscoveryReconcilerFactory)
+	appMeshParser := aws.NewAppMeshParser(arnParser)
+	meshWorkloadScannerFactory := appmesh2.AppMeshWorkloadScannerFactoryProvider(appMeshParser)
+	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podEventWatcherFactory, serviceEventWatcherFactory, meshWorkloadEventWatcherFactory, deploymentEventWatcherFactory, meshClientFactory, podClientFactory, meshEventWatcherFactory, meshWorkloadScannerFactory)
 	return discoveryContext, nil
 }
