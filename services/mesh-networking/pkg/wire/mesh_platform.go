@@ -34,9 +34,9 @@ func NewNetworkingAwsCredsHandler() aws.AwsCredsHandler {
 }
 
 func (n *networkingAwsCredsHandler) MeshPlatformAdded(ctx context.Context, secret *v1.Secret) error {
-	panic("implement me")
+	return nil
 }
 
 func (n *networkingAwsCredsHandler) MeshPlatformRemoved(ctx context.Context, secret *v1.Secret) error {
-	panic("implement me")
+	return nil
 }
