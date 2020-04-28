@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"

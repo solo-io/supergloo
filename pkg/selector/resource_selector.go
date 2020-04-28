@@ -11,7 +11,7 @@ import (
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

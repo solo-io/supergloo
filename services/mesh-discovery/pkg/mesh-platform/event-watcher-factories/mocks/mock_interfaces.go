@@ -11,7 +11,7 @@ import (
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	controller1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
 )
 
 // MockDeploymentEventWatcherFactory is a mock of DeploymentEventWatcherFactory interface.

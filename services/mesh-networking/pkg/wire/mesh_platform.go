@@ -5,16 +5,17 @@ import (
 
 	"github.com/google/wire"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws"
+	mesh_platform "github.com/solo-io/service-mesh-hub/services/common/mesh-platform"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
+	"github.com/solo-io/service-mesh-hub/services/common/mesh-platform/rest"
 	v1 "k8s.io/api/core/v1"
 )
 
 func MeshPlatformCredentialsHandlersProvider(
 	asyncManagerController *mc_manager.AsyncManagerController,
-	awsCredsHandler aws.AwsCredsHandler,
-) []mc_manager.MeshPlatformCredentialsHandler {
-	return []mc_manager.MeshPlatformCredentialsHandler{
+	awsCredsHandler rest.AwsCredsHandler,
+) []mesh_platform.MeshPlatformCredentialsHandler {
+	return []mesh_platform.MeshPlatformCredentialsHandler{
 		asyncManagerController,
 		awsCredsHandler,
 	}
@@ -29,7 +30,7 @@ var AwsSet = wire.NewSet(
 type networkingAwsCredsHandler struct {
 }
 
-func NewNetworkingAwsCredsHandler() aws.AwsCredsHandler {
+func NewNetworkingAwsCredsHandler() rest.AwsCredsHandler {
 	return &networkingAwsCredsHandler{}
 }
 

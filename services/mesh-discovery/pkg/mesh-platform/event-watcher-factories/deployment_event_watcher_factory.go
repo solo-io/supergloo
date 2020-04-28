@@ -2,7 +2,7 @@ package event_watcher_factories
 
 import (
 	apps_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
 )
 
 func NewDeploymentEventWatcherFactory() DeploymentEventWatcherFactory {

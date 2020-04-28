@@ -5,8 +5,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/bootstrap"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/wire"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -25,15 +24,15 @@ func Run(ctx context.Context) {
 	}
 
 	// block until we die; RIP
-	err = multicluster.SetupAndStartLocalManager(
+	err = mc_manager.SetupAndStartLocalManager(
 		meshNetworkingContext.MultiClusterDeps,
 		[]mc_manager.AsyncManagerStartOptionsFunc{
-			multicluster.AddAllV1Alpha1ToScheme,
-			multicluster.AddAllIstioToScheme,
-			multicluster.AddAllLinkerdToScheme,
+			mc_manager.AddAllV1Alpha1ToScheme,
+			mc_manager.AddAllIstioToScheme,
+			mc_manager.AddAllLinkerdToScheme,
 			startComponents(meshNetworkingContext),
 		},
-		[]multicluster.NamedAsyncManagerHandler{{
+		[]mc_manager.NamedAsyncManagerHandler{{
 			Name:                "mesh-networking-multicluster-controller",
 			AsyncManagerHandler: meshNetworkingContext.MeshNetworkingClusterHandler,
 		}},

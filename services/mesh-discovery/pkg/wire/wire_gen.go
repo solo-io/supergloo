@@ -15,13 +15,14 @@ import (
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
-	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh-workload"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/consul"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/istio"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s/mesh/linkerd"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/rest/aws/clients/appmesh"
+	"github.com/solo-io/service-mesh-hub/services/common/mesh-platform/rest"
+	mc_wire "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/wire"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/consul"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/istio"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/linkerd"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws/clients/appmesh"
 	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/event-watcher-factories"
 )
 
@@ -44,7 +45,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
 	appMeshDiscoveryReconcilerFactory := aws.NewAppMeshDiscoveryReconcilerFactory(client, meshClientFactory)
-	awsCredsHandler := aws.NewAwsAPIHandler(appMeshClientFactory, appMeshDiscoveryReconcilerFactory)
+	awsCredsHandler := rest.NewAwsAPIHandler(appMeshClientFactory, appMeshDiscoveryReconcilerFactory)
 	v := MeshPlatformCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
@@ -56,7 +57,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	linkerdMeshScanner := linkerd.NewLinkerdMeshScanner(imageNameParser)
 	replicaSetClientFactory := v1_2.ReplicaSetClientFactoryProvider()
 	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
-	ownerFetcherFactory := mesh_workload.OwnerFetcherFactoryProvider()
+	ownerFetcherFactory := k8s.OwnerFetcherFactoryProvider()
 	serviceClientFactory := v1.ServiceClientFactoryProvider()
 	meshServiceClientFactory := v1alpha1.MeshServiceClientFactoryProvider()
 	meshWorkloadClientFactory := v1alpha1.MeshWorkloadClientFactoryProvider()
