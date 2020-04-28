@@ -30,7 +30,7 @@ NOTE: all of the Service Mesh Hub CRs have a `status` field that give you an ind
 
 Knowing how to get logs from the Service Mesh Hub components is crucial for getting feedback about what's happening. Service Mesh Hub has three core components:
 
-* `csr-agent` - responsible for creating certificate/key pairs and issuing a Certificate Signing Request for a particular mesh -- this is used in Mesh identity federation
+* `csr-agent` - responsible for creating certificate/key pairs and issuing a Certificate Signing Request for a particular mesh -- this is used in Mesh identity federation; this component is not available in the default install, only when a cluster is registered
 * `mesh-discovery` - responsible for discovering Meshes, periodically querying clusters and control planes for their `MeshService`s and `MeshWorkload`s. 
 * `mesh-networking` - responsible for orchestrating federation events, traffic policy updates, and access-control policy rules
 
@@ -41,6 +41,10 @@ kubectl logs -f deploy/mesh-networking -n service-mesh-hub
 ```
 
 This will give you valuable insight into the control loop that manages the state of a `VirtualMesh`
+
+##### Debug Logging
+
+You can set the `env` variable `DEBUG_MODE` to "true" in any of the Service Mesh Hub pods to increase the logging level. You can set an explicit logging level using the `LOG_LEVEL` env variable. See [https://pkg.go.dev/go.uber.org/zap/zapcore?tab=doc#Level](https://pkg.go.dev/go.uber.org/zap/zapcore?tab=doc#Level) for the log levels.
 
 ## Common issues
 
@@ -93,6 +97,21 @@ Note, the external-ip. Any `ServiceEntry` created for cross-cluster service disc
 
 Right now, Service Mesh Hub supports Istio 1.5.x. More versions can be supported based on user feedback. Additional meshes like Linkerd and AppMesh are also supported, each in various stages of completeness. 
 
+{{% notice warning %}}
+We do not yet support automatically upgrading Istio in-place from versions 1.4 and earlier to 1.5, due to a number of
+breaking changes across that version change. If you are currently running Istio prior to 1.5, you may have to
+fully uninstall the mesh before attempting an installation of 1.5. 
+
+<br/>
+
+Users have reported seeing the following when attempting to upgrade in-place:
+
+<br/>
+
+https://discuss.istio.io/t/istio-upgrade-from-1-4-6-1-5-0-throws-istiod-errors-remote-error-tls-error-decrypting-message/5727
+
+{{% /notice %}}
+
 ##### Do cross-cluster service entries resolve DNS?
 
 Not at the moment. They are created and are routable within the Istio (or any mesh) sidecar proxy, but not directly. This automation, to set up the DNS stubbing, is coming very soon (and this doc might be outdated by then). We will keep the docs as up to date as possible. 
@@ -102,3 +121,4 @@ Not at the moment. They are created and are routable within the Istio (or any me
 
 If you've run into something else, please reach out the `@ceposta`,  `@Graham Goudeau` or `@Harvey Xia` on the [Solo.io Slack](https://slack.solo.io) in the #service-mesh-hub channel
 
+If you see an error like `resource version conflict` please chime in on [https://github.com/solo-io/service-mesh-hub/issues/635](https://github.com/solo-io/service-mesh-hub/issues/635)
