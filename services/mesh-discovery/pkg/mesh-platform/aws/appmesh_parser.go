@@ -1,9 +1,8 @@
-package aws_utils
+package aws
 
 import (
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/rotisserie/eris"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,16 +27,17 @@ var (
 	}
 )
 
-type AppMeshPod struct {
-	AwsAccountID    string
-	Region          string
-	AppMeshName     string
-	VirtualNodeName string
+type appMeshParser struct {
+	arnParser ArnParser
+}
+
+func NewAppMeshParser(arnParser ArnParser) AppMeshParser {
+	return &appMeshParser{arnParser: arnParser}
 }
 
 // iterate through pod's containers and check for one with name containing "appmesh" and "proxy"
 // if true, return inferred AppMesh name
-func ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod, error) {
+func (a *appMeshParser) ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod, error) {
 	var err error
 	var awsAccountID, region, appMeshName, virtualNodeName string
 	for _, container := range pod.Spec.Containers {
@@ -62,7 +62,7 @@ func ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod, error) {
 					if env.Value == "" {
 						return nil, EmptyEnvVarValueError(env.Name, pod.ObjectMeta)
 					}
-					awsAccountID, err = ParseAwsAccountID(env.Value)
+					awsAccountID, err = a.arnParser.ParseAccountID(env.Value)
 					if err != nil {
 						return nil, err
 					}
@@ -77,12 +77,4 @@ func ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod, error) {
 		}
 	}
 	return nil, nil
-}
-
-func ParseAwsAccountID(arnString string) (string, error) {
-	parse, err := arn.Parse(arnString)
-	if err != nil {
-		return "", ARNParseError(err, arnString)
-	}
-	return parse.AccountID, nil
 }

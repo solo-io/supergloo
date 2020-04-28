@@ -170,12 +170,12 @@ func (a *AsyncManagerController) GetClientForCluster(_ context.Context, clusterN
 		var ok bool
 		mgr, ok = a.managers.GetManager(clusterName)
 		if !ok {
-			return eris.New("")
+			return ClientNotFoundError(clusterName)
 		}
 		return nil
 	}, opts...)
 	if err != nil {
-		return nil, ClientNotFoundError(clusterName)
+		return nil, err
 	}
 	return mgr.Manager().GetClient(), nil
 }

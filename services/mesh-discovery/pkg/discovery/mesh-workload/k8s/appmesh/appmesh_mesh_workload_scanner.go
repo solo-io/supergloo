@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws-utils"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -27,21 +27,24 @@ var (
 // visible for testing
 func NewAppMeshWorkloadScanner(
 	ownerFetcher k8s.OwnerFetcher,
+	appMeshParser aws.AppMeshParser,
 	meshClient zephyr_discovery.MeshClient,
 ) k8s.MeshWorkloadScanner {
 	return &appMeshWorkloadScanner{
-		ownerFetcher: ownerFetcher,
-		meshClient:   meshClient,
+		ownerFetcher:  ownerFetcher,
+		meshClient:    meshClient,
+		appMeshParser: appMeshParser,
 	}
 }
 
 type appMeshWorkloadScanner struct {
-	meshClient   zephyr_discovery.MeshClient
-	ownerFetcher k8s.OwnerFetcher
+	ownerFetcher  k8s.OwnerFetcher
+	appMeshParser aws.AppMeshParser
+	meshClient    zephyr_discovery.MeshClient
 }
 
 func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
-	appMeshPod, err := aws_utils.ScanPodForAppMesh(pod)
+	appMeshPod, err := a.appMeshParser.ScanPodForAppMesh(pod)
 	if err != nil {
 		return nil, err
 	}

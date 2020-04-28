@@ -16,7 +16,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws-utils"
+	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
+	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -28,8 +29,9 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		ctrl                *gomock.Controller
 		ctx                 context.Context
 		mockOwnerFetcher    *mock_mesh_workload.MockOwnerFetcher
-		meshWorkloadScanner k8s.MeshWorkloadScanner
 		mockMeshClient      *mock_core.MockMeshClient
+		mockAppMeshParser   *mock_aws.MockAppMeshParser
+		meshWorkloadScanner k8s.MeshWorkloadScanner
 		namespace           = "namespace"
 		clusterName         = "clusterName"
 		deploymentName      = "deployment-name"
@@ -70,7 +72,8 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		ctx = context.TODO()
 		mockOwnerFetcher = mock_mesh_workload.NewMockOwnerFetcher(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
-		meshWorkloadScanner = appmesh.NewAppMeshWorkloadScanner(mockOwnerFetcher, mockMeshClient)
+		mockAppMeshParser = mock_aws.NewMockAppMeshParser(ctrl)
+		meshWorkloadScanner = appmesh.NewAppMeshWorkloadScanner(mockOwnerFetcher, mockAppMeshParser, mockMeshClient)
 	})
 
 	AfterEach(func() {
@@ -137,6 +140,13 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 				},
 			},
 		}
+		mockAppMeshParser.
+			EXPECT().
+			ScanPodForAppMesh(pod).
+			Return(&aws_utils.AppMeshPod{
+				Region:      region,
+				AppMeshName: meshName,
+			}, nil)
 		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshWorkload).To(Equal(expectedMeshWorkload))
@@ -151,6 +161,10 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 			},
 			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
 		}
+		mockAppMeshParser.
+			EXPECT().
+			ScanPodForAppMesh(nonAppMeshPod).
+			Return(nil, nil)
 		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, nonAppMeshPod, clusterName)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshWorkload).To(BeNil())
@@ -159,6 +173,10 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 	It("should return error if error fetching deployment", func() {
 		expectedErr := eris.New("error")
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(nil, expectedErr)
+		mockAppMeshParser.
+			EXPECT().
+			ScanPodForAppMesh(pod).
+			Return(&aws_utils.AppMeshPod{}, nil)
 		_, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
 	})

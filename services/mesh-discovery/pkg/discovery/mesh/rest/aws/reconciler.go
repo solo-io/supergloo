@@ -12,7 +12,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	rest2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws-utils"
+	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -85,7 +85,7 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
 			return err
 		}
 		for _, appMeshRef := range appMeshes.Meshes {
-			discoveredMesh, err := a.convertAppMeshMesh(appMeshRef)
+			discoveredMesh, err := a.convertAppMesh(appMeshRef)
 			if err != nil {
 				return err
 			}
@@ -121,7 +121,7 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
 	return nil
 }
 
-func (a *appMeshDiscoveryReconciler) convertAppMeshMesh(appMeshRef *appmesh.MeshRef) (*zephyr_discovery.Mesh, error) {
+func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef) (*zephyr_discovery.Mesh, error) {
 	meshName := a.buildAppMeshMeshName(appMeshRef)
 	awsAccountID, err := aws_utils.ParseAwsAccountID(aws.StringValue(appMeshRef.Arn))
 	if err != nil {

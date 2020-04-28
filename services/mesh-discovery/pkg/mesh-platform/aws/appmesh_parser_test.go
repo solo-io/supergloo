@@ -1,17 +1,35 @@
-package aws_utils_test
+package aws_test
 
 import (
 	"fmt"
 
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws-utils"
+	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
+	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws/mocks"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("AppmeshParser", func() {
+	var (
+		ctrl          *gomock.Controller
+		mockArnParser *mock_aws.MockArnParser
+		appMeshParser aws_utils.AppMeshParser
+	)
+
+	BeforeEach(func() {
+		ctrl = gomock.NewController(GinkgoT())
+		mockArnParser = mock_aws.NewMockArnParser(ctrl)
+		appMeshParser = aws_utils.NewAppMeshParser(mockArnParser)
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
+	})
+
 	It("should scan pod for AppMesh sidecar and return data if so", func() {
 		expectedAppMeshPod := &aws_utils.AppMeshPod{
 			AwsAccountID:    "account-id",
@@ -47,7 +65,8 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		appMeshPod, err := aws_utils.ScanPodForAppMesh(pod)
+		mockArnParser.EXPECT().ParseAccountID(pod.Spec.Containers[0].Env[2].Value).Return(expectedAppMeshPod.AwsAccountID, nil)
+		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod)
 		Expect(err).To(BeNil())
 		Expect(appMeshPod).To(Equal(expectedAppMeshPod))
 	})
@@ -80,7 +99,7 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		_, err := aws_utils.ScanPodForAppMesh(pod)
+		_, err := appMeshParser.ScanPodForAppMesh(pod)
 		Expect(err).To(testutils.HaveInErrorChain(aws_utils.EmptyEnvVarValueError(aws_utils.AppMeshRegionEnvVarName, pod.ObjectMeta)))
 	})
 
@@ -113,7 +132,7 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		_, err := aws_utils.ScanPodForAppMesh(pod)
+		_, err := appMeshParser.ScanPodForAppMesh(pod)
 		Expect(err).To(testutils.HaveInErrorChain(aws_utils.UnexpectedVirtualNodeValue(unexpectedValue)))
 	})
 
@@ -128,15 +147,8 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		appMeshPod, err := aws_utils.ScanPodForAppMesh(pod)
+		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod)
 		Expect(err).To(BeNil())
 		Expect(appMeshPod).To(BeNil())
-	})
-
-	It("parsing AWS account ID should yield error", func() {
-		invalidArnString := "invalid-arn"
-		id, err := aws_utils.ParseAwsAccountID(invalidArnString)
-		Expect(id).To(BeEmpty())
-		Expect(err).To(testutils.HaveInErrorChain(aws_utils.ARNParseError(err, invalidArnString)))
 	})
 })
