@@ -60,7 +60,7 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 					},
 				},
 			},
-			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
+			ObjectMeta: metav1.ObjectMeta{Namespace: namespace},
 		}
 		deployment = &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{Name: deploymentName, Namespace: namespace},

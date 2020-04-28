@@ -40,9 +40,9 @@ type EventWatcherFactories struct {
 }
 
 type MeshDiscovery struct {
-	IstioMeshScanner         mesh_istio.IstioMeshScanner
-	ConsulConnectMeshScanner mesh_consul.ConsulConnectMeshScanner
-	LinkerdMeshScanner       mesh_linkerd.LinkerdMeshScanner
+	IstioMeshScanner              mesh_istio.IstioMeshScanner
+	ConsulConnectMeshScanner      mesh_consul.ConsulConnectMeshScanner
+	LinkerdMeshScanner            mesh_linkerd.LinkerdMeshScanner
 	AppMeshWorkloadScannerFactory meshworkload_discovery.MeshWorkloadScannerFactory
 }
 

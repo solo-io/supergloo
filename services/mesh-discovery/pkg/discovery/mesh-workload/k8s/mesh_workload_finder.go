@@ -294,7 +294,6 @@ func (m *meshWorkloadFinder) handlePodDelete(pod *k8s_core_types.Pod) error {
 }
 
 func (m *meshWorkloadFinder) handlePodCreate(pod *k8s_core_types.Pod) error {
-	pod.SetClusterName(m.clusterName)
 	logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, pod)
 
 	logger.Debugf("Handling create for pod %s.%s", pod.GetName(), pod.GetNamespace())

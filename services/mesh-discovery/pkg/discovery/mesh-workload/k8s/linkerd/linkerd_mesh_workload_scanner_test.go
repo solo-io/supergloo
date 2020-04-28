@@ -40,7 +40,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 					{Name: "linkerd-proxy"},
 				},
 			},
-			ObjectMeta: k8s_meta_types.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
+			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: namespace},
 		}
 		deployment = &k8s_apps_types.Deployment{
 			ObjectMeta: k8s_meta_types.ObjectMeta{Name: deploymentName, Namespace: namespace},
@@ -113,7 +113,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 					{Image: "random-image"},
 				},
 			},
-			ObjectMeta: k8s_meta_types.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
+			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: namespace},
 		}
 		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, nonLinkerdPod, clusterName)
 		Expect(err).NotTo(HaveOccurred())

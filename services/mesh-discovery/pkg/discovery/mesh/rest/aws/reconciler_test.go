@@ -16,6 +16,7 @@ import (
 	rest2 "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/rest"
 	rest3 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
+	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws/mocks"
 	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,6 +28,7 @@ var _ = Describe("Reconciler", func() {
 		ctx                        context.Context
 		mockMeshClient             *mock_core.MockMeshClient
 		mockAppMeshClient          *mock_appmesh_clients.MockAppMeshAPI
+		mockArnParser              *mock_aws.MockArnParser
 		meshPlatformName           string
 		awsAccountID               string
 		appMeshDiscoveryReconciler rest3.RestAPIDiscoveryReconciler
@@ -36,10 +38,12 @@ var _ = Describe("Reconciler", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
+		mockArnParser = mock_aws.NewMockArnParser(ctrl)
 		meshPlatformName = "aws-account-name"
 		awsAccountID = "410461945555"
 		mockAppMeshClient = mock_appmesh_clients.NewMockAppMeshAPI(ctrl)
 		appMeshDiscoveryReconciler = aws.NewAppMeshDiscoveryReconciler(
+			mockArnParser,
 			mockMeshClient,
 			mockAppMeshClient,
 			meshPlatformName,
@@ -93,6 +97,7 @@ var _ = Describe("Reconciler", func() {
 			Meshes:    meshRefs[3:],
 			NextToken: nil,
 		}
+		mockArnParser.EXPECT().ParseAccountID(gomock.Any()).Times(len(meshRefs)).Return(awsAccountID, nil)
 		mockAppMeshClient.EXPECT().ListMeshes(page1Input).Return(page1, nil)
 		mockAppMeshClient.EXPECT().ListMeshes(page2Input).Return(page2, nil)
 		for _, meshRef := range meshRefs {

@@ -72,7 +72,7 @@ func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_type
 	}
 	return &zephyr_discovery.MeshWorkload{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
-			Name:      a.buildMeshWorkloadName(deployment.GetName(), deployment.GetNamespace(), pod.GetClusterName()),
+			Name:      a.buildMeshWorkloadName(deployment.GetName(), deployment.GetNamespace(), clusterName),
 			Namespace: env.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(),
 		},
@@ -81,7 +81,7 @@ func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_type
 				KubeControllerRef: &zephyr_core_types.ResourceRef{
 					Name:      deployment.GetName(),
 					Namespace: deployment.GetNamespace(),
-					Cluster:   pod.GetClusterName(),
+					Cluster:   clusterName,
 				},
 				Labels:             pod.GetLabels(),
 				ServiceAccountName: pod.Spec.ServiceAccountName,

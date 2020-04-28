@@ -40,7 +40,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 					{Image: "istio-proxy"},
 				},
 			},
-			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
+			ObjectMeta: metav1.ObjectMeta{Namespace: namespace},
 		}
 		deployment = &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{Name: deploymentName, Namespace: namespace},
@@ -113,7 +113,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 					{Image: "random-image"},
 				},
 			},
-			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
+			ObjectMeta: metav1.ObjectMeta{Namespace: namespace},
 		}
 		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, nonIstioPod, clusterName)
 		Expect(err).NotTo(HaveOccurred())
