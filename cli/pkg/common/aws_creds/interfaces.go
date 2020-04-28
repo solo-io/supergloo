@@ -9,7 +9,7 @@ import (
 
 type SecretAwsCredsConverter interface {
 	/*
-		Convert an AWS credentials file (typically stored in ~/.aws/config) to an SMH formatted k8s Secret
+		Convert an AWS credentials file (typically stored in ~/.aws/credentials) to an SMH formatted k8s Secret
 		The secretName identifies the AWS account for which the credentials grant access.
 	*/
 	CredsFileToSecret(

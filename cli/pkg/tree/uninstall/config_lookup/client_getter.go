@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/avast/retry-go"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

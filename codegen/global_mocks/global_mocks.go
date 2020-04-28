@@ -3,7 +3,8 @@ package global_mocks
 /************************************************************************************************
 *
 *
-*        This file is used as a stub that only contains go:generate mockgen statements
+*        This file is used as a stub that only contains a go:generate mockgen statement
+*        that triggers a shell script that generates external library mocks in parallel.
 *
 *
 ************************************************************************************************/

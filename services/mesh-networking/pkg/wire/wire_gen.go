@@ -8,6 +8,8 @@ package wire
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
@@ -19,7 +21,7 @@ import (
 	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
+	mc_wire "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	access_policy_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	istio_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/istio-enforcer"
@@ -52,8 +54,12 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	if err != nil {
 		return MeshNetworkingContext{}, err
 	}
-	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
-	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController)
+	fileReader := files.NewDefaultFileReader()
+	converter := kube.NewConverter(fileReader)
+	asyncManagerController := mc_wire.KubeClusterCredentialsHandlerProvider(converter)
+	awsCredsHandler := NewNetworkingAwsCredsHandler()
+	v := MeshPlatformCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
+	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	virtualMeshCSRControllerFactory := controller_factories.NewVirtualMeshCSRControllerFactory()
 	controllerFactories := NewControllerFactories(virtualMeshCSRControllerFactory)
@@ -86,10 +92,10 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	serviceProfileClientFactory := v1alpha2.ServiceProfileClientFactoryProvider()
 	trafficSplitClientFactory := v1alpha1_4.TrafficSplitClientFactoryProvider()
 	linkerdTranslator := linkerd_translator.NewLinkerdTrafficPolicyTranslator(dynamicClientGetter, meshClient, serviceProfileClientFactory, trafficSplitClientFactory)
-	v := TrafficPolicyMeshTranslatorsProvider(istioTranslator, linkerdTranslator)
+	v2 := TrafficPolicyMeshTranslatorsProvider(istioTranslator, linkerdTranslator)
 	trafficPolicyEventWatcher := LocalTrafficPolicyEventWatcherProvider(asyncManager)
 	meshServiceEventWatcher := LocalMeshServiceEventWatcherProvider(asyncManager)
-	trafficPolicyTranslatorLoop := traffic_policy_translator.NewTrafficPolicyTranslatorLoop(trafficPolicyPreprocessor, v, meshClient, meshServiceClient, trafficPolicyClient, trafficPolicyEventWatcher, meshServiceEventWatcher)
+	trafficPolicyTranslatorLoop := traffic_policy_translator.NewTrafficPolicyTranslatorLoop(trafficPolicyPreprocessor, v2, meshClient, meshServiceClient, trafficPolicyClient, trafficPolicyEventWatcher, meshServiceEventWatcher)
 	meshWorkloadEventWatcher := LocalMeshWorkloadEventWatcherProvider(asyncManager)
 	virtualMeshEventWatcher := controller_factories.NewLocalVirtualMeshEventWatcher(asyncManager)
 	virtualMeshFinder := vm_validation.NewVirtualMeshFinder(meshClient)
@@ -105,11 +111,11 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	accessControlPolicyClient := v1alpha1_2.AccessControlPolicyClientProvider(client)
 	authorizationPolicyClientFactory := v1beta1.AuthorizationPolicyClientFactoryProvider()
 	istio_translatorIstioTranslator := istio_translator2.NewIstioTranslator(meshClient, dynamicClientGetter, authorizationPolicyClientFactory)
-	v2 := AccessControlPolicyMeshTranslatorsProvider(istio_translatorIstioTranslator)
-	acpTranslatorLoop := acp_translator.NewAcpTranslatorLoop(accessControlPolicyEventWatcher, meshServiceEventWatcher, meshClient, accessControlPolicyClient, resourceSelector, v2)
+	v3 := AccessControlPolicyMeshTranslatorsProvider(istio_translatorIstioTranslator)
+	acpTranslatorLoop := acp_translator.NewAcpTranslatorLoop(accessControlPolicyEventWatcher, meshServiceEventWatcher, meshClient, accessControlPolicyClient, resourceSelector, v3)
 	istioEnforcer := istio_enforcer.NewIstioEnforcer(dynamicClientGetter, authorizationPolicyClientFactory)
-	v3 := GlobalAccessControlPolicyMeshEnforcersProvider(istioEnforcer)
-	accessPolicyEnforcerLoop := access_policy_enforcer.NewEnforcerLoop(virtualMeshEventWatcher, virtualMeshClient, meshClient, v3)
+	v4 := GlobalAccessControlPolicyMeshEnforcersProvider(istioEnforcer)
+	accessPolicyEnforcerLoop := access_policy_enforcer.NewEnforcerLoop(virtualMeshEventWatcher, virtualMeshClient, meshClient, v4)
 	gatewayClientFactory := v1alpha3.GatewayClientFactoryProvider()
 	envoyFilterClientFactory := v1alpha3.EnvoyFilterClientFactoryProvider()
 	serviceEntryClientFactory := v1alpha3.ServiceEntryClientFactoryProvider()

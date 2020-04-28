@@ -3,16 +3,14 @@ package mesh_discovery
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/istio"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/linkerd"
-
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/bootstrap"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
-	md_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/istio"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/linkerd"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s"
+	md_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/wire"
 	"go.uber.org/zap"
 )
@@ -35,7 +33,7 @@ func Run(rootCtx context.Context) {
 	// with the controller factory, and attaches the given mesh finders to it
 	deploymentHandler, err := md_multicluster.NewDiscoveryClusterHandler(
 		localManager,
-		[]mesh.MeshScanner{
+		[]k8s.MeshScanner{
 			discoveryContext.MeshDiscovery.IstioMeshScanner,
 			discoveryContext.MeshDiscovery.ConsulConnectMeshScanner,
 			discoveryContext.MeshDiscovery.LinkerdMeshScanner,
@@ -43,6 +41,7 @@ func Run(rootCtx context.Context) {
 		md_multicluster.MeshWorkloadScannerFactoryImplementations{
 			types.MeshType_ISTIO:   istio.NewIstioMeshWorkloadScanner,
 			types.MeshType_LINKERD: linkerd.NewLinkerdMeshWorkloadScanner,
+			types.MeshType_APPMESH: discoveryContext.MeshDiscovery.AppMeshWorkloadScannerFactory,
 		},
 		discoveryContext,
 	)
@@ -52,13 +51,15 @@ func Run(rootCtx context.Context) {
 	}
 
 	// block until we die; RIP
-	err = multicluster.SetupAndStartLocalManager(
+	err = mc_manager.SetupAndStartLocalManager(
 		discoveryContext.MultiClusterDeps,
 
 		// need to be sure to register the v1alpha1 CRDs with the controller runtime
-		[]mc_manager.AsyncManagerStartOptionsFunc{multicluster.AddAllV1Alpha1ToScheme},
+		[]mc_manager.AsyncManagerStartOptionsFunc{
+			mc_manager.AddAllV1Alpha1ToScheme,
+		},
 
-		[]multicluster.NamedAsyncManagerHandler{{
+		[]mc_manager.NamedAsyncManagerHandler{{
 			Name:                "discovery-controller",
 			AsyncManagerHandler: deploymentHandler,
 		}},

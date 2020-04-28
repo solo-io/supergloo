@@ -29,4 +29,7 @@ mockgen -package mock_linkerd_clients -destination ../../test/mocks/clients/link
 # SMI clients
 mockgen -package mock_smi_clients -destination ../../test/mocks/clients/smi/split/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1 TrafficSplitClient &
 
+# AppMesh clients
+mockgen -package mock_appmesh_clients -destination ../../test/mocks/clients/aws/appmesh/clients.go github.com/aws/aws-sdk-go/service/appmesh/appmeshiface AppMeshAPI &
+
 wait

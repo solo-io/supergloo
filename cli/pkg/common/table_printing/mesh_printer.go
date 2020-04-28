@@ -203,11 +203,12 @@ func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*zephyr_disc
 		if awsAppMesh == nil {
 			continue
 		}
-		// Append installation info
+		// Append AppMesh instance info
 		newRow = append(
 			newRow,
-			awsAppMesh.GetInstallation().GetInstallationNamespace(),
-			awsAppMesh.GetInstallation().GetVersion(),
+			awsAppMesh.GetName(),
+			awsAppMesh.GetAwsAccountId(),
+			awsAppMesh.GetRegion(),
 		)
 
 		preFilteredRows = append(preFilteredRows, newRow)
