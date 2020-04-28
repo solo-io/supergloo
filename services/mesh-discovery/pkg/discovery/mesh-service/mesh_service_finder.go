@@ -63,17 +63,31 @@ func (m *meshServiceFinder) StartDiscovery(
 	meshWorkloadEventWatcher zephyr_discovery_controller.MeshWorkloadEventWatcher,
 ) error {
 
-	err := serviceEventWatcher.AddEventHandler(m.ctx, &ServiceEventHandler{
-		Ctx:                 m.ctx,
-		HandleServiceUpsert: m.handleServiceUpsert,
+	err := serviceEventWatcher.AddEventHandler(m.ctx, &k8s_core_controller.ServiceEventHandlerFuncs{
+		OnCreate: func(obj *k8s_core_types.Service) error {
+			_ = m.handleServiceUpsert(obj)
+			return nil
+		},
+		OnUpdate: func(_, new *k8s_core_types.Service) error {
+			_ = m.handleServiceUpsert(new)
+			return nil
+		},
+		OnDelete: nil,
 	})
 	if err != nil {
 		return err
 	}
 
-	return meshWorkloadEventWatcher.AddEventHandler(m.ctx, &MeshWorkloadEventHandler{
-		Ctx:                      m.ctx,
-		HandleMeshWorkloadUpsert: m.handleMeshWorkloadUpsert,
+	return meshWorkloadEventWatcher.AddEventHandler(m.ctx, &zephyr_discovery_controller.MeshWorkloadEventHandlerFuncs{
+		OnCreate: func(obj *zephyr_discovery.MeshWorkload) error {
+			_ = m.handleMeshWorkloadUpsert(obj)
+			return nil
+		},
+		OnUpdate: func(_, new *zephyr_discovery.MeshWorkload) error {
+			_ = m.handleMeshWorkloadUpsert(new)
+			return nil
+		},
+		OnDelete: nil,
 	})
 }
 
