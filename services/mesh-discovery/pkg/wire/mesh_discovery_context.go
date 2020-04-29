@@ -4,17 +4,17 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
-	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
-	mesh_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/consul"
-	mesh_istio "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/istio"
-	mesh_linkerd "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/linkerd"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/controllers"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
+	meshworkload_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
+	mesh_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/consul"
+	mesh_istio "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/istio"
+	mesh_linkerd "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/linkerd"
+	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/event-watcher-factories"
 )
 
 // just used to package everything up for wire
 type DiscoveryContext struct {
-	MultiClusterDeps      multicluster.MultiClusterDependencies
+	MultiClusterDeps      mc_manager.MultiClusterDependencies
 	ClientFactories       ClientFactories
 	EventWatcherFactories EventWatcherFactories
 	MeshDiscovery         MeshDiscovery
@@ -23,7 +23,7 @@ type DiscoveryContext struct {
 type ClientFactories struct {
 	ReplicaSetClientFactory   k8s_apps.ReplicaSetClientFactory
 	DeploymentClientFactory   k8s_apps.DeploymentClientFactory
-	OwnerFetcherClientFactory mesh_workload.OwnerFetcherFactory
+	OwnerFetcherClientFactory meshworkload_discovery.OwnerFetcherFactory
 	ServiceClientFactory      k8s_core.ServiceClientFactory
 	MeshServiceClientFactory  zephyr_discovery.MeshServiceClientFactory
 	MeshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory
@@ -32,37 +32,39 @@ type ClientFactories struct {
 }
 
 type EventWatcherFactories struct {
-	DeploymentEventWatcherFactory   controllers.DeploymentEventWatcherFactory
-	PodEventWatcherFactory          controllers.PodEventWatcherFactory
-	ServiceEventWatcherFactory      controllers.ServiceEventWatcherFactory
-	MeshWorkloadEventWatcherFactory controllers.MeshWorkloadEventWatcherFactory
-	MeshControllerFactory           controllers.MeshEventWatcherFactory
+	DeploymentEventWatcherFactory   event_watcher_factories.DeploymentEventWatcherFactory
+	PodEventWatcherFactory          event_watcher_factories.PodEventWatcherFactory
+	ServiceEventWatcherFactory      event_watcher_factories.ServiceEventWatcherFactory
+	MeshWorkloadEventWatcherFactory event_watcher_factories.MeshWorkloadEventWatcherFactory
+	MeshControllerFactory           event_watcher_factories.MeshEventWatcherFactory
 }
 
 type MeshDiscovery struct {
-	IstioMeshScanner         mesh_istio.IstioMeshScanner
-	ConsulConnectMeshScanner mesh_consul.ConsulConnectMeshScanner
-	LinkerdMeshScanner       mesh_linkerd.LinkerdMeshScanner
+	IstioMeshScanner              mesh_istio.IstioMeshScanner
+	ConsulConnectMeshScanner      mesh_consul.ConsulConnectMeshScanner
+	LinkerdMeshScanner            mesh_linkerd.LinkerdMeshScanner
+	AppMeshWorkloadScannerFactory meshworkload_discovery.MeshWorkloadScannerFactory
 }
 
 func DiscoveryContextProvider(
-	multiClusterDeps multicluster.MultiClusterDependencies,
+	multiClusterDeps mc_manager.MultiClusterDependencies,
 	istioMeshScanner mesh_istio.IstioMeshScanner,
 	consulConnectMeshScanner mesh_consul.ConsulConnectMeshScanner,
 	linkerdMeshScanner mesh_linkerd.LinkerdMeshScanner,
 	replicaSetClientFactory k8s_apps.ReplicaSetClientFactory,
 	deploymentClientFactory k8s_apps.DeploymentClientFactory,
-	ownerFetcherClientFactory mesh_workload.OwnerFetcherFactory,
+	ownerFetcherClientFactory meshworkload_discovery.OwnerFetcherFactory,
 	serviceClientFactory k8s_core.ServiceClientFactory,
 	meshServiceClientFactory zephyr_discovery.MeshServiceClientFactory,
 	meshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory,
-	podEventWatcherFactory controllers.PodEventWatcherFactory,
-	serviceEventWatcherFactory controllers.ServiceEventWatcherFactory,
-	meshWorkloadControllerFactory controllers.MeshWorkloadEventWatcherFactory,
-	deploymentEventWatcherFactory controllers.DeploymentEventWatcherFactory,
+	podEventWatcherFactory event_watcher_factories.PodEventWatcherFactory,
+	serviceEventWatcherFactory event_watcher_factories.ServiceEventWatcherFactory,
+	meshWorkloadControllerFactory event_watcher_factories.MeshWorkloadEventWatcherFactory,
+	deploymentEventWatcherFactory event_watcher_factories.DeploymentEventWatcherFactory,
 	meshClientFactory zephyr_discovery.MeshClientFactory,
 	podClientFactory k8s_core.PodClientFactory,
-	meshControllerFactory controllers.MeshEventWatcherFactory,
+	meshControllerFactory event_watcher_factories.MeshEventWatcherFactory,
+	appMeshWorkloadScannerFactory meshworkload_discovery.MeshWorkloadScannerFactory,
 ) DiscoveryContext {
 
 	return DiscoveryContext{
@@ -85,9 +87,10 @@ func DiscoveryContextProvider(
 			MeshControllerFactory:           meshControllerFactory,
 		},
 		MeshDiscovery: MeshDiscovery{
-			IstioMeshScanner:         istioMeshScanner,
-			ConsulConnectMeshScanner: consulConnectMeshScanner,
-			LinkerdMeshScanner:       linkerdMeshScanner,
+			IstioMeshScanner:              istioMeshScanner,
+			ConsulConnectMeshScanner:      consulConnectMeshScanner,
+			LinkerdMeshScanner:            linkerdMeshScanner,
+			AppMeshWorkloadScannerFactory: appMeshWorkloadScannerFactory,
 		},
 	}
 }

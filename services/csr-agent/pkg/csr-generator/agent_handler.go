@@ -8,7 +8,7 @@ import (
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
 	"go.uber.org/zap"
 )
 

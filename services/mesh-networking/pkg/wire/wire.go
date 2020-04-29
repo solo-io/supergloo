@@ -6,12 +6,14 @@ import (
 	"context"
 
 	"github.com/google/wire"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
-	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
+	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	networking_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster"
 	controller_factories "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/controllers"
@@ -53,6 +55,10 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		cert_manager.VMCSRSnapshotListenerSet,
 		MeshNetworkingSnapshotContextProvider,
 		MeshNetworkingContextProvider,
+		AwsSet,
+		MeshPlatformCredentialsHandlersProvider,
+		kube.NewConverter,
+		files.NewDefaultFileReader,
 	)
 
 	return MeshNetworkingContext{}, nil

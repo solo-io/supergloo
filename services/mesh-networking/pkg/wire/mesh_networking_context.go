@@ -6,8 +6,7 @@ import (
 
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
@@ -19,7 +18,7 @@ import (
 
 // just used to package everything up for wire
 type MeshNetworkingContext struct {
-	MultiClusterDeps              multicluster.MultiClusterDependencies
+	MultiClusterDeps              mc_manager.MultiClusterDependencies
 	MeshNetworkingClusterHandler  mc_manager.AsyncManagerHandler
 	TrafficPolicyTranslator       traffic_policy_translator.TrafficPolicyTranslatorLoop
 	MeshNetworkingSnapshotContext *MeshNetworkingSnapshotContext
@@ -29,7 +28,7 @@ type MeshNetworkingContext struct {
 }
 
 func MeshNetworkingContextProvider(
-	multiClusterDeps multicluster.MultiClusterDependencies,
+	multiClusterDeps mc_manager.MultiClusterDependencies,
 	meshNetworkingClusterHandler mc_manager.AsyncManagerHandler,
 	trafficPolicyTranslator traffic_policy_translator.TrafficPolicyTranslatorLoop,
 	meshNetworkingSnapshotContext *MeshNetworkingSnapshotContext,
