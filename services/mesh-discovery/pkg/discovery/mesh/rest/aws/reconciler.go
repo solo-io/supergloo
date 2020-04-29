@@ -2,8 +2,6 @@ package aws
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/appmesh"
@@ -11,8 +9,10 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	mesh_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
+	"k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -95,9 +95,16 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
 				return err
 			}
 			discoveredSMHMeshNames.Insert(discoveredMesh.GetName())
-			err = a.meshClient.UpsertMeshSpec(ctx, discoveredMesh)
-			if err != nil {
-				return err
+			// Create Mesh only if it doesn't exist to avoid overwriting.
+			_, err = a.meshClient.GetMesh(
+				ctx,
+				client.ObjectKey{Name: discoveredMesh.GetName(), Namespace: discoveredMesh.GetNamespace()},
+			)
+			if errors.IsNotFound(err) {
+				err = a.meshClient.CreateMesh(ctx, discoveredMesh)
+				if err != nil {
+					return err
+				}
 			}
 		}
 		if appMeshes.NextToken == nil {
@@ -127,7 +134,7 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
 }
 
 func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef) (*zephyr_discovery.Mesh, error) {
-	meshName := a.buildAppMeshMeshName(appMeshRef)
+	meshName := metadata.BuildAppMeshName(aws.StringValue(appMeshRef.MeshName), a.region, aws.StringValue(appMeshRef.MeshOwner))
 	awsAccountID, err := a.arnParser.ParseAccountID(aws.StringValue(appMeshRef.Arn))
 	if err != nil {
 		return nil, err
@@ -147,20 +154,4 @@ func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef)
 			},
 		},
 	}, nil
-}
-
-// TODO: https://github.com/solo-io/service-mesh-hub/issues/141
-// Secret name identifies the user-supplied AWS Account registration name
-// Format: <mesh_type>-<mesh_entity_name>-<parent_mesh_name>-<aws_account_registration_name>
-func (a *appMeshDiscoveryReconciler) buildAppMeshMeshName(mesh *appmesh.MeshRef) string {
-	return fmt.Sprintf("%s-%s-%s",
-		ObjectNamePrefix,
-		convertToKubeName(aws.StringValue(mesh.MeshName)),
-		a.meshPlatformName)
-}
-
-// AppMesh entity names only contain "Alphanumeric characters, dashes, and underscores are allowed." (taken from AppMesh GUI)
-// So just replace underscores with a k8s name friendly delimiter
-func convertToKubeName(appmeshName string) string {
-	return strings.ReplaceAll(appmeshName, "_", "-")
 }
