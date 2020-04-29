@@ -25,6 +25,7 @@ type ClusterTenancyScanner interface {
 		ctx context.Context,
 		clusterName string,
 		pod *k8s_core.Pod,
-		meshClient zephyr_discovery.MeshClient,
 	) error
 }
+
+type ClusterTenancyScannerFactory func(meshClient zephyr_discovery.MeshClient) ClusterTenancyScanner

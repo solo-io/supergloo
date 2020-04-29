@@ -15,13 +15,27 @@ import (
 
 type appmeshTenancyScanner struct {
 	appmeshParser aws.AppMeshParser
+	meshClient    zephyr_discovery.MeshClient
+}
+
+func AppMeshTenancyScannerFactoryProvider(
+	appmeshParser aws.AppMeshParser,
+) k8s_tenancy.ClusterTenancyScannerFactory {
+	return func(meshClient zephyr_discovery.MeshClient) k8s_tenancy.ClusterTenancyScanner {
+		return NewAppmeshTenancyScanner(
+			appmeshParser,
+			meshClient,
+		)
+	}
 }
 
 func NewAppmeshTenancyScanner(
 	appmeshParser aws.AppMeshParser,
+	meshClient zephyr_discovery.MeshClient,
 ) k8s_tenancy.ClusterTenancyScanner {
 	return &appmeshTenancyScanner{
 		appmeshParser: appmeshParser,
+		meshClient:    meshClient,
 	}
 }
 
@@ -29,7 +43,6 @@ func (a *appmeshTenancyScanner) UpdateMeshTenancy(
 	ctx context.Context,
 	clusterName string,
 	pod *k8s_core_types.Pod,
-	meshClient zephyr_discovery.MeshClient,
 ) error {
 	appMesh, err := a.appmeshParser.ScanPodForAppMesh(pod)
 	if err != nil {
@@ -38,14 +51,14 @@ func (a *appmeshTenancyScanner) UpdateMeshTenancy(
 	if appMesh == nil {
 		return nil
 	}
-	mesh, err := meshClient.GetMesh(ctx, client.ObjectKey{Name: appMesh.AppMeshName, Namespace: env.GetWriteNamespace()})
+	mesh, err := a.meshClient.GetMesh(ctx, client.ObjectKey{Name: appMesh.AppMeshName, Namespace: env.GetWriteNamespace()})
 	if errors.IsNotFound(err) {
 		// Mesh has not yet been discovered, do nothing (wait for Mesh discovery to process the Mesh)
 		return nil
 	} else if !stringutils.ContainsString(clusterName, mesh.Spec.GetAwsAppMesh().GetClusters()) {
 		// Record this Mesh as a tenant of this cluster
 		mesh.Spec.GetAwsAppMesh().Clusters = append(mesh.Spec.GetAwsAppMesh().GetClusters(), clusterName)
-		return meshClient.UpdateMesh(ctx, mesh)
+		return a.meshClient.UpdateMesh(ctx, mesh)
 	}
 	return nil
 }

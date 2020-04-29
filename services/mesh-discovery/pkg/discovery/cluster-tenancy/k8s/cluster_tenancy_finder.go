@@ -66,7 +66,7 @@ func (c *clusterTenancyFinder) reconcileTenancyForPodUpsert(
 	pod *k8s_core_types.Pod,
 ) error {
 	for _, tenancyScanner := range c.tenancyScanners {
-		err := tenancyScanner.UpdateMeshTenancy(ctx, c.clusterName, pod, c.localMeshClient)
+		err := tenancyScanner.UpdateMeshTenancy(ctx, c.clusterName, pod)
 		if err != nil {
 			return err
 		}

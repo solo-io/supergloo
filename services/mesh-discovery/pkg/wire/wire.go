@@ -13,6 +13,7 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/wire"
+	appmesh_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	mesh_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/consul"
 	mesh_istio "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/istio"
@@ -46,6 +47,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		AwsSet,
 		kube.NewConverter,
 		files.NewDefaultFileReader,
+		appmesh_tenancy.AppMeshTenancyScannerFactoryProvider,
 	)
 
 	return DiscoveryContext{}, nil

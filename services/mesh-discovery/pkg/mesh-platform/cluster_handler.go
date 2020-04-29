@@ -12,6 +12,7 @@ import (
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
+	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
 	meshservice_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service/k8s"
 	meshworkload_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s"
@@ -26,6 +27,7 @@ func NewDiscoveryClusterHandler(
 	localManager mc_manager.AsyncManager,
 	meshScanners []k8s.MeshScanner,
 	meshWorkloadScannerFactories MeshWorkloadScannerFactoryImplementations,
+	clusterTenancyScannerFactories []k8s_tenancy.ClusterTenancyScannerFactory,
 	discoveryContext wire.DiscoveryContext,
 ) (mc_manager.AsyncManagerHandler, error) {
 
@@ -41,15 +43,16 @@ func NewDiscoveryClusterHandler(
 
 	// we don't store the local manager on the struct to avoid mistakenly conflating the local manager with the remote manager
 	handler := &discoveryClusterHandler{
-		localMeshClient:               localMeshClient,
-		meshScanners:                  meshScanners,
-		localMeshWorkloadClient:       localMeshWorkloadClient,
-		localManager:                  localManager,
-		meshWorkloadScannerFactories:  meshWorkloadScannerFactories,
-		discoveryContext:              discoveryContext,
-		localMeshServiceClient:        localMeshServiceClient,
-		localMeshWorkloadEventWatcher: localMeshWorkloadEventWatcher,
-		localMeshEventWatcher:         localMeshController,
+		localMeshClient:                localMeshClient,
+		meshScanners:                   meshScanners,
+		localMeshWorkloadClient:        localMeshWorkloadClient,
+		localManager:                   localManager,
+		meshWorkloadScannerFactories:   meshWorkloadScannerFactories,
+		discoveryContext:               discoveryContext,
+		localMeshServiceClient:         localMeshServiceClient,
+		localMeshWorkloadEventWatcher:  localMeshWorkloadEventWatcher,
+		localMeshEventWatcher:          localMeshController,
+		clusterTenancyScannerFactories: clusterTenancyScannerFactories,
 	}
 
 	return handler, nil
@@ -69,14 +72,16 @@ type discoveryClusterHandler struct {
 	localMeshEventWatcher         zephyr_discovery_controller.MeshEventWatcher
 
 	// scanners
-	meshScanners                 []k8s.MeshScanner
-	meshWorkloadScannerFactories MeshWorkloadScannerFactoryImplementations
+	meshScanners                   []k8s.MeshScanner
+	meshWorkloadScannerFactories   MeshWorkloadScannerFactoryImplementations
+	clusterTenancyScannerFactories []k8s_tenancy.ClusterTenancyScannerFactory
 }
 
 type clusterDependentDeps struct {
 	deploymentEventWatcher k8s_apps_controller.DeploymentEventWatcher
 	podEventWatcher        k8s_core_controller.PodEventWatcher
 	meshWorkloadScanners   meshworkload_discovery.MeshWorkloadScannerImplementations
+	clusterTenancyScanners []k8s_tenancy.ClusterTenancyScanner
 	serviceEventWatcher    k8s_core_controller.ServiceEventWatcher
 	serviceClient          k8s_core.ServiceClient
 	podClient              k8s_core.PodClient
@@ -116,22 +121,26 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		m.localMeshClient,
 	)
 
-	err = meshFinder.StartDiscovery(initializedDeps.deploymentEventWatcher)
-	if err != nil {
+	clusterTenancyFinder := k8s_tenancy.NewClusterTenancyFinder(
+		clusterName,
+		initializedDeps.clusterTenancyScanners,
+		initializedDeps.podClient,
+		m.localMeshClient,
+	)
+
+	if err = meshFinder.StartDiscovery(initializedDeps.deploymentEventWatcher); err != nil {
 		return err
 	}
 
-	err = meshWorkloadFinder.StartDiscovery(initializedDeps.podEventWatcher, m.localMeshEventWatcher)
-	if err != nil {
+	if err = meshWorkloadFinder.StartDiscovery(initializedDeps.podEventWatcher, m.localMeshEventWatcher); err != nil {
 		return err
 	}
 
-	err = meshServiceFinder.StartDiscovery(initializedDeps.serviceEventWatcher, m.localMeshWorkloadEventWatcher)
-	if err != nil {
+	if err = meshServiceFinder.StartDiscovery(initializedDeps.serviceEventWatcher, m.localMeshWorkloadEventWatcher); err != nil {
 		return err
 	}
 
-	return nil
+	return clusterTenancyFinder.StartDiscovery(ctx, initializedDeps.podEventWatcher, m.localMeshEventWatcher)
 }
 
 func (m *discoveryClusterHandler) ClusterRemoved(cluster string) error {
@@ -157,8 +166,12 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 			deploymentClient,
 			replicaSetClient,
 		)
-
 		meshWorkloadScanners[meshType] = scannerFactory(ownerFetcher, m.localMeshClient)
+	}
+
+	var clusterTenancyScanners []k8s_tenancy.ClusterTenancyScanner
+	for _, tenancyScannerFactory := range m.clusterTenancyScannerFactories {
+		clusterTenancyScanners = append(clusterTenancyScanners, tenancyScannerFactory(m.localMeshClient))
 	}
 
 	return &clusterDependentDeps{
@@ -169,5 +182,6 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 		serviceClient:          serviceClient,
 		podClient:              podClient,
 		deploymentClient:       deploymentClient,
+		clusterTenancyScanners: clusterTenancyScanners,
 	}, nil
 }

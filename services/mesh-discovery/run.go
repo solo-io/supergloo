@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/bootstrap"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
+	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/istio"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/linkerd"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s"
@@ -42,6 +43,9 @@ func Run(rootCtx context.Context) {
 			types.MeshType_ISTIO:   istio.NewIstioMeshWorkloadScanner,
 			types.MeshType_LINKERD: linkerd.NewLinkerdMeshWorkloadScanner,
 			types.MeshType_APPMESH: discoveryContext.MeshDiscovery.AppMeshWorkloadScannerFactory,
+		},
+		[]k8s_tenancy.ClusterTenancyScannerFactory{
+			discoveryContext.ClusterTenancy.AppMeshClusterTenancyScannerFactory,
 		},
 		discoveryContext,
 	)
