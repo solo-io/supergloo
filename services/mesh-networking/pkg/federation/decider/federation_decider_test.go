@@ -359,7 +359,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshServiceClient.EXPECT().
-			UpdateMeshService(ctx, &meshService1Copy).
+			UpsertMeshServiceSpec(ctx, &meshService1Copy).
 			Return(nil)
 
 		// EXPECTs for meshService2
@@ -378,7 +378,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshServiceClient.EXPECT().
-			UpdateMeshService(ctx, &meshService2Copy).
+			UpsertMeshServiceSpec(ctx, &meshService2Copy).
 			Return(nil)
 
 		// EXPECTs for meshService3
@@ -397,7 +397,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshServiceClient.EXPECT().
-			UpdateMeshService(ctx, &meshService3Copy).
+			UpsertMeshServiceSpec(ctx, &meshService3Copy).
 			Return(nil)
 
 		// EXPECTs for meshService4
@@ -406,7 +406,7 @@ var _ = Describe("Federation Decider", func() {
 			MulticlusterDnsName: "application-svc4.application-ns4.cluster-4",
 		}
 		meshServiceClient.EXPECT().
-			UpdateMeshService(ctx, &meshService4Copy).
+			UpsertMeshServiceSpec(ctx, &meshService4Copy).
 			Return(nil)
 
 		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, strategies.GetFederationStrategyFromMode)
