@@ -47,7 +47,7 @@ coredns   1      179m
 
 Let's add [Server entries](https://coredns.io/manual/plugins/) with plugins to the `istio-coredns-plugin` to stub out domains like the following:
 
-{{< highlight yaml "hl_lines=11-16" >}}
+{{< highlight yaml "hl_lines=11-17" >}}
 kubectl --context $CLUSTER apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
@@ -221,7 +221,7 @@ EOF
 {{< /tab >}}
 
 
-{{< tab name="coredns (==1.4.0)" codelang="shell" >}}
+{{< tab name="coredns (>1.4.0)" codelang="shell" >}}
 
 ISTIO_COREDNS=$(kubectl get svc -n istio-system istiocoredns -o jsonpath={.spec.clusterIP})
 
