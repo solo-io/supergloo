@@ -186,7 +186,7 @@ func (m *meshWorkloadFinder) handleMeshDelete(deletedMesh *zephyr_discovery.Mesh
 	logger.Debugf("Handling delete for mesh %s.%s", deletedMesh.GetName(), deletedMesh.GetNamespace())
 
 	// ignore meshes that are not running on this cluster
-	if deletedMesh.Spec.GetCluster().GetName() != m.clusterName {
+	if !m.clusterHostsMesh(deletedMesh) {
 		return nil
 	}
 
@@ -233,7 +233,7 @@ func (m *meshWorkloadFinder) handleMeshCreate(mesh *zephyr_discovery.Mesh) error
 	//  - that mesh is recorded here
 	//  - we start discovering workloads on cluster B using the Istio mesh workload discovery
 	//  - but we haven't yet discovered Istio on this cluster
-	if mesh.Spec.GetCluster().GetName() != m.clusterName {
+	if !m.clusterHostsMesh(mesh) {
 		return nil
 	}
 
@@ -430,4 +430,18 @@ func (m *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *zephyr_d
 	mw.Spec = discoveredWorkload.Spec
 	mw.Labels = discoveredWorkload.Labels
 	return m.localMeshWorkloadClient.UpdateMeshWorkload(m.ctx, mw)
+}
+
+func (m *meshWorkloadFinder) clusterHostsMesh(mesh *zephyr_discovery.Mesh) bool {
+	// AppMesh's data plane can span multiple clusters
+	if mesh.Spec.GetAwsAppMesh() != nil {
+		for _, clusterRef := range mesh.Spec.GetAwsAppMesh().GetClusters() {
+			if clusterRef.GetName() == m.clusterName {
+				return true
+			}
+		}
+		return false
+	} else {
+		return mesh.Spec.GetCluster().GetName() == m.clusterName
+	}
 }

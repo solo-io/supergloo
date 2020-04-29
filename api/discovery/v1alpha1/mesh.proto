@@ -60,6 +60,8 @@ message MeshSpec {
         string region = 2;
         // The AWS Account ID associated with the Mesh. Populated at REST API registration time.
         string aws_account_id = 3;
+        // The k8s clusters on which sidecars for this AppMesh instance have been discovered.
+        repeated core.zephyr.solo.io.ResourceRef clusters = 4;
     }
 
     // Mesh object representing an installed Linkerd control plane
@@ -82,7 +84,7 @@ message MeshSpec {
         ConsulConnectMesh consul_connect = 4;
     }
 
-    // The cluster on which this mesh resides.
+    // The cluster on which the control plane for this mesh is deployed.
     core.zephyr.solo.io.ResourceRef cluster = 5;
 }
 

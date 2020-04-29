@@ -725,4 +725,56 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
 		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 	})
+
+	It("should reprocess pods if new AppMesh detected", func() {
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.MESH_PLATFORM: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+
+		// Now AppMesh has been discovered
+		podClient.EXPECT().
+			ListPod(ctx).
+			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+			Spec: zephyr_discovery_types.MeshSpec{
+				MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+					AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
+						Clusters: []*zephyr_core_types.ResourceRef{
+							{Name: clusterName},
+						},
+					},
+				},
+			},
+		})
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("should not reprocess pods if new AppMesh detected", func() {
+		mockLocalMeshWorkloadClient.EXPECT().
+			ListMeshWorkload(ctx, client.MatchingLabels{
+				constants.MESH_PLATFORM: clusterName,
+			}).
+			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+		err := meshWorkloadFinder.StartDiscovery(podEventWatcher, meshEventWatcher)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+
+		err = meshEventHandlerFuncs.OnCreate(&zephyr_discovery.Mesh{
+			Spec: zephyr_discovery_types.MeshSpec{
+				MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+					AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
+						Clusters: []*zephyr_core_types.ResourceRef{
+							{Name: "some-other-cluster-name"},
+						},
+					},
+				},
+			},
+		})
+		Expect(err).ToNot(HaveOccurred())
+	})
 })
