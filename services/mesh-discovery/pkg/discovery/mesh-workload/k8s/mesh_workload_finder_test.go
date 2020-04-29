@@ -744,9 +744,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
 					AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
-						Clusters: []*zephyr_core_types.ResourceRef{
-							{Name: clusterName},
-						},
+						Clusters: []string{clusterName},
 					},
 				},
 			},
@@ -768,9 +766,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
 					AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
-						Clusters: []*zephyr_core_types.ResourceRef{
-							{Name: "some-other-cluster-name"},
-						},
+						Clusters: []string{"some-other-cluster-name"},
 					},
 				},
 			},

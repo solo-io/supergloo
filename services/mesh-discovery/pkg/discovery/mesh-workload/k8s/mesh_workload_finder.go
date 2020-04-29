@@ -6,6 +6,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/go-utils/stringutils"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
@@ -435,12 +436,7 @@ func (m *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *zephyr_d
 func (m *meshWorkloadFinder) clusterHostsMesh(mesh *zephyr_discovery.Mesh) bool {
 	// AppMesh's data plane can span multiple clusters
 	if mesh.Spec.GetAwsAppMesh() != nil {
-		for _, clusterRef := range mesh.Spec.GetAwsAppMesh().GetClusters() {
-			if clusterRef.GetName() == m.clusterName {
-				return true
-			}
-		}
-		return false
+		return stringutils.ContainsString(m.clusterName, mesh.Spec.GetAwsAppMesh().GetClusters())
 	} else {
 		return mesh.Spec.GetCluster().GetName() == m.clusterName
 	}
