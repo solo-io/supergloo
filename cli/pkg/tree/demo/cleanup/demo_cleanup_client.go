@@ -12,7 +12,7 @@ func DemoCleanup(ctx context.Context, runner exec.Runner) error {
 
 const (
 	cleanupDemoScript = `
-kind get clusters | while read -r r; do kind delete cluster --name "$r"; done
+kind get clusters | grep -E  '(management-plane|remote-cluster)-[a-z0-9]+' | while read -r r; do kind delete cluster --name "$r"; done
 exit 0
 `
 )
