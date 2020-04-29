@@ -14,10 +14,10 @@ func updateServices(ctx context.Context, federatedServices []*zephyr_discovery.M
 	logger := contextutils.LoggerFrom(ctx)
 
 	for _, federatedService := range federatedServices {
-		err := meshServiceClient.UpdateMeshService(ctx, federatedService)
+		err := meshServiceClient.UpsertMeshServiceSpec(ctx, federatedService)
 		if err != nil {
 			logger.Errorw(fmt.Sprintf("Failed to set federation metadata on mesh service"),
-				zap.Any("opbject_meta", federatedService.ObjectMeta),
+				zap.Any("object_meta", federatedService.ObjectMeta),
 				zap.Error(err),
 			)
 			return err
