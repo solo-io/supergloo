@@ -72,6 +72,9 @@ metadata:
   namespace: istio-operator
 spec:
   profile: default
+  addonComponents:
+    istiocoredns:
+      enabled: true  
   values:
     global:
       controlPlaneSecurityEnabled: true

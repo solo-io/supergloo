@@ -2,6 +2,7 @@
 title: Troubleshooting
 menuTitle: Troubleshooting
 weight: 10
+description: Understanding how to troubleshoot Service Mesh Hub with tips on logging, FAQ, and understanding how things work
 ---
 
 In this guide we explore how to troubleshoot when things don't behave the way you're expecting. We also try to explain how things work under the covers so you can use your own troubleshooting skills to find why things may not behave as expected. We would love to hear from you if you if you get stuck on the [Solo.io Slack](https://slack.solo.io) or if you figure out how to solve something not covered here, please consider a [Pull Request to the docs](https://github.com/solo-io/service-mesh-hub/tree/master/docs) to add it.
@@ -93,6 +94,15 @@ istiod                 ClusterIP      10.8.51.94    <none>           15012/TCP,4
 
 Note, the external-ip. Any `ServiceEntry` created for cross-cluster service discovery will use this external ip. The logic for getting the `ingressgateway` IP can be found in the [federation code base](https://github.com/solo-io/service-mesh-hub/blob/master/services/mesh-networking/pkg/federation/dns/external_access_point_getter.go#L85) of the `mesh-networking` service.
 
+##### Do cross-cluster service entries resolve DNS?
+
+They can, but they are not automatically configured by Service Mesh Hub *yet*. Services in deployment targets (clusters) that are registered with Service Mesh Hub are created and are routable within the Istio (or any mesh) sidecar proxy, but not directly (ie, `nslookup` will fail). 
+
+However, you can manually set up the DNS yourself. See the [customizing DNS for Istio routing]({{% versioned_link_path fromRoot="/operations/customize_dns" %}}) for more.
+
+
+This automation, to set up the DNS stubbing, is coming very soon (and this doc might be outdated by then). We will keep the docs as up to date as possible. 
+
 ##### What Istio versions are supported?
 
 Right now, Service Mesh Hub supports Istio 1.5.x. More versions can be supported based on user feedback. Additional meshes like Linkerd and AppMesh are also supported, each in various stages of completeness. 
@@ -112,9 +122,7 @@ https://discuss.istio.io/t/istio-upgrade-from-1-4-6-1-5-0-throws-istiod-errors-r
 
 {{% /notice %}}
 
-##### Do cross-cluster service entries resolve DNS?
 
-Not at the moment. They are created and are routable within the Istio (or any mesh) sidecar proxy, but not directly. This automation, to set up the DNS stubbing, is coming very soon (and this doc might be outdated by then). We will keep the docs as up to date as possible. 
 
 
 ##### Found something else?
