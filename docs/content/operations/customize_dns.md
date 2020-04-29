@@ -48,6 +48,7 @@ coredns   1      179m
 Let's add [Server entries](https://coredns.io/manual/plugins/) with plugins to the `istio-coredns-plugin` to stub out domains like the following:
 
 {{< highlight yaml "hl_lines=11-16" >}}
+kubectl --context $CLUSTER apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -75,6 +76,7 @@ data:
           cache 30
           reload
         }
+EOF        
 {{< /highlight >}}
 
 Everything else in the configmap can stay the same. 
