@@ -13,6 +13,7 @@ import (
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mesh_service "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service"
 	discovery_mocks "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -35,8 +36,8 @@ type mocks struct {
 
 	meshServiceFinder mesh_service.MeshServiceFinder
 
-	serviceCallback      func(service *k8s_core_types.Service) error
-	meshWorkloadCallback func(meshWorkload *zephyr_discovery.MeshWorkload) error
+	serviceCallback      *func(service *k8s_core_types.Service) error
+	meshWorkloadCallback *func(meshWorkload *zephyr_discovery.MeshWorkload) error
 }
 
 var _ = Describe("Mesh Service Finder", func() {
@@ -62,15 +63,15 @@ var _ = Describe("Mesh Service Finder", func() {
 		serviceEventWatcher := mock_corev1.NewMockServiceEventWatcher(ctrl)
 		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 
-		var serviceCallback func(service *k8s_core_types.Service) error
-		var meshWorkloadCallback func(meshWorkload *zephyr_discovery.MeshWorkload) error
+		serviceCallback := new(func(service *k8s_core_types.Service) error)
+		meshWorkloadCallback := new(func(meshWorkload *zephyr_discovery.MeshWorkload) error)
 
 		// need to grab the callbacks so we can hook into them and send events
 		serviceEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, serviceEventHandler *k8s_core_controller.ServiceEventHandlerFuncs) error {
-				serviceCallback = serviceEventHandler.OnCreate
+				*serviceCallback = serviceEventHandler.OnCreate
 				return nil
 			})
 
@@ -78,7 +79,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, mwEventHandler *controller.MeshWorkloadEventHandlerFuncs) error {
-				meshWorkloadCallback = mwEventHandler.OnCreate
+				*meshWorkloadCallback = mwEventHandler.OnCreate
 				return nil
 			})
 
@@ -91,12 +92,6 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkloadClient,
 			meshClient,
 		)
-
-		err := meshServiceFinder.StartDiscovery(
-			serviceEventWatcher,
-			meshWorkloadEventWatcher,
-		)
-		Expect(err).NotTo(HaveOccurred())
 
 		return mocks{
 			serviceClient:            serviceClient,
@@ -131,6 +126,13 @@ var _ = Describe("Mesh Service Finder", func() {
 			}
 
 			meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Name:      "test-mesh-workload",
+					Namespace: env.GetWriteNamespace(),
+					Labels: map[string]string{
+						constants.CLUSTER: clusterName,
+					},
+				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
@@ -146,6 +148,13 @@ var _ = Describe("Mesh Service Finder", func() {
 				},
 			}
 			meshWorkloadEventV2 := &zephyr_discovery.MeshWorkload{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Name:      "test-mesh-workload-v2",
+					Namespace: env.GetWriteNamespace(),
+					Labels: map[string]string{
+						constants.CLUSTER: clusterName,
+					},
+				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
@@ -204,6 +213,24 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			meshServiceName := "right-service-ns1-test-cluster-name"
 
+			// first list call is on startup, making it empty just for convenience in this test
+			mocks.meshWorkloadClient.EXPECT().
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+
+			// this list call is the real one we care about
+			mocks.meshWorkloadClient.EXPECT().
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil)
+			mocks.meshServiceClient.EXPECT().
+				ListMeshService(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.serviceClient.
 				EXPECT().
 				ListService(ctx).
@@ -211,18 +238,11 @@ var _ = Describe("Mesh Service Finder", func() {
 					Items: []k8s_core_types.Service{wrongService, rightService},
 				}, nil)
 
-			mocks.meshWorkloadClient.
-				EXPECT().
-				ListMeshWorkload(ctx).
-				Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{
-					*meshWorkloadEvent,
-					*meshWorkloadEventV2,
-				}}, nil)
-
 			mocks.meshClient.
 				EXPECT().
 				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
-				Return(mesh, nil)
+				Return(mesh, nil).
+				Times(3)
 
 			mocks.meshServiceClient.
 				EXPECT().
@@ -265,8 +285,13 @@ var _ = Describe("Mesh Service Finder", func() {
 				}).
 				Return(nil)
 
-			err := mocks.meshWorkloadCallback(meshWorkloadEvent)
+			err := mocks.meshServiceFinder.StartDiscovery(
+				mocks.serviceEventWatcher,
+				mocks.meshWorkloadEventWatcher,
+			)
+			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
+			err = (*mocks.meshWorkloadCallback)(meshWorkloadEvent)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -313,6 +338,17 @@ var _ = Describe("Mesh Service Finder", func() {
 				},
 			}
 
+			mocks.meshWorkloadClient.EXPECT().
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+			mocks.meshServiceClient.EXPECT().
+				ListMeshService(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshServiceList{}, nil)
+
 			mocks.serviceClient.
 				EXPECT().
 				ListService(ctx).
@@ -325,8 +361,13 @@ var _ = Describe("Mesh Service Finder", func() {
 				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
-			err := mocks.meshWorkloadCallback(meshWorkloadEvent)
+			err := mocks.meshServiceFinder.StartDiscovery(
+				mocks.serviceEventWatcher,
+				mocks.meshWorkloadEventWatcher,
+			)
+			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
+			err = (*mocks.meshWorkloadCallback)(meshWorkloadEvent)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -345,8 +386,24 @@ var _ = Describe("Mesh Service Finder", func() {
 				},
 			}
 
-			err := mocks.meshWorkloadCallback(meshWorkloadEvent)
+			mocks.meshWorkloadClient.EXPECT().
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+			mocks.meshServiceClient.EXPECT().
+				ListMeshService(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshServiceList{}, nil)
 
+			err := mocks.meshServiceFinder.StartDiscovery(
+				mocks.serviceEventWatcher,
+				mocks.meshWorkloadEventWatcher,
+			)
+			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+
+			err = (*mocks.meshWorkloadCallback)(meshWorkloadEvent)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -403,8 +460,24 @@ var _ = Describe("Mesh Service Finder", func() {
 				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
-			err := mocks.meshWorkloadCallback(meshWorkloadEvent)
+			mocks.meshWorkloadClient.EXPECT().
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+			mocks.meshServiceClient.EXPECT().
+				ListMeshService(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshServiceList{}, nil)
 
+			err := mocks.meshServiceFinder.StartDiscovery(
+				mocks.serviceEventWatcher,
+				mocks.meshWorkloadEventWatcher,
+			)
+			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+
+			err = (*mocks.meshWorkloadCallback)(meshWorkloadEvent)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -469,8 +542,16 @@ var _ = Describe("Mesh Service Finder", func() {
 				},
 			}
 
-			meshServiceName := "right-service-ns1-test-cluster-name"
-
+			mocks.meshWorkloadClient.EXPECT().
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+			mocks.meshServiceClient.EXPECT().
+				ListMeshService(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.serviceClient.
 				EXPECT().
 				ListService(ctx).
@@ -478,47 +559,18 @@ var _ = Describe("Mesh Service Finder", func() {
 					Items: []k8s_core_types.Service{wrongService, rightService},
 				}, nil)
 
-			mocks.meshWorkloadClient.
-				EXPECT().
-				ListMeshWorkload(ctx).
-				Return(&zephyr_discovery.MeshWorkloadList{Items: nil}, nil)
-
 			mocks.meshClient.
 				EXPECT().
 				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
-			mocks.meshServiceClient.
-				EXPECT().
-				GetMeshService(ctx, client.ObjectKey{
-					Name:      meshServiceName,
-					Namespace: env.GetWriteNamespace(),
-				}).
-				Return(&zephyr_discovery.MeshService{
-					ObjectMeta: k8s_meta_types.ObjectMeta{
-						Name:      meshServiceName,
-						Namespace: env.GetWriteNamespace(),
-					},
-					Spec: zephyr_discovery_types.MeshServiceSpec{
-						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-							Ref: &zephyr_core_types.ResourceRef{
-								Name:      rightService.GetName(),
-								Namespace: rightService.GetNamespace(),
-								Cluster:   clusterName,
-							},
-							WorkloadSelectorLabels: rightService.Spec.Selector,
-							Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
-								Name:     "port-1",
-								Port:     80,
-								Protocol: "TCP",
-							}},
-						},
-						Mesh: meshWorkloadEvent.Spec.Mesh,
-					},
-				}, nil)
+			err := mocks.meshServiceFinder.StartDiscovery(
+				mocks.serviceEventWatcher,
+				mocks.meshWorkloadEventWatcher,
+			)
+			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
-			err := mocks.meshWorkloadCallback(meshWorkloadEvent)
-
+			err = (*mocks.meshWorkloadCallback)(meshWorkloadEvent)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
@@ -579,6 +631,11 @@ var _ = Describe("Mesh Service Finder", func() {
 				},
 			}
 			rightWorkloadV1 := &zephyr_discovery.MeshWorkload{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Labels: map[string]string{
+						constants.CLUSTER: clusterName,
+					},
+				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
@@ -594,6 +651,11 @@ var _ = Describe("Mesh Service Finder", func() {
 				},
 			}
 			rightWorkloadV2 := &zephyr_discovery.MeshWorkload{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Labels: map[string]string{
+						constants.CLUSTER: clusterName,
+					},
+				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
 					KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
@@ -611,6 +673,16 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			meshServiceName := "my-svc-my-ns-test-cluster-name"
 
+			mocks.meshWorkloadClient.EXPECT().
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+			mocks.meshServiceClient.EXPECT().
+				ListMeshService(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.meshClient.
 				EXPECT().
 				GetMesh(ctx, client.ObjectKey{
@@ -618,11 +690,13 @@ var _ = Describe("Mesh Service Finder", func() {
 					Namespace: mesh.Namespace,
 				}).
 				Return(mesh, nil).
-				Times(2)
+				Times(3)
 
 			mocks.meshWorkloadClient.
 				EXPECT().
-				ListMeshWorkload(ctx).
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{
 						*wrongWorkload,
@@ -672,8 +746,13 @@ var _ = Describe("Mesh Service Finder", func() {
 				}).
 				Return(nil)
 
-			err := mocks.serviceCallback(serviceEvent)
+			err := mocks.meshServiceFinder.StartDiscovery(
+				mocks.serviceEventWatcher,
+				mocks.meshWorkloadEventWatcher,
+			)
+			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
+			err = (*mocks.serviceCallback)(serviceEvent)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -735,9 +814,21 @@ var _ = Describe("Mesh Service Finder", func() {
 				},
 			}
 
+			mocks.meshWorkloadClient.EXPECT().
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+			mocks.meshServiceClient.EXPECT().
+				ListMeshService(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.meshWorkloadClient.
 				EXPECT().
-				ListMeshWorkload(ctx).
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{
 						*wrongWorkload1,
@@ -754,8 +845,13 @@ var _ = Describe("Mesh Service Finder", func() {
 				Return(mesh, nil).
 				Times(2)
 
-			err := mocks.serviceCallback(serviceEvent)
+			err := mocks.meshServiceFinder.StartDiscovery(
+				mocks.serviceEventWatcher,
+				mocks.meshWorkloadEventWatcher,
+			)
+			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
+			err = (*mocks.serviceCallback)(serviceEvent)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -803,9 +899,21 @@ var _ = Describe("Mesh Service Finder", func() {
 				},
 			}
 
+			mocks.meshWorkloadClient.EXPECT().
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+			mocks.meshServiceClient.EXPECT().
+				ListMeshService(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.meshWorkloadClient.
 				EXPECT().
-				ListMeshWorkload(ctx).
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{
 						*wrongWorkload1,
@@ -820,8 +928,13 @@ var _ = Describe("Mesh Service Finder", func() {
 				}).
 				Return(mesh, nil)
 
-			err := mocks.serviceCallback(serviceEvent)
+			err := mocks.meshServiceFinder.StartDiscovery(
+				mocks.serviceEventWatcher,
+				mocks.meshWorkloadEventWatcher,
+			)
+			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 
+			err = (*mocks.serviceCallback)(serviceEvent)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -838,8 +951,24 @@ var _ = Describe("Mesh Service Finder", func() {
 				},
 			}
 
-			err := mocks.serviceCallback(serviceEvent)
+			mocks.meshWorkloadClient.EXPECT().
+				ListMeshWorkload(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
+			mocks.meshServiceClient.EXPECT().
+				ListMeshService(ctx, client.MatchingLabels{
+					constants.CLUSTER: clusterName,
+				}).
+				Return(&zephyr_discovery.MeshServiceList{}, nil)
 
+			err := mocks.meshServiceFinder.StartDiscovery(
+				mocks.serviceEventWatcher,
+				mocks.meshWorkloadEventWatcher,
+			)
+			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
+
+			err = (*mocks.serviceCallback)(serviceEvent)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})

@@ -13,6 +13,7 @@ import (
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
+	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -62,17 +63,39 @@ func (m *meshServiceFinder) StartDiscovery(
 	serviceEventWatcher k8s_core_controller.ServiceEventWatcher,
 	meshWorkloadEventWatcher zephyr_discovery_controller.MeshWorkloadEventWatcher,
 ) error {
+	meshWorkloadList, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
+		constants.CLUSTER: m.clusterName,
+	})
+	if err != nil {
+		return err
+	}
 
-	err := serviceEventWatcher.AddEventHandler(m.ctx, &k8s_core_controller.ServiceEventHandlerFuncs{
+	// at the start, everything we've recorded is "live" so far
+	var allMeshWorkloads []*zephyr_discovery.MeshWorkload
+	for _, meshWorkloadIter := range meshWorkloadList.Items {
+		meshWorkload := meshWorkloadIter
+
+		allMeshWorkloads = append(allMeshWorkloads, &meshWorkload)
+	}
+
+	err = m.garbageCollectOrphanServices(allMeshWorkloads)
+	if err != nil {
+		return err
+	}
+
+	err = serviceEventWatcher.AddEventHandler(m.ctx, &k8s_core_controller.ServiceEventHandlerFuncs{
 		OnCreate: func(obj *k8s_core_types.Service) error {
-			_ = m.handleServiceUpsert(obj)
+			_ = m.handleServiceUpsert(obj, logging.CreateEvent)
 			return nil
 		},
 		OnUpdate: func(_, new *k8s_core_types.Service) error {
-			_ = m.handleServiceUpsert(new)
+			_ = m.handleServiceUpsert(new, logging.UpdateEvent)
 			return nil
 		},
-		OnDelete: nil,
+		OnDelete: func(obj *k8s_core_types.Service) error {
+			_ = m.handleServiceDelete(obj)
+			return nil
+		},
 	})
 	if err != nil {
 		return err
@@ -80,14 +103,17 @@ func (m *meshServiceFinder) StartDiscovery(
 
 	return meshWorkloadEventWatcher.AddEventHandler(m.ctx, &zephyr_discovery_controller.MeshWorkloadEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_discovery.MeshWorkload) error {
-			_ = m.handleMeshWorkloadUpsert(obj)
+			_ = m.handleMeshWorkloadUpsert(obj, logging.CreateEvent)
 			return nil
 		},
 		OnUpdate: func(_, new *zephyr_discovery.MeshWorkload) error {
-			_ = m.handleMeshWorkloadUpsert(new)
+			_ = m.handleMeshWorkloadUpsert(new, logging.UpdateEvent)
 			return nil
 		},
-		OnDelete: nil,
+		OnDelete: func(obj *zephyr_discovery.MeshWorkload) error {
+			_ = m.handleMeshWorkloadDelete(obj)
+			return nil
+		},
 	})
 }
 
@@ -102,41 +128,103 @@ type meshServiceFinder struct {
 }
 
 // handle non-delete events
-func (m *meshServiceFinder) handleServiceUpsert(service *k8s_core_types.Service) error {
-	// early optimization- bail out early if we know that this service can't select anything
-	// otherwise we'll have to check all the mesh workloads
-	if len(service.Spec.Selector) == 0 {
+func (m *meshServiceFinder) handleServiceUpsert(service *k8s_core_types.Service, eventType logging.EventType) error {
+	logger := logging.BuildEventLogger(m.ctx, eventType, service)
+
+	mesh, backingWorkloads, err := m.findMeshAndWorkloadsForService(service)
+	if err != nil {
+		logger.Errorf("%+v", err)
 		return nil
 	}
 
-	meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, meshWorkload := range meshWorkloads.Items {
-
-		mesh, err := m.meshClient.GetMesh(m.ctx, clients.ResourceRefToObjectKey(meshWorkload.Spec.GetMesh()))
+	if mesh != nil {
+		err = m.upsertMeshService(
+			service,
+			mesh,
+			m.findSubsets(backingWorkloads),
+			m.clusterName,
+		)
 		if err != nil {
-			return err
-		}
-
-		if m.isServiceBackedByWorkload(service, &meshWorkload, mesh) {
-			return m.upsertMeshService(
-				service,
-				mesh,
-				m.findSubsets(service, meshWorkloads, mesh),
-				m.clusterName,
-			)
+			logger.Errorf("%+v", err)
+			return nil
 		}
 	}
 
-	// TODO: handle deletions https://github.com/solo-io/service-mesh-hub/issues/169
 	return nil
 }
 
+func (m *meshServiceFinder) handleServiceDelete(service *k8s_core_types.Service) error {
+	logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, service)
+
+	mesh, _, err := m.findMeshAndWorkloadsForService(service)
+	if err != nil {
+		logger.Errorf("%+v", err)
+		return nil
+	}
+
+	// not part of any mesh, so no delete action needs to be taken
+	if mesh == nil {
+		return nil
+	}
+	meshService, err := m.buildMeshService(service, mesh, nil, m.clusterName)
+	if err != nil {
+		logger.Errorf("%+v", err)
+		return nil
+	}
+	serviceObjKey, err := client.ObjectKeyFromObject(meshService)
+	if err != nil {
+		logger.Errorf("%+v", err)
+		return nil
+	}
+
+	err = m.meshServiceClient.DeleteMeshService(m.ctx, serviceObjKey)
+	if err != nil {
+		logger.Errorf("%+v", err)
+		return nil
+	}
+
+	return nil
+}
+
+// Find the mesh that the service is a part of. Also find the workloads that back it.
+// Returning nil, nil, nil from this method means that the service was not a part of any mesh.
+func (m *meshServiceFinder) findMeshAndWorkloadsForService(service *k8s_core_types.Service) (*zephyr_discovery.Mesh, []*zephyr_discovery.MeshWorkload, error) {
+	// early optimization- bail out early if we know that this service can't select anything
+	// otherwise we'll have to check all the mesh workloads
+	if len(service.Spec.Selector) == 0 {
+		return nil, nil, nil
+	}
+
+	meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
+		constants.CLUSTER: m.clusterName,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var backingWorkloads []*zephyr_discovery.MeshWorkload
+	var mesh *zephyr_discovery.Mesh
+	for _, meshWorkloadIter := range meshWorkloads.Items {
+		meshWorkload := meshWorkloadIter
+
+		meshForWorkload, err := m.meshClient.GetMesh(m.ctx, clients.ResourceRefToObjectKey(meshWorkload.Spec.GetMesh()))
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if m.isServiceBackedByWorkload(service, &meshWorkload) {
+			mesh = meshForWorkload
+			backingWorkloads = append(backingWorkloads, &meshWorkload)
+		}
+	}
+
+	return mesh, backingWorkloads, nil
+}
+
 // handle non-delete events
-func (m *meshServiceFinder) handleMeshWorkloadUpsert(meshWorkload *zephyr_discovery.MeshWorkload) error {
+func (m *meshServiceFinder) handleMeshWorkloadUpsert(meshWorkload *zephyr_discovery.MeshWorkload, eventType logging.EventType) error {
+	logger := logging.BuildEventLogger(m.ctx, eventType, meshWorkload)
+
 	podLabels := meshWorkload.Spec.GetKubeController().GetLabels()
 
 	// the `AreLabelsInWhiteList` check later on has undesirable behavior when the "whitelist" is empty,
@@ -147,44 +235,130 @@ func (m *meshServiceFinder) handleMeshWorkloadUpsert(meshWorkload *zephyr_discov
 
 	workloadMesh, err := m.meshClient.GetMesh(m.ctx, clients.ResourceRefToObjectKey(meshWorkload.Spec.GetMesh()))
 	if err != nil {
+		logger.Errorf("%+v", err)
 		return err
 	}
 
 	services, err := m.serviceClient.ListService(m.ctx)
 	if err != nil {
+		logger.Errorf("%+v", err)
 		return err
 	}
 
 	for _, service := range services.Items {
-		if m.isServiceBackedByWorkload(&service, meshWorkload, workloadMesh) {
-			meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx)
-			if err != nil {
-				return err
-			}
-			return m.upsertMeshService(
+		if m.isServiceBackedByWorkload(&service, meshWorkload) {
+			_, backingWorkloads, err := m.findMeshAndWorkloadsForService(&service)
+
+			err = m.upsertMeshService(
 				&service,
 				workloadMesh,
-				m.findSubsets(&service, meshWorkloads, workloadMesh),
+				m.findSubsets(backingWorkloads),
 				m.clusterName,
 			)
+			if err != nil {
+				logger.Errorf("%+v", err)
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func (m *meshServiceFinder) findSubsets(
-	service *k8s_core_types.Service,
-	meshWorkloads *zephyr_discovery.MeshWorkloadList,
-	mesh *zephyr_discovery.Mesh,
-) map[string]*zephyr_discovery_types.MeshServiceSpec_Subset {
+func (m *meshServiceFinder) handleMeshWorkloadDelete(deletedMeshWorkload *zephyr_discovery.MeshWorkload) error {
+	logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, deletedMeshWorkload)
+
+	// careful to only delete mesh services that this cluster-scoped mesh service finder instance owns
+	if deletedMeshWorkload.Labels[constants.CLUSTER] != m.clusterName {
+		logger.Debugf("Ignoring mesh workload delete event because cluster does not match for %+v", deletedMeshWorkload.Spec)
+		return nil
+	}
+
+	// Start with all mesh workloads. We'll filter them in the next step
+	allMeshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
+		constants.CLUSTER: m.clusterName,
+	})
+	if err != nil {
+		logger.Errorf("%+v", err)
+		return err
+	}
+
+	// take care that we don't include the workload that just got deleted
+	// (unsure of the controller-runtime cache behavior here- better safe than sorry)
+	var remainingMeshWorkloads []*zephyr_discovery.MeshWorkload
+	for _, candidateMeshWorkloadIter := range allMeshWorkloads.Items {
+		candidateMeshWorkload := &candidateMeshWorkloadIter
+
+		// save all the non-deleted mesh workloads
+		if !clients.SameObject(candidateMeshWorkload.ObjectMeta, deletedMeshWorkload.ObjectMeta) {
+			remainingMeshWorkloads = append(remainingMeshWorkloads, candidateMeshWorkload)
+		}
+	}
+
+	err = m.garbageCollectOrphanServices(remainingMeshWorkloads)
+	if err != nil {
+		logger.Errorf("%+v", err)
+		return err
+	}
+
+	return nil
+}
+
+// Accepts a list of "live" mesh workloads on the cluster that this mesh service finder is processing
+// This is to support the case where this is run in the context of a delete events rolling in and we want to
+// be careful to avoid considering the one that just got deleted.
+func (m *meshServiceFinder) garbageCollectOrphanServices(liveMeshWorkloads []*zephyr_discovery.MeshWorkload) error {
+	// find the mesh services on this cluster (ie, the only ones that could be backed by the workloads we're handed)
+	meshServicesOnCluster, err := m.meshServiceClient.ListMeshService(m.ctx, client.MatchingLabels{
+		constants.CLUSTER: m.clusterName,
+	})
+	if err != nil {
+		return err
+	}
+
+	// for each mesh service on this cluster, check whether it still has workloads backing it
+	for _, meshService := range meshServicesOnCluster.Items {
+		kubeService, err := m.serviceClient.GetService(m.ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetKubeService().GetRef()))
+		if errors.IsNotFound(err) {
+			// the service backing this has already disappeared, just clean it up immediately
+			err = m.meshServiceClient.DeleteMeshService(m.ctx, clients.ObjectMetaToObjectKey(meshService.ObjectMeta))
+			if err != nil {
+				return err
+			}
+
+			// we're done for this service, continue to the next one
+			continue
+		} else if err != nil {
+			return err
+		}
+
+		hasBackingWorkloads := false
+		for _, meshWorkload := range liveMeshWorkloads {
+			hasBackingWorkloads = m.isServiceBackedByWorkload(kubeService, meshWorkload)
+
+			if hasBackingWorkloads {
+				break
+			}
+		}
+
+		// if we couldn't find backing workloads, then delete the mesh service we're processing in this loop iteration
+		if !hasBackingWorkloads {
+			err = m.meshServiceClient.DeleteMeshService(m.ctx, clients.ObjectMetaToObjectKey(meshService.ObjectMeta))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// expects a list of just the workloads that back the service you're finding subsets for
+func (m *meshServiceFinder) findSubsets(backingWorkloads []*zephyr_discovery.MeshWorkload) map[string]*zephyr_discovery_types.MeshServiceSpec_Subset {
 
 	uniqueLabels := make(map[string]sets.String)
-	for _, workload := range meshWorkloads.Items {
-		if !m.isServiceBackedByWorkload(service, &workload, mesh) {
-			continue
-		}
-		for key, val := range workload.Spec.GetKubeController().GetLabels() {
+	for _, backingWorkload := range backingWorkloads {
+		for key, val := range backingWorkload.Spec.GetKubeController().GetLabels() {
 			// skip known kubernetes values
 			if skippedLabels.Has(key) {
 				continue
@@ -217,13 +391,13 @@ func (m *meshServiceFinder) findSubsets(
 func (m *meshServiceFinder) isServiceBackedByWorkload(
 	service *k8s_core_types.Service,
 	meshWorkload *zephyr_discovery.MeshWorkload,
-	mesh *zephyr_discovery.Mesh,
 ) bool {
+	workloadCluster := meshWorkload.Labels[constants.CLUSTER]
 
 	// If the meshworkload is not on the same cluster as the service, it can be skipped safely
 	// The event handler accepts events from MeshWorkloads which may "match" the incoming service
 	// but be on a different cluster, so it is important to check that here.
-	if mesh.Spec.GetCluster().GetName() != m.clusterName {
+	if workloadCluster != m.clusterName {
 		return false
 	}
 
@@ -239,11 +413,15 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(
 
 func (m *meshServiceFinder) buildMeshService(
 	service *k8s_core_types.Service,
-	meshType zephyr_core_types.MeshType,
-	meshObjectMeta k8s_meta_types.ObjectMeta,
+	mesh *zephyr_discovery.Mesh,
 	subsets map[string]*zephyr_discovery_types.MeshServiceSpec_Subset,
 	clusterName string,
-) *zephyr_discovery.MeshService {
+) (*zephyr_discovery.MeshService, error) {
+	meshType, err := enum_conversion.MeshToMeshType(mesh)
+	if err != nil {
+		return nil, err
+	}
+
 	return &zephyr_discovery.MeshService{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      m.buildMeshServiceName(service, clusterName),
@@ -261,10 +439,10 @@ func (m *meshServiceFinder) buildMeshService(
 				Labels:                 service.GetLabels(),
 				Ports:                  m.convertPorts(service),
 			},
-			Mesh:    clients.ObjectMetaToResourceRef(meshObjectMeta),
+			Mesh:    clients.ObjectMetaToResourceRef(mesh.ObjectMeta),
 			Subsets: subsets,
 		},
-	}
+	}, nil
 }
 
 func (m *meshServiceFinder) convertPorts(service *k8s_core_types.Service) (ports []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort) {
@@ -284,12 +462,10 @@ func (m *meshServiceFinder) upsertMeshService(
 	subsets map[string]*zephyr_discovery_types.MeshServiceSpec_Subset,
 	clusterName string,
 ) error {
-	meshType, err := enum_conversion.MeshToMeshType(mesh)
+	computedMeshService, err := m.buildMeshService(service, mesh, subsets, clusterName)
 	if err != nil {
 		return err
 	}
-
-	computedMeshService := m.buildMeshService(service, meshType, mesh.ObjectMeta, subsets, clusterName)
 
 	existingMeshService, err := m.meshServiceClient.GetMeshService(m.ctx, client.ObjectKey{
 		Name:      computedMeshService.GetName(),
