@@ -41,7 +41,7 @@ jobs:
       run : docker login quay.io --username "solo-io+solobot" --password ${{ secrets.QUAY_IO_PASSWORD }}
 
     - name: Push latest
-      # Found on github community: https://github.community/t5/GitHub-Actions/Github-Actions-GITHUB-EVENT-PATH-does-not-contain-relevant-PR/td-p/20835
+      # Found on github community:  https://github.community/t5/GitHub-Actions/Github-Actions-GITHUB-EVENT-PATH-does-not-contain-relevant-PR/td-p/20835
       if: github.ref == 'refs/heads/master'
       run: cd docs &&  make latest -B
 
