@@ -42,12 +42,12 @@ func (c *clusterTenancyFinder) StartDiscovery(
 		OnCreate: func(pod *k8s_core_types.Pod) error {
 			logging.BuildEventLogger(ctx, logging.CreateEvent, pod).
 				Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
-			return c.reconcileTenancyForPodUpsert(ctx, pod)
+			return c.reconcileTenancyForPod(ctx, pod)
 		},
 		OnUpdate: func(_, pod *k8s_core_types.Pod) error {
 			logging.BuildEventLogger(ctx, logging.UpdateEvent, pod).
 				Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
-			return c.reconcileTenancyForPodUpsert(ctx, pod)
+			return c.reconcileTenancyForPod(ctx, pod)
 		},
 		OnDelete: func(pod *k8s_core_types.Pod) error {
 			logging.BuildEventLogger(ctx, logging.DeleteEvent, pod).
@@ -72,7 +72,7 @@ func (c *clusterTenancyFinder) StartDiscovery(
 }
 
 // Register cluster to Mesh tenancy if needed
-func (c *clusterTenancyFinder) reconcileTenancyForPodUpsert(
+func (c *clusterTenancyFinder) reconcileTenancyForPod(
 	ctx context.Context,
 	pod *k8s_core_types.Pod,
 ) error {
@@ -103,7 +103,7 @@ func (c *clusterTenancyFinder) reconcileTenancyForMesh(
 	}
 	for _, pod := range podList.Items {
 		pod := pod
-		err := c.reconcileTenancyForPodUpsert(ctx, &pod)
+		err := c.reconcileTenancyForPod(ctx, &pod)
 		if err != nil {
 			return err
 		}

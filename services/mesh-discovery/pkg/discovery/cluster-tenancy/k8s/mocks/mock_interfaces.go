@@ -6,11 +6,12 @@ package mock_k8s_tenancy
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	v1 "k8s.io/api/core/v1"
-	reflect "reflect"
 )
 
 // MockClusterTenancyFinder is a mock of ClusterTenancyFinder interface.
