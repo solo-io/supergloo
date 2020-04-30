@@ -65,7 +65,7 @@ func (a *appmeshTenancyScanner) UpdateMeshTenancy(
 	} else if !stringutils.ContainsString(clusterName, mesh.Spec.GetAwsAppMesh().GetClusters()) {
 		// Record this Mesh as a tenant of this cluster
 		mesh.Spec.GetAwsAppMesh().Clusters = append(mesh.Spec.GetAwsAppMesh().GetClusters(), clusterName)
-		return a.meshClient.UpsertMeshSpec(ctx, mesh)
+		return a.meshClient.UpdateMesh(ctx, mesh)
 	}
 	return nil
 }

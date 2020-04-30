@@ -94,6 +94,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 		m.ctx,
 		&zephyr_discovery_controller.MeshEventHandlerFuncs{
 			OnCreate: m.handleMeshCreate,
+			OnUpdate: m.handleMeshUpdate,
 			OnDelete: m.handleMeshDelete,
 		},
 	)
@@ -225,9 +226,21 @@ func (m *meshWorkloadFinder) handleMeshDelete(deletedMesh *zephyr_discovery.Mesh
 }
 
 func (m *meshWorkloadFinder) handleMeshCreate(mesh *zephyr_discovery.Mesh) error {
-	logger := contextutils.LoggerFrom(m.ctx)
+	logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, mesh)
 	logger.Debugf("mesh create event for %s", mesh.Name)
+	return m.handleMeshUpsert(mesh, logger)
+}
 
+func (m *meshWorkloadFinder) handleMeshUpdate(_, mesh *zephyr_discovery.Mesh) error {
+	logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, mesh)
+	logger.Debugf("mesh update event for %s", mesh.Name)
+	return m.handleMeshUpsert(mesh, logger)
+}
+
+func (m *meshWorkloadFinder) handleMeshUpsert(
+	mesh *zephyr_discovery.Mesh,
+	logger *zap.SugaredLogger,
+) error {
 	// ensure we are only watching for meshes discovered on this same cluster
 	// otherwise we can hit a race where:
 	//  - Istio is discovered on cluster A

@@ -7,6 +7,7 @@ import (
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/skv2/pkg/utils"
 	k8s_core_types "k8s.io/api/core/v1"
 )
@@ -39,12 +40,18 @@ func (c *clusterTenancyFinder) StartDiscovery(
 ) (err error) {
 	if err = podEventWatcher.AddEventHandler(ctx, &k8s_core_controller.PodEventHandlerFuncs{
 		OnCreate: func(pod *k8s_core_types.Pod) error {
+			logging.BuildEventLogger(ctx, logging.CreateEvent, pod).
+				Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
 			return c.reconcileTenancyForPodUpsert(ctx, pod)
 		},
 		OnUpdate: func(_, pod *k8s_core_types.Pod) error {
+			logging.BuildEventLogger(ctx, logging.UpdateEvent, pod).
+				Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
 			return c.reconcileTenancyForPodUpsert(ctx, pod)
 		},
 		OnDelete: func(pod *k8s_core_types.Pod) error {
+			logging.BuildEventLogger(ctx, logging.DeleteEvent, pod).
+				Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
 			return c.reconcileTenancyForCluster(ctx)
 		},
 	}); err != nil {
@@ -52,9 +59,13 @@ func (c *clusterTenancyFinder) StartDiscovery(
 	}
 	return meshEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshEventHandlerFuncs{
 		OnCreate: func(mesh *zephyr_discovery.Mesh) error {
+			logging.BuildEventLogger(ctx, logging.CreateEvent, mesh).
+				Debugf("Handling for %s.%s", mesh.GetName(), mesh.GetNamespace())
 			return c.reconcileTenancyForMesh(ctx, mesh)
 		},
 		OnUpdate: func(_, mesh *zephyr_discovery.Mesh) error {
+			logging.BuildEventLogger(ctx, logging.UpdateEvent, mesh).
+				Debugf("Handling for %s.%s", mesh.GetName(), mesh.GetNamespace())
 			return c.reconcileTenancyForMesh(ctx, mesh)
 		},
 	})

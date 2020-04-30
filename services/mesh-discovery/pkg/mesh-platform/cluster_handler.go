@@ -132,15 +132,15 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		return err
 	}
 
+	if err = clusterTenancyFinder.StartDiscovery(ctx, initializedDeps.podEventWatcher, m.localMeshEventWatcher); err != nil {
+		return err
+	}
+
 	if err = meshWorkloadFinder.StartDiscovery(initializedDeps.podEventWatcher, m.localMeshEventWatcher); err != nil {
 		return err
 	}
 
-	if err = meshServiceFinder.StartDiscovery(initializedDeps.serviceEventWatcher, m.localMeshWorkloadEventWatcher); err != nil {
-		return err
-	}
-
-	return clusterTenancyFinder.StartDiscovery(ctx, initializedDeps.podEventWatcher, m.localMeshEventWatcher)
+	return meshServiceFinder.StartDiscovery(initializedDeps.serviceEventWatcher, m.localMeshWorkloadEventWatcher)
 }
 
 func (m *discoveryClusterHandler) ClusterRemoved(cluster string) error {
