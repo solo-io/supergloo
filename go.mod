@@ -38,6 +38,7 @@ require (
 	github.com/rotisserie/eris v0.2.0
 	github.com/sergi/go-diff v1.1.0
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
+	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
 	github.com/solo-io/go-utils v0.15.1
 	github.com/solo-io/protoc-gen-ext v0.0.7
