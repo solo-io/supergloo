@@ -13,9 +13,9 @@ For example, when you have the Bookinfo sample installed across multiple cluster
 kubectl get serviceentry -n istio-system
 
 NAME                                          HOSTS                                           LOCATION        RESOLUTION   AGE
-istio-ingressgateway.istio-system.cluster-2   [istio-ingressgateway.istio-system.cluster-2]   MESH_INTERNAL   DNS          164m
-ratings.default.cluster-2                     [ratings.default.cluster-2]                     MESH_INTERNAL   DNS          164m
-reviews.default.cluster-2                     [reviews.default.cluster-2]                     MESH_INTERNAL   DNS          164m
+istio-ingressgateway.istio-system.cluster-2   [istio-ingressgateway.istio-system.cluster-2]   MESH_INTERNAL   DNS          163m
+ratings.default.cluster-2                     [ratings.default.cluster-2]                     MESH_INTERNAL   DNS          163m
+reviews.default.cluster-2                     [reviews.default.cluster-2]                     MESH_INTERNAL   DNS          163m
 ```
 
 From within a pod on `cluster-1`, you cannot reach any of those `hostnames` directly:
