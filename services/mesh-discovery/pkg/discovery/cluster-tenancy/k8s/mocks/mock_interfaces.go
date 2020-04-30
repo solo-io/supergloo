@@ -6,13 +6,11 @@ package mock_k8s_tenancy
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	v1 "k8s.io/api/core/v1"
+	reflect "reflect"
 )
 
 // MockClusterTenancyFinder is a mock of ClusterTenancyFinder interface.
@@ -76,15 +74,15 @@ func (m *MockClusterTenancyScanner) EXPECT() *MockClusterTenancyScannerMockRecor
 }
 
 // UpdateMeshTenancy mocks base method.
-func (m *MockClusterTenancyScanner) UpdateMeshTenancy(ctx context.Context, clusterName string, pod *v1.Pod, meshClient v1alpha1.MeshClient) error {
+func (m *MockClusterTenancyScanner) UpdateMeshTenancy(ctx context.Context, clusterName string, pod *v1.Pod) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateMeshTenancy", ctx, clusterName, pod, meshClient)
+	ret := m.ctrl.Call(m, "UpdateMeshTenancy", ctx, clusterName, pod)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateMeshTenancy indicates an expected call of UpdateMeshTenancy.
-func (mr *MockClusterTenancyScannerMockRecorder) UpdateMeshTenancy(ctx, clusterName, pod, meshClient interface{}) *gomock.Call {
+func (mr *MockClusterTenancyScannerMockRecorder) UpdateMeshTenancy(ctx, clusterName, pod interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshTenancy", reflect.TypeOf((*MockClusterTenancyScanner)(nil).UpdateMeshTenancy), ctx, clusterName, pod, meshClient)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshTenancy", reflect.TypeOf((*MockClusterTenancyScanner)(nil).UpdateMeshTenancy), ctx, clusterName, pod)
 }

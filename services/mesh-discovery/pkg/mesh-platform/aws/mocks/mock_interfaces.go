@@ -5,11 +5,10 @@
 package mock_aws
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
 	v1 "k8s.io/api/core/v1"
+	reflect "reflect"
 )
 
 // MockAppMeshParser is a mock of AppMeshParser interface.
