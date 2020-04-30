@@ -13,6 +13,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
@@ -22,6 +23,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("AppmeshMeshWorkloadScanner", func() {
@@ -38,6 +40,7 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		deploymentKind      = "deployment-kind"
 		meshName            = "mesh-name-1"
 		region              = "us-east-1"
+		awsAccountId        = "awsaccountid"
 		pod                 = &corev1.Pod{
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{
@@ -54,7 +57,7 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 							},
 							{
 								Name:  aws_utils.AppMeshRoleArnEnvVarName,
-								Value: "arn:aws:iam::awsaccountid:role/iamserviceaccount-role",
+								Value: fmt.Sprintf("arn:aws:iam::%s:role/iamserviceaccount-role", awsAccountId),
 							},
 						},
 					},
@@ -82,44 +85,33 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 
 	It("should scan pod and disambiguate multiple AppMesh Meshes", func() {
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)
-		meshList := &zephyr_discovery.MeshList{
-			Items: []zephyr_discovery.Mesh{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      meshName,
-						Namespace: "mesh-namespace",
-					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
-								Name:   meshName,
-								Region: region,
-							},
-						},
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "mesh-name-2",
-						Namespace: "mesh-namespace",
-					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
-								Name:   "some-other-mesh",
-								Region: "some-other-region",
-							},
-						},
+		mesh := &zephyr_discovery.Mesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      meshName,
+				Namespace: env.GetWriteNamespace(),
+			},
+			Spec: zephyr_discovery_types.MeshSpec{
+				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
+				MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+					AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
+						Name:   meshName,
+						Region: region,
 					},
 				},
 			},
 		}
-		mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
+		mockMeshClient.
+			EXPECT().
+			GetMesh(
+				ctx,
+				client.ObjectKey{
+					Name:      metadata.BuildAppMeshName(meshName, region, awsAccountId),
+					Namespace: env.GetWriteNamespace(),
+				},
+			).Return(mesh, nil)
 		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      fmt.Sprintf("appmesh-%s-%s-%s", deploymentName, namespace, clusterName),
+				Name:      fmt.Sprintf("%s-%s-%s-%s", "appmesh", deploymentName, namespace, clusterName),
 				Namespace: env.GetWriteNamespace(),
 				Labels:    appmesh.DiscoveryLabels(),
 			},
@@ -134,9 +126,8 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 					ServiceAccountName: "",
 				},
 				Mesh: &zephyr_core_types.ResourceRef{
-					Name:      meshList.Items[0].GetName(),
-					Namespace: meshList.Items[0].GetNamespace(),
-					Cluster:   clusterName,
+					Name:      meshName,
+					Namespace: mesh.GetNamespace(),
 				},
 			},
 		}
@@ -144,8 +135,9 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 			EXPECT().
 			ScanPodForAppMesh(pod).
 			Return(&aws_utils.AppMeshPod{
-				Region:      region,
-				AppMeshName: meshName,
+				Region:       region,
+				AppMeshName:  meshName,
+				AwsAccountID: awsAccountId,
 			}, nil)
 		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
 		Expect(err).NotTo(HaveOccurred())

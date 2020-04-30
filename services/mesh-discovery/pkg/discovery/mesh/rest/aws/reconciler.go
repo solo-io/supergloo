@@ -95,7 +95,7 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
 				return err
 			}
 			discoveredSMHMeshNames.Insert(discoveredMesh.GetName())
-			// Create Mesh only if it doesn't exist to avoid overwriting.
+			// Create Mesh only if it doesn't exist to avoid overwriting the clusters field.
 			_, err = a.meshClient.GetMesh(
 				ctx,
 				client.ObjectKey{Name: discoveredMesh.GetName(), Namespace: discoveredMesh.GetNamespace()},
