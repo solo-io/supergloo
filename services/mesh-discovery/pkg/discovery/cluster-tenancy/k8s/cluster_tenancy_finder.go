@@ -40,33 +40,53 @@ func (c *clusterTenancyFinder) StartDiscovery(
 ) (err error) {
 	if err = podEventWatcher.AddEventHandler(ctx, &k8s_core_controller.PodEventHandlerFuncs{
 		OnCreate: func(pod *k8s_core_types.Pod) error {
-			logging.BuildEventLogger(ctx, logging.CreateEvent, pod).
-				Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
-			return c.reconcileTenancyForPod(ctx, pod)
+			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, pod)
+			logger.Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
+			err := c.reconcileTenancyForPod(ctx, pod)
+			if err != nil {
+				logger.Errorf("%+v", err)
+			}
+			return nil
 		},
 		OnUpdate: func(_, pod *k8s_core_types.Pod) error {
-			logging.BuildEventLogger(ctx, logging.UpdateEvent, pod).
-				Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
-			return c.reconcileTenancyForPod(ctx, pod)
+			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, pod)
+			logger.Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
+			err := c.reconcileTenancyForPod(ctx, pod)
+			if err != nil {
+				logger.Errorf("%+v", err)
+			}
+			return nil
 		},
 		OnDelete: func(pod *k8s_core_types.Pod) error {
-			logging.BuildEventLogger(ctx, logging.DeleteEvent, pod).
-				Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
-			return c.reconcileTenancyForCluster(ctx)
+			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, pod)
+			logger.Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
+			err := c.reconcileTenancyForCluster(ctx)
+			if err != nil {
+				logger.Errorf("%+v", err)
+			}
+			return nil
 		},
 	}); err != nil {
 		return err
 	}
 	return meshEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshEventHandlerFuncs{
 		OnCreate: func(mesh *zephyr_discovery.Mesh) error {
-			logging.BuildEventLogger(ctx, logging.CreateEvent, mesh).
-				Debugf("Handling for %s.%s", mesh.GetName(), mesh.GetNamespace())
-			return c.reconcileTenancyForMesh(ctx, mesh)
+			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, mesh)
+			logger.Debugf("Handling for %s.%s", mesh.GetName(), mesh.GetNamespace())
+			err := c.reconcileTenancyForMesh(ctx, mesh)
+			if err != nil {
+				logger.Errorf("%+v", err)
+			}
+			return nil
 		},
 		OnUpdate: func(_, mesh *zephyr_discovery.Mesh) error {
-			logging.BuildEventLogger(ctx, logging.UpdateEvent, mesh).
-				Debugf("Handling for %s.%s", mesh.GetName(), mesh.GetNamespace())
-			return c.reconcileTenancyForMesh(ctx, mesh)
+			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, mesh)
+			logger.Debugf("Handling for %s.%s", mesh.GetName(), mesh.GetNamespace())
+			err := c.reconcileTenancyForMesh(ctx, mesh)
+			if err != nil {
+				logger.Errorf("%+v", err)
+			}
+			return nil
 		},
 	})
 }
