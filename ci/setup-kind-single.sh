@@ -15,10 +15,8 @@ make clean
 
 # generate 16-character random suffix on these names
 managementPlane=management-plane-$(xxd -l16 -ps /dev/urandom)
-remoteCluster=target-cluster-$(xxd -l16 -ps /dev/urandom)
 
 # set up each cluster
-# Create NodePort for remote cluster so it can be reachable from the management plane.
 # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
 cat <<EOF | kind create cluster --name $managementPlane --config=-
 kind: Cluster
@@ -85,7 +83,7 @@ make meshctl -B
 helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
 ./_output/meshctl install --file ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
 
-#register the remote cluster, and install Istio onto the management plane cluster
+#register the management cluster
 ./_output/meshctl cluster register \
   --remote-context kind-$managementPlane \
   --remote-cluster-name management-plane-cluster \
