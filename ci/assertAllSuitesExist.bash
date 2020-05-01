@@ -1,3 +1,8 @@
+#########################################################################
+# Ginkgo doesn't fail if a directory doesn't contain a _suite_test.go   #
+# So we'll do it ourselves                                              #
+#########################################################################
+
 find . -name '*_test.go' | while read -r f; do \
   numSuites=$(find "$(dirname "$f")" -name '*_suite_test.go' -maxdepth 1 | wc -l | tr -d '[:space:]')
 
