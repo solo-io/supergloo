@@ -8,7 +8,6 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
-	"github.com/solo-io/skv2/pkg/utils"
 	k8s_core_types "k8s.io/api/core/v1"
 )
 
@@ -103,11 +102,7 @@ func (c *clusterTenancyFinder) updateClusterRegistryForMesh(
 	if mesh == nil {
 		return nil
 	}
-	if ClusterHostsMesh(c.clusterName, mesh) {
-		return registrar.RegisterMesh(ctx, c.clusterName, mesh)
-	} else {
-		return registrar.DeregisterMesh(ctx, c.clusterName, mesh)
-	}
+	return registrar.RegisterMesh(ctx, c.clusterName, mesh)
 }
 
 func (c *clusterTenancyFinder) reconcileTenancyForPod(
@@ -128,13 +123,14 @@ func (c *clusterTenancyFinder) reconcileTenancyForMesh(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 ) error {
-	// Currently multicluster tenancy is only supported for AppMesh
-	if mesh.Spec.GetAwsAppMesh() == nil {
-		return nil
-	}
-	// Remove this cluster from tenancy list and recompute in case this cluster no longer contains any
+	// Remove this cluster from Mesh's cluster list and recompute in case this cluster no longer contains any
 	// Mesh injected workloads.
-	mesh.Spec.GetAwsAppMesh().Clusters = utils.RemoveString(mesh.Spec.GetAwsAppMesh().GetClusters(), c.clusterName)
+	for _, registrar := range c.tenancyRegistrars {
+		err := registrar.DeregisterMesh(ctx, c.clusterName, mesh)
+		if err != nil {
+			return err
+		}
+	}
 	podList, err := c.podClient.ListPod(ctx)
 	if err != nil {
 		return err

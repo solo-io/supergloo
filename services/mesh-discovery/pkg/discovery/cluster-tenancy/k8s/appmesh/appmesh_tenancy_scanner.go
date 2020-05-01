@@ -68,6 +68,9 @@ func (a *appmeshTenancyScanner) RegisterMesh(ctx context.Context, clusterName st
 	if !isAppMesh(mesh) {
 		return nil
 	}
+	if utils.ContainsString(mesh.Spec.GetAwsAppMesh().Clusters, clusterName) {
+		return nil
+	}
 	mesh.Spec.GetAwsAppMesh().Clusters = append(mesh.Spec.GetAwsAppMesh().GetClusters(), clusterName)
 	return a.meshClient.UpdateMesh(ctx, mesh)
 }
