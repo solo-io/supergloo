@@ -10,7 +10,7 @@ if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
   exit 1;
 fi
 
-bash ./assertAllSuitesExist.bash
+bash ./ci/assertAllSuitesExist.bash
 
 protoc --version
 
