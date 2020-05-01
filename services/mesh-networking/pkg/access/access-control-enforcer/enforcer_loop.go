@@ -66,7 +66,19 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 		},
 		OnDelete: func(virtualMesh *zephyr_networking.VirtualMesh) error {
 			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, virtualMesh)
-			logger.Debugf("Ignoring event: %+v", virtualMesh)
+			logger.Debugw("event handler enter",
+				zap.Any("spec", virtualMesh.Spec),
+				zap.Any("status", virtualMesh.Status),
+			)
+
+			// manually set this to false so that things get cleaned up
+			virtualMesh.Spec.EnforceAccessControl = false
+
+			err := e.enforceGlobalAccessControl(ctx, virtualMesh)
+			if err != nil {
+				logger.Errorf("%+v", err)
+			}
+
 			return nil
 		},
 		OnGeneric: func(virtualMesh *zephyr_networking.VirtualMesh) error {

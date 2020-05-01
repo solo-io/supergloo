@@ -194,4 +194,28 @@ var _ = Describe("EnforcerLoop", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
 	})
+
+	It("should clean up everything that's relevant when a virtual mesh is deleted", func() {
+		vm := buildVirtualMesh()
+		meshes := buildMeshes()
+		for i, meshRef := range vm.Spec.GetMeshes() {
+			meshClient.
+				EXPECT().
+				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				Return(meshes[i], nil)
+		}
+		for _, meshEnforcer := range meshEnforcers {
+			meshEnforcer.
+				EXPECT().
+				StopEnforcing(contextutils.WithLogger(ctx, ""), meshes).
+				Return(nil)
+			meshEnforcer.
+				EXPECT().
+				Name().
+				Return("")
+		}
+
+		err := virtualMeshHandler.DeleteVirtualMesh(vm)
+		Expect(err).ToNot(HaveOccurred())
+	})
 })
