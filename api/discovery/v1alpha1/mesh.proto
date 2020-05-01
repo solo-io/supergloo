@@ -84,7 +84,11 @@ message MeshSpec {
         ConsulConnectMesh consul_connect = 4;
     }
 
-    // The cluster on which the control plane for this mesh is deployed.
+    /*
+        The cluster on which the control plane for this mesh is deployed.
+        This field may not apply to all Mesh types, such as AppMesh, whose control planes
+        are located externally to any user accessible compute platform.
+    */
     core.zephyr.solo.io.ResourceRef cluster = 5;
 }
 

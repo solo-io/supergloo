@@ -43,7 +43,7 @@ Meshes represent a currently registered service mesh.
 | awsAppMesh | [MeshSpec.AwsAppMesh](#discovery.zephyr.solo.io.MeshSpec.AwsAppMesh) |  |  |
 | linkerd | [MeshSpec.LinkerdMesh](#discovery.zephyr.solo.io.MeshSpec.LinkerdMesh) |  |  |
 | consulConnect | [MeshSpec.ConsulConnectMesh](#discovery.zephyr.solo.io.MeshSpec.ConsulConnectMesh) |  |  |
-| cluster | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | The cluster on which the control plane for this mesh is deployed. |
+| cluster | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | The cluster on which the control plane for this mesh is deployed. This field may not apply to all Mesh types, such as AppMesh, whose control planes are located externally to any user accessible compute platform. |
 
 
 

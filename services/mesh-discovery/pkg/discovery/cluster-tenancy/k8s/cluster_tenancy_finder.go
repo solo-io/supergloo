@@ -13,27 +13,27 @@ import (
 )
 
 type clusterTenancyFinder struct {
-	clusterName     string
-	tenancyScanners []ClusterTenancyScanner
-	podClient       k8s_core.PodClient
-	localMeshClient zephyr_discovery.MeshClient
+	clusterName       string
+	tenancyRegistrars []ClusterTenancyRegistrar
+	podClient         k8s_core.PodClient
+	localMeshClient   zephyr_discovery.MeshClient
 }
 
 func NewClusterTenancyFinder(
 	clusterName string,
-	tenancyScanners []ClusterTenancyScanner,
+	tenancyRegistrars []ClusterTenancyRegistrar,
 	podClient k8s_core.PodClient,
 	localMeshClient zephyr_discovery.MeshClient,
-) ClusterTenancyFinder {
+) ClusterTenancyRegistrarLoop {
 	return &clusterTenancyFinder{
-		clusterName:     clusterName,
-		tenancyScanners: tenancyScanners,
-		podClient:       podClient,
-		localMeshClient: localMeshClient,
+		clusterName:       clusterName,
+		tenancyRegistrars: tenancyRegistrars,
+		podClient:         podClient,
+		localMeshClient:   localMeshClient,
 	}
 }
 
-func (c *clusterTenancyFinder) StartDiscovery(
+func (c *clusterTenancyFinder) StartRegistration(
 	ctx context.Context,
 	podEventWatcher k8s_core_controller.PodEventWatcher,
 	meshEventWatcher zephyr_discovery_controller.MeshEventWatcher,
@@ -91,13 +91,31 @@ func (c *clusterTenancyFinder) StartDiscovery(
 	})
 }
 
-// Register cluster to Mesh tenancy if needed
+func (c *clusterTenancyFinder) updateClusterRegistryForMesh(
+	ctx context.Context,
+	registrar ClusterTenancyRegistrar,
+	pod *k8s_core_types.Pod,
+) error {
+	mesh, err := registrar.MeshForWorkload(ctx, pod)
+	if err != nil {
+		return err
+	}
+	if mesh == nil {
+		return nil
+	}
+	if ClusterHostsMesh(c.clusterName, mesh) {
+		return registrar.RegisterMesh(ctx, c.clusterName, mesh)
+	} else {
+		return registrar.DeregisterMesh(ctx, c.clusterName, mesh)
+	}
+}
+
 func (c *clusterTenancyFinder) reconcileTenancyForPod(
 	ctx context.Context,
 	pod *k8s_core_types.Pod,
 ) error {
-	for _, tenancyScanner := range c.tenancyScanners {
-		err := tenancyScanner.UpdateMeshTenancy(ctx, c.clusterName, pod)
+	for _, registrar := range c.tenancyRegistrars {
+		err := c.updateClusterRegistryForMesh(ctx, registrar, pod)
 		if err != nil {
 			return err
 		}
@@ -110,7 +128,7 @@ func (c *clusterTenancyFinder) reconcileTenancyForMesh(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 ) error {
-	// Currently multicluster tenancy is only support for AppMesh
+	// Currently multicluster tenancy is only supported for AppMesh
 	if mesh.Spec.GetAwsAppMesh() == nil {
 		return nil
 	}
@@ -141,7 +159,7 @@ func (c *clusterTenancyFinder) reconcileTenancyForCluster(ctx context.Context) e
 		mesh := mesh
 		// If Mesh has this cluster registered, delete it and recompute in case this cluster no longer contains any
 		// Mesh injected workloads.
-		if utils.ContainsString(mesh.Spec.GetAwsAppMesh().GetClusters(), c.clusterName) {
+		if ClusterHostsMesh(c.clusterName, &mesh) {
 			err = c.reconcileTenancyForMesh(ctx, &mesh)
 			if err != nil {
 				return err

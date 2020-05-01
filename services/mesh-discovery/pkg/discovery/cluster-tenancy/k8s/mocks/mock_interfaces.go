@@ -9,81 +9,111 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	v1 "k8s.io/api/core/v1"
 )
 
-// MockClusterTenancyFinder is a mock of ClusterTenancyFinder interface.
-type MockClusterTenancyFinder struct {
+// MockClusterTenancyRegistrarLoop is a mock of ClusterTenancyRegistrarLoop interface.
+type MockClusterTenancyRegistrarLoop struct {
 	ctrl     *gomock.Controller
-	recorder *MockClusterTenancyFinderMockRecorder
+	recorder *MockClusterTenancyRegistrarLoopMockRecorder
 }
 
-// MockClusterTenancyFinderMockRecorder is the mock recorder for MockClusterTenancyFinder.
-type MockClusterTenancyFinderMockRecorder struct {
-	mock *MockClusterTenancyFinder
+// MockClusterTenancyRegistrarLoopMockRecorder is the mock recorder for MockClusterTenancyRegistrarLoop.
+type MockClusterTenancyRegistrarLoopMockRecorder struct {
+	mock *MockClusterTenancyRegistrarLoop
 }
 
-// NewMockClusterTenancyFinder creates a new mock instance.
-func NewMockClusterTenancyFinder(ctrl *gomock.Controller) *MockClusterTenancyFinder {
-	mock := &MockClusterTenancyFinder{ctrl: ctrl}
-	mock.recorder = &MockClusterTenancyFinderMockRecorder{mock}
+// NewMockClusterTenancyRegistrarLoop creates a new mock instance.
+func NewMockClusterTenancyRegistrarLoop(ctrl *gomock.Controller) *MockClusterTenancyRegistrarLoop {
+	mock := &MockClusterTenancyRegistrarLoop{ctrl: ctrl}
+	mock.recorder = &MockClusterTenancyRegistrarLoopMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockClusterTenancyFinder) EXPECT() *MockClusterTenancyFinderMockRecorder {
+func (m *MockClusterTenancyRegistrarLoop) EXPECT() *MockClusterTenancyRegistrarLoopMockRecorder {
 	return m.recorder
 }
 
-// StartDiscovery mocks base method.
-func (m *MockClusterTenancyFinder) StartDiscovery(ctx context.Context, podEventWatcher controller0.PodEventWatcher, meshEventWatcher controller.MeshEventWatcher) error {
+// StartRegistration mocks base method.
+func (m *MockClusterTenancyRegistrarLoop) StartRegistration(ctx context.Context, podEventWatcher controller0.PodEventWatcher, meshEventWatcher controller.MeshEventWatcher) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartDiscovery", ctx, podEventWatcher, meshEventWatcher)
+	ret := m.ctrl.Call(m, "StartRegistration", ctx, podEventWatcher, meshEventWatcher)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// StartDiscovery indicates an expected call of StartDiscovery.
-func (mr *MockClusterTenancyFinderMockRecorder) StartDiscovery(ctx, podEventWatcher, meshEventWatcher interface{}) *gomock.Call {
+// StartRegistration indicates an expected call of StartRegistration.
+func (mr *MockClusterTenancyRegistrarLoopMockRecorder) StartRegistration(ctx, podEventWatcher, meshEventWatcher interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockClusterTenancyFinder)(nil).StartDiscovery), ctx, podEventWatcher, meshEventWatcher)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartRegistration", reflect.TypeOf((*MockClusterTenancyRegistrarLoop)(nil).StartRegistration), ctx, podEventWatcher, meshEventWatcher)
 }
 
-// MockClusterTenancyScanner is a mock of ClusterTenancyScanner interface.
-type MockClusterTenancyScanner struct {
+// MockClusterTenancyRegistrar is a mock of ClusterTenancyRegistrar interface.
+type MockClusterTenancyRegistrar struct {
 	ctrl     *gomock.Controller
-	recorder *MockClusterTenancyScannerMockRecorder
+	recorder *MockClusterTenancyRegistrarMockRecorder
 }
 
-// MockClusterTenancyScannerMockRecorder is the mock recorder for MockClusterTenancyScanner.
-type MockClusterTenancyScannerMockRecorder struct {
-	mock *MockClusterTenancyScanner
+// MockClusterTenancyRegistrarMockRecorder is the mock recorder for MockClusterTenancyRegistrar.
+type MockClusterTenancyRegistrarMockRecorder struct {
+	mock *MockClusterTenancyRegistrar
 }
 
-// NewMockClusterTenancyScanner creates a new mock instance.
-func NewMockClusterTenancyScanner(ctrl *gomock.Controller) *MockClusterTenancyScanner {
-	mock := &MockClusterTenancyScanner{ctrl: ctrl}
-	mock.recorder = &MockClusterTenancyScannerMockRecorder{mock}
+// NewMockClusterTenancyRegistrar creates a new mock instance.
+func NewMockClusterTenancyRegistrar(ctrl *gomock.Controller) *MockClusterTenancyRegistrar {
+	mock := &MockClusterTenancyRegistrar{ctrl: ctrl}
+	mock.recorder = &MockClusterTenancyRegistrarMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockClusterTenancyScanner) EXPECT() *MockClusterTenancyScannerMockRecorder {
+func (m *MockClusterTenancyRegistrar) EXPECT() *MockClusterTenancyRegistrarMockRecorder {
 	return m.recorder
 }
 
-// UpdateMeshTenancy mocks base method.
-func (m *MockClusterTenancyScanner) UpdateMeshTenancy(ctx context.Context, clusterName string, pod *v1.Pod) error {
+// MeshForWorkload mocks base method.
+func (m *MockClusterTenancyRegistrar) MeshForWorkload(ctx context.Context, pod *v1.Pod) (*v1alpha1.Mesh, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateMeshTenancy", ctx, clusterName, pod)
+	ret := m.ctrl.Call(m, "MeshForWorkload", ctx, pod)
+	ret0, _ := ret[0].(*v1alpha1.Mesh)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MeshForWorkload indicates an expected call of MeshForWorkload.
+func (mr *MockClusterTenancyRegistrarMockRecorder) MeshForWorkload(ctx, pod interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshForWorkload", reflect.TypeOf((*MockClusterTenancyRegistrar)(nil).MeshForWorkload), ctx, pod)
+}
+
+// RegisterMesh mocks base method.
+func (m *MockClusterTenancyRegistrar) RegisterMesh(ctx context.Context, clusterName string, mesh *v1alpha1.Mesh) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterMesh", ctx, clusterName, mesh)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateMeshTenancy indicates an expected call of UpdateMeshTenancy.
-func (mr *MockClusterTenancyScannerMockRecorder) UpdateMeshTenancy(ctx, clusterName, pod interface{}) *gomock.Call {
+// RegisterMesh indicates an expected call of RegisterMesh.
+func (mr *MockClusterTenancyRegistrarMockRecorder) RegisterMesh(ctx, clusterName, mesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshTenancy", reflect.TypeOf((*MockClusterTenancyScanner)(nil).UpdateMeshTenancy), ctx, clusterName, pod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterMesh", reflect.TypeOf((*MockClusterTenancyRegistrar)(nil).RegisterMesh), ctx, clusterName, mesh)
+}
+
+// DeregisterMesh mocks base method.
+func (m *MockClusterTenancyRegistrar) DeregisterMesh(ctx context.Context, clusterName string, mesh *v1alpha1.Mesh) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeregisterMesh", ctx, clusterName, mesh)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeregisterMesh indicates an expected call of DeregisterMesh.
+func (mr *MockClusterTenancyRegistrarMockRecorder) DeregisterMesh(ctx, clusterName, mesh interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeregisterMesh", reflect.TypeOf((*MockClusterTenancyRegistrar)(nil).DeregisterMesh), ctx, clusterName, mesh)
 }

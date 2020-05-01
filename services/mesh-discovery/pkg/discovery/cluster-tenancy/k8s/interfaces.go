@@ -11,21 +11,19 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
-type ClusterTenancyFinder interface {
-	StartDiscovery(
+type ClusterTenancyRegistrarLoop interface {
+	StartRegistration(
 		ctx context.Context,
 		podEventWatcher k8s_core_controller.PodEventWatcher,
 		meshEventWatcher discovery_controllers.MeshEventWatcher,
 	) error
 }
 
-type ClusterTenancyScanner interface {
-	// Scan the pod for existence of a Mesh, update the relevant Mesh CRD only if it already exists. Otherwise do nothing.
-	UpdateMeshTenancy(
-		ctx context.Context,
-		clusterName string,
-		pod *k8s_core.Pod,
-	) error
+type ClusterTenancyRegistrar interface {
+	// Scan the pod for existence of a Mesh, return Mesh if found.
+	MeshForWorkload(ctx context.Context, pod *k8s_core.Pod) (*zephyr_discovery.Mesh, error)
+	RegisterMesh(ctx context.Context, clusterName string, mesh *zephyr_discovery.Mesh) error
+	DeregisterMesh(ctx context.Context, clusterName string, mesh *zephyr_discovery.Mesh) error
 }
 
-type ClusterTenancyScannerFactory func(meshClient zephyr_discovery.MeshClient) ClusterTenancyScanner
+type ClusterTenancyScannerFactory func(meshClient zephyr_discovery.MeshClient) ClusterTenancyRegistrar

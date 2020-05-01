@@ -34,7 +34,10 @@ type MeshSpec struct {
 	//	*MeshSpec_Linkerd
 	//	*MeshSpec_ConsulConnect
 	MeshType isMeshSpec_MeshType `protobuf_oneof:"mesh_type"`
-	// The cluster on which the control plane for this mesh is deployed.
+	//
+	//The cluster on which the control plane for this mesh is deployed.
+	//This field may not apply to all Mesh types, such as AppMesh, whose control planes
+	//are located externally to any user accessible compute platform.
 	Cluster              *types.ResourceRef `protobuf:"bytes,5,opt,name=cluster,proto3" json:"cluster,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
 	XXX_unrecognized     []byte             `json:"-"`

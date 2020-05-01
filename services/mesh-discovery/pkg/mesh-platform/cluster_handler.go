@@ -81,7 +81,7 @@ type clusterDependentDeps struct {
 	deploymentEventWatcher k8s_apps_controller.DeploymentEventWatcher
 	podEventWatcher        k8s_core_controller.PodEventWatcher
 	meshWorkloadScanners   meshworkload_discovery.MeshWorkloadScannerImplementations
-	clusterTenancyScanners []k8s_tenancy.ClusterTenancyScanner
+	clusterTenancyScanners []k8s_tenancy.ClusterTenancyRegistrar
 	serviceEventWatcher    k8s_core_controller.ServiceEventWatcher
 	serviceClient          k8s_core.ServiceClient
 	podClient              k8s_core.PodClient
@@ -132,7 +132,7 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		return err
 	}
 
-	if err = clusterTenancyFinder.StartDiscovery(ctx, initializedDeps.podEventWatcher, m.localMeshEventWatcher); err != nil {
+	if err = clusterTenancyFinder.StartRegistration(ctx, initializedDeps.podEventWatcher, m.localMeshEventWatcher); err != nil {
 		return err
 	}
 
@@ -169,7 +169,7 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 		meshWorkloadScanners[meshType] = scannerFactory(ownerFetcher, m.localMeshClient)
 	}
 
-	var clusterTenancyScanners []k8s_tenancy.ClusterTenancyScanner
+	var clusterTenancyScanners []k8s_tenancy.ClusterTenancyRegistrar
 	for _, tenancyScannerFactory := range m.clusterTenancyScannerFactories {
 		clusterTenancyScanners = append(clusterTenancyScanners, tenancyScannerFactory(m.localMeshClient))
 	}

@@ -6,6 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -21,31 +22,31 @@ import (
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("ClusterTenancyFinder", func() {
+var _ = Describe("ClusterTenancyRegistrarLoop", func() {
 	var (
 		ctrl                  *gomock.Controller
 		ctx                   = context.TODO()
 		clusterName           = "test-cluster-name"
-		mockTenancyScanner    *mock_k8s_tenancy.MockClusterTenancyScanner
+		mockTenancyRegistrar  *mock_k8s_tenancy.MockClusterTenancyRegistrar
 		mockPodClient         *mock_k8s_core_clients.MockPodClient
 		mockMeshClient        *mock_core.MockMeshClient
 		mockPodEventWatcher   *mock_controllers.MockPodEventWatcher
 		mockMeshEventWatcher  *mock_zephyr_discovery.MockMeshEventWatcher
 		podEventHandlerFuncs  k8s_core_controller.PodEventHandler
 		meshEventHandlerFuncs zephyr_discovery_controller.MeshEventHandler
-		clusterTenancyFinder  k8s_tenancy.ClusterTenancyFinder
+		clusterTenancyFinder  k8s_tenancy.ClusterTenancyRegistrarLoop
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		mockTenancyScanner = mock_k8s_tenancy.NewMockClusterTenancyScanner(ctrl)
+		mockTenancyRegistrar = mock_k8s_tenancy.NewMockClusterTenancyRegistrar(ctrl)
 		mockPodClient = mock_k8s_core_clients.NewMockPodClient(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockPodEventWatcher = mock_controllers.NewMockPodEventWatcher(ctrl)
 		mockMeshEventWatcher = mock_zephyr_discovery.NewMockMeshEventWatcher(ctrl)
 		clusterTenancyFinder = k8s_tenancy.NewClusterTenancyFinder(
 			clusterName,
-			[]k8s_tenancy.ClusterTenancyScanner{mockTenancyScanner},
+			[]k8s_tenancy.ClusterTenancyRegistrar{mockTenancyRegistrar},
 			mockPodClient,
 			mockMeshClient,
 		)
@@ -63,7 +64,7 @@ var _ = Describe("ClusterTenancyFinder", func() {
 				meshEventHandlerFuncs = eventHandlerFuncs
 				return nil
 			})
-		err := clusterTenancyFinder.StartDiscovery(ctx, mockPodEventWatcher, mockMeshEventWatcher)
+		err := clusterTenancyFinder.StartRegistration(ctx, mockPodEventWatcher, mockMeshEventWatcher)
 		Expect(err).To(BeNil())
 	})
 
@@ -71,8 +72,28 @@ var _ = Describe("ClusterTenancyFinder", func() {
 		ctrl.Finish()
 	})
 
-	var expectReconcileTenancyForPodUpsert = func(pod *k8s_core.Pod) {
-		mockTenancyScanner.EXPECT().UpdateMeshTenancy(ctx, clusterName, pod).Return(nil)
+	var expectRegisterForPodUpsert = func(pod *k8s_core.Pod) {
+		mesh := &zephyr_discovery.Mesh{
+			Spec: zephyr_discovery_types.MeshSpec{
+				Cluster: &types.ResourceRef{
+					Name: clusterName,
+				},
+			},
+		}
+		mockTenancyRegistrar.EXPECT().MeshForWorkload(ctx, pod).Return(mesh, nil)
+		mockTenancyRegistrar.EXPECT().RegisterMesh(ctx, clusterName, mesh).Return(nil)
+	}
+
+	var expectDeregisterForPodUpsert = func(pod *k8s_core.Pod) {
+		mesh := &zephyr_discovery.Mesh{
+			Spec: zephyr_discovery_types.MeshSpec{
+				Cluster: &types.ResourceRef{
+					Name: "some other cluster",
+				},
+			},
+		}
+		mockTenancyRegistrar.EXPECT().MeshForWorkload(ctx, pod).Return(mesh, nil)
+		mockTenancyRegistrar.EXPECT().DeregisterMesh(ctx, clusterName, mesh).Return(nil)
 	}
 
 	var expectReconcileTenancyForMeshUpsert = func(mesh *zephyr_discovery.Mesh) {
@@ -85,7 +106,7 @@ var _ = Describe("ClusterTenancyFinder", func() {
 		mockPodClient.EXPECT().ListPod(ctx).Return(podList, nil)
 		for _, pod := range podList.Items {
 			pod := pod
-			expectReconcileTenancyForPodUpsert(&pod)
+			expectRegisterForPodUpsert(&pod)
 		}
 	}
 
@@ -113,16 +134,23 @@ var _ = Describe("ClusterTenancyFinder", func() {
 		expectReconcileTenancyForMeshUpsert(&meshList.Items[0])
 	}
 
+	It("should reconcile tenancy by deregistering mesh upon Pod create", func() {
+		pod := &k8s_core.Pod{}
+		expectDeregisterForPodUpsert(pod)
+		err := podEventHandlerFuncs.CreatePod(pod)
+		Expect(err).To(BeNil())
+	})
+
 	It("should reconcile tenancy upon Pod create", func() {
 		pod := &k8s_core.Pod{}
-		expectReconcileTenancyForPodUpsert(pod)
+		expectRegisterForPodUpsert(pod)
 		err := podEventHandlerFuncs.CreatePod(pod)
 		Expect(err).To(BeNil())
 	})
 
 	It("should reconcile tenancy upon Pod update", func() {
 		pod := &k8s_core.Pod{}
-		expectReconcileTenancyForPodUpsert(pod)
+		expectRegisterForPodUpsert(pod)
 		err := podEventHandlerFuncs.UpdatePod(nil, pod)
 		Expect(err).To(BeNil())
 	})

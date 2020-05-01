@@ -752,7 +752,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	It("should not reprocess pods if new AppMesh detected", func() {
+	It("should not reprocess pods if new AppMesh detected on an unrelated cluster", func() {
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
 				constants.MESH_PLATFORM: clusterName,
