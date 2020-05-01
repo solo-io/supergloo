@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Clean up resources related to access control enforcement when the relevant VirtualMesh is deleted
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/585
+    resolvesIssue: false
