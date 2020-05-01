@@ -74,6 +74,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 			// manually set this to false so that things get cleaned up
 			virtualMesh.Spec.EnforceAccessControl = false
 
+			// TODO https://github.com/solo-io/service-mesh-hub/issues/650 - we probably want to introduce some defensive retries into our code
 			err := e.enforceGlobalAccessControl(ctx, virtualMesh)
 			if err != nil {
 				logger.Errorf("%+v", err)
