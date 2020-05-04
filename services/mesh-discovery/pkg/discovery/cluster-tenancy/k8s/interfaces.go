@@ -21,7 +21,7 @@ type ClusterTenancyRegistrarLoop interface {
 
 type ClusterTenancyRegistrar interface {
 	// Scan the pod for existence of a Mesh, return Mesh if found.
-	MeshForWorkload(ctx context.Context, pod *k8s_core.Pod) (*zephyr_discovery.Mesh, error)
+	MeshFromSidecar(ctx context.Context, pod *k8s_core.Pod) (*zephyr_discovery.Mesh, error)
 	RegisterMesh(ctx context.Context, clusterName string, mesh *zephyr_discovery.Mesh) error
 	DeregisterMesh(ctx context.Context, clusterName string, mesh *zephyr_discovery.Mesh) error
 }

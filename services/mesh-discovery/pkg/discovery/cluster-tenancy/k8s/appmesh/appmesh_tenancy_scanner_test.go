@@ -63,7 +63,7 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 			Name:      metadata.BuildAppMeshName(appMeshPod.AppMeshName, appMeshPod.Region, appMeshPod.AwsAccountID),
 			Namespace: env.GetWriteNamespace(),
 		}).Return(expectedMesh, nil)
-		mesh, err := appMeshTenancyRegistrar.MeshForWorkload(ctx, pod)
+		mesh, err := appMeshTenancyRegistrar.MeshFromSidecar(ctx, pod)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(mesh).To(Equal(expectedMesh))
 	})

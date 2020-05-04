@@ -95,7 +95,7 @@ func (c *clusterTenancyFinder) updateClusterRegistryForMesh(
 	registrar ClusterTenancyRegistrar,
 	pod *k8s_core_types.Pod,
 ) error {
-	mesh, err := registrar.MeshForWorkload(ctx, pod)
+	mesh, err := registrar.MeshFromSidecar(ctx, pod)
 	if err != nil {
 		return err
 	}

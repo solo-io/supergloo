@@ -5,6 +5,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
+// Uses metadata recorded on the Mesh CRD to determine whether mesh is hosted on cluster.
 func ClusterHostsMesh(clusterName string, mesh *zephyr_discovery.Mesh) bool {
 	if mesh == nil {
 		return false

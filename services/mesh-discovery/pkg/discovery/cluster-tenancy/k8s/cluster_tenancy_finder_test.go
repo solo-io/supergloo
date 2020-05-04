@@ -80,7 +80,7 @@ var _ = Describe("ClusterTenancyRegistrarLoop", func() {
 				},
 			},
 		}
-		mockTenancyRegistrar.EXPECT().MeshForWorkload(ctx, pod).Return(mesh, nil)
+		mockTenancyRegistrar.EXPECT().MeshFromSidecar(ctx, pod).Return(mesh, nil)
 		mockTenancyRegistrar.EXPECT().RegisterMesh(ctx, clusterName, mesh).Return(nil)
 	}
 

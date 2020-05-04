@@ -6,7 +6,6 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/go-utils/stringutils"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
@@ -16,6 +15,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -188,7 +188,7 @@ func (m *meshWorkloadFinder) handleMeshDelete(deletedMesh *zephyr_discovery.Mesh
 	logger.Debugf("Handling delete for mesh %s.%s", deletedMesh.GetName(), deletedMesh.GetNamespace())
 
 	// ignore meshes that are not running on this cluster
-	if !m.clusterHostsMesh(deletedMesh) {
+	if !k8s_tenancy.ClusterHostsMesh(m.clusterName, deletedMesh) {
 		return nil
 	}
 
@@ -247,7 +247,7 @@ func (m *meshWorkloadFinder) handleMeshUpsert(
 	//  - that mesh is recorded here
 	//  - we start discovering workloads on cluster B using the Istio mesh workload discovery
 	//  - but we haven't yet discovered Istio on this cluster
-	if !m.clusterHostsMesh(mesh) {
+	if !k8s_tenancy.ClusterHostsMesh(m.clusterName, mesh) {
 		return nil
 	}
 
@@ -444,13 +444,4 @@ func (m *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *zephyr_d
 	mw.Spec = discoveredWorkload.Spec
 	mw.Labels = discoveredWorkload.Labels
 	return m.localMeshWorkloadClient.UpdateMeshWorkload(m.ctx, mw)
-}
-
-func (m *meshWorkloadFinder) clusterHostsMesh(mesh *zephyr_discovery.Mesh) bool {
-	// AppMesh's data plane can span multiple clusters
-	if mesh.Spec.GetAwsAppMesh() != nil {
-		return stringutils.ContainsString(m.clusterName, mesh.Spec.GetAwsAppMesh().GetClusters())
-	} else {
-		return mesh.Spec.GetCluster().GetName() == m.clusterName
-	}
 }

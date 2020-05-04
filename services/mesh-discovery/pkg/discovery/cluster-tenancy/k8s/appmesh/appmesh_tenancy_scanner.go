@@ -40,7 +40,7 @@ func NewAppmeshTenancyScanner(
 	}
 }
 
-func (a *appmeshTenancyScanner) MeshForWorkload(
+func (a *appmeshTenancyScanner) MeshFromSidecar(
 	ctx context.Context,
 	pod *k8s_core_types.Pod,
 ) (*zephyr_discovery.Mesh, error) {

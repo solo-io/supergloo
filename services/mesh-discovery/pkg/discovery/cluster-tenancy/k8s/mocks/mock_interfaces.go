@@ -6,13 +6,12 @@ package mock_k8s_tenancy
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	v1 "k8s.io/api/core/v1"
+	reflect "reflect"
 )
 
 // MockClusterTenancyRegistrarLoop is a mock of ClusterTenancyRegistrarLoop interface.
@@ -75,19 +74,19 @@ func (m *MockClusterTenancyRegistrar) EXPECT() *MockClusterTenancyRegistrarMockR
 	return m.recorder
 }
 
-// MeshForWorkload mocks base method.
-func (m *MockClusterTenancyRegistrar) MeshForWorkload(ctx context.Context, pod *v1.Pod) (*v1alpha1.Mesh, error) {
+// MeshFromSidecar mocks base method.
+func (m *MockClusterTenancyRegistrar) MeshFromSidecar(ctx context.Context, pod *v1.Pod) (*v1alpha1.Mesh, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MeshForWorkload", ctx, pod)
+	ret := m.ctrl.Call(m, "MeshFromSidecar", ctx, pod)
 	ret0, _ := ret[0].(*v1alpha1.Mesh)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// MeshForWorkload indicates an expected call of MeshForWorkload.
-func (mr *MockClusterTenancyRegistrarMockRecorder) MeshForWorkload(ctx, pod interface{}) *gomock.Call {
+// MeshFromSidecar indicates an expected call of MeshFromSidecar.
+func (mr *MockClusterTenancyRegistrarMockRecorder) MeshFromSidecar(ctx, pod interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshForWorkload", reflect.TypeOf((*MockClusterTenancyRegistrar)(nil).MeshForWorkload), ctx, pod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshFromSidecar", reflect.TypeOf((*MockClusterTenancyRegistrar)(nil).MeshFromSidecar), ctx, pod)
 }
 
 // RegisterMesh mocks base method.
