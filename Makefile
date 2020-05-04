@@ -20,7 +20,8 @@ ifeq ($(TAGGED_VERSION),)
 endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
 
-LDFLAGS := "-X github.com/solo-io/service-mesh-hub/pkg/version.Version=$(VERSION)"
+# "-s -w" strips out the debug symbol tables from the binaries
+LDFLAGS := "-X github.com/solo-io/service-mesh-hub/pkg/version.Version=$(VERSION) -s -w"
 GCFLAGS := all="-N -l"
 
 GO_BUILD_FLAGS := GO111MODULE=on CGO_ENABLED=0 GOARCH=amd64
@@ -62,6 +63,7 @@ update-deps: mod-download
 	GO111MODULE=off go get -u github.com/google/wire/cmd/wire
 	GO111MODULE=off go get -u github.com/golang/mock/gomock
 	GO111MODULE=off go install github.com/golang/mock/mockgen
+	brew install upx
 
 
 .PHONY: fmt-changed
@@ -163,6 +165,8 @@ $(OUTPUT_DIR)/meshctl-darwin-amd64: $(SOURCES)
 $(OUTPUT_DIR)/meshctl-windows-amd64.exe: $(SOURCES)
 	$(GO_BUILD_FLAGS) GOOS=windows go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CLI_DIR)/cmd/main.go
 
+pack-cli:
+	upx $(OUTPUT_DIR)/meshctl*
 
 .PHONY: meshctl
 meshctl: $(OUTPUT_DIR)/meshctl
@@ -174,7 +178,7 @@ meshctl-darwin-amd64: $(OUTPUT_DIR)/meshctl-darwin-amd64
 meshctl-windows-amd64: $(OUTPUT_DIR)/meshctl-windows-amd64.exe
 
 .PHONY: build-cli
-build-cli: meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64
+build-cli: meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64 pack-cli
 
 #----------------------------------------------------------------------------------
 # Release
