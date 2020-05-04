@@ -165,6 +165,7 @@ $(OUTPUT_DIR)/meshctl-darwin-amd64: $(SOURCES)
 $(OUTPUT_DIR)/meshctl-windows-amd64.exe: $(SOURCES)
 	$(GO_BUILD_FLAGS) GOOS=windows go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CLI_DIR)/cmd/main.go
 
+# https://upx.github.io/
 pack-cli:
 	upx $(OUTPUT_DIR)/meshctl*
 
