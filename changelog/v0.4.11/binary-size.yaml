@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
-    description: Reduce CLI binary size by
+    description: Reduce CLI binary size by 75%
     issueLink: https://github.com/solo-io/service-mesh-hub/issues/651
