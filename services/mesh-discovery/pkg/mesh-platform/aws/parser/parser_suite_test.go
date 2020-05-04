@@ -1,4 +1,4 @@
-package rest_test
+package aws_utils_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestRest(t *testing.T) {
+func TestAwsUtils(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Rest Suite")
+	RunSpecs(t, "AWS Parser Suite")
 }

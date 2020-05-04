@@ -1,6 +1,8 @@
-package aws
+package aws_utils
 
-import "github.com/aws/aws-sdk-go/aws/arn"
+import (
+	"github.com/aws/aws-sdk-go/aws/arn"
+)
 
 type arnParser struct{}
 

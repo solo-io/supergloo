@@ -1,4 +1,4 @@
-package aws
+package aws_utils
 
 import (
 	k8s_core_types "k8s.io/api/core/v1"

@@ -1,4 +1,4 @@
-package aws_test
+package aws_utils_test
 
 import (
 	"fmt"
@@ -6,11 +6,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
+	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws/parser"
 )
 
 var _ = Describe("ArnParser", func() {
-	var arnParser = aws.NewArnParser()
+	var arnParser = aws_utils.NewArnParser()
 
 	It("should parse AWS account ID", func() {
 		accountID := "123456"
@@ -23,6 +23,6 @@ var _ = Describe("ArnParser", func() {
 	It("should throw error for invalid ARN", func() {
 		arnString := "invalid"
 		_, err := arnParser.ParseAccountID(arnString)
-		Expect(err).To(testutils.HaveInErrorChain(aws.ARNParseError(err, arnString)))
+		Expect(err).To(testutils.HaveInErrorChain(aws_utils.ARNParseError(err, arnString)))
 	})
 })

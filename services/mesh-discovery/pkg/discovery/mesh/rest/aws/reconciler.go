@@ -12,7 +12,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mesh_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
+	aws_utils2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws/parser"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -26,7 +26,7 @@ var (
 type appMeshDiscoveryReconciler struct {
 	meshPlatformName   string
 	region             string
-	arnParser          aws_utils.ArnParser
+	arnParser          aws_utils2.ArnParser
 	meshClient         zephyr_discovery.MeshClient
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient
 	meshServiceClient  zephyr_discovery.MeshServiceClient
@@ -42,7 +42,7 @@ type AppMeshDiscoveryReconcilerFactory func(
 func NewAppMeshDiscoveryReconcilerFactory(
 	masterClient client.Client,
 	meshClientFactory zephyr_discovery.MeshClientFactory,
-	arnParser aws_utils.ArnParser,
+	arnParser aws_utils2.ArnParser,
 ) AppMeshDiscoveryReconcilerFactory {
 	return func(
 		meshPlatformName string,
@@ -60,7 +60,7 @@ func NewAppMeshDiscoveryReconcilerFactory(
 }
 
 func NewAppMeshDiscoveryReconciler(
-	arnParser aws_utils.ArnParser,
+	arnParser aws_utils2.ArnParser,
 	meshClient zephyr_discovery.MeshClient,
 	appMeshClient appmeshiface.AppMeshAPI,
 	meshPlatformName string,

@@ -1,4 +1,4 @@
-package rest_test
+package aws_test
 
 import (
 	"context"
@@ -9,10 +9,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
-	rest2 "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/rest"
 	rest3 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws/clients/appmesh/mocks"
 	mock_rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/mocks"
+	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -24,7 +24,7 @@ var _ = Describe("CredsHandler", func() {
 		mockAppMeshClientFactory       *mock_aws.MockAppMeshClientFactory
 		mockRestAPIDiscoveryReconciler *mock_rest_api.MockRestAPIDiscoveryReconciler
 		appMeshClient                  *appmesh.AppMesh
-		awsCredsHandler                rest2.AwsCredsHandler
+		awsCredsHandler                aws2.AwsCredsHandler
 		secret                         *k8s_core_types.Secret
 	)
 
@@ -34,7 +34,7 @@ var _ = Describe("CredsHandler", func() {
 		appMeshClient = &appmesh.AppMesh{}
 		mockAppMeshClientFactory = mock_aws.NewMockAppMeshClientFactory(ctrl)
 		mockRestAPIDiscoveryReconciler = mock_rest_api.NewMockRestAPIDiscoveryReconciler(ctrl)
-		awsCredsHandler = rest2.NewAwsAPIHandler(
+		awsCredsHandler = aws2.NewAwsAPIHandler(
 			mockAppMeshClientFactory,
 			func(_ string, _ appmeshiface.AppMeshAPI, _ string) rest3.RestAPIDiscoveryReconciler {
 				return mockRestAPIDiscoveryReconciler
@@ -63,7 +63,7 @@ var _ = Describe("CredsHandler", func() {
 	})
 
 	It("should handle new API registration", func() {
-		mockAppMeshClientFactory.EXPECT().Build(secret, rest2.Region).Return(appMeshClient, nil)
+		mockAppMeshClientFactory.EXPECT().Build(secret, aws2.Region).Return(appMeshClient, nil)
 		//mockRestAPIDiscoveryReconciler.EXPECT().Reconcile(gomock.Any())
 		err := awsCredsHandler.MeshPlatformAdded(ctx, secret)
 		Expect(err).ToNot(HaveOccurred())
@@ -71,7 +71,7 @@ var _ = Describe("CredsHandler", func() {
 
 	It("should handle new API deregistration", func() {
 		// register the API first for cancelFunc map entry
-		mockAppMeshClientFactory.EXPECT().Build(secret, rest2.Region).Return(appMeshClient, nil)
+		mockAppMeshClientFactory.EXPECT().Build(secret, aws2.Region).Return(appMeshClient, nil)
 		err := awsCredsHandler.MeshPlatformAdded(ctx, secret)
 		Expect(err).ToNot(HaveOccurred())
 

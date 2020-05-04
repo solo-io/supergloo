@@ -13,10 +13,10 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	rest2 "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/rest"
 	rest3 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
-	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws/mocks"
+	aws4 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
+	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws/parser/mocks"
 	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,7 +47,7 @@ var _ = Describe("Reconciler", func() {
 			mockMeshClient,
 			mockAppMeshClient,
 			meshPlatformName,
-			rest2.Region,
+			aws4.Region,
 		)
 	})
 
@@ -111,7 +111,7 @@ var _ = Describe("Reconciler", func() {
 						AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
 							Name:         *meshRef.MeshName,
 							AwsAccountId: awsAccountID,
-							Region:       rest2.Region,
+							Region:       aws4.Region,
 						},
 					},
 				},
