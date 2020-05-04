@@ -16,9 +16,9 @@ import (
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	mock_controllers "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
-	mock_controllers "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/event-watcher-factories/mocks"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -111,14 +111,14 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(discoveredMeshWorkload, nil)
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_PLATFORM:             clusterName,
+			constants.COMPUTE_TARGET:            clusterName,
 			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
 			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
 		objKey, _ := client.ObjectKeyFromObject(discoveredMeshWorkload)
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 		mockLocalMeshWorkloadClient.EXPECT().
@@ -153,7 +153,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(discoveredMeshWorkload, nil)
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_PLATFORM:             clusterName,
+			constants.COMPUTE_TARGET:            clusterName,
 			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
 			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
@@ -172,7 +172,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -198,7 +198,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	It("discovers no workload if no mesh has been discovered (prevents a race condition)", func() {
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -219,7 +219,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{*pod}}, nil)
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -266,7 +266,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -316,7 +316,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -373,7 +373,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(newDiscoveredMeshWorkload, nil)
 		newDiscoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_PLATFORM:             clusterName,
+			constants.COMPUTE_TARGET:            clusterName,
 			constants.KUBE_CONTROLLER_NAME:      newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
 			constants.KUBE_CONTROLLER_NAMESPACE: newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
@@ -386,7 +386,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -416,7 +416,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -450,7 +450,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -481,7 +481,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -529,7 +529,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		discoveredMeshWorkload.Spec.Mesh = meshSpec
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_PLATFORM:             clusterName,
+			constants.COMPUTE_TARGET:            clusterName,
 			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
 			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
@@ -541,7 +541,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(&k8s_core_types.PodList{Items: []k8s_core_types.Pod{}}, nil)
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -566,7 +566,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	It("does not start discovering if a mesh was discovered on some other cluster", func() {
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -587,7 +587,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	It("does not remember that a mesh was discovered on some other cluster when handling a pod event later", func() {
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -613,7 +613,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	It("does nothing on startup if nothing has been discovered yet and no events come in", func() {
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
@@ -644,7 +644,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*discoveredMeshWorkload}}, nil)
 		podClient.EXPECT().
@@ -653,7 +653,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Times(2)
 		mockLocalMeshClient.EXPECT().
 			ListMesh(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}, nil)
 		podCopy := *pod
@@ -698,7 +698,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 		mockLocalMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*discoveredMeshWorkload}}, nil)
 		podClient.EXPECT().
@@ -707,7 +707,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Times(2)
 		mockLocalMeshClient.EXPECT().
 			ListMesh(ctx, client.MatchingLabels{
-				constants.MESH_PLATFORM: clusterName,
+				constants.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{mesh}}, nil)
 		podCopy := *pod

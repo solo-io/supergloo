@@ -12,12 +12,12 @@ import (
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/wire"
+	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
+	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	mesh_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/consul"
 	mesh_istio "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/istio"
 	mesh_linkerd "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/linkerd"
-	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/event-watcher-factories"
 )
 
 func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
@@ -42,7 +42,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		mesh_consul.WireProviderSet,
 		mesh_linkerd.WireProviderSet,
 		DiscoveryContextProvider,
-		MeshPlatformCredentialsHandlersProvider,
+		ComputeTargetCredentialsHandlersProvider,
 		AwsSet,
 		kube.NewConverter,
 		files.NewDefaultFileReader,

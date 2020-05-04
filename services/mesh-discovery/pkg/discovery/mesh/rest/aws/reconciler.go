@@ -11,8 +11,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	aws_utils2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	mesh_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
-	aws_utils2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws/parser"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -24,7 +24,7 @@ var (
 )
 
 type appMeshDiscoveryReconciler struct {
-	meshPlatformName   string
+	computeTargetName  string
 	region             string
 	arnParser          aws_utils2.ArnParser
 	meshClient         zephyr_discovery.MeshClient
@@ -34,7 +34,7 @@ type appMeshDiscoveryReconciler struct {
 }
 
 type AppMeshDiscoveryReconcilerFactory func(
-	meshPlatformName string,
+	computeTargetName string,
 	appMeshClient appmeshiface.AppMeshAPI,
 	region string,
 ) mesh_discovery.RestAPIDiscoveryReconciler
@@ -45,7 +45,7 @@ func NewAppMeshDiscoveryReconcilerFactory(
 	arnParser aws_utils2.ArnParser,
 ) AppMeshDiscoveryReconcilerFactory {
 	return func(
-		meshPlatformName string,
+		computeTargetName string,
 		appMeshClient appmeshiface.AppMeshAPI,
 		region string,
 	) mesh_discovery.RestAPIDiscoveryReconciler {
@@ -53,7 +53,7 @@ func NewAppMeshDiscoveryReconcilerFactory(
 			arnParser,
 			meshClientFactory(masterClient),
 			appMeshClient,
-			meshPlatformName,
+			computeTargetName,
 			region,
 		)
 	}
@@ -63,15 +63,15 @@ func NewAppMeshDiscoveryReconciler(
 	arnParser aws_utils2.ArnParser,
 	meshClient zephyr_discovery.MeshClient,
 	appMeshClient appmeshiface.AppMeshAPI,
-	meshPlatformName string,
+	computeTargetName string,
 	region string,
 ) mesh_discovery.RestAPIDiscoveryReconciler {
 	return &appMeshDiscoveryReconciler{
-		arnParser:        arnParser,
-		meshClient:       meshClient,
-		appMeshClient:    appMeshClient,
-		meshPlatformName: meshPlatformName,
-		region:           region,
+		arnParser:         arnParser,
+		meshClient:        meshClient,
+		appMeshClient:     appMeshClient,
+		computeTargetName: computeTargetName,
+		region:            region,
 	}
 }
 
@@ -156,7 +156,7 @@ func (a *appMeshDiscoveryReconciler) buildAppMeshMeshName(mesh *appmesh.MeshRef)
 	return fmt.Sprintf("%s-%s-%s",
 		ObjectNamePrefix,
 		convertToKubeName(aws.StringValue(mesh.MeshName)),
-		a.meshPlatformName)
+		a.computeTargetName)
 }
 
 // AppMesh entity names only contain "Alphanumeric characters, dashes, and underscores are allowed." (taken from AppMesh GUI)

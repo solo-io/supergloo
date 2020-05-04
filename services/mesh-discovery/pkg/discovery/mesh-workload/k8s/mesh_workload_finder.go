@@ -101,7 +101,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 
 func (m *meshWorkloadFinder) reconcileExistingState() error {
 	inThisCluster := client.MatchingLabels{
-		constants.MESH_PLATFORM: m.clusterName,
+		constants.COMPUTE_TARGET: m.clusterName,
 	}
 
 	existingMeshWorkloads, err := m.localMeshWorkloadClient.ListMeshWorkload(m.ctx, inThisCluster)
@@ -376,7 +376,7 @@ func (m *meshWorkloadFinder) attachGeneralDiscoveryLabels(meshWorkload *zephyr_d
 		meshWorkload.Labels = map[string]string{}
 	}
 	meshWorkload.Labels[constants.DISCOVERED_BY] = constants.MESH_WORKLOAD_DISCOVERY
-	meshWorkload.Labels[constants.MESH_PLATFORM] = m.clusterName
+	meshWorkload.Labels[constants.COMPUTE_TARGET] = m.clusterName
 	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAME] = meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetName()
 	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAMESPACE] = meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace()
 }

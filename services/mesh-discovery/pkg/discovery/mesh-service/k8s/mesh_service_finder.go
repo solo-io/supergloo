@@ -31,7 +31,7 @@ var (
 			constants.MESH_TYPE:              strings.ToLower(meshType.String()),
 			constants.KUBE_SERVICE_NAME:      kubeServiceName,
 			constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
-			constants.MESH_PLATFORM:          cluster,
+			constants.COMPUTE_TARGET:         cluster,
 		}
 	}
 
@@ -150,7 +150,7 @@ type meshServiceFinder struct {
 
 func (m *meshServiceFinder) loadAllMeshWorkloadsInCluster() ([]*zephyr_discovery.MeshWorkload, error) {
 	meshWorkloadList, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
-		constants.MESH_PLATFORM: m.clusterName,
+		constants.COMPUTE_TARGET: m.clusterName,
 	})
 	if err != nil {
 		return nil, err
@@ -224,7 +224,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(service *k8s_core_typ
 	}
 
 	meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
-		constants.MESH_PLATFORM: m.clusterName,
+		constants.COMPUTE_TARGET: m.clusterName,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -290,14 +290,14 @@ func (m *meshServiceFinder) handleMeshWorkloadUpsert(logger *zap.SugaredLogger, 
 
 func (m *meshServiceFinder) handleMeshWorkloadDelete(logger *zap.SugaredLogger, deletedMeshWorkload *zephyr_discovery.MeshWorkload) error {
 	// careful to only delete mesh services that this cluster-scoped mesh service finder instance owns
-	if deletedMeshWorkload.Labels[constants.MESH_PLATFORM] != m.clusterName {
+	if deletedMeshWorkload.Labels[constants.COMPUTE_TARGET] != m.clusterName {
 		logger.Debugf("Ignoring mesh workload delete event because cluster does not match for %+v", deletedMeshWorkload.Spec)
 		return nil
 	}
 
 	// Start with all mesh workloads. We'll filter them in the next step
 	allMeshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
-		constants.MESH_PLATFORM: m.clusterName,
+		constants.COMPUTE_TARGET: m.clusterName,
 	})
 	if err != nil {
 		return err
@@ -329,7 +329,7 @@ func (m *meshServiceFinder) handleMeshWorkloadDelete(logger *zap.SugaredLogger, 
 func (m *meshServiceFinder) reconcileMeshServices(liveMeshWorkloads []*zephyr_discovery.MeshWorkload) error {
 	// find the mesh services on this cluster (ie, the only ones that could be backed by the workloads we're handed)
 	meshServicesOnCluster, err := m.meshServiceClient.ListMeshService(m.ctx, client.MatchingLabels{
-		constants.MESH_PLATFORM: m.clusterName,
+		constants.COMPUTE_TARGET: m.clusterName,
 	})
 	if err != nil {
 		return err
@@ -410,7 +410,7 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(
 	service *k8s_core_types.Service,
 	meshWorkload *zephyr_discovery.MeshWorkload,
 ) bool {
-	workloadCluster := meshWorkload.Labels[constants.MESH_PLATFORM]
+	workloadCluster := meshWorkload.Labels[constants.COMPUTE_TARGET]
 
 	// If the meshworkload is not on the same cluster as the service, it can be skipped safely
 	// The event handler accepts events from MeshWorkloads which may "match" the incoming service
