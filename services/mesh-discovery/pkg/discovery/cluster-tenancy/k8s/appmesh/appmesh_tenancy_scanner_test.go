@@ -10,10 +10,10 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
+	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
+	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
 	appmesh_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s/appmesh"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
-	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/pkg/utils"
 	k8s_core "k8s.io/api/core/v1"
@@ -52,7 +52,7 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 			},
 		}
 		pod := &k8s_core.Pod{}
-		appMeshPod := &aws.AppMeshPod{
+		appMeshPod := &aws_utils.AppMeshPod{
 			AwsAccountID:    "aws-account-id",
 			Region:          "region",
 			AppMeshName:     "appmeshname",

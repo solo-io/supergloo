@@ -14,10 +14,10 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	rest2 "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/rest"
+	aws4 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
+	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
 	rest3 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
-	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws/mocks"
 	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -33,7 +33,7 @@ var _ = Describe("Reconciler", func() {
 		mockMeshClient             *mock_core.MockMeshClient
 		mockAppMeshClient          *mock_appmesh_clients.MockAppMeshAPI
 		mockArnParser              *mock_aws.MockArnParser
-		meshPlatformName           string
+		computeTargetName          string
 		awsAccountID               string
 		appMeshDiscoveryReconciler rest3.RestAPIDiscoveryReconciler
 	)
@@ -43,15 +43,15 @@ var _ = Describe("Reconciler", func() {
 		ctx = context.TODO()
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockArnParser = mock_aws.NewMockArnParser(ctrl)
-		meshPlatformName = "aws-account-name"
+		computeTargetName = "aws-account-name"
 		awsAccountID = "410461945555"
 		mockAppMeshClient = mock_appmesh_clients.NewMockAppMeshAPI(ctrl)
 		appMeshDiscoveryReconciler = aws.NewAppMeshDiscoveryReconciler(
 			mockArnParser,
 			mockMeshClient,
 			mockAppMeshClient,
-			meshPlatformName,
-			rest2.Region,
+			computeTargetName,
+			aws4.Region,
 		)
 	})
 
@@ -122,7 +122,7 @@ var _ = Describe("Reconciler", func() {
 						AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
 							Name:         *meshRef.MeshName,
 							AwsAccountId: awsAccountID,
-							Region:       rest2.Region,
+							Region:       aws4.Region,
 						},
 					},
 				},

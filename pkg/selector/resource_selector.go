@@ -10,8 +10,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -23,31 +23,31 @@ var (
 		return eris.Errorf("Multiple MeshServices found with labels %s=%s, %s=%s, %s=%s",
 			constants.KUBE_SERVICE_NAME, name,
 			constants.KUBE_SERVICE_NAMESPACE, namespace,
-			constants.MESH_PLATFORM, clusterName)
+			constants.COMPUTE_TARGET, clusterName)
 	}
 	MultipleMeshWorkloadsFound = func(name, namespace, clusterName string) error {
 		return eris.Errorf("Multiple MeshWorkloads found with labels %s=%s, %s=%s, %s=%s",
 			constants.KUBE_CONTROLLER_NAME, name,
 			constants.KUBE_CONTROLLER_NAMESPACE, namespace,
-			constants.MESH_PLATFORM, clusterName)
+			constants.COMPUTE_TARGET, clusterName)
 	}
 	MeshServiceNotFound = func(name, namespace, clusterName string) error {
 		return eris.Errorf("No MeshService found with labels %s=%s, %s=%s, %s=%s",
 			constants.KUBE_SERVICE_NAME, name,
 			constants.KUBE_SERVICE_NAMESPACE, namespace,
-			constants.MESH_PLATFORM, clusterName)
+			constants.COMPUTE_TARGET, clusterName)
 	}
 	MeshWorkloadNotFound = func(name, namespace, clusterName string) error {
 		return eris.Errorf("No MeshWorkloads found with labels %s=%s, %s=%s, %s=%s",
 			constants.KUBE_CONTROLLER_NAME, name,
 			constants.KUBE_CONTROLLER_NAMESPACE, namespace,
-			constants.MESH_PLATFORM, clusterName)
+			constants.COMPUTE_TARGET, clusterName)
 	}
 	MustProvideClusterName = func(ref *core_types.ResourceRef) error {
 		return eris.Errorf("Must provide cluster name in ref %+v", ref)
 	}
-	MissingMeshPlatformLabel = func(resourceName string) error {
-		return eris.Errorf("Resource '%s' does not have a "+constants.MESH_PLATFORM+" label", resourceName)
+	MissingComputeTargetLabel = func(resourceName string) error {
+		return eris.Errorf("Resource '%s' does not have a "+constants.COMPUTE_TARGET+" label", resourceName)
 	}
 )
 
@@ -84,7 +84,7 @@ func (b *resourceSelector) GetMeshServiceByRefSelector(
 	destinationKey := client.MatchingLabels{
 		constants.KUBE_SERVICE_NAME:      kubeServiceName,
 		constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
-		constants.MESH_PLATFORM:          kubeServiceCluster,
+		constants.COMPUTE_TARGET:         kubeServiceCluster,
 	}
 	meshServiceList, err := b.meshServiceClient.ListMeshService(ctx, destinationKey)
 	if err != nil {
@@ -210,9 +210,9 @@ func (b *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 	for _, meshWorkloadIter := range meshWorkloadList.Items {
 		meshWorkload := meshWorkloadIter // careful not to close over the loop var
 
-		clusterName := meshWorkload.Labels[constants.MESH_PLATFORM]
+		clusterName := meshWorkload.Labels[constants.COMPUTE_TARGET]
 		if clusterName == "" {
-			return nil, MissingMeshPlatformLabel(meshWorkload.GetName())
+			return nil, MissingComputeTargetLabel(meshWorkload.GetName())
 		}
 
 		dynamicClient, err := b.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
@@ -266,7 +266,7 @@ func (b *resourceSelector) GetMeshWorkloadByRefSelector(
 	destinationKey := client.MatchingLabels{
 		constants.KUBE_CONTROLLER_NAME:      podEventWatcherName,
 		constants.KUBE_CONTROLLER_NAMESPACE: podEventWatcherNamespace,
-		constants.MESH_PLATFORM:             podEventWatcherCluster,
+		constants.COMPUTE_TARGET:            podEventWatcherCluster,
 	}
 	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkload(ctx, destinationKey)
 	if err != nil {

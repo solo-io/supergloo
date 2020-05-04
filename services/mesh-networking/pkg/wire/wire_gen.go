@@ -21,7 +21,7 @@ import (
 	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	mc_wire "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/wire"
+	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	access_policy_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	istio_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/istio-enforcer"
@@ -58,7 +58,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	converter := kube.NewConverter(fileReader)
 	asyncManagerController := mc_wire.KubeClusterCredentialsHandlerProvider(converter)
 	awsCredsHandler := NewNetworkingAwsCredsHandler()
-	v := MeshPlatformCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
+	v := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	virtualMeshCSRControllerFactory := controller_factories.NewVirtualMeshCSRControllerFactory()

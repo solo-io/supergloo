@@ -95,7 +95,7 @@ func (m *meshFinder) GenericDeployment(deployment *apps_v1.Deployment) error {
 // When the pod starts up, we reconcile the existing state of discovered resources with a newly-computed set of discovered resources.
 // If the newly-computed set is missing entries from the current state, we must have missed an event, and we must reconcile the two.
 func (m *meshFinder) reconcileExistingState() error {
-	allMeshesOnCluster, err := m.localMeshClient.ListMesh(m.ctx, client.MatchingLabels{constants.MESH_PLATFORM: m.clusterName})
+	allMeshesOnCluster, err := m.localMeshClient.ListMesh(m.ctx, client.MatchingLabels{constants.COMPUTE_TARGET: m.clusterName})
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func (m *meshFinder) discoverAndUpsertMesh(deployment *apps_v1.Deployment, logge
 		discoveredMesh.Labels = map[string]string{}
 	}
 
-	discoveredMesh.Labels[constants.MESH_PLATFORM] = m.clusterName
+	discoveredMesh.Labels[constants.COMPUTE_TARGET] = m.clusterName
 
 	err = m.localMeshClient.UpsertMeshSpec(m.ctx, discoveredMesh)
 	if err != nil {

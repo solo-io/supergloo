@@ -5,17 +5,17 @@ import (
 
 	"github.com/google/wire"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
-	mesh_platform "github.com/solo-io/service-mesh-hub/services/common/mesh-platform"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
-	"github.com/solo-io/service-mesh-hub/services/common/mesh-platform/rest"
+	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
+	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	v1 "k8s.io/api/core/v1"
 )
 
-func MeshPlatformCredentialsHandlersProvider(
+func ComputeTargetCredentialsHandlersProvider(
 	asyncManagerController *mc_manager.AsyncManagerController,
-	awsCredsHandler rest.AwsCredsHandler,
-) []mesh_platform.MeshPlatformCredentialsHandler {
-	return []mesh_platform.MeshPlatformCredentialsHandler{
+	awsCredsHandler aws2.AwsCredsHandler,
+) []compute_target.ComputeTargetCredentialsHandler {
+	return []compute_target.ComputeTargetCredentialsHandler{
 		asyncManagerController,
 		awsCredsHandler,
 	}
@@ -30,14 +30,14 @@ var AwsSet = wire.NewSet(
 type networkingAwsCredsHandler struct {
 }
 
-func NewNetworkingAwsCredsHandler() rest.AwsCredsHandler {
+func NewNetworkingAwsCredsHandler() aws2.AwsCredsHandler {
 	return &networkingAwsCredsHandler{}
 }
 
-func (n *networkingAwsCredsHandler) MeshPlatformAdded(ctx context.Context, secret *v1.Secret) error {
+func (n *networkingAwsCredsHandler) ComputeTargetAdded(ctx context.Context, secret *v1.Secret) error {
 	return nil
 }
 
-func (n *networkingAwsCredsHandler) MeshPlatformRemoved(ctx context.Context, secret *v1.Secret) error {
+func (n *networkingAwsCredsHandler) ComputeTargetRemoved(ctx context.Context, secret *v1.Secret) error {
 	return nil
 }

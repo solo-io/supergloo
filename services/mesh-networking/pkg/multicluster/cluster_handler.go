@@ -6,7 +6,7 @@ import (
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer"
 )

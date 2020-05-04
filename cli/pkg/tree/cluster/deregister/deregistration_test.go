@@ -24,7 +24,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s/mocks"
+	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
 	mock_cli_runtime "github.com/solo-io/service-mesh-hub/test/mocks/cli_runtime"
 	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_k8s_core_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"

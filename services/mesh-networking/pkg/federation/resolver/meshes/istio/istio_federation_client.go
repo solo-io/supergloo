@@ -14,7 +14,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/proto_conversion"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes"
 	alpha3 "istio.io/api/networking/v1alpha3"
