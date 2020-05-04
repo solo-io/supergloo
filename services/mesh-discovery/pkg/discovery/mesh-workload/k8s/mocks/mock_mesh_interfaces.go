@@ -40,17 +40,17 @@ func (m *MockMeshWorkloadFinder) EXPECT() *MockMeshWorkloadFinderMockRecorder {
 }
 
 // StartDiscovery mocks base method.
-func (m *MockMeshWorkloadFinder) StartDiscovery(podEventWatcher controller0.PodEventWatcher, meshController controller.MeshEventWatcher) error {
+func (m *MockMeshWorkloadFinder) StartDiscovery(podEventWatcher controller0.PodEventWatcher, meshEventWatcher controller.MeshEventWatcher) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartDiscovery", podEventWatcher, meshController)
+	ret := m.ctrl.Call(m, "StartDiscovery", podEventWatcher, meshEventWatcher)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartDiscovery indicates an expected call of StartDiscovery.
-func (mr *MockMeshWorkloadFinderMockRecorder) StartDiscovery(podEventWatcher, meshController interface{}) *gomock.Call {
+func (mr *MockMeshWorkloadFinderMockRecorder) StartDiscovery(podEventWatcher, meshEventWatcher interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).StartDiscovery), podEventWatcher, meshController)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).StartDiscovery), podEventWatcher, meshEventWatcher)
 }
 
 // MockOwnerFetcher is a mock of OwnerFetcher interface.

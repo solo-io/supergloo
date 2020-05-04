@@ -15,6 +15,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -93,6 +94,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 		m.ctx,
 		&zephyr_discovery_controller.MeshEventHandlerFuncs{
 			OnCreate: m.handleMeshCreate,
+			OnUpdate: m.handleMeshUpdate,
 			OnDelete: m.handleMeshDelete,
 		},
 	)
@@ -186,7 +188,7 @@ func (m *meshWorkloadFinder) handleMeshDelete(deletedMesh *zephyr_discovery.Mesh
 	logger.Debugf("Handling delete for mesh %s.%s", deletedMesh.GetName(), deletedMesh.GetNamespace())
 
 	// ignore meshes that are not running on this cluster
-	if deletedMesh.Spec.GetCluster().GetName() != m.clusterName {
+	if !k8s_tenancy.ClusterHostsMesh(m.clusterName, deletedMesh) {
 		return nil
 	}
 
@@ -224,16 +226,28 @@ func (m *meshWorkloadFinder) handleMeshDelete(deletedMesh *zephyr_discovery.Mesh
 }
 
 func (m *meshWorkloadFinder) handleMeshCreate(mesh *zephyr_discovery.Mesh) error {
-	logger := contextutils.LoggerFrom(m.ctx)
+	logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, mesh)
 	logger.Debugf("mesh create event for %s", mesh.Name)
+	return m.handleMeshUpsert(mesh, logger)
+}
 
+func (m *meshWorkloadFinder) handleMeshUpdate(_, mesh *zephyr_discovery.Mesh) error {
+	logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, mesh)
+	logger.Debugf("mesh update event for %s", mesh.Name)
+	return m.handleMeshUpsert(mesh, logger)
+}
+
+func (m *meshWorkloadFinder) handleMeshUpsert(
+	mesh *zephyr_discovery.Mesh,
+	logger *zap.SugaredLogger,
+) error {
 	// ensure we are only watching for meshes discovered on this same cluster
 	// otherwise we can hit a race where:
 	//  - Istio is discovered on cluster A
 	//  - that mesh is recorded here
 	//  - we start discovering workloads on cluster B using the Istio mesh workload discovery
 	//  - but we haven't yet discovered Istio on this cluster
-	if mesh.Spec.GetCluster().GetName() != m.clusterName {
+	if !k8s_tenancy.ClusterHostsMesh(m.clusterName, mesh) {
 		return nil
 	}
 

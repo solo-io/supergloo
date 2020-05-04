@@ -6,6 +6,7 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories"
+	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
 	meshworkload_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	mesh_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/consul"
 	mesh_istio "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/istio"
@@ -18,6 +19,7 @@ type DiscoveryContext struct {
 	ClientFactories       ClientFactories
 	EventWatcherFactories EventWatcherFactories
 	MeshDiscovery         MeshDiscovery
+	ClusterTenancy        ClusterTenancy
 }
 
 type ClientFactories struct {
@@ -46,6 +48,10 @@ type MeshDiscovery struct {
 	AppMeshWorkloadScannerFactory meshworkload_discovery.MeshWorkloadScannerFactory
 }
 
+type ClusterTenancy struct {
+	AppMeshClusterTenancyScannerFactory k8s_tenancy.ClusterTenancyScannerFactory
+}
+
 func DiscoveryContextProvider(
 	multiClusterDeps mc_manager.MultiClusterDependencies,
 	istioMeshScanner mesh_istio.IstioMeshScanner,
@@ -65,6 +71,7 @@ func DiscoveryContextProvider(
 	podClientFactory k8s_core.PodClientFactory,
 	meshControllerFactory event_watcher_factories.MeshEventWatcherFactory,
 	appMeshWorkloadScannerFactory meshworkload_discovery.MeshWorkloadScannerFactory,
+	appMeshClusterTenancyScannerFactory k8s_tenancy.ClusterTenancyScannerFactory,
 ) DiscoveryContext {
 
 	return DiscoveryContext{
@@ -91,6 +98,9 @@ func DiscoveryContextProvider(
 			ConsulConnectMeshScanner:      consulConnectMeshScanner,
 			LinkerdMeshScanner:            linkerdMeshScanner,
 			AppMeshWorkloadScannerFactory: appMeshWorkloadScannerFactory,
+		},
+		ClusterTenancy: ClusterTenancy{
+			AppMeshClusterTenancyScannerFactory: appMeshClusterTenancyScannerFactory,
 		},
 	}
 }

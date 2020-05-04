@@ -19,7 +19,7 @@ type MeshWorkloadFinder interface {
 	// an event is only received by our callbacks if all the given predicates return true
 	StartDiscovery(
 		podEventWatcher k8s_core_controller.PodEventWatcher,
-		meshController zephyr_discovery_controller.MeshEventWatcher,
+		meshEventWatcher zephyr_discovery_controller.MeshEventWatcher,
 	) error
 }
 

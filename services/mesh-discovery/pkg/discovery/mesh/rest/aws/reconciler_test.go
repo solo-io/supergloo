@@ -13,13 +13,17 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	aws4 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
 	rest3 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
 	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Reconciler", func() {
@@ -56,6 +60,7 @@ var _ = Describe("Reconciler", func() {
 	})
 
 	var expectReconcileMeshes = func() {
+		region := "us-east-2"
 		page1Input := &appmesh.ListMeshesInput{
 			Limit: aws.NumItemsPerRequest,
 		}
@@ -65,28 +70,34 @@ var _ = Describe("Reconciler", func() {
 		}
 		meshRefs := []*appmesh.MeshRef{
 			{
-				MeshName: aws2.String("mesh-name-1"),
-				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-1", awsAccountID)),
+				MeshName:  aws2.String("mesh-name-1"),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-1", region, awsAccountID)),
+				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
-				MeshName: aws2.String("mesh-name-2"),
-				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-2", awsAccountID)),
+				MeshName:  aws2.String("mesh-name-2"),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-2", region, awsAccountID)),
+				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
-				MeshName: aws2.String("mesh-name-3"),
-				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-3", awsAccountID)),
+				MeshName:  aws2.String("mesh-name-3"),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-3", region, awsAccountID)),
+				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
-				MeshName: aws2.String("mesh-name-4"),
-				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-4", awsAccountID)),
+				MeshName:  aws2.String("mesh-name-4"),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-4", region, awsAccountID)),
+				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
-				MeshName: aws2.String("mesh-name-5"),
-				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-5", awsAccountID)),
+				MeshName:  aws2.String("mesh-name-5"),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-5", region, awsAccountID)),
+				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
-				MeshName: aws2.String("mesh-name-6"),
-				Arn:      aws2.String(fmt.Sprintf("arn:aws:appmesh:us-east-2:%s:mesh/appmesh-6", awsAccountID)),
+				MeshName:  aws2.String("mesh-name-6"),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-6", region, awsAccountID)),
+				MeshOwner: aws2.String(awsAccountID),
 			},
 		}
 		page1 := &appmesh.ListMeshesOutput{
@@ -103,7 +114,7 @@ var _ = Describe("Reconciler", func() {
 		for _, meshRef := range meshRefs {
 			mesh := &zephyr_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name:      fmt.Sprintf("%s-%s-%s", aws.ObjectNamePrefix, *meshRef.MeshName, computeTargetName),
+					Name:      metadata.BuildAppMeshName(aws2.StringValue(meshRef.MeshName), region, aws2.StringValue(meshRef.MeshOwner)),
 					Namespace: env.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshSpec{
@@ -116,12 +127,21 @@ var _ = Describe("Reconciler", func() {
 					},
 				},
 			}
-			mockMeshClient.EXPECT().UpsertMeshSpec(ctx, mesh).Return(nil)
+			mockMeshClient.
+				EXPECT().
+				GetMesh(ctx, client.ObjectKey{Name: mesh.GetName(), Namespace: mesh.GetNamespace()}).
+				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
+			mockMeshClient.
+				EXPECT().
+				CreateMesh(ctx, mesh).
+				Return(nil)
 		}
 		existingMeshes := &zephyr_discovery.MeshList{
 			Items: []zephyr_discovery.Mesh{
-				{ObjectMeta: k8s_meta_types.ObjectMeta{ // should not be deleted
-					Name: fmt.Sprintf("%s-%s-%s", aws.ObjectNamePrefix, *meshRefs[0].MeshName, computeTargetName)},
+				{
+					ObjectMeta: k8s_meta_types.ObjectMeta{ // should not be deleted
+						Name: metadata.BuildAppMeshName(aws2.StringValue(meshRefs[0].MeshName), region, aws2.StringValue(meshRefs[0].MeshOwner)),
+					},
 					Spec: zephyr_discovery_types.MeshSpec{
 						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
 							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}}},

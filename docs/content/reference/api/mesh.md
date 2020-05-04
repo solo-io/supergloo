@@ -43,7 +43,7 @@ Meshes represent a currently registered service mesh.
 | awsAppMesh | [MeshSpec.AwsAppMesh](#discovery.zephyr.solo.io.MeshSpec.AwsAppMesh) |  |  |
 | linkerd | [MeshSpec.LinkerdMesh](#discovery.zephyr.solo.io.MeshSpec.LinkerdMesh) |  |  |
 | consulConnect | [MeshSpec.ConsulConnectMesh](#discovery.zephyr.solo.io.MeshSpec.ConsulConnectMesh) |  |  |
-| cluster | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | The cluster on which this mesh resides. |
+| cluster | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | The cluster on which the control plane for this mesh is deployed. This field may not apply to all Mesh types, such as AppMesh, whose control planes are located externally to any user accessible compute platform. |
 
 
 
@@ -61,6 +61,7 @@ Mesh object representing AWS AppMesh
 | name | [string](#string) |  | AWS name for the AppMesh instance, must be unique across the AWS account. |
 | region | [string](#string) |  | The AWS region the AWS App Mesh control plane resources exist in. |
 | awsAccountId | [string](#string) |  | The AWS Account ID associated with the Mesh. Populated at REST API registration time. |
+| clusters | [][string](#string) | repeated | The k8s clusters on which sidecars for this AppMesh instance have been discovered. |
 
 
 
