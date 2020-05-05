@@ -49,15 +49,20 @@ var (
 )
 
 type clusterRegistrationClient struct {
-	secretClient             k8s_core.SecretClient
-	namespaceClient          k8s_core.NamespaceClient
-	kubernetesClusterClient  zephyr_discovery.KubernetesClusterClient
-	helmClientFactory        types.HelmClientForMemoryConfigFactory
-	deployedVersionFinder    version.DeployedVersionFinder
-	kubeConverter            kube.Converter
-	namespaceClientFactory   k8s_core.NamespaceClientFromConfigFactory
-	clusterAuthorization     auth.ClusterAuthorization
-	csrAgentInstallerFactory csr.CsrAgentInstallerFactory
+	secretClient                        k8s_core.SecretClient
+	namespaceClient                     k8s_core.NamespaceClient
+	kubernetesClusterClient             zephyr_discovery.KubernetesClusterClient
+	helmClientFactory                   types.HelmClientForMemoryConfigFactory
+	deployedVersionFinder               version.DeployedVersionFinder
+	kubeConverter                       kube.Converter
+	namespaceClientFactory              k8s_core.NamespaceClientFromConfigFactory
+	secretClientFactory                 k8s_core.SecretClientFromConfigFactory
+	serviceAccountClientFactory         k8s_core.ServiceAccountClientFromConfigFactory
+	rbacClientFactory                   auth.RbacClientFactory
+	remoteAuthorityConfigCreatorFactory auth.RemoteAuthorityConfigCreatorFactory
+	remoteAuthorityManagerFactory       auth.RemoteAuthorityManagerFactory
+	clusterAuthorizationFactory         auth.ClusterAuthorizationFactory
+	csrAgentInstallerFactory            csr.CsrAgentInstallerFactory
 }
 
 func NewClusterRegistrationClient(
@@ -68,19 +73,29 @@ func NewClusterRegistrationClient(
 	deployedVersionFinder version.DeployedVersionFinder,
 	kubeConverter kube.Converter,
 	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
-	clusterAuthorization auth.ClusterAuthorization,
+	secretClientFactory k8s_core.SecretClientFromConfigFactory,
+	serviceAccountClientFactory k8s_core.ServiceAccountClientFromConfigFactory,
+	rbacClientFactory auth.RbacClientFactory,
+	remoteAuthorityConfigCreatorFactory auth.RemoteAuthorityConfigCreatorFactory,
+	remoteAuthorityManagerFactory auth.RemoteAuthorityManagerFactory,
+	clusterAuthorizationFactory auth.ClusterAuthorizationFactory,
 	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
 ) ClusterRegistrationClient {
 	return &clusterRegistrationClient{
-		secretClient:             secretClient,
-		namespaceClient:          namespaceClient,
-		kubernetesClusterClient:  kubernetesClusterClient,
-		helmClientFactory:        helmClientFactory,
-		deployedVersionFinder:    deployedVersionFinder,
-		kubeConverter:            kubeConverter,
-		namespaceClientFactory:   namespaceClientFactory,
-		clusterAuthorization:     clusterAuthorization,
-		csrAgentInstallerFactory: csrAgentInstallerFactory,
+		secretClient:                        secretClient,
+		namespaceClient:                     namespaceClient,
+		kubernetesClusterClient:             kubernetesClusterClient,
+		helmClientFactory:                   helmClientFactory,
+		deployedVersionFinder:               deployedVersionFinder,
+		kubeConverter:                       kubeConverter,
+		namespaceClientFactory:              namespaceClientFactory,
+		secretClientFactory:                 secretClientFactory,
+		serviceAccountClientFactory:         serviceAccountClientFactory,
+		rbacClientFactory:                   rbacClientFactory,
+		remoteAuthorityConfigCreatorFactory: remoteAuthorityConfigCreatorFactory,
+		remoteAuthorityManagerFactory:       remoteAuthorityManagerFactory,
+		clusterAuthorizationFactory:         clusterAuthorizationFactory,
+		csrAgentInstallerFactory:            csrAgentInstallerFactory,
 	}
 }
 
@@ -104,7 +119,7 @@ func (c *clusterRegistrationClient) Register(
 	if err = c.checkClusterExistence(ctx, remoteClusterName, overwrite); err != nil {
 		return err
 	}
-	if err = c.ensureRemoteNamespace(ctx, remoteWriteNamespace); err != nil {
+	if err = c.ensureRemoteNamespace(ctx, remoteRestConfig, remoteWriteNamespace); err != nil {
 		return err
 	}
 	if serviceAccountBearerToken, err = c.generateServiceAccountBearerToken(
@@ -163,11 +178,16 @@ func (c *clusterRegistrationClient) checkClusterExistence(
 
 func (c *clusterRegistrationClient) ensureRemoteNamespace(
 	ctx context.Context,
+	remoteRestConfig *rest.Config,
 	writeNamespace string,
 ) error {
-	_, err := c.namespaceClient.GetNamespace(ctx, client.ObjectKey{Name: writeNamespace})
+	remoteNamespaceClient, err := c.namespaceClientFactory(remoteRestConfig)
+	if err != nil {
+		return err
+	}
+	_, err = remoteNamespaceClient.GetNamespace(ctx, client.ObjectKey{Name: writeNamespace})
 	if k8s_errs.IsNotFound(err) {
-		return c.namespaceClient.CreateNamespace(ctx, &k8s_core_types.Namespace{
+		return remoteNamespaceClient.CreateNamespace(ctx, &k8s_core_types.Namespace{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name: writeNamespace,
 			},
@@ -214,12 +234,34 @@ func (c *clusterRegistrationClient) generateServiceAccountBearerToken(
 		Name:      remoteClusterName,
 		Namespace: remoteWriteNamespace,
 	}
-	bearerTokenForServiceAccount, err := c.clusterAuthorization.BuildRemoteBearerToken(ctx, remoteAuthConfig, serviceAccountRef)
+	remoteClusterAuth, err := c.constructRemoteClusterAuth(remoteAuthConfig)
 	if err != nil {
 		return "", err
 	}
-
+	bearerTokenForServiceAccount, err := remoteClusterAuth.BuildRemoteBearerToken(ctx, remoteAuthConfig, serviceAccountRef)
+	if err != nil {
+		return "", err
+	}
 	return bearerTokenForServiceAccount, nil
+}
+
+func (c *clusterRegistrationClient) constructRemoteClusterAuth(remoteAuthConfig *rest.Config) (auth.ClusterAuthorization, error) {
+	serviceAccountClient, err := c.serviceAccountClientFactory(remoteAuthConfig)
+	if err != nil {
+		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(remoteAuthConfig)
+	if err != nil {
+		return nil, err
+	}
+	rbacClient := c.rbacClientFactory(clientset)
+	secretClient, err := c.secretClientFactory(remoteAuthConfig)
+	if err != nil {
+		return nil, err
+	}
+	remoteAuthorityConfigCreator := c.remoteAuthorityConfigCreatorFactory(secretClient, serviceAccountClient)
+	remoteAuthorityManager := c.remoteAuthorityManagerFactory(serviceAccountClient, rbacClient)
+	return c.clusterAuthorizationFactory(remoteAuthorityConfigCreator, remoteAuthorityManager), nil
 }
 
 func (c *clusterRegistrationClient) writeKubeConfigToMaster(

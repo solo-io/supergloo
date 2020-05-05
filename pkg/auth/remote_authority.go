@@ -17,6 +17,15 @@ const (
 	RegistrationServiceAccountValue = "true"
 )
 
+type RemoteAuthorityManagerFactory func(
+	serviceAccountClient k8s_core.ServiceAccountClient,
+	rbacClient RbacClient,
+) RemoteAuthorityManager
+
+func RemoteAuthorityManagerFactoryProvider() RemoteAuthorityManagerFactory {
+	return NewRemoteAuthorityManager
+}
+
 func NewRemoteAuthorityManager(
 	serviceAccountClient k8s_core.ServiceAccountClient,
 	rbacClient RbacClient,

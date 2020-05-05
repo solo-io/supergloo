@@ -21,6 +21,15 @@ type clusterAuthorization struct {
 	remoteAuthorityManager RemoteAuthorityManager
 }
 
+type ClusterAuthorizationFactory func(
+	configCreator RemoteAuthorityConfigCreator,
+	remoteAuthorityManager RemoteAuthorityManager,
+) ClusterAuthorization
+
+func ClusterAuthorizationFactoryProvider() ClusterAuthorizationFactory {
+	return NewClusterAuthorization
+}
+
 func NewClusterAuthorization(
 	configCreator RemoteAuthorityConfigCreator,
 	remoteAuthorityManager RemoteAuthorityManager) ClusterAuthorization {

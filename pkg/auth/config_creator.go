@@ -20,10 +20,6 @@ const (
 )
 
 var (
-	FailedToReadCAFile = func(err error, fileName string) error {
-		return eris.Wrapf(err, "Failed to read kubeconfig CA file: %s", fileName)
-	}
-
 	// exponential backoff retry with an initial period of 0.1s for 7 iterations, which will mean a cumulative retry period of ~6s
 	secretLookupOpts = []retry.Option{
 		retry.Delay(time.Millisecond * 100),
@@ -31,6 +27,15 @@ var (
 		retry.DelayType(retry.BackOffDelay),
 	}
 )
+
+type RemoteAuthorityConfigCreatorFactory func(
+	secretClient k8s_core.SecretClient,
+	serviceAccountClient k8s_core.ServiceAccountClient,
+) RemoteAuthorityConfigCreator
+
+func RemoteAuthorityConfigCreatorFactoryProvider() RemoteAuthorityConfigCreatorFactory {
+	return NewRemoteAuthorityConfigCreator
+}
 
 func NewRemoteAuthorityConfigCreator(
 	secretClient k8s_core.SecretClient,
