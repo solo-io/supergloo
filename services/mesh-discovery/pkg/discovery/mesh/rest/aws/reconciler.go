@@ -99,6 +99,8 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
+			} else if err != nil {
+				return err
 			}
 		}
 		if appMeshes.NextToken == nil {

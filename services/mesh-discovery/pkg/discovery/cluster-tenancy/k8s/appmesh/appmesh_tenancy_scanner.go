@@ -79,6 +79,9 @@ func (a *appmeshTenancyScanner) DeregisterMesh(ctx context.Context, clusterName 
 	if !isAppMesh(mesh) {
 		return nil
 	}
+	if !utils.ContainsString(mesh.Spec.GetAwsAppMesh().Clusters, clusterName) {
+		return nil
+	}
 	mesh.Spec.GetAwsAppMesh().Clusters = utils.RemoveString(mesh.Spec.GetAwsAppMesh().GetClusters(), clusterName)
 	return a.meshClient.UpdateMesh(ctx, mesh)
 }
