@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
 	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws/clients/appmesh"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
