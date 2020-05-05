@@ -94,7 +94,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: helmClient,
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,
@@ -176,7 +176,7 @@ Service Mesh Hub has been uninstalled
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: helmClient,
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,
@@ -233,7 +233,7 @@ Service Mesh Hub has been uninstalled
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: helmClient,
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,
@@ -293,7 +293,7 @@ Service Mesh Hub has been uninstalled
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: helmClient,
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,
@@ -373,7 +373,7 @@ Service Mesh Hub has been uninstalled with errors
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: helmClient,
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,
@@ -461,7 +461,7 @@ Service Mesh Hub has been uninstalled with errors
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: helmClient,
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,

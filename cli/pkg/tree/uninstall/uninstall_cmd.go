@@ -153,7 +153,7 @@ func buildMasterKubeClients(opts *options.Options, kubeLoader common_config.Kube
 }
 
 func cleanUpManagementPlaneComponents(out io.Writer, masterKubeClients *common.KubeClients, opts *options.Options) error {
-	uninstaller, err := masterKubeClients.HelmClient.NewUninstall(opts.Root.KubeContext, opts.Root.KubeContext, opts.Root.WriteNamespace)
+	uninstaller, err := masterKubeClients.HelmClientFileConfigFactory(opts.Root.KubeConfig, opts.Root.KubeContext).NewUninstall(opts.Root.WriteNamespace)
 	if err != nil {
 		return FailedToSetUpUninstallClient(err)
 	}

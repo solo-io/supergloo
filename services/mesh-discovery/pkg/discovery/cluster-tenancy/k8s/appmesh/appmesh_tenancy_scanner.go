@@ -6,8 +6,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
+	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
 	"github.com/solo-io/skv2/pkg/utils"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -15,12 +15,12 @@ import (
 )
 
 type appmeshTenancyScanner struct {
-	appmeshParser aws.AppMeshParser
+	appmeshParser aws_utils.AppMeshParser
 	meshClient    zephyr_discovery.MeshClient
 }
 
 func AppMeshTenancyScannerFactoryProvider(
-	appmeshParser aws.AppMeshParser,
+	appmeshParser aws_utils.AppMeshParser,
 ) k8s_tenancy.ClusterTenancyScannerFactory {
 	return func(meshClient zephyr_discovery.MeshClient) k8s_tenancy.ClusterTenancyRegistrar {
 		return NewAppmeshTenancyScanner(
@@ -31,7 +31,7 @@ func AppMeshTenancyScannerFactoryProvider(
 }
 
 func NewAppmeshTenancyScanner(
-	appmeshParser aws.AppMeshParser,
+	appmeshParser aws_utils.AppMeshParser,
 	meshClient zephyr_discovery.MeshClient,
 ) k8s_tenancy.ClusterTenancyRegistrar {
 	return &appmeshTenancyScanner{

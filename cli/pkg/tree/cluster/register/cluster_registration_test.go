@@ -219,7 +219,7 @@ users:
 
 			csrAgentInstaller.EXPECT().
 				Install(ctx, &csr.CsrAgentInstallOptions{
-					KubeConfig:           remoteKubeConfig,
+					KubeConfigPath:       remoteKubeConfig,
 					KubeContext:          "",
 					ClusterName:          clusterName,
 					SmhInstallNamespace:  env.GetWriteNamespace(),
@@ -338,7 +338,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 			csrAgentInstaller.
 				EXPECT().
 				Install(ctx, &csr.CsrAgentInstallOptions{
-					KubeConfig:           remoteKubeConfig,
+					KubeConfigPath:       remoteKubeConfig,
 					ClusterName:          "test-cluster-name",
 					SmhInstallNamespace:  env.GetWriteNamespace(),
 					RemoteWriteNamespace: env.GetWriteNamespace(),
@@ -458,7 +458,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 			csrAgentInstaller.
 				EXPECT().
 				Install(ctx, &csr.CsrAgentInstallOptions{
-					KubeConfig:           remoteKubeConfig,
+					KubeConfigPath:       remoteKubeConfig,
 					KubeContext:          contextDEF,
 					ClusterName:          "test-cluster-name",
 					SmhInstallNamespace:  env.GetWriteNamespace(),
@@ -706,7 +706,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 			csrAgentInstaller.
 				EXPECT().
 				Install(ctx, &csr.CsrAgentInstallOptions{
-					KubeConfig:           remoteKubeConfig,
+					KubeConfigPath:       remoteKubeConfig,
 					KubeContext:          "",
 					ClusterName:          "test-cluster-name",
 					SmhInstallNamespace:  env.GetWriteNamespace(),
@@ -822,7 +822,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 			csrAgentInstaller.
 				EXPECT().
 				Install(ctx, &csr.CsrAgentInstallOptions{
-					KubeConfig:           remoteKubeConfig,
+					KubeConfigPath:       remoteKubeConfig,
 					KubeContext:          "",
 					ClusterName:          "test-cluster-name",
 					SmhInstallNamespace:  env.GetWriteNamespace(),
@@ -922,7 +922,7 @@ Successfully wrote kube config secret to master cluster...
 			csrAgentInstaller.
 				EXPECT().
 				Install(ctx, &csr.CsrAgentInstallOptions{
-					KubeConfig:           localKubeConfig,
+					KubeConfigPath:       localKubeConfig,
 					KubeContext:          remoteContext,
 					ClusterName:          clusterName,
 					SmhInstallNamespace:  env.GetWriteNamespace(),
@@ -1020,7 +1020,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			csrAgentInstaller.EXPECT().
 				Install(ctx, &csr.CsrAgentInstallOptions{
-					KubeConfig:           remoteKubeConfig,
+					KubeConfigPath:       remoteKubeConfig,
 					KubeContext:          "",
 					ClusterName:          clusterName,
 					SmhInstallNamespace:  env.GetWriteNamespace(),

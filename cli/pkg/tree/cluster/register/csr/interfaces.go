@@ -3,16 +3,18 @@ package csr
 import (
 	"context"
 
-	"github.com/solo-io/go-utils/installutils/helminstall/types"
-	"github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/solo-io/go-utils/installutils/helminstall"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
 type CsrAgentInstallOptions struct {
-	// these two kube fields should be for the *remote* cluster
-	KubeConfig  string
-	KubeContext string
+	// File KubeConfig for remote cluster
+	KubeConfigPath string
+	KubeContext    string
+	// In memory KubeConfig for remote cluster
+	KubeConfig clientcmd.ClientConfig
 
 	ClusterName          string
 	SmhInstallNamespace  string
@@ -28,7 +30,4 @@ type CsrAgentInstaller interface {
 	) error
 }
 
-type CsrAgentInstallerFactory func(
-	helmInstaller types.Installer,
-	deployedVersionFinder version.DeployedVersionFinder,
-) CsrAgentInstaller
+type CsrAgentInstallerFactory func(helmInstallerFactory helminstall.InstallerFactory) CsrAgentInstaller

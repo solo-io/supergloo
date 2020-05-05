@@ -42,8 +42,8 @@ var (
 	PostInstallMessage = "Service Mesh Hub successfully installed!\n"
 )
 
-func HelmInstallerProvider(helmClient types.HelmClient, kubeClient kubernetes.Interface) types.Installer {
-	return helminstall.NewInstaller(helmClient, kubeClient.CoreV1().Namespaces(), os.Stdout)
+func HelmInstallerProvider(kubeClient kubernetes.Interface) helminstall.InstallerFactory {
+	return helminstall.NewInstallerFactory(kubeClient.CoreV1().Namespaces(), os.Stdout)
 }
 
 func InstallCmd(
@@ -76,9 +76,8 @@ func InstallCmd(
 			if err != nil {
 				return InstallErr(err)
 			}
-			if err := kubeClients.HelmInstaller.Install(&types.InstallerConfig{
-				KubeConfig:         opts.Root.KubeConfig,
-				KubeContext:        opts.Root.KubeContext,
+			helmClient := kubeClients.HelmClientFileConfigFactory(opts.Root.KubeConfig, opts.Root.KubeContext)
+			if err := kubeClients.HelmInstallerFactory(helmClient).Install(&types.InstallerConfig{
 				DryRun:             opts.SmhInstall.DryRun,
 				Verbose:            opts.Root.Verbose,
 				InstallNamespace:   opts.Root.WriteNamespace,
@@ -109,12 +108,9 @@ func InstallCmd(
 				}
 				return register.RegisterCluster(
 					ctx,
-					common.GetBinaryName(cmd),
-					cmd.Flags(),
-					clientFactory,
 					kubeClientsFactory,
+					clientFactory,
 					opts,
-					out,
 					kubeLoader,
 				)
 			} else if opts.SmhInstall.Register {

@@ -10,8 +10,8 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	mesh_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
+	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
+	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -24,7 +24,7 @@ var (
 )
 
 type appMeshDiscoveryReconciler struct {
-	meshPlatformName   string
+	computeTargetName  string
 	region             string
 	arnParser          aws_utils.ArnParser
 	meshClient         zephyr_discovery.MeshClient
@@ -33,27 +33,21 @@ type appMeshDiscoveryReconciler struct {
 	appMeshClient      appmeshiface.AppMeshAPI
 }
 
-type AppMeshDiscoveryReconcilerFactory func(
-	meshPlatformName string,
-	appMeshClient appmeshiface.AppMeshAPI,
-	region string,
-) mesh_discovery.RestAPIDiscoveryReconciler
-
 func NewAppMeshDiscoveryReconcilerFactory(
 	masterClient client.Client,
 	meshClientFactory zephyr_discovery.MeshClientFactory,
 	arnParser aws_utils.ArnParser,
-) AppMeshDiscoveryReconcilerFactory {
+) compute_target_aws.RestAPIDiscoveryReconcilerFactory {
 	return func(
-		meshPlatformName string,
+		computeTargetName string,
 		appMeshClient appmeshiface.AppMeshAPI,
 		region string,
-	) mesh_discovery.RestAPIDiscoveryReconciler {
+	) compute_target_aws.RestAPIDiscoveryReconciler {
 		return NewAppMeshDiscoveryReconciler(
 			arnParser,
 			meshClientFactory(masterClient),
 			appMeshClient,
-			meshPlatformName,
+			computeTargetName,
 			region,
 		)
 	}
@@ -63,15 +57,15 @@ func NewAppMeshDiscoveryReconciler(
 	arnParser aws_utils.ArnParser,
 	meshClient zephyr_discovery.MeshClient,
 	appMeshClient appmeshiface.AppMeshAPI,
-	meshPlatformName string,
+	computeTargetName string,
 	region string,
-) mesh_discovery.RestAPIDiscoveryReconciler {
+) compute_target_aws.RestAPIDiscoveryReconciler {
 	return &appMeshDiscoveryReconciler{
-		arnParser:        arnParser,
-		meshClient:       meshClient,
-		appMeshClient:    appMeshClient,
-		meshPlatformName: meshPlatformName,
-		region:           region,
+		arnParser:         arnParser,
+		meshClient:        meshClient,
+		appMeshClient:     appMeshClient,
+		computeTargetName: computeTargetName,
+		region:            region,
 	}
 }
 

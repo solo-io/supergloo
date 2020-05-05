@@ -55,7 +55,7 @@ var _ = Describe("Install", func() {
 		meshctl = &cli_test.MockMeshctl{
 			MockController: ctrl,
 			Clients:        common.Clients{},
-			KubeClients:    common.KubeClients{HelmInstaller: mockHelmInstaller},
+			KubeClients:    common.KubeClients{HelmInstallerFactory: mockHelmInstaller},
 			KubeLoader:     mockKubeLoader,
 			Ctx:            ctx,
 		}
@@ -252,7 +252,7 @@ users:
 
 		csrAgentInstaller.EXPECT().
 			Install(ctx, &csr.CsrAgentInstallOptions{
-				KubeConfig:           "",
+				KubeConfigPath:       "",
 				KubeContext:          contextABC,
 				ClusterName:          clusterName,
 				SmhInstallNamespace:  env.GetWriteNamespace(),
@@ -288,7 +288,7 @@ users:
 			},
 			KubeClients: common.KubeClients{
 				ClusterAuthorization: authClient,
-				HelmInstaller:        mockHelmInstaller,
+				HelmInstallerFactory: mockHelmInstaller,
 				KubeClusterClient:    clusterClient,
 				HealthCheckClients:   healthcheck_types.Clients{},
 				SecretClient:         secretClient,

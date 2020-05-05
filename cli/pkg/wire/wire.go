@@ -25,7 +25,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/deregister"
-	register "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe"
@@ -48,6 +48,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
+	clients2 "github.com/solo-io/service-mesh-hub/pkg/clients"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
@@ -80,7 +81,6 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		auth.NewClusterAuthorization,
 		docker.NewImageNameParser,
 		version2.NewDeployedVersionFinder,
-		helminstall.DefaultHelmClient,
 		install.HelmInstallerProvider,
 		healthcheck.ClientsProvider,
 		crd_uninstall.NewCrdRemover,
@@ -105,6 +105,12 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		zephyr_networking.AccessControlPolicyClientFromClientsetProvider,
 		zephyr_networking.VirtualMeshClientFromClientsetProvider,
 		zephyr_security.VirtualMeshCertificateSigningRequestClientFromClientsetProvider,
+		common.ClusterRegistrationClientsProvider,
+		csr.NewCsrAgentInstallerFactory,
+		helminstall.DefaultHelmClientFileConfigFactory,
+		helminstall.DefaultHelmClientMemoryConfigFactory,
+		k8s_core.NamespaceClientFromConfigFactoryProvider,
+		clients2.NewClusterRegistrationClient,
 	)
 	return nil, nil
 }
@@ -122,8 +128,6 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 		server.NewDeploymentClient,
 		operator.NewInstallerManifestBuilder,
 		common.IstioClientsProvider,
-		register.NewCsrAgentInstallerFactory,
-		common.ClusterRegistrationClientsProvider,
 		operator.NewOperatorManagerFactory,
 		status.StatusClientFactoryProvider,
 		healthcheck.DefaultHealthChecksProvider,

@@ -5,8 +5,8 @@ import (
 
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/mesh-platform/k8s"
 	global_access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	istio_api_security "istio.io/api/security/v1beta1"

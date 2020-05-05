@@ -396,7 +396,7 @@ var _ = Describe("Mesh Finder", func() {
 			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
 
 			localMeshClient.EXPECT().
-				ListMesh(ctx, client.MatchingLabels{constants.MESH_PLATFORM: clusterName}).
+				ListMesh(ctx, client.MatchingLabels{constants.COMPUTE_TARGET: clusterName}).
 				Return(&mp_v1alpha1.MeshList{Items: []mp_v1alpha1.Mesh{}}, nil)
 
 			eventHandler := k8s.NewMeshFinder(
@@ -421,7 +421,7 @@ var _ = Describe("Mesh Finder", func() {
 			mesh := BuildMesh(meshObjectMeta)
 
 			localMeshClient.EXPECT().
-				ListMesh(ctx, client.MatchingLabels{constants.MESH_PLATFORM: clusterName}).
+				ListMesh(ctx, client.MatchingLabels{constants.COMPUTE_TARGET: clusterName}).
 				Return(&mp_v1alpha1.MeshList{Items: []mp_v1alpha1.Mesh{*mesh}}, nil)
 
 			deploymentClient.EXPECT().
@@ -454,7 +454,7 @@ var _ = Describe("Mesh Finder", func() {
 			mesh := BuildMesh(meshObjectMeta)
 
 			localMeshClient.EXPECT().
-				ListMesh(ctx, client.MatchingLabels{constants.MESH_PLATFORM: clusterName}).
+				ListMesh(ctx, client.MatchingLabels{constants.COMPUTE_TARGET: clusterName}).
 				Return(&mp_v1alpha1.MeshList{Items: []mp_v1alpha1.Mesh{*mesh}}, nil)
 
 			deploymentClient.EXPECT().
@@ -496,7 +496,7 @@ var _ = Describe("Mesh Finder", func() {
 			}
 
 			localMeshClient.EXPECT().
-				ListMesh(ctx, client.MatchingLabels{constants.MESH_PLATFORM: clusterName}).
+				ListMesh(ctx, client.MatchingLabels{constants.COMPUTE_TARGET: clusterName}).
 				Return(&mp_v1alpha1.MeshList{Items: []mp_v1alpha1.Mesh{*mesh}}, nil)
 
 			deploymentClient.EXPECT().

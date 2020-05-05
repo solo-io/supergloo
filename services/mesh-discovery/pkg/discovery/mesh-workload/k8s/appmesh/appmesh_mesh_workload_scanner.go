@@ -11,8 +11,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	meshworkload_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/mesh-platform/aws"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,7 +27,7 @@ var (
 )
 
 func AppMeshWorkloadScannerFactoryProvider(
-	appMeshParser aws.AppMeshParser,
+	appMeshParser aws_utils.AppMeshParser,
 ) meshworkload_discovery.MeshWorkloadScannerFactory {
 	return func(
 		ownerFetcher meshworkload_discovery.OwnerFetcher,
@@ -40,7 +40,7 @@ func AppMeshWorkloadScannerFactoryProvider(
 // visible for testing
 func NewAppMeshWorkloadScanner(
 	ownerFetcher meshworkload_discovery.OwnerFetcher,
-	appMeshParser aws.AppMeshParser,
+	appMeshParser aws_utils.AppMeshParser,
 	meshClient zephyr_discovery.MeshClient,
 ) meshworkload_discovery.MeshWorkloadScanner {
 	return &appMeshWorkloadScanner{
@@ -52,7 +52,7 @@ func NewAppMeshWorkloadScanner(
 
 type appMeshWorkloadScanner struct {
 	ownerFetcher  meshworkload_discovery.OwnerFetcher
-	appMeshParser aws.AppMeshParser
+	appMeshParser aws_utils.AppMeshParser
 	meshClient    zephyr_discovery.MeshClient
 }
 

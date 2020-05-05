@@ -60,7 +60,7 @@ var _ = Describe("CSR Agent Installer", func() {
 		err := csrAgentInstaller.Install(
 			ctx,
 			&csr.CsrAgentInstallOptions{
-				KubeConfig:           kubeConfig,
+				KubeConfigPath:       kubeConfig,
 				KubeContext:          kubeContext,
 				ClusterName:          "remote-cluster-name",
 				SmhInstallNamespace:  env.GetWriteNamespace(),
@@ -98,7 +98,7 @@ var _ = Describe("CSR Agent Installer", func() {
 		err := csrAgentInstaller.Install(
 			ctx,
 			&csr.CsrAgentInstallOptions{
-				KubeConfig:           kubeConfig,
+				KubeConfigPath:       kubeConfig,
 				KubeContext:          kubeContext,
 				ClusterName:          "remote-cluster-name",
 				SmhInstallNamespace:  env.GetWriteNamespace(),
@@ -137,7 +137,7 @@ var _ = Describe("CSR Agent Installer", func() {
 		err := csrAgentInstaller.Install(
 			ctx,
 			&csr.CsrAgentInstallOptions{
-				KubeConfig:           kubeConfig,
+				KubeConfigPath:       kubeConfig,
 				KubeContext:          kubeContext,
 				ClusterName:          "remote-cluster-name",
 				SmhInstallNamespace:  env.GetWriteNamespace(),
@@ -176,7 +176,7 @@ var _ = Describe("CSR Agent Installer", func() {
 		err := csrAgentInstaller.Install(
 			ctx,
 			&csr.CsrAgentInstallOptions{
-				KubeConfig:           kubeConfig,
+				KubeConfigPath:       kubeConfig,
 				KubeContext:          kubeContext,
 				ClusterName:          "remote-cluster-name",
 				SmhInstallNamespace:  env.GetWriteNamespace(),
