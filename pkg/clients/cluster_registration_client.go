@@ -92,6 +92,7 @@ func (c *clusterRegistrationClient) Register(
 	overwrite bool,
 	useDevCsrAgentChart bool,
 	localClusterDomainOverride string,
+	remoteContextName string,
 ) error {
 	var err error
 	var remoteRestConfig *rest.Config
@@ -123,6 +124,7 @@ func (c *clusterRegistrationClient) Register(
 	if secret, err = c.writeKubeConfigToMaster(
 		ctx,
 		remoteClusterName,
+		remoteContextName,
 		serviceAccountBearerToken,
 		remoteConfig,
 		localClusterDomainOverride,
@@ -223,6 +225,7 @@ func (c *clusterRegistrationClient) generateServiceAccountBearerToken(
 func (c *clusterRegistrationClient) writeKubeConfigToMaster(
 	ctx context.Context,
 	remoteClusterName string,
+	remoteContextName string,
 	serviceAccountBearerToken string,
 	clientConfig clientcmd.ClientConfig,
 	localClusterDomainOverride string,
@@ -231,7 +234,6 @@ func (c *clusterRegistrationClient) writeKubeConfigToMaster(
 	if err != nil {
 		return nil, err
 	}
-	remoteContextName := config.CurrentContext
 	remoteContext := config.Contexts[remoteContextName]
 	remoteCluster := config.Clusters[remoteContext.Cluster]
 	// Hack for local e2e testing with Kind

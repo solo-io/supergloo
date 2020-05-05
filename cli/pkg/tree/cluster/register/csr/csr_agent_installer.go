@@ -34,7 +34,8 @@ func NewCsrAgentInstallerFactory(
 			helmClientMemoryConfigFactory,
 			deployedVersionFinder,
 			helmInstallerFactory,
-		)}
+		)
+	}
 }
 
 func NewCsrAgentInstaller(

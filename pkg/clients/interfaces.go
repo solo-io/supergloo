@@ -7,6 +7,8 @@ import (
 )
 
 type ClusterRegistrationClient interface {
+	// The remoteContextName must be passed explicitly rather than inferred from the remoteConfig because
+	// of an open k8s bug, https://github.com/kubernetes/kubernetes/pull/87622.
 	Register(
 		ctx context.Context,
 		remoteConfig clientcmd.ClientConfig,
@@ -15,5 +17,6 @@ type ClusterRegistrationClient interface {
 		overwrite bool,
 		useDevCsrAgentChart bool,
 		localClusterDomainOverride string,
+		remoteContextName string,
 	) error
 }

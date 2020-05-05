@@ -62,7 +62,6 @@ func RegisterCluster(
 	if err != nil {
 		return err
 	}
-
 	masterCfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 	if err != nil {
 		return err
@@ -79,5 +78,6 @@ func RegisterCluster(
 		registerOpts.Overwrite,
 		registerOpts.UseDevCsrAgentChart,
 		registerOpts.LocalClusterDomainOverride,
+		remoteContext,
 	)
 }
