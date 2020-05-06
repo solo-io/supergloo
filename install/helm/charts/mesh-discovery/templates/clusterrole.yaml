@@ -10,5 +10,5 @@ rules:
     resources: ["secrets", "pods", "services"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["discovery.zephyr.solo.io"]
-    resources: ["meshes", "meshworkloads", "meshservices"]
+    resources: ["meshes", "meshworkloads", "meshservices", "kubernetesclusters"]
     verbs: ["*"]
