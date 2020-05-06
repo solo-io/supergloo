@@ -8,7 +8,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
 )
@@ -20,21 +19,24 @@ const (
 )
 
 type awsCredsHandler struct {
-	appMeshClientFactory              appmesh_client.AppMeshClientFactory
-	appMeshDiscoveryReconcilerFactory RestAPIDiscoveryReconcilerFactory
-	reconcilerCancelFuncs             map[string]context.CancelFunc // Map of computeTargetName -> RestAPIDiscoveryReconciler's cancelFunc
+	reconcilerCancelFuncs      map[string]context.CancelFunc // Map of computeTargetName -> RestAPIDiscoveryReconciler's cancelFunc
+	secretCredsConverter       aws_creds.SecretAwsCredsConverter
+	appMeshDiscoveryReconciler AppMeshDiscoveryReconciler
+	eksReconciler              EksDiscoveryReconciler
 }
 
 type AwsCredsHandler compute_target.ComputeTargetCredentialsHandler
 
 func NewAwsAPIHandler(
-	appMeshClientFactory appmesh_client.AppMeshClientFactory,
-	appMeshReconcilerFactory RestAPIDiscoveryReconcilerFactory,
+	secretCredsConverter aws_creds.SecretAwsCredsConverter,
+	appMeshDiscoveryReconciler AppMeshDiscoveryReconciler,
+	eksReconciler EksDiscoveryReconciler,
 ) AwsCredsHandler {
 	return &awsCredsHandler{
-		appMeshClientFactory:              appMeshClientFactory,
-		appMeshDiscoveryReconcilerFactory: appMeshReconcilerFactory,
-		reconcilerCancelFuncs:             make(map[string]context.CancelFunc),
+		reconcilerCancelFuncs:      make(map[string]context.CancelFunc),
+		secretCredsConverter:       secretCredsConverter,
+		appMeshDiscoveryReconciler: appMeshDiscoveryReconciler,
+		eksReconciler:              eksReconciler,
 	}
 }
 
@@ -45,23 +47,24 @@ func (a *awsCredsHandler) ComputeTargetAdded(ctx context.Context, secret *k8s_co
 	}
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Debugf("New REST API added for compute target %s", secret.GetName())
-	// Periodically run API Reconciler to ensure AppMesh state is consistent with SMH
 	ticker := time.NewTicker(ReconcileIntervalSeconds * time.Second)
-	appMeshClient, err := a.appMeshClientFactory.Build(secret, Region)
+	reconcilerCtx, cancelFunc := a.buildContext(ctx, secret.GetName())
+	// Store mapping of computeTargetName to cancelFunc so reconciler can be canceled
+	a.reconcilerCancelFuncs[secret.GetName()] = cancelFunc
+	creds, err := a.secretCredsConverter.SecretToCreds(secret)
 	if err != nil {
 		return err
 	}
-	reconcilerCtx, cancelFunc := a.buildContext(ctx, secret.GetName())
-	appMeshDiscoveryReconciler := a.appMeshDiscoveryReconcilerFactory(secret.GetName(), appMeshClient, Region)
-	// Store mapping of computeTargetName to cancelFunc so reconciler can be canceled
-	a.reconcilerCancelFuncs[secret.GetName()] = cancelFunc
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
+				var err error
 				logger.Debugf("Reconciling AppMesh with secret %s.%s", secret.GetName(), secret.GetNamespace())
-				err := appMeshDiscoveryReconciler.Reconcile(reconcilerCtx)
-				if err != nil {
+				if err = a.appMeshDiscoveryReconciler.Reconcile(reconcilerCtx, creds, Region); err != nil {
+					logger.Error(err)
+				}
+				if err = a.eksReconciler.Reconcile(reconcilerCtx, creds, Region); err != nil {
 					logger.Error(err)
 				}
 			case <-reconcilerCtx.Done():

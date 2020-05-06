@@ -3,18 +3,16 @@ package aws
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 )
 
 //go:generate mockgen -source interfaces.go -destination ./mocks/interfaces.go
 
 type RestAPIDiscoveryReconciler interface {
 	// Reconcile Mesh entities as indicated by the REST API with SMH's current state
-	Reconcile(ctx context.Context) error
+	Reconcile(ctx context.Context, creds *credentials.Credentials, region string) error
 }
 
-type RestAPIDiscoveryReconcilerFactory func(
-	computeTargetName string,
-	appMeshClient appmeshiface.AppMeshAPI,
-	region string,
-) RestAPIDiscoveryReconciler
+type EksDiscoveryReconciler RestAPIDiscoveryReconciler
+
+type AppMeshDiscoveryReconciler RestAPIDiscoveryReconciler

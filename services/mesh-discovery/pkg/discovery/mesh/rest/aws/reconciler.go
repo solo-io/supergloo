@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
+	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,59 +20,35 @@ import (
 )
 
 var (
-	ObjectNamePrefix   = "appmesh"
 	NumItemsPerRequest = aws.Int64(100)
 )
 
 type appMeshDiscoveryReconciler struct {
-	computeTargetName  string
-	region             string
-	arnParser          aws_utils.ArnParser
-	meshClient         zephyr_discovery.MeshClient
-	meshWorkloadClient zephyr_discovery.MeshWorkloadClient
-	meshServiceClient  zephyr_discovery.MeshServiceClient
-	appMeshClient      appmeshiface.AppMeshAPI
-}
-
-func NewAppMeshDiscoveryReconcilerFactory(
-	masterClient client.Client,
-	meshClientFactory zephyr_discovery.MeshClientFactory,
-	arnParser aws_utils.ArnParser,
-) compute_target_aws.RestAPIDiscoveryReconcilerFactory {
-	return func(
-		computeTargetName string,
-		appMeshClient appmeshiface.AppMeshAPI,
-		region string,
-	) compute_target_aws.RestAPIDiscoveryReconciler {
-		return NewAppMeshDiscoveryReconciler(
-			arnParser,
-			meshClientFactory(masterClient),
-			appMeshClient,
-			computeTargetName,
-			region,
-		)
-	}
+	arnParser            aws_utils.ArnParser
+	meshClient           zephyr_discovery.MeshClient
+	appmeshClientFactory appmesh_client.AppMeshClientFactory
 }
 
 func NewAppMeshDiscoveryReconciler(
+	masterClient client.Client,
+	meshClientFactory zephyr_discovery.MeshClientFactory,
 	arnParser aws_utils.ArnParser,
-	meshClient zephyr_discovery.MeshClient,
-	appMeshClient appmeshiface.AppMeshAPI,
-	computeTargetName string,
-	region string,
-) compute_target_aws.RestAPIDiscoveryReconciler {
+	appmeshClientFactory appmesh_client.AppMeshClientFactory,
+) compute_target_aws.AppMeshDiscoveryReconciler {
 	return &appMeshDiscoveryReconciler{
-		arnParser:         arnParser,
-		meshClient:        meshClient,
-		appMeshClient:     appMeshClient,
-		computeTargetName: computeTargetName,
-		region:            region,
+		arnParser:            arnParser,
+		meshClient:           meshClientFactory(masterClient),
+		appmeshClientFactory: appmeshClientFactory,
 	}
 }
 
 // Currently Meshes are the only SMH CRD that are discovered through the AWS REST API
 // For EKS, workloads and services are discovered directly from the cluster.
-func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
+func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *credentials.Credentials, region string) error {
+	appmeshClient, err := a.appmeshClientFactory(creds, region)
+	if err != nil {
+		return err
+	}
 	var nextToken *string
 	input := &appmesh.ListMeshesInput{
 		Limit:     NumItemsPerRequest,
@@ -79,12 +56,12 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
 	}
 	discoveredSMHMeshNames := sets.NewString() // Set containing SMH unique identifiers for AppMesh instances (the Mesh CRD name) for comparison
 	for {
-		appMeshes, err := a.appMeshClient.ListMeshes(input)
+		appMeshes, err := appmeshClient.ListMeshes(input)
 		if err != nil {
 			return err
 		}
 		for _, appMeshRef := range appMeshes.Meshes {
-			discoveredMesh, err := a.convertAppMesh(appMeshRef)
+			discoveredMesh, err := a.convertAppMesh(appMeshRef, region)
 			if err != nil {
 				return err
 			}
@@ -129,8 +106,8 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context) error {
 	return nil
 }
 
-func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef) (*zephyr_discovery.Mesh, error) {
-	meshName := metadata.BuildAppMeshName(aws.StringValue(appMeshRef.MeshName), a.region, aws.StringValue(appMeshRef.MeshOwner))
+func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef, region string) (*zephyr_discovery.Mesh, error) {
+	meshName := metadata.BuildAppMeshName(aws.StringValue(appMeshRef.MeshName), region, aws.StringValue(appMeshRef.MeshOwner))
 	awsAccountID, err := a.arnParser.ParseAccountID(aws.StringValue(appMeshRef.Arn))
 	if err != nil {
 		return nil, err
@@ -145,7 +122,7 @@ func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef)
 				AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
 					Name:         aws.StringValue(appMeshRef.MeshName),
 					AwsAccountId: awsAccountID,
-					Region:       a.region,
+					Region:       region,
 				},
 			},
 		},

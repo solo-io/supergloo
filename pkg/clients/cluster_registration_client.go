@@ -46,6 +46,7 @@ var (
 	FailedToConvertToSecret = func(err error) error {
 		return eris.Wrap(err, "Could not convert kube config for new service account into secret")
 	}
+	EmptyContextsError = eris.New("No contexts found for kube config")
 )
 
 type clusterRegistrationClient struct {
@@ -276,7 +277,17 @@ func (c *clusterRegistrationClient) writeKubeConfigToMaster(
 	if err != nil {
 		return nil, err
 	}
-	remoteContext := config.Contexts[remoteContextName]
+	if len(config.Contexts) < 1 {
+		return nil, EmptyContextsError
+	}
+	var remoteContext *api.Context
+	if len(config.Contexts) == 1 {
+		for _, context := range config.Contexts {
+			remoteContext = context
+		}
+	} else {
+		remoteContext = config.Contexts[remoteContextName]
+	}
 	remoteCluster := config.Clusters[remoteContext.Cluster]
 	// Hack for local e2e testing with Kind
 	err = hackClusterConfigForLocalTestingInKIND(remoteCluster, remoteContextName, localClusterDomainOverride)

@@ -2,24 +2,57 @@ package wire
 
 import (
 	"github.com/google/wire"
+	"github.com/solo-io/go-utils/installutils/helminstall"
+	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/auth"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/version"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
+	eks_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s-cluster/rest/eks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
+	"k8s.io/client-go/rest"
 )
 
 var AwsSet = wire.NewSet(
 	compute_target_aws.NewAwsAPIHandler,
 	aws_creds.DefaultSecretAwsCredsConverter,
-	appmesh_client.NewAppMeshClientFactory,
-	aws.NewAppMeshDiscoveryReconcilerFactory,
 	aws_utils.NewArnParser,
 	aws_utils.NewAppMeshParser,
 	appmesh.AppMeshWorkloadScannerFactoryProvider,
+	aws.NewAppMeshDiscoveryReconciler,
+	eks.NewEksDiscoveryReconciler,
+	eks_client.EksClientFactoryProvider,
+	eks_client.EksConfigBuilderFactoryProvider,
+	appmesh_client.AppMeshClientFactoryProvider,
+)
+
+var ClusterRegistrationSet = wire.NewSet(
+	helminstall.DefaultHelmClientMemoryConfigFactory,
+	helminstall.DefaultHelmClientFileConfigFactory,
+	k8s_core.SecretClientFromConfigFactoryProvider,
+	k8s_core.NamespaceClientFromConfigFactoryProvider,
+	zephyr_discovery.KubernetesClusterClientFromConfigFactoryProvider,
+	k8s_apps.DeploymentClientFromConfigFactoryProvider,
+	k8s_core.ServiceAccountClientFromConfigFactoryProvider,
+	auth.RbacClientFactoryProvider,
+	auth.RemoteAuthorityConfigCreatorFactoryProvider,
+	auth.RemoteAuthorityManagerFactoryProvider,
+	auth.ClusterAuthorizationFactoryProvider,
+	csr.NewCsrAgentInstallerFactory,
+	DeployedVersionFinderProvider,
 )
 
 func ComputeTargetCredentialsHandlersProvider(
@@ -30,4 +63,61 @@ func ComputeTargetCredentialsHandlersProvider(
 		asyncManagerController,
 		awsCredsHandler,
 	}
+}
+
+func DeployedVersionFinderProvider(
+	masterCfg *rest.Config,
+	deploymentClientFromConfigFactory k8s_apps.DeploymentClientFromConfigFactory,
+	imageNameParser docker.ImageNameParser,
+) (version.DeployedVersionFinder, error) {
+	deploymentClient, err := deploymentClientFromConfigFactory(masterCfg)
+	if err != nil {
+		return nil, err
+	}
+	return version.NewDeployedVersionFinder(deploymentClient, imageNameParser), nil
+}
+
+func ClusterRegistrationClientProvider(
+	masterCfg *rest.Config,
+	secretClientFactory k8s_core.SecretClientFromConfigFactory,
+	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
+	kubeClusterClient zephyr_discovery.KubernetesClusterClientFromConfigFactory,
+	serviceAccountFactory k8s_core.ServiceAccountClientFromConfigFactory,
+	kubeConverter kube.Converter,
+	rbacClientFactory auth.RbacClientFactory,
+	remoteAuthorityConfigCreatorFactory auth.RemoteAuthorityConfigCreatorFactory,
+	remoteAuthorityManagerFactory auth.RemoteAuthorityManagerFactory,
+	clusterAuthorizationFactory auth.ClusterAuthorizationFactory,
+	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
+	helmClientForMemoryConfigFactory types.HelmClientForMemoryConfigFactory,
+	deployedVersionFinder version.DeployedVersionFinder,
+) (clients.ClusterRegistrationClient, error) {
+	masterSecretClient, err := secretClientFactory(masterCfg)
+	if err != nil {
+		return nil, err
+	}
+	masterNamespaceClient, err := namespaceClientFactory(masterCfg)
+	if err != nil {
+		return nil, err
+	}
+	masterKubeClusterClient, err := kubeClusterClient(masterCfg)
+	if err != nil {
+		return nil, err
+	}
+	return clients.NewClusterRegistrationClient(
+		masterSecretClient,
+		masterNamespaceClient,
+		masterKubeClusterClient,
+		helmClientForMemoryConfigFactory,
+		deployedVersionFinder,
+		kubeConverter,
+		namespaceClientFactory,
+		secretClientFactory,
+		serviceAccountFactory,
+		rbacClientFactory,
+		remoteAuthorityConfigCreatorFactory,
+		remoteAuthorityManagerFactory,
+		clusterAuthorizationFactory,
+		csrAgentInstallerFactory,
+	), nil
 }
