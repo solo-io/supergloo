@@ -18,5 +18,6 @@ type ClusterRegistrationClient interface {
 		useDevCsrAgentChart bool,
 		localClusterDomainOverride string,
 		remoteContextName string,
+		clusterLabels map[string]string,
 	) error
 }

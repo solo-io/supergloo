@@ -47,10 +47,10 @@ var (
 )
 
 type clusterRegistrationClient struct {
-	secretClient                k8s_core.SecretClient
-	kubernetesClusterClient     zephyr_discovery.KubernetesClusterClient
-	kubeConverter               kube.Converter
-	csrAgentInstallerFactory    csr.CsrAgentInstallerFactory
+	secretClient             k8s_core.SecretClient
+	kubernetesClusterClient  zephyr_discovery.KubernetesClusterClient
+	kubeConverter            kube.Converter
+	csrAgentInstallerFactory csr.CsrAgentInstallerFactory
 }
 
 func NewClusterRegistrationClient(
@@ -60,10 +60,10 @@ func NewClusterRegistrationClient(
 	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
 ) ClusterRegistrationClient {
 	return &clusterRegistrationClient{
-		secretClient:                secretClient,
-		kubernetesClusterClient:     kubernetesClusterClient,
-		kubeConverter:               kubeConverter,
-		csrAgentInstallerFactory:    csrAgentInstallerFactory,
+		secretClient:             secretClient,
+		kubernetesClusterClient:  kubernetesClusterClient,
+		kubeConverter:            kubeConverter,
+		csrAgentInstallerFactory: csrAgentInstallerFactory,
 	}
 }
 
@@ -76,6 +76,7 @@ func (c *clusterRegistrationClient) Register(
 	useDevCsrAgentChart bool,
 	localClusterDomainOverride string,
 	remoteContextName string,
+	clusterLabels map[string]string,
 ) error {
 	var err error
 	var remoteRestConfig *rest.Config
@@ -114,7 +115,14 @@ func (c *clusterRegistrationClient) Register(
 	); err != nil {
 		return err
 	}
-	if err = c.writeKubeClusterToMaster(ctx, env.GetWriteNamespace(), remoteClusterName, remoteWriteNamespace, secret); err != nil {
+	if err = c.writeKubeClusterToMaster(
+		ctx,
+		env.GetWriteNamespace(),
+		remoteClusterName,
+		remoteWriteNamespace,
+		secret,
+		clusterLabels,
+	); err != nil {
 		return err
 	}
 	return nil
@@ -289,11 +297,13 @@ func (c *clusterRegistrationClient) writeKubeClusterToMaster(
 	remoteClusterName string,
 	remoteWriteNamespace string,
 	secret *k8s_core_types.Secret,
+	clusterLabels map[string]string,
 ) error {
 	cluster := &zephyr_discovery.KubernetesCluster{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      remoteClusterName,
 			Namespace: writeNamespace,
+			Labels:    clusterLabels,
 		},
 		Spec: zephyr_discovery_types.KubernetesClusterSpec{
 			SecretRef: &zephyr_core_types.ResourceRef{

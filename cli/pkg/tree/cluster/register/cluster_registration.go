@@ -32,7 +32,6 @@ var (
 )
 
 // write a new kube config secret to the master cluster containing creds for talking to the remote cluster as the given service account
-
 func RegisterCluster(
 	ctx context.Context,
 	kubeClientsFactory common.KubeClientsFactory,
@@ -79,5 +78,6 @@ func RegisterCluster(
 		registerOpts.UseDevCsrAgentChart,
 		registerOpts.LocalClusterDomainOverride,
 		remoteContext,
+		nil,
 	)
 }
