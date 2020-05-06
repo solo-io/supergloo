@@ -7,13 +7,11 @@ package wire
 
 import (
 	"context"
-	"io"
-
 	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/reporting-client/pkg/client"
-	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
+	"github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
@@ -30,46 +28,47 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create"
-	access_control_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/access-control-policy"
-	traffic_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/access-control-policy"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/virtualmesh"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/cleanup"
-	demo_init "github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/init"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/init"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get"
-	get_cluster "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/cluster"
-	get_mesh "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/mesh"
-	get_service "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/service"
-	get_virtual_mesh "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/virtual_mesh"
-	get_vmcsr "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/vmcsr"
-	get_workload "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/workload"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/cluster"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/mesh"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/service"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/virtual_mesh"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/vmcsr"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/workload"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh"
-	mesh_install "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
-	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
-	helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
-	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	version2 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"github.com/spf13/cobra"
+	"io"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -142,14 +141,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	helmClientForMemoryConfigFactory := helminstall.DefaultHelmClientMemoryConfigFactory()
 	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
 	clusterRegistrationClients := common.ClusterRegistrationClientsProvider(csrAgentInstallerFactory)
-	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
-	secretClientFromConfigFactory := v1.SecretClientFromConfigFactoryProvider()
-	serviceAccountClientFromConfigFactory := v1.ServiceAccountClientFromConfigFactoryProvider()
-	rbacClientFactory := auth.RbacClientFactoryProvider()
-	remoteAuthorityConfigCreatorFactory := auth.RemoteAuthorityConfigCreatorFactoryProvider()
-	remoteAuthorityManagerFactory := auth.RemoteAuthorityManagerFactoryProvider()
-	clusterAuthorizationFactory := auth.ClusterAuthorizationFactoryProvider()
-	clusterRegistrationClient := clients.NewClusterRegistrationClient(secretClient, namespaceClient, kubernetesClusterClient, helmClientForMemoryConfigFactory, deployedVersionFinder, converter, namespaceClientFromConfigFactory, secretClientFromConfigFactory, serviceAccountClientFromConfigFactory, rbacClientFactory, remoteAuthorityConfigCreatorFactory, remoteAuthorityManagerFactory, clusterAuthorizationFactory, csrAgentInstallerFactory)
+	clusterRegistrationClient := clients.NewClusterRegistrationClient(secretClient, kubernetesClusterClient, converter, csrAgentInstallerFactory)
 	kubeClients := common.KubeClientsProvider(clusterAuthorization, installerFactory, helmClientForFileConfigFactory, kubernetesClusterClient, healthcheck_typesClients, deployedVersionFinder, customResourceDefinitionClientFromConfigFactory, secretClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCertificateSigningRequestClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient, clusterRegistrationClients, clusterRegistrationClient)
 	return kubeClients, nil
 }

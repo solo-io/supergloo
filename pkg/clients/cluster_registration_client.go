@@ -8,7 +8,6 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall"
-	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
@@ -16,9 +15,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"go.uber.org/zap/zaptest"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
@@ -50,53 +47,23 @@ var (
 )
 
 type clusterRegistrationClient struct {
-	secretClient                        k8s_core.SecretClient
-	namespaceClient                     k8s_core.NamespaceClient
-	kubernetesClusterClient             zephyr_discovery.KubernetesClusterClient
-	helmClientFactory                   types.HelmClientForMemoryConfigFactory
-	deployedVersionFinder               version.DeployedVersionFinder
-	kubeConverter                       kube.Converter
-	namespaceClientFactory              k8s_core.NamespaceClientFromConfigFactory
-	secretClientFactory                 k8s_core.SecretClientFromConfigFactory
-	serviceAccountClientFactory         k8s_core.ServiceAccountClientFromConfigFactory
-	rbacClientFactory                   auth.RbacClientFactory
-	remoteAuthorityConfigCreatorFactory auth.RemoteAuthorityConfigCreatorFactory
-	remoteAuthorityManagerFactory       auth.RemoteAuthorityManagerFactory
-	clusterAuthorizationFactory         auth.ClusterAuthorizationFactory
-	csrAgentInstallerFactory            csr.CsrAgentInstallerFactory
+	secretClient                k8s_core.SecretClient
+	kubernetesClusterClient     zephyr_discovery.KubernetesClusterClient
+	kubeConverter               kube.Converter
+	csrAgentInstallerFactory    csr.CsrAgentInstallerFactory
 }
 
 func NewClusterRegistrationClient(
 	secretClient k8s_core.SecretClient,
-	namespaceClient k8s_core.NamespaceClient,
 	kubernetesClusterClient zephyr_discovery.KubernetesClusterClient,
-	helmClientFactory types.HelmClientForMemoryConfigFactory,
-	deployedVersionFinder version.DeployedVersionFinder,
 	kubeConverter kube.Converter,
-	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
-	secretClientFactory k8s_core.SecretClientFromConfigFactory,
-	serviceAccountClientFactory k8s_core.ServiceAccountClientFromConfigFactory,
-	rbacClientFactory auth.RbacClientFactory,
-	remoteAuthorityConfigCreatorFactory auth.RemoteAuthorityConfigCreatorFactory,
-	remoteAuthorityManagerFactory auth.RemoteAuthorityManagerFactory,
-	clusterAuthorizationFactory auth.ClusterAuthorizationFactory,
 	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
 ) ClusterRegistrationClient {
 	return &clusterRegistrationClient{
-		secretClient:                        secretClient,
-		namespaceClient:                     namespaceClient,
-		kubernetesClusterClient:             kubernetesClusterClient,
-		helmClientFactory:                   helmClientFactory,
-		deployedVersionFinder:               deployedVersionFinder,
-		kubeConverter:                       kubeConverter,
-		namespaceClientFactory:              namespaceClientFactory,
-		secretClientFactory:                 secretClientFactory,
-		serviceAccountClientFactory:         serviceAccountClientFactory,
-		rbacClientFactory:                   rbacClientFactory,
-		remoteAuthorityConfigCreatorFactory: remoteAuthorityConfigCreatorFactory,
-		remoteAuthorityManagerFactory:       remoteAuthorityManagerFactory,
-		clusterAuthorizationFactory:         clusterAuthorizationFactory,
-		csrAgentInstallerFactory:            csrAgentInstallerFactory,
+		secretClient:                secretClient,
+		kubernetesClusterClient:     kubernetesClusterClient,
+		kubeConverter:               kubeConverter,
+		csrAgentInstallerFactory:    csrAgentInstallerFactory,
 	}
 }
 
@@ -182,10 +149,11 @@ func (c *clusterRegistrationClient) ensureRemoteNamespace(
 	remoteRestConfig *rest.Config,
 	writeNamespace string,
 ) error {
-	remoteNamespaceClient, err := c.namespaceClientFactory(remoteRestConfig)
+	remoteClientset, err := k8s_core.NewClientsetFromConfig(remoteRestConfig)
 	if err != nil {
 		return err
 	}
+	remoteNamespaceClient := remoteClientset.Namespaces()
 	_, err = remoteNamespaceClient.GetNamespace(ctx, client.ObjectKey{Name: writeNamespace})
 	if k8s_errs.IsNotFound(err) {
 		return remoteNamespaceClient.CreateNamespace(ctx, &k8s_core_types.Namespace{
@@ -235,7 +203,7 @@ func (c *clusterRegistrationClient) generateServiceAccountBearerToken(
 		Name:      remoteClusterName,
 		Namespace: remoteWriteNamespace,
 	}
-	remoteClusterAuth, err := c.constructRemoteClusterAuth(remoteAuthConfig)
+	remoteClusterAuth, err := DefaultClusterAuthClientFromConfig(remoteAuthConfig)
 	if err != nil {
 		return "", err
 	}
@@ -244,25 +212,6 @@ func (c *clusterRegistrationClient) generateServiceAccountBearerToken(
 		return "", err
 	}
 	return bearerTokenForServiceAccount, nil
-}
-
-func (c *clusterRegistrationClient) constructRemoteClusterAuth(remoteAuthConfig *rest.Config) (auth.ClusterAuthorization, error) {
-	serviceAccountClient, err := c.serviceAccountClientFactory(remoteAuthConfig)
-	if err != nil {
-		return nil, err
-	}
-	clientset, err := kubernetes.NewForConfig(remoteAuthConfig)
-	if err != nil {
-		return nil, err
-	}
-	rbacClient := c.rbacClientFactory(clientset)
-	secretClient, err := c.secretClientFactory(remoteAuthConfig)
-	if err != nil {
-		return nil, err
-	}
-	remoteAuthorityConfigCreator := c.remoteAuthorityConfigCreatorFactory(secretClient, serviceAccountClient)
-	remoteAuthorityManager := c.remoteAuthorityManagerFactory(serviceAccountClient, rbacClient)
-	return c.clusterAuthorizationFactory(remoteAuthorityConfigCreator, remoteAuthorityManager), nil
 }
 
 func (c *clusterRegistrationClient) writeKubeConfigToMaster(

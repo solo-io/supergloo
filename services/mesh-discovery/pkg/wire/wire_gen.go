@@ -7,7 +7,6 @@ package wire
 
 import (
 	"context"
-
 	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
@@ -15,16 +14,15 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/auth"
+	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
+	"github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
-	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories"
-	appmesh_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s/appmesh"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s/appmesh"
 	eks2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s-cluster/rest/eks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	appmesh2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
@@ -57,13 +55,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	eksClientFactory := eks.EksClientFactoryProvider()
 	eksConfigBuilderFactory := eks.EksConfigBuilderFactoryProvider()
 	secretClientFromConfigFactory := v1.SecretClientFromConfigFactoryProvider()
-	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
 	kubernetesClusterClientFromConfigFactory := v1alpha1.KubernetesClusterClientFromConfigFactoryProvider()
-	serviceAccountClientFromConfigFactory := v1.ServiceAccountClientFromConfigFactoryProvider()
-	rbacClientFactory := auth.RbacClientFactoryProvider()
-	remoteAuthorityConfigCreatorFactory := auth.RemoteAuthorityConfigCreatorFactoryProvider()
-	remoteAuthorityManagerFactory := auth.RemoteAuthorityManagerFactoryProvider()
-	clusterAuthorizationFactory := auth.ClusterAuthorizationFactoryProvider()
 	helmClientForFileConfigFactory := helminstall.DefaultHelmClientFileConfigFactory()
 	helmClientForMemoryConfigFactory := helminstall.DefaultHelmClientMemoryConfigFactory()
 	deploymentClientFromConfigFactory := v1_2.DeploymentClientFromConfigFactoryProvider()
@@ -73,7 +65,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		return DiscoveryContext{}, err
 	}
 	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
-	clusterRegistrationClient, err := ClusterRegistrationClientProvider(config, secretClientFromConfigFactory, namespaceClientFromConfigFactory, kubernetesClusterClientFromConfigFactory, serviceAccountClientFromConfigFactory, converter, rbacClientFactory, remoteAuthorityConfigCreatorFactory, remoteAuthorityManagerFactory, clusterAuthorizationFactory, csrAgentInstallerFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
+	clusterRegistrationClient, err := ClusterRegistrationClientProvider(config, secretClientFromConfigFactory, kubernetesClusterClientFromConfigFactory, converter, csrAgentInstallerFactory)
 	if err != nil {
 		return DiscoveryContext{}, err
 	}

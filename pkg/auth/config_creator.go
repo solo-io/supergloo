@@ -28,15 +28,6 @@ var (
 	}
 )
 
-type RemoteAuthorityConfigCreatorFactory func(
-	secretClient k8s_core.SecretClient,
-	serviceAccountClient k8s_core.ServiceAccountClient,
-) RemoteAuthorityConfigCreator
-
-func RemoteAuthorityConfigCreatorFactoryProvider() RemoteAuthorityConfigCreatorFactory {
-	return NewRemoteAuthorityConfigCreator
-}
-
 func NewRemoteAuthorityConfigCreator(
 	secretClient k8s_core.SecretClient,
 	serviceAccountClient k8s_core.ServiceAccountClient,

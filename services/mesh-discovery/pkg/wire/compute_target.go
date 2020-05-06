@@ -3,7 +3,6 @@ package wire
 import (
 	"github.com/google/wire"
 	"github.com/solo-io/go-utils/installutils/helminstall"
-	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
@@ -48,8 +47,6 @@ var ClusterRegistrationSet = wire.NewSet(
 	k8s_apps.DeploymentClientFromConfigFactoryProvider,
 	k8s_core.ServiceAccountClientFromConfigFactoryProvider,
 	auth.RbacClientFactoryProvider,
-	auth.RemoteAuthorityConfigCreatorFactoryProvider,
-	auth.RemoteAuthorityManagerFactoryProvider,
 	auth.ClusterAuthorizationFactoryProvider,
 	csr.NewCsrAgentInstallerFactory,
 	DeployedVersionFinderProvider,
@@ -80,23 +77,11 @@ func DeployedVersionFinderProvider(
 func ClusterRegistrationClientProvider(
 	masterCfg *rest.Config,
 	secretClientFactory k8s_core.SecretClientFromConfigFactory,
-	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
 	kubeClusterClient zephyr_discovery.KubernetesClusterClientFromConfigFactory,
-	serviceAccountFactory k8s_core.ServiceAccountClientFromConfigFactory,
 	kubeConverter kube.Converter,
-	rbacClientFactory auth.RbacClientFactory,
-	remoteAuthorityConfigCreatorFactory auth.RemoteAuthorityConfigCreatorFactory,
-	remoteAuthorityManagerFactory auth.RemoteAuthorityManagerFactory,
-	clusterAuthorizationFactory auth.ClusterAuthorizationFactory,
 	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
-	helmClientForMemoryConfigFactory types.HelmClientForMemoryConfigFactory,
-	deployedVersionFinder version.DeployedVersionFinder,
 ) (clients.ClusterRegistrationClient, error) {
 	masterSecretClient, err := secretClientFactory(masterCfg)
-	if err != nil {
-		return nil, err
-	}
-	masterNamespaceClient, err := namespaceClientFactory(masterCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -106,18 +91,8 @@ func ClusterRegistrationClientProvider(
 	}
 	return clients.NewClusterRegistrationClient(
 		masterSecretClient,
-		masterNamespaceClient,
 		masterKubeClusterClient,
-		helmClientForMemoryConfigFactory,
-		deployedVersionFinder,
 		kubeConverter,
-		namespaceClientFactory,
-		secretClientFactory,
-		serviceAccountFactory,
-		rbacClientFactory,
-		remoteAuthorityConfigCreatorFactory,
-		remoteAuthorityManagerFactory,
-		clusterAuthorizationFactory,
 		csrAgentInstallerFactory,
 	), nil
 }

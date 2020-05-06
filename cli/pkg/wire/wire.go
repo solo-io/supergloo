@@ -109,14 +109,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		csr.NewCsrAgentInstallerFactory,
 		helminstall.DefaultHelmClientFileConfigFactory,
 		helminstall.DefaultHelmClientMemoryConfigFactory,
-		k8s_core.NamespaceClientFromConfigFactoryProvider,
 		clients2.NewClusterRegistrationClient,
-		k8s_core.SecretClientFromConfigFactoryProvider,
-		k8s_core.ServiceAccountClientFromConfigFactoryProvider,
-		auth.RbacClientFactoryProvider,
-		auth.RemoteAuthorityConfigCreatorFactoryProvider,
-		auth.RemoteAuthorityManagerFactoryProvider,
-		auth.ClusterAuthorizationFactoryProvider,
 	)
 	return nil, nil
 }
