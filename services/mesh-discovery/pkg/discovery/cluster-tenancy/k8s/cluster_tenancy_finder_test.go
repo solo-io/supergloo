@@ -6,10 +6,8 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	mock_controllers "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories/mocks"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
@@ -17,7 +15,6 @@ import (
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_k8s_core_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
-	"github.com/solo-io/skv2/pkg/utils"
 	k8s_core "k8s.io/api/core/v1"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -72,114 +69,71 @@ var _ = Describe("ClusterTenancyRegistrarLoop", func() {
 		ctrl.Finish()
 	})
 
-	var expectRegisterForPodUpsert = func(pod *k8s_core.Pod) {
-		mesh := &zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &types.ResourceRef{
-					Name: clusterName,
-				},
-			},
-		}
-		mockTenancyRegistrar.EXPECT().MeshFromSidecar(ctx, pod).Return(mesh, nil)
-		mockTenancyRegistrar.EXPECT().RegisterMesh(ctx, clusterName, mesh).Return(nil)
-	}
-
-	var expectReconcileTenancyForMeshUpsert = func(mesh *zephyr_discovery.Mesh) {
+	var expectReconcile = func() {
+		namespace := "namespace"
 		podList := &k8s_core.PodList{
 			Items: []k8s_core.Pod{
-				{ObjectMeta: k8s_meta.ObjectMeta{Name: "1"}},
-				{ObjectMeta: k8s_meta.ObjectMeta{Name: "2"}},
+				{ObjectMeta: k8s_meta.ObjectMeta{Name: "pod1", Namespace: namespace}},
+				{ObjectMeta: k8s_meta.ObjectMeta{Name: "pod2", Namespace: namespace}},
+				{ObjectMeta: k8s_meta.ObjectMeta{Name: "pod3", Namespace: namespace}},
+				{ObjectMeta: k8s_meta.ObjectMeta{Name: "pod4", Namespace: namespace}},
+				{ObjectMeta: k8s_meta.ObjectMeta{Name: "pod5", Namespace: namespace}},
+				{ObjectMeta: k8s_meta.ObjectMeta{Name: "pod6", Namespace: namespace}},
 			},
 		}
 		mockPodClient.EXPECT().ListPod(ctx).Return(podList, nil)
-		for _, pod := range podList.Items {
-			pod := pod
-			expectRegisterForPodUpsert(&pod)
-		}
-	}
-
-	var expectDeregisterMesh = func(mesh *zephyr_discovery.Mesh) {
-		mockTenancyRegistrar.EXPECT().DeregisterMesh(ctx, clusterName, mesh).Return(nil)
-	}
-
-	var expectReconcileTenancyForCluster = func() {
 		meshList := &zephyr_discovery.MeshList{
 			Items: []zephyr_discovery.Mesh{
-				{
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
-								Clusters: []string{"a", "b", clusterName},
-							},
-						},
-					},
-				},
-				{
-					Spec: zephyr_discovery_types.MeshSpec{
-						// This mesh should be ignored
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
-					},
-				},
+				{ObjectMeta: k8s_meta.ObjectMeta{Name: "mesh1", Namespace: namespace}},
+				{ObjectMeta: k8s_meta.ObjectMeta{Name: "mesh2", Namespace: namespace}},
+				{ObjectMeta: k8s_meta.ObjectMeta{Name: "mesh3", Namespace: namespace}},
+				{ObjectMeta: k8s_meta.ObjectMeta{Name: "mesh4", Namespace: namespace}}, // Not on cluster
 			},
 		}
 		mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
-		expectDeregisterMesh(&meshList.Items[0])
-		expectReconcileTenancyForMeshUpsert(&meshList.Items[0])
+		for i, pod := range podList.Items[:3] {
+			pod := pod
+			mockTenancyRegistrar.EXPECT().MeshFromSidecar(ctx, &pod).Return(&meshList.Items[i], nil)
+		}
+		for _, pod := range podList.Items[3:] {
+			pod := pod
+			mockTenancyRegistrar.EXPECT().MeshFromSidecar(ctx, &pod).Return(nil, nil)
+		}
+		mockTenancyRegistrar.EXPECT().ClusterHostsMesh(clusterName, &meshList.Items[0]).Return(false)
+		mockTenancyRegistrar.EXPECT().RegisterMesh(ctx, clusterName, &meshList.Items[0]).Return(nil)
+		mockTenancyRegistrar.EXPECT().ClusterHostsMesh(clusterName, &meshList.Items[1]).Return(true)
+		mockTenancyRegistrar.EXPECT().ClusterHostsMesh(clusterName, &meshList.Items[2]).Return(true)
+		mockTenancyRegistrar.EXPECT().ClusterHostsMesh(clusterName, &meshList.Items[3]).Return(true)
+		mockTenancyRegistrar.EXPECT().DeregisterMesh(ctx, clusterName, &meshList.Items[3]).Return(nil)
 	}
 
 	It("should reconcile tenancy upon Pod create", func() {
-		pod := &k8s_core.Pod{}
-		expectRegisterForPodUpsert(pod)
-		err := podEventHandlerFuncs.CreatePod(pod)
+		expectReconcile()
+		err := podEventHandlerFuncs.CreatePod(&k8s_core.Pod{})
 		Expect(err).To(BeNil())
 	})
 
 	It("should reconcile tenancy upon Pod update", func() {
-		pod := &k8s_core.Pod{}
-		expectRegisterForPodUpsert(pod)
-		err := podEventHandlerFuncs.UpdatePod(nil, pod)
+		expectReconcile()
+		err := podEventHandlerFuncs.UpdatePod(&k8s_core.Pod{}, &k8s_core.Pod{})
 		Expect(err).To(BeNil())
 	})
 
-	It("should reconcile tenancy for pod delete", func() {
-		expectReconcileTenancyForCluster()
+	It("should reconcile tenancy upon Pod delete", func() {
+		expectReconcile()
 		err := podEventHandlerFuncs.DeletePod(&k8s_core.Pod{})
 		Expect(err).To(BeNil())
 	})
 
-	It("should reconcile cluster tenancy for mesh create", func() {
-		meshWithCluster := &zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-					AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
-						Clusters: []string{"a", "b", clusterName},
-					},
-				},
-			},
-		}
-		meshWithoutCluster := meshWithCluster.DeepCopy()
-		meshWithoutCluster.Spec.GetAwsAppMesh().Clusters = utils.RemoveString(meshWithoutCluster.Spec.GetAwsAppMesh().GetClusters(), clusterName)
-		expectDeregisterMesh(meshWithCluster)
-		expectReconcileTenancyForMeshUpsert(meshWithoutCluster)
-		err := meshEventHandlerFuncs.CreateMesh(meshWithCluster)
+	It("should reconcile tenancy upon Mesh create", func() {
+		expectReconcile()
+		err := meshEventHandlerFuncs.CreateMesh(&zephyr_discovery.Mesh{})
 		Expect(err).To(BeNil())
 	})
 
-	It("should reconcile cluster tenancy for mesh create", func() {
-		meshWithCluster := &zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-					AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
-						Clusters: []string{"a", "b", clusterName},
-					},
-				},
-			},
-		}
-		meshWithoutCluster := meshWithCluster.DeepCopy()
-		meshWithoutCluster.Spec.GetAwsAppMesh().Clusters = utils.RemoveString(meshWithoutCluster.Spec.GetAwsAppMesh().GetClusters(), clusterName)
-		expectDeregisterMesh(meshWithCluster)
-		expectReconcileTenancyForMeshUpsert(meshWithoutCluster)
-		err := meshEventHandlerFuncs.UpdateMesh(nil, meshWithCluster)
+	It("should reconcile tenancy upon Mesh update", func() {
+		expectReconcile()
+		err := meshEventHandlerFuncs.UpdateMesh(&zephyr_discovery.Mesh{}, &zephyr_discovery.Mesh{})
 		Expect(err).To(BeNil())
 	})
 })
