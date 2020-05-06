@@ -99,7 +99,7 @@ func (m *MockClusterTenancyRegistrar) ClusterHostsMesh(clusterName string, mesh 
 }
 
 // ClusterHostsMesh indicates an expected call of ClusterHostsMesh.
-func (mr *MockClusterTenancyRegistrarMockRecorder) MeshContainsCluster(clusterName, mesh interface{}) *gomock.Call {
+func (mr *MockClusterTenancyRegistrarMockRecorder) ClusterHostsMesh(clusterName, mesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterHostsMesh", reflect.TypeOf((*MockClusterTenancyRegistrar)(nil).ClusterHostsMesh), clusterName, mesh)
 }
