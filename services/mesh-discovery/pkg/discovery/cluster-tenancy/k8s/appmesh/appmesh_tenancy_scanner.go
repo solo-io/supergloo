@@ -64,7 +64,7 @@ func (a *appmeshTenancyScanner) MeshFromSidecar(
 	return mesh, nil
 }
 
-func (a *appmeshTenancyScanner) MeshContainsCluster(clusterName string, mesh *zephyr_discovery.Mesh) bool {
+func (a *appmeshTenancyScanner) ClusterHostsMesh(clusterName string, mesh *zephyr_discovery.Mesh) bool {
 	return utils.ContainsString(mesh.Spec.GetAwsAppMesh().Clusters, clusterName)
 }
 
