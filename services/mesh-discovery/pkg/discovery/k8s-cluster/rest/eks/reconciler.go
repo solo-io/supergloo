@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/eks"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
@@ -23,7 +24,10 @@ const (
 )
 
 var (
-	DiscoveryLabels = map[string]string{constants.DISCOVERED_BY: constants.EKS_CLUSTER_DISCOVERY}
+	DiscoveryLabels          = map[string]string{constants.DISCOVERED_BY: constants.EKS_CLUSTER_DISCOVERY}
+	FailedRegisteringCluster = func(err error, name string) error {
+		return eris.Wrapf(err, "Failed to register EKS cluster %s", name)
+	}
 )
 
 type eksReconciler struct {
@@ -52,7 +56,7 @@ func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Creden
 	if err != nil {
 		return err
 	}
-	clusterNamesOnAWS, err := e.fetchEksClustersOnAWS(ctx, eksClient, region)
+	clusterNamesOnAWS, smhToAwsClusterNames, err := e.fetchEksClustersOnAWS(ctx, eksClient, region)
 	if err != nil {
 		return err
 	}
@@ -64,9 +68,10 @@ func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Creden
 	// TODO deregister clusters that are no longer on AWS
 	//clustersToDeregister := clusterNamesOnSMH.Difference(clusterNamesOnAWS)
 	for clusterName, _ := range clustersToRegister {
-		err := e.registerCluster(ctx, eksClient, clusterName)
+		awsClusterName := smhToAwsClusterNames[clusterName]
+		err := e.registerCluster(ctx, eksClient, awsClusterName, clusterName)
 		if err != nil {
-			return err
+			return FailedRegisteringCluster(err, awsClusterName)
 		}
 	}
 	return nil
@@ -76,26 +81,28 @@ func (e *eksReconciler) fetchEksClustersOnAWS(
 	ctx context.Context,
 	eksClient cloud.EksClient,
 	region string,
-) (sets.String, error) {
+) (sets.String, map[string]string, error) {
 	var clusterNames []string
+	smhToAwsClusterNames := make(map[string]string)
 	input := &eks.ListClustersInput{
 		MaxResults: aws.Int64(MaxResults),
 	}
 	for {
 		listClustersOutput, err := eksClient.ListClusters(ctx, input)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		for _, clusterNameRef := range listClustersOutput.Clusters {
-			clusterName := metadata.BuildEksClusterName(aws.StringValue(clusterNameRef), region)
-			clusterNames = append(clusterNames, clusterName)
+			smhClusterName := metadata.BuildEksClusterName(aws.StringValue(clusterNameRef), region)
+			clusterNames = append(clusterNames, smhClusterName)
+			smhToAwsClusterNames[smhClusterName] = aws.StringValue(clusterNameRef)
 		}
 		if listClustersOutput.NextToken == nil {
 			break
 		}
 		input.NextToken = listClustersOutput.NextToken
 	}
-	return sets.NewString(clusterNames...), nil
+	return sets.NewString(clusterNames...), smhToAwsClusterNames, nil
 }
 
 func (e *eksReconciler) fetchEksClustersOnSMH(ctx context.Context) (sets.String, error) {
@@ -114,9 +121,10 @@ func (e *eksReconciler) fetchEksClustersOnSMH(ctx context.Context) (sets.String,
 func (e *eksReconciler) registerCluster(
 	ctx context.Context,
 	eksClient cloud.EksClient,
-	clusterName string,
+	awsClusterName string,
+	smhClusterName string,
 ) error {
-	cluster, err := eksClient.DescribeCluster(ctx, clusterName)
+	cluster, err := eksClient.DescribeCluster(ctx, awsClusterName)
 	if err != nil {
 		return err
 	}
@@ -127,7 +135,7 @@ func (e *eksReconciler) registerCluster(
 	return e.clusterRegistrationClient.Register(
 		ctx,
 		config,
-		clusterName,
+		smhClusterName,
 		env.GetWriteNamespace(), // TODO make this configurable
 		false,
 		false,

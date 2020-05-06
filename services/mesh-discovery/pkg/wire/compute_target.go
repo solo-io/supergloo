@@ -33,6 +33,7 @@ var AwsSet = wire.NewSet(
 	appmesh.AppMeshWorkloadScannerFactoryProvider,
 	aws.NewAppMeshDiscoveryReconciler,
 	eks.NewEksDiscoveryReconciler,
+	zephyr_discovery.KubernetesClusterClientProvider,
 	eks_client.EksClientFactoryProvider,
 	eks_client.EksConfigBuilderFactoryProvider,
 	appmesh_client.AppMeshClientFactoryProvider,

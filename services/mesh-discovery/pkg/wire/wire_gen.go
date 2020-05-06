@@ -53,6 +53,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	arnParser := aws_utils.NewArnParser()
 	appMeshClientFactory := appmesh.AppMeshClientFactoryProvider()
 	appMeshDiscoveryReconciler := aws.NewAppMeshDiscoveryReconciler(client, meshClientFactory, arnParser, appMeshClientFactory)
+	kubernetesClusterClient := v1alpha1.KubernetesClusterClientProvider(client)
 	eksClientFactory := eks.EksClientFactoryProvider()
 	eksConfigBuilderFactory := eks.EksConfigBuilderFactoryProvider()
 	secretClientFromConfigFactory := v1.SecretClientFromConfigFactoryProvider()
@@ -70,7 +71,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	if err != nil {
 		return DiscoveryContext{}, err
 	}
-	eksDiscoveryReconciler := eks2.NewEksDiscoveryReconciler(eksClientFactory, eksConfigBuilderFactory, clusterRegistrationClient)
+	eksDiscoveryReconciler := eks2.NewEksDiscoveryReconciler(kubernetesClusterClient, eksClientFactory, eksConfigBuilderFactory, clusterRegistrationClient)
 	awsCredsHandler := aws2.NewAwsAPIHandler(secretAwsCredsConverter, appMeshDiscoveryReconciler, eksDiscoveryReconciler)
 	v := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
