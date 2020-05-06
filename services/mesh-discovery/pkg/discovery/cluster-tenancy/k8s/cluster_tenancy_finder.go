@@ -127,7 +127,7 @@ func (c *clusterTenancyFinder) reconcile(ctx context.Context) error {
 	}
 	for _, mesh := range meshList.Items {
 		mesh := mesh
-		err := c.reconcileMesh(ctx, meshesOnCluster, &mesh)
+		err := c.reconcileClusterTenancyForMesh(ctx, meshesOnCluster, &mesh)
 		if err != nil {
 			return err
 		}
@@ -152,17 +152,17 @@ func (c *clusterTenancyFinder) meshFromPod(
 	return nil, nil, nil
 }
 
-func (c *clusterTenancyFinder) reconcileMesh(
+func (c *clusterTenancyFinder) reconcileClusterTenancyForMesh(
 	ctx context.Context,
-	meshesOnCluster map[ClusterTenancyRegistrar][]client.ObjectKey,
+	meshesOnClusterByRegistrar map[ClusterTenancyRegistrar][]client.ObjectKey,
 	mesh *zephyr_discovery.Mesh,
 ) error {
 	meshObjKey := clients.ObjectMetaToObjectKey(mesh.ObjectMeta)
-	for registrar, meshOnCluster := range meshesOnCluster {
-		meshContainsCluster := registrar.MeshContainsCluster(c.clusterName, mesh)
-		if meshContainsCluster && !containsMesh(meshObjKey, meshOnCluster) {
+	for registrar, meshesOnCluster := range meshesOnClusterByRegistrar {
+		clusterHostsMesh := registrar.ClusterHostsMesh(c.clusterName, mesh)
+		if clusterHostsMesh && !containsMesh(meshObjKey, meshesOnCluster) {
 			return registrar.DeregisterMesh(ctx, c.clusterName, mesh)
-		} else if !meshContainsCluster && containsMesh(meshObjKey, meshOnCluster) {
+		} else if !clusterHostsMesh && containsMesh(meshObjKey, meshesOnCluster) {
 			return registrar.RegisterMesh(ctx, c.clusterName, mesh)
 		}
 	}
