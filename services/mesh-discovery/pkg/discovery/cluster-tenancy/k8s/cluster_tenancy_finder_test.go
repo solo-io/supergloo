@@ -99,11 +99,11 @@ var _ = Describe("ClusterTenancyRegistrarLoop", func() {
 			pod := pod
 			mockTenancyRegistrar.EXPECT().MeshFromSidecar(ctx, &pod).Return(nil, nil)
 		}
-		mockTenancyRegistrar.EXPECT().MeshContainsCluster(clusterName, &meshList.Items[0]).Return(false)
+		mockTenancyRegistrar.EXPECT().ClusterHostsMesh(clusterName, &meshList.Items[0]).Return(false)
 		mockTenancyRegistrar.EXPECT().RegisterMesh(ctx, clusterName, &meshList.Items[0]).Return(nil)
-		mockTenancyRegistrar.EXPECT().MeshContainsCluster(clusterName, &meshList.Items[1]).Return(true)
-		mockTenancyRegistrar.EXPECT().MeshContainsCluster(clusterName, &meshList.Items[2]).Return(true)
-		mockTenancyRegistrar.EXPECT().MeshContainsCluster(clusterName, &meshList.Items[3]).Return(true)
+		mockTenancyRegistrar.EXPECT().ClusterHostsMesh(clusterName, &meshList.Items[1]).Return(true)
+		mockTenancyRegistrar.EXPECT().ClusterHostsMesh(clusterName, &meshList.Items[2]).Return(true)
+		mockTenancyRegistrar.EXPECT().ClusterHostsMesh(clusterName, &meshList.Items[3]).Return(true)
 		mockTenancyRegistrar.EXPECT().DeregisterMesh(ctx, clusterName, &meshList.Items[3]).Return(nil)
 	}
 
