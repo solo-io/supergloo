@@ -3,7 +3,7 @@ package csr
 import (
 	"context"
 
-	"github.com/solo-io/go-utils/installutils/helminstall"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -30,4 +30,4 @@ type CsrAgentInstaller interface {
 	) error
 }
 
-type CsrAgentInstallerFactory func(helmInstallerFactory helminstall.InstallerFactory) CsrAgentInstaller
+type CsrAgentInstallerFactory func(helmInstallerFactory factories.HelmerInstallerFactory) CsrAgentInstaller

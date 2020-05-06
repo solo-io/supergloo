@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
@@ -16,6 +15,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"go.uber.org/zap/zaptest"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
@@ -187,7 +187,7 @@ func (c *clusterRegistrationClient) installRemoteCRDs(
 		return err
 	}
 	kubeClient := kubernetes.NewForConfigOrDie(restConfig)
-	helmInstaller := helminstall.NewInstallerFactory(kubeClient.CoreV1().Namespaces(), &zaptest.Discarder{})
+	helmInstaller := factories.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), &zaptest.Discarder{})
 	csrAgentInstaller := c.csrAgentInstallerFactory(helmInstaller)
 	return csrAgentInstaller.Install(
 		ctx,

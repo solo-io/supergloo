@@ -2,7 +2,6 @@ package common
 
 import (
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/installutils/helminstall"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
@@ -40,7 +39,7 @@ var (
 // a grab bag of various clients that command implementations may use
 type KubeClients struct {
 	ClusterAuthorization            auth.ClusterAuthorization
-	HelmInstallerFactory            helminstall.InstallerFactory
+	HelmInstallerFactory            factories.HelmerInstallerFactory
 	HelmClientFileConfigFactory     factories.HelmClientForFileConfigFactory
 	KubeClusterClient               zephyr_discovery.KubernetesClusterClient // client for KubernetesCluster custom resources
 	MeshServiceClient               zephyr_discovery.MeshServiceClient
@@ -150,7 +149,7 @@ func ClientsProvider(
 // facilitates wire codegen
 func KubeClientsProvider(
 	authorization auth.ClusterAuthorization,
-	helmInstallerFactory helminstall.InstallerFactory,
+	helmInstallerFactory factories.HelmerInstallerFactory,
 	helmClientFileConfigFactory factories.HelmClientForFileConfigFactory,
 	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
 	healthCheckClients healthcheck_types.Clients,

@@ -1,6 +1,8 @@
 package factories
 
 import (
+	"io"
+
 	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	"k8s.io/client-go/tools/clientcmd"
@@ -19,5 +21,13 @@ func HelmClientForFileConfigFactoryProvider() HelmClientForFileConfigFactory {
 func HelmClientForMemoryConfigFactoryProvider() HelmClientForMemoryConfigFactory {
 	return func(config clientcmd.ClientConfig) types.HelmClient {
 		return helminstall.DefaultHelmClientMemoryConfig(config)
+	}
+}
+
+type HelmerInstallerFactory func(helmClient types.HelmClient) types.Installer
+
+func NewHelmInstallerFactory(kubeNsClient helminstall.NamespaceClient, outputWriter io.Writer) HelmerInstallerFactory {
+	return func(helmClient types.HelmClient) types.Installer {
+		return helminstall.NewInstaller(helmClient, kubeNsClient, outputWriter)
 	}
 }
