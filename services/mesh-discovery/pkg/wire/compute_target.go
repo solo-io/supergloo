@@ -2,7 +2,6 @@ package wire
 
 import (
 	"github.com/google/wire"
-	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
@@ -12,6 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
@@ -40,8 +40,8 @@ var AwsSet = wire.NewSet(
 )
 
 var ClusterRegistrationSet = wire.NewSet(
-	helminstall.DefaultHelmClientMemoryConfigFactory,
-	helminstall.DefaultHelmClientFileConfigFactory,
+	factories.HelmClientForMemoryConfigFactoryProvider,
+	factories.HelmClientForFileConfigFactoryProvider,
 	k8s_core.SecretClientFromConfigFactoryProvider,
 	k8s_core.NamespaceClientFromConfigFactoryProvider,
 	zephyr_discovery.KubernetesClusterClientFromConfigFactoryProvider,

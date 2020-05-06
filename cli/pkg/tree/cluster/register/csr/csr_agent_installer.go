@@ -7,6 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 )
 
@@ -22,8 +23,8 @@ const (
 )
 
 func NewCsrAgentInstallerFactory(
-	helmClientFileConfigFactory types.HelmClientForFileConfigFactory,
-	helmClientMemoryConfigFactory types.HelmClientForMemoryConfigFactory,
+	helmClientFileConfigFactory factories.HelmClientForFileConfigFactory,
+	helmClientMemoryConfigFactory factories.HelmClientForMemoryConfigFactory,
 	deployedVersionFinder version.DeployedVersionFinder,
 ) CsrAgentInstallerFactory {
 	return func(
@@ -39,8 +40,8 @@ func NewCsrAgentInstallerFactory(
 }
 
 func NewCsrAgentInstaller(
-	helmClientFileConfigFactory types.HelmClientForFileConfigFactory,
-	helmClientMemoryConfigFactory types.HelmClientForMemoryConfigFactory,
+	helmClientFileConfigFactory factories.HelmClientForFileConfigFactory,
+	helmClientMemoryConfigFactory factories.HelmClientForMemoryConfigFactory,
 	deployedVersionFinder version.DeployedVersionFinder,
 	helmInstallerFactory helminstall.InstallerFactory,
 ) CsrAgentInstaller {
@@ -53,8 +54,8 @@ func NewCsrAgentInstaller(
 }
 
 type csrAgentInstaller struct {
-	helmClientFileConfigFactory   types.HelmClientForFileConfigFactory
-	helmClientMemoryConfigFactory types.HelmClientForMemoryConfigFactory
+	helmClientFileConfigFactory   factories.HelmClientForFileConfigFactory
+	helmClientMemoryConfigFactory factories.HelmClientForMemoryConfigFactory
 	helmInstallerFactory          helminstall.InstallerFactory
 	deployedVersionFinder         version.DeployedVersionFinder
 }

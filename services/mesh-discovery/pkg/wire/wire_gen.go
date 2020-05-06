@@ -8,7 +8,6 @@ package wire
 import (
 	"context"
 
-	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
@@ -17,6 +16,7 @@ import (
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
@@ -58,8 +58,8 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	eksConfigBuilderFactory := eks.EksConfigBuilderFactoryProvider()
 	secretClientFromConfigFactory := v1.SecretClientFromConfigFactoryProvider()
 	kubernetesClusterClientFromConfigFactory := v1alpha1.KubernetesClusterClientFromConfigFactoryProvider()
-	helmClientForFileConfigFactory := helminstall.DefaultHelmClientFileConfigFactory()
-	helmClientForMemoryConfigFactory := helminstall.DefaultHelmClientMemoryConfigFactory()
+	helmClientForFileConfigFactory := factories.HelmClientForFileConfigFactoryProvider()
+	helmClientForMemoryConfigFactory := factories.HelmClientForMemoryConfigFactoryProvider()
 	deploymentClientFromConfigFactory := v1_2.DeploymentClientFromConfigFactoryProvider()
 	imageNameParser := docker.NewImageNameParser()
 	deployedVersionFinder, err := DeployedVersionFinderProvider(config, deploymentClientFromConfigFactory, imageNameParser)

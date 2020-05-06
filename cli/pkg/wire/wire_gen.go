@@ -9,7 +9,6 @@ import (
 	"context"
 	"io"
 
-	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/reporting-client/pkg/client"
 	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
@@ -67,6 +66,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"github.com/spf13/cobra"
@@ -92,7 +92,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	remoteAuthorityManager := auth.NewRemoteAuthorityManager(serviceAccountClient, rbacClient)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
 	installerFactory := install.HelmInstallerProvider(kubernetesClientset)
-	helmClientForFileConfigFactory := helminstall.DefaultHelmClientFileConfigFactory()
+	helmClientForFileConfigFactory := factories.HelmClientForFileConfigFactoryProvider()
 	v1alpha1Clientset, err := v1alpha1.ClientsetFromConfigProvider(masterConfig)
 	if err != nil {
 		return nil, err
@@ -139,7 +139,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
 	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
 	resourceDescriber := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
-	helmClientForMemoryConfigFactory := helminstall.DefaultHelmClientMemoryConfigFactory()
+	helmClientForMemoryConfigFactory := factories.HelmClientForMemoryConfigFactoryProvider()
 	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
 	clusterRegistrationClients := common.ClusterRegistrationClientsProvider(csrAgentInstallerFactory)
 	clusterRegistrationClient := clients.NewClusterRegistrationClient(secretClient, kubernetesClusterClient, converter, csrAgentInstallerFactory)

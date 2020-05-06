@@ -3,7 +3,6 @@ package common
 import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall"
-	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
@@ -26,6 +25,7 @@ import (
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"k8s.io/client-go/rest"
@@ -41,7 +41,7 @@ var (
 type KubeClients struct {
 	ClusterAuthorization            auth.ClusterAuthorization
 	HelmInstallerFactory            helminstall.InstallerFactory
-	HelmClientFileConfigFactory     types.HelmClientForFileConfigFactory     // used for uninstalling - the go-utils package is not laid out very well
+	HelmClientFileConfigFactory     factories.HelmClientForFileConfigFactory
 	KubeClusterClient               zephyr_discovery.KubernetesClusterClient // client for KubernetesCluster custom resources
 	MeshServiceClient               zephyr_discovery.MeshServiceClient
 	MeshWorkloadClient              zephyr_discovery.MeshWorkloadClient
@@ -151,7 +151,7 @@ func ClientsProvider(
 func KubeClientsProvider(
 	authorization auth.ClusterAuthorization,
 	helmInstallerFactory helminstall.InstallerFactory,
-	helmClientFileConfigFactory types.HelmClientForFileConfigFactory,
+	helmClientFileConfigFactory factories.HelmClientForFileConfigFactory,
 	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
 	healthCheckClients healthcheck_types.Clients,
 	deployedVersionFinder version.DeployedVersionFinder,

@@ -7,7 +7,6 @@ import (
 	"io"
 
 	"github.com/google/wire"
-	"github.com/solo-io/go-utils/installutils/helminstall"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
@@ -51,6 +50,7 @@ import (
 	clients2 "github.com/solo-io/service-mesh-hub/pkg/clients"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
 	"github.com/spf13/cobra"
@@ -107,8 +107,8 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		zephyr_security.VirtualMeshCertificateSigningRequestClientFromClientsetProvider,
 		common.ClusterRegistrationClientsProvider,
 		csr.NewCsrAgentInstallerFactory,
-		helminstall.DefaultHelmClientFileConfigFactory,
-		helminstall.DefaultHelmClientMemoryConfigFactory,
+		factories.HelmClientForMemoryConfigFactoryProvider,
+		factories.HelmClientForFileConfigFactoryProvider,
 		clients2.NewClusterRegistrationClient,
 	)
 	return nil, nil
