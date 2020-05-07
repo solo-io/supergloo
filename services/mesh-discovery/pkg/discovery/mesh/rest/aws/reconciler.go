@@ -19,6 +19,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	ReconcilerName = "AppMesh reconciler"
+)
+
 var (
 	NumItemsPerRequest = aws.Int64(100)
 )
@@ -40,6 +44,10 @@ func NewAppMeshDiscoveryReconciler(
 		meshClient:           meshClientFactory(masterClient),
 		appmeshClientFactory: appmeshClientFactory,
 	}
+}
+
+func (a *appMeshDiscoveryReconciler) GetName() string {
+	return ReconcilerName
 }
 
 // Currently Meshes are the only SMH CRD that are discovered through the AWS REST API

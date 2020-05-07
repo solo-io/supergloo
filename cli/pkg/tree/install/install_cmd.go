@@ -106,13 +106,19 @@ func InstallCmd(
 					RemoteContext:        raw.CurrentContext,
 					RemoteKubeConfig:     opts.Root.KubeConfig,
 				}
-				return register.RegisterCluster(
+				err = register.RegisterCluster(
 					ctx,
 					kubeClientsFactory,
 					clientFactory,
 					opts,
 					kubeLoader,
 				)
+				if err != nil {
+					fmt.Printf("Error registering cluster %s: %+v", opts.SmhInstall.ClusterName, err)
+				} else {
+					fmt.Printf("Successfully registered cluster %s.", opts.SmhInstall.ClusterName)
+				}
+				return err
 			} else if opts.SmhInstall.Register {
 				return CannotRegisterInDryRunMode
 			}

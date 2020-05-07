@@ -11,6 +11,7 @@ import (
 type RestAPIDiscoveryReconciler interface {
 	// Reconcile Mesh entities as indicated by the REST API with SMH's current state
 	Reconcile(ctx context.Context, creds *credentials.Credentials, region string) error
+	GetName() string
 }
 
 type EksDiscoveryReconciler RestAPIDiscoveryReconciler

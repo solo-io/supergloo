@@ -31,12 +31,13 @@ var AwsSet = wire.NewSet(
 	aws_utils.NewArnParser,
 	aws_utils.NewAppMeshParser,
 	appmesh.AppMeshWorkloadScannerFactoryProvider,
-	aws.NewAppMeshDiscoveryReconciler,
-	eks.NewEksDiscoveryReconciler,
 	zephyr_discovery.KubernetesClusterClientProvider,
 	eks_client.EksClientFactoryProvider,
 	eks_client.EksConfigBuilderFactoryProvider,
 	appmesh_client.AppMeshClientFactoryProvider,
+	AwsDiscoveryReconcilersProvider,
+	aws.NewAppMeshDiscoveryReconciler,
+	eks.NewEksDiscoveryReconciler,
 )
 
 var ClusterRegistrationSet = wire.NewSet(
@@ -52,6 +53,13 @@ var ClusterRegistrationSet = wire.NewSet(
 	csr.NewCsrAgentInstallerFactory,
 	DeployedVersionFinderProvider,
 )
+
+func AwsDiscoveryReconcilersProvider(
+	appMeshReconciler compute_target_aws.AppMeshDiscoveryReconciler,
+	eksReconciler compute_target_aws.EksDiscoveryReconciler,
+) []compute_target_aws.RestAPIDiscoveryReconciler {
+	return []compute_target_aws.RestAPIDiscoveryReconciler{appMeshReconciler, eksReconciler}
+}
 
 func ComputeTargetCredentialsHandlersProvider(
 	asyncManagerController *mc_manager.AsyncManagerController,

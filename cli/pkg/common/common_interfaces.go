@@ -1,7 +1,6 @@
 package common
 
 import (
-	"github.com/rotisserie/eris"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
@@ -28,12 +27,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"k8s.io/client-go/rest"
-)
-
-var (
-	FailedLoadingMasterConfig = func(err error) error {
-		return eris.Wrap(err, "Failed to load the kube config for the master cluster")
-	}
 )
 
 // a grab bag of various clients that command implementations may use

@@ -3,6 +3,7 @@ package common_config
 import (
 	"os"
 
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"k8s.io/cli-runtime/pkg/resource"
@@ -10,6 +11,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+)
+
+var (
+	FailedLoadingMasterConfig = func(err error) error {
+		return eris.Wrap(err, "Failed to load the kube config for the master cluster")
+	}
 )
 
 // given a path to a kube config file, convert it into either creds for hitting the API server of the cluster it points to,
@@ -45,7 +52,7 @@ type kubeLoader struct {
 func (k *kubeLoader) GetRestConfigForContext(path string, context string) (*rest.Config, error) {
 	cfg, err := k.GetConfigWithContext("", path, context)
 	if err != nil {
-		return nil, err
+		return nil, FailedLoadingMasterConfig(err)
 	}
 
 	return cfg.ClientConfig()

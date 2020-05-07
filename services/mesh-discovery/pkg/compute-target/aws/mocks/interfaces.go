@@ -48,3 +48,17 @@ func (mr *MockRestAPIDiscoveryReconcilerMockRecorder) Reconcile(ctx, creds, regi
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reconcile", reflect.TypeOf((*MockRestAPIDiscoveryReconciler)(nil).Reconcile), ctx, creds, region)
 }
+
+// GetName mocks base method.
+func (m *MockRestAPIDiscoveryReconciler) GetName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetName indicates an expected call of GetName.
+func (mr *MockRestAPIDiscoveryReconcilerMockRecorder) GetName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetName", reflect.TypeOf((*MockRestAPIDiscoveryReconciler)(nil).GetName))
+}

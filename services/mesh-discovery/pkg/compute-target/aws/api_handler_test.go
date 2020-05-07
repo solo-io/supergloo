@@ -3,14 +3,13 @@ package aws_test
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
+	mock_aws_creds "github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds/mocks"
 	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
-	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh/mocks"
 	mock_rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/mocks"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,26 +17,23 @@ import (
 
 var _ = Describe("CredsHandler", func() {
 	var (
-		ctrl                           *gomock.Controller
-		ctx                            context.Context
-		mockAppMeshClientFactory       *mock_aws.MockAppMeshClientFactory
-		mockRestAPIDiscoveryReconciler *mock_rest_api.MockRestAPIDiscoveryReconciler
-		appMeshClient                  *appmesh.AppMesh
-		awsCredsHandler                aws2.AwsCredsHandler
-		secret                         *k8s_core_types.Secret
+		ctrl                *gomock.Controller
+		ctx                 context.Context
+		mockSecretConverter *mock_aws_creds.MockSecretAwsCredsConverter
+		mockReconciler      *mock_rest_api.MockRestAPIDiscoveryReconciler
+		awsCredsHandler     aws2.AwsCredsHandler
+		secret              *k8s_core_types.Secret
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		appMeshClient = &appmesh.AppMesh{}
-		mockAppMeshClientFactory = mock_aws.NewMockAppMeshClientFactory(ctrl)
-		mockRestAPIDiscoveryReconciler = mock_rest_api.NewMockRestAPIDiscoveryReconciler(ctrl)
+		mockSecretConverter = mock_aws_creds.NewMockSecretAwsCredsConverter(ctrl)
+		mockReconciler = mock_rest_api.NewMockRestAPIDiscoveryReconciler(ctrl)
 		awsCredsHandler = aws2.NewAwsAPIHandler(
-			mockAppMeshClientFactory,
-			func(_ string, _ appmeshiface.AppMeshAPI, _ string) aws2.RestAPIDiscoveryReconciler {
-				return mockRestAPIDiscoveryReconciler
-			})
+			mockSecretConverter,
+			[]aws2.RestAPIDiscoveryReconciler{mockReconciler},
+		)
 		secret = &k8s_core_types.Secret{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "secret-name",
@@ -62,15 +58,18 @@ var _ = Describe("CredsHandler", func() {
 	})
 
 	It("should handle new API registration", func() {
-		mockAppMeshClientFactory.EXPECT().Build(secret, aws2.Region).Return(appMeshClient, nil)
-		//mockRestAPIDiscoveryReconciler.EXPECT().Reconcile(gomock.Any())
+		creds := &credentials.Credentials{}
+		mockSecretConverter.EXPECT().SecretToCreds(secret).Return(creds, nil)
+		mockReconciler.EXPECT().Reconcile(gomock.Any(), creds, aws2.Region).Return(nil)
 		err := awsCredsHandler.ComputeTargetAdded(ctx, secret)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should handle new API deregistration", func() {
-		// register the API first for cancelFunc map entry
-		mockAppMeshClientFactory.EXPECT().Build(secret, aws2.Region).Return(appMeshClient, nil)
+		// first register the API for cancelFunc map entry
+		creds := &credentials.Credentials{}
+		mockSecretConverter.EXPECT().SecretToCreds(secret).Return(creds, nil)
+		mockReconciler.EXPECT().Reconcile(gomock.Any(), creds, aws2.Region).Return(nil)
 		err := awsCredsHandler.ComputeTargetAdded(ctx, secret)
 		Expect(err).ToNot(HaveOccurred())
 

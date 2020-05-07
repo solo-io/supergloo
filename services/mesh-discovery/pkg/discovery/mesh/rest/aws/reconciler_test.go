@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	aws2 "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/appmesh"
+	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -32,9 +34,9 @@ var _ = Describe("Reconciler", func() {
 		mockMeshClient             *mock_core.MockMeshClient
 		mockAppMeshClient          *mock_appmesh_clients.MockAppMeshAPI
 		mockArnParser              *mock_aws.MockArnParser
-		computeTargetName          string
 		awsAccountID               string
 		appMeshDiscoveryReconciler aws4.RestAPIDiscoveryReconciler
+		region                     = "us-east-2"
 	)
 
 	BeforeEach(func() {
@@ -42,15 +44,17 @@ var _ = Describe("Reconciler", func() {
 		ctx = context.TODO()
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockArnParser = mock_aws.NewMockArnParser(ctrl)
-		computeTargetName = "aws-account-name"
 		awsAccountID = "410461945555"
 		mockAppMeshClient = mock_appmesh_clients.NewMockAppMeshAPI(ctrl)
 		appMeshDiscoveryReconciler = aws.NewAppMeshDiscoveryReconciler(
+			nil,
+			func(client client.Client) zephyr_discovery.MeshClient {
+				return mockMeshClient
+			},
 			mockArnParser,
-			mockMeshClient,
-			mockAppMeshClient,
-			computeTargetName,
-			aws4.Region,
+			func(creds *credentials.Credentials, region string) (appmeshiface.AppMeshAPI, error) {
+				return mockAppMeshClient, nil
+			},
 		)
 	})
 
@@ -59,7 +63,6 @@ var _ = Describe("Reconciler", func() {
 	})
 
 	var expectReconcileMeshes = func() {
-		region := "us-east-2"
 		page1Input := &appmesh.ListMeshesInput{
 			Limit: aws.NumItemsPerRequest,
 		}
@@ -163,7 +166,7 @@ var _ = Describe("Reconciler", func() {
 
 	It("should reconcile Meshes", func() {
 		expectReconcileMeshes()
-		err := appMeshDiscoveryReconciler.Reconcile(ctx)
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, nil, region)
 		Expect(err).ToNot(HaveOccurred())
 	})
 })

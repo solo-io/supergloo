@@ -72,9 +72,10 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		return DiscoveryContext{}, err
 	}
 	eksDiscoveryReconciler := eks2.NewEksDiscoveryReconciler(kubernetesClusterClient, eksClientFactory, eksConfigBuilderFactory, clusterRegistrationClient)
-	awsCredsHandler := aws2.NewAwsAPIHandler(secretAwsCredsConverter, appMeshDiscoveryReconciler, eksDiscoveryReconciler)
-	v := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
-	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
+	v := AwsDiscoveryReconcilersProvider(appMeshDiscoveryReconciler, eksDiscoveryReconciler)
+	awsCredsHandler := aws2.NewAwsAPIHandler(secretAwsCredsConverter, v)
+	v2 := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
+	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v2)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	configMapClientFactory := v1.ConfigMapClientFactoryProvider()
 	istioMeshScanner := istio.NewIstioMeshScanner(imageNameParser, configMapClientFactory)

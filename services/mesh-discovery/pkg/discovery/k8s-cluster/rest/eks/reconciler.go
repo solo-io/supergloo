@@ -20,7 +20,8 @@ import (
 )
 
 const (
-	MaxResults = 100
+	ReconcilerName = "EKS reconciler"
+	MaxResults     = 100
 )
 
 var (
@@ -49,6 +50,10 @@ func NewEksDiscoveryReconciler(
 		eksConfigBuilderFactory:   eksConfigBuilderFactory,
 		clusterRegistrationClient: clusterRegistrationClient,
 	}
+}
+
+func (e *eksReconciler) GetName() string {
+	return ReconcilerName
 }
 
 func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Credentials, region string) error {

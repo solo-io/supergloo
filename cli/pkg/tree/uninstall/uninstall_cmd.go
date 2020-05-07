@@ -143,11 +143,11 @@ func UninstallCmd(
 func buildMasterKubeClients(opts *options.Options, kubeLoader common_config.KubeLoader, kubeClientsFactory common.KubeClientsFactory) (*rest.Config, *common.KubeClients, error) {
 	masterCfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 	if err != nil {
-		return nil, nil, common.FailedLoadingMasterConfig(err)
+		return nil, nil, err
 	}
 	masterKubeClients, err := kubeClientsFactory(masterCfg, opts.Root.WriteNamespace)
 	if err != nil {
-		return nil, nil, common.FailedLoadingMasterConfig(err)
+		return nil, nil, err
 	}
 	return masterCfg, masterKubeClients, nil
 }

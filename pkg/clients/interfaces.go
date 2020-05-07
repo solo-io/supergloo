@@ -6,6 +6,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+//go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
+
 type ClusterRegistrationClient interface {
 	// The remoteContextName must be passed explicitly rather than inferred from the remoteConfig because
 	// of an open k8s bug, https://github.com/kubernetes/kubernetes/pull/87622.
