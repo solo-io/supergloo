@@ -63,7 +63,8 @@ change Traffic Policy semantics)
         - this reconciler determines which mesh service(s) the validated traffic policy applies to, and looks up all
         the `TrafficPolicyIntermediateRepresentation`s with the appropriate destinations.
         - for each one of those `TrafficPolicyIntermediateRepresentation`s, it checks whether the validated Traffic Policy
-        can be merged with the other Traffic Policies already recorded on the Intermediate Representation
+        can be merged with the other Traffic Policies already recorded on the Intermediate Representation. If the Traffic Policy existed
+        already and is already present in the `validated_traffic_policies` list, then consider the rest of the list together with its new state.
         - if merging fails for any one of those IRs, we stop and record a "merge failure" error onto the user-written Traffic Policy
         - otherwise, for each IR, we add the user-written traffic policy definition in with the others on that IR (or update
         the spec we had recorded previously, if this traffic policy's name/namespace is already found in the `validated_traffic_policies` list.
