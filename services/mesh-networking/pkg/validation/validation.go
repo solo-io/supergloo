@@ -34,19 +34,15 @@ type virtualMeshValidator struct {
 }
 
 func (m *virtualMeshValidator) ValidateVirtualMeshUpsert(ctx context.Context, obj *zephyr_networking.VirtualMesh, snapshot *snapshot.MeshNetworkingSnapshot) bool {
-	if err := m.validate(ctx, obj); err != nil {
-		m.updateVirtualMeshStatus(ctx, obj)
-		return false
-	}
-	return true
+	err := m.validate(ctx, obj)
+	m.updateVirtualMeshStatus(ctx, obj)
+	return err == nil
 }
 
 func (m *virtualMeshValidator) ValidateVirtualMeshDelete(ctx context.Context, obj *zephyr_networking.VirtualMesh, snapshot *snapshot.MeshNetworkingSnapshot) bool {
-	if err := m.validate(ctx, obj); err != nil {
-		m.updateVirtualMeshStatus(ctx, obj)
-		return false
-	}
-	return true
+	err := m.validate(ctx, obj)
+	m.updateVirtualMeshStatus(ctx, obj)
+	return err == nil
 }
 
 func (m *virtualMeshValidator) ValidateMeshServiceUpsert(ctx context.Context, obj *zephyr_discovery.MeshService, snapshot *snapshot.MeshNetworkingSnapshot) bool {
@@ -85,6 +81,11 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *zephyr_networki
 			return wrapped
 		}
 	}
+
+	vm.Status.ConfigStatus = &zephyr_core_types.Status{
+		State:   zephyr_core_types.Status_ACCEPTED,
+	}
+
 	return nil
 }
 
