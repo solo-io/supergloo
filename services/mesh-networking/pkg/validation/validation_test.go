@@ -2,6 +2,7 @@ package vm_validation_test
 
 import (
 	"context"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -104,7 +105,6 @@ var _ = Describe("validator", func() {
 
 		valid := validator.ValidateVirtualMeshUpsert(ctx, vm, nil)
 		Expect(valid).To(BeTrue())
-
 
 	})
 

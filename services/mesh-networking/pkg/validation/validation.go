@@ -83,7 +83,7 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *zephyr_networki
 	}
 
 	vm.Status.ConfigStatus = &zephyr_core_types.Status{
-		State:   zephyr_core_types.Status_ACCEPTED,
+		State: zephyr_core_types.Status_ACCEPTED,
 	}
 
 	return nil
