@@ -40,13 +40,12 @@ require (
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
-	github.com/solo-io/go-utils v0.15.2
+	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/protoc-gen-ext v0.0.7
 	github.com/solo-io/reporting-client v0.1.3
 	github.com/solo-io/skv2 v0.1.1
 	github.com/solo-io/solo-kit v0.13.3
 	github.com/spf13/cobra v0.0.5
-	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.13.0
 	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
 	google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24 // indirect
@@ -73,9 +72,6 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 
 	github.com/solo-io/autopilot => github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
-
-    // TODO (harveyxia) temporary for testing, remove
-	github.com/solo-io/go-utils => /Users/harvey/go-utils
 
 	k8s.io/api => k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.2
