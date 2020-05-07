@@ -7,6 +7,12 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+type ClusterAuthClientFromConfigFactory func(remoteAuthConfig *rest.Config) (auth.ClusterAuthorization, error)
+
+func ClusterAuthClientFromConfigFactoryProvider() ClusterAuthClientFromConfigFactory {
+	return DefaultClusterAuthClientFromConfig
+}
+
 var DefaultClusterAuthClientFromConfig = func(remoteAuthConfig *rest.Config) (auth.ClusterAuthorization, error) {
 	remoteClientset, err := k8s_core.NewClientsetFromConfig(remoteAuthConfig)
 	if err != nil {

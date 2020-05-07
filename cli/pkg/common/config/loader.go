@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	FailedLoadingMasterConfig = func(err error) error {
-		return eris.Wrap(err, "Failed to load the kube config for the master cluster")
+	FailedLoadingKubeConfig = func(err error) error {
+		return eris.Wrap(err, "Failed to load the kube config")
 	}
 )
 
@@ -52,7 +52,7 @@ type kubeLoader struct {
 func (k *kubeLoader) GetRestConfigForContext(path string, context string) (*rest.Config, error) {
 	cfg, err := k.GetConfigWithContext("", path, context)
 	if err != nil {
-		return nil, FailedLoadingMasterConfig(err)
+		return nil, FailedLoadingKubeConfig(err)
 	}
 
 	return cfg.ClientConfig()

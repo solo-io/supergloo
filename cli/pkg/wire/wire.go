@@ -70,6 +70,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		k8s_core.PodClientFromClientsetProvider,
 		k8s_core.SecretClientFactoryProvider,
 		k8s_core.ServiceAccountClientFactoryProvider,
+		k8s_core.NamespaceClientFromConfigFactoryProvider,
 		kubernetes_apps.ClientsetFromConfigProvider,
 		kubernetes_apps.DeploymentClientFromClientsetProvider,
 		kubernetes_apps.DeploymentClientFactoryProvider,
@@ -110,6 +111,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		factories.HelmClientForMemoryConfigFactoryProvider,
 		factories.HelmClientForFileConfigFactoryProvider,
 		clients2.NewClusterRegistrationClient,
+		clients2.ClusterAuthClientFromConfigFactoryProvider,
 	)
 	return nil, nil
 }

@@ -87,6 +87,7 @@ func ClusterRegistrationClientProvider(
 	masterCfg *rest.Config,
 	secretClientFactory k8s_core.SecretClientFromConfigFactory,
 	kubeClusterClient zephyr_discovery.KubernetesClusterClientFromConfigFactory,
+	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
 	kubeConverter kube.Converter,
 	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
 ) (clients.ClusterRegistrationClient, error) {
@@ -101,7 +102,9 @@ func ClusterRegistrationClientProvider(
 	return clients.NewClusterRegistrationClient(
 		masterSecretClient,
 		masterKubeClusterClient,
+		namespaceClientFactory,
 		kubeConverter,
 		csrAgentInstallerFactory,
+		clients.DefaultClusterAuthClientFromConfig,
 	), nil
 }

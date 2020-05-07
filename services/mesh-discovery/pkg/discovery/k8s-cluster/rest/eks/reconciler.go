@@ -71,8 +71,8 @@ func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Creden
 	}
 	clustersToRegister := clusterNamesOnAWS.Difference(clusterNamesOnSMH)
 	// TODO deregister clusters that are no longer on AWS
-	//clustersToDeregister := clusterNamesOnSMH.Difference(clusterNamesOnAWS)
-	for clusterName, _ := range clustersToRegister {
+	// clustersToDeregister := clusterNamesOnSMH.Difference(clusterNamesOnAWS)
+	for _, clusterName := range clustersToRegister.List() {
 		awsClusterName := smhToAwsClusterNames[clusterName]
 		err := e.registerCluster(ctx, eksClient, awsClusterName, clusterName)
 		if err != nil {

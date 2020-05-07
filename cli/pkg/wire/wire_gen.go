@@ -142,7 +142,9 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	helmClientForMemoryConfigFactory := factories.HelmClientForMemoryConfigFactoryProvider()
 	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
 	clusterRegistrationClients := common.ClusterRegistrationClientsProvider(csrAgentInstallerFactory)
-	clusterRegistrationClient := clients.NewClusterRegistrationClient(secretClient, kubernetesClusterClient, converter, csrAgentInstallerFactory)
+	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
+	clusterAuthClientFromConfigFactory := clients.ClusterAuthClientFromConfigFactoryProvider()
+	clusterRegistrationClient := clients.NewClusterRegistrationClient(secretClient, kubernetesClusterClient, namespaceClientFromConfigFactory, converter, csrAgentInstallerFactory, clusterAuthClientFromConfigFactory)
 	kubeClients := common.KubeClientsProvider(clusterAuthorization, helmerInstallerFactory, helmClientForFileConfigFactory, kubernetesClusterClient, healthcheck_typesClients, deployedVersionFinder, customResourceDefinitionClientFromConfigFactory, secretClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCertificateSigningRequestClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient, clusterRegistrationClients, clusterRegistrationClient)
 	return kubeClients, nil
 }

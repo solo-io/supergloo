@@ -58,6 +58,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	eksConfigBuilderFactory := eks.EksConfigBuilderFactoryProvider()
 	secretClientFromConfigFactory := v1.SecretClientFromConfigFactoryProvider()
 	kubernetesClusterClientFromConfigFactory := v1alpha1.KubernetesClusterClientFromConfigFactoryProvider()
+	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
 	helmClientForFileConfigFactory := factories.HelmClientForFileConfigFactoryProvider()
 	helmClientForMemoryConfigFactory := factories.HelmClientForMemoryConfigFactoryProvider()
 	deploymentClientFromConfigFactory := v1_2.DeploymentClientFromConfigFactoryProvider()
@@ -67,7 +68,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		return DiscoveryContext{}, err
 	}
 	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
-	clusterRegistrationClient, err := ClusterRegistrationClientProvider(config, secretClientFromConfigFactory, kubernetesClusterClientFromConfigFactory, converter, csrAgentInstallerFactory)
+	clusterRegistrationClient, err := ClusterRegistrationClientProvider(config, secretClientFromConfigFactory, kubernetesClusterClientFromConfigFactory, namespaceClientFromConfigFactory, converter, csrAgentInstallerFactory)
 	if err != nil {
 		return DiscoveryContext{}, err
 	}
