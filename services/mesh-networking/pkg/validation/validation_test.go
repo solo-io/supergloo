@@ -52,12 +52,6 @@ var _ = Describe("validator", func() {
 			Spec: zephyr_networking_types.VirtualMeshSpec{
 				Meshes: []*zephyr_core_types.ResourceRef{ref},
 			},
-			Status: zephyr_networking_types.VirtualMeshStatus{
-				CertificateStatus: &zephyr_core_types.Status{
-					State:   zephyr_core_types.Status_INVALID,
-					Message: testErr.Error(),
-				},
-			},
 		}
 		meshFinder.EXPECT().
 			GetMeshesForVirtualMesh(ctx, vm).
@@ -69,6 +63,49 @@ var _ = Describe("validator", func() {
 
 		valid := validator.ValidateVirtualMeshUpsert(ctx, vm, nil)
 		Expect(valid).To(BeFalse())
+		Expect(vm.Status.ConfigStatus.State).To(Equal(zephyr_core_types.Status_INVALID))
+	})
+
+	It("will recover to valid after being invalid", func() {
+		ref := &zephyr_core_types.ResourceRef{
+			Name:      "incorrect",
+			Namespace: "ref",
+		}
+		vm := &zephyr_networking.VirtualMesh{
+			Spec: zephyr_networking_types.VirtualMeshSpec{
+				Meshes: []*zephyr_core_types.ResourceRef{ref},
+			},
+			Status: zephyr_networking_types.VirtualMeshStatus{
+				ConfigStatus: &zephyr_core_types.Status{
+					State:   zephyr_core_types.Status_INVALID,
+					Message: testErr.Error(),
+				},
+			},
+		}
+
+		// A valid mesh exists
+		mesh := zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
+				Name:      ref.GetName(),
+				Namespace: ref.GetNamespace(),
+			},
+			Spec: zephyr_discovery_types.MeshSpec{
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
+					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+				},
+			},
+		}
+		meshFinder.EXPECT().
+			GetMeshesForVirtualMesh(ctx, vm).
+			Return([]*zephyr_discovery.Mesh{&mesh}, nil)
+
+		virtualMeshClient.EXPECT().
+			UpdateVirtualMeshStatus(ctx, vm).
+			Return(nil)
+
+		valid := validator.ValidateVirtualMeshUpsert(ctx, vm, nil)
+		Expect(valid).To(BeTrue())
+
 	})
 
 	It("will return invalid if a non-istio mesh is referenced", func() {
@@ -134,6 +171,10 @@ var _ = Describe("validator", func() {
 		meshFinder.EXPECT().
 			GetMeshesForVirtualMesh(ctx, vm).
 			Return([]*zephyr_discovery.Mesh{&mesh}, nil)
+
+		virtualMeshClient.EXPECT().
+			UpdateVirtualMeshStatus(ctx, vm).
+			Return(nil)
 
 		valid := validator.ValidateVirtualMeshUpsert(ctx, vm, nil)
 		Expect(valid).To(BeTrue())
