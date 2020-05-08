@@ -640,7 +640,7 @@ func (i *istioTrafficPolicyTranslator) getHostnameForKubeService(
 	meshService *zephyr_discovery.MeshService,
 	destination *zephyr_core_types.ResourceRef,
 ) (hostname string, isMulticluster bool, err error) {
-	destinationMeshService, err := i.resourceSelector.GetMeshServiceByRefSelector(
+	destinationMeshService, err := i.resourceSelector.GetAllMeshServiceByRefSelector(
 		ctx, destination.GetName(), destination.GetNamespace(), destination.GetCluster())
 	if err != nil {
 		return "", false, err

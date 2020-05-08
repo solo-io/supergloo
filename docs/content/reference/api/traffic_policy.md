@@ -362,8 +362,9 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| translationStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  |  |
-| translatorErrors | [][TrafficPolicyStatus.TranslatorError](#networking.zephyr.solo.io.TrafficPolicyStatus.TranslatorError) | repeated |  |
+| translationStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  | Whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration. |
+| translatorErrors | [][TrafficPolicyStatus.TranslatorError](#networking.zephyr.solo.io.TrafficPolicyStatus.TranslatorError) | repeated | More details about whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration. |
+| validationStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  | Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific routing configuration. |
 
 
 

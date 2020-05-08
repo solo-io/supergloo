@@ -4,6 +4,7 @@ option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephy
 
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
+import "service-mesh-hub/api/networking/v1alpha1/traffic_policy.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -64,6 +65,13 @@ message MeshServiceSpec {
 }
 
 message MeshServiceStatus {
+    message ValidatedTrafficPolicy {
+        string name = 1;
+        string namespace = 2;
+        networking.zephyr.solo.io.TrafficPolicySpec traffic_policy_spec = 3;
+    }
     // The status of federation artifacts being written to remote clusters as a result of the federation metadata on this object's Spec.
     core.zephyr.solo.io.Status federation_status = 1;
+
+    repeated ValidatedTrafficPolicy validated_traffic_policies = 2;
 }

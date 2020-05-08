@@ -365,6 +365,13 @@ message TrafficPolicyStatus {
         string translator_id = 1;
         string error_message = 2;
     }
+
+    // Whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration.
     core.zephyr.solo.io.Status translation_status = 1;
+
+    // More details about whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration.
     repeated TranslatorError translator_errors = 2;
+
+    // Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific routing configuration.
+    core.zephyr.solo.io.Status validation_status = 3;
 }

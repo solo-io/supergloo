@@ -12,6 +12,7 @@ import (
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	_ "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -82,6 +83,17 @@ func (this *MeshServiceStatus) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for MeshServiceStatus
 func (this *MeshServiceStatus) UnmarshalJSON(b []byte) error {
+	return MeshServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for MeshServiceStatus_ValidatedTrafficPolicy
+func (this *MeshServiceStatus_ValidatedTrafficPolicy) MarshalJSON() ([]byte, error) {
+	str, err := MeshServiceMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for MeshServiceStatus_ValidatedTrafficPolicy
+func (this *MeshServiceStatus_ValidatedTrafficPolicy) UnmarshalJSON(b []byte) error {
 	return MeshServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

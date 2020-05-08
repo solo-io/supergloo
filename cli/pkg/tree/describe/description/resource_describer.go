@@ -45,7 +45,7 @@ type resourceDescriber struct {
 }
 
 func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*DescriptionResult, error) {
-	meshServiceForKubeService, err := r.ResourceSelector.GetMeshServiceByRefSelector(ctx, kubeResourceIdentifier.Name, kubeResourceIdentifier.Namespace, kubeResourceIdentifier.ClusterName)
+	meshServiceForKubeService, err := r.ResourceSelector.GetAllMeshServiceByRefSelector(ctx, kubeResourceIdentifier.Name, kubeResourceIdentifier.Namespace, kubeResourceIdentifier.ClusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 	var relevantAccessControlPolicies []*zephyr_networking.AccessControlPolicy
 	for _, acpIter := range allAccessControlPolicies.Items {
 		acp := acpIter
-		matchingMeshServices, err := r.ResourceSelector.GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
+		matchingMeshServices, err := r.ResourceSelector.GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
 		if err != nil {
 			return nil, FailedToFindMeshServicesBySelector(err, acp.Spec.GetDestinationSelector())
 		}
@@ -81,7 +81,7 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 	var relevantTrafficPolicies []*zephyr_networking.TrafficPolicy
 	for _, tpIter := range allTrafficControlPolicies.Items {
 		tp := tpIter
-		matchingMeshServices, err := r.ResourceSelector.GetMeshServicesByServiceSelector(ctx, tp.Spec.GetDestinationSelector())
+		matchingMeshServices, err := r.ResourceSelector.GetAllMeshServicesByServiceSelector(ctx, tp.Spec.GetDestinationSelector())
 		if err != nil {
 			return nil, FailedToFindMeshServicesBySelector(err, tp.Spec.GetDestinationSelector())
 		}

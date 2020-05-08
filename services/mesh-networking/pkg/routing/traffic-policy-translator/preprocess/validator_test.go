@@ -65,7 +65,7 @@ var _ = Describe("Validator", func() {
 		}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServicesByServiceSelector(ctx, tp.Spec.GetDestinationSelector()).
+			GetAllMeshServicesByServiceSelector(ctx, tp.Spec.GetDestinationSelector()).
 			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
 		err := validator.Validate(ctx, tp)
 		expectSingleErrorOf(err, selector.MeshServiceNotFound(name, namespace, cluster))
@@ -118,7 +118,7 @@ var _ = Describe("Validator", func() {
 		}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServiceByRefSelector(ctx, name, namespace, cluster).
+			GetAllMeshServiceByRefSelector(ctx, name, namespace, cluster).
 			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)
@@ -157,7 +157,7 @@ var _ = Describe("Validator", func() {
 		}}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServiceByRefSelector(ctx, serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()).
+			GetAllMeshServiceByRefSelector(ctx, serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()).
 			Return(backingMeshService, nil)
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)
@@ -266,7 +266,7 @@ var _ = Describe("Validator", func() {
 		}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServiceByRefSelector(ctx, serviceKey.Name, serviceKey.Namespace, "").
+			GetAllMeshServiceByRefSelector(ctx, serviceKey.Name, serviceKey.Namespace, "").
 			Return(nil, nil)
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)
@@ -290,7 +290,7 @@ var _ = Describe("Validator", func() {
 		}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServiceByRefSelector(ctx, serviceKey.Name, serviceKey.Namespace, "").
+			GetAllMeshServiceByRefSelector(ctx, serviceKey.Name, serviceKey.Namespace, "").
 			Return(nil, selector.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)

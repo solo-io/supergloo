@@ -2,12 +2,20 @@ package mesh_networking
 
 import (
 	"context"
+	"time"
 
 	"github.com/solo-io/go-utils/contextutils"
+	v1alpha12 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/bootstrap"
+	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
+	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
+	traffic_policy_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/validation"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/wire"
 	"go.uber.org/zap"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -55,12 +63,26 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 			logger.Fatalw("error initializing mesh networking snapshot listener", zap.Error(err))
 		}
 		// start the TrafficPolicyTranslator
-		err = meshNetworkingContext.TrafficPolicyTranslator.Start(
-			contextutils.WithLogger(ctx, "traffic_policy_translator"),
-		)
-		if err != nil {
-			logger.Fatalw("error initializing TrafficPolicyTranslator", zap.Error(err))
-		}
+		//err = meshNetworkingContext.TrafficPolicyTranslator.Start(
+		//	contextutils.WithLogger(ctx, "traffic_policy_translator"),
+		//)
+		//if err != nil {
+		//	logger.Fatalw("error initializing TrafficPolicyTranslator", zap.Error(err))
+		//}
+		validationReconciler := reconciliation.NewPeriodicReconciler()
+		go validationReconciler.Start(ctx, time.Second, "tp validation",
+			traffic_policy_validation.NewValidationLoop(
+				v1alpha1.NewTrafficPolicyClient(m.GetClient()),
+				v1alpha12.NewMeshServiceClient(m.GetClient()),
+				traffic_policy_validation.NewValidator(selector.NewResourceSelector(
+					v1alpha12.NewMeshServiceClient(m.GetClient()),
+					v1alpha12.NewMeshWorkloadClient(m.GetClient()),
+					func(client client.Client) v1.DeploymentClient {
+						return v1.NewDeploymentClient(client)
+					},
+					nil,
+				)),
+			).RunOnce)
 
 		err = meshNetworkingContext.AccessControlPolicyTranslator.Start(
 			contextutils.WithLogger(ctx, "access_control_policy_translator"),
