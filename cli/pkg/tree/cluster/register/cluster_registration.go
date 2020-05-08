@@ -6,11 +6,11 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 )
 
 const (
@@ -38,7 +38,7 @@ func RegisterCluster(
 	kubeClientsFactory common.KubeClientsFactory,
 	clientsFactory common.ClientsFactory,
 	opts *options.Options,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 ) error {
 	if err := cluster_internal.VerifyRemoteContextFlags(opts); err != nil {
 		return err
@@ -77,7 +77,7 @@ func RegisterCluster(
 		registerOpts.RemoteWriteNamespace,
 		remoteContext,
 		MeshctlDiscoverySource,
-		clients.ClusterRegisterOpts{
+		cluster_registration.ClusterRegisterOpts{
 			Overwrite:                  registerOpts.Overwrite,
 			UseDevCsrAgentChart:        registerOpts.UseDevCsrAgentChart,
 			LocalClusterDomainOverride: registerOpts.LocalClusterDomainOverride,

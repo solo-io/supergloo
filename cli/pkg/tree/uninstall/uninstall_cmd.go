@@ -10,9 +10,9 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -46,7 +46,7 @@ func UninstallCmd(
 	out io.Writer,
 	opts *options.Options,
 	kubeClientsFactory common.KubeClientsFactory,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 ) UninstallCommand {
 	cmd := &cobra.Command{
 		Use:   cliconstants.UninstallCommand.Use,
@@ -140,7 +140,7 @@ func UninstallCmd(
 	return cmd
 }
 
-func buildMasterKubeClients(opts *options.Options, kubeLoader common_config.KubeLoader, kubeClientsFactory common.KubeClientsFactory) (*rest.Config, *common.KubeClients, error) {
+func buildMasterKubeClients(opts *options.Options, kubeLoader kubeconfig.KubeLoader, kubeClientsFactory common.KubeClientsFactory) (*rest.Config, *common.KubeClients, error) {
 	masterCfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 	if err != nil {
 		return nil, nil, err

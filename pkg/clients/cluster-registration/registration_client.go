@@ -1,23 +1,24 @@
-package clients
+package cluster_registration
 
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"strings"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	"go.uber.org/zap/zaptest"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,7 +59,7 @@ type clusterRegistrationClient struct {
 	namespaceClientFactory             k8s_core.NamespaceClientFromConfigFactory
 	kubeConverter                      kube.Converter
 	csrAgentInstallerFactory           csr.CsrAgentInstallerFactory
-	clusterAuthClientFromConfigFactory ClusterAuthClientFromConfigFactory
+	clusterAuthClientFromConfigFactory clients.ClusterAuthClientFromConfigFactory
 }
 
 func NewClusterRegistrationClient(
@@ -67,7 +68,7 @@ func NewClusterRegistrationClient(
 	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
 	kubeConverter kube.Converter,
 	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
-	clusterAuthClientFromConfigFactory ClusterAuthClientFromConfigFactory,
+	clusterAuthClientFromConfigFactory clients.ClusterAuthClientFromConfigFactory,
 ) ClusterRegistrationClient {
 	return &clusterRegistrationClient{
 		secretClient:                       secretClient,
@@ -209,13 +210,12 @@ func (c *clusterRegistrationClient) installRemoteCSRAgent(
 		return err
 	}
 	kubeClient := kubernetes.NewForConfigOrDie(restConfig)
-	helmInstaller := factories.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), &zaptest.Discarder{})
+	helmInstaller := factories.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), ioutil.Discard)
 	csrAgentInstaller := c.csrAgentInstallerFactory(helmInstaller)
 	return csrAgentInstaller.Install(
 		ctx,
 		&csr.CsrAgentInstallOptions{
-			KubeConfig:           remoteConfig,
-			ClusterName:          remoteClusterName,
+			KubeConfig:           csr.KubeConfig{KubeConfig: remoteConfig},
 			SmhInstallNamespace:  env.GetWriteNamespace(),
 			UseDevCsrAgentChart:  useDevCsrAgentChart,
 			ReleaseName:          cliconstants.CsrAgentReleaseName,

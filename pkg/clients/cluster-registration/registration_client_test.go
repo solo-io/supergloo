@@ -1,4 +1,4 @@
-package clients_test
+package cluster_registration_test
 
 import (
 	"context"
@@ -10,8 +10,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
-	mock_csr "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr/mocks"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -19,8 +17,11 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
+	mock_csr "github.com/solo-io/service-mesh-hub/pkg/installers/csr/mocks"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mock_k8s_cliendcmd "github.com/solo-io/service-mesh-hub/test/mocks/client-go/clientcmd"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -45,7 +46,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 		mockKubeConverter           *mock_kube.MockConverter
 		mockCsrAgentInstaller       *mock_csr.MockCsrAgentInstaller
 		mockClusterAuthClient       *mock_auth.MockClusterAuthorization
-		clusterRegistrationClient   clients.ClusterRegistrationClient
+		clusterRegistrationClient   cluster_registration.ClusterRegistrationClient
 		mockRemoteConfig            *mock_k8s_cliendcmd.MockClientConfig
 		remoteClusterName           = "remote-cluster-name"
 		remoteWriteNamespace        = "remote-write-namespace"
@@ -63,7 +64,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 		mockCsrAgentInstaller = mock_csr.NewMockCsrAgentInstaller(ctrl)
 		mockRemoteConfig = mock_k8s_cliendcmd.NewMockClientConfig(ctrl)
 		mockClusterAuthClient = mock_auth.NewMockClusterAuthorization(ctrl)
-		clusterRegistrationClient = clients.NewClusterRegistrationClient(
+		clusterRegistrationClient = cluster_registration.NewClusterRegistrationClient(
 			mockSecretClient,
 			mockKubernetesClusterClient,
 			func(cfg *rest.Config) (k8s_core.NamespaceClient, error) {
@@ -228,7 +229,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 			remoteWriteNamespace,
 			remoteContextName,
 			discoverySource,
-			clients.ClusterRegisterOpts{
+			cluster_registration.ClusterRegisterOpts{
 				Overwrite:                  false,
 				UseDevCsrAgentChart:        useDevCsrAgentChart,
 				LocalClusterDomainOverride: localClusterDomainOverride,
@@ -261,13 +262,13 @@ var _ = Describe("ClusterRegistrationClient", func() {
 			remoteWriteNamespace,
 			remoteContextName,
 			discoverySource,
-			clients.ClusterRegisterOpts{
+			cluster_registration.ClusterRegisterOpts{
 				Overwrite:                  false,
 				UseDevCsrAgentChart:        useDevCsrAgentChart,
 				LocalClusterDomainOverride: localClusterDomainOverride,
 			},
 		)
-		Expect(err).To(testutils.HaveInErrorChain(clients.ContextNotFound(remoteContextName)))
+		Expect(err).To(testutils.HaveInErrorChain(cluster_registration.ContextNotFound(remoteContextName)))
 	})
 
 	It("should return error if context not found in kubeconfig", func() {
@@ -308,12 +309,12 @@ var _ = Describe("ClusterRegistrationClient", func() {
 			remoteWriteNamespace,
 			remoteContextName,
 			discoverySource,
-			clients.ClusterRegisterOpts{
+			cluster_registration.ClusterRegisterOpts{
 				Overwrite:                  false,
 				UseDevCsrAgentChart:        useDevCsrAgentChart,
 				LocalClusterDomainOverride: localClusterDomainOverride,
 			},
 		)
-		Expect(err).To(testutils.HaveInErrorChain(clients.ClusterNotFound(nonExtantClusterName)))
+		Expect(err).To(testutils.HaveInErrorChain(cluster_registration.ClusterNotFound(nonExtantClusterName)))
 	})
 })

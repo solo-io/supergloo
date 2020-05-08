@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	mock_clients "github.com/solo-io/service-mesh-hub/pkg/clients/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
@@ -119,7 +119,7 @@ var _ = Describe("Reconciler", func() {
 			env.GetWriteNamespace(),
 			"",
 			discovery_eks.ReconcilerDiscoverySource,
-			clients.ClusterRegisterOpts{},
+			cluster_registration.ClusterRegisterOpts{},
 		).Return(nil)
 	}
 

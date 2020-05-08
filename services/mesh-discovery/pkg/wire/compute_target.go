@@ -4,14 +4,15 @@ import (
 	"github.com/google/wire"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
@@ -90,7 +91,7 @@ func ClusterRegistrationClientProvider(
 	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
 	kubeConverter kube.Converter,
 	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
-) (clients.ClusterRegistrationClient, error) {
+) (cluster_registration.ClusterRegistrationClient, error) {
 	masterSecretClient, err := secretClientFactory(masterCfg)
 	if err != nil {
 		return nil, err
@@ -99,7 +100,7 @@ func ClusterRegistrationClientProvider(
 	if err != nil {
 		return nil, err
 	}
-	return clients.NewClusterRegistrationClient(
+	return cluster_registration.NewClusterRegistrationClient(
 		masterSecretClient,
 		masterKubeClusterClient,
 		namespaceClientFactory,

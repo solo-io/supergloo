@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	csr "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
+	csr "github.com/solo-io/service-mesh-hub/pkg/installers/csr"
 )
 
 // MockCsrAgentInstaller is a mock of CsrAgentInstaller interface.
@@ -47,4 +47,18 @@ func (m *MockCsrAgentInstaller) Install(ctx context.Context, installOptions *csr
 func (mr *MockCsrAgentInstallerMockRecorder) Install(ctx, installOptions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Install", reflect.TypeOf((*MockCsrAgentInstaller)(nil).Install), ctx, installOptions)
+}
+
+// Uninstall mocks base method.
+func (m *MockCsrAgentInstaller) Uninstall(uninstallOptions *csr.CsrAgentUninstallOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Uninstall", uninstallOptions)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Uninstall indicates an expected call of Uninstall.
+func (mr *MockCsrAgentInstallerMockRecorder) Uninstall(uninstallOptions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Uninstall", reflect.TypeOf((*MockCsrAgentInstaller)(nil).Uninstall), uninstallOptions)
 }

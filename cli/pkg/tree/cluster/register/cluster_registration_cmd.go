@@ -7,8 +7,8 @@ import (
 	"github.com/google/wire"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +23,7 @@ func ClusterRegistrationCmd(
 	kubeClientsFactory common.KubeClientsFactory,
 	clientsFactory common.ClientsFactory,
 	opts *options.Options,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 ) RegistrationCmd {
 	register := &cobra.Command{
 		Use:   cliconstants.ClusterRegisterCommand.Use,

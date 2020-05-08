@@ -12,9 +12,9 @@ import (
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	mock_types "github.com/solo-io/go-utils/installutils/helminstall/types/mocks"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
 	mock_version "github.com/solo-io/service-mesh-hub/pkg/version/mocks"
 	"k8s.io/client-go/tools/clientcmd"
 )

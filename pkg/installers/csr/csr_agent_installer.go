@@ -81,27 +81,40 @@ func (c *csrAgentInstaller) Install(
 	return nil
 }
 
+func (c *csrAgentInstaller) Uninstall(uninstallOptions *CsrAgentUninstallOptions) error {
+	helmClient := c.buildHelmClient(uninstallOptions.KubeConfig)
+	uninstaller, err := helmClient.NewUninstall(uninstallOptions.ReleaseNamespace)
+	if err != nil {
+		return err
+	}
+	_, err = uninstaller.Run(uninstallOptions.ReleaseName)
+	return err
+}
+
 func (c *csrAgentInstaller) runHelmInstall(
 	version string,
 	opts *CsrAgentInstallOptions,
 ) error {
 	var chartPathTemplate string
-	var helmClient types.HelmClient
 	if opts.UseDevCsrAgentChart {
 		chartPathTemplate = LocallyPackagedChartTemplate
 	} else {
 		chartPathTemplate = CsrAgentChartUriTemplate
 	}
 	releaseUri := fmt.Sprintf(chartPathTemplate, version)
-	if opts.KubeConfig != nil {
-		helmClient = c.helmClientMemoryConfigFactory(opts.KubeConfig)
-	} else {
-		helmClient = c.helmClientFileConfigFactory(opts.KubeConfigPath, opts.KubeContext)
-	}
+	helmClient := c.buildHelmClient(opts.KubeConfig)
 	return c.helmInstallerFactory(helmClient).Install(&types.InstallerConfig{
 		InstallNamespace: opts.RemoteWriteNamespace,
 		CreateNamespace:  true,
 		ReleaseName:      opts.ReleaseName,
 		ReleaseUri:       releaseUri,
 	})
+}
+
+func (c *csrAgentInstaller) buildHelmClient(kubeConfig KubeConfig) types.HelmClient {
+	if kubeConfig.KubeConfig != nil {
+		return c.helmClientMemoryConfigFactory(kubeConfig.KubeConfig)
+	} else {
+		return c.helmClientFileConfigFactory(kubeConfig.KubeConfigPath, kubeConfig.KubeContext)
+	}
 }

@@ -1,4 +1,4 @@
-package deregister_test
+package cluster_registration_test
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/deregister"
 	mock_config_lookup "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup/mocks"
 	mock_crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd/mocks"
 	helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
@@ -22,6 +21,7 @@ import (
 	zephyr_security_scheme "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
@@ -134,7 +134,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			RemoveCrdGroup(ctx, clusterToDeregister.GetName(), kubeRestConfig.RestConfig, zephyr_security_scheme.SchemeGroupVersion).
 			Return(false, nil)
 
-		clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(
+		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
 			func(cfg *rest.Config) resource.RESTClientGetter {
 				Expect(cfg).To(Equal(remoteRestConfig))
@@ -189,7 +189,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			FromCluster(ctx, clusterToDeregister.GetName()).
 			Return(nil, testErr)
 
-		clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(
+		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
 			func(cfg *rest.Config) resource.RESTClientGetter {
 				Fail("Should not have called the rest client getter factory")
@@ -212,7 +212,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		)
 
 		err := clusterDeregistrationClient.Run(ctx, clusterToDeregister)
-		Expect(err).To(testutils.HaveInErrorChain(deregister.FailedToFindClusterCredentials(testErr, remoteClusterName)))
+		Expect(err).To(testutils.HaveInErrorChain(cluster_registration.FailedToFindClusterCredentials(testErr, remoteClusterName)))
 	})
 
 	It("responds with the appropriate error if CSR uninstallation fails", func() {
@@ -249,7 +249,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			FromCluster(ctx, clusterToDeregister.GetName()).
 			Return(&kube.ConvertedConfigs{RestConfig: remoteRestConfig}, nil)
 
-		clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(
+		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
 			func(cfg *rest.Config) resource.RESTClientGetter {
 				Expect(cfg).To(Equal(remoteRestConfig))
@@ -273,7 +273,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		)
 
 		err := clusterDeregistrationClient.Run(ctx, clusterToDeregister)
-		Expect(err).To(testutils.HaveInErrorChain(deregister.FailedToUninstallCsrAgent(testErr, remoteClusterName)))
+		Expect(err).To(testutils.HaveInErrorChain(cluster_registration.FailedToUninstallCsrAgent(testErr, remoteClusterName)))
 	})
 
 	It("responds with the appropriate error if CRD removal fails", func() {
@@ -354,7 +354,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			).
 			Return(nil)
 
-		clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(
+		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
 			func(cfg *rest.Config) resource.RESTClientGetter {
 				Expect(cfg).To(Equal(remoteRestConfig))
@@ -378,6 +378,6 @@ var _ = Describe("Cluster Deregistration", func() {
 		)
 
 		err := clusterDeregistrationClient.Run(ctx, clusterToDeregister)
-		Expect(err).To(testutils.HaveInErrorChain(deregister.FailedToRemoveCrds(testErr, remoteClusterName)))
+		Expect(err).To(testutils.HaveInErrorChain(cluster_registration.FailedToRemoveCrds(testErr, remoteClusterName)))
 	})
 })

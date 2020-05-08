@@ -1,4 +1,4 @@
-package common_config
+package kubeconfig
 
 import (
 	"os"
@@ -18,17 +18,6 @@ var (
 		return eris.Wrap(err, "Failed to load the kube config")
 	}
 )
-
-// given a path to a kube config file, convert it into either creds for hitting the API server of the cluster it points to,
-// or return the contexts/clusters it is aware of
-//go:generate mockgen -destination ../../mocks/mock_kube_loader.go -package cli_mocks github.com/solo-io/service-mesh-hub/cli/pkg/common/config KubeLoader
-type KubeLoader interface {
-	GetConfigWithContext(masterURL, kubeconfigPath, context string) (clientcmd.ClientConfig, error)
-	GetRestConfigForContext(path string, context string) (*rest.Config, error)
-	GetRawConfigForContext(path, context string) (clientcmdapi.Config, error)
-	RESTClientGetter(path, context string) resource.RESTClientGetter
-	GetRestConfigFromBytes(config []byte) (*rest.Config, error)
-}
 
 // only the pieces from a kube config that we need to operate on
 // mainly just used to simplify from the complexity of the actual object

@@ -19,7 +19,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	mock_clients "github.com/solo-io/service-mesh-hub/pkg/clients/mocks"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -189,7 +189,7 @@ var _ = Describe("Install", func() {
 				installNamespace,
 				contextABC,
 				register.MeshctlDiscoverySource,
-				clients.ClusterRegisterOpts{},
+				cluster_registration.ClusterRegisterOpts{},
 			)
 		mockKubeLoader.EXPECT().GetRawConfigForContext("", "").Return(cxt, nil)
 
