@@ -72,7 +72,8 @@ func (a *appmeshTenancyScanner) RegisterMesh(ctx context.Context, clusterName st
 	if !isAppMesh(mesh) {
 		return nil
 	}
-	if utils.ContainsString(mesh.Spec.GetAwsAppMesh().Clusters, clusterName) {
+	// Avoid issuing an update if not needed, an optimization that assists in reaching a steady state
+	if a.ClusterHostsMesh(clusterName, mesh) {
 		return nil
 	}
 	mesh.Spec.GetAwsAppMesh().Clusters = append(mesh.Spec.GetAwsAppMesh().GetClusters(), clusterName)
@@ -83,7 +84,8 @@ func (a *appmeshTenancyScanner) DeregisterMesh(ctx context.Context, clusterName 
 	if !isAppMesh(mesh) {
 		return nil
 	}
-	if !utils.ContainsString(mesh.Spec.GetAwsAppMesh().Clusters, clusterName) {
+	// Avoid issuing an update if not needed, an optimization that assists in reaching a steady state
+	if !a.ClusterHostsMesh(clusterName, mesh) {
 		return nil
 	}
 	mesh.Spec.GetAwsAppMesh().Clusters = utils.RemoveString(mesh.Spec.GetAwsAppMesh().GetClusters(), clusterName)
