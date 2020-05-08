@@ -3,7 +3,6 @@ package constants
 const (
 	DISCOVERED_BY             = "discovered-by"
 	MESH_WORKLOAD_DISCOVERY   = "mesh-workload-discovery"
-	EKS_CLUSTER_DISCOVERY     = "eks-cluster-discovery"
 	COMPUTE_TARGET            = "compute-target"
 	KUBE_SERVICE_NAME         = "kube-service-name"
 	KUBE_SERVICE_NAMESPACE    = "kube-service-namespace"

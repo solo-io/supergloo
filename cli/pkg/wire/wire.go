@@ -106,7 +106,6 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		zephyr_networking.AccessControlPolicyClientFromClientsetProvider,
 		zephyr_networking.VirtualMeshClientFromClientsetProvider,
 		zephyr_security.VirtualMeshCertificateSigningRequestClientFromClientsetProvider,
-		common.ClusterRegistrationClientsProvider,
 		csr.NewCsrAgentInstallerFactory,
 		factories.HelmClientForMemoryConfigFactoryProvider,
 		factories.HelmClientForFileConfigFactoryProvider,

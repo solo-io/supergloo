@@ -10,11 +10,12 @@ import (
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
 type CsrAgentInstallOptions struct {
-	// File KubeConfig for remote cluster
+	// Either KubeConfig or KubeconfigPath + KubeContext needs to be provided. KubeConfig takes precedence if both are supplied.
+	// In memory KubeConfig for remote cluster.
+	KubeConfig clientcmd.ClientConfig
+	// File KubeConfig for remote cluster.
 	KubeConfigPath string
 	KubeContext    string
-	// In memory KubeConfig for remote cluster
-	KubeConfig clientcmd.ClientConfig
 
 	ClusterName          string
 	SmhInstallNamespace  string

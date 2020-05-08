@@ -38,6 +38,12 @@ var (
 	InstallSet = wire.NewSet(
 		InstallCmd,
 	)
+	SuccessRegisteringClusterMessage = func(clusterName string) string {
+		return fmt.Sprintf("Successfully registered cluster %s.", clusterName)
+	}
+	ErrorRegisteringClusterMessage = func(clusterName string, err error) string {
+		return fmt.Sprintf("Error registering cluster %s: %+v", clusterName, err)
+	}
 	PreInstallMessage  = "Starting Service Mesh Hub installation...\n"
 	PostInstallMessage = "Service Mesh Hub successfully installed!\n"
 )
@@ -114,9 +120,9 @@ func InstallCmd(
 					kubeLoader,
 				)
 				if err != nil {
-					fmt.Printf("Error registering cluster %s: %+v", opts.SmhInstall.ClusterName, err)
+					fmt.Fprintf(out, ErrorRegisteringClusterMessage(opts.SmhInstall.ClusterName, err))
 				} else {
-					fmt.Printf("Successfully registered cluster %s.", opts.SmhInstall.ClusterName)
+					fmt.Fprintf(out, SuccessRegisteringClusterMessage(opts.SmhInstall.ClusterName))
 				}
 				return err
 			} else if opts.SmhInstall.Register {

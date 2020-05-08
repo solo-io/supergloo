@@ -9,7 +9,6 @@ import (
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/deregister"
-	register "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
@@ -53,7 +52,6 @@ type KubeClients struct {
 	AccessControlPolicyClient       zephyr_networking.AccessControlPolicyClient
 	ResourceDescriber               description.ResourceDescriber
 	ResourceSelector                selector.ResourceSelector
-	ClusterRegistrationClients      ClusterRegistrationClients
 	ClusterRegistrationClient       clients.ClusterRegistrationClient
 }
 
@@ -99,18 +97,6 @@ func UninstallClientsProvider(
 		CrdRemover:              crdRemover,
 		SecretToConfigConverter: secretToConfigConverter,
 	}
-}
-
-func ClusterRegistrationClientsProvider(
-	csrAgentInstallerFactory register.CsrAgentInstallerFactory,
-) ClusterRegistrationClients {
-	return ClusterRegistrationClients{
-		CsrAgentInstallerFactory: csrAgentInstallerFactory,
-	}
-}
-
-type ClusterRegistrationClients struct {
-	CsrAgentInstallerFactory register.CsrAgentInstallerFactory
 }
 
 type ClientsFactory func(opts *options.Options) (*Clients, error)
@@ -163,7 +149,6 @@ func KubeClientsProvider(
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
-	clusterRegistrationClients ClusterRegistrationClients,
 	clusterRegistrationClient clients.ClusterRegistrationClient,
 ) *KubeClients {
 	return &KubeClients{
@@ -189,7 +174,6 @@ func KubeClientsProvider(
 		TrafficPolicyClient:             trafficPolicyClient,
 		AccessControlPolicyClient:       accessControlPolicyClient,
 		MeshWorkloadClient:              meshWorkloadClient,
-		ClusterRegistrationClients:      clusterRegistrationClients,
 		ClusterRegistrationClient:       clusterRegistrationClient,
 	}
 }

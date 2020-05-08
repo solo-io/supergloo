@@ -16,8 +16,10 @@ import (
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	mock_clients "github.com/solo-io/service-mesh-hub/pkg/clients/mocks"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -118,11 +120,12 @@ var _ = Describe("Install", func() {
 			Install(installerconfig).
 			Return(nil)
 
-		_, err := meshctl.Invoke(
+		stdout, err := meshctl.Invoke(
 			fmt.Sprintf(
 				"install -f %s --dry-run --create-namespace %t --verbose --release-name %s --namespace %s --values %s,%s",
 				chartOverride, createNamespace, releaseName, installNamespace, valuesFile1, valuesFile2))
 		Expect(err).NotTo(HaveOccurred())
+		Expect(stdout).To(BeEmpty())
 	})
 
 	It("should register if flag is set", func() {
@@ -184,11 +187,9 @@ var _ = Describe("Install", func() {
 				targetConfig,
 				clusterName,
 				installNamespace,
-				false,
-				false,
-				"",
 				contextABC,
-				nil,
+				register.MeshctlDiscoverySource,
+				clients.ClusterRegisterOpts{},
 			)
 		mockKubeLoader.EXPECT().GetRawConfigForContext("", "").Return(cxt, nil)
 
@@ -217,15 +218,16 @@ var _ = Describe("Install", func() {
 			Ctx:        ctx,
 		}
 
-		_, err := meshctl.Invoke(
+		stdout, err := meshctl.Invoke(
 			fmt.Sprintf("install --register --cluster-name %s -f %s", clusterName, chartOverride))
 		Expect(err).NotTo(HaveOccurred())
-
+		Expect(stdout).To(ContainSubstring(install.SuccessRegisteringClusterMessage(clusterName)))
 	})
 
 	It("should fail if invalid version override supplied", func() {
 		invalidVersion := "123"
-		_, err := meshctl.Invoke(fmt.Sprintf("install --version %s", invalidVersion))
+		stdout, err := meshctl.Invoke(fmt.Sprintf("install --version %s", invalidVersion))
 		Expect(err).To(testutils.HaveInErrorChain(install.InvalidVersionErr(invalidVersion)))
+		Expect(stdout).To(BeEmpty())
 	})
 })

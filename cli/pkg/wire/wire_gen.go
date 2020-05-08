@@ -139,13 +139,12 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
 	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
 	resourceDescriber := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
+	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
 	helmClientForMemoryConfigFactory := factories.HelmClientForMemoryConfigFactoryProvider()
 	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
-	clusterRegistrationClients := common.ClusterRegistrationClientsProvider(csrAgentInstallerFactory)
-	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
 	clusterAuthClientFromConfigFactory := clients.ClusterAuthClientFromConfigFactoryProvider()
 	clusterRegistrationClient := clients.NewClusterRegistrationClient(secretClient, kubernetesClusterClient, namespaceClientFromConfigFactory, converter, csrAgentInstallerFactory, clusterAuthClientFromConfigFactory)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, helmerInstallerFactory, helmClientForFileConfigFactory, kubernetesClusterClient, healthcheck_typesClients, deployedVersionFinder, customResourceDefinitionClientFromConfigFactory, secretClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCertificateSigningRequestClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient, clusterRegistrationClients, clusterRegistrationClient)
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, helmerInstallerFactory, helmClientForFileConfigFactory, kubernetesClusterClient, healthcheck_typesClients, deployedVersionFinder, customResourceDefinitionClientFromConfigFactory, secretClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCertificateSigningRequestClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient, clusterRegistrationClient)
 	return kubeClients, nil
 }
 

@@ -6,6 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
@@ -20,6 +21,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mock_k8s_cliendcmd "github.com/solo-io/service-mesh-hub/test/mocks/client-go/clientcmd"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -48,7 +50,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 		remoteClusterName           = "remote-cluster-name"
 		remoteWriteNamespace        = "remote-write-namespace"
 		remoteContextName           = "remote-context-name"
-		clusterLabels               = map[string]string{"cluster": "labels"}
+		discoverySource             = "discovery-source"
 	)
 
 	BeforeEach(func() {
@@ -131,7 +133,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 					LocationOfOrigin: "context-location-of-origin",
 					Cluster:          "cluster",
 					AuthInfo:         "",
-					Namespace:        "conttext-namespace",
+					Namespace:        "context-namespace",
 					Extensions:       map[string]runtime.Object{},
 				},
 			},
@@ -195,7 +197,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      remoteClusterName,
 					Namespace: env.GetWriteNamespace(),
-					Labels:    clusterLabels,
+					Labels:    map[string]string{constants.DISCOVERED_BY: discoverySource},
 				},
 				Spec: zephyr_discovery_types.KubernetesClusterSpec{
 					SecretRef: &zephyr_core_types.ResourceRef{
@@ -224,12 +226,94 @@ var _ = Describe("ClusterRegistrationClient", func() {
 			mockRemoteConfig,
 			remoteClusterName,
 			remoteWriteNamespace,
-			false,
-			useDevCsrAgentChart,
-			localClusterDomainOverride,
 			remoteContextName,
-			clusterLabels,
+			discoverySource,
+			clients.ClusterRegisterOpts{
+				Overwrite:                  false,
+				UseDevCsrAgentChart:        useDevCsrAgentChart,
+				LocalClusterDomainOverride: localClusterDomainOverride,
+			},
 		)
 		Expect(err).To(BeNil())
+	})
+
+	It("should return error if context not found in kubeconfig", func() {
+		useDevCsrAgentChart := false
+		localClusterDomainOverride := ""
+		restConfig := &rest.Config{}
+		mockRemoteConfig.EXPECT().ClientConfig().Return(restConfig, nil)
+		expectClusterNotExists()
+		expectCreateRemoteNamespace()
+		expectGenServiceAccountBearerToken(restConfig)
+		expectInstallRemoteCSRAgent(useDevCsrAgentChart, restConfig)
+
+		apiConfig := api.Config{
+			Contexts: map[string]*api.Context{
+				"some other name": {},
+			},
+		}
+		mockRemoteConfig.EXPECT().RawConfig().Return(apiConfig, nil)
+
+		err := clusterRegistrationClient.Register(
+			ctx,
+			mockRemoteConfig,
+			remoteClusterName,
+			remoteWriteNamespace,
+			remoteContextName,
+			discoverySource,
+			clients.ClusterRegisterOpts{
+				Overwrite:                  false,
+				UseDevCsrAgentChart:        useDevCsrAgentChart,
+				LocalClusterDomainOverride: localClusterDomainOverride,
+			},
+		)
+		Expect(err).To(testutils.HaveInErrorChain(clients.ContextNotFound(remoteContextName)))
+	})
+
+	It("should return error if context not found in kubeconfig", func() {
+		useDevCsrAgentChart := false
+		localClusterDomainOverride := ""
+		restConfig := &rest.Config{}
+		mockRemoteConfig.EXPECT().ClientConfig().Return(restConfig, nil)
+		expectClusterNotExists()
+		expectCreateRemoteNamespace()
+		expectGenServiceAccountBearerToken(restConfig)
+		expectInstallRemoteCSRAgent(useDevCsrAgentChart, restConfig)
+
+		nonExtantClusterName := "not-found-cluster"
+		apiConfig := api.Config{
+			Contexts: map[string]*api.Context{
+				remoteContextName: {
+					LocationOfOrigin: "context-location-of-origin",
+					Cluster:          nonExtantClusterName,
+				},
+			},
+			Clusters: map[string]*api.Cluster{
+				"cluster": {
+					LocationOfOrigin:         "location-of-origin",
+					Server:                   "",
+					InsecureSkipTLSVerify:    false,
+					CertificateAuthority:     "",
+					CertificateAuthorityData: nil,
+					Extensions:               nil,
+				},
+			},
+		}
+		mockRemoteConfig.EXPECT().RawConfig().Return(apiConfig, nil)
+
+		err := clusterRegistrationClient.Register(
+			ctx,
+			mockRemoteConfig,
+			remoteClusterName,
+			remoteWriteNamespace,
+			remoteContextName,
+			discoverySource,
+			clients.ClusterRegisterOpts{
+				Overwrite:                  false,
+				UseDevCsrAgentChart:        useDevCsrAgentChart,
+				LocalClusterDomainOverride: localClusterDomainOverride,
+			},
+		)
+		Expect(err).To(testutils.HaveInErrorChain(clients.ClusterNotFound(nonExtantClusterName)))
 	})
 })

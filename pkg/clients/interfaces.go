@@ -16,10 +16,8 @@ type ClusterRegistrationClient interface {
 		remoteConfig clientcmd.ClientConfig,
 		remoteClusterName string,
 		remoteWriteNamespace string,
-		overwrite bool,
-		useDevCsrAgentChart bool,
-		localClusterDomainOverride string,
 		remoteContextName string,
-		clusterLabels map[string]string,
+		discoverySource string,
+		registerOpts ClusterRegisterOpts,
 	) error
 }

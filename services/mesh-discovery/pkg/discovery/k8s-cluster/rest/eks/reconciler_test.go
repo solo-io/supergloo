@@ -10,9 +10,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	mock_clients "github.com/solo-io/service-mesh-hub/pkg/clients/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
+	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	discovery_eks "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s-cluster/rest/eks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -99,8 +101,9 @@ var _ = Describe("Reconciler", func() {
 		}
 		mockKubeClusterClient.
 			EXPECT().
-			ListKubernetesCluster(ctx, client.MatchingLabels(discovery_eks.DiscoveryLabels)).
-			Return(clusterList, nil)
+			ListKubernetesCluster(ctx, client.MatchingLabels(
+				map[string]string{constants.DISCOVERED_BY: discovery_eks.ReconcilerDiscoverySource}),
+			).Return(clusterList, nil)
 		return sets.NewString(clusterList.Items[0].GetName())
 	}
 
@@ -114,11 +117,9 @@ var _ = Describe("Reconciler", func() {
 			configForEksCluster,
 			smhName,
 			env.GetWriteNamespace(),
-			false,
-			false,
 			"",
-			"",
-			discovery_eks.DiscoveryLabels,
+			discovery_eks.ReconcilerDiscoverySource,
+			clients.ClusterRegisterOpts{},
 		).Return(nil)
 	}
 

@@ -10,10 +10,11 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
 )
 
 const (
-	FailedToCheckForPreviousKubeCluster = "Could not get KubernetesCluster resource from master cluster"
+	MeshctlDiscoverySource = "meshctl"
 )
 
 var (
@@ -74,10 +75,12 @@ func RegisterCluster(
 		remoteConfig,
 		registerOpts.RemoteClusterName,
 		registerOpts.RemoteWriteNamespace,
-		registerOpts.Overwrite,
-		registerOpts.UseDevCsrAgentChart,
-		registerOpts.LocalClusterDomainOverride,
 		remoteContext,
-		nil,
+		MeshctlDiscoverySource,
+		clients.ClusterRegisterOpts{
+			Overwrite:                  registerOpts.Overwrite,
+			UseDevCsrAgentChart:        registerOpts.UseDevCsrAgentChart,
+			LocalClusterDomainOverride: registerOpts.LocalClusterDomainOverride,
+		},
 	)
 }

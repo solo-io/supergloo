@@ -25,8 +25,8 @@ const (
 )
 
 var (
-	DiscoveryLabels          = map[string]string{constants.DISCOVERED_BY: constants.EKS_CLUSTER_DISCOVERY}
-	FailedRegisteringCluster = func(err error, name string) error {
+	ReconcilerDiscoverySource = "eks-cluster-discovery"
+	FailedRegisteringCluster  = func(err error, name string) error {
 		return eris.Wrapf(err, "Failed to register EKS cluster %s", name)
 	}
 )
@@ -111,7 +111,10 @@ func (e *eksReconciler) fetchEksClustersOnAWS(
 }
 
 func (e *eksReconciler) fetchEksClustersOnSMH(ctx context.Context) (sets.String, error) {
-	clusters, err := e.kubeClusterClient.ListKubernetesCluster(ctx, client.MatchingLabels(DiscoveryLabels))
+	reconcilerDiscoverySelector := map[string]string{
+		constants.DISCOVERED_BY: ReconcilerDiscoverySource,
+	}
+	clusters, err := e.kubeClusterClient.ListKubernetesCluster(ctx, client.MatchingLabels(reconcilerDiscoverySelector))
 	if err != nil {
 		return nil, err
 	}
@@ -137,15 +140,21 @@ func (e *eksReconciler) registerCluster(
 	if err != nil {
 		return err
 	}
+	rawConfig, err := config.RawConfig()
+	if err != nil {
+		return err
+	}
 	return e.clusterRegistrationClient.Register(
 		ctx,
 		config,
 		smhClusterName,
 		env.GetWriteNamespace(), // TODO make this configurable
-		false,
-		false,
-		"",
-		"",
-		DiscoveryLabels,
+		rawConfig.CurrentContext,
+		ReconcilerDiscoverySource,
+		clients.ClusterRegisterOpts{
+			Overwrite:                  false,
+			UseDevCsrAgentChart:        false,
+			LocalClusterDomainOverride: "",
+		},
 	)
 }

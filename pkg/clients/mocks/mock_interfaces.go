@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	clients "github.com/solo-io/service-mesh-hub/pkg/clients"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
 )
 
@@ -36,15 +37,15 @@ func (m *MockClusterRegistrationClient) EXPECT() *MockClusterRegistrationClientM
 }
 
 // Register mocks base method.
-func (m *MockClusterRegistrationClient) Register(ctx context.Context, remoteConfig clientcmd.ClientConfig, remoteClusterName, remoteWriteNamespace string, overwrite, useDevCsrAgentChart bool, localClusterDomainOverride, remoteContextName string, clusterLabels map[string]string) error {
+func (m *MockClusterRegistrationClient) Register(ctx context.Context, remoteConfig clientcmd.ClientConfig, remoteClusterName, remoteWriteNamespace, remoteContextName, discoverySource string, registerOpts clients.ClusterRegisterOpts) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Register", ctx, remoteConfig, remoteClusterName, remoteWriteNamespace, overwrite, useDevCsrAgentChart, localClusterDomainOverride, remoteContextName, clusterLabels)
+	ret := m.ctrl.Call(m, "Register", ctx, remoteConfig, remoteClusterName, remoteWriteNamespace, remoteContextName, discoverySource, registerOpts)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Register indicates an expected call of Register.
-func (mr *MockClusterRegistrationClientMockRecorder) Register(ctx, remoteConfig, remoteClusterName, remoteWriteNamespace, overwrite, useDevCsrAgentChart, localClusterDomainOverride, remoteContextName, clusterLabels interface{}) *gomock.Call {
+func (mr *MockClusterRegistrationClientMockRecorder) Register(ctx, remoteConfig, remoteClusterName, remoteWriteNamespace, remoteContextName, discoverySource, registerOpts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockClusterRegistrationClient)(nil).Register), ctx, remoteConfig, remoteClusterName, remoteWriteNamespace, overwrite, useDevCsrAgentChart, localClusterDomainOverride, remoteContextName, clusterLabels)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockClusterRegistrationClient)(nil).Register), ctx, remoteConfig, remoteClusterName, remoteWriteNamespace, remoteContextName, discoverySource, registerOpts)
 }

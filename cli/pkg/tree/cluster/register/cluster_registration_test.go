@@ -14,6 +14,8 @@ import (
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	mock_clients "github.com/solo-io/service-mesh-hub/pkg/clients/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -79,11 +81,9 @@ var _ = Describe("Cluster Operations", func() {
 					remoteKubeConfig,
 					clusterName,
 					env.GetWriteNamespace(),
-					false,
-					false,
 					"",
-					"",
-					nil,
+					register.MeshctlDiscoverySource,
+					clients.ClusterRegisterOpts{},
 				).
 				Return(nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
@@ -111,11 +111,9 @@ var _ = Describe("Cluster Operations", func() {
 					remoteKubeConfig,
 					clusterName,
 					env.GetWriteNamespace(),
-					false,
-					false,
 					"",
-					"",
-					nil,
+					register.MeshctlDiscoverySource,
+					clients.ClusterRegisterOpts{},
 				).
 				Return(nil)
 			kubeLoader.
@@ -149,11 +147,9 @@ var _ = Describe("Cluster Operations", func() {
 					remoteKubeConfig,
 					clusterName,
 					env.GetWriteNamespace(),
-					false,
-					false,
-					"",
 					contextDEF,
-					nil,
+					register.MeshctlDiscoverySource,
+					clients.ClusterRegisterOpts{},
 				).
 				Return(nil)
 
@@ -221,11 +217,9 @@ var _ = Describe("Cluster Operations", func() {
 					remoteKubeConfig,
 					clusterName,
 					env.GetWriteNamespace(),
-					false,
-					false,
-					"",
 					contextDEF,
-					nil,
+					register.MeshctlDiscoverySource,
+					clients.ClusterRegisterOpts{},
 				).
 				Return(nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
@@ -248,11 +242,11 @@ var _ = Describe("Cluster Operations", func() {
 					remoteKubeConfig,
 					clusterName,
 					env.GetWriteNamespace(),
-					false,
-					true,
 					"",
-					"",
-					nil,
+					register.MeshctlDiscoverySource,
+					clients.ClusterRegisterOpts{
+						UseDevCsrAgentChart: true,
+					},
 				).
 				Return(nil)
 

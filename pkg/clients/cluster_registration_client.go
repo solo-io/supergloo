@@ -16,6 +16,7 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"go.uber.org/zap/zaptest"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
@@ -43,7 +44,12 @@ var (
 	FailedToConvertToSecret = func(err error) error {
 		return eris.Wrap(err, "Could not convert kube config for new service account into secret")
 	}
-	EmptyContextsError = eris.New("No contexts found for kube config")
+	ContextNotFound = func(contextName string) error {
+		return eris.Errorf("Context with name %s not found in kubeconfig", contextName)
+	}
+	ClusterNotFound = func(clusterName string) error {
+		return eris.Errorf("Cluster with name %s not found in kubeconfig", clusterName)
+	}
 )
 
 type clusterRegistrationClient struct {
@@ -73,62 +79,75 @@ func NewClusterRegistrationClient(
 	}
 }
 
+type ClusterRegisterOpts struct {
+	Overwrite                  bool
+	UseDevCsrAgentChart        bool
+	LocalClusterDomainOverride string
+}
+
 func (c *clusterRegistrationClient) Register(
 	ctx context.Context,
 	remoteConfig clientcmd.ClientConfig,
 	remoteClusterName string,
 	remoteWriteNamespace string,
-	overwrite bool,
-	useDevCsrAgentChart bool,
-	localClusterDomainOverride string,
 	remoteContextName string,
-	clusterLabels map[string]string,
+	discoverySource string,
+	clusterRegisterOpts ClusterRegisterOpts,
 ) error {
-	var err error
-	var remoteRestConfig *rest.Config
-	var serviceAccountBearerToken string
-	var secret *k8s_core_types.Secret
-	if remoteRestConfig, err = remoteConfig.ClientConfig(); err != nil {
+	remoteRestConfig, err := remoteConfig.ClientConfig()
+	if err != nil {
 		return err
 	}
-	if err = c.checkClusterExistence(ctx, remoteClusterName, overwrite); err != nil {
+	err = c.checkClusterExistence(ctx, remoteClusterName, clusterRegisterOpts.Overwrite)
+	if err != nil {
 		return err
 	}
-	if err = c.ensureRemoteNamespace(ctx, remoteRestConfig, remoteWriteNamespace); err != nil {
+	err = c.ensureRemoteNamespace(ctx, remoteRestConfig, remoteWriteNamespace)
+	if err != nil {
 		return err
 	}
-	if serviceAccountBearerToken, err = c.generateServiceAccountBearerToken(
+	serviceAccountBearerToken, err := c.generateServiceAccountBearerToken(
 		ctx,
 		remoteRestConfig,
 		remoteClusterName,
 		remoteWriteNamespace,
-	); err != nil {
+	)
+	if err != nil {
 		return err
 	}
 	// Install CRDs to remote cluster. This must happen before kubeconfig Secret is written to master cluster because
 	// relevant CRDs must exist before SMH attempts any cross cluster functionality.
-	if err = c.installRemoteCSRAgent(ctx, remoteClusterName, remoteWriteNamespace, remoteConfig, useDevCsrAgentChart); err != nil {
+	err = c.installRemoteCSRAgent(
+		ctx,
+		remoteClusterName,
+		remoteWriteNamespace,
+		remoteConfig,
+		clusterRegisterOpts.UseDevCsrAgentChart,
+	)
+	if err != nil {
 		return err
 	}
 	// Write kubeconfig Secret and KubeCluster CRD to master cluster
-	if secret, err = c.writeKubeConfigToMaster(
+	secret, err := c.writeKubeConfigToMaster(
 		ctx,
 		remoteClusterName,
 		remoteContextName,
 		serviceAccountBearerToken,
 		remoteConfig,
-		localClusterDomainOverride,
-	); err != nil {
+		clusterRegisterOpts.LocalClusterDomainOverride,
+	)
+	if err != nil {
 		return err
 	}
-	if err = c.writeKubeClusterToMaster(
+	err = c.writeKubeClusterToMaster(
 		ctx,
 		env.GetWriteNamespace(),
 		remoteClusterName,
 		remoteWriteNamespace,
 		secret,
-		clusterLabels,
-	); err != nil {
+		discoverySource,
+	)
+	if err != nil {
 		return err
 	}
 	return nil
@@ -146,14 +165,12 @@ func (c *clusterRegistrationClient) checkClusterExistence(
 			Namespace: env.GetWriteNamespace(),
 		},
 	)
-	if err != nil {
-		if !k8s_errs.IsNotFound(err) {
-			return err
-		}
-	} else {
-		if !overwrite {
-			return ClusterAlreadyRegisteredError(remoteClusterName)
-		}
+	if k8s_errs.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return err
+	} else if !overwrite {
+		return ClusterAlreadyRegisteredError(remoteClusterName)
 	}
 	return nil
 }
@@ -239,18 +256,14 @@ func (c *clusterRegistrationClient) writeKubeConfigToMaster(
 	if err != nil {
 		return nil, err
 	}
-	if len(config.Contexts) < 1 {
-		return nil, EmptyContextsError
+	remoteContext, ok := config.Contexts[remoteContextName]
+	if !ok {
+		return nil, ContextNotFound(remoteContextName)
 	}
-	var remoteContext *api.Context
-	if len(config.Contexts) == 1 {
-		for _, context := range config.Contexts {
-			remoteContext = context
-		}
-	} else {
-		remoteContext = config.Contexts[remoteContextName]
+	remoteCluster, ok := config.Clusters[remoteContext.Cluster]
+	if !ok {
+		return nil, ClusterNotFound(remoteContext.Cluster)
 	}
-	remoteCluster := config.Clusters[remoteContext.Cluster]
 	// Hack for local e2e testing with Kind
 	err = hackClusterConfigForLocalTestingInKIND(remoteCluster, remoteContextName, localClusterDomainOverride)
 	if err != nil {
@@ -302,13 +315,15 @@ func (c *clusterRegistrationClient) writeKubeClusterToMaster(
 	remoteClusterName string,
 	remoteWriteNamespace string,
 	secret *k8s_core_types.Secret,
-	clusterLabels map[string]string,
+	discoverySource string,
 ) error {
 	cluster := &zephyr_discovery.KubernetesCluster{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      remoteClusterName,
 			Namespace: writeNamespace,
-			Labels:    clusterLabels,
+			Labels: map[string]string{
+				constants.DISCOVERED_BY: discoverySource,
+			},
 		},
 		Spec: zephyr_discovery_types.KubernetesClusterSpec{
 			SecretRef: &zephyr_core_types.ResourceRef{
@@ -330,10 +345,9 @@ func (c *clusterRegistrationClient) upsertSecretData(
 	secret *k8s_core_types.Secret,
 ) error {
 	existing, err := c.secretClient.GetSecret(ctx, client.ObjectKey{Name: secret.Name, Namespace: secret.Namespace})
-	if err != nil {
-		if k8s_errs.IsNotFound(err) {
-			return c.secretClient.CreateSecret(ctx, secret)
-		}
+	if k8s_errs.IsNotFound(err) {
+		return c.secretClient.CreateSecret(ctx, secret)
+	} else if err != nil {
 		return err
 	}
 	existing.Data = secret.Data

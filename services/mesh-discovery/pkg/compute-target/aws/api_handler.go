@@ -53,14 +53,14 @@ func (a *awsCredsHandler) ComputeTargetAdded(ctx context.Context, secret *k8s_co
 	if err != nil {
 		return err
 	}
-	a.initReconcilers(logger, reconcilerCtx, creds)
+	a.runReconcilers(logger, reconcilerCtx, creds)
 	go func() {
+		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
-				a.initReconcilers(logger, reconcilerCtx, creds)
+				a.runReconcilers(logger, reconcilerCtx, creds)
 			case <-reconcilerCtx.Done():
-				ticker.Stop()
 				return
 			}
 		}
@@ -90,7 +90,7 @@ func (a *awsCredsHandler) buildContext(parentCtx context.Context, computeTargetN
 	))
 }
 
-func (a *awsCredsHandler) initReconcilers(
+func (a *awsCredsHandler) runReconcilers(
 	logger *zap.SugaredLogger,
 	reconcilerCtx context.Context,
 	creds *credentials.Credentials) {
