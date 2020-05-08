@@ -96,8 +96,8 @@ func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *zeph
 	}
 	kubeClient := kubernetes.NewForConfigOrDie(config.RestConfig)
 	helmInstallerFactory := factories.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), ioutil.Discard)
-	helmUninstaller := c.csrAgentInstallerFactory(helmInstallerFactory)
-	err = helmUninstaller.Uninstall(&csr.CsrAgentUninstallOptions{
+	csrAgentInstaller := c.csrAgentInstallerFactory(helmInstallerFactory)
+	err = csrAgentInstaller.Uninstall(&csr.CsrAgentUninstallOptions{
 		KubeConfig:       csr.KubeConfig{KubeConfig: config.ClientConfig},
 		ReleaseName:      cliconstants.CsrAgentReleaseName,
 		ReleaseNamespace: kubeCluster.Spec.GetWriteNamespace(),

@@ -12,6 +12,7 @@ import (
 	install_istio "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 	mock_operator "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator/mocks"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -21,7 +22,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
-	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	mock_server "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
@@ -33,7 +33,7 @@ import (
 )
 
 type necessaryMocks struct {
-	kubeLoader             *cli_mocks.MockKubeLoader
+	kubeLoader             *mock_kubeconfig.MockKubeLoader
 	restClientGetter       *mock_cli_runtime.MockRESTClientGetter
 	unstructuredKubeClient *mock_kube.MockUnstructuredKubeClient
 	operatorManager        *mock_operator.MockOperatorManager
@@ -53,7 +53,7 @@ var _ = Describe("Mesh installation", func() {
 		kubeConfigPath = "/fake/path/to/kubeconfig"
 		ctx            = context.TODO()
 		setupMocks     = func() necessaryMocks {
-			kubeLoader := cli_mocks.NewMockKubeLoader(ctrl)
+			kubeLoader := mock_kubeconfig.NewMockKubeLoader(ctrl)
 			restClientGetter := mock_cli_runtime.NewMockRESTClientGetter(ctrl)
 
 			kubeLoader.EXPECT().RESTClientGetter(kubeConfigPath, "").Return(restClientGetter)

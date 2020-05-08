@@ -82,9 +82,10 @@ var _ = Describe("CSR Agent Installer", func() {
 		err := csrAgentInstaller.Install(
 			ctx,
 			&csr.CsrAgentInstallOptions{
-				KubeConfigPath:       kubeConfig,
-				KubeContext:          kubeContext,
-				ClusterName:          "remote-cluster-name",
+				KubeConfig: csr.KubeConfig{
+					KubeConfigPath: kubeConfig,
+					KubeContext:    kubeContext,
+				},
 				SmhInstallNamespace:  env.GetWriteNamespace(),
 				ReleaseName:          releaseName,
 				RemoteWriteNamespace: remoteWriteNamespace,
@@ -122,8 +123,7 @@ var _ = Describe("CSR Agent Installer", func() {
 		err := csrAgentInstaller.Install(
 			ctx,
 			&csr.CsrAgentInstallOptions{
-				KubeConfig:           kubeConfig,
-				ClusterName:          "remote-cluster-name",
+				KubeConfig:           csr.KubeConfig{KubeConfig: kubeConfig},
 				SmhInstallNamespace:  env.GetWriteNamespace(),
 				ReleaseName:          releaseName,
 				RemoteWriteNamespace: remoteWriteNamespace,
@@ -163,9 +163,10 @@ var _ = Describe("CSR Agent Installer", func() {
 		err := csrAgentInstaller.Install(
 			ctx,
 			&csr.CsrAgentInstallOptions{
-				KubeConfigPath:       kubeConfig,
-				KubeContext:          kubeContext,
-				ClusterName:          "remote-cluster-name",
+				KubeConfig: csr.KubeConfig{
+					KubeConfigPath: kubeConfig,
+					KubeContext:    kubeContext,
+				},
 				SmhInstallNamespace:  env.GetWriteNamespace(),
 				ReleaseName:          releaseName,
 				RemoteWriteNamespace: remoteWriteNamespace,
@@ -206,9 +207,10 @@ var _ = Describe("CSR Agent Installer", func() {
 		err := csrAgentInstaller.Install(
 			ctx,
 			&csr.CsrAgentInstallOptions{
-				KubeConfigPath:       kubeConfig,
-				KubeContext:          kubeContext,
-				ClusterName:          "remote-cluster-name",
+				KubeConfig: csr.KubeConfig{
+					KubeConfigPath: kubeConfig,
+					KubeContext:    kubeContext,
+				},
 				SmhInstallNamespace:  env.GetWriteNamespace(),
 				ReleaseName:          releaseName,
 				RemoteWriteNamespace: remoteWriteNamespace,
@@ -249,9 +251,10 @@ var _ = Describe("CSR Agent Installer", func() {
 		err := csrAgentInstaller.Install(
 			ctx,
 			&csr.CsrAgentInstallOptions{
-				KubeConfigPath:       kubeConfig,
-				KubeContext:          kubeContext,
-				ClusterName:          "remote-cluster-name",
+				KubeConfig: csr.KubeConfig{
+					KubeConfigPath: kubeConfig,
+					KubeContext:    kubeContext,
+				},
 				SmhInstallNamespace:  env.GetWriteNamespace(),
 				ReleaseName:          releaseName,
 				RemoteWriteNamespace: remoteWriteNamespace,
@@ -259,5 +262,31 @@ var _ = Describe("CSR Agent Installer", func() {
 			},
 		)
 		Expect(err).To(testutils.HaveInErrorChain(csr.FailedToSetUpCsrAgent(testErr)))
+	})
+
+	It("should uninstall", func() {
+		csrAgentInstaller = csr.NewCsrAgentInstaller(
+			mockHelmFileClientFactory,
+			mockHelmMemoryClientFactory,
+			mockDeployedVersionFinder,
+			func(helmClient types.HelmClient) types.Installer {
+				Expect(helmClient).To(BeIdenticalTo(mockHelmMemoryClient))
+				return mockHelmInstaller
+			},
+		)
+		kubeConfig := &clientcmd.DirectClientConfig{}
+		releaseName := "csr-agent-release-name"
+		releaseNamespace := "remote-write-namespace"
+		mockHelmUninstaller := mock_types.NewMockHelmUninstaller(ctrl)
+		mockHelmMemoryClient.EXPECT().NewUninstall(releaseNamespace).Return(mockHelmUninstaller, nil)
+		mockHelmUninstaller.EXPECT().Run(releaseName).Return(nil, nil)
+		err := csrAgentInstaller.Uninstall(
+			&csr.CsrAgentUninstallOptions{
+				KubeConfig:       csr.KubeConfig{KubeConfig: kubeConfig},
+				ReleaseName:      releaseName,
+				ReleaseNamespace: releaseNamespace,
+			},
+		)
+		Expect(err).NotTo(HaveOccurred())
 	})
 })

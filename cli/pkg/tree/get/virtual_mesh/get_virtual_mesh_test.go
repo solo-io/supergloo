@@ -8,9 +8,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
-	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -20,7 +20,7 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 		ctrl                   *gomock.Controller
 		ctx                    context.Context
 		meshctl                *cli_test.MockMeshctl
-		mockKubeLoader         *cli_mocks.MockKubeLoader
+		mockKubeLoader         *mock_kubeconfig.MockKubeLoader
 		mockVirtualMeshPrinter *mock_table_printing.MockVirtualMeshPrinter
 		mockVirtualMeshClient  *mock_zephyr_networking.MockVirtualMeshClient
 	)
@@ -28,7 +28,7 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockKubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
+		mockKubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
 		mockVirtualMeshPrinter = mock_table_printing.NewMockVirtualMeshPrinter(ctrl)
 		mockVirtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 		meshctl = &cli_test.MockMeshctl{

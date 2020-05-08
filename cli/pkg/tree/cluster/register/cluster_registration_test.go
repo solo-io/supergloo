@@ -16,8 +16,9 @@ import (
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
-	mock_clients "github.com/solo-io/service-mesh-hub/pkg/clients/mocks"
+	mock_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -28,10 +29,10 @@ var _ = Describe("Cluster Operations", func() {
 		ctrl                          *gomock.Controller
 		ctx                           context.Context
 		secretClient                  *mock_kubernetes_core.MockSecretClient
-		kubeLoader                    *cli_mocks.MockKubeLoader
+		kubeLoader                    *mock_kubeconfig.MockKubeLoader
 		meshctl                       *cli_test.MockMeshctl
 		configVerifier                *cli_mocks.MockMasterKubeConfigVerifier
-		mockClusterRegistrationClient *mock_clients.MockClusterRegistrationClient
+		mockClusterRegistrationClient *mock_registration.MockClusterRegistrationClient
 	)
 
 	BeforeEach(func() {
@@ -39,9 +40,9 @@ var _ = Describe("Cluster Operations", func() {
 		ctx = context.TODO()
 
 		secretClient = mock_kubernetes_core.NewMockSecretClient(ctrl)
-		kubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
+		kubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
 		configVerifier = cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
-		mockClusterRegistrationClient = mock_clients.NewMockClusterRegistrationClient(ctrl)
+		mockClusterRegistrationClient = mock_registration.NewMockClusterRegistrationClient(ctrl)
 		meshctl = &cli_test.MockMeshctl{
 			KubeClients: common.KubeClients{
 				SecretClient:              secretClient,

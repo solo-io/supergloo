@@ -118,8 +118,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 	var expectInstallRemoteCSRAgent = func(useDevCsrAgentChart bool, restCfg *rest.Config) {
 		mockRemoteConfig.EXPECT().ClientConfig().Return(restCfg, nil)
 		mockCsrAgentInstaller.EXPECT().Install(ctx, &csr.CsrAgentInstallOptions{
-			KubeConfig:           mockRemoteConfig,
-			ClusterName:          remoteClusterName,
+			KubeConfig:           csr.KubeConfig{KubeConfig: mockRemoteConfig},
 			SmhInstallNamespace:  env.GetWriteNamespace(),
 			UseDevCsrAgentChart:  useDevCsrAgentChart,
 			ReleaseName:          cliconstants.CsrAgentReleaseName,

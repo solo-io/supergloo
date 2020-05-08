@@ -8,13 +8,13 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
 	mock_status "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 )
 
 var _ = Describe("Meshctl check command", func() {
@@ -34,7 +34,7 @@ var _ = Describe("Meshctl check command", func() {
 	})
 
 	It("works", func() {
-		kubeLoader := cli_mocks.NewMockKubeLoader(ctrl)
+		kubeLoader := mock_kubeconfig.NewMockKubeLoader(ctrl)
 		kubeLoader.EXPECT().
 			GetRestConfigForContext("", "").
 			Return(nil, nil)
@@ -66,7 +66,7 @@ var _ = Describe("Meshctl check command", func() {
 	})
 
 	It("åccepts 'pretty' and 'json' as print formats", func() {
-		kubeLoader := cli_mocks.NewMockKubeLoader(ctrl)
+		kubeLoader := mock_kubeconfig.NewMockKubeLoader(ctrl)
 		kubeLoader.EXPECT().
 			GetRestConfigForContext("", "").
 			Return(nil, nil).
@@ -102,7 +102,7 @@ var _ = Describe("Meshctl check command", func() {
 	})
 
 	It("complains about unrecognized print format", func() {
-		kubeLoader := cli_mocks.NewMockKubeLoader(ctrl)
+		kubeLoader := mock_kubeconfig.NewMockKubeLoader(ctrl)
 		var healthCheckSuite healthcheck_types.HealthCheckSuite = map[healthcheck_types.Category][]healthcheck_types.HealthCheck{}
 		statusClient := mock_status.NewMockStatusClient(ctrl)
 

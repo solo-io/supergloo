@@ -20,7 +20,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
-	mock_clients "github.com/solo-io/service-mesh-hub/pkg/clients/mocks"
+	mock_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	"k8s.io/client-go/rest"
@@ -33,11 +34,11 @@ var _ = Describe("Install", func() {
 	var (
 		ctrl                          *gomock.Controller
 		ctx                           context.Context
-		mockKubeLoader                *cli_mocks.MockKubeLoader
+		mockKubeLoader                *mock_kubeconfig.MockKubeLoader
 		meshctl                       *cli_test.MockMeshctl
 		mockHelmClient                *mock_types.MockHelmClient
 		mockHelmInstaller             *mock_types.MockInstaller
-		mockClusterRegistrationClient *mock_clients.MockClusterRegistrationClient
+		mockClusterRegistrationClient *mock_registration.MockClusterRegistrationClient
 	)
 
 	BeforeEach(func() {
@@ -45,8 +46,8 @@ var _ = Describe("Install", func() {
 		ctx = context.TODO()
 		mockHelmClient = mock_types.NewMockHelmClient(ctrl)
 		mockHelmInstaller = mock_types.NewMockInstaller(ctrl)
-		mockKubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
-		mockClusterRegistrationClient = mock_clients.NewMockClusterRegistrationClient(ctrl)
+		mockKubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
+		mockClusterRegistrationClient = mock_registration.NewMockClusterRegistrationClient(ctrl)
 		meshctl = &cli_test.MockMeshctl{
 			MockController: ctrl,
 			Clients:        common.Clients{},
