@@ -10,7 +10,7 @@ import (
 
 type Validator interface {
 	// always returns a non-nil Status that should be written to the cluster
-	// if validation failed, that status will also be returned with the concrete error that occurred so it can be logged
+	// if validation failed, the concrete validation error that occurred will be returned with that non-nil status so it can be logged
 	ValidateTrafficPolicy(trafficPolicy *zephyr_networking.TrafficPolicy, allMeshServices []*zephyr_discovery.MeshService) (*zephyr_core_types.Status, error)
 }
 
