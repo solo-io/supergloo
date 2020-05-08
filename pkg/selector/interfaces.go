@@ -12,8 +12,13 @@ import (
 // Find Service Mesh Hub resources that correspond to k8s-native resources
 type ResourceSelector interface {
 	// fetch all MeshServices that match the given selector
-	GetMeshServicesByServiceSelector(
+	GetAllMeshServicesByServiceSelector(
 		ctx context.Context,
+		selector *zephyr_core_types.ServiceSelector,
+	) ([]*zephyr_discovery.MeshService, error)
+
+	GetMeshServicesByServiceSelector(
+		meshServices []*zephyr_discovery.MeshService,
 		selector *zephyr_core_types.ServiceSelector,
 	) ([]*zephyr_discovery.MeshService, error)
 
@@ -31,12 +36,19 @@ type ResourceSelector interface {
 
 	// fetch the MeshService backing a k8s Service by the Service's name, namespace, cluster name
 	// return error if no MeshService found, or multiple
-	GetMeshServiceByRefSelector(
+	GetAllMeshServiceByRefSelector(
 		ctx context.Context,
 		kubeServiceName string,
 		kubeServiceNamespace string,
 		kubeServiceCluster string,
 	) (*zephyr_discovery.MeshService, error)
+
+	GetMeshServiceByRefSelector(
+		meshServices []*zephyr_discovery.MeshService,
+		kubeServiceName string,
+		kubeServiceNamespace string,
+		kubeServiceCluster string,
+	) *zephyr_discovery.MeshService
 
 	// get the Mesh Workload corresponding to the indicated pod controller (eg deployment)
 	GetMeshWorkloadByRefSelector(

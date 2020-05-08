@@ -93,7 +93,7 @@ var _ = Describe("Resource describer", func() {
 			}
 
 			resourceSelector.EXPECT().
-				GetMeshServiceByRefSelector(ctx, serviceName, serviceNs, serviceCluster).
+				GetAllMeshServiceByRefSelector(ctx, serviceName, serviceNs, serviceCluster).
 				Return(describedMeshService, nil)
 			accessControlPolicyClient.EXPECT().
 				ListAccessControlPolicy(ctx).
@@ -102,11 +102,11 @@ var _ = Describe("Resource describer", func() {
 				ListTrafficPolicy(ctx).
 				Return(trafficPolicies, nil)
 			resourceSelector.EXPECT().
-				GetMeshServicesByServiceSelector(ctx, wrongServiceSelector).
+				GetAllMeshServicesByServiceSelector(ctx, wrongServiceSelector).
 				Return([]*zephyr_discovery.MeshService{}, nil).
 				Times(2)
 			resourceSelector.EXPECT().
-				GetMeshServicesByServiceSelector(ctx, correctServiceSelector).
+				GetAllMeshServicesByServiceSelector(ctx, correctServiceSelector).
 				Return([]*zephyr_discovery.MeshService{describedMeshService}, nil).
 				Times(2)
 

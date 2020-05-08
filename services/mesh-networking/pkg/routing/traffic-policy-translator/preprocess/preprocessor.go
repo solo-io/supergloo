@@ -43,7 +43,7 @@ func (d *trafficPolicyPreprocessor) PreprocessTrafficPolicy(
 	if err != nil {
 		return nil, err
 	}
-	meshServices, err := d.resourceSelector.GetMeshServicesByServiceSelector(
+	meshServices, err := d.resourceSelector.GetAllMeshServicesByServiceSelector(
 		ctx,
 		trafficPolicy.Spec.GetDestinationSelector(),
 	)

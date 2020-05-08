@@ -59,7 +59,7 @@ var _ = Describe("Merger", func() {
 		expectedMergedTPs := map[networking_selector.MeshServiceId][]*zephyr_networking.TrafficPolicy{}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServicesByServiceSelector(ctx, selector).
+			GetAllMeshServicesByServiceSelector(ctx, selector).
 			Return(ms, nil)
 		mockMerger.
 			EXPECT().
@@ -83,7 +83,7 @@ var _ = Describe("Merger", func() {
 		ms := []*zephyr_discovery.MeshService{}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServicesByServiceSelector(ctx, selector).
+			GetAllMeshServicesByServiceSelector(ctx, selector).
 			Return(ms, nil)
 		mockMerger.
 			EXPECT().
