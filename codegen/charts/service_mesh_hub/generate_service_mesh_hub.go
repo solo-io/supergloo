@@ -94,9 +94,11 @@ func main() {
 				RenderTypes:      renderTypes,
 				RenderController: true,
 				RenderProtos:     true,
-				CustomTemplates: map[string]string{
-					"clients.go":          customClientTemplate,
-					"client_providers.go": customClientProviders,
+				CustomTemplates: model.CustomTemplates{
+					Templates: map[string]string{
+						"clients.go":          customClientTemplate,
+						"client_providers.go": customClientProviders,
+					},
 				},
 				ApiRoot: "pkg/api",
 			},
@@ -160,9 +162,11 @@ func main() {
 				RenderTypes:      renderTypes,
 				RenderController: true,
 				RenderProtos:     true,
-				CustomTemplates: map[string]string{
-					"clients.go":          customClientTemplate,
-					"client_providers.go": customClientProviders,
+				CustomTemplates: model.CustomTemplates{
+					Templates: map[string]string{
+						"clients.go":          customClientTemplate,
+						"client_providers.go": customClientProviders,
+					},
 				},
 				ApiRoot: "pkg/api",
 			},
@@ -197,8 +201,10 @@ func main() {
 				},
 				RenderController: true,
 				RenderClients:    true,
-				CustomTemplates: map[string]string{
-					"client_providers.go": customClientProviders,
+				CustomTemplates: model.CustomTemplates{
+					Templates: map[string]string{
+						"client_providers.go": customClientProviders,
+					},
 				},
 				CustomTypesImportPath: "k8s.io/api/core/v1",
 				ApiRoot:               "pkg/api/kubernetes",
@@ -219,8 +225,10 @@ func main() {
 				},
 				RenderController: true,
 				RenderClients:    true,
-				CustomTemplates: map[string]string{
-					"client_providers.go": customClientProviders,
+				CustomTemplates: model.CustomTemplates{
+					Templates: map[string]string{
+						"client_providers.go": customClientProviders,
+					},
 				},
 				CustomTypesImportPath: "k8s.io/api/apps/v1",
 				ApiRoot:               "pkg/api/kubernetes",
@@ -237,8 +245,10 @@ func main() {
 					},
 				},
 				RenderClients: true,
-				CustomTemplates: map[string]string{
-					"client_providers.go": customClientProviders,
+				CustomTemplates: model.CustomTemplates{
+					Templates: map[string]string{
+						"client_providers.go": customClientProviders,
+					},
 				},
 				CustomTypesImportPath: "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
 				ApiRoot:               "pkg/api/kubernetes",
@@ -267,9 +277,11 @@ func main() {
 					},
 				},
 				CustomTypesImportPath: "istio.io/client-go/pkg/apis/networking/v1alpha3",
-				CustomTemplates: map[string]string{
-					"clients.go":          customClientTemplate,
-					"client_providers.go": customClientProviders,
+				CustomTemplates: model.CustomTemplates{
+					Templates: map[string]string{
+						"clients.go":          customClientTemplate,
+						"client_providers.go": customClientProviders,
+					},
 				},
 				ApiRoot: "pkg/api/istio",
 			},
@@ -285,9 +297,11 @@ func main() {
 					},
 				},
 				CustomTypesImportPath: "istio.io/client-go/pkg/apis/security/v1beta1",
-				CustomTemplates: map[string]string{
-					"clients.go":          customClientTemplate,
-					"client_providers.go": customClientProviders,
+				CustomTemplates: model.CustomTemplates{
+					Templates: map[string]string{
+						"clients.go":          customClientTemplate,
+						"client_providers.go": customClientProviders,
+					},
 				},
 				ApiRoot: "pkg/api/istio",
 			},
@@ -303,9 +317,11 @@ func main() {
 					},
 				},
 				CustomTypesImportPath: "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2",
-				CustomTemplates: map[string]string{
-					"clients.go":          customClientTemplate,
-					"client_providers.go": customClientProviders,
+				CustomTemplates: model.CustomTemplates{
+					Templates: map[string]string{
+						"clients.go":          customClientTemplate,
+						"client_providers.go": customClientProviders,
+					},
 				},
 				ApiRoot: "pkg/api/linkerd",
 			},
@@ -321,9 +337,11 @@ func main() {
 					},
 				},
 				CustomTypesImportPath: "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1",
-				CustomTemplates: map[string]string{
-					"clients.go":          customClientTemplate,
-					"client_providers.go": customClientProviders,
+				CustomTemplates: model.CustomTemplates{
+					Templates: map[string]string{
+						"clients.go":          customClientTemplate,
+						"client_providers.go": customClientProviders,
+					},
 				},
 				ApiRoot: "pkg/api/smi",
 			},

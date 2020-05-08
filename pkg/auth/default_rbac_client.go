@@ -11,6 +11,12 @@ import (
 	k8srbacv1 "k8s.io/client-go/kubernetes/typed/rbac/v1"
 )
 
+type RbacClientFactory func(kubeClients kubernetes.Interface) RbacClient
+
+func RbacClientFactoryProvider() RbacClientFactory {
+	return RbacClientProvider
+}
+
 func RbacClientProvider(kubeClients kubernetes.Interface) RbacClient {
 	return &defaultRbacClient{clusterRoleBindingClient: kubeClients.RbacV1().ClusterRoleBindings()}
 }

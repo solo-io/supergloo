@@ -7,7 +7,6 @@ import (
 	"io"
 
 	"github.com/google/wire"
-	"github.com/solo-io/go-utils/installutils/helminstall"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
@@ -25,7 +24,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/deregister"
-	register "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe"
@@ -48,8 +47,10 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
+	clients2 "github.com/solo-io/service-mesh-hub/pkg/clients"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
 	"github.com/spf13/cobra"
@@ -69,6 +70,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		k8s_core.PodClientFromClientsetProvider,
 		k8s_core.SecretClientFactoryProvider,
 		k8s_core.ServiceAccountClientFactoryProvider,
+		k8s_core.NamespaceClientFromConfigFactoryProvider,
 		kubernetes_apps.ClientsetFromConfigProvider,
 		kubernetes_apps.DeploymentClientFromClientsetProvider,
 		kubernetes_apps.DeploymentClientFactoryProvider,
@@ -80,7 +82,6 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		auth.NewClusterAuthorization,
 		docker.NewImageNameParser,
 		version2.NewDeployedVersionFinder,
-		helminstall.DefaultHelmClient,
 		install.HelmInstallerProvider,
 		healthcheck.ClientsProvider,
 		crd_uninstall.NewCrdRemover,
@@ -105,6 +106,11 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		zephyr_networking.AccessControlPolicyClientFromClientsetProvider,
 		zephyr_networking.VirtualMeshClientFromClientsetProvider,
 		zephyr_security.VirtualMeshCertificateSigningRequestClientFromClientsetProvider,
+		csr.NewCsrAgentInstallerFactory,
+		factories.HelmClientForMemoryConfigFactoryProvider,
+		factories.HelmClientForFileConfigFactoryProvider,
+		clients2.NewClusterRegistrationClient,
+		clients2.ClusterAuthClientFromConfigFactoryProvider,
 	)
 	return nil, nil
 }
@@ -122,8 +128,6 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 		server.NewDeploymentClient,
 		operator.NewInstallerManifestBuilder,
 		common.IstioClientsProvider,
-		register.NewCsrAgentInstallerFactory,
-		common.ClusterRegistrationClientsProvider,
 		operator.NewOperatorManagerFactory,
 		status.StatusClientFactoryProvider,
 		healthcheck.DefaultHealthChecksProvider,

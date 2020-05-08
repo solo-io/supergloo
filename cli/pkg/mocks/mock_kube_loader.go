@@ -10,6 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	resource "k8s.io/cli-runtime/pkg/resource"
 	rest "k8s.io/client-go/rest"
+	clientcmd "k8s.io/client-go/tools/clientcmd"
 	api "k8s.io/client-go/tools/clientcmd/api"
 )
 
@@ -34,6 +35,21 @@ func NewMockKubeLoader(ctrl *gomock.Controller) *MockKubeLoader {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockKubeLoader) EXPECT() *MockKubeLoaderMockRecorder {
 	return m.recorder
+}
+
+// GetConfigWithContext mocks base method.
+func (m *MockKubeLoader) GetConfigWithContext(arg0, arg1, arg2 string) (clientcmd.ClientConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetConfigWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(clientcmd.ClientConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetConfigWithContext indicates an expected call of GetConfigWithContext.
+func (mr *MockKubeLoaderMockRecorder) GetConfigWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfigWithContext", reflect.TypeOf((*MockKubeLoader)(nil).GetConfigWithContext), arg0, arg1, arg2)
 }
 
 // GetRawConfigForContext mocks base method.

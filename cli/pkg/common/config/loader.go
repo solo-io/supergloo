@@ -3,6 +3,7 @@ package common_config
 import (
 	"os"
 
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"k8s.io/cli-runtime/pkg/resource"
@@ -12,10 +13,17 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
+var (
+	FailedLoadingKubeConfig = func(err error) error {
+		return eris.Wrap(err, "Failed to load the kube config")
+	}
+)
+
 // given a path to a kube config file, convert it into either creds for hitting the API server of the cluster it points to,
 // or return the contexts/clusters it is aware of
 //go:generate mockgen -destination ../../mocks/mock_kube_loader.go -package cli_mocks github.com/solo-io/service-mesh-hub/cli/pkg/common/config KubeLoader
 type KubeLoader interface {
+	GetConfigWithContext(masterURL, kubeconfigPath, context string) (clientcmd.ClientConfig, error)
 	GetRestConfigForContext(path string, context string) (*rest.Config, error)
 	GetRawConfigForContext(path, context string) (clientcmdapi.Config, error)
 	RESTClientGetter(path, context string) resource.RESTClientGetter
@@ -42,9 +50,9 @@ type kubeLoader struct {
 }
 
 func (k *kubeLoader) GetRestConfigForContext(path string, context string) (*rest.Config, error) {
-	cfg, err := getConfigWithContext("", path, context)
+	cfg, err := k.GetConfigWithContext("", path, context)
 	if err != nil {
-		return nil, err
+		return nil, FailedLoadingKubeConfig(err)
 	}
 
 	return cfg.ClientConfig()
@@ -54,7 +62,7 @@ func (k *kubeLoader) GetRestConfigFromBytes(config []byte) (*rest.Config, error)
 	return clientcmd.RESTConfigFromKubeConfig(config)
 }
 
-func getConfigWithContext(masterURL, kubeconfigPath, context string) (clientcmd.ClientConfig, error) {
+func (k *kubeLoader) GetConfigWithContext(masterURL, kubeconfigPath, context string) (clientcmd.ClientConfig, error) {
 	verifiedKubeConfigPath := clientcmd.RecommendedHomeFile
 	if kubeconfigPath != "" {
 		verifiedKubeConfigPath = kubeconfigPath
@@ -84,7 +92,7 @@ func assertKubeConfigExists(path string) error {
 }
 
 func (k *kubeLoader) GetRawConfigForContext(path, context string) (clientcmdapi.Config, error) {
-	cfg, err := getConfigWithContext("", path, context)
+	cfg, err := k.GetConfigWithContext("", path, context)
 	if err != nil {
 		return clientcmdapi.Config{}, err
 	}

@@ -2,40 +2,39 @@ package aws
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
-	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws/clients/appmesh"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
 )
 
 const (
-	// TODO make this configurable by user
-	ReconcileIntervalSeconds = 1
+	ReconcileIntervalSeconds = 1           // TODO make this configurable by user
 	Region                   = "us-east-2" // TODO remove hardcode and replace with configuration
 )
 
 type awsCredsHandler struct {
-	appMeshClientFactory              appmesh_client.AppMeshClientFactory
-	appMeshDiscoveryReconcilerFactory aws.AppMeshDiscoveryReconcilerFactory
-	reconcilerCancelFuncs             map[string]context.CancelFunc // Map of computeTargetName -> RestAPIDiscoveryReconciler's cancelFunc
+	reconcilerCancelFuncs map[string]context.CancelFunc // Map of computeTargetName -> RestAPIDiscoveryReconciler's cancelFunc
+	secretCredsConverter  aws_creds.SecretAwsCredsConverter
+	reconcilers           []RestAPIDiscoveryReconciler
 }
 
 type AwsCredsHandler compute_target.ComputeTargetCredentialsHandler
 
 func NewAwsAPIHandler(
-	appMeshClientFactory appmesh_client.AppMeshClientFactory,
-	appMeshReconcilerFactory aws.AppMeshDiscoveryReconcilerFactory,
+	secretCredsConverter aws_creds.SecretAwsCredsConverter,
+	reconcilers []RestAPIDiscoveryReconciler,
 ) AwsCredsHandler {
 	return &awsCredsHandler{
-		appMeshClientFactory:              appMeshClientFactory,
-		appMeshDiscoveryReconcilerFactory: appMeshReconcilerFactory,
-		reconcilerCancelFuncs:             make(map[string]context.CancelFunc),
+		reconcilerCancelFuncs: make(map[string]context.CancelFunc),
+		secretCredsConverter:  secretCredsConverter,
+		reconcilers:           reconcilers,
 	}
 }
 
@@ -46,27 +45,22 @@ func (a *awsCredsHandler) ComputeTargetAdded(ctx context.Context, secret *k8s_co
 	}
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Debugf("New REST API added for compute target %s", secret.GetName())
-	// Periodically run API Reconciler to ensure AppMesh state is consistent with SMH
 	ticker := time.NewTicker(ReconcileIntervalSeconds * time.Second)
-	appMeshClient, err := a.appMeshClientFactory.Build(secret, Region)
+	reconcilerCtx, cancelFunc := a.buildContext(ctx, secret.GetName())
+	// Store mapping of computeTargetName to cancelFunc so associated reconcilers can be canceled
+	a.reconcilerCancelFuncs[secret.GetName()] = cancelFunc
+	creds, err := a.secretCredsConverter.SecretToCreds(secret)
 	if err != nil {
 		return err
 	}
-	reconcilerCtx, cancelFunc := a.buildContext(ctx, secret.GetName())
-	appMeshDiscoveryReconciler := a.appMeshDiscoveryReconcilerFactory(secret.GetName(), appMeshClient, Region)
-	// Store mapping of computeTargetName to cancelFunc so reconciler can be canceled
-	a.reconcilerCancelFuncs[secret.GetName()] = cancelFunc
+	a.runReconcilers(logger, reconcilerCtx, creds)
 	go func() {
+		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
-				logger.Debugf("Reconciling AppMesh with secret %s.%s", secret.GetName(), secret.GetNamespace())
-				err := appMeshDiscoveryReconciler.Reconcile(reconcilerCtx)
-				if err != nil {
-					logger.Error(err)
-				}
+				a.runReconcilers(logger, reconcilerCtx, creds)
 			case <-reconcilerCtx.Done():
-				ticker.Stop()
 				return
 			}
 		}
@@ -94,4 +88,15 @@ func (a *awsCredsHandler) buildContext(parentCtx context.Context, computeTargetN
 		context.WithValue(parentCtx, constants.COMPUTE_TARGET, computeTargetName),
 		zap.String(constants.COMPUTE_TARGET, computeTargetName),
 	))
+}
+
+func (a *awsCredsHandler) runReconcilers(
+	logger *zap.SugaredLogger,
+	reconcilerCtx context.Context,
+	creds *credentials.Credentials) {
+	for _, reconciler := range a.reconcilers {
+		if err := reconciler.Reconcile(reconcilerCtx, creds, Region); err != nil {
+			logger.Errorw(fmt.Sprintf("Error reconciling for %s", reconciler.GetName()), zap.Error(err))
+		}
+	}
 }

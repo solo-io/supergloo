@@ -20,10 +20,6 @@ const (
 )
 
 var (
-	FailedToReadCAFile = func(err error, fileName string) error {
-		return eris.Wrapf(err, "Failed to read kubeconfig CA file: %s", fileName)
-	}
-
 	// exponential backoff retry with an initial period of 0.1s for 7 iterations, which will mean a cumulative retry period of ~6s
 	secretLookupOpts = []retry.Option{
 		retry.Delay(time.Millisecond * 100),

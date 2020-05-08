@@ -68,9 +68,11 @@ func main() {
 				RenderTypes:      renderTypes,
 				RenderController: true,
 				RenderProtos:     true,
-				CustomTemplates: map[string]string{
-					"clients.go":          customClientTemplate,
-					"client_providers.go": customClientProviders,
+				CustomTemplates: model.CustomTemplates{
+					Templates: map[string]string{
+						"clients.go":          customClientTemplate,
+						"client_providers.go": customClientProviders,
+					},
 				},
 				ApiRoot: "pkg/api",
 			},

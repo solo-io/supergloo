@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	mock_types "github.com/solo-io/go-utils/installutils/helminstall/types/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
@@ -70,7 +71,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall("", "", env.GetWriteNamespace()).
+			NewUninstall(env.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
@@ -94,7 +95,9 @@ var _ = Describe("Crd Uninstaller", func() {
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: func(kubeConfig, kubeContext string) types.HelmClient {
+					return helmClient
+				},
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,
@@ -141,7 +144,7 @@ Service Mesh Hub has been uninstalled
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall("", "", env.GetWriteNamespace()).
+			NewUninstall(env.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
@@ -176,7 +179,9 @@ Service Mesh Hub has been uninstalled
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: func(kubeConfig, kubeContext string) types.HelmClient {
+					return helmClient
+				},
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,
@@ -214,7 +219,7 @@ Service Mesh Hub has been uninstalled
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall("", "", env.GetWriteNamespace()).
+			NewUninstall(env.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
@@ -233,7 +238,9 @@ Service Mesh Hub has been uninstalled
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: func(kubeConfig, kubeContext string) types.HelmClient {
+					return helmClient
+				},
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,
@@ -274,7 +281,7 @@ Service Mesh Hub has been uninstalled
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall("", "", env.GetWriteNamespace()).
+			NewUninstall(env.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
@@ -293,7 +300,9 @@ Service Mesh Hub has been uninstalled
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: func(kubeConfig, kubeContext string) types.HelmClient {
+					return helmClient
+				},
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,
@@ -349,7 +358,7 @@ Service Mesh Hub has been uninstalled with errors
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall("", "", env.GetWriteNamespace()).
+			NewUninstall(env.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
@@ -373,7 +382,9 @@ Service Mesh Hub has been uninstalled with errors
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: func(kubeConfig, kubeContext string) types.HelmClient {
+					return helmClient
+				},
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,
@@ -426,7 +437,7 @@ Service Mesh Hub has been uninstalled with errors
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall("", "", smhInstallNamespace).
+			NewUninstall(smhInstallNamespace).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
@@ -461,7 +472,9 @@ Service Mesh Hub has been uninstalled with errors
 			MockController: ctrl,
 			Ctx:            ctx,
 			KubeClients: common.KubeClients{
-				HelmClient:                  helmClient,
+				HelmClientFileConfigFactory: func(kubeConfig, kubeContext string) types.HelmClient {
+					return helmClient
+				},
 				KubeClusterClient:           kubeClusterClient,
 				ClusterDeregistrationClient: clusterDeregistrationClient,
 				NamespaceClient:             namespaceClient,

@@ -43,11 +43,13 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		mesh_consul.WireProviderSet,
 		mesh_linkerd.WireProviderSet,
 		DiscoveryContextProvider,
-		ComputeTargetCredentialsHandlersProvider,
 		AwsSet,
 		kube.NewConverter,
 		files.NewDefaultFileReader,
 		appmesh_tenancy.AppMeshTenancyScannerFactoryProvider,
+		ClusterRegistrationSet,
+		ComputeTargetCredentialsHandlersProvider,
+		ClusterRegistrationClientProvider,
 	)
 
 	return DiscoveryContext{}, nil

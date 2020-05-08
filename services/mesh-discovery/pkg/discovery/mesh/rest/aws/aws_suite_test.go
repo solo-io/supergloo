@@ -9,5 +9,5 @@ import (
 
 func TestAws(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Aws Suite")
+	RunSpecs(t, "Discovery AWS Mesh reconciler Suite")
 }

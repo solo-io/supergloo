@@ -7,6 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 )
 
@@ -21,23 +22,42 @@ const (
 	LocallyPackagedChartTemplate = "./_output/helm/charts/csr-agent/csr-agent-%s.tgz"
 )
 
-func NewCsrAgentInstallerFactory() CsrAgentInstallerFactory {
-	return NewCsrAgentInstaller
+func NewCsrAgentInstallerFactory(
+	helmClientFileConfigFactory factories.HelmClientForFileConfigFactory,
+	helmClientMemoryConfigFactory factories.HelmClientForMemoryConfigFactory,
+	deployedVersionFinder version.DeployedVersionFinder,
+) CsrAgentInstallerFactory {
+	return func(
+		helmInstallerFactory factories.HelmerInstallerFactory,
+	) CsrAgentInstaller {
+		return NewCsrAgentInstaller(
+			helmClientFileConfigFactory,
+			helmClientMemoryConfigFactory,
+			deployedVersionFinder,
+			helmInstallerFactory,
+		)
+	}
 }
 
 func NewCsrAgentInstaller(
-	helmInstaller types.Installer,
+	helmClientFileConfigFactory factories.HelmClientForFileConfigFactory,
+	helmClientMemoryConfigFactory factories.HelmClientForMemoryConfigFactory,
 	deployedVersionFinder version.DeployedVersionFinder,
+	helmInstallerFactory factories.HelmerInstallerFactory,
 ) CsrAgentInstaller {
 	return &csrAgentInstaller{
-		helmInstaller:         helmInstaller,
-		deployedVersionFinder: deployedVersionFinder,
+		helmClientFileConfigFactory:   helmClientFileConfigFactory,
+		helmClientMemoryConfigFactory: helmClientMemoryConfigFactory,
+		helmInstallerFactory:          helmInstallerFactory,
+		deployedVersionFinder:         deployedVersionFinder,
 	}
 }
 
 type csrAgentInstaller struct {
-	helmInstaller         types.Installer
-	deployedVersionFinder version.DeployedVersionFinder
+	helmClientFileConfigFactory   factories.HelmClientForFileConfigFactory
+	helmClientMemoryConfigFactory factories.HelmClientForMemoryConfigFactory
+	helmInstallerFactory          factories.HelmerInstallerFactory
+	deployedVersionFinder         version.DeployedVersionFinder
 }
 
 func (c *csrAgentInstaller) Install(
@@ -49,14 +69,7 @@ func (c *csrAgentInstaller) Install(
 		return FailedToSetUpCsrAgent(err)
 	}
 
-	err = c.runHelmInstall(
-		installOptions.KubeConfig,
-		installOptions.KubeContext,
-		openSourceVersion,
-		installOptions.RemoteWriteNamespace,
-		installOptions.ReleaseName,
-		installOptions.UseDevCsrAgentChart,
-	)
+	err = c.runHelmInstall(openSourceVersion, installOptions)
 
 	// if we already have a CSR agent running here, then we're done
 	if eris.Is(err, helminstall.ReleaseAlreadyInstalledErr(installOptions.ReleaseName, installOptions.RemoteWriteNamespace)) {
@@ -69,29 +82,26 @@ func (c *csrAgentInstaller) Install(
 }
 
 func (c *csrAgentInstaller) runHelmInstall(
-	kubeConfig string,
-	kubeContext string,
 	version string,
-	installNamespace string,
-	releaseName string,
-	useDevCsrAgentChart bool,
+	opts *CsrAgentInstallOptions,
 ) error {
-
 	var chartPathTemplate string
-	if useDevCsrAgentChart {
+	var helmClient types.HelmClient
+	if opts.UseDevCsrAgentChart {
 		chartPathTemplate = LocallyPackagedChartTemplate
 	} else {
 		chartPathTemplate = CsrAgentChartUriTemplate
 	}
-
 	releaseUri := fmt.Sprintf(chartPathTemplate, version)
-
-	return c.helmInstaller.Install(&types.InstallerConfig{
-		KubeConfig:       kubeConfig,
-		KubeContext:      kubeContext,
-		InstallNamespace: installNamespace,
+	if opts.KubeConfig != nil {
+		helmClient = c.helmClientMemoryConfigFactory(opts.KubeConfig)
+	} else {
+		helmClient = c.helmClientFileConfigFactory(opts.KubeConfigPath, opts.KubeContext)
+	}
+	return c.helmInstallerFactory(helmClient).Install(&types.InstallerConfig{
+		InstallNamespace: opts.RemoteWriteNamespace,
 		CreateNamespace:  true,
-		ReleaseName:      releaseName,
+		ReleaseName:      opts.ReleaseName,
 		ReleaseUri:       releaseUri,
 	})
 }
