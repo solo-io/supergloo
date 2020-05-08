@@ -15,5 +15,5 @@ type Validator interface {
 }
 
 type ValidationLoop interface {
-	RunValidationOnce(ctx context.Context) error
+	RunOnce(ctx context.Context) error
 }

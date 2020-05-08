@@ -82,7 +82,7 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 					},
 					nil,
 				)),
-			).RunValidationOnce)
+			).RunOnce)
 
 		err = meshNetworkingContext.AccessControlPolicyTranslator.Start(
 			contextutils.WithLogger(ctx, "access_control_policy_translator"),

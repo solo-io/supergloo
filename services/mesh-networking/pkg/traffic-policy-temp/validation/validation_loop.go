@@ -26,7 +26,7 @@ type validationLoop struct {
 	validator           Validator
 }
 
-func (v *validationLoop) RunValidationOnce(ctx context.Context) error {
+func (v *validationLoop) RunOnce(ctx context.Context) error {
 	logger := contextutils.LoggerFrom(ctx)
 	trafficPolicies, err := v.trafficPolicyClient.ListTrafficPolicy(ctx)
 	if err != nil {
