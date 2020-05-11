@@ -33,21 +33,21 @@ func (m *MockRunner) EXPECT() *MockRunnerMockRecorder {
 	return m.recorder
 }
 
-// Deregister mocks base method.
+// Run mocks base method.
 func (m *MockRunner) Run(cmd string, args ...string) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{cmd}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "Deregister", varargs...)
+	ret := m.ctrl.Call(m, "Run", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Deregister indicates an expected call of Deregister.
+// Run indicates an expected call of Run.
 func (mr *MockRunnerMockRecorder) Run(cmd interface{}, args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{cmd}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deregister", reflect.TypeOf((*MockRunner)(nil).Run), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockRunner)(nil).Run), varargs...)
 }
