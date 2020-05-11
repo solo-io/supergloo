@@ -11,8 +11,10 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -21,11 +23,15 @@ var (
 	DeregistrationSet = wire.NewSet(
 		ClusterDeregistrationCmd,
 	)
-	KubeClusterNotFound = func(remoteClusterName string, err error) error {
+	ErrorGettingKubeCluster = func(remoteClusterName string, err error) error {
 		return eris.Errorf("Error retrieving KubernetesCluster object %s.%s, %s",
 			remoteClusterName,
 			env.GetWriteNamespace(),
 			err.Error())
+	}
+	CannotManuallyRemoveDiscoveredCluster = func(remoteClusterName string) error {
+		// TODO harveyxia improve this error message once user-config for cluster discovery is implemented
+		return eris.Errorf("Cannot manually deregister discovered cluster %s. To remove the cluster, you must configure the discovery config.", remoteClusterName)
 	}
 )
 
@@ -78,7 +84,10 @@ func deregisterCluster(
 		ctx,
 		client.ObjectKey{Name: opts.Cluster.Deregister.RemoteClusterName, Namespace: env.GetWriteNamespace()})
 	if err != nil {
-		return KubeClusterNotFound(opts.Cluster.Deregister.RemoteClusterName, err)
+		return ErrorGettingKubeCluster(opts.Cluster.Deregister.RemoteClusterName, err)
+	}
+	if kubeCluster.GetLabels()[constants.DISCOVERED_BY] != register.MeshctlDiscoverySource {
+		return CannotManuallyRemoveDiscoveredCluster(opts.Cluster.Deregister.RemoteClusterName)
 	}
 	return masterKubeClients.ClusterDeregistrationClient.Deregister(ctx, kubeCluster)
 }
