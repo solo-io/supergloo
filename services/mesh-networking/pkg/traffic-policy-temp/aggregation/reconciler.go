@@ -78,52 +78,15 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		}
 	}
 
-	// TODO: Set statuses
-
-	return nil
-}
-
-func (a *aggregationReconciler) markTrafficPoliciesAsConflictIfNecessary(
-	ctx context.Context,
-	policiesInConflict map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
-) error {
-	for tp, newlyComputedConflictErrors := range policiesInConflict {
-		shouldUpdateStatus := false
-
-		if len(tp.Status.ConflictErrors) != len(newlyComputedConflictErrors) {
-			shouldUpdateStatus = true
-		} else {
-			for i, newlyComputedConflict := range newlyComputedConflictErrors {
-				shouldUpdateStatus = shouldUpdateStatus || !newlyComputedConflict.Equal(tp.Status.ConflictErrors[i])
-			}
-		}
-
-		if shouldUpdateStatus {
-			tp.Status.ConflictErrors = newlyComputedConflictErrors
-			return a.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, tp)
+	for service, validatedPolicies := range serviceToUpdatedStatus {
+		err := a.updateServiceStatusIfNecessary(ctx, service, validatedPolicies)
+		if err != nil {
+			return err
 		}
 	}
 
-	return nil
-}
-
-func (a *aggregationReconciler) updateServiceStatusIfNecessary(
-	ctx context.Context,
-	meshService *zephyr_discovery.MeshService,
-	newlyComputedMergeablePolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
-) error {
-	shouldUpdateStatus := false
-	if len(newlyComputedMergeablePolicies) != len(meshService.Status.ValidatedTrafficPolicies) {
-		shouldUpdateStatus = true
-	} else {
-		for i, newlyComputedPolicy := range newlyComputedMergeablePolicies {
-			shouldUpdateStatus = shouldUpdateStatus || !meshService.Status.ValidatedTrafficPolicies[i].Equal(newlyComputedPolicy)
-		}
-	}
-
-	if shouldUpdateStatus {
-		meshService.Status.ValidatedTrafficPolicies = newlyComputedMergeablePolicies
-		err := a.meshServiceClient.UpdateMeshServiceStatus(ctx, meshService)
+	for _, policy := range allValidatedTrafficPolicies {
+		err := a.updatePolicyStatusIfNecessary(ctx, policy, trafficPolicyToAllConflicts[policy])
 		if err != nil {
 			return err
 		}
@@ -235,4 +198,54 @@ func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*z
 	}
 
 	return allMeshServices, serviceToClusterName, nil
+}
+
+func (a *aggregationReconciler) updateServiceStatusIfNecessary(
+	ctx context.Context,
+	meshService *zephyr_discovery.MeshService,
+	newlyComputedMergeablePolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
+) error {
+	shouldUpdateStatus := false
+	if len(newlyComputedMergeablePolicies) != len(meshService.Status.ValidatedTrafficPolicies) {
+		shouldUpdateStatus = true
+	} else {
+		for i, newlyComputedPolicy := range newlyComputedMergeablePolicies {
+			shouldUpdateStatus = shouldUpdateStatus || !meshService.Status.ValidatedTrafficPolicies[i].Equal(newlyComputedPolicy)
+		}
+	}
+
+	if shouldUpdateStatus {
+		meshService.Status.ValidatedTrafficPolicies = newlyComputedMergeablePolicies
+		err := a.meshServiceClient.UpdateMeshServiceStatus(ctx, meshService)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (a *aggregationReconciler) updatePolicyStatusIfNecessary(
+	ctx context.Context,
+	policy *zephyr_networking.TrafficPolicy,
+	newConflictErrors []*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
+) error {
+	shouldUpdateStatus := false
+	if len(newConflictErrors) != len(policy.Status.GetConflictErrors()) {
+		shouldUpdateStatus = true
+	} else {
+		for newErrorIndex, newError := range newConflictErrors {
+			shouldUpdateStatus = shouldUpdateStatus || !policy.Status.GetConflictErrors()[newErrorIndex].Equal(newError)
+		}
+	}
+
+	if shouldUpdateStatus {
+		policy.Status.ConflictErrors = newConflictErrors
+		err := a.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, policy)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
