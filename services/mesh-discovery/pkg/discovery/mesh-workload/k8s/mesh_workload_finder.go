@@ -19,10 +19,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const (
-	MeshWorkloadProcessingError = "Error processing deployment for mesh workload discovery"
-)
-
 func NewMeshWorkloadFinder(
 	ctx context.Context,
 	clusterName string,
@@ -75,7 +71,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 			},
 			OnUpdate: func(old, new *k8s_core_types.Pod) error {
 				logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, new)
-				logger.Debugf("Handling create for pod %s.%s", new.GetName(), new.GetNamespace())
+				logger.Debugf("Handling update for pod %s.%s", new.GetName(), new.GetNamespace())
 				err = m.reconcile()
 				if err != nil {
 					logger.Errorf("%+v", err)
@@ -84,7 +80,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 			},
 			OnDelete: func(obj *k8s_core_types.Pod) error {
 				logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, obj)
-				logger.Debugf("Handling create for pod %s.%s", obj.GetName(), obj.GetNamespace())
+				logger.Debugf("Handling delete for pod %s.%s", obj.GetName(), obj.GetNamespace())
 				err = m.reconcile()
 				if err != nil {
 					logger.Errorf("%+v", err)
@@ -101,7 +97,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 		&zephyr_discovery_controller.MeshEventHandlerFuncs{
 			OnCreate: func(obj *zephyr_discovery.Mesh) error {
 				logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, obj)
-				logger.Debugf("mesh create event for %s", obj.Name)
+				logger.Debugf("mesh create event for %s.%s", obj.GetName(), obj.GetNamespace())
 				err = m.reconcile()
 				if err != nil {
 					logger.Errorf("%+v", err)
@@ -110,7 +106,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 			},
 			OnUpdate: func(old, new *zephyr_discovery.Mesh) error {
 				logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, new)
-				logger.Debugf("mesh create event for %s", new.Name)
+				logger.Debugf("mesh update event for %s.%s", new.GetName(), new.GetNamespace())
 				err = m.reconcile()
 				if err != nil {
 					logger.Errorf("%+v", err)
@@ -119,7 +115,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 			},
 			OnDelete: func(obj *zephyr_discovery.Mesh) error {
 				logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, obj)
-				logger.Debugf("mesh create event for %s", obj.Name)
+				logger.Debugf("mesh delete event for %s.%s", obj.GetName(), obj.GetNamespace())
 				err = m.reconcile()
 				if err != nil {
 					logger.Errorf("%+v", err)
@@ -176,14 +172,14 @@ func (m *meshWorkloadFinder) getExistingWorkloads() (map[string]*zephyr_discover
 	if err != nil {
 		return nil, nil, err
 	}
-	meshWorkloads := make(map[string]*zephyr_discovery.MeshWorkload)
-	meshWorkloadNames := sets.NewString()
+	workloadsByName := make(map[string]*zephyr_discovery.MeshWorkload)
+	workloadNames := sets.NewString()
 	for _, meshWorkload := range meshWorkloadList.Items {
 		meshWorkload := meshWorkload
-		meshWorkloads[meshWorkload.GetName()] = &meshWorkload
-		meshWorkloadNames.Insert(meshWorkload.GetName())
+		workloadsByName[meshWorkload.GetName()] = &meshWorkload
+		workloadNames.Insert(meshWorkload.GetName())
 	}
-	return meshWorkloads, meshWorkloadNames, nil
+	return workloadsByName, workloadNames, nil
 }
 
 func (m *meshWorkloadFinder) discoverAllWorkloads(discoveredMeshTypes sets.Int32) ([]*zephyr_discovery.MeshWorkload, sets.String, error) {
