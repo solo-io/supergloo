@@ -7,8 +7,8 @@ import (
 	"github.com/google/wire"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +25,7 @@ func GetWorkloadRootCommand(
 	out io.Writer,
 	printers common.Printers,
 	kubeClientFactory common.KubeClientsFactory,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 	opts *options.Options,
 ) GetWorkloadCommand {
 	cmd := &cobra.Command{

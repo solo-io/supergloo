@@ -12,12 +12,12 @@ import (
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/helmutil"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/semver"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 )
@@ -57,7 +57,7 @@ func InstallCmd(
 	opts *options.Options,
 	kubeClientsFactory common.KubeClientsFactory,
 	clientFactory common.ClientsFactory,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 	out io.Writer,
 ) InstallCommand {
 	cmd := &cobra.Command{

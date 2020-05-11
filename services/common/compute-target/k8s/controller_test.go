@@ -10,8 +10,8 @@ import (
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
-	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	. "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	. "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
@@ -31,7 +31,7 @@ var _ = Describe("mc_manager", func() {
 		configHandler     compute_target.ComputeTargetCredentialsHandler
 		managerHandler    *MockAsyncManagerHandler
 		cfg               *rest.Config
-		mockKubeConverter *mock_kube.MockConverter
+		mockKubeConverter *mock_kubeconfig.MockConverter
 		constErr          = eris.New("hello")
 	)
 
@@ -41,7 +41,7 @@ var _ = Describe("mc_manager", func() {
 		managerHandler = NewMockAsyncManagerHandler(ctrl)
 		asyncMgr = NewMockAsyncManager(ctrl)
 		asyncMgrFactory = NewMockAsyncManagerFactory(ctrl)
-		mockKubeConverter = mock_kube.NewMockConverter(ctrl)
+		mockKubeConverter = mock_kubeconfig.NewMockConverter(ctrl)
 		managerController := NewAsyncManagerController(asyncMgrFactory, mockKubeConverter)
 		informer, configHandler = managerController, managerController
 		cfg = &rest.Config{}
@@ -105,7 +105,7 @@ users:
 				}
 				mockKubeConverter.EXPECT().
 					SecretToConfig(secret).
-					Return(clusterName, &kube.ConvertedConfigs{
+					Return(clusterName, &kubeconfig.ConvertedConfigs{
 						RestConfig: &rest.Config{},
 						ApiConfig: &api.Config{
 							CurrentContext: "current-context",

@@ -1,4 +1,4 @@
-package clients_test
+package kubeconfig_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestClients(t *testing.T) {
+func TestKubeconfig(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Clients Suite")
+	RunSpecs(t, "Kubeconfig Suite")
 }

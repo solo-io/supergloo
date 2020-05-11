@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/wire"
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	mc_watcher "github.com/solo-io/service-mesh-hub/services/common/compute-target/secret-event-handler"
@@ -59,7 +59,7 @@ func AsyncManagerFactoryProvider() mc_manager.AsyncManagerFactory {
 }
 
 func KubeClusterCredentialsHandlerProvider(
-	kubeConverter kube.Converter,
+	kubeConverter kubeconfig.Converter,
 ) *mc_manager.AsyncManagerController {
 	return mc_manager.NewAsyncManagerController(mc_manager.NewAsyncManagerFactory(), kubeConverter)
 }

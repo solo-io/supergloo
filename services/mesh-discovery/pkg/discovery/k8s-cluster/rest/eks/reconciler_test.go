@@ -10,8 +10,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	mock_clients "github.com/solo-io/service-mesh-hub/pkg/clients/mocks"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
+	mock_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
@@ -35,7 +35,7 @@ var _ = Describe("Reconciler", func() {
 		mockKubeClusterClient         *mock_core.MockKubernetesClusterClient
 		mockEksClient                 *mock_cloud.MockEksClient
 		mockEksConfigBuilder          *mock_discovery.MockEksConfigBuilder
-		mockClusterRegistrationClient *mock_clients.MockClusterRegistrationClient
+		mockClusterRegistrationClient *mock_registration.MockClusterRegistrationClient
 		eksReconciler                 compute_target_aws.EksDiscoveryReconciler
 	)
 
@@ -45,7 +45,7 @@ var _ = Describe("Reconciler", func() {
 		mockKubeClusterClient = mock_core.NewMockKubernetesClusterClient(ctrl)
 		mockEksClient = mock_cloud.NewMockEksClient(ctrl)
 		mockEksConfigBuilder = mock_discovery.NewMockEksConfigBuilder(ctrl)
-		mockClusterRegistrationClient = mock_clients.NewMockClusterRegistrationClient(ctrl)
+		mockClusterRegistrationClient = mock_registration.NewMockClusterRegistrationClient(ctrl)
 		eksReconciler = discovery_eks.NewEksDiscoveryReconciler(
 			mockKubeClusterClient,
 			func(creds *credentials.Credentials, region string) (cloud.EksClient, error) {
@@ -119,7 +119,7 @@ var _ = Describe("Reconciler", func() {
 			env.GetWriteNamespace(),
 			"",
 			discovery_eks.ReconcilerDiscoverySource,
-			clients.ClusterRegisterOpts{},
+			cluster_registration.ClusterRegisterOpts{},
 		).Return(nil)
 	}
 

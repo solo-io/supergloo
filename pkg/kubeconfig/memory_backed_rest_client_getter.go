@@ -1,7 +1,7 @@
-package common_config
+package kubeconfig
 
 import (
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/config/internal"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig/internal"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/discovery"

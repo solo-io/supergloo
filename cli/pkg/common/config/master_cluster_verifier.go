@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"k8s.io/client-go/rest"
 )
 
@@ -33,14 +34,14 @@ type MasterKubeConfigVerifier interface {
 // Accepts the validated master kube REST config
 type OnMasterVerificationSuccess func(masterKubeConfig *rest.Config)
 
-func NewMasterKubeConfigVerifier(kubeLoader KubeLoader) MasterKubeConfigVerifier {
+func NewMasterKubeConfigVerifier(kubeLoader kubeconfig.KubeLoader) MasterKubeConfigVerifier {
 	return &masterKubeConfigVerifier{
 		kubeLoader: kubeLoader,
 	}
 }
 
 type masterKubeConfigVerifier struct {
-	kubeLoader KubeLoader
+	kubeLoader kubeconfig.KubeLoader
 }
 
 func (m *masterKubeConfigVerifier) Verify(masterKubeConfigPath string, masterContext string) (err error) {

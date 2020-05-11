@@ -7,11 +7,11 @@ import (
 
 	"github.com/google/wire"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories"
 	appmesh_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s/appmesh"
@@ -44,7 +44,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		mesh_linkerd.WireProviderSet,
 		DiscoveryContextProvider,
 		AwsSet,
-		kube.NewConverter,
+		kubeconfig.NewConverter,
 		files.NewDefaultFileReader,
 		appmesh_tenancy.AppMeshTenancyScannerFactoryProvider,
 		ClusterRegistrationSet,

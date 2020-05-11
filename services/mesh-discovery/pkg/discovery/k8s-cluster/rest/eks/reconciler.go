@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
@@ -35,14 +35,14 @@ type eksReconciler struct {
 	kubeClusterClient         v1alpha1.KubernetesClusterClient
 	eksClientFactory          eks_client.EksClientFactory
 	eksConfigBuilderFactory   eks_client.EksConfigBuilderFactory
-	clusterRegistrationClient clients.ClusterRegistrationClient
+	clusterRegistrationClient cluster_registration.ClusterRegistrationClient
 }
 
 func NewEksDiscoveryReconciler(
 	kubeClusterClient v1alpha1.KubernetesClusterClient,
 	eksClientFactory eks_client.EksClientFactory,
 	eksConfigBuilderFactory eks_client.EksConfigBuilderFactory,
-	clusterRegistrationClient clients.ClusterRegistrationClient,
+	clusterRegistrationClient cluster_registration.ClusterRegistrationClient,
 ) compute_target_aws.EksDiscoveryReconciler {
 	return &eksReconciler{
 		kubeClusterClient:         kubeClusterClient,
@@ -151,7 +151,7 @@ func (e *eksReconciler) registerCluster(
 		env.GetWriteNamespace(), // TODO make this configurable
 		rawConfig.CurrentContext,
 		ReconcilerDiscoverySource,
-		clients.ClusterRegisterOpts{
+		cluster_registration.ClusterRegisterOpts{
 			Overwrite:                  false,
 			UseDevCsrAgentChart:        false,
 			LocalClusterDomainOverride: "",
