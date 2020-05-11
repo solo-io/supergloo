@@ -25,6 +25,5 @@ type ClusterRegistrationClient interface {
 
 // perform all the steps necessary to de-register this cluster from the SMH installation
 type ClusterDeregistrationClient interface {
-	// results in deleting thepkg/clients/cluster-registration/registration_client.go kubeCluster that's passed in
 	Deregister(ctx context.Context, kubeCluster *zephyr_discovery.KubernetesCluster) error
 }
