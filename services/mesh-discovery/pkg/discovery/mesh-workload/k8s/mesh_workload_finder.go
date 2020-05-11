@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
@@ -16,22 +15,13 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
-	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
-	MeshWorkloadProcessingError    = "Error processing deployment for mesh workload discovery"
-	MeshWorkloadProcessingNonFatal = "Non-fatal error occurred while scanning for mesh workloads"
-)
-
-var (
-	FailedToReprocessPods = func(clusterName string, err error) error {
-		return eris.Wrapf(err, "Failed to re-process pods in cluster %s for mesh workload discovery", clusterName)
-	}
+	MeshWorkloadProcessingError = "Error processing deployment for mesh workload discovery"
 )
 
 func NewMeshWorkloadFinder(
@@ -81,21 +71,68 @@ func (m *meshWorkloadFinder) StartDiscovery(
 	err = podEventWatcher.AddEventHandler(
 		m.ctx,
 		&k8s_core_controller.PodEventHandlerFuncs{
-			OnCreate: m.handlePodCreate,
-			OnUpdate: m.handlePodUpdate,
-			OnDelete: m.handlePodDelete,
+			OnCreate: func(obj *k8s_core_types.Pod) error {
+				logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, obj)
+				logger.Debugf("Handling create for pod %s.%s", obj.GetName(), obj.GetNamespace())
+				err = m.reconcileExistingState()
+				if err != nil {
+					logger.Errorf("%+v", err)
+				}
+				return err
+			},
+			OnUpdate: func(old, new *k8s_core_types.Pod) error {
+				logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, new)
+				logger.Debugf("Handling create for pod %s.%s", new.GetName(), new.GetNamespace())
+				err = m.reconcileExistingState()
+				if err != nil {
+					logger.Errorf("%+v", err)
+				}
+				return err
+			},
+			OnDelete: func(obj *k8s_core_types.Pod) error {
+				logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, obj)
+				logger.Debugf("Handling create for pod %s.%s", obj.GetName(), obj.GetNamespace())
+				err = m.reconcileExistingState()
+				if err != nil {
+					logger.Errorf("%+v", err)
+				}
+				return err
+			},
 		},
 	)
 	if err != nil {
 		return err
 	}
-
 	err = meshEventWatcher.AddEventHandler(
 		m.ctx,
 		&zephyr_discovery_controller.MeshEventHandlerFuncs{
-			OnCreate: m.handleMeshCreate,
-			OnUpdate: m.handleMeshUpdate,
-			OnDelete: m.handleMeshDelete,
+			OnCreate: func(obj *zephyr_discovery.Mesh) error {
+				logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, obj)
+				logger.Debugf("mesh create event for %s", obj.Name)
+				err = m.reconcileExistingState()
+				if err != nil {
+					logger.Errorf("%+v", err)
+				}
+				return err
+			},
+			OnUpdate: func(old, new *zephyr_discovery.Mesh) error {
+				logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, new)
+				logger.Debugf("mesh create event for %s", new.Name)
+				err = m.reconcileExistingState()
+				if err != nil {
+					logger.Errorf("%+v", err)
+				}
+				return err
+			},
+			OnDelete: func(obj *zephyr_discovery.Mesh) error {
+				logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, obj)
+				logger.Debugf("mesh create event for %s", obj.Name)
+				err = m.reconcileExistingState()
+				if err != nil {
+					logger.Errorf("%+v", err)
+				}
+				return err
+			},
 		},
 	)
 	return err
@@ -121,27 +158,16 @@ func (m *meshWorkloadFinder) reconcileExistingState() error {
 		return err
 	}
 
-	meshes, err := m.localMeshClient.ListMesh(m.ctx, inThisCluster)
+	discoveredMeshTypes, err := m.getDiscoveredMeshTypes(m.ctx)
 	if err != nil {
 		return err
-	}
-
-	// manually run mesh create events for all meshes we already have recorded
-	// this ensures that this component's stateful map of mesh types matches what it should
-	for _, meshIter := range meshes.Items {
-		mesh := meshIter
-
-		err := m.handleMeshCreate(&mesh)
-		if err != nil {
-			return err
-		}
 	}
 
 	rediscoveredWorkloadsByName := map[string]*zephyr_discovery.MeshWorkload{}
 	for _, podIter := range podsInCluster.Items {
 		pod := podIter
 
-		discoveredWorkload, err := m.discoverMeshWorkload(&pod)
+		discoveredWorkload, err := m.discoverMeshWorkload(&pod, discoveredMeshTypes)
 		if err != nil {
 			return err
 		} else if discoveredWorkload == nil {
@@ -225,164 +251,30 @@ func (m *meshWorkloadFinder) handleMeshDelete(deletedMesh *zephyr_discovery.Mesh
 	return nil
 }
 
-func (m *meshWorkloadFinder) handleMeshCreate(mesh *zephyr_discovery.Mesh) error {
-	logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, mesh)
-	logger.Debugf("mesh create event for %s", mesh.Name)
-	return m.handleMeshUpsert(mesh, logger)
-}
-
-func (m *meshWorkloadFinder) handleMeshUpdate(_, mesh *zephyr_discovery.Mesh) error {
-	logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, mesh)
-	logger.Debugf("mesh update event for %s", mesh.Name)
-	return m.handleMeshUpsert(mesh, logger)
-}
-
-func (m *meshWorkloadFinder) handleMeshUpsert(
-	mesh *zephyr_discovery.Mesh,
-	logger *zap.SugaredLogger,
-) error {
-	// ensure we are only watching for meshes discovered on this same cluster
-	// otherwise we can hit a race where:
-	//  - Istio is discovered on cluster A
-	//  - that mesh is recorded here
-	//  - we start discovering workloads on cluster B using the Istio mesh workload discovery
-	//  - but we haven't yet discovered Istio on this cluster
-	if !k8s_tenancy.ClusterHostsMesh(m.clusterName, mesh) {
-		return nil
-	}
-
-	meshType, err := enum_conversion.MeshToMeshType(mesh)
+func (m *meshWorkloadFinder) getDiscoveredMeshTypes(ctx context.Context) (sets.Int32, error) {
+	meshList, err := m.localMeshClient.ListMesh(ctx)
 	if err != nil {
-		logger.Errorf("%+v", err)
-		return nil
+		return nil, err
 	}
-
-	// first, register in our stateful representation that we have seen this mesh
-	// this allows us to use the mesh workload scanner implementation later on
-	m.discoveredMeshTypesMutex.Lock()
-	m.discoveredMeshTypes.Insert(int32(meshType))
-	m.discoveredMeshTypesMutex.Unlock()
-
-	allPods, err := m.podClient.ListPod(m.ctx)
-	if err != nil {
-		contextutils.LoggerFrom(m.ctx).Errorf("Error loading all pods from mesh create event %s", mesh.Name)
-		return FailedToReprocessPods(m.clusterName, err)
-	}
-
-	// now that we have discovered a new mesh on this cluster, kick off a re-process of all existing pods
-	for _, podIter := range allPods.Items {
-		pod := podIter
-		contextutils.LoggerFrom(m.ctx).Debugf("mesh create event for %s - processing pod %s", mesh.Name, pod.Name)
-		err := m.handlePodCreate(&pod)
+	discoveredMeshTypes := sets.Int32{}
+	for _, mesh := range meshList.Items {
+		mesh := mesh
+		// ensure we are only watching for meshes discovered on this same cluster
+		// otherwise we can hit a race where:
+		//  - Istio is discovered on cluster A
+		//  - that mesh is recorded here
+		//  - we start discovering workloads on cluster B using the Istio mesh workload discovery
+		//  - but we haven't yet discovered Istio on this cluster
+		if !k8s_tenancy.ClusterHostsMesh(m.clusterName, &mesh) {
+			continue
+		}
+		meshType, err := enum_conversion.MeshToMeshType(&mesh)
 		if err != nil {
-			contextutils.LoggerFrom(m.ctx).Errorf("Error reprocessing all pods from mesh create event %s", mesh.Name)
-			return FailedToReprocessPods(m.clusterName, err)
+			return nil, err
 		}
+		discoveredMeshTypes.Insert(int32(meshType))
 	}
-
-	return nil
-}
-
-func (m *meshWorkloadFinder) handlePodDelete(pod *k8s_core_types.Pod) error {
-	logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, pod)
-
-	logger.Debugf("Handling delete for pod %s.%s", pod.GetName(), pod.GetNamespace())
-
-	discoveredMeshWorkload, err := m.discoverMeshWorkload(pod)
-	if err != nil {
-		logger.Errorf("Error while handling pod delete: %+v", err)
-		return nil
-	}
-
-	if discoveredMeshWorkload == nil {
-		return nil
-	}
-
-	err = m.localMeshWorkloadClient.DeleteMeshWorkload(m.ctx, clients.ObjectMetaToObjectKey(discoveredMeshWorkload.ObjectMeta))
-	if err != nil {
-		logger.Errorf("Could not delete mesh workload: %+v", err)
-		return nil
-	}
-
-	return nil
-}
-
-func (m *meshWorkloadFinder) handlePodCreate(pod *k8s_core_types.Pod) error {
-	logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, pod)
-
-	logger.Debugf("Handling create for pod %s.%s", pod.GetName(), pod.GetNamespace())
-	discoveredMeshWorkload, err := m.discoverMeshWorkload(pod)
-
-	logger.Debugf("pod %s.%s discovered: %t", pod.GetName(), pod.GetNamespace(), discoveredMeshWorkload != nil)
-
-	if err != nil && discoveredMeshWorkload == nil {
-		logger.Errorw(MeshWorkloadProcessingError, zap.Error(err))
-		return err
-	} else if err != nil && discoveredMeshWorkload != nil {
-		logger.Warnw(MeshWorkloadProcessingNonFatal, zap.Error(err))
-	} else if discoveredMeshWorkload == nil {
-		logger.Debugf("MeshWorkload not found for pod %s/%s", pod.Namespace, pod.Name)
-		return nil
-	}
-	err = m.createOrUpdateWorkload(discoveredMeshWorkload)
-	logger.Debugf("pod %s.%s resulted in error after upsert: %t", pod.GetName(), pod.GetNamespace(), err != nil)
-	if err != nil {
-		logger.Errorf("Error: %+v", err)
-	}
-	return err
-}
-
-func (m *meshWorkloadFinder) handlePodUpdate(old, new *k8s_core_types.Pod) error {
-	old.SetClusterName(m.clusterName)
-	new.SetClusterName(m.clusterName)
-
-	logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, new)
-
-	oldMeshWorkload, err := m.discoverMeshWorkload(old)
-	if err != nil && oldMeshWorkload == nil {
-		logger.Errorw(MeshWorkloadProcessingError, zap.Error(err))
-		return err
-	} else if err != nil && oldMeshWorkload != nil {
-		logger.Warnw(MeshWorkloadProcessingNonFatal, zap.Error(err))
-	}
-	newMeshWorkload, err := m.discoverMeshWorkload(new)
-	if err != nil && newMeshWorkload == nil {
-		logger.Errorw(MeshWorkloadProcessingError, zap.Error(err))
-		return err
-	} else if err != nil && newMeshWorkload != nil {
-		logger.Warnw(MeshWorkloadProcessingNonFatal, zap.Error(err))
-	}
-
-	if oldMeshWorkload == nil && newMeshWorkload == nil {
-		// irrelevant pod, ignore
-		return nil
-	} else if oldMeshWorkload == nil && newMeshWorkload != nil {
-		// existing pod is now mesh-injected
-		return m.createOrUpdateWorkload(newMeshWorkload)
-	} else if oldMeshWorkload != nil && newMeshWorkload == nil {
-		// existing pod is no longer mesh-injected
-		// TODO: delete
-		return nil
-	} else {
-		// old and new MeshWorkloads equivalent
-		if oldMeshWorkload.Spec.Equal(newMeshWorkload.Spec) {
-			return nil
-		} else {
-			return m.localMeshWorkloadClient.UpdateMeshWorkload(m.ctx, newMeshWorkload)
-		}
-	}
-}
-
-func (m *meshWorkloadFinder) DeletePod(pod *k8s_core_types.Pod) error {
-	logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, pod)
-	logger.Error("Deletion of MeshWorkloads is currently not supported")
-	return nil
-}
-
-func (m *meshWorkloadFinder) GenericPod(pod *k8s_core_types.Pod) error {
-	logger := logging.BuildEventLogger(m.ctx, logging.GenericEvent, pod)
-	logger.Error("MeshWorkload generic events are not currently supported")
-	return nil
+	return discoveredMeshTypes, nil
 }
 
 func (m *meshWorkloadFinder) attachGeneralDiscoveryLabels(meshWorkload *zephyr_discovery.MeshWorkload) {
@@ -395,18 +287,12 @@ func (m *meshWorkloadFinder) attachGeneralDiscoveryLabels(meshWorkload *zephyr_d
 	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAMESPACE] = meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace()
 }
 
-func (m *meshWorkloadFinder) discoverMeshWorkload(pod *k8s_core_types.Pod) (*zephyr_discovery.MeshWorkload, error) {
+func (m *meshWorkloadFinder) discoverMeshWorkload(pod *k8s_core_types.Pod, discoveredMeshTypes sets.Int32) (*zephyr_discovery.MeshWorkload, error) {
 	logger := contextutils.LoggerFrom(m.ctx)
 	var discoveredMeshWorkload *zephyr_discovery.MeshWorkload
 	var err error
-	// Only run mesh workload scanner implementations for meshes that are known to have been discovered.
-	// This prevents a race condition: If a mesh and its injected pods exist already when mesh-discovery comes online,
-	// then the pods can be discovered first and will end up having a nil mesh reference on them.
-	m.discoveredMeshTypesMutex.RLock()
-	discoveredMeshTypes := m.discoveredMeshTypes.List()
-	m.discoveredMeshTypesMutex.RUnlock()
 
-	for _, discoveredMeshType := range discoveredMeshTypes {
+	for _, discoveredMeshType := range discoveredMeshTypes.List() {
 		meshWorkloadScanner, ok := m.meshWorkloadScannerImplementations[zephyr_core_types.MeshType(discoveredMeshType)]
 		if !ok {
 			logger.Warnf("No MeshWorkloadScanner found for mesh type: %s", zephyr_core_types.MeshType(discoveredMeshType).String())
@@ -425,23 +311,4 @@ func (m *meshWorkloadFinder) discoverMeshWorkload(pod *k8s_core_types.Pod) (*zep
 		m.attachGeneralDiscoveryLabels(discoveredMeshWorkload)
 	}
 	return discoveredMeshWorkload, nil
-}
-
-func (m *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *zephyr_discovery.MeshWorkload) error {
-	objectKey, err := client.ObjectKeyFromObject(discoveredWorkload)
-	if err != nil {
-		return err
-	}
-	mw, err := m.localMeshWorkloadClient.GetMeshWorkload(m.ctx, objectKey)
-	if errors.IsNotFound(err) {
-		return m.localMeshWorkloadClient.CreateMeshWorkload(m.ctx, discoveredWorkload)
-	} else if err != nil {
-		return err
-	} else if mw.Spec.Equal(discoveredWorkload.Spec) {
-		return nil
-	}
-	// Need to do this, as we need metadata from previous object, (ResourceVersion), for update
-	mw.Spec = discoveredWorkload.Spec
-	mw.Labels = discoveredWorkload.Labels
-	return m.localMeshWorkloadClient.UpdateMeshWorkload(m.ctx, mw)
 }
