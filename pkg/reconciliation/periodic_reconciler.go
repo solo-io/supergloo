@@ -8,13 +8,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewPeriodicReconciler() PeriodicReconciler {
+func NewPeriodicReconciliationRunner() PeriodicReconciliationRunner {
 	return &periodicReconciler{}
 }
 
 type periodicReconciler struct{}
 
-func (p *periodicReconciler) Start(ctx context.Context, reconciliationPeriod time.Duration, actionName string, action func(context.Context) error) {
+func (p *periodicReconciler) Start(ctx context.Context, reconciliationPeriod time.Duration, actionName string, reconciler Reconciler) {
 	logger := contextutils.LoggerFrom(contextutils.WithLoggerValues(ctx,
 		zap.String("periodic_reconciler_name", actionName),
 	))
@@ -29,7 +29,7 @@ func (p *periodicReconciler) Start(ctx context.Context, reconciliationPeriod tim
 			return
 		case <-ticker.C:
 			logger.Debugf("new reconcile loop running")
-			err := action(ctx)
+			err := reconciler.Reconcile(ctx)
 			if err != nil {
 				logger.Errorf("Error during reconciliation, retrying in %s: %+v", reconciliationPeriod.String(), err)
 			}

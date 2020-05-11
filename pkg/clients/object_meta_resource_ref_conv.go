@@ -1,6 +1,8 @@
 package clients
 
 import (
+	"fmt"
+
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -10,6 +12,11 @@ import (
 // (cluster probably isn't set on these objects, but this is just in the interest of future-proofing)
 func SameObject(this k8s_meta_types.ObjectMeta, that k8s_meta_types.ObjectMeta) bool {
 	return this.GetName() == that.GetName() && this.GetNamespace() == that.GetNamespace() && this.GetClusterName() == that.GetClusterName()
+}
+
+// turn an ObjectMeta into a unique (single-cluster) string that can be used in sets, map keys, etc.
+func ToUniqueString(obj k8s_meta_types.ObjectMeta) string {
+	return fmt.Sprintf("%s+%s", obj.Name, obj.Namespace)
 }
 
 func ObjectMetaToResourceRef(objMeta k8s_meta_types.ObjectMeta) *zephyr_core_types.ResourceRef {

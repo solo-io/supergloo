@@ -8,6 +8,8 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 )
 
+//go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
+
 type Validator interface {
 	// always returns a non-nil Status that should be written to the cluster
 	// if validation failed, the concrete validation error that occurred will be returned with that non-nil status so it can be logged

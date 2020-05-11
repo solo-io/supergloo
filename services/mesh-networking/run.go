@@ -69,9 +69,9 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 		//if err != nil {
 		//	logger.Fatalw("error initializing TrafficPolicyTranslator", zap.Error(err))
 		//}
-		validationReconciler := reconciliation.NewPeriodicReconciler()
-		go validationReconciler.Start(ctx, time.Second, "tp validation",
-			traffic_policy_validation.NewValidationLoop(
+		validationReconcileRunner := reconciliation.NewPeriodicReconciliationRunner()
+		go validationReconcileRunner.Start(ctx, time.Second, "tp validation",
+			traffic_policy_validation.NewValidationReconciler(
 				v1alpha1.NewTrafficPolicyClient(m.GetClient()),
 				v1alpha12.NewMeshServiceClient(m.GetClient()),
 				traffic_policy_validation.NewValidator(selector.NewResourceSelector(
@@ -82,7 +82,7 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 					},
 					nil,
 				)),
-			).RunOnce)
+			))
 
 		err = meshNetworkingContext.AccessControlPolicyTranslator.Start(
 			contextutils.WithLogger(ctx, "access_control_policy_translator"),

@@ -6,13 +6,14 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
 )
 
-func NewValidationLoop(
+func NewValidationReconciler(
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	validator Validator,
-) ValidationLoop {
+) reconciliation.Reconciler {
 	return &validationLoop{
 		trafficPolicyClient: trafficPolicyClient,
 		validator:           validator,
@@ -26,7 +27,7 @@ type validationLoop struct {
 	validator           Validator
 }
 
-func (v *validationLoop) RunOnce(ctx context.Context) error {
+func (v *validationLoop) Reconcile(ctx context.Context) error {
 	logger := contextutils.LoggerFrom(ctx)
 	trafficPolicies, err := v.trafficPolicyClient.ListTrafficPolicy(ctx)
 	if err != nil {
@@ -55,6 +56,9 @@ func (v *validationLoop) RunOnce(ctx context.Context) error {
 
 		if !trafficPolicy.Status.GetValidationStatus().Equal(newValidationStatus) {
 			trafficPolicy.Status.ValidationStatus = newValidationStatus
+
+			// also zero-out the conflict errors, since the state has changed and we don't know what it may conflict with now
+			trafficPolicy.Status.ConflictErrors = nil
 
 			err := v.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, &trafficPolicy)
 			if err != nil {
