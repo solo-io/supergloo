@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/google/wire"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
@@ -16,11 +17,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type DeregistrationCmd *cobra.Command
-
-var DeregistrationSet = wire.NewSet(
-	ClusterDeregistrationCmd,
+var (
+	DeregistrationSet = wire.NewSet(
+		ClusterDeregistrationCmd,
+	)
+	KubeClusterNotFound = func(remoteClusterName string, err error) error {
+		return eris.Errorf("Error retrieving KubernetesCluster object %s.%s, %s",
+			remoteClusterName,
+			env.GetWriteNamespace(),
+			err.Error())
+	}
 )
+
+type DeregistrationCmd *cobra.Command
 
 func ClusterDeregistrationCmd(
 	ctx context.Context,
@@ -31,33 +40,45 @@ func ClusterDeregistrationCmd(
 	out io.Writer,
 ) DeregistrationCmd {
 	register := &cobra.Command{
-		Use:   cliconstants.ClusterRegisterCommand.Use,
-		Short: cliconstants.ClusterRegisterCommand.Short,
-		Long:  cliconstants.ClusterRegisterCommand.Long,
+		Use:   cliconstants.ClusterDeregisterCommand.Use,
+		Short: cliconstants.ClusterDeregisterCommand.Short,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := cluster_internal.VerifyMasterCluster(clientsFactory, opts); err != nil {
-				return err
-			}
-			masterCfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
+			err := deregisterCluster(ctx, kubeClientsFactory, clientsFactory, opts, kubeLoader)
 			if err != nil {
-				return err
-			}
-			masterKubeClients, err := kubeClientsFactory(masterCfg, opts.Root.WriteNamespace)
-			if err != nil {
-				return err
-			}
-			kubeCluster, err := masterKubeClients.KubeClusterClient.GetKubernetesCluster(
-				ctx,
-				client.ObjectKey{Name: opts.Cluster.Deregister.RemoteClusterName, Namespace: env.GetWriteNamespace()})
-			err = masterKubeClients.ClusterDeregistrationClient.Deregister(ctx, kubeCluster)
-			if err != nil {
-				fmt.Fprintf(out, "Error deregistering cluster %s: %+v", opts.Cluster.Deregister.RemoteClusterName, err)
+				fmt.Fprintf(out, "Error deregistering cluster %s.\n", opts.Cluster.Deregister.RemoteClusterName)
 			} else {
-				fmt.Fprintf(out, "Successfully deregistered cluster %s.", opts.Cluster.Deregister.RemoteClusterName)
+				fmt.Fprintf(out, "Successfully deregistered cluster %s.\n", opts.Cluster.Deregister.RemoteClusterName)
 			}
 			return err
 		},
 	}
 	options.AddClusterDeregisterFlags(register, opts)
 	return register
+}
+
+func deregisterCluster(
+	ctx context.Context,
+	kubeClientsFactory common.KubeClientsFactory,
+	clientsFactory common.ClientsFactory,
+	opts *options.Options,
+	kubeLoader kubeconfig.KubeLoader,
+) error {
+	if err := cluster_internal.VerifyMasterCluster(clientsFactory, opts); err != nil {
+		return err
+	}
+	masterCfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
+	if err != nil {
+		return err
+	}
+	masterKubeClients, err := kubeClientsFactory(masterCfg, opts.Root.WriteNamespace)
+	if err != nil {
+		return err
+	}
+	kubeCluster, err := masterKubeClients.KubeClusterClient.GetKubernetesCluster(
+		ctx,
+		client.ObjectKey{Name: opts.Cluster.Deregister.RemoteClusterName, Namespace: env.GetWriteNamespace()})
+	if err != nil {
+		return KubeClusterNotFound(opts.Cluster.Deregister.RemoteClusterName, err)
+	}
+	return masterKubeClients.ClusterDeregistrationClient.Deregister(ctx, kubeCluster)
 }

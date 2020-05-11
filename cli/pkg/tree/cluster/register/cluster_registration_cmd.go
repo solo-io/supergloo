@@ -40,9 +40,9 @@ func ClusterRegistrationCmd(
 				kubeLoader,
 			)
 			if err != nil {
-				fmt.Fprintf(out, "Error registering cluster %s: %+v", opts.Cluster.Register.RemoteClusterName, err)
+				fmt.Fprintf(out, "Error registering cluster %s.\n", opts.Cluster.Register.RemoteClusterName)
 			} else {
-				fmt.Fprintf(out, "Successfully registered cluster %s.", opts.Cluster.Register.RemoteClusterName)
+				fmt.Fprintf(out, "Successfully registered cluster %s.\n", opts.Cluster.Register.RemoteClusterName)
 			}
 			return err
 		},

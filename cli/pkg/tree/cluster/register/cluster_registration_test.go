@@ -188,18 +188,18 @@ var _ = Describe("Cluster Operations", func() {
 			testErr := eris.New("hello")
 
 			stdout, err = meshctl.Invoke("cluster register --remote-cluster-name hello")
-			Expect(stdout).To(Equal(fmt.Sprintf("Error registering cluster hello: %+v", err)))
+			Expect(stdout).To(Equal(fmt.Sprintf("Error registering cluster hello.\n")))
 			Expect(err).To(HaveInErrorChain(cluster_internal.NoRemoteConfigSpecifiedError))
 
 			configVerifier.EXPECT().Verify(kubeConfigPath, "").Return(testErr)
 			stdout, err = meshctl.Invoke("cluster register --remote-cluster-name hello --remote-context hello")
-			Expect(stdout).To(Equal(fmt.Sprintf("Error registering cluster hello: %+v", err)))
+			Expect(stdout).To(Equal(fmt.Sprintf("Error registering cluster hello.\n")))
 			Expect(err).To(HaveInErrorChain(testErr))
 
 			configVerifier.EXPECT().Verify(kubeConfigPath, "").Return(testErr)
 
 			stdout, err = meshctl.Invoke("cluster register --remote-cluster-name hello --remote-kubeconfig hello")
-			Expect(stdout).To(Equal(fmt.Sprintf("Error registering cluster hello: %+v", err)))
+			Expect(stdout).To(Equal(fmt.Sprint("Error registering cluster hello.\n")))
 			Expect(err).To(HaveInErrorChain(testErr))
 		})
 
