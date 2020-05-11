@@ -120,15 +120,16 @@ func (c *clusterDeregistrationClient) Deregister(ctx context.Context, kubeCluste
 		return FailedToCleanUpKubeConfigCrd(err, kubeCluster.GetName())
 	}
 
-	err = c.cleanUpServiceAccounts(ctx, clientForCluster, kubeCluster)
-	if err != nil {
-		return FailedToCleanUpServiceAccount(err, kubeCluster.GetName())
-	}
-
 	// the CSR agent installs only CRDs from the security group. Remove only those
 	_, err = c.crdRemover.RemoveCrdGroup(ctx, kubeCluster.GetName(), config.RestConfig, zephyr_security_scheme.SchemeGroupVersion)
 	if err != nil && !meta.IsNoMatchError(err) {
 		return FailedToRemoveCrds(err, kubeCluster.GetName())
+	}
+
+	// Remove the service account as the last step, as this is required for SMH to perform any operation on the cluster.
+	err = c.cleanUpServiceAccounts(ctx, clientForCluster, kubeCluster)
+	if err != nil {
+		return FailedToCleanUpServiceAccount(err, kubeCluster.GetName())
 	}
 
 	return nil

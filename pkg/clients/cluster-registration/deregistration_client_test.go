@@ -338,16 +338,6 @@ var _ = Describe("Cluster Deregistration", func() {
 		kubeClusterClient.EXPECT().
 			DeleteKubernetesCluster(ctx, clients.ObjectMetaToObjectKey(clusterToDeregister.ObjectMeta)).
 			Return(nil)
-		remoteServiceAccountClient.EXPECT().
-			DeleteAllOfServiceAccount(
-				ctx,
-				client.InNamespace(remoteWriteNamespace),
-				client.MatchingLabels{
-					cliconstants.ManagedByLabel:     cliconstants.ServiceMeshHubApplicationName,
-					auth.RegistrationServiceAccount: auth.RegistrationServiceAccountValue,
-				},
-			).
-			Return(nil)
 
 		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
