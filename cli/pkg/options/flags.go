@@ -97,6 +97,13 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 	cobra.MarkFlagRequired(flags, remoteClusterName)
 }
 
+func AddClusterDeregisterFlags(cmd *cobra.Command, opts *Options) {
+	flags := cmd.PersistentFlags()
+	remoteClusterName := "remote-cluster-name"
+	flags.StringVar(&opts.Cluster.Deregister.RemoteClusterName, remoteClusterName, "", "Name of the cluster to deregister")
+	cobra.MarkFlagRequired(flags, remoteClusterName)
+}
+
 func AddMeshInstallFlags(cmd *cobra.Command, opts *Options) {
 	operatorNsFlag := "operator-namespace"
 	flags := cmd.PersistentFlags()

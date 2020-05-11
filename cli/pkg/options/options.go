@@ -33,6 +33,7 @@ type Root struct {
 
 type Cluster struct {
 	Register Register
+	Deregister
 }
 
 type Register struct {
@@ -43,6 +44,10 @@ type Register struct {
 	LocalClusterDomainOverride string
 	Overwrite                  bool
 	UseDevCsrAgentChart        bool
+}
+
+type Deregister struct {
+	RemoteClusterName string
 }
 
 type Mesh struct {
