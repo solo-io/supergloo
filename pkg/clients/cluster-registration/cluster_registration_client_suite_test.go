@@ -1,4 +1,4 @@
-package deregister_test
+package cluster_registration_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestCluster(t *testing.T) {
+func TestClients(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Cluster De-Registration Suite")
+	RunSpecs(t, "Registration Client Suite")
 }

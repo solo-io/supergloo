@@ -1,8 +1,9 @@
-package clients
+package cluster_registration
 
 import (
 	"context"
 
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -20,4 +21,9 @@ type ClusterRegistrationClient interface {
 		discoverySource string,
 		registerOpts ClusterRegisterOpts,
 	) error
+}
+
+// perform all the steps necessary to de-register this cluster from the SMH installation
+type ClusterDeregistrationClient interface {
+	Deregister(ctx context.Context, kubeCluster *zephyr_discovery.KubernetesCluster) error
 }

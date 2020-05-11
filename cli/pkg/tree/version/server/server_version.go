@@ -2,10 +2,10 @@ package server
 
 import (
 	"github.com/rotisserie/eris"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	k8s_apps "k8s.io/api/apps/v1"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -30,10 +30,10 @@ type DeploymentClient interface {
 
 type defaultDeploymentClient struct {
 	opts   *options.Options
-	loader common_config.KubeLoader
+	loader kubeconfig.KubeLoader
 }
 
-func NewDeploymentClient(loader common_config.KubeLoader, opts *options.Options) DeploymentClient {
+func NewDeploymentClient(loader kubeconfig.KubeLoader, opts *options.Options) DeploymentClient {
 	return &defaultDeploymentClient{
 		opts:   opts,
 		loader: loader,
@@ -70,7 +70,7 @@ type ServerVersionClient interface {
 }
 
 // default ServerVersionClient
-func DefaultServerVersionClientProvider(opts *options.Options, loader common_config.KubeLoader, imageNameParser docker.ImageNameParser) ServerVersionClient {
+func DefaultServerVersionClientProvider(opts *options.Options, loader kubeconfig.KubeLoader, imageNameParser docker.ImageNameParser) ServerVersionClient {
 	return NewServerVersionClient(
 		opts.Root.WriteNamespace,
 		NewDeploymentClient(loader, opts),

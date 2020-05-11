@@ -1,4 +1,4 @@
-package kube_test
+package kubeconfig_test
 
 import (
 	"encoding/base64"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	mock_files "github.com/solo-io/service-mesh-hub/cli/pkg/common/files/mocks"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -54,7 +54,7 @@ users:
 
 		expectedSecret := &v1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
+				Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 				Name:      name,
 				Namespace: namespace,
 			},
@@ -66,7 +66,7 @@ users:
 
 		config, err := clientcmd.Load([]byte(kubeConfigRaw))
 		Expect(err).NotTo(HaveOccurred())
-		secret, err := kube.NewConverter(nil).ConfigToSecret(name, namespace, &kube.KubeConfig{
+		secret, err := kubeconfig.NewConverter(nil).ConfigToSecret(name, namespace, &kubeconfig.KubeConfig{
 			Config:  *config,
 			Cluster: clusterName,
 		})
@@ -131,7 +131,7 @@ users:
 
 		expectedSecret := &v1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Labels:    map[string]string{kube.KubeConfigSecretLabel: "true"},
+				Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 				Name:      name,
 				Namespace: namespace,
 			},
@@ -143,7 +143,7 @@ users:
 
 		config, err := clientcmd.Load([]byte(kubeConfigRaw))
 		Expect(err).NotTo(HaveOccurred())
-		secret, err := kube.NewConverter(fileReader).ConfigToSecret(name, namespace, &kube.KubeConfig{
+		secret, err := kubeconfig.NewConverter(fileReader).ConfigToSecret(name, namespace, &kubeconfig.KubeConfig{
 			Config:  *config,
 			Cluster: clusterName,
 		})

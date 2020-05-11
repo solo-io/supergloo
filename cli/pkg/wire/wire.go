@@ -23,8 +23,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/deregister"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe"
@@ -36,7 +34,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
-	helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
@@ -48,9 +45,12 @@ import (
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	clients2 "github.com/solo-io/service-mesh-hub/pkg/clients"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
 	"github.com/spf13/cobra"
@@ -85,13 +85,11 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		install.HelmInstallerProvider,
 		healthcheck.ClientsProvider,
 		crd_uninstall.NewCrdRemover,
-		kube.NewConverter,
+		kubeconfig.NewConverter,
 		common.UninstallClientsProvider,
-		common_config.NewInMemoryRESTClientGetterFactory,
-		helm_uninstall.NewUninstallerFactory,
-		config_lookup.NewKubeConfigLookup,
+		kubeconfig.NewKubeConfigLookup,
 		config_lookup.NewDynamicClientGetter,
-		deregister.NewClusterDeregistrationClient,
+		cluster_registration.NewClusterDeregistrationClient,
 		common.KubeClientsProvider,
 		description.NewResourceDescriber,
 		selector.NewResourceSelector,
@@ -109,7 +107,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		csr.NewCsrAgentInstallerFactory,
 		factories.HelmClientForMemoryConfigFactoryProvider,
 		factories.HelmClientForFileConfigFactoryProvider,
-		clients2.NewClusterRegistrationClient,
+		cluster_registration.NewClusterRegistrationClient,
 		clients2.ClusterAuthClientFromConfigFactoryProvider,
 	)
 	return nil, nil
@@ -118,10 +116,10 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	wire.Build(
 		files.NewDefaultFileReader,
-		kube.NewConverter,
+		kubeconfig.NewConverter,
 		upgrade.UpgraderClientSet,
 		docker.NewImageNameParser,
-		common_config.DefaultKubeLoaderProvider,
+		kubeconfig.DefaultKubeLoaderProvider,
 		common_config.NewMasterKubeConfigVerifier,
 		server.DefaultServerVersionClientProvider,
 		kube.NewUnstructuredKubeClientFactory,
@@ -140,7 +138,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	wire.Build(
 		docker.NewImageNameParser,
 		files.NewDefaultFileReader,
-		common_config.DefaultKubeLoaderProvider,
+		kubeconfig.DefaultKubeLoaderProvider,
 		options.NewOptionsProvider,
 		DefaultKubeClientsFactoryProvider,
 		DefaultClientsFactoryProvider,
@@ -173,10 +171,10 @@ func InitializeCLIWithMocks(
 	usageClient usageclient.Client,
 	kubeClientsFactory common.KubeClientsFactory,
 	clientsFactory common.ClientsFactory,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 	imageNameParser docker.ImageNameParser,
 	fileReader files.FileReader,
-	kubeconfigConverter kube.Converter,
+	kubeconfigConverter kubeconfig.Converter,
 	printers common.Printers,
 	runner exec.Runner,
 	interactivePrompt interactive.InteractivePrompt,

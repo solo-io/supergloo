@@ -10,7 +10,6 @@ import (
 	mock_interactive "github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	mock_resource_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing/mocks"
-	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	access_control_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/access-control-policy"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
@@ -18,6 +17,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +28,7 @@ var _ = Describe("AccessControlPolicy", func() {
 	var (
 		ctrl                   *gomock.Controller
 		ctx                    context.Context
-		mockKubeLoader         *cli_mocks.MockKubeLoader
+		mockKubeLoader         *mock_kubeconfig.MockKubeLoader
 		mockMeshServiceClient  *mock_zephyr_discovery.MockMeshServiceClient
 		mockMeshWorkloadClient *mock_zephyr_discovery.MockMeshWorkloadClient
 		mockACPClient          *mock_zephyr_networking.MockAccessControlPolicyClient
@@ -40,7 +40,7 @@ var _ = Describe("AccessControlPolicy", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockKubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
+		mockKubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
 		mockMeshServiceClient = mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
 		mockMeshWorkloadClient = mock_zephyr_discovery.NewMockMeshWorkloadClient(ctrl)
 		mockACPClient = mock_zephyr_networking.NewMockAccessControlPolicyClient(ctrl)

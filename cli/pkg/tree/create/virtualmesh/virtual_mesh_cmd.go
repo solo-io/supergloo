@@ -7,7 +7,6 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
@@ -17,6 +16,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/spf13/cobra"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +28,7 @@ func CreateVirtualMeshCommand(
 	ctx context.Context,
 	out io.Writer,
 	opts *options.Options,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 	kubeClientsFactory common.KubeClientsFactory,
 	interactivePrompt interactive.InteractivePrompt,
 	printers common.Printers,
@@ -43,7 +43,7 @@ func CreateVirtualMeshCommand(
 func createVirtualMesh(
 	ctx context.Context,
 	out io.Writer,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 	kubeClientsFactory common.KubeClientsFactory,
 	opts *options.Options,
 	interactivePrompt interactive.InteractivePrompt,

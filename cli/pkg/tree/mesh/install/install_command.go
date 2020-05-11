@@ -8,12 +8,12 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	install_istio "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/spf13/cobra"
 )
 
@@ -40,7 +40,7 @@ func MeshInstallRootCmd(
 	opts *options.Options,
 	out io.Writer,
 	in io.Reader,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 	imageNameParser docker.ImageNameParser,
 	fileReader files.FileReader,
 ) MeshInstallCommand {

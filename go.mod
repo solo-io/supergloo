@@ -50,7 +50,6 @@ require (
 	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
 	google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24 // indirect
 	google.golang.org/grpc v1.26.0
-	helm.sh/helm/v3 v3.0.0
 	istio.io/api v0.0.0-20200218013118-7fd43ea7fc2b
 	istio.io/client-go v0.0.0-20200218195608-60c238c92aa0
 	istio.io/istio v0.0.0-20200215010343-d9274c558175

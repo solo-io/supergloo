@@ -12,15 +12,15 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	mock_clients "github.com/solo-io/service-mesh-hub/pkg/clients/mocks"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
+	mock_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	"k8s.io/client-go/rest"
@@ -33,11 +33,11 @@ var _ = Describe("Install", func() {
 	var (
 		ctrl                          *gomock.Controller
 		ctx                           context.Context
-		mockKubeLoader                *cli_mocks.MockKubeLoader
+		mockKubeLoader                *mock_kubeconfig.MockKubeLoader
 		meshctl                       *cli_test.MockMeshctl
 		mockHelmClient                *mock_types.MockHelmClient
 		mockHelmInstaller             *mock_types.MockInstaller
-		mockClusterRegistrationClient *mock_clients.MockClusterRegistrationClient
+		mockClusterRegistrationClient *mock_registration.MockClusterRegistrationClient
 	)
 
 	BeforeEach(func() {
@@ -45,8 +45,8 @@ var _ = Describe("Install", func() {
 		ctx = context.TODO()
 		mockHelmClient = mock_types.NewMockHelmClient(ctrl)
 		mockHelmInstaller = mock_types.NewMockInstaller(ctrl)
-		mockKubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
-		mockClusterRegistrationClient = mock_clients.NewMockClusterRegistrationClient(ctrl)
+		mockKubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
+		mockClusterRegistrationClient = mock_registration.NewMockClusterRegistrationClient(ctrl)
 		meshctl = &cli_test.MockMeshctl{
 			MockController: ctrl,
 			Clients:        common.Clients{},
@@ -163,7 +163,7 @@ var _ = Describe("Install", func() {
 		authClient := mock_auth.NewMockClusterAuthorization(ctrl)
 		configVerifier := cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
 		clusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
-		kubeConverter := mock_kube.NewMockConverter(ctrl)
+		kubeConverter := mock_kubeconfig.NewMockConverter(ctrl)
 
 		configVerifier.EXPECT().Verify("", "").Return(nil)
 
@@ -189,7 +189,7 @@ var _ = Describe("Install", func() {
 				installNamespace,
 				contextABC,
 				register.MeshctlDiscoverySource,
-				clients.ClusterRegisterOpts{},
+				cluster_registration.ClusterRegisterOpts{},
 			)
 		mockKubeLoader.EXPECT().GetRawConfigForContext("", "").Return(cxt, nil)
 

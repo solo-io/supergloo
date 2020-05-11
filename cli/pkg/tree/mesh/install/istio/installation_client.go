@@ -7,12 +7,12 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 )
 
 var (
@@ -50,7 +50,7 @@ func NewIstioInstaller(
 	opts *options.Options,
 	kubeConfigPath,
 	kubeContext string,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 	imageNameParser docker.ImageNameParser,
 	fileReader files.FileReader,
 ) (IstioInstaller, error) {
