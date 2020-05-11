@@ -74,16 +74,16 @@ func (m *MockClusterDeregistrationClient) EXPECT() *MockClusterDeregistrationCli
 	return m.recorder
 }
 
-// Run mocks base method.
-func (m *MockClusterDeregistrationClient) Run(ctx context.Context, kubeCluster *v1alpha1.KubernetesCluster) error {
+// Deregister mocks base method.
+func (m *MockClusterDeregistrationClient) Deregister(ctx context.Context, kubeCluster *v1alpha1.KubernetesCluster) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Run", ctx, kubeCluster)
+	ret := m.ctrl.Call(m, "Deregister", ctx, kubeCluster)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Run indicates an expected call of Run.
-func (mr *MockClusterDeregistrationClientMockRecorder) Run(ctx, kubeCluster interface{}) *gomock.Call {
+// Deregister indicates an expected call of Deregister.
+func (mr *MockClusterDeregistrationClientMockRecorder) Deregister(ctx, kubeCluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockClusterDeregistrationClient)(nil).Run), ctx, kubeCluster)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deregister", reflect.TypeOf((*MockClusterDeregistrationClient)(nil).Deregister), ctx, kubeCluster)
 }

@@ -175,7 +175,7 @@ func deregisterClusters(ctx context.Context, out io.Writer, kubeClusters *zephyr
 	fmt.Fprintf(out, "Starting to de-register %d cluster(s). This may take a moment...\n", len(kubeClusters.Items))
 
 	for _, kubeCluster := range kubeClusters.Items {
-		err := masterKubeClients.ClusterDeregistrationClient.Run(ctx, &kubeCluster)
+		err := masterKubeClients.ClusterDeregistrationClient.Deregister(ctx, &kubeCluster)
 		if err != nil {
 			return FailedToDeRegisterCluster(err, kubeCluster.GetName())
 		}

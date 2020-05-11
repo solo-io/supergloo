@@ -154,7 +154,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			},
 		)
 
-		err := clusterDeregistrationClient.Run(ctx, clusterToDeregister)
+		err := clusterDeregistrationClient.Deregister(ctx, clusterToDeregister)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -204,7 +204,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			},
 		)
 
-		err := clusterDeregistrationClient.Run(ctx, clusterToDeregister)
+		err := clusterDeregistrationClient.Deregister(ctx, clusterToDeregister)
 		Expect(err).To(testutils.HaveInErrorChain(cluster_registration.FailedToFindClusterCredentials(testErr, remoteClusterName)))
 	})
 
@@ -263,7 +263,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			},
 		)
 
-		err := clusterDeregistrationClient.Run(ctx, clusterToDeregister)
+		err := clusterDeregistrationClient.Deregister(ctx, clusterToDeregister)
 		Expect(err).To(testutils.HaveInErrorChain(cluster_registration.FailedToUninstallCsrAgent(testErr, remoteClusterName)))
 	})
 
@@ -366,7 +366,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			},
 		)
 
-		err := clusterDeregistrationClient.Run(ctx, clusterToDeregister)
+		err := clusterDeregistrationClient.Deregister(ctx, clusterToDeregister)
 		Expect(err).To(testutils.HaveInErrorChain(cluster_registration.FailedToRemoveCrds(testErr, remoteClusterName)))
 	})
 })

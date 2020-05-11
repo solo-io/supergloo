@@ -82,10 +82,10 @@ var _ = Describe("Crd Uninstaller", func() {
 				Items: []zephyr_discovery.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
 		clusterDeregistrationClient.EXPECT().
-			Run(ctx, cluster1).
+			Deregister(ctx, cluster1).
 			Return(nil)
 		clusterDeregistrationClient.EXPECT().
-			Run(ctx, cluster2).
+			Deregister(ctx, cluster2).
 			Return(nil)
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
@@ -155,10 +155,10 @@ Service Mesh Hub has been uninstalled
 				Items: []zephyr_discovery.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
 		clusterDeregistrationClient.EXPECT().
-			Run(ctx, cluster1).
+			Deregister(ctx, cluster1).
 			Return(nil)
 		clusterDeregistrationClient.EXPECT().
-			Run(ctx, cluster2).
+			Deregister(ctx, cluster2).
 			Return(nil)
 		ns := &k8s_core.Namespace{
 			ObjectMeta: k8s_meta.ObjectMeta{
@@ -369,7 +369,7 @@ Service Mesh Hub has been uninstalled with errors
 				Items: []zephyr_discovery.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
 		clusterDeregistrationClient.EXPECT().
-			Run(ctx, cluster1).
+			Deregister(ctx, cluster1).
 			Return(generateNewErr())
 		namespaceClient.EXPECT().
 			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
@@ -448,10 +448,10 @@ Service Mesh Hub has been uninstalled with errors
 				Items: []zephyr_discovery.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
 		clusterDeregistrationClient.EXPECT().
-			Run(ctx, cluster1).
+			Deregister(ctx, cluster1).
 			Return(nil)
 		clusterDeregistrationClient.EXPECT().
-			Run(ctx, cluster2).
+			Deregister(ctx, cluster2).
 			Return(nil)
 		ns := &k8s_core.Namespace{
 			ObjectMeta: k8s_meta.ObjectMeta{

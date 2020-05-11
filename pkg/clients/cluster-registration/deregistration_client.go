@@ -87,7 +87,7 @@ type clusterDeregistrationClient struct {
 	dynamicClientGetter         mc_manager.DynamicClientGetter
 }
 
-func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *zephyr_discovery.KubernetesCluster) error {
+func (c *clusterDeregistrationClient) Deregister(ctx context.Context, kubeCluster *zephyr_discovery.KubernetesCluster) error {
 	config, err := c.kubeConfigLookup.FromCluster(ctx, kubeCluster.GetName())
 	if meta.IsNoMatchError(err) {
 		return nil
