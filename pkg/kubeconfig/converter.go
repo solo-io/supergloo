@@ -1,4 +1,4 @@
-package kube
+package kubeconfig
 
 import (
 	"github.com/rotisserie/eris"

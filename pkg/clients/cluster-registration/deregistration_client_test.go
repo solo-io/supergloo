@@ -9,8 +9,6 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
-	mock_config_lookup "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup/mocks"
 	mock_crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd/mocks"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
@@ -24,6 +22,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
 	mock_csr "github.com/solo-io/service-mesh-hub/pkg/installers/csr/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
 	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -57,7 +57,7 @@ var _ = Describe("Cluster Deregistration", func() {
 	It("can deregister a cluster", func() {
 		mockCsrAgentInstaller := mock_csr.NewMockCsrAgentInstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
+		configLookup := mock_kubeconfig.NewMockKubeConfigLookup(ctrl)
 		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		remoteSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
@@ -91,7 +91,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			},
 		}
 
-		kubeRestConfig := &kube.ConvertedConfigs{
+		kubeRestConfig := &kubeconfig.ConvertedConfigs{
 			RestConfig:   remoteRestConfig,
 			ClientConfig: remoteClientConfig,
 		}
@@ -162,7 +162,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		testErr := eris.New("test-err")
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		mockCsrAgentInstaller := mock_csr.NewMockCsrAgentInstaller(ctrl)
-		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
+		configLookup := mock_kubeconfig.NewMockKubeConfigLookup(ctrl)
 		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		dynamicClientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
@@ -212,7 +212,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		testErr := eris.New("test-err")
 		mockCsrAgentInstaller := mock_csr.NewMockCsrAgentInstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
+		configLookup := mock_kubeconfig.NewMockKubeConfigLookup(ctrl)
 		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		remoteSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
@@ -236,7 +236,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		}
 		configLookup.EXPECT().
 			FromCluster(ctx, clusterToDeregister.GetName()).
-			Return(&kube.ConvertedConfigs{
+			Return(&kubeconfig.ConvertedConfigs{
 				RestConfig:   remoteRestConfig,
 				ClientConfig: remoteClientConfig,
 			}, nil)
@@ -271,7 +271,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		testErr := eris.New("test-err")
 		mockCsrAgentInstaller := mock_csr.NewMockCsrAgentInstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
+		configLookup := mock_kubeconfig.NewMockKubeConfigLookup(ctrl)
 		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		remoteSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
@@ -306,7 +306,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		}
 		configLookup.EXPECT().
 			FromCluster(ctx, clusterToDeregister.GetName()).
-			Return(&kube.ConvertedConfigs{
+			Return(&kubeconfig.ConvertedConfigs{
 				RestConfig:   remoteRestConfig,
 				ClientConfig: remoteClientConfig,
 			}, nil)

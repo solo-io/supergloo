@@ -6,7 +6,6 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_core_v1_clients "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
@@ -34,9 +33,6 @@ var (
 	FailedToRemoveCrds = func(err error, clusterName string) error {
 		return eris.Wrapf(err, "Failed to remove CRDs from cluster %s", clusterName)
 	}
-	FailedToSetUpHelmUnintaller = func(err error, clusterName string) error {
-		return eris.Wrapf(err, "Failed to set up Helm uninstaller %s", clusterName)
-	}
 	FailedToCleanUpKubeConfigSecret = func(err error, clusterName string) error {
 		return eris.Wrapf(err, "Failed to clean up kubeconfig secret for cluster %s", clusterName)
 	}
@@ -49,14 +45,12 @@ var (
 	FailedToCleanUpServiceAccount = func(err error, clusterName string) error {
 		return eris.Wrapf(err, "Failed to clean up Service Mesh Hub service account from cluster %s", clusterName)
 	}
-
-	noOpHelmLogger = func(format string, v ...interface{}) {}
 )
 
 func NewClusterDeregistrationClient(
 	crdRemover crd_uninstall.CrdRemover,
 	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
-	kubeConfigLookup config_lookup.KubeConfigLookup,
+	kubeConfigLookup kubeconfig.KubeConfigLookup,
 	localkubeClusterClient zephyr_discovery.KubernetesClusterClient,
 	localSecretClient k8s_core_v1_clients.SecretClient,
 	secretClientFactory k8s_core_v1_clients.SecretClientFactory,
@@ -79,7 +73,7 @@ type clusterDeregistrationClient struct {
 	crdRemover                  crd_uninstall.CrdRemover
 	kubeLoader                  kubeconfig.KubeLoader
 	csrAgentInstallerFactory    csr.CsrAgentInstallerFactory
-	kubeConfigLookup            config_lookup.KubeConfigLookup
+	kubeConfigLookup            kubeconfig.KubeConfigLookup
 	localkubeClusterClient      zephyr_discovery.KubernetesClusterClient
 	localSecretClient           k8s_core_v1_clients.SecretClient
 	secretClientFactory         k8s_core_v1_clients.SecretClientFactory

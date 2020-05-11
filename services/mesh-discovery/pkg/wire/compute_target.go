@@ -3,7 +3,6 @@ package wire
 import (
 	"github.com/google/wire"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
@@ -13,6 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
@@ -89,7 +89,7 @@ func ClusterRegistrationClientProvider(
 	secretClientFactory k8s_core.SecretClientFromConfigFactory,
 	kubeClusterClient zephyr_discovery.KubernetesClusterClientFromConfigFactory,
 	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
-	kubeConverter kube.Converter,
+	kubeConverter kubeconfig.Converter,
 	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
 ) (cluster_registration.ClusterRegistrationClient, error) {
 	masterSecretClient, err := secretClientFactory(masterCfg)

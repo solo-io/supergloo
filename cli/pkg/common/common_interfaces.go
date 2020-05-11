@@ -10,7 +10,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
 	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
@@ -22,6 +21,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"k8s.io/client-go/rest"
@@ -45,7 +45,7 @@ type KubeClients struct {
 	NamespaceClient             k8s_core.NamespaceClient
 	UninstallClients            UninstallClients
 	ClusterDeregistrationClient cluster_registration.ClusterDeregistrationClient
-	KubeConfigLookup            config_lookup.KubeConfigLookup
+	KubeConfigLookup            kubeconfig.KubeConfigLookup
 	TrafficPolicyClient         zephyr_networking.TrafficPolicyClient
 	AccessControlPolicyClient   zephyr_networking.AccessControlPolicyClient
 	ResourceDescriber           description.ResourceDescriber
@@ -63,7 +63,7 @@ type Clients struct {
 	DeploymentClient              server.DeploymentClient
 	StatusClientFactory           status.StatusClientFactory
 	HealthCheckSuite              healthcheck_types.HealthCheckSuite
-	KubeConverter                 kube.Converter
+	KubeConverter                 kubeconfig.Converter
 	IstioClients                  IstioClients
 }
 
@@ -84,12 +84,12 @@ type IstioClients struct {
 
 type UninstallClients struct {
 	CrdRemover              crd_uninstall.CrdRemover
-	SecretToConfigConverter kube.Converter
+	SecretToConfigConverter kubeconfig.Converter
 }
 
 func UninstallClientsProvider(
 	crdRemover crd_uninstall.CrdRemover,
-	secretToConfigConverter kube.Converter,
+	secretToConfigConverter kubeconfig.Converter,
 ) UninstallClients {
 	return UninstallClients{
 		CrdRemover:              crdRemover,
@@ -108,7 +108,7 @@ func ClientsProvider(
 	istioClients IstioClients,
 	statusClientFactory status.StatusClientFactory,
 	healthCheckSuite healthcheck_types.HealthCheckSuite,
-	kubeConverter kube.Converter,
+	kubeConverter kubeconfig.Converter,
 ) *Clients {
 	return &Clients{
 		ServerVersionClient:           serverVersionClient,
@@ -136,7 +136,7 @@ func KubeClientsProvider(
 	namespaceClient k8s_core.NamespaceClient,
 	uninstallClients UninstallClients,
 	clusterDeregistrationClient cluster_registration.ClusterDeregistrationClient,
-	kubeConfigLookup config_lookup.KubeConfigLookup,
+	kubeConfigLookup kubeconfig.KubeConfigLookup,
 	virtualMeshCsrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshClient zephyr_discovery.MeshClient,

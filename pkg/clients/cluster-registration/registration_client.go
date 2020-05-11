@@ -9,7 +9,6 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -18,6 +17,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
@@ -57,7 +57,7 @@ type clusterRegistrationClient struct {
 	secretClient                       k8s_core.SecretClient
 	kubernetesClusterClient            zephyr_discovery.KubernetesClusterClient
 	namespaceClientFactory             k8s_core.NamespaceClientFromConfigFactory
-	kubeConverter                      kube.Converter
+	kubeConverter                      kubeconfig.Converter
 	csrAgentInstallerFactory           csr.CsrAgentInstallerFactory
 	clusterAuthClientFromConfigFactory clients.ClusterAuthClientFromConfigFactory
 }
@@ -66,7 +66,7 @@ func NewClusterRegistrationClient(
 	secretClient k8s_core.SecretClient,
 	kubernetesClusterClient zephyr_discovery.KubernetesClusterClient,
 	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
-	kubeConverter kube.Converter,
+	kubeConverter kubeconfig.Converter,
 	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
 	clusterAuthClientFromConfigFactory clients.ClusterAuthClientFromConfigFactory,
 ) ClusterRegistrationClient {
@@ -272,7 +272,7 @@ func (c *clusterRegistrationClient) writeKubeConfigToMaster(
 	secret, err := c.kubeConverter.ConfigToSecret(
 		remoteClusterName,
 		env.GetWriteNamespace(),
-		&kube.KubeConfig{
+		&kubeconfig.KubeConfig{
 			Config: api.Config{
 				Kind:        "Secret",
 				APIVersion:  "kubernetes_core",

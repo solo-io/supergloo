@@ -113,11 +113,11 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	customResourceDefinitionClientFromConfigFactory := v1beta1.CustomResourceDefinitionClientFromConfigFactoryProvider()
 	crdRemover := crd_uninstall.NewCrdRemover(customResourceDefinitionClientFromConfigFactory)
 	fileReader := files.NewDefaultFileReader()
-	converter := kube.NewConverter(fileReader)
+	converter := kubeconfig.NewConverter(fileReader)
 	uninstallClients := common.UninstallClientsProvider(crdRemover, converter)
 	helmClientForMemoryConfigFactory := factories.HelmClientForMemoryConfigFactoryProvider()
 	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
-	kubeConfigLookup := config_lookup.NewKubeConfigLookup(kubernetesClusterClient, secretClient, converter)
+	kubeConfigLookup := kubeconfig.NewKubeConfigLookup(kubernetesClusterClient, secretClient, converter)
 	secretClientFactory := v1.SecretClientFactoryProvider()
 	dynamicClientGetter := config_lookup.NewDynamicClientGetter(kubeConfigLookup)
 	serviceAccountClientFactory := v1.ServiceAccountClientFactoryProvider()
@@ -161,7 +161,7 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	statusClientFactory := status.StatusClientFactoryProvider()
 	healthCheckSuite := healthcheck.DefaultHealthChecksProvider()
 	fileReader := files.NewDefaultFileReader()
-	converter := kube.NewConverter(fileReader)
+	converter := kubeconfig.NewConverter(fileReader)
 	commonClients := common.ClientsProvider(serverVersionClient, assetHelper, masterKubeConfigVerifier, unstructuredKubeClientFactory, deploymentClient, istioClients, statusClientFactory, healthCheckSuite, converter)
 	return commonClients, nil
 }
@@ -217,7 +217,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	return command
 }
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader kubeconfig.KubeLoader, imageNameParser docker.ImageNameParser, fileReader files.FileReader, kubeconfigConverter kube.Converter, printers common.Printers, runner exec.Runner, interactivePrompt interactive.InteractivePrompt) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader kubeconfig.KubeLoader, imageNameParser docker.ImageNameParser, fileReader files.FileReader, kubeconfigConverter kubeconfig.Converter, printers common.Printers, runner exec.Runner, interactivePrompt interactive.InteractivePrompt) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
 	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)

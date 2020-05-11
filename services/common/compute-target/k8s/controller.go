@@ -5,7 +5,7 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	k8s_core_types "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -53,7 +53,7 @@ type AsyncManagerController struct {
 	factory       AsyncManagerFactory
 	managers      *AsyncManagerMap
 	handlers      *AsyncManagerHandlerMap
-	kubeConverter kube.Converter
+	kubeConverter kubeconfig.Converter
 }
 
 /*
@@ -64,7 +64,7 @@ type AsyncManagerController struct {
 */
 func NewAsyncManagerController(
 	factory AsyncManagerFactory,
-	kubeConverter kube.Converter,
+	kubeConverter kubeconfig.Converter,
 ) *AsyncManagerController {
 	managers := NewAsyncManagerMap()
 	receivers := NewAsyncManagerHandler()
@@ -89,7 +89,7 @@ func NewAsyncManagerControllerWithHandlers(
 	handlers *AsyncManagerHandlerMap,
 	managers *AsyncManagerMap,
 	factory AsyncManagerFactory,
-	kubeConverter kube.Converter,
+	kubeConverter kubeconfig.Converter,
 ) *AsyncManagerController {
 	mcMgr := &AsyncManagerController{
 		handlers:      handlers,

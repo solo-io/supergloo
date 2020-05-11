@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/usage"
 	usage_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/common/usage/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
@@ -38,7 +37,7 @@ type MockMeshctl struct {
 	KubeLoader      kubeconfig.KubeLoader
 	ImageNameParser docker.ImageNameParser
 	FileReader      files.FileReader
-	KubeConverter   kube.Converter
+	KubeConverter   kubeconfig.Converter
 
 	Runner            exec.Runner
 	Printers          common.Printers

@@ -8,8 +8,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
-	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -22,6 +20,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
 	mock_csr "github.com/solo-io/service-mesh-hub/pkg/installers/csr/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mock_k8s_cliendcmd "github.com/solo-io/service-mesh-hub/test/mocks/client-go/clientcmd"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -43,7 +43,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 		mockSecretClient            *mock_kubernetes_core.MockSecretClient
 		mockKubernetesClusterClient *mock_core.MockKubernetesClusterClient
 		mockNamespaceClient         *mock_kubernetes_core.MockNamespaceClient
-		mockKubeConverter           *mock_kube.MockConverter
+		mockKubeConverter           *mock_kubeconfig.MockConverter
 		mockCsrAgentInstaller       *mock_csr.MockCsrAgentInstaller
 		mockClusterAuthClient       *mock_auth.MockClusterAuthorization
 		clusterRegistrationClient   cluster_registration.ClusterRegistrationClient
@@ -60,7 +60,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 		mockSecretClient = mock_kubernetes_core.NewMockSecretClient(ctrl)
 		mockKubernetesClusterClient = mock_core.NewMockKubernetesClusterClient(ctrl)
 		mockNamespaceClient = mock_kubernetes_core.NewMockNamespaceClient(ctrl)
-		mockKubeConverter = mock_kube.NewMockConverter(ctrl)
+		mockKubeConverter = mock_kubeconfig.NewMockConverter(ctrl)
 		mockCsrAgentInstaller = mock_csr.NewMockCsrAgentInstaller(ctrl)
 		mockRemoteConfig = mock_k8s_cliendcmd.NewMockClientConfig(ctrl)
 		mockClusterAuthClient = mock_auth.NewMockClusterAuthorization(ctrl)
@@ -153,7 +153,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 		mockKubeConverter.EXPECT().ConfigToSecret(
 			remoteClusterName,
 			env.GetWriteNamespace(),
-			&kube.KubeConfig{
+			&kubeconfig.KubeConfig{
 				Config: api.Config{
 					Kind:        "Secret",
 					APIVersion:  "kubernetes_core",

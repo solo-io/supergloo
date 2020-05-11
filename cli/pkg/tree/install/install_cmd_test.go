@@ -12,7 +12,6 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
@@ -164,7 +163,7 @@ var _ = Describe("Install", func() {
 		authClient := mock_auth.NewMockClusterAuthorization(ctrl)
 		configVerifier := cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
 		clusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
-		kubeConverter := mock_kube.NewMockConverter(ctrl)
+		kubeConverter := mock_kubeconfig.NewMockConverter(ctrl)
 
 		configVerifier.EXPECT().Verify("", "").Return(nil)
 

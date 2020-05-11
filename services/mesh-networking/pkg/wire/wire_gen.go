@@ -9,7 +9,6 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
@@ -19,6 +18,7 @@ import (
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
@@ -55,7 +55,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		return MeshNetworkingContext{}, err
 	}
 	fileReader := files.NewDefaultFileReader()
-	converter := kube.NewConverter(fileReader)
+	converter := kubeconfig.NewConverter(fileReader)
 	asyncManagerController := mc_wire.KubeClusterCredentialsHandlerProvider(converter)
 	awsCredsHandler := NewNetworkingAwsCredsHandler()
 	v := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
