@@ -43,6 +43,7 @@ const (
 
 	EnvoySniClusterFilterName        = "envoy.filters.network.sni_cluster"
 	EnvoyTcpClusterRewriteFilterName = "envoy.filters.network.tcp_cluster_rewrite"
+	MultiClusterDRServiceEntryLabel  = "cluster"
 )
 
 type IstioFederationClient meshes.MeshFederationClient
@@ -208,7 +209,7 @@ func (i *istioFederationClient) setUpServiceEntry(
 		Ports:   make(map[string]uint32),
 		Labels:  make(map[string]string),
 	}
-	endpoint.Labels["cluster"] = meshService.Spec.KubeService.Ref.Cluster
+	endpoint.Labels[MultiClusterDRServiceEntryLabel] = meshService.Spec.KubeService.Ref.Cluster
 	var ports []*alpha3.Port
 	for _, port := range meshService.Spec.GetKubeService().GetPorts() {
 		ports = append(ports, &alpha3.Port{

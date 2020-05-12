@@ -22,7 +22,8 @@ import (
 )
 
 const (
-	TranslatorId = "istio_translator"
+	TranslatorId            = "istio_translator"
+	MultiClusterDRLabelName = "cluster"
 )
 
 type IstioTranslator traffic_policy_translator.TrafficPolicyMeshTranslator
@@ -63,7 +64,7 @@ var (
 		return eris.Errorf("Multi cluster subsets are currently not supported, found one on destination: %+v", dest)
 	}
 	MultiClusterDestinationRuleNotFound = func(resource *zephyr_core_types.ResourceRef) error {
-		return eris.Errorf("Could not find multicluster destination rule for %v in namespace %v", resource.Name, resource.Namespace)
+		return eris.Errorf("Could not find multicluster destination rule for %s in namespace %s", resource.Name, resource.Namespace)
 	}
 )
 
@@ -383,8 +384,8 @@ func (i *istioTrafficPolicyTranslator) translateRequestMatcherHeaders(matchers [
 	return headerMatchers, inverseHeaderMatchers
 }
 
-// ensure that subsets declared in this TrafficPolicy are reflected in the relevant kube Service's DestinationRules
-// return name of Subset declared in DestinationRule
+// For the local DestinationRule representing the multicluster DNS name for a remote service, declare a new subset entry that references the corresponding endpoint on the corresponding ServiceEntry.
+// Reference: https://istio.io/blog/2019/multicluster-version-routing/#create-a-service-entry-and-destination-rule-on-cluster1-for-the-remote-reviews-service
 func (i *istioTrafficPolicyTranslator) translateSubset(
 	ctx context.Context,
 	destination *zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination,
@@ -438,6 +439,9 @@ func (i *istioTrafficPolicyTranslator) translateSubsetForMulticluster(
 	installationNamespace := mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace()
 
 	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
+	if err != nil {
+		return err
+	}
 
 	destinationRuleRef := &zephyr_core_types.ResourceRef{
 		Name:      serviceMulticlusterName,
@@ -445,8 +449,11 @@ func (i *istioTrafficPolicyTranslator) translateSubsetForMulticluster(
 	}
 	destinationRuleClient := i.destinationRuleClientFactory(dynamicClient)
 	destinationRule, err := destinationRuleClient.GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destinationRuleRef))
-	if destinationRule == nil {
-		return MultiClusterDestinationRuleNotFound(destinationRuleRef)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return MultiClusterDestinationRuleNotFound(destinationRuleRef)
+		}
+		return err
 	}
 
 	for _, subset := range destinationRule.Spec.GetSubsets() {
@@ -457,7 +464,7 @@ func (i *istioTrafficPolicyTranslator) translateSubsetForMulticluster(
 	}
 
 	defaultLabels := map[string]string{
-		"cluster": destClusterName,
+		MultiClusterDRLabelName: destClusterName,
 	}
 	destinationRule.Spec.Subsets = append(destinationRule.Spec.Subsets, &istio_networking_types.Subset{
 		Name:   subsetName,
