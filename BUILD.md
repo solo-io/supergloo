@@ -58,16 +58,35 @@ Allocate at least 12GB to Docker Desktop, based on anecdotal experience.
 
 ### Running
 
+To quickly run the script, you can use the `start-local-env` make target:
+
+```shell script
+make start-local-env
+```
+
+To cleanup, you can run:
+
+```shell script
+make destroy-local-env
+```
+
+
 If the script runs succesfully, you're kubeconfig will be correctly updated to point to the new kind cluster (named `management-plane-*`)
 
 You should now be ready to follow the tutorials in the docs, or start making modifications to the code.
 
 ### Making changes
 
-If you make changes to the code, you can easily build and push the image changes to Kind with the following `make` target:
+If you make changes to the code, you can easily build and push the image changes to Kind with the following `make` targets:
 
 ```
+make docker
 make kind-load-images
+```
+If you need to push to a specific cluster, you can specify in the `CLUSTER_NAME` env variable:
+
+```shell script
+CLUSTER_NAME=foo make kind-laod-images
 ```
 
 You can then re-start the Service Mesh Hub components and it will pick up the changes from the new images:
