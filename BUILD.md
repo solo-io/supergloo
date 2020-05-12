@@ -86,7 +86,7 @@ make kind-load-images
 If you need to push to a specific cluster, you can specify in the `CLUSTER_NAME` env variable:
 
 ```shell script
-CLUSTER_NAME=foo make kind-laod-images
+CLUSTER_NAME=foo make kind-load-images
 ```
 
 You can then re-start the Service Mesh Hub components and it will pick up the changes from the new images:
