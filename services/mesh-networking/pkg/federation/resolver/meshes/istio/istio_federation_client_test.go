@@ -894,7 +894,7 @@ var _ = Describe("Istio Federation Decider", func() {
 						Ports: map[string]uint32{
 							svcPort.Name: port,
 						},
-						Labels: map[string]string {
+						Labels: map[string]string{
 							"cluster": istioMeshForService.Spec.Cluster.Name,
 						},
 					}},

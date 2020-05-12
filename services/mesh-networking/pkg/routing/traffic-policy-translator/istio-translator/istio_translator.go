@@ -63,7 +63,7 @@ var (
 		return eris.Errorf("Multi cluster subsets are currently not supported, found one on destination: %+v", dest)
 	}
 	MultiClusterDestinationRuleNotFound = func(resource *zephyr_core_types.ResourceRef) error {
-		return eris.Errorf("Could not find multicluster destination rule for %v in namespace %v", resource.Name, resource.Namespace )
+		return eris.Errorf("Could not find multicluster destination rule for %v in namespace %v", resource.Name, resource.Namespace)
 	}
 )
 
@@ -426,7 +426,7 @@ func (i *istioTrafficPolicyTranslator) translateSubsetForMulticluster(
 	subsetName string,
 	meshService *zephyr_discovery.MeshService,
 	destination *zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination,
-) (error) {
+) error {
 
 	destClusterName := destination.GetDestination().GetCluster()
 	mesh, err := i.getMeshForMeshService(ctx, meshService)
@@ -452,11 +452,11 @@ func (i *istioTrafficPolicyTranslator) translateSubsetForMulticluster(
 	for _, subset := range destinationRule.Spec.GetSubsets() {
 		if subsetName == subset.Name {
 			// we have the subset already
-			return  nil
+			return nil
 		}
 	}
 
-	defaultLabels := map[string]string {
+	defaultLabels := map[string]string{
 		"cluster": destClusterName,
 	}
 	destinationRule.Spec.Subsets = append(destinationRule.Spec.Subsets, &istio_networking_types.Subset{
@@ -697,7 +697,7 @@ func (i *istioTrafficPolicyTranslator) getClusterNameForMeshService(
 func (i *istioTrafficPolicyTranslator) getMeshForMeshService(
 	ctx context.Context,
 	meshService *zephyr_discovery.MeshService,
-)(*zephyr_discovery.Mesh, error){
+) (*zephyr_discovery.Mesh, error) {
 	return i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 }
 

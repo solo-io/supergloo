@@ -27,17 +27,17 @@ import (
 )
 
 type testContext struct {
-	clusterName            string
+	clusterName               string
 	meshInstallationNamespace string
-	meshObjKey             client.ObjectKey
-	meshServiceObjKey      client.ObjectKey
-	kubeServiceObjKey      client.ObjectKey
-	mesh                   *zephyr_discovery.Mesh
-	meshService            *zephyr_discovery.MeshService
-	trafficPolicy          []*zephyr_networking.TrafficPolicy
-	computedVirtualService *client_v1alpha3.VirtualService
-	baseMatchRequest       *api_v1alpha3.HTTPMatchRequest
-	defaultRoute           []*api_v1alpha3.HTTPRouteDestination
+	meshObjKey                client.ObjectKey
+	meshServiceObjKey         client.ObjectKey
+	kubeServiceObjKey         client.ObjectKey
+	mesh                      *zephyr_discovery.Mesh
+	meshService               *zephyr_discovery.MeshService
+	trafficPolicy             []*zephyr_networking.TrafficPolicy
+	computedVirtualService    *client_v1alpha3.VirtualService
+	baseMatchRequest          *api_v1alpha3.HTTPMatchRequest
+	defaultRoute              []*api_v1alpha3.HTTPRouteDestination
 }
 
 var _ = Describe("IstioTranslator", func() {
@@ -123,7 +123,7 @@ var _ = Describe("IstioTranslator", func() {
 					},
 					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
 						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation {
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: meshInstallationNamespace,
 							},
 						},
@@ -193,17 +193,17 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockDestinationRuleClient.EXPECT().CreateDestinationRule(ctx, computedDestinationRule).Return(nil)
 			return &testContext{
-				clusterName:            clusterName,
+				clusterName:               clusterName,
 				meshInstallationNamespace: meshInstallationNamespace,
-				meshObjKey:             meshObjKey,
-				meshServiceObjKey:      meshServiceObjKey,
-				kubeServiceObjKey:      kubeServiceObjKey,
-				mesh:                   mesh,
-				meshService:            meshService,
-				trafficPolicy:          trafficPolicy,
-				computedVirtualService: computedVirtualService,
-				baseMatchRequest:       baseMatchRequest,
-				defaultRoute:           defaultRoute,
+				meshObjKey:                meshObjKey,
+				meshServiceObjKey:         meshServiceObjKey,
+				kubeServiceObjKey:         kubeServiceObjKey,
+				mesh:                      mesh,
+				meshService:               meshService,
+				trafficPolicy:             trafficPolicy,
+				computedVirtualService:    computedVirtualService,
+				baseMatchRequest:          baseMatchRequest,
+				defaultRoute:              defaultRoute,
 			}
 		}
 
@@ -969,9 +969,8 @@ var _ = Describe("IstioTranslator", func() {
 						},
 					},
 				},
-
 			}
-			defaultLabels := map[string]string {
+			defaultLabels := map[string]string{
 				"cluster": destCluster,
 			}
 			computedMultiClusterDestRule := &client_v1alpha3.DestinationRule{
@@ -989,7 +988,6 @@ var _ = Describe("IstioTranslator", func() {
 						},
 					},
 				},
-
 			}
 			// expect these calls the normal translation and subset translation
 			mockResourceSelector.
@@ -1017,7 +1015,7 @@ var _ = Describe("IstioTranslator", func() {
 			// on the same mesh as the mesh service
 			mockMeshClient.
 				EXPECT().
-				GetMesh(ctx,  testContext.meshObjKey).
+				GetMesh(ctx, testContext.meshObjKey).
 				Return(testContext.mesh, nil)
 			mockDynamicClientGetter.
 				EXPECT().
