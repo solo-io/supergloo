@@ -32,8 +32,8 @@ type Root struct {
 }
 
 type Cluster struct {
-	Register Register
-	Deregister
+	Register   Register
+	Deregister Deregister
 }
 
 type Register struct {

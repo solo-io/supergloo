@@ -133,7 +133,7 @@ var _ = Describe("ClusterDeregistrationCmd", func() {
 			GetKubernetesCluster(ctx, client.ObjectKey{Name: remoteClusterName, Namespace: env.GetWriteNamespace()}).
 			Return(kubeCluster, nil)
 		stdout, err := meshctl.Invoke(fmt.Sprintf("cluster deregister --remote-cluster-name %s", remoteClusterName))
-		Expect(err).To(testutils.HaveInErrorChain(deregister.CannotManuallyRemoveDiscoveredCluster(remoteClusterName)))
+		Expect(err).To(testutils.HaveInErrorChain(deregister.DeregisterNotPermitted(remoteClusterName)))
 		Expect(stdout).To(Equal(fmt.Sprintf("Error deregistering cluster %s.\n", remoteClusterName)))
 	})
 })

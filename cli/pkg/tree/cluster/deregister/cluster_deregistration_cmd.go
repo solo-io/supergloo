@@ -29,9 +29,8 @@ var (
 			env.GetWriteNamespace(),
 			err.Error())
 	}
-	CannotManuallyRemoveDiscoveredCluster = func(remoteClusterName string) error {
-		// TODO harveyxia improve this error message once user-config for cluster discovery is implemented
-		return eris.Errorf("Cannot manually deregister discovered cluster %s. To remove the cluster, you must configure the discovery config.", remoteClusterName)
+	DeregisterNotPermitted = func(remoteClusterName string) error {
+		return eris.Errorf("Cannot deregister cluster %s which was not manually registered through meshctl.", remoteClusterName)
 	}
 )
 
@@ -86,8 +85,9 @@ func deregisterCluster(
 	if err != nil {
 		return ErrorGettingKubeCluster(opts.Cluster.Deregister.RemoteClusterName, err)
 	}
-	if kubeCluster.GetLabels()[constants.DISCOVERED_BY] != register.MeshctlDiscoverySource {
-		return CannotManuallyRemoveDiscoveredCluster(opts.Cluster.Deregister.RemoteClusterName)
+	discoveredBy, ok := kubeCluster.GetLabels()[constants.DISCOVERED_BY]
+	if !(ok && discoveredBy == register.MeshctlDiscoverySource) {
+		return DeregisterNotPermitted(opts.Cluster.Deregister.RemoteClusterName)
 	}
 	return masterKubeClients.ClusterDeregistrationClient.Deregister(ctx, kubeCluster)
 }
