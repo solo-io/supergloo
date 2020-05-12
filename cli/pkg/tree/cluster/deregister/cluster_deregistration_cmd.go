@@ -86,6 +86,8 @@ func deregisterCluster(
 		return ErrorGettingKubeCluster(opts.Cluster.Deregister.RemoteClusterName, err)
 	}
 	discoveredBy, ok := kubeCluster.GetLabels()[constants.DISCOVERED_BY]
+	// Only allow manual deregistration of manually registered clusters, otherwise deregistration will compete with automated cluster discovery.
+	// Deregistration of discovered clusters must happen through discovery configuration.
 	if !(ok && discoveredBy == register.MeshctlDiscoverySource) {
 		return DeregisterNotPermitted(opts.Cluster.Deregister.RemoteClusterName)
 	}
