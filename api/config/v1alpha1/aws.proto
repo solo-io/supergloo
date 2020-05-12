@@ -6,19 +6,44 @@ import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 message AwsConfig {
-
+    repeated AwsAccountConfig aws_account_configs = 1;
 }
 
-message Discovery {
-    message EKS {
+message AwsAccountConfig {
+    // AWS account ID.
+    string account_id = 1;
+    DiscoveryConfig discovery_config = 2;
+}
 
+/*
+    Configure which AWS resources should be discovered by SMH.
+    For unspecified or null fields, discovery will not run for the corresponding AWS resource type.
+*/
+message DiscoveryConfig {
+    DiscoverySelectors appmesh = 1;
+    DiscoverySelectors eks = 2;
+}
+
+/*
+    An AWS resource will be selected if *any* of the resource_selectors apply.
+    For a given resource_selector to apply to a resource, the resource must match *all* of the resource_selector's match criteria.
+*/
+message DiscoverySelectors {
+    repeated ResourceSelector resource_selectors = 1;
+}
+
+message ResourceSelector {
+    // Selects all resources that exist in the specified AWS region and possess the specified tags.
+    message Matcher {
+        // AWS regions, e.g. us-east-2. If unspecified, select across all regions.
+        repeated string regions = 1;
+        // AWS resource tags. If unspecified, match any tags.
+        map<string, string> tags = 2;
     }
 
-    message AppMesh {
-
+    oneof matcher_type {
+        // AWS resource ARN that directly references a resource.
+        string arn = 1;
+        Matcher matcher = 2;
     }
-
-    EKS eks = 1;
-
-    AppMesh appmesh = 2;
 }

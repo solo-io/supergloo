@@ -1,0 +1,12 @@
+syntax = "proto3";
+package config.zephyr.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/config.zephyr.solo.io/v1alpha1/types";
+
+import "service-mesh-hub/api/config/v1alpha1/aws.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+message Settings {
+    AwsConfig aws_config = 1;
+}
