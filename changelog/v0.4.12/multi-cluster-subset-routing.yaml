@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Support multi-cluster subset routing
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/671
