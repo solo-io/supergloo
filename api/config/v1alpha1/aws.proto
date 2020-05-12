@@ -1,0 +1,24 @@
+syntax = "proto3";
+package config.zephyr.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/config.zephyr.solo.io/v1alpha1/types";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+message AwsConfig {
+
+}
+
+message Discovery {
+    message EKS {
+
+    }
+
+    message AppMesh {
+
+    }
+
+    EKS eks = 1;
+
+    AppMesh appmesh = 2;
+}
