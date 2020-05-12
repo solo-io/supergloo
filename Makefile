@@ -211,3 +211,21 @@ endef
 docker-push: docker
 	$(foreach component,$(COMPONENTS),$(call docker_push,$(component)))
 	$(call docker_push,csr-agent)
+
+CLUSTER_NAME := $(if $(CLUSTER_NAME),$(CLUSTER_NAME), $(shell kind get clusters | grep management-plane))
+define kind_load
+kind load docker-image quay.io/solo-io/$(1):$(VERSION) --name $(CLUSTER_NAME);
+endef
+
+.PHONY: kind-load-images
+kind-load-images:
+	$(foreach component,$(COMPONENTS),$(call kind_load,$(component)))
+	$(call kind_load,csr-agent)
+
+.PHONY: start-local-env
+start-local-env:
+	./ci/setup-kind.sh
+
+.PHONY: destroy-local-env
+destroy-local-env:
+	./ci/setup-kind.sh cleanup
