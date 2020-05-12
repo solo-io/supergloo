@@ -95,6 +95,16 @@ You can then re-start the Service Mesh Hub components and it will pick up the ch
 kubectl delete po --all -n service-mesh-hub
 ```
 
+### Contribute code back
+
+Please see the [CONTRIBUTING.md](CONTRIBUTING.md) doc.  We have a `gofmt` and `goimports` `pre-commit` hook that you can install with the following `make` target:
+
+```shell script
+make init
+```
+
+This will add [the following pre-commit hook](./.githooks/pre-commit) to check for formatting before committing to the PR.
+
 ## Understanding Service Mesh Hub components
 
 We have three main areas that see active development:
