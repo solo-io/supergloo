@@ -62,6 +62,9 @@ var (
 	MultiClusterSubsetsNotSupported = func(dest *zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination) error {
 		return eris.Errorf("Multi cluster subsets are currently not supported, found one on destination: %+v", dest)
 	}
+	MultiClusterDestinationRuleNotFound = func(resource *zephyr_core_types.ResourceRef) error {
+		return eris.Errorf("Could not find multicluster destination rule for %v in namespace %v", resource.Name, resource.Namespace )
+	}
 )
 
 func (i *istioTrafficPolicyTranslator) Name() string {
@@ -415,6 +418,60 @@ func (i *istioTrafficPolicyTranslator) translateSubset(
 	return subsetName, nil
 }
 
+// ensure that subsets declared in this TrafficPolicy are reflected in the relevant kube Service's DestinationRules
+// return name of Subset declared in DestinationRule
+func (i *istioTrafficPolicyTranslator) translateSubsetForMulticluster(
+	ctx context.Context,
+	serviceMulticlusterName string,
+	subsetName string,
+	meshService *zephyr_discovery.MeshService,
+	destination *zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination,
+) (error) {
+
+	destClusterName := destination.GetDestination().GetCluster()
+	mesh, err := i.getMeshForMeshService(ctx, meshService)
+	if err != nil {
+		return err
+	}
+
+	clusterName := mesh.Spec.GetCluster().GetName()
+	installationNamespace := mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace()
+
+	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
+
+	destinationRuleRef := &zephyr_core_types.ResourceRef{
+		Name:      serviceMulticlusterName,
+		Namespace: installationNamespace,
+	}
+	destinationRuleClient := i.destinationRuleClientFactory(dynamicClient)
+	destinationRule, err := destinationRuleClient.GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destinationRuleRef))
+	if destinationRule == nil {
+		return MultiClusterDestinationRuleNotFound(destinationRuleRef)
+	}
+
+	for _, subset := range destinationRule.Spec.GetSubsets() {
+		if subsetName == subset.Name {
+			// we have the subset already
+			return  nil
+		}
+	}
+
+	defaultLabels := map[string]string {
+		"cluster": destClusterName,
+	}
+	destinationRule.Spec.Subsets = append(destinationRule.Spec.Subsets, &istio_networking_types.Subset{
+		Name:   subsetName,
+		Labels: defaultLabels,
+	})
+
+	err = destinationRuleClient.UpdateDestinationRule(ctx, destinationRule)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // For each Destination, create an Istio HTTPRouteDestination
 func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 	ctx context.Context,
@@ -449,14 +506,18 @@ func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 				}
 			}
 			if destination.Subset != nil {
-				// multicluster subsets are currently unsupported, so return a status error to invalidate the TrafficPolicy
-				if isMulticluster {
-					return nil, MultiClusterSubsetsNotSupported(destination)
-				}
 				subsetName, err := i.translateSubset(ctx, destination)
 				if err != nil {
 					return nil, err
 				}
+
+				if isMulticluster {
+					err := i.translateSubsetForMulticluster(ctx, hostnameForKubeService, subsetName, meshService, destination)
+					if err != nil {
+						return nil, err
+					}
+				}
+
 				httpRouteDestination.Destination.Subset = subsetName
 			}
 			translatedRouteDestinations = append(translatedRouteDestinations, httpRouteDestination)
@@ -626,11 +687,18 @@ func (i *istioTrafficPolicyTranslator) getClusterNameForMeshService(
 	ctx context.Context,
 	meshService *zephyr_discovery.MeshService,
 ) (string, error) {
-	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	mesh, err := i.getMeshForMeshService(ctx, meshService)
 	if err != nil {
 		return "", err
 	}
 	return mesh.Spec.GetCluster().GetName(), nil
+}
+
+func (i *istioTrafficPolicyTranslator) getMeshForMeshService(
+	ctx context.Context,
+	meshService *zephyr_discovery.MeshService,
+)(*zephyr_discovery.Mesh, error){
+	return i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 }
 
 // If destination is in the same namespace as k8s Service, return k8s Service name.namespace

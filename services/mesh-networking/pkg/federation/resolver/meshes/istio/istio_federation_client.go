@@ -206,7 +206,9 @@ func (i *istioFederationClient) setUpServiceEntry(
 	endpoint := &alpha3.ServiceEntry_Endpoint{
 		Address: eap.Address,
 		Ports:   make(map[string]uint32),
+		Labels:  make(map[string]string),
 	}
+	endpoint.Labels["cluster"] = meshService.Spec.KubeService.Ref.Cluster
 	var ports []*alpha3.Port
 	for _, port := range meshService.Spec.GetKubeService().GetPorts() {
 		ports = append(ports, &alpha3.Port{

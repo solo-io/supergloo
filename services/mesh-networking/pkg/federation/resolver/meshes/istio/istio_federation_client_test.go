@@ -839,6 +839,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			backingKubeSvc := &zephyr_core_types.ResourceRef{
 				Name:      "application-svc",
 				Namespace: "application-ns",
+				Cluster:   istioMeshForService.Spec.Cluster.Name,
 			}
 			serviceMulticlusterDnsName := dns.BuildMulticlusterDnsName(backingKubeSvc, istioMeshForService.Spec.Cluster.Name)
 			svcPort := &zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
@@ -892,6 +893,9 @@ var _ = Describe("Istio Federation Decider", func() {
 						Address: externalAddress,
 						Ports: map[string]uint32{
 							svcPort.Name: port,
+						},
+						Labels: map[string]string {
+							"cluster": istioMeshForService.Spec.Cluster.Name,
 						},
 					}},
 					Hosts:    []string{serviceMulticlusterDnsName},

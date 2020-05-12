@@ -2,6 +2,7 @@ package istio_translator_test
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
@@ -27,6 +28,7 @@ import (
 
 type testContext struct {
 	clusterName            string
+	meshInstallationNamespace string
 	meshObjKey             client.ObjectKey
 	meshServiceObjKey      client.ObjectKey
 	kubeServiceObjKey      client.ObjectKey
@@ -80,10 +82,11 @@ var _ = Describe("IstioTranslator", func() {
 		setupTestContext := func() *testContext {
 			clusterName := "clusterName"
 			sourceNamespace := "source-namespace"
+			meshInstallationNamespace := "mesh-installation-namespace"
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshServiceObjKey := client.ObjectKey{Name: "mesh-service-name", Namespace: "mesh-service-namespace"}
 			kubeServiceObjKey := client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
-			meshServiceFederationMCDnsName := "multiclusterDNSname"
+			meshServiceFederationMCDnsName := fmt.Sprintf("%v.%v.%v", meshServiceObjKey.Name, meshServiceObjKey.Namespace, clusterName)
 			meshService := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:        meshServiceObjKey.Name,
@@ -119,7 +122,11 @@ var _ = Describe("IstioTranslator", func() {
 						Name: clusterName,
 					},
 					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation {
+								InstallationNamespace: meshInstallationNamespace,
+							},
+						},
 					},
 				},
 			}
@@ -187,6 +194,7 @@ var _ = Describe("IstioTranslator", func() {
 			mockDestinationRuleClient.EXPECT().CreateDestinationRule(ctx, computedDestinationRule).Return(nil)
 			return &testContext{
 				clusterName:            clusterName,
+				meshInstallationNamespace: meshInstallationNamespace,
 				meshObjKey:             meshObjKey,
 				meshServiceObjKey:      meshServiceObjKey,
 				kubeServiceObjKey:      kubeServiceObjKey,
@@ -886,13 +894,18 @@ var _ = Describe("IstioTranslator", func() {
 			Expect(translatorError).To(BeNil())
 		})
 
-		It("should error translating multi cluster TrafficShift with subsets", func() {
+		It("should translate multi-cluster TrafficShift with subsets", func() {
 			testContext := setupTestContext()
-			destName := "name"
-			destNamespace := "namespace"
-			multiClusterDnsName := "multicluster-dns-name"
-			destCluster := "remote-cluster-1"
+			destName := "remote-dest-name"
+			destNamespace := "remote-dest-namespace"
+			destCluster := "remote-cluster"
+			multiClusterDnsName := fmt.Sprintf("%v.%v.%v", destName, destNamespace, destCluster)
+			//meshServiceCluster := "mesh-svc-cluster"
 			declaredSubset := map[string]string{"env": "dev", "version": "v1"}
+			//clusterSubset := map[string]string{"cluster": "dev", }
+			expectedSubsetName := "env-dev_version-v1"
+			remoteMeshName := "remote-mesh-name"
+			remoteMeshNamespace := "remote-mesh-namespace"
 			destination := &zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 				Destination: &zephyr_core_types.ResourceRef{
 					Name:      destName,
@@ -907,26 +920,126 @@ var _ = Describe("IstioTranslator", func() {
 					destination,
 				},
 			}
-			backingMeshService := &zephyr_discovery.MeshService{
+			for _, httpRoute := range testContext.computedVirtualService.Spec.Http {
+				httpRoute.Route = []*api_v1alpha3.HTTPRouteDestination{
+					{
+						Destination: &api_v1alpha3.Destination{
+							Host:   multiClusterDnsName,
+							Subset: expectedSubsetName,
+						},
+						Weight: 50,
+					},
+				}
+			}
+			destMeshService := &zephyr_discovery.MeshService{
+
 				Spec: zephyr_discovery_types.MeshServiceSpec{
+					Mesh: &zephyr_core_types.ResourceRef{
+						Name:      remoteMeshName,
+						Namespace: remoteMeshNamespace,
+					},
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: &zephyr_core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
+							Cluster:   destCluster,
 						},
 					},
 					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
+			existingDestRule := &client_v1alpha3.DestinationRule{}
+			computedDestRule := &client_v1alpha3.DestinationRule{
+				Spec: api_v1alpha3.DestinationRule{
+					Subsets: []*api_v1alpha3.Subset{
+						{
+							Name:   expectedSubsetName,
+							Labels: declaredSubset,
+						},
+					},
+				},
+			}
+
+			multiClusterDestRule := &client_v1alpha3.DestinationRule{
+				Spec: api_v1alpha3.DestinationRule{
+					Host: multiClusterDnsName,
+					TrafficPolicy: &api_v1alpha3.TrafficPolicy{
+						Tls: &api_v1alpha3.TLSSettings{
+							Mode: api_v1alpha3.TLSSettings_ISTIO_MUTUAL,
+						},
+					},
+				},
+
+			}
+			defaultLabels := map[string]string {
+				"cluster": destCluster,
+			}
+			computedMultiClusterDestRule := &client_v1alpha3.DestinationRule{
+				Spec: api_v1alpha3.DestinationRule{
+					Host: multiClusterDnsName,
+					TrafficPolicy: &api_v1alpha3.TrafficPolicy{
+						Tls: &api_v1alpha3.TLSSettings{
+							Mode: api_v1alpha3.TLSSettings_ISTIO_MUTUAL,
+						},
+					},
+					Subsets: []*api_v1alpha3.Subset{
+						{
+							Name:   expectedSubsetName,
+							Labels: defaultLabels,
+						},
+					},
+				},
+
+			}
+			// expect these calls the normal translation and subset translation
 			mockResourceSelector.
 				EXPECT().
 				GetMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
-				Return(backingMeshService, nil)
+				Return(destMeshService, nil)
+			mockDynamicClientGetter.
+				EXPECT().
+				GetClientForCluster(ctx, destCluster).
+				Return(nil, nil)
+			mockDestinationRuleClient.
+				EXPECT().
+				GetDestinationRule(ctx, client.ObjectKey{Name: destName, Namespace: destNamespace}).
+				Return(existingDestRule, nil)
+			mockDestinationRuleClient.
+				EXPECT().
+				UpdateDestinationRule(ctx, computedDestRule).
+				Return(nil)
+
+			// expect these calls for the multi-cluster subset part
+			// for this to work, we need to know the cluster name of both the mesh service as well
+			// as the remote destination. we end up writing a destination rule to the mesh service's cluster
+			// which points to the remote destination's cluster using the 'cluster' label
+			// the destination rule is the multi-cluster destination rule (denoted by the hostname) and lives
+			// on the same mesh as the mesh service
+			mockMeshClient.
+				EXPECT().
+				GetMesh(ctx,  testContext.meshObjKey).
+				Return(testContext.mesh, nil)
+			mockDynamicClientGetter.
+				EXPECT().
+				GetClientForCluster(ctx, testContext.clusterName).
+				Return(nil, nil)
+			mockDestinationRuleClient.
+				EXPECT().
+				GetDestinationRule(ctx, client.ObjectKey{Name: multiClusterDnsName, Namespace: testContext.meshInstallationNamespace}).
+				Return(multiClusterDestRule, nil)
+			mockDestinationRuleClient.
+				EXPECT().
+				UpdateDestinationRule(ctx, computedMultiClusterDestRule).
+				Return(nil)
+			mockVirtualServiceClient.
+				EXPECT().
+				UpsertVirtualServiceSpec(ctx, testContext.computedVirtualService).
+				Return(nil)
+
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
-			Expect(translatorError).NotTo(BeNil())
-			Expect(translatorError.ErrorMessage).
-				To(ContainSubstring(istio_translator.MultiClusterSubsetsNotSupported(destination).Error()))
+			Expect(translatorError).To(BeNil())
+
 		})
 
 		It("should return error if multiple MeshServices found for name/namespace/cluster", func() {
