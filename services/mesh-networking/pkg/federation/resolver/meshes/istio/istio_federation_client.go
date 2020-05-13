@@ -43,6 +43,7 @@ const (
 
 	EnvoySniClusterFilterName        = "envoy.filters.network.sni_cluster"
 	EnvoyTcpClusterRewriteFilterName = "envoy.filters.network.tcp_cluster_rewrite"
+	MultiClusterDRServiceEntryLabel  = "cluster"
 )
 
 type IstioFederationClient meshes.MeshFederationClient
@@ -152,6 +153,7 @@ func (i *istioFederationClient) FederateClientSide(
 	return i.setUpDestinationRule(
 		ctx,
 		clientForWorkloadMesh,
+		meshService,
 		serviceMulticlusterName,
 		installNamespace,
 	)
@@ -160,6 +162,7 @@ func (i *istioFederationClient) FederateClientSide(
 func (i *istioFederationClient) setUpDestinationRule(
 	ctx context.Context,
 	clientForWorkloadMesh client.Client,
+	meshService *zephyr_discovery.MeshService,
 	serviceMulticlusterName string,
 	installNamespace string,
 ) error {
@@ -168,24 +171,49 @@ func (i *istioFederationClient) setUpDestinationRule(
 		Namespace: installNamespace,
 	}
 
-	destinationRuleClient := i.destinationRuleClientFactory(clientForWorkloadMesh)
-	_, err := destinationRuleClient.GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destinationRuleRef))
-
-	if errors.IsNotFound(err) {
-		return destinationRuleClient.CreateDestinationRule(ctx, &v1alpha3.DestinationRule{
-			ObjectMeta: clients.ResourceRefToObjectMeta(destinationRuleRef),
-			Spec: alpha3.DestinationRule{
-				Host: serviceMulticlusterName,
-				TrafficPolicy: &alpha3.TrafficPolicy{
-					Tls: &alpha3.TLSSettings{
-						// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/242
-						Mode: alpha3.TLSSettings_ISTIO_MUTUAL,
-					},
+	destinationRule := &v1alpha3.DestinationRule{
+		ObjectMeta: clients.ResourceRefToObjectMeta(destinationRuleRef),
+		Spec: alpha3.DestinationRule{
+			Host: serviceMulticlusterName,
+			TrafficPolicy: &alpha3.TrafficPolicy{
+				Tls: &alpha3.TLSSettings{
+					// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/242
+					Mode: alpha3.TLSSettings_ISTIO_MUTUAL,
 				},
 			},
-		})
+		},
+	}
+
+	defaultLabels := map[string]string{
+		MultiClusterDRServiceEntryLabel: meshService.Spec.KubeService.Ref.Cluster,
+	}
+
+	if meshService.Spec.Subsets != nil {
+		for name, subset := range meshService.Spec.Subsets {
+			for _, value := range subset.Values {
+				subsetName := i.deriveSubsetName(name, value)
+				destinationRule.Spec.Subsets = append(destinationRule.Spec.Subsets, &alpha3.Subset{
+					Name:   subsetName,
+					Labels: defaultLabels,
+				})
+			}
+		}
+	}
+
+	destinationRuleClient := i.destinationRuleClientFactory(clientForWorkloadMesh)
+	_, err := destinationRuleClient.GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destinationRuleRef))
+	if errors.IsNotFound(err) {
+		return destinationRuleClient.CreateDestinationRule(ctx, destinationRule)
 	}
 	return err
+}
+
+func (i *istioFederationClient) deriveSubsetName(
+	name string,
+	value string,
+) string {
+	subsetName := fmt.Sprintf("%s-%s", name, value)
+	return subsetName
 }
 
 func (i *istioFederationClient) setUpServiceEntry(
@@ -206,7 +234,9 @@ func (i *istioFederationClient) setUpServiceEntry(
 	endpoint := &alpha3.ServiceEntry_Endpoint{
 		Address: eap.Address,
 		Ports:   make(map[string]uint32),
+		Labels:  make(map[string]string),
 	}
+	endpoint.Labels[MultiClusterDRServiceEntryLabel] = meshService.Spec.KubeService.Ref.Cluster
 	var ports []*alpha3.Port
 	for _, port := range meshService.Spec.GetKubeService().GetPorts() {
 		ports = append(ports, &alpha3.Port{

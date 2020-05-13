@@ -839,6 +839,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			backingKubeSvc := &zephyr_core_types.ResourceRef{
 				Name:      "application-svc",
 				Namespace: "application-ns",
+				Cluster:   istioMeshForService.Spec.Cluster.Name,
 			}
 			serviceMulticlusterDnsName := dns.BuildMulticlusterDnsName(backingKubeSvc, istioMeshForService.Spec.Cluster.Name)
 			svcPort := &zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
@@ -860,6 +861,11 @@ var _ = Describe("Istio Federation Decider", func() {
 						Ref: backingKubeSvc,
 						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 							svcPort,
+						},
+					},
+					Subsets: map[string]*zephyr_discovery_types.MeshServiceSpec_Subset{
+						"version": {
+							Values: []string{"v1", "v2"},
 						},
 					},
 				},
@@ -893,6 +899,9 @@ var _ = Describe("Istio Federation Decider", func() {
 						Ports: map[string]uint32{
 							svcPort.Name: port,
 						},
+						Labels: map[string]string{
+							"cluster": istioMeshForService.Spec.Cluster.Name,
+						},
 					}},
 					Hosts:    []string{serviceMulticlusterDnsName},
 					Location: istio_networking_types.ServiceEntry_MESH_INTERNAL,
@@ -914,6 +923,10 @@ var _ = Describe("Istio Federation Decider", func() {
 			destinationRuleClient.EXPECT().
 				GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destinationRuleRef)).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
+
+			defaultLabels := map[string]string{
+				"cluster": istioMeshForService.Spec.Cluster.Name,
+			}
 			destinationRuleClient.EXPECT().CreateDestinationRule(ctx, &istio_client_networking_types.DestinationRule{
 				ObjectMeta: clients.ResourceRefToObjectMeta(destinationRuleRef),
 				Spec: istio_networking_types.DestinationRule{
@@ -922,6 +935,16 @@ var _ = Describe("Istio Federation Decider", func() {
 						Tls: &istio_networking_types.TLSSettings{
 							// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/242
 							Mode: istio_networking_types.TLSSettings_ISTIO_MUTUAL,
+						},
+					},
+					Subsets: []*istio_networking_types.Subset{
+						{
+							Name:   "version-v1",
+							Labels: defaultLabels,
+						},
+						{
+							Name:   "version-v2",
+							Labels: defaultLabels,
 						},
 					},
 				},
