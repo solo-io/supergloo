@@ -5,7 +5,6 @@
 package mock_traffic_policy_validation
 
 import (
-	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -50,41 +49,4 @@ func (m *MockValidator) ValidateTrafficPolicy(trafficPolicy *v1alpha10.TrafficPo
 func (mr *MockValidatorMockRecorder) ValidateTrafficPolicy(trafficPolicy, allMeshServices interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateTrafficPolicy", reflect.TypeOf((*MockValidator)(nil).ValidateTrafficPolicy), trafficPolicy, allMeshServices)
-}
-
-// MockValidationLoop is a mock of ValidationLoop interface.
-type MockValidationLoop struct {
-	ctrl     *gomock.Controller
-	recorder *MockValidationLoopMockRecorder
-}
-
-// MockValidationLoopMockRecorder is the mock recorder for MockValidationLoop.
-type MockValidationLoopMockRecorder struct {
-	mock *MockValidationLoop
-}
-
-// NewMockValidationLoop creates a new mock instance.
-func NewMockValidationLoop(ctrl *gomock.Controller) *MockValidationLoop {
-	mock := &MockValidationLoop{ctrl: ctrl}
-	mock.recorder = &MockValidationLoopMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockValidationLoop) EXPECT() *MockValidationLoopMockRecorder {
-	return m.recorder
-}
-
-// RunOnce mocks base method.
-func (m *MockValidationLoop) RunOnce(ctx context.Context) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RunOnce", ctx)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RunOnce indicates an expected call of RunOnce.
-func (mr *MockValidationLoopMockRecorder) RunOnce(ctx interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunOnce", reflect.TypeOf((*MockValidationLoop)(nil).RunOnce), ctx)
 }
