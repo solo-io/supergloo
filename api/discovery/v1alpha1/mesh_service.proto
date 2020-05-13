@@ -55,7 +55,7 @@ message MeshServiceSpec {
 
     message Subset {
         repeated string values = 1;
-    }
+    }f
 
     // Subsets for routing, based on labels.
     map<string, Subset> subsets = 3;

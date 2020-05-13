@@ -11,7 +11,7 @@ import (
 	types2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/mocks"
 	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -37,6 +37,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		trafficPolicyClient := mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
 		meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
 		aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
+		meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
 
 		tps := []*zephyr_networking.TrafficPolicy{
 			{
@@ -66,13 +67,15 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			ListMeshService(ctx).
 			Return(&zephyr_discovery.MeshServiceList{}, nil)
 		aggregator.EXPECT().
-			GroupByMeshService(nil, map[*zephyr_discovery.MeshService]string{}).
+			GroupByMeshService(nil, map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo{}).
 			Return([]*traffic_policy_aggregation.ServiceWithRelevantPolicies{})
 
 		reconciler := traffic_policy_aggregation.NewAggregationReconciler(
 			trafficPolicyClient,
 			meshServiceClient,
+			meshClient,
 			aggregator,
+			nil,
 		)
 
 		err := reconciler.Reconcile(ctx)
@@ -83,6 +86,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		trafficPolicyClient := mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
 		meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
 		aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
+		meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
 
 		// going to associate tp1 and tp2 with service 1; and tp3 and tp4 with service 2
 		tps := []*zephyr_networking.TrafficPolicy{
@@ -121,17 +125,44 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		}
 		cluster1 := "cluster-1"
 		cluster2 := "cluster-2"
+		mesh1 := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
+				Name: "mesh-1",
+			},
+			Spec: types2.MeshSpec{
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: cluster1,
+				},
+				MeshType: &types2.MeshSpec_Istio{},
+			},
+		}
+		mesh2 := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
+				Name: "mesh-2",
+			},
+			Spec: types2.MeshSpec{
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: cluster2,
+				},
+				MeshType: &types2.MeshSpec_Istio{},
+			},
+		}
+
 		meshServices := []*zephyr_discovery.MeshService{
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name:   "ms1",
-					Labels: map[string]string{constants.COMPUTE_TARGET: cluster1},
+					Name: "ms1",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh1.ObjectMeta),
 				},
 			},
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name:   "ms2",
-					Labels: map[string]string{constants.COMPUTE_TARGET: cluster2},
+					Name: "ms2",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh2.ObjectMeta),
 				},
 			},
 		}
@@ -146,17 +177,23 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			Return(&zephyr_discovery.MeshServiceList{
 				Items: []zephyr_discovery.MeshService{*meshServices[0], *meshServices[1]},
 			}, nil)
+		meshClient.EXPECT().
+			GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh1.ObjectMeta)).
+			Return(mesh1, nil)
+		meshClient.EXPECT().
+			GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh2.ObjectMeta)).
+			Return(mesh2, nil)
 		aggregator.EXPECT().
 			GroupByMeshService(tps, gomock.Any()).
 			DoAndReturn(func(
 				trafficPolicies []*zephyr_networking.TrafficPolicy,
-				meshServiceToClusterName map[*zephyr_discovery.MeshService]string,
+				meshServiceToClusterName map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo,
 			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
 				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
 				Expect(meshServiceToClusterName).To(HaveLen(2))
-				for service, cluster := range meshServiceToClusterName {
-					properAssociation := (service.ObjectMeta.Name == "ms1" && cluster == cluster1) ||
-						(service.ObjectMeta.Name == "ms2" && cluster == cluster2)
+				for service, serviceInfo := range meshServiceToClusterName {
+					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
+						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
 					Expect(properAssociation).To(BeTrue())
 				}
 				return []*traffic_policy_aggregation.ServiceWithRelevantPolicies{
@@ -170,11 +207,26 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					},
 				}
 			})
+		aggregator.EXPECT().
+			FindMergeConflict(&tps[0].Spec, nil, meshServices).
+			Return(nil)
+		aggregator.EXPECT().
+			FindMergeConflict(&tps[1].Spec, []*types.TrafficPolicySpec{&tps[0].Spec}, meshServices).
+			Return(nil)
+		aggregator.EXPECT().
+			FindMergeConflict(&tps[2].Spec, nil, meshServices).
+			Return(nil)
+		aggregator.EXPECT().
+			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices).
+			Return(nil)
+
 		meshServiceClient.EXPECT().
 			UpdateMeshServiceStatus(ctx, &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name:   "ms1",
-					Labels: map[string]string{constants.COMPUTE_TARGET: cluster1},
+					Name: "ms1",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh1.ObjectMeta),
 				},
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
@@ -193,8 +245,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		meshServiceClient.EXPECT().
 			UpdateMeshServiceStatus(ctx, &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name:   "ms2",
-					Labels: map[string]string{constants.COMPUTE_TARGET: cluster2},
+					Name: "ms2",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh2.ObjectMeta),
 				},
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
@@ -214,7 +268,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		reconciler := traffic_policy_aggregation.NewAggregationReconciler(
 			trafficPolicyClient,
 			meshServiceClient,
+			meshClient,
 			aggregator,
+			nil,
 		)
 
 		err := reconciler.Reconcile(ctx)
@@ -225,6 +281,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		trafficPolicyClient := mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
 		meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
 		aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
+		meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
 
 		// going to associate tp1 and tp2 with service 1; and tp3 and tp4 with service 2
 		tps := []*zephyr_networking.TrafficPolicy{
@@ -281,11 +338,35 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 
 		cluster1 := "cluster-1"
 		cluster2 := "cluster-2"
+		mesh1 := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
+				Name: "mesh-1",
+			},
+			Spec: types2.MeshSpec{
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: cluster1,
+				},
+				MeshType: &types2.MeshSpec_Istio{},
+			},
+		}
+		mesh2 := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
+				Name: "mesh-2",
+			},
+			Spec: types2.MeshSpec{
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: cluster2,
+				},
+				MeshType: &types2.MeshSpec_Istio{},
+			},
+		}
 		meshServices := []*zephyr_discovery.MeshService{
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name:   "ms1",
-					Labels: map[string]string{constants.COMPUTE_TARGET: cluster1},
+					Name: "ms1",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh1.ObjectMeta),
 				},
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
@@ -302,8 +383,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			},
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name:   "ms2",
-					Labels: map[string]string{constants.COMPUTE_TARGET: cluster2},
+					Name: "ms2",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh2.ObjectMeta),
 				},
 			},
 		}
@@ -321,17 +404,23 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			Return(&zephyr_discovery.MeshServiceList{
 				Items: []zephyr_discovery.MeshService{*meshServices[0], *meshServices[1]},
 			}, nil)
+		meshClient.EXPECT().
+			GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh1.ObjectMeta)).
+			Return(mesh1, nil)
+		meshClient.EXPECT().
+			GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh2.ObjectMeta)).
+			Return(mesh2, nil)
 		aggregator.EXPECT().
 			GroupByMeshService(tps, gomock.Any()).
 			DoAndReturn(func(
 				trafficPolicies []*zephyr_networking.TrafficPolicy,
-				meshServiceToClusterName map[*zephyr_discovery.MeshService]string,
+				meshServiceToClusterName map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo,
 			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
 				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
 				Expect(meshServiceToClusterName).To(HaveLen(2))
-				for service, cluster := range meshServiceToClusterName {
-					properAssociation := (service.ObjectMeta.Name == "ms1" && cluster == cluster1) ||
-						(service.ObjectMeta.Name == "ms2" && cluster == cluster2)
+				for service, serviceInfo := range meshServiceToClusterName {
+					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
+						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
 					Expect(properAssociation).To(BeTrue())
 				}
 				return []*traffic_policy_aggregation.ServiceWithRelevantPolicies{
@@ -350,14 +439,22 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				&tps[0].Spec,
 			}, meshServices).
 			Return(conflictError)
+		aggregator.EXPECT().
+			FindMergeConflict(&tps[2].Spec, nil, meshServices).
+			Return(nil)
+		aggregator.EXPECT().
+			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices).
+			Return(nil)
 
 		// NOTE: No update issued for ms1
 
 		meshServiceClient.EXPECT().
 			UpdateMeshServiceStatus(ctx, &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name:   "ms2",
-					Labels: map[string]string{constants.COMPUTE_TARGET: cluster2},
+					Name: "ms2",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh2.ObjectMeta),
 				},
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
@@ -388,7 +485,401 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		reconciler := traffic_policy_aggregation.NewAggregationReconciler(
 			trafficPolicyClient,
 			meshServiceClient,
+			meshClient,
 			aggregator,
+			nil,
+		)
+
+		err := reconciler.Reconcile(ctx)
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("resets traffic policy conflict errors if they no longer target any service", func() {
+		trafficPolicyClient := mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
+		meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
+		aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
+		meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
+
+		// going to associate tp1 and tp2 with service 1; and tp3 and tp4 with service 2
+		tps := []*zephyr_networking.TrafficPolicy{
+			{
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp1"},
+				Status: types.TrafficPolicyStatus{
+					ValidationStatus: &zephyr_core_types.Status{
+						State: zephyr_core_types.Status_ACCEPTED,
+					},
+
+					// this should get cleared out later
+					ConflictErrors: []*types.TrafficPolicyStatus_ConflictError{{
+						ErrorMessage: "whoops error",
+					}},
+				},
+			},
+			{
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp2"},
+				Status: types.TrafficPolicyStatus{
+					ValidationStatus: &zephyr_core_types.Status{
+						State: zephyr_core_types.Status_ACCEPTED,
+					},
+				},
+			},
+			{
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp3"},
+				Status: types.TrafficPolicyStatus{
+					ValidationStatus: &zephyr_core_types.Status{
+						State: zephyr_core_types.Status_ACCEPTED,
+					},
+				},
+			},
+			{
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp4"},
+				Status: types.TrafficPolicyStatus{
+					ValidationStatus: &zephyr_core_types.Status{
+						State: zephyr_core_types.Status_ACCEPTED,
+					},
+				},
+			},
+		}
+		cluster1 := "cluster-1"
+		cluster2 := "cluster-2"
+		mesh1 := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
+				Name: "mesh-1",
+			},
+			Spec: types2.MeshSpec{
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: cluster1,
+				},
+				MeshType: &types2.MeshSpec_Istio{},
+			},
+		}
+		mesh2 := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
+				Name: "mesh-2",
+			},
+			Spec: types2.MeshSpec{
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: cluster2,
+				},
+				MeshType: &types2.MeshSpec_Istio{},
+			},
+		}
+
+		meshServices := []*zephyr_discovery.MeshService{
+			{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Name: "ms1",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh1.ObjectMeta),
+				},
+			},
+			{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Name: "ms2",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh2.ObjectMeta),
+				},
+			},
+		}
+
+		trafficPolicyClient.EXPECT().
+			ListTrafficPolicy(ctx).
+			Return(&zephyr_networking.TrafficPolicyList{
+				Items: []zephyr_networking.TrafficPolicy{*tps[0], *tps[1], *tps[2], *tps[3]},
+			}, nil)
+		meshServiceClient.EXPECT().
+			ListMeshService(ctx).
+			Return(&zephyr_discovery.MeshServiceList{
+				Items: []zephyr_discovery.MeshService{*meshServices[0], *meshServices[1]},
+			}, nil)
+		meshClient.EXPECT().
+			GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh1.ObjectMeta)).
+			Return(mesh1, nil)
+		meshClient.EXPECT().
+			GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh2.ObjectMeta)).
+			Return(mesh2, nil)
+		aggregator.EXPECT().
+			GroupByMeshService(tps, gomock.Any()).
+			DoAndReturn(func(
+				trafficPolicies []*zephyr_networking.TrafficPolicy,
+				meshServiceToClusterName map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo,
+			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
+				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
+				Expect(meshServiceToClusterName).To(HaveLen(2))
+				for service, serviceInfo := range meshServiceToClusterName {
+					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
+						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
+					Expect(properAssociation).To(BeTrue())
+				}
+
+				// tps[0] will not be associated with any service status
+				return []*traffic_policy_aggregation.ServiceWithRelevantPolicies{
+					{
+						MeshService:     meshServices[0],
+						TrafficPolicies: tps[1:2], // intentionally excluding tps[0]
+					},
+					{
+						MeshService:     meshServices[1],
+						TrafficPolicies: tps[2:4],
+					},
+				}
+			})
+		aggregator.EXPECT().
+			FindMergeConflict(&tps[1].Spec, nil, meshServices).
+			Return(nil)
+		aggregator.EXPECT().
+			FindMergeConflict(&tps[2].Spec, nil, meshServices).
+			Return(nil)
+		aggregator.EXPECT().
+			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices).
+			Return(nil)
+		meshServiceClient.EXPECT().
+			UpdateMeshServiceStatus(ctx, &zephyr_discovery.MeshService{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Name: "ms1",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh1.ObjectMeta),
+				},
+				Status: types2.MeshServiceStatus{
+					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
+						{
+							Name:              "tp2",
+							TrafficPolicySpec: &tps[1].Spec,
+						},
+					},
+				},
+			}).
+			Return(nil)
+		meshServiceClient.EXPECT().
+			UpdateMeshServiceStatus(ctx, &zephyr_discovery.MeshService{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Name: "ms2",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh2.ObjectMeta),
+				},
+				Status: types2.MeshServiceStatus{
+					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
+						{
+							Name:              "tp3",
+							TrafficPolicySpec: &tps[2].Spec,
+						},
+						{
+							Name:              "tp4",
+							TrafficPolicySpec: &tps[3].Spec,
+						},
+					},
+				},
+			}).
+			Return(nil)
+		tp1Copy := *tps[0]
+		tp1Copy.Status = types.TrafficPolicyStatus{
+			ValidationStatus: tps[0].Status.ValidationStatus,
+			ConflictErrors:   nil,
+		}
+		trafficPolicyClient.EXPECT().
+			UpdateTrafficPolicyStatus(ctx, &tp1Copy).
+			Return(nil)
+
+		reconciler := traffic_policy_aggregation.NewAggregationReconciler(
+			trafficPolicyClient,
+			meshServiceClient,
+			meshClient,
+			aggregator,
+			nil,
+		)
+
+		err := reconciler.Reconcile(ctx)
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("does not include new policies if they cannot merge with the existing state", func() {
+		trafficPolicyClient := mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
+		meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
+		aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
+		meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
+
+		// going to associate tp1 and tp2 with service 1; and tp3 and tp4 with service 2
+		tps := []*zephyr_networking.TrafficPolicy{
+			{
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp1"},
+				Spec: types.TrafficPolicySpec{
+					Retries: &types.TrafficPolicySpec_RetryPolicy{
+						Attempts: 1,
+					},
+				},
+				Status: types.TrafficPolicyStatus{
+					ValidationStatus: &zephyr_core_types.Status{
+						State: zephyr_core_types.Status_ACCEPTED,
+					},
+				},
+			},
+			{
+				// This traffic policy will be in conflict with the existing state on the service
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp2"},
+				Spec: types.TrafficPolicySpec{
+					Retries: &types.TrafficPolicySpec_RetryPolicy{
+						Attempts: 9999,
+					},
+				},
+				Status: types.TrafficPolicyStatus{
+					ValidationStatus: &zephyr_core_types.Status{
+						State: zephyr_core_types.Status_ACCEPTED,
+					},
+				},
+			},
+			{
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp3"},
+				Status: types.TrafficPolicyStatus{
+					ValidationStatus: &zephyr_core_types.Status{
+						State: zephyr_core_types.Status_ACCEPTED,
+					},
+				},
+			},
+			{
+				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp4"},
+				Status: types.TrafficPolicyStatus{
+					ValidationStatus: &zephyr_core_types.Status{
+						State: zephyr_core_types.Status_ACCEPTED,
+					},
+				},
+			},
+		}
+
+		cluster1 := "cluster-1"
+		cluster2 := "cluster-2"
+		mesh1 := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
+				Name: "mesh-1",
+			},
+			Spec: types2.MeshSpec{
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: cluster1,
+				},
+				MeshType: &types2.MeshSpec_Istio{},
+			},
+		}
+		mesh2 := &zephyr_discovery.Mesh{
+			ObjectMeta: k8s_meta_types.ObjectMeta{
+				Name: "mesh-2",
+			},
+			Spec: types2.MeshSpec{
+				Cluster: &zephyr_core_types.ResourceRef{
+					Name: cluster2,
+				},
+				MeshType: &types2.MeshSpec_Istio{},
+			},
+		}
+		meshServices := []*zephyr_discovery.MeshService{
+			{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Name: "ms1",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh1.ObjectMeta),
+				},
+				Status: types2.MeshServiceStatus{
+					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
+						{
+							Name:              tps[1].Name,
+							TrafficPolicySpec: &tps[1].Spec,
+						},
+					},
+				},
+			},
+			{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Name: "ms2",
+				},
+				Spec: types2.MeshServiceSpec{
+					Mesh: clients.ObjectMetaToResourceRef(mesh2.ObjectMeta),
+				},
+				Status: types2.MeshServiceStatus{
+					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
+						{
+							Name:              tps[2].Name,
+							TrafficPolicySpec: &tps[2].Spec,
+						},
+						{
+							Name:              tps[3].Name,
+							TrafficPolicySpec: &tps[3].Spec,
+						},
+					},
+				},
+			},
+		}
+		conflictError := &types.TrafficPolicyStatus_ConflictError{
+			ErrorMessage: "whoops conflict",
+		}
+
+		trafficPolicyClient.EXPECT().
+			ListTrafficPolicy(ctx).
+			Return(&zephyr_networking.TrafficPolicyList{
+				Items: []zephyr_networking.TrafficPolicy{*tps[0], *tps[1], *tps[2], *tps[3]},
+			}, nil)
+		meshServiceClient.EXPECT().
+			ListMeshService(ctx).
+			Return(&zephyr_discovery.MeshServiceList{
+				Items: []zephyr_discovery.MeshService{*meshServices[0], *meshServices[1]},
+			}, nil)
+		meshClient.EXPECT().
+			GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh1.ObjectMeta)).
+			Return(mesh1, nil)
+		meshClient.EXPECT().
+			GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh2.ObjectMeta)).
+			Return(mesh2, nil)
+		aggregator.EXPECT().
+			GroupByMeshService(tps, gomock.Any()).
+			DoAndReturn(func(
+				trafficPolicies []*zephyr_networking.TrafficPolicy,
+				meshServiceToClusterName map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo,
+			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
+				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
+				Expect(meshServiceToClusterName).To(HaveLen(2))
+				for service, serviceInfo := range meshServiceToClusterName {
+					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
+						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
+					Expect(properAssociation).To(BeTrue())
+				}
+				return []*traffic_policy_aggregation.ServiceWithRelevantPolicies{
+					{
+						MeshService: meshServices[0],
+
+						// be sure to reference `trafficPolicies` and not `tps` here- the references have changed by this point in the application code
+						TrafficPolicies: trafficPolicies[0:2],
+					},
+					{
+						MeshService:     meshServices[1],
+						TrafficPolicies: trafficPolicies[2:4],
+					},
+				}
+			})
+
+		aggregator.EXPECT().
+			FindMergeConflict(&tps[0].Spec, []*types.TrafficPolicySpec{&tps[1].Spec}, meshServices).
+			Return(conflictError)
+
+		trafficPolicyClient.EXPECT().
+			UpdateTrafficPolicyStatus(ctx, &zephyr_networking.TrafficPolicy{
+				ObjectMeta: tps[0].ObjectMeta,
+				Spec:       tps[0].Spec,
+				Status: types.TrafficPolicyStatus{
+					ValidationStatus: &zephyr_core_types.Status{
+						State: zephyr_core_types.Status_ACCEPTED,
+					},
+					ConflictErrors: []*types.TrafficPolicyStatus_ConflictError{conflictError},
+				},
+			})
+
+		reconciler := traffic_policy_aggregation.NewAggregationReconciler(
+			trafficPolicyClient,
+			meshServiceClient,
+			meshClient,
+			aggregator,
+			nil,
 		)
 
 		err := reconciler.Reconcile(ctx)

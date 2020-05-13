@@ -52,7 +52,7 @@ func (mr *MockAggregatorMockRecorder) FindMergeConflict(trafficPolicyToMerge, po
 }
 
 // GroupByMeshService mocks base method.
-func (m *MockAggregator) GroupByMeshService(trafficPolicies []*v1alpha10.TrafficPolicy, meshServiceToClusterName map[*v1alpha1.MeshService]string) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
+func (m *MockAggregator) GroupByMeshService(trafficPolicies []*v1alpha10.TrafficPolicy, meshServiceToClusterName map[*v1alpha1.MeshService]*traffic_policy_aggregation.MeshServiceInfo) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GroupByMeshService", trafficPolicies, meshServiceToClusterName)
 	ret0, _ := ret[0].([]*traffic_policy_aggregation.ServiceWithRelevantPolicies)

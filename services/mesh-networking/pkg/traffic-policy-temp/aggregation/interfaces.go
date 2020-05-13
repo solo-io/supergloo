@@ -1,6 +1,7 @@
 package traffic_policy_aggregation
 
 import (
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
@@ -24,11 +25,16 @@ type Aggregator interface {
 	//           (This list must be reconciled with the existing state in the service's status)
 	GroupByMeshService(
 		trafficPolicies []*zephyr_networking.TrafficPolicy,
-		meshServiceToClusterName map[*zephyr_discovery.MeshService]string,
+		meshServiceToClusterName map[*zephyr_discovery.MeshService]*MeshServiceInfo,
 	) []*ServiceWithRelevantPolicies
 }
 
 type ServiceWithRelevantPolicies struct {
 	MeshService     *zephyr_discovery.MeshService
 	TrafficPolicies []*zephyr_networking.TrafficPolicy
+}
+
+type MeshServiceInfo struct {
+	ClusterName string
+	MeshType    zephyr_core_types.MeshType
 }

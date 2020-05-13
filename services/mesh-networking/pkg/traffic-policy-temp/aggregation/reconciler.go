@@ -9,9 +9,9 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
 	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -19,19 +19,25 @@ import (
 func NewAggregationReconciler(
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
+	meshClient zephyr_discovery.MeshClient,
 	aggregator Aggregator,
+	translationValidators map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator,
 ) reconciliation.Reconciler {
 	return &aggregationReconciler{
-		trafficPolicyClient: trafficPolicyClient,
-		meshServiceClient:   meshServiceClient,
-		aggregator:          aggregator,
+		trafficPolicyClient:   trafficPolicyClient,
+		meshServiceClient:     meshServiceClient,
+		meshClient:            meshClient,
+		aggregator:            aggregator,
+		translationValidators: translationValidators,
 	}
 }
 
 type aggregationReconciler struct {
-	trafficPolicyClient zephyr_networking.TrafficPolicyClient
-	meshServiceClient   zephyr_discovery.MeshServiceClient
-	aggregator          Aggregator
+	trafficPolicyClient   zephyr_networking.TrafficPolicyClient
+	meshServiceClient     zephyr_discovery.MeshServiceClient
+	meshClient            zephyr_discovery.MeshClient
+	aggregator            Aggregator
+	translationValidators map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator
 }
 
 func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
@@ -85,6 +91,8 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		}
 	}
 
+	// here?
+
 	for _, policy := range allValidatedTrafficPolicies {
 		err := a.updatePolicyStatusIfNecessary(ctx, policy, trafficPolicyToAllConflicts[policy])
 		if err != nil {
@@ -134,6 +142,8 @@ func (a *aggregationReconciler) determineNewStatuses(
 			var policiesToMergeWith []*zephyr_networking_types.TrafficPolicySpec
 			for i, tpIter := range previouslyRecordedPolicies {
 				tp := tpIter
+
+				// exclude the traffic policy that got updated
 				if i == policyIndex {
 					continue
 				}
@@ -166,34 +176,54 @@ func (a *aggregationReconciler) determineNewStatuses(
 
 		// we didn't see this one before, so it must be new
 		if !previouslyRecordedNameNamespaces.Has(clients.ToUniqueString(relevantPolicy.ObjectMeta)) {
-			policiesToRecordOnService = append(policiesToRecordOnService, &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
-				Name:              relevantPolicy.GetName(),
-				Namespace:         relevantPolicy.GetNamespace(),
-				TrafficPolicySpec: &relevantPolicy.Spec,
-			})
+			var specsToMergeWith []*zephyr_networking_types.TrafficPolicySpec
+			for _, validatedPolicyIter := range policiesToRecordOnService {
+				validatedPolicy := validatedPolicyIter
+
+				specsToMergeWith = append(specsToMergeWith, validatedPolicy.TrafficPolicySpec)
+			}
+
+			mergeConflict := a.aggregator.FindMergeConflict(&relevantPolicy.Spec, specsToMergeWith, allMeshServices)
+			if mergeConflict == nil {
+				policiesToRecordOnService = append(policiesToRecordOnService, &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+					Name:              relevantPolicy.GetName(),
+					Namespace:         relevantPolicy.GetNamespace(),
+					TrafficPolicySpec: &relevantPolicy.Spec,
+				})
+			} else {
+				policiesInConflict[relevantPolicy] = append(policiesInConflict[relevantPolicy], mergeConflict)
+			}
 		}
 	}
 
 	return policiesToRecordOnService, policiesInConflict
 }
 
-func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*zephyr_discovery.MeshService, map[*zephyr_discovery.MeshService]string, error) {
+func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*zephyr_discovery.MeshService, map[*zephyr_discovery.MeshService]*MeshServiceInfo, error) {
 	meshServiceList, err := a.meshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	serviceToClusterName := map[*zephyr_discovery.MeshService]string{}
+	serviceToClusterName := map[*zephyr_discovery.MeshService]*MeshServiceInfo{}
 	allMeshServices := []*zephyr_discovery.MeshService{}
 	for _, ms := range meshServiceList.Items {
 		meshService := ms
 
-		clusterName, ok := meshService.Labels[constants.COMPUTE_TARGET]
-		if !ok {
-			return nil, nil, selector.MissingComputeTargetLabel(meshService.GetName())
+		meshForService, err := a.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+		if err != nil {
+			return nil, nil, err
 		}
 
-		serviceToClusterName[&meshService] = clusterName
+		meshType, err := enum_conversion.MeshToMeshType(meshForService)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		serviceToClusterName[&meshService] = &MeshServiceInfo{
+			ClusterName: meshForService.Spec.GetCluster().GetName(),
+			MeshType:    meshType,
+		}
 		allMeshServices = append(allMeshServices, &meshService)
 	}
 
