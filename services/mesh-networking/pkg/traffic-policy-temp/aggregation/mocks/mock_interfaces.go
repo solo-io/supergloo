@@ -38,29 +38,30 @@ func (m *MockAggregator) EXPECT() *MockAggregatorMockRecorder {
 }
 
 // FindMergeConflict mocks base method.
-func (m *MockAggregator) FindMergeConflict(trafficPolicyToMerge *types.TrafficPolicySpec, policiesToMergeWith []*types.TrafficPolicySpec, meshServices []*v1alpha1.MeshService) *types.TrafficPolicyStatus_ConflictError {
+func (m *MockAggregator) FindMergeConflict(trafficPolicyToMerge *types.TrafficPolicySpec, policiesToMergeWith []*types.TrafficPolicySpec, meshService *v1alpha1.MeshService) *types.TrafficPolicyStatus_ConflictError {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindMergeConflict", trafficPolicyToMerge, policiesToMergeWith, meshServices)
+	ret := m.ctrl.Call(m, "FindMergeConflict", trafficPolicyToMerge, policiesToMergeWith, meshService)
 	ret0, _ := ret[0].(*types.TrafficPolicyStatus_ConflictError)
 	return ret0
 }
 
 // FindMergeConflict indicates an expected call of FindMergeConflict.
-func (mr *MockAggregatorMockRecorder) FindMergeConflict(trafficPolicyToMerge, policiesToMergeWith, meshServices interface{}) *gomock.Call {
+func (mr *MockAggregatorMockRecorder) FindMergeConflict(trafficPolicyToMerge, policiesToMergeWith, meshService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindMergeConflict", reflect.TypeOf((*MockAggregator)(nil).FindMergeConflict), trafficPolicyToMerge, policiesToMergeWith, meshServices)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindMergeConflict", reflect.TypeOf((*MockAggregator)(nil).FindMergeConflict), trafficPolicyToMerge, policiesToMergeWith, meshService)
 }
 
 // GroupByMeshService mocks base method.
-func (m *MockAggregator) GroupByMeshService(trafficPolicies []*v1alpha10.TrafficPolicy, meshServiceToClusterName map[*v1alpha1.MeshService]*traffic_policy_aggregation.MeshServiceInfo) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
+func (m *MockAggregator) GroupByMeshService(trafficPolicies []*v1alpha10.TrafficPolicy, meshServices []*v1alpha1.MeshService) ([]*traffic_policy_aggregation.ServiceWithRelevantPolicies, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GroupByMeshService", trafficPolicies, meshServiceToClusterName)
+	ret := m.ctrl.Call(m, "GroupByMeshService", trafficPolicies, meshServices)
 	ret0, _ := ret[0].([]*traffic_policy_aggregation.ServiceWithRelevantPolicies)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GroupByMeshService indicates an expected call of GroupByMeshService.
-func (mr *MockAggregatorMockRecorder) GroupByMeshService(trafficPolicies, meshServiceToClusterName interface{}) *gomock.Call {
+func (mr *MockAggregatorMockRecorder) GroupByMeshService(trafficPolicies, meshServices interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupByMeshService", reflect.TypeOf((*MockAggregator)(nil).GroupByMeshService), trafficPolicies, meshServiceToClusterName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupByMeshService", reflect.TypeOf((*MockAggregator)(nil).GroupByMeshService), trafficPolicies, meshServices)
 }

@@ -63,7 +63,10 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		return err
 	}
 
-	serviceWithRelevantPolicies := a.aggregator.GroupByMeshService(allValidatedTrafficPolicies, serviceToMetadata)
+	serviceWithRelevantPolicies, err := a.aggregator.GroupByMeshService(allValidatedTrafficPolicies, allMeshServices)
+	if err != nil {
+		return err
+	}
 
 	trafficPolicyToAllConflicts := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError{}
 	trafficPolicyToAllTranslationErrs := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{}
@@ -102,8 +105,6 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 			return err
 		}
 	}
-
-	// here?
 
 	for _, policy := range allValidatedTrafficPolicies {
 		err := a.updatePolicyStatusIfNecessary(ctx, policy, trafficPolicyToAllConflicts[policy], trafficPolicyToAllTranslationErrs[policy])
@@ -167,7 +168,7 @@ func (a *aggregationReconciler) determineNewStatuses(
 				policiesToMergeWith = append(policiesToMergeWith, tp.TrafficPolicySpec)
 			}
 
-			mergeConflict := a.aggregator.FindMergeConflict(&newlyValidatedPolicyState.Spec, policiesToMergeWith, allMeshServices)
+			mergeConflict := a.aggregator.FindMergeConflict(&newlyValidatedPolicyState.Spec, policiesToMergeWith, meshService)
 
 			// this will be either the new one, or the old one if we couldn't merge the new state in with the others
 			var validatedTrafficPolicyStateToRecord *zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy
@@ -222,7 +223,7 @@ func (a *aggregationReconciler) determineNewStatuses(
 				specsToMergeWith = append(specsToMergeWith, validatedPolicy.TrafficPolicySpec)
 			}
 
-			mergeConflict := a.aggregator.FindMergeConflict(&relevantPolicy.Spec, specsToMergeWith, allMeshServices)
+			mergeConflict := a.aggregator.FindMergeConflict(&relevantPolicy.Spec, specsToMergeWith, meshService)
 			if mergeConflict == nil {
 				validated := &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 					Name:              relevantPolicy.GetName(),

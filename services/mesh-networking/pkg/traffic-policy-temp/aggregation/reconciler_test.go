@@ -70,8 +70,8 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			ListMeshService(ctx).
 			Return(&zephyr_discovery.MeshServiceList{}, nil)
 		aggregator.EXPECT().
-			GroupByMeshService(nil, map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo{}).
-			Return([]*traffic_policy_aggregation.ServiceWithRelevantPolicies{})
+			GroupByMeshService(nil, []*zephyr_discovery.MeshService{}).
+			Return([]*traffic_policy_aggregation.ServiceWithRelevantPolicies{}, nil)
 
 		reconciler := traffic_policy_aggregation.NewAggregationReconciler(
 			trafficPolicyClient,
@@ -193,15 +193,12 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			GroupByMeshService(tps, gomock.Any()).
 			DoAndReturn(func(
 				trafficPolicies []*zephyr_networking.TrafficPolicy,
-				meshServiceToClusterName map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo,
-			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
+				meshServices []*zephyr_discovery.MeshService,
+			) (result []*traffic_policy_aggregation.ServiceWithRelevantPolicies, err error) {
 				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
-				Expect(meshServiceToClusterName).To(HaveLen(2))
+				Expect(meshServices).To(HaveLen(2))
 				var ret []*traffic_policy_aggregation.ServiceWithRelevantPolicies
-				for service, serviceInfo := range meshServiceToClusterName {
-					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
-						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
-					Expect(properAssociation).To(BeTrue())
+				for _, service := range meshServices {
 					var policies []*zephyr_networking.TrafficPolicy
 					if service.ObjectMeta.Name == "ms1" {
 						policies = trafficPolicies[0:2]
@@ -214,19 +211,19 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					})
 				}
 
-				return ret
+				return ret, nil
 			})
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[0].Spec, nil, meshServices).
+			FindMergeConflict(&tps[0].Spec, nil, meshServices[0]).
 			Return(nil)
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[1].Spec, []*types.TrafficPolicySpec{&tps[0].Spec}, meshServices).
+			FindMergeConflict(&tps[1].Spec, []*types.TrafficPolicySpec{&tps[0].Spec}, meshServices[0]).
 			Return(nil)
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[2].Spec, nil, meshServices).
+			FindMergeConflict(&tps[2].Spec, nil, meshServices[1]).
 			Return(nil)
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices).
+			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices[1]).
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
@@ -462,15 +459,12 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			GroupByMeshService(tps, gomock.Any()).
 			DoAndReturn(func(
 				trafficPolicies []*zephyr_networking.TrafficPolicy,
-				meshServiceToClusterName map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo,
-			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
+				meshServices []*zephyr_discovery.MeshService,
+			) (result []*traffic_policy_aggregation.ServiceWithRelevantPolicies, err error) {
 				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
-				Expect(meshServiceToClusterName).To(HaveLen(2))
+				Expect(meshServices).To(HaveLen(2))
 				var ret []*traffic_policy_aggregation.ServiceWithRelevantPolicies
-				for service, serviceInfo := range meshServiceToClusterName {
-					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
-						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
-					Expect(properAssociation).To(BeTrue())
+				for _, service := range meshServices {
 					var policies []*zephyr_networking.TrafficPolicy
 					if service.ObjectMeta.Name == "ms1" {
 						policies = trafficPolicies[0:2]
@@ -483,18 +477,18 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					})
 				}
 
-				return ret
+				return ret, nil
 			})
 		aggregator.EXPECT().
 			FindMergeConflict(&tps[1].Spec, []*types.TrafficPolicySpec{
 				&tps[0].Spec,
-			}, meshServices).
+			}, meshServices[0]).
 			Return(conflictError)
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[2].Spec, nil, meshServices).
+			FindMergeConflict(&tps[2].Spec, nil, meshServices[1]).
 			Return(nil)
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices).
+			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices[1]).
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
@@ -682,15 +676,12 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			GroupByMeshService(tps, gomock.Any()).
 			DoAndReturn(func(
 				trafficPolicies []*zephyr_networking.TrafficPolicy,
-				meshServiceToClusterName map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo,
-			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
+				meshServices []*zephyr_discovery.MeshService,
+			) (result []*traffic_policy_aggregation.ServiceWithRelevantPolicies, err error) {
 				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
-				Expect(meshServiceToClusterName).To(HaveLen(2))
+				Expect(meshServices).To(HaveLen(2))
 				var ret []*traffic_policy_aggregation.ServiceWithRelevantPolicies
-				for service, serviceInfo := range meshServiceToClusterName {
-					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
-						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
-					Expect(properAssociation).To(BeTrue())
+				for _, service := range meshServices {
 					var policies []*zephyr_networking.TrafficPolicy
 					if service.ObjectMeta.Name == "ms1" {
 						policies = trafficPolicies[1:2] // intentionally excluding tp[0]
@@ -703,16 +694,16 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					})
 				}
 
-				return ret
+				return ret, nil
 			})
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[1].Spec, nil, meshServices).
+			FindMergeConflict(&tps[1].Spec, nil, meshServices[0]).
 			Return(nil)
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[2].Spec, nil, meshServices).
+			FindMergeConflict(&tps[2].Spec, nil, meshServices[1]).
 			Return(nil)
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices).
+			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices[1]).
 			Return(nil)
 		meshServiceClient.EXPECT().
 			UpdateMeshServiceStatus(ctx, &zephyr_discovery.MeshService{
@@ -943,15 +934,12 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			GroupByMeshService(tps, gomock.Any()).
 			DoAndReturn(func(
 				trafficPolicies []*zephyr_networking.TrafficPolicy,
-				meshServiceToClusterName map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo,
-			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
+				meshServices []*zephyr_discovery.MeshService,
+			) (result []*traffic_policy_aggregation.ServiceWithRelevantPolicies, err error) {
 				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
-				Expect(meshServiceToClusterName).To(HaveLen(2))
+				Expect(meshServices).To(HaveLen(2))
 				var ret []*traffic_policy_aggregation.ServiceWithRelevantPolicies
-				for service, serviceInfo := range meshServiceToClusterName {
-					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
-						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
-					Expect(properAssociation).To(BeTrue())
+				for _, service := range meshServices {
 					var policies []*zephyr_networking.TrafficPolicy
 					if service.ObjectMeta.Name == "ms1" {
 						policies = trafficPolicies[0:2]
@@ -964,11 +952,11 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					})
 				}
 
-				return ret
+				return ret, nil
 			})
 
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[0].Spec, []*types.TrafficPolicySpec{&tps[1].Spec}, meshServices).
+			FindMergeConflict(&tps[0].Spec, []*types.TrafficPolicySpec{&tps[1].Spec}, meshServices[0]).
 			Return(conflictError)
 
 		trafficPolicyClient.EXPECT().
@@ -1013,12 +1001,22 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 						State: zephyr_core_types.Status_ACCEPTED,
 					},
 				},
+				Spec: types.TrafficPolicySpec{
+					Retries: &types.TrafficPolicySpec_RetryPolicy{
+						Attempts: 1,
+					},
+				},
 			},
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp2"},
 				Status: types.TrafficPolicyStatus{
 					ValidationStatus: &zephyr_core_types.Status{
 						State: zephyr_core_types.Status_ACCEPTED,
+					},
+				},
+				Spec: types.TrafficPolicySpec{
+					Retries: &types.TrafficPolicySpec_RetryPolicy{
+						Attempts: 2,
 					},
 				},
 			},
@@ -1029,12 +1027,22 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 						State: zephyr_core_types.Status_ACCEPTED,
 					},
 				},
+				Spec: types.TrafficPolicySpec{
+					Retries: &types.TrafficPolicySpec_RetryPolicy{
+						Attempts: 3,
+					},
+				},
 			},
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp4"},
 				Status: types.TrafficPolicyStatus{
 					ValidationStatus: &zephyr_core_types.Status{
 						State: zephyr_core_types.Status_ACCEPTED,
+					},
+				},
+				Spec: types.TrafficPolicySpec{
+					Retries: &types.TrafficPolicySpec_RetryPolicy{
+						Attempts: 4,
 					},
 				},
 			},
@@ -1122,15 +1130,12 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			GroupByMeshService(tps, gomock.Any()).
 			DoAndReturn(func(
 				trafficPolicies []*zephyr_networking.TrafficPolicy,
-				meshServiceToClusterName map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo,
-			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
+				meshServices []*zephyr_discovery.MeshService,
+			) (result []*traffic_policy_aggregation.ServiceWithRelevantPolicies, err error) {
 				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
-				Expect(meshServiceToClusterName).To(HaveLen(2))
+				Expect(meshServices).To(HaveLen(2))
 				var ret []*traffic_policy_aggregation.ServiceWithRelevantPolicies
-				for service, serviceInfo := range meshServiceToClusterName {
-					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
-						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
-					Expect(properAssociation).To(BeTrue())
+				for _, service := range meshServices {
 					var policies []*zephyr_networking.TrafficPolicy
 					if service.ObjectMeta.Name == "ms1" {
 						policies = trafficPolicies[0:2]
@@ -1143,16 +1148,16 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					})
 				}
 
-				return ret
+				return ret, nil
 			})
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[1].Spec, nil, meshServices).
+			FindMergeConflict(&tps[0].Spec, nil, meshServices[0]).
 			Return(nil)
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[2].Spec, nil, meshServices).
+			FindMergeConflict(&tps[1].Spec, nil, meshServices[0]).
 			Return(nil)
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices).
+			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices[1]).
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
@@ -1178,11 +1183,11 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
 					Name:              "tp3",
-					TrafficPolicySpec: &tps[1].Spec,
+					TrafficPolicySpec: &tps[2].Spec,
 				},
 				{
 					Name:              "tp4",
-					TrafficPolicySpec: &tps[2].Spec,
+					TrafficPolicySpec: &tps[3].Spec,
 				},
 			}).
 			Return([]*mesh_translation.TranslationError{{

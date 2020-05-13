@@ -9,7 +9,9 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
 
-// Find Service Mesh Hub resources that correspond to k8s-native resources
+// Find Service Mesh Hub resources that correspond to k8s-native resources.
+// Methods with the word "All" in their name will do a client lookup in their implementation.
+// Methods that do not conform to that naming scheme will be passed in a list of relevant mesh services, so as to avoid a client lookup.
 type ResourceSelector interface {
 	// fetch all MeshServices that match the given selector
 	GetAllMeshServicesByServiceSelector(

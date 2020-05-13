@@ -15,7 +15,7 @@ type Aggregator interface {
 	FindMergeConflict(
 		trafficPolicyToMerge *zephyr_networking_types.TrafficPolicySpec,
 		policiesToMergeWith []*zephyr_networking_types.TrafficPolicySpec,
-		meshServices []*zephyr_discovery.MeshService,
+		meshService *zephyr_discovery.MeshService,
 	) *zephyr_networking_types.TrafficPolicyStatus_ConflictError
 
 	// return a list of pairs:
@@ -25,8 +25,8 @@ type Aggregator interface {
 	//           (This list must be reconciled with the existing state in the service's status)
 	GroupByMeshService(
 		trafficPolicies []*zephyr_networking.TrafficPolicy,
-		meshServiceToClusterName map[*zephyr_discovery.MeshService]*MeshServiceInfo,
-	) []*ServiceWithRelevantPolicies
+		meshServices []*zephyr_discovery.MeshService,
+	) (result []*ServiceWithRelevantPolicies, err error)
 }
 
 type ServiceWithRelevantPolicies struct {
