@@ -3,6 +3,7 @@ package traffic_policy_aggregation
 import (
 	"context"
 
+	"github.com/rotisserie/eris"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -58,12 +59,12 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	}
 
 	// TODO: Get rid of this map
-	allMeshServices, serviceToClusterName, err := a.aggregateMeshServices(ctx)
+	allMeshServices, serviceToMetadata, err := a.aggregateMeshServices(ctx)
 	if err != nil {
 		return err
 	}
 
-	serviceWithRelevantPolicies := a.aggregator.GroupByMeshService(allValidatedTrafficPolicies, serviceToClusterName)
+	serviceWithRelevantPolicies := a.aggregator.GroupByMeshService(allValidatedTrafficPolicies, serviceToMetadata)
 
 	trafficPolicyToAllConflicts := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError{}
 	serviceToUpdatedStatus := map[*zephyr_discovery.MeshService][]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{}
@@ -71,11 +72,17 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	for _, serviceWithPolicies := range serviceWithRelevantPolicies {
 		meshService := serviceWithPolicies.MeshService
 
+		translationValidator, ok := a.translationValidators[serviceToMetadata[meshService].MeshType]
+		if !ok {
+			return eris.Errorf("Missing translation validator for mesh type %s", serviceToMetadata[meshService].MeshType.String())
+		}
+
 		newlyComputedMergeablePolicies, trafficPoliciesInConflict := a.determineNewStatuses(
 			meshService,
 			serviceWithPolicies.TrafficPolicies,
 			uniqueStringToValidatedTrafficPolicy,
 			allMeshServices,
+			translationValidator,
 		)
 
 		serviceToUpdatedStatus[meshService] = newlyComputedMergeablePolicies
@@ -108,6 +115,7 @@ func (a *aggregationReconciler) determineNewStatuses(
 	policiesForService []*zephyr_networking.TrafficPolicy,
 	uniqueStringToNewlyValidatedTrafficPolicy map[string]*zephyr_networking.TrafficPolicy,
 	allMeshServices []*zephyr_discovery.MeshService,
+	translationValidator mesh_translation.TranslationValidator,
 ) (
 	[]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 	map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError,

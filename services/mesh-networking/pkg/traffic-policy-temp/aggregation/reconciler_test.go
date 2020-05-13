@@ -14,6 +14,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/mocks"
+	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
+	mock_mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes/mocks"
 	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,6 +40,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
 		aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 		meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
+		validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
 
 		tps := []*zephyr_networking.TrafficPolicy{
 			{
@@ -75,7 +78,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			meshServiceClient,
 			meshClient,
 			aggregator,
-			nil,
+			map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
+				zephyr_core_types.MeshType_ISTIO: validator,
+			},
 		)
 
 		err := reconciler.Reconcile(ctx)
@@ -87,6 +92,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
 		aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 		meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
+		validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
 
 		// going to associate tp1 and tp2 with service 1; and tp3 and tp4 with service 2
 		tps := []*zephyr_networking.TrafficPolicy{
@@ -191,21 +197,24 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
 				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
 				Expect(meshServiceToClusterName).To(HaveLen(2))
+				var ret []*traffic_policy_aggregation.ServiceWithRelevantPolicies
 				for service, serviceInfo := range meshServiceToClusterName {
 					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
 						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
 					Expect(properAssociation).To(BeTrue())
+					var policies []*zephyr_networking.TrafficPolicy
+					if service.ObjectMeta.Name == "ms1" {
+						policies = trafficPolicies[0:2]
+					} else {
+						policies = trafficPolicies[2:4]
+					}
+					ret = append(ret, &traffic_policy_aggregation.ServiceWithRelevantPolicies{
+						MeshService:     service,
+						TrafficPolicies: policies,
+					})
 				}
-				return []*traffic_policy_aggregation.ServiceWithRelevantPolicies{
-					{
-						MeshService:     meshServices[0],
-						TrafficPolicies: tps[0:2],
-					},
-					{
-						MeshService:     meshServices[1],
-						TrafficPolicies: tps[2:4],
-					},
-				}
+
+				return ret
 			})
 		aggregator.EXPECT().
 			FindMergeConflict(&tps[0].Spec, nil, meshServices).
@@ -270,7 +279,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			meshServiceClient,
 			meshClient,
 			aggregator,
-			nil,
+			map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
+				zephyr_core_types.MeshType_ISTIO: validator,
+			},
 		)
 
 		err := reconciler.Reconcile(ctx)
@@ -282,6 +293,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
 		aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 		meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
+		validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
 
 		// going to associate tp1 and tp2 with service 1; and tp3 and tp4 with service 2
 		tps := []*zephyr_networking.TrafficPolicy{
@@ -418,21 +430,24 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
 				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
 				Expect(meshServiceToClusterName).To(HaveLen(2))
+				var ret []*traffic_policy_aggregation.ServiceWithRelevantPolicies
 				for service, serviceInfo := range meshServiceToClusterName {
 					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
 						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
 					Expect(properAssociation).To(BeTrue())
+					var policies []*zephyr_networking.TrafficPolicy
+					if service.ObjectMeta.Name == "ms1" {
+						policies = trafficPolicies[0:2]
+					} else {
+						policies = trafficPolicies[2:4]
+					}
+					ret = append(ret, &traffic_policy_aggregation.ServiceWithRelevantPolicies{
+						MeshService:     service,
+						TrafficPolicies: policies,
+					})
 				}
-				return []*traffic_policy_aggregation.ServiceWithRelevantPolicies{
-					{
-						MeshService:     meshServices[0],
-						TrafficPolicies: tps[0:2],
-					},
-					{
-						MeshService:     meshServices[1],
-						TrafficPolicies: tps[2:4],
-					},
-				}
+
+				return ret
 			})
 		aggregator.EXPECT().
 			FindMergeConflict(&tps[1].Spec, []*types.TrafficPolicySpec{
@@ -487,7 +502,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			meshServiceClient,
 			meshClient,
 			aggregator,
-			nil,
+			map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
+				zephyr_core_types.MeshType_ISTIO: validator,
+			},
 		)
 
 		err := reconciler.Reconcile(ctx)
@@ -499,6 +516,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
 		aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 		meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
+		validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
 
 		// going to associate tp1 and tp2 with service 1; and tp3 and tp4 with service 2
 		tps := []*zephyr_networking.TrafficPolicy{
@@ -608,23 +626,24 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
 				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
 				Expect(meshServiceToClusterName).To(HaveLen(2))
+				var ret []*traffic_policy_aggregation.ServiceWithRelevantPolicies
 				for service, serviceInfo := range meshServiceToClusterName {
 					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
 						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
 					Expect(properAssociation).To(BeTrue())
+					var policies []*zephyr_networking.TrafficPolicy
+					if service.ObjectMeta.Name == "ms1" {
+						policies = trafficPolicies[1:2] // intentionally excluding tp[0]
+					} else {
+						policies = trafficPolicies[2:4]
+					}
+					ret = append(ret, &traffic_policy_aggregation.ServiceWithRelevantPolicies{
+						MeshService:     service,
+						TrafficPolicies: policies,
+					})
 				}
 
-				// tps[0] will not be associated with any service status
-				return []*traffic_policy_aggregation.ServiceWithRelevantPolicies{
-					{
-						MeshService:     meshServices[0],
-						TrafficPolicies: tps[1:2], // intentionally excluding tps[0]
-					},
-					{
-						MeshService:     meshServices[1],
-						TrafficPolicies: tps[2:4],
-					},
-				}
+				return ret
 			})
 		aggregator.EXPECT().
 			FindMergeConflict(&tps[1].Spec, nil, meshServices).
@@ -689,7 +708,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			meshServiceClient,
 			meshClient,
 			aggregator,
-			nil,
+			map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
+				zephyr_core_types.MeshType_ISTIO: validator,
+			},
 		)
 
 		err := reconciler.Reconcile(ctx)
@@ -701,6 +722,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
 		aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 		meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
+		validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
 
 		// going to associate tp1 and tp2 with service 1; and tp3 and tp4 with service 2
 		tps := []*zephyr_networking.TrafficPolicy{
@@ -839,23 +861,24 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			) []*traffic_policy_aggregation.ServiceWithRelevantPolicies {
 				// see https://github.com/solo-io/service-mesh-hub/issues/677 for why this is such a pain
 				Expect(meshServiceToClusterName).To(HaveLen(2))
+				var ret []*traffic_policy_aggregation.ServiceWithRelevantPolicies
 				for service, serviceInfo := range meshServiceToClusterName {
 					properAssociation := (service.ObjectMeta.Name == "ms1" && serviceInfo.ClusterName == cluster1) ||
 						(service.ObjectMeta.Name == "ms2" && serviceInfo.ClusterName == cluster2)
 					Expect(properAssociation).To(BeTrue())
+					var policies []*zephyr_networking.TrafficPolicy
+					if service.ObjectMeta.Name == "ms1" {
+						policies = trafficPolicies[0:2]
+					} else {
+						policies = trafficPolicies[2:4]
+					}
+					ret = append(ret, &traffic_policy_aggregation.ServiceWithRelevantPolicies{
+						MeshService:     service,
+						TrafficPolicies: policies,
+					})
 				}
-				return []*traffic_policy_aggregation.ServiceWithRelevantPolicies{
-					{
-						MeshService: meshServices[0],
 
-						// be sure to reference `trafficPolicies` and not `tps` here- the references have changed by this point in the application code
-						TrafficPolicies: trafficPolicies[0:2],
-					},
-					{
-						MeshService:     meshServices[1],
-						TrafficPolicies: trafficPolicies[2:4],
-					},
-				}
+				return ret
 			})
 
 		aggregator.EXPECT().
@@ -879,7 +902,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			meshServiceClient,
 			meshClient,
 			aggregator,
-			nil,
+			map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
+				zephyr_core_types.MeshType_ISTIO: validator,
+			},
 		)
 
 		err := reconciler.Reconcile(ctx)

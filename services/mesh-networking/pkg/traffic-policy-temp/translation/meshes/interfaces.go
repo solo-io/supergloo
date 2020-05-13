@@ -9,6 +9,8 @@ import (
 	istio_networking "istio.io/api/networking/v1alpha3"
 )
 
+//go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
+
 type IstioTranslator interface {
 	Translate(
 		ctx context.Context,
