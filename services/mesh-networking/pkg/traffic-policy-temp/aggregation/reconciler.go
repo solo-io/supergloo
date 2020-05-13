@@ -58,7 +58,6 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		}
 	}
 
-	// TODO: Get rid of this map
 	allMeshServices, serviceToMetadata, err := a.aggregateMeshServices(ctx)
 	if err != nil {
 		return err
@@ -67,6 +66,7 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	serviceWithRelevantPolicies := a.aggregator.GroupByMeshService(allValidatedTrafficPolicies, serviceToMetadata)
 
 	trafficPolicyToAllConflicts := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError{}
+	trafficPolicyToAllTranslationErrs := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{}
 	serviceToUpdatedStatus := map[*zephyr_discovery.MeshService][]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{}
 
 	for _, serviceWithPolicies := range serviceWithRelevantPolicies {
@@ -77,8 +77,9 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 			return eris.Errorf("Missing translation validator for mesh type %s", serviceToMetadata[meshService].MeshType.String())
 		}
 
-		newlyComputedMergeablePolicies, trafficPoliciesInConflict := a.determineNewStatuses(
+		newlyComputedMergeablePolicies, trafficPoliciesInConflict, policyToTranslationErrors := a.determineNewStatuses(
 			meshService,
+			serviceToMetadata[meshService].Mesh,
 			serviceWithPolicies.TrafficPolicies,
 			uniqueStringToValidatedTrafficPolicy,
 			allMeshServices,
@@ -88,6 +89,10 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		serviceToUpdatedStatus[meshService] = newlyComputedMergeablePolicies
 		for trafficPolicy, conflicts := range trafficPoliciesInConflict {
 			trafficPolicyToAllConflicts[trafficPolicy] = append(trafficPolicyToAllConflicts[trafficPolicy], conflicts...)
+		}
+
+		for trafficPolicy, translationErrors := range policyToTranslationErrors {
+			trafficPolicyToAllTranslationErrs[trafficPolicy] = append(trafficPolicyToAllTranslationErrs[trafficPolicy], translationErrors...)
 		}
 	}
 
@@ -101,7 +106,7 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	// here?
 
 	for _, policy := range allValidatedTrafficPolicies {
-		err := a.updatePolicyStatusIfNecessary(ctx, policy, trafficPolicyToAllConflicts[policy])
+		err := a.updatePolicyStatusIfNecessary(ctx, policy, trafficPolicyToAllConflicts[policy], trafficPolicyToAllTranslationErrs[policy])
 		if err != nil {
 			return err
 		}
@@ -112,6 +117,7 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 
 func (a *aggregationReconciler) determineNewStatuses(
 	meshService *zephyr_discovery.MeshService,
+	mesh *zephyr_discovery.Mesh,
 	policiesForService []*zephyr_networking.TrafficPolicy,
 	uniqueStringToNewlyValidatedTrafficPolicy map[string]*zephyr_networking.TrafficPolicy,
 	allMeshServices []*zephyr_discovery.MeshService,
@@ -119,9 +125,11 @@ func (a *aggregationReconciler) determineNewStatuses(
 ) (
 	[]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 	map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
+	map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError,
 ) {
 	var policiesToRecordOnService []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy
 	policiesInConflict := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError{}
+	untranslatablePolicies := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{}
 
 	// keep track of the entries that were already on the statuses
 	previouslyRecordedNameNamespaces := sets.NewString()
@@ -174,7 +182,30 @@ func (a *aggregationReconciler) determineNewStatuses(
 				}
 			}
 
-			policiesToRecordOnService = append(policiesToRecordOnService, validatedTrafficPolicyStateToRecord)
+			// we know that the policies are mergeable; now let's see if they can be translated all together
+			dryRunTranslation := append([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil), policiesToRecordOnService...)
+			dryRunTranslation = append(dryRunTranslation, validatedTrafficPolicyStateToRecord)
+
+			translationErrors := translationValidator.GetTranslationErrors(
+				meshService,
+				mesh,
+				dryRunTranslation,
+			)
+
+			if len(translationErrors) == 0 {
+				// we're done, record this as validated
+				policiesToRecordOnService = append(policiesToRecordOnService, validatedTrafficPolicyStateToRecord)
+			} else {
+				for _, translationError := range translationErrors {
+					// need to pick out the translation policy in question from the error result list
+					if clients.SameObject(k8s_meta_types.ObjectMeta{
+						Name:      translationError.Policy.GetName(),
+						Namespace: translationError.Policy.GetNamespace(),
+					}, newlyValidatedPolicyState.ObjectMeta) {
+						untranslatablePolicies[newlyValidatedPolicyState] = translationError.TranslatorErrors
+					}
+				}
+			}
 		}
 	}
 
@@ -193,18 +224,41 @@ func (a *aggregationReconciler) determineNewStatuses(
 
 			mergeConflict := a.aggregator.FindMergeConflict(&relevantPolicy.Spec, specsToMergeWith, allMeshServices)
 			if mergeConflict == nil {
-				policiesToRecordOnService = append(policiesToRecordOnService, &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				validated := &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 					Name:              relevantPolicy.GetName(),
 					Namespace:         relevantPolicy.GetNamespace(),
 					TrafficPolicySpec: &relevantPolicy.Spec,
-				})
+				}
+
+				dryRunTranslation := append([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil), policiesToRecordOnService...)
+				dryRunTranslation = append(dryRunTranslation, validated)
+
+				translationErrors := translationValidator.GetTranslationErrors(
+					meshService,
+					mesh,
+					dryRunTranslation,
+				)
+
+				if len(translationErrors) == 0 {
+					policiesToRecordOnService = append(policiesToRecordOnService, validated)
+				} else {
+					for _, translationError := range translationErrors {
+						// need to pick out the translation policy in question from the error result list
+						if clients.SameObject(k8s_meta_types.ObjectMeta{
+							Name:      translationError.Policy.GetName(),
+							Namespace: translationError.Policy.GetNamespace(),
+						}, relevantPolicy.ObjectMeta) {
+							untranslatablePolicies[relevantPolicy] = translationError.TranslatorErrors
+						}
+					}
+				}
 			} else {
 				policiesInConflict[relevantPolicy] = append(policiesInConflict[relevantPolicy], mergeConflict)
 			}
 		}
 	}
 
-	return policiesToRecordOnService, policiesInConflict
+	return policiesToRecordOnService, policiesInConflict, untranslatablePolicies
 }
 
 func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*zephyr_discovery.MeshService, map[*zephyr_discovery.MeshService]*MeshServiceInfo, error) {
@@ -231,6 +285,7 @@ func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*z
 		serviceToClusterName[&meshService] = &MeshServiceInfo{
 			ClusterName: meshForService.Spec.GetCluster().GetName(),
 			MeshType:    meshType,
+			Mesh:        meshForService,
 		}
 		allMeshServices = append(allMeshServices, &meshService)
 	}
@@ -267,6 +322,7 @@ func (a *aggregationReconciler) updatePolicyStatusIfNecessary(
 	ctx context.Context,
 	policy *zephyr_networking.TrafficPolicy,
 	newConflictErrors []*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
+	newTranslationErrors []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError,
 ) error {
 	shouldUpdateStatus := false
 	if len(newConflictErrors) != len(policy.Status.GetConflictErrors()) {
@@ -277,8 +333,21 @@ func (a *aggregationReconciler) updatePolicyStatusIfNecessary(
 		}
 	}
 
+	if len(newTranslationErrors) != len(policy.Status.TranslatorErrors) {
+		shouldUpdateStatus = true
+	} else {
+		for newErrorIndex, newError := range newTranslationErrors {
+			shouldUpdateStatus = shouldUpdateStatus || !policy.Status.GetTranslatorErrors()[newErrorIndex].Equal(newError)
+		}
+	}
+
 	if shouldUpdateStatus {
 		policy.Status.ConflictErrors = newConflictErrors
+		policy.Status.TranslatorErrors = newTranslationErrors
+
+		// the next stage, actual non-dry-run translation, will set this to the proper value
+		policy.Status.TranslationStatus = nil
+
 		err := a.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, policy)
 		if err != nil {
 			return err

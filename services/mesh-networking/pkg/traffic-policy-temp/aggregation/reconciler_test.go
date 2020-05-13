@@ -228,6 +228,42 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		aggregator.EXPECT().
 			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices).
 			Return(nil)
+		validator.EXPECT().
+			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
+				Name:              "tp1",
+				TrafficPolicySpec: &tps[0].Spec,
+			}}).
+			Return(nil)
+		validator.EXPECT().
+			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
+				{
+					Name:              "tp1",
+					TrafficPolicySpec: &tps[0].Spec,
+				},
+				{
+					Name:              "tp2",
+					TrafficPolicySpec: &tps[1].Spec,
+				},
+			}).
+			Return(nil)
+		validator.EXPECT().
+			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
+				Name:              "tp3",
+				TrafficPolicySpec: &tps[2].Spec,
+			}}).
+			Return(nil)
+		validator.EXPECT().
+			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
+				{
+					Name:              "tp3",
+					TrafficPolicySpec: &tps[1].Spec,
+				},
+				{
+					Name:              "tp4",
+					TrafficPolicySpec: &tps[2].Spec,
+				},
+			}).
+			Return(nil)
 
 		meshServiceClient.EXPECT().
 			UpdateMeshServiceStatus(ctx, &zephyr_discovery.MeshService{
@@ -460,6 +496,30 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		aggregator.EXPECT().
 			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices).
 			Return(nil)
+		validator.EXPECT().
+			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
+				Name:              tp2LastValidState.Name,
+				TrafficPolicySpec: &tp2LastValidState.Spec,
+			}}).
+			Return(nil)
+		validator.EXPECT().
+			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
+				Name:              tps[2].Name,
+				TrafficPolicySpec: &tps[2].Spec,
+			}}).
+			Return(nil)
+		validator.EXPECT().
+			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
+				{
+					Name:              tps[2].Name,
+					TrafficPolicySpec: &tps[2].Spec,
+				},
+				{
+					Name:              tps[3].Name,
+					TrafficPolicySpec: &tps[3].Spec,
+				},
+			}).
+			Return(nil)
 
 		// NOTE: No update issued for ms1
 
@@ -669,6 +729,32 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 							TrafficPolicySpec: &tps[1].Spec,
 						},
 					},
+				},
+			}).
+			Return(nil)
+		validator.EXPECT().
+			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
+				Name:              tps[1].Name,
+				TrafficPolicySpec: &tps[1].Spec,
+			}}).
+			Return(nil)
+		validator.EXPECT().
+			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
+				{
+					Name:              tps[2].Name,
+					TrafficPolicySpec: &tps[2].Spec,
+				},
+			}).
+			Return(nil)
+		validator.EXPECT().
+			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
+				{
+					Name:              tps[2].Name,
+					TrafficPolicySpec: &tps[2].Spec,
+				},
+				{
+					Name:              tps[3].Name,
+					TrafficPolicySpec: &tps[3].Spec,
 				},
 			}).
 			Return(nil)

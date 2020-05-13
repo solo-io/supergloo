@@ -1,8 +1,6 @@
 package mesh_translation
 
 import (
-	"context"
-
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
@@ -13,7 +11,6 @@ import (
 
 type IstioTranslator interface {
 	Translate(
-		ctx context.Context,
 		meshService *zephyr_discovery.MeshService,
 		mesh *zephyr_discovery.Mesh,
 		trafficPolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
@@ -21,7 +18,7 @@ type IstioTranslator interface {
 }
 
 type TranslationValidator interface {
-	GetTranslationErrors(ctx context.Context,
+	GetTranslationErrors(
 		meshService *zephyr_discovery.MeshService,
 		mesh *zephyr_discovery.Mesh,
 		trafficPolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,

@@ -36,5 +36,6 @@ type ServiceWithRelevantPolicies struct {
 
 type MeshServiceInfo struct {
 	ClusterName string
+	Mesh        *zephyr_discovery.Mesh
 	MeshType    zephyr_core_types.MeshType
 }
