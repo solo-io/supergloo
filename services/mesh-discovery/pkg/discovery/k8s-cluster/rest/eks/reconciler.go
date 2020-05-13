@@ -19,6 +19,7 @@ import (
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	eks_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
 	"github.com/solo-io/skv2/pkg/multicluster/discovery/cloud"
+	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -32,6 +33,11 @@ var (
 	EKSClusterDiscoveryLabel = "eks-cluster-discovery"
 	FailedRegisteringCluster = func(err error, name string) error {
 		return eris.Wrapf(err, "Failed to register EKS cluster %s", name)
+	}
+	UnauthorizedForEKSCluster = func(accessKeyID string, eksClusterName string) error {
+		return eris.Errorf("AWS credentials (access_key_id: %s) are not authorized for EKS cluster %s. "+
+			"See https://aws.amazon.com/premiumsupport/knowledge-center/eks-api-server-unauthorized-error for details on how to enable "+
+			"access for the provided credentials.", accessKeyID, eksClusterName)
 	}
 )
 
@@ -93,7 +99,13 @@ func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Creden
 		for _, clusterName := range clustersToRegister.List() {
 			awsClusterName := smhToAwsClusterNames[clusterName]
 			err := e.registerCluster(ctx, eksClient, awsClusterName, clusterName)
-			if err != nil {
+			if k8s_errs.IsUnauthorized(err) {
+				credsValue, err := creds.Get()
+				if err != nil {
+					return err
+				}
+				return UnauthorizedForEKSCluster(credsValue.AccessKeyID, awsClusterName)
+			} else if err != nil {
 				return FailedRegisteringCluster(err, awsClusterName)
 			}
 		}

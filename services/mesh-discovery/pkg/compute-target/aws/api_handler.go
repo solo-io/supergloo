@@ -108,7 +108,7 @@ func (a *awsCredsHandler) runReconcilers(
 ) {
 	for _, reconciler := range a.reconcilers {
 		if err := reconciler.Reconcile(reconcilerCtx, creds, accountID); err != nil {
-			logger.Errorw(fmt.Sprintf("Error reconciling for %s", reconciler.GetName()), zap.Error(err))
+			logger.Errorw(fmt.Sprintf("Error during reconcile for %s", reconciler.GetName()), zap.Error(err))
 		}
 	}
 }
