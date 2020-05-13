@@ -1,4 +1,4 @@
-package aws
+package appmesh
 
 import (
 	"context"
@@ -8,8 +8,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
+	settings_utils "github.com/solo-io/service-mesh-hub/pkg/settings"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
@@ -31,6 +33,8 @@ type appMeshDiscoveryReconciler struct {
 	arnParser            aws_utils.ArnParser
 	meshClient           zephyr_discovery.MeshClient
 	appmeshClientFactory appmesh_client.AppMeshClientFactory
+	settingsClient       settings.SettingsHelperClient
+	awsSelector          settings_utils.AwsSelector
 }
 
 func NewAppMeshDiscoveryReconciler(
@@ -38,11 +42,15 @@ func NewAppMeshDiscoveryReconciler(
 	meshClientFactory zephyr_discovery.MeshClientFactory,
 	arnParser aws_utils.ArnParser,
 	appmeshClientFactory appmesh_client.AppMeshClientFactory,
+	settingsClient settings.SettingsHelperClient,
+	awsSelector settings_utils.AwsSelector,
 ) compute_target_aws.AppMeshDiscoveryReconciler {
 	return &appMeshDiscoveryReconciler{
 		arnParser:            arnParser,
 		meshClient:           meshClientFactory(masterClient),
 		appmeshClientFactory: appmeshClientFactory,
+		settingsClient:       settingsClient,
+		awsSelector:          awsSelector,
 	}
 }
 
@@ -52,46 +60,64 @@ func (a *appMeshDiscoveryReconciler) GetName() string {
 
 // Currently Meshes are the only SMH CRD that are discovered through the AWS REST API
 // For EKS, workloads and services are discovered directly from the cluster.
-func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *credentials.Credentials, region string) error {
-	appmeshClient, err := a.appmeshClientFactory(creds, region)
+func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *credentials.Credentials, accountID string) error {
+	selectorsByRegion, err := a.fetchSelectorsByRegion(ctx, accountID)
 	if err != nil {
 		return err
 	}
-	var nextToken *string
-	input := &appmesh.ListMeshesInput{
-		Limit:     NumItemsPerRequest,
-		NextToken: nextToken,
-	}
-	discoveredSMHMeshNames := sets.NewString() // Set containing SMH unique identifiers for AppMesh instances (the Mesh CRD name) for comparison
-	for {
-		appMeshes, err := appmeshClient.ListMeshes(input)
+	// Set containing SMH unique identifiers for AppMesh instances (the Mesh CRD name) for comparison
+	discoveredSMHMeshNames := sets.NewString()
+	for region, selectors := range selectorsByRegion {
+		appmeshClient, err := a.appmeshClientFactory(creds, region)
 		if err != nil {
 			return err
 		}
-		for _, appMeshRef := range appMeshes.Meshes {
-			discoveredMesh, err := a.convertAppMesh(appMeshRef, region)
+		var nextToken *string
+		input := &appmesh.ListMeshesInput{
+			Limit:     NumItemsPerRequest,
+			NextToken: nextToken,
+		}
+		for {
+			appMeshes, err := appmeshClient.ListMeshes(input)
 			if err != nil {
 				return err
 			}
-			discoveredSMHMeshNames.Insert(discoveredMesh.GetName())
-			// Create Mesh only if it doesn't exist to avoid overwriting the clusters field.
-			_, err = a.meshClient.GetMesh(
-				ctx,
-				client.ObjectKey{Name: discoveredMesh.GetName(), Namespace: discoveredMesh.GetNamespace()},
-			)
-			if errors.IsNotFound(err) {
-				err = a.meshClient.CreateMesh(ctx, discoveredMesh)
+			for _, appMeshRef := range appMeshes.Meshes {
+				appMeshTagsOutput, err := appmeshClient.ListTagsForResource(&appmesh.ListTagsForResourceInput{ResourceArn: appMeshRef.Arn})
 				if err != nil {
 					return err
 				}
-			} else if err != nil {
-				return err
+				matched, err := a.awsSelector.AppMeshMatchedBySelectors(appMeshRef, appMeshTagsOutput.Tags, selectors)
+				if err != nil {
+					return err
+				}
+				if !matched {
+					continue
+				}
+				discoveredMesh, err := a.convertAppMesh(appMeshRef, region)
+				if err != nil {
+					return err
+				}
+				discoveredSMHMeshNames.Insert(discoveredMesh.GetName())
+				// Create Mesh only if it doesn't exist to avoid overwriting the clusters field.
+				_, err = a.meshClient.GetMesh(
+					ctx,
+					client.ObjectKey{Name: discoveredMesh.GetName(), Namespace: discoveredMesh.GetNamespace()},
+				)
+				if errors.IsNotFound(err) {
+					err = a.meshClient.CreateMesh(ctx, discoveredMesh)
+					if err != nil {
+						return err
+					}
+				} else if err != nil {
+					return err
+				}
 			}
+			if appMeshes.NextToken == nil {
+				break
+			}
+			input.SetNextToken(aws.StringValue(appMeshes.NextToken))
 		}
-		if appMeshes.NextToken == nil {
-			break
-		}
-		input.SetNextToken(aws.StringValue(appMeshes.NextToken))
 	}
 
 	meshList, err := a.meshClient.ListMesh(ctx)
@@ -135,4 +161,15 @@ func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef,
 			},
 		},
 	}, nil
+}
+
+func (a *appMeshDiscoveryReconciler) fetchSelectorsByRegion(
+	ctx context.Context,
+	accountID string,
+) (settings_utils.AwsSelectorsByRegion, error) {
+	awsSettings, err := a.settingsClient.GetAWSSettingsForAccount(ctx, accountID)
+	if err != nil {
+		return nil, err
+	}
+	return a.awsSelector.ResourceSelectorsByRegion(awsSettings.GetDiscoverySettings().GetAppmesh().GetResourceSelectors())
 }

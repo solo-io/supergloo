@@ -1,4 +1,4 @@
-package aws_test
+package appmesh_test
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	aws4 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/appmesh"
 	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -46,7 +46,7 @@ var _ = Describe("Reconciler", func() {
 		mockArnParser = mock_aws.NewMockArnParser(ctrl)
 		awsAccountID = "410461945555"
 		mockAppMeshClient = mock_appmesh_clients.NewMockAppMeshAPI(ctrl)
-		appMeshDiscoveryReconciler = aws.NewAppMeshDiscoveryReconciler(
+		appMeshDiscoveryReconciler = appmesh.NewAppMeshDiscoveryReconciler(
 			nil,
 			func(client client.Client) zephyr_discovery.MeshClient {
 				return mockMeshClient
@@ -64,10 +64,10 @@ var _ = Describe("Reconciler", func() {
 
 	var expectReconcileMeshes = func() {
 		page1Input := &appmesh.ListMeshesInput{
-			Limit: aws.NumItemsPerRequest,
+			Limit: appmesh.NumItemsPerRequest,
 		}
 		page2Input := &appmesh.ListMeshesInput{
-			Limit:     aws.NumItemsPerRequest,
+			Limit:     appmesh.NumItemsPerRequest,
 			NextToken: aws2.String("page-2-token"),
 		}
 		meshRefs := []*appmesh.MeshRef{
@@ -166,7 +166,7 @@ var _ = Describe("Reconciler", func() {
 
 	It("should reconcile Meshes", func() {
 		expectReconcileMeshes()
-		err := appMeshDiscoveryReconciler.Reconcile(ctx, nil, region)
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, nil, "")
 		Expect(err).ToNot(HaveOccurred())
 	})
 })

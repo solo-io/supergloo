@@ -8,9 +8,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
+	settings_utils "github.com/solo-io/service-mesh-hub/pkg/settings"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	eks_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
@@ -25,8 +28,8 @@ const (
 )
 
 var (
-	ReconcilerDiscoverySource = "eks-cluster-discovery"
-	FailedRegisteringCluster  = func(err error, name string) error {
+	EKSClusterDiscoveryLabel = "eks-cluster-discovery"
+	FailedRegisteringCluster = func(err error, name string) error {
 		return eris.Wrapf(err, "Failed to register EKS cluster %s", name)
 	}
 )
@@ -36,6 +39,8 @@ type eksReconciler struct {
 	eksClientFactory          eks_client.EksClientFactory
 	eksConfigBuilderFactory   eks_client.EksConfigBuilderFactory
 	clusterRegistrationClient cluster_registration.ClusterRegistrationClient
+	settingsClient            settings.SettingsHelperClient
+	awsSelector               settings_utils.AwsSelector
 }
 
 func NewEksDiscoveryReconciler(
@@ -43,12 +48,16 @@ func NewEksDiscoveryReconciler(
 	eksClientFactory eks_client.EksClientFactory,
 	eksConfigBuilderFactory eks_client.EksConfigBuilderFactory,
 	clusterRegistrationClient cluster_registration.ClusterRegistrationClient,
+	settingsClient settings.SettingsHelperClient,
+	awsSelector settings_utils.AwsSelector,
 ) compute_target_aws.EksDiscoveryReconciler {
 	return &eksReconciler{
 		kubeClusterClient:         kubeClusterClient,
 		eksClientFactory:          eksClientFactory,
 		eksConfigBuilderFactory:   eksConfigBuilderFactory,
 		clusterRegistrationClient: clusterRegistrationClient,
+		settingsClient:            settingsClient,
+		awsSelector:               awsSelector,
 	}
 }
 
@@ -56,29 +65,37 @@ func (e *eksReconciler) GetName() string {
 	return ReconcilerName
 }
 
-func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Credentials, region string) error {
-	eksClient, err := e.eksClientFactory(creds, region)
+func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Credentials, accountID string) error {
+	selectorsByRegion, err := e.fetchSelectorsByRegion(ctx, accountID)
 	if err != nil {
 		return err
 	}
-	clusterNamesOnAWS, smhToAwsClusterNames, err := e.fetchEksClustersOnAWS(ctx, eksClient, region)
-	if err != nil {
-		return err
-	}
+	clusterNamesOnAWS := sets.NewString()
 	clusterNamesOnSMH, err := e.fetchEksClustersOnSMH(ctx)
 	if err != nil {
 		return err
 	}
-	clustersToRegister := clusterNamesOnAWS.Difference(clusterNamesOnSMH)
-	// TODO deregister clusters that are no longer on AWS
-	// clustersToDeregister := clusterNamesOnSMH.Difference(clusterNamesOnAWS)
-	for _, clusterName := range clustersToRegister.List() {
-		awsClusterName := smhToAwsClusterNames[clusterName]
-		err := e.registerCluster(ctx, eksClient, awsClusterName, clusterName)
+	for region, selectors := range selectorsByRegion {
+		eksClient, err := e.eksClientFactory(creds, region)
 		if err != nil {
-			return FailedRegisteringCluster(err, awsClusterName)
+			return err
+		}
+		clusterNamesOnAWSForRegion, smhToAwsClusterNames, err := e.fetchEksClustersOnAWS(ctx, eksClient, region, selectors)
+		if err != nil {
+			return err
+		}
+		clusterNamesOnAWS = clusterNamesOnAWS.Union(clusterNamesOnAWSForRegion)
+		clustersToRegister := clusterNamesOnAWSForRegion.Difference(clusterNamesOnSMH)
+		for _, clusterName := range clustersToRegister.List() {
+			awsClusterName := smhToAwsClusterNames[clusterName]
+			err := e.registerCluster(ctx, eksClient, awsClusterName, clusterName)
+			if err != nil {
+				return FailedRegisteringCluster(err, awsClusterName)
+			}
 		}
 	}
+	// TODO deregister clusters that are no longer on AWS
+	// clustersToDeregister := clusterNamesOnSMH.Difference(clusterNamesOnAWS)
 	return nil
 }
 
@@ -86,6 +103,7 @@ func (e *eksReconciler) fetchEksClustersOnAWS(
 	ctx context.Context,
 	eksClient cloud.EksClient,
 	region string,
+	selectors []*zephyr_settings_types.ResourceSelector,
 ) (sets.String, map[string]string, error) {
 	var clusterNames []string
 	smhToAwsClusterNames := make(map[string]string)
@@ -98,9 +116,21 @@ func (e *eksReconciler) fetchEksClustersOnAWS(
 			return nil, nil, err
 		}
 		for _, clusterNameRef := range listClustersOutput.Clusters {
-			smhClusterName := metadata.BuildEksClusterName(aws.StringValue(clusterNameRef), region)
+			clusterName := aws.StringValue(clusterNameRef)
+			eksCluster, err := eksClient.DescribeCluster(ctx, clusterName)
+			if err != nil {
+				return nil, nil, err
+			}
+			matched, err := e.awsSelector.EKSMatchedBySelectors(eksCluster, selectors)
+			if err != nil {
+				return nil, nil, err
+			}
+			if !matched {
+				continue
+			}
+			smhClusterName := metadata.BuildEksClusterName(clusterName, region)
 			clusterNames = append(clusterNames, smhClusterName)
-			smhToAwsClusterNames[smhClusterName] = aws.StringValue(clusterNameRef)
+			smhToAwsClusterNames[smhClusterName] = clusterName
 		}
 		if listClustersOutput.NextToken == nil {
 			break
@@ -112,7 +142,7 @@ func (e *eksReconciler) fetchEksClustersOnAWS(
 
 func (e *eksReconciler) fetchEksClustersOnSMH(ctx context.Context) (sets.String, error) {
 	reconcilerDiscoverySelector := map[string]string{
-		constants.DISCOVERED_BY: ReconcilerDiscoverySource,
+		constants.DISCOVERED_BY: EKSClusterDiscoveryLabel,
 	}
 	clusters, err := e.kubeClusterClient.ListKubernetesCluster(ctx, client.MatchingLabels(reconcilerDiscoverySelector))
 	if err != nil {
@@ -150,11 +180,22 @@ func (e *eksReconciler) registerCluster(
 		smhClusterName,
 		env.GetWriteNamespace(), // TODO make this configurable
 		rawConfig.CurrentContext,
-		ReconcilerDiscoverySource,
+		EKSClusterDiscoveryLabel,
 		cluster_registration.ClusterRegisterOpts{
 			Overwrite:                  false,
 			UseDevCsrAgentChart:        false,
 			LocalClusterDomainOverride: "",
 		},
 	)
+}
+
+func (e *eksReconciler) fetchSelectorsByRegion(
+	ctx context.Context,
+	accountID string,
+) (settings_utils.AwsSelectorsByRegion, error) {
+	awsSettings, err := e.settingsClient.GetAWSSettingsForAccount(ctx, accountID)
+	if err != nil {
+		return nil, err
+	}
+	return e.awsSelector.ResourceSelectorsByRegion(awsSettings.GetDiscoverySettings().GetAppmesh().GetResourceSelectors())
 }

@@ -3,7 +3,7 @@
 title: "aws.proto"
 ---
 
-## Package : `config.zephyr.solo.io`
+## Package : `settings.zephyr.solo.io`
 
 
 
@@ -16,13 +16,13 @@ title: "aws.proto"
 
 
 ## Table of Contents
-  - [AwsAccountConfig](#config.zephyr.solo.io.AwsAccountConfig)
-  - [AwsConfig](#config.zephyr.solo.io.AwsConfig)
-  - [DiscoveryConfig](#config.zephyr.solo.io.DiscoveryConfig)
-  - [DiscoverySelectors](#config.zephyr.solo.io.DiscoverySelectors)
-  - [ResourceSelector](#config.zephyr.solo.io.ResourceSelector)
-  - [ResourceSelector.Matcher](#config.zephyr.solo.io.ResourceSelector.Matcher)
-  - [ResourceSelector.Matcher.TagsEntry](#config.zephyr.solo.io.ResourceSelector.Matcher.TagsEntry)
+  - [AwsAccountSettings](#settings.zephyr.solo.io.AwsAccountSettings)
+  - [AwsSettings](#settings.zephyr.solo.io.AwsSettings)
+  - [DiscoverySelectors](#settings.zephyr.solo.io.DiscoverySelectors)
+  - [DiscoverySettings](#settings.zephyr.solo.io.DiscoverySettings)
+  - [ResourceSelector](#settings.zephyr.solo.io.ResourceSelector)
+  - [ResourceSelector.Matcher](#settings.zephyr.solo.io.ResourceSelector.Matcher)
+  - [ResourceSelector.Matcher.TagsEntry](#settings.zephyr.solo.io.ResourceSelector.Matcher.TagsEntry)
 
 
 
@@ -30,54 +30,38 @@ title: "aws.proto"
 
 
 
-<a name="config.zephyr.solo.io.AwsAccountConfig"></a>
+<a name="settings.zephyr.solo.io.AwsAccountSettings"></a>
 
-### AwsAccountConfig
+### AwsAccountSettings
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | accountId | [string](#string) |  | AWS account ID. |
-| discoveryConfig | [DiscoveryConfig](#config.zephyr.solo.io.DiscoveryConfig) |  |  |
+| discoverySettings | [DiscoverySettings](#settings.zephyr.solo.io.DiscoverySettings) |  |  |
 
 
 
 
 
 
-<a name="config.zephyr.solo.io.AwsConfig"></a>
+<a name="settings.zephyr.solo.io.AwsSettings"></a>
 
-### AwsConfig
+### AwsSettings
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| awsAccountConfigs | [][AwsAccountConfig](#config.zephyr.solo.io.AwsAccountConfig) | repeated |  |
+| awsAccountSettings | [][AwsAccountSettings](#settings.zephyr.solo.io.AwsAccountSettings) | repeated |  |
 
 
 
 
 
 
-<a name="config.zephyr.solo.io.DiscoveryConfig"></a>
-
-### DiscoveryConfig
-Configure which AWS resources should be discovered by SMH. For unspecified or null fields, discovery will not run for the corresponding AWS resource type.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| appmesh | [DiscoverySelectors](#config.zephyr.solo.io.DiscoverySelectors) |  |  |
-| eks | [DiscoverySelectors](#config.zephyr.solo.io.DiscoverySelectors) |  |  |
-
-
-
-
-
-
-<a name="config.zephyr.solo.io.DiscoverySelectors"></a>
+<a name="settings.zephyr.solo.io.DiscoverySelectors"></a>
 
 ### DiscoverySelectors
 An AWS resource will be selected if *any* of the resource_selectors apply. For a given resource_selector to apply to a resource, the resource must match *all* of the resource_selector's match criteria.
@@ -85,14 +69,30 @@ An AWS resource will be selected if *any* of the resource_selectors apply. For a
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| resourceSelectors | [][ResourceSelector](#config.zephyr.solo.io.ResourceSelector) | repeated |  |
+| resourceSelectors | [][ResourceSelector](#settings.zephyr.solo.io.ResourceSelector) | repeated |  |
 
 
 
 
 
 
-<a name="config.zephyr.solo.io.ResourceSelector"></a>
+<a name="settings.zephyr.solo.io.DiscoverySettings"></a>
+
+### DiscoverySettings
+Configure which AWS resources should be discovered by SMH. For unspecified or null fields, discovery will not run for the corresponding AWS resource type.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| appmesh | [DiscoverySelectors](#settings.zephyr.solo.io.DiscoverySelectors) |  |  |
+| eks | [DiscoverySelectors](#settings.zephyr.solo.io.DiscoverySelectors) |  |  |
+
+
+
+
+
+
+<a name="settings.zephyr.solo.io.ResourceSelector"></a>
 
 ### ResourceSelector
 
@@ -101,14 +101,14 @@ An AWS resource will be selected if *any* of the resource_selectors apply. For a
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | arn | [string](#string) |  | AWS resource ARN that directly references a resource. |
-| matcher | [ResourceSelector.Matcher](#config.zephyr.solo.io.ResourceSelector.Matcher) |  |  |
+| matcher | [ResourceSelector.Matcher](#settings.zephyr.solo.io.ResourceSelector.Matcher) |  |  |
 
 
 
 
 
 
-<a name="config.zephyr.solo.io.ResourceSelector.Matcher"></a>
+<a name="settings.zephyr.solo.io.ResourceSelector.Matcher"></a>
 
 ### ResourceSelector.Matcher
 Selects all resources that exist in the specified AWS region and possess the specified tags.
@@ -117,14 +117,14 @@ Selects all resources that exist in the specified AWS region and possess the spe
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | regions | [][string](#string) | repeated | AWS regions, e.g. us-east-2. If unspecified, select across all regions. |
-| tags | [][ResourceSelector.Matcher.TagsEntry](#config.zephyr.solo.io.ResourceSelector.Matcher.TagsEntry) | repeated | AWS resource tags. If unspecified, match any tags. |
+| tags | [][ResourceSelector.Matcher.TagsEntry](#settings.zephyr.solo.io.ResourceSelector.Matcher.TagsEntry) | repeated | AWS resource tags. If unspecified, match any tags. |
 
 
 
 
 
 
-<a name="config.zephyr.solo.io.ResourceSelector.Matcher.TagsEntry"></a>
+<a name="settings.zephyr.solo.io.ResourceSelector.Matcher.TagsEntry"></a>
 
 ### ResourceSelector.Matcher.TagsEntry
 

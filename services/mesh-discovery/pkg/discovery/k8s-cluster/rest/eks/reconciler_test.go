@@ -102,7 +102,7 @@ var _ = Describe("Reconciler", func() {
 		mockKubeClusterClient.
 			EXPECT().
 			ListKubernetesCluster(ctx, client.MatchingLabels(
-				map[string]string{constants.DISCOVERED_BY: discovery_eks.ReconcilerDiscoverySource}),
+				map[string]string{constants.DISCOVERED_BY: discovery_eks.EKSClusterDiscoveryLabel}),
 			).Return(clusterList, nil)
 		return sets.NewString(clusterList.Items[0].GetName())
 	}
@@ -118,7 +118,7 @@ var _ = Describe("Reconciler", func() {
 			smhName,
 			env.GetWriteNamespace(),
 			"",
-			discovery_eks.ReconcilerDiscoverySource,
+			discovery_eks.EKSClusterDiscoveryLabel,
 			cluster_registration.ClusterRegisterOpts{},
 		).Return(nil)
 	}
@@ -131,7 +131,7 @@ var _ = Describe("Reconciler", func() {
 		for _, clusterToRegister := range clustersToRegister.List() {
 			expectRegisterCluster(smhToAwsClusterNames[clusterToRegister], clusterToRegister)
 		}
-		err := eksReconciler.Reconcile(ctx, &credentials.Credentials{}, region)
+		err := eksReconciler.Reconcile(ctx, &credentials.Credentials{}, "")
 		Expect(err).To(BeNil())
 	})
 })

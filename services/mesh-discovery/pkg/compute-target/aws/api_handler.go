@@ -5,24 +5,27 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/sts"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
 )
 
 const (
-	ReconcileIntervalSeconds = 1           // TODO make this configurable by user
-	Region                   = "us-east-2" // TODO remove hardcode and replace with configuration
+	ReconcileIntervalSeconds = 1 // TODO make this configurable by user
 )
 
 type awsCredsHandler struct {
 	reconcilerCancelFuncs map[string]context.CancelFunc // Map of computeTargetName -> RestAPIDiscoveryReconciler's cancelFunc
+	credsToAccount        map[*credentials.Credentials]string
 	secretCredsConverter  aws_creds.SecretAwsCredsConverter
 	reconcilers           []RestAPIDiscoveryReconciler
+	stsClientFactory      sts.STSClientFactory
 }
 
 type AwsCredsHandler compute_target.ComputeTargetCredentialsHandler
@@ -30,11 +33,14 @@ type AwsCredsHandler compute_target.ComputeTargetCredentialsHandler
 func NewAwsAPIHandler(
 	secretCredsConverter aws_creds.SecretAwsCredsConverter,
 	reconcilers []RestAPIDiscoveryReconciler,
+	stsClientFactory sts.STSClientFactory,
 ) AwsCredsHandler {
 	return &awsCredsHandler{
 		reconcilerCancelFuncs: make(map[string]context.CancelFunc),
+		credsToAccount:        make(map[*credentials.Credentials]string),
 		secretCredsConverter:  secretCredsConverter,
 		reconcilers:           reconcilers,
+		stsClientFactory:      stsClientFactory,
 	}
 }
 
@@ -53,13 +59,17 @@ func (a *awsCredsHandler) ComputeTargetAdded(ctx context.Context, secret *k8s_co
 	if err != nil {
 		return err
 	}
-	a.runReconcilers(logger, reconcilerCtx, creds)
+	accountID, err := a.fetchAWSAccount(creds)
+	if err != nil {
+		return err
+	}
+	a.runReconcilers(logger, reconcilerCtx, creds, accountID)
 	go func() {
 		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
-				a.runReconcilers(logger, reconcilerCtx, creds)
+				a.runReconcilers(logger, reconcilerCtx, creds, accountID)
 			case <-reconcilerCtx.Done():
 				return
 			}
@@ -93,10 +103,32 @@ func (a *awsCredsHandler) buildContext(parentCtx context.Context, computeTargetN
 func (a *awsCredsHandler) runReconcilers(
 	logger *zap.SugaredLogger,
 	reconcilerCtx context.Context,
-	creds *credentials.Credentials) {
+	creds *credentials.Credentials,
+	accountID string,
+) {
 	for _, reconciler := range a.reconcilers {
-		if err := reconciler.Reconcile(reconcilerCtx, creds, Region); err != nil {
+		if err := reconciler.Reconcile(reconcilerCtx, creds, accountID); err != nil {
 			logger.Errorw(fmt.Sprintf("Error reconciling for %s", reconciler.GetName()), zap.Error(err))
 		}
 	}
+}
+
+func (a *awsCredsHandler) fetchAWSAccount(creds *credentials.Credentials) (string, error) {
+	var accountID string
+	value, ok := a.credsToAccount[creds]
+	if !ok {
+		// Region does not matter for constructing the STS client because the account identity is region agnostic.
+		stsClient, err := a.stsClientFactory(creds, "us-east-1")
+		if err != nil {
+			return "", err
+		}
+		callerIdentity, err := stsClient.GetCallerIdentity()
+		if err != nil {
+			return "", err
+		}
+		accountID = aws.StringValue(callerIdentity.Account)
+		a.credsToAccount[creds] = accountID
+	}
+	accountID = value
+	return accountID, nil
 }

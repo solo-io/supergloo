@@ -1,25 +1,25 @@
 syntax = "proto3";
-package config.zephyr.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/config.zephyr.solo.io/v1alpha1/types";
+package settings.zephyr.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
-message AwsConfig {
-    repeated AwsAccountConfig aws_account_configs = 1;
+message AwsSettings {
+    repeated AwsAccountSettings aws_account_settings = 1;
 }
 
-message AwsAccountConfig {
+message AwsAccountSettings {
     // AWS account ID.
     string account_id = 1;
-    DiscoveryConfig discovery_config = 2;
+    DiscoverySettings discovery_settings = 2;
 }
 
 /*
     Configure which AWS resources should be discovered by SMH.
     For unspecified or null fields, discovery will not run for the corresponding AWS resource type.
 */
-message DiscoveryConfig {
+message DiscoverySettings {
     DiscoverySelectors appmesh = 1;
     DiscoverySelectors eks = 2;
 }

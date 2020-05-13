@@ -87,3 +87,18 @@ func (mr *MockArnParserMockRecorder) ParseAccountID(arn interface{}) *gomock.Cal
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseAccountID", reflect.TypeOf((*MockArnParser)(nil).ParseAccountID), arn)
 }
+
+// ParseRegion mocks base method.
+func (m *MockArnParser) ParseRegion(arn string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParseRegion", arn)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParseRegion indicates an expected call of ParseRegion.
+func (mr *MockArnParserMockRecorder) ParseRegion(arn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseRegion", reflect.TypeOf((*MockArnParser)(nil).ParseRegion), arn)
+}

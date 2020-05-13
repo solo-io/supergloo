@@ -1,0 +1,16 @@
+syntax = "proto3";
+package settings.zephyr.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types";
+
+import "service-mesh-hub/api/settings/v1alpha1/aws.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+// Top level SMH user configuration object.
+message SettingsSpec {
+    AwsSettings aws_settings = 1;
+}
+
+message SettingsStatus {
+}

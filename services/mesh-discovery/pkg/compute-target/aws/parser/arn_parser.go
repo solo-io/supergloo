@@ -10,10 +10,26 @@ func NewArnParser() ArnParser {
 	return &arnParser{}
 }
 
-func (a *arnParser) ParseAccountID(arnString string) (string, error) {
-	parse, err := arn.Parse(arnString)
+func (a *arnParser) parse(arnString string) (*arn.ARN, error) {
+	parsedARN, err := arn.Parse(arnString)
 	if err != nil {
-		return "", ARNParseError(err, arnString)
+		return nil, ARNParseError(err, arnString)
 	}
-	return parse.AccountID, nil
+	return &parsedARN, nil
+}
+
+func (a *arnParser) ParseAccountID(arnString string) (string, error) {
+	parsedARN, err := a.parse(arnString)
+	if err != nil {
+		return "", err
+	}
+	return parsedARN.AccountID, nil
+}
+
+func (a *arnParser) ParseRegion(arnString string) (string, error) {
+	parsedARN, err := a.parse(arnString)
+	if err != nil {
+		return "", err
+	}
+	return parsedARN.Region, nil
 }

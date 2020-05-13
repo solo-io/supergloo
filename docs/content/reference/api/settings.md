@@ -3,7 +3,7 @@
 title: "settings.proto"
 ---
 
-## Package : `config.zephyr.solo.io`
+## Package : `settings.zephyr.solo.io`
 
 
 
@@ -16,7 +16,8 @@ title: "settings.proto"
 
 
 ## Table of Contents
-  - [Settings](#config.zephyr.solo.io.Settings)
+  - [SettingsSpec](#settings.zephyr.solo.io.SettingsSpec)
+  - [SettingsStatus](#settings.zephyr.solo.io.SettingsStatus)
 
 
 
@@ -24,15 +25,25 @@ title: "settings.proto"
 
 
 
-<a name="config.zephyr.solo.io.Settings"></a>
+<a name="settings.zephyr.solo.io.SettingsSpec"></a>
 
-### Settings
-
+### SettingsSpec
+Top level SMH user configuration object.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| awsConfig | [AwsConfig](#config.zephyr.solo.io.AwsConfig) |  |  |
+| awsSettings | [AwsSettings](#settings.zephyr.solo.io.AwsSettings) |  |  |
+
+
+
+
+
+
+<a name="settings.zephyr.solo.io.SettingsStatus"></a>
+
+### SettingsStatus
+
 
 
 
