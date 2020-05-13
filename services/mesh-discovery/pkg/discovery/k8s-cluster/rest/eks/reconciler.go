@@ -213,9 +213,9 @@ func (e *eksReconciler) fetchSelectorsByRegion(
 	if err != nil {
 		return nil, err
 	}
-	// "eks: {}" indicates discovery for all regions.
-	if awsSettings.GetDiscoverySettings().GetEks() != nil &&
-		len(awsSettings.GetDiscoverySettings().GetEks().GetResourceSelectors()) == 0 {
+	// "discoverySettings: {}" or "eks: {}" indicates discovery for all regions.
+	if e.awsSelector.IsDiscoverAll(awsSettings.GetDiscoverySettings()) ||
+		(awsSettings.GetDiscoverySettings().GetEks() != nil && len(awsSettings.GetDiscoverySettings().GetEks().GetResourceSelectors()) == 0) {
 		return e.awsSelector.AwsSelectorsForAllRegions(), nil
 	}
 	return e.awsSelector.ResourceSelectorsByRegion(awsSettings.GetDiscoverySettings().GetEks().GetResourceSelectors())

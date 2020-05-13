@@ -176,9 +176,9 @@ func (a *appMeshDiscoveryReconciler) fetchSelectorsByRegion(
 	if err != nil {
 		return nil, err
 	}
-	// "appmesh: {}" indicates discovery for all regions.
-	if awsSettings.GetDiscoverySettings().GetAppmesh() != nil &&
-		len(awsSettings.GetDiscoverySettings().GetAppmesh().GetResourceSelectors()) == 0 {
+	// "discoverySettings: {}" or "appmesh: {}" indicates discovery for all regions.
+	if a.awsSelector.IsDiscoverAll(awsSettings.GetDiscoverySettings()) ||
+		(awsSettings.GetDiscoverySettings().GetAppmesh() != nil && len(awsSettings.GetDiscoverySettings().GetAppmesh().GetResourceSelectors()) == 0) {
 		return a.awsSelector.AwsSelectorsForAllRegions(), nil
 	}
 	return a.awsSelector.ResourceSelectorsByRegion(awsSettings.GetDiscoverySettings().GetAppmesh().GetResourceSelectors())

@@ -18,6 +18,8 @@ type AwsSelector interface {
 
 	AwsSelectorsForAllRegions() AwsSelectorsByRegion
 
+	IsDiscoverAll(discoverySettings *zephyr_settings_types.DiscoverySettings) bool
+
 	AppMeshMatchedBySelectors(
 		appmeshRef *appmesh.MeshRef,
 		appmeshTags []*appmesh.TagRef,

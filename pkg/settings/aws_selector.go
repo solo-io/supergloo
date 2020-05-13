@@ -23,7 +23,7 @@ func NewAwsSelector(arnParser aws_utils.ArnParser) AwsSelector {
 	return &awsSelector{arnParser: arnParser}
 }
 
-func (s *awsSelector) ResourceSelectorsByRegion(
+func (a *awsSelector) ResourceSelectorsByRegion(
 	resourceSelectors []*zephyr_settings_types.ResourceSelector,
 ) (AwsSelectorsByRegion, error) {
 	resourceSelectorsByRegion := make(AwsSelectorsByRegion)
@@ -41,7 +41,7 @@ func (s *awsSelector) ResourceSelectorsByRegion(
 				}
 			}
 		case *zephyr_settings_types.ResourceSelector_Arn:
-			region, err := s.arnParser.ParseRegion(resourceSelector.GetArn())
+			region, err := a.arnParser.ParseRegion(resourceSelector.GetArn())
 			if err != nil {
 				return nil, err
 			}
@@ -57,8 +57,13 @@ func (s *awsSelector) ResourceSelectorsByRegion(
 	return resourceSelectorsByRegion, nil
 }
 
+func (a *awsSelector) IsDiscoverAll(discoverySettings *zephyr_settings_types.DiscoverySettings) bool {
+	discoverAll := &zephyr_settings_types.DiscoverySettings{}
+	return discoverySettings.Equal(discoverAll)
+}
+
 // Return AwsSelectorsByRegion that includes discovery for all resources in all regions.
-func (s *awsSelector) AwsSelectorsForAllRegions() AwsSelectorsByRegion {
+func (a *awsSelector) AwsSelectorsForAllRegions() AwsSelectorsByRegion {
 	awsSelectorsForAllRegions := make(AwsSelectorsByRegion)
 	for region, _ := range endpoints.AwsPartition().Regions() {
 		// Nil value denotes selection of all resources in that region.
@@ -68,7 +73,7 @@ func (s *awsSelector) AwsSelectorsForAllRegions() AwsSelectorsByRegion {
 }
 
 // Return true if appmesh is matched by any selector, or if selectors is nil.
-func (s *awsSelector) AppMeshMatchedBySelectors(
+func (a *awsSelector) AppMeshMatchedBySelectors(
 	appmeshRef *appmesh.MeshRef,
 	appmeshTags []*appmesh.TagRef,
 	selectors []*zephyr_settings_types.ResourceSelector,
@@ -77,7 +82,7 @@ func (s *awsSelector) AppMeshMatchedBySelectors(
 		return true, nil
 	}
 	for _, selector := range selectors {
-		matched, err := s.appMeshMatchedBySelector(appmeshRef, appmeshTags, selector)
+		matched, err := a.appMeshMatchedBySelector(appmeshRef, appmeshTags, selector)
 		if err != nil {
 			return false, err
 		}
@@ -89,7 +94,7 @@ func (s *awsSelector) AppMeshMatchedBySelectors(
 }
 
 // Return true if EKS cluster is matched by any selector, or if selectors is nil.
-func (s *awsSelector) EKSMatchedBySelectors(
+func (a *awsSelector) EKSMatchedBySelectors(
 	eksCluster *eks.Cluster,
 	selectors []*zephyr_settings_types.ResourceSelector,
 ) (bool, error) {
@@ -97,7 +102,7 @@ func (s *awsSelector) EKSMatchedBySelectors(
 		return true, nil
 	}
 	for _, selector := range selectors {
-		matched, err := s.eksMatchedBySelector(eksCluster, selector)
+		matched, err := a.eksMatchedBySelector(eksCluster, selector)
 		if err != nil {
 			return false, err
 		}
@@ -108,14 +113,14 @@ func (s *awsSelector) EKSMatchedBySelectors(
 	return false, nil
 }
 
-func (s *awsSelector) appMeshMatchedBySelector(
+func (a *awsSelector) appMeshMatchedBySelector(
 	appmeshRef *appmesh.MeshRef,
 	appmeshTags []*appmesh.TagRef,
 	selector *zephyr_settings_types.ResourceSelector,
 ) (bool, error) {
 	switch selector.GetMatcherType().(type) {
 	case *zephyr_settings_types.ResourceSelector_Matcher_:
-		appMeshRegion, err := s.arnParser.ParseRegion(aws.StringValue(appmeshRef.Arn))
+		appMeshRegion, err := a.arnParser.ParseRegion(aws.StringValue(appmeshRef.Arn))
 		if err != nil {
 			return false, err
 		}
@@ -130,13 +135,13 @@ func (s *awsSelector) appMeshMatchedBySelector(
 	return false, nil
 }
 
-func (s *awsSelector) eksMatchedBySelector(
+func (a *awsSelector) eksMatchedBySelector(
 	eksCluster *eks.Cluster,
 	selector *zephyr_settings_types.ResourceSelector,
 ) (bool, error) {
 	switch selector.GetMatcherType().(type) {
 	case *zephyr_settings_types.ResourceSelector_Matcher_:
-		eksRegion, err := s.arnParser.ParseRegion(aws.StringValue(eksCluster.Arn))
+		eksRegion, err := a.arnParser.ParseRegion(aws.StringValue(eksCluster.Arn))
 		if err != nil {
 			return false, err
 		}
