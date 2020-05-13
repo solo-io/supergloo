@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/appmesh"
+	"github.com/hashicorp/go-multierror"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
@@ -15,7 +16,7 @@ import (
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -67,10 +68,12 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *crede
 	}
 	// Set containing SMH unique identifiers for AppMesh instances (the Mesh CRD name) for comparison
 	discoveredSMHMeshNames := sets.NewString()
+	var errors *multierror.Error
 	for region, selectors := range selectorsByRegion {
 		appmeshClient, err := a.appmeshClientFactory(creds, region)
 		if err != nil {
-			return err
+			errors = multierror.Append(errors, err)
+			continue
 		}
 		var nextToken *string
 		input := &appmesh.ListMeshesInput{
@@ -80,12 +83,14 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *crede
 		for {
 			appMeshes, err := appmeshClient.ListMeshes(input)
 			if err != nil {
-				return err
+				errors = multierror.Append(errors, err)
+				break
 			}
 			for _, appMeshRef := range appMeshes.Meshes {
 				appMeshTagsOutput, err := appmeshClient.ListTagsForResource(&appmesh.ListTagsForResourceInput{ResourceArn: appMeshRef.Arn})
 				if err != nil {
-					return err
+					errors = multierror.Append(errors, err)
+					continue
 				}
 				matched, err := a.awsSelector.AppMeshMatchedBySelectors(appMeshRef, appMeshTagsOutput.Tags, selectors)
 				if err != nil {
@@ -104,7 +109,7 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *crede
 					ctx,
 					client.ObjectKey{Name: discoveredMesh.GetName(), Namespace: discoveredMesh.GetNamespace()},
 				)
-				if errors.IsNotFound(err) {
+				if k8s_errs.IsNotFound(err) {
 					err = a.meshClient.CreateMesh(ctx, discoveredMesh)
 					if err != nil {
 						return err
@@ -137,7 +142,7 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *crede
 			}
 		}
 	}
-	return nil
+	return errors.ErrorOrNil()
 }
 
 func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef, region string) (*zephyr_discovery.Mesh, error) {
@@ -170,6 +175,11 @@ func (a *appMeshDiscoveryReconciler) fetchSelectorsByRegion(
 	awsSettings, err := a.settingsClient.GetAWSSettingsForAccount(ctx, accountID)
 	if err != nil {
 		return nil, err
+	}
+	// "appmesh: {}" indicates discovery for all regions.
+	if awsSettings.GetDiscoverySettings().GetAppmesh() != nil &&
+		len(awsSettings.GetDiscoverySettings().GetAppmesh().GetResourceSelectors()) == 0 {
+		return a.awsSelector.AwsSelectorsForAllRegions(), nil
 	}
 	return a.awsSelector.ResourceSelectorsByRegion(awsSettings.GetDiscoverySettings().GetAppmesh().GetResourceSelectors())
 }

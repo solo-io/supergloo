@@ -2,6 +2,7 @@ package settings
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/rotisserie/eris"
@@ -34,7 +35,10 @@ func (s *awsSelector) ResourceSelectorsByRegion(
 				if !ok {
 					resourceSelectorsByRegion[region] = []*zephyr_settings_types.ResourceSelector{}
 				}
-				resourceSelectorsByRegion[region] = append(selectors, resourceSelector)
+				// If matches contains region but no specified tags, this indicates selection of all resources in that region.
+				if resourceSelector.GetMatcher().GetTags() != nil {
+					resourceSelectorsByRegion[region] = append(selectors, resourceSelector)
+				}
 			}
 		case *zephyr_settings_types.ResourceSelector_Arn:
 			region, err := s.arnParser.ParseRegion(resourceSelector.GetArn())
@@ -53,11 +57,25 @@ func (s *awsSelector) ResourceSelectorsByRegion(
 	return resourceSelectorsByRegion, nil
 }
 
+// Return AwsSelectorsByRegion that includes discovery for all resources in all regions.
+func (s *awsSelector) AwsSelectorsForAllRegions() AwsSelectorsByRegion {
+	awsSelectorsForAllRegions := make(AwsSelectorsByRegion)
+	for region, _ := range endpoints.AwsPartition().Regions() {
+		// Nil value denotes selection of all resources in that region.
+		awsSelectorsForAllRegions[region] = nil
+	}
+	return awsSelectorsForAllRegions
+}
+
+// Return true if appmesh is matched by any selector, or if selectors is nil.
 func (s *awsSelector) AppMeshMatchedBySelectors(
 	appmeshRef *appmesh.MeshRef,
 	appmeshTags []*appmesh.TagRef,
 	selectors []*zephyr_settings_types.ResourceSelector,
 ) (bool, error) {
+	if len(selectors) == 0 {
+		return true, nil
+	}
 	for _, selector := range selectors {
 		matched, err := s.appMeshMatchedBySelector(appmeshRef, appmeshTags, selector)
 		if err != nil {
@@ -70,10 +88,14 @@ func (s *awsSelector) AppMeshMatchedBySelectors(
 	return false, nil
 }
 
+// Return true if EKS cluster is matched by any selector, or if selectors is nil.
 func (s *awsSelector) EKSMatchedBySelectors(
 	eksCluster *eks.Cluster,
 	selectors []*zephyr_settings_types.ResourceSelector,
 ) (bool, error) {
+	if len(selectors) == 0 {
+		return true, nil
+	}
 	for _, selector := range selectors {
 		matched, err := s.eksMatchedBySelector(eksCluster, selector)
 		if err != nil {

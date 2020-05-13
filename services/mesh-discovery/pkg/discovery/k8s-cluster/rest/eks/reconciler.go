@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/eks"
+	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
@@ -75,14 +76,17 @@ func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Creden
 	if err != nil {
 		return err
 	}
+	var errors *multierror.Error
 	for region, selectors := range selectorsByRegion {
 		eksClient, err := e.eksClientFactory(creds, region)
 		if err != nil {
-			return err
+			errors = multierror.Append(errors, err)
+			continue
 		}
 		clusterNamesOnAWSForRegion, smhToAwsClusterNames, err := e.fetchEksClustersOnAWS(ctx, eksClient, region, selectors)
 		if err != nil {
-			return err
+			errors = multierror.Append(errors, err)
+			continue
 		}
 		clusterNamesOnAWS = clusterNamesOnAWS.Union(clusterNamesOnAWSForRegion)
 		clustersToRegister := clusterNamesOnAWSForRegion.Difference(clusterNamesOnSMH)
@@ -96,7 +100,7 @@ func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Creden
 	}
 	// TODO deregister clusters that are no longer on AWS
 	// clustersToDeregister := clusterNamesOnSMH.Difference(clusterNamesOnAWS)
-	return nil
+	return errors.ErrorOrNil()
 }
 
 func (e *eksReconciler) fetchEksClustersOnAWS(
@@ -197,5 +201,10 @@ func (e *eksReconciler) fetchSelectorsByRegion(
 	if err != nil {
 		return nil, err
 	}
-	return e.awsSelector.ResourceSelectorsByRegion(awsSettings.GetDiscoverySettings().GetAppmesh().GetResourceSelectors())
+	// "eks: {}" indicates discovery for all regions.
+	if awsSettings.GetDiscoverySettings().GetEks() != nil &&
+		len(awsSettings.GetDiscoverySettings().GetEks().GetResourceSelectors()) == 0 {
+		return e.awsSelector.AwsSelectorsForAllRegions(), nil
+	}
+	return e.awsSelector.ResourceSelectorsByRegion(awsSettings.GetDiscoverySettings().GetEks().GetResourceSelectors())
 }

@@ -114,8 +114,7 @@ func (a *awsCredsHandler) runReconcilers(
 }
 
 func (a *awsCredsHandler) fetchAWSAccount(creds *credentials.Credentials) (string, error) {
-	var accountID string
-	value, ok := a.credsToAccount[creds]
+	accountID, ok := a.credsToAccount[creds]
 	if !ok {
 		// Region does not matter for constructing the STS client because the account identity is region agnostic.
 		stsClient, err := a.stsClientFactory(creds, "us-east-1")
@@ -129,6 +128,5 @@ func (a *awsCredsHandler) fetchAWSAccount(creds *credentials.Credentials) (strin
 		accountID = aws.StringValue(callerIdentity.Account)
 		a.credsToAccount[creds] = accountID
 	}
-	accountID = value
 	return accountID, nil
 }

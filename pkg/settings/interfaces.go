@@ -8,12 +8,15 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
+// Nil value denotes selection of all resources in that region.
 type AwsSelectorsByRegion map[string][]*zephyr_settings_types.ResourceSelector
 
 type AwsSelector interface {
 	ResourceSelectorsByRegion(
 		resourceSelectors []*zephyr_settings_types.ResourceSelector,
 	) (AwsSelectorsByRegion, error)
+
+	AwsSelectorsForAllRegions() AwsSelectorsByRegion
 
 	AppMeshMatchedBySelectors(
 		appmeshRef *appmesh.MeshRef,

@@ -38,15 +38,15 @@ func (m *MockRestAPIDiscoveryReconciler) EXPECT() *MockRestAPIDiscoveryReconcile
 // Reconcile mocks base method.
 func (m *MockRestAPIDiscoveryReconciler) Reconcile(ctx context.Context, creds *credentials.Credentials, accountID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Reconcile", ctx, creds)
+	ret := m.ctrl.Call(m, "Reconcile", ctx, creds, accountID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Reconcile indicates an expected call of Reconcile.
-func (mr *MockRestAPIDiscoveryReconcilerMockRecorder) Reconcile(ctx, creds interface{}) *gomock.Call {
+func (mr *MockRestAPIDiscoveryReconcilerMockRecorder) Reconcile(ctx, creds, accountID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reconcile", reflect.TypeOf((*MockRestAPIDiscoveryReconciler)(nil).Reconcile), ctx, creds)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reconcile", reflect.TypeOf((*MockRestAPIDiscoveryReconciler)(nil).Reconcile), ctx, creds, accountID)
 }
 
 // GetName mocks base method.
