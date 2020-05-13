@@ -52,6 +52,20 @@ func (mr *MockAwsSelectorMockRecorder) ResourceSelectorsByRegion(resourceSelecto
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceSelectorsByRegion", reflect.TypeOf((*MockAwsSelector)(nil).ResourceSelectorsByRegion), resourceSelectors)
 }
 
+// AwsSelectorsForAllRegions mocks base method.
+func (m *MockAwsSelector) AwsSelectorsForAllRegions() settings.AwsSelectorsByRegion {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AwsSelectorsForAllRegions")
+	ret0, _ := ret[0].(settings.AwsSelectorsByRegion)
+	return ret0
+}
+
+// AwsSelectorsForAllRegions indicates an expected call of AwsSelectorsForAllRegions.
+func (mr *MockAwsSelectorMockRecorder) AwsSelectorsForAllRegions() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AwsSelectorsForAllRegions", reflect.TypeOf((*MockAwsSelector)(nil).AwsSelectorsForAllRegions))
+}
+
 // AppMeshMatchedBySelectors mocks base method.
 func (m *MockAwsSelector) AppMeshMatchedBySelectors(appmeshRef *appmesh.MeshRef, appmeshTags []*appmesh.TagRef, selectors []*types.ResourceSelector) (bool, error) {
 	m.ctrl.T.Helper()
