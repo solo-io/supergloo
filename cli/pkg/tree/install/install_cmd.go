@@ -9,15 +9,15 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/helmutil"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/semver"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 )
@@ -38,12 +38,18 @@ var (
 	InstallSet = wire.NewSet(
 		InstallCmd,
 	)
+	SuccessRegisteringClusterMessage = func(clusterName string) string {
+		return fmt.Sprintf("Successfully registered cluster %s.", clusterName)
+	}
+	ErrorRegisteringClusterMessage = func(clusterName string, err error) string {
+		return fmt.Sprintf("Error registering cluster %s: %+v", clusterName, err)
+	}
 	PreInstallMessage  = "Starting Service Mesh Hub installation...\n"
 	PostInstallMessage = "Service Mesh Hub successfully installed!\n"
 )
 
-func HelmInstallerProvider(helmClient types.HelmClient, kubeClient kubernetes.Interface) types.Installer {
-	return helminstall.NewInstaller(helmClient, kubeClient.CoreV1().Namespaces(), os.Stdout)
+func HelmInstallerProvider(kubeClient kubernetes.Interface) factories.HelmerInstallerFactory {
+	return factories.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), os.Stdout)
 }
 
 func InstallCmd(
@@ -51,7 +57,7 @@ func InstallCmd(
 	opts *options.Options,
 	kubeClientsFactory common.KubeClientsFactory,
 	clientFactory common.ClientsFactory,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 	out io.Writer,
 ) InstallCommand {
 	cmd := &cobra.Command{
@@ -76,9 +82,8 @@ func InstallCmd(
 			if err != nil {
 				return InstallErr(err)
 			}
-			if err := kubeClients.HelmInstaller.Install(&types.InstallerConfig{
-				KubeConfig:         opts.Root.KubeConfig,
-				KubeContext:        opts.Root.KubeContext,
+			helmClient := kubeClients.HelmClientFileConfigFactory(opts.Root.KubeConfig, opts.Root.KubeContext)
+			if err := kubeClients.HelmInstallerFactory(helmClient).Install(&types.InstallerConfig{
 				DryRun:             opts.SmhInstall.DryRun,
 				Verbose:            opts.Root.Verbose,
 				InstallNamespace:   opts.Root.WriteNamespace,
@@ -107,16 +112,19 @@ func InstallCmd(
 					RemoteContext:        raw.CurrentContext,
 					RemoteKubeConfig:     opts.Root.KubeConfig,
 				}
-				return register.RegisterCluster(
+				err = register.RegisterCluster(
 					ctx,
-					common.GetBinaryName(cmd),
-					cmd.Flags(),
-					clientFactory,
 					kubeClientsFactory,
+					clientFactory,
 					opts,
-					out,
 					kubeLoader,
 				)
+				if err != nil {
+					fmt.Fprintf(out, ErrorRegisteringClusterMessage(opts.SmhInstall.ClusterName, err))
+				} else {
+					fmt.Fprintf(out, SuccessRegisteringClusterMessage(opts.SmhInstall.ClusterName))
+				}
+				return err
 			} else if opts.SmhInstall.Register {
 				return CannotRegisterInDryRunMode
 			}

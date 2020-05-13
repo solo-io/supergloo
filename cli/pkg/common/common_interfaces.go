@@ -1,8 +1,6 @@
 package common
 
 import (
-	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
@@ -10,11 +8,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/deregister"
-	register "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
 	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
@@ -24,41 +19,38 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"k8s.io/client-go/rest"
 )
 
-var (
-	FailedLoadingMasterConfig = func(err error) error {
-		return eris.Wrap(err, "Failed to load the kube config for the master cluster")
-	}
-)
-
 // a grab bag of various clients that command implementations may use
 type KubeClients struct {
-	ClusterAuthorization            auth.ClusterAuthorization
-	HelmInstaller                   types.Installer
-	HelmClient                      types.HelmClient                         // used for uninstalling - the go-utils package is not laid out very well
-	KubeClusterClient               zephyr_discovery.KubernetesClusterClient // client for KubernetesCluster custom resources
-	MeshServiceClient               zephyr_discovery.MeshServiceClient
-	MeshWorkloadClient              zephyr_discovery.MeshWorkloadClient
-	MeshClient                      zephyr_discovery.MeshClient
-	VirtualMeshClient               zephyr_networking.VirtualMeshClient
-	VirtualMeshCSRClient            zephyr_security.VirtualMeshCertificateSigningRequestClient
-	DeployedVersionFinder           version.DeployedVersionFinder
-	CrdClientFactory                k8s_apiextensions.CustomResourceDefinitionClientFromConfigFactory
-	HealthCheckClients              healthcheck_types.Clients
-	SecretClient                    k8s_core.SecretClient
-	NamespaceClient                 k8s_core.NamespaceClient
-	UninstallClients                UninstallClients
-	InMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory
-	ClusterDeregistrationClient     deregister.ClusterDeregistrationClient
-	KubeConfigLookup                config_lookup.KubeConfigLookup
-	TrafficPolicyClient             zephyr_networking.TrafficPolicyClient
-	AccessControlPolicyClient       zephyr_networking.AccessControlPolicyClient
-	ResourceDescriber               description.ResourceDescriber
-	ResourceSelector                selector.ResourceSelector
+	ClusterAuthorization        auth.ClusterAuthorization
+	HelmInstallerFactory        factories.HelmerInstallerFactory
+	HelmClientFileConfigFactory factories.HelmClientForFileConfigFactory
+	KubeClusterClient           zephyr_discovery.KubernetesClusterClient // client for KubernetesCluster custom resources
+	MeshServiceClient           zephyr_discovery.MeshServiceClient
+	MeshWorkloadClient          zephyr_discovery.MeshWorkloadClient
+	MeshClient                  zephyr_discovery.MeshClient
+	VirtualMeshClient           zephyr_networking.VirtualMeshClient
+	VirtualMeshCSRClient        zephyr_security.VirtualMeshCertificateSigningRequestClient
+	DeployedVersionFinder       version.DeployedVersionFinder
+	CrdClientFactory            k8s_apiextensions.CustomResourceDefinitionClientFromConfigFactory
+	HealthCheckClients          healthcheck_types.Clients
+	SecretClient                k8s_core.SecretClient
+	NamespaceClient             k8s_core.NamespaceClient
+	UninstallClients            UninstallClients
+	ClusterDeregistrationClient cluster_registration.ClusterDeregistrationClient
+	KubeConfigLookup            kubeconfig.KubeConfigLookup
+	TrafficPolicyClient         zephyr_networking.TrafficPolicyClient
+	AccessControlPolicyClient   zephyr_networking.AccessControlPolicyClient
+	ResourceDescriber           description.ResourceDescriber
+	ResourceSelector            selector.ResourceSelector
+	ClusterRegistrationClient   cluster_registration.ClusterRegistrationClient
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -71,10 +63,8 @@ type Clients struct {
 	DeploymentClient              server.DeploymentClient
 	StatusClientFactory           status.StatusClientFactory
 	HealthCheckSuite              healthcheck_types.HealthCheckSuite
-	KubeConverter                 kube.Converter
-
-	IstioClients               IstioClients
-	ClusterRegistrationClients ClusterRegistrationClients
+	KubeConverter                 kubeconfig.Converter
+	IstioClients                  IstioClients
 }
 
 func IstioClientsProvider(
@@ -94,29 +84,17 @@ type IstioClients struct {
 
 type UninstallClients struct {
 	CrdRemover              crd_uninstall.CrdRemover
-	SecretToConfigConverter kube.Converter
+	SecretToConfigConverter kubeconfig.Converter
 }
 
 func UninstallClientsProvider(
 	crdRemover crd_uninstall.CrdRemover,
-	secretToConfigConverter kube.Converter,
+	secretToConfigConverter kubeconfig.Converter,
 ) UninstallClients {
 	return UninstallClients{
 		CrdRemover:              crdRemover,
 		SecretToConfigConverter: secretToConfigConverter,
 	}
-}
-
-func ClusterRegistrationClientsProvider(
-	csrAgentInstallerFactory register.CsrAgentInstallerFactory,
-) ClusterRegistrationClients {
-	return ClusterRegistrationClients{
-		CsrAgentInstallerFactory: csrAgentInstallerFactory,
-	}
-}
-
-type ClusterRegistrationClients struct {
-	CsrAgentInstallerFactory register.CsrAgentInstallerFactory
 }
 
 type ClientsFactory func(opts *options.Options) (*Clients, error)
@@ -130,8 +108,7 @@ func ClientsProvider(
 	istioClients IstioClients,
 	statusClientFactory status.StatusClientFactory,
 	healthCheckSuite healthcheck_types.HealthCheckSuite,
-	clusterRegistrationClients ClusterRegistrationClients,
-	kubeConverter kube.Converter,
+	kubeConverter kubeconfig.Converter,
 ) *Clients {
 	return &Clients{
 		ServerVersionClient:           serverVersionClient,
@@ -142,7 +119,6 @@ func ClientsProvider(
 		IstioClients:                  istioClients,
 		StatusClientFactory:           statusClientFactory,
 		HealthCheckSuite:              healthCheckSuite,
-		ClusterRegistrationClients:    clusterRegistrationClients,
 		KubeConverter:                 kubeConverter,
 	}
 }
@@ -150,8 +126,8 @@ func ClientsProvider(
 // facilitates wire codegen
 func KubeClientsProvider(
 	authorization auth.ClusterAuthorization,
-	helmInstaller types.Installer,
-	helmClient types.HelmClient,
+	helmInstallerFactory factories.HelmerInstallerFactory,
+	helmClientFileConfigFactory factories.HelmClientForFileConfigFactory,
 	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
 	healthCheckClients healthcheck_types.Clients,
 	deployedVersionFinder version.DeployedVersionFinder,
@@ -159,9 +135,8 @@ func KubeClientsProvider(
 	secretClient k8s_core.SecretClient,
 	namespaceClient k8s_core.NamespaceClient,
 	uninstallClients UninstallClients,
-	inMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory,
-	clusterDeregistrationClient deregister.ClusterDeregistrationClient,
-	kubeConfigLookup config_lookup.KubeConfigLookup,
+	clusterDeregistrationClient cluster_registration.ClusterDeregistrationClient,
+	kubeConfigLookup kubeconfig.KubeConfigLookup,
 	virtualMeshCsrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshClient zephyr_discovery.MeshClient,
@@ -171,30 +146,31 @@ func KubeClientsProvider(
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
+	clusterRegistrationClient cluster_registration.ClusterRegistrationClient,
 ) *KubeClients {
 	return &KubeClients{
-		ClusterAuthorization:            authorization,
-		HelmInstaller:                   helmInstaller,
-		HelmClient:                      helmClient,
-		KubeClusterClient:               kubeClusterClient,
-		MeshServiceClient:               meshServiceClient,
-		VirtualMeshCSRClient:            virtualMeshCsrClient,
-		DeployedVersionFinder:           deployedVersionFinder,
-		CrdClientFactory:                crdClientFactory,
-		HealthCheckClients:              healthCheckClients,
-		SecretClient:                    secretClient,
-		NamespaceClient:                 namespaceClient,
-		UninstallClients:                uninstallClients,
-		InMemoryRESTClientGetterFactory: inMemoryRESTClientGetterFactory,
-		ClusterDeregistrationClient:     clusterDeregistrationClient,
-		KubeConfigLookup:                kubeConfigLookup,
-		MeshClient:                      meshClient,
-		VirtualMeshClient:               virtualMeshClient,
-		ResourceDescriber:               resourceDescriber,
-		ResourceSelector:                resourceSelector,
-		TrafficPolicyClient:             trafficPolicyClient,
-		AccessControlPolicyClient:       accessControlPolicyClient,
-		MeshWorkloadClient:              meshWorkloadClient,
+		ClusterAuthorization:        authorization,
+		HelmInstallerFactory:        helmInstallerFactory,
+		HelmClientFileConfigFactory: helmClientFileConfigFactory,
+		KubeClusterClient:           kubeClusterClient,
+		MeshServiceClient:           meshServiceClient,
+		VirtualMeshCSRClient:        virtualMeshCsrClient,
+		DeployedVersionFinder:       deployedVersionFinder,
+		CrdClientFactory:            crdClientFactory,
+		HealthCheckClients:          healthCheckClients,
+		SecretClient:                secretClient,
+		NamespaceClient:             namespaceClient,
+		UninstallClients:            uninstallClients,
+		ClusterDeregistrationClient: clusterDeregistrationClient,
+		KubeConfigLookup:            kubeConfigLookup,
+		MeshClient:                  meshClient,
+		VirtualMeshClient:           virtualMeshClient,
+		ResourceDescriber:           resourceDescriber,
+		ResourceSelector:            resourceSelector,
+		TrafficPolicyClient:         trafficPolicyClient,
+		AccessControlPolicyClient:   accessControlPolicyClient,
+		MeshWorkloadClient:          meshWorkloadClient,
+		ClusterRegistrationClient:   clusterRegistrationClient,
 	}
 }
 

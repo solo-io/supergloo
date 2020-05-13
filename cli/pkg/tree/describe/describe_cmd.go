@@ -9,10 +9,10 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -29,7 +29,7 @@ var (
 
 func DescribeCmd(
 	ctx context.Context,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 	kubeClientsFactory common.KubeClientsFactory,
 	printers common.Printers,
 	opts *options.Options,

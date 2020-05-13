@@ -10,23 +10,27 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/factories"
+	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories"
 	appmesh_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s/appmesh"
+	eks2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s-cluster/rest/eks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	appmesh2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/consul"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/istio"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/linkerd"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws/clients/appmesh"
 )
 
 // Injectors from wire.go:
@@ -41,19 +45,39 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		return DiscoveryContext{}, err
 	}
 	fileReader := files.NewDefaultFileReader()
-	converter := kube.NewConverter(fileReader)
+	converter := kubeconfig.NewConverter(fileReader)
 	asyncManagerController := mc_wire.KubeClusterCredentialsHandlerProvider(converter)
 	secretAwsCredsConverter := aws_creds.DefaultSecretAwsCredsConverter()
-	appMeshClientFactory := appmesh.NewAppMeshClientFactory(secretAwsCredsConverter)
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
 	arnParser := aws_utils.NewArnParser()
-	appMeshDiscoveryReconcilerFactory := aws.NewAppMeshDiscoveryReconcilerFactory(client, meshClientFactory, arnParser)
-	awsCredsHandler := aws2.NewAwsAPIHandler(appMeshClientFactory, appMeshDiscoveryReconcilerFactory)
-	v := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
-	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
-	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
+	appMeshClientFactory := appmesh.AppMeshClientFactoryProvider()
+	appMeshDiscoveryReconciler := aws.NewAppMeshDiscoveryReconciler(client, meshClientFactory, arnParser, appMeshClientFactory)
+	kubernetesClusterClient := v1alpha1.KubernetesClusterClientProvider(client)
+	eksClientFactory := eks.EksClientFactoryProvider()
+	eksConfigBuilderFactory := eks.EksConfigBuilderFactoryProvider()
+	secretClientFromConfigFactory := v1.SecretClientFromConfigFactoryProvider()
+	kubernetesClusterClientFromConfigFactory := v1alpha1.KubernetesClusterClientFromConfigFactoryProvider()
+	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
+	helmClientForFileConfigFactory := factories.HelmClientForFileConfigFactoryProvider()
+	helmClientForMemoryConfigFactory := factories.HelmClientForMemoryConfigFactoryProvider()
+	deploymentClientFromConfigFactory := v1_2.DeploymentClientFromConfigFactoryProvider()
 	imageNameParser := docker.NewImageNameParser()
+	deployedVersionFinder, err := DeployedVersionFinderProvider(config, deploymentClientFromConfigFactory, imageNameParser)
+	if err != nil {
+		return DiscoveryContext{}, err
+	}
+	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
+	clusterRegistrationClient, err := ClusterRegistrationClientProvider(config, secretClientFromConfigFactory, kubernetesClusterClientFromConfigFactory, namespaceClientFromConfigFactory, converter, csrAgentInstallerFactory)
+	if err != nil {
+		return DiscoveryContext{}, err
+	}
+	eksDiscoveryReconciler := eks2.NewEksDiscoveryReconciler(kubernetesClusterClient, eksClientFactory, eksConfigBuilderFactory, clusterRegistrationClient)
+	v := AwsDiscoveryReconcilersProvider(appMeshDiscoveryReconciler, eksDiscoveryReconciler)
+	awsCredsHandler := aws2.NewAwsAPIHandler(secretAwsCredsConverter, v)
+	v2 := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
+	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v2)
+	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	configMapClientFactory := v1.ConfigMapClientFactoryProvider()
 	istioMeshScanner := istio.NewIstioMeshScanner(imageNameParser, configMapClientFactory)
 	consulConnectInstallationScanner := consul.NewConsulConnectInstallationScanner(imageNameParser)

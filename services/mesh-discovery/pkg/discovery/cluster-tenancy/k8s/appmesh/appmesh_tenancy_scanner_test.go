@@ -86,6 +86,20 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
+	It("while registering cluster, it should update Mesh only if needed", func() {
+		mesh := &zephyr_discovery.Mesh{
+			Spec: zephyr_discovery_types.MeshSpec{
+				MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+					AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
+						Clusters: []string{"a", "b", clusterName},
+					},
+				},
+			},
+		}
+		err := appMeshTenancyRegistrar.RegisterMesh(ctx, clusterName, mesh)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
 	It("should deregister cluster for Mesh", func() {
 		mesh := &zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
@@ -100,6 +114,20 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 		updatedMesh := mesh.DeepCopy()
 		updatedMesh.Spec.GetAwsAppMesh().Clusters = utils.RemoveString(updatedMesh.Spec.GetAwsAppMesh().Clusters, clusterName)
 		mockMeshClient.EXPECT().UpdateMesh(ctx, updatedMesh).Return(nil)
+		err := appMeshTenancyRegistrar.DeregisterMesh(ctx, clusterName, mesh)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("while deregistering cluster, it should update Mesh only if needed", func() {
+		mesh := &zephyr_discovery.Mesh{
+			Spec: zephyr_discovery_types.MeshSpec{
+				MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+					AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
+						Clusters: []string{"a", "b"},
+					},
+				},
+			},
+		}
 		err := appMeshTenancyRegistrar.DeregisterMesh(ctx, clusterName, mesh)
 		Expect(err).ToNot(HaveOccurred())
 	})

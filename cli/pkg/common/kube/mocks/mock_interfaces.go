@@ -8,64 +8,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
-	v1 "k8s.io/api/core/v1"
 	resource "k8s.io/cli-runtime/pkg/resource"
 )
-
-// MockConverter is a mock of Converter interface.
-type MockConverter struct {
-	ctrl     *gomock.Controller
-	recorder *MockConverterMockRecorder
-}
-
-// MockConverterMockRecorder is the mock recorder for MockConverter.
-type MockConverterMockRecorder struct {
-	mock *MockConverter
-}
-
-// NewMockConverter creates a new mock instance.
-func NewMockConverter(ctrl *gomock.Controller) *MockConverter {
-	mock := &MockConverter{ctrl: ctrl}
-	mock.recorder = &MockConverterMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockConverter) EXPECT() *MockConverterMockRecorder {
-	return m.recorder
-}
-
-// ConfigToSecret mocks base method.
-func (m *MockConverter) ConfigToSecret(secretName, secretNamespace string, config *kube.KubeConfig) (*v1.Secret, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfigToSecret", secretName, secretNamespace, config)
-	ret0, _ := ret[0].(*v1.Secret)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConfigToSecret indicates an expected call of ConfigToSecret.
-func (mr *MockConverterMockRecorder) ConfigToSecret(secretName, secretNamespace, config interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigToSecret", reflect.TypeOf((*MockConverter)(nil).ConfigToSecret), secretName, secretNamespace, config)
-}
-
-// SecretToConfig mocks base method.
-func (m *MockConverter) SecretToConfig(secret *v1.Secret) (string, *kube.ConvertedConfigs, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SecretToConfig", secret)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(*kube.ConvertedConfigs)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// SecretToConfig indicates an expected call of SecretToConfig.
-func (mr *MockConverterMockRecorder) SecretToConfig(secret interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SecretToConfig", reflect.TypeOf((*MockConverter)(nil).SecretToConfig), secret)
-}
 
 // MockUnstructuredKubeClient is a mock of UnstructuredKubeClient interface.
 type MockUnstructuredKubeClient struct {

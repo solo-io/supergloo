@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	aws2 "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/appmesh"
+	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -16,7 +18,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	aws4 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
-	rest3 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
 	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -33,9 +34,9 @@ var _ = Describe("Reconciler", func() {
 		mockMeshClient             *mock_core.MockMeshClient
 		mockAppMeshClient          *mock_appmesh_clients.MockAppMeshAPI
 		mockArnParser              *mock_aws.MockArnParser
-		computeTargetName          string
 		awsAccountID               string
-		appMeshDiscoveryReconciler rest3.RestAPIDiscoveryReconciler
+		appMeshDiscoveryReconciler aws4.RestAPIDiscoveryReconciler
+		region                     = "us-east-2"
 	)
 
 	BeforeEach(func() {
@@ -43,15 +44,17 @@ var _ = Describe("Reconciler", func() {
 		ctx = context.TODO()
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockArnParser = mock_aws.NewMockArnParser(ctrl)
-		computeTargetName = "aws-account-name"
 		awsAccountID = "410461945555"
 		mockAppMeshClient = mock_appmesh_clients.NewMockAppMeshAPI(ctrl)
 		appMeshDiscoveryReconciler = aws.NewAppMeshDiscoveryReconciler(
+			nil,
+			func(client client.Client) zephyr_discovery.MeshClient {
+				return mockMeshClient
+			},
 			mockArnParser,
-			mockMeshClient,
-			mockAppMeshClient,
-			computeTargetName,
-			aws4.Region,
+			func(creds *credentials.Credentials, region string) (appmeshiface.AppMeshAPI, error) {
+				return mockAppMeshClient, nil
+			},
 		)
 	})
 
@@ -60,7 +63,6 @@ var _ = Describe("Reconciler", func() {
 	})
 
 	var expectReconcileMeshes = func() {
-		region := "us-east-2"
 		page1Input := &appmesh.ListMeshesInput{
 			Limit: aws.NumItemsPerRequest,
 		}
@@ -164,7 +166,7 @@ var _ = Describe("Reconciler", func() {
 
 	It("should reconcile Meshes", func() {
 		expectReconcileMeshes()
-		err := appMeshDiscoveryReconciler.Reconcile(ctx)
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, nil, region)
 		Expect(err).ToNot(HaveOccurred())
 	})
 })

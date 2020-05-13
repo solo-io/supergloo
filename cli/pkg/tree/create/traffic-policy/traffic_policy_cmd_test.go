@@ -12,7 +12,6 @@ import (
 	mock_interactive "github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	mock_resource_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing/mocks"
-	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	traffic_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
@@ -20,6 +19,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,7 +31,7 @@ var _ = Describe("TrafficPolicyCmd", func() {
 	var (
 		ctrl                    *gomock.Controller
 		ctx                     context.Context
-		mockKubeLoader          *cli_mocks.MockKubeLoader
+		mockKubeLoader          *mock_kubeconfig.MockKubeLoader
 		mockMeshServiceClient   *mock_core.MockMeshServiceClient
 		mockTrafficPolicyClient *mock_zephyr_networking.MockTrafficPolicyClient
 		mockInteractivePrompt   *mock_interactive.MockInteractivePrompt
@@ -42,7 +42,7 @@ var _ = Describe("TrafficPolicyCmd", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockKubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
+		mockKubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
 		mockMeshServiceClient = mock_core.NewMockMeshServiceClient(ctrl)
 		mockTrafficPolicyClient = mock_zephyr_networking.NewMockTrafficPolicyClient(ctrl)
 		mockInteractivePrompt = mock_interactive.NewMockInteractivePrompt(ctrl)

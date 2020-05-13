@@ -9,5 +9,5 @@ import (
 
 func TestRest(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "AWS Suite")
+	RunSpecs(t, "Discovery AWS API handler Suite")
 }

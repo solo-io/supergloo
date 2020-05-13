@@ -8,16 +8,15 @@ import (
 	"github.com/mattn/go-shellwords"
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/usage"
 	usage_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/common/usage/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/wire"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"k8s.io/client-go/rest"
 )
 
@@ -35,10 +34,10 @@ type MockMeshctl struct {
 
 	KubeClients common.KubeClients
 
-	KubeLoader      common_config.KubeLoader
+	KubeLoader      kubeconfig.KubeLoader
 	ImageNameParser docker.ImageNameParser
 	FileReader      files.FileReader
-	KubeConverter   kube.Converter
+	KubeConverter   kubeconfig.Converter
 
 	Runner            exec.Runner
 	Printers          common.Printers

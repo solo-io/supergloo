@@ -10,9 +10,9 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -46,7 +46,7 @@ func UninstallCmd(
 	out io.Writer,
 	opts *options.Options,
 	kubeClientsFactory common.KubeClientsFactory,
-	kubeLoader common_config.KubeLoader,
+	kubeLoader kubeconfig.KubeLoader,
 ) UninstallCommand {
 	cmd := &cobra.Command{
 		Use:   cliconstants.UninstallCommand.Use,
@@ -140,20 +140,20 @@ func UninstallCmd(
 	return cmd
 }
 
-func buildMasterKubeClients(opts *options.Options, kubeLoader common_config.KubeLoader, kubeClientsFactory common.KubeClientsFactory) (*rest.Config, *common.KubeClients, error) {
+func buildMasterKubeClients(opts *options.Options, kubeLoader kubeconfig.KubeLoader, kubeClientsFactory common.KubeClientsFactory) (*rest.Config, *common.KubeClients, error) {
 	masterCfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 	if err != nil {
-		return nil, nil, common.FailedLoadingMasterConfig(err)
+		return nil, nil, err
 	}
 	masterKubeClients, err := kubeClientsFactory(masterCfg, opts.Root.WriteNamespace)
 	if err != nil {
-		return nil, nil, common.FailedLoadingMasterConfig(err)
+		return nil, nil, err
 	}
 	return masterCfg, masterKubeClients, nil
 }
 
 func cleanUpManagementPlaneComponents(out io.Writer, masterKubeClients *common.KubeClients, opts *options.Options) error {
-	uninstaller, err := masterKubeClients.HelmClient.NewUninstall(opts.Root.KubeContext, opts.Root.KubeContext, opts.Root.WriteNamespace)
+	uninstaller, err := masterKubeClients.HelmClientFileConfigFactory(opts.Root.KubeConfig, opts.Root.KubeContext).NewUninstall(opts.Root.WriteNamespace)
 	if err != nil {
 		return FailedToSetUpUninstallClient(err)
 	}
@@ -175,7 +175,7 @@ func deregisterClusters(ctx context.Context, out io.Writer, kubeClusters *zephyr
 	fmt.Fprintf(out, "Starting to de-register %d cluster(s). This may take a moment...\n", len(kubeClusters.Items))
 
 	for _, kubeCluster := range kubeClusters.Items {
-		err := masterKubeClients.ClusterDeregistrationClient.Run(ctx, &kubeCluster)
+		err := masterKubeClients.ClusterDeregistrationClient.Deregister(ctx, &kubeCluster)
 		if err != nil {
 			return FailedToDeRegisterCluster(err, kubeCluster.GetName())
 		}
