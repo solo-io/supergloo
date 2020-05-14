@@ -18,16 +18,18 @@ import (
 var _ = Describe("CredsHandler", func() {
 	var (
 		ctrl                *gomock.Controller
-		ctx                 context.Context
+		cancellableCtx      context.Context
 		mockSecretConverter *mock_aws_creds.MockSecretAwsCredsConverter
 		mockReconciler      *mock_rest_api.MockRestAPIDiscoveryReconciler
 		awsCredsHandler     aws2.AwsCredsHandler
 		secret              *k8s_core_types.Secret
+		cancelFunc          func()
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		ctx = context.TODO()
+		ctx := context.TODO()
+		cancellableCtx, cancelFunc = context.WithCancel(ctx)
 		mockSecretConverter = mock_aws_creds.NewMockSecretAwsCredsConverter(ctrl)
 		mockReconciler = mock_rest_api.NewMockRestAPIDiscoveryReconciler(ctrl)
 		awsCredsHandler = aws2.NewAwsAPIHandler(
@@ -45,15 +47,16 @@ var _ = Describe("CredsHandler", func() {
 
 	AfterEach(func() {
 		ctrl.Finish()
+		cancelFunc()
 	})
 
 	It("should ignore non-AWS secrets when compute target added", func() {
-		err := awsCredsHandler.ComputeTargetAdded(ctx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
+		err := awsCredsHandler.ComputeTargetAdded(cancellableCtx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should ignore non-AWS secrets when compute target removed", func() {
-		err := awsCredsHandler.ComputeTargetRemoved(ctx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
+		err := awsCredsHandler.ComputeTargetRemoved(cancellableCtx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -61,7 +64,7 @@ var _ = Describe("CredsHandler", func() {
 		creds := &credentials.Credentials{}
 		mockSecretConverter.EXPECT().SecretToCreds(secret).Return(creds, nil)
 		mockReconciler.EXPECT().Reconcile(gomock.Any(), creds, aws2.Region).Return(nil)
-		err := awsCredsHandler.ComputeTargetAdded(ctx, secret)
+		err := awsCredsHandler.ComputeTargetAdded(cancellableCtx, secret)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -70,10 +73,10 @@ var _ = Describe("CredsHandler", func() {
 		creds := &credentials.Credentials{}
 		mockSecretConverter.EXPECT().SecretToCreds(secret).Return(creds, nil)
 		mockReconciler.EXPECT().Reconcile(gomock.Any(), creds, aws2.Region).Return(nil)
-		err := awsCredsHandler.ComputeTargetAdded(ctx, secret)
+		err := awsCredsHandler.ComputeTargetAdded(cancellableCtx, secret)
 		Expect(err).ToNot(HaveOccurred())
 
-		err = awsCredsHandler.ComputeTargetRemoved(ctx, secret)
+		err = awsCredsHandler.ComputeTargetRemoved(cancellableCtx, secret)
 		Expect(err).ToNot(HaveOccurred())
 	})
 })
