@@ -106,7 +106,7 @@ func (a *aggregator) GroupByMeshService(
 			policy := policyIter
 
 			// we are only searching across the space of this one service, so if the resulting list is nonempty, this one must be included
-			servicesForPolicy, err := a.resourceSelector.GetMeshServicesByServiceSelector(
+			servicesForPolicy, err := a.resourceSelector.FilterMeshServicesByServiceSelector(
 				[]*zephyr_discovery.MeshService{service},
 				policy.Spec.GetDestinationSelector(),
 			)

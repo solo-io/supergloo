@@ -87,7 +87,7 @@ func (v *validator) validateDestination(allServices []*zephyr_discovery.MeshServ
 	if selector == nil {
 		return nil
 	}
-	_, err := v.resourceSelector.GetMeshServicesByServiceSelector(allServices, selector)
+	_, err := v.resourceSelector.FilterMeshServicesByServiceSelector(allServices, selector)
 	if err != nil {
 		return err
 	}
@@ -210,7 +210,7 @@ func (v *validator) validateKubeService(
 	if ref == nil {
 		return nil, NilDestinationRef
 	}
-	meshService := v.resourceSelector.GetMeshServiceByRefSelector(services, ref.GetName(), ref.GetNamespace(), ref.GetCluster())
+	meshService := v.resourceSelector.FindMeshServiceByRefSelector(services, ref.GetName(), ref.GetNamespace(), ref.GetCluster())
 
 	if meshService == nil {
 		return nil, DestinationNotFound(ref)

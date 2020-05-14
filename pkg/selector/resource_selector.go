@@ -72,7 +72,7 @@ type resourceSelector struct {
 	dynamicClientGetter     mc_manager.DynamicClientGetter
 }
 
-func (b *resourceSelector) GetMeshServiceByRefSelector(
+func (b *resourceSelector) FindMeshServiceByRefSelector(
 	meshServices []*zephyr_discovery.MeshService,
 	kubeServiceName string,
 	kubeServiceNamespace string,
@@ -129,10 +129,10 @@ func (b *resourceSelector) GetAllMeshServicesByServiceSelector(
 	}
 	allMeshServices := convertServicesToPointerSlice(meshServiceList.Items)
 
-	return b.GetMeshServicesByServiceSelector(allMeshServices, selector)
+	return b.FilterMeshServicesByServiceSelector(allMeshServices, selector)
 }
 
-func (b *resourceSelector) GetMeshServicesByServiceSelector(
+func (b *resourceSelector) FilterMeshServicesByServiceSelector(
 	meshServices []*zephyr_discovery.MeshService,
 	selector *core_types.ServiceSelector,
 ) ([]*zephyr_discovery.MeshService, error) {

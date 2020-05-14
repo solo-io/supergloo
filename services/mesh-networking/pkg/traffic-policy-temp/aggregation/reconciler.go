@@ -41,6 +41,10 @@ type aggregationReconciler struct {
 	translationValidators map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator
 }
 
+func (a *aggregationReconciler) GetName() string {
+	return "traffic-policy-aggregation"
+}
+
 func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	allTrafficPolicies, err := a.trafficPolicyClient.ListTrafficPolicy(ctx)
 	if err != nil {
@@ -53,7 +57,7 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		trafficPolicy := tpIter
 
 		if trafficPolicy.Status.GetValidationStatus().GetState() == zephyr_core_types.Status_ACCEPTED {
-			uniqueStringToValidatedTrafficPolicy[clients.ToUniqueString(trafficPolicy.ObjectMeta)] = &trafficPolicy
+			uniqueStringToValidatedTrafficPolicy[clients.ToUniqueSingleClusterString(trafficPolicy.ObjectMeta)] = &trafficPolicy
 			allValidatedTrafficPolicies = append(allValidatedTrafficPolicies, &trafficPolicy)
 		}
 	}
@@ -147,7 +151,7 @@ func (a *aggregationReconciler) determineNewStatuses(
 	// this loop should result in a stable ordering in the list
 	for policyIndex, previouslyRecordedPolicyIter := range previouslyRecordedPolicies {
 		previouslyRecordedPolicy := previouslyRecordedPolicyIter
-		identifierString := clients.ToUniqueString(k8s_meta_types.ObjectMeta{
+		identifierString := clients.ToUniqueSingleClusterString(k8s_meta_types.ObjectMeta{
 			Name:      previouslyRecordedPolicy.GetRef().GetName(),
 			Namespace: previouslyRecordedPolicy.GetRef().GetNamespace(),
 		})
@@ -216,7 +220,7 @@ func (a *aggregationReconciler) determineNewStatuses(
 		relevantPolicy := relevantPolicyIter
 
 		// we didn't see this one before, so it must be new
-		if !previouslyRecordedNameNamespaces.Has(clients.ToUniqueString(relevantPolicy.ObjectMeta)) {
+		if !previouslyRecordedNameNamespaces.Has(clients.ToUniqueSingleClusterString(relevantPolicy.ObjectMeta)) {
 			var specsToMergeWith []*zephyr_networking_types.TrafficPolicySpec
 			for _, validatedPolicyIter := range policiesToRecordOnService {
 				validatedPolicy := validatedPolicyIter

@@ -10,8 +10,7 @@ import (
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
 
 // Find Service Mesh Hub resources that correspond to k8s-native resources.
-// Methods with the word "All" in their name will do a client lookup in their implementation.
-// Methods that do not conform to that naming scheme will be passed in a list of relevant mesh services, so as to avoid a client lookup.
+// Methods that do not receive a list of resources to filter or to select from will do a client lookup for those resources.
 type ResourceSelector interface {
 	// fetch all MeshServices that match the given selector
 	GetAllMeshServicesByServiceSelector(
@@ -19,7 +18,7 @@ type ResourceSelector interface {
 		selector *zephyr_core_types.ServiceSelector,
 	) ([]*zephyr_discovery.MeshService, error)
 
-	GetMeshServicesByServiceSelector(
+	FilterMeshServicesByServiceSelector(
 		meshServices []*zephyr_discovery.MeshService,
 		selector *zephyr_core_types.ServiceSelector,
 	) ([]*zephyr_discovery.MeshService, error)
@@ -45,7 +44,7 @@ type ResourceSelector interface {
 		kubeServiceCluster string,
 	) (*zephyr_discovery.MeshService, error)
 
-	GetMeshServiceByRefSelector(
+	FindMeshServiceByRefSelector(
 		meshServices []*zephyr_discovery.MeshService,
 		kubeServiceName string,
 		kubeServiceNamespace string,

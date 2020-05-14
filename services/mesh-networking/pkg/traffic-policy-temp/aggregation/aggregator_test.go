@@ -77,25 +77,25 @@ var _ = Describe("Aggregator", func() {
 			aggregator := traffic_policy_aggregation.NewAggregator(resourceSelector)
 
 			resourceSelector.EXPECT().
-				GetMeshServicesByServiceSelector(
+				FilterMeshServicesByServiceSelector(
 					[]*zephyr_discovery.MeshService{meshServices[0]},
 					trafficPolicies[0].Spec.DestinationSelector,
 				).
 				Return([]*zephyr_discovery.MeshService{meshServices[0]}, nil)
 			resourceSelector.EXPECT().
-				GetMeshServicesByServiceSelector(
+				FilterMeshServicesByServiceSelector(
 					[]*zephyr_discovery.MeshService{meshServices[1]},
 					trafficPolicies[0].Spec.DestinationSelector,
 				).
 				Return([]*zephyr_discovery.MeshService{meshServices[1]}, nil)
 			resourceSelector.EXPECT().
-				GetMeshServicesByServiceSelector(
+				FilterMeshServicesByServiceSelector(
 					[]*zephyr_discovery.MeshService{meshServices[0]},
 					trafficPolicies[1].Spec.DestinationSelector,
 				).
 				Return([]*zephyr_discovery.MeshService{meshServices[0]}, nil)
 			resourceSelector.EXPECT().
-				GetMeshServicesByServiceSelector(
+				FilterMeshServicesByServiceSelector(
 					[]*zephyr_discovery.MeshService{meshServices[1]},
 					trafficPolicies[1].Spec.DestinationSelector,
 				).

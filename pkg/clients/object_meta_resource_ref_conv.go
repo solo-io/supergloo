@@ -15,7 +15,7 @@ func SameObject(this k8s_meta_types.ObjectMeta, that k8s_meta_types.ObjectMeta) 
 }
 
 // turn an ObjectMeta into a unique (single-cluster) string that can be used in sets, map keys, etc.
-func ToUniqueString(obj k8s_meta_types.ObjectMeta) string {
+func ToUniqueSingleClusterString(obj k8s_meta_types.ObjectMeta) string {
 	return fmt.Sprintf("%s+%s", obj.Name, obj.Namespace)
 }
 

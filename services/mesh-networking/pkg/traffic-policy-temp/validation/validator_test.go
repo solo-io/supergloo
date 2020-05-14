@@ -60,7 +60,7 @@ var _ = Describe("Validator", func() {
 		meshServices := []*zephyr_discovery.MeshService{}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServicesByServiceSelector(meshServices, tp.Spec.GetDestinationSelector()).
+			FilterMeshServicesByServiceSelector(meshServices, tp.Spec.GetDestinationSelector()).
 			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
 		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		expectSingleErrorOf(err, selector.MeshServiceNotFound(name, namespace, cluster))
@@ -119,7 +119,7 @@ var _ = Describe("Validator", func() {
 		meshServices := []*zephyr_discovery.MeshService{}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServiceByRefSelector(meshServices, name, namespace, cluster).
+			FindMeshServiceByRefSelector(meshServices, name, namespace, cluster).
 			Return(nil)
 		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		multierr, ok := err.(*multierror.Error)
@@ -164,7 +164,7 @@ var _ = Describe("Validator", func() {
 		meshServices := []*zephyr_discovery.MeshService{backingMeshService}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServiceByRefSelector(meshServices, serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()).
+			FindMeshServiceByRefSelector(meshServices, serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()).
 			Return(backingMeshService)
 		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		multierr, ok := err.(*multierror.Error)
@@ -287,7 +287,7 @@ var _ = Describe("Validator", func() {
 		meshServices := []*zephyr_discovery.MeshService{backingMeshService}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServiceByRefSelector(meshServices, serviceKey.Name, serviceKey.Namespace, "").
+			FindMeshServiceByRefSelector(meshServices, serviceKey.Name, serviceKey.Namespace, "").
 			Return(backingMeshService)
 		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		multierr, ok := err.(*multierror.Error)
@@ -312,7 +312,7 @@ var _ = Describe("Validator", func() {
 		}
 		mockResourceSelector.
 			EXPECT().
-			GetMeshServiceByRefSelector(nil, serviceKey.Name, serviceKey.Namespace, "").
+			FindMeshServiceByRefSelector(nil, serviceKey.Name, serviceKey.Namespace, "").
 			Return(nil)
 		status, err := validator.ValidateTrafficPolicy(tp, nil)
 		multierr, ok := err.(*multierror.Error)

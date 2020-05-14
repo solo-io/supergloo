@@ -14,9 +14,9 @@ func NewPeriodicReconciliationRunner() PeriodicReconciliationRunner {
 
 type periodicReconciler struct{}
 
-func (p *periodicReconciler) Start(ctx context.Context, reconciliationPeriod time.Duration, actionName string, reconciler Reconciler) {
+func (p *periodicReconciler) Start(ctx context.Context, reconciliationPeriod time.Duration, reconciler Reconciler) {
 	logger := contextutils.LoggerFrom(contextutils.WithLoggerValues(ctx,
-		zap.String("periodic_reconciler_name", actionName),
+		zap.String("periodic_reconciler_name", reconciler.GetName()),
 	))
 
 	ticker := time.NewTicker(reconciliationPeriod)
@@ -25,13 +25,13 @@ func (p *periodicReconciler) Start(ctx context.Context, reconciliationPeriod tim
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Debugf("periodic reconciler is ending", actionName)
+			logger.Debugf("periodic reconciler is ending", reconciler.GetName())
 			return
 		case <-ticker.C:
 			logger.Debugf("new reconcile loop running")
 			err := reconciler.Reconcile(ctx)
 			if err != nil {
-				logger.Errorf("Error during reconciliation, retrying in %s: %+v", reconciliationPeriod.String(), err)
+				logger.Errorf("Error during %s reconciliation, retrying in %s: %+v", reconciler.GetName(), reconciliationPeriod.String(), err)
 			}
 		}
 	}

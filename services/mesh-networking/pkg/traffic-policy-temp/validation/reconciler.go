@@ -27,6 +27,10 @@ type validationLoop struct {
 	validator           Validator
 }
 
+func (*validationLoop) GetName() string {
+	return "traffic-policy-validation"
+}
+
 func (v *validationLoop) Reconcile(ctx context.Context) error {
 	logger := contextutils.LoggerFrom(ctx)
 	trafficPolicies, err := v.trafficPolicyClient.ListTrafficPolicy(ctx)
