@@ -48,8 +48,10 @@ var _ = Describe("CredsHandler", func() {
 	})
 
 	It("should ignore non-AWS secrets when compute target added", func() {
-		err := awsCredsHandler.ComputeTargetAdded(ctx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
+		cancellableCtx, cancelFunc := context.WithCancel(ctx)
+		err := awsCredsHandler.ComputeTargetAdded(cancellableCtx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
 		Expect(err).ToNot(HaveOccurred())
+		cancelFunc()
 	})
 
 	It("should ignore non-AWS secrets when compute target removed", func() {
