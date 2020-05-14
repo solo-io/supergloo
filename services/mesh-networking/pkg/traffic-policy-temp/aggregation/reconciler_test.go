@@ -227,36 +227,48 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
-				Name:              "tp1",
+				Ref: &zephyr_core_types.ResourceRef{
+					Name: "tp1",
+				},
 				TrafficPolicySpec: &tps[0].Spec,
 			}}).
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Name:              "tp1",
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: "tp1",
+					},
 					TrafficPolicySpec: &tps[0].Spec,
 				},
 				{
-					Name:              "tp2",
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: "tp2",
+					},
 					TrafficPolicySpec: &tps[1].Spec,
 				},
 			}).
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
-				Name:              "tp3",
+				Ref: &zephyr_core_types.ResourceRef{
+					Name: "tp3",
+				},
 				TrafficPolicySpec: &tps[2].Spec,
 			}}).
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Name:              "tp3",
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: "tp3",
+					},
 					TrafficPolicySpec: &tps[1].Spec,
 				},
 				{
-					Name:              "tp4",
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: "tp4",
+					},
 					TrafficPolicySpec: &tps[2].Spec,
 				},
 			}).
@@ -273,11 +285,15 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Name:              "tp1",
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: "tp1",
+							},
 							TrafficPolicySpec: &tps[0].Spec,
 						},
 						{
-							Name:              "tp2",
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: "tp2",
+							},
 							TrafficPolicySpec: &tps[1].Spec,
 						},
 					},
@@ -295,11 +311,15 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Name:              "tp3",
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: "tp3",
+							},
 							TrafficPolicySpec: &tps[2].Spec,
 						},
 						{
-							Name:              "tp4",
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: "tp4",
+							},
 							TrafficPolicySpec: &tps[3].Spec,
 						},
 					},
@@ -416,11 +436,15 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Name:              tp2LastValidState.Name,
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: tp2LastValidState.Name,
+							},
 							TrafficPolicySpec: &tp2LastValidState.Spec,
 						},
 						{
-							Name:              tps[0].Name,
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: tps[0].Name,
+							},
 							TrafficPolicySpec: &tps[0].Spec,
 						},
 					},
@@ -492,24 +516,32 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
-				Name:              tp2LastValidState.Name,
+				Ref: &zephyr_core_types.ResourceRef{
+					Name: tp2LastValidState.Name,
+				},
 				TrafficPolicySpec: &tp2LastValidState.Spec,
 			}}).
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
-				Name:              tps[2].Name,
+				Ref: &zephyr_core_types.ResourceRef{
+					Name: tps[2].Name,
+				},
 				TrafficPolicySpec: &tps[2].Spec,
 			}}).
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Name:              tps[2].Name,
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: tps[2].Name,
+					},
 					TrafficPolicySpec: &tps[2].Spec,
 				},
 				{
-					Name:              tps[3].Name,
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: tps[3].Name,
+					},
 					TrafficPolicySpec: &tps[3].Spec,
 				},
 			}).
@@ -528,11 +560,15 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Name:              "tp3",
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: "tp3",
+							},
 							TrafficPolicySpec: &tps[2].Spec,
 						},
 						{
-							Name:              "tp4",
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: "tp4",
+							},
 							TrafficPolicySpec: &tps[3].Spec,
 						},
 					},
@@ -716,7 +752,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Name:              "tp2",
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: "tp2",
+							},
 							TrafficPolicySpec: &tps[1].Spec,
 						},
 					},
@@ -725,14 +763,18 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
-				Name:              tps[1].Name,
+				Ref: &zephyr_core_types.ResourceRef{
+					Name: tps[1].Name,
+				},
 				TrafficPolicySpec: &tps[1].Spec,
 			}}).
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Name:              tps[2].Name,
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: tps[2].Name,
+					},
 					TrafficPolicySpec: &tps[2].Spec,
 				},
 			}).
@@ -740,11 +782,15 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Name:              tps[2].Name,
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: tps[2].Name,
+					},
 					TrafficPolicySpec: &tps[2].Spec,
 				},
 				{
-					Name:              tps[3].Name,
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: tps[3].Name,
+					},
 					TrafficPolicySpec: &tps[3].Spec,
 				},
 			}).
@@ -760,11 +806,15 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Name:              "tp3",
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: "tp3",
+							},
 							TrafficPolicySpec: &tps[2].Spec,
 						},
 						{
-							Name:              "tp4",
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: "tp4",
+							},
 							TrafficPolicySpec: &tps[3].Spec,
 						},
 					},
@@ -883,7 +933,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Name:              tps[1].Name,
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: tps[1].Name,
+							},
 							TrafficPolicySpec: &tps[1].Spec,
 						},
 					},
@@ -899,11 +951,15 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Name:              tps[2].Name,
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: tps[2].Name,
+							},
 							TrafficPolicySpec: &tps[2].Spec,
 						},
 						{
-							Name:              tps[3].Name,
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: tps[3].Name,
+							},
 							TrafficPolicySpec: &tps[3].Spec,
 						},
 					},
@@ -1091,11 +1147,15 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Name:              tps[2].Name,
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: tps[2].Name,
+							},
 							TrafficPolicySpec: &tps[2].Spec,
 						},
 						{
-							Name: tps[3].Name,
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: tps[3].Name,
+							},
 							TrafficPolicySpec: &types.TrafficPolicySpec{
 								Retries: &types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 420,
@@ -1161,12 +1221,16 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
-				Name:              "tp1",
+				Ref: &zephyr_core_types.ResourceRef{
+					Name: "tp1",
+				},
 				TrafficPolicySpec: &tps[0].Spec,
 			}}).
 			Return([]*mesh_translation.TranslationError{{
 				Policy: &types2.MeshServiceStatus_ValidatedTrafficPolicy{
-					Name:              tps[0].Name,
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: tps[0].Name,
+					},
 					TrafficPolicySpec: &tps[0].Spec,
 				},
 				TranslatorErrors: []*types.TrafficPolicyStatus_TranslatorError{translatorError},
@@ -1174,7 +1238,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Name:              "tp2",
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: "tp2",
+					},
 					TrafficPolicySpec: &tps[1].Spec,
 				},
 			}).
@@ -1182,17 +1248,23 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Name:              "tp3",
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: "tp3",
+					},
 					TrafficPolicySpec: &tps[2].Spec,
 				},
 				{
-					Name:              "tp4",
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: "tp4",
+					},
 					TrafficPolicySpec: &tps[3].Spec,
 				},
 			}).
 			Return([]*mesh_translation.TranslationError{{
 				Policy: &types2.MeshServiceStatus_ValidatedTrafficPolicy{
-					Name:              tps[3].Name,
+					Ref: &zephyr_core_types.ResourceRef{
+						Name: tps[3].Name,
+					},
 					TrafficPolicySpec: &tps[3].Spec,
 				},
 				TranslatorErrors: []*types.TrafficPolicyStatus_TranslatorError{translatorError},
@@ -1209,7 +1281,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Name:              "tp2",
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: "tp2",
+							},
 							TrafficPolicySpec: &tps[1].Spec,
 						},
 					},
@@ -1227,7 +1301,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Status: types2.MeshServiceStatus{
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Name:              "tp3",
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: "tp3",
+							},
 							TrafficPolicySpec: &tps[2].Spec,
 						},
 					},

@@ -57,9 +57,6 @@ func (v *validationLoop) Reconcile(ctx context.Context) error {
 		if !trafficPolicy.Status.GetValidationStatus().Equal(newValidationStatus) {
 			trafficPolicy.Status.ValidationStatus = newValidationStatus
 
-			// also zero-out the conflict errors, since the state has changed and we don't know what it may conflict with now
-			trafficPolicy.Status.ConflictErrors = nil
-
 			err := v.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, &trafficPolicy)
 			if err != nil {
 				return err

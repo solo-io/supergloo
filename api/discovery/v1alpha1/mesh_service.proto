@@ -66,9 +66,8 @@ message MeshServiceSpec {
 
 message MeshServiceStatus {
     message ValidatedTrafficPolicy {
-        string name = 1;
-        string namespace = 2;
-        networking.zephyr.solo.io.TrafficPolicySpec traffic_policy_spec = 3;
+        core.zephyr.solo.io.ResourceRef ref = 1;
+        networking.zephyr.solo.io.TrafficPolicySpec traffic_policy_spec = 2;
     }
     // The status of federation artifacts being written to remote clusters as a result of the federation metadata on this object's Spec.
     core.zephyr.solo.io.Status federation_status = 1;

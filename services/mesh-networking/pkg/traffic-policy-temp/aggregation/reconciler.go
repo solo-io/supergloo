@@ -85,7 +85,6 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 			serviceToMetadata[meshService].Mesh,
 			serviceWithPolicies.TrafficPolicies,
 			uniqueStringToValidatedTrafficPolicy,
-			allMeshServices,
 			translationValidator,
 		)
 
@@ -99,6 +98,7 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		}
 	}
 
+	// these two `updateStatus*` methods depend on an idempotent ordering in all the collections coming out of `determineNewStatuses`
 	for service, validatedPolicies := range serviceToUpdatedStatus {
 		err := a.updateServiceStatusIfNecessary(ctx, service, validatedPolicies)
 		if err != nil {
@@ -116,12 +116,17 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	return nil
 }
 
+/**
+ *  There are three important collections (two in parameters, one on the service) in play here:
+ *    - policiesForService: The *new valid* state of the traffic policies that apply to THIS service. These policies will be a subset of the next collection.
+ *    - uniqueStringToNewlyValidatedTrafficPolicy: The set of ALL new, valid traffic policies
+ *    - previouslyRecordedPolicies: The last-known good state of the policies that applied to this service during a previous reconcile iteration
+ */
 func (a *aggregationReconciler) determineNewStatuses(
 	meshService *zephyr_discovery.MeshService,
 	mesh *zephyr_discovery.Mesh,
 	policiesForService []*zephyr_networking.TrafficPolicy,
 	uniqueStringToNewlyValidatedTrafficPolicy map[string]*zephyr_networking.TrafficPolicy,
-	allMeshServices []*zephyr_discovery.MeshService,
 	translationValidator mesh_translation.TranslationValidator,
 ) (
 	[]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
@@ -143,8 +148,8 @@ func (a *aggregationReconciler) determineNewStatuses(
 	for policyIndex, previouslyRecordedPolicyIter := range previouslyRecordedPolicies {
 		previouslyRecordedPolicy := previouslyRecordedPolicyIter
 		identifierString := clients.ToUniqueString(k8s_meta_types.ObjectMeta{
-			Name:      previouslyRecordedPolicy.Name,
-			Namespace: previouslyRecordedPolicy.Namespace,
+			Name:      previouslyRecordedPolicy.GetRef().GetName(),
+			Namespace: previouslyRecordedPolicy.GetRef().GetNamespace(),
 		})
 
 		previouslyRecordedNameNamespaces.Insert(identifierString)
@@ -177,8 +182,7 @@ func (a *aggregationReconciler) determineNewStatuses(
 				validatedTrafficPolicyStateToRecord = previouslyRecordedPolicy
 			} else {
 				validatedTrafficPolicyStateToRecord = &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
-					Name:              newlyValidatedPolicyState.GetName(),
-					Namespace:         newlyValidatedPolicyState.GetNamespace(),
+					Ref:               clients.ObjectMetaToResourceRef(newlyValidatedPolicyState.ObjectMeta),
 					TrafficPolicySpec: &newlyValidatedPolicyState.Spec,
 				}
 			}
@@ -199,10 +203,7 @@ func (a *aggregationReconciler) determineNewStatuses(
 			} else {
 				for _, translationError := range translationErrors {
 					// need to pick out the translation policy in question from the error result list
-					if clients.SameObject(k8s_meta_types.ObjectMeta{
-						Name:      translationError.Policy.GetName(),
-						Namespace: translationError.Policy.GetNamespace(),
-					}, newlyValidatedPolicyState.ObjectMeta) {
+					if clients.SameObject(clients.ResourceRefToObjectMeta(translationError.Policy.Ref), newlyValidatedPolicyState.ObjectMeta) {
 						untranslatablePolicies[newlyValidatedPolicyState] = translationError.TranslatorErrors
 					}
 				}
@@ -226,8 +227,7 @@ func (a *aggregationReconciler) determineNewStatuses(
 			mergeConflict := a.aggregator.FindMergeConflict(&relevantPolicy.Spec, specsToMergeWith, meshService)
 			if mergeConflict == nil {
 				validated := &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
-					Name:              relevantPolicy.GetName(),
-					Namespace:         relevantPolicy.GetNamespace(),
+					Ref:               clients.ObjectMetaToResourceRef(relevantPolicy.ObjectMeta),
 					TrafficPolicySpec: &relevantPolicy.Spec,
 				}
 
@@ -245,10 +245,7 @@ func (a *aggregationReconciler) determineNewStatuses(
 				} else {
 					for _, translationError := range translationErrors {
 						// need to pick out the translation policy in question from the error result list
-						if clients.SameObject(k8s_meta_types.ObjectMeta{
-							Name:      translationError.Policy.GetName(),
-							Namespace: translationError.Policy.GetNamespace(),
-						}, relevantPolicy.ObjectMeta) {
+						if clients.SameObject(clients.ResourceRefToObjectMeta(translationError.Policy.GetRef()), relevantPolicy.ObjectMeta) {
 							untranslatablePolicies[relevantPolicy] = translationError.TranslatorErrors
 						}
 					}
