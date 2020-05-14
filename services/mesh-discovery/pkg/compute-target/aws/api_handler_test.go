@@ -3,7 +3,9 @@ package aws_test
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	sts2 "github.com/aws/aws-sdk-go/service/sts"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,17 +22,19 @@ import (
 var _ = Describe("CredsHandler", func() {
 	var (
 		ctrl                *gomock.Controller
-		ctx                 context.Context
+		cancellableCtx      context.Context
 		mockSecretConverter *mock_aws_creds.MockSecretAwsCredsConverter
 		mockReconciler      *mock_rest_api.MockRestAPIDiscoveryReconciler
 		mockSTSClient       *mock_sts.MockSTSClient
 		awsCredsHandler     aws2.AwsCredsHandler
 		secret              *k8s_core_types.Secret
+		cancelFunc          func()
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		ctx = context.TODO()
+		ctx := context.TODO()
+		cancellableCtx, cancelFunc = context.WithCancel(ctx)
 		mockSecretConverter = mock_aws_creds.NewMockSecretAwsCredsConverter(ctrl)
 		mockReconciler = mock_rest_api.NewMockRestAPIDiscoveryReconciler(ctrl)
 		mockSTSClient = mock_sts.NewMockSTSClient(ctrl)
@@ -52,35 +56,40 @@ var _ = Describe("CredsHandler", func() {
 
 	AfterEach(func() {
 		ctrl.Finish()
+		cancelFunc()
 	})
 
 	It("should ignore non-AWS secrets when compute target added", func() {
-		err := awsCredsHandler.ComputeTargetAdded(ctx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
+		err := awsCredsHandler.ComputeTargetAdded(cancellableCtx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should ignore non-AWS secrets when compute target removed", func() {
-		err := awsCredsHandler.ComputeTargetRemoved(ctx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
+		err := awsCredsHandler.ComputeTargetRemoved(cancellableCtx, &k8s_core_types.Secret{Type: k8s_core_types.SecretTypeOpaque})
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should handle new API registration", func() {
+		accountID := "accountid"
 		creds := &credentials.Credentials{}
 		mockSecretConverter.EXPECT().SecretToCreds(secret).Return(creds, nil)
-		mockReconciler.EXPECT().Reconcile(gomock.Any(), creds, aws2.Region).Return(nil)
-		err := awsCredsHandler.ComputeTargetAdded(ctx, secret)
+		mockSTSClient.EXPECT().GetCallerIdentity().Return(&sts2.GetCallerIdentityOutput{Account: aws.String(accountID)}, nil)
+		mockReconciler.EXPECT().Reconcile(gomock.Any(), creds, accountID).Return(nil)
+		err := awsCredsHandler.ComputeTargetAdded(cancellableCtx, secret)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should handle new API deregistration", func() {
 		// first register the API for cancelFunc map entry
+		accountID := "accountid"
 		creds := &credentials.Credentials{}
 		mockSecretConverter.EXPECT().SecretToCreds(secret).Return(creds, nil)
-		mockReconciler.EXPECT().Reconcile(gomock.Any(), creds, aws2.Region).Return(nil)
-		err := awsCredsHandler.ComputeTargetAdded(ctx, secret)
+		mockSTSClient.EXPECT().GetCallerIdentity().Return(&sts2.GetCallerIdentityOutput{Account: aws.String(accountID)}, nil)
+		mockReconciler.EXPECT().Reconcile(gomock.Any(), creds, accountID).Return(nil)
+		err := awsCredsHandler.ComputeTargetAdded(cancellableCtx, secret)
 		Expect(err).ToNot(HaveOccurred())
 
-		err = awsCredsHandler.ComputeTargetRemoved(ctx, secret)
+		err = awsCredsHandler.ComputeTargetRemoved(cancellableCtx, secret)
 		Expect(err).ToNot(HaveOccurred())
 	})
 })

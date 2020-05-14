@@ -13,12 +13,16 @@ import (
 	. "github.com/onsi/gomega"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	mock_settings2 "github.com/solo-io/service-mesh-hub/pkg/clients/settings/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
+	settings_utils "github.com/solo-io/service-mesh-hub/pkg/settings"
+	mock_settings "github.com/solo-io/service-mesh-hub/pkg/settings/mocks"
 	aws4 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/appmesh"
+	zephyr_discovery_appmesh "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/appmesh"
 	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -36,7 +40,8 @@ var _ = Describe("Reconciler", func() {
 		mockArnParser              *mock_aws.MockArnParser
 		awsAccountID               string
 		appMeshDiscoveryReconciler aws4.RestAPIDiscoveryReconciler
-		region                     = "us-east-2"
+		mockAwsSelector            *mock_settings.MockAwsSelector
+		mockSettingsHelperClient   *mock_settings2.MockSettingsHelperClient
 	)
 
 	BeforeEach(func() {
@@ -46,7 +51,9 @@ var _ = Describe("Reconciler", func() {
 		mockArnParser = mock_aws.NewMockArnParser(ctrl)
 		awsAccountID = "410461945555"
 		mockAppMeshClient = mock_appmesh_clients.NewMockAppMeshAPI(ctrl)
-		appMeshDiscoveryReconciler = appmesh.NewAppMeshDiscoveryReconciler(
+		mockSettingsHelperClient = mock_settings2.NewMockSettingsHelperClient(ctrl)
+		mockAwsSelector = mock_settings.NewMockAwsSelector(ctrl)
+		appMeshDiscoveryReconciler = zephyr_discovery_appmesh.NewAppMeshDiscoveryReconciler(
 			nil,
 			func(client client.Client) zephyr_discovery.MeshClient {
 				return mockMeshClient
@@ -55,6 +62,8 @@ var _ = Describe("Reconciler", func() {
 			func(creds *credentials.Credentials, region string) (appmeshiface.AppMeshAPI, error) {
 				return mockAppMeshClient, nil
 			},
+			mockSettingsHelperClient,
+			mockAwsSelector,
 		)
 	})
 
@@ -62,43 +71,43 @@ var _ = Describe("Reconciler", func() {
 		ctrl.Finish()
 	})
 
-	var expectReconcileMeshes = func() {
+	var expectReconcileMeshesByRegion = func(region string, selectors []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector) {
 		page1Input := &appmesh.ListMeshesInput{
-			Limit: appmesh.NumItemsPerRequest,
+			Limit: zephyr_discovery_appmesh.NumItemsPerRequest,
 		}
 		page2Input := &appmesh.ListMeshesInput{
-			Limit:     appmesh.NumItemsPerRequest,
+			Limit:     zephyr_discovery_appmesh.NumItemsPerRequest,
 			NextToken: aws2.String("page-2-token"),
 		}
 		meshRefs := []*appmesh.MeshRef{
 			{
 				MeshName:  aws2.String("mesh-name-1"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-1", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-1", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
 				MeshName:  aws2.String("mesh-name-2"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-2", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-2", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
 				MeshName:  aws2.String("mesh-name-3"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-3", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-3", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
 				MeshName:  aws2.String("mesh-name-4"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-4", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-4", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
 				MeshName:  aws2.String("mesh-name-5"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-5", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-5", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
 				MeshName:  aws2.String("mesh-name-6"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/appmesh-6", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-6", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 		}
@@ -112,7 +121,27 @@ var _ = Describe("Reconciler", func() {
 		}
 		mockArnParser.EXPECT().ParseAccountID(gomock.Any()).Times(len(meshRefs)).Return(awsAccountID, nil)
 		mockAppMeshClient.EXPECT().ListMeshes(page1Input).Return(page1, nil)
+		for _, appmeshRef := range page1.Meshes {
+			tagsOutput := &appmesh.ListTagsForResourceOutput{
+				Tags: []*appmesh.TagRef{{Key: aws2.String("k"), Value: aws2.String("v")}},
+			}
+			mockAppMeshClient.
+				EXPECT().
+				ListTagsForResource(&appmesh.ListTagsForResourceInput{ResourceArn: appmeshRef.Arn}).
+				Return(tagsOutput, nil)
+			mockAwsSelector.EXPECT().AppMeshMatchedBySelectors(appmeshRef, tagsOutput.Tags, selectors).Return(true, nil)
+		}
 		mockAppMeshClient.EXPECT().ListMeshes(page2Input).Return(page2, nil)
+		for _, appmeshRef := range page2.Meshes {
+			tagsOutput := &appmesh.ListTagsForResourceOutput{
+				Tags: []*appmesh.TagRef{{Key: aws2.String("k"), Value: aws2.String("v")}},
+			}
+			mockAppMeshClient.
+				EXPECT().
+				ListTagsForResource(&appmesh.ListTagsForResourceInput{ResourceArn: appmeshRef.Arn}).
+				Return(tagsOutput, nil)
+			mockAwsSelector.EXPECT().AppMeshMatchedBySelectors(appmeshRef, tagsOutput.Tags, selectors).Return(true, nil)
+		}
 		for _, meshRef := range meshRefs {
 			mesh := &zephyr_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -124,7 +153,7 @@ var _ = Describe("Reconciler", func() {
 						AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
 							Name:         *meshRef.MeshName,
 							AwsAccountId: awsAccountID,
-							Region:       aws4.Region,
+							Region:       region,
 						},
 					},
 				},
@@ -164,9 +193,144 @@ var _ = Describe("Reconciler", func() {
 		}
 	}
 
-	It("should reconcile Meshes", func() {
-		expectReconcileMeshes()
-		err := appMeshDiscoveryReconciler.Reconcile(ctx, nil, "")
+	It("should reconcile Meshes for all regions with empty appmesh_discovery", func() {
+		accountID := "accountID"
+		region := "region"
+		selectors := settings_utils.AwsSelectorsByRegion{
+			region: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+				{
+					MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+						Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
+							Regions: []string{region},
+						},
+					},
+				},
+			},
+		}
+		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
+			AccountId:        accountID,
+			AppmeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+		}
+		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetAppmeshDiscovery()).Return(true)
+		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
+		mockAwsSelector.EXPECT().AwsSelectorsForAllRegions().Return(selectors)
+
+		expectReconcileMeshesByRegion(region, selectors[region])
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, nil, accountID)
 		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("should reconcile Meshes for all regions with appmesh_discovery populated with empty resource_selectors", func() {
+		accountID := "accountID"
+		region := "region"
+		selectors := settings_utils.AwsSelectorsByRegion{
+			region: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+				{
+					MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+						Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
+							Regions: []string{region},
+						},
+					},
+				},
+			},
+		}
+		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
+			AccountId: accountID,
+			AppmeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{
+				ResourceSelectors: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{},
+			},
+		}
+		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetAppmeshDiscovery()).Return(true)
+		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
+		mockAwsSelector.EXPECT().AwsSelectorsForAllRegions().Return(selectors)
+
+		expectReconcileMeshesByRegion(region, selectors[region])
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, nil, accountID)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("should not reconcile if appmesh_discovery is nil and clear all Appmeshes from SMH", func() {
+		accountID := "accountID"
+		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{}
+		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
+		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetAppmeshDiscovery()).Return(false)
+		mockAwsSelector.EXPECT().ResourceSelectorsByRegion(nil).Return(nil, nil)
+
+		existingMeshes := &zephyr_discovery.MeshList{
+			Items: []zephyr_discovery.Mesh{
+				{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: "appmesh1",
+					},
+					Spec: zephyr_discovery_types.MeshSpec{
+						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+				},
+				{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: "appmesh2",
+					},
+					Spec: zephyr_discovery_types.MeshSpec{
+						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+				},
+				{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: "appmesh3",
+					},
+					Spec: zephyr_discovery_types.MeshSpec{
+						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+				},
+			},
+		}
+		mockMeshClient.EXPECT().ListMesh(ctx).Return(existingMeshes, nil)
+		for _, existingMesh := range existingMeshes.Items {
+			existingMesh := existingMesh
+			mockMeshClient.EXPECT().DeleteMesh(ctx, clients.ObjectMetaToObjectKey(existingMesh.ObjectMeta)).Return(nil)
+		}
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, &credentials.Credentials{}, accountID)
+		Expect(err).To(BeNil())
+	})
+
+	It("should not reconcile if account settings not found and clear all Appmeshes from SMH", func() {
+		accountID := "accountID"
+		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(nil, nil)
+
+		existingMeshes := &zephyr_discovery.MeshList{
+			Items: []zephyr_discovery.Mesh{
+				{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: "appmesh1",
+					},
+					Spec: zephyr_discovery_types.MeshSpec{
+						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+				},
+				{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: "appmesh2",
+					},
+					Spec: zephyr_discovery_types.MeshSpec{
+						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+				},
+				{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: "appmesh3",
+					},
+					Spec: zephyr_discovery_types.MeshSpec{
+						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+				},
+			},
+		}
+		mockMeshClient.EXPECT().ListMesh(ctx).Return(existingMeshes, nil)
+		for _, existingMesh := range existingMeshes.Items {
+			existingMesh := existingMesh
+			mockMeshClient.EXPECT().DeleteMesh(ctx, clients.ObjectMetaToObjectKey(existingMesh.ObjectMeta)).Return(nil)
+		}
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, &credentials.Credentials{}, accountID)
+		Expect(err).To(BeNil())
 	})
 })

@@ -43,18 +43,14 @@ var _ = Describe("SettingsClient", func() {
 	}
 
 	It("should get AWS Settings for account ID", func() {
-		accountSettings := &zephyr_settings_types.AwsAccountSettings{
+		accountSettings := &zephyr_settings_types.SettingsSpec_AwsAccount{
 			AccountId: "account-id",
-			DiscoverySettings: &zephyr_settings_types.DiscoverySettings{
-				Appmesh: nil,
-				Eks:     nil,
-			},
+			AppmeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+			EksDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
 		}
 		settingsSpec := zephyr_settings_types.SettingsSpec{
-			AwsSettings: &zephyr_settings_types.AwsSettings{
-				AwsAccountSettings: []*zephyr_settings_types.AwsAccountSettings{
-					accountSettings,
-				},
+			Aws: []*zephyr_settings_types.SettingsSpec_AwsAccount{
+				accountSettings,
 			},
 		}
 		expectGetSettingsSpec(settingsSpec)
@@ -64,18 +60,14 @@ var _ = Describe("SettingsClient", func() {
 	})
 
 	It("should return nil if accountID not found", func() {
-		accountSettings := &zephyr_settings_types.AwsAccountSettings{
+		accountSettings := &zephyr_settings_types.SettingsSpec_AwsAccount{
 			AccountId: "account-id",
-			DiscoverySettings: &zephyr_settings_types.DiscoverySettings{
-				Appmesh: nil,
-				Eks:     nil,
-			},
+			AppmeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+			EksDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
 		}
 		settingsSpec := zephyr_settings_types.SettingsSpec{
-			AwsSettings: &zephyr_settings_types.AwsSettings{
-				AwsAccountSettings: []*zephyr_settings_types.AwsAccountSettings{
-					accountSettings,
-				},
+			Aws: []*zephyr_settings_types.SettingsSpec_AwsAccount{
+				accountSettings,
 			},
 		}
 		expectGetSettingsSpec(settingsSpec)

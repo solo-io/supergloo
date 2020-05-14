@@ -179,6 +179,9 @@ func (a *appMeshDiscoveryReconciler) fetchSelectorsByRegion(
 	if err != nil {
 		return nil, err
 	}
+	if awsSettings == nil {
+		return nil, nil
+	}
 	// "appmesh_discovery: {}" or "appmesh_discovery: { resource_selectors: [] }" both denote discovery for all regions.
 	if a.awsSelector.IsDiscoverAll(awsSettings.GetAppmeshDiscovery()) ||
 		(awsSettings.GetAppmeshDiscovery() != nil && len(awsSettings.GetAppmeshDiscovery().GetResourceSelectors()) == 0) {

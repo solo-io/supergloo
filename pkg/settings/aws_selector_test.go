@@ -40,35 +40,35 @@ var _ = Describe("AWS Selector", func() {
 		mockArnParser.EXPECT().ParseRegion(arnString1).Return(region1, nil)
 		mockArnParser.EXPECT().ParseRegion(arnString2).Return(region1, nil)
 		mockArnParser.EXPECT().ParseRegion(arnString3).Return(region3, nil)
-		resourceSelectors := []*zephyr_settings_types.ResourceSelector{
+		resourceSelectors := []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 			{
-				MatcherType: &zephyr_settings_types.ResourceSelector_Matcher_{
-					Matcher: &zephyr_settings_types.ResourceSelector_Matcher{
+				MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+					Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
 						Regions: []string{region1, region2},
 						Tags:    map[string]string{"tag1": "value1"},
 					},
 				},
 			},
 			{
-				MatcherType: &zephyr_settings_types.ResourceSelector_Matcher_{
-					Matcher: &zephyr_settings_types.ResourceSelector_Matcher{
+				MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+					Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
 						Regions: []string{region2, region3},
 						Tags:    map[string]string{"tag2": "value2"},
 					},
 				},
 			},
 			{
-				MatcherType: &zephyr_settings_types.ResourceSelector_Arn{
+				MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Arn{
 					Arn: arnString1,
 				},
 			},
 			{
-				MatcherType: &zephyr_settings_types.ResourceSelector_Arn{
+				MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Arn{
 					Arn: arnString2,
 				},
 			},
 			{
-				MatcherType: &zephyr_settings_types.ResourceSelector_Arn{
+				MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Arn{
 					Arn: arnString3,
 				},
 			},
@@ -84,8 +84,14 @@ var _ = Describe("AWS Selector", func() {
 	})
 
 	It("should return true if DiscoverySettings exists but is empty", func() {
-		isDiscoverAll := awsSelector.IsDiscoverAll(&zephyr_settings_types.DiscoverySettings{})
+		isDiscoverAll := awsSelector.IsDiscoverAll(&zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{})
 		Expect(isDiscoverAll).To(BeTrue())
+	})
+
+	It("should return false if DiscoverySettings does not exist", func() {
+		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{}
+		isDiscoverAll := awsSelector.IsDiscoverAll(settings.GetEksDiscovery())
+		Expect(isDiscoverAll).To(BeFalse())
 	})
 
 	It("should return AwsSelectorsByRegion representing all regions", func() {
@@ -113,9 +119,9 @@ var _ = Describe("AWS Selector", func() {
 				Value: aws.String("v2"),
 			},
 		}
-		selector := &zephyr_settings_types.ResourceSelector{
-			MatcherType: &zephyr_settings_types.ResourceSelector_Matcher_{
-				Matcher: &zephyr_settings_types.ResourceSelector_Matcher{
+		selector := &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+			MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+				Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
 					Regions: []string{"region2", region},
 					Tags: map[string]string{
 						"k1": "v1",
@@ -123,7 +129,7 @@ var _ = Describe("AWS Selector", func() {
 				},
 			},
 		}
-		matchedBySelectors, err := awsSelector.AppMeshMatchedBySelectors(appmeshRef, appmeshTags, []*zephyr_settings_types.ResourceSelector{selector})
+		matchedBySelectors, err := awsSelector.AppMeshMatchedBySelectors(appmeshRef, appmeshTags, []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{selector})
 		Expect(err).To(BeNil())
 		Expect(matchedBySelectors).To(BeTrue())
 	})
@@ -144,9 +150,9 @@ var _ = Describe("AWS Selector", func() {
 				Value: aws.String("v2"),
 			},
 		}
-		selector := &zephyr_settings_types.ResourceSelector{
-			MatcherType: &zephyr_settings_types.ResourceSelector_Matcher_{
-				Matcher: &zephyr_settings_types.ResourceSelector_Matcher{
+		selector := &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+			MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+				Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
 					Regions: []string{"region2", region},
 					Tags: map[string]string{
 						"k1": "v1",
@@ -155,21 +161,39 @@ var _ = Describe("AWS Selector", func() {
 				},
 			},
 		}
-		matchedBySelectors, err := awsSelector.AppMeshMatchedBySelectors(appmeshRef, appmeshTags, []*zephyr_settings_types.ResourceSelector{selector})
+		matchedBySelectors, err := awsSelector.AppMeshMatchedBySelectors(appmeshRef, appmeshTags, []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{selector})
 		Expect(err).To(BeNil())
 		Expect(matchedBySelectors).To(BeFalse())
 	})
 
-	It("should return true if appmesh  matches any selector by ARN", func() {
+	It("should return true for appmesh if selector is empty or nil", func() {
+		appmeshRef := &appmesh.MeshRef{
+			Arn: aws.String(""),
+		}
+		appmeshTags := []*appmesh.TagRef{
+			{
+				Key:   aws.String("k1"),
+				Value: aws.String("v1"),
+			},
+		}
+		matchedBySelectors, err := awsSelector.AppMeshMatchedBySelectors(appmeshRef, appmeshTags, []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{})
+		Expect(err).To(BeNil())
+		Expect(matchedBySelectors).To(BeTrue())
+		matchedBySelectors, err = awsSelector.AppMeshMatchedBySelectors(appmeshRef, appmeshTags, nil)
+		Expect(err).To(BeNil())
+		Expect(matchedBySelectors).To(BeTrue())
+	})
+
+	It("should return true if appmesh matches any selector by ARN", func() {
 		appmeshRef := &appmesh.MeshRef{
 			Arn: aws.String("arn"),
 		}
-		selector := &zephyr_settings_types.ResourceSelector{
-			MatcherType: &zephyr_settings_types.ResourceSelector_Arn{
+		selector := &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+			MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Arn{
 				Arn: "arn",
 			},
 		}
-		matchedBySelectors, err := awsSelector.AppMeshMatchedBySelectors(appmeshRef, nil, []*zephyr_settings_types.ResourceSelector{selector})
+		matchedBySelectors, err := awsSelector.AppMeshMatchedBySelectors(appmeshRef, nil, []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{selector})
 		Expect(err).To(BeNil())
 		Expect(matchedBySelectors).To(BeTrue())
 	})
@@ -183,9 +207,9 @@ var _ = Describe("AWS Selector", func() {
 			},
 		}
 		mockArnParser.EXPECT().ParseRegion(aws.StringValue(eksCluster.Arn)).Return(region, nil)
-		selector := &zephyr_settings_types.ResourceSelector{
-			MatcherType: &zephyr_settings_types.ResourceSelector_Matcher_{
-				Matcher: &zephyr_settings_types.ResourceSelector_Matcher{
+		selector := &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+			MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+				Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
 					Regions: []string{"region2", region},
 					Tags: map[string]string{
 						"k1": "v1",
@@ -193,7 +217,22 @@ var _ = Describe("AWS Selector", func() {
 				},
 			},
 		}
-		matchedBySelectors, err := awsSelector.EKSMatchedBySelectors(eksCluster, []*zephyr_settings_types.ResourceSelector{selector})
+		matchedBySelectors, err := awsSelector.EKSMatchedBySelectors(eksCluster, []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{selector})
+		Expect(err).To(BeNil())
+		Expect(matchedBySelectors).To(BeTrue())
+	})
+
+	It("should return true for EKS if selector is empty or nil", func() {
+		eksCluster := &eks.Cluster{
+			Arn: aws.String(""),
+			Tags: map[string]*string{
+				"k1": aws.String("v1"),
+			},
+		}
+		matchedBySelectors, err := awsSelector.EKSMatchedBySelectors(eksCluster, []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{})
+		Expect(err).To(BeNil())
+		Expect(matchedBySelectors).To(BeTrue())
+		matchedBySelectors, err = awsSelector.EKSMatchedBySelectors(eksCluster, nil)
 		Expect(err).To(BeNil())
 		Expect(matchedBySelectors).To(BeTrue())
 	})
@@ -205,12 +244,12 @@ var _ = Describe("AWS Selector", func() {
 				"k1": aws.String("v1"),
 			},
 		}
-		selector := &zephyr_settings_types.ResourceSelector{
-			MatcherType: &zephyr_settings_types.ResourceSelector_Arn{
+		selector := &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+			MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Arn{
 				Arn: "arn",
 			},
 		}
-		matchedBySelectors, err := awsSelector.EKSMatchedBySelectors(eksCluster, []*zephyr_settings_types.ResourceSelector{selector})
+		matchedBySelectors, err := awsSelector.EKSMatchedBySelectors(eksCluster, []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{selector})
 		Expect(err).To(BeNil())
 		Expect(matchedBySelectors).To(BeTrue())
 	})

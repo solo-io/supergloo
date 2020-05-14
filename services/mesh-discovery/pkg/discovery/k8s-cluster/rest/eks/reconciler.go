@@ -216,6 +216,9 @@ func (e *eksReconciler) fetchSelectorsByRegion(
 	if err != nil {
 		return nil, err
 	}
+	if awsSettings == nil {
+		return nil, nil
+	}
 	// "eks_discovery: {}" or "eks_discovery: { resource_selectors: [] }" both denote discovery for all regions.
 	if e.awsSelector.IsDiscoverAll(awsSettings.GetEksDiscovery()) ||
 		(awsSettings.GetEksDiscovery() != nil && len(awsSettings.GetEksDiscovery().GetResourceSelectors()) == 0) {

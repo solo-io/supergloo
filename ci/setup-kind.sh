@@ -16,7 +16,7 @@
 #####################################
 
 if [ "$1" == "cleanup" ]; then
-  kind get clusters | while read -r r; do kind delete cluster --name "$r"; done
+  kind get clusters | grep -E  '(management-plane|target-cluster)-[a-z0-9]+' | while read -r r; do kind delete cluster --name $r; done
   exit 0
 fi
 
@@ -83,28 +83,16 @@ ls install/helm/charts/custom-resource-definitions/crds | while read f; do kubec
 # register all the CRDs in the target cluster too
 ls install/helm/charts/custom-resource-definitions/crds | while read f; do kubectl --context kind-$remoteCluster apply -f install/helm/charts/custom-resource-definitions/crds/$f; done
 
+# Build the docker images
+make -B docker
 
-# make all the docker images
-# write the output to a temp file so that we can grab the image names out of it
-# also ensure we clean up the file once we're done
-tempFile=/tmp/images
+# Load images into the management plane cluster
+export CLUSTER_NAME=$managementPlane
+make kind-load-images
 
-# don't proceed if the code doesn't compile
-set -e
-make docker -B | tee $tempFile
-
-# allow failures again- this is how the waiting works below
-set +e
-
-function cleanup {
-  rm $tempFile
-}
-
-trap cleanup EXIT
-
-# grab the image names out of the `make docker` output
-# the kind cluster name is just $managementPlane, not kind-$managementPlane; the latter is how kubectl is aware of it
-sed -nE 's|Successfully tagged (.*$)|\1|p' $tempFile | while read f; do kind load docker-image --name $managementPlane $f; kind load docker-image --name $remoteCluster $f; done
+# Load images into the target cluster
+export CLUSTER_NAME=$remoteCluster
+make kind-load-images
 
 # create Helm packages
 make -s package-index-mgmt-plane-helm -B

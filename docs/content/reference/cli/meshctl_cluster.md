@@ -33,5 +33,6 @@ meshctl cluster [flags]
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - CLI for Service Mesh Hub
+* [meshctl cluster deregister](../meshctl_cluster_deregister)	 - Deregister an existing cluster
 * [meshctl cluster register](../meshctl_cluster_register)	 - Register a new cluster by creating a service account token in that cluster through which to authorize Service Mesh Hub
 
