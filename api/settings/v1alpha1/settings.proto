@@ -2,14 +2,41 @@ syntax = "proto3";
 package settings.zephyr.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types";
 
-import "service-mesh-hub/api/settings/v1alpha1/aws.proto";
-
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 // Top level SMH user configuration object.
 message SettingsSpec {
-    AwsSettings aws_settings = 1;
+    message AwsAccount {
+        // Configure which AWS resources should be discovered by SMH. An AWS resource will be selected if any of the resource_selectors apply.
+        message DiscoverySelector {
+            repeated ResourceSelector resource_selectors = 1;
+        }
+
+        // For a given resource_selector to apply to a resource, the resource must match all of the resource_selector's match criteria.
+        message ResourceSelector {
+            // Selects all resources that exist in the specified AWS region and possess the specified tags.
+            message Matcher {
+                // AWS regions, e.g. us-east-2. If unspecified, select across all regions.
+                repeated string regions = 1;
+                // AWS resource tags. If unspecified, match any tags.
+                map<string, string> tags = 2;
+            }
+            oneof matcher_type {
+                // AWS resource ARN that directly references a resource.
+                string arn = 1;
+                Matcher matcher = 2;
+            }
+        }
+
+        // AWS account ID.
+        string account_id = 1;
+        // For unspecified or null fields, discovery will not run for the corresponding AWS resource type.
+        DiscoverySelector appmesh_discovery = 2;
+        DiscoverySelector eks_discovery = 3;
+    }
+
+    repeated AwsAccount aws = 1;
 }
 
 message SettingsStatus {

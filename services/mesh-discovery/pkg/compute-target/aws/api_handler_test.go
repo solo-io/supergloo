@@ -10,6 +10,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	mock_aws_creds "github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds/mocks"
 	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/sts"
+	mock_sts "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/sts/mocks"
 	mock_rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/mocks"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,6 +23,7 @@ var _ = Describe("CredsHandler", func() {
 		ctx                 context.Context
 		mockSecretConverter *mock_aws_creds.MockSecretAwsCredsConverter
 		mockReconciler      *mock_rest_api.MockRestAPIDiscoveryReconciler
+		mockSTSClient       *mock_sts.MockSTSClient
 		awsCredsHandler     aws2.AwsCredsHandler
 		secret              *k8s_core_types.Secret
 	)
@@ -30,9 +33,13 @@ var _ = Describe("CredsHandler", func() {
 		ctx = context.TODO()
 		mockSecretConverter = mock_aws_creds.NewMockSecretAwsCredsConverter(ctrl)
 		mockReconciler = mock_rest_api.NewMockRestAPIDiscoveryReconciler(ctrl)
+		mockSTSClient = mock_sts.NewMockSTSClient(ctrl)
 		awsCredsHandler = aws2.NewAwsAPIHandler(
 			mockSecretConverter,
 			[]aws2.RestAPIDiscoveryReconciler{mockReconciler},
+			func(creds *credentials.Credentials, region string) (sts.STSClient, error) {
+				return mockSTSClient, nil
+			},
 		)
 		secret = &k8s_core_types.Secret{
 			ObjectMeta: k8s_meta_types.ObjectMeta{

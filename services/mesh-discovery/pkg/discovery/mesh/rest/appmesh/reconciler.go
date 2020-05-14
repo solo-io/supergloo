@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
@@ -62,6 +63,7 @@ func (a *appMeshDiscoveryReconciler) GetName() string {
 // Currently Meshes are the only SMH CRD that are discovered through the AWS REST API
 // For EKS, workloads and services are discovered directly from the cluster.
 func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *credentials.Credentials, accountID string) error {
+	logger := contextutils.LoggerFrom(ctx)
 	selectorsByRegion, err := a.fetchSelectorsByRegion(ctx, accountID)
 	if err != nil {
 		return err
@@ -81,6 +83,7 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *crede
 			NextToken: nextToken,
 		}
 		for {
+			logger.Debugf("Listing Appmeshes with input %+v", input)
 			appMeshes, err := appmeshClient.ListMeshes(input)
 			if err != nil {
 				errors = multierror.Append(errors, err)
@@ -176,10 +179,10 @@ func (a *appMeshDiscoveryReconciler) fetchSelectorsByRegion(
 	if err != nil {
 		return nil, err
 	}
-	// "discoverySettings: {}" or "appmesh: {}" indicates discovery for all regions.
-	if a.awsSelector.IsDiscoverAll(awsSettings.GetDiscoverySettings()) ||
-		(awsSettings.GetDiscoverySettings().GetAppmesh() != nil && len(awsSettings.GetDiscoverySettings().GetAppmesh().GetResourceSelectors()) == 0) {
+	// "appmesh_discovery: {}" or "appmesh_discovery: { resource_selectors: [] }" both denote discovery for all regions.
+	if a.awsSelector.IsDiscoverAll(awsSettings.GetAppmeshDiscovery()) ||
+		(awsSettings.GetAppmeshDiscovery() != nil && len(awsSettings.GetAppmeshDiscovery().GetResourceSelectors()) == 0) {
 		return a.awsSelector.AwsSelectorsForAllRegions(), nil
 	}
-	return a.awsSelector.ResourceSelectorsByRegion(awsSettings.GetDiscoverySettings().GetAppmesh().GetResourceSelectors())
+	return a.awsSelector.ResourceSelectorsByRegion(awsSettings.GetAppmeshDiscovery().GetResourceSelectors())
 }

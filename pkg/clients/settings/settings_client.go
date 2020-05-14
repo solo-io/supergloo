@@ -36,12 +36,12 @@ func (a *awsSettingsHelperClient) getSettingsSpec(ctx context.Context) (*zephyr_
 func (a *awsSettingsHelperClient) GetAWSSettingsForAccount(
 	ctx context.Context,
 	accountId string,
-) (*zephyr_settings_types.AwsAccountSettings, error) {
+) (*zephyr_settings_types.SettingsSpec_AwsAccount, error) {
 	settingsSpec, err := a.getSettingsSpec(ctx)
 	if err != nil {
 		return nil, err
 	}
-	for _, awsAccountConfig := range settingsSpec.GetAwsSettings().GetAwsAccountSettings() {
+	for _, awsAccountConfig := range settingsSpec.GetAws() {
 		if awsAccountConfig.GetAccountId() == accountId {
 			return awsAccountConfig, nil
 		}

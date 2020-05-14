@@ -24,7 +24,7 @@ func main() {
 		renderTypes = true
 	}
 
-	//load custom client template
+	// load custom client template
 	customClientTemplateBytes, err := ioutil.ReadFile("../custom_client.gotmpl")
 	customClientTemplate := string(customClientTemplateBytes)
 	if err != nil {

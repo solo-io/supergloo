@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
@@ -119,14 +120,16 @@ func (e *eksReconciler) fetchEksClustersOnAWS(
 	ctx context.Context,
 	eksClient cloud.EksClient,
 	region string,
-	selectors []*zephyr_settings_types.ResourceSelector,
+	selectors []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
 ) (sets.String, map[string]string, error) {
+	logger := contextutils.LoggerFrom(ctx)
 	var clusterNames []string
 	smhToAwsClusterNames := make(map[string]string)
 	input := &eks.ListClustersInput{
 		MaxResults: aws.Int64(MaxResults),
 	}
 	for {
+		logger.Debugf("Listing EKS clusters with input %+v", input)
 		listClustersOutput, err := eksClient.ListClusters(ctx, input)
 		if err != nil {
 			return nil, nil, err
@@ -213,10 +216,10 @@ func (e *eksReconciler) fetchSelectorsByRegion(
 	if err != nil {
 		return nil, err
 	}
-	// "discoverySettings: {}" or "eks: {}" indicates discovery for all regions.
-	if e.awsSelector.IsDiscoverAll(awsSettings.GetDiscoverySettings()) ||
-		(awsSettings.GetDiscoverySettings().GetEks() != nil && len(awsSettings.GetDiscoverySettings().GetEks().GetResourceSelectors()) == 0) {
+	// "eks_discovery: {}" or "eks_discovery: { resource_selectors: [] }" both denote discovery for all regions.
+	if e.awsSelector.IsDiscoverAll(awsSettings.GetEksDiscovery()) ||
+		(awsSettings.GetEksDiscovery() != nil && len(awsSettings.GetEksDiscovery().GetResourceSelectors()) == 0) {
 		return e.awsSelector.AwsSelectorsForAllRegions(), nil
 	}
-	return e.awsSelector.ResourceSelectorsByRegion(awsSettings.GetDiscoverySettings().GetEks().GetResourceSelectors())
+	return e.awsSelector.ResourceSelectorsByRegion(awsSettings.GetEksDiscovery().GetResourceSelectors())
 }

@@ -29,6 +29,50 @@ func (this *SettingsSpec) UnmarshalJSON(b []byte) error {
 	return SettingsUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for SettingsSpec_AwsAccount
+func (this *SettingsSpec_AwsAccount) MarshalJSON() ([]byte, error) {
+	str, err := SettingsMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for SettingsSpec_AwsAccount
+func (this *SettingsSpec_AwsAccount) UnmarshalJSON(b []byte) error {
+	return SettingsUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for SettingsSpec_AwsAccount_DiscoverySelector
+func (this *SettingsSpec_AwsAccount_DiscoverySelector) MarshalJSON() ([]byte, error) {
+	str, err := SettingsMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for SettingsSpec_AwsAccount_DiscoverySelector
+func (this *SettingsSpec_AwsAccount_DiscoverySelector) UnmarshalJSON(b []byte) error {
+	return SettingsUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for SettingsSpec_AwsAccount_ResourceSelector
+func (this *SettingsSpec_AwsAccount_ResourceSelector) MarshalJSON() ([]byte, error) {
+	str, err := SettingsMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for SettingsSpec_AwsAccount_ResourceSelector
+func (this *SettingsSpec_AwsAccount_ResourceSelector) UnmarshalJSON(b []byte) error {
+	return SettingsUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for SettingsSpec_AwsAccount_ResourceSelector_Matcher
+func (this *SettingsSpec_AwsAccount_ResourceSelector_Matcher) MarshalJSON() ([]byte, error) {
+	str, err := SettingsMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for SettingsSpec_AwsAccount_ResourceSelector_Matcher
+func (this *SettingsSpec_AwsAccount_ResourceSelector_Matcher) UnmarshalJSON(b []byte) error {
+	return SettingsUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for SettingsStatus
 func (this *SettingsStatus) MarshalJSON() ([]byte, error) {
 	str, err := SettingsMarshaler.MarshalToString(this)

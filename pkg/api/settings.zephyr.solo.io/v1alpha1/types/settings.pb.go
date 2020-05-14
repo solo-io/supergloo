@@ -25,10 +25,10 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Top level SMH user configuration object.
 type SettingsSpec struct {
-	AwsSettings          *AwsSettings `protobuf:"bytes,1,opt,name=aws_settings,json=awsSettings,proto3" json:"aws_settings,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
+	Aws                  []*SettingsSpec_AwsAccount `protobuf:"bytes,1,rep,name=aws,proto3" json:"aws,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
+	XXX_unrecognized     []byte                     `json:"-"`
+	XXX_sizecache        int32                      `json:"-"`
 }
 
 func (m *SettingsSpec) Reset()         { *m = SettingsSpec{} }
@@ -55,9 +55,244 @@ func (m *SettingsSpec) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_SettingsSpec proto.InternalMessageInfo
 
-func (m *SettingsSpec) GetAwsSettings() *AwsSettings {
+func (m *SettingsSpec) GetAws() []*SettingsSpec_AwsAccount {
 	if m != nil {
-		return m.AwsSettings
+		return m.Aws
+	}
+	return nil
+}
+
+type SettingsSpec_AwsAccount struct {
+	// AWS account ID.
+	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	// For unspecified or null fields, discovery will not run for the corresponding AWS resource type.
+	AppmeshDiscovery     *SettingsSpec_AwsAccount_DiscoverySelector `protobuf:"bytes,2,opt,name=appmesh_discovery,json=appmeshDiscovery,proto3" json:"appmesh_discovery,omitempty"`
+	EksDiscovery         *SettingsSpec_AwsAccount_DiscoverySelector `protobuf:"bytes,3,opt,name=eks_discovery,json=eksDiscovery,proto3" json:"eks_discovery,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                                   `json:"-"`
+	XXX_unrecognized     []byte                                     `json:"-"`
+	XXX_sizecache        int32                                      `json:"-"`
+}
+
+func (m *SettingsSpec_AwsAccount) Reset()         { *m = SettingsSpec_AwsAccount{} }
+func (m *SettingsSpec_AwsAccount) String() string { return proto.CompactTextString(m) }
+func (*SettingsSpec_AwsAccount) ProtoMessage()    {}
+func (*SettingsSpec_AwsAccount) Descriptor() ([]byte, []int) {
+	return fileDescriptor_90263b8cbb7a30d1, []int{0, 0}
+}
+func (m *SettingsSpec_AwsAccount) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SettingsSpec_AwsAccount.Unmarshal(m, b)
+}
+func (m *SettingsSpec_AwsAccount) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SettingsSpec_AwsAccount.Marshal(b, m, deterministic)
+}
+func (m *SettingsSpec_AwsAccount) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SettingsSpec_AwsAccount.Merge(m, src)
+}
+func (m *SettingsSpec_AwsAccount) XXX_Size() int {
+	return xxx_messageInfo_SettingsSpec_AwsAccount.Size(m)
+}
+func (m *SettingsSpec_AwsAccount) XXX_DiscardUnknown() {
+	xxx_messageInfo_SettingsSpec_AwsAccount.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SettingsSpec_AwsAccount proto.InternalMessageInfo
+
+func (m *SettingsSpec_AwsAccount) GetAccountId() string {
+	if m != nil {
+		return m.AccountId
+	}
+	return ""
+}
+
+func (m *SettingsSpec_AwsAccount) GetAppmeshDiscovery() *SettingsSpec_AwsAccount_DiscoverySelector {
+	if m != nil {
+		return m.AppmeshDiscovery
+	}
+	return nil
+}
+
+func (m *SettingsSpec_AwsAccount) GetEksDiscovery() *SettingsSpec_AwsAccount_DiscoverySelector {
+	if m != nil {
+		return m.EksDiscovery
+	}
+	return nil
+}
+
+// Configure which AWS resources should be discovered by SMH. An AWS resource will be selected if any of the resource_selectors apply.
+type SettingsSpec_AwsAccount_DiscoverySelector struct {
+	ResourceSelectors    []*SettingsSpec_AwsAccount_ResourceSelector `protobuf:"bytes,1,rep,name=resource_selectors,json=resourceSelectors,proto3" json:"resource_selectors,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                                    `json:"-"`
+	XXX_unrecognized     []byte                                      `json:"-"`
+	XXX_sizecache        int32                                       `json:"-"`
+}
+
+func (m *SettingsSpec_AwsAccount_DiscoverySelector) Reset() {
+	*m = SettingsSpec_AwsAccount_DiscoverySelector{}
+}
+func (m *SettingsSpec_AwsAccount_DiscoverySelector) String() string {
+	return proto.CompactTextString(m)
+}
+func (*SettingsSpec_AwsAccount_DiscoverySelector) ProtoMessage() {}
+func (*SettingsSpec_AwsAccount_DiscoverySelector) Descriptor() ([]byte, []int) {
+	return fileDescriptor_90263b8cbb7a30d1, []int{0, 0, 0}
+}
+func (m *SettingsSpec_AwsAccount_DiscoverySelector) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SettingsSpec_AwsAccount_DiscoverySelector.Unmarshal(m, b)
+}
+func (m *SettingsSpec_AwsAccount_DiscoverySelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SettingsSpec_AwsAccount_DiscoverySelector.Marshal(b, m, deterministic)
+}
+func (m *SettingsSpec_AwsAccount_DiscoverySelector) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SettingsSpec_AwsAccount_DiscoverySelector.Merge(m, src)
+}
+func (m *SettingsSpec_AwsAccount_DiscoverySelector) XXX_Size() int {
+	return xxx_messageInfo_SettingsSpec_AwsAccount_DiscoverySelector.Size(m)
+}
+func (m *SettingsSpec_AwsAccount_DiscoverySelector) XXX_DiscardUnknown() {
+	xxx_messageInfo_SettingsSpec_AwsAccount_DiscoverySelector.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SettingsSpec_AwsAccount_DiscoverySelector proto.InternalMessageInfo
+
+func (m *SettingsSpec_AwsAccount_DiscoverySelector) GetResourceSelectors() []*SettingsSpec_AwsAccount_ResourceSelector {
+	if m != nil {
+		return m.ResourceSelectors
+	}
+	return nil
+}
+
+// For a given resource_selector to apply to a resource, the resource must match all of the resource_selector's match criteria.
+type SettingsSpec_AwsAccount_ResourceSelector struct {
+	// Types that are valid to be assigned to MatcherType:
+	//	*SettingsSpec_AwsAccount_ResourceSelector_Arn
+	//	*SettingsSpec_AwsAccount_ResourceSelector_Matcher_
+	MatcherType          isSettingsSpec_AwsAccount_ResourceSelector_MatcherType `protobuf_oneof:"matcher_type"`
+	XXX_NoUnkeyedLiteral struct{}                                               `json:"-"`
+	XXX_unrecognized     []byte                                                 `json:"-"`
+	XXX_sizecache        int32                                                  `json:"-"`
+}
+
+func (m *SettingsSpec_AwsAccount_ResourceSelector) Reset() {
+	*m = SettingsSpec_AwsAccount_ResourceSelector{}
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector) String() string { return proto.CompactTextString(m) }
+func (*SettingsSpec_AwsAccount_ResourceSelector) ProtoMessage()    {}
+func (*SettingsSpec_AwsAccount_ResourceSelector) Descriptor() ([]byte, []int) {
+	return fileDescriptor_90263b8cbb7a30d1, []int{0, 0, 1}
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector.Unmarshal(m, b)
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector.Marshal(b, m, deterministic)
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector.Merge(m, src)
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector) XXX_Size() int {
+	return xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector.Size(m)
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector) XXX_DiscardUnknown() {
+	xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector proto.InternalMessageInfo
+
+type isSettingsSpec_AwsAccount_ResourceSelector_MatcherType interface {
+	isSettingsSpec_AwsAccount_ResourceSelector_MatcherType()
+	Equal(interface{}) bool
+}
+
+type SettingsSpec_AwsAccount_ResourceSelector_Arn struct {
+	Arn string `protobuf:"bytes,1,opt,name=arn,proto3,oneof" json:"arn,omitempty"`
+}
+type SettingsSpec_AwsAccount_ResourceSelector_Matcher_ struct {
+	Matcher *SettingsSpec_AwsAccount_ResourceSelector_Matcher `protobuf:"bytes,2,opt,name=matcher,proto3,oneof" json:"matcher,omitempty"`
+}
+
+func (*SettingsSpec_AwsAccount_ResourceSelector_Arn) isSettingsSpec_AwsAccount_ResourceSelector_MatcherType() {
+}
+func (*SettingsSpec_AwsAccount_ResourceSelector_Matcher_) isSettingsSpec_AwsAccount_ResourceSelector_MatcherType() {
+}
+
+func (m *SettingsSpec_AwsAccount_ResourceSelector) GetMatcherType() isSettingsSpec_AwsAccount_ResourceSelector_MatcherType {
+	if m != nil {
+		return m.MatcherType
+	}
+	return nil
+}
+
+func (m *SettingsSpec_AwsAccount_ResourceSelector) GetArn() string {
+	if x, ok := m.GetMatcherType().(*SettingsSpec_AwsAccount_ResourceSelector_Arn); ok {
+		return x.Arn
+	}
+	return ""
+}
+
+func (m *SettingsSpec_AwsAccount_ResourceSelector) GetMatcher() *SettingsSpec_AwsAccount_ResourceSelector_Matcher {
+	if x, ok := m.GetMatcherType().(*SettingsSpec_AwsAccount_ResourceSelector_Matcher_); ok {
+		return x.Matcher
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*SettingsSpec_AwsAccount_ResourceSelector) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*SettingsSpec_AwsAccount_ResourceSelector_Arn)(nil),
+		(*SettingsSpec_AwsAccount_ResourceSelector_Matcher_)(nil),
+	}
+}
+
+// Selects all resources that exist in the specified AWS region and possess the specified tags.
+type SettingsSpec_AwsAccount_ResourceSelector_Matcher struct {
+	// AWS regions, e.g. us-east-2. If unspecified, select across all regions.
+	Regions []string `protobuf:"bytes,1,rep,name=regions,proto3" json:"regions,omitempty"`
+	// AWS resource tags. If unspecified, match any tags.
+	Tags                 map[string]string `protobuf:"bytes,2,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *SettingsSpec_AwsAccount_ResourceSelector_Matcher) Reset() {
+	*m = SettingsSpec_AwsAccount_ResourceSelector_Matcher{}
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector_Matcher) String() string {
+	return proto.CompactTextString(m)
+}
+func (*SettingsSpec_AwsAccount_ResourceSelector_Matcher) ProtoMessage() {}
+func (*SettingsSpec_AwsAccount_ResourceSelector_Matcher) Descriptor() ([]byte, []int) {
+	return fileDescriptor_90263b8cbb7a30d1, []int{0, 0, 1, 0}
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector_Matcher) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector_Matcher.Unmarshal(m, b)
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector_Matcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector_Matcher.Marshal(b, m, deterministic)
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector_Matcher) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector_Matcher.Merge(m, src)
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector_Matcher) XXX_Size() int {
+	return xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector_Matcher.Size(m)
+}
+func (m *SettingsSpec_AwsAccount_ResourceSelector_Matcher) XXX_DiscardUnknown() {
+	xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector_Matcher.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SettingsSpec_AwsAccount_ResourceSelector_Matcher proto.InternalMessageInfo
+
+func (m *SettingsSpec_AwsAccount_ResourceSelector_Matcher) GetRegions() []string {
+	if m != nil {
+		return m.Regions
+	}
+	return nil
+}
+
+func (m *SettingsSpec_AwsAccount_ResourceSelector_Matcher) GetTags() map[string]string {
+	if m != nil {
+		return m.Tags
 	}
 	return nil
 }
@@ -94,6 +329,11 @@ var xxx_messageInfo_SettingsStatus proto.InternalMessageInfo
 
 func init() {
 	proto.RegisterType((*SettingsSpec)(nil), "settings.zephyr.solo.io.SettingsSpec")
+	proto.RegisterType((*SettingsSpec_AwsAccount)(nil), "settings.zephyr.solo.io.SettingsSpec.AwsAccount")
+	proto.RegisterType((*SettingsSpec_AwsAccount_DiscoverySelector)(nil), "settings.zephyr.solo.io.SettingsSpec.AwsAccount.DiscoverySelector")
+	proto.RegisterType((*SettingsSpec_AwsAccount_ResourceSelector)(nil), "settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector")
+	proto.RegisterType((*SettingsSpec_AwsAccount_ResourceSelector_Matcher)(nil), "settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher")
+	proto.RegisterMapType((map[string]string)(nil), "settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry")
 	proto.RegisterType((*SettingsStatus)(nil), "settings.zephyr.solo.io.SettingsStatus")
 }
 
@@ -102,21 +342,36 @@ func init() {
 }
 
 var fileDescriptor_90263b8cbb7a30d1 = []byte{
-	// 213 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xf2, 0x48, 0xcf, 0x2c, 0xc9,
-	0x28, 0x4d, 0xd2, 0x4b, 0xce, 0xcf, 0xd5, 0x2f, 0xce, 0xcf, 0xc9, 0xd7, 0xcd, 0xcc, 0xd7, 0x2f,
-	0x4e, 0x2d, 0x2a, 0xcb, 0x4c, 0x4e, 0xd5, 0xcd, 0x4d, 0x2d, 0xce, 0xd0, 0xcd, 0x28, 0x4d, 0xd2,
-	0x4f, 0x2c, 0xc8, 0xd4, 0x2f, 0x4e, 0x2d, 0x29, 0xc9, 0xcc, 0x4b, 0x2f, 0xd6, 0x2f, 0x33, 0x4c,
-	0xcc, 0x29, 0xc8, 0x48, 0x34, 0x84, 0x8b, 0xe8, 0x15, 0x14, 0xe5, 0x97, 0xe4, 0x0b, 0x89, 0xc3,
-	0xf9, 0x55, 0xa9, 0x05, 0x19, 0x95, 0x45, 0x7a, 0x20, 0xe3, 0xf4, 0x32, 0xf3, 0xa5, 0x0c, 0x88,
-	0x34, 0x2f, 0xb1, 0x1c, 0x6a, 0x94, 0x94, 0x48, 0x7a, 0x7e, 0x7a, 0x3e, 0x98, 0xa9, 0x0f, 0x62,
-	0x41, 0x44, 0x95, 0xc2, 0xb9, 0x78, 0x82, 0xa1, 0x9a, 0x82, 0x0b, 0x52, 0x93, 0x85, 0xdc, 0xb9,
-	0x78, 0x12, 0xcb, 0x8b, 0xe3, 0x61, 0x06, 0x49, 0x30, 0x2a, 0x30, 0x6a, 0x70, 0x1b, 0xa9, 0xe8,
-	0xe1, 0x70, 0x87, 0x9e, 0x63, 0x79, 0x31, 0x4c, 0x7f, 0x10, 0x77, 0x22, 0x82, 0xa3, 0x24, 0xc0,
-	0xc5, 0x07, 0x37, 0xb8, 0x24, 0xb1, 0xa4, 0xb4, 0xd8, 0x29, 0x62, 0xc5, 0x23, 0x39, 0xc6, 0xa8,
-	0x20, 0x62, 0xc2, 0xa6, 0x20, 0x3b, 0x1d, 0xc5, 0x3f, 0x68, 0xb6, 0x22, 0xbc, 0x57, 0x52, 0x59,
-	0x90, 0x5a, 0x9c, 0xc4, 0x06, 0xf6, 0x8b, 0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0xd6, 0xa0, 0x94,
-	0xfc, 0x78, 0x01, 0x00, 0x00,
+	// 462 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x53, 0xc1, 0x6e, 0xd3, 0x40,
+	0x10, 0xad, 0x63, 0xda, 0xc8, 0xd3, 0x50, 0x25, 0xab, 0x4a, 0x58, 0x96, 0x40, 0x51, 0x4f, 0xb9,
+	0x64, 0x4d, 0xcb, 0x01, 0xc4, 0x2d, 0x11, 0x48, 0xe9, 0x81, 0xcb, 0x86, 0x03, 0xe2, 0x12, 0x6d,
+	0x9c, 0xd1, 0xda, 0x4a, 0xe2, 0x5d, 0xed, 0xae, 0x53, 0x99, 0x3b, 0xff, 0xc2, 0x8f, 0x70, 0xe1,
+	0x33, 0x90, 0xf8, 0x04, 0xee, 0xc8, 0xf6, 0xc6, 0x2d, 0x41, 0x48, 0x54, 0xf4, 0x36, 0xf3, 0x3c,
+	0xf3, 0xde, 0x9b, 0x59, 0x0f, 0xcc, 0x44, 0x66, 0xd3, 0x62, 0x49, 0x13, 0xb9, 0x8d, 0x8d, 0xdc,
+	0xc8, 0x71, 0x26, 0x63, 0x83, 0x7a, 0x97, 0x25, 0x38, 0xde, 0xa2, 0x49, 0xc7, 0x69, 0xb1, 0x8c,
+	0xb9, 0xca, 0x62, 0x83, 0xd6, 0x66, 0xb9, 0x30, 0xf1, 0xee, 0x92, 0x6f, 0x54, 0xca, 0x2f, 0x5b,
+	0x84, 0x2a, 0x2d, 0xad, 0x24, 0x4f, 0xda, 0xfc, 0x13, 0xaa, 0xb4, 0xd4, 0xb4, 0xa2, 0xa3, 0x99,
+	0x8c, 0xce, 0x85, 0x14, 0xb2, 0xae, 0x89, 0xab, 0xa8, 0x29, 0xbf, 0xf8, 0x76, 0x02, 0xbd, 0xb9,
+	0xeb, 0x98, 0x2b, 0x4c, 0xc8, 0x14, 0x7c, 0x7e, 0x63, 0x42, 0x6f, 0xe8, 0x8f, 0x4e, 0xaf, 0x9e,
+	0xd3, 0xbf, 0xb0, 0xd1, 0xbb, 0x3d, 0x74, 0x72, 0x63, 0x26, 0x49, 0x22, 0x8b, 0xdc, 0xb2, 0xaa,
+	0x39, 0xfa, 0x79, 0x0c, 0x70, 0x8b, 0x91, 0xa7, 0x00, 0xbc, 0x09, 0x17, 0xd9, 0x2a, 0xf4, 0x86,
+	0xde, 0x28, 0x60, 0x81, 0x43, 0xae, 0x57, 0x44, 0xc2, 0x80, 0x2b, 0x55, 0x4d, 0xb9, 0x58, 0x65,
+	0x26, 0x91, 0x3b, 0xd4, 0x65, 0xd8, 0x19, 0x7a, 0xa3, 0xd3, 0xab, 0xe9, 0x7d, 0xf5, 0xe9, 0x9b,
+	0x3d, 0xc3, 0x1c, 0x37, 0x98, 0x58, 0xa9, 0x59, 0xdf, 0x91, 0xb7, 0x5f, 0x88, 0x80, 0xc7, 0xb8,
+	0x36, 0x77, 0xc4, 0xfc, 0x07, 0x13, 0xeb, 0xe1, 0xda, 0xb4, 0x68, 0xf4, 0xd9, 0x83, 0xc1, 0x1f,
+	0x35, 0x44, 0x01, 0xd1, 0x68, 0x64, 0xa1, 0x13, 0x5c, 0x18, 0x07, 0xee, 0x17, 0x3e, 0xb9, 0xb7,
+	0x07, 0xe6, 0xa8, 0x5a, 0x0b, 0x03, 0x7d, 0x80, 0x98, 0xe8, 0x47, 0x07, 0xfa, 0x87, 0x75, 0x84,
+	0x80, 0xcf, 0x75, 0xde, 0x3c, 0xc7, 0xec, 0x88, 0x55, 0x09, 0x41, 0xe8, 0x6e, 0xb9, 0x4d, 0x52,
+	0xd4, 0xee, 0x01, 0xae, 0xff, 0xdb, 0x0f, 0x7d, 0xd7, 0x10, 0xce, 0x8e, 0xd8, 0x9e, 0x3b, 0xfa,
+	0xea, 0x41, 0xd7, 0xc1, 0x24, 0x84, 0xae, 0x46, 0x91, 0xc9, 0xbc, 0x59, 0x41, 0xc0, 0xf6, 0x29,
+	0x11, 0xf0, 0xc8, 0x72, 0x61, 0xc2, 0x4e, 0xbd, 0x99, 0xf9, 0x83, 0x39, 0xa1, 0xef, 0xb9, 0x30,
+	0x6f, 0x73, 0xab, 0x4b, 0x56, 0x0b, 0x44, 0x2f, 0x21, 0x68, 0x21, 0xd2, 0x07, 0x7f, 0x8d, 0xa5,
+	0xfb, 0x4b, 0xab, 0x90, 0x9c, 0xc3, 0xf1, 0x8e, 0x6f, 0x0a, 0xac, 0x57, 0x12, 0xb0, 0x26, 0x79,
+	0xdd, 0x79, 0xe5, 0x4d, 0xcf, 0xa0, 0xe7, 0x46, 0x5a, 0xd8, 0x52, 0xe1, 0x45, 0x1f, 0xce, 0x5a,
+	0x33, 0x96, 0xdb, 0xc2, 0x4c, 0x3f, 0x7c, 0xf9, 0xfe, 0xcc, 0xfb, 0xc8, 0xfe, 0xe5, 0xba, 0xd5,
+	0x5a, 0xfc, 0x76, 0xe1, 0x07, 0x63, 0xde, 0x1e, 0x7c, 0x25, 0x65, 0x96, 0x27, 0xf5, 0xfd, 0xbe,
+	0xf8, 0x15, 0x00, 0x00, 0xff, 0xff, 0x95, 0x70, 0xbd, 0xe5, 0x3a, 0x04, 0x00, 0x00,
 }
 
 func (this *SettingsSpec) Equal(that interface{}) bool {
@@ -138,8 +393,199 @@ func (this *SettingsSpec) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.AwsSettings.Equal(that1.AwsSettings) {
+	if len(this.Aws) != len(that1.Aws) {
 		return false
+	}
+	for i := range this.Aws {
+		if !this.Aws[i].Equal(that1.Aws[i]) {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *SettingsSpec_AwsAccount) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*SettingsSpec_AwsAccount)
+	if !ok {
+		that2, ok := that.(SettingsSpec_AwsAccount)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.AccountId != that1.AccountId {
+		return false
+	}
+	if !this.AppmeshDiscovery.Equal(that1.AppmeshDiscovery) {
+		return false
+	}
+	if !this.EksDiscovery.Equal(that1.EksDiscovery) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *SettingsSpec_AwsAccount_DiscoverySelector) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*SettingsSpec_AwsAccount_DiscoverySelector)
+	if !ok {
+		that2, ok := that.(SettingsSpec_AwsAccount_DiscoverySelector)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.ResourceSelectors) != len(that1.ResourceSelectors) {
+		return false
+	}
+	for i := range this.ResourceSelectors {
+		if !this.ResourceSelectors[i].Equal(that1.ResourceSelectors[i]) {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *SettingsSpec_AwsAccount_ResourceSelector) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*SettingsSpec_AwsAccount_ResourceSelector)
+	if !ok {
+		that2, ok := that.(SettingsSpec_AwsAccount_ResourceSelector)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.MatcherType == nil {
+		if this.MatcherType != nil {
+			return false
+		}
+	} else if this.MatcherType == nil {
+		return false
+	} else if !this.MatcherType.Equal(that1.MatcherType) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *SettingsSpec_AwsAccount_ResourceSelector_Arn) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*SettingsSpec_AwsAccount_ResourceSelector_Arn)
+	if !ok {
+		that2, ok := that.(SettingsSpec_AwsAccount_ResourceSelector_Arn)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Arn != that1.Arn {
+		return false
+	}
+	return true
+}
+func (this *SettingsSpec_AwsAccount_ResourceSelector_Matcher_) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*SettingsSpec_AwsAccount_ResourceSelector_Matcher_)
+	if !ok {
+		that2, ok := that.(SettingsSpec_AwsAccount_ResourceSelector_Matcher_)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Matcher.Equal(that1.Matcher) {
+		return false
+	}
+	return true
+}
+func (this *SettingsSpec_AwsAccount_ResourceSelector_Matcher) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*SettingsSpec_AwsAccount_ResourceSelector_Matcher)
+	if !ok {
+		that2, ok := that.(SettingsSpec_AwsAccount_ResourceSelector_Matcher)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Regions) != len(that1.Regions) {
+		return false
+	}
+	for i := range this.Regions {
+		if this.Regions[i] != that1.Regions[i] {
+			return false
+		}
+	}
+	if len(this.Tags) != len(that1.Tags) {
+		return false
+	}
+	for i := range this.Tags {
+		if this.Tags[i] != that1.Tags[i] {
+			return false
+		}
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
 		return false

@@ -38,7 +38,7 @@ func (m *MockAwsSelector) EXPECT() *MockAwsSelectorMockRecorder {
 }
 
 // ResourceSelectorsByRegion mocks base method.
-func (m *MockAwsSelector) ResourceSelectorsByRegion(resourceSelectors []*types.ResourceSelector) (settings.AwsSelectorsByRegion, error) {
+func (m *MockAwsSelector) ResourceSelectorsByRegion(resourceSelectors []*types.SettingsSpec_AwsAccount_ResourceSelector) (settings.AwsSelectorsByRegion, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ResourceSelectorsByRegion", resourceSelectors)
 	ret0, _ := ret[0].(settings.AwsSelectorsByRegion)
@@ -66,8 +66,22 @@ func (mr *MockAwsSelectorMockRecorder) AwsSelectorsForAllRegions() *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AwsSelectorsForAllRegions", reflect.TypeOf((*MockAwsSelector)(nil).AwsSelectorsForAllRegions))
 }
 
+// IsDiscoverAll mocks base method.
+func (m *MockAwsSelector) IsDiscoverAll(discoverySettings *types.SettingsSpec_AwsAccount_DiscoverySelector) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsDiscoverAll", discoverySettings)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsDiscoverAll indicates an expected call of IsDiscoverAll.
+func (mr *MockAwsSelectorMockRecorder) IsDiscoverAll(discoverySettings interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDiscoverAll", reflect.TypeOf((*MockAwsSelector)(nil).IsDiscoverAll), discoverySettings)
+}
+
 // AppMeshMatchedBySelectors mocks base method.
-func (m *MockAwsSelector) AppMeshMatchedBySelectors(appmeshRef *appmesh.MeshRef, appmeshTags []*appmesh.TagRef, selectors []*types.ResourceSelector) (bool, error) {
+func (m *MockAwsSelector) AppMeshMatchedBySelectors(appmeshRef *appmesh.MeshRef, appmeshTags []*appmesh.TagRef, selectors []*types.SettingsSpec_AwsAccount_ResourceSelector) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AppMeshMatchedBySelectors", appmeshRef, appmeshTags, selectors)
 	ret0, _ := ret[0].(bool)
@@ -82,7 +96,7 @@ func (mr *MockAwsSelectorMockRecorder) AppMeshMatchedBySelectors(appmeshRef, app
 }
 
 // EKSMatchedBySelectors mocks base method.
-func (m *MockAwsSelector) EKSMatchedBySelectors(eksCluster *eks.Cluster, selectors []*types.ResourceSelector) (bool, error) {
+func (m *MockAwsSelector) EKSMatchedBySelectors(eksCluster *eks.Cluster, selectors []*types.SettingsSpec_AwsAccount_ResourceSelector) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EKSMatchedBySelectors", eksCluster, selectors)
 	ret0, _ := ret[0].(bool)

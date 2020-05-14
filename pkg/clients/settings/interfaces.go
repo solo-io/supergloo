@@ -10,5 +10,6 @@ import (
 
 // Convenience wrapper around fetching the global Settings object.
 type SettingsHelperClient interface {
-	GetAWSSettingsForAccount(ctx context.Context, accountId string) (*zephyr_settings_types.AwsAccountSettings, error)
+	// Fetch Settings for the specified AWS account ID, returns (nil, nil) if no settings found.
+	GetAWSSettingsForAccount(ctx context.Context, accountId string) (*zephyr_settings_types.SettingsSpec_AwsAccount, error)
 }

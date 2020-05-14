@@ -9,25 +9,25 @@ import (
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
 // Nil value denotes selection of all resources in that region.
-type AwsSelectorsByRegion map[string][]*zephyr_settings_types.ResourceSelector
+type AwsSelectorsByRegion map[string][]*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector
 
 type AwsSelector interface {
 	ResourceSelectorsByRegion(
-		resourceSelectors []*zephyr_settings_types.ResourceSelector,
+		resourceSelectors []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
 	) (AwsSelectorsByRegion, error)
 
 	AwsSelectorsForAllRegions() AwsSelectorsByRegion
 
-	IsDiscoverAll(discoverySettings *zephyr_settings_types.DiscoverySettings) bool
+	IsDiscoverAll(discoverySettings *zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector) bool
 
 	AppMeshMatchedBySelectors(
 		appmeshRef *appmesh.MeshRef,
 		appmeshTags []*appmesh.TagRef,
-		selectors []*zephyr_settings_types.ResourceSelector,
+		selectors []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
 	) (bool, error)
 
 	EKSMatchedBySelectors(
 		eksCluster *eks.Cluster,
-		selectors []*zephyr_settings_types.ResourceSelector,
+		selectors []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
 	) (bool, error)
 }

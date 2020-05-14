@@ -13,7 +13,7 @@ import (
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
 )
 
-var _ = Describe("Utils", func() {
+var _ = Describe("AWS Selector", func() {
 	var (
 		ctrl          *gomock.Controller
 		mockArnParser *mock_aws.MockArnParser

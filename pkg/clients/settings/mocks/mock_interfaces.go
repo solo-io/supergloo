@@ -36,10 +36,10 @@ func (m *MockSettingsHelperClient) EXPECT() *MockSettingsHelperClientMockRecorde
 }
 
 // GetAWSSettingsForAccount mocks base method.
-func (m *MockSettingsHelperClient) GetAWSSettingsForAccount(ctx context.Context, accountId string) (*types.AwsAccountSettings, error) {
+func (m *MockSettingsHelperClient) GetAWSSettingsForAccount(ctx context.Context, accountId string) (*types.SettingsSpec_AwsAccount, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAWSSettingsForAccount", ctx, accountId)
-	ret0, _ := ret[0].(*types.AwsAccountSettings)
+	ret0, _ := ret[0].(*types.SettingsSpec_AwsAccount)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
