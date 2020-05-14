@@ -3,6 +3,7 @@ package register
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/google/wire"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
@@ -24,6 +25,7 @@ func ClusterRegistrationCmd(
 	clientsFactory common.ClientsFactory,
 	opts *options.Options,
 	kubeLoader kubeconfig.KubeLoader,
+	out io.Writer,
 ) RegistrationCmd {
 	register := &cobra.Command{
 		Use:   cliconstants.ClusterRegisterCommand.Use,
@@ -38,9 +40,9 @@ func ClusterRegistrationCmd(
 				kubeLoader,
 			)
 			if err != nil {
-				fmt.Printf("Error registering cluster %s: %+v", opts.SmhInstall.ClusterName, err)
+				fmt.Fprintf(out, "Error registering cluster %s.\n", opts.Cluster.Register.RemoteClusterName)
 			} else {
-				fmt.Printf("Successfully registered cluster %s.", opts.SmhInstall.ClusterName)
+				fmt.Fprintf(out, "Successfully registered cluster %s.\n", opts.Cluster.Register.RemoteClusterName)
 			}
 			return err
 		},
