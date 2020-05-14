@@ -132,7 +132,6 @@ func (a *awsSelector) appMeshMatchedBySelector(
 	default:
 		return false, UnknownSelectorType(selector)
 	}
-	return false, nil
 }
 
 func (a *awsSelector) eksMatchedBySelector(
@@ -152,7 +151,6 @@ func (a *awsSelector) eksMatchedBySelector(
 	default:
 		return false, UnknownSelectorType(selector)
 	}
-	return false, nil
 }
 
 func appmeshContainsTags(selectorTags map[string]string, appMeshTags []*appmesh.TagRef) bool {
