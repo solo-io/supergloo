@@ -29,6 +29,8 @@ func (a *aggregator) FindMergeConflict(
 	policiesToMergeWith []*zephyr_networking_types.TrafficPolicySpec,
 	meshService *zephyr_discovery.MeshService,
 ) *zephyr_networking_types.TrafficPolicyStatus_ConflictError {
+	// The ordering of this list doesn't matter; conflict errors are reported on the list as a whole, and
+	// any conflict on a Traffic Policy that is found will also be discovered on all the *other* policies that it conflicts with
 	allPoliciesTogether := append([]*zephyr_networking_types.TrafficPolicySpec(nil), policiesToMergeWith...)
 	allPoliciesTogether = append(allPoliciesTogether, trafficPolicyToMerge)
 
@@ -51,16 +53,8 @@ func (a *aggregator) FindMergeConflict(
 		for _, mergedTrafficPolicy := range mergedTrafficPolicies {
 			// if spec containing TrafficPolicy rules already exists, with same Source selectors, just append to its HttpRequestMatchers
 			if mergeableHttpTp.SourceSelector.Equal(mergedTrafficPolicy.Spec.GetSourceSelector()) &&
-				a.areTrafficPolicyActionsEqual(mergeableHttpTp.TrafficPolicySpec, &mergedTrafficPolicy.Spec) {
-				/*
-					Only attempt to add the HttpMatcher the list if it is non-nil.
-					Nil HttpRequestMatchers is a valid state in the Istio API, and therefore must
-					be treated as an additional case here
-				*/
-				if mergeableHttpTp.HttpMatcher != nil {
-					mergedTrafficPolicy.Spec.HttpRequestMatchers =
-						append(mergedTrafficPolicy.Spec.GetHttpRequestMatchers(), mergeableHttpTp.HttpMatcher)
-				}
+				a.areTrafficPolicyActionsEqual(mergeableHttpTp.TrafficPolicyRoutingConfig, &mergedTrafficPolicy.Spec) {
+				a.appendHttpMatcherIfNonNil(mergedTrafficPolicy.Spec.HttpRequestMatchers, mergeableHttpTp.HttpMatcher)
 				trafficPolicyExists = true
 				break
 			}
@@ -68,19 +62,12 @@ func (a *aggregator) FindMergeConflict(
 		// Create new merged TrafficPolicySpec
 		if !trafficPolicyExists {
 			newMergedTrafficPolicy := &zephyr_networking.TrafficPolicy{
-				Spec: *mergeableHttpTp.TrafficPolicySpec,
+				Spec: *mergeableHttpTp.TrafficPolicyRoutingConfig,
 			}
 			mergedTrafficPolicies = append(mergedTrafficPolicies, newMergedTrafficPolicy)
 			newMergedTrafficPolicy.Spec.SourceSelector = mergeableHttpTp.SourceSelector
-			/*
-				Only attempt to add the HttpMatcher the list if it is non-nil.
-				Nil HttpRequestMatchers is a valid state in the Istio API, and therefore must
-				be treated as an additional case here
-			*/
-			if mergeableHttpTp.HttpMatcher != nil {
-				newMergedTrafficPolicy.Spec.HttpRequestMatchers =
-					[]*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{mergeableHttpTp.HttpMatcher}
-			}
+
+			a.appendHttpMatcherIfNonNil(newMergedTrafficPolicy.Spec.HttpRequestMatchers, mergeableHttpTp.HttpMatcher)
 		}
 	}
 
@@ -125,6 +112,22 @@ func (a *aggregator) GroupByMeshService(
 	return result, nil
 }
 
+/*
+	Only attempt to add the HttpMatcher the list if it is non-nil.
+	Nil HttpRequestMatchers is a valid state in the Istio API, and therefore must
+	be treated as an additional case here
+*/
+func (*aggregator) appendHttpMatcherIfNonNil(
+	list []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher,
+	nillableMatcher *zephyr_networking_types.TrafficPolicySpec_HttpMatcher,
+) []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher {
+	if nillableMatcher != nil {
+		return append(list, nillableMatcher)
+	}
+
+	return list
+}
+
 func (a *aggregator) mergeHttpTrafficPolicies(
 	trafficPolicySpec *zephyr_networking_types.TrafficPolicySpec,
 	mergeableTrafficPolicies []*mergeableHttpTrafficPolicy,
@@ -161,12 +164,12 @@ func (a *aggregator) attemptTrafficPolicyMerge(
 	for _, mergeableTp := range mergeableTrafficPolicies {
 		// attempt merging if Source selector and HttpMatcher are equal
 		if trafficPolicySpec.SourceSelector.Equal(mergeableTp.SourceSelector) && httpMatcher.Equal(mergeableTp.HttpMatcher) {
-			mergedTrafficPolicySpec, err := a.mergeTrafficPolicySpec(mergeableTp.TrafficPolicySpec, trafficPolicySpec)
+			mergedTrafficPolicySpec, err := a.mergeTrafficPolicySpec(mergeableTp.TrafficPolicyRoutingConfig, trafficPolicySpec)
 			if err != nil {
 				return nil, err
 			}
 			// update existing TrafficPolicy with merged spec
-			mergeableTp.TrafficPolicySpec = mergedTrafficPolicySpec
+			mergeableTp.TrafficPolicyRoutingConfig = mergedTrafficPolicySpec
 			merged = true
 			break
 		}
@@ -181,9 +184,9 @@ func (a *aggregator) attemptTrafficPolicyMerge(
 		return nil, err
 	}
 	return &mergeableHttpTrafficPolicy{
-		HttpMatcher:       httpMatcher,
-		SourceSelector:    trafficPolicySpec.SourceSelector,
-		TrafficPolicySpec: newTPSpec,
+		HttpMatcher:                httpMatcher,
+		SourceSelector:             trafficPolicySpec.SourceSelector,
+		TrafficPolicyRoutingConfig: newTPSpec,
 	}, nil
 }
 
@@ -259,7 +262,7 @@ func (a *aggregator) areTrafficPolicyActionsEqual(
 }
 
 type mergeableHttpTrafficPolicy struct {
-	HttpMatcher       *zephyr_networking_types.TrafficPolicySpec_HttpMatcher
-	SourceSelector    *zephyr_core_types.WorkloadSelector
-	TrafficPolicySpec *zephyr_networking_types.TrafficPolicySpec
+	HttpMatcher                *zephyr_networking_types.TrafficPolicySpec_HttpMatcher
+	SourceSelector             *zephyr_core_types.WorkloadSelector
+	TrafficPolicyRoutingConfig *zephyr_networking_types.TrafficPolicySpec
 }
