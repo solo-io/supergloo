@@ -70,7 +70,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			ListMeshService(ctx).
 			Return(&zephyr_discovery.MeshServiceList{}, nil)
 		aggregator.EXPECT().
-			GroupByMeshService(nil, []*zephyr_discovery.MeshService{}).
+			GroupByMeshService(nil, nil).
 			Return([]*traffic_policy_aggregation.ServiceWithRelevantPolicies{}, nil)
 
 		reconciler := traffic_policy_aggregation.NewAggregationReconciler(

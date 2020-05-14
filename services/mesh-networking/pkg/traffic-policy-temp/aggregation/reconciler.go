@@ -142,7 +142,7 @@ func (a *aggregationReconciler) determineNewStatuses(
 	untranslatablePolicies := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{}
 
 	// keep track of the entries that were already on the statuses
-	previouslyRecordedNameNamespaces := sets.NewString()
+	previouslyRecordedTrafficPolicyIDs := sets.NewString()
 	previouslyRecordedPolicies := meshService.Status.GetValidatedTrafficPolicies()
 
 	// here we ensure that everything that was in the list previously is either:
@@ -156,12 +156,12 @@ func (a *aggregationReconciler) determineNewStatuses(
 			Namespace: previouslyRecordedPolicy.GetRef().GetNamespace(),
 		})
 
-		previouslyRecordedNameNamespaces.Insert(identifierString)
+		previouslyRecordedTrafficPolicyIDs.Insert(identifierString)
 
-		newlyValidatedPolicyState, validatedPolicyFound := uniqueStringToNewlyValidatedTrafficPolicy[identifierString]
+		newlyValidatedPolicy, validatedPolicyFound := uniqueStringToNewlyValidatedTrafficPolicy[identifierString]
 
 		// if the policy couldn't be validated or if it hasn't changed, keep the old state in the list
-		if !validatedPolicyFound || newlyValidatedPolicyState.Spec.Equal(previouslyRecordedPolicy.TrafficPolicySpec) {
+		if !validatedPolicyFound || newlyValidatedPolicy.Spec.Equal(previouslyRecordedPolicy.TrafficPolicySpec) {
 			policiesToRecordOnService = append(policiesToRecordOnService, previouslyRecordedPolicy)
 		} else {
 			// otherwise, there is a newly-valid state to record. Ensure that this new state can in fact be merged in with the rest of the list
@@ -177,28 +177,28 @@ func (a *aggregationReconciler) determineNewStatuses(
 				policiesToMergeWith = append(policiesToMergeWith, tp.TrafficPolicySpec)
 			}
 
-			mergeConflict := a.aggregator.FindMergeConflict(&newlyValidatedPolicyState.Spec, policiesToMergeWith, meshService)
+			mergeConflict := a.aggregator.FindMergeConflict(&newlyValidatedPolicy.Spec, policiesToMergeWith, meshService)
 
 			// this will be either the new one, or the old one if we couldn't merge the new state in with the others
 			var validatedTrafficPolicyStateToRecord *zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy
 			if mergeConflict != nil {
-				policiesInConflict[newlyValidatedPolicyState] = append(policiesInConflict[newlyValidatedPolicyState], mergeConflict)
+				policiesInConflict[newlyValidatedPolicy] = append(policiesInConflict[newlyValidatedPolicy], mergeConflict)
 				validatedTrafficPolicyStateToRecord = previouslyRecordedPolicy
 			} else {
 				validatedTrafficPolicyStateToRecord = &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
-					Ref:               clients.ObjectMetaToResourceRef(newlyValidatedPolicyState.ObjectMeta),
-					TrafficPolicySpec: &newlyValidatedPolicyState.Spec,
+					Ref:               clients.ObjectMetaToResourceRef(newlyValidatedPolicy.ObjectMeta),
+					TrafficPolicySpec: &newlyValidatedPolicy.Spec,
 				}
 			}
 
 			// we know that the policies are mergeable; now let's see if they can be translated all together
-			dryRunTranslation := append([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil), policiesToRecordOnService...)
-			dryRunTranslation = append(dryRunTranslation, validatedTrafficPolicyStateToRecord)
+			mergeableTPs := append([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil), policiesToRecordOnService...)
+			mergeableTPs = append(mergeableTPs, validatedTrafficPolicyStateToRecord)
 
 			translationErrors := translationValidator.GetTranslationErrors(
 				meshService,
 				mesh,
-				dryRunTranslation,
+				mergeableTPs,
 			)
 
 			if len(translationErrors) == 0 {
@@ -207,8 +207,8 @@ func (a *aggregationReconciler) determineNewStatuses(
 			} else {
 				for _, translationError := range translationErrors {
 					// need to pick out the translation policy in question from the error result list
-					if clients.SameObject(clients.ResourceRefToObjectMeta(translationError.Policy.Ref), newlyValidatedPolicyState.ObjectMeta) {
-						untranslatablePolicies[newlyValidatedPolicyState] = translationError.TranslatorErrors
+					if clients.SameObject(clients.ResourceRefToObjectMeta(translationError.Policy.Ref), newlyValidatedPolicy.ObjectMeta) {
+						untranslatablePolicies[newlyValidatedPolicy] = translationError.TranslatorErrors
 					}
 				}
 			}
@@ -220,7 +220,7 @@ func (a *aggregationReconciler) determineNewStatuses(
 		relevantPolicy := relevantPolicyIter
 
 		// we didn't see this one before, so it must be new
-		if !previouslyRecordedNameNamespaces.Has(clients.ToUniqueSingleClusterString(relevantPolicy.ObjectMeta)) {
+		if !previouslyRecordedTrafficPolicyIDs.Has(clients.ToUniqueSingleClusterString(relevantPolicy.ObjectMeta)) {
 			var specsToMergeWith []*zephyr_networking_types.TrafficPolicySpec
 			for _, validatedPolicyIter := range policiesToRecordOnService {
 				validatedPolicy := validatedPolicyIter
@@ -235,13 +235,13 @@ func (a *aggregationReconciler) determineNewStatuses(
 					TrafficPolicySpec: &relevantPolicy.Spec,
 				}
 
-				dryRunTranslation := append([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil), policiesToRecordOnService...)
-				dryRunTranslation = append(dryRunTranslation, validated)
+				mergeableTPs := append([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil), policiesToRecordOnService...)
+				mergeableTPs = append(mergeableTPs, validated)
 
 				translationErrors := translationValidator.GetTranslationErrors(
 					meshService,
 					mesh,
-					dryRunTranslation,
+					mergeableTPs,
 				)
 
 				if len(translationErrors) == 0 {
@@ -269,8 +269,8 @@ func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*z
 		return nil, nil, err
 	}
 
-	serviceToClusterName := map[*zephyr_discovery.MeshService]*MeshServiceInfo{}
-	allMeshServices := []*zephyr_discovery.MeshService{}
+	serviceToMetadata := map[*zephyr_discovery.MeshService]*MeshServiceInfo{}
+	var allMeshServices []*zephyr_discovery.MeshService
 	for _, ms := range meshServiceList.Items {
 		meshService := ms
 
@@ -284,7 +284,7 @@ func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*z
 			return nil, nil, err
 		}
 
-		serviceToClusterName[&meshService] = &MeshServiceInfo{
+		serviceToMetadata[&meshService] = &MeshServiceInfo{
 			ClusterName: meshForService.Spec.GetCluster().GetName(),
 			MeshType:    meshType,
 			Mesh:        meshForService,
@@ -292,7 +292,7 @@ func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*z
 		allMeshServices = append(allMeshServices, &meshService)
 	}
 
-	return allMeshServices, serviceToClusterName, nil
+	return allMeshServices, serviceToMetadata, nil
 }
 
 func (a *aggregationReconciler) updateServiceStatusIfNecessary(

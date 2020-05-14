@@ -160,7 +160,6 @@ func (a *aggregator) attemptTrafficPolicyMerge(
 	mergeableTrafficPolicies []*mergeableHttpTrafficPolicy,
 	httpMatcher *zephyr_networking_types.TrafficPolicySpec_HttpMatcher,
 ) (*mergeableHttpTrafficPolicy, error) {
-	var merged bool
 	for _, mergeableTp := range mergeableTrafficPolicies {
 		// attempt merging if Source selector and HttpMatcher are equal
 		if trafficPolicySpec.SourceSelector.Equal(mergeableTp.SourceSelector) && httpMatcher.Equal(mergeableTp.HttpMatcher) {
@@ -170,14 +169,10 @@ func (a *aggregator) attemptTrafficPolicyMerge(
 			}
 			// update existing TrafficPolicy with merged spec
 			mergeableTp.TrafficPolicyRoutingConfig = mergedTrafficPolicySpec
-			merged = true
-			break
+			return nil, nil
 		}
 	}
-	// If the TP has already been merged, return nothing
-	if merged {
-		return nil, nil
-	}
+
 	// copy all spec fields except HttpMatchers and Destination rules
 	newTPSpec, err := a.mergeTrafficPolicySpec(&zephyr_networking_types.TrafficPolicySpec{}, trafficPolicySpec)
 	if err != nil {
