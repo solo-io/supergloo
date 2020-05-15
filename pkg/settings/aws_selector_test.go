@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
+	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/settings"
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
 )
@@ -88,10 +88,10 @@ var _ = Describe("AWS Selector", func() {
 		Expect(isDiscoverAll).To(BeTrue())
 	})
 
-	It("should return false if DiscoverySettings does not exist", func() {
+	It("should return true if DiscoverySettings does not exist", func() {
 		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{}
 		isDiscoverAll := awsSelector.IsDiscoverAll(settings.GetEksDiscovery())
-		Expect(isDiscoverAll).To(BeFalse())
+		Expect(isDiscoverAll).To(BeTrue())
 	})
 
 	It("should return AwsSelectorsByRegion representing all regions", func() {

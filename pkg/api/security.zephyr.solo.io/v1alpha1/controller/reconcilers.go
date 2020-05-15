@@ -70,9 +70,9 @@ type virtualMeshCertificateSigningRequestReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewVirtualMeshCertificateSigningRequestReconcileLoop(name string, mgr manager.Manager) VirtualMeshCertificateSigningRequestReconcileLoop {
+func NewVirtualMeshCertificateSigningRequestReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) VirtualMeshCertificateSigningRequestReconcileLoop {
 	return &virtualMeshCertificateSigningRequestReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest{}),
+		loop: reconcile.NewLoop(name, mgr, &security_zephyr_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest{}, options),
 	}
 }
 

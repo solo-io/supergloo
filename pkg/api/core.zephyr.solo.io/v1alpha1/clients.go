@@ -11,7 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MulticlusterClientset for the settings.zephyr.solo.io/v1alpha1 APIs
+// MulticlusterClientset for the core.zephyr.solo.io/v1alpha1 APIs
 type MulticlusterClientset interface {
 	// Cluster returns a Clientset for the given cluster
 	Cluster(cluster string) (Clientset, error)
@@ -33,9 +33,9 @@ func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
 	return NewClientset(client), nil
 }
 
-// clienset for the settings.zephyr.solo.io/v1alpha1 APIs
+// clienset for the core.zephyr.solo.io/v1alpha1 APIs
 type Clientset interface {
-	// clienset for the settings.zephyr.solo.io/v1alpha1/v1alpha1 APIs
+	// clienset for the core.zephyr.solo.io/v1alpha1/v1alpha1 APIs
 	Settings() SettingsClient
 }
 
@@ -61,7 +61,7 @@ func NewClientset(client client.Client) Clientset {
 	return &clientSet{client: client}
 }
 
-// clienset for the settings.zephyr.solo.io/v1alpha1/v1alpha1 APIs
+// clienset for the core.zephyr.solo.io/v1alpha1/v1alpha1 APIs
 func (c *clientSet) Settings() SettingsClient {
 	return NewSettingsClient(c.client)
 }

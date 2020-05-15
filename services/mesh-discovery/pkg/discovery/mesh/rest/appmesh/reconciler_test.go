@@ -11,9 +11,9 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	mock_settings2 "github.com/solo-io/service-mesh-hub/pkg/clients/settings/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
@@ -208,10 +208,36 @@ var _ = Describe("Reconciler", func() {
 			},
 		}
 		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
-			AccountId:        accountID,
-			AppmeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+			AccountId:     accountID,
+			MeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
 		}
-		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetAppmeshDiscovery()).Return(true)
+		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetMeshDiscovery()).Return(true)
+		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
+		mockAwsSelector.EXPECT().AwsSelectorsForAllRegions().Return(selectors)
+
+		expectReconcileMeshesByRegion(region, selectors[region])
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, nil, accountID)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("should reconcile Meshes for all regions with nil appmesh_discovery", func() {
+		accountID := "accountID"
+		region := "region"
+		selectors := settings_utils.AwsSelectorsByRegion{
+			region: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+				{
+					MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+						Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
+							Regions: []string{region},
+						},
+					},
+				},
+			},
+		}
+		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
+			AccountId: accountID,
+		}
+		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetMeshDiscovery()).Return(true)
 		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
 		mockAwsSelector.EXPECT().AwsSelectorsForAllRegions().Return(selectors)
 
@@ -236,11 +262,11 @@ var _ = Describe("Reconciler", func() {
 		}
 		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
 			AccountId: accountID,
-			AppmeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{
+			MeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{
 				ResourceSelectors: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{},
 			},
 		}
-		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetAppmeshDiscovery()).Return(true)
+		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetMeshDiscovery()).Return(true)
 		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
 		mockAwsSelector.EXPECT().AwsSelectorsForAllRegions().Return(selectors)
 
@@ -249,12 +275,15 @@ var _ = Describe("Reconciler", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	It("should not reconcile if appmesh_discovery is nil and clear all Appmeshes from SMH", func() {
+	It("should not reconcile if mesh_discovery is disabled and clear all Appmeshes from SMH", func() {
 		accountID := "accountID"
-		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{}
+		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
+			AccountId: "",
+			MeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{
+				Disabled: true,
+			},
+		}
 		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
-		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetAppmeshDiscovery()).Return(false)
-		mockAwsSelector.EXPECT().ResourceSelectorsByRegion(nil).Return(nil, nil)
 
 		existingMeshes := &zephyr_discovery.MeshList{
 			Items: []zephyr_discovery.Mesh{

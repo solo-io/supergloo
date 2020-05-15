@@ -179,13 +179,12 @@ func (a *appMeshDiscoveryReconciler) fetchSelectorsByRegion(
 	if err != nil {
 		return nil, err
 	}
-	if awsSettings == nil {
+	if awsSettings == nil || awsSettings.GetMeshDiscovery().GetDisabled() {
 		return nil, nil
 	}
-	// "appmesh_discovery: {}" or "appmesh_discovery: { resource_selectors: [] }" both denote discovery for all regions.
-	if a.awsSelector.IsDiscoverAll(awsSettings.GetAppmeshDiscovery()) ||
-		(awsSettings.GetAppmeshDiscovery() != nil && len(awsSettings.GetAppmeshDiscovery().GetResourceSelectors()) == 0) {
+	if a.awsSelector.IsDiscoverAll(awsSettings.GetMeshDiscovery()) ||
+		(awsSettings.GetMeshDiscovery() != nil && len(awsSettings.GetMeshDiscovery().GetResourceSelectors()) == 0) {
 		return a.awsSelector.AwsSelectorsForAllRegions(), nil
 	}
-	return a.awsSelector.ResourceSelectorsByRegion(awsSettings.GetAppmeshDiscovery().GetResourceSelectors())
+	return a.awsSelector.ResourceSelectorsByRegion(awsSettings.GetMeshDiscovery().GetResourceSelectors())
 }

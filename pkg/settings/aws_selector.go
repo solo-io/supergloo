@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/rotisserie/eris"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
+	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	"github.com/solo-io/skv2/pkg/utils"
 )
@@ -59,7 +59,7 @@ func (a *awsSelector) ResourceSelectorsByRegion(
 
 func (a *awsSelector) IsDiscoverAll(discoverySettings *zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector) bool {
 	discoverAll := &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{}
-	return discoverySettings.Equal(discoverAll)
+	return discoverySettings.Equal(discoverAll) || discoverySettings == nil
 }
 
 // Return AwsSelectorsByRegion that includes discovery for all resources in all regions.

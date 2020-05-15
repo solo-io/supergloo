@@ -6,7 +6,7 @@ package controller
 import (
 	"context"
 
-	settings_zephyr_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1"
+	core_zephyr_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
@@ -18,41 +18,41 @@ import (
 // Handle events for the Settings Resource
 // DEPRECATED: Prefer reconciler pattern.
 type SettingsEventHandler interface {
-	CreateSettings(obj *settings_zephyr_solo_io_v1alpha1.Settings) error
-	UpdateSettings(old, new *settings_zephyr_solo_io_v1alpha1.Settings) error
-	DeleteSettings(obj *settings_zephyr_solo_io_v1alpha1.Settings) error
-	GenericSettings(obj *settings_zephyr_solo_io_v1alpha1.Settings) error
+	CreateSettings(obj *core_zephyr_solo_io_v1alpha1.Settings) error
+	UpdateSettings(old, new *core_zephyr_solo_io_v1alpha1.Settings) error
+	DeleteSettings(obj *core_zephyr_solo_io_v1alpha1.Settings) error
+	GenericSettings(obj *core_zephyr_solo_io_v1alpha1.Settings) error
 }
 
 type SettingsEventHandlerFuncs struct {
-	OnCreate  func(obj *settings_zephyr_solo_io_v1alpha1.Settings) error
-	OnUpdate  func(old, new *settings_zephyr_solo_io_v1alpha1.Settings) error
-	OnDelete  func(obj *settings_zephyr_solo_io_v1alpha1.Settings) error
-	OnGeneric func(obj *settings_zephyr_solo_io_v1alpha1.Settings) error
+	OnCreate  func(obj *core_zephyr_solo_io_v1alpha1.Settings) error
+	OnUpdate  func(old, new *core_zephyr_solo_io_v1alpha1.Settings) error
+	OnDelete  func(obj *core_zephyr_solo_io_v1alpha1.Settings) error
+	OnGeneric func(obj *core_zephyr_solo_io_v1alpha1.Settings) error
 }
 
-func (f *SettingsEventHandlerFuncs) CreateSettings(obj *settings_zephyr_solo_io_v1alpha1.Settings) error {
+func (f *SettingsEventHandlerFuncs) CreateSettings(obj *core_zephyr_solo_io_v1alpha1.Settings) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *SettingsEventHandlerFuncs) DeleteSettings(obj *settings_zephyr_solo_io_v1alpha1.Settings) error {
+func (f *SettingsEventHandlerFuncs) DeleteSettings(obj *core_zephyr_solo_io_v1alpha1.Settings) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *SettingsEventHandlerFuncs) UpdateSettings(objOld, objNew *settings_zephyr_solo_io_v1alpha1.Settings) error {
+func (f *SettingsEventHandlerFuncs) UpdateSettings(objOld, objNew *core_zephyr_solo_io_v1alpha1.Settings) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *SettingsEventHandlerFuncs) GenericSettings(obj *settings_zephyr_solo_io_v1alpha1.Settings) error {
+func (f *SettingsEventHandlerFuncs) GenericSettings(obj *core_zephyr_solo_io_v1alpha1.Settings) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
@@ -69,7 +69,7 @@ type settingsEventWatcher struct {
 
 func NewSettingsEventWatcher(name string, mgr manager.Manager) SettingsEventWatcher {
 	return &settingsEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &settings_zephyr_solo_io_v1alpha1.Settings{}),
+		watcher: events.NewWatcher(name, mgr, &core_zephyr_solo_io_v1alpha1.Settings{}),
 	}
 }
 
@@ -87,7 +87,7 @@ type genericSettingsHandler struct {
 }
 
 func (h genericSettingsHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*settings_zephyr_solo_io_v1alpha1.Settings)
+	obj, ok := object.(*core_zephyr_solo_io_v1alpha1.Settings)
 	if !ok {
 		return errors.Errorf("internal error: Settings handler received event for %T", object)
 	}
@@ -95,7 +95,7 @@ func (h genericSettingsHandler) Create(object runtime.Object) error {
 }
 
 func (h genericSettingsHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*settings_zephyr_solo_io_v1alpha1.Settings)
+	obj, ok := object.(*core_zephyr_solo_io_v1alpha1.Settings)
 	if !ok {
 		return errors.Errorf("internal error: Settings handler received event for %T", object)
 	}
@@ -103,11 +103,11 @@ func (h genericSettingsHandler) Delete(object runtime.Object) error {
 }
 
 func (h genericSettingsHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*settings_zephyr_solo_io_v1alpha1.Settings)
+	objOld, ok := old.(*core_zephyr_solo_io_v1alpha1.Settings)
 	if !ok {
 		return errors.Errorf("internal error: Settings handler received event for %T", old)
 	}
-	objNew, ok := new.(*settings_zephyr_solo_io_v1alpha1.Settings)
+	objNew, ok := new.(*core_zephyr_solo_io_v1alpha1.Settings)
 	if !ok {
 		return errors.Errorf("internal error: Settings handler received event for %T", new)
 	}
@@ -115,7 +115,7 @@ func (h genericSettingsHandler) Update(old, new runtime.Object) error {
 }
 
 func (h genericSettingsHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*settings_zephyr_solo_io_v1alpha1.Settings)
+	obj, ok := object.(*core_zephyr_solo_io_v1alpha1.Settings)
 	if !ok {
 		return errors.Errorf("internal error: Settings handler received event for %T", object)
 	}

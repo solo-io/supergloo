@@ -9,8 +9,8 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	mock_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
 	mock_settings2 "github.com/solo-io/service-mesh-hub/pkg/clients/settings/mocks"
@@ -207,13 +207,30 @@ var _ = Describe("Reconciler", func() {
 		Expect(err).To(BeNil())
 	})
 
-	It("should not reconcile if eks_discovery is nil", func() {
+	It("should reconcile all regions if eks_discovery is nil", func() {
+		region := "region"
+		selectors := settings_utils.AwsSelectorsByRegion{
+			region: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+				{
+					MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+						Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
+							Regions: []string{region},
+						},
+					},
+				},
+			},
+		}
 		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{}
 		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
-		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetEksDiscovery()).Return(false)
-		mockAwsSelector.EXPECT().ResourceSelectorsByRegion(nil).Return(nil, nil)
+		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetEksDiscovery()).Return(true)
+		mockAwsSelector.EXPECT().AwsSelectorsForAllRegions().Return(selectors)
 
-		expectFetchEksClustersOnSMH()
+		clustersOnAWS, smhToAwsClusterNames := expectFetchEksClustersOnAWS(region, selectors[region])
+		clustersOnSMH := expectFetchEksClustersOnSMH()
+		clustersToRegister := clustersOnAWS.Difference(clustersOnSMH)
+		for _, clusterToRegister := range clustersToRegister.List() {
+			expectRegisterCluster(smhToAwsClusterNames[clusterToRegister], clusterToRegister)
+		}
 		err := eksReconciler.Reconcile(ctx, &credentials.Credentials{}, accountID)
 		Expect(err).To(BeNil())
 	})

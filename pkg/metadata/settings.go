@@ -1,5 +1,5 @@
 package metadata
 
 const (
-	GlobalSettingsName = "smh-global-settings"
+	GlobalSettingsName = "settings"
 )

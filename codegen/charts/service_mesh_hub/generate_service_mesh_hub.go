@@ -45,7 +45,7 @@ func main() {
 		Groups: []model.Group{
 			{
 				GroupVersion: schema.GroupVersion{
-					Group:   "settings." + cliconstants.ServiceMeshHubApiGroupSuffix,
+					Group:   "core." + cliconstants.ServiceMeshHubApiGroupSuffix,
 					Version: "v1alpha1",
 				},
 				Module: "github.com/solo-io/service-mesh-hub",
@@ -55,12 +55,12 @@ func main() {
 						Spec: model.Field{
 							Type: model.Type{
 								Name:      "SettingsSpec",
-								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types",
 							},
 						},
 						Status: &model.Field{Type: model.Type{
 							Name:      "SettingsStatus",
-							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types",
 						}},
 					},
 				},

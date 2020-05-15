@@ -20,7 +20,7 @@ mockgen -package mock_k8s_cliendcmd -destination ../../test/mocks/client-go/clie
 mockgen -package mock_zephyr_discovery_clients -destination ../../test/mocks/clients/discovery.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1 KubernetesClusterClient,MeshClient,MeshServiceClient,MeshWorkloadClient &
 mockgen -package mock_zephyr_networking_clients -destination ../../test/mocks/clients/networking.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1 TrafficPolicyClient,AccessControlPolicyClient,VirtualMeshClient &
 mockgen -package mock_zephyr_security_clients -destination ../../test/mocks/clients/security.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1 VirtualMeshCertificateSigningRequestClient &
-mockgen -package mock_zephyr_settings_clients -destination ../../test/mocks/clients/settings.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1 SettingsClient &
+mockgen -package mock_zephyr_settings_clients -destination ../../test/mocks/clients/settings.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1 SettingsClient &
 
 # Istio clients
 mockgen -package mock_istio_security_clients -destination ../../test/mocks/clients/istio/security/v1alpha3/clients.go github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1 AuthorizationPolicyClient &

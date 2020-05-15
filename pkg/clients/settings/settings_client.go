@@ -3,8 +3,8 @@ package settings
 import (
 	"context"
 
-	zephyr_settings "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
+	zephyr_settings "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
+	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -41,7 +41,10 @@ func (a *awsSettingsHelperClient) GetAWSSettingsForAccount(
 	if err != nil {
 		return nil, err
 	}
-	for _, awsAccountConfig := range settingsSpec.GetAws() {
+	if settingsSpec.GetAws().GetDisabled() {
+		return nil, nil
+	}
+	for _, awsAccountConfig := range settingsSpec.GetAws().GetAccounts() {
 		if awsAccountConfig.GetAccountId() == accountId {
 			return awsAccountConfig, nil
 		}

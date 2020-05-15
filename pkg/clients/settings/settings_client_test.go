@@ -6,8 +6,8 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
+	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
@@ -44,13 +44,15 @@ var _ = Describe("SettingsClient", func() {
 
 	It("should get AWS Settings for account ID", func() {
 		accountSettings := &zephyr_settings_types.SettingsSpec_AwsAccount{
-			AccountId:        "account-id",
-			AppmeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
-			EksDiscovery:     &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+			AccountId:     "account-id",
+			MeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+			EksDiscovery:  &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
 		}
 		settingsSpec := zephyr_settings_types.SettingsSpec{
-			Aws: []*zephyr_settings_types.SettingsSpec_AwsAccount{
-				accountSettings,
+			Aws: &zephyr_settings_types.SettingsSpec_Aws{
+				Accounts: []*zephyr_settings_types.SettingsSpec_AwsAccount{
+					accountSettings,
+				},
 			},
 		}
 		expectGetSettingsSpec(settingsSpec)
@@ -61,13 +63,35 @@ var _ = Describe("SettingsClient", func() {
 
 	It("should return nil if accountID not found", func() {
 		accountSettings := &zephyr_settings_types.SettingsSpec_AwsAccount{
-			AccountId:        "account-id",
-			AppmeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
-			EksDiscovery:     &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+			AccountId:     "account-id",
+			MeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+			EksDiscovery:  &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
 		}
 		settingsSpec := zephyr_settings_types.SettingsSpec{
-			Aws: []*zephyr_settings_types.SettingsSpec_AwsAccount{
-				accountSettings,
+			Aws: &zephyr_settings_types.SettingsSpec_Aws{
+				Accounts: []*zephyr_settings_types.SettingsSpec_AwsAccount{
+					accountSettings,
+				},
+			},
+		}
+		expectGetSettingsSpec(settingsSpec)
+		accountSettings, err := settingsHelperClient.GetAWSSettingsForAccount(ctx, "missing accountID")
+		Expect(err).ToNot(HaveOccurred())
+		Expect(accountSettings).To(BeNil())
+	})
+
+	It("should return nil if disabled for account", func() {
+		accountSettings := &zephyr_settings_types.SettingsSpec_AwsAccount{
+			AccountId:     "account-id",
+			MeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+			EksDiscovery:  &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+		}
+		settingsSpec := zephyr_settings_types.SettingsSpec{
+			Aws: &zephyr_settings_types.SettingsSpec_Aws{
+				Disabled: true,
+				Accounts: []*zephyr_settings_types.SettingsSpec_AwsAccount{
+					accountSettings,
+				},
 			},
 		}
 		expectGetSettingsSpec(settingsSpec)

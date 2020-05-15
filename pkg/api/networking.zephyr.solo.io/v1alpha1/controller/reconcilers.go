@@ -70,9 +70,9 @@ type trafficPolicyReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewTrafficPolicyReconcileLoop(name string, mgr manager.Manager) TrafficPolicyReconcileLoop {
+func NewTrafficPolicyReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) TrafficPolicyReconcileLoop {
 	return &trafficPolicyReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &networking_zephyr_solo_io_v1alpha1.TrafficPolicy{}),
+		loop: reconcile.NewLoop(name, mgr, &networking_zephyr_solo_io_v1alpha1.TrafficPolicy{}, options),
 	}
 }
 
@@ -185,9 +185,9 @@ type accessControlPolicyReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewAccessControlPolicyReconcileLoop(name string, mgr manager.Manager) AccessControlPolicyReconcileLoop {
+func NewAccessControlPolicyReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) AccessControlPolicyReconcileLoop {
 	return &accessControlPolicyReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &networking_zephyr_solo_io_v1alpha1.AccessControlPolicy{}),
+		loop: reconcile.NewLoop(name, mgr, &networking_zephyr_solo_io_v1alpha1.AccessControlPolicy{}, options),
 	}
 }
 
@@ -300,9 +300,9 @@ type virtualMeshReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewVirtualMeshReconcileLoop(name string, mgr manager.Manager) VirtualMeshReconcileLoop {
+func NewVirtualMeshReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) VirtualMeshReconcileLoop {
 	return &virtualMeshReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &networking_zephyr_solo_io_v1alpha1.VirtualMesh{}),
+		loop: reconcile.NewLoop(name, mgr, &networking_zephyr_solo_io_v1alpha1.VirtualMesh{}, options),
 	}
 }
 

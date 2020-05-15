@@ -6,7 +6,7 @@ package controller
 import (
 	"context"
 
-	settings_zephyr_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1"
+	core_zephyr_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -19,7 +19,7 @@ import (
 // Reconcile Upsert events for the Settings Resource across clusters.
 // implemented by the user
 type MulticlusterSettingsReconciler interface {
-	ReconcileSettings(clusterName string, obj *settings_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error)
+	ReconcileSettings(clusterName string, obj *core_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the Settings Resource across clusters.
@@ -31,11 +31,11 @@ type MulticlusterSettingsDeletionReconciler interface {
 }
 
 type MulticlusterSettingsReconcilerFuncs struct {
-	OnReconcileSettings         func(clusterName string, obj *settings_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error)
+	OnReconcileSettings         func(clusterName string, obj *core_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error)
 	OnReconcileSettingsDeletion func(clusterName string, req reconcile.Request)
 }
 
-func (f *MulticlusterSettingsReconcilerFuncs) ReconcileSettings(clusterName string, obj *settings_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error) {
+func (f *MulticlusterSettingsReconcilerFuncs) ReconcileSettings(clusterName string, obj *core_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error) {
 	if f.OnReconcileSettings == nil {
 		return reconcile.Result{}, nil
 	}
@@ -65,7 +65,7 @@ func (m *multiclusterSettingsReconcileLoop) AddMulticlusterSettingsReconciler(ct
 }
 
 func NewMulticlusterSettingsReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterSettingsReconcileLoop {
-	return &multiclusterSettingsReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &settings_zephyr_solo_io_v1alpha1.Settings{})}
+	return &multiclusterSettingsReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &core_zephyr_solo_io_v1alpha1.Settings{})}
 }
 
 type genericSettingsMulticlusterReconciler struct {
@@ -79,7 +79,7 @@ func (g genericSettingsMulticlusterReconciler) ReconcileDeletion(cluster string,
 }
 
 func (g genericSettingsMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*settings_zephyr_solo_io_v1alpha1.Settings)
+	obj, ok := object.(*core_zephyr_solo_io_v1alpha1.Settings)
 	if !ok {
 		return reconcile.Result{}, errors.Errorf("internal error: Settings handler received event for %T", object)
 	}

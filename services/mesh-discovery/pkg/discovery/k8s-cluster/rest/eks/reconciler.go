@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
+	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
@@ -216,10 +216,9 @@ func (e *eksReconciler) fetchSelectorsByRegion(
 	if err != nil {
 		return nil, err
 	}
-	if awsSettings == nil {
+	if awsSettings == nil || awsSettings.GetEksDiscovery().GetDisabled() {
 		return nil, nil
 	}
-	// "eks_discovery: {}" or "eks_discovery: { resource_selectors: [] }" both denote discovery for all regions.
 	if e.awsSelector.IsDiscoverAll(awsSettings.GetEksDiscovery()) ||
 		(awsSettings.GetEksDiscovery() != nil && len(awsSettings.GetEksDiscovery().GetResourceSelectors()) == 0) {
 		return e.awsSelector.AwsSelectorsForAllRegions(), nil

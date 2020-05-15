@@ -7,12 +7,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Provider for the settings.zephyr.solo.io/v1alpha1 Clientset from config
+// Provider for the core.zephyr.solo.io/v1alpha1 Clientset from config
 func ClientsetFromConfigProvider(cfg *rest.Config) (Clientset, error) {
 	return NewClientsetFromConfig(cfg)
 }
 
-// Provider for the settings.zephyr.solo.io/v1alpha1 Clientset from client
+// Provider for the core.zephyr.solo.io/v1alpha1 Clientset from client
 func ClientsProvider(client client.Client) Clientset {
 	return NewClientset(client)
 }

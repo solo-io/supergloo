@@ -3,7 +3,7 @@ package settings
 import (
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/aws/aws-sdk-go/service/eks"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types"
+	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
@@ -18,6 +18,7 @@ type AwsSelector interface {
 
 	AwsSelectorsForAllRegions() AwsSelectorsByRegion
 
+	// Return true if discoverySettings is nil or empty
 	IsDiscoverAll(discoverySettings *zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector) bool
 
 	AppMeshMatchedBySelectors(

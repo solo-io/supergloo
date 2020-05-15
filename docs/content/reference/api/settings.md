@@ -3,7 +3,7 @@
 title: "settings.proto"
 ---
 
-## Package : `settings.zephyr.solo.io`
+## Package : `core.zephyr.solo.io`
 
 
 
@@ -16,13 +16,14 @@ title: "settings.proto"
 
 
 ## Table of Contents
-  - [SettingsSpec](#settings.zephyr.solo.io.SettingsSpec)
-  - [SettingsSpec.AwsAccount](#settings.zephyr.solo.io.SettingsSpec.AwsAccount)
-  - [SettingsSpec.AwsAccount.DiscoverySelector](#settings.zephyr.solo.io.SettingsSpec.AwsAccount.DiscoverySelector)
-  - [SettingsSpec.AwsAccount.ResourceSelector](#settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector)
-  - [SettingsSpec.AwsAccount.ResourceSelector.Matcher](#settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher)
-  - [SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry](#settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry)
-  - [SettingsStatus](#settings.zephyr.solo.io.SettingsStatus)
+  - [SettingsSpec](#core.zephyr.solo.io.SettingsSpec)
+  - [SettingsSpec.Aws](#core.zephyr.solo.io.SettingsSpec.Aws)
+  - [SettingsSpec.AwsAccount](#core.zephyr.solo.io.SettingsSpec.AwsAccount)
+  - [SettingsSpec.AwsAccount.DiscoverySelector](#core.zephyr.solo.io.SettingsSpec.AwsAccount.DiscoverySelector)
+  - [SettingsSpec.AwsAccount.ResourceSelector](#core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector)
+  - [SettingsSpec.AwsAccount.ResourceSelector.Matcher](#core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher)
+  - [SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry](#core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry)
+  - [SettingsStatus](#core.zephyr.solo.io.SettingsStatus)
 
 
 
@@ -30,7 +31,7 @@ title: "settings.proto"
 
 
 
-<a name="settings.zephyr.solo.io.SettingsSpec"></a>
+<a name="core.zephyr.solo.io.SettingsSpec"></a>
 
 ### SettingsSpec
 Top level SMH user configuration object.
@@ -38,14 +39,30 @@ Top level SMH user configuration object.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| aws | [][SettingsSpec.AwsAccount](#settings.zephyr.solo.io.SettingsSpec.AwsAccount) | repeated |  |
+| aws | [SettingsSpec.Aws](#core.zephyr.solo.io.SettingsSpec.Aws) |  |  |
 
 
 
 
 
 
-<a name="settings.zephyr.solo.io.SettingsSpec.AwsAccount"></a>
+<a name="core.zephyr.solo.io.SettingsSpec.Aws"></a>
+
+### SettingsSpec.Aws
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| disabled | [bool](#bool) |  | If true, disable integration with AWS. |
+| accounts | [][SettingsSpec.AwsAccount](#core.zephyr.solo.io.SettingsSpec.AwsAccount) | repeated | Per-account AWS settings. |
+
+
+
+
+
+
+<a name="core.zephyr.solo.io.SettingsSpec.AwsAccount"></a>
 
 ### SettingsSpec.AwsAccount
 
@@ -54,15 +71,15 @@ Top level SMH user configuration object.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | accountId | [string](#string) |  | AWS account ID. |
-| appmeshDiscovery | [SettingsSpec.AwsAccount.DiscoverySelector](#settings.zephyr.solo.io.SettingsSpec.AwsAccount.DiscoverySelector) |  | For unspecified or null fields, discovery will not run for the corresponding AWS resource type. |
-| eksDiscovery | [SettingsSpec.AwsAccount.DiscoverySelector](#settings.zephyr.solo.io.SettingsSpec.AwsAccount.DiscoverySelector) |  |  |
+| meshDiscovery | [SettingsSpec.AwsAccount.DiscoverySelector](#core.zephyr.solo.io.SettingsSpec.AwsAccount.DiscoverySelector) |  | If unspecified, by default discovery will run for AppMesh in all regions. |
+| eksDiscovery | [SettingsSpec.AwsAccount.DiscoverySelector](#core.zephyr.solo.io.SettingsSpec.AwsAccount.DiscoverySelector) |  | If unspecified, by default discovery will run for EKS clusters in all regions. |
 
 
 
 
 
 
-<a name="settings.zephyr.solo.io.SettingsSpec.AwsAccount.DiscoverySelector"></a>
+<a name="core.zephyr.solo.io.SettingsSpec.AwsAccount.DiscoverySelector"></a>
 
 ### SettingsSpec.AwsAccount.DiscoverySelector
 Configure which AWS resources should be discovered by SMH. An AWS resource will be selected if any of the resource_selectors apply.
@@ -70,14 +87,15 @@ Configure which AWS resources should be discovered by SMH. An AWS resource will 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| resourceSelectors | [][SettingsSpec.AwsAccount.ResourceSelector](#settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector) | repeated |  |
+| disabled | [bool](#bool) |  | If true, disable discovery. |
+| resourceSelectors | [][SettingsSpec.AwsAccount.ResourceSelector](#core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector) | repeated |  |
 
 
 
 
 
 
-<a name="settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector"></a>
+<a name="core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector"></a>
 
 ### SettingsSpec.AwsAccount.ResourceSelector
 For a given resource_selector to apply to a resource, the resource must match all of the resource_selector's match criteria.
@@ -86,14 +104,14 @@ For a given resource_selector to apply to a resource, the resource must match al
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | arn | [string](#string) |  | AWS resource ARN that directly references a resource. |
-| matcher | [SettingsSpec.AwsAccount.ResourceSelector.Matcher](#settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher) |  |  |
+| matcher | [SettingsSpec.AwsAccount.ResourceSelector.Matcher](#core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher) |  |  |
 
 
 
 
 
 
-<a name="settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher"></a>
+<a name="core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher"></a>
 
 ### SettingsSpec.AwsAccount.ResourceSelector.Matcher
 Selects all resources that exist in the specified AWS region and possess the specified tags.
@@ -102,14 +120,14 @@ Selects all resources that exist in the specified AWS region and possess the spe
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | regions | [][string](#string) | repeated | AWS regions, e.g. us-east-2. If unspecified, select across all regions. |
-| tags | [][SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry](#settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry) | repeated | AWS resource tags. If unspecified, match any tags. |
+| tags | [][SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry](#core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry) | repeated | AWS resource tags. If unspecified, match any tags. |
 
 
 
 
 
 
-<a name="settings.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry"></a>
+<a name="core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry"></a>
 
 ### SettingsSpec.AwsAccount.ResourceSelector.Matcher.TagsEntry
 
@@ -125,7 +143,7 @@ Selects all resources that exist in the specified AWS region and possess the spe
 
 
 
-<a name="settings.zephyr.solo.io.SettingsStatus"></a>
+<a name="core.zephyr.solo.io.SettingsStatus"></a>
 
 ### SettingsStatus
 

@@ -1,16 +1,25 @@
 syntax = "proto3";
-package settings.zephyr.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1/types";
+package core.zephyr.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 // Top level SMH user configuration object.
 message SettingsSpec {
+    message Aws {
+        // If true, disable integration with AWS.
+        bool disabled = 1;
+        // Per-account AWS settings.
+        repeated AwsAccount accounts = 2;
+    }
+
     message AwsAccount {
         // Configure which AWS resources should be discovered by SMH. An AWS resource will be selected if any of the resource_selectors apply.
         message DiscoverySelector {
-            repeated ResourceSelector resource_selectors = 1;
+            // If true, disable discovery.
+            bool disabled = 1;
+            repeated ResourceSelector resource_selectors = 2;
         }
 
         // For a given resource_selector to apply to a resource, the resource must match all of the resource_selector's match criteria.
@@ -31,12 +40,13 @@ message SettingsSpec {
 
         // AWS account ID.
         string account_id = 1;
-        // For unspecified or null fields, discovery will not run for the corresponding AWS resource type.
-        DiscoverySelector appmesh_discovery = 2;
+        // If unspecified, by default discovery will run for AppMesh in all regions.
+        DiscoverySelector mesh_discovery = 2;
+        // If unspecified, by default discovery will run for EKS clusters in all regions.
         DiscoverySelector eks_discovery = 3;
     }
 
-    repeated AwsAccount aws = 1;
+    Aws aws = 1;
 }
 
 message SettingsStatus {

@@ -6,7 +6,7 @@ package controller
 import (
 	"context"
 
-	settings_zephyr_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/settings.zephyr.solo.io/v1alpha1"
+	core_zephyr_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -18,7 +18,7 @@ import (
 // Reconcile Upsert events for the Settings Resource.
 // implemented by the user
 type SettingsReconciler interface {
-	ReconcileSettings(obj *settings_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error)
+	ReconcileSettings(obj *core_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the Settings Resource.
@@ -30,11 +30,11 @@ type SettingsDeletionReconciler interface {
 }
 
 type SettingsReconcilerFuncs struct {
-	OnReconcileSettings         func(obj *settings_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error)
+	OnReconcileSettings         func(obj *core_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error)
 	OnReconcileSettingsDeletion func(req reconcile.Request)
 }
 
-func (f *SettingsReconcilerFuncs) ReconcileSettings(obj *settings_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error) {
+func (f *SettingsReconcilerFuncs) ReconcileSettings(obj *core_zephyr_solo_io_v1alpha1.Settings) (reconcile.Result, error) {
 	if f.OnReconcileSettings == nil {
 		return reconcile.Result{}, nil
 	}
@@ -59,7 +59,7 @@ type SettingsFinalizer interface {
 
 	// finalize the object before it is deleted.
 	// Watchers created with a finalizing handler will a
-	FinalizeSettings(obj *settings_zephyr_solo_io_v1alpha1.Settings) error
+	FinalizeSettings(obj *core_zephyr_solo_io_v1alpha1.Settings) error
 }
 
 type SettingsReconcileLoop interface {
@@ -70,9 +70,9 @@ type settingsReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewSettingsReconcileLoop(name string, mgr manager.Manager) SettingsReconcileLoop {
+func NewSettingsReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) SettingsReconcileLoop {
 	return &settingsReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &settings_zephyr_solo_io_v1alpha1.Settings{}),
+		loop: reconcile.NewLoop(name, mgr, &core_zephyr_solo_io_v1alpha1.Settings{}, options),
 	}
 }
 
@@ -99,7 +99,7 @@ type genericSettingsReconciler struct {
 }
 
 func (r genericSettingsReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*settings_zephyr_solo_io_v1alpha1.Settings)
+	obj, ok := object.(*core_zephyr_solo_io_v1alpha1.Settings)
 	if !ok {
 		return reconcile.Result{}, errors.Errorf("internal error: Settings handler received event for %T", object)
 	}
@@ -123,7 +123,7 @@ func (r genericSettingsFinalizer) FinalizerName() string {
 }
 
 func (r genericSettingsFinalizer) Finalize(object ezkube.Object) error {
-	obj, ok := object.(*settings_zephyr_solo_io_v1alpha1.Settings)
+	obj, ok := object.(*core_zephyr_solo_io_v1alpha1.Settings)
 	if !ok {
 		return errors.Errorf("internal error: Settings handler received event for %T", object)
 	}
