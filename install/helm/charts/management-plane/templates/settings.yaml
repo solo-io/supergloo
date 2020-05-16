@@ -1,4 +1,4 @@
-apiVersion: settings.zephyr.solo.io/v1alpha1
+apiVersion: core.zephyr.solo.io/v1alpha1
 kind: Settings
 metadata:
   namespace: {{ .Release.Namespace }}
