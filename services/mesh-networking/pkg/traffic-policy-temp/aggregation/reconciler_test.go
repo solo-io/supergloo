@@ -384,12 +384,22 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 						State: zephyr_core_types.Status_ACCEPTED,
 					},
 				},
+				Spec: types.TrafficPolicySpec{
+					Retries: &types.TrafficPolicySpec_RetryPolicy{
+						Attempts: 34, // used across both tp3 and tp4
+					},
+				},
 			},
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp4"},
 				Status: types.TrafficPolicyStatus{
 					ValidationStatus: &zephyr_core_types.Status{
 						State: zephyr_core_types.Status_ACCEPTED,
+					},
+				},
+				Spec: types.TrafficPolicySpec{
+					Retries: &types.TrafficPolicySpec_RetryPolicy{
+						Attempts: 34, // used across both tp3 and tp4
 					},
 				},
 			},
@@ -437,15 +447,15 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
 							Ref: &zephyr_core_types.ResourceRef{
-								Name: tp2LastValidState.Name,
-							},
-							TrafficPolicySpec: &tp2LastValidState.Spec,
-						},
-						{
-							Ref: &zephyr_core_types.ResourceRef{
 								Name: tps[0].Name,
 							},
 							TrafficPolicySpec: &tps[0].Spec,
+						},
+						{
+							Ref: &zephyr_core_types.ResourceRef{
+								Name: tp2LastValidState.Name,
+							},
+							TrafficPolicySpec: &tp2LastValidState.Spec,
 						},
 					},
 				},
@@ -504,9 +514,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				return ret, nil
 			})
 		aggregator.EXPECT().
-			FindMergeConflict(&tps[1].Spec, []*types.TrafficPolicySpec{
-				&tps[0].Spec,
-			}, meshServices[0]).
+			FindMergeConflict(&tps[1].Spec, []*types.TrafficPolicySpec{&tps[0].Spec}, meshServices[0]).
 			Return(conflictError)
 		aggregator.EXPECT().
 			FindMergeConflict(&tps[2].Spec, nil, meshServices[1]).
@@ -515,33 +523,19 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			FindMergeConflict(&tps[3].Spec, []*types.TrafficPolicySpec{&tps[2].Spec}, meshServices[1]).
 			Return(nil)
 		validator.EXPECT().
-			GetTranslationErrors(meshServices[0], mesh1, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
-				Ref: &zephyr_core_types.ResourceRef{
-					Name: tp2LastValidState.Name,
-				},
-				TrafficPolicySpec: &tp2LastValidState.Spec,
-			}}).
-			Return(nil)
-		validator.EXPECT().
 			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{{
-				Ref: &zephyr_core_types.ResourceRef{
-					Name: tps[2].Name,
-				},
+				Ref:               clients.ObjectMetaToResourceRef(tps[2].ObjectMeta),
 				TrafficPolicySpec: &tps[2].Spec,
 			}}).
 			Return(nil)
 		validator.EXPECT().
 			GetTranslationErrors(meshServices[1], mesh2, []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref: &zephyr_core_types.ResourceRef{
-						Name: tps[2].Name,
-					},
+					Ref:               clients.ObjectMetaToResourceRef(tps[2].ObjectMeta),
 					TrafficPolicySpec: &tps[2].Spec,
 				},
 				{
-					Ref: &zephyr_core_types.ResourceRef{
-						Name: tps[3].Name,
-					},
+					Ref:               clients.ObjectMetaToResourceRef(tps[3].ObjectMeta),
 					TrafficPolicySpec: &tps[3].Spec,
 				},
 			}).
@@ -1290,26 +1284,26 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				},
 			}).
 			Return(nil)
-		meshServiceClient.EXPECT().
-			UpdateMeshServiceStatus(ctx, &zephyr_discovery.MeshService{
-				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name: "ms2",
-				},
-				Spec: types2.MeshServiceSpec{
-					Mesh: clients.ObjectMetaToResourceRef(mesh2.ObjectMeta),
-				},
-				Status: types2.MeshServiceStatus{
-					ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
-						{
-							Ref: &zephyr_core_types.ResourceRef{
-								Name: "tp3",
-							},
-							TrafficPolicySpec: &tps[2].Spec,
-						},
-					},
-				},
-			}).
-			Return(nil)
+		//meshServiceClient.EXPECT().
+		//	UpdateMeshServiceStatus(ctx, &zephyr_discovery.MeshService{
+		//		ObjectMeta: k8s_meta_types.ObjectMeta{
+		//			Name: "ms2",
+		//		},
+		//		Spec: types2.MeshServiceSpec{
+		//			Mesh: clients.ObjectMetaToResourceRef(mesh2.ObjectMeta),
+		//		},
+		//		Status: types2.MeshServiceStatus{
+		//			ValidatedTrafficPolicies: []*types2.MeshServiceStatus_ValidatedTrafficPolicy{
+		//				{
+		//					Ref: &zephyr_core_types.ResourceRef{
+		//						Name: "tp3",
+		//					},
+		//					TrafficPolicySpec: &tps[2].Spec,
+		//				},
+		//			},
+		//		},
+		//	}).
+		//	Return(nil)
 		trafficPolicyClient.EXPECT().
 			UpdateTrafficPolicyStatus(ctx, &zephyr_networking.TrafficPolicy{
 				ObjectMeta: tps[0].ObjectMeta,
@@ -1347,5 +1341,17 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 
 		err := reconciler.Reconcile(ctx)
 		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("is a no-op if nothing has changed", func() {
+
+	})
+
+	It("can remove policies from a service when they no longer exist", func() {
+
+	})
+
+	It("does not mark an unchanged policy as in conflict if a policy LATER in the service status list is updated to be in conflict", func() {
+
 	})
 })

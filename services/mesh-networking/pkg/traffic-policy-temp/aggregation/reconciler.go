@@ -2,6 +2,7 @@ package traffic_policy_aggregation
 
 import (
 	"context"
+	"sort"
 
 	"github.com/rotisserie/eris"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
@@ -13,7 +14,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
 	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
-	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -53,9 +53,11 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 
 	uniqueStringToValidatedTrafficPolicy := map[string]*zephyr_networking.TrafficPolicy{}
 	var allValidatedTrafficPolicies []*zephyr_networking.TrafficPolicy
+	allTrafficPolicyIds := sets.NewString()
 	for _, tpIter := range allTrafficPolicies.Items {
 		trafficPolicy := tpIter
 
+		allTrafficPolicyIds.Insert(clients.ToUniqueSingleClusterString(trafficPolicy.ObjectMeta))
 		if trafficPolicy.Status.GetValidationStatus().GetState() == zephyr_core_types.Status_ACCEPTED {
 			uniqueStringToValidatedTrafficPolicy[clients.ToUniqueSingleClusterString(trafficPolicy.ObjectMeta)] = &trafficPolicy
 			allValidatedTrafficPolicies = append(allValidatedTrafficPolicies, &trafficPolicy)
@@ -90,6 +92,7 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 			serviceWithPolicies.TrafficPolicies,
 			uniqueStringToValidatedTrafficPolicy,
 			translationValidator,
+			allTrafficPolicyIds,
 		)
 
 		serviceToUpdatedStatus[meshService] = newlyComputedMergeablePolicies
@@ -120,6 +123,17 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	return nil
 }
 
+type policyToCheck struct {
+	Ref *zephyr_core_types.ResourceRef
+
+	// If this is non-nil, then the traffic policy is both 1. valid, and 2. changed from the last reconcile iteration.
+	// That implies that this field will be nil if the policy was invalid.
+	UpdatedTrafficPolicy *zephyr_networking.TrafficPolicy
+
+	// if this is non-nil, then we previously recorded a last-known-good state for this policy
+	LastKnownGoodSpecState *zephyr_networking_types.TrafficPolicySpec
+}
+
 /**
  *  There are three important collections (two in parameters, one on the service) in play here:
  *    - policiesForService: The *new valid* state of the traffic policies that apply to THIS service. These policies will be a subset of the next collection.
@@ -132,68 +146,139 @@ func (a *aggregationReconciler) determineNewStatuses(
 	policiesForService []*zephyr_networking.TrafficPolicy,
 	uniqueStringToNewlyValidatedTrafficPolicy map[string]*zephyr_networking.TrafficPolicy,
 	translationValidator mesh_translation.TranslationValidator,
+	allTrafficPolicyIds sets.String,
 ) (
 	[]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 	map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
 	map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError,
 ) {
+	previouslyRecordedTrafficPolicyIDs := sets.NewString()
+	anyPolicyChangedSinceLastReconcile := false
+
+	var policiesToCheck []*policyToCheck
+	for _, previouslyRecordedPolicyIter := range meshService.Status.GetValidatedTrafficPolicies() {
+		previouslyRecordedPolicy := previouslyRecordedPolicyIter
+		identifierString := clients.ToUniqueSingleClusterString(clients.ResourceRefToObjectMeta(previouslyRecordedPolicy.GetRef()))
+
+		// if this traffic policy has been deleted, we need to remove this previously-recorded policy from the output of this reconcile loop
+		if !allTrafficPolicyIds.Has(identifierString) {
+			continue
+		}
+
+		previouslyRecordedTrafficPolicyIDs.Insert(identifierString)
+		newlyValidatedPolicy, newlyValidatedPolicyFound := uniqueStringToNewlyValidatedTrafficPolicy[identifierString]
+
+		var p *policyToCheck
+		if !newlyValidatedPolicyFound || newlyValidatedPolicy.Spec.Equal(previouslyRecordedPolicy.TrafficPolicySpec) {
+			// if the traffic policy was either 1. not validated, or 2. has not been updated since the last reconcile iteration, keep it the same
+			p = &policyToCheck{
+				Ref:                    previouslyRecordedPolicy.Ref,
+				LastKnownGoodSpecState: previouslyRecordedPolicy.TrafficPolicySpec,
+			}
+		} else {
+			// this policy was updated if a newly-validated state was found
+			anyPolicyChangedSinceLastReconcile = anyPolicyChangedSinceLastReconcile || newlyValidatedPolicyFound
+			p = &policyToCheck{
+				Ref:                    previouslyRecordedPolicy.Ref,
+				LastKnownGoodSpecState: previouslyRecordedPolicy.TrafficPolicySpec,
+				UpdatedTrafficPolicy:   newlyValidatedPolicy, // this field may be nil if the policy could not be validated
+			}
+		}
+
+		policiesToCheck = append(policiesToCheck, p)
+	}
+
+	// add NEW policies that were not previously recorded
+	for _, relevantPolicyIter := range policiesForService {
+		relevantPolicy := relevantPolicyIter
+		policyId := clients.ToUniqueSingleClusterString(relevantPolicy.ObjectMeta)
+
+		if previouslyRecordedTrafficPolicyIDs.Has(policyId) {
+			continue
+		}
+
+		anyPolicyChangedSinceLastReconcile = true
+		policiesToCheck = append(policiesToCheck, &policyToCheck{
+			Ref:                  clients.ObjectMetaToResourceRef(relevantPolicy.ObjectMeta),
+			UpdatedTrafficPolicy: relevantPolicy,
+		})
+	}
+
 	var policiesToRecordOnService []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy
 	policiesInConflict := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError{}
 	untranslatablePolicies := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{}
 
-	// keep track of the entries that were already on the statuses
-	previouslyRecordedTrafficPolicyIDs := sets.NewString()
-	previouslyRecordedPolicies := meshService.Status.GetValidatedTrafficPolicies()
+	// avoid expensive merge and translation validations if nothing changed from the last reconcile iteration
+	if !anyPolicyChangedSinceLastReconcile {
+		for _, policyIter := range policiesToCheck {
+			policiesToRecordOnService = append(policiesToRecordOnService, &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				Ref:               policyIter.Ref,
+				TrafficPolicySpec: policyIter.LastKnownGoodSpecState,
+			})
+		}
+		return policiesToRecordOnService, nil, nil
+	}
 
-	// here we ensure that everything that was in the list previously is either:
-	//   1. maintaining its old state, or
-	//   2. taking on the newly-validated state
-	// this loop should result in a stable ordering in the list
-	for policyIndex, previouslyRecordedPolicyIter := range previouslyRecordedPolicies {
-		previouslyRecordedPolicy := previouslyRecordedPolicyIter
-		identifierString := clients.ToUniqueSingleClusterString(k8s_meta_types.ObjectMeta{
-			Name:      previouslyRecordedPolicy.GetRef().GetName(),
-			Namespace: previouslyRecordedPolicy.GetRef().GetNamespace(),
-		})
+	// We want to sort those entries with a nil `UpdatedTrafficPolicy` field to the BEGINNING of the list.
+	// This is significant- we want to ensure that we only mark those policies that have CHANGED since the
+	// last reconcile iteration and are NOW in conflict with other policies to be marked as in conflict, not older
+	// ones that are unchanged. We accomplish that doing this sort, which ensures that we accept unchanged
+	// policies into the `policiesToRecordOnService` list first (which will all pass validation together), then
+	// subsequently we process the changed policies, which may fail and then be marked as in conflict.
+	sort.Slice(policiesToCheck, func(i, j int) bool {
+		// polices[i] is LESS than policies[j] (i.e., should appear before it in the list) if policies[i] was not updated
+		// we don't care if policies[j] was updated or not, it'll get sorted at some point too.
+		return policiesToCheck[i].UpdatedTrafficPolicy == nil
+	})
 
-		previouslyRecordedTrafficPolicyIDs.Insert(identifierString)
+	for _, policyToCheckIter := range policiesToCheck {
+		policyToProcess := policyToCheckIter
 
-		newlyValidatedPolicy, validatedPolicyFound := uniqueStringToNewlyValidatedTrafficPolicy[identifierString]
+		// see the notes on the sort.Slice call above; because of that ordering, we know that anything
+		// with a nil Updated field must by definition be both merge-able and translate-able with everything
+		// ELSE with a nil Updated field, so we can avoid doing expensive merge/translate validations on all of those.
+		if policyToProcess.UpdatedTrafficPolicy == nil {
+			policiesToRecordOnService = append(policiesToRecordOnService, &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				Ref:               policyToProcess.Ref,
+				TrafficPolicySpec: policyToProcess.LastKnownGoodSpecState,
+			})
+			continue
+		}
 
-		// if the policy couldn't be validated or if it hasn't changed, keep the old state in the list
-		if !validatedPolicyFound || newlyValidatedPolicy.Spec.Equal(previouslyRecordedPolicy.TrafficPolicySpec) {
-			policiesToRecordOnService = append(policiesToRecordOnService, previouslyRecordedPolicy)
+		var toValidate *zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy
+		if policyToProcess.UpdatedTrafficPolicy == nil {
+			// nothing was updated from the last reconcile iteration, make sure we can still merge this one in
+			toValidate = &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				Ref:               policyToProcess.Ref,
+				TrafficPolicySpec: policyToProcess.LastKnownGoodSpecState,
+			}
 		} else {
-			// otherwise, there is a newly-valid state to record. Ensure that this new state can in fact be merged in with the rest of the list
-			var policiesToMergeWith []*zephyr_networking_types.TrafficPolicySpec
-			for i, tpIter := range previouslyRecordedPolicies {
-				tp := tpIter
-
-				// exclude the traffic policy that got updated
-				if i == policyIndex {
-					continue
-				}
-
-				policiesToMergeWith = append(policiesToMergeWith, tp.TrafficPolicySpec)
+			toValidate = &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				Ref:               policyToProcess.Ref,
+				TrafficPolicySpec: &policyToProcess.UpdatedTrafficPolicy.Spec,
 			}
+		}
 
-			mergeConflict := a.aggregator.FindMergeConflict(&newlyValidatedPolicy.Spec, policiesToMergeWith, meshService)
+		// fall back to this if `toValidate` does not pass all validations. The `TrafficPolicySpec` field here should always be non-nil
+		successfullyValidated := &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			Ref:               policyToProcess.Ref,
+			TrafficPolicySpec: policyToProcess.LastKnownGoodSpecState, // may be nil
+		}
 
-			// this will be either the new one, or the old one if we couldn't merge the new state in with the others
-			var validatedTrafficPolicyStateToRecord *zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy
-			if mergeConflict != nil {
-				policiesInConflict[newlyValidatedPolicy] = append(policiesInConflict[newlyValidatedPolicy], mergeConflict)
-				validatedTrafficPolicyStateToRecord = previouslyRecordedPolicy
-			} else {
-				validatedTrafficPolicyStateToRecord = &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
-					Ref:               clients.ObjectMetaToResourceRef(newlyValidatedPolicy.ObjectMeta),
-					TrafficPolicySpec: &newlyValidatedPolicy.Spec,
-				}
-			}
+		var mergeabilityCheckCopy []*zephyr_networking_types.TrafficPolicySpec
+		for _, tp := range policiesToRecordOnService {
+			// don't need to skip any entries in the list in here, since we won't process a traffic policy twice
 
-			// we know that the policies are mergeable; now let's see if they can be translated all together
+			mergeabilityCheckCopy = append(mergeabilityCheckCopy, tp.TrafficPolicySpec)
+		}
+
+		mergeConflict := a.aggregator.FindMergeConflict(toValidate.TrafficPolicySpec, mergeabilityCheckCopy, meshService)
+		if mergeConflict != nil {
+			policiesInConflict[policyToProcess.UpdatedTrafficPolicy] = append(policiesInConflict[policyToProcess.UpdatedTrafficPolicy], mergeConflict)
+		} else {
+			// we know they're mergeable now, let's see if they can be translated all together
 			mergeableTPs := append([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil), policiesToRecordOnService...)
-			mergeableTPs = append(mergeableTPs, validatedTrafficPolicyStateToRecord)
+			mergeableTPs = append(mergeableTPs, toValidate)
 
 			translationErrors := translationValidator.GetTranslationErrors(
 				meshService,
@@ -202,61 +287,20 @@ func (a *aggregationReconciler) determineNewStatuses(
 			)
 
 			if len(translationErrors) == 0 {
-				// we're done, record this as validated
-				policiesToRecordOnService = append(policiesToRecordOnService, validatedTrafficPolicyStateToRecord)
+				successfullyValidated = toValidate
 			} else {
 				for _, translationError := range translationErrors {
 					// need to pick out the translation policy in question from the error result list
-					if clients.SameObject(clients.ResourceRefToObjectMeta(translationError.Policy.Ref), newlyValidatedPolicy.ObjectMeta) {
-						untranslatablePolicies[newlyValidatedPolicy] = translationError.TranslatorErrors
+					if clients.SameObject(clients.ResourceRefToObjectMeta(translationError.Policy.GetRef()), policyToProcess.UpdatedTrafficPolicy.ObjectMeta) {
+						untranslatablePolicies[policyToProcess.UpdatedTrafficPolicy] = translationError.TranslatorErrors
 					}
 				}
 			}
 		}
-	}
 
-	// here we add in the NEW traffic policies- those that we associated with this service, but that we didn't process in the for loop above
-	for _, relevantPolicyIter := range policiesForService {
-		relevantPolicy := relevantPolicyIter
-
-		// we didn't see this one before, so it must be new
-		if !previouslyRecordedTrafficPolicyIDs.Has(clients.ToUniqueSingleClusterString(relevantPolicy.ObjectMeta)) {
-			var specsToMergeWith []*zephyr_networking_types.TrafficPolicySpec
-			for _, validatedPolicyIter := range policiesToRecordOnService {
-				validatedPolicy := validatedPolicyIter
-
-				specsToMergeWith = append(specsToMergeWith, validatedPolicy.TrafficPolicySpec)
-			}
-
-			mergeConflict := a.aggregator.FindMergeConflict(&relevantPolicy.Spec, specsToMergeWith, meshService)
-			if mergeConflict == nil {
-				validated := &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
-					Ref:               clients.ObjectMetaToResourceRef(relevantPolicy.ObjectMeta),
-					TrafficPolicySpec: &relevantPolicy.Spec,
-				}
-
-				mergeableTPs := append([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil), policiesToRecordOnService...)
-				mergeableTPs = append(mergeableTPs, validated)
-
-				translationErrors := translationValidator.GetTranslationErrors(
-					meshService,
-					mesh,
-					mergeableTPs,
-				)
-
-				if len(translationErrors) == 0 {
-					policiesToRecordOnService = append(policiesToRecordOnService, validated)
-				} else {
-					for _, translationError := range translationErrors {
-						// need to pick out the translation policy in question from the error result list
-						if clients.SameObject(clients.ResourceRefToObjectMeta(translationError.Policy.GetRef()), relevantPolicy.ObjectMeta) {
-							untranslatablePolicies[relevantPolicy] = translationError.TranslatorErrors
-						}
-					}
-				}
-			} else {
-				policiesInConflict[relevantPolicy] = append(policiesInConflict[relevantPolicy], mergeConflict)
-			}
+		// this field would be nil if we are adding a NEW traffic policy, and there isn't a last-known good state to fall back on
+		if successfullyValidated.TrafficPolicySpec != nil {
+			policiesToRecordOnService = append(policiesToRecordOnService, successfullyValidated)
 		}
 	}
 
