@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl get virtualmeshcertificatesigningrequests
 
-Examine configured virtual mesh ceriticate signing request
+Examine configured virtual mesh certificate signing request
 
 ### Synopsis
 
-Examine configured virtual mesh ceriticate signing request
+Examine configured virtual mesh certificate signing request
 
 ```
 meshctl get virtualmeshcertificatesigningrequests [flags]
