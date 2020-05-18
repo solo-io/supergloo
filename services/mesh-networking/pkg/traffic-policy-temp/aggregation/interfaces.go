@@ -1,7 +1,6 @@
 package traffic_policy_aggregation
 
 import (
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -62,24 +61,9 @@ type Aggregator interface {
 		meshService *zephyr_discovery.MeshService,
 	) *zephyr_networking_types.TrafficPolicyStatus_ConflictError
 
-	// return a list of pairs:
-	//    - the service (note that it will have the previously-recorded traffic policy state in its status)
-	//           (services that have no traffic policies applying to them *will* be reflected in this list- their ServiceWithRelevantPolicies struct will have an empty `TrafficPolicies` field)
-	//    - the traffic policies in the given snapshot that are associated with the above service.
-	//           (This list must be reconciled with the existing state in the service's status)
+	// return the policies tht have the given mesh service as a destination
 	PoliciesForService(
 		trafficPolicies []*zephyr_networking.TrafficPolicy,
 		meshService *zephyr_discovery.MeshService,
 	) ([]*zephyr_networking.TrafficPolicy, error)
-}
-
-type ServiceWithRelevantPolicies struct {
-	MeshService     *zephyr_discovery.MeshService
-	TrafficPolicies []*zephyr_networking.TrafficPolicy
-}
-
-type MeshServiceInfo struct {
-	ClusterName string
-	Mesh        *zephyr_discovery.Mesh
-	MeshType    zephyr_core_types.MeshType
 }

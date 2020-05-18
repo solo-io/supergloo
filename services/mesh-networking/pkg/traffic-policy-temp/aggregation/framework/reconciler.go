@@ -114,13 +114,13 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	return nil
 }
 
-func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*zephyr_discovery.MeshService, map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo, error) {
+func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*zephyr_discovery.MeshService, map[*zephyr_discovery.MeshService]*meshServiceInfo, error) {
 	meshServiceList, err := a.meshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	serviceToMetadata := map[*zephyr_discovery.MeshService]*traffic_policy_aggregation.MeshServiceInfo{}
+	serviceToMetadata := map[*zephyr_discovery.MeshService]*meshServiceInfo{}
 	var allMeshServices []*zephyr_discovery.MeshService
 	for _, ms := range meshServiceList.Items {
 		meshService := ms
@@ -135,7 +135,7 @@ func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*z
 			return nil, nil, err
 		}
 
-		serviceToMetadata[&meshService] = &traffic_policy_aggregation.MeshServiceInfo{
+		serviceToMetadata[&meshService] = &meshServiceInfo{
 			ClusterName: meshForService.Spec.GetCluster().GetName(),
 			MeshType:    meshType,
 			Mesh:        meshForService,
@@ -144,4 +144,10 @@ func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*z
 	}
 
 	return allMeshServices, serviceToMetadata, nil
+}
+
+type meshServiceInfo struct {
+	ClusterName string
+	Mesh        *zephyr_discovery.Mesh
+	MeshType    zephyr_core_types.MeshType
 }

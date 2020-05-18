@@ -74,11 +74,6 @@ func (a *aggregator) FindMergeConflict(
 	return nil
 }
 
-// return a list of pairs:
-//    - the service (note that it will have the previously-recorded traffic policy state in its status)
-//           (services that have no traffic policies applying to them *will* be reflected in this list- their ServiceWithRelevantPolicies struct will have an empty `TrafficPolicies` field)
-//    - the traffic policies in the given snapshot that are associated with the above service.
-//           (This list must be reconciled with the existing state in the service's status)
 func (a *aggregator) PoliciesForService(
 	trafficPolicies []*zephyr_networking.TrafficPolicy,
 	meshService *zephyr_discovery.MeshService,
