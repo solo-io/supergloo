@@ -41,10 +41,10 @@ func (m *virtualMeshPrinter) Print(
 	var preFilteredRows [][]string
 	for _, virtualMesh := range virtualMeshes {
 		var newRow []string
-		// Append commonn metadata
+		// Append common metadata
 		newRow = append(newRow, m.buildMetadataCell(virtualMesh))
 
-		// Append mesehes
+		// Append meshes
 		newRow = append(newRow, m.buildMeshesCell(virtualMesh.Spec.GetMeshes()))
 
 		// Append federation data

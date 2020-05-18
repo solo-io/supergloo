@@ -77,7 +77,7 @@ func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnap
 		}
 	}
 
-	for _, vm := range perMeshMetadata.ResolvedVirtualMeshs {
+	for _, vm := range perMeshMetadata.ResolvedVirtualMeshes {
 		f.federateVirtualMesh(
 			ctx,
 			vm,

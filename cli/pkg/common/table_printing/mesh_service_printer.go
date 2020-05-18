@@ -43,7 +43,7 @@ func (m *meshServicePrinter) Print(
 	var preFilteredRows [][]string
 	for _, meshService := range meshServices {
 		var newRow []string
-		// Append commonn metadata
+		// Append common metadata
 		newRow = append(newRow, meshService.Spec.GetMesh().GetName())
 
 		kubeService := meshService.Spec.GetKubeService()

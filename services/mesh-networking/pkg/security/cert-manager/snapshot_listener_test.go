@@ -47,7 +47,7 @@ var _ = Describe("snapshot listener", func() {
 		testLogger.EXPECT().
 			LastEntry().
 			Level(zapcore.DebugLevel).
-			HaveMessage(cert_manager.NoVirtualMeshsChangedMessage)
+			HaveMessage(cert_manager.NoVirtualMeshesChangedMessage)
 	})
 
 	It("will process all create events in order", func() {

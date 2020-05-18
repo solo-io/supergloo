@@ -69,7 +69,7 @@ func (l *LogMatcher) NumEntries(num int) *LogMatcher {
 
 func (l *LogMatcher) Entry(index int) *EntryMatcher {
 	Expect(index).To(BeNumerically("<", len(l.entries)), "index must be within range of the # of "+
-		"avaiable entries")
+		"available entries")
 	return &EntryMatcher{entry: l.entries[index]}
 }
 

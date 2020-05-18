@@ -71,7 +71,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 				return mockNamespaceClient, nil
 			},
 			mockKubeConverter,
-			func(helmInstallerFactory factories.HelmerInstallerFactory) csr.CsrAgentInstaller {
+			func(helmInstallerFactory factories.HelmInstallerFactory) csr.CsrAgentInstaller {
 				return mockCsrAgentInstaller
 			},
 			func(remoteAuthConfig *rest.Config) (auth.ClusterAuthorization, error) {

@@ -22,7 +22,7 @@ var (
 		return eris.Errorf("failed to find asset %s in release %s", assetName, tag)
 	}
 	DownloadingAssetError = func(err error, assetName string) error {
-		return eris.Wrapf(err, "error occured attempting to dowload %s", assetName)
+		return eris.Wrapf(err, "error occurred attempting to download %s", assetName)
 	}
 
 	// wire set to package up upgrade client set dependencies

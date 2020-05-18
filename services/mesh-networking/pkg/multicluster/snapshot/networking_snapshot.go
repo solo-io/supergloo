@@ -310,7 +310,7 @@ func (f *networkingSnapshotGenerator) StartPushingSnapshots(ctx context.Context,
 					zap.Uint("snapshot_version", f.version),
 					zap.Int("num_mesh_services", len(f.snapshot.MeshServices)),
 					zap.Int("num_mesh_workloads", len(f.snapshot.MeshWorkloads)),
-					zap.Int("num_virtual_meshs", len(f.snapshot.VirtualMeshes)),
+					zap.Int("num_virtual_meshes", len(f.snapshot.VirtualMeshes)),
 				)
 				for _, listener := range f.listeners {
 					listener.Sync(snapshotContext, &f.snapshot)

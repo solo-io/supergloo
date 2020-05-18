@@ -24,9 +24,9 @@ func HelmClientForMemoryConfigFactoryProvider() HelmClientForMemoryConfigFactory
 	}
 }
 
-type HelmerInstallerFactory func(helmClient types.HelmClient) types.Installer
+type HelmInstallerFactory func(helmClient types.HelmClient) types.Installer
 
-func NewHelmInstallerFactory(kubeNsClient helminstall.NamespaceClient, outputWriter io.Writer) HelmerInstallerFactory {
+func NewHelmInstallerFactory(kubeNsClient helminstall.NamespaceClient, outputWriter io.Writer) HelmInstallerFactory {
 	return func(helmClient types.HelmClient) types.Installer {
 		return helminstall.NewInstaller(helmClient, kubeNsClient, outputWriter)
 	}

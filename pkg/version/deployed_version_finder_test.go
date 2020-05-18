@@ -142,7 +142,7 @@ var _ = Describe("Federation Decider", func() {
 				Return(nil, testErr)
 
 			openSourceVersion, err := deployedVersionFinder.OpenSourceVersion(ctx, env.GetWriteNamespace())
-			Expect(err).To(testutils.HaveInErrorChain(version.FailedToLookUpOpenSourceDeployemnt(testErr)))
+			Expect(err).To(testutils.HaveInErrorChain(version.FailedToLookUpOpenSourceDeployment(testErr)))
 			Expect(openSourceVersion).To(BeEmpty())
 		})
 

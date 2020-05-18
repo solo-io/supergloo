@@ -35,7 +35,7 @@ var (
 	FailedToGenerateCSRError = func(err error) error {
 		return eris.Wrapf(err, "failed to generate CSR")
 	}
-	FailesToAddCsrToResource = func(err error) error {
+	FailedToAddCsrToResource = func(err error) error {
 		return eris.Wrapf(err, "failed to update resource with csr bytes")
 	}
 	FailedToUpdateCaError = func(err error) error {
@@ -133,7 +133,7 @@ func (i *istioCSRGenerator) generateCsr(
 
 	obj.Spec.CsrData = csr
 	if err = i.csrClient.UpdateVirtualMeshCertificateSigningRequest(ctx, obj); err != nil {
-		wrapped := FailesToAddCsrToResource(err)
+		wrapped := FailedToAddCsrToResource(err)
 		obj.Status.ComputedStatus = &zephyr_core_types.Status{
 			State:   zephyr_core_types.Status_INVALID,
 			Message: wrapped.Error(),

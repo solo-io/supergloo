@@ -51,7 +51,7 @@ func NewClusterDeregistrationClient(
 	crdRemover crd_uninstall.CrdRemover,
 	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
 	kubeConfigLookup kubeconfig.KubeConfigLookup,
-	localkubeClusterClient zephyr_discovery.KubernetesClusterClient,
+	localKubeClusterClient zephyr_discovery.KubernetesClusterClient,
 	localSecretClient k8s_core_v1_clients.SecretClient,
 	secretClientFactory k8s_core_v1_clients.SecretClientFactory,
 	dynamicClientGetter mc_manager.DynamicClientGetter,
@@ -61,7 +61,7 @@ func NewClusterDeregistrationClient(
 		crdRemover:                  crdRemover,
 		csrAgentInstallerFactory:    csrAgentInstallerFactory,
 		kubeConfigLookup:            kubeConfigLookup,
-		localkubeClusterClient:      localkubeClusterClient,
+		localKubeClusterClient:      localKubeClusterClient,
 		localSecretClient:           localSecretClient,
 		secretClientFactory:         secretClientFactory,
 		dynamicClientGetter:         dynamicClientGetter,
@@ -74,7 +74,7 @@ type clusterDeregistrationClient struct {
 	kubeLoader                  kubeconfig.KubeLoader
 	csrAgentInstallerFactory    csr.CsrAgentInstallerFactory
 	kubeConfigLookup            kubeconfig.KubeConfigLookup
-	localkubeClusterClient      zephyr_discovery.KubernetesClusterClient
+	localKubeClusterClient      zephyr_discovery.KubernetesClusterClient
 	localSecretClient           k8s_core_v1_clients.SecretClient
 	secretClientFactory         k8s_core_v1_clients.SecretClientFactory
 	serviceAccountClientFactory k8s_core_v1_clients.ServiceAccountClientFactory
@@ -115,7 +115,7 @@ func (c *clusterDeregistrationClient) Deregister(ctx context.Context, kubeCluste
 		return FailedToCleanUpKubeConfigSecret(err, kubeCluster.GetName())
 	}
 
-	err = c.localkubeClusterClient.DeleteKubernetesCluster(ctx, clients.ObjectMetaToObjectKey(kubeCluster.ObjectMeta))
+	err = c.localKubeClusterClient.DeleteKubernetesCluster(ctx, clients.ObjectMetaToObjectKey(kubeCluster.ObjectMeta))
 	if err != nil {
 		return FailedToCleanUpKubeConfigCrd(err, kubeCluster.GetName())
 	}
