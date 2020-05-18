@@ -9,10 +9,103 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	types0 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
+	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
 )
+
+// MockPolicyCollector is a mock of PolicyCollector interface.
+type MockPolicyCollector struct {
+	ctrl     *gomock.Controller
+	recorder *MockPolicyCollectorMockRecorder
+}
+
+// MockPolicyCollectorMockRecorder is the mock recorder for MockPolicyCollector.
+type MockPolicyCollectorMockRecorder struct {
+	mock *MockPolicyCollector
+}
+
+// NewMockPolicyCollector creates a new mock instance.
+func NewMockPolicyCollector(ctrl *gomock.Controller) *MockPolicyCollector {
+	mock := &MockPolicyCollector{ctrl: ctrl}
+	mock.recorder = &MockPolicyCollectorMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPolicyCollector) EXPECT() *MockPolicyCollectorMockRecorder {
+	return m.recorder
+}
+
+// CollectForService mocks base method.
+func (m *MockPolicyCollector) CollectForService(meshService *v1alpha1.MeshService, mesh *v1alpha1.Mesh, translationValidator mesh_translation.TranslationValidator, allTrafficPolicies []*v1alpha10.TrafficPolicy) ([]*types.MeshServiceStatus_ValidatedTrafficPolicy, map[*v1alpha10.TrafficPolicy][]*types0.TrafficPolicyStatus_ConflictError, map[*v1alpha10.TrafficPolicy][]*types0.TrafficPolicyStatus_TranslatorError, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CollectForService", meshService, mesh, translationValidator, allTrafficPolicies)
+	ret0, _ := ret[0].([]*types.MeshServiceStatus_ValidatedTrafficPolicy)
+	ret1, _ := ret[1].(map[*v1alpha10.TrafficPolicy][]*types0.TrafficPolicyStatus_ConflictError)
+	ret2, _ := ret[2].(map[*v1alpha10.TrafficPolicy][]*types0.TrafficPolicyStatus_TranslatorError)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// CollectForService indicates an expected call of CollectForService.
+func (mr *MockPolicyCollectorMockRecorder) CollectForService(meshService, mesh, translationValidator, allTrafficPolicies interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CollectForService", reflect.TypeOf((*MockPolicyCollector)(nil).CollectForService), meshService, mesh, translationValidator, allTrafficPolicies)
+}
+
+// MockInMemoryStatusUpdater is a mock of InMemoryStatusUpdater interface.
+type MockInMemoryStatusUpdater struct {
+	ctrl     *gomock.Controller
+	recorder *MockInMemoryStatusUpdaterMockRecorder
+}
+
+// MockInMemoryStatusUpdaterMockRecorder is the mock recorder for MockInMemoryStatusUpdater.
+type MockInMemoryStatusUpdaterMockRecorder struct {
+	mock *MockInMemoryStatusUpdater
+}
+
+// NewMockInMemoryStatusUpdater creates a new mock instance.
+func NewMockInMemoryStatusUpdater(ctrl *gomock.Controller) *MockInMemoryStatusUpdater {
+	mock := &MockInMemoryStatusUpdater{ctrl: ctrl}
+	mock.recorder = &MockInMemoryStatusUpdaterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockInMemoryStatusUpdater) EXPECT() *MockInMemoryStatusUpdaterMockRecorder {
+	return m.recorder
+}
+
+// UpdateServicePolicies mocks base method.
+func (m *MockInMemoryStatusUpdater) UpdateServicePolicies(meshService *v1alpha1.MeshService, newlyComputedMergeablePolicies []*types.MeshServiceStatus_ValidatedTrafficPolicy) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateServicePolicies", meshService, newlyComputedMergeablePolicies)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// UpdateServicePolicies indicates an expected call of UpdateServicePolicies.
+func (mr *MockInMemoryStatusUpdaterMockRecorder) UpdateServicePolicies(meshService, newlyComputedMergeablePolicies interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServicePolicies", reflect.TypeOf((*MockInMemoryStatusUpdater)(nil).UpdateServicePolicies), meshService, newlyComputedMergeablePolicies)
+}
+
+// UpdateConflictAndTranslatorErrors mocks base method.
+func (m *MockInMemoryStatusUpdater) UpdateConflictAndTranslatorErrors(policy *v1alpha10.TrafficPolicy, newConflictErrors []*types0.TrafficPolicyStatus_ConflictError, newTranslationErrors []*types0.TrafficPolicyStatus_TranslatorError) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateConflictAndTranslatorErrors", policy, newConflictErrors, newTranslationErrors)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// UpdateConflictAndTranslatorErrors indicates an expected call of UpdateConflictAndTranslatorErrors.
+func (mr *MockInMemoryStatusUpdaterMockRecorder) UpdateConflictAndTranslatorErrors(policy, newConflictErrors, newTranslationErrors interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateConflictAndTranslatorErrors", reflect.TypeOf((*MockInMemoryStatusUpdater)(nil).UpdateConflictAndTranslatorErrors), policy, newConflictErrors, newTranslationErrors)
+}
 
 // MockAggregator is a mock of Aggregator interface.
 type MockAggregator struct {
@@ -38,10 +131,10 @@ func (m *MockAggregator) EXPECT() *MockAggregatorMockRecorder {
 }
 
 // FindMergeConflict mocks base method.
-func (m *MockAggregator) FindMergeConflict(trafficPolicyToMerge *types.TrafficPolicySpec, policiesToMergeWith []*types.TrafficPolicySpec, meshService *v1alpha1.MeshService) *types.TrafficPolicyStatus_ConflictError {
+func (m *MockAggregator) FindMergeConflict(trafficPolicyToMerge *types0.TrafficPolicySpec, policiesToMergeWith []*types0.TrafficPolicySpec, meshService *v1alpha1.MeshService) *types0.TrafficPolicyStatus_ConflictError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindMergeConflict", trafficPolicyToMerge, policiesToMergeWith, meshService)
-	ret0, _ := ret[0].(*types.TrafficPolicyStatus_ConflictError)
+	ret0, _ := ret[0].(*types0.TrafficPolicyStatus_ConflictError)
 	return ret0
 }
 
