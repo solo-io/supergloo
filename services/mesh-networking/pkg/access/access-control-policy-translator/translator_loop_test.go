@@ -126,7 +126,7 @@ var _ = Describe("Translator", func() {
 			}
 			resourceSelector.
 				EXPECT().
-				GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
+				GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
 				Return(matchingMeshServices, nil)
 			var expectedTargetServices []access_control_policy_translator.TargetService
 			for i, meshService := range matchingMeshServices {
@@ -191,7 +191,7 @@ var _ = Describe("Translator", func() {
 			}
 			resourceSelector.
 				EXPECT().
-				GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
+				GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
 				Return(matchingMeshServices, nil)
 			var expectedTargetServices []access_control_policy_translator.TargetService
 			for i, meshService := range matchingMeshServices {
@@ -316,7 +316,7 @@ var _ = Describe("Translator", func() {
 				acp := acp
 				resourceSelector.
 					EXPECT().
-					GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
+					GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
 					Return([]*zephyr_discovery.MeshService{meshService}, nil)
 				for _, meshTranslator := range meshTranslators {
 					meshTranslator.
@@ -426,7 +426,7 @@ var _ = Describe("Translator", func() {
 				acp := acp
 				resourceSelector.
 					EXPECT().
-					GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
+					GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
 					Return([]*zephyr_discovery.MeshService{meshService}, nil)
 				for _, meshTranslator := range meshTranslators {
 					meshTranslator.

@@ -352,7 +352,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockResourceSelector.
 				EXPECT().
-				GetMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
+				GetAllMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
@@ -396,7 +396,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockResourceSelector.
 				EXPECT().
-				GetMeshServiceByRefSelector(ctx, destName, destNamespace, remoteClusterName).
+				GetAllMeshServiceByRefSelector(ctx, destName, destNamespace, remoteClusterName).
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
@@ -740,7 +740,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockResourceSelector.
 				EXPECT().
-				GetMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
+				GetAllMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
@@ -797,7 +797,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockResourceSelector.
 				EXPECT().
-				GetMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
+				GetAllMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
@@ -862,7 +862,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockResourceSelector.
 				EXPECT().
-				GetMeshServiceByRefSelector(ctx, destName, destNamespace, testContext.clusterName).
+				GetAllMeshServiceByRefSelector(ctx, destName, destNamespace, testContext.clusterName).
 				Return(backingMeshService, nil)
 
 			mockDynamicClientGetter.
@@ -920,7 +920,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockResourceSelector.
 				EXPECT().
-				GetMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
+				GetAllMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -945,7 +945,7 @@ var _ = Describe("IstioTranslator", func() {
 			err := eris.New("mesh-service-selector-error")
 			mockResourceSelector.
 				EXPECT().
-				GetMeshServiceByRefSelector(ctx, destName, destNamespace, remoteClusterName).
+				GetAllMeshServiceByRefSelector(ctx, destName, destNamespace, remoteClusterName).
 				Return(nil, err)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)

@@ -72,7 +72,26 @@ type resourceSelector struct {
 	dynamicClientGetter     mc_manager.DynamicClientGetter
 }
 
-func (b *resourceSelector) GetMeshServiceByRefSelector(
+func (b *resourceSelector) FindMeshServiceByRefSelector(
+	meshServices []*zephyr_discovery.MeshService,
+	kubeServiceName string,
+	kubeServiceNamespace string,
+	kubeServiceCluster string,
+) *zephyr_discovery.MeshService {
+	for _, meshService := range meshServices {
+		matchesCriteria := meshService.Labels[constants.KUBE_SERVICE_NAME] == kubeServiceName &&
+			meshService.Labels[constants.KUBE_SERVICE_NAMESPACE] == kubeServiceNamespace &&
+			meshService.Labels[constants.COMPUTE_TARGET] == kubeServiceCluster
+
+		if matchesCriteria {
+			return meshService
+		}
+	}
+
+	return nil
+}
+
+func (b *resourceSelector) GetAllMeshServiceByRefSelector(
 	ctx context.Context,
 	kubeServiceName string,
 	kubeServiceNamespace string,
@@ -100,19 +119,28 @@ func (b *resourceSelector) GetMeshServiceByRefSelector(
 }
 
 // List all MeshServices and filter for the ones associated with the k8s Services specified in the selector
-func (b *resourceSelector) GetMeshServicesByServiceSelector(
+func (b *resourceSelector) GetAllMeshServicesByServiceSelector(
 	ctx context.Context,
 	selector *core_types.ServiceSelector,
 ) ([]*zephyr_discovery.MeshService, error) {
-	var selectedMeshServices []*zephyr_discovery.MeshService
 	meshServiceList, err := b.meshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return nil, err
 	}
 	allMeshServices := convertServicesToPointerSlice(meshServiceList.Items)
+
+	return b.FilterMeshServicesByServiceSelector(allMeshServices, selector)
+}
+
+func (b *resourceSelector) FilterMeshServicesByServiceSelector(
+	meshServices []*zephyr_discovery.MeshService,
+	selector *core_types.ServiceSelector,
+) ([]*zephyr_discovery.MeshService, error) {
+	var selectedMeshServices []*zephyr_discovery.MeshService
+
 	// select all MeshServices
 	if selector.GetServiceSelectorType() == nil {
-		return allMeshServices, nil
+		return meshServices, nil
 	}
 	switch selectorType := selector.GetServiceSelectorType().(type) {
 	case *core_types.ServiceSelector_Matcher_:
@@ -120,14 +148,14 @@ func (b *resourceSelector) GetMeshServicesByServiceSelector(
 			selector.GetMatcher().GetLabels(),
 			selector.GetMatcher().GetNamespaces(),
 			selector.GetMatcher().GetClusters(),
-			allMeshServices,
+			meshServices,
 		)
 	case *core_types.ServiceSelector_ServiceRefs_:
 		for _, ref := range selector.GetServiceRefs().GetServices() {
 			if ref.GetCluster() == "" {
 				return nil, MustProvideClusterName(ref)
 			}
-			selectedMeshService := getMeshServiceByServiceKey(ref, allMeshServices)
+			selectedMeshService := getMeshServiceByServiceKey(ref, meshServices)
 			if selectedMeshService != nil {
 				selectedMeshServices = append(selectedMeshServices, selectedMeshService)
 			} else {
@@ -305,7 +333,7 @@ func getMeshServicesBySelectorNamespace(
 	var selectedMeshServices []*zephyr_discovery.MeshService
 	for _, meshService := range meshServices {
 		kubeService := meshService.Spec.GetKubeService()
-		if KubeServiceMatches(selectors, namespaces, clusters, kubeService) {
+		if kubeServiceMatches(selectors, namespaces, clusters, kubeService) {
 			selectedMeshServices = append(selectedMeshServices, meshService)
 		}
 	}
@@ -317,7 +345,7 @@ func getMeshServicesBySelectorNamespace(
 2) If namespaces is specified, the k8s must be in one of those namespaces
 3) The k8s Service must exist in the specified cluster. If cluster is empty, select across all clusters.
 */
-func KubeServiceMatches(
+func kubeServiceMatches(
 	labels map[string]string,
 	namespaces []string,
 	clusters []string,

@@ -1,8 +1,6 @@
-package preprocess_test
+package traffic_policy_validation_test
 
 import (
-	"context"
-
 	types1 "github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/go-multierror"
@@ -17,25 +15,21 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	traffic_policy_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/validation"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Validator", func() {
 	var (
-		ctrl                  *gomock.Controller
-		ctx                   context.Context
-		mockMeshServiceClient *mock_zephyr_discovery.MockMeshServiceClient
-		mockResourceSelector  *mock_selector.MockResourceSelector
-		validator             preprocess.TrafficPolicyValidator
+		ctrl                 *gomock.Controller
+		mockResourceSelector *mock_selector.MockResourceSelector
+		validator            traffic_policy_validation.Validator
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		ctx = context.TODO()
-		mockMeshServiceClient = mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
 		mockResourceSelector = mock_selector.NewMockResourceSelector(ctrl)
-		validator = preprocess.NewTrafficPolicyValidator(mockMeshServiceClient, mockResourceSelector)
+		validator = traffic_policy_validation.NewValidator(mockResourceSelector)
 	})
 
 	AfterEach(func() {
@@ -63,12 +57,14 @@ var _ = Describe("Validator", func() {
 				},
 			},
 		}
+		meshServices := []*zephyr_discovery.MeshService{}
 		mockResourceSelector.
 			EXPECT().
-			GetAllMeshServicesByServiceSelector(ctx, tp.Spec.GetDestinationSelector()).
+			FilterMeshServicesByServiceSelector(meshServices, tp.Spec.GetDestinationSelector()).
 			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
-		err := validator.Validate(ctx, tp)
+		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		expectSingleErrorOf(err, selector.MeshServiceNotFound(name, namespace, cluster))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 
 	It("should return error for RetryPolicy with negative num attempts", func() {
@@ -77,10 +73,12 @@ var _ = Describe("Validator", func() {
 				Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{Attempts: -1},
 			},
 		}
-		err := validator.Validate(ctx, tp)
+		meshServices := []*zephyr_discovery.MeshService{}
+		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(preprocess.InvalidRetryPolicyNumAttempts(-1))))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 
 	It("should return error for RetryPolicy with negative per retry timeout", func() {
@@ -89,10 +87,12 @@ var _ = Describe("Validator", func() {
 				Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{PerTryTimeout: &types1.Duration{Seconds: -1}},
 			},
 		}
-		err := validator.Validate(ctx, tp)
+		meshServices := []*zephyr_discovery.MeshService{}
+		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(preprocess.MinDurationError)))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 
 	It("should return error if TrafficShift has destinations that cannot be found", func() {
@@ -116,14 +116,20 @@ var _ = Describe("Validator", func() {
 				},
 			},
 		}
+		meshServices := []*zephyr_discovery.MeshService{}
 		mockResourceSelector.
 			EXPECT().
-			GetAllMeshServiceByRefSelector(ctx, name, namespace, cluster).
-			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
-		err := validator.Validate(ctx, tp)
+			FindMeshServiceByRefSelector(meshServices, name, namespace, cluster).
+			Return(nil)
+		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(selector.MeshServiceNotFound(name, namespace, cluster))))
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(traffic_policy_validation.DestinationNotFound(&zephyr_core_types.ResourceRef{
+			Name:      name,
+			Namespace: namespace,
+			Cluster:   cluster,
+		}))))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 
 	It("should return error if TrafficShift has subsets that can't be found", func() {
@@ -155,14 +161,16 @@ var _ = Describe("Validator", func() {
 				"version": {Values: []string{"v2", "v3"}},
 			},
 		}}
+		meshServices := []*zephyr_discovery.MeshService{backingMeshService}
 		mockResourceSelector.
 			EXPECT().
-			GetAllMeshServiceByRefSelector(ctx, serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()).
-			Return(backingMeshService, nil)
-		err := validator.Validate(ctx, tp)
+			FindMeshServiceByRefSelector(meshServices, serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()).
+			Return(backingMeshService)
+		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(preprocess.SubsetSelectorNotFound(backingMeshService, "version", "v1"))))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 
 	It("should return error if FaultInjection Abort has invalid percentage", func() {
@@ -174,10 +182,12 @@ var _ = Describe("Validator", func() {
 				},
 			},
 		}
-		err := validator.Validate(ctx, tp)
+		meshServices := []*zephyr_discovery.MeshService{}
+		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(preprocess.InvalidPercentageError(invalidPct))))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 
 	It("should return error if FaultInjection Abort has invalid HTTP status", func() {
@@ -196,10 +206,11 @@ var _ = Describe("Validator", func() {
 				},
 			},
 		}
-		err := validator.Validate(ctx, tp)
+		status, err := validator.ValidateTrafficPolicy(tp, nil)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(preprocess.InvalidHttpStatus(invalidHttpStatus))))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 
 	It("should return error if FaultInjection Delay has invalid duration", func() {
@@ -217,10 +228,11 @@ var _ = Describe("Validator", func() {
 				},
 			},
 		}
-		err := validator.Validate(ctx, tp)
+		status, err := validator.ValidateTrafficPolicy(tp, nil)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(preprocess.MinDurationError)))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 
 	It("should return error if RequestTimeout has an invalid duration", func() {
@@ -229,10 +241,11 @@ var _ = Describe("Validator", func() {
 				RequestTimeout: &types1.Duration{Seconds: 0, Nanos: 999999},
 			},
 		}
-		err := validator.Validate(ctx, tp)
+		status, err := validator.ValidateTrafficPolicy(tp, nil)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(preprocess.MinDurationError)))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 
 	It("should return error if CorsPolicy has an invalid max age duration", func() {
@@ -243,10 +256,11 @@ var _ = Describe("Validator", func() {
 				},
 			},
 		}
-		err := validator.Validate(ctx, tp)
+		status, err := validator.ValidateTrafficPolicy(tp, nil)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(preprocess.MinDurationError)))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 
 	It("should return error if Mirror has invalid percentage", func() {
@@ -264,14 +278,22 @@ var _ = Describe("Validator", func() {
 				},
 			},
 		}
+		backingMeshService := &zephyr_discovery.MeshService{Spec: zephyr_discovery_types.MeshServiceSpec{
+			Subsets: map[string]*zephyr_discovery_types.MeshServiceSpec_Subset{
+				"env":     {Values: []string{"dev", "prod"}},
+				"version": {Values: []string{"v2", "v3"}},
+			},
+		}}
+		meshServices := []*zephyr_discovery.MeshService{backingMeshService}
 		mockResourceSelector.
 			EXPECT().
-			GetAllMeshServiceByRefSelector(ctx, serviceKey.Name, serviceKey.Namespace, "").
-			Return(nil, nil)
-		err := validator.Validate(ctx, tp)
+			FindMeshServiceByRefSelector(meshServices, serviceKey.Name, serviceKey.Namespace, "").
+			Return(backingMeshService)
+		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(preprocess.InvalidPercentageError(invalidPct))))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 
 	It("should return error if Mirror has destination that cannot be found", func() {
@@ -290,12 +312,13 @@ var _ = Describe("Validator", func() {
 		}
 		mockResourceSelector.
 			EXPECT().
-			GetAllMeshServiceByRefSelector(ctx, serviceKey.Name, serviceKey.Namespace, "").
-			Return(nil, selector.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))
-		err := validator.Validate(ctx, tp)
+			FindMeshServiceByRefSelector(nil, serviceKey.Name, serviceKey.Namespace, "").
+			Return(nil)
+		status, err := validator.ValidateTrafficPolicy(tp, nil)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(selector.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))))
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(traffic_policy_validation.DestinationNotFound(serviceRef))))
+		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 })
 

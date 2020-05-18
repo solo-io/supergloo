@@ -207,6 +207,17 @@ func (this *TrafficPolicyStatus_TranslatorError) UnmarshalJSON(b []byte) error {
 	return TrafficPolicyUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for TrafficPolicyStatus_ConflictError
+func (this *TrafficPolicyStatus_ConflictError) MarshalJSON() ([]byte, error) {
+	str, err := TrafficPolicyMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for TrafficPolicyStatus_ConflictError
+func (this *TrafficPolicyStatus_ConflictError) UnmarshalJSON(b []byte) error {
+	return TrafficPolicyUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 var (
 	TrafficPolicyMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
 	TrafficPolicyUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}

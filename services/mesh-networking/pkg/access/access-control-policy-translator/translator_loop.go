@@ -217,7 +217,7 @@ func (t *translatorLoop) translateACPsForMeshService(
 
 // Get all destination services' MeshService and backing Mesh selected by the AccessControlPolicy
 func (t *translatorLoop) getTargetServices(ctx context.Context, acp *zephyr_networking.AccessControlPolicy) ([]TargetService, error) {
-	meshServices, err := t.resourceSelector.GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
+	meshServices, err := t.resourceSelector.GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
 	if err != nil {
 		return nil, err
 	}
@@ -251,7 +251,7 @@ func (t *translatorLoop) getApplicableAccessControlPolicies(
 	}
 	for _, acp := range acpList.Items {
 		acp := acp
-		meshServicesForACP, err := t.resourceSelector.GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
+		meshServicesForACP, err := t.resourceSelector.GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
 		if err != nil {
 			return nil, err
 		}
