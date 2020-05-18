@@ -53,7 +53,7 @@ var _ = Describe("ResourceSelector", func() {
 		ctrl.Finish()
 	})
 
-	Describe("GetMeshServicesByServiceSelector", func() {
+	Describe("GetAllMeshServicesByServiceSelector", func() {
 		var (
 			namespace1   string
 			namespace2   string
@@ -150,7 +150,7 @@ var _ = Describe("ResourceSelector", func() {
 			}
 			expectedMeshServices := []*zephyr_discovery.MeshService{&meshService1, &meshService3}
 
-			meshServices, err := resourceSelector.GetMeshServicesByServiceSelector(ctx, selector)
+			meshServices, err := resourceSelector.GetAllMeshServicesByServiceSelector(ctx, selector)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(meshServices).To(ConsistOf(expectedMeshServices))
 		})
@@ -175,7 +175,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			expectedMeshServices := []*zephyr_discovery.MeshService{&meshService1, &meshService3}
-			meshServices, err := resourceSelector.GetMeshServicesByServiceSelector(ctx, selector)
+			meshServices, err := resourceSelector.GetAllMeshServicesByServiceSelector(ctx, selector)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(meshServices).To(ConsistOf(expectedMeshServices))
 		})
@@ -193,7 +193,7 @@ var _ = Describe("ResourceSelector", func() {
 					},
 				},
 			}
-			_, err := resourceSelector.GetMeshServicesByServiceSelector(ctx, selector)
+			_, err := resourceSelector.GetAllMeshServicesByServiceSelector(ctx, selector)
 			Expect(err).To(testutils.HaveInErrorChain(networking_selector.KubeServiceNotFound(name, namespace, cluster)))
 		})
 
@@ -206,7 +206,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			expectedMeshServices := []*zephyr_discovery.MeshService{&meshService1, &meshService2, &meshService3, &meshService4}
-			meshServices, err := resourceSelector.GetMeshServicesByServiceSelector(ctx, selector)
+			meshServices, err := resourceSelector.GetAllMeshServicesByServiceSelector(ctx, selector)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(meshServices).To(ConsistOf(expectedMeshServices))
 		})
@@ -214,7 +214,7 @@ var _ = Describe("ResourceSelector", func() {
 		It("should select all services if selector ommitted", func() {
 			selector := &zephyr_core_types.ServiceSelector{}
 			expectedMeshServices := []*zephyr_discovery.MeshService{&meshService1, &meshService2, &meshService3, &meshService4, &meshService5}
-			meshServices, err := resourceSelector.GetMeshServicesByServiceSelector(ctx, selector)
+			meshServices, err := resourceSelector.GetAllMeshServicesByServiceSelector(ctx, selector)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(meshServices).To(ConsistOf(expectedMeshServices))
 		})
@@ -692,7 +692,7 @@ var _ = Describe("ResourceSelector", func() {
 		})
 	})
 
-	Describe("GetMeshServiceByRefSelector", func() {
+	Describe("GetAllMeshServiceByRefSelector", func() {
 		It("should return MeshService if found", func() {
 			serviceName := "kubeServiceName"
 			serviceNamespace := "kubeServiceNamespace"
@@ -706,7 +706,7 @@ var _ = Describe("ResourceSelector", func() {
 			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
 				&zephyr_discovery.MeshServiceList{
 					Items: []zephyr_discovery.MeshService{expectedMeshService}}, nil)
-			meshService, err := resourceSelector.GetMeshServiceByRefSelector(ctx, serviceName, serviceNamespace, serviceCluster)
+			meshService, err := resourceSelector.GetAllMeshServiceByRefSelector(ctx, serviceName, serviceNamespace, serviceCluster)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(meshService).To(Equal(&expectedMeshService))
 		})
@@ -723,7 +723,7 @@ var _ = Describe("ResourceSelector", func() {
 			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
 				&zephyr_discovery.MeshServiceList{
 					Items: []zephyr_discovery.MeshService{{}, {}}}, nil)
-			_, err := resourceSelector.GetMeshServiceByRefSelector(ctx, serviceName, serviceNamespace, serviceCluster)
+			_, err := resourceSelector.GetAllMeshServiceByRefSelector(ctx, serviceName, serviceNamespace, serviceCluster)
 			Expect(err).To(testutils.HaveInErrorChain(networking_selector.MultipleMeshServicesFound(serviceName, serviceNamespace, serviceCluster)))
 		})
 
@@ -739,7 +739,7 @@ var _ = Describe("ResourceSelector", func() {
 			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
 				&zephyr_discovery.MeshServiceList{
 					Items: []zephyr_discovery.MeshService{}}, nil)
-			_, err := resourceSelector.GetMeshServiceByRefSelector(ctx, serviceName, serviceNamespace, serviceCluster)
+			_, err := resourceSelector.GetAllMeshServiceByRefSelector(ctx, serviceName, serviceNamespace, serviceCluster)
 			Expect(err).To(testutils.HaveInErrorChain(networking_selector.MeshServiceNotFound(serviceName, serviceNamespace, serviceCluster)))
 		})
 	})

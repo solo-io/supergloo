@@ -264,21 +264,21 @@ var _ = Describe("Merger", func() {
 				},
 			},
 		}
-		/*** GetMeshServicesByServiceSelector() ***/
+		/*** GetAllMeshServicesByServiceSelector() ***/
 		trafficPolicyList := &zephyr_networking.TrafficPolicyList{
 			Items: []zephyr_networking.TrafficPolicy{tp1, tp2, tp3, tp4, tp5, ignoredTP}}
 		mockTrafficPolicyClient.EXPECT().ListTrafficPolicy(ctx).Return(trafficPolicyList, nil)
-		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp1.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetAllMeshServicesByServiceSelector(ctx, tp1.Spec.GetDestinationSelector()).
 			Return([]*zephyr_discovery.MeshService{meshServices[0]}, nil)
-		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp2.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetAllMeshServicesByServiceSelector(ctx, tp2.Spec.GetDestinationSelector()).
 			Return([]*zephyr_discovery.MeshService{meshServices[0], meshServices[1]}, nil)
-		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp3.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetAllMeshServicesByServiceSelector(ctx, tp3.Spec.GetDestinationSelector()).
 			Return([]*zephyr_discovery.MeshService{meshServices[1]}, nil)
-		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp4.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetAllMeshServicesByServiceSelector(ctx, tp4.Spec.GetDestinationSelector()).
 			Return([]*zephyr_discovery.MeshService{meshServices[0]}, nil)
-		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp5.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetAllMeshServicesByServiceSelector(ctx, tp5.Spec.GetDestinationSelector()).
 			Return([]*zephyr_discovery.MeshService{meshServices[0]}, nil)
-		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, ignoredTP.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetAllMeshServicesByServiceSelector(ctx, ignoredTP.Spec.GetDestinationSelector()).
 			Return([]*zephyr_discovery.MeshService{meshServices[0], meshServices[1]}, nil)
 		/*** buildKeyForMeshService ***/
 		mesh1 := &zephyr_discovery.Mesh{Spec: zephyr_discovery_types.MeshSpec{Cluster: &zephyr_core_types.ResourceRef{Name: meshClusterName1}}}

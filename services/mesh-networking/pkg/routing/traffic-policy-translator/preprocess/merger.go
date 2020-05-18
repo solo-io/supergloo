@@ -67,7 +67,7 @@ func (t *trafficPolicyMerger) getTrafficPoliciesByMeshService(
 	for _, trafficPolicy := range trafficPolicyList.Items {
 		// shadow trafficPolicy to avoid overwriting memory referenced by &trafficPolicy on each iteration
 		trafficPolicy := trafficPolicy
-		meshServicesForTP, err := t.resourceSelector.GetMeshServicesByServiceSelector(
+		meshServicesForTP, err := t.resourceSelector.GetAllMeshServicesByServiceSelector(
 			ctx,
 			trafficPolicy.Spec.GetDestinationSelector(),
 		)
