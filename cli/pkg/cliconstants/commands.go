@@ -27,6 +27,11 @@ var (
 			"the latter selects which context should be used from that kubeconfig file",
 	}
 
+	ClusterDeregisterCommand = cobra.Command{
+		Use:   "deregister",
+		Short: "Deregister an existing cluster",
+	}
+
 	DemoCommand = cobra.Command{
 		Use:   "demo",
 		Short: "Command line utilities for running/interacting with Service Mesh Hub demos",
