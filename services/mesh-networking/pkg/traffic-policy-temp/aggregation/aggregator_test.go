@@ -41,13 +41,8 @@ var _ = Describe("Aggregator", func() {
 				},
 			},
 		}
-		meshServices = []*zephyr_discovery.MeshService{
-			{
-				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "ms-1"},
-			},
-			{
-				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "ms-2"},
-			},
+		meshService = &zephyr_discovery.MeshService{
+			ObjectMeta: k8s_meta_types.ObjectMeta{Name: "ms-1"},
 		}
 	)
 
@@ -60,16 +55,13 @@ var _ = Describe("Aggregator", func() {
 	})
 
 	Context("Grouping", func() {
-		It("returns entries even for services with no traffic policies", func() {
+		It("returns empty when no traffic policies are provided", func() {
 			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
 			aggregator := traffic_policy_aggregation.NewAggregator(resourceSelector)
 
-			groupings, err := aggregator.GroupByMeshService([]*zephyr_networking.TrafficPolicy{}, meshServices)
+			policies, err := aggregator.PoliciesForService([]*zephyr_networking.TrafficPolicy{}, meshService)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(groupings).To(HaveLen(2))
-			for _, entry := range groupings {
-				Expect(entry.TrafficPolicies).To(BeEmpty())
-			}
+			Expect(policies).To(BeEmpty())
 		})
 
 		It("can associate policies with services", func() {
@@ -78,37 +70,42 @@ var _ = Describe("Aggregator", func() {
 
 			resourceSelector.EXPECT().
 				FilterMeshServicesByServiceSelector(
-					[]*zephyr_discovery.MeshService{meshServices[0]},
+					[]*zephyr_discovery.MeshService{meshService},
 					trafficPolicies[0].Spec.DestinationSelector,
 				).
-				Return([]*zephyr_discovery.MeshService{meshServices[0]}, nil)
+				Return([]*zephyr_discovery.MeshService{meshService}, nil)
 			resourceSelector.EXPECT().
 				FilterMeshServicesByServiceSelector(
-					[]*zephyr_discovery.MeshService{meshServices[1]},
-					trafficPolicies[0].Spec.DestinationSelector,
-				).
-				Return([]*zephyr_discovery.MeshService{meshServices[1]}, nil)
-			resourceSelector.EXPECT().
-				FilterMeshServicesByServiceSelector(
-					[]*zephyr_discovery.MeshService{meshServices[0]},
+					[]*zephyr_discovery.MeshService{meshService},
 					trafficPolicies[1].Spec.DestinationSelector,
 				).
-				Return([]*zephyr_discovery.MeshService{meshServices[0]}, nil)
+				Return([]*zephyr_discovery.MeshService{meshService}, nil)
+
+			policies, err := aggregator.PoliciesForService(trafficPolicies, meshService)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(policies).To(Equal(trafficPolicies))
+		})
+
+		It("can associate some but not all policies with a service", func() {
+			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+			aggregator := traffic_policy_aggregation.NewAggregator(resourceSelector)
+
 			resourceSelector.EXPECT().
 				FilterMeshServicesByServiceSelector(
-					[]*zephyr_discovery.MeshService{meshServices[1]},
+					[]*zephyr_discovery.MeshService{meshService},
+					trafficPolicies[0].Spec.DestinationSelector,
+				).
+				Return([]*zephyr_discovery.MeshService{meshService}, nil)
+			resourceSelector.EXPECT().
+				FilterMeshServicesByServiceSelector(
+					[]*zephyr_discovery.MeshService{meshService},
 					trafficPolicies[1].Spec.DestinationSelector,
 				).
 				Return(nil, nil)
 
-			groupings, err := aggregator.GroupByMeshService(trafficPolicies, meshServices)
+			policies, err := aggregator.PoliciesForService(trafficPolicies, meshService)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(groupings).To(HaveLen(2))
-			Expect(groupings[0].MeshService).To(Equal(meshServices[0]))
-			Expect(groupings[0].TrafficPolicies).To(HaveLen(2))
-			Expect(groupings[1].MeshService).To(Equal(meshServices[1]))
-			Expect(groupings[1].TrafficPolicies).To(HaveLen(1))
-			Expect(groupings[1].TrafficPolicies[0]).To(Equal(trafficPolicies[0]))
+			Expect(policies).To(Equal(trafficPolicies[:1]))
 		})
 	})
 
@@ -126,7 +123,7 @@ var _ = Describe("Aggregator", func() {
 
 				specs = append(specs, &tp.Spec)
 			}
-			conflictError := aggregator.FindMergeConflict(&trafficPolicies[0].Spec, specs, meshServices[0])
+			conflictError := aggregator.FindMergeConflict(&trafficPolicies[0].Spec, specs, meshService)
 			Expect(conflictError).NotTo(BeNil())
 			Expect(conflictError.ErrorMessage).To(Equal(traffic_policy_aggregation.TrafficPolicyConflictError.Error()))
 		})
@@ -144,7 +141,7 @@ var _ = Describe("Aggregator", func() {
 						Seconds: 420,
 					},
 				},
-			}, meshServices[0])
+			}, meshService)
 			Expect(conflictError).To(BeNil())
 		})
 	})

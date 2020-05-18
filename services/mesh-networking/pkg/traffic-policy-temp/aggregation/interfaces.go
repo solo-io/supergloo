@@ -26,12 +26,15 @@ type PolicyCollector interface {
 		mesh *zephyr_discovery.Mesh,
 		translationValidator mesh_translation.TranslationValidator,
 		allTrafficPolicies []*zephyr_networking.TrafficPolicy,
-	) (
-		policiesToRecordOnService []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
-		policyToConflictErrors map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
-		policyToTranslatorErrors map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError,
-		err error,
-	)
+	) (*CollectionResult, error)
+}
+
+type CollectionResult struct {
+	// the policies (a mix of updated and last-known good state) that should be recorded next on the service
+	PoliciesToRecordOnService []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy
+
+	PolicyToConflictErrors   map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError
+	PolicyToTranslatorErrors map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError
 }
 
 // This interface serves to abstract away the details of merging new entries into various objects' statuses. Its behavior needs to
@@ -64,10 +67,10 @@ type Aggregator interface {
 	//           (services that have no traffic policies applying to them *will* be reflected in this list- their ServiceWithRelevantPolicies struct will have an empty `TrafficPolicies` field)
 	//    - the traffic policies in the given snapshot that are associated with the above service.
 	//           (This list must be reconciled with the existing state in the service's status)
-	GroupByMeshService(
+	PoliciesForService(
 		trafficPolicies []*zephyr_networking.TrafficPolicy,
-		meshServices []*zephyr_discovery.MeshService,
-	) (result []*ServiceWithRelevantPolicies, err error)
+		meshService *zephyr_discovery.MeshService,
+	) ([]*zephyr_networking.TrafficPolicy, error)
 }
 
 type ServiceWithRelevantPolicies struct {

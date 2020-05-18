@@ -12,7 +12,6 @@ import (
 	types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	types0 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
 )
 
@@ -144,17 +143,17 @@ func (mr *MockAggregatorMockRecorder) FindMergeConflict(trafficPolicyToMerge, po
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindMergeConflict", reflect.TypeOf((*MockAggregator)(nil).FindMergeConflict), trafficPolicyToMerge, policiesToMergeWith, meshService)
 }
 
-// GroupByMeshService mocks base method.
-func (m *MockAggregator) GroupByMeshService(trafficPolicies []*v1alpha10.TrafficPolicy, meshServices []*v1alpha1.MeshService) ([]*traffic_policy_aggregation.ServiceWithRelevantPolicies, error) {
+// PoliciesForService mocks base method.
+func (m *MockAggregator) PoliciesForService(trafficPolicies []*v1alpha10.TrafficPolicy, meshService *v1alpha1.MeshService) ([]*v1alpha10.TrafficPolicy, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GroupByMeshService", trafficPolicies, meshServices)
-	ret0, _ := ret[0].([]*traffic_policy_aggregation.ServiceWithRelevantPolicies)
+	ret := m.ctrl.Call(m, "PoliciesForService", trafficPolicies, meshService)
+	ret0, _ := ret[0].([]*v1alpha10.TrafficPolicy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GroupByMeshService indicates an expected call of GroupByMeshService.
-func (mr *MockAggregatorMockRecorder) GroupByMeshService(trafficPolicies, meshServices interface{}) *gomock.Call {
+// PoliciesForService indicates an expected call of PoliciesForService.
+func (mr *MockAggregatorMockRecorder) PoliciesForService(trafficPolicies, meshService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupByMeshService", reflect.TypeOf((*MockAggregator)(nil).GroupByMeshService), trafficPolicies, meshServices)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PoliciesForService", reflect.TypeOf((*MockAggregator)(nil).PoliciesForService), trafficPolicies, meshService)
 }

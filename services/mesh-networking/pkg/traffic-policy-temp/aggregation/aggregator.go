@@ -79,37 +79,28 @@ func (a *aggregator) FindMergeConflict(
 //           (services that have no traffic policies applying to them *will* be reflected in this list- their ServiceWithRelevantPolicies struct will have an empty `TrafficPolicies` field)
 //    - the traffic policies in the given snapshot that are associated with the above service.
 //           (This list must be reconciled with the existing state in the service's status)
-func (a *aggregator) GroupByMeshService(
+func (a *aggregator) PoliciesForService(
 	trafficPolicies []*zephyr_networking.TrafficPolicy,
-	meshServices []*zephyr_discovery.MeshService,
-) (result []*ServiceWithRelevantPolicies, err error) {
-	for _, serviceIter := range meshServices {
-		service := serviceIter
-		resultEntry := &ServiceWithRelevantPolicies{
-			MeshService: service,
+	meshService *zephyr_discovery.MeshService,
+) (results []*zephyr_networking.TrafficPolicy, err error) {
+	for _, policyIter := range trafficPolicies {
+		policy := policyIter
+
+		// we are only searching across the space of this one service, so if the resulting list is nonempty, this one must be included
+		servicesForPolicy, err := a.resourceSelector.FilterMeshServicesByServiceSelector(
+			[]*zephyr_discovery.MeshService{meshService},
+			policy.Spec.GetDestinationSelector(),
+		)
+		if err != nil {
+			return nil, err
 		}
 
-		for _, policyIter := range trafficPolicies {
-			policy := policyIter
-
-			// we are only searching across the space of this one service, so if the resulting list is nonempty, this one must be included
-			servicesForPolicy, err := a.resourceSelector.FilterMeshServicesByServiceSelector(
-				[]*zephyr_discovery.MeshService{service},
-				policy.Spec.GetDestinationSelector(),
-			)
-			if err != nil {
-				return nil, err
-			}
-
-			if len(servicesForPolicy) > 0 {
-				resultEntry.TrafficPolicies = append(resultEntry.TrafficPolicies, policy)
-			}
+		if len(servicesForPolicy) > 0 {
+			results = append(results, policy)
 		}
-
-		result = append(result, resultEntry)
 	}
 
-	return result, nil
+	return results, err
 }
 
 /*

@@ -68,7 +68,7 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	serviceToUpdatedStatus := map[*zephyr_discovery.MeshService][]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{}
 
 	for _, meshService := range allMeshServices {
-		newlyComputedMergeablePolicies, trafficPoliciesInConflict, policyToTranslationErrors, err := a.policyCollector.CollectForService(
+		collectionResult, err := a.policyCollector.CollectForService(
 			meshService,
 			serviceToMetadata[meshService].Mesh,
 			a.translationValidators[serviceToMetadata[meshService].MeshType],
@@ -78,12 +78,12 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 			return err
 		}
 
-		serviceToUpdatedStatus[meshService] = newlyComputedMergeablePolicies
-		for trafficPolicy, conflicts := range trafficPoliciesInConflict {
+		serviceToUpdatedStatus[meshService] = collectionResult.PoliciesToRecordOnService
+		for trafficPolicy, conflicts := range collectionResult.PolicyToConflictErrors {
 			trafficPolicyToAllConflicts[trafficPolicy] = append(trafficPolicyToAllConflicts[trafficPolicy], conflicts...)
 		}
 
-		for trafficPolicy, translationErrors := range policyToTranslationErrors {
+		for trafficPolicy, translationErrors := range collectionResult.PolicyToTranslatorErrors {
 			trafficPolicyToAllTranslationErrs[trafficPolicy] = append(trafficPolicyToAllTranslationErrs[trafficPolicy], translationErrors...)
 		}
 	}

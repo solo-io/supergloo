@@ -28,18 +28,13 @@ func (p *policyCollector) CollectForService(
 	mesh *zephyr_discovery.Mesh,
 	translationValidator mesh_translation.TranslationValidator,
 	allTrafficPolicies []*zephyr_networking.TrafficPolicy,
-) (
-	policiesToRecordOnService []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
-	policyToConflictErrors map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
-	policyToTranslatorErrors map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError,
-	err error,
-) {
-	allTrafficPolicyIds, _, uniqueStringToNewlyValidatedTrafficPolicy, policiesForService, err := p.aggregateTrafficPolicies(
+) (*CollectionResult, error) {
+	allTrafficPolicyIds, uniqueStringToNewlyValidatedTrafficPolicy, policiesForService, err := p.aggregateTrafficPolicies(
 		meshService,
 		allTrafficPolicies,
 	)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
 
 	// build a summary of existing valid policies with their new state and last-known good state
@@ -52,17 +47,23 @@ func (p *policyCollector) CollectForService(
 
 	// Avoid expensive merge and translation validations if nothing changed from the last reconcile iteration
 	if !anyPolicyChangedSinceLastReconcile {
-		return meshService.Status.ValidatedTrafficPolicies, nil, nil, nil
+		return &CollectionResult{
+			PoliciesToRecordOnService: meshService.Status.ValidatedTrafficPolicies,
+		}, nil
 	}
 
-	policiesToRecordOnService, policyToConflictErrors, policyToTranslatorErrors = p.determineFinalValidState(
+	policiesToRecordOnService, policyToConflictErrors, policyToTranslatorErrors := p.determineFinalValidState(
 		meshService,
 		mesh,
 		translationValidator,
 		policiesToCheck,
 	)
 
-	return policiesToRecordOnService, policyToConflictErrors, policyToTranslatorErrors, nil
+	return &CollectionResult{
+		PoliciesToRecordOnService: policiesToRecordOnService,
+		PolicyToConflictErrors:    policyToConflictErrors,
+		PolicyToTranslatorErrors:  policyToTranslatorErrors,
+	}, nil
 }
 
 func (p *policyCollector) determineFinalValidState(
@@ -176,13 +177,13 @@ func (p *policyCollector) aggregateTrafficPolicies(
 	allTrafficPolicies []*zephyr_networking.TrafficPolicy,
 ) (
 	allPolicyIds sets.String, // clients.ToUniqueString results for ALL policies, regardless of validation status
-	allValidatedTrafficPolicies []*zephyr_networking.TrafficPolicy, // all validated policies
 	uniqueStringToValidatedTrafficPolicy map[string]*zephyr_networking.TrafficPolicy, // all validated policies collected into a map
 	policiesForService []*zephyr_networking.TrafficPolicy, // just the validated policies that apply to this service
 	err error,
 ) {
 	allIds := sets.NewString()
 	uniqueStringToValidatedTrafficPolicy = map[string]*zephyr_networking.TrafficPolicy{}
+	var allValidatedTrafficPolicies []*zephyr_networking.TrafficPolicy // all validated policies
 
 	for _, tpIter := range allTrafficPolicies {
 		trafficPolicy := tpIter
@@ -194,13 +195,12 @@ func (p *policyCollector) aggregateTrafficPolicies(
 		}
 	}
 
-	// TODO: Remove list creation here
-	serviceWithRelevantPolicies, err := p.trafficPolicyAggregator.GroupByMeshService(allValidatedTrafficPolicies, []*zephyr_discovery.MeshService{meshService})
+	policiesForService, err = p.trafficPolicyAggregator.PoliciesForService(allValidatedTrafficPolicies, meshService)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	return allIds, allValidatedTrafficPolicies, uniqueStringToValidatedTrafficPolicy, serviceWithRelevantPolicies[0].TrafficPolicies, nil
+	return allIds, uniqueStringToValidatedTrafficPolicy, policiesForService, nil
 }
 
 // return:
