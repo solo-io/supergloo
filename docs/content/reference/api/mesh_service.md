@@ -189,8 +189,7 @@ The MeshService is an abstraction for a service which we have discovered to be p
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | [string](#string) |  |  |
-| namespace | [string](#string) |  |  |
+| ref | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  |  |
 | trafficPolicySpec | [networking.zephyr.solo.io.TrafficPolicySpec](#networking.zephyr.solo.io.TrafficPolicySpec) |  |  |
 
 

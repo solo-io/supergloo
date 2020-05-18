@@ -12,6 +12,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	aggregation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/framework"
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/mocks"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
@@ -138,10 +139,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					Return(mesh2, nil)
 				policyCollector.EXPECT().
 					CollectForService(meshServices[0], mesh1, validator, nil).
-					Return(nil, nil, nil, nil)
+					Return(&traffic_policy_aggregation.CollectionResult{}, nil)
 				policyCollector.EXPECT().
 					CollectForService(meshServices[1], mesh2, validator, nil).
-					Return(nil, nil, nil, nil)
+					Return(&traffic_policy_aggregation.CollectionResult{}, nil)
 				inMemoryStatusUpdater.EXPECT().
 					UpdateServicePolicies(meshServices[0], nil).
 					Return(false)
@@ -292,17 +293,16 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				Return(mesh2, nil)
 			policyCollector.EXPECT().
 				CollectForService(meshServices[0], mesh1, validator, trafficPolicies).
-				Return(newlyValidatedTrafficPolicies[0:2], nil, nil, nil)
+				Return(&traffic_policy_aggregation.CollectionResult{PoliciesToRecordOnService: newlyValidatedTrafficPolicies[0:2]}, nil)
 			policyCollector.EXPECT().
 				CollectForService(meshServices[1], mesh2, validator, trafficPolicies).
-				Return(
-					newlyValidatedTrafficPolicies[2:4],
-					map[*zephyr_networking.TrafficPolicy][]*types.TrafficPolicyStatus_ConflictError{
+				Return(&traffic_policy_aggregation.CollectionResult{
+					PoliciesToRecordOnService: newlyValidatedTrafficPolicies[2:4],
+					PolicyToConflictErrors: map[*zephyr_networking.TrafficPolicy][]*types.TrafficPolicyStatus_ConflictError{
 						trafficPolicies[3]: conflictErrors,
 					},
-					nil,
-					nil,
-				)
+				}, nil)
+
 			ms1Copy := *meshServices[0]
 			ms1Copy.Status = zephyr_discovery_types.MeshServiceStatus{
 				ValidatedTrafficPolicies: newlyValidatedTrafficPolicies[0:2],

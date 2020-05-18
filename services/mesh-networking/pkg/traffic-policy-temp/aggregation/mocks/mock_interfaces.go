@@ -12,6 +12,7 @@ import (
 	types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	types0 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
 )
 
@@ -39,14 +40,12 @@ func (m *MockPolicyCollector) EXPECT() *MockPolicyCollectorMockRecorder {
 }
 
 // CollectForService mocks base method.
-func (m *MockPolicyCollector) CollectForService(meshService *v1alpha1.MeshService, mesh *v1alpha1.Mesh, translationValidator mesh_translation.TranslationValidator, allTrafficPolicies []*v1alpha10.TrafficPolicy) ([]*types.MeshServiceStatus_ValidatedTrafficPolicy, map[*v1alpha10.TrafficPolicy][]*types0.TrafficPolicyStatus_ConflictError, map[*v1alpha10.TrafficPolicy][]*types0.TrafficPolicyStatus_TranslatorError, error) {
+func (m *MockPolicyCollector) CollectForService(meshService *v1alpha1.MeshService, mesh *v1alpha1.Mesh, translationValidator mesh_translation.TranslationValidator, allTrafficPolicies []*v1alpha10.TrafficPolicy) (*traffic_policy_aggregation.CollectionResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CollectForService", meshService, mesh, translationValidator, allTrafficPolicies)
-	ret0, _ := ret[0].([]*types.MeshServiceStatus_ValidatedTrafficPolicy)
-	ret1, _ := ret[1].(map[*v1alpha10.TrafficPolicy][]*types0.TrafficPolicyStatus_ConflictError)
-	ret2, _ := ret[2].(map[*v1alpha10.TrafficPolicy][]*types0.TrafficPolicyStatus_TranslatorError)
-	ret3, _ := ret[3].(error)
-	return ret0, ret1, ret2, ret3
+	ret0, _ := ret[0].(*traffic_policy_aggregation.CollectionResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CollectForService indicates an expected call of CollectForService.

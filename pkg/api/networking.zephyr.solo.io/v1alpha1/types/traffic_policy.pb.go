@@ -1225,11 +1225,11 @@ func (m *TrafficPolicySpec_HttpMethod) GetMethod() types.HttpMethodValue {
 type TrafficPolicyStatus struct {
 	// Whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration.
 	TranslationStatus *types.Status `protobuf:"bytes,1,opt,name=translation_status,json=translationStatus,proto3" json:"translation_status,omitempty"`
-	// More details about whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration.
+	// Provides details on any translation errors that occurred. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config.
 	TranslatorErrors []*TrafficPolicyStatus_TranslatorError `protobuf:"bytes,2,rep,name=translator_errors,json=translatorErrors,proto3" json:"translator_errors,omitempty"`
 	// Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific routing configuration.
 	ValidationStatus *types.Status `protobuf:"bytes,3,opt,name=validation_status,json=validationStatus,proto3" json:"validation_status,omitempty"`
-	// Whether or not this resource's spec conflicts with other Traffic Policies that apply to the same source or destination.
+	// Provides details on any configuration conflicts between this TrafficPolicy and other TrafficPolicies that apply to the same configuration target. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config.
 	ConflictErrors       []*TrafficPolicyStatus_ConflictError `protobuf:"bytes,4,rep,name=conflict_errors,json=conflictErrors,proto3" json:"conflict_errors,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                             `json:"-"`
 	XXX_unrecognized     []byte                               `json:"-"`
