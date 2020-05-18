@@ -7,6 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -26,6 +27,9 @@ var (
 	UnexpectedVirtualNodeValue = func(virtualNodeEnvVarValue string) error {
 		return eris.Errorf("Unexpected value for env var %s: %s", AppMeshVirtualNodeEnvVarName, virtualNodeEnvVarValue)
 	}
+	AwsAuthConfigMapParseError = func(err error) error {
+		return eris.Wrap(err, "Error parsing aws-auth.kube-system ConfigMap")
+	}
 )
 
 type appMeshParser struct {
@@ -42,10 +46,12 @@ func (a *appMeshParser) ScanPodForAppMesh(
 	pod *k8s_core_types.Pod,
 	configMap *k8s_core_types.ConfigMap,
 ) (*AppMeshPod, error) {
-	var err error
-
-	err = yaml.Unmarshal([]byte(configMap.Data["mapRoles"]), &authData.MapRoles)
 	var awsAccountID, region, appMeshName, virtualNodeName string
+	var err error
+	awsAccountID, err = a.parseAwsAccountFromConfigMap(configMap)
+	if err != nil {
+		return nil, AwsAuthConfigMapParseError(err)
+	}
 	for _, container := range pod.Spec.Containers {
 		if strings.Contains(container.Image, "appmesh") && strings.Contains(container.Image, "envoy") {
 			for _, env := range container.Env {
@@ -64,7 +70,8 @@ func (a *appMeshParser) ScanPodForAppMesh(
 						return nil, EmptyEnvVarValueError(env.Name, pod.ObjectMeta)
 					}
 					region = env.Value
-				} else if env.Name == AppMeshRoleArnEnvVarName {
+				} else if env.Name == AppMeshRoleArnEnvVarName && awsAccountID == "" {
+					// Fallback to using env var if AWS account ID wasn't found from aws-auth ConfigMap
 					if env.Value == "" {
 						return nil, EmptyEnvVarValueError(env.Name, pod.ObjectMeta)
 					}
@@ -84,4 +91,33 @@ func (a *appMeshParser) ScanPodForAppMesh(
 		}
 	}
 	return nil, nil
+}
+
+func (a *appMeshParser) parseAwsAccountFromConfigMap(configMap *k8s_core_types.ConfigMap) (string, error) {
+	if configMap == nil {
+		return "", nil
+	}
+	var authData mapper.AwsAuthData
+	mapRoles, ok := configMap.Data["mapRoles"]
+	if !ok {
+		return "", nil
+	}
+	err := yaml.Unmarshal([]byte(mapRoles), &authData.MapRoles)
+	if err != nil {
+		return "", err
+	}
+	// Fetch AWS account ID from the "aws-auth.kube-system" ConfigMap.
+	// EKS docs suggest, but do not confirm, that this ConfigMap exists on all EKS clusters.
+	// Reference: https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html
+	// NB: This logic also assumes that the AWS account owning the EKS cluster is also the account that owns the Appmesh instance.
+	for _, mapRole := range authData.MapRoles {
+		if mapRole.Username == "system:node:{{EC2PrivateDNSName}}" {
+			accountID, err := a.arnParser.ParseAccountID(mapRole.RoleARN)
+			if err != nil {
+				return "", err
+			}
+			return accountID, nil
+		}
+	}
+	return "", nil
 }

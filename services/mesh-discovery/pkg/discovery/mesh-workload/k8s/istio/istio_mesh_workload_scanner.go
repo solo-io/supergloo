@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -27,6 +28,7 @@ var (
 func NewIstioMeshWorkloadScanner(
 	ownerFetcher k8s.OwnerFetcher,
 	meshClient zephyr_discovery.MeshClient,
+	_ client.Client,
 ) k8s.MeshWorkloadScanner {
 	return &istioMeshWorkloadScanner{
 		ownerFetcher: ownerFetcher,

@@ -30,13 +30,20 @@ var (
 
 func AppMeshWorkloadScannerFactoryProvider(
 	appMeshParser aws_utils.AppMeshScanner,
+	configMapClientFactory k8s_core.ConfigMapClientFactory,
 ) meshworkload_discovery.MeshWorkloadScannerFactory {
 	return func(
 		ownerFetcher meshworkload_discovery.OwnerFetcher,
 		meshClient zephyr_discovery.MeshClient,
-		configMapClient k8s_core.ConfigMapClient,
+		remoteClient client.Client,
 	) meshworkload_discovery.MeshWorkloadScanner {
-		return NewAppMeshWorkloadScanner(ownerFetcher, appMeshParser, meshClient, configMapClient)
+		return NewAppMeshWorkloadScanner(
+			ownerFetcher,
+			appMeshParser,
+			meshClient,
+			configMapClientFactory,
+			remoteClient,
+		)
 	}
 }
 
@@ -45,25 +52,28 @@ func NewAppMeshWorkloadScanner(
 	ownerFetcher meshworkload_discovery.OwnerFetcher,
 	appMeshParser aws_utils.AppMeshScanner,
 	meshClient zephyr_discovery.MeshClient,
-	configMapClient k8s_core.ConfigMapClient,
+	configMapClientFactory k8s_core.ConfigMapClientFactory,
+	remoteClient client.Client,
 ) meshworkload_discovery.MeshWorkloadScanner {
 	return &appMeshWorkloadScanner{
-		ownerFetcher:    ownerFetcher,
-		meshClient:      meshClient,
-		configMapClient: configMapClient,
-		appmeshScanner:  appMeshParser,
+		ownerFetcher:           ownerFetcher,
+		meshClient:             meshClient,
+		appmeshScanner:         appMeshParser,
+		configMapClientFactory: configMapClientFactory,
+		remoteClient:           remoteClient,
 	}
 }
 
 type appMeshWorkloadScanner struct {
-	ownerFetcher    meshworkload_discovery.OwnerFetcher
-	appmeshScanner  aws_utils.AppMeshScanner
-	meshClient      zephyr_discovery.MeshClient
-	configMapClient k8s_core.ConfigMapClient
+	ownerFetcher           meshworkload_discovery.OwnerFetcher
+	appmeshScanner         aws_utils.AppMeshScanner
+	meshClient             zephyr_discovery.MeshClient
+	configMapClientFactory k8s_core.ConfigMapClientFactory
+	remoteClient           client.Client
 }
 
 func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
-	configMap, err := a.configMapClient.GetConfigMap(ctx, AwsAuthConfigMapKey)
+	configMap, err := a.configMapClientFactory(a.remoteClient).GetConfigMap(ctx, AwsAuthConfigMapKey)
 	if err != nil {
 		return nil, err
 	}

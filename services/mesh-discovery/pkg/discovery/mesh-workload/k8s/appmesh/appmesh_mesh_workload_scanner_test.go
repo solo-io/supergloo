@@ -12,6 +12,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
@@ -20,8 +21,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -33,6 +35,7 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		mockOwnerFetcher    *mock_mesh_workload.MockOwnerFetcher
 		mockMeshClient      *mock_core.MockMeshClient
 		mockAppMeshParser   *mock_aws.MockAppMeshScanner
+		mockConfigMapClient *mock_kubernetes_core.MockConfigMapClient
 		meshWorkloadScanner k8s.MeshWorkloadScanner
 		namespace           = "namespace"
 		clusterName         = "clusterName"
@@ -41,12 +44,12 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		meshName            = "mesh-name-1"
 		region              = "us-east-1"
 		awsAccountId        = "awsaccountid"
-		pod                 = &corev1.Pod{
-			Spec: corev1.PodSpec{
-				Containers: []corev1.Container{
+		pod                 = &k8s_core_types.Pod{
+			Spec: k8s_core_types.PodSpec{
+				Containers: []k8s_core_types.Container{
 					{
 						Image: "appmesh-envoy",
-						Env: []corev1.EnvVar{
+						Env: []k8s_core_types.EnvVar{
 							{
 								Name:  aws_utils.AppMeshVirtualNodeEnvVarName,
 								Value: fmt.Sprintf("mesh/%s/virtualNode/virtualNodeName", meshName),
@@ -76,7 +79,16 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		mockOwnerFetcher = mock_mesh_workload.NewMockOwnerFetcher(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockAppMeshParser = mock_aws.NewMockAppMeshScanner(ctrl)
-		meshWorkloadScanner = appmesh.NewAppMeshWorkloadScanner(mockOwnerFetcher, mockAppMeshParser, mockMeshClient)
+		mockConfigMapClient = mock_kubernetes_core.NewMockConfigMapClient(ctrl)
+		meshWorkloadScanner = appmesh.NewAppMeshWorkloadScanner(
+			mockOwnerFetcher,
+			mockAppMeshParser,
+			mockMeshClient,
+			func(client client.Client) k8s_core.ConfigMapClient {
+				return mockConfigMapClient
+			},
+			nil,
+		)
 	})
 
 	AfterEach(func() {
@@ -131,9 +143,11 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 				},
 			},
 		}
+		configMap := &k8s_core_types.ConfigMap{}
+		mockConfigMapClient.EXPECT().GetConfigMap(ctx, appmesh.AwsAuthConfigMapKey).Return(configMap, nil)
 		mockAppMeshParser.
 			EXPECT().
-			ScanPodForAppMesh(pod).
+			ScanPodForAppMesh(pod, configMap).
 			Return(&aws_utils.AppMeshPod{
 				Region:       region,
 				AppMeshName:  meshName,
@@ -145,17 +159,19 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 	})
 
 	It("should return nil if not appmesh injected pod", func() {
-		nonAppMeshPod := &corev1.Pod{
-			Spec: corev1.PodSpec{
-				Containers: []corev1.Container{
+		nonAppMeshPod := &k8s_core_types.Pod{
+			Spec: k8s_core_types.PodSpec{
+				Containers: []k8s_core_types.Container{
 					{Image: "random-image"},
 				},
 			},
 			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
 		}
+		configMap := &k8s_core_types.ConfigMap{}
+		mockConfigMapClient.EXPECT().GetConfigMap(ctx, appmesh.AwsAuthConfigMapKey).Return(configMap, nil)
 		mockAppMeshParser.
 			EXPECT().
-			ScanPodForAppMesh(nonAppMeshPod).
+			ScanPodForAppMesh(nonAppMeshPod, configMap).
 			Return(nil, nil)
 		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, nonAppMeshPod, clusterName)
 		Expect(err).NotTo(HaveOccurred())
@@ -165,9 +181,11 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 	It("should return error if error fetching deployment", func() {
 		expectedErr := eris.New("error")
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(nil, expectedErr)
+		configMap := &k8s_core_types.ConfigMap{}
+		mockConfigMapClient.EXPECT().GetConfigMap(ctx, appmesh.AwsAuthConfigMapKey).Return(configMap, nil)
 		mockAppMeshParser.
 			EXPECT().
-			ScanPodForAppMesh(pod).
+			ScanPodForAppMesh(pod, configMap).
 			Return(&aws_utils.AppMeshPod{}, nil)
 		_, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
