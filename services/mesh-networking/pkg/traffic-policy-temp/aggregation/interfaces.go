@@ -40,12 +40,12 @@ type CollectionResult struct {
 // ensure that we don't incur k8s api server calls when they are not necessary.
 // The logic depends on there being an idempotent order coming out of `PolicyCollector` if no updates have happened.
 // These methods can change the objects they are handed- they return true if the object was changed in memory and should be updated in the persistence layer
-type InMemoryStatusUpdater interface {
-	UpdateServicePolicies(
+type InMemoryStatusMutator interface {
+	MutateServicePolicies(
 		meshService *zephyr_discovery.MeshService,
 		newlyComputedMergeablePolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 	) (policyNeedsUpdating bool)
-	UpdateConflictAndTranslatorErrors(
+	MutateConflictAndTranslatorErrors(
 		policy *zephyr_networking.TrafficPolicy,
 		newConflictErrors []*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
 		newTranslationErrors []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError,
@@ -61,7 +61,7 @@ type Aggregator interface {
 		meshService *zephyr_discovery.MeshService,
 	) *zephyr_networking_types.TrafficPolicyStatus_ConflictError
 
-	// return the policies tht have the given mesh service as a destination
+	// return the policies that have the given mesh service as a destination
 	PoliciesForService(
 		trafficPolicies []*zephyr_networking.TrafficPolicy,
 		meshService *zephyr_discovery.MeshService,

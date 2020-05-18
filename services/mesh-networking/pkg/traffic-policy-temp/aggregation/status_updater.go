@@ -7,13 +7,13 @@ import (
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 )
 
-func NewInMemoryStatusUpdater() InMemoryStatusUpdater {
-	return &inMemoryStatusUpdater{}
+func NewInMemoryStatusMutator() InMemoryStatusMutator {
+	return &inMemoryStatusMutator{}
 }
 
-type inMemoryStatusUpdater struct{}
+type inMemoryStatusMutator struct{}
 
-func (*inMemoryStatusUpdater) UpdateServicePolicies(
+func (*inMemoryStatusMutator) MutateServicePolicies(
 	meshService *zephyr_discovery.MeshService,
 	newlyComputedMergeablePolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) (serviceNeedsUpdating bool) {
@@ -32,7 +32,7 @@ func (*inMemoryStatusUpdater) UpdateServicePolicies(
 	return serviceNeedsUpdating
 }
 
-func (*inMemoryStatusUpdater) UpdateConflictAndTranslatorErrors(
+func (*inMemoryStatusMutator) MutateConflictAndTranslatorErrors(
 	policy *zephyr_networking.TrafficPolicy,
 	newConflictErrors []*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
 	newTranslationErrors []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError,

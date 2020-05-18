@@ -44,7 +44,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
 			policyCollector := mock_traffic_policy_aggregation.NewMockPolicyCollector(ctrl)
 			validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-			inMemoryStatusUpdater := mock_traffic_policy_aggregation.NewMockInMemoryStatusUpdater(ctrl)
+			inMemoryStatusMutator := mock_traffic_policy_aggregation.NewMockInMemoryStatusMutator(ctrl)
 			reconciler := aggregation_framework.NewAggregationReconciler(
 				trafficPolicyClient,
 				meshServiceClient,
@@ -53,7 +53,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
 					zephyr_core_types.MeshType_ISTIO: validator,
 				},
-				inMemoryStatusUpdater,
+				inMemoryStatusMutator,
 			)
 
 			trafficPolicyClient.EXPECT().
@@ -76,7 +76,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
 				policyCollector := mock_traffic_policy_aggregation.NewMockPolicyCollector(ctrl)
 				validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-				inMemoryStatusUpdater := mock_traffic_policy_aggregation.NewMockInMemoryStatusUpdater(ctrl)
+				inMemoryStatusMutator := mock_traffic_policy_aggregation.NewMockInMemoryStatusMutator(ctrl)
 				reconciler := aggregation_framework.NewAggregationReconciler(
 					trafficPolicyClient,
 					meshServiceClient,
@@ -85,7 +85,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
 						zephyr_core_types.MeshType_ISTIO: validator,
 					},
-					inMemoryStatusUpdater,
+					inMemoryStatusMutator,
 				)
 				mesh1 := &zephyr_discovery.Mesh{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -143,11 +143,11 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				policyCollector.EXPECT().
 					CollectForService(meshServices[1], mesh2, validator, nil).
 					Return(&traffic_policy_aggregation.CollectionResult{}, nil)
-				inMemoryStatusUpdater.EXPECT().
-					UpdateServicePolicies(meshServices[0], nil).
+				inMemoryStatusMutator.EXPECT().
+					MutateServicePolicies(meshServices[0], nil).
 					Return(false)
-				inMemoryStatusUpdater.EXPECT().
-					UpdateServicePolicies(meshServices[1], nil).
+				inMemoryStatusMutator.EXPECT().
+					MutateServicePolicies(meshServices[1], nil).
 					Return(false)
 
 				trafficPolicyClient.EXPECT().
@@ -167,7 +167,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
 			policyCollector := mock_traffic_policy_aggregation.NewMockPolicyCollector(ctrl)
 			validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-			inMemoryStatusUpdater := mock_traffic_policy_aggregation.NewMockInMemoryStatusUpdater(ctrl)
+			inMemoryStatusMutator := mock_traffic_policy_aggregation.NewMockInMemoryStatusMutator(ctrl)
 			reconciler := aggregation_framework.NewAggregationReconciler(
 				trafficPolicyClient,
 				meshServiceClient,
@@ -176,7 +176,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
 					zephyr_core_types.MeshType_ISTIO: validator,
 				},
-				inMemoryStatusUpdater,
+				inMemoryStatusMutator,
 			)
 			mesh1 := &zephyr_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -316,8 +316,8 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				ConflictErrors: conflictErrors,
 			}
 
-			inMemoryStatusUpdater.EXPECT().
-				UpdateServicePolicies(meshServices[0], newlyValidatedTrafficPolicies[0:2]).
+			inMemoryStatusMutator.EXPECT().
+				MutateServicePolicies(meshServices[0], newlyValidatedTrafficPolicies[0:2]).
 				DoAndReturn(func(
 					meshService *zephyr_discovery.MeshService,
 					newlyComputedMergeablePolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
@@ -327,8 +327,8 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					}
 					return true
 				})
-			inMemoryStatusUpdater.EXPECT().
-				UpdateServicePolicies(meshServices[1], newlyValidatedTrafficPolicies[2:4]).
+			inMemoryStatusMutator.EXPECT().
+				MutateServicePolicies(meshServices[1], newlyValidatedTrafficPolicies[2:4]).
 				DoAndReturn(func(
 					meshService *zephyr_discovery.MeshService,
 					newlyComputedMergeablePolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
@@ -338,8 +338,8 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					}
 					return true
 				})
-			inMemoryStatusUpdater.EXPECT().
-				UpdateConflictAndTranslatorErrors(gomock.Any(), gomock.Any(), nil).
+			inMemoryStatusMutator.EXPECT().
+				MutateConflictAndTranslatorErrors(gomock.Any(), gomock.Any(), nil).
 				DoAndReturn(func(
 					policy *zephyr_networking.TrafficPolicy,
 					newConflictErrors []*types.TrafficPolicyStatus_ConflictError,

@@ -21,7 +21,7 @@ func NewAggregationReconciler(
 	meshClient zephyr_discovery.MeshClient,
 	policyCollector traffic_policy_aggregation.PolicyCollector,
 	translationValidators map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator,
-	inMemoryStatusUpdater traffic_policy_aggregation.InMemoryStatusUpdater,
+	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator,
 ) reconciliation.Reconciler {
 	return &aggregationReconciler{
 		trafficPolicyClient:   trafficPolicyClient,
@@ -29,7 +29,7 @@ func NewAggregationReconciler(
 		meshClient:            meshClient,
 		policyCollector:       policyCollector,
 		translationValidators: translationValidators,
-		inMemoryStatusUpdater: inMemoryStatusUpdater,
+		inMemoryStatusMutator: inMemoryStatusMutator,
 	}
 }
 
@@ -39,7 +39,7 @@ type aggregationReconciler struct {
 	meshClient            zephyr_discovery.MeshClient
 	policyCollector       traffic_policy_aggregation.PolicyCollector
 	translationValidators map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator
-	inMemoryStatusUpdater traffic_policy_aggregation.InMemoryStatusUpdater
+	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator
 }
 
 func (a *aggregationReconciler) GetName() string {
@@ -89,7 +89,7 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	}
 
 	for service, validatedPolicies := range serviceToUpdatedStatus {
-		needsUpdating := a.inMemoryStatusUpdater.UpdateServicePolicies(service, validatedPolicies)
+		needsUpdating := a.inMemoryStatusMutator.MutateServicePolicies(service, validatedPolicies)
 		if needsUpdating {
 			err := a.meshServiceClient.UpdateMeshServiceStatus(ctx, service)
 			if err != nil {
@@ -102,7 +102,7 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		// Note that this is being called for all policies, regardless of validation status.
 		// We don't want knowledge of validation status to leak into this component, and we don't care if
 		// invalid policies have their merge/translation errors zeroed out
-		needsUpdating := a.inMemoryStatusUpdater.UpdateConflictAndTranslatorErrors(policy, trafficPolicyToAllConflicts[policy], trafficPolicyToAllTranslationErrs[policy])
+		needsUpdating := a.inMemoryStatusMutator.MutateConflictAndTranslatorErrors(policy, trafficPolicyToAllConflicts[policy], trafficPolicyToAllTranslationErrs[policy])
 		if needsUpdating {
 			err := a.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, policy)
 			if err != nil {

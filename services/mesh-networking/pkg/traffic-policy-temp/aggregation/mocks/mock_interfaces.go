@@ -54,55 +54,55 @@ func (mr *MockPolicyCollectorMockRecorder) CollectForService(meshService, mesh, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CollectForService", reflect.TypeOf((*MockPolicyCollector)(nil).CollectForService), meshService, mesh, translationValidator, allTrafficPolicies)
 }
 
-// MockInMemoryStatusUpdater is a mock of InMemoryStatusUpdater interface.
-type MockInMemoryStatusUpdater struct {
+// MockInMemoryStatusMutator is a mock of InMemoryStatusMutator interface.
+type MockInMemoryStatusMutator struct {
 	ctrl     *gomock.Controller
-	recorder *MockInMemoryStatusUpdaterMockRecorder
+	recorder *MockInMemoryStatusMutatorMockRecorder
 }
 
-// MockInMemoryStatusUpdaterMockRecorder is the mock recorder for MockInMemoryStatusUpdater.
-type MockInMemoryStatusUpdaterMockRecorder struct {
-	mock *MockInMemoryStatusUpdater
+// MockInMemoryStatusMutatorMockRecorder is the mock recorder for MockInMemoryStatusMutator.
+type MockInMemoryStatusMutatorMockRecorder struct {
+	mock *MockInMemoryStatusMutator
 }
 
-// NewMockInMemoryStatusUpdater creates a new mock instance.
-func NewMockInMemoryStatusUpdater(ctrl *gomock.Controller) *MockInMemoryStatusUpdater {
-	mock := &MockInMemoryStatusUpdater{ctrl: ctrl}
-	mock.recorder = &MockInMemoryStatusUpdaterMockRecorder{mock}
+// NewMockInMemoryStatusMutator creates a new mock instance.
+func NewMockInMemoryStatusMutator(ctrl *gomock.Controller) *MockInMemoryStatusMutator {
+	mock := &MockInMemoryStatusMutator{ctrl: ctrl}
+	mock.recorder = &MockInMemoryStatusMutatorMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockInMemoryStatusUpdater) EXPECT() *MockInMemoryStatusUpdaterMockRecorder {
+func (m *MockInMemoryStatusMutator) EXPECT() *MockInMemoryStatusMutatorMockRecorder {
 	return m.recorder
 }
 
-// UpdateServicePolicies mocks base method.
-func (m *MockInMemoryStatusUpdater) UpdateServicePolicies(meshService *v1alpha1.MeshService, newlyComputedMergeablePolicies []*types.MeshServiceStatus_ValidatedTrafficPolicy) bool {
+// MutateServicePolicies mocks base method.
+func (m *MockInMemoryStatusMutator) MutateServicePolicies(meshService *v1alpha1.MeshService, newlyComputedMergeablePolicies []*types.MeshServiceStatus_ValidatedTrafficPolicy) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateServicePolicies", meshService, newlyComputedMergeablePolicies)
+	ret := m.ctrl.Call(m, "MutateServicePolicies", meshService, newlyComputedMergeablePolicies)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// UpdateServicePolicies indicates an expected call of UpdateServicePolicies.
-func (mr *MockInMemoryStatusUpdaterMockRecorder) UpdateServicePolicies(meshService, newlyComputedMergeablePolicies interface{}) *gomock.Call {
+// MutateServicePolicies indicates an expected call of MutateServicePolicies.
+func (mr *MockInMemoryStatusMutatorMockRecorder) MutateServicePolicies(meshService, newlyComputedMergeablePolicies interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServicePolicies", reflect.TypeOf((*MockInMemoryStatusUpdater)(nil).UpdateServicePolicies), meshService, newlyComputedMergeablePolicies)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MutateServicePolicies", reflect.TypeOf((*MockInMemoryStatusMutator)(nil).MutateServicePolicies), meshService, newlyComputedMergeablePolicies)
 }
 
-// UpdateConflictAndTranslatorErrors mocks base method.
-func (m *MockInMemoryStatusUpdater) UpdateConflictAndTranslatorErrors(policy *v1alpha10.TrafficPolicy, newConflictErrors []*types0.TrafficPolicyStatus_ConflictError, newTranslationErrors []*types0.TrafficPolicyStatus_TranslatorError) bool {
+// MutateConflictAndTranslatorErrors mocks base method.
+func (m *MockInMemoryStatusMutator) MutateConflictAndTranslatorErrors(policy *v1alpha10.TrafficPolicy, newConflictErrors []*types0.TrafficPolicyStatus_ConflictError, newTranslationErrors []*types0.TrafficPolicyStatus_TranslatorError) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateConflictAndTranslatorErrors", policy, newConflictErrors, newTranslationErrors)
+	ret := m.ctrl.Call(m, "MutateConflictAndTranslatorErrors", policy, newConflictErrors, newTranslationErrors)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// UpdateConflictAndTranslatorErrors indicates an expected call of UpdateConflictAndTranslatorErrors.
-func (mr *MockInMemoryStatusUpdaterMockRecorder) UpdateConflictAndTranslatorErrors(policy, newConflictErrors, newTranslationErrors interface{}) *gomock.Call {
+// MutateConflictAndTranslatorErrors indicates an expected call of MutateConflictAndTranslatorErrors.
+func (mr *MockInMemoryStatusMutatorMockRecorder) MutateConflictAndTranslatorErrors(policy, newConflictErrors, newTranslationErrors interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateConflictAndTranslatorErrors", reflect.TypeOf((*MockInMemoryStatusUpdater)(nil).UpdateConflictAndTranslatorErrors), policy, newConflictErrors, newTranslationErrors)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MutateConflictAndTranslatorErrors", reflect.TypeOf((*MockInMemoryStatusMutator)(nil).MutateConflictAndTranslatorErrors), policy, newConflictErrors, newTranslationErrors)
 }
 
 // MockAggregator is a mock of Aggregator interface.

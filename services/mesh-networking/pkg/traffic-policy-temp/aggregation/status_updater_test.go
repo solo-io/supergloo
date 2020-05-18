@@ -12,7 +12,7 @@ import (
 )
 
 var _ = Describe("StatusUpdater", func() {
-	statusUpdater := traffic_policy_aggregation.NewInMemoryStatusUpdater()
+	statusUpdater := traffic_policy_aggregation.NewInMemoryStatusMutator()
 
 	Context("when updating service policies", func() {
 		Context("if the length of the status policies is different than the length of the new policies", func() {
@@ -26,7 +26,7 @@ var _ = Describe("StatusUpdater", func() {
 				}
 				newPolicies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil)
 
-				Expect(statusUpdater.UpdateServicePolicies(ms, newPolicies)).To(BeTrue())
+				Expect(statusUpdater.MutateServicePolicies(ms, newPolicies)).To(BeTrue())
 				Expect(ms.Status.ValidatedTrafficPolicies).To(BeNil())
 			})
 
@@ -40,7 +40,7 @@ var _ = Describe("StatusUpdater", func() {
 				}
 				newPolicies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{}
 
-				Expect(statusUpdater.UpdateServicePolicies(ms, newPolicies)).To(BeTrue())
+				Expect(statusUpdater.MutateServicePolicies(ms, newPolicies)).To(BeTrue())
 				Expect(ms.Status.ValidatedTrafficPolicies).To(BeEmpty())
 			})
 
@@ -61,7 +61,7 @@ var _ = Describe("StatusUpdater", func() {
 					},
 				}
 
-				Expect(statusUpdater.UpdateServicePolicies(ms, newPolicies)).To(BeTrue())
+				Expect(statusUpdater.MutateServicePolicies(ms, newPolicies)).To(BeTrue())
 				Expect(ms.Status.ValidatedTrafficPolicies).To(Equal(newPolicies))
 			})
 		})
@@ -79,7 +79,7 @@ var _ = Describe("StatusUpdater", func() {
 					Ref: &zephyr_core_types.ResourceRef{Name: "bar"},
 				}}
 
-				Expect(statusUpdater.UpdateServicePolicies(ms, newPolicies)).To(BeTrue())
+				Expect(statusUpdater.MutateServicePolicies(ms, newPolicies)).To(BeTrue())
 				Expect(ms.Status.ValidatedTrafficPolicies).To(Equal(newPolicies))
 			})
 
@@ -95,7 +95,7 @@ var _ = Describe("StatusUpdater", func() {
 					Ref: &zephyr_core_types.ResourceRef{Name: "foo"},
 				}}
 
-				Expect(statusUpdater.UpdateServicePolicies(ms, newPolicies)).To(BeFalse())
+				Expect(statusUpdater.MutateServicePolicies(ms, newPolicies)).To(BeFalse())
 				Expect(ms.Status.ValidatedTrafficPolicies).To(Equal(newPolicies))
 			})
 		})
@@ -109,7 +109,7 @@ var _ = Describe("StatusUpdater", func() {
 					ErrorMessage: "whoops",
 				}}
 
-				Expect(statusUpdater.UpdateConflictAndTranslatorErrors(policy, conflictErrors, nil)).To(BeTrue())
+				Expect(statusUpdater.MutateConflictAndTranslatorErrors(policy, conflictErrors, nil)).To(BeTrue())
 				Expect(policy.Status.ConflictErrors).To(Equal(conflictErrors))
 			})
 
@@ -122,7 +122,7 @@ var _ = Describe("StatusUpdater", func() {
 						ConflictErrors: conflictErrors,
 					},
 				}
-				Expect(statusUpdater.UpdateConflictAndTranslatorErrors(policy, nil, nil)).To(BeTrue())
+				Expect(statusUpdater.MutateConflictAndTranslatorErrors(policy, nil, nil)).To(BeTrue())
 				Expect(policy.Status.ConflictErrors).To(BeNil())
 			})
 
@@ -139,7 +139,7 @@ var _ = Describe("StatusUpdater", func() {
 				newConflictErrors := []*zephyr_networking_types.TrafficPolicyStatus_ConflictError{{
 					ErrorMessage: "new message",
 				}}
-				Expect(statusUpdater.UpdateConflictAndTranslatorErrors(policy, newConflictErrors, nil)).To(BeTrue())
+				Expect(statusUpdater.MutateConflictAndTranslatorErrors(policy, newConflictErrors, nil)).To(BeTrue())
 				Expect(policy.Status.ConflictErrors).To(Equal(newConflictErrors))
 			})
 		})
