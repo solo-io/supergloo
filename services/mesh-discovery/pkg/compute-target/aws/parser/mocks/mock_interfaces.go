@@ -5,11 +5,10 @@
 package mock_aws_utils
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	v1 "k8s.io/api/core/v1"
+	reflect "reflect"
 )
 
 // MockAppMeshScanner is a mock of AppMeshScanner interface.
@@ -36,18 +35,18 @@ func (m *MockAppMeshScanner) EXPECT() *MockAppMeshScannerMockRecorder {
 }
 
 // ScanPodForAppMesh mocks base method.
-func (m *MockAppMeshScanner) ScanPodForAppMesh(pod *v1.Pod) (*aws_utils.AppMeshPod, error) {
+func (m *MockAppMeshScanner) ScanPodForAppMesh(pod *v1.Pod, configMap *v1.ConfigMap) (*aws_utils.AppMeshPod, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ScanPodForAppMesh", pod)
+	ret := m.ctrl.Call(m, "ScanPodForAppMesh", pod, configMap)
 	ret0, _ := ret[0].(*aws_utils.AppMeshPod)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ScanPodForAppMesh indicates an expected call of ScanPodForAppMesh.
-func (mr *MockAppMeshScannerMockRecorder) ScanPodForAppMesh(pod interface{}) *gomock.Call {
+func (mr *MockAppMeshScannerMockRecorder) ScanPodForAppMesh(pod, configMap interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanPodForAppMesh", reflect.TypeOf((*MockAppMeshScanner)(nil).ScanPodForAppMesh), pod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanPodForAppMesh", reflect.TypeOf((*MockAppMeshScanner)(nil).ScanPodForAppMesh), pod, configMap)
 }
 
 // MockArnParser is a mock of ArnParser interface.

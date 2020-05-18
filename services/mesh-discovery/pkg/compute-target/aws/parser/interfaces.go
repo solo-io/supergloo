@@ -14,9 +14,11 @@ type AppMeshPod struct {
 }
 
 type AppMeshScanner interface {
-	ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod, error)
+	ScanPodForAppMesh(
+		pod *k8s_core_types.Pod,
+		configMap *k8s_core_types.ConfigMap,
+	) (*AppMeshPod, error)
 }
-
 type ArnParser interface {
 	ParseAccountID(arn string) (string, error)
 	ParseRegion(arn string) (string, error)

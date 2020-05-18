@@ -3,6 +3,7 @@ package aws_utils
 import (
 	"strings"
 
+	"github.com/keikoproj/aws-auth/pkg/mapper"
 	"github.com/rotisserie/eris"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,8 +38,13 @@ func NewAppMeshParser(arnParser ArnParser) AppMeshScanner {
 
 // iterate through pod's containers and check for one with name containing "appmesh" and "proxy"
 // if true, return inferred AppMesh name
-func (a *appMeshParser) ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod, error) {
+func (a *appMeshParser) ScanPodForAppMesh(
+	pod *k8s_core_types.Pod,
+	configMap *k8s_core_types.ConfigMap,
+) (*AppMeshPod, error) {
 	var err error
+
+	err = yaml.Unmarshal([]byte(configMap.Data["mapRoles"]), &authData.MapRoles)
 	var awsAccountID, region, appMeshName, virtualNodeName string
 	for _, container := range pod.Spec.Containers {
 		if strings.Contains(container.Image, "appmesh") && strings.Contains(container.Image, "envoy") {
