@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Use "aws-auth.kube-system" ConfigMap to determine AWS account ID.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/696

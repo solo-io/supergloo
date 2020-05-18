@@ -59,7 +59,7 @@ func (a *appmeshTenancyScanner) MeshFromSidecar(
 	pod *k8s_core_types.Pod,
 ) (*zephyr_discovery.Mesh, error) {
 	configMap, err := a.configMapClientFactory(a.remoteClient).GetConfigMap(ctx, appmesh.AwsAuthConfigMapKey)
-	if err != nil {
+	if err != nil && !errors.IsNotFound(err) {
 		return nil, err
 	}
 	appMesh, err := a.appmeshScanner.ScanPodForAppMesh(pod, configMap)
