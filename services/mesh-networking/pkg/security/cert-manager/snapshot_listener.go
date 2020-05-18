@@ -19,7 +19,7 @@ var (
 		NewVMCSRSnapshotListener,
 	)
 
-	NoVirtualMeshsChangedMessage = "no virtual meshes were created or updated during this sync"
+	NoVirtualMeshesChangedMessage = "no virtual meshes were created or updated during this sync"
 )
 
 type VMCSRSnapshotListener snapshot.MeshNetworkingSnapshotListener
@@ -31,9 +31,9 @@ func NewVMCSRSnapshotListener(
 	return &snapshot.MeshNetworkingSnapshotListenerFunc{
 		OnSync: func(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot) {
 			logger := contextutils.LoggerFrom(ctx)
-			// If no virtual meshs have been updated return immediately
+			// If no virtual meshes have been updated return immediately
 			if len(snap.VirtualMeshes) == 0 {
-				logger.Debug(NoVirtualMeshsChangedMessage)
+				logger.Debug(NoVirtualMeshesChangedMessage)
 				return
 			}
 

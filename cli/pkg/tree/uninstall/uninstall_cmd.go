@@ -52,7 +52,7 @@ func UninstallCmd(
 		Use:   cliconstants.UninstallCommand.Use,
 		Short: cliconstants.UninstallCommand.Short,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			uninstallErrorOccured := false
+			uninstallErrorOccurred := false
 
 			masterCfg, masterKubeClients, err := buildMasterKubeClients(opts, kubeLoader, kubeClientsFactory)
 			if err != nil {
@@ -65,7 +65,7 @@ func UninstallCmd(
 				if strings.Contains(err.Error(), ReleaseNotFoundHelmErrorMessage) {
 					fmt.Fprintf(out, "Management plane components are not running here...\n")
 				} else {
-					uninstallErrorOccured = true
+					uninstallErrorOccurred = true
 					fmt.Fprintf(out, "Management plane components not removed - Continuing...\n\t(%s)\n", err.Error())
 				}
 			}
@@ -82,12 +82,12 @@ func UninstallCmd(
 
 				// failed to find the clusters, but continue through to the other steps, making this one a no-op
 				kubeClusters = &zephyr_discovery.KubernetesClusterList{}
-				uninstallErrorOccured = true
+				uninstallErrorOccurred = true
 			} else {
 				// can only do this step if we definitely have kube clusters to read from
 				err = deregisterClusters(ctx, out, kubeClusters, masterKubeClients)
 				if err != nil {
-					uninstallErrorOccured = true
+					uninstallErrorOccurred = true
 					fmt.Fprintf(out, "Failed to de-register all clusters - Continuing...\n\t(%s)\n", err.Error())
 				}
 			}
@@ -95,7 +95,7 @@ func UninstallCmd(
 			// optionally clean up the management plane namespace
 			err = removeManagementPlaneNamespace(ctx, out, masterKubeClients, opts)
 			if err != nil {
-				uninstallErrorOccured = true
+				uninstallErrorOccurred = true
 				fmt.Fprintf(out, "Failed to remove management plane namespace - Continuing...\n\t(%s)\n", err.Error())
 			}
 
@@ -108,17 +108,17 @@ func UninstallCmd(
 			} else if err == nil && !deletedCrds {
 				fmt.Fprintf(out, "No CRDs to remove from the management plane cluster...\n")
 			} else {
-				uninstallErrorOccured = true
+				uninstallErrorOccurred = true
 				fmt.Fprintf(out, "Failed to remove CRDs from management plane - Continuing...\n\t(%s)\n", err.Error())
 			}
 
 			messageSuffix := ""
-			if uninstallErrorOccured {
+			if uninstallErrorOccurred {
 				messageSuffix = " with errors"
 			}
 
 			fmt.Fprintf(out, "\nService Mesh Hub has been uninstalled%s\n", messageSuffix)
-			if uninstallErrorOccured {
+			if uninstallErrorOccurred {
 				return eris.New("errors occurred")
 			}
 

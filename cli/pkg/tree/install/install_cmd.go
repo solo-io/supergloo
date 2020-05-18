@@ -48,7 +48,7 @@ var (
 	PostInstallMessage = "Service Mesh Hub successfully installed!\n"
 )
 
-func HelmInstallerProvider(kubeClient kubernetes.Interface) factories.HelmerInstallerFactory {
+func HelmInstallerProvider(kubeClient kubernetes.Interface) factories.HelmInstallerFactory {
 	return factories.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), os.Stdout)
 }
 

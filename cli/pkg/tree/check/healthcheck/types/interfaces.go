@@ -25,7 +25,7 @@ type HealthCheck interface {
 	//   (example: the federation health checks should mark themselves as N/A if no federation has been configured yet)
 	// if Run returns (runFailure, true) and runFailure is non-nil, then the result's message should be reported to the user
 	// if Run returns (nil, true) then the check succeeded
-	Run(ctx context.Context, installNamesapce string, clients Clients) (runFailure *RunFailure, checkApplies bool)
+	Run(ctx context.Context, installNamespace string, clients Clients) (runFailure *RunFailure, checkApplies bool)
 }
 
 type RunFailure struct {

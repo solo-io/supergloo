@@ -139,7 +139,7 @@ var _ = Describe("Cluster Deregistration", func() {
 
 		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
-			func(helmInstallerFactory factories.HelmerInstallerFactory) csr.CsrAgentInstaller {
+			func(helmInstallerFactory factories.HelmInstallerFactory) csr.CsrAgentInstaller {
 				return mockCsrAgentInstaller
 			},
 			configLookup,
@@ -189,7 +189,7 @@ var _ = Describe("Cluster Deregistration", func() {
 
 		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
-			func(helmInstallerFactory factories.HelmerInstallerFactory) csr.CsrAgentInstaller {
+			func(helmInstallerFactory factories.HelmInstallerFactory) csr.CsrAgentInstaller {
 				return mockCsrAgentInstaller
 			},
 			configLookup,
@@ -248,7 +248,7 @@ var _ = Describe("Cluster Deregistration", func() {
 
 		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
-			func(helmInstallerFactory factories.HelmerInstallerFactory) csr.CsrAgentInstaller {
+			func(helmInstallerFactory factories.HelmInstallerFactory) csr.CsrAgentInstaller {
 				return mockCsrAgentInstaller
 			},
 			configLookup,
@@ -341,7 +341,7 @@ var _ = Describe("Cluster Deregistration", func() {
 
 		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
-			func(helmInstallerFactory factories.HelmerInstallerFactory) csr.CsrAgentInstaller {
+			func(helmInstallerFactory factories.HelmInstallerFactory) csr.CsrAgentInstaller {
 				return mockCsrAgentInstaller
 			},
 			configLookup,

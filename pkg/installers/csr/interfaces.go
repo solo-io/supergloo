@@ -35,4 +35,4 @@ type CsrAgentInstaller interface {
 	Uninstall(uninstallOptions *CsrAgentUninstallOptions) error
 }
 
-type CsrAgentInstallerFactory func(helmInstallerFactory factories.HelmerInstallerFactory) CsrAgentInstaller
+type CsrAgentInstallerFactory func(helmInstallerFactory factories.HelmInstallerFactory) CsrAgentInstaller

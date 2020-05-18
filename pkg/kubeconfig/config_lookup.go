@@ -20,12 +20,12 @@ var (
 
 func NewKubeConfigLookup(
 	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
-	secrestClient k8s_core.SecretClient,
+	secretClient k8s_core.SecretClient,
 	kubeConverter Converter,
 ) KubeConfigLookup {
 	return &kubeConfigLookup{
 		kubeClusterClient: kubeClusterClient,
-		secretsClient:     secrestClient,
+		secretsClient:     secretClient,
 		kubeConverter:     kubeConverter,
 	}
 }

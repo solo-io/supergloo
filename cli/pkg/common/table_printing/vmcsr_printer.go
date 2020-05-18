@@ -39,10 +39,10 @@ func (m *vmcsrPrinter) Print(
 	var preFilteredRows [][]string
 	for _, vmcsr := range vmcsrs {
 		var newRow []string
-		// Append commonn metadata
+		// Append common metadata
 		newRow = append(newRow, m.buildMetadataCell(vmcsr))
 
-		// Append mesehes
+		// Append meshes
 		newRow = append(newRow, m.buildCSRCell(vmcsr.Spec))
 
 		// Append status data

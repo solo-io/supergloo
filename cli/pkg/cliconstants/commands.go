@@ -49,7 +49,7 @@ var (
 		Use:   "cleanup",
 		Short: "Delete the local Service Mesh Hub demo setup",
 		Long: "This will delete all kind clusters running locally, so make sure to only run this script if the only " +
-			"kind clusters running are those created by mesctl demo init.",
+			"kind clusters running are those created by meshctl demo init.",
 	}
 
 	GetCommand = struct {
@@ -94,7 +94,7 @@ var (
 		VMCSR: cobra.Command{
 			Use:     "virtualmeshcertificatesigningrequests",
 			Aliases: []string{"vmcsr", "vmcsrs", "virtualmeshcertificatesigningrequest"},
-			Short:   "Examine configured virtual mesh ceriticate signing request",
+			Short:   "Examine configured virtual mesh certificate signing request",
 		},
 	}
 

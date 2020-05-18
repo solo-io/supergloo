@@ -139,7 +139,7 @@ var _ = Describe("csr processor", func() {
 			Expect(status).To(Equal(&zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
 				ComputedStatus: &zephyr_core_types.Status{
 					State:   zephyr_core_types.Status_INVALID,
-					Message: csr_generator.FailesToAddCsrToResource(testErr).Error(),
+					Message: csr_generator.FailedToAddCsrToResource(testErr).Error(),
 				},
 			}))
 		})

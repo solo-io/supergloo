@@ -59,7 +59,7 @@ func (m *meshPrinter) printIstioMeshes(out io.Writer, meshes []*zephyr_discovery
 
 	var preFilteredRows [][]string
 	for _, mesh := range meshes {
-		// Append commonn metadata
+		// Append common metadata
 		newRow := []string{mesh.GetName(), mesh.Spec.GetCluster().GetName()}
 
 		// istioMeshes should be prefiltered, if they are not, simply skip it
@@ -113,7 +113,7 @@ func (m *meshPrinter) printLinkerdMeshes(out io.Writer, meshes []*zephyr_discove
 
 	var preFilteredRows [][]string
 	for _, mesh := range meshes {
-		// Append commonn metadata
+		// Append common metadata
 		newRow := []string{mesh.GetName(), mesh.Spec.GetCluster().GetName()}
 
 		// linkerdMesh should be prefiltered, if they are not, simply skip it
@@ -154,19 +154,19 @@ func (m *meshPrinter) printConsulConnectMeshes(out io.Writer, meshes []*zephyr_d
 
 	var preFilteredRows [][]string
 	for _, mesh := range meshes {
-		// Append commonn metadata
+		// Append common metadata
 		newRow := []string{mesh.GetName(), mesh.Spec.GetCluster().GetName()}
 
 		// Consul Connect should be prefiltered, if they are not, simply skip it
-		consulConnectmesh := mesh.Spec.GetConsulConnect()
-		if consulConnectmesh == nil {
+		consulConnectMesh := mesh.Spec.GetConsulConnect()
+		if consulConnectMesh == nil {
 			continue
 		}
 		// Append installation info
 		newRow = append(
 			newRow,
-			consulConnectmesh.GetInstallation().GetInstallationNamespace(),
-			consulConnectmesh.GetInstallation().GetVersion(),
+			consulConnectMesh.GetInstallation().GetInstallationNamespace(),
+			consulConnectMesh.GetInstallation().GetVersion(),
 		)
 
 		preFilteredRows = append(preFilteredRows, newRow)
@@ -195,7 +195,7 @@ func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*zephyr_disc
 
 	var preFilteredRows [][]string
 	for _, mesh := range meshes {
-		// Append commonn metadata
+		// Append common metadata
 		newRow := []string{mesh.GetName(), mesh.Spec.GetCluster().GetName()}
 
 		// aws appmesh should be prefiltered, if they are not, simply skip it

@@ -55,7 +55,7 @@ func AddInstallFlags(cmd *cobra.Command, opts *Options) {
 		"Create the namespace to install Service Mesh Hub into")
 	flags.BoolVarP(&opts.SmhInstall.Register, "register", "r", false,
 		"Register the management plane cluster. This would be the same as running the meshctl cluster register "+
-			"command on the managemenent plane cluster after installing.")
+			"command on the management plane cluster after installing.")
 	flags.StringVar(&opts.SmhInstall.ClusterName, "cluster-name", DefaultManagementPlaneName,
 		"Name by which to register the management-plane cluster in Service Mesh Hub. This flag will only be "+
 			"considered if --register is set.")
