@@ -103,9 +103,9 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	deploymentEventWatcherFactory := event_watcher_factories.NewDeploymentEventWatcherFactory()
 	podClientFactory := v1.PodClientFactoryProvider()
 	meshEventWatcherFactory := event_watcher_factories.NewMeshEventWatcherFactory()
-	appMeshParser := aws_utils.NewAppMeshParser(arnParser)
-	meshWorkloadScannerFactory := appmesh3.AppMeshWorkloadScannerFactoryProvider(appMeshParser)
-	clusterTenancyScannerFactory := appmesh_tenancy.AppMeshTenancyScannerFactoryProvider(appMeshParser)
+	appMeshScanner := aws_utils.NewAppMeshParser(arnParser)
+	meshWorkloadScannerFactory := appmesh3.AppMeshWorkloadScannerFactoryProvider(appMeshScanner)
+	clusterTenancyScannerFactory := appmesh_tenancy.AppMeshTenancyScannerFactoryProvider(appMeshScanner)
 	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podEventWatcherFactory, serviceEventWatcherFactory, meshWorkloadEventWatcherFactory, deploymentEventWatcherFactory, meshClientFactory, podClientFactory, meshEventWatcherFactory, meshWorkloadScannerFactory, clusterTenancyScannerFactory)
 	return discoveryContext, nil
 }

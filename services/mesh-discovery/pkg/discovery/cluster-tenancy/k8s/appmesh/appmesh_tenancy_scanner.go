@@ -15,12 +15,12 @@ import (
 )
 
 type appmeshTenancyScanner struct {
-	appmeshParser aws_utils.AppMeshParser
-	meshClient    zephyr_discovery.MeshClient
+	appmeshScanner aws_utils.AppMeshScanner
+	meshClient     zephyr_discovery.MeshClient
 }
 
 func AppMeshTenancyScannerFactoryProvider(
-	appmeshParser aws_utils.AppMeshParser,
+	appmeshParser aws_utils.AppMeshScanner,
 ) k8s_tenancy.ClusterTenancyScannerFactory {
 	return func(meshClient zephyr_discovery.MeshClient) k8s_tenancy.ClusterTenancyRegistrar {
 		return NewAppmeshTenancyScanner(
@@ -31,12 +31,12 @@ func AppMeshTenancyScannerFactoryProvider(
 }
 
 func NewAppmeshTenancyScanner(
-	appmeshParser aws_utils.AppMeshParser,
+	appmeshScanner aws_utils.AppMeshScanner,
 	meshClient zephyr_discovery.MeshClient,
 ) k8s_tenancy.ClusterTenancyRegistrar {
 	return &appmeshTenancyScanner{
-		appmeshParser: appmeshParser,
-		meshClient:    meshClient,
+		appmeshScanner: appmeshScanner,
+		meshClient:     meshClient,
 	}
 }
 
@@ -44,7 +44,7 @@ func (a *appmeshTenancyScanner) MeshFromSidecar(
 	ctx context.Context,
 	pod *k8s_core_types.Pod,
 ) (*zephyr_discovery.Mesh, error) {
-	appMesh, err := a.appmeshParser.ScanPodForAppMesh(pod)
+	appMesh, err := a.appmeshScanner.ScanPodForAppMesh(pod)
 	if err != nil {
 		return nil, err
 	}

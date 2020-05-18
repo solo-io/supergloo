@@ -13,7 +13,7 @@ type AppMeshPod struct {
 	VirtualNodeName string
 }
 
-type AppMeshParser interface {
+type AppMeshScanner interface {
 	ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod, error)
 }
 

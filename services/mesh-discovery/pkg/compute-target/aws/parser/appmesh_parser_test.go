@@ -17,7 +17,7 @@ var _ = Describe("AppmeshParser", func() {
 	var (
 		ctrl          *gomock.Controller
 		mockArnParser *mock_aws.MockArnParser
-		appMeshParser aws_utils.AppMeshParser
+		appMeshParser aws_utils.AppMeshScanner
 	)
 
 	BeforeEach(func() {

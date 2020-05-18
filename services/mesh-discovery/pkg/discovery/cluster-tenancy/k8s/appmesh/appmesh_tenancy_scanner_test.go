@@ -25,14 +25,14 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 		ctrl                    *gomock.Controller
 		ctx                     = context.TODO()
 		clusterName             = "test-cluster-name"
-		mockAppMeshParser       *mock_aws.MockAppMeshParser
+		mockAppMeshParser       *mock_aws.MockAppMeshScanner
 		mockMeshClient          *mock_core.MockMeshClient
 		appMeshTenancyRegistrar k8s_tenancy.ClusterTenancyRegistrar
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		mockAppMeshParser = mock_aws.NewMockAppMeshParser(ctrl)
+		mockAppMeshParser = mock_aws.NewMockAppMeshScanner(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		appMeshTenancyRegistrar = appmesh_tenancy.NewAppmeshTenancyScanner(mockAppMeshParser, mockMeshClient)
 	})

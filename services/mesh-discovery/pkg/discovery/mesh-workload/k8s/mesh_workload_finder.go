@@ -193,7 +193,8 @@ func (m *meshWorkloadFinder) discoverAllWorkloads(discoveredMeshTypes sets.Int32
 		pod := pod
 		discoveredWorkload, err := m.discoverMeshWorkload(&pod, discoveredMeshTypes)
 		if err != nil {
-			return nil, nil, err
+			contextutils.LoggerFrom(m.ctx).Warnf("Error scanning pod %s.%s: %+v", pod.GetName(), pod.GetNamespace(), err)
+			continue
 		} else if discoveredWorkload == nil {
 			continue
 		}

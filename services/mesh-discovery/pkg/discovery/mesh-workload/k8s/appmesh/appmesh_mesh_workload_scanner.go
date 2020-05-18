@@ -27,7 +27,7 @@ var (
 )
 
 func AppMeshWorkloadScannerFactoryProvider(
-	appMeshParser aws_utils.AppMeshParser,
+	appMeshParser aws_utils.AppMeshScanner,
 ) meshworkload_discovery.MeshWorkloadScannerFactory {
 	return func(
 		ownerFetcher meshworkload_discovery.OwnerFetcher,
@@ -40,24 +40,24 @@ func AppMeshWorkloadScannerFactoryProvider(
 // visible for testing
 func NewAppMeshWorkloadScanner(
 	ownerFetcher meshworkload_discovery.OwnerFetcher,
-	appMeshParser aws_utils.AppMeshParser,
+	appMeshParser aws_utils.AppMeshScanner,
 	meshClient zephyr_discovery.MeshClient,
 ) meshworkload_discovery.MeshWorkloadScanner {
 	return &appMeshWorkloadScanner{
-		ownerFetcher:  ownerFetcher,
-		meshClient:    meshClient,
-		appMeshParser: appMeshParser,
+		ownerFetcher:   ownerFetcher,
+		meshClient:     meshClient,
+		appmeshScanner: appMeshParser,
 	}
 }
 
 type appMeshWorkloadScanner struct {
-	ownerFetcher  meshworkload_discovery.OwnerFetcher
-	appMeshParser aws_utils.AppMeshParser
-	meshClient    zephyr_discovery.MeshClient
+	ownerFetcher   meshworkload_discovery.OwnerFetcher
+	appmeshScanner aws_utils.AppMeshScanner
+	meshClient     zephyr_discovery.MeshClient
 }
 
 func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
-	appMeshPod, err := a.appMeshParser.ScanPodForAppMesh(pod)
+	appMeshPod, err := a.appmeshScanner.ScanPodForAppMesh(pod)
 	if err != nil {
 		return nil, err
 	}
