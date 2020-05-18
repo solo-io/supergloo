@@ -15,3 +15,6 @@ rules:
   - apiGroups: ["discovery.zephyr.solo.io"]
     resources: ["meshes", "meshworkloads", "meshservices", "kubernetesclusters"]
     verbs: ["*"]
+  - apiGroups: ["core.zephyr.solo.io"]
+    resources: ["settings"]
+    verbs: ["*"]

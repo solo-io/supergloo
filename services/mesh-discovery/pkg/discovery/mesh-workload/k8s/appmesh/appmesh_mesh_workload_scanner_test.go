@@ -32,7 +32,7 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		ctx                 context.Context
 		mockOwnerFetcher    *mock_mesh_workload.MockOwnerFetcher
 		mockMeshClient      *mock_core.MockMeshClient
-		mockAppMeshParser   *mock_aws.MockAppMeshParser
+		mockAppMeshParser   *mock_aws.MockAppMeshScanner
 		meshWorkloadScanner k8s.MeshWorkloadScanner
 		namespace           = "namespace"
 		clusterName         = "clusterName"
@@ -75,7 +75,7 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		ctx = context.TODO()
 		mockOwnerFetcher = mock_mesh_workload.NewMockOwnerFetcher(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
-		mockAppMeshParser = mock_aws.NewMockAppMeshParser(ctrl)
+		mockAppMeshParser = mock_aws.NewMockAppMeshScanner(ctrl)
 		meshWorkloadScanner = appmesh.NewAppMeshWorkloadScanner(mockOwnerFetcher, mockAppMeshParser, mockMeshClient)
 	})
 

@@ -31,7 +31,7 @@ type appMeshParser struct {
 	arnParser ArnParser
 }
 
-func NewAppMeshParser(arnParser ArnParser) AppMeshParser {
+func NewAppMeshParser(arnParser ArnParser) AppMeshScanner {
 	return &appMeshParser{arnParser: arnParser}
 }
 
@@ -68,6 +68,7 @@ func (a *appMeshParser) ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod,
 					}
 				}
 			}
+			// If any of the below variables is empty, return error
 			return &AppMeshPod{
 				AwsAccountID:    awsAccountID,
 				Region:          region,
