@@ -70,9 +70,9 @@ type secretReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewSecretReconcileLoop(name string, mgr manager.Manager) SecretReconcileLoop {
+func NewSecretReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) SecretReconcileLoop {
 	return &secretReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &core_v1.Secret{}),
+		loop: reconcile.NewLoop(name, mgr, &core_v1.Secret{}, options),
 	}
 }
 
@@ -185,9 +185,9 @@ type serviceAccountReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewServiceAccountReconcileLoop(name string, mgr manager.Manager) ServiceAccountReconcileLoop {
+func NewServiceAccountReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ServiceAccountReconcileLoop {
 	return &serviceAccountReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &core_v1.ServiceAccount{}),
+		loop: reconcile.NewLoop(name, mgr, &core_v1.ServiceAccount{}, options),
 	}
 }
 
@@ -300,9 +300,9 @@ type configMapReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewConfigMapReconcileLoop(name string, mgr manager.Manager) ConfigMapReconcileLoop {
+func NewConfigMapReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ConfigMapReconcileLoop {
 	return &configMapReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &core_v1.ConfigMap{}),
+		loop: reconcile.NewLoop(name, mgr, &core_v1.ConfigMap{}, options),
 	}
 }
 
@@ -415,9 +415,9 @@ type serviceReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewServiceReconcileLoop(name string, mgr manager.Manager) ServiceReconcileLoop {
+func NewServiceReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ServiceReconcileLoop {
 	return &serviceReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &core_v1.Service{}),
+		loop: reconcile.NewLoop(name, mgr, &core_v1.Service{}, options),
 	}
 }
 
@@ -530,9 +530,9 @@ type podReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewPodReconcileLoop(name string, mgr manager.Manager) PodReconcileLoop {
+func NewPodReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) PodReconcileLoop {
 	return &podReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &core_v1.Pod{}),
+		loop: reconcile.NewLoop(name, mgr, &core_v1.Pod{}, options),
 	}
 }
 
@@ -645,9 +645,9 @@ type namespaceReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewNamespaceReconcileLoop(name string, mgr manager.Manager) NamespaceReconcileLoop {
+func NewNamespaceReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) NamespaceReconcileLoop {
 	return &namespaceReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &core_v1.Namespace{}),
+		loop: reconcile.NewLoop(name, mgr, &core_v1.Namespace{}, options),
 	}
 }
 
@@ -760,9 +760,9 @@ type nodeReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewNodeReconcileLoop(name string, mgr manager.Manager) NodeReconcileLoop {
+func NewNodeReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) NodeReconcileLoop {
 	return &nodeReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &core_v1.Node{}),
+		loop: reconcile.NewLoop(name, mgr, &core_v1.Node{}, options),
 	}
 }
 

@@ -10,27 +10,31 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
+	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	settings2 "github.com/solo-io/service-mesh-hub/pkg/settings"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
-	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/sts"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories"
 	appmesh_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s/appmesh"
 	eks2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s-cluster/rest/eks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
-	appmesh2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
+	appmesh3 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/consul"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/istio"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/linkerd"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
+	appmesh2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/appmesh"
 )
 
 // Injectors from wire.go:
@@ -52,7 +56,10 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
 	arnParser := aws_utils.NewArnParser()
 	appMeshClientFactory := appmesh.AppMeshClientFactoryProvider()
-	appMeshDiscoveryReconciler := aws.NewAppMeshDiscoveryReconciler(client, meshClientFactory, arnParser, appMeshClientFactory)
+	settingsClient := v1alpha1_2.SettingsClientProvider(client)
+	settingsHelperClient := settings.NewAwsSettingsHelperClient(settingsClient)
+	awsSelector := settings2.NewAwsSelector(arnParser)
+	appMeshDiscoveryReconciler := appmesh2.NewAppMeshDiscoveryReconciler(client, meshClientFactory, arnParser, appMeshClientFactory, settingsHelperClient, awsSelector)
 	kubernetesClusterClient := v1alpha1.KubernetesClusterClientProvider(client)
 	eksClientFactory := eks.EksClientFactoryProvider()
 	eksConfigBuilderFactory := eks.EksConfigBuilderFactoryProvider()
@@ -72,9 +79,10 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	if err != nil {
 		return DiscoveryContext{}, err
 	}
-	eksDiscoveryReconciler := eks2.NewEksDiscoveryReconciler(kubernetesClusterClient, eksClientFactory, eksConfigBuilderFactory, clusterRegistrationClient)
+	eksDiscoveryReconciler := eks2.NewEksDiscoveryReconciler(kubernetesClusterClient, eksClientFactory, eksConfigBuilderFactory, clusterRegistrationClient, settingsHelperClient, awsSelector)
 	v := AwsDiscoveryReconcilersProvider(appMeshDiscoveryReconciler, eksDiscoveryReconciler)
-	awsCredsHandler := aws2.NewAwsAPIHandler(secretAwsCredsConverter, v)
+	stsClientFactory := sts.STSClientFactoryProvider()
+	awsCredsHandler := aws.NewAwsAPIHandler(secretAwsCredsConverter, v, stsClientFactory)
 	v2 := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v2)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
@@ -96,7 +104,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	podClientFactory := v1.PodClientFactoryProvider()
 	meshEventWatcherFactory := event_watcher_factories.NewMeshEventWatcherFactory()
 	appMeshParser := aws_utils.NewAppMeshParser(arnParser)
-	meshWorkloadScannerFactory := appmesh2.AppMeshWorkloadScannerFactoryProvider(appMeshParser)
+	meshWorkloadScannerFactory := appmesh3.AppMeshWorkloadScannerFactoryProvider(appMeshParser)
 	clusterTenancyScannerFactory := appmesh_tenancy.AppMeshTenancyScannerFactoryProvider(appMeshParser)
 	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podEventWatcherFactory, serviceEventWatcherFactory, meshWorkloadEventWatcherFactory, deploymentEventWatcherFactory, meshClientFactory, podClientFactory, meshEventWatcherFactory, meshWorkloadScannerFactory, clusterTenancyScannerFactory)
 	return discoveryContext, nil

@@ -6,6 +6,7 @@ import (
 	linkerd_config "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
 	"github.com/rotisserie/eris"
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
+	zephyr_settings "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
@@ -21,6 +22,7 @@ var AddAllV1Alpha1ToScheme AsyncManagerStartOptionsFunc = func(_ context.Context
 		zephyr_discovery.AddToScheme,
 		zephyr_networking.AddToScheme,
 		zephyr_security.AddToScheme,
+		zephyr_settings.AddToScheme,
 	}
 	var err error
 	for _, addToScheme := range addToSchemes {

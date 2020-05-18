@@ -70,9 +70,9 @@ type deploymentReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewDeploymentReconcileLoop(name string, mgr manager.Manager) DeploymentReconcileLoop {
+func NewDeploymentReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) DeploymentReconcileLoop {
 	return &deploymentReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &apps_v1.Deployment{}),
+		loop: reconcile.NewLoop(name, mgr, &apps_v1.Deployment{}, options),
 	}
 }
 
@@ -185,9 +185,9 @@ type replicaSetReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewReplicaSetReconcileLoop(name string, mgr manager.Manager) ReplicaSetReconcileLoop {
+func NewReplicaSetReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ReplicaSetReconcileLoop {
 	return &replicaSetReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &apps_v1.ReplicaSet{}),
+		loop: reconcile.NewLoop(name, mgr, &apps_v1.ReplicaSet{}, options),
 	}
 }
 

@@ -19,4 +19,5 @@ type AppMeshParser interface {
 
 type ArnParser interface {
 	ParseAccountID(arn string) (string, error)
+	ParseRegion(arn string) (string, error)
 }

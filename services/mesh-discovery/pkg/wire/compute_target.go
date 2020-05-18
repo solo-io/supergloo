@@ -21,8 +21,8 @@ import (
 	eks_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s-cluster/rest/eks"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/aws"
+	meshworkload_appmesh "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/appmesh"
 	"k8s.io/client-go/rest"
 )
 
@@ -31,13 +31,13 @@ var AwsSet = wire.NewSet(
 	aws_creds.DefaultSecretAwsCredsConverter,
 	aws_utils.NewArnParser,
 	aws_utils.NewAppMeshParser,
-	appmesh.AppMeshWorkloadScannerFactoryProvider,
+	meshworkload_appmesh.AppMeshWorkloadScannerFactoryProvider,
 	zephyr_discovery.KubernetesClusterClientProvider,
 	eks_client.EksClientFactoryProvider,
 	eks_client.EksConfigBuilderFactoryProvider,
 	appmesh_client.AppMeshClientFactoryProvider,
 	AwsDiscoveryReconcilersProvider,
-	aws.NewAppMeshDiscoveryReconciler,
+	appmesh.NewAppMeshDiscoveryReconciler,
 	eks.NewEksDiscoveryReconciler,
 )
 

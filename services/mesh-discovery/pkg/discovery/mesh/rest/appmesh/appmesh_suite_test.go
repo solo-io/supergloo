@@ -1,4 +1,4 @@
-package aws_test
+package appmesh_test
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestAws(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Discovery AWS Mesh reconciler Suite")
+	RunSpecs(t, "Discovery Appmesh reconciler Suite")
 }

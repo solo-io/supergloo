@@ -41,9 +41,9 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
 	github.com/solo-io/go-utils v0.16.0
-	github.com/solo-io/protoc-gen-ext v0.0.7
+	github.com/solo-io/protoc-gen-ext v0.0.9
 	github.com/solo-io/reporting-client v0.1.3
-	github.com/solo-io/skv2 v0.1.1
+	github.com/solo-io/skv2 v0.2.1
 	github.com/solo-io/solo-kit v0.13.3
 	github.com/spf13/cobra v0.0.5
 	go.uber.org/zap v1.13.0

@@ -25,4 +25,12 @@ var _ = Describe("ArnParser", func() {
 		_, err := arnParser.ParseAccountID(arnString)
 		Expect(err).To(testutils.HaveInErrorChain(aws_utils.ARNParseError(err, arnString)))
 	})
+
+	It("should parse AWS region", func() {
+		expectedRegion := "us-east-2"
+		arnString := fmt.Sprintf("arn:aws:appmesh:%s:410461945957:mesh/test-appmesh", expectedRegion)
+		region, err := arnParser.ParseRegion(arnString)
+		Expect(err).To(BeNil())
+		Expect(region).To(Equal(expectedRegion))
+	})
 })

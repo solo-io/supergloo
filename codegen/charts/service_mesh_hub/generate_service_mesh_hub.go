@@ -45,6 +45,39 @@ func main() {
 		Groups: []model.Group{
 			{
 				GroupVersion: schema.GroupVersion{
+					Group:   "core." + cliconstants.ServiceMeshHubApiGroupSuffix,
+					Version: "v1alpha1",
+				},
+				Module: "github.com/solo-io/service-mesh-hub",
+				Resources: []model.Resource{
+					{
+						Kind: "Settings",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:      "SettingsSpec",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types",
+							},
+						},
+						Status: &model.Field{Type: model.Type{
+							Name:      "SettingsStatus",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types",
+						}},
+					},
+				},
+				ApiRoot:          "pkg/api/",
+				RenderManifests:  true,
+				RenderTypes:      renderTypes,
+				RenderController: true,
+				RenderProtos:     true,
+				RenderClients:    true,
+				CustomTemplates: model.CustomTemplates{
+					Templates: map[string]string{
+						"client_providers.go": customClientProviders,
+					},
+				},
+			},
+			{
+				GroupVersion: schema.GroupVersion{
 					Group:   "networking." + cliconstants.ServiceMeshHubApiGroupSuffix,
 					Version: "v1alpha1",
 				},

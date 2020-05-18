@@ -70,9 +70,9 @@ type kubernetesClusterReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewKubernetesClusterReconcileLoop(name string, mgr manager.Manager) KubernetesClusterReconcileLoop {
+func NewKubernetesClusterReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) KubernetesClusterReconcileLoop {
 	return &kubernetesClusterReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &discovery_zephyr_solo_io_v1alpha1.KubernetesCluster{}),
+		loop: reconcile.NewLoop(name, mgr, &discovery_zephyr_solo_io_v1alpha1.KubernetesCluster{}, options),
 	}
 }
 
@@ -185,9 +185,9 @@ type meshServiceReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewMeshServiceReconcileLoop(name string, mgr manager.Manager) MeshServiceReconcileLoop {
+func NewMeshServiceReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) MeshServiceReconcileLoop {
 	return &meshServiceReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &discovery_zephyr_solo_io_v1alpha1.MeshService{}),
+		loop: reconcile.NewLoop(name, mgr, &discovery_zephyr_solo_io_v1alpha1.MeshService{}, options),
 	}
 }
 
@@ -300,9 +300,9 @@ type meshWorkloadReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewMeshWorkloadReconcileLoop(name string, mgr manager.Manager) MeshWorkloadReconcileLoop {
+func NewMeshWorkloadReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) MeshWorkloadReconcileLoop {
 	return &meshWorkloadReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &discovery_zephyr_solo_io_v1alpha1.MeshWorkload{}),
+		loop: reconcile.NewLoop(name, mgr, &discovery_zephyr_solo_io_v1alpha1.MeshWorkload{}, options),
 	}
 }
 
@@ -415,9 +415,9 @@ type meshReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewMeshReconcileLoop(name string, mgr manager.Manager) MeshReconcileLoop {
+func NewMeshReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) MeshReconcileLoop {
 	return &meshReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &discovery_zephyr_solo_io_v1alpha1.Mesh{}),
+		loop: reconcile.NewLoop(name, mgr, &discovery_zephyr_solo_io_v1alpha1.Mesh{}, options),
 	}
 }
 
