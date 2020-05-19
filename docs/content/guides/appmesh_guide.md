@@ -2,7 +2,7 @@
 title: "Appmesh Guide"
 menuTitle: Appmesh Guide
 description: Guide for getting started using Service Mesh Hub with Appmesh.
-weight: 100
+weight: 110
 ---
 
 # Service Mesh Hub with Appmesh
@@ -23,11 +23,12 @@ There are three pre-requisites to following these guides:
     - https://kubernetes.io/docs/tasks/tools/install-kubectl/
 2. Install `meshctl`
     - `curl -sL https://run.solo.io/meshctl/install | sh && export PATH=$PATH:$HOME/.service-mesh-hub/bin`
+    - see the [guide]({{% versioned_link_path fromRoot="/getting_started" %}})
 3. Have an existing AppMesh instance and access to a set of credentials for the associated AWS account (access key ID and secret key pair).
 
 ## Configure discovery of Appmesh
 
-First confirm that your Appmesh instance exists by running `aws appmesh describe-mesh --mesh-name <mesh-name`. Copy the ARN returned in the response, which you'll need in the steps below.
+First confirm that your Appmesh instance exists by running `aws appmesh describe-mesh --mesh-name <mesh-name>`. Copy the ARN returned in the response, which you'll need in the steps below.
 
 Upon installation of Service Mesh Hub v0.4.12+, you should see a `settings.core.zephyr.solo.io` CRD instance with the name 
 `settings` in the SMH write namespace (by default this is `service-mesh-hub`), populated with

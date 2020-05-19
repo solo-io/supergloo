@@ -2,7 +2,7 @@
 title: "EKS Guide"
 menuTitle: EKS Guide
 description: Guide for getting started using Service Mesh Hub with EKS.
-weight: 100
+weight: 120
 ---
 
 # Service Mesh Hub with Appmesh
@@ -21,6 +21,7 @@ There are three pre-requisites to following these guides:
     - https://kubernetes.io/docs/tasks/tools/install-kubectl/
 2. Install `meshctl`
     - `curl -sL https://run.solo.io/meshctl/install | sh && export PATH=$PATH:$HOME/.service-mesh-hub/bin`
+    - see the [guide]({{% versioned_link_path fromRoot="/getting_started" %}})
 3. Install `helm`, [instructions here](https://helm.sh/docs/intro/install/)
 
 ## Provision an Appmesh-enabled EKS cluster
