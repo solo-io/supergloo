@@ -110,7 +110,7 @@ spec:
         - -enable-statsd=false
         env:
         - name: APPMESH_NAME
-          value: harvey-appmesh
+          value: appmesh-test
         - name: APPMESH_LOG_LEVEL
           value: info
         - name: CA_BUNDLE
