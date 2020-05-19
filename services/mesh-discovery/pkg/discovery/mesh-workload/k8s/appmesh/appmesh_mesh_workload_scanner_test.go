@@ -12,7 +12,6 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
@@ -21,7 +20,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
+	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	appsv1 "k8s.io/api/apps/v1"
 	k8s_core_types "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,7 +34,7 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		mockOwnerFetcher    *mock_mesh_workload.MockOwnerFetcher
 		mockMeshClient      *mock_core.MockMeshClient
 		mockAppMeshParser   *mock_aws.MockAppMeshScanner
-		mockConfigMapClient *mock_kubernetes_core.MockConfigMapClient
+		mockRemoteClient    *mock_controller_runtime.MockClient
 		meshWorkloadScanner k8s.MeshWorkloadScanner
 		namespace           = "namespace"
 		clusterName         = "clusterName"
@@ -79,15 +78,12 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		mockOwnerFetcher = mock_mesh_workload.NewMockOwnerFetcher(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockAppMeshParser = mock_aws.NewMockAppMeshScanner(ctrl)
-		mockConfigMapClient = mock_kubernetes_core.NewMockConfigMapClient(ctrl)
+		mockRemoteClient = mock_controller_runtime.NewMockClient(ctrl)
 		meshWorkloadScanner = appmesh.NewAppMeshWorkloadScanner(
 			mockOwnerFetcher,
 			mockAppMeshParser,
 			mockMeshClient,
-			func(client client.Client) k8s_core.ConfigMapClient {
-				return mockConfigMapClient
-			},
-			nil,
+			mockRemoteClient,
 		)
 	})
 
@@ -143,11 +139,9 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 				},
 			},
 		}
-		configMap := &k8s_core_types.ConfigMap{}
-		mockConfigMapClient.EXPECT().GetConfigMap(ctx, appmesh.AwsAuthConfigMapKey).Return(configMap, nil)
 		mockAppMeshParser.
 			EXPECT().
-			ScanPodForAppMesh(pod, configMap).
+			ScanPodForAppMesh(ctx, pod, mockRemoteClient).
 			Return(&aws_utils.AppMeshPod{
 				Region:       region,
 				AppMeshName:  meshName,
@@ -167,11 +161,9 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 			},
 			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
 		}
-		configMap := &k8s_core_types.ConfigMap{}
-		mockConfigMapClient.EXPECT().GetConfigMap(ctx, appmesh.AwsAuthConfigMapKey).Return(configMap, nil)
 		mockAppMeshParser.
 			EXPECT().
-			ScanPodForAppMesh(nonAppMeshPod, configMap).
+			ScanPodForAppMesh(ctx, nonAppMeshPod, mockRemoteClient).
 			Return(nil, nil)
 		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, nonAppMeshPod, clusterName)
 		Expect(err).NotTo(HaveOccurred())
@@ -181,11 +173,9 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 	It("should return error if error fetching deployment", func() {
 		expectedErr := eris.New("error")
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(nil, expectedErr)
-		configMap := &k8s_core_types.ConfigMap{}
-		mockConfigMapClient.EXPECT().GetConfigMap(ctx, appmesh.AwsAuthConfigMapKey).Return(configMap, nil)
 		mockAppMeshParser.
 			EXPECT().
-			ScanPodForAppMesh(pod, configMap).
+			ScanPodForAppMesh(ctx, pod, mockRemoteClient).
 			Return(&aws_utils.AppMeshPod{}, nil)
 		_, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))

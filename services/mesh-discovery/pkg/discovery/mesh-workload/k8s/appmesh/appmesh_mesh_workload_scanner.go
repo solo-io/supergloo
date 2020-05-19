@@ -8,7 +8,6 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
@@ -25,12 +24,10 @@ var (
 			constants.MESH_TYPE: strings.ToLower(zephyr_core_types.MeshType_APPMESH.String()),
 		}
 	}
-	AwsAuthConfigMapKey = client.ObjectKey{Name: "aws-auth", Namespace: "kube-system"}
 )
 
 func AppMeshWorkloadScannerFactoryProvider(
 	appMeshParser aws_utils.AppMeshScanner,
-	configMapClientFactory k8s_core.ConfigMapClientFactory,
 ) meshworkload_discovery.MeshWorkloadScannerFactory {
 	return func(
 		ownerFetcher meshworkload_discovery.OwnerFetcher,
@@ -41,7 +38,6 @@ func AppMeshWorkloadScannerFactoryProvider(
 			ownerFetcher,
 			appMeshParser,
 			meshClient,
-			configMapClientFactory,
 			remoteClient,
 		)
 	}
@@ -52,32 +48,25 @@ func NewAppMeshWorkloadScanner(
 	ownerFetcher meshworkload_discovery.OwnerFetcher,
 	appMeshParser aws_utils.AppMeshScanner,
 	meshClient zephyr_discovery.MeshClient,
-	configMapClientFactory k8s_core.ConfigMapClientFactory,
 	remoteClient client.Client,
 ) meshworkload_discovery.MeshWorkloadScanner {
 	return &appMeshWorkloadScanner{
-		ownerFetcher:           ownerFetcher,
-		meshClient:             meshClient,
-		appmeshScanner:         appMeshParser,
-		configMapClientFactory: configMapClientFactory,
-		remoteClient:           remoteClient,
+		ownerFetcher:   ownerFetcher,
+		meshClient:     meshClient,
+		appmeshScanner: appMeshParser,
+		remoteClient:   remoteClient,
 	}
 }
 
 type appMeshWorkloadScanner struct {
-	ownerFetcher           meshworkload_discovery.OwnerFetcher
-	appmeshScanner         aws_utils.AppMeshScanner
-	meshClient             zephyr_discovery.MeshClient
-	configMapClientFactory k8s_core.ConfigMapClientFactory
-	remoteClient           client.Client
+	ownerFetcher   meshworkload_discovery.OwnerFetcher
+	appmeshScanner aws_utils.AppMeshScanner
+	meshClient     zephyr_discovery.MeshClient
+	remoteClient   client.Client
 }
 
 func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
-	configMap, err := a.configMapClientFactory(a.remoteClient).GetConfigMap(ctx, AwsAuthConfigMapKey)
-	if err != nil {
-		return nil, err
-	}
-	appMeshPod, err := a.appmeshScanner.ScanPodForAppMesh(pod, configMap)
+	appMeshPod, err := a.appmeshScanner.ScanPodForAppMesh(ctx, pod, a.remoteClient)
 	if err != nil {
 		return nil, err
 	}

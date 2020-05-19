@@ -8,16 +8,13 @@ import (
 	. "github.com/onsi/gomega"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
 	appmesh_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s/appmesh"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	"github.com/solo-io/skv2/pkg/utils"
 	k8s_core "k8s.io/api/core/v1"
@@ -31,7 +28,6 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 		clusterName             = "test-cluster-name"
 		mockAppMeshParser       *mock_aws.MockAppMeshScanner
 		mockMeshClient          *mock_core.MockMeshClient
-		mockConfigMapClient     *mock_kubernetes_core.MockConfigMapClient
 		mockRemoteClient        *mock_controller_runtime.MockClient
 		appMeshTenancyRegistrar k8s_tenancy.ClusterTenancyRegistrar
 	)
@@ -40,13 +36,9 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockAppMeshParser = mock_aws.NewMockAppMeshScanner(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
-		mockConfigMapClient = mock_kubernetes_core.NewMockConfigMapClient(ctrl)
 		mockRemoteClient = mock_controller_runtime.NewMockClient(ctrl)
 		appMeshTenancyRegistrar = appmesh_tenancy.NewAppmeshTenancyScanner(
 			mockAppMeshParser,
-			func(client client.Client) v1.ConfigMapClient {
-				return mockConfigMapClient
-			},
 			mockMeshClient,
 			mockRemoteClient,
 		)
@@ -73,9 +65,7 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 			AppMeshName:     "appmeshname",
 			VirtualNodeName: "virtualnodename",
 		}
-		configMap := &k8s_core.ConfigMap{}
-		mockConfigMapClient.EXPECT().GetConfigMap(ctx, appmesh.AwsAuthConfigMapKey).Return(configMap, nil)
-		mockAppMeshParser.EXPECT().ScanPodForAppMesh(pod, configMap).Return(appMeshPod, nil)
+		mockAppMeshParser.EXPECT().ScanPodForAppMesh(ctx, pod, mockRemoteClient).Return(appMeshPod, nil)
 		mockMeshClient.EXPECT().GetMesh(ctx, client.ObjectKey{
 			Name:      metadata.BuildAppMeshName(appMeshPod.AppMeshName, appMeshPod.Region, appMeshPod.AwsAccountID),
 			Namespace: env.GetWriteNamespace(),

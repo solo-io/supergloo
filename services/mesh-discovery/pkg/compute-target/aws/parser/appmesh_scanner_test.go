@@ -1,6 +1,7 @@
 package aws_utils_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/golang/mock/gomock"
@@ -9,34 +10,28 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
+	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("AppmeshParser", func() {
 	var (
-		ctrl          *gomock.Controller
-		mockArnParser *mock_aws.MockArnParser
-		appMeshParser aws_utils.AppMeshScanner
-		accountID     = "111122223333"
-		roleARN       = fmt.Sprintf("arn:aws:iam::%s:role/role-name", accountID)
-		configMap     = &k8s_core_types.ConfigMap{
-			Data: map[string]string{
-				"mapRoles": fmt.Sprintf(`
-- groups:
-  - system:bootstrappers
-  - system:nodes
-  rolearn: %s
-  username: system:node:{{EC2PrivateDNSName}}
-`, roleARN),
-			},
-		}
+		ctrl                    *gomock.Controller
+		ctx                     context.Context
+		mockArnParser           *mock_aws.MockArnParser
+		mockAwsAccountIdFetcher *mock_aws.MockAwsAccountIdFetcher
+		mockRemoteClient        *mock_controller_runtime.MockClient
+		appMeshParser           aws_utils.AppMeshScanner
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
+		ctx = context.TODO()
+		mockRemoteClient = mock_controller_runtime.NewMockClient(ctrl)
 		mockArnParser = mock_aws.NewMockArnParser(ctrl)
-		appMeshParser = aws_utils.NewAppMeshParser(mockArnParser)
+		mockAwsAccountIdFetcher = mock_aws.NewMockAwsAccountIdFetcher(ctrl)
+		appMeshParser = aws_utils.NewAppMeshScanner(mockArnParser, mockAwsAccountIdFetcher)
 	})
 
 	AfterEach(func() {
@@ -45,7 +40,7 @@ var _ = Describe("AppmeshParser", func() {
 
 	It("should scan pod for AppMesh sidecar and return data if so", func() {
 		expectedAppMeshPod := &aws_utils.AppMeshPod{
-			AwsAccountID:    accountID,
+			AwsAccountID:    "accountID",
 			Region:          "us-east-2",
 			AppMeshName:     "appmeshname",
 			VirtualNodeName: "virtualnodename",
@@ -74,15 +69,15 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		mockArnParser.EXPECT().ParseAccountID(roleARN).Return(expectedAppMeshPod.AwsAccountID, nil)
-		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod, configMap)
+		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return(expectedAppMeshPod.AwsAccountID, nil)
+		appMeshPod, err := appMeshParser.ScanPodForAppMesh(ctx, pod, mockRemoteClient)
 		Expect(err).To(BeNil())
 		Expect(appMeshPod).To(Equal(expectedAppMeshPod))
 	})
 
 	It("should scan pod for AppMesh sidecar and fall back on using AWS_ROLE_ARN if configMap not found", func() {
 		expectedAppMeshPod := &aws_utils.AppMeshPod{
-			AwsAccountID:    accountID,
+			AwsAccountID:    "accountID",
 			Region:          "us-east-2",
 			AppMeshName:     "appmeshname",
 			VirtualNodeName: "virtualnodename",
@@ -115,8 +110,9 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
+		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return("", nil)
 		mockArnParser.EXPECT().ParseAccountID(pod.Spec.Containers[0].Env[2].Value).Return(expectedAppMeshPod.AwsAccountID, nil)
-		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod, nil)
+		appMeshPod, err := appMeshParser.ScanPodForAppMesh(ctx, pod, mockRemoteClient)
 		Expect(err).To(BeNil())
 		Expect(appMeshPod).To(Equal(expectedAppMeshPod))
 	})
@@ -149,8 +145,8 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		mockArnParser.EXPECT().ParseAccountID(roleARN).Return(accountID, nil)
-		_, err := appMeshParser.ScanPodForAppMesh(pod, configMap)
+		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return("accountID", nil)
+		_, err := appMeshParser.ScanPodForAppMesh(ctx, pod, mockRemoteClient)
 		Expect(err).To(testutils.HaveInErrorChain(aws_utils.EmptyEnvVarValueError(aws_utils.AppMeshRegionEnvVarName, pod.ObjectMeta)))
 	})
 
@@ -183,8 +179,8 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		mockArnParser.EXPECT().ParseAccountID(roleARN).Return(accountID, nil)
-		_, err := appMeshParser.ScanPodForAppMesh(pod, configMap)
+		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return("accountID", nil)
+		_, err := appMeshParser.ScanPodForAppMesh(ctx, pod, mockRemoteClient)
 		Expect(err).To(testutils.HaveInErrorChain(aws_utils.UnexpectedVirtualNodeValue(unexpectedValue)))
 	})
 
@@ -199,8 +195,8 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		mockArnParser.EXPECT().ParseAccountID(roleARN).Return(accountID, nil)
-		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod, configMap)
+		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return("", nil)
+		appMeshPod, err := appMeshParser.ScanPodForAppMesh(ctx, pod, mockRemoteClient)
 		Expect(err).To(BeNil())
 		Expect(appMeshPod).To(BeNil())
 	})
