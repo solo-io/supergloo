@@ -56,7 +56,7 @@ func (a *appMeshScanner) ScanPodForAppMesh(
 	var err error
 	awsAccountID, err = a.awsAccountIdFetcher.GetEksAccountId(ctx, remoteClient)
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Warnf("Error parsing aws-auth.kube-system ConfigMap: %+v", )
+		contextutils.LoggerFrom(ctx).Warnf("Error parsing aws-auth.kube-system ConfigMap: %+v")
 	}
 	for _, container := range pod.Spec.Containers {
 		if strings.Contains(container.Image, "appmesh") && strings.Contains(container.Image, "envoy") {
