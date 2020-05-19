@@ -42,6 +42,11 @@ By default discovery for AWS resources is disabled. To enable discovery for your
 making the relevant substitutions (note for simplicity we disable EKS discovery, see the guides section for a tutorial on EKS discovery):
 
 ```yaml
+apiVersion: core.zephyr.solo.io/v1alpha1
+kind: Settings
+metadata:
+  namespace: service-mesh-hub
+  name: settings
 spec:
   aws:
     disabled: false
@@ -63,6 +68,11 @@ The [DiscoverySelector](https://docs.solo.io/service-mesh-hub/latest/reference/a
 allows for matching by region and tags. For instance, to discover all Appmesh meshes in `us-east-2`, apply the following Settings config:
 
 ```yaml
+apiVersion: core.zephyr.solo.io/v1alpha1
+kind: Settings
+metadata:
+  namespace: service-mesh-hub
+  name: settings
 spec:
   aws:
     disabled: false
