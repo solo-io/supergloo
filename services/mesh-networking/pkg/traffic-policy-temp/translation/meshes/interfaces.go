@@ -14,7 +14,7 @@ type IstioTranslator interface {
 		meshService *zephyr_discovery.MeshService,
 		mesh *zephyr_discovery.Mesh,
 		trafficPolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
-	) (IstioTranslationOutput, []*TranslationError)
+	) (*IstioTranslationOutput, []*TranslationError)
 }
 
 type TranslationValidator interface {

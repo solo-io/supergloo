@@ -3,6 +3,7 @@ package translation_framework
 import (
 	"context"
 
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
@@ -58,7 +59,11 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 
 		switch meshType {
 		case zephyr_core_types.MeshType_ISTIO:
-			t.istioTranslator.Translate()
+			output, translationErr := t.istioTranslator.Translate(&meshService, mesh, meshService.Status.ValidatedTrafficPolicies)
+			if len(translationErr) > 0 {
+				return eris.Errorf("Translation errors occurred in translation reconciler; this is unexpected: %+v", translationErr)
+			}
+
 		}
 	}
 }

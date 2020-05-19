@@ -37,10 +37,10 @@ func (m *MockIstioTranslator) EXPECT() *MockIstioTranslatorMockRecorder {
 }
 
 // Translate mocks base method.
-func (m *MockIstioTranslator) Translate(meshService *v1alpha1.MeshService, mesh *v1alpha1.Mesh, trafficPolicies []*types.MeshServiceStatus_ValidatedTrafficPolicy) (mesh_translation.IstioTranslationOutput, []*mesh_translation.TranslationError) {
+func (m *MockIstioTranslator) Translate(meshService *v1alpha1.MeshService, mesh *v1alpha1.Mesh, trafficPolicies []*types.MeshServiceStatus_ValidatedTrafficPolicy) (*mesh_translation.IstioTranslationOutput, []*mesh_translation.TranslationError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", meshService, mesh, trafficPolicies)
-	ret0, _ := ret[0].(mesh_translation.IstioTranslationOutput)
+	ret0, _ := ret[0].(*mesh_translation.IstioTranslationOutput)
 	ret1, _ := ret[1].([]*mesh_translation.TranslationError)
 	return ret0, ret1
 }
