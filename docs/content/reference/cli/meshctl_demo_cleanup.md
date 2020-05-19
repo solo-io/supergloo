@@ -8,7 +8,7 @@ Delete the local Service Mesh Hub demo setup
 
 ### Synopsis
 
-This will delete all kind clusters running locally, so make sure to only run this script if the only kind clusters running are those created by mesctl demo init.
+This will delete all kind clusters running locally, so make sure to only run this script if the only kind clusters running are those created by meshctl demo init.
 
 ```
 meshctl demo cleanup [flags]

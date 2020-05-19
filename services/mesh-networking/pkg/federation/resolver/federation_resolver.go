@@ -233,12 +233,12 @@ func (f *federationResolver) getVirtualMeshContainingService(
 	ctx context.Context,
 	meshForService *zephyr_discovery.Mesh,
 ) (*zephyr_networking.VirtualMesh, error) {
-	virtualMeshs, err := f.virtualMeshClient.ListVirtualMesh(ctx)
+	virtualMeshes, err := f.virtualMeshClient.ListVirtualMesh(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, virtualMesh := range virtualMeshs.Items {
+	for _, virtualMesh := range virtualMeshes.Items {
 		for _, mesh := range virtualMesh.Spec.GetMeshes() {
 			if mesh.GetName() == meshForService.GetName() && mesh.GetNamespace() == meshForService.GetNamespace() {
 				return &virtualMesh, nil

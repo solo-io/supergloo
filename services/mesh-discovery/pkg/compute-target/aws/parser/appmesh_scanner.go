@@ -27,19 +27,27 @@ var (
 	}
 )
 
-type appMeshParser struct {
+type appMeshScanner struct {
 	arnParser ArnParser
 }
 
-func NewAppMeshParser(arnParser ArnParser) AppMeshScanner {
-	return &appMeshParser{arnParser: arnParser}
+func NewAppMeshScanner(
+	arnParser ArnParser,
+) AppMeshScanner {
+	return &appMeshScanner{
+		arnParser: arnParser,
+	}
 }
 
 // iterate through pod's containers and check for one with name containing "appmesh" and "proxy"
 // if true, return inferred AppMesh name
-func (a *appMeshParser) ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod, error) {
+func (a *appMeshScanner) ScanPodForAppMesh(
+	pod *k8s_core_types.Pod,
+	awsAccountId AwsAccountId,
+) (*AppMeshPod, error) {
 	var err error
-	var awsAccountID, region, appMeshName, virtualNodeName string
+	var awsAccountIDString, region, appMeshName, virtualNodeName string
+	awsAccountIDString = string(awsAccountId)
 	for _, container := range pod.Spec.Containers {
 		if strings.Contains(container.Image, "appmesh") && strings.Contains(container.Image, "envoy") {
 			for _, env := range container.Env {
@@ -58,11 +66,12 @@ func (a *appMeshParser) ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod,
 						return nil, EmptyEnvVarValueError(env.Name, pod.ObjectMeta)
 					}
 					region = env.Value
-				} else if env.Name == AppMeshRoleArnEnvVarName {
+				} else if env.Name == AppMeshRoleArnEnvVarName && awsAccountIDString == "" {
+					// Fallback to using env var if AWS account ID wasn't found from aws-auth ConfigMap
 					if env.Value == "" {
 						return nil, EmptyEnvVarValueError(env.Name, pod.ObjectMeta)
 					}
-					awsAccountID, err = a.arnParser.ParseAccountID(env.Value)
+					awsAccountIDString, err = a.arnParser.ParseAccountID(env.Value)
 					if err != nil {
 						return nil, err
 					}
@@ -70,7 +79,7 @@ func (a *appMeshParser) ScanPodForAppMesh(pod *k8s_core_types.Pod) (*AppMeshPod,
 			}
 			// If any of the below variables is empty, return error
 			return &AppMeshPod{
-				AwsAccountID:    awsAccountID,
+				AwsAccountID:    awsAccountIDString,
 				Region:          region,
 				AppMeshName:     appMeshName,
 				VirtualNodeName: virtualNodeName,

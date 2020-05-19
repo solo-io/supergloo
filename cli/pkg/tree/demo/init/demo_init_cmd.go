@@ -17,14 +17,14 @@ var InitSet = wire.NewSet(
 
 func DemoInitCmd(
 	ctx context.Context,
-	runnner exec.Runner,
+	runner exec.Runner,
 ) InitCmd {
 	init := &cobra.Command{
 		Use:   cliconstants.DemoInitCommand.Use,
 		Short: cliconstants.DemoInitCommand.Short,
 		Long:  cliconstants.DemoInitCommand.Long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return DemoInit(ctx, runnner)
+			return DemoInit(ctx, runner)
 		},
 	}
 

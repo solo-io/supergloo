@@ -108,7 +108,7 @@ func (c *asyncManager) GotError() <-chan struct{} {
 }
 
 /*
-	This fn type is meant to be used as a way of recieving the context and manager of an async manager upon start up.
+	This fn type is meant to be used as a way of receiving the context and manager of an async manager upon start up.
 	This is meant to consolidate the surface area where controllers and other context/manager dependent functions are
 	run.
 */

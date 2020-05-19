@@ -178,7 +178,7 @@ func collectDescriptors(protoDir, outDir string, filter func(file *model.Descrip
 
 	// we have to convert the codegen request from a gogo proto to a golang proto
 	// because of incompatibility between the solo kit Collector and the
-	// psuedomoto/protoc-doc-gen library:
+	// pseudomuto/protoc-gen-doc library:
 	golangRequest, err := func() (*plugin_go.CodeGeneratorRequest, error) {
 		b, err := proto.Marshal(req)
 		if err != nil {

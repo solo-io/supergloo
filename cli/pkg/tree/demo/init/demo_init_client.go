@@ -191,6 +191,6 @@ printf "\nThe remote cluster can be accessed via: kubectl config use-context kin
 printf "\nIf you plan are using this demo along with an official Service Mesh Hub guide the following may come in very handy:"
 printf "\n\nexport MGMT_PLANE_CTX=kind-$managementPlane\nexport REMOTE_CTX=kind-$remoteCluster\n\n"
 printf "\nWhen you are finished simply run:\nmeshctl demo cleanup\nor\nkind delete cluster $managementPlane && kind delete cluster $remoteCluster"
-printf "\n\nHvae fun playing around with Service Mesh Hub. Let us know what you think 😊"
+printf "\n\nHave fun playing around with Service Mesh Hub. Let us know what you think 😊"
 `
 )

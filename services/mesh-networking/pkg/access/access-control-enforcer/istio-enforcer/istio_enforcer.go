@@ -101,7 +101,7 @@ func (i *istioEnforcer) ensureIngressGatewayPolicy(
 	authPolicyClient istio_security.AuthorizationPolicyClient,
 ) error {
 	// The following config allows all traffic into the "istio-ingressgateway", which in Service Mesh Hub is
-	// the gateway used for multi cluster traffic. Authorization is then handled by the invidual workloads which traffic
+	// the gateway used for multi cluster traffic. Authorization is then handled by the individual workloads which traffic
 	// is forwarded to.
 	ingressGatewayAllowAllPolicy := &client_security_v1beta1.AuthorizationPolicy{
 		ObjectMeta: v1.ObjectMeta{

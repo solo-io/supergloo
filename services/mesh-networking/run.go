@@ -66,21 +66,21 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 			contextutils.WithLogger(ctx, "access_control_policy_translator"),
 		)
 		if err != nil {
-			logger.Fatalw("error intitializing AccessControlPolicyTranslator", zap.Error(err))
+			logger.Fatalw("error initializing AccessControlPolicyTranslator", zap.Error(err))
 		}
 
 		err = meshNetworkingContext.GlobalAccessPolicyEnforcer.Start(
 			contextutils.WithLogger(ctx, "global_access_control_policy_enforcer"),
 		)
 		if err != nil {
-			logger.Fatalw("error intitializing GlobalAccessControlPolicyEnforcer", zap.Error(err))
+			logger.Fatalw("error initializing GlobalAccessControlPolicyEnforcer", zap.Error(err))
 		}
 
 		err = meshNetworkingContext.FederationResolver.Start(
 			contextutils.WithLogger(ctx, "federation_resolver"),
 		)
 		if err != nil {
-			logger.Fatalw("error intitializing FederationResolver", zap.Error(err))
+			logger.Fatalw("error initializing FederationResolver", zap.Error(err))
 		}
 		return nil
 	}

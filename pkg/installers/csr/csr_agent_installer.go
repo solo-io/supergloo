@@ -28,7 +28,7 @@ func NewCsrAgentInstallerFactory(
 	deployedVersionFinder version.DeployedVersionFinder,
 ) CsrAgentInstallerFactory {
 	return func(
-		helmInstallerFactory factories.HelmerInstallerFactory,
+		helmInstallerFactory factories.HelmInstallerFactory,
 	) CsrAgentInstaller {
 		return NewCsrAgentInstaller(
 			helmClientFileConfigFactory,
@@ -43,7 +43,7 @@ func NewCsrAgentInstaller(
 	helmClientFileConfigFactory factories.HelmClientForFileConfigFactory,
 	helmClientMemoryConfigFactory factories.HelmClientForMemoryConfigFactory,
 	deployedVersionFinder version.DeployedVersionFinder,
-	helmInstallerFactory factories.HelmerInstallerFactory,
+	helmInstallerFactory factories.HelmInstallerFactory,
 ) CsrAgentInstaller {
 	return &csrAgentInstaller{
 		helmClientFileConfigFactory:   helmClientFileConfigFactory,
@@ -56,7 +56,7 @@ func NewCsrAgentInstaller(
 type csrAgentInstaller struct {
 	helmClientFileConfigFactory   factories.HelmClientForFileConfigFactory
 	helmClientMemoryConfigFactory factories.HelmClientForMemoryConfigFactory
-	helmInstallerFactory          factories.HelmerInstallerFactory
+	helmInstallerFactory          factories.HelmInstallerFactory
 	deployedVersionFinder         version.DeployedVersionFinder
 }
 

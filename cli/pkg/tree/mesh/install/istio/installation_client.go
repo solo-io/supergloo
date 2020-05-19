@@ -46,7 +46,7 @@ type IstioInstaller interface {
 func NewIstioInstaller(
 	out io.Writer,
 	in io.Reader,
-	clientfactory common.ClientsFactory,
+	clientFactory common.ClientsFactory,
 	opts *options.Options,
 	kubeConfigPath,
 	kubeContext string,
@@ -55,7 +55,7 @@ func NewIstioInstaller(
 	fileReader files.FileReader,
 ) (IstioInstaller, error) {
 
-	clients, err := clientfactory(opts)
+	clients, err := clientFactory(opts)
 	if err != nil {
 		return nil, err
 	}

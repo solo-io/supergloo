@@ -22,7 +22,7 @@ func main() {
 	ctx := context.TODO()
 	mgr, err := manager.NewManager(ctx, "")
 	if err != nil {
-		log.Fatal("failed to initialize anyvendor manager")
+		log.Fatal("failed to initialize vendor_any manager")
 	}
 
 	if err = mgr.Ensure(ctx, imports.ToAnyvendorConfig()); err != nil {

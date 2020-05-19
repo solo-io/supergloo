@@ -31,7 +31,7 @@ type PerMeshMetadata struct {
 
 	// all virtual meshes included here will have all their relevant data populated above
 	// i.e., if a virtual mesh is included here, you can safely query the map above for its member meshes' data
-	ResolvedVirtualMeshs []*zephyr_networking.VirtualMesh
+	ResolvedVirtualMeshes []*zephyr_networking.VirtualMesh
 }
 
 func (p PerMeshMetadata) GetOrInitialize(meshName string) *MeshMetadata {
@@ -102,7 +102,7 @@ func BuildPerMeshMetadataFromSnapshot(
 		}
 
 		if multiErr.ErrorOrNil() == nil {
-			perMeshResources.ResolvedVirtualMeshs = append(perMeshResources.ResolvedVirtualMeshs, vm)
+			perMeshResources.ResolvedVirtualMeshes = append(perMeshResources.ResolvedVirtualMeshes, vm)
 		} else {
 			errors = append(errors, ErrorReport{
 				VirtualMesh: vm,

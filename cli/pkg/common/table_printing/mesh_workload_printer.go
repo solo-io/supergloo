@@ -11,16 +11,16 @@ import (
 )
 
 func NewMeshWorkloadPrinter(tableBuilder TableBuilder) MeshWorkloadPrinter {
-	return &meshWorkloadPrintner{
+	return &meshWorkloadPrinter{
 		tableBuilder: tableBuilder,
 	}
 }
 
-type meshWorkloadPrintner struct {
+type meshWorkloadPrinter struct {
 	tableBuilder TableBuilder
 }
 
-func (m *meshWorkloadPrintner) Print(
+func (m *meshWorkloadPrinter) Print(
 	out io.Writer,
 	meshWorkloads []*zephyr_discovery.MeshWorkload,
 ) error {
@@ -54,7 +54,7 @@ func (m *meshWorkloadPrintner) Print(
 		} else {
 			newRow = append(newRow, "")
 		}
-		// Append commonn metadata
+		// Append common metadata
 		newRow = append(newRow, meshWorkload.Spec.GetMesh().GetName())
 
 		// Add workload labels

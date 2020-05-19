@@ -13,7 +13,7 @@ import (
 
 var (
 	NoOpenSourceDeployment             = eris.New("Could not find any open-source components of Service Mesh Hub")
-	FailedToLookUpOpenSourceDeployemnt = func(err error) error {
+	FailedToLookUpOpenSourceDeployment = func(err error) error {
 		return eris.Wrap(err, "Failed to find any open-source components of Service Mesh Hub")
 	}
 	FailedToParseImageName = func(err error, imageName string) error {
@@ -49,7 +49,7 @@ func (d *deployedVersionFinder) OpenSourceVersion(ctx context.Context, installNa
 	if errors.IsNotFound(err) {
 		return "", NoOpenSourceDeployment
 	} else if err != nil {
-		return "", FailedToLookUpOpenSourceDeployemnt(err)
+		return "", FailedToLookUpOpenSourceDeployment(err)
 	}
 
 	for _, container := range deployment.Spec.Template.Spec.Containers {

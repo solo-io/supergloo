@@ -7,6 +7,7 @@ import (
 	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	k8s_core "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
@@ -27,4 +28,7 @@ type ClusterTenancyRegistrar interface {
 	DeregisterMesh(ctx context.Context, clusterName string, mesh *zephyr_discovery.Mesh) error
 }
 
-type ClusterTenancyScannerFactory func(meshClient zephyr_discovery.MeshClient) ClusterTenancyRegistrar
+type ClusterTenancyScannerFactory func(
+	meshClient zephyr_discovery.MeshClient,
+	clusterClient client.Client,
+) ClusterTenancyRegistrar

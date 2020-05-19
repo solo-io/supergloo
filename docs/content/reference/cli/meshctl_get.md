@@ -37,7 +37,7 @@ meshctl get [flags]
 * [meshctl get clusters](../meshctl_get_clusters)	 - Examine registered kubernetes clusters
 * [meshctl get meshes](../meshctl_get_meshes)	 - Examine discovered meshes
 * [meshctl get services](../meshctl_get_services)	 - Examine discovered mesh services
-* [meshctl get virtualmeshcertificatesigningrequests](../meshctl_get_virtualmeshcertificatesigningrequests)	 - Examine configured virtual mesh ceriticate signing request
+* [meshctl get virtualmeshcertificatesigningrequests](../meshctl_get_virtualmeshcertificatesigningrequests)	 - Examine configured virtual mesh certificate signing request
 * [meshctl get virtualmeshes](../meshctl_get_virtualmeshes)	 - Examine configured virtual meshes
 * [meshctl get workloads](../meshctl_get_workloads)	 - Examine discovered mesh workloads
 

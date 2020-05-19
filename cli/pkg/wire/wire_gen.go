@@ -92,7 +92,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	rbacClient := auth.RbacClientProvider(kubernetesClientset)
 	remoteAuthorityManager := auth.NewRemoteAuthorityManager(serviceAccountClient, rbacClient)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
-	helmerInstallerFactory := install.HelmInstallerProvider(kubernetesClientset)
+	helmInstallerFactory := install.HelmInstallerProvider(kubernetesClientset)
 	helmClientForFileConfigFactory := factories.HelmClientForFileConfigFactoryProvider()
 	v1alpha1Clientset, err := v1alpha1.ClientsetFromConfigProvider(masterConfig)
 	if err != nil {
@@ -143,7 +143,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
 	clusterAuthClientFromConfigFactory := clients.ClusterAuthClientFromConfigFactoryProvider()
 	clusterRegistrationClient := cluster_registration.NewClusterRegistrationClient(secretClient, kubernetesClusterClient, namespaceClientFromConfigFactory, converter, csrAgentInstallerFactory, clusterAuthClientFromConfigFactory)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, helmerInstallerFactory, helmClientForFileConfigFactory, kubernetesClusterClient, healthcheck_typesClients, deployedVersionFinder, customResourceDefinitionClientFromConfigFactory, secretClient, namespaceClient, uninstallClients, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCertificateSigningRequestClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient, clusterRegistrationClient)
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, helmInstallerFactory, helmClientForFileConfigFactory, kubernetesClusterClient, healthcheck_typesClients, deployedVersionFinder, customResourceDefinitionClientFromConfigFactory, secretClient, namespaceClient, uninstallClients, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCertificateSigningRequestClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient, clusterRegistrationClient)
 	return kubeClients, nil
 }
 

@@ -166,12 +166,12 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 			deploymentClient,
 			replicaSetClient,
 		)
-		meshWorkloadScanners[meshType] = scannerFactory(ownerFetcher, m.localMeshClient)
+		meshWorkloadScanners[meshType] = scannerFactory(ownerFetcher, m.localMeshClient, mgr.Manager().GetClient())
 	}
 
 	var clusterTenancyScanners []k8s_tenancy.ClusterTenancyRegistrar
 	for _, tenancyScannerFactory := range m.clusterTenancyScannerFactories {
-		clusterTenancyScanners = append(clusterTenancyScanners, tenancyScannerFactory(m.localMeshClient))
+		clusterTenancyScanners = append(clusterTenancyScanners, tenancyScannerFactory(m.localMeshClient, mgr.Manager().GetClient()))
 	}
 
 	return &clusterDependentDeps{

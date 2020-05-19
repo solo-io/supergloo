@@ -35,7 +35,7 @@ type MeshNetworkingSnapshotGenerator interface {
 	//   * another `snapshotFrequency` period has elapsed
 	//   * <-ctx.Done() has not been signaled
 	//   * the snapshot has changed since the last time it was pushed out to the listeners
-	// this method blocks, so start it in a seperate go routine
+	// this method blocks, so start it in a separate go routine
 	StartPushingSnapshots(ctx context.Context, snapshotFrequency time.Duration)
 }
 
