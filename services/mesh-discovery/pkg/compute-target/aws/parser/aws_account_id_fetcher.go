@@ -49,10 +49,6 @@ func (a *awsAccountIdFetcher) GetEksAccountId(
 	if err != nil {
 		return "", err
 	}
-	// Fetch AWS account ID from the "aws-auth.kube-system" ConfigMap.
-	// EKS docs suggest, but do not confirm, that this ConfigMap exists on all EKS clusters.
-	// Reference: https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html
-	// NB: This logic also assumes that the AWS account owning the EKS cluster is also the account that owns the Appmesh instance.
 	for _, mapRole := range authData.MapRoles {
 		if mapRole.Username == "system:node:{{EC2PrivateDNSName}}" {
 			accountID, err := a.arnParser.ParseAccountID(mapRole.RoleARN)
