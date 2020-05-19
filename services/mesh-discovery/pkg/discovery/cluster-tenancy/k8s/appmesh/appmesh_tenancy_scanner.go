@@ -3,6 +3,7 @@ package appmesh_tenancy
 import (
 	"context"
 
+	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
@@ -15,13 +16,15 @@ import (
 )
 
 type appmeshTenancyScanner struct {
-	appmeshScanner aws_utils.AppMeshScanner
-	meshClient     zephyr_discovery.MeshClient
-	remoteClient   client.Client
+	appmeshScanner      aws_utils.AppMeshScanner
+	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher
+	meshClient          zephyr_discovery.MeshClient
+	remoteClient        client.Client
 }
 
 func AppMeshTenancyScannerFactoryProvider(
 	appmeshParser aws_utils.AppMeshScanner,
+	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher,
 ) k8s_tenancy.ClusterTenancyScannerFactory {
 	return func(
 		meshClient zephyr_discovery.MeshClient,
@@ -31,6 +34,7 @@ func AppMeshTenancyScannerFactoryProvider(
 			appmeshParser,
 			meshClient,
 			remoteClient,
+			awsAccountIdFetcher,
 		)
 	}
 }
@@ -39,11 +43,13 @@ func NewAppmeshTenancyScanner(
 	appmeshScanner aws_utils.AppMeshScanner,
 	meshClient zephyr_discovery.MeshClient,
 	remoteClient client.Client,
+	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher,
 ) k8s_tenancy.ClusterTenancyRegistrar {
 	return &appmeshTenancyScanner{
-		appmeshScanner: appmeshScanner,
-		meshClient:     meshClient,
-		remoteClient:   remoteClient,
+		appmeshScanner:      appmeshScanner,
+		meshClient:          meshClient,
+		remoteClient:        remoteClient,
+		awsAccountIdFetcher: awsAccountIdFetcher,
 	}
 }
 
@@ -51,7 +57,11 @@ func (a *appmeshTenancyScanner) MeshFromSidecar(
 	ctx context.Context,
 	pod *k8s_core_types.Pod,
 ) (*zephyr_discovery.Mesh, error) {
-	appMesh, err := a.appmeshScanner.ScanPodForAppMesh(ctx, pod, a.remoteClient)
+	awsAccountId, err := a.awsAccountIdFetcher.GetEksAccountId(ctx, a.remoteClient)
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Warnf("Error fetching AWS Account ID from ConfigMap: %+v", err)
+	}
+	appMesh, err := a.appmeshScanner.ScanPodForAppMesh(pod, awsAccountId)
 	if err != nil {
 		return nil, err
 	}

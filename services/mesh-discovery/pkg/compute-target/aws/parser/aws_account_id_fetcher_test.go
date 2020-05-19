@@ -26,7 +26,7 @@ var _ = Describe("AwsAccountIdFetcher", func() {
 		mockArnParser       *mock_aws.MockArnParser
 		mockConfigMapClient *mock_kubernetes_core.MockConfigMapClient
 		awsAccountIdFetcher aws_utils.AwsAccountIdFetcher
-		accountID           = "111122223333"
+		accountID           = aws_utils.AwsAccountId("111122223333")
 		roleARN             = fmt.Sprintf("arn:aws:iam::%s:role/role-name", accountID)
 		configMap           = &k8s_core_types.ConfigMap{
 			Data: map[string]string{
@@ -60,7 +60,7 @@ var _ = Describe("AwsAccountIdFetcher", func() {
 
 	It("should fetch AWS account ID from ConfigMap", func() {
 		mockConfigMapClient.EXPECT().GetConfigMap(ctx, aws_utils.AwsAuthConfigMapKey).Return(configMap, nil)
-		mockArnParser.EXPECT().ParseAccountID(roleARN).Return(accountID, nil)
+		mockArnParser.EXPECT().ParseAccountID(roleARN).Return(string(accountID), nil)
 		id, err := awsAccountIdFetcher.GetEksAccountId(ctx, nil)
 		Expect(err).To(BeNil())
 		Expect(id).To(Equal(accountID))

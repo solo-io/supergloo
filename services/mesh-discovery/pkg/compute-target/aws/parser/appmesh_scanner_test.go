@@ -1,7 +1,6 @@
 package aws_utils_test
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/golang/mock/gomock"
@@ -10,28 +9,22 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
-	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("AppmeshParser", func() {
 	var (
-		ctrl                    *gomock.Controller
-		ctx                     context.Context
-		mockArnParser           *mock_aws.MockArnParser
-		mockAwsAccountIdFetcher *mock_aws.MockAwsAccountIdFetcher
-		mockRemoteClient        *mock_controller_runtime.MockClient
-		appMeshParser           aws_utils.AppMeshScanner
+		ctrl          *gomock.Controller
+		mockArnParser *mock_aws.MockArnParser
+		appMeshParser aws_utils.AppMeshScanner
+		awsAccountId  = aws_utils.AwsAccountId("accountID")
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		ctx = context.TODO()
-		mockRemoteClient = mock_controller_runtime.NewMockClient(ctrl)
 		mockArnParser = mock_aws.NewMockArnParser(ctrl)
-		mockAwsAccountIdFetcher = mock_aws.NewMockAwsAccountIdFetcher(ctrl)
-		appMeshParser = aws_utils.NewAppMeshScanner(mockArnParser, mockAwsAccountIdFetcher)
+		appMeshParser = aws_utils.NewAppMeshScanner(mockArnParser)
 	})
 
 	AfterEach(func() {
@@ -69,13 +62,12 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return(expectedAppMeshPod.AwsAccountID, nil)
-		appMeshPod, err := appMeshParser.ScanPodForAppMesh(ctx, pod, mockRemoteClient)
+		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod, awsAccountId)
 		Expect(err).To(BeNil())
 		Expect(appMeshPod).To(Equal(expectedAppMeshPod))
 	})
 
-	It("should scan pod for AppMesh sidecar and fall back on using AWS_ROLE_ARN if configMap not found", func() {
+	It("should scan pod for AppMesh sidecar and fall back on using AWS_ROLE_ARN if accountId is empty", func() {
 		expectedAppMeshPod := &aws_utils.AppMeshPod{
 			AwsAccountID:    "accountID",
 			Region:          "us-east-2",
@@ -110,9 +102,8 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return("", nil)
 		mockArnParser.EXPECT().ParseAccountID(pod.Spec.Containers[0].Env[2].Value).Return(expectedAppMeshPod.AwsAccountID, nil)
-		appMeshPod, err := appMeshParser.ScanPodForAppMesh(ctx, pod, mockRemoteClient)
+		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod, "")
 		Expect(err).To(BeNil())
 		Expect(appMeshPod).To(Equal(expectedAppMeshPod))
 	})
@@ -145,8 +136,7 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return("accountID", nil)
-		_, err := appMeshParser.ScanPodForAppMesh(ctx, pod, mockRemoteClient)
+		_, err := appMeshParser.ScanPodForAppMesh(pod, awsAccountId)
 		Expect(err).To(testutils.HaveInErrorChain(aws_utils.EmptyEnvVarValueError(aws_utils.AppMeshRegionEnvVarName, pod.ObjectMeta)))
 	})
 
@@ -179,8 +169,7 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return("accountID", nil)
-		_, err := appMeshParser.ScanPodForAppMesh(ctx, pod, mockRemoteClient)
+		_, err := appMeshParser.ScanPodForAppMesh(pod, awsAccountId)
 		Expect(err).To(testutils.HaveInErrorChain(aws_utils.UnexpectedVirtualNodeValue(unexpectedValue)))
 	})
 
@@ -195,8 +184,7 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return("", nil)
-		appMeshPod, err := appMeshParser.ScanPodForAppMesh(ctx, pod, mockRemoteClient)
+		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod, awsAccountId)
 		Expect(err).To(BeNil())
 		Expect(appMeshPod).To(BeNil())
 	})

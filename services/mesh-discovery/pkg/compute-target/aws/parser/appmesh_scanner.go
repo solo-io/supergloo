@@ -1,14 +1,11 @@
 package aws_utils
 
 import (
-	"context"
 	"strings"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/contextutils"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -31,33 +28,26 @@ var (
 )
 
 type appMeshScanner struct {
-	arnParser           ArnParser
-	awsAccountIdFetcher AwsAccountIdFetcher
+	arnParser ArnParser
 }
 
 func NewAppMeshScanner(
 	arnParser ArnParser,
-	awsAccountIdFetcher AwsAccountIdFetcher,
 ) AppMeshScanner {
 	return &appMeshScanner{
-		arnParser:           arnParser,
-		awsAccountIdFetcher: awsAccountIdFetcher,
+		arnParser: arnParser,
 	}
 }
 
 // iterate through pod's containers and check for one with name containing "appmesh" and "proxy"
 // if true, return inferred AppMesh name
 func (a *appMeshScanner) ScanPodForAppMesh(
-	ctx context.Context,
 	pod *k8s_core_types.Pod,
-	remoteClient client.Client,
+	awsAccountId AwsAccountId,
 ) (*AppMeshPod, error) {
-	var awsAccountID, region, appMeshName, virtualNodeName string
 	var err error
-	awsAccountID, err = a.awsAccountIdFetcher.GetEksAccountId(ctx, remoteClient)
-	if err != nil {
-		contextutils.LoggerFrom(ctx).Warnf("Error parsing aws-auth.kube-system ConfigMap: %+v")
-	}
+	var awsAccountIDString, region, appMeshName, virtualNodeName string
+	awsAccountIDString = string(awsAccountId)
 	for _, container := range pod.Spec.Containers {
 		if strings.Contains(container.Image, "appmesh") && strings.Contains(container.Image, "envoy") {
 			for _, env := range container.Env {
@@ -76,12 +66,12 @@ func (a *appMeshScanner) ScanPodForAppMesh(
 						return nil, EmptyEnvVarValueError(env.Name, pod.ObjectMeta)
 					}
 					region = env.Value
-				} else if env.Name == AppMeshRoleArnEnvVarName && awsAccountID == "" {
+				} else if env.Name == AppMeshRoleArnEnvVarName && awsAccountIDString == "" {
 					// Fallback to using env var if AWS account ID wasn't found from aws-auth ConfigMap
 					if env.Value == "" {
 						return nil, EmptyEnvVarValueError(env.Name, pod.ObjectMeta)
 					}
-					awsAccountID, err = a.arnParser.ParseAccountID(env.Value)
+					awsAccountIDString, err = a.arnParser.ParseAccountID(env.Value)
 					if err != nil {
 						return nil, err
 					}
@@ -89,7 +79,7 @@ func (a *appMeshScanner) ScanPodForAppMesh(
 			}
 			// If any of the below variables is empty, return error
 			return &AppMeshPod{
-				AwsAccountID:    awsAccountID,
+				AwsAccountID:    awsAccountIDString,
 				Region:          region,
 				AppMeshName:     appMeshName,
 				VirtualNodeName: virtualNodeName,

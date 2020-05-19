@@ -38,18 +38,18 @@ func (m *MockAppMeshScanner) EXPECT() *MockAppMeshScannerMockRecorder {
 }
 
 // ScanPodForAppMesh mocks base method.
-func (m *MockAppMeshScanner) ScanPodForAppMesh(ctx context.Context, pod *v1.Pod, remoteClient client.Client) (*aws_utils.AppMeshPod, error) {
+func (m *MockAppMeshScanner) ScanPodForAppMesh(pod *v1.Pod, awsAccountId aws_utils.AwsAccountId) (*aws_utils.AppMeshPod, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ScanPodForAppMesh", ctx, pod, remoteClient)
+	ret := m.ctrl.Call(m, "ScanPodForAppMesh", pod, awsAccountId)
 	ret0, _ := ret[0].(*aws_utils.AppMeshPod)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ScanPodForAppMesh indicates an expected call of ScanPodForAppMesh.
-func (mr *MockAppMeshScannerMockRecorder) ScanPodForAppMesh(ctx, pod, remoteClient interface{}) *gomock.Call {
+func (mr *MockAppMeshScannerMockRecorder) ScanPodForAppMesh(pod, awsAccountId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanPodForAppMesh", reflect.TypeOf((*MockAppMeshScanner)(nil).ScanPodForAppMesh), ctx, pod, remoteClient)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanPodForAppMesh", reflect.TypeOf((*MockAppMeshScanner)(nil).ScanPodForAppMesh), pod, awsAccountId)
 }
 
 // MockArnParser is a mock of ArnParser interface.
@@ -129,10 +129,10 @@ func (m *MockAwsAccountIdFetcher) EXPECT() *MockAwsAccountIdFetcherMockRecorder 
 }
 
 // GetEksAccountId mocks base method.
-func (m *MockAwsAccountIdFetcher) GetEksAccountId(ctx context.Context, clusterScopedClient client.Client) (string, error) {
+func (m *MockAwsAccountIdFetcher) GetEksAccountId(ctx context.Context, clusterScopedClient client.Client) (aws_utils.AwsAccountId, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEksAccountId", ctx, clusterScopedClient)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(aws_utils.AwsAccountId)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

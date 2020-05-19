@@ -29,6 +29,7 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 		mockAppMeshParser       *mock_aws.MockAppMeshScanner
 		mockMeshClient          *mock_core.MockMeshClient
 		mockRemoteClient        *mock_controller_runtime.MockClient
+		mockAwsAccountIdFetcher *mock_aws.MockAwsAccountIdFetcher
 		appMeshTenancyRegistrar k8s_tenancy.ClusterTenancyRegistrar
 	)
 
@@ -37,10 +38,12 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 		mockAppMeshParser = mock_aws.NewMockAppMeshScanner(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockRemoteClient = mock_controller_runtime.NewMockClient(ctrl)
+		mockAwsAccountIdFetcher = mock_aws.NewMockAwsAccountIdFetcher(ctrl)
 		appMeshTenancyRegistrar = appmesh_tenancy.NewAppmeshTenancyScanner(
 			mockAppMeshParser,
 			mockMeshClient,
 			mockRemoteClient,
+			mockAwsAccountIdFetcher,
 		)
 	})
 
@@ -65,7 +68,8 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 			AppMeshName:     "appmeshname",
 			VirtualNodeName: "virtualnodename",
 		}
-		mockAppMeshParser.EXPECT().ScanPodForAppMesh(ctx, pod, mockRemoteClient).Return(appMeshPod, nil)
+		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return(aws_utils.AwsAccountId(appMeshPod.AwsAccountID), nil)
+		mockAppMeshParser.EXPECT().ScanPodForAppMesh(pod, aws_utils.AwsAccountId(appMeshPod.AwsAccountID)).Return(appMeshPod, nil)
 		mockMeshClient.EXPECT().GetMesh(ctx, client.ObjectKey{
 			Name:      metadata.BuildAppMeshName(appMeshPod.AppMeshName, appMeshPod.Region, appMeshPod.AwsAccountID),
 			Namespace: env.GetWriteNamespace(),

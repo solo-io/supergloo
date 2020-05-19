@@ -32,7 +32,7 @@ func NewAwsAccountIdFetcher(
 func (a *awsAccountIdFetcher) GetEksAccountId(
 	ctx context.Context,
 	clusterScopedClient client.Client,
-) (accountId string, err error) {
+) (AwsAccountId, error) {
 	configMap, err := a.configMapClientFactory(clusterScopedClient).GetConfigMap(ctx, AwsAuthConfigMapKey)
 	if err != nil && !errors.IsNotFound(err) {
 		return "", err
@@ -59,7 +59,7 @@ func (a *awsAccountIdFetcher) GetEksAccountId(
 			if err != nil {
 				return "", err
 			}
-			return accountID, nil
+			return AwsAccountId(accountID), nil
 		}
 	}
 	return "", nil

@@ -103,10 +103,10 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	deploymentEventWatcherFactory := event_watcher_factories.NewDeploymentEventWatcherFactory()
 	podClientFactory := v1.PodClientFactoryProvider()
 	meshEventWatcherFactory := event_watcher_factories.NewMeshEventWatcherFactory()
+	appMeshScanner := aws_utils.NewAppMeshScanner(arnParser)
 	awsAccountIdFetcher := aws_utils.NewAwsAccountIdFetcher(arnParser, configMapClientFactory)
-	appMeshScanner := aws_utils.NewAppMeshScanner(arnParser, awsAccountIdFetcher)
-	meshWorkloadScannerFactory := appmesh3.AppMeshWorkloadScannerFactoryProvider(appMeshScanner)
-	clusterTenancyScannerFactory := appmesh_tenancy.AppMeshTenancyScannerFactoryProvider(appMeshScanner)
+	meshWorkloadScannerFactory := appmesh3.AppMeshWorkloadScannerFactoryProvider(appMeshScanner, awsAccountIdFetcher)
+	clusterTenancyScannerFactory := appmesh_tenancy.AppMeshTenancyScannerFactoryProvider(appMeshScanner, awsAccountIdFetcher)
 	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podEventWatcherFactory, serviceEventWatcherFactory, meshWorkloadEventWatcherFactory, deploymentEventWatcherFactory, meshClientFactory, podClientFactory, meshEventWatcherFactory, meshWorkloadScannerFactory, clusterTenancyScannerFactory)
 	return discoveryContext, nil
 }

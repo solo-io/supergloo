@@ -9,6 +9,8 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
+type AwsAccountId string
+
 type AppMeshPod struct {
 	AwsAccountID    string
 	Region          string
@@ -19,9 +21,8 @@ type AppMeshPod struct {
 // Scans pod for Appmesh envoy sidecar.
 type AppMeshScanner interface {
 	ScanPodForAppMesh(
-		ctx context.Context,
 		pod *k8s_core_types.Pod,
-		remoteClient client.Client,
+		awsAccountId AwsAccountId,
 	) (*AppMeshPod, error)
 }
 
@@ -34,5 +35,5 @@ type AwsAccountIdFetcher interface {
 	GetEksAccountId(
 		ctx context.Context,
 		clusterScopedClient client.Client,
-	) (accountId string, err error)
+	) (awsAccountID AwsAccountId, err error)
 }
