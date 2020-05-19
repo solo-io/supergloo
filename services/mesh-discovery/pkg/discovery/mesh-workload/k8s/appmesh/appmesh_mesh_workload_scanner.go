@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/solo-io/go-utils/contextutils"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -28,12 +29,20 @@ var (
 
 func AppMeshWorkloadScannerFactoryProvider(
 	appMeshParser aws_utils.AppMeshScanner,
+	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher,
 ) meshworkload_discovery.MeshWorkloadScannerFactory {
 	return func(
 		ownerFetcher meshworkload_discovery.OwnerFetcher,
 		meshClient zephyr_discovery.MeshClient,
+		remoteClient client.Client,
 	) meshworkload_discovery.MeshWorkloadScanner {
-		return NewAppMeshWorkloadScanner(ownerFetcher, appMeshParser, meshClient)
+		return NewAppMeshWorkloadScanner(
+			ownerFetcher,
+			appMeshParser,
+			meshClient,
+			awsAccountIdFetcher,
+			remoteClient,
+		)
 	}
 }
 
@@ -42,22 +51,32 @@ func NewAppMeshWorkloadScanner(
 	ownerFetcher meshworkload_discovery.OwnerFetcher,
 	appMeshParser aws_utils.AppMeshScanner,
 	meshClient zephyr_discovery.MeshClient,
+	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher,
+	remoteClient client.Client,
 ) meshworkload_discovery.MeshWorkloadScanner {
 	return &appMeshWorkloadScanner{
-		ownerFetcher:   ownerFetcher,
-		meshClient:     meshClient,
-		appmeshScanner: appMeshParser,
+		ownerFetcher:        ownerFetcher,
+		meshClient:          meshClient,
+		appmeshScanner:      appMeshParser,
+		remoteClient:        remoteClient,
+		awsAccountIdFetcher: awsAccountIdFetcher,
 	}
 }
 
 type appMeshWorkloadScanner struct {
-	ownerFetcher   meshworkload_discovery.OwnerFetcher
-	appmeshScanner aws_utils.AppMeshScanner
-	meshClient     zephyr_discovery.MeshClient
+	ownerFetcher        meshworkload_discovery.OwnerFetcher
+	appmeshScanner      aws_utils.AppMeshScanner
+	meshClient          zephyr_discovery.MeshClient
+	remoteClient        client.Client
+	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher
 }
 
 func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
-	appMeshPod, err := a.appmeshScanner.ScanPodForAppMesh(pod)
+	awsAccountId, err := a.awsAccountIdFetcher.GetEksAccountId(ctx, a.remoteClient)
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Warnf("Error fetching AWS Account ID from ConfigMap: %+v", err)
+	}
+	appMeshPod, err := a.appmeshScanner.ScanPodForAppMesh(pod, awsAccountId)
 	if err != nil {
 		return nil, err
 	}

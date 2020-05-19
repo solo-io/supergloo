@@ -18,12 +18,13 @@ var _ = Describe("AppmeshParser", func() {
 		ctrl          *gomock.Controller
 		mockArnParser *mock_aws.MockArnParser
 		appMeshParser aws_utils.AppMeshScanner
+		awsAccountId  = aws_utils.AwsAccountId("accountID")
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockArnParser = mock_aws.NewMockArnParser(ctrl)
-		appMeshParser = aws_utils.NewAppMeshParser(mockArnParser)
+		appMeshParser = aws_utils.NewAppMeshScanner(mockArnParser)
 	})
 
 	AfterEach(func() {
@@ -32,7 +33,43 @@ var _ = Describe("AppmeshParser", func() {
 
 	It("should scan pod for AppMesh sidecar and return data if so", func() {
 		expectedAppMeshPod := &aws_utils.AppMeshPod{
-			AwsAccountID:    "account-id",
+			AwsAccountID:    "accountID",
+			Region:          "us-east-2",
+			AppMeshName:     "appmeshname",
+			VirtualNodeName: "virtualnodename",
+		}
+		pod := &k8s_core_types.Pod{
+			ObjectMeta: k8s_meta_types.ObjectMeta{},
+			Spec: k8s_core_types.PodSpec{
+				Containers: []k8s_core_types.Container{
+					{
+						Image: "840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.12.2.1-prod",
+						Env: []k8s_core_types.EnvVar{
+							{
+								Name: aws_utils.AppMeshVirtualNodeEnvVarName,
+								Value: fmt.Sprintf(
+									"mesh/%s/virtualNode/%s",
+									expectedAppMeshPod.AppMeshName,
+									expectedAppMeshPod.VirtualNodeName,
+								),
+							},
+							{
+								Name:  aws_utils.AppMeshRegionEnvVarName,
+								Value: expectedAppMeshPod.Region,
+							},
+						},
+					},
+				},
+			},
+		}
+		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod, awsAccountId)
+		Expect(err).To(BeNil())
+		Expect(appMeshPod).To(Equal(expectedAppMeshPod))
+	})
+
+	It("should scan pod for AppMesh sidecar and fall back on using AWS_ROLE_ARN if accountId is empty", func() {
+		expectedAppMeshPod := &aws_utils.AppMeshPod{
+			AwsAccountID:    "accountID",
 			Region:          "us-east-2",
 			AppMeshName:     "appmeshname",
 			VirtualNodeName: "virtualnodename",
@@ -66,7 +103,7 @@ var _ = Describe("AppmeshParser", func() {
 			},
 		}
 		mockArnParser.EXPECT().ParseAccountID(pod.Spec.Containers[0].Env[2].Value).Return(expectedAppMeshPod.AwsAccountID, nil)
-		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod)
+		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod, "")
 		Expect(err).To(BeNil())
 		Expect(appMeshPod).To(Equal(expectedAppMeshPod))
 	})
@@ -99,7 +136,7 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		_, err := appMeshParser.ScanPodForAppMesh(pod)
+		_, err := appMeshParser.ScanPodForAppMesh(pod, awsAccountId)
 		Expect(err).To(testutils.HaveInErrorChain(aws_utils.EmptyEnvVarValueError(aws_utils.AppMeshRegionEnvVarName, pod.ObjectMeta)))
 	})
 
@@ -132,7 +169,7 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		_, err := appMeshParser.ScanPodForAppMesh(pod)
+		_, err := appMeshParser.ScanPodForAppMesh(pod, awsAccountId)
 		Expect(err).To(testutils.HaveInErrorChain(aws_utils.UnexpectedVirtualNodeValue(unexpectedValue)))
 	})
 
@@ -147,7 +184,7 @@ var _ = Describe("AppmeshParser", func() {
 				},
 			},
 		}
-		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod)
+		appMeshPod, err := appMeshParser.ScanPodForAppMesh(pod, awsAccountId)
 		Expect(err).To(BeNil())
 		Expect(appMeshPod).To(BeNil())
 	})

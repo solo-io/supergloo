@@ -20,33 +20,36 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
+	k8s_core_types "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 	var (
-		ctrl                *gomock.Controller
-		ctx                 context.Context
-		mockOwnerFetcher    *mock_mesh_workload.MockOwnerFetcher
-		mockMeshClient      *mock_core.MockMeshClient
-		mockAppMeshParser   *mock_aws.MockAppMeshScanner
-		meshWorkloadScanner k8s.MeshWorkloadScanner
-		namespace           = "namespace"
-		clusterName         = "clusterName"
-		deploymentName      = "deployment-name"
-		deploymentKind      = "deployment-kind"
-		meshName            = "mesh-name-1"
-		region              = "us-east-1"
-		awsAccountId        = "awsaccountid"
-		pod                 = &corev1.Pod{
-			Spec: corev1.PodSpec{
-				Containers: []corev1.Container{
+		ctrl                    *gomock.Controller
+		ctx                     context.Context
+		mockOwnerFetcher        *mock_mesh_workload.MockOwnerFetcher
+		mockMeshClient          *mock_core.MockMeshClient
+		mockAppMeshParser       *mock_aws.MockAppMeshScanner
+		mockRemoteClient        *mock_controller_runtime.MockClient
+		mockAwsAccountIdFetcher *mock_aws.MockAwsAccountIdFetcher
+		meshWorkloadScanner     k8s.MeshWorkloadScanner
+		namespace               = "namespace"
+		clusterName             = "clusterName"
+		deploymentName          = "deployment-name"
+		deploymentKind          = "deployment-kind"
+		meshName                = "mesh-name-1"
+		region                  = "us-east-1"
+		awsAccountId            = "awsaccountid"
+		pod                     = &k8s_core_types.Pod{
+			Spec: k8s_core_types.PodSpec{
+				Containers: []k8s_core_types.Container{
 					{
 						Image: "appmesh-envoy",
-						Env: []corev1.EnvVar{
+						Env: []k8s_core_types.EnvVar{
 							{
 								Name:  aws_utils.AppMeshVirtualNodeEnvVarName,
 								Value: fmt.Sprintf("mesh/%s/virtualNode/virtualNodeName", meshName),
@@ -76,7 +79,15 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		mockOwnerFetcher = mock_mesh_workload.NewMockOwnerFetcher(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockAppMeshParser = mock_aws.NewMockAppMeshScanner(ctrl)
-		meshWorkloadScanner = appmesh.NewAppMeshWorkloadScanner(mockOwnerFetcher, mockAppMeshParser, mockMeshClient)
+		mockRemoteClient = mock_controller_runtime.NewMockClient(ctrl)
+		mockAwsAccountIdFetcher = mock_aws.NewMockAwsAccountIdFetcher(ctrl)
+		meshWorkloadScanner = appmesh.NewAppMeshWorkloadScanner(
+			mockOwnerFetcher,
+			mockAppMeshParser,
+			mockMeshClient,
+			mockAwsAccountIdFetcher,
+			mockRemoteClient,
+		)
 	})
 
 	AfterEach(func() {
@@ -131,9 +142,10 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 				},
 			},
 		}
+		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return(aws_utils.AwsAccountId(awsAccountId), nil)
 		mockAppMeshParser.
 			EXPECT().
-			ScanPodForAppMesh(pod).
+			ScanPodForAppMesh(pod, aws_utils.AwsAccountId(awsAccountId)).
 			Return(&aws_utils.AppMeshPod{
 				Region:       region,
 				AppMeshName:  meshName,
@@ -145,17 +157,18 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 	})
 
 	It("should return nil if not appmesh injected pod", func() {
-		nonAppMeshPod := &corev1.Pod{
-			Spec: corev1.PodSpec{
-				Containers: []corev1.Container{
+		nonAppMeshPod := &k8s_core_types.Pod{
+			Spec: k8s_core_types.PodSpec{
+				Containers: []k8s_core_types.Container{
 					{Image: "random-image"},
 				},
 			},
 			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
 		}
+		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return(aws_utils.AwsAccountId(""), nil)
 		mockAppMeshParser.
 			EXPECT().
-			ScanPodForAppMesh(nonAppMeshPod).
+			ScanPodForAppMesh(nonAppMeshPod, aws_utils.AwsAccountId("")).
 			Return(nil, nil)
 		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, nonAppMeshPod, clusterName)
 		Expect(err).NotTo(HaveOccurred())
@@ -164,10 +177,11 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 
 	It("should return error if error fetching deployment", func() {
 		expectedErr := eris.New("error")
+		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return(aws_utils.AwsAccountId(""), nil)
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(nil, expectedErr)
 		mockAppMeshParser.
 			EXPECT().
-			ScanPodForAppMesh(pod).
+			ScanPodForAppMesh(pod, aws_utils.AwsAccountId("")).
 			Return(&aws_utils.AppMeshPod{}, nil)
 		_, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
