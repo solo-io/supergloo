@@ -17,7 +17,11 @@ meshctl demo cleanup [flags]
 ### Options
 
 ```
-  -h, --help   help for cleanup
+      --cluster-name string   Specify the name of the k8s cluster to cleanup.
+  -h, --help                  help for cleanup
+      --mesh-name string      Specify the name of the service mesh to cleanup.
+      --profile string        Specify the demo profile, must be one of [istio-multicluster, appmesh-eks]
+      --region string         Specify the name of the region containing the entities to cleanup. Defaults to us-east-2. (default "us-east-2")
 ```
 
 ### Options inherited from parent commands

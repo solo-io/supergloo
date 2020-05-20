@@ -17,7 +17,7 @@ func AppmeshEksDemo(runner exec.Runner, awsRegion string) error {
 		3. Helm (https://helm.sh/docs/intro/install/)
 		4. AWS API credentials must be configured, either through the `~/.aws/credentials` [file](https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html)
 			or [environment variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html)
- */
+*/
 const (
 	appmeshEksDemoScript = `
 awsAccountID=$(echo $(aws sts get-caller-identity --query 'Account'))

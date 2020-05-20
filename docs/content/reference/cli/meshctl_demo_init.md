@@ -17,7 +17,9 @@ meshctl demo init [flags]
 ### Options
 
 ```
-  -h, --help   help for init
+      --aws-region string   Specify the AWS region for demo entities, defaults to us-east-2. (default "us-east-2")
+  -h, --help                help for init
+      --profile string      Specify the demo profile, must be one of [istio-multicluster, appmesh-eks]
 ```
 
 ### Options inherited from parent commands
