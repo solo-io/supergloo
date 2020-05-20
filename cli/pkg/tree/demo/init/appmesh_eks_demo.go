@@ -31,6 +31,7 @@ else echo "Using AWS Account ID $awsAccountID" ;
 fi
 
 # Provision EKS cluster.
+echo "******* Note that provisioning a new EKS cluster can take up to 20 minutes *******"
 eksctl create cluster --name=$clusterName \
 --region $region \
 --nodes 1 \
