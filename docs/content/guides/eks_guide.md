@@ -26,8 +26,10 @@ There are three pre-requisites to following these guides:
 
 ## Provision an Appmesh-enabled EKS cluster
 
+{{% notice note %}}
 This step can be skipped if you have an existing EKS cluster you can use for testing (note that as this is still a developing feature,
  some SMH related resources may not be cleaned up).
+{{% /notice %}}
 
 Also note that enabling Appmesh is optional, we include it here for users who are looking to use Appmesh with EKS.
 
@@ -67,8 +69,15 @@ eksctl create iamserviceaccount \
 
 5. Install the [appmesh-controller](https://github.com/aws/aws-app-mesh-controller-for-k8s) (this allows configuration of appmesh resources through k8s CRDs):
 
+
+Add the EKS helm repo:
 ```shell script
-helm upgrade -i appmesh-controller eks/appmesh-controller \
+helm repo add eks https://aws.github.io/eks-charts
+```
+
+Install the controller:
+```shell script
+helm install appmesh-controller eks/appmesh-controller \
     --namespace appmesh-system \
     --set region=<region> \
     --set serviceAccount.create=false \
@@ -96,7 +105,7 @@ $(kubectl config view --raw -o json --minify | jq -r '.clusters[0].cluster."cert
 ```
 
 Edit the appmesh-inject deployment by adding/replacing the environment variable `CA_BUNDLE` with above output
-for the container entry with image `602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-app-mesh-inject:v0.5.0`. It should look similar to:
+for the container entry with image name `appmesh-inject`. It should look similar to:
 
 ```yaml
 spec:
@@ -115,7 +124,7 @@ spec:
         - name: APPMESH_LOG_LEVEL
           value: info
         - name: CA_BUNDLE
-          value: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN5RENDQWJDZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJd01EVXhOVEV6TlRneE9Gb1hEVE13TURVeE16RXpOVGd4T0Zvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBT0MzClFhOEFYUmhZVy9MNXl2SEZkRUdPbTRNNWxldTFHWjV1bnNJdTdlUzlSbTcyZ1dSd3hzbzRTT0xvSUxDUlhxS2gKaERCOCtlRVI5SHVmaUU1VC9YaWRDanZXY3p4SVpRZmxmT1NRRTdZUzVHNGR3ZzFnZHM1djJLYnZCQkZwZSt5UAp6WXhQRXJPYkYrUmhBWGVQdmVjUkNrY1lxeDZqR3lmTGNkMHRUNjkxTGNRa2VkZE0zZE02TWx3TDNPdjdGTXkxCmpMV1Y4OWtiQlR5bk1nTzUyb3BpbktJRnZseUVDZFdCeE9vMVQ5bnVCeXI1T1QwekhUSlR5UVVLaHY3bm00U1cKK1Y5dzJ5NGZFL3BzdllPTEo1c2gvSEJ0ejVGNjMvdXlyZDJYTTlXQ3BLMzFuZGtzWmdyUjl6ZHFmREF6M3FyTAo3L0hGVGxONFg0b3RtaDZieVRzQ0F3RUFBYU1qTUNFd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFETXFJVlZoS2t2bHlwOXlNV1MvZjV5MHc2WVMKeFBKbG9SZXNiQUFvVHg0N3orMmZkdTV2UldJSXdCemQ2K0RhUnR2Zmo4bUZvc3JYVnFZTWJTY2RYaXc2ZFBnUApudjY3ZmErUDMxOUVNVmt3NTUyOEVyM1RHbGhITkdXek5sZ05zQmZEaU5oY0JCVmNOLzQrOTh1MEJJU1laalozCjRaMkVRN09KY0FVLzdsUE1lbUJIaEFhSVh2RHV1b1BkOXc5bVRrRFFpYWMzS3BuQkthbFpmb0FCbEcrNHd0Q0wKbW5PMlAxL3FRbDEzRnRsamhFTW9qakNpOHFPalVKaVdMaEpjbEhYWko2TmoxV0dyczlLUytydjFiNjFDUDhhZwpNTmQwR2FleUpnd1FMM285aFJGSDJlZ3hhQnQvdjErc0d2dWxxT0ZnNVJNTDBxdktiN3pZYUNTaDlRaz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+          value: LS0tLS1CRUdJTiB.....S1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
         image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-app-mesh-inject:v0.5.0
 ...
 ```
@@ -152,7 +161,6 @@ metadata:
   name: settings
 spec:
   aws:
-    disabled: false
     accounts:
       - accountId: "<aws-account-id>"
         eksDiscovery:
@@ -170,7 +178,7 @@ The name of the KubernetesCluster takes the form `eks-<eks-cluster-name>-<region
 Note that workload (MeshWorkload CRD) and service (MeshService CRD) discovery will not occur unless the workloads correspond
 to an existing discovered Mesh.
 
-The [DiscoverySelector](https://docs.solo.io/service-mesh-hub/latest/reference/api/settings/#core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher) API
+The [DiscoverySelector]({{% versioned_link_path fromRoot="/reference/api/settings/#core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher" %}}) API
 allows for matching by region and tags. For instance, to discover all EKS clusters in `us-east-2`, apply the following Settings config:
 
 ```yaml

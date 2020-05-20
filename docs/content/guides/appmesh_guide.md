@@ -50,17 +50,16 @@ metadata:
   name: settings
 spec:
   aws:
-    disabled: false
     accounts:
       - accountId: "<aws-account-id>"
         meshDiscovery:
           resourceSelectors:
-          - arn: <appmesh-instance-arn>
+          - arn: <mesh-instance-arn>
         eksDiscovery:
           disabled: true
 ```
 
-This configuration instructs SMH to discover the Appmesh instance with the specified `<appmesh-instance-arn>`.
+This configuration instructs SMH to discover the Appmesh instance with the specified `<mesh-instance-arn>`.
 
 Once the settings object is updated, you should see that SMH has discovered the mesh by running `kubectl -n <smh-write-namespace> get mesh`.
 The name of the Mesh takes the form `appmesh-<mesh-name>-<aws-region>-<aws-account-id>`.
