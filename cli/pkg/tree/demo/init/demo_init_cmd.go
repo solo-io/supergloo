@@ -1,22 +1,35 @@
 package demo_init
 
 import (
-	"context"
+	"strings"
 
 	"github.com/google/wire"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/spf13/cobra"
 )
 
 type InitCmd *cobra.Command
 
-var InitSet = wire.NewSet(
-	DemoInitCmd,
+const (
+	IstioDemoProfileName      = "istio-multicluster"
+	AppmeshEksDemoProfileName = "appmesh-eks"
+)
+
+var (
+	InitSet = wire.NewSet(
+		DemoInitCmd,
+	)
+	Profiles = []string{
+		IstioDemoProfileName,
+		AppmeshEksDemoProfileName,
+	}
 )
 
 func DemoInitCmd(
-	ctx context.Context,
+	opts *options.Options,
 	runner exec.Runner,
 ) InitCmd {
 	init := &cobra.Command{
@@ -24,10 +37,16 @@ func DemoInitCmd(
 		Short: cliconstants.DemoInitCommand.Short,
 		Long:  cliconstants.DemoInitCommand.Long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return DemoInit(ctx, runner)
+			switch opts.Demo.Profile {
+			case IstioDemoProfileName:
+				return IstioMulticlusterDemo(runner)
+			case AppmeshEksDemoProfileName:
+				return AppmeshEksDemo(runner, opts.Demo.AwsRegion)
+			default:
+				return eris.Errorf("Invalid profile name, must be one of [%s]", strings.Join(Profiles, ", "))
+			}
 		},
 	}
-
-	// options.AddClusterRegisterFlags(init, opts)
+	options.AddDemoFlags(init, opts, Profiles)
 	return init
 }

@@ -1,17 +1,15 @@
 package demo_init
 
 import (
-	"context"
-
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
 )
 
-func DemoInit(ctx context.Context, runner exec.Runner) error {
-	return runner.Run("bash", "-c", initDemoScript)
+func IstioMulticlusterDemo(runner exec.Runner) error {
+	return runner.Run("bash", "-c", istioKindDemoScript)
 }
 
 const (
-	initDemoScript = `
+	istioKindDemoScript = `
 
 # generate 16-character random suffix on these names
 managementPlane=management-plane-$(xxd -l16 -ps /dev/urandom)

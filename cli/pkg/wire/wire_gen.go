@@ -7,12 +7,10 @@ package wire
 
 import (
 	"context"
-	"io"
-
 	"github.com/solo-io/reporting-client/pkg/client"
-	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
+	"github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
@@ -28,42 +26,42 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/deregister"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create"
-	access_control_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/access-control-policy"
-	traffic_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/access-control-policy"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/virtualmesh"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/cleanup"
-	demo_init "github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/init"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/init"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get"
-	get_cluster "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/cluster"
-	get_mesh "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/mesh"
-	get_service "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/service"
-	get_virtual_mesh "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/virtual_mesh"
-	get_vmcsr "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/vmcsr"
-	get_workload "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/workload"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/cluster"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/mesh"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/service"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/virtual_mesh"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/vmcsr"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/workload"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh"
-	mesh_install "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
-	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
-	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	version2 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
-	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
@@ -71,6 +69,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"github.com/spf13/cobra"
+	"io"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -200,7 +199,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	printers := common.PrintersProvider(meshPrinter, meshServicePrinter, meshWorkloadPrinter, kubernetesClusterPrinter, trafficPolicyPrinter, accessControlPolicyPrinter, virtualMeshPrinter, virtualMeshCSRPrinter, resourcePrinter)
 	describeCommand := describe.DescribeCmd(ctx, kubeLoader, kubeClientsFactory, printers, optionsOptions, out)
 	runner := exec.NewShellRunner(in, out)
-	initCmd := demo_init.DemoInitCmd(ctx, runner)
+	initCmd := demo_init.DemoInitCmd(ctx, optionsOptions, runner)
 	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runner)
 	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
 	getMeshCommand := get_mesh.GetMeshRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
@@ -234,7 +233,7 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
 	describeCommand := describe.DescribeCmd(ctx, kubeLoader, kubeClientsFactory, printers, optionsOptions, out)
-	initCmd := demo_init.DemoInitCmd(ctx, runner)
+	initCmd := demo_init.DemoInitCmd(ctx, optionsOptions, runner)
 	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runner)
 	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
 	getMeshCommand := get_mesh.GetMeshRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)

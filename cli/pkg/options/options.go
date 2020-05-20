@@ -19,6 +19,7 @@ type Options struct {
 	Get          Get
 	SmhUninstall SmhUninstall
 	Demo         Demo
+	DemoCleanup  DemoCleanup
 	Describe     Describe
 	Create       Create
 }
@@ -100,17 +101,15 @@ type Describe struct {
 }
 
 type Demo struct {
-	DemoLabel         string
-	UseKind           bool
-	ClusterName       string
-	IstioMulticluster IstioMulticluster
-	DevMode           bool
-	ContextName       string
+	Profile   string
+	AwsRegion string
 }
 
-type IstioMulticluster struct {
-	RemoteClusterName string
-	RemoteContextName string
+type DemoCleanup struct {
+	Profile     string
+	AwsRegion   string
+	MeshName    string
+	ClusterName string
 }
 
 type Create struct {
