@@ -123,7 +123,7 @@ Note that the location of the Service Mesh Hub Helm charts is subject to change.
 Then install Service Mesh Hub into the `service-mesh-hub` namespace:
 
 ```shell
-helm install smh smh/service-mesh-hub —-namespace service-mesh-hub
+helm install smh smh/service-mesh-hub --namespace service-mesh-hub
 ```
 
 ### Verify install
