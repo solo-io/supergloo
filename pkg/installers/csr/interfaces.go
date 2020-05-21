@@ -15,6 +15,7 @@ type CsrAgentInstallOptions struct {
 	UseDevCsrAgentChart  bool // if true, look for a chart in .tgz form in _output/helm/charts/csr-agent
 	ReleaseName          string
 	RemoteWriteNamespace string
+	ValuesFiles          []string
 }
 
 type CsrAgentUninstallOptions struct {

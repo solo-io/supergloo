@@ -256,5 +256,35 @@ var _ = Describe("Cluster Operations", func() {
 				" --kubeconfig %s --remote-cluster-name %s --dev-csr-agent-chart", remoteKubeConfigPath, localKubeConfig, clusterName))
 			Expect(err).NotTo(HaveOccurred())
 		})
+
+		It("can register with custom Helm values files for csr-agent", func() {
+			localKubeConfig := "~/.kube/master-config"
+			remoteKubeConfigPath := "~/.kube/target-config"
+			clusterName := "test-cluster-name"
+			configVerifier.EXPECT().Verify(localKubeConfig, "").Return(nil)
+			remoteKubeConfig := &clientcmd.DirectClientConfig{}
+			kubeLoader.EXPECT().GetConfigWithContext("", remoteKubeConfigPath, "").Return(remoteKubeConfig, nil)
+			mockClusterRegistrationClient.
+				EXPECT().
+				Register(
+					ctx,
+					remoteKubeConfig,
+					clusterName,
+					env.GetWriteNamespace(),
+					"",
+					register.MeshctlDiscoverySource,
+					cluster_registration.ClusterRegisterOpts{
+						UseDevCsrAgentChart:              true,
+						CsrAgentHelmChartValuesFileNames: []string{"file1", "file2"},
+					},
+				).
+				Return(nil)
+
+			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
+
+			_, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
+				" --kubeconfig %s --remote-cluster-name %s --dev-csr-agent-chart --values file1 --values file2", remoteKubeConfigPath, localKubeConfig, clusterName))
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 })

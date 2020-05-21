@@ -78,9 +78,10 @@ func RegisterCluster(
 		remoteContext,
 		MeshctlDiscoverySource,
 		cluster_registration.ClusterRegisterOpts{
-			Overwrite:                  registerOpts.Overwrite,
-			UseDevCsrAgentChart:        registerOpts.UseDevCsrAgentChart,
-			LocalClusterDomainOverride: registerOpts.LocalClusterDomainOverride,
+			Overwrite:                        registerOpts.Overwrite,
+			UseDevCsrAgentChart:              registerOpts.UseDevCsrAgentChart,
+			LocalClusterDomainOverride:       registerOpts.LocalClusterDomainOverride,
+			CsrAgentHelmChartValuesFileNames: opts.Cluster.Register.CsrAgentHelmChartValueFileNames,
 		},
 	)
 }
