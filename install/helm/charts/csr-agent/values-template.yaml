@@ -6,4 +6,5 @@ deployment:
     pullPolicy: IfNotPresent
   stats:
     enabled: true
+  nodeSelector: {}
 global: {}
