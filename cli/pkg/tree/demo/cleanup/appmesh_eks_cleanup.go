@@ -7,7 +7,7 @@ import (
 )
 
 func AppmeshEksCleanup(runner exec.Runner, region string, meshName string, eksClusterName string) error {
-	return runner.Run("bash", "-c", fmt.Sprintf(appmeshEksCleanupScript, region, meshName, eksClusterName))
+	return runner.Run("bash", "-x", "-c", fmt.Sprintf(appmeshEksCleanupScript, region, meshName, eksClusterName))
 }
 
 const (
@@ -30,6 +30,6 @@ OIDCURL=$(aws eks describe-cluster --name $eksClusterName --output json | jq -r 
 aws iam delete-open-id-connect-provider --open-id-connect-provider-arn arn:aws:iam::$awsAccountID:oidc-provider/$OIDCURL
 
 # Delete EKS cluster
-eksctl delete cluster --name=$clusterName --region=$region
+eksctl delete cluster --name=$eksClusterName --region=$region
 `
 )

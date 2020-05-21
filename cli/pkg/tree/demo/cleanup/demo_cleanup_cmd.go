@@ -27,7 +27,7 @@ func DemoCleanupCmd(
 		Short: cliconstants.DemoCleanupCommand.Short,
 		Long:  cliconstants.DemoCleanupCommand.Long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			switch opts.Demo.Profile {
+			switch opts.DemoCleanup.Profile {
 			case demo_init.IstioDemoProfileName:
 				return IstioMulticlusterCleanup(runner)
 			case demo_init.AppmeshEksDemoProfileName:
