@@ -4,3 +4,9 @@ global:
     pullPolicy: IfNotPresent
   stats:
     enabled: true
+mesh-discovery:
+  deployment:
+    nodeSelector: {}
+mesh-networking:
+  deployment:
+    nodeSelector: {}
