@@ -20,6 +20,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
+	"github.com/spf13/afero"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -33,12 +34,13 @@ var _ = Describe("Cluster Operations", func() {
 		meshctl                       *cli_test.MockMeshctl
 		configVerifier                *cli_mocks.MockMasterKubeConfigVerifier
 		mockClusterRegistrationClient *mock_registration.MockClusterRegistrationClient
+		fs                            afero.Fs
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-
+		fs = afero.NewMemMapFs()
 		secretClient = mock_kubernetes_core.NewMockSecretClient(ctrl)
 		kubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
 		configVerifier = cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
@@ -54,6 +56,7 @@ var _ = Describe("Cluster Operations", func() {
 			MockController: ctrl,
 			KubeLoader:     kubeLoader,
 			Ctx:            ctx,
+			Fs:             fs,
 		}
 	})
 
@@ -274,16 +277,52 @@ var _ = Describe("Cluster Operations", func() {
 					"",
 					register.MeshctlDiscoverySource,
 					cluster_registration.ClusterRegisterOpts{
-						UseDevCsrAgentChart:              true,
-						CsrAgentHelmChartValuesFileNames: []string{"file1", "file2"},
+						UseDevCsrAgentChart: true,
+						CsrAgentHelmChartValuesFileNames: map[string]interface{}{
+							"mesh-networking": map[string]interface{}{
+								"deployment": map[string]interface{}{
+									"nodeSelector": map[string]interface{}{
+										"kubernetes.io/os": "linux",
+									},
+								},
+							},
+							"mesh-discovery": map[string]interface{}{
+								"deployment": map[string]interface{}{
+									"nodeSelector": map[string]interface{}{
+										"kubernetes.io/os": "linux",
+									},
+								},
+							},
+						},
 					},
 				).
 				Return(nil)
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 
+			fileName1 := "file1"
+			fileName2 := "file2"
+			afero.WriteFile(
+				fs,
+				fileName1,
+				[]byte("mesh-networking:\n  deployment:\n    nodeSelector: {\n kubernetes.io/os: linux \n}"),
+				0644,
+			)
+			afero.WriteFile(
+				fs,
+				fileName2,
+				[]byte("mesh-discovery:\n  deployment:\n    nodeSelector: {\n kubernetes.io/os: linux \n}"),
+				0644,
+			)
+
 			_, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
-				" --kubeconfig %s --remote-cluster-name %s --dev-csr-agent-chart --values file1 --values file2", remoteKubeConfigPath, localKubeConfig, clusterName))
+				" --kubeconfig %s --remote-cluster-name %s --dev-csr-agent-chart --values %s --values %s",
+				remoteKubeConfigPath,
+				localKubeConfig,
+				clusterName,
+				fileName1,
+				fileName2,
+			))
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})

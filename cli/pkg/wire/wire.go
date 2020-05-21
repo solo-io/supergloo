@@ -53,6 +53,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -160,6 +161,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 		create.CreateSet,
 		get.GetSet,
 		cli.BuildCli,
+		afero.NewOsFs,
 	)
 	return nil
 }
@@ -178,6 +180,7 @@ func InitializeCLIWithMocks(
 	printers common.Printers,
 	runner exec.Runner,
 	interactivePrompt interactive.InteractivePrompt,
+	fs afero.Fs,
 ) *cobra.Command {
 	wire.Build(
 		options.NewOptionsProvider,

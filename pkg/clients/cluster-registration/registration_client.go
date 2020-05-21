@@ -84,7 +84,7 @@ type ClusterRegisterOpts struct {
 	Overwrite                        bool
 	UseDevCsrAgentChart              bool
 	LocalClusterDomainOverride       string
-	CsrAgentHelmChartValuesFileNames []string
+	CsrAgentHelmChartValuesFileNames map[string]interface{}
 }
 
 func (c *clusterRegistrationClient) Register(
@@ -204,7 +204,7 @@ func (c *clusterRegistrationClient) installRemoteCSRAgent(
 	remoteWriteNamespace string,
 	remoteConfig clientcmd.ClientConfig,
 	useDevCsrAgentChart bool,
-	valuesFiles []string,
+	csrAgentHelmValues map[string]interface{},
 ) error {
 	restConfig, err := remoteConfig.ClientConfig()
 	if err != nil {
@@ -221,7 +221,7 @@ func (c *clusterRegistrationClient) installRemoteCSRAgent(
 			UseDevCsrAgentChart:  useDevCsrAgentChart,
 			ReleaseName:          cliconstants.CsrAgentReleaseName,
 			RemoteWriteNamespace: remoteWriteNamespace,
-			ValuesFiles:          valuesFiles,
+			ExtraValues:          csrAgentHelmValues,
 		})
 }
 

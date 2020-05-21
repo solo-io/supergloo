@@ -355,7 +355,7 @@ type TrafficPolicySpec_FaultInjection struct {
 	//	*TrafficPolicySpec_FaultInjection_Delay_
 	//	*TrafficPolicySpec_FaultInjection_Abort_
 	FaultInjectionType isTrafficPolicySpec_FaultInjection_FaultInjectionType `protobuf_oneof:"fault_injection_type"`
-	// Percentage of requests to be faulted with the error code provided. Values range between 0 and 100
+	// Percentage of requests to be faulted with the error code provided. ExtraValues range between 0 and 100
 	Percentage           float64  `protobuf:"fixed64,5,opt,name=percentage,proto3" json:"percentage,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -1128,7 +1128,7 @@ type TrafficPolicySpec_Mirror struct {
 	Destination *types.ResourceRef `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
 	//
 	//Percentage of traffic to mirror. If absent, 100% will be mirrored.
-	//Values range between 0 and 100
+	//ExtraValues range between 0 and 100
 	Percentage float64 `protobuf:"fixed64,2,opt,name=percentage,proto3" json:"percentage,omitempty"`
 	// Port on the destination service to receive traffic. If multiple are found, and none are specified,
 	// then the configuration will be considered invalid.

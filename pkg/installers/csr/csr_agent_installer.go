@@ -108,7 +108,7 @@ func (c *csrAgentInstaller) runHelmInstall(
 		CreateNamespace:  true,
 		ReleaseName:      opts.ReleaseName,
 		ReleaseUri:       releaseUri,
-		ValuesFiles:      opts.ValuesFiles,
+		ExtraValues:      opts.ExtraValues,
 	})
 }
 
