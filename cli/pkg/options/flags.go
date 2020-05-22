@@ -88,6 +88,9 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 	flags.BoolVar(&opts.Cluster.Register.Overwrite, ClusterRegisterOverwriteFlag, false,
 		"Overwrite any cluster registered with the cluster name provided")
 	flags.BoolVar(&opts.Cluster.Register.UseDevCsrAgentChart, devCsrAgentChartName, false, "Use a packaged CSR agent chart from ./_output rather than a release chart")
+	flags.StringSliceVarP(&opts.Cluster.Register.CsrAgentHelmChartValueFileNames, "values", "", nil,
+		"List of files with value overrides for the csr-agent Helm chart, "+
+			"(e.g. --values file1,file2 or --values file1 --values file2)")
 
 	// this flag is mainly for our own debugging purposes
 	// don't show it in usage messages

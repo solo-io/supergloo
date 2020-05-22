@@ -70,6 +70,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -173,7 +174,8 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	kubeClientsFactory := DefaultKubeClientsFactoryProvider()
 	clientsFactory := DefaultClientsFactoryProvider()
 	kubeLoader := kubeconfig.DefaultKubeLoaderProvider(optionsOptions)
-	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out)
+	fs := afero.NewOsFs()
+	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out, fs)
 	deregistrationCmd := deregister.ClusterDeregistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd, deregistrationCmd)
 	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
@@ -182,7 +184,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	meshInstallCommand := mesh_install.MeshInstallRootCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
 	meshCommand := mesh.MeshRootCmd(meshInstallCommand)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
-	installCommand := install.InstallCmd(ctx, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, out)
+	installCommand := install.InstallCmd(ctx, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, out, fs)
 	uninstallCommand := uninstall.UninstallCmd(ctx, out, optionsOptions, kubeClientsFactory, kubeLoader)
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()
@@ -219,16 +221,16 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	return command
 }
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader kubeconfig.KubeLoader, imageNameParser docker.ImageNameParser, fileReader files.FileReader, kubeconfigConverter kubeconfig.Converter, printers common.Printers, runner exec.Runner, interactivePrompt interactive.InteractivePrompt) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader kubeconfig.KubeLoader, imageNameParser docker.ImageNameParser, fileReader files.FileReader, kubeconfigConverter kubeconfig.Converter, printers common.Printers, runner exec.Runner, interactivePrompt interactive.InteractivePrompt, fs afero.Fs) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
-	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out)
+	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out, fs)
 	deregistrationCmd := deregister.ClusterDeregistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd, deregistrationCmd)
 	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
 	meshInstallCommand := mesh_install.MeshInstallRootCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
 	meshCommand := mesh.MeshRootCmd(meshInstallCommand)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
-	installCommand := install.InstallCmd(ctx, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, out)
+	installCommand := install.InstallCmd(ctx, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, out, fs)
 	uninstallCommand := uninstall.UninstallCmd(ctx, out, optionsOptions, kubeClientsFactory, kubeLoader)
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()

@@ -37,13 +37,14 @@ type Cluster struct {
 }
 
 type Register struct {
-	RemoteClusterName          string
-	RemoteWriteNamespace       string
-	RemoteContext              string
-	RemoteKubeConfig           string
-	LocalClusterDomainOverride string
-	Overwrite                  bool
-	UseDevCsrAgentChart        bool
+	RemoteClusterName               string
+	RemoteWriteNamespace            string
+	RemoteContext                   string
+	RemoteKubeConfig                string
+	LocalClusterDomainOverride      string
+	Overwrite                       bool
+	UseDevCsrAgentChart             bool
+	CsrAgentHelmChartValueFileNames []string
 }
 
 type Deregister struct {
