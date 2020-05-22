@@ -46,7 +46,7 @@ title: "virtual_mesh.proto"
 | federation | [VirtualMeshSpec.Federation](#networking.zephyr.solo.io.VirtualMeshSpec.Federation) |  |  |
 | shared | [VirtualMeshSpec.SharedTrust](#networking.zephyr.solo.io.VirtualMeshSpec.SharedTrust) |  |  |
 | limited | [VirtualMeshSpec.LimitedTrust](#networking.zephyr.solo.io.VirtualMeshSpec.LimitedTrust) |  |  |
-| enforceAccessControl | [bool](#bool) |  | If true, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies. If false, by default allow traffic to all Services in the VirtualMesh. Defaults to false when not set. |
+| enforceAccessControl | [google.protobuf.BoolValue](#google.protobuf.BoolValue) |  | If true, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies. If false, by default allow traffic to all Services in the VirtualMesh. If omitted, the default value depends on the type of the first mesh listed in `meshes`: Istio: false Appmesh: true |
 
 
 
