@@ -22,7 +22,7 @@ fi
 
 make clean
 
-# generate 1 allows to make several envs in parallel
+# allow to make several envs in parallel
 managementPlane=management-plane-$1
 remoteCluster=target-cluster-$1
 
