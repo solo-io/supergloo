@@ -97,20 +97,20 @@ case $(uname) in
 esac
 
 #register the remote cluster, and install Istio onto the management plane cluster
-./_output/meshctl cluster register \
+meshctl cluster register \
   --remote-context kind-$managementPlane \
   --remote-cluster-name management-plane-cluster \
   --local-cluster-domain-override $CLUSTER_DOMAIN_MGMT \
   --dev-csr-agent-chart
 
 #register the remote cluster, and install Istio onto the remote cluster
-./_output/meshctl cluster register \
+meshctl cluster register \
   --remote-context kind-$remoteCluster \
   --remote-cluster-name target-cluster \
   --local-cluster-domain-override $CLUSTER_DOMAIN_REMOTE \
   --dev-csr-agent-chart
 
-./_output/meshctl mesh install istio --context kind-$remoteCluster --operator-spec=- <<EOF
+meshctl mesh install istio --context kind-$remoteCluster --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -174,7 +174,7 @@ spec:
       selfSigned: false
 EOF
 
-./_output/meshctl mesh install istio --context kind-$managementPlane --operator-spec=- <<EOF
+meshctl mesh install istio --context kind-$managementPlane --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
