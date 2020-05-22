@@ -105,18 +105,36 @@ make meshctl -B
 helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
 ./_output/meshctl install --file ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
 
+case $(uname) in
+  "Darwin")
+  {
+      CLUSTER_DOMAIN_MGMT=host.docker.internal
+      CLUSTER_DOMAIN_REMOTE=host.docker.internal
+  } ;;
+  "Linux")
+  {
+      CLUSTER_DOMAIN_MGMT=$(docker exec meshhub-1-management-plane-control-plane ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p'):6443
+      CLUSTER_DOMAIN_REMOTE=$(docker exec meshhub-1-target-cluster-control-plane ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p'):6443
+  } ;;
+  *)
+  {
+      echo "Unsupported OS"
+      exit 1
+  } ;;
+esac
+
 #register the remote cluster, and install Istio onto the management plane cluster
 ./_output/meshctl cluster register \
   --remote-context kind-$managementPlane \
   --remote-cluster-name management-plane-cluster \
-  --local-cluster-domain-override host.docker.internal \
+  --local-cluster-domain-override $CLUSTER_DOMAIN_MGMT \
   --dev-csr-agent-chart
 
 #register the remote cluster, and install Istio onto the remote cluster
 ./_output/meshctl cluster register \
   --remote-context kind-$remoteCluster \
   --remote-cluster-name target-cluster \
-  --local-cluster-domain-override host.docker.internal \
+  --local-cluster-domain-override $CLUSTER_DOMAIN_REMOTE \
   --dev-csr-agent-chart
 
 ./_output/meshctl mesh install istio --context kind-$remoteCluster --operator-spec=- <<EOF
