@@ -5,7 +5,7 @@ import (
 )
 
 func IstioMulticlusterCleanup(runner exec.Runner) error {
-	return runner.Run("bash", "-c", istioMulticlusterCleanupScript)
+	return runner.Run("bash", istioMulticlusterCleanupScript)
 }
 
 const (

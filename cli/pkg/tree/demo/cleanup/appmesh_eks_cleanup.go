@@ -7,7 +7,7 @@ import (
 )
 
 func AppmeshEksCleanup(runner exec.Runner, region string, meshName string, eksClusterName string) error {
-	return runner.Run("bash", "-x", "-c", fmt.Sprintf(appmeshEksCleanupScript, region, meshName, eksClusterName))
+	return runner.Run("bash", fmt.Sprintf(appmeshEksCleanupScript, region, meshName, eksClusterName))
 }
 
 const (
@@ -23,6 +23,7 @@ else echo "Using AWS Account ID $awsAccountID" ;
 fi
 
 # Delete Appmesh mesh
+# Note: pipe through cat to prevent the interactive aws prompt form blocking the script.
 aws appmesh delete-mesh --mesh-name=$meshName | cat
 
 # Delete OIDC provider for EKS cluster.

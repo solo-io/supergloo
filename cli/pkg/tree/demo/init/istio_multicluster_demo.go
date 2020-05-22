@@ -5,7 +5,7 @@ import (
 )
 
 func IstioMulticlusterDemo(runner exec.Runner) error {
-	return runner.Run("bash", "-c", istioKindDemoScript)
+	return runner.Run("bash", istioKindDemoScript)
 }
 
 const (

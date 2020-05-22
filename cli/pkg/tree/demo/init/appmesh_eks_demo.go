@@ -7,7 +7,7 @@ import (
 )
 
 func AppmeshEksDemo(runner exec.Runner, awsRegion string) error {
-	return runner.Run("bash", "-eux", "-c", fmt.Sprintf(appmeshEksDemoScript, awsRegion))
+	return runner.Run("bash", fmt.Sprintf(appmeshEksDemoScript, awsRegion))
 }
 
 /*
@@ -66,6 +66,7 @@ helm install appmesh-inject eks/appmesh-inject \
     --set mesh.create=true
 
 # Create Appmesh mesh.
+# Note: pipe through cat to prevent the interactive aws prompt form blocking the script.
 aws appmesh create-mesh --mesh-name=$meshName --region=$region | cat
 
 # Label the default namespace for appmesh injection.

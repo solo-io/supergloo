@@ -112,7 +112,7 @@ func (a *awsCredsHandler) runReconcilers(
 }
 
 func (a *awsCredsHandler) fetchAWSAccount(creds *credentials.Credentials) (string, error) {
-	// AwsRegion does not matter for constructing the STS client because the account identity is region agnostic.
+	// Region does not matter for constructing the STS client because the account identity is region agnostic.
 	stsClient, err := a.stsClientFactory(creds, "us-east-1")
 	if err != nil {
 		return "", err
