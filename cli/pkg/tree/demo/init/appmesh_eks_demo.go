@@ -26,7 +26,7 @@ clusterName=smh-demo-cluster-$(xxd -l8 -ps /dev/urandom)
 meshName=smh-demo-mesh-$(xxd -l8 -ps /dev/urandom)
 
 if [ -z ${awsAccountID+x} ]; 
-then echo "Unable to fetch AWS account ID, check that your AWS credentials are configured properly." && exit 0 ; 
+then echo "Unable to fetch AWS account ID, check that your AWS credentials are configured properly." && exit 1 ; 
 else echo "Using AWS Account ID $awsAccountID" ; 
 fi
 

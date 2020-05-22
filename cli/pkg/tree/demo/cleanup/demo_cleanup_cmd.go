@@ -38,5 +38,7 @@ func DemoCleanupCmd(
 		},
 	}
 	options.AddDemoCleanupFlags(init, opts, demo_init.Profiles)
+	// Silence verbose error message for non-zero exit codes.
+	init.SilenceUsage = true
 	return init
 }

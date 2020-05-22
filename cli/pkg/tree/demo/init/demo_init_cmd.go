@@ -48,5 +48,7 @@ func DemoInitCmd(
 		},
 	}
 	options.AddDemoFlags(init, opts, Profiles)
+	// Silence verbose error message for non-zero exit codes.
+	init.SilenceUsage = true
 	return init
 }
