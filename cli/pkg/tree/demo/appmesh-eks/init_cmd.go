@@ -92,7 +92,7 @@ kubectl label namespace default appmesh.k8s.aws/sidecarInjectorWebhook=enabled
 # Manually set the CA_BUNDLE env variable to fix the issue documented here, https://github.com/aws/aws-app-mesh-inject#troubleshooting
 set +x
 kubectl -n appmesh-system set env deployment/appmesh-inject -c appmesh-inject CA_BUNDLE=$(kubectl config view --raw -o json --minify | jq -r '.clusters[0].cluster."certificate-authority-data"' | tr -d '"')
-sex -x
+set -x
 
 # Install Service Mesh Hub.
 meshctl install

@@ -33,6 +33,6 @@ meshctl demo [flags]
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - CLI for Service Mesh Hub
-* [meshctl demo cleanup](../meshctl_demo_cleanup)	 - Delete the local Service Mesh Hub demo setup
-* [meshctl demo init](../meshctl_demo_init)	 - Bootstrap a new local Service Mesh Hub demo setup
+* [meshctl demo appmesh-eks](../meshctl_demo_appmesh-eks)	 - Demo Service Mesh Hub functionality with Appmesh and EKS
+* [meshctl demo istio-multicluster](../meshctl_demo_istio-multicluster)	 - Demo Service Mesh Hub functionality with two Istio control planes deployed on separate clusters.
 
