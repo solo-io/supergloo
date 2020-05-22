@@ -36,3 +36,7 @@ spec:
             - name: START_STATS_SERVER
               value: "true"
             {{- end}}
+    {{- if .Values.deployment.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.deployment.nodeSelector | indent 8 }}
+    {{- end }}
