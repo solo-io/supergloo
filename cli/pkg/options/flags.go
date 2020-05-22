@@ -114,25 +114,24 @@ func AddMeshInstallFlags(cmd *cobra.Command, opts *Options) {
 	flags.StringVar(&opts.Mesh.Install.Profile, "profile", "", "optional profile")
 }
 
-func AddDemoFlags(cmd *cobra.Command, opts *Options, profileNames []string) {
+func AddAppmeshEksInitFlags(cmd *cobra.Command, opts *Options) {
 	flags := cmd.PersistentFlags()
-
-	profileFlag := "profile"
-	flags.StringVar(&opts.Demo.Profile, profileFlag, "", fmt.Sprintf("Specify the demo profile, must be one of [%s]", strings.Join(profileNames, ", ")))
-	cobra.MarkFlagRequired(flags, profileFlag)
-	flags.StringVar(&opts.Demo.AwsRegion, "aws-region", "us-east-2", "Specify the AWS region for demo entities, defaults to us-east-2.")
+	region := "aws-region"
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, region, "us-east-2", "Specify the AWS region for demo entities, defaults to us-east-2.")
+	cobra.MarkFlagRequired(flags, region)
 }
 
-func AddDemoCleanupFlags(cmd *cobra.Command, opts *Options, profileNames []string) {
+func AddAppmeshEksCleanupFlags(cmd *cobra.Command, opts *Options) {
 	flags := cmd.PersistentFlags()
-
-	profileFlag := "profile"
-	flags.StringVar(&opts.DemoCleanup.Profile, profileFlag, "", fmt.Sprintf("Specify the demo profile, must be one of [%s]", strings.Join(profileNames, ", ")))
-	cobra.MarkFlagRequired(flags, profileFlag)
-
-	flags.StringVar(&opts.DemoCleanup.AwsRegion, "region", "us-east-2", "Specify the name of the region containing the entities to cleanup. Defaults to us-east-2.")
-	flags.StringVar(&opts.DemoCleanup.ClusterName, "cluster-name", "", "Specify the name of the k8s cluster to cleanup.")
-	flags.StringVar(&opts.DemoCleanup.MeshName, "mesh-name", "", "Specify the name of the service mesh to cleanup.")
+	region := "aws-region"
+	meshName := "mesh-name"
+	eksClusterName := "eks-cluster-name"
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, region, "us-east-2", "Specify the AWS region for demo entities, defaults to us-east-2.")
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, meshName, "", "Specify name of the App mesh to cleanup.")
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, eksClusterName, "", "Specify the name of the EKS cluster to cleanup.")
+	cobra.MarkFlagRequired(flags, region)
+	cobra.MarkFlagRequired(flags, meshName)
+	cobra.MarkFlagRequired(flags, eksClusterName)
 }
 
 func AddUninstallFlags(cmd *cobra.Command, opts *Options) {

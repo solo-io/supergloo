@@ -19,7 +19,6 @@ type Options struct {
 	Get          Get
 	SmhUninstall SmhUninstall
 	Demo         Demo
-	DemoCleanup  DemoCleanup
 	Describe     Describe
 	Create       Create
 }
@@ -101,15 +100,13 @@ type Describe struct {
 }
 
 type Demo struct {
-	Profile   string
-	AwsRegion string
+	AppmeshEks AppmeshEks
 }
 
-type DemoCleanup struct {
-	Profile     string
-	AwsRegion   string
-	MeshName    string
-	ClusterName string
+type AppmeshEks struct {
+	AwsRegion      string
+	EksClusterName string
+	MeshName       string
 }
 
 type Create struct {

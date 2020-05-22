@@ -1,23 +1,38 @@
-package demo_init
+package appmesh_eks
 
 import (
 	"fmt"
 
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	"github.com/spf13/cobra"
 )
 
-func AppmeshEksDemo(runner exec.Runner, awsRegion string) error {
+type InitCmd *cobra.Command
+
+func Init(
+	runner exec.Runner,
+	opts *options.Options,
+) InitCmd {
+	init := &cobra.Command{
+		Use:   cliconstants.AppmeshEksInitCommand.Use,
+		Short: cliconstants.AppmeshEksInitCommand.Short,
+		Long:  cliconstants.AppmeshEksInitCommand.Long,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return appmeshEksDemo(runner, opts.Demo.AppmeshEks.AwsRegion)
+		},
+	}
+	options.AddAppmeshEksInitFlags(init, opts)
+	// Silence verbose error message for non-zero exit codes.
+	init.SilenceUsage = true
+	return init
+}
+
+func appmeshEksDemo(runner exec.Runner, awsRegion string) error {
 	return runner.Run("bash", fmt.Sprintf(appmeshEksDemoScript, awsRegion))
 }
 
-/*
-	Prerequisites:
-		1. meshctl
-		2. eksctl (https://github.com/weaveworks/eksctl)
-		3. Helm (https://helm.sh/docs/intro/install/)
-		4. AWS API credentials must be configured, either through the `~/.aws/credentials` [file](https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html)
-			or [environment variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html)
-*/
 const (
 	appmeshEksDemoScript = `
 awsAccountID=$(echo $(aws sts get-caller-identity --query 'Account'))
@@ -31,7 +46,9 @@ else echo "Using AWS Account ID $awsAccountID" ;
 fi
 
 # Provision EKS cluster.
+set +x
 echo "******* Note that provisioning a new EKS cluster can take up to 20 minutes *******"
+set -x
 eksctl create cluster --name=$clusterName \
 --region $region \
 --nodes 1 \
