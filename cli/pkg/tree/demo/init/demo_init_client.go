@@ -13,6 +13,7 @@ func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 func DemoInit(ctx context.Context, runner exec.Runner) error {
+	// note: "init-demo.sh" is dummy arg 0.
 	return runner.Run("bash", "-c", initDemoScript, "init-demo.sh", fmt.Sprintf("%d", rand.Uint32()))
 }
 
