@@ -100,15 +100,13 @@ esac
 meshctl cluster register \
   --remote-context kind-$managementPlane \
   --remote-cluster-name management-plane-cluster \
-  --local-cluster-domain-override $CLUSTER_DOMAIN_MGMT \
-  --dev-csr-agent-chart
+  --local-cluster-domain-override $CLUSTER_DOMAIN_MGMT
 
 #register the remote cluster, and install Istio onto the remote cluster
 meshctl cluster register \
   --remote-context kind-$remoteCluster \
-  --remote-cluster-name target-cluster \
-  --local-cluster-domain-override $CLUSTER_DOMAIN_REMOTE \
-  --dev-csr-agent-chart
+  --remote-cluster-name remote-cluster \
+  --local-cluster-domain-override $CLUSTER_DOMAIN_REMOTE
 
 meshctl mesh install istio --context kind-$remoteCluster --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
