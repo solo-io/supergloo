@@ -4,6 +4,7 @@ option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.zeph
 
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
+import "google/protobuf/wrappers.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -89,9 +90,11 @@ message VirtualMeshSpec {
     /*
         If true, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies.
         If false, by default allow traffic to all Services in the VirtualMesh.
-        Defaults to false when not set.
+        If omitted, the default value depends on the type of the first mesh listed in `meshes`:
+            Istio: false
+            Appmesh: true
     */
-    bool enforce_access_control = 7;
+    google.protobuf.BoolValue enforce_access_control = 7;
 }
 
 message VirtualMeshStatus {

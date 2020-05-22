@@ -7,9 +7,11 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
+	access_policy_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 )
 
 func NewVirtualMeshPrinter(tableBuilder TableBuilder) VirtualMeshPrinter {
@@ -25,6 +27,7 @@ type virtualMeshPrinter struct {
 func (m *virtualMeshPrinter) Print(
 	out io.Writer,
 	virtualMeshes []*zephyr_networking.VirtualMesh,
+	meshes []*zephyr_discovery.Mesh,
 ) error {
 	if len(virtualMeshes) == 0 {
 		return nil
@@ -39,7 +42,7 @@ func (m *virtualMeshPrinter) Print(
 		"Status",
 	}
 	var preFilteredRows [][]string
-	for _, virtualMesh := range virtualMeshes {
+	for i, virtualMesh := range virtualMeshes {
 		var newRow []string
 		// Append common metadata
 		newRow = append(newRow, m.buildMetadataCell(virtualMesh))
@@ -48,7 +51,11 @@ func (m *virtualMeshPrinter) Print(
 		newRow = append(newRow, m.buildMeshesCell(virtualMesh.Spec.GetMeshes()))
 
 		// Append federation data
-		newRow = append(newRow, m.buildConfigCell(virtualMesh.Spec))
+		cell, err := m.buildConfigCell(virtualMesh.Spec, meshes[i])
+		if err != nil {
+			return err
+		}
+		newRow = append(newRow, cell)
 
 		// Append status data
 		newRow = append(newRow, m.buildStatusCell(virtualMesh.Status))
@@ -87,7 +94,10 @@ func (m *virtualMeshPrinter) buildMeshesCell(meshList []*zephyr_core_types.Resou
 	return strings.Join(items, "\n")
 }
 
-func (m *virtualMeshPrinter) buildConfigCell(spec zephyr_networking_types.VirtualMeshSpec) string {
+func (m *virtualMeshPrinter) buildConfigCell(
+	spec zephyr_networking_types.VirtualMeshSpec,
+	mesh *zephyr_discovery.Mesh,
+) (string, error) {
 	var items []string
 
 	switch spec.GetTrustModel().(type) {
@@ -138,13 +148,21 @@ func (m *virtualMeshPrinter) buildConfigCell(spec zephyr_networking_types.Virtua
 
 	items = append(items, fmt.Sprintf("\nFederation Mode: %s", spec.GetFederation().GetMode().String()))
 
+	accessControlEnforcementBool := spec.GetEnforceAccessControl().GetValue()
+	if spec.GetEnforceAccessControl() == nil {
+		var err error
+		accessControlEnforcementBool, err = access_policy_enforcer.DefaultAccessControlValueForMesh(mesh)
+		if err != nil {
+			return "", err
+		}
+	}
 	accessControlEnforcement := "disabled"
-	if spec.GetEnforceAccessControl() {
+	if accessControlEnforcementBool {
 		accessControlEnforcement = "enabled"
 	}
 	items = append(items, fmt.Sprintf("\nAccess Control Enforcement: %s", accessControlEnforcement))
 
-	return strings.Join(items, "\n")
+	return strings.Join(items, "\n"), nil
 }
 
 func (m *virtualMeshPrinter) buildStatusCell(status zephyr_networking_types.VirtualMeshStatus) string {

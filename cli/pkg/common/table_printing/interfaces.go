@@ -45,11 +45,11 @@ type AccessControlPolicyPrinter interface {
 }
 
 type VirtualMeshPrinter interface {
-	Print(out io.Writer, meshServices []*zephyr_networking.VirtualMesh) error
+	Print(out io.Writer, virtualMeshes []*zephyr_networking.VirtualMesh, meshes []*zephyr_discovery.Mesh) error
 }
 
 type VirtualMeshCSRPrinter interface {
-	Print(out io.Writer, meshServices []*zephyr_security.VirtualMeshCertificateSigningRequest) error
+	Print(out io.Writer, vmcsrs []*zephyr_security.VirtualMeshCertificateSigningRequest) error
 }
 
 type MeshPrinter interface {

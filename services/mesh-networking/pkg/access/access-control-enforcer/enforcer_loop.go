@@ -3,6 +3,7 @@ package access_policy_enforcer
 import (
 	"context"
 
+	protobuf_types "github.com/gogo/protobuf/types"
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
@@ -72,12 +73,23 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 			)
 
 			// manually set this to false so that things get cleaned up
-			virtualMesh.Spec.EnforceAccessControl = false
-
-			// TODO https://github.com/solo-io/service-mesh-hub/issues/650 - we probably want to introduce some defensive retries into our code
-			err := e.enforceGlobalAccessControl(ctx, virtualMesh)
+			firstMesh, err := e.fetchFirstMesh(ctx, virtualMesh)
 			if err != nil {
 				logger.Errorf("%+v", err)
+				return err
+			}
+			defaultAccessControlValue, err := DefaultAccessControlValueForMesh(firstMesh)
+			if err != nil {
+				logger.Errorf("%+v", err)
+				return err
+			}
+			virtualMesh.Spec.EnforceAccessControl = &protobuf_types.BoolValue{Value: defaultAccessControlValue}
+
+			// TODO https://github.com/solo-io/service-mesh-hub/issues/650 - we probably want to introduce some defensive retries into our code
+			err = e.enforceGlobalAccessControl(ctx, virtualMesh)
+			if err != nil {
+				logger.Errorf("%+v", err)
+				return err
 			}
 
 			return nil
@@ -98,8 +110,22 @@ func (e *enforcerLoop) enforceGlobalAccessControl(
 	if err != nil {
 		return err
 	}
+	if len(meshes) == 0 {
+		return nil
+	}
 	for _, meshEnforcer := range e.meshEnforcers {
-		if virtualMesh.Spec.GetEnforceAccessControl() {
+		var enforceAccessControl bool
+
+		if virtualMesh.Spec.GetEnforceAccessControl() != nil {
+			enforceAccessControl = virtualMesh.Spec.GetEnforceAccessControl().GetValue()
+		} else {
+			enforceAccessControl, err = DefaultAccessControlValueForMesh(meshes[0])
+			if err != nil {
+				return err
+			}
+		}
+
+		if enforceAccessControl {
 			if err = meshEnforcer.StartEnforcing(
 				contextutils.WithLogger(ctx, meshEnforcer.Name()),
 				meshes,
@@ -114,6 +140,7 @@ func (e *enforcerLoop) enforceGlobalAccessControl(
 				return err
 			}
 		}
+
 	}
 	return nil
 }
@@ -131,6 +158,20 @@ func (e *enforcerLoop) fetchMeshes(
 		meshes = append(meshes, mesh)
 	}
 	return meshes, nil
+}
+
+func (e *enforcerLoop) fetchFirstMesh(
+	ctx context.Context,
+	virtualMesh *zephyr_networking.VirtualMesh,
+) (*zephyr_discovery.Mesh, error) {
+	if len(virtualMesh.Spec.GetMeshes()) == 0 {
+		return nil, nil
+	}
+	mesh, err := e.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(virtualMesh.Spec.GetMeshes()[0]))
+	if err != nil {
+		return nil, err
+	}
+	return mesh, nil
 }
 
 func (e *enforcerLoop) setStatus(
