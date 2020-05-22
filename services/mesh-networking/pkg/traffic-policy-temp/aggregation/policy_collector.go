@@ -25,6 +25,7 @@ type policyCollector struct {
 
 func (p *policyCollector) CollectForService(
 	meshService *zephyr_discovery.MeshService,
+	allMeshServices []*zephyr_discovery.MeshService,
 	mesh *zephyr_discovery.Mesh,
 	translationValidator mesh_translation.TranslationValidator,
 	allTrafficPolicies []*zephyr_networking.TrafficPolicy,
@@ -54,6 +55,7 @@ func (p *policyCollector) CollectForService(
 
 	policiesToRecordOnService, policyToConflictErrors, policyToTranslatorErrors := p.determineFinalValidState(
 		meshService,
+		allMeshServices,
 		mesh,
 		translationValidator,
 		policiesToCheck,
@@ -68,6 +70,7 @@ func (p *policyCollector) CollectForService(
 
 func (p *policyCollector) determineFinalValidState(
 	meshService *zephyr_discovery.MeshService,
+	allMeshServices []*zephyr_discovery.MeshService,
 	mesh *zephyr_discovery.Mesh,
 	translationValidator mesh_translation.TranslationValidator,
 	policiesToCheckParam []*policyToCheck,
@@ -147,6 +150,7 @@ func (p *policyCollector) determineFinalValidState(
 
 			translationErrors := translationValidator.GetTranslationErrors(
 				meshService,
+				allMeshServices,
 				mesh,
 				mergeableTPs,
 			)

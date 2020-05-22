@@ -177,10 +177,11 @@ var _ = Describe("TranslationReconciler", func() {
 						Items: []zephyr_discovery.MeshService{*meshServices[0], *meshServices[1], *meshServices[2]},
 					}, nil)
 				snapshotAccumulator.EXPECT().
-					AccumulateFromTranslation(gomock.Any(), meshServices[0], knownMeshes[0]).
+					AccumulateFromTranslation(gomock.Any(), meshServices[0], meshServices, knownMeshes[0]).
 					DoAndReturn(func(
 						snapshotInProgress *snapshot.TranslatedSnapshot,
 						meshService *zephyr_discovery.MeshService,
+						allMeshServices []*zephyr_discovery.MeshService,
 						mesh *zephyr_discovery.Mesh,
 					) error {
 						snapshotInProgress.Istio = &snapshot.IstioSnapshot{
@@ -195,6 +196,7 @@ var _ = Describe("TranslationReconciler", func() {
 					DoAndReturn(func(
 						snapshotInProgress *snapshot.TranslatedSnapshot,
 						meshService *zephyr_discovery.MeshService,
+						allMeshServices []*zephyr_discovery.MeshService,
 						mesh *zephyr_discovery.Mesh,
 					) error {
 						snapshotInProgress.Istio.DestinationRules = append(snapshotInProgress.Istio.DestinationRules, &istio_networking.DestinationRule{
@@ -207,6 +209,7 @@ var _ = Describe("TranslationReconciler", func() {
 					DoAndReturn(func(
 						snapshotInProgress *snapshot.TranslatedSnapshot,
 						meshService *zephyr_discovery.MeshService,
+						allMeshServices []*zephyr_discovery.MeshService,
 						mesh *zephyr_discovery.Mesh,
 					) error {
 						snapshotInProgress.Istio = &snapshot.IstioSnapshot{

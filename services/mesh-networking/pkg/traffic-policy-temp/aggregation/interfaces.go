@@ -22,6 +22,7 @@ type PolicyCollector interface {
 	// Errors can occur due to invalid selectors on policies.
 	CollectForService(
 		meshService *zephyr_discovery.MeshService,
+		allMeshServices []*zephyr_discovery.MeshService,
 		mesh *zephyr_discovery.Mesh,
 		translationValidator mesh_translation.TranslationValidator,
 		allTrafficPolicies []*zephyr_networking.TrafficPolicy,

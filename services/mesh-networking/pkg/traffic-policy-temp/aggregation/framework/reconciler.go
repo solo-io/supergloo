@@ -70,6 +70,7 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	for _, meshService := range allMeshServices {
 		collectionResult, err := a.policyCollector.CollectForService(
 			meshService,
+			allMeshServices,
 			serviceToMetadata[meshService].Mesh,
 
 			// intentionally not doing map existence checks here; if it panics, we forgot to implement the validator for this translator
