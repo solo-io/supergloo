@@ -35,7 +35,6 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.RetryPolicy](#networking.zephyr.solo.io.TrafficPolicySpec.RetryPolicy)
   - [TrafficPolicySpec.StringMatch](#networking.zephyr.solo.io.TrafficPolicySpec.StringMatch)
   - [TrafficPolicyStatus](#networking.zephyr.solo.io.TrafficPolicyStatus)
-  - [TrafficPolicyStatus.ConflictError](#networking.zephyr.solo.io.TrafficPolicyStatus.ConflictError)
   - [TrafficPolicyStatus.TranslatorError](#networking.zephyr.solo.io.TrafficPolicyStatus.TranslatorError)
 
 
@@ -363,26 +362,8 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| translationStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  | Whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration. |
-| translatorErrors | [][TrafficPolicyStatus.TranslatorError](#networking.zephyr.solo.io.TrafficPolicyStatus.TranslatorError) | repeated | Provides details on any translation errors that occurred. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config. |
-| validationStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  | Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific routing configuration. |
-| conflictErrors | [][TrafficPolicyStatus.ConflictError](#networking.zephyr.solo.io.TrafficPolicyStatus.ConflictError) | repeated | Provides details on any configuration conflicts between this TrafficPolicy and other TrafficPolicies that apply to the same configuration target. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config. |
-
-
-
-
-
-
-<a name="networking.zephyr.solo.io.TrafficPolicyStatus.ConflictError"></a>
-
-### TrafficPolicyStatus.ConflictError
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| configurationTarget | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | The service or workload on which this Traffic Policy conflicts with other Traffic policies. |
-| errorMessage | [string](#string) |  | Details about the nature of the conflict. |
+| translationStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  |  |
+| translatorErrors | [][TrafficPolicyStatus.TranslatorError](#networking.zephyr.solo.io.TrafficPolicyStatus.TranslatorError) | repeated |  |
 
 
 

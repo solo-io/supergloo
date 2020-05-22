@@ -25,7 +25,6 @@ title: "mesh_service.proto"
   - [MeshServiceSpec.Subset](#discovery.zephyr.solo.io.MeshServiceSpec.Subset)
   - [MeshServiceSpec.SubsetsEntry](#discovery.zephyr.solo.io.MeshServiceSpec.SubsetsEntry)
   - [MeshServiceStatus](#discovery.zephyr.solo.io.MeshServiceStatus)
-  - [MeshServiceStatus.ValidatedTrafficPolicy](#discovery.zephyr.solo.io.MeshServiceStatus.ValidatedTrafficPolicy)
 
 
 
@@ -174,23 +173,6 @@ The MeshService is an abstraction for a service which we have discovered to be p
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | federationStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  | The status of federation artifacts being written to remote clusters as a result of the federation metadata on this object's Spec. |
-| validatedTrafficPolicies | [][MeshServiceStatus.ValidatedTrafficPolicy](#discovery.zephyr.solo.io.MeshServiceStatus.ValidatedTrafficPolicy) | repeated |  |
-
-
-
-
-
-
-<a name="discovery.zephyr.solo.io.MeshServiceStatus.ValidatedTrafficPolicy"></a>
-
-### MeshServiceStatus.ValidatedTrafficPolicy
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| ref | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  |  |
-| trafficPolicySpec | [networking.zephyr.solo.io.TrafficPolicySpec](#networking.zephyr.solo.io.TrafficPolicySpec) |  |  |
 
 
 
