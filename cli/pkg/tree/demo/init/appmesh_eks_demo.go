@@ -73,14 +73,18 @@ aws appmesh create-mesh --mesh-name=$meshName --region=$region | cat
 kubectl label namespace default appmesh.k8s.aws/sidecarInjectorWebhook=enabled
 
 # Manually set the CA_BUNDLE env variable to fix the issue documented here, https://github.com/aws/aws-app-mesh-inject#troubleshooting
+set +x
 kubectl -n appmesh-system set env deployment/appmesh-inject -c appmesh-inject CA_BUNDLE=$(kubectl config view --raw -o json --minify | jq -r '.clusters[0].cluster."certificate-authority-data"' | tr -d '"')
+sex -x
 
 # Install Service Mesh Hub.
 meshctl install
 
 # Generate AWS secret
+set +x
 aws_access_key_id=$(echo -n $(aws configure get aws_access_key_id) | base64)
 aws_secret_access_key=$(echo -n $(aws configure get aws_secret_access_key) | base64)
+set -x
 
 kubectl -n service-mesh-hub apply -f - <<EOF
 apiVersion: v1
