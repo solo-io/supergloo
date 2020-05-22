@@ -76,33 +76,7 @@ kubectl config use-context kind-$managementPlane
 kubectl create ns --context kind-$managementPlane  service-mesh-hub
 kubectl create ns --context kind-$remoteCluster  service-mesh-hub
 
-# leaving this in for the time being as there is a race with helm installing CRDs
-# register all our CRDs in the management plane
-kubectl --context kind-$managementPlane apply -f install/helm/charts/custom-resource-definitions/crds
-# register all the CRDs in the target cluster too
-kubectl --context kind-$remoteCluster apply -f install/helm/charts/custom-resource-definitions/crds
-
-# Build the docker images
-make -B docker
-
-# Load images into the management plane cluster
-export CLUSTER_NAME=$managementPlane
-make kind-load-images
-
-# Load images into the target cluster
-export CLUSTER_NAME=$remoteCluster
-make kind-load-images
-
-# create Helm packages
-make -s package-index-mgmt-plane-helm -B
-make -s package-index-csr-agent-helm -B
-
-# generate the meshctl binary
-make meshctl -B
-# install the app
-# the helm version needs to strip the leading v out of the git describe output
-helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
-./_output/meshctl install --file ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
+meshctl install
 
 case $(uname) in
   "Darwin")
