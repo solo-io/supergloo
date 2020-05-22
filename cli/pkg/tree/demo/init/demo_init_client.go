@@ -21,7 +21,6 @@ const (
 	initDemoScript = `
 set -e
 
-# generate 1 allows to make several envs in parallel
 managementPlane=management-plane-$1
 remoteCluster=target-cluster-$1
 
@@ -99,7 +98,7 @@ esac
 #register the remote cluster, and install Istio onto the management plane cluster
 meshctl cluster register \
   --remote-context kind-$managementPlane \
-  --remote-cluster-name management-plane-cluster \
+  --remote-cluster-name management-plane \
   --local-cluster-domain-override $CLUSTER_DOMAIN_MGMT
 
 #register the remote cluster, and install Istio onto the remote cluster
