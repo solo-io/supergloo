@@ -44,34 +44,30 @@ func (i *istioEnforcer) Name() string {
 	return EnforcerId
 }
 
-func (i *istioEnforcer) StartEnforcing(ctx context.Context, meshes []*zephyr_discovery.Mesh) error {
-	for _, mesh := range meshes {
-		if mesh.Spec.GetIstio() == nil {
-			continue
-		}
-		clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
-		if err != nil {
-			return err
-		}
-		authPolicyClient := i.authPolicyClientFactory(clientForCluster)
-		if err := i.ensureIngressGatewayPolicy(ctx, mesh, authPolicyClient); err != nil {
-			return err
-		}
-		if err := i.ensureGlobalAuthPolicy(ctx, mesh, authPolicyClient); err != nil {
-			return err
-		}
+func (i *istioEnforcer) StartEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
+	if mesh.Spec.GetIstio() == nil {
+		return nil
+	}
+	clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
+	if err != nil {
+		return err
+	}
+	authPolicyClient := i.authPolicyClientFactory(clientForCluster)
+	if err := i.ensureIngressGatewayPolicy(ctx, mesh, authPolicyClient); err != nil {
+		return err
+	}
+	if err := i.ensureGlobalAuthPolicy(ctx, mesh, authPolicyClient); err != nil {
+		return err
 	}
 	return nil
 }
 
-func (i *istioEnforcer) StopEnforcing(ctx context.Context, meshes []*zephyr_discovery.Mesh) error {
-	for _, mesh := range meshes {
-		if mesh.Spec.GetIstio() == nil {
-			continue
-		}
-		if err := i.stopEnforcingForMesh(ctx, mesh); err != nil {
-			return err
-		}
+func (i *istioEnforcer) StopEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
+	if mesh.Spec.GetIstio() == nil {
+		return nil
+	}
+	if err := i.stopEnforcingForMesh(ctx, mesh); err != nil {
+		return err
 	}
 	return nil
 }

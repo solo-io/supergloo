@@ -97,23 +97,6 @@ var _ = Describe("EnforcerLoop", func() {
 		}
 	}
 
-	var buildMeshesWithDefaultAccessControlDisabled = func() []*zephyr_discovery.Mesh {
-		return []*zephyr_discovery.Mesh{
-			{
-				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "name1", Namespace: "namespace1"},
-				Spec: types.MeshSpec{
-					MeshType: &types.MeshSpec_AwsAppMesh_{},
-				},
-			},
-			{
-				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "name2", Namespace: "namespace2"},
-				Spec: types.MeshSpec{
-					MeshType: &types.MeshSpec_Istio{},
-				},
-			},
-		}
-	}
-
 	It("should start enforcing access control on VirtualMesh creates", func() {
 		vm := buildVirtualMesh()
 		vm.Spec.EnforceAccessControl = &protobuf_types.BoolValue{Value: true}
@@ -124,16 +107,19 @@ var _ = Describe("EnforcerLoop", func() {
 				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
-		for _, meshEnforcer := range meshEnforcers {
-			meshEnforcer.
-				EXPECT().
-				StartEnforcing(contextutils.WithLogger(ctx, ""), meshes).
-				Return(nil)
-			meshEnforcer.
-				EXPECT().
-				Name().
-				Return("")
+		for _, mesh := range meshes {
+			for _, meshEnforcer := range meshEnforcers {
+				meshEnforcer.
+					EXPECT().
+					StartEnforcing(contextutils.WithLogger(ctx, ""), mesh).
+					Return(nil)
+				meshEnforcer.
+					EXPECT().
+					Name().
+					Return("")
+			}
 		}
+
 		var capturedVM *zephyr_networking.VirtualMesh
 		virtualMeshClient.
 			EXPECT().
@@ -152,6 +138,7 @@ var _ = Describe("EnforcerLoop", func() {
 
 	It("should stop enforcing access control on VirtualMesh creates", func() {
 		vm := buildVirtualMesh()
+		vm.Spec.EnforceAccessControl = &protobuf_types.BoolValue{Value: false}
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
@@ -159,15 +146,17 @@ var _ = Describe("EnforcerLoop", func() {
 				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
-		for _, meshEnforcer := range meshEnforcers {
-			meshEnforcer.
-				EXPECT().
-				StopEnforcing(contextutils.WithLogger(ctx, ""), meshes).
-				Return(nil)
-			meshEnforcer.
-				EXPECT().
-				Name().
-				Return("")
+		for _, mesh := range meshes {
+			for _, meshEnforcer := range meshEnforcers {
+				meshEnforcer.
+					EXPECT().
+					StopEnforcing(contextutils.WithLogger(ctx, ""), mesh).
+					Return(nil)
+				meshEnforcer.
+					EXPECT().
+					Name().
+					Return("")
+			}
 		}
 		var capturedVM *zephyr_networking.VirtualMesh
 		virtualMeshClient.
@@ -197,7 +186,7 @@ var _ = Describe("EnforcerLoop", func() {
 		}
 		meshEnforcers[0].
 			EXPECT().
-			StopEnforcing(contextutils.WithLogger(ctx, ""), meshes).
+			StopEnforcing(contextutils.WithLogger(ctx, ""), meshes[0]).
 			Return(testErr)
 		meshEnforcers[0].
 			EXPECT().
@@ -220,7 +209,7 @@ var _ = Describe("EnforcerLoop", func() {
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
 	})
 
-	It("should clean up everything that's relevant when a virtual mesh is deleted and stop enforcing if default access control is false", func() {
+	It("should clean up translated resources when a virtual mesh is deleted and stop enforcing if default access control is false", func() {
 		vm := buildVirtualMesh()
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		for i, meshRef := range vm.Spec.GetMeshes() {
@@ -230,45 +219,22 @@ var _ = Describe("EnforcerLoop", func() {
 				Return(meshes[i], nil)
 		}
 
-		meshClient.
-			EXPECT().
-			GetMesh(ctx, clients.ResourceRefToObjectKey(vm.Spec.GetMeshes()[0])).
-			Return(meshes[0], nil)
-
+		// Istio should stop enforcing by default
 		for _, meshEnforcer := range meshEnforcers {
 			meshEnforcer.
 				EXPECT().
-				StopEnforcing(contextutils.WithLogger(ctx, ""), meshes).
+				StopEnforcing(contextutils.WithLogger(ctx, ""), meshes[0]).
 				Return(nil)
 			meshEnforcer.
 				EXPECT().
 				Name().
 				Return("")
 		}
-
-		err := virtualMeshHandler.DeleteVirtualMesh(vm)
-		Expect(err).ToNot(HaveOccurred())
-	})
-
-	It("should clean up everything that's relevant when a virtual mesh is deleted and stop enforcing if default access control is true", func() {
-		vm := buildVirtualMesh()
-		meshes := buildMeshesWithDefaultAccessControlDisabled()
-		for i, meshRef := range vm.Spec.GetMeshes() {
-			meshClient.
-				EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
-				Return(meshes[i], nil)
-		}
-
-		meshClient.
-			EXPECT().
-			GetMesh(ctx, clients.ResourceRefToObjectKey(vm.Spec.GetMeshes()[0])).
-			Return(meshes[0], nil)
-
+		// Appmesh should start enforcing by default
 		for _, meshEnforcer := range meshEnforcers {
 			meshEnforcer.
 				EXPECT().
-				StartEnforcing(contextutils.WithLogger(ctx, ""), meshes).
+				StartEnforcing(contextutils.WithLogger(ctx, ""), meshes[1]).
 				Return(nil)
 			meshEnforcer.
 				EXPECT().
