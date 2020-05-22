@@ -8,6 +8,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"go.uber.org/zap"
@@ -105,13 +106,15 @@ func (e *enforcerLoop) enforceGlobalAccessControl(
 	for _, mesh := range meshes {
 		var enforceAccessControl bool
 
-		if !enforceMeshDefault && virtualMesh.Spec.GetEnforceAccessControl() != nil {
-			enforceAccessControl = virtualMesh.Spec.GetEnforceAccessControl().GetValue()
-		} else {
+		if enforceMeshDefault || virtualMesh.Spec.GetEnforceAccessControl() == types.VirtualMeshSpec_MESH_DEFAULT {
 			enforceAccessControl, err = DefaultAccessControlValueForMesh(mesh)
 			if err != nil {
 				return err
 			}
+		} else if virtualMesh.Spec.GetEnforceAccessControl() == types.VirtualMeshSpec_ENABLED {
+			enforceAccessControl = true
+		} else {
+			enforceAccessControl = false
 		}
 
 		for _, meshEnforcer := range e.meshEnforcers {

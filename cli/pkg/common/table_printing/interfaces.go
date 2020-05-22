@@ -45,7 +45,7 @@ type AccessControlPolicyPrinter interface {
 }
 
 type VirtualMeshPrinter interface {
-	Print(out io.Writer, virtualMeshes []*zephyr_networking.VirtualMesh, meshes []*zephyr_discovery.Mesh) error
+	Print(out io.Writer, virtualMeshes []*zephyr_networking.VirtualMesh) error
 }
 
 type VirtualMeshCSRPrinter interface {

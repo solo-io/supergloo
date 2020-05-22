@@ -5,15 +5,12 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	types2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,13 +22,13 @@ var UPDATE_VIRTUAL_MESH_GOLDENS = false
 
 var _ = Describe("Virtual Mesh Table Printer", func() {
 	const tpGoldenDirectory = "virtual_mesh"
-	var runTest = func(fileName string, virtualMeshes []*zephyr_networking.VirtualMesh, meshes []*zephyr_discovery.Mesh) {
+	var runTest = func(fileName string, virtualMeshes []*zephyr_networking.VirtualMesh) {
 		goldenFilename := test_goldens.GoldenFilePath(tpGoldenDirectory, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
 
 		output := &bytes.Buffer{}
-		err = table_printing.NewVirtualMeshPrinter(table_printing.DefaultTableBuilder()).Print(output, virtualMeshes, meshes)
+		err = table_printing.NewVirtualMeshPrinter(table_printing.DefaultTableBuilder()).Print(output, virtualMeshes)
 
 		if UPDATE_VIRTUAL_MESH_GOLDENS || test_goldens.UpdateGoldens() {
 			err = ioutil.WriteFile(goldenFilename, []byte(output.String()), os.ModeAppend)
@@ -71,7 +68,7 @@ var _ = Describe("Virtual Mesh Table Printer", func() {
 								},
 							},
 						},
-						EnforceAccessControl: &types.BoolValue{Value: true},
+						EnforceAccessControl: zephyr_networking_types.VirtualMeshSpec_ENABLED,
 					},
 					Status: zephyr_networking_types.VirtualMeshStatus{
 						FederationStatus: &zephyr_core_types.Status{
@@ -106,7 +103,7 @@ var _ = Describe("Virtual Mesh Table Printer", func() {
 								},
 							},
 						},
-						EnforceAccessControl: nil,
+						EnforceAccessControl: zephyr_networking_types.VirtualMeshSpec_MESH_DEFAULT,
 					},
 					Status: zephyr_networking_types.VirtualMeshStatus{
 						CertificateStatus: &zephyr_core_types.Status{
@@ -117,14 +114,6 @@ var _ = Describe("Virtual Mesh Table Printer", func() {
 							State:   zephyr_core_types.Status_PROCESSING_ERROR,
 							Message: "This is a processing error",
 						},
-					},
-				},
-			},
-			[]*zephyr_discovery.Mesh{
-				{},
-				{
-					Spec: types2.MeshSpec{
-						MeshType: &types2.MeshSpec_Istio{},
 					},
 				},
 			},

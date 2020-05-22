@@ -72,6 +72,19 @@ message VirtualMeshSpec {
     */
     message LimitedTrust {}
 
+    /*
+        If ENABLED, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies.
+        If DISABLED, by default allow traffic to all Services in the VirtualMesh.
+        If MESH_DEFAULT, the default value depends on the type service mesh:
+            Istio: false
+            Appmesh: true
+    */
+    enum EnforcementPolicy {
+        MESH_DEFAULT = 0;
+        ENABLED = 1;
+        DISABLED = 2;
+    }
+
     // User-provided display name for the virtual mesh.
     string display_name = 1;
 
@@ -87,14 +100,7 @@ message VirtualMeshSpec {
         LimitedTrust limited = 6;
     }
 
-    /*
-        If true, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies.
-        If false, by default allow traffic to all Services in the VirtualMesh.
-        If omitted, the default value depends on the type of the first mesh listed in `meshes`:
-            Istio: false
-            Appmesh: true
-    */
-    google.protobuf.BoolValue enforce_access_control = 7;
+    EnforcementPolicy enforce_access_control = 7;
 }
 
 message VirtualMeshStatus {

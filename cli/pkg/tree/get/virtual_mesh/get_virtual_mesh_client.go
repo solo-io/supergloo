@@ -7,10 +7,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func GetVirtualMeshes(
@@ -34,21 +32,9 @@ func GetVirtualMeshes(
 		return err
 	}
 	virtualMeshList := make([]*zephyr_networking.VirtualMesh, 0, len(virtualMeshes.Items))
-	meshList := make([]*zephyr_discovery.Mesh, 0, len(virtualMeshes.Items))
 	for _, v := range virtualMeshes.Items {
 		v := v
 		virtualMeshList = append(virtualMeshList, &v)
-		if len(v.Spec.GetMeshes()) == 0 {
-			meshList = append(meshList, nil)
-		}
-		mesh, err := kubeClients.MeshClient.GetMesh(
-			ctx,
-			client.ObjectKey{Name: v.Spec.GetMeshes()[0].GetName(), Namespace: v.Spec.GetMeshes()[0].GetNamespace()},
-		)
-		if err != nil {
-			return err
-		}
-		meshList = append(meshList, mesh)
 	}
 	switch opts.Get.OutputFormat {
 	case resource_printing.JSONFormat.String():
@@ -56,6 +42,6 @@ func GetVirtualMeshes(
 	case resource_printing.YAMLFormat.String():
 		return printers.ResourcePrinter.Print(out, virtualMeshes, resource_printing.YAMLFormat)
 	default:
-		return printers.VirtualMeshPrinter.Print(out, virtualMeshList, meshList)
+		return printers.VirtualMeshPrinter.Print(out, virtualMeshList)
 	}
 }

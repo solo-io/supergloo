@@ -113,17 +113,17 @@ func (m *MockVirtualMeshPrinter) EXPECT() *MockVirtualMeshPrinterMockRecorder {
 }
 
 // Print mocks base method.
-func (m *MockVirtualMeshPrinter) Print(out io.Writer, virtualMeshes []*v1alpha10.VirtualMesh, meshes []*v1alpha1.Mesh) error {
+func (m *MockVirtualMeshPrinter) Print(out io.Writer, virtualMeshes []*v1alpha10.VirtualMesh) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Print", out, virtualMeshes, meshes)
+	ret := m.ctrl.Call(m, "Print", out, virtualMeshes)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Print indicates an expected call of Print.
-func (mr *MockVirtualMeshPrinterMockRecorder) Print(out, virtualMeshes, meshes interface{}) *gomock.Call {
+func (mr *MockVirtualMeshPrinterMockRecorder) Print(out, virtualMeshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockVirtualMeshPrinter)(nil).Print), out, virtualMeshes, meshes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockVirtualMeshPrinter)(nil).Print), out, virtualMeshes)
 }
 
 // MockVirtualMeshCSRPrinter is a mock of VirtualMeshCSRPrinter interface.

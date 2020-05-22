@@ -12,9 +12,6 @@ const (
 )
 
 func DefaultAccessControlValueForMesh(mesh *zephyr_discovery.Mesh) (bool, error) {
-	if mesh == nil {
-		return false, nil
-	}
 	switch mesh.Spec.GetMeshType().(type) {
 	case *discovery_types.MeshSpec_Istio:
 		return IstioDefaultAccessControlValue, nil

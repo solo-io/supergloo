@@ -3,7 +3,6 @@ package access_policy_enforcer_test
 import (
 	"context"
 
-	protobuf_types "github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -99,7 +98,7 @@ var _ = Describe("EnforcerLoop", func() {
 
 	It("should start enforcing access control on VirtualMesh creates", func() {
 		vm := buildVirtualMesh()
-		vm.Spec.EnforceAccessControl = &protobuf_types.BoolValue{Value: true}
+		vm.Spec.EnforceAccessControl = zephyr_networking_types.VirtualMeshSpec_ENABLED
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
@@ -138,7 +137,7 @@ var _ = Describe("EnforcerLoop", func() {
 
 	It("should stop enforcing access control on VirtualMesh creates", func() {
 		vm := buildVirtualMesh()
-		vm.Spec.EnforceAccessControl = &protobuf_types.BoolValue{Value: false}
+		vm.Spec.EnforceAccessControl = zephyr_networking_types.VirtualMeshSpec_DISABLED
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
