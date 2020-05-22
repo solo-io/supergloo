@@ -35,8 +35,8 @@ var _ = Describe("Demo init", func() {
 	})
 
 	It("will call the runner", func() {
-		runner.EXPECT().Run("bash", "-c", gomock.Any()).Return(nil)
-		_, err := meshctl.Invoke("demo cleanup")
+		runner.EXPECT().Run("bash", gomock.Any()).Return(nil)
+		_, err := meshctl.Invoke("demo cleanup --profile appmesh-eks")
 		Expect(err).NotTo(HaveOccurred())
 	})
 })

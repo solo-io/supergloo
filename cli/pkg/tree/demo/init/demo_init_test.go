@@ -35,7 +35,7 @@ var _ = Describe("Demo init", func() {
 	})
 
 	It("will call the runner", func() {
-		runner.EXPECT().Run("bash", "-c", gomock.Any()).Return(nil)
+		runner.EXPECT().Run("bash", gomock.Any()).Return(nil)
 		_, err := meshctl.Invoke("demo init --profile istio-multicluster")
 		Expect(err).NotTo(HaveOccurred())
 	})
