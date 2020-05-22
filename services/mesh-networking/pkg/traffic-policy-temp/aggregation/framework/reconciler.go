@@ -71,6 +71,8 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		collectionResult, err := a.policyCollector.CollectForService(
 			meshService,
 			serviceToMetadata[meshService].Mesh,
+
+			// intentionally not doing map existence checks here; if it panics, we forgot to implement the validator for this translator
 			a.translationValidators[serviceToMetadata[meshService].MeshType],
 			allTrafficPolicies,
 		)

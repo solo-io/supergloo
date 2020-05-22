@@ -18,6 +18,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
+	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
@@ -128,7 +129,7 @@ var _ = Describe("Cluster Deregistration", func() {
 				ctx,
 				client.InNamespace(remoteWriteNamespace),
 				client.MatchingLabels{
-					cliconstants.ManagedByLabel:     cliconstants.ServiceMeshHubApplicationName,
+					constants.ManagedByLabel:        constants.ServiceMeshHubApplicationName,
 					auth.RegistrationServiceAccount: auth.RegistrationServiceAccountValue,
 				},
 			).

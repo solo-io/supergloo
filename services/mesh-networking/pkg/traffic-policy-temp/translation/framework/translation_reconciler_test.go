@@ -11,7 +11,8 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	translation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework"
-	mock_translation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/mocks"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/snapshot"
+	mock_snapshot "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/snapshot/mocks"
 	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	istio_networking "istio.io/api/networking/v1alpha3"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,7 +53,7 @@ var _ = Describe("TranslationReconciler", func() {
 			It("still runs the output reconciliation", func() {
 				meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
 				meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
-				snapshotReconciler := mock_translation_framework.NewMockTranslationSnapshotReconciler(ctrl)
+				snapshotReconciler := mock_snapshot.NewMockTranslationSnapshotReconciler(ctrl)
 				reconciler := translation_framework.NewTranslationReconciler(meshServiceClient, meshClient, nil, snapshotReconciler)
 				knownMeshes := []*zephyr_discovery.Mesh{
 					{
@@ -75,7 +76,7 @@ var _ = Describe("TranslationReconciler", func() {
 					},
 				}
 				// contents don't matter
-				clusterNameToSnapshot := map[string]*translation_framework.TranslatedSnapshot{
+				clusterNameToSnapshot := map[string]*snapshot.TranslatedSnapshot{
 					"cluster1": nil,
 					"cluster2": nil,
 				}
@@ -104,9 +105,9 @@ var _ = Describe("TranslationReconciler", func() {
 			It("generates the correct resources to be reconciled", func() {
 				meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
 				meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
-				snapshotReconciler := mock_translation_framework.NewMockTranslationSnapshotReconciler(ctrl)
-				snapshotAccumulator := mock_translation_framework.NewMockTranslationSnapshotAccumulator(ctrl)
-				var snapshotAccumulatorGetter translation_framework.TranslationSnapshotAccumulatorGetter = func(meshType zephyr_core_types.MeshType) (accumulator translation_framework.TranslationSnapshotAccumulator, err error) {
+				snapshotReconciler := mock_snapshot.NewMockTranslationSnapshotReconciler(ctrl)
+				snapshotAccumulator := mock_snapshot.NewMockTranslationSnapshotAccumulator(ctrl)
+				var snapshotAccumulatorGetter snapshot.TranslationSnapshotAccumulatorGetter = func(meshType zephyr_core_types.MeshType) (accumulator snapshot.TranslationSnapshotAccumulator, err error) {
 					return snapshotAccumulator, nil
 				}
 				reconciler := translation_framework.NewTranslationReconciler(meshServiceClient, meshClient, snapshotAccumulatorGetter, snapshotReconciler)
@@ -153,15 +154,15 @@ var _ = Describe("TranslationReconciler", func() {
 						},
 					},
 				}
-				clusterNameToSnapshot := map[string]*translation_framework.TranslatedSnapshot{
+				clusterNameToSnapshot := map[string]*snapshot.TranslatedSnapshot{
 					knownMeshes[0].Spec.Cluster.Name: {
-						Istio: &translation_framework.IstioSnapshot{},
+						Istio: &snapshot.IstioSnapshot{},
 					},
 					knownMeshes[1].Spec.Cluster.Name: {
-						Istio: &translation_framework.IstioSnapshot{},
+						Istio: &snapshot.IstioSnapshot{},
 					},
 					knownMeshes[2].Spec.Cluster.Name: {
-						Istio: &translation_framework.IstioSnapshot{},
+						Istio: &snapshot.IstioSnapshot{},
 					},
 				}
 
@@ -178,11 +179,11 @@ var _ = Describe("TranslationReconciler", func() {
 				snapshotAccumulator.EXPECT().
 					AccumulateFromTranslation(gomock.Any(), meshServices[0], knownMeshes[0]).
 					DoAndReturn(func(
-						snapshotInProgress *translation_framework.TranslatedSnapshot,
+						snapshotInProgress *snapshot.TranslatedSnapshot,
 						meshService *zephyr_discovery.MeshService,
 						mesh *zephyr_discovery.Mesh,
 					) error {
-						snapshotInProgress.Istio = &translation_framework.IstioSnapshot{
+						snapshotInProgress.Istio = &snapshot.IstioSnapshot{
 							DestinationRules: []*istio_networking.DestinationRule{{
 								Host: "host-1",
 							}},
@@ -190,9 +191,9 @@ var _ = Describe("TranslationReconciler", func() {
 						return nil
 					})
 				snapshotAccumulator.EXPECT().
-					AccumulateFromTranslation(gomock.Any(), meshServices[1], knownMeshes[0]).
+					AccumulateFromTranslation(gomock.Any(), meshServices[1], meshServices, knownMeshes[0]).
 					DoAndReturn(func(
-						snapshotInProgress *translation_framework.TranslatedSnapshot,
+						snapshotInProgress *snapshot.TranslatedSnapshot,
 						meshService *zephyr_discovery.MeshService,
 						mesh *zephyr_discovery.Mesh,
 					) error {
@@ -202,13 +203,13 @@ var _ = Describe("TranslationReconciler", func() {
 						return nil
 					})
 				snapshotAccumulator.EXPECT().
-					AccumulateFromTranslation(gomock.Any(), meshServices[2], knownMeshes[2]).
+					AccumulateFromTranslation(gomock.Any(), meshServices[2], meshServices, knownMeshes[2]).
 					DoAndReturn(func(
-						snapshotInProgress *translation_framework.TranslatedSnapshot,
+						snapshotInProgress *snapshot.TranslatedSnapshot,
 						meshService *zephyr_discovery.MeshService,
 						mesh *zephyr_discovery.Mesh,
 					) error {
-						snapshotInProgress.Istio = &translation_framework.IstioSnapshot{
+						snapshotInProgress.Istio = &snapshot.IstioSnapshot{
 							DestinationRules: []*istio_networking.DestinationRule{{
 								Host: "host-3",
 							}},

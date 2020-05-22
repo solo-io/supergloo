@@ -9,13 +9,14 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
 	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/snapshot"
 )
 
 func NewTranslationReconciler(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshClient zephyr_discovery.MeshClient,
-	translationSnapshotBuilderGetter TranslationSnapshotAccumulatorGetter,
-	snapshotReconciler TranslationSnapshotReconciler,
+	translationSnapshotBuilderGetter snapshot.TranslationSnapshotAccumulatorGetter,
+	snapshotReconciler snapshot.TranslationSnapshotReconciler,
 ) reconciliation.Reconciler {
 	return &translationReconciler{
 		meshServiceClient:                meshServiceClient,
@@ -28,8 +29,8 @@ func NewTranslationReconciler(
 type translationReconciler struct {
 	meshServiceClient                zephyr_discovery.MeshServiceClient
 	meshClient                       zephyr_discovery.MeshClient
-	translationSnapshotBuilderGetter TranslationSnapshotAccumulatorGetter
-	snapshotReconciler               TranslationSnapshotReconciler
+	translationSnapshotBuilderGetter snapshot.TranslationSnapshotAccumulatorGetter
+	snapshotReconciler               snapshot.TranslationSnapshotReconciler
 }
 
 func (*translationReconciler) GetName() string {
@@ -66,6 +67,13 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	var allMeshServices []*zephyr_discovery.MeshService
+	for _, meshService := range meshServiceList.Items {
+		meshService := meshService
+		allMeshServices = append(allMeshServices, &meshService)
+	}
+
 	for _, meshServiceIter := range meshServiceList.Items {
 		meshService := meshServiceIter
 
@@ -90,6 +98,7 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 		err = snapshotAccumulator.AccumulateFromTranslation(
 			clusterNameToSnapshot[clusterName],
 			&meshService,
+			allMeshServices,
 			mesh,
 		)
 		if err != nil {
@@ -101,93 +110,3 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 	// reconcile everything at once
 	return t.snapshotReconciler.ReconcileAllSnapshots(ctx, clusterNameToSnapshot)
 }
-
-//		err = t.accumulateResourcesForService(
-//			logger,
-//			&meshService,
-//			mesh,
-//			meshType,
-//			clusterNameToResources,
-//		)
-//		if err != nil {
-//			return err
-//		}
-//	}
-//
-//	return t.reconcileOutputResources(ctx, clusterNameToResources)
-//}
-//
-//func (t *translationReconciler) reconcileOutputResources(ctx context.Context, clusterNameToResources map[string]*translatedSnapshot) error {
-//	for clusterName, resourcesToReconcile := range clusterNameToResources {
-//		client, err := t.clientGetter.GetClientForCluster(ctx, clusterName)
-//		if err != nil {
-//			return err
-//		}
-//
-//		if resourcesToReconcile.istio != nil {
-//			virtualServiceReconciler, err := t.virtualServiceReconcilerBuilder.
-//				WithClient(client).
-//				ScopedToLabels(resourcesToReconcile.istio.translationLabels).
-//				Build()
-//			if err != nil {
-//				return err
-//			}
-//
-//			err = virtualServiceReconciler.Reconcile(ctx, resourcesToReconcile.istio.VirtualServices)
-//			if err != nil {
-//				return err
-//			}
-//
-//			destinationRuleReconciler, err := t.destinationRuleReconcilerBuilder.
-//				WithClient(client).
-//				ScopedToLabels(resourcesToReconcile.istio.translationLabels).
-//				Build()
-//			if err != nil {
-//				return err
-//			}
-//
-//			err = destinationRuleReconciler.Reconcile(ctx, resourcesToReconcile.istio.DestinationRules)
-//			if err != nil {
-//				return err
-//			}
-//		}
-//	}
-//
-//	return nil
-//}
-//
-//func (t *translationReconciler) accumulateResourcesForService(
-//	logger *zap.SugaredLogger,
-//	meshService *zephyr_discovery.MeshService,
-//	mesh *zephyr_discovery.Mesh,
-//	meshType zephyr_core_types.MeshType,
-//	clusterNameToResources map[string]*translatedSnapshot,
-//) error {
-//	logger.Debugf("Translating for mesh service %s.%s", meshService.GetName(), meshService.GetNamespace())
-//
-//	clusterName := mesh.Spec.GetCluster().GetName()
-//
-//	switch meshType {
-//	case zephyr_core_types.MeshType_ISTIO:
-//		if _, ok := clusterNameToResources[clusterName]; !ok {
-//			clusterNameToResources[clusterName] = &translatedSnapshot{
-//				istio: &istioSnapshot{
-//					translationLabels: t.istioTranslator.GetTranslationLabels(),
-//				},
-//			}
-//		}
-//
-//		output, translationErr := t.istioTranslator.Translate(meshService, mesh, meshService.Status.ValidatedTrafficPolicies)
-//		if len(translationErr) > 0 {
-//			return eris.Errorf("Translation errors occurred in translation reconciler; this is unexpected: %+v", translationErr)
-//		}
-//
-//		existingResources := clusterNameToResources[clusterName]
-//		existingResources.istio.DestinationRules = append(existingResources.istio.DestinationRules, output.DestinationRules...)
-//		existingResources.istio.VirtualServices = append(existingResources.istio.VirtualServices, output.VirtualServices...)
-//	default:
-//		return eris.Errorf("Traffic policy translation is unsupported for mesh type %s", meshType.String())
-//	}
-//
-//	return nil
-//}

@@ -12,6 +12,7 @@ import (
 	zephyr_security_scheme "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
@@ -141,7 +142,7 @@ func (c *clusterDeregistrationClient) cleanUpServiceAccounts(ctx context.Context
 		ctx,
 		client.InNamespace(kubeCluster.Spec.GetWriteNamespace()),
 		client.MatchingLabels{
-			cliconstants.ManagedByLabel:     cliconstants.ServiceMeshHubApplicationName,
+			constants.ManagedByLabel:        constants.ServiceMeshHubApplicationName,
 			auth.RegistrationServiceAccount: auth.RegistrationServiceAccountValue,
 		},
 	)

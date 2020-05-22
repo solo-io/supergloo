@@ -9,20 +9,16 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
 
-type IstioTranslator interface {
-	TranslationValidator
-	DiscoveryLabelsGetter
-
-	Translate(
-		meshService *zephyr_discovery.MeshService,
-		mesh *zephyr_discovery.Mesh,
-		trafficPolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
-	) (*IstioTranslationOutput, []*TranslationError)
-}
-
+/*
+ * Every translator should embed the following three interfaces, for consistency across all the different mesh-specific translators.
+ * Note that the validator is used in the aggregation validation step.
+ */
 type TranslationValidator interface {
+	// Ignore the mesh-specific output from the translation step, in an effort to unify them behind some kind of common interface.
+	// Generics ;(
 	GetTranslationErrors(
 		meshService *zephyr_discovery.MeshService,
+		allMeshServices []*zephyr_discovery.MeshService,
 		mesh *zephyr_discovery.Mesh,
 		trafficPolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 	) []*TranslationError
@@ -31,6 +27,25 @@ type TranslationValidator interface {
 type DiscoveryLabelsGetter interface {
 	// get the labels that this translator attaches to the resources it creates
 	GetTranslationLabels() map[string]string
+}
+
+type NamedTranslator interface {
+	Name() string
+}
+
+// Mesh-specific interfaces
+
+type IstioTranslator interface {
+	TranslationValidator
+	DiscoveryLabelsGetter
+	NamedTranslator
+
+	Translate(
+		meshService *zephyr_discovery.MeshService,
+		allMeshServices []*zephyr_discovery.MeshService,
+		mesh *zephyr_discovery.Mesh,
+		trafficPolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
+	) (*IstioTranslationOutput, []*TranslationError)
 }
 
 type TranslationError struct {

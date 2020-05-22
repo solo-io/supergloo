@@ -1,4 +1,4 @@
-package translation_framework
+package snapshot
 
 import (
 	"context"
@@ -16,11 +16,14 @@ type TranslationSnapshotAccumulator interface {
 	AccumulateFromTranslation(
 		snapshotInProgress *TranslatedSnapshot,
 		meshService *zephyr_discovery.MeshService,
+		allMeshServices []*zephyr_discovery.MeshService,
 		mesh *zephyr_discovery.Mesh,
 	) error
 }
 
 type TranslationSnapshotReconciler interface {
+	// return a map that's pre-populated for every cluster name referenced in the meshes
+	// we still want to run reconciliation for clusters where there are no mesh services
 	InitializeClusterNameToSnapshot(knownMeshes []*zephyr_discovery.Mesh) map[string]*TranslatedSnapshot
 	ReconcileAllSnapshots(ctx context.Context, clusterNameToSnapshot map[string]*TranslatedSnapshot) error
 }
