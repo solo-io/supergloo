@@ -6,7 +6,7 @@
 | Display Name: my favorite virtual mesh      | - mesh-3                 | Certificate Authority:                   |   Message: This is a conflict         |
 |                                             |                          |   Type: Self Signed                      |                                       |
 |                                             |                          |   Org Name: my-org                       | Config Status:                        |
-|                                             |                          |   TTL: ŭ days                            |   State: ACCEPTED                     |
+|                                             |                          |   TTL: 365 days                          |   State: ACCEPTED                     |
 |                                             |                          |   Key Size: 2048                         |                                       |
 |                                             |                          |                                          |                                       |
 |                                             |                          | Federation Mode: PERMISSIVE              |                                       |
