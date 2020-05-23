@@ -8,7 +8,6 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/go-utils/testutils"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -37,8 +36,9 @@ import (
 
 var _ = Describe("Istio Federation Decider", func() {
 	var (
-		ctrl *gomock.Controller
-		ctx  context.Context
+		ctrl                  *gomock.Controller
+		ctx                   context.Context
+		installationNamespace = "istio-system"
 
 		mustBuildFilterPatch = func(clusterName string) *types3.Struct {
 			val, err := istio_federation.BuildClusterReplacementPatch(clusterName)
@@ -57,73 +57,6 @@ var _ = Describe("Istio Federation Decider", func() {
 	})
 
 	Context("FederateServiceSide", func() {
-		It("errors if the service being federated is not Istio", func() {
-			clientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
-			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
-			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
-			externalAccessPointGetter := mock_dns.NewMockExternalAccessPointGetter(ctrl)
-
-			federationClient := istio_federation.NewIstioFederationClient(
-				clientGetter,
-				meshClient,
-				func(_ client.Client) istio_networking.GatewayClient {
-					return nil
-				},
-				func(_ client.Client) istio_networking.EnvoyFilterClient {
-					return nil
-				},
-				func(_ client.Client) istio_networking.DestinationRuleClient {
-					return nil
-				},
-				func(_ client.Client) istio_networking.ServiceEntryClient {
-					return nil
-				},
-				func(_ client.Client) kubernetes_core.ServiceClient {
-					return nil
-				},
-				ipAssigner,
-				externalAccessPointGetter,
-			)
-
-			nonIstioMeshRef := &zephyr_core_types.ResourceRef{
-				Name:      "linkerd-mesh",
-				Namespace: env.GetWriteNamespace(),
-			}
-			nonIstioMesh := &zephyr_discovery.Mesh{
-				ObjectMeta: clients.ResourceRefToObjectMeta(nonIstioMeshRef),
-				Spec: zephyr_discovery_types.MeshSpec{
-					Cluster: &zephyr_core_types.ResourceRef{
-						Name: "linkerd",
-					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
-				},
-			}
-			nonIstioMeshService := &zephyr_discovery.MeshService{
-				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name:      "linkerd-svc",
-					Namespace: "application-ns",
-				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: nonIstioMeshRef,
-				},
-			}
-			virtualMesh := &zephyr_networking.VirtualMesh{
-				Spec: zephyr_networking_types.VirtualMeshSpec{
-					Meshes: []*zephyr_core_types.ResourceRef{nonIstioMeshRef},
-				},
-			}
-			meshClient.EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(nonIstioMeshRef)).
-				Return(nonIstioMesh, nil)
-			clientGetter.EXPECT().
-				GetClientForCluster(ctx, "linkerd").
-				Return(nil, nil)
-
-			_, err := federationClient.FederateServiceSide(ctx, virtualMesh, nonIstioMeshService)
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(testutils.HaveInErrorChain(istio_federation.ServiceNotInIstio(nonIstioMeshService)))
-		})
-
 		It("can resolve federation for a service belonging to an Istio mesh when no resources exist yet", func() {
 			clientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
 			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
@@ -166,10 +99,12 @@ var _ = Describe("Istio Federation Decider", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-								InstallationNamespace: "istio-system",
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+									InstallationNamespace: installationNamespace,
+								},
 							},
 						},
 					},
@@ -305,7 +240,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					Port:    uint32(3000),
 				}, nil)
 
-			eap, err := federationClient.FederateServiceSide(ctx, virtualMesh, istioMeshService)
+			eap, err := federationClient.FederateServiceSide(ctx, installationNamespace, virtualMesh, istioMeshService)
 			Expect(eap.Address).To(Equal("externally-resolvable-hostname.com"))
 			Expect(eap.Port).To(Equal(uint32(3000)))
 			Expect(err).NotTo(HaveOccurred())
@@ -353,10 +288,12 @@ var _ = Describe("Istio Federation Decider", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-								InstallationNamespace: "istio-system",
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+									InstallationNamespace: installationNamespace,
+								},
 							},
 						},
 					},
@@ -492,7 +429,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					Port:    uint32(3000),
 				}, nil)
 
-			eap, err := federationClient.FederateServiceSide(ctx, virtualMesh, istioMeshService)
+			eap, err := federationClient.FederateServiceSide(ctx, installationNamespace, virtualMesh, istioMeshService)
 			Expect(eap.Address).To(Equal("externally-resolvable-hostname.com"))
 			Expect(eap.Port).To(Equal(uint32(3000)))
 			Expect(err).NotTo(HaveOccurred())
@@ -540,10 +477,12 @@ var _ = Describe("Istio Federation Decider", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-								InstallationNamespace: "istio-system",
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+									InstallationNamespace: installationNamespace,
+								},
 							},
 						},
 					},
@@ -688,7 +627,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					Port:    uint32(3000),
 				}, nil)
 
-			eap, err := federationClient.FederateServiceSide(ctx, virtualMesh, istioMeshService)
+			eap, err := federationClient.FederateServiceSide(ctx, installationNamespace, virtualMesh, istioMeshService)
 			Expect(eap.Address).To(Equal("externally-resolvable-hostname.com"))
 			Expect(eap.Port).To(Equal(uint32(3000)))
 			Expect(err).NotTo(HaveOccurred())
@@ -696,73 +635,6 @@ var _ = Describe("Istio Federation Decider", func() {
 	})
 
 	Context("FederateClientSide", func() {
-		It("errors if the mesh workload does not belong to an Istio mesh", func() {
-			clientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
-			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
-			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
-			externalAccessPointGetter := mock_dns.NewMockExternalAccessPointGetter(ctrl)
-
-			federationClient := istio_federation.NewIstioFederationClient(
-				clientGetter,
-				meshClient,
-				func(_ client.Client) istio_networking.GatewayClient {
-					return nil
-				},
-				func(_ client.Client) istio_networking.EnvoyFilterClient {
-					return nil
-				},
-				func(_ client.Client) istio_networking.DestinationRuleClient {
-					return nil
-				},
-				func(_ client.Client) istio_networking.ServiceEntryClient {
-					return nil
-				},
-				func(_ client.Client) kubernetes_core.ServiceClient {
-					return nil
-				},
-				ipAssigner,
-				externalAccessPointGetter,
-			)
-
-			nonIstioMeshRef := &zephyr_core_types.ResourceRef{
-				Name:      "linkerd-mesh",
-				Namespace: env.GetWriteNamespace(),
-			}
-			nonIstioMesh := &zephyr_discovery.Mesh{
-				ObjectMeta: clients.ResourceRefToObjectMeta(nonIstioMeshRef),
-				Spec: zephyr_discovery_types.MeshSpec{
-					Cluster: &zephyr_core_types.ResourceRef{
-						Name: "linkerd",
-					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
-				},
-			}
-			nonIstioMeshWorkload := &zephyr_discovery.MeshWorkload{
-				Spec: zephyr_discovery_types.MeshWorkloadSpec{
-					Mesh: nonIstioMeshRef,
-				},
-			}
-			istioMeshService := &zephyr_discovery.MeshService{
-				ObjectMeta: k8s_meta_types.ObjectMeta{
-					Name:      "istio-svc",
-					Namespace: "application-ns",
-				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{},
-			}
-			meshClient.EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(nonIstioMeshRef)).
-				Return(nonIstioMesh, nil)
-			clientGetter.EXPECT().
-				GetClientForCluster(ctx, "linkerd").
-				Return(nil, nil)
-			eap := dns.ExternalAccessPoint{
-				Address: "abc.com",
-				Port:    0,
-			}
-			err := federationClient.FederateClientSide(ctx, eap, istioMeshService, nonIstioMeshWorkload)
-			Expect(err).To(testutils.HaveInErrorChain(istio_federation.WorkloadNotInIstio(nonIstioMeshWorkload)))
-		})
-
 		It("can resolve federation on the client side", func() {
 			clientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
 			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
@@ -807,10 +679,12 @@ var _ = Describe("Istio Federation Decider", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "istio-cluster-svc",
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-								InstallationNamespace: "istio-system",
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+									InstallationNamespace: installationNamespace,
+								},
 							},
 						},
 					},
@@ -822,10 +696,12 @@ var _ = Describe("Istio Federation Decider", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "istio-cluster-workload",
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-								InstallationNamespace: "istio-system",
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+									InstallationNamespace: installationNamespace,
+								},
 							},
 						},
 					},
@@ -931,7 +807,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Address: externalAddress,
 				Port:    port,
 			}
-			err := federationClient.FederateClientSide(ctx, eap, meshService, meshWorkload)
+			err := federationClient.FederateClientSide(ctx, installationNamespace, eap, meshService, meshWorkload)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})

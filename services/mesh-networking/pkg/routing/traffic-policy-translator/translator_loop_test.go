@@ -120,7 +120,7 @@ var _ = Describe("Translator", func() {
 			}
 			mesh := &zephyr_discovery.Mesh{
 				Spec: zephyr_discovery_types.MeshSpec{
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 				},
 			}
 			mockMeshServiceClient.
@@ -167,7 +167,7 @@ var _ = Describe("Translator", func() {
 			}
 			mesh := &zephyr_discovery.Mesh{
 				Spec: zephyr_discovery_types.MeshSpec{
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_6_{},
 				},
 			}
 			mockMeshServiceClient.
@@ -242,7 +242,7 @@ var _ = Describe("Translator", func() {
 			}
 			mesh := &zephyr_discovery.Mesh{
 				Spec: zephyr_discovery_types.MeshSpec{
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 				},
 			}
 			mockMeshServiceClient.

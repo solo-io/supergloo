@@ -155,7 +155,7 @@ var _ = Describe("Mesh installation", func() {
 			Create(cliconstants.DefaultIstioOperatorNamespace, demoControlPlaneResource).
 			Return(nil, nil)
 
-		output, err := mocks.meshctl.Invoke("mesh install istio --profile=demo")
+		output, err := mocks.meshctl.Invoke("mesh install istio1.5 --profile=demo")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(`Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'
 
@@ -175,7 +175,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			}).
 			Return(installationManifest, nil)
 
-		output, err := mocks.meshctl.Invoke("mesh install istio --dry-run")
+		output, err := mocks.meshctl.Invoke("mesh install istio1.5 --dry-run")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(installationManifest + "\n"))
 	})
@@ -197,7 +197,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			GetOperatorSpecWithProfile("demo", cliconstants.DefaultIstioOperatorNamespace).
 			Return(controlPlaneSpec, nil)
 
-		output, err := mocks.meshctl.Invoke("mesh install istio --dry-run --profile=demo")
+		output, err := mocks.meshctl.Invoke("mesh install istio1.5 --dry-run --profile=demo")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(installationManifest + "\n\n---\n" + controlPlaneSpec + "\n"))
 	})
@@ -223,7 +223,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			Read("/foo/bar").
 			Return([]byte(controlPlaneSpec), nil)
 
-		output, err := mocks.meshctl.Invoke("mesh install istio --dry-run --operator-spec=/foo/bar")
+		output, err := mocks.meshctl.Invoke("mesh install istio1.5 --dry-run --operator-spec=/foo/bar")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(installationManifest + "\n\n---\n" + controlPlaneSpec + "\n"))
 	})
@@ -259,7 +259,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			Create(cliconstants.DefaultIstioOperatorNamespace, controlPlaneResource).
 			Return(nil, nil)
 
-		output, err := mocks.meshctl.Invoke(fmt.Sprintf("mesh install istio --operator-spec %s", specFile))
+		output, err := mocks.meshctl.Invoke(fmt.Sprintf("mesh install istio1.5 --operator-spec %s", specFile))
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(`Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'
@@ -296,7 +296,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			Create(cliconstants.DefaultIstioOperatorNamespace, controlPlaneResource).
 			Return(nil, nil)
 
-		output, err := mocks.meshctl.Invoke("mesh install istio --operator-spec=-")
+		output, err := mocks.meshctl.Invoke("mesh install istio1.5 --operator-spec=-")
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(`Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'
@@ -311,7 +311,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 		mocks.operatorManager.EXPECT().ValidateOperatorNamespace(clusterName).Return(true, nil)
 		mocks.operatorManager.EXPECT().Install().Return(nil)
 
-		output, err := mocks.meshctl.Invoke(fmt.Sprintf("mesh install istio"))
+		output, err := mocks.meshctl.Invoke(fmt.Sprintf("mesh install istio1.5"))
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(`Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'
@@ -325,7 +325,7 @@ The Istio operator has been installed to cluster 'cluster-name' in namespace 'is
 
 		specFile := "/path/to/spec/file"
 
-		output, err := mocks.meshctl.Invoke(fmt.Sprintf("mesh install istio --profile=demo --operator-spec %s", specFile))
+		output, err := mocks.meshctl.Invoke(fmt.Sprintf("mesh install istio1.5 --profile=demo --operator-spec %s", specFile))
 
 		Expect(err).To(testutils.HaveInErrorChain(install_istio.ConflictingControlPlaneSettings))
 		Expect(output).To(BeEmpty())
@@ -358,7 +358,7 @@ The Istio operator has been installed to cluster 'cluster-name' in namespace 'is
 			Create(cliconstants.DefaultIstioOperatorNamespace, demoControlPlaneResource).
 			Return(nil, nil)
 
-		output, err := mocks.meshctl.Invoke("mesh install istio --profile=demo")
+		output, err := mocks.meshctl.Invoke("mesh install istio1.5 --profile=demo")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(`The Istio operator is already installed to cluster 'cluster-name' in namespace 'istio-operator' and is suitable for use. Continuing with the Istio installation.
 
@@ -383,7 +383,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			BuildResources(cliconstants.DefaultIstioOperatorNamespace, specContent).
 			Return(nil, testErr)
 
-		output, err := mocks.meshctl.Invoke(fmt.Sprintf("mesh install istio --operator-spec %s", specFile))
+		output, err := mocks.meshctl.Invoke(fmt.Sprintf("mesh install istio1.5 --operator-spec %s", specFile))
 
 		Expect(err).To(testutils.HaveInErrorChain(install_istio.FailedToParseControlPlaneSettings(testErr)))
 		Expect(output).To(Equal("Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'\n"))
@@ -422,7 +422,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			BuildResources(cliconstants.DefaultIstioOperatorNamespace, demoControlPlaneSpec).
 			Return(demoControlPlaneResource, nil)
 
-		output, err := mocks.meshctl.Invoke("mesh install istio --profile=demo")
+		output, err := mocks.meshctl.Invoke("mesh install istio1.5 --profile=demo")
 		Expect(err).To(testutils.HaveInErrorChain(install_istio.TooManyControlPlaneResources(len(demoControlPlaneResource))))
 		Expect(output).To(Equal("Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'\n"))
 	})
@@ -452,7 +452,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			BuildResources(cliconstants.DefaultIstioOperatorNamespace, demoControlPlaneSpec).
 			Return(demoControlPlaneResource, nil)
 
-		output, err := mocks.meshctl.Invoke("mesh install istio --profile=demo")
+		output, err := mocks.meshctl.Invoke("mesh install istio1.5 --profile=demo")
 		Expect(err).To(testutils.HaveInErrorChain(install_istio.UnknownControlPlaneKind("whoops-wrong-kind")))
 		Expect(output).To(Equal("Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'\n"))
 	})

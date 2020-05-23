@@ -201,9 +201,16 @@ func (f *federationResolver) federateToRemoteWorkload(
 	)
 	// set up gateway resources on the target cluster
 	switch meshForService.Spec.GetMeshType().(type) {
-	case *zephyr_discovery_types.MeshSpec_Istio:
+	case *zephyr_discovery_types.MeshSpec_Istio1_5_, *zephyr_discovery_types.MeshSpec_Istio1_6_:
+		var installationNamespace string
+		if meshForService.Spec.GetIstio1_5() != nil {
+			installationNamespace = meshForService.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace()
+		} else {
+			installationNamespace = meshForService.Spec.GetIstio1_6().GetMetadata().GetInstallation().GetInstallationNamespace()
+		}
 		eap, err = f.perMeshFederationClients.Istio.FederateServiceSide(
 			contextutils.WithLogger(ctx, "istio"),
+			installationNamespace,
 			virtualMesh,
 			meshService,
 		)
@@ -217,9 +224,16 @@ func (f *federationResolver) federateToRemoteWorkload(
 
 	// set up gateway resources on the client cluster
 	switch meshForWorkload.Spec.GetMeshType().(type) {
-	case *zephyr_discovery_types.MeshSpec_Istio:
+	case *zephyr_discovery_types.MeshSpec_Istio1_5_, *zephyr_discovery_types.MeshSpec_Istio1_6_:
+		var installationNamespace string
+		if meshForWorkload.Spec.GetIstio1_5() != nil {
+			installationNamespace = meshForWorkload.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace()
+		} else {
+			installationNamespace = meshForWorkload.Spec.GetIstio1_6().GetMetadata().GetInstallation().GetInstallationNamespace()
+		}
 		return f.perMeshFederationClients.Istio.FederateClientSide(
 			contextutils.WithLogger(ctx, "istio"),
+			installationNamespace,
 			eap,
 			meshService,
 			workload,

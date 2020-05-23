@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
 	"istio.io/istio/pkg/spiffe"
 )
 
@@ -40,7 +41,13 @@ func (i *istioCertConfigProducer) ConfigureCertificateInfo(
 	vm *zephyr_networking.VirtualMesh,
 	mesh *zephyr_discovery.Mesh,
 ) (*zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig, error) {
-	istioMesh := mesh.Spec.GetIstio()
+	var istioMesh *zephyr_discovery_types.MeshSpec_IstioMesh
+	if mesh.Spec.GetIstio1_6() != nil {
+		istioMesh = mesh.Spec.GetIstio1_6().GetMetadata()
+	} else if mesh.Spec.GetIstio1_5() != nil {
+		istioMesh = mesh.Spec.GetIstio1_5().GetMetadata()
+	}
+
 	if istioMesh == nil {
 		return nil, IncorrectMeshTypeError(mesh)
 	}
@@ -58,10 +65,16 @@ func (i *istioCertConfigProducer) ConfigureCertificateInfo(
 	if istioMesh.GetCitadelInfo().GetCitadelServiceAccount() != "" {
 		citadelServiceAccount = istioMesh.GetCitadelInfo().GetCitadelServiceAccount()
 	}
+
+	meshType, err := enum_conversion.MeshToMeshType(mesh)
+	if err != nil {
+		return nil, err
+	}
+
 	return &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 		// TODO: Make citadel namespace discoverable
 		Hosts:    []string{BuildSpiffeURI(trustDomain, citadelNamespace, citadelServiceAccount)},
 		Org:      DefaultIstioOrg,
-		MeshType: zephyr_core_types.MeshType_ISTIO,
+		MeshType: meshType,
 	}, nil
 }

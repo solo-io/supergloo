@@ -16,6 +16,7 @@ type MeshFederationClient interface {
 	// returns the externally-resolvable address (NOTE: can be either an IP or a hostname) that the service is now reachable at
 	FederateServiceSide(
 		ctx context.Context,
+		installationNamespace string,
 		virtualMesh *zephyr_networking.VirtualMesh,
 		meshService *zephyr_discovery.MeshService,
 	) (eap dns.ExternalAccessPoint, err error)
@@ -23,6 +24,7 @@ type MeshFederationClient interface {
 	// set up appropriate resources in the cluster of the mesh workload (the client cluster) where the traffic will originate
 	FederateClientSide(
 		ctx context.Context,
+		installationNamespace string,
 		eap dns.ExternalAccessPoint,
 		meshService *zephyr_discovery.MeshService,
 		meshWorkload *zephyr_discovery.MeshWorkload,

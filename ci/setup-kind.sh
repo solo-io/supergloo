@@ -174,6 +174,8 @@ spec:
     global:
       pilotCertProvider: kubernetes
       controlPlaneSecurityEnabled: true
+      mtls:
+        enabled: true
       podDNSSearchNamespaces:
       - global
       - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
@@ -236,6 +238,8 @@ spec:
     global:
       pilotCertProvider: kubernetes
       controlPlaneSecurityEnabled: true
+      mtls:
+        enabled: true
       podDNSSearchNamespaces:
       - global
       - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
@@ -333,28 +337,6 @@ kubectl --context kind-$remoteCluster -n istio-system rollout status deployment 
 # label bookinfo namespaces for injection
 kubectl --context kind-$managementPlane label namespace default istio-injection=enabled
 kubectl --context kind-$remoteCluster label namespace default istio-injection=enabled
-
-# Enable global mTLS for Istio 1.6
-kubectl --context kind-$managementPlane apply -f - <<EOF
-apiVersion: security.istio.io/v1beta1
-kind: PeerAuthentication
-metadata:
-  name: service-mesh-hub
-  namespace: istio-system
-spec:
-  mtls:
-    mode: STRICT
-EOF
-kubectl --context kind-$remoteCluster apply -f - <<EOF
-apiVersion: security.istio.io/v1beta1
-kind: PeerAuthentication
-metadata:
-  name: service-mesh-hub
-  namespace: istio-system
-spec:
-  mtls:
-    mode: STRICT
-EOF
 
 # Apply bookinfo deployments and services
 kubectl apply --context kind-$managementPlane -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml

@@ -118,8 +118,10 @@ var _ = Describe("IstioTranslator", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+						},
 					},
 				},
 			}

@@ -58,10 +58,12 @@ var _ = Describe("IstioEnforcer", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterNames[0],
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-								InstallationNamespace: installationNamespace[0],
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+									InstallationNamespace: installationNamespace[0],
+								},
 							},
 						},
 					},
@@ -72,10 +74,12 @@ var _ = Describe("IstioEnforcer", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterNames[1],
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-								InstallationNamespace: installationNamespace[1],
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+									InstallationNamespace: installationNamespace[1],
+								},
 							},
 						},
 					},
@@ -94,7 +98,7 @@ var _ = Describe("IstioEnforcer", func() {
 			globalAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      istio_enforcer.GlobalAccessControlAuthPolicyName,
-					Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
+					Namespace: mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace(),
 					Labels:    constants.OwnedBySMHLabel,
 				},
 				Spec: security_v1beta1.AuthorizationPolicy{},
@@ -106,7 +110,7 @@ var _ = Describe("IstioEnforcer", func() {
 			ingressAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      istio_enforcer.IngressGatewayAuthPolicy,
-					Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
+					Namespace: mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace(),
 					Labels:    constants.OwnedBySMHLabel,
 				},
 				Spec: security_v1beta1.AuthorizationPolicy{
@@ -135,11 +139,11 @@ var _ = Describe("IstioEnforcer", func() {
 				Return(nil, nil)
 			globalAuthPolicyKey := client.ObjectKey{
 				Name:      istio_enforcer.GlobalAccessControlAuthPolicyName,
-				Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
+				Namespace: mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace(),
 			}
 			ingressAuthPolicyKey := client.ObjectKey{
 				Name:      istio_enforcer.IngressGatewayAuthPolicy,
-				Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
+				Namespace: mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace(),
 			}
 			// test
 			if i != 0 {

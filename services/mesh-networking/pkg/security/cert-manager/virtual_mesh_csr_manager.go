@@ -14,6 +14,7 @@ import (
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
@@ -97,8 +98,12 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 			err        error
 		)
 		switch mesh.Spec.GetMeshType().(type) {
-		case *zephyr_discovery_types.MeshSpec_Istio:
-			meshType = zephyr_core_types.MeshType_ISTIO
+		case *zephyr_discovery_types.MeshSpec_Istio1_5_, *zephyr_discovery_types.MeshSpec_Istio1_6_:
+			meshType, err = enum_conversion.MeshToMeshType(mesh)
+			if err != nil {
+				return err
+			}
+
 			certConfig, err = m.istioCertConfigProducer.ConfigureCertificateInfo(vm, mesh)
 		default:
 			return UnsupportedMeshTypeError(mesh)

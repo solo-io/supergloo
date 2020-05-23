@@ -17,8 +17,10 @@ func MeshToMeshType(mesh *discovery_v1alpha1.Mesh) (core_types.MeshType, error) 
 	var meshType core_types.MeshType
 
 	switch mesh.Spec.GetMeshType().(type) {
-	case *discovery_types.MeshSpec_Istio:
-		meshType = core_types.MeshType_ISTIO
+	case *discovery_types.MeshSpec_Istio1_5_:
+		meshType = core_types.MeshType_ISTIO1_5
+	case *discovery_types.MeshSpec_Istio1_6_:
+		meshType = core_types.MeshType_ISTIO1_6
 	case *discovery_types.MeshSpec_AwsAppMesh_:
 		meshType = core_types.MeshType_APPMESH
 	case *discovery_types.MeshSpec_ConsulConnect:

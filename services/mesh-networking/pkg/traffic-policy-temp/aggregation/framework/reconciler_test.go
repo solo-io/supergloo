@@ -51,7 +51,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				meshClient,
 				policyCollector,
 				map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
-					zephyr_core_types.MeshType_ISTIO: validator,
+					zephyr_core_types.MeshType_ISTIO1_5: validator,
 				},
 				inMemoryStatusMutator,
 			)
@@ -83,7 +83,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					meshClient,
 					policyCollector,
 					map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
-						zephyr_core_types.MeshType_ISTIO: validator,
+						zephyr_core_types.MeshType_ISTIO1_5: validator,
 					},
 					inMemoryStatusMutator,
 				)
@@ -95,7 +95,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 						Cluster: &zephyr_core_types.ResourceRef{
 							Name: "cluster1",
 						},
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+						MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 					},
 				}
 				mesh2 := &zephyr_discovery.Mesh{
@@ -106,7 +106,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 						Cluster: &zephyr_core_types.ResourceRef{
 							Name: "cluster2",
 						},
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+						MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 					},
 				}
 				meshServices := []*zephyr_discovery.MeshService{
@@ -174,7 +174,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				meshClient,
 				policyCollector,
 				map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
-					zephyr_core_types.MeshType_ISTIO: validator,
+					zephyr_core_types.MeshType_ISTIO1_5: validator,
 				},
 				inMemoryStatusMutator,
 			)
@@ -186,7 +186,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "cluster1",
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 				},
 			}
 			mesh2 := &zephyr_discovery.Mesh{
@@ -197,7 +197,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "cluster2",
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 				},
 			}
 			meshServices := []*zephyr_discovery.MeshService{

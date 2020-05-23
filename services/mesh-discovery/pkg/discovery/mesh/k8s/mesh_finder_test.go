@@ -486,10 +486,12 @@ var _ = Describe("Mesh Finder", func() {
 			meshObjectMeta := metav1.ObjectMeta{Name: "test-mesh", Namespace: remoteNamespace}
 			mesh := BuildMesh(meshObjectMeta)
 			mesh.Spec = types.MeshSpec{
-				MeshType: &types.MeshSpec_Istio{
-					Istio: &types.MeshSpec_IstioMesh{
-						Installation: &types.MeshSpec_MeshInstallation{
-							Version: "1.4.0",
+				MeshType: &types.MeshSpec_Istio1_5_{
+					Istio1_5: &types.MeshSpec_Istio1_5{
+						Metadata: &types.MeshSpec_IstioMesh{
+							Installation: &types.MeshSpec_MeshInstallation{
+								Version: "1.5.0",
+							},
 						},
 					},
 				},
@@ -505,10 +507,12 @@ var _ = Describe("Mesh Finder", func() {
 
 			updatedMesh := *mesh
 			updatedMesh.Spec = types.MeshSpec{
-				MeshType: &types.MeshSpec_Istio{
-					Istio: &types.MeshSpec_IstioMesh{
-						Installation: &types.MeshSpec_MeshInstallation{
-							Version: "1.5.0",
+				MeshType: &types.MeshSpec_Istio1_5_{
+					Istio1_5: &types.MeshSpec_Istio1_5{
+						Metadata: &types.MeshSpec_IstioMesh{
+							Installation: &types.MeshSpec_MeshInstallation{
+								Version: "1.5.1",
+							},
 						},
 					},
 				},

@@ -308,10 +308,12 @@ var _ = Describe("Federation Decider", func() {
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
 				Cluster: clientClusterRef,
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-							InstallationNamespace: "istio-system",
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+								InstallationNamespace: "istio-system",
+							},
 						},
 					},
 				},
@@ -323,10 +325,12 @@ var _ = Describe("Federation Decider", func() {
 				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-							InstallationNamespace: "istio-system",
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+								InstallationNamespace: "istio-system",
+							},
 						},
 					},
 				},
@@ -379,10 +383,10 @@ var _ = Describe("Federation Decider", func() {
 			Port:    port,
 		}
 		meshFederationClient.EXPECT().
-			FederateServiceSide(contextutils.WithLogger(eventCtx, "istio"), virtualMeshContainingService, federatedService).
+			FederateServiceSide(contextutils.WithLogger(eventCtx, "istio"), "istio-system", virtualMeshContainingService, federatedService).
 			Return(eap, nil)
 		meshFederationClient.EXPECT().
-			FederateClientSide(contextutils.WithLogger(eventCtx, "istio"), eap, federatedService, federatedToWorkload).
+			FederateClientSide(contextutils.WithLogger(eventCtx, "istio"), "istio-system", eap, federatedService, federatedToWorkload).
 			Return(nil)
 		serviceCopy := *federatedService
 		serviceCopy.Status.FederationStatus = &zephyr_core_types.Status{

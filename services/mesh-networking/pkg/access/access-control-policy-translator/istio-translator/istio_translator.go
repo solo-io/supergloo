@@ -88,7 +88,7 @@ func (i *istioTranslator) Translate(
 	// target services.
 	for _, targetService := range targetServices {
 		// only translate Istio-backed services
-		if targetService.Mesh.Spec.GetIstio() == nil {
+		if targetService.Mesh.Spec.GetIstio1_5() == nil && targetService.Mesh.Spec.GetIstio1_6() == nil {
 			continue
 		}
 		client, err := i.dynamicClientGetter.GetClientForCluster(ctx, targetService.Mesh.Spec.GetCluster().GetName())
@@ -243,12 +243,22 @@ func (i *istioTranslator) getTrustDomainForClusters(ctx context.Context, cluster
 	var trustDomains []string
 	for _, mesh := range meshList.Items {
 		mesh := mesh
-		if mesh.Spec.GetIstio() == nil || !stringutils.ContainsString(mesh.Spec.GetCluster().GetName(), clusterNames) {
+
+		isIstio := mesh.Spec.GetIstio1_5() != nil || mesh.Spec.GetIstio1_6() != nil
+		if !isIstio || !stringutils.ContainsString(mesh.Spec.GetCluster().GetName(), clusterNames) {
 			continue
 		}
-		trustDomain := mesh.Spec.GetIstio().GetCitadelInfo().GetTrustDomain()
+
+		var citadelInfo *zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo
+		if mesh.Spec.GetIstio1_5() != nil {
+			citadelInfo = mesh.Spec.GetIstio1_5().GetMetadata().GetCitadelInfo()
+		} else {
+			citadelInfo = mesh.Spec.GetIstio1_6().GetMetadata().GetCitadelInfo()
+		}
+
+		trustDomain := citadelInfo.GetTrustDomain()
 		if trustDomain == "" {
-			return nil, EmptyTrustDomainForMeshError(&mesh, mesh.Spec.GetIstio().GetCitadelInfo())
+			return nil, EmptyTrustDomainForMeshError(&mesh, citadelInfo)
 		}
 		trustDomains = append(trustDomains, trustDomain)
 	}

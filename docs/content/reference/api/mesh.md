@@ -19,6 +19,8 @@ title: "mesh.proto"
   - [MeshSpec](#discovery.zephyr.solo.io.MeshSpec)
   - [MeshSpec.AwsAppMesh](#discovery.zephyr.solo.io.MeshSpec.AwsAppMesh)
   - [MeshSpec.ConsulConnectMesh](#discovery.zephyr.solo.io.MeshSpec.ConsulConnectMesh)
+  - [MeshSpec.Istio1_5](#discovery.zephyr.solo.io.MeshSpec.Istio1_5)
+  - [MeshSpec.Istio1_6](#discovery.zephyr.solo.io.MeshSpec.Istio1_6)
   - [MeshSpec.IstioMesh](#discovery.zephyr.solo.io.MeshSpec.IstioMesh)
   - [MeshSpec.IstioMesh.CitadelInfo](#discovery.zephyr.solo.io.MeshSpec.IstioMesh.CitadelInfo)
   - [MeshSpec.LinkerdMesh](#discovery.zephyr.solo.io.MeshSpec.LinkerdMesh)
@@ -39,7 +41,8 @@ Meshes represent a currently registered service mesh.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| istio | [MeshSpec.IstioMesh](#discovery.zephyr.solo.io.MeshSpec.IstioMesh) |  |  |
+| istio15 | [MeshSpec.Istio1_5](#discovery.zephyr.solo.io.MeshSpec.Istio1_5) |  |  |
+| istio16 | [MeshSpec.Istio1_6](#discovery.zephyr.solo.io.MeshSpec.Istio1_6) |  |  |
 | awsAppMesh | [MeshSpec.AwsAppMesh](#discovery.zephyr.solo.io.MeshSpec.AwsAppMesh) |  |  |
 | linkerd | [MeshSpec.LinkerdMesh](#discovery.zephyr.solo.io.MeshSpec.LinkerdMesh) |  |  |
 | consulConnect | [MeshSpec.ConsulConnectMesh](#discovery.zephyr.solo.io.MeshSpec.ConsulConnectMesh) |  |  |
@@ -77,6 +80,36 @@ Mesh object representing AWS AppMesh
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | installation | [MeshSpec.MeshInstallation](#discovery.zephyr.solo.io.MeshSpec.MeshInstallation) |  |  |
+
+
+
+
+
+
+<a name="discovery.zephyr.solo.io.MeshSpec.Istio1_5"></a>
+
+### MeshSpec.Istio1_5
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| metadata | [MeshSpec.IstioMesh](#discovery.zephyr.solo.io.MeshSpec.IstioMesh) |  |  |
+
+
+
+
+
+
+<a name="discovery.zephyr.solo.io.MeshSpec.Istio1_6"></a>
+
+### MeshSpec.Istio1_6
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| metadata | [MeshSpec.IstioMesh](#discovery.zephyr.solo.io.MeshSpec.IstioMesh) |  |  |
 
 
 

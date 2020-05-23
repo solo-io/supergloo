@@ -56,7 +56,7 @@ var _ = Describe("VMCSR Table Printer", func() {
 						CertConfig: &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 							Hosts:    []string{"host1", "host2"},
 							Org:      "my-org",
-							MeshType: zephyr_core_types.MeshType_ISTIO,
+							MeshType: zephyr_core_types.MeshType_ISTIO1_5,
 						},
 						VirtualMeshRef: &zephyr_core_types.ResourceRef{
 							Name:      "name-1",

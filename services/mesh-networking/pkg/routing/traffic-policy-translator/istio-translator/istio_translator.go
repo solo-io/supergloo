@@ -81,7 +81,7 @@ func (i *istioTrafficPolicyTranslator) TranslateTrafficPolicy(
 	mesh *zephyr_discovery.Mesh,
 	mergedTrafficPolicies []*zephyr_networking.TrafficPolicy,
 ) *zephyr_networking_types.TrafficPolicyStatus_TranslatorError {
-	if mesh.Spec.GetIstio() == nil {
+	if mesh.Spec.GetIstio1_5() == nil && mesh.Spec.GetIstio1_6() == nil {
 		return nil
 	}
 	destinationRuleClient, virtualServiceClient, err := i.fetchClientsForMeshService(ctx, meshService)

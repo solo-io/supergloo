@@ -11,7 +11,7 @@ Install meshes using meshctl
 Install meshes using meshctl
 
 ```
-meshctl mesh install (istio) [flags]
+meshctl mesh install (istio1.5|istio1.6) [flags]
 ```
 
 ### Options

@@ -8,6 +8,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
@@ -17,9 +18,9 @@ import (
 )
 
 var (
-	DiscoveryLabels = func() map[string]string {
+	DiscoveryLabels = func(meshType zephyr_core_types.MeshType) map[string]string {
 		return map[string]string{
-			constants.MESH_TYPE: strings.ToLower(zephyr_core_types.MeshType_ISTIO.String()),
+			constants.MESH_TYPE: strings.ToLower(meshType.String()),
 		}
 	}
 )
@@ -49,7 +50,7 @@ func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_ty
 	if err != nil {
 		return nil, err
 	}
-	meshRef, err := i.getMeshResourceRef(ctx, clusterName)
+	meshType, meshRef, err := i.getMeshResourceRef(ctx, clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +58,7 @@ func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_ty
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      i.buildMeshWorkloadName(deployment.GetName(), deployment.GetNamespace(), clusterName),
 			Namespace: env.GetWriteNamespace(),
-			Labels:    DiscoveryLabels(),
+			Labels:    DiscoveryLabels(meshType),
 		},
 		Spec: zephyr_discovery_types.MeshWorkloadSpec{
 			KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
@@ -84,22 +85,29 @@ func (i *istioMeshWorkloadScanner) isIstioPod(pod *k8s_core_types.Pod) bool {
 	return false
 }
 
-func (i *istioMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clusterName string) (*zephyr_core_types.ResourceRef, error) {
+func (i *istioMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clusterName string) (zephyr_core_types.MeshType, *zephyr_core_types.ResourceRef, error) {
 	meshList, err := i.meshClient.ListMesh(ctx)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	for _, mesh := range meshList.Items {
+		meshType, err := enum_conversion.MeshToMeshType(&mesh)
+		if err != nil {
+			return 0, nil, err
+		}
+
+		isIstio5Or6 := meshType == zephyr_core_types.MeshType_ISTIO1_5 || meshType == zephyr_core_types.MeshType_ISTIO1_6
+
 		// Assume single tenancy for clusters with Istio mesh
-		if mesh.Spec.GetIstio() != nil && mesh.Spec.GetCluster().GetName() == clusterName {
-			return &zephyr_core_types.ResourceRef{
+		if isIstio5Or6 && mesh.Spec.GetCluster().GetName() == clusterName {
+			return meshType, &zephyr_core_types.ResourceRef{
 				Name:      mesh.GetName(),
 				Namespace: mesh.GetNamespace(),
 				Cluster:   clusterName,
 			}, nil
 		}
 	}
-	return nil, nil
+	return 0, nil, nil
 }
 
 func (i *istioMeshWorkloadScanner) buildMeshWorkloadName(deploymentName string, namespace string, clusterName string) string {

@@ -86,6 +86,7 @@ type istioFederationClient struct {
 
 func (i *istioFederationClient) FederateServiceSide(
 	ctx context.Context,
+	installationNamespace string,
 	virtualMesh *zephyr_networking.VirtualMesh,
 	meshService *zephyr_discovery.MeshService,
 ) (eap dns.ExternalAccessPoint, err error) {
@@ -94,21 +95,15 @@ func (i *istioFederationClient) FederateServiceSide(
 		return eap, err
 	}
 
-	if meshForService.Spec.GetIstio() == nil {
-		return eap, ServiceNotInIstio(meshService)
-	}
-
-	installNamespace := meshForService.Spec.GetIstio().GetInstallation().GetInstallationNamespace()
-
 	// Make sure the gateway is in a good state
-	err = i.ensureGatewayExists(ctx, dynamicClient, virtualMesh.GetName(), meshService, installNamespace)
+	err = i.ensureGatewayExists(ctx, dynamicClient, virtualMesh.GetName(), meshService, installationNamespace)
 	if err != nil {
 		return eap, eris.Wrapf(err, "Failed to configure the ingress gateway for service %s.%s",
 			meshService.GetName(), meshService.GetNamespace())
 	}
 
 	// ensure that the envoy filter exists
-	err = i.ensureEnvoyFilterExists(ctx, virtualMesh.GetName(), dynamicClient, installNamespace, meshForService.Spec.GetCluster().GetName())
+	err = i.ensureEnvoyFilterExists(ctx, virtualMesh.GetName(), dynamicClient, installationNamespace, meshForService.Spec.GetCluster().GetName())
 	if err != nil {
 		return eap, eris.Wrapf(err, "Failed to configure the ingress gateway envoy filter for service %s.%s",
 			meshService.GetName(), meshService.GetNamespace())
@@ -120,6 +115,7 @@ func (i *istioFederationClient) FederateServiceSide(
 
 func (i *istioFederationClient) FederateClientSide(
 	ctx context.Context,
+	installationNamespace string,
 	eap dns.ExternalAccessPoint,
 	meshService *zephyr_discovery.MeshService,
 	meshWorkload *zephyr_discovery.MeshWorkload,
@@ -129,12 +125,6 @@ func (i *istioFederationClient) FederateClientSide(
 		return err
 	}
 
-	if meshForWorkload.Spec.GetIstio() == nil {
-		return WorkloadNotInIstio(meshWorkload)
-	}
-
-	installNamespace := meshForWorkload.Spec.GetIstio().GetInstallation().GetInstallationNamespace()
-
 	serviceMulticlusterName := meshService.Spec.GetFederation().GetMulticlusterDnsName()
 
 	err = i.setUpServiceEntry(
@@ -142,7 +132,7 @@ func (i *istioFederationClient) FederateClientSide(
 		clientForWorkloadMesh,
 		eap,
 		meshService,
-		installNamespace,
+		installationNamespace,
 		meshForWorkload.Spec.GetCluster().GetName(),
 	)
 	if err != nil {
@@ -153,7 +143,7 @@ func (i *istioFederationClient) FederateClientSide(
 		ctx,
 		clientForWorkloadMesh,
 		serviceMulticlusterName,
-		installNamespace,
+		installationNamespace,
 	)
 }
 

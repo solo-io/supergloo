@@ -23,15 +23,19 @@ var (
 	MeshInstallProviderSet = wire.NewSet(
 		MeshInstallRootCmd,
 	)
-	validMeshTypes = []string{
-		strings.ToLower(zephyr_core_types.MeshType_ISTIO.String()),
+	validMeshTypes = map[string]zephyr_core_types.MeshType{
+		"istio1.5": zephyr_core_types.MeshType_ISTIO1_5,
+		"istio1.6": zephyr_core_types.MeshType_ISTIO1_6,
 	}
-	UnsupportedMeshTypeError = func(meshType string) error {
+	UnsupportedMeshTypeError = func(meshType string, validMeshTypeArgs []string) error {
 		return eris.Errorf(
 			"Mesh Type: (%s) is not one of the supported Mesh types [%s]",
 			meshType,
-			strings.Join(validMeshTypes, "|"),
+			strings.Join(validMeshTypeArgs, "|"),
 		)
+	}
+	NotImplementedMeshTypeError = func(meshType string) error {
+		return eris.Errorf("Mesh type %s has not had its installation implemented. This is unexpected.", meshType)
 	}
 )
 
@@ -44,17 +48,26 @@ func MeshInstallRootCmd(
 	imageNameParser docker.ImageNameParser,
 	fileReader files.FileReader,
 ) MeshInstallCommand {
-	installCommand := cliconstants.MeshInstallCommand(validMeshTypes)
+	var validMeshTypeArgs []string
+	for validArg, _ := range validMeshTypes {
+		validMeshTypeArgs = append(validMeshTypeArgs, validArg)
+	}
+
+	installCommand := cliconstants.MeshInstallCommand(validMeshTypeArgs)
 	cmd := &cobra.Command{
 		Use:     installCommand.Use,
 		Short:   installCommand.Short,
 		Aliases: installCommand.Aliases,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			meshType := args[0]
+			meshType, ok := validMeshTypes[args[0]]
 
-			switch strings.ToUpper(meshType) {
-			case zephyr_core_types.MeshType_ISTIO.String():
+			if !ok {
+				return UnsupportedMeshTypeError(args[0], validMeshTypeArgs)
+			}
+
+			switch meshType {
+			case zephyr_core_types.MeshType_ISTIO1_5:
 				istioInstaller, err := install_istio.NewIstioInstaller(
 					out,
 					in,
@@ -71,7 +84,7 @@ func MeshInstallRootCmd(
 				}
 				return istioInstaller.Install()
 			default:
-				return UnsupportedMeshTypeError(meshType)
+				return NotImplementedMeshTypeError(args[0])
 			}
 		},
 	}

@@ -71,7 +71,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			mockLocalMeshClient,
 			mockLocalMeshWorkloadClient,
 			k8s.MeshWorkloadScannerImplementations{
-				zephyr_core_types.MeshType_ISTIO: mockMeshWorkloadScanner,
+				zephyr_core_types.MeshType_ISTIO1_5: mockMeshWorkloadScanner,
 			},
 			mockPodClient,
 		)
@@ -92,7 +92,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	var expectReconcile = func() {
 		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{
-			{Spec: zephyr_discovery_types.MeshSpec{MeshType: &zephyr_discovery_types.MeshSpec_Istio{}, Cluster: &zephyr_core_types.ResourceRef{Name: clusterName}}},
+			{Spec: zephyr_discovery_types.MeshSpec{MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{}, Cluster: &zephyr_core_types.ResourceRef{Name: clusterName}}},
 			{Spec: zephyr_discovery_types.MeshSpec{MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{}}},
 		}}
 		mockLocalMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
