@@ -9,7 +9,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
+	types3 "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	types2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -54,12 +56,22 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 		virtualMeshes := []*zephyr_networking.VirtualMesh{
 			{
 				ObjectMeta: v1.ObjectMeta{
-					Name: "mesh-1",
+					Name: "virtualmesh-1",
+				},
+				Spec: types2.VirtualMeshSpec{
+					Meshes: []*types3.ResourceRef{
+						{Name: "mesh-1", Namespace: "mesh-namespace-1"},
+					},
 				},
 			},
 			{
 				ObjectMeta: v1.ObjectMeta{
-					Name: "mesh-2",
+					Name: "virtualmesh-2",
+				},
+				Spec: types2.VirtualMeshSpec{
+					Meshes: []*types3.ResourceRef{
+						{Name: "mesh-2", Namespace: "mesh-namespace-2"},
+					},
 				},
 			},
 		}
@@ -71,6 +83,7 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 			Return(&zephyr_networking.VirtualMeshList{
 				Items: []zephyr_networking.VirtualMesh{*virtualMeshes[0], *virtualMeshes[1]},
 			}, nil)
+
 		mockVirtualMeshPrinter.EXPECT().
 			Print(gomock.Any(), virtualMeshes).
 			Return(nil)

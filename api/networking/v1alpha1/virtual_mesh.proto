@@ -4,6 +4,7 @@ option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.zeph
 
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
+import "google/protobuf/wrappers.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -71,6 +72,19 @@ message VirtualMeshSpec {
     */
     message LimitedTrust {}
 
+    /*
+        If ENABLED, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies.
+        If DISABLED, by default allow traffic to all Services in the VirtualMesh.
+        If MESH_DEFAULT, the default value depends on the type service mesh:
+            Istio: false
+            Appmesh: true
+    */
+    enum EnforcementPolicy {
+        MESH_DEFAULT = 0;
+        ENABLED = 1;
+        DISABLED = 2;
+    }
+
     // User-provided display name for the virtual mesh.
     string display_name = 1;
 
@@ -86,12 +100,7 @@ message VirtualMeshSpec {
         LimitedTrust limited = 6;
     }
 
-    /*
-        If true, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies.
-        If false, by default allow traffic to all Services in the VirtualMesh.
-        Defaults to false when not set.
-    */
-    bool enforce_access_control = 7;
+    EnforcementPolicy enforce_access_control = 7;
 }
 
 message VirtualMeshStatus {

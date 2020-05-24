@@ -48,7 +48,11 @@ func (m *virtualMeshPrinter) Print(
 		newRow = append(newRow, m.buildMeshesCell(virtualMesh.Spec.GetMeshes()))
 
 		// Append federation data
-		newRow = append(newRow, m.buildConfigCell(virtualMesh.Spec))
+		cell, err := m.buildConfigCell(virtualMesh.Spec)
+		if err != nil {
+			return err
+		}
+		newRow = append(newRow, cell)
 
 		// Append status data
 		newRow = append(newRow, m.buildStatusCell(virtualMesh.Status))
@@ -87,7 +91,9 @@ func (m *virtualMeshPrinter) buildMeshesCell(meshList []*zephyr_core_types.Resou
 	return strings.Join(items, "\n")
 }
 
-func (m *virtualMeshPrinter) buildConfigCell(spec zephyr_networking_types.VirtualMeshSpec) string {
+func (m *virtualMeshPrinter) buildConfigCell(
+	spec zephyr_networking_types.VirtualMeshSpec,
+) (string, error) {
 	var items []string
 
 	switch spec.GetTrustModel().(type) {
@@ -138,13 +144,10 @@ func (m *virtualMeshPrinter) buildConfigCell(spec zephyr_networking_types.Virtua
 
 	items = append(items, fmt.Sprintf("\nFederation Mode: %s", spec.GetFederation().GetMode().String()))
 
-	accessControlEnforcement := "disabled"
-	if spec.GetEnforceAccessControl() {
-		accessControlEnforcement = "enabled"
-	}
+	accessControlEnforcement := spec.GetEnforceAccessControl().String()
 	items = append(items, fmt.Sprintf("\nAccess Control Enforcement: %s", accessControlEnforcement))
 
-	return strings.Join(items, "\n")
+	return strings.Join(items, "\n"), nil
 }
 
 func (m *virtualMeshPrinter) buildStatusCell(status zephyr_networking_types.VirtualMeshStatus) string {
