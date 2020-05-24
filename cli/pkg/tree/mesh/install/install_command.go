@@ -8,13 +8,13 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	install_istio "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-installation/istio/operator"
 	"github.com/spf13/cobra"
 )
 
@@ -83,7 +83,7 @@ func MeshInstallRootCmd(
 				if err != nil {
 					return err
 				}
-				return istioInstaller.Install(operator.Istio1_5)
+				return istioInstaller.Install(operator.IstioVersion1_5)
 			default:
 				return NotImplementedMeshTypeError(args[0])
 			}

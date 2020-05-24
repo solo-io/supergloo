@@ -5,7 +5,6 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -27,16 +26,11 @@ type KubeContext struct {
 	Clusters       map[string]*api.Cluster
 }
 
-// default KubeLoader
-func DefaultKubeLoaderProvider(opts *options.Options) KubeLoader {
-	return &kubeLoader{
-		timeout: opts.Root.KubeTimeout.String(),
-	}
+func NewKubeLoader() KubeLoader {
+	return &kubeLoader{}
 }
 
-type kubeLoader struct {
-	timeout string
-}
+type kubeLoader struct{}
 
 func (k *kubeLoader) GetRestConfigForContext(path string, context string) (*rest.Config, error) {
 	cfg, err := k.GetConfigWithContext("", path, context)

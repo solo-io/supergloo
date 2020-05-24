@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	mock_files "github.com/solo-io/service-mesh-hub/cli/pkg/common/files/mocks"
+	mock_files "github.com/solo-io/service-mesh-hub/pkg/filesystem/files/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

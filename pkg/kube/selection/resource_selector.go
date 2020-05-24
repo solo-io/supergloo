@@ -9,9 +9,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -21,33 +20,33 @@ var (
 	}
 	MultipleMeshServicesFound = func(name, namespace, clusterName string) error {
 		return eris.Errorf("Multiple MeshServices found with labels %s=%s, %s=%s, %s=%s",
-			constants.KUBE_SERVICE_NAME, name,
-			constants.KUBE_SERVICE_NAMESPACE, namespace,
-			constants.COMPUTE_TARGET, clusterName)
+			kube.KUBE_SERVICE_NAME, name,
+			kube.KUBE_SERVICE_NAMESPACE, namespace,
+			kube.COMPUTE_TARGET, clusterName)
 	}
 	MultipleMeshWorkloadsFound = func(name, namespace, clusterName string) error {
 		return eris.Errorf("Multiple MeshWorkloads found with labels %s=%s, %s=%s, %s=%s",
-			constants.KUBE_CONTROLLER_NAME, name,
-			constants.KUBE_CONTROLLER_NAMESPACE, namespace,
-			constants.COMPUTE_TARGET, clusterName)
+			kube.KUBE_CONTROLLER_NAME, name,
+			kube.KUBE_CONTROLLER_NAMESPACE, namespace,
+			kube.COMPUTE_TARGET, clusterName)
 	}
 	MeshServiceNotFound = func(name, namespace, clusterName string) error {
 		return eris.Errorf("No MeshService found with labels %s=%s, %s=%s, %s=%s",
-			constants.KUBE_SERVICE_NAME, name,
-			constants.KUBE_SERVICE_NAMESPACE, namespace,
-			constants.COMPUTE_TARGET, clusterName)
+			kube.KUBE_SERVICE_NAME, name,
+			kube.KUBE_SERVICE_NAMESPACE, namespace,
+			kube.COMPUTE_TARGET, clusterName)
 	}
 	MeshWorkloadNotFound = func(name, namespace, clusterName string) error {
 		return eris.Errorf("No MeshWorkloads found with labels %s=%s, %s=%s, %s=%s",
-			constants.KUBE_CONTROLLER_NAME, name,
-			constants.KUBE_CONTROLLER_NAMESPACE, namespace,
-			constants.COMPUTE_TARGET, clusterName)
+			kube.KUBE_CONTROLLER_NAME, name,
+			kube.KUBE_CONTROLLER_NAMESPACE, namespace,
+			kube.COMPUTE_TARGET, clusterName)
 	}
 	MustProvideClusterName = func(ref *core_types.ResourceRef) error {
 		return eris.Errorf("Must provide cluster name in ref %+v", ref)
 	}
 	MissingComputeTargetLabel = func(resourceName string) error {
-		return eris.Errorf("Resource '%s' does not have a "+constants.COMPUTE_TARGET+" label", resourceName)
+		return eris.Errorf("Resource '%s' does not have a "+kube.COMPUTE_TARGET+" label", resourceName)
 	}
 )
 
@@ -55,7 +54,7 @@ func NewResourceSelector(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 	deploymentClientFactory kubernetes_apps.DeploymentClientFactory,
-	dynamicClientGetter mc_manager.DynamicClientGetter,
+	dynamicClientGetter multicluster.DynamicClientGetter,
 ) ResourceSelector {
 	return &resourceSelector{
 		meshServiceClient:       meshServiceClient,
@@ -69,7 +68,7 @@ type resourceSelector struct {
 	meshServiceClient       zephyr_discovery.MeshServiceClient
 	meshWorkloadClient      zephyr_discovery.MeshWorkloadClient
 	deploymentClientFactory kubernetes_apps.DeploymentClientFactory
-	dynamicClientGetter     mc_manager.DynamicClientGetter
+	dynamicClientGetter     multicluster.DynamicClientGetter
 }
 
 func (b *resourceSelector) FindMeshServiceByRefSelector(
@@ -79,9 +78,9 @@ func (b *resourceSelector) FindMeshServiceByRefSelector(
 	kubeServiceCluster string,
 ) *zephyr_discovery.MeshService {
 	for _, meshService := range meshServices {
-		matchesCriteria := meshService.Labels[constants.KUBE_SERVICE_NAME] == kubeServiceName &&
-			meshService.Labels[constants.KUBE_SERVICE_NAMESPACE] == kubeServiceNamespace &&
-			meshService.Labels[constants.COMPUTE_TARGET] == kubeServiceCluster
+		matchesCriteria := meshService.Labels[kube.KUBE_SERVICE_NAME] == kubeServiceName &&
+			meshService.Labels[kube.KUBE_SERVICE_NAMESPACE] == kubeServiceNamespace &&
+			meshService.Labels[kube.COMPUTE_TARGET] == kubeServiceCluster
 
 		if matchesCriteria {
 			return meshService
@@ -101,9 +100,9 @@ func (b *resourceSelector) GetAllMeshServiceByRefSelector(
 		return nil, MustProvideClusterName(&core_types.ResourceRef{Name: kubeServiceName, Namespace: kubeServiceNamespace})
 	}
 	destinationKey := client.MatchingLabels{
-		constants.KUBE_SERVICE_NAME:      kubeServiceName,
-		constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
-		constants.COMPUTE_TARGET:         kubeServiceCluster,
+		kube.KUBE_SERVICE_NAME:      kubeServiceName,
+		kube.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
+		kube.COMPUTE_TARGET:         kubeServiceCluster,
 	}
 	meshServiceList, err := b.meshServiceClient.ListMeshService(ctx, destinationKey)
 	if err != nil {
@@ -238,7 +237,7 @@ func (b *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 	for _, meshWorkloadIter := range meshWorkloadList.Items {
 		meshWorkload := meshWorkloadIter // careful not to close over the loop var
 
-		clusterName := meshWorkload.Labels[constants.COMPUTE_TARGET]
+		clusterName := meshWorkload.Labels[kube.COMPUTE_TARGET]
 		if clusterName == "" {
 			return nil, MissingComputeTargetLabel(meshWorkload.GetName())
 		}
@@ -250,7 +249,7 @@ func (b *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 
 		deploymentClient := b.deploymentClientFactory(dynamicClient)
 
-		workloadController, err := deploymentClient.GetDeployment(ctx, clients.ResourceRefToObjectKey(meshWorkload.Spec.GetKubeController().GetKubeControllerRef()))
+		workloadController, err := deploymentClient.GetDeployment(ctx, ResourceRefToObjectKey(meshWorkload.Spec.GetKubeController().GetKubeControllerRef()))
 		if err != nil {
 			return nil, err
 		}
@@ -292,9 +291,9 @@ func (b *resourceSelector) GetMeshWorkloadByRefSelector(
 		return nil, MustProvideClusterName(&core_types.ResourceRef{Name: podEventWatcherName, Namespace: podEventWatcherNamespace})
 	}
 	destinationKey := client.MatchingLabels{
-		constants.KUBE_CONTROLLER_NAME:      podEventWatcherName,
-		constants.KUBE_CONTROLLER_NAMESPACE: podEventWatcherNamespace,
-		constants.COMPUTE_TARGET:            podEventWatcherCluster,
+		kube.KUBE_CONTROLLER_NAME:      podEventWatcherName,
+		kube.KUBE_CONTROLLER_NAMESPACE: podEventWatcherNamespace,
+		kube.COMPUTE_TARGET:            podEventWatcherCluster,
 	}
 	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkload(ctx, destinationKey)
 	if err != nil {

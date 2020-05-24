@@ -7,8 +7,8 @@ import (
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	k8s_core_types "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -145,7 +145,7 @@ func (c *clusterTenancyFinder) meshFromPod(
 			return nil, nil, err
 		}
 		if mesh != nil {
-			key := clients.ObjectMetaToObjectKey(mesh.ObjectMeta)
+			key := selection.ObjectMetaToObjectKey(mesh.ObjectMeta)
 			return registrar, &key, nil
 		}
 	}
@@ -157,7 +157,7 @@ func (c *clusterTenancyFinder) reconcileClusterTenancyForMesh(
 	meshesOnClusterByRegistrar map[ClusterTenancyRegistrar][]client.ObjectKey,
 	mesh *zephyr_discovery.Mesh,
 ) error {
-	meshObjKey := clients.ObjectMetaToObjectKey(mesh.ObjectMeta)
+	meshObjKey := selection.ObjectMetaToObjectKey(mesh.ObjectMeta)
 	for registrar, meshesOnCluster := range meshesOnClusterByRegistrar {
 		clusterHostsMesh := registrar.ClusterHostsMesh(c.clusterName, mesh)
 		if clusterHostsMesh && !containsMesh(meshObjKey, meshesOnCluster) {

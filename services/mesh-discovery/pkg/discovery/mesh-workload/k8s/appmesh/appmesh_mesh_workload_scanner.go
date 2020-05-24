@@ -9,10 +9,10 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	meshworkload_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,7 +22,7 @@ import (
 var (
 	DiscoveryLabels = func() map[string]string {
 		return map[string]string{
-			constants.MESH_TYPE: strings.ToLower(zephyr_core_types.MeshType_APPMESH.String()),
+			kube.MESH_TYPE: strings.ToLower(zephyr_core_types.MeshType_APPMESH.String()),
 		}
 	}
 )

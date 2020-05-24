@@ -11,9 +11,9 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
 	networking_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mock_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_apps "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/apps/v1"
 	k8s_apps_types "k8s.io/api/apps/v1"
@@ -27,7 +27,7 @@ var _ = Describe("ResourceSelector", func() {
 		ctx                     context.Context
 		mockMeshServiceClient   *mock_discovery.MockMeshServiceClient
 		mockMeshWorkloadClient  *mock_discovery.MockMeshWorkloadClient
-		mockDynamicClientGetter *mock_mc_manager.MockDynamicClientGetter
+		mockDynamicClientGetter *mock_multicluster.MockDynamicClientGetter
 		mockDeploymentClient    *mock_kubernetes_apps.MockDeploymentClient
 		resourceSelector        networking_selector.ResourceSelector
 	)
@@ -37,7 +37,7 @@ var _ = Describe("ResourceSelector", func() {
 		ctx = context.TODO()
 		mockMeshServiceClient = mock_discovery.NewMockMeshServiceClient(ctrl)
 		mockMeshWorkloadClient = mock_discovery.NewMockMeshWorkloadClient(ctrl)
-		mockDynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+		mockDynamicClientGetter = mock_multicluster.NewMockDynamicClientGetter(ctrl)
 		mockDeploymentClient = mock_kubernetes_apps.NewMockDeploymentClient(ctrl)
 		resourceSelector = networking_selector.NewResourceSelector(
 			mockMeshServiceClient,
@@ -516,7 +516,7 @@ var _ = Describe("ResourceSelector", func() {
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: "cluster-1",
+						kube.COMPUTE_TARGET: "cluster-1",
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -547,7 +547,7 @@ var _ = Describe("ResourceSelector", func() {
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: "cluster-2",
+						kube.COMPUTE_TARGET: "cluster-2",
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -606,7 +606,7 @@ var _ = Describe("ResourceSelector", func() {
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-1",
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: "cluster-1",
+						kube.COMPUTE_TARGET: "cluster-1",
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -637,7 +637,7 @@ var _ = Describe("ResourceSelector", func() {
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "my-workload-2",
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: "cluster-2",
+						kube.COMPUTE_TARGET: "cluster-2",
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -698,9 +698,9 @@ var _ = Describe("ResourceSelector", func() {
 			serviceNamespace := "kubeServiceNamespace"
 			serviceCluster := "destinationClusterName"
 			destinationKey := client.MatchingLabels(map[string]string{
-				constants.KUBE_SERVICE_NAME:      serviceName,
-				constants.KUBE_SERVICE_NAMESPACE: serviceNamespace,
-				constants.COMPUTE_TARGET:         serviceCluster,
+				kube.KUBE_SERVICE_NAME:      serviceName,
+				kube.KUBE_SERVICE_NAMESPACE: serviceNamespace,
+				kube.COMPUTE_TARGET:         serviceCluster,
 			})
 			expectedMeshService := zephyr_discovery.MeshService{}
 			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
@@ -716,9 +716,9 @@ var _ = Describe("ResourceSelector", func() {
 			serviceNamespace := "kubeServiceNamespace"
 			serviceCluster := "destinationClusterName"
 			destinationKey := client.MatchingLabels(map[string]string{
-				constants.KUBE_SERVICE_NAME:      serviceName,
-				constants.KUBE_SERVICE_NAMESPACE: serviceNamespace,
-				constants.COMPUTE_TARGET:         serviceCluster,
+				kube.KUBE_SERVICE_NAME:      serviceName,
+				kube.KUBE_SERVICE_NAMESPACE: serviceNamespace,
+				kube.COMPUTE_TARGET:         serviceCluster,
 			})
 			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
 				&zephyr_discovery.MeshServiceList{
@@ -732,9 +732,9 @@ var _ = Describe("ResourceSelector", func() {
 			serviceNamespace := "kubeServiceNamespace"
 			serviceCluster := "destinationClusterName"
 			destinationKey := client.MatchingLabels(map[string]string{
-				constants.KUBE_SERVICE_NAME:      serviceName,
-				constants.KUBE_SERVICE_NAMESPACE: serviceNamespace,
-				constants.COMPUTE_TARGET:         serviceCluster,
+				kube.KUBE_SERVICE_NAME:      serviceName,
+				kube.KUBE_SERVICE_NAMESPACE: serviceNamespace,
+				kube.COMPUTE_TARGET:         serviceCluster,
 			})
 			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
 				&zephyr_discovery.MeshServiceList{
@@ -763,9 +763,9 @@ var _ = Describe("ResourceSelector", func() {
 			}
 			mockMeshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.KUBE_CONTROLLER_NAME:      controllerName,
-					constants.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
-					constants.COMPUTE_TARGET:            cluster,
+					kube.KUBE_CONTROLLER_NAME:      controllerName,
+					kube.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
+					kube.COMPUTE_TARGET:            cluster,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{*expectedWorkload},
@@ -790,9 +790,9 @@ var _ = Describe("ResourceSelector", func() {
 			}
 			mockMeshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.KUBE_CONTROLLER_NAME:      controllerName,
-					constants.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
-					constants.COMPUTE_TARGET:            cluster,
+					kube.KUBE_CONTROLLER_NAME:      controllerName,
+					kube.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
+					kube.COMPUTE_TARGET:            cluster,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{*workload1, *workload2},
@@ -807,9 +807,9 @@ var _ = Describe("ResourceSelector", func() {
 			controllerName, controllerNamespace, cluster := "test-name", "test-namespace", "test-cluster"
 			mockMeshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.KUBE_CONTROLLER_NAME:      controllerName,
-					constants.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
-					constants.COMPUTE_TARGET:            cluster,
+					kube.KUBE_CONTROLLER_NAME:      controllerName,
+					kube.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
+					kube.COMPUTE_TARGET:            cluster,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{},

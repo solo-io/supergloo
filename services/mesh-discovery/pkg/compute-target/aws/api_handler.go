@@ -8,9 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/sts"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -93,8 +93,8 @@ func (a *awsCredsHandler) ComputeTargetRemoved(ctx context.Context, secret *k8s_
 
 func (a *awsCredsHandler) buildContext(parentCtx context.Context, computeTargetName string) (context.Context, context.CancelFunc) {
 	return context.WithCancel(contextutils.WithLoggerValues(
-		context.WithValue(parentCtx, constants.COMPUTE_TARGET, computeTargetName),
-		zap.String(constants.COMPUTE_TARGET, computeTargetName),
+		context.WithValue(parentCtx, kube.COMPUTE_TARGET, computeTargetName),
+		zap.String(kube.COMPUTE_TARGET, computeTargetName),
 	))
 }
 

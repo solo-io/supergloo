@@ -5,9 +5,9 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
 	"github.com/solo-io/skv2/pkg/utils"
 	k8s_core_types "k8s.io/api/core/v1"

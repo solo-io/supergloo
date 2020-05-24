@@ -12,11 +12,11 @@ import (
 	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
-	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/settings"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	eks_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
 	"github.com/solo-io/skv2/pkg/multicluster/discovery/cloud"
@@ -161,7 +161,7 @@ func (e *eksReconciler) fetchEksClustersOnAWS(
 
 func (e *eksReconciler) fetchEksClustersOnSMH(ctx context.Context) (sets.String, error) {
 	reconcilerDiscoverySelector := map[string]string{
-		constants.DISCOVERED_BY: EKSClusterDiscoveryLabel,
+		kube.DISCOVERED_BY: EKSClusterDiscoveryLabel,
 	}
 	clusters, err := e.kubeClusterClient.ListKubernetesCluster(ctx, client.MatchingLabels(reconcilerDiscoverySelector))
 	if err != nil {

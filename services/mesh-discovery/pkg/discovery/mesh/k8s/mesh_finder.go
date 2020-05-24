@@ -8,9 +8,9 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"go.uber.org/zap"
 	apps_v1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -79,7 +79,7 @@ func (m *meshFinder) DeleteDeployment(deployment *apps_v1.Deployment) error {
 	}
 
 	if discoveredMesh != nil {
-		err = m.localMeshClient.DeleteMesh(m.ctx, clients.ObjectMetaToObjectKey(discoveredMesh.ObjectMeta))
+		err = m.localMeshClient.DeleteMesh(m.ctx, selection.ObjectMetaToObjectKey(discoveredMesh.ObjectMeta))
 		if err != nil {
 			logger.Errorf("Error while deleting mesh: %+v", err)
 		}
@@ -95,7 +95,7 @@ func (m *meshFinder) GenericDeployment(deployment *apps_v1.Deployment) error {
 // When the pod starts up, we reconcile the existing state of discovered resources with a newly-computed set of discovered resources.
 // If the newly-computed set is missing entries from the current state, we must have missed an event, and we must reconcile the two.
 func (m *meshFinder) reconcileExistingState() error {
-	allMeshesOnCluster, err := m.localMeshClient.ListMesh(m.ctx, client.MatchingLabels{constants.COMPUTE_TARGET: m.clusterName})
+	allMeshesOnCluster, err := m.localMeshClient.ListMesh(m.ctx, client.MatchingLabels{kube.COMPUTE_TARGET: m.clusterName})
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func (m *meshFinder) reconcileExistingState() error {
 
 		if shouldDelete {
 			// we missed a delete event - clean up the state
-			err := m.localMeshClient.DeleteMesh(m.ctx, clients.ObjectMetaToObjectKey(recordedMesh.ObjectMeta))
+			err := m.localMeshClient.DeleteMesh(m.ctx, selection.ObjectMetaToObjectKey(recordedMesh.ObjectMeta))
 			if err != nil {
 				return err
 			}
@@ -176,7 +176,7 @@ func (m *meshFinder) discoverAndUpsertMesh(deployment *apps_v1.Deployment, logge
 		discoveredMesh.Labels = map[string]string{}
 	}
 
-	discoveredMesh.Labels[constants.COMPUTE_TARGET] = m.clusterName
+	discoveredMesh.Labels[kube.COMPUTE_TARGET] = m.clusterName
 
 	err = m.localMeshClient.UpsertMeshSpec(m.ctx, discoveredMesh)
 	if err != nil {

@@ -12,11 +12,11 @@ import (
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/proto_conversion"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio/proto_conversion"
 	alpha3 "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/istio/security/proto/envoy/config/filter/network/tcp_cluster_rewrite/v2alpha1"
@@ -49,7 +49,7 @@ type IstioFederationClient meshes.MeshFederationClient
 
 // istio-specific implementation of federation resolution
 func NewIstioFederationClient(
-	dynamicClientGetter mc_manager.DynamicClientGetter,
+	dynamicClientGetter multicluster.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	gatewayClientFactory istio_networking.GatewayClientFactory,
 	envoyFilterClientFactory istio_networking.EnvoyFilterClientFactory,
@@ -73,7 +73,7 @@ func NewIstioFederationClient(
 }
 
 type istioFederationClient struct {
-	dynamicClientGetter          mc_manager.DynamicClientGetter
+	dynamicClientGetter          multicluster.DynamicClientGetter
 	meshClient                   zephyr_discovery.MeshClient
 	gatewayClientFactory         istio_networking.GatewayClientFactory
 	envoyFilterClientFactory     istio_networking.EnvoyFilterClientFactory
@@ -159,11 +159,11 @@ func (i *istioFederationClient) setUpDestinationRule(
 	}
 
 	destinationRuleClient := i.destinationRuleClientFactory(clientForWorkloadMesh)
-	_, err := destinationRuleClient.GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destinationRuleRef))
+	_, err := destinationRuleClient.GetDestinationRule(ctx, selection.ResourceRefToObjectKey(destinationRuleRef))
 
 	if errors.IsNotFound(err) {
 		return destinationRuleClient.CreateDestinationRule(ctx, &v1alpha3.DestinationRule{
-			ObjectMeta: clients.ResourceRefToObjectMeta(destinationRuleRef),
+			ObjectMeta: selection.ResourceRefToObjectMeta(destinationRuleRef),
 			Spec: alpha3.DestinationRule{
 				Host: serviceMulticlusterName,
 				TrafficPolicy: &alpha3.TrafficPolicy{
@@ -208,7 +208,7 @@ func (i *istioFederationClient) setUpServiceEntry(
 	}
 	endpoints := []*alpha3.ServiceEntry_Endpoint{endpoint}
 
-	existing, err := serviceEntryClient.GetServiceEntry(ctx, clients.ResourceRefToObjectKey(computedRef))
+	existing, err := serviceEntryClient.GetServiceEntry(ctx, selection.ResourceRefToObjectKey(computedRef))
 	if errors.IsNotFound(err) {
 		// generate a unique IP within the workload cluster for the service entry to point to
 		newIp, err := i.ipAssigner.AssignIPOnCluster(ctx, workloadClusterName)
@@ -216,7 +216,7 @@ func (i *istioFederationClient) setUpServiceEntry(
 			return err
 		}
 		serviceEntry := &v1alpha3.ServiceEntry{
-			ObjectMeta: clients.ResourceRefToObjectMeta(computedRef),
+			ObjectMeta: selection.ResourceRefToObjectMeta(computedRef),
 			Spec: alpha3.ServiceEntry{
 				Addresses:  []string{newIp},
 				Hosts:      []string{meshService.Spec.GetFederation().GetMulticlusterDnsName()},
@@ -290,7 +290,7 @@ func (i *istioFederationClient) ensureEnvoyFilterExists(
 
 	// see https://github.com/solo-io/service-mesh-hub/issues/195 for details on this envoy filter config
 	return envoyFilterClient.UpsertEnvoyFilterSpec(ctx, &v1alpha3.EnvoyFilter{
-		ObjectMeta: clients.ResourceRefToObjectMeta(computedRef),
+		ObjectMeta: selection.ResourceRefToObjectMeta(computedRef),
 		Spec: alpha3.EnvoyFilter{
 			ConfigPatches: []*alpha3.EnvoyFilter_EnvoyConfigObjectPatch{{
 				ApplyTo: alpha3.EnvoyFilter_NETWORK_FILTER,
@@ -334,12 +334,12 @@ func (i *istioFederationClient) ensureGatewayExists(
 		Namespace: installNamespace,
 	}
 
-	existingGateway, err := gatewayClient.GetGateway(ctx, clients.ResourceRefToObjectKey(computedGatewayRef))
+	existingGateway, err := gatewayClient.GetGateway(ctx, selection.ResourceRefToObjectKey(computedGatewayRef))
 	serviceDnsName := BuildMatchingMultiClusterHostName(meshService.Spec.GetFederation())
 	if errors.IsNotFound(err) {
 		// if the gateway wasn't found, then create our initial state
 		return gatewayClient.CreateGateway(ctx, &v1alpha3.Gateway{
-			ObjectMeta: clients.ResourceRefToObjectMeta(computedGatewayRef),
+			ObjectMeta: selection.ResourceRefToObjectMeta(computedGatewayRef),
 			Spec: alpha3.Gateway{
 				Servers: []*alpha3.Server{{
 					Port: &alpha3.Port{
@@ -405,7 +405,7 @@ func BuildMatchingMultiClusterHostName(federationInfo *discovery_types.MeshServi
 }
 
 func (i *istioFederationClient) getClientForMesh(ctx context.Context, meshRef *zephyr_core_types.ResourceRef) (*zephyr_discovery.Mesh, client.Client, error) {
-	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef))
+	mesh, err := i.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef))
 	if err != nil {
 		return nil, nil, err
 	}

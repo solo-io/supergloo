@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
 )
 
@@ -38,7 +38,7 @@ func GetChartUri(chartOverride, versionOverride string) (string, error) {
 
 	var helmChartArchiveUri string
 	if chartOverride == "" {
-		helmChartArchiveUri = fmt.Sprintf(cliconstants.ServiceMeshHubChartUriTemplate, strings.TrimPrefix(helmChartVersion, "v"))
+		helmChartArchiveUri = fmt.Sprintf(constants.ServiceMeshHubChartUriTemplate, strings.TrimPrefix(helmChartVersion, "v"))
 	} else {
 		helmChartArchiveUri = chartOverride
 	}

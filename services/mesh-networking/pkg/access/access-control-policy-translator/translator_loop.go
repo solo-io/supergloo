@@ -11,7 +11,6 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"go.uber.org/zap"
@@ -182,7 +181,7 @@ func (t *translatorLoop) translateACPsForMeshService(
 	ctx context.Context,
 	meshService *zephyr_discovery.MeshService,
 ) ([]translatorErrorForACP, error) {
-	mesh, err := t.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	mesh, err := t.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +222,7 @@ func (t *translatorLoop) getTargetServices(ctx context.Context, acp *zephyr_netw
 	}
 	var targetServices []TargetService
 	for _, meshService := range meshServices {
-		mesh, err := t.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+		mesh, err := t.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 		if err != nil {
 			return nil, err
 		}

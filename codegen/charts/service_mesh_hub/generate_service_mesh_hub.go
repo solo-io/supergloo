@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
@@ -45,7 +45,7 @@ func main() {
 		Groups: []model.Group{
 			{
 				GroupVersion: schema.GroupVersion{
-					Group:   "core." + cliconstants.ServiceMeshHubApiGroupSuffix,
+					Group:   "core." + constants.ServiceMeshHubApiGroupSuffix,
 					Version: "v1alpha1",
 				},
 				Module: "github.com/solo-io/service-mesh-hub",
@@ -78,7 +78,7 @@ func main() {
 			},
 			{
 				GroupVersion: schema.GroupVersion{
-					Group:   "networking." + cliconstants.ServiceMeshHubApiGroupSuffix,
+					Group:   "networking." + constants.ServiceMeshHubApiGroupSuffix,
 					Version: "v1alpha1",
 				},
 				Module: "github.com/solo-io/service-mesh-hub",
@@ -137,7 +137,7 @@ func main() {
 			},
 			{
 				GroupVersion: schema.GroupVersion{
-					Group:   "discovery." + cliconstants.ServiceMeshHubApiGroupSuffix,
+					Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
 					Version: "v1alpha1",
 				},
 				Module: "github.com/solo-io/service-mesh-hub",

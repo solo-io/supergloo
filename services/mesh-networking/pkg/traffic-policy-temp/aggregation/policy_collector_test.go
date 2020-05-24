@@ -9,7 +9,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/mocks"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
@@ -167,7 +167,7 @@ var _ = Describe("PolicyCollector", func() {
 			validator.EXPECT().
 				GetTranslationErrors(meshService, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 					{
-						Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
+						Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 						TrafficPolicySpec: &trafficPolicies[1].Spec,
 					},
 				}).
@@ -178,11 +178,11 @@ var _ = Describe("PolicyCollector", func() {
 			validator.EXPECT().
 				GetTranslationErrors(meshService, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 					{
-						Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
+						Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 						TrafficPolicySpec: &trafficPolicies[1].Spec,
 					},
 					{
-						Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
+						Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 						TrafficPolicySpec: &trafficPolicies[2].Spec,
 					},
 				}).
@@ -192,11 +192,11 @@ var _ = Describe("PolicyCollector", func() {
 			Expect(err).To(BeNil())
 			Expect(result.PoliciesToRecordOnService).To(Equal([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
+					Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 					TrafficPolicySpec: &trafficPolicies[1].Spec,
 				},
 				{
-					Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
+					Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 					TrafficPolicySpec: &trafficPolicies[2].Spec,
 				},
 			}))
@@ -263,11 +263,11 @@ var _ = Describe("PolicyCollector", func() {
 					Status: zephyr_discovery_types.MeshServiceStatus{
 						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 							{
-								Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
+								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 								TrafficPolicySpec: &trafficPolicies[1].Spec,
 							},
 							{
-								Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
+								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 								TrafficPolicySpec: &trafficPolicies[2].Spec,
 							},
 						},
@@ -344,11 +344,11 @@ var _ = Describe("PolicyCollector", func() {
 						Status: zephyr_discovery_types.MeshServiceStatus{
 							ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 								{
-									Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
+									Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 									TrafficPolicySpec: &trafficPolicies[1].Spec,
 								},
 								{
-									Ref: clients.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
+									Ref: selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 									TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
 										Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
 											Attempts: 9999, // this is getting updated to the value "2"
@@ -368,11 +368,11 @@ var _ = Describe("PolicyCollector", func() {
 					validator.EXPECT().
 						GetTranslationErrors(meshService, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 							{
-								Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
+								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 								TrafficPolicySpec: &trafficPolicies[1].Spec,
 							},
 							{
-								Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
+								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 								TrafficPolicySpec: &trafficPolicies[2].Spec,
 							},
 						}).
@@ -383,7 +383,7 @@ var _ = Describe("PolicyCollector", func() {
 					Expect(result.PoliciesToRecordOnService).To(Equal([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						meshService.Status.ValidatedTrafficPolicies[0],
 						{
-							Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
+							Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 							TrafficPolicySpec: &trafficPolicies[2].Spec,
 						},
 					}))
@@ -449,11 +449,11 @@ var _ = Describe("PolicyCollector", func() {
 						Status: zephyr_discovery_types.MeshServiceStatus{
 							ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 								{
-									Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
+									Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 									TrafficPolicySpec: &trafficPolicies[1].Spec,
 								},
 								{
-									Ref: clients.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
+									Ref: selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 									TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
 										Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
 											Attempts: 9999, // this is getting updated to the value "2"
@@ -538,11 +538,11 @@ var _ = Describe("PolicyCollector", func() {
 						Status: zephyr_discovery_types.MeshServiceStatus{
 							ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 								{
-									Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
+									Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 									TrafficPolicySpec: &trafficPolicies[1].Spec,
 								},
 								{
-									Ref: clients.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
+									Ref: selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 									TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
 										Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
 											Attempts: 9999, // this is getting updated to the value "2"
@@ -563,18 +563,18 @@ var _ = Describe("PolicyCollector", func() {
 					validator.EXPECT().
 						GetTranslationErrors(meshService, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 							{
-								Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
+								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 								TrafficPolicySpec: &trafficPolicies[1].Spec,
 							},
 							{
-								Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
+								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 								TrafficPolicySpec: &trafficPolicies[2].Spec,
 							},
 						}).
 						Return([]*mesh_translation.TranslationError{{
 							Policy: &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 								TrafficPolicySpec: &trafficPolicies[2].Spec,
-								Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
+								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 							},
 							TranslatorErrors: []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{translationError},
 						}})

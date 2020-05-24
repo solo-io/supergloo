@@ -10,9 +10,9 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
-	mock_kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery/mocks"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	version2 "github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
+	mock_kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/kube/discovery/mocks"
 	"k8s.io/apimachinery/pkg/version"
 )
 

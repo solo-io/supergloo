@@ -11,10 +11,10 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -27,11 +27,11 @@ import (
 var (
 	DiscoveryLabels = func(meshType zephyr_core_types.MeshType, cluster, kubeServiceName, kubeServiceNamespace string) map[string]string {
 		return map[string]string{
-			constants.DISCOVERED_BY:          constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_TYPE:              strings.ToLower(meshType.String()),
-			constants.KUBE_SERVICE_NAME:      kubeServiceName,
-			constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
-			constants.COMPUTE_TARGET:         cluster,
+			kube.DISCOVERED_BY:          kube.MESH_WORKLOAD_DISCOVERY,
+			kube.MESH_TYPE:              strings.ToLower(meshType.String()),
+			kube.KUBE_SERVICE_NAME:      kubeServiceName,
+			kube.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
+			kube.COMPUTE_TARGET:         cluster,
 		}
 	}
 
@@ -150,7 +150,7 @@ type meshServiceFinder struct {
 
 func (m *meshServiceFinder) loadAllMeshWorkloadsInCluster() ([]*zephyr_discovery.MeshWorkload, error) {
 	meshWorkloadList, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
-		constants.COMPUTE_TARGET: m.clusterName,
+		kube.COMPUTE_TARGET: m.clusterName,
 	})
 	if err != nil {
 		return nil, err
@@ -224,7 +224,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(service *k8s_core_typ
 	}
 
 	meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
-		constants.COMPUTE_TARGET: m.clusterName,
+		kube.COMPUTE_TARGET: m.clusterName,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -235,7 +235,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(service *k8s_core_typ
 	for _, meshWorkloadIter := range meshWorkloads.Items {
 		meshWorkload := meshWorkloadIter
 
-		meshForWorkload, err := m.meshClient.GetMesh(m.ctx, clients.ResourceRefToObjectKey(meshWorkload.Spec.GetMesh()))
+		meshForWorkload, err := m.meshClient.GetMesh(m.ctx, selection.ResourceRefToObjectKey(meshWorkload.Spec.GetMesh()))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -259,7 +259,7 @@ func (m *meshServiceFinder) handleMeshWorkloadUpsert(logger *zap.SugaredLogger, 
 		return nil
 	}
 
-	workloadMesh, err := m.meshClient.GetMesh(m.ctx, clients.ResourceRefToObjectKey(meshWorkload.Spec.GetMesh()))
+	workloadMesh, err := m.meshClient.GetMesh(m.ctx, selection.ResourceRefToObjectKey(meshWorkload.Spec.GetMesh()))
 	if err != nil {
 		return err
 	}
@@ -290,14 +290,14 @@ func (m *meshServiceFinder) handleMeshWorkloadUpsert(logger *zap.SugaredLogger, 
 
 func (m *meshServiceFinder) handleMeshWorkloadDelete(logger *zap.SugaredLogger, deletedMeshWorkload *zephyr_discovery.MeshWorkload) error {
 	// careful to only delete mesh services that this cluster-scoped mesh service finder instance owns
-	if deletedMeshWorkload.Labels[constants.COMPUTE_TARGET] != m.clusterName {
+	if deletedMeshWorkload.Labels[kube.COMPUTE_TARGET] != m.clusterName {
 		logger.Debugf("Ignoring mesh workload delete event because cluster does not match for %+v", deletedMeshWorkload.Spec)
 		return nil
 	}
 
 	// Start with all mesh workloads. We'll filter them in the next step
 	allMeshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
-		constants.COMPUTE_TARGET: m.clusterName,
+		kube.COMPUTE_TARGET: m.clusterName,
 	})
 	if err != nil {
 		return err
@@ -310,7 +310,7 @@ func (m *meshServiceFinder) handleMeshWorkloadDelete(logger *zap.SugaredLogger, 
 		candidateMeshWorkload := &candidateMeshWorkloadIter
 
 		// save all the non-deleted mesh workloads
-		if !clients.SameObject(candidateMeshWorkload.ObjectMeta, deletedMeshWorkload.ObjectMeta) {
+		if !selection.SameObject(candidateMeshWorkload.ObjectMeta, deletedMeshWorkload.ObjectMeta) {
 			remainingMeshWorkloads = append(remainingMeshWorkloads, candidateMeshWorkload)
 		}
 	}
@@ -329,7 +329,7 @@ func (m *meshServiceFinder) handleMeshWorkloadDelete(logger *zap.SugaredLogger, 
 func (m *meshServiceFinder) reconcileMeshServices(liveMeshWorkloads []*zephyr_discovery.MeshWorkload) error {
 	// find the mesh services on this cluster (ie, the only ones that could be backed by the workloads we're handed)
 	meshServicesOnCluster, err := m.meshServiceClient.ListMeshService(m.ctx, client.MatchingLabels{
-		constants.COMPUTE_TARGET: m.clusterName,
+		kube.COMPUTE_TARGET: m.clusterName,
 	})
 	if err != nil {
 		return err
@@ -337,10 +337,10 @@ func (m *meshServiceFinder) reconcileMeshServices(liveMeshWorkloads []*zephyr_di
 
 	// for each mesh service on this cluster, check whether it still has workloads backing it
 	for _, meshService := range meshServicesOnCluster.Items {
-		kubeService, err := m.serviceClient.GetService(m.ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetKubeService().GetRef()))
+		kubeService, err := m.serviceClient.GetService(m.ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetKubeService().GetRef()))
 		if errors.IsNotFound(err) {
 			// the service backing this has already disappeared, just clean it up immediately
-			err = m.meshServiceClient.DeleteMeshService(m.ctx, clients.ObjectMetaToObjectKey(meshService.ObjectMeta))
+			err = m.meshServiceClient.DeleteMeshService(m.ctx, selection.ObjectMetaToObjectKey(meshService.ObjectMeta))
 			if err != nil {
 				return err
 			}
@@ -361,7 +361,7 @@ func (m *meshServiceFinder) reconcileMeshServices(liveMeshWorkloads []*zephyr_di
 
 		// if we couldn't find backing workloads, then delete the mesh service we're processing in this loop iteration
 		if !hasBackingWorkloads {
-			err = m.meshServiceClient.DeleteMeshService(m.ctx, clients.ObjectMetaToObjectKey(meshService.ObjectMeta))
+			err = m.meshServiceClient.DeleteMeshService(m.ctx, selection.ObjectMetaToObjectKey(meshService.ObjectMeta))
 			if err != nil {
 				return err
 			}
@@ -410,7 +410,7 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(
 	service *k8s_core_types.Service,
 	meshWorkload *zephyr_discovery.MeshWorkload,
 ) bool {
-	workloadCluster := meshWorkload.Labels[constants.COMPUTE_TARGET]
+	workloadCluster := meshWorkload.Labels[kube.COMPUTE_TARGET]
 
 	// If the meshworkload is not on the same cluster as the service, it can be skipped safely
 	// The event handler accepts events from MeshWorkloads which may "match" the incoming service
@@ -457,7 +457,7 @@ func (m *meshServiceFinder) buildMeshService(
 				Labels:                 service.GetLabels(),
 				Ports:                  m.convertPorts(service),
 			},
-			Mesh:    clients.ObjectMetaToResourceRef(mesh.ObjectMeta),
+			Mesh:    selection.ObjectMetaToResourceRef(mesh.ObjectMeta),
 			Subsets: subsets,
 		},
 	}, nil

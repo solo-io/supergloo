@@ -15,8 +15,8 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver"
 	mock_meshes "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/mock"
@@ -210,11 +210,11 @@ var _ = Describe("Federation Decider", func() {
 		}
 		eventCtx := container_runtime.EventContext(ctx, container_runtime.CreateEvent, service1)
 		meshWorkloadClient.EXPECT().
-			GetMeshWorkload(eventCtx, clients.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[0])).
+			GetMeshWorkload(eventCtx, selection.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[0])).
 			Return(nil, testErr)
 
 		meshWorkloadClient.EXPECT().
-			GetMeshWorkload(eventCtx, clients.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[1])).
+			GetMeshWorkload(eventCtx, selection.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[1])).
 			Return(nil, testErr)
 
 		meshServiceClient.EXPECT().
@@ -337,7 +337,7 @@ var _ = Describe("Federation Decider", func() {
 		}
 
 		federatedService := &zephyr_discovery.MeshService{
-			ObjectMeta: clients.ResourceRefToObjectMeta(federatedServiceRef),
+			ObjectMeta: selection.ResourceRefToObjectMeta(federatedServiceRef),
 			Spec: zephyr_discovery_types.MeshServiceSpec{
 				Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
 					MulticlusterDnsName:  dns.BuildMulticlusterDnsName(kubeServiceRef, serverClusterName),
@@ -346,17 +346,17 @@ var _ = Describe("Federation Decider", func() {
 				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 					Ref: kubeServiceRef,
 				},
-				Mesh: clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta),
+				Mesh: selection.ObjectMetaToResourceRef(serverMesh.ObjectMeta),
 			},
 		}
 		federatedToWorkload := &zephyr_discovery.MeshWorkload{
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
-				Mesh: clients.ObjectMetaToResourceRef(clientMesh.ObjectMeta),
+				Mesh: selection.ObjectMetaToResourceRef(clientMesh.ObjectMeta),
 			},
 		}
 		virtualMeshContainingService := &zephyr_networking.VirtualMesh{
 			Spec: zephyr_networking_types.VirtualMeshSpec{
-				Meshes: []*zephyr_core_types.ResourceRef{clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta)},
+				Meshes: []*zephyr_core_types.ResourceRef{selection.ObjectMetaToResourceRef(serverMesh.ObjectMeta)},
 			},
 		}
 		externalAddress := "255.255.255.255" // intentional garbage
@@ -364,13 +364,13 @@ var _ = Describe("Federation Decider", func() {
 
 		eventCtx := container_runtime.EventContext(ctx, container_runtime.CreateEvent, federatedService)
 		meshWorkloadClient.EXPECT().
-			GetMeshWorkload(eventCtx, clients.ResourceRefToObjectKey(meshWorkloadRef)).
+			GetMeshWorkload(eventCtx, selection.ResourceRefToObjectKey(meshWorkloadRef)).
 			Return(federatedToWorkload, nil)
 		meshClient.EXPECT().
-			GetMesh(eventCtx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(clientMesh.ObjectMeta))).
+			GetMesh(eventCtx, selection.ResourceRefToObjectKey(selection.ObjectMetaToResourceRef(clientMesh.ObjectMeta))).
 			Return(clientMesh, nil)
 		meshClient.EXPECT().
-			GetMesh(eventCtx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta))).
+			GetMesh(eventCtx, selection.ResourceRefToObjectKey(selection.ObjectMetaToResourceRef(serverMesh.ObjectMeta))).
 			Return(serverMesh, nil)
 		virtualMeshClient.EXPECT().
 			ListVirtualMesh(eventCtx).

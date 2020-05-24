@@ -13,8 +13,8 @@ import (
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -88,7 +88,7 @@ func deregisterCluster(
 	if kubeCluster.GetLabels() == nil {
 		return DeregisterNotPermitted(opts.Cluster.Deregister.RemoteClusterName)
 	}
-	discoveredBy, ok := kubeCluster.GetLabels()[constants.DISCOVERED_BY]
+	discoveredBy, ok := kubeCluster.GetLabels()[kube.DISCOVERED_BY]
 	// Only allow manual deregistration of manually registered clusters, otherwise deregistration will compete with automated cluster discovery.
 	// Deregistration of discovered clusters must happen through discovery configuration.
 	if !(ok && discoveredBy == register.MeshctlDiscoverySource) {

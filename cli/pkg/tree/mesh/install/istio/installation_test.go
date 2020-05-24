@@ -6,13 +6,14 @@ import (
 	"os"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
-	mock_files "github.com/solo-io/service-mesh-hub/cli/pkg/common/files/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	install_istio "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
-	mock_operator "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator/mocks"
+	mock_files "github.com/solo-io/service-mesh-hub/pkg/filesystem/files/mocks"
 	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
+	unstructured2 "github.com/solo-io/service-mesh-hub/pkg/kube/unstructured"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-installation/istio/operator"
+	mock_operator "github.com/solo-io/service-mesh-hub/pkg/mesh-installation/istio/operator/mocks"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -20,12 +21,11 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
-	mock_kube "github.com/solo-io/service-mesh-hub/cli/pkg/common/kube/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	mock_server "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
 	mock_docker "github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker/mocks"
+	mock_kube "github.com/solo-io/service-mesh-hub/pkg/kube/unstructured/mocks"
 	mock_cli_runtime "github.com/solo-io/service-mesh-hub/test/mocks/cli_runtime"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/resource"
@@ -73,12 +73,12 @@ var _ = Describe("Mesh installation", func() {
 			operatorManifestBuilder := mock_operator.NewMockInstallerManifestBuilder(ctrl)
 			fileReader := mock_files.NewMockFileReader(ctrl)
 
-			unstructuredClientFactory := func(_ resource.RESTClientGetter) kube.UnstructuredKubeClient {
+			unstructuredClientFactory := func(_ resource.RESTClientGetter) unstructured2.UnstructuredKubeClient {
 				return unstructuredClient
 			}
 
 			operatorManagerFactory := func(
-				_ kube.UnstructuredKubeClient,
+				_ unstructured2.UnstructuredKubeClient,
 				_ operator.InstallerManifestBuilder,
 				_ server.DeploymentClient,
 				_ docker.ImageNameParser,

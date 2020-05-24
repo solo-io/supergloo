@@ -8,7 +8,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/metadata"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/util/sets"

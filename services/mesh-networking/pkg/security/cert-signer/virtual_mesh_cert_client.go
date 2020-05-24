@@ -8,10 +8,10 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -44,7 +44,7 @@ func (v *virtualMeshCertClient) GetRootCaBundle(
 	ctx context.Context,
 	meshRef *zephyr_core_types.ResourceRef,
 ) (*cert_secrets.RootCAData, error) {
-	vm, err := v.localVirtualMeshClient.GetVirtualMesh(ctx, clients.ResourceRefToObjectKey(meshRef))
+	vm, err := v.localVirtualMeshClient.GetVirtualMesh(ctx, selection.ResourceRefToObjectKey(meshRef))
 	if err != nil {
 		return nil, err
 	}

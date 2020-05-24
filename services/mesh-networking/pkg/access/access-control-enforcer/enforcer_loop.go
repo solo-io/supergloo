@@ -8,8 +8,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"go.uber.org/zap"
 )
 
@@ -124,7 +124,7 @@ func (e *enforcerLoop) fetchMeshes(
 ) ([]*zephyr_discovery.Mesh, error) {
 	var meshes []*zephyr_discovery.Mesh
 	for _, meshRef := range virtualMesh.Spec.GetMeshes() {
-		mesh, err := e.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef))
+		mesh, err := e.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef))
 		if err != nil {
 			return nil, err
 		}

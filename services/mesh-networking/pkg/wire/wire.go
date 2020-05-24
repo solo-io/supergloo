@@ -6,12 +6,12 @@ import (
 	"context"
 
 	"github.com/google/wire"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
+	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"

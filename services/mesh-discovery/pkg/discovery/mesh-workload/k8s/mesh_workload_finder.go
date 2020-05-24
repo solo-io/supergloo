@@ -9,10 +9,10 @@ import (
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -156,7 +156,7 @@ func (m *meshWorkloadFinder) reconcile() error {
 		if !ok {
 			continue
 		}
-		err = m.localMeshWorkloadClient.DeleteMeshWorkload(m.ctx, clients.ObjectMetaToObjectKey(existingWorkload.ObjectMeta))
+		err = m.localMeshWorkloadClient.DeleteMeshWorkload(m.ctx, selection.ObjectMetaToObjectKey(existingWorkload.ObjectMeta))
 		if err != nil {
 			return err
 		}
@@ -166,7 +166,7 @@ func (m *meshWorkloadFinder) reconcile() error {
 
 func (m *meshWorkloadFinder) getExistingWorkloads() (map[string]*zephyr_discovery.MeshWorkload, sets.String, error) {
 	inThisCluster := client.MatchingLabels{
-		constants.COMPUTE_TARGET: m.clusterName,
+		kube.COMPUTE_TARGET: m.clusterName,
 	}
 	meshWorkloadList, err := m.localMeshWorkloadClient.ListMeshWorkload(m.ctx, inThisCluster)
 	if err != nil {
@@ -260,8 +260,8 @@ func (m *meshWorkloadFinder) attachGeneralDiscoveryLabels(meshWorkload *zephyr_d
 	if meshWorkload.Labels == nil {
 		meshWorkload.Labels = map[string]string{}
 	}
-	meshWorkload.Labels[constants.DISCOVERED_BY] = constants.MESH_WORKLOAD_DISCOVERY
-	meshWorkload.Labels[constants.COMPUTE_TARGET] = m.clusterName
-	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAME] = meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetName()
-	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAMESPACE] = meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace()
+	meshWorkload.Labels[kube.DISCOVERED_BY] = kube.MESH_WORKLOAD_DISCOVERY
+	meshWorkload.Labels[kube.COMPUTE_TARGET] = m.clusterName
+	meshWorkload.Labels[kube.KUBE_CONTROLLER_NAME] = meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetName()
+	meshWorkload.Labels[kube.KUBE_CONTROLLER_NAMESPACE] = meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace()
 }

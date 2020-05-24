@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"

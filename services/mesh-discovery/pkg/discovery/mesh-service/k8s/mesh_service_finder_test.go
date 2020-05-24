@@ -11,9 +11,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service/k8s"
 	discovery_mocks "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -139,7 +139,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Name:      "test-mesh-workload",
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -161,7 +161,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Name:      "test-mesh-workload-v2",
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -225,19 +225,19 @@ var _ = Describe("Mesh Service Finder", func() {
 			// first list call is on startup, making it empty just for convenience in this test
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
 			// this list call is the real one we care about
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.serviceClient.
@@ -249,7 +249,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, selection.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil).
 				Times(3)
 
@@ -349,12 +349,12 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 
@@ -367,7 +367,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, selection.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
 			err := mocks.meshServiceFinder.StartDiscovery(
@@ -397,12 +397,12 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 
@@ -466,17 +466,17 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, selection.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 
@@ -553,12 +553,12 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.serviceClient.
@@ -570,7 +570,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, selection.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
 			err := mocks.meshServiceFinder.StartDiscovery(
@@ -602,7 +602,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Name:      "test-mesh-workload",
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -624,7 +624,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Name:      "test-mesh-workload-v2",
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -666,7 +666,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshService := &zephyr_discovery.MeshService{
 				Spec: zephyr_discovery_types.MeshServiceSpec{
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: clients.ObjectMetaToResourceRef(kubeService.ObjectMeta),
+						Ref: selection.ObjectMetaToResourceRef(kubeService.ObjectMeta),
 					},
 				},
 			}
@@ -674,29 +674,29 @@ var _ = Describe("Mesh Service Finder", func() {
 			// first list call is on startup, making it empty just for convenience in this test
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil)
 			mocks.serviceClient.EXPECT().
-				GetService(ctx, clients.ResourceRefToObjectKey(meshService.Spec.KubeService.Ref)).
+				GetService(ctx, selection.ResourceRefToObjectKey(meshService.Spec.KubeService.Ref)).
 				Return(kubeService, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{Items: []zephyr_discovery.MeshService{*meshService}}, nil)
 			mocks.meshServiceClient.EXPECT().
-				DeleteMeshService(ctx, clients.ObjectMetaToObjectKey(meshService.ObjectMeta)).
+				DeleteMeshService(ctx, selection.ObjectMetaToObjectKey(meshService.ObjectMeta)).
 				Return(nil)
 
 			err := mocks.meshServiceFinder.StartDiscovery(
@@ -728,7 +728,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Name:      "test-mesh-workload",
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -750,7 +750,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Name:      "test-mesh-workload-v2",
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -792,7 +792,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshService := &zephyr_discovery.MeshService{
 				Spec: zephyr_discovery_types.MeshServiceSpec{
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: clients.ObjectMetaToResourceRef(kubeService.ObjectMeta),
+						Ref: selection.ObjectMetaToResourceRef(kubeService.ObjectMeta),
 					},
 				},
 			}
@@ -800,29 +800,29 @@ var _ = Describe("Mesh Service Finder", func() {
 			// first list call is on startup, making it empty just for convenience in this test
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil)
 			mocks.serviceClient.EXPECT().
-				GetService(ctx, clients.ResourceRefToObjectKey(meshService.Spec.KubeService.Ref)).
+				GetService(ctx, selection.ResourceRefToObjectKey(meshService.Spec.KubeService.Ref)).
 				Return(nil, errors.NewNotFound(zephyr_discovery.Resource("kube service"), ""))
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{Items: []zephyr_discovery.MeshService{*meshService}}, nil)
 			mocks.meshServiceClient.EXPECT().
-				DeleteMeshService(ctx, clients.ObjectMetaToObjectKey(meshService.ObjectMeta)).
+				DeleteMeshService(ctx, selection.ObjectMetaToObjectKey(meshService.ObjectMeta)).
 				Return(nil)
 
 			err := mocks.meshServiceFinder.StartDiscovery(
@@ -854,7 +854,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Name:      "test-mesh-workload",
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -876,7 +876,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Name:      "test-mesh-workload-v2",
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -918,7 +918,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshService := &zephyr_discovery.MeshService{
 				Spec: zephyr_discovery_types.MeshServiceSpec{
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: clients.ObjectMetaToResourceRef(kubeService.ObjectMeta),
+						Ref: selection.ObjectMetaToResourceRef(kubeService.ObjectMeta),
 					},
 				},
 			}
@@ -926,25 +926,25 @@ var _ = Describe("Mesh Service Finder", func() {
 			// first list call is on startup, making it empty just for convenience in this test
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil)
 			mocks.serviceClient.EXPECT().
-				GetService(ctx, clients.ResourceRefToObjectKey(meshService.Spec.KubeService.Ref)).
+				GetService(ctx, selection.ResourceRefToObjectKey(meshService.Spec.KubeService.Ref)).
 				Return(kubeService, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{Items: []zephyr_discovery.MeshService{*meshService}}, nil)
 
@@ -1017,7 +1017,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			rightWorkloadV1 := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -1037,7 +1037,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			rightWorkloadV2 := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -1059,12 +1059,12 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.meshClient.
@@ -1079,7 +1079,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			mocks.meshWorkloadClient.
 				EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{
@@ -1200,18 +1200,18 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.meshWorkloadClient.
 				EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{
@@ -1285,18 +1285,18 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.meshWorkloadClient.
 				EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{
@@ -1337,12 +1337,12 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 
@@ -1399,7 +1399,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			rightWorkloadV1 := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -1419,7 +1419,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			rightWorkloadV2 := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -1451,17 +1451,17 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{
 					Items: []zephyr_discovery.MeshWorkload{
@@ -1471,13 +1471,13 @@ var _ = Describe("Mesh Service Finder", func() {
 					},
 				}, nil)
 			mocks.meshClient.EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(wrongWorkload.Spec.Mesh)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(wrongWorkload.Spec.Mesh)).
 				Return(mesh, nil)
 			mocks.meshClient.EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(rightWorkloadV1.Spec.Mesh)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(rightWorkloadV1.Spec.Mesh)).
 				Return(mesh, nil)
 			mocks.meshClient.EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(rightWorkloadV2.Spec.Mesh)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(rightWorkloadV2.Spec.Mesh)).
 				Return(mesh, nil)
 			mocks.meshServiceClient.EXPECT().
 				DeleteMeshService(ctx, client.ObjectKey{
@@ -1503,13 +1503,13 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{}, nil)
 
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{}, nil)
 
@@ -1539,7 +1539,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Name:      "test-mesh-workload",
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -1569,19 +1569,19 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*meshWorkload}}, nil)
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{Items: []zephyr_discovery.MeshService{*meshService}}, nil)
 			mocks.serviceClient.EXPECT().
-				GetService(ctx, clients.ResourceRefToObjectKey(meshService.Spec.KubeService.Ref)).
+				GetService(ctx, selection.ResourceRefToObjectKey(meshService.Spec.KubeService.Ref)).
 				Return(nil, errors.NewNotFound(zephyr_discovery.Resource("meshservice"), meshService.GetName()))
 			mocks.meshServiceClient.EXPECT().
-				DeleteMeshService(ctx, clients.ObjectMetaToObjectKey(meshService.ObjectMeta)).
+				DeleteMeshService(ctx, selection.ObjectMetaToObjectKey(meshService.ObjectMeta)).
 				Return(nil)
 
 			err := mocks.meshServiceFinder.StartDiscovery(
@@ -1610,7 +1610,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Name:      "test-mesh-workload",
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -1632,7 +1632,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					Name:      "test-mesh-workload-v2",
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
-						constants.COMPUTE_TARGET: clusterName,
+						kube.COMPUTE_TARGET: clusterName,
 					},
 				},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -1674,23 +1674,23 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshService := &zephyr_discovery.MeshService{
 				Spec: zephyr_discovery_types.MeshServiceSpec{
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: clients.ObjectMetaToResourceRef(kubeService.ObjectMeta),
+						Ref: selection.ObjectMetaToResourceRef(kubeService.ObjectMeta),
 					},
 				},
 			}
 
 			mocks.meshServiceClient.EXPECT().
 				ListMeshService(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshServiceList{Items: []zephyr_discovery.MeshService{*meshService}}, nil)
 			mocks.meshWorkloadClient.EXPECT().
 				ListMeshWorkload(ctx, client.MatchingLabels{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				}).
 				Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil)
 			mocks.serviceClient.EXPECT().
-				GetService(ctx, clients.ResourceRefToObjectKey(meshService.Spec.KubeService.Ref)).
+				GetService(ctx, selection.ResourceRefToObjectKey(meshService.Spec.KubeService.Ref)).
 				Return(kubeService, nil)
 
 			err := mocks.meshServiceFinder.StartDiscovery(

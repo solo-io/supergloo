@@ -7,12 +7,12 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/unstructured"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-installation/istio/operator"
 )
 
 var (
@@ -98,7 +98,7 @@ func NewIstioInstaller(
 }
 
 type istioInstaller struct {
-	unstructuredKubeClient kube.UnstructuredKubeClient
+	unstructuredKubeClient unstructured.UnstructuredKubeClient
 	manifestBuilder        operator.InstallerManifestBuilder
 	istioInstallOptions    *options.MeshInstall
 	out                    io.Writer

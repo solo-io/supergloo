@@ -8,7 +8,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -156,7 +156,7 @@ func (p *policyCollector) determineFinalValidState(
 			} else {
 				for _, translationError := range translationErrors {
 					// need to pick out the translation policy in question from the error result list
-					if clients.SameObject(clients.ResourceRefToObjectMeta(translationError.Policy.GetRef()), policyToProcess.UpdatedTrafficPolicy.ObjectMeta) {
+					if selection.SameObject(selection.ResourceRefToObjectMeta(translationError.Policy.GetRef()), policyToProcess.UpdatedTrafficPolicy.ObjectMeta) {
 						untranslatablePolicies[policyToProcess.UpdatedTrafficPolicy] = translationError.TranslatorErrors
 					}
 				}
@@ -188,10 +188,10 @@ func (p *policyCollector) aggregateTrafficPolicies(
 	for _, tpIter := range allTrafficPolicies {
 		trafficPolicy := tpIter
 
-		allIds.Insert(clients.ToUniqueSingleClusterString(trafficPolicy.ObjectMeta))
+		allIds.Insert(selection.ToUniqueSingleClusterString(trafficPolicy.ObjectMeta))
 		if trafficPolicy.Status.GetValidationStatus().GetState() == zephyr_core_types.Status_ACCEPTED {
 			allValidatedTrafficPolicies = append(allValidatedTrafficPolicies, trafficPolicy)
-			uniqueStringToValidatedTrafficPolicy[clients.ToUniqueSingleClusterString(trafficPolicy.ObjectMeta)] = trafficPolicy
+			uniqueStringToValidatedTrafficPolicy[selection.ToUniqueSingleClusterString(trafficPolicy.ObjectMeta)] = trafficPolicy
 		}
 	}
 
@@ -218,7 +218,7 @@ func (*policyCollector) buildPoliciesToCheck(
 
 	for _, previouslyRecordedPolicyIter := range meshService.Status.GetValidatedTrafficPolicies() {
 		previouslyRecordedPolicy := previouslyRecordedPolicyIter
-		identifierString := clients.ToUniqueSingleClusterString(clients.ResourceRefToObjectMeta(previouslyRecordedPolicy.GetRef()))
+		identifierString := selection.ToUniqueSingleClusterString(selection.ResourceRefToObjectMeta(previouslyRecordedPolicy.GetRef()))
 
 		// if this traffic policy has been deleted, we need to remove this previously-recorded policy from the output of this reconcile loop
 		if !allTrafficPolicyIds.Has(identifierString) {
@@ -252,7 +252,7 @@ func (*policyCollector) buildPoliciesToCheck(
 	// add NEW policies that were not previously recorded
 	for _, relevantPolicyIter := range policiesForService {
 		relevantPolicy := relevantPolicyIter
-		policyId := clients.ToUniqueSingleClusterString(relevantPolicy.ObjectMeta)
+		policyId := selection.ToUniqueSingleClusterString(relevantPolicy.ObjectMeta)
 
 		if previouslyRecordedTrafficPolicyIDs.Has(policyId) {
 			continue
@@ -260,7 +260,7 @@ func (*policyCollector) buildPoliciesToCheck(
 
 		anyPolicyChangedSinceLastReconcile = true
 		policiesToCheck = append(policiesToCheck, &policyToCheck{
-			Ref:                  clients.ObjectMetaToResourceRef(relevantPolicy.ObjectMeta),
+			Ref:                  selection.ObjectMetaToResourceRef(relevantPolicy.ObjectMeta),
 			UpdatedTrafficPolicy: relevantPolicy,
 		})
 	}

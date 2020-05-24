@@ -16,10 +16,10 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/deregister"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	mock_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
+	mock_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration/mocks"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -82,7 +82,7 @@ var _ = Describe("ClusterDeregistrationCmd", func() {
 		kubeCluster := &v1alpha1.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Labels: map[string]string{
-					constants.DISCOVERED_BY: register.MeshctlDiscoverySource,
+					kube.DISCOVERED_BY: register.MeshctlDiscoverySource,
 				},
 			},
 		}
@@ -124,7 +124,7 @@ var _ = Describe("ClusterDeregistrationCmd", func() {
 		kubeCluster := &v1alpha1.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Labels: map[string]string{
-					constants.DISCOVERED_BY: "discovery",
+					kube.DISCOVERED_BY: "discovery",
 				},
 			},
 		}

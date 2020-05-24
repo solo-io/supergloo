@@ -1,7 +1,7 @@
 package version
 
 import (
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/semver"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/semver"
 )
 
 var (

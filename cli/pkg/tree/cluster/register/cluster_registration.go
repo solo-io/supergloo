@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/spf13/afero"
 	"helm.sh/helm/v3/pkg/chartutil"

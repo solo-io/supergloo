@@ -15,8 +15,8 @@ import (
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	mock_dns "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns/mocks"
@@ -94,7 +94,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Namespace: container_runtime.GetWriteNamespace(),
 			}
 			istioMesh := &zephyr_discovery.Mesh{
-				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(istioMeshRef),
 				Spec: zephyr_discovery_types.MeshSpec{
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
@@ -139,7 +139,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			meshClient.EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName).
@@ -283,7 +283,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Namespace: container_runtime.GetWriteNamespace(),
 			}
 			istioMesh := &zephyr_discovery.Mesh{
-				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(istioMeshRef),
 				Spec: zephyr_discovery_types.MeshSpec{
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
@@ -328,7 +328,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			meshClient.EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName).
@@ -472,7 +472,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Namespace: container_runtime.GetWriteNamespace(),
 			}
 			istioMesh := &zephyr_discovery.Mesh{
-				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(istioMeshRef),
 				Spec: zephyr_discovery_types.MeshSpec{
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
@@ -517,7 +517,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			meshClient.EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName).
@@ -674,7 +674,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Namespace: container_runtime.GetWriteNamespace(),
 			}
 			istioMeshForService := &zephyr_discovery.Mesh{
-				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRefService),
+				ObjectMeta: selection.ResourceRefToObjectMeta(istioMeshRefService),
 				Spec: zephyr_discovery_types.MeshSpec{
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "istio-cluster-svc",
@@ -691,7 +691,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			istioMeshForWorkload := &zephyr_discovery.Mesh{
-				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRefWorkload),
+				ObjectMeta: selection.ResourceRefToObjectMeta(istioMeshRefWorkload),
 				Spec: zephyr_discovery_types.MeshSpec{
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "istio-cluster-workload",
@@ -741,7 +741,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			meshClient.EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(istioMeshRefWorkload)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(istioMeshRefWorkload)).
 				Return(istioMeshForWorkload, nil)
 			workloadClient := mock_controller_runtime.NewMockClient(ctrl)
 			clientGetter.EXPECT().
@@ -755,13 +755,13 @@ var _ = Describe("Istio Federation Decider", func() {
 				Namespace: "istio-system",
 			}
 			serviceEntryClient.EXPECT().
-				GetServiceEntry(ctx, clients.ResourceRefToObjectKey(serviceEntryRef)).
+				GetServiceEntry(ctx, selection.ResourceRefToObjectKey(serviceEntryRef)).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 			ipAssigner.EXPECT().
 				AssignIPOnCluster(ctx, istioMeshForWorkload.Spec.Cluster.Name).
 				Return("255.255.255.255", nil)
 			serviceEntry := &istio_client_networking_types.ServiceEntry{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceEntryRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceEntryRef),
 				Spec: istio_networking_types.ServiceEntry{
 					Addresses: []string{"255.255.255.255"},
 					Endpoints: []*istio_networking_types.ServiceEntry_Endpoint{{
@@ -788,10 +788,10 @@ var _ = Describe("Istio Federation Decider", func() {
 				Namespace: "istio-system",
 			}
 			destinationRuleClient.EXPECT().
-				GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destinationRuleRef)).
+				GetDestinationRule(ctx, selection.ResourceRefToObjectKey(destinationRuleRef)).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 			destinationRuleClient.EXPECT().CreateDestinationRule(ctx, &istio_client_networking_types.DestinationRule{
-				ObjectMeta: clients.ResourceRefToObjectMeta(destinationRuleRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(destinationRuleRef),
 				Spec: istio_networking_types.DestinationRule{
 					Host: serviceMulticlusterDnsName,
 					TrafficPolicy: &istio_networking_types.TrafficPolicy{

@@ -14,9 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/usage"
@@ -46,10 +44,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh"
 	mesh_install "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
-	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
 	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	version2 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
@@ -60,16 +56,19 @@ import (
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
-	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
+	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/auth"
+	crd_uninstall "github.com/solo-io/service-mesh-hub/pkg/kube/crd"
+	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/kube/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/unstructured"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-installation/istio/operator"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
@@ -142,7 +141,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	resourceSelector := selection.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
 	resourceDescriber := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
 	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
-	clusterAuthClientFromConfigFactory := clients.ClusterAuthClientFromConfigFactoryProvider()
+	clusterAuthClientFromConfigFactory := auth.ClusterAuthClientFromConfigFactoryProvider()
 	clusterRegistrationClient := cluster_registration.NewClusterRegistrationClient(secretClient, kubernetesClusterClient, namespaceClientFromConfigFactory, converter, csrAgentInstallerFactory, clusterAuthClientFromConfigFactory)
 	kubeClients := common.KubeClientsProvider(clusterAuthorization, helmInstallerFactory, helmClientForFileConfigFactory, kubernetesClusterClient, healthcheck_typesClients, deployedVersionFinder, customResourceDefinitionClientFromConfigFactory, secretClient, namespaceClient, uninstallClients, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCertificateSigningRequestClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient, clusterRegistrationClient)
 	return kubeClients, nil
@@ -155,7 +154,7 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	githubAssetClient := upgrade_assets.DefaultGithubAssetClient()
 	assetHelper := upgrade_assets.NewAssetHelper(githubAssetClient)
 	masterKubeConfigVerifier := common_config.NewMasterKubeConfigVerifier(kubeLoader)
-	unstructuredKubeClientFactory := kube.NewUnstructuredKubeClientFactory()
+	unstructuredKubeClientFactory := unstructured.NewUnstructuredKubeClientFactory()
 	deploymentClient := server.NewDeploymentClient(kubeLoader, opts)
 	installerManifestBuilder := operator.NewInstallerManifestBuilder()
 	operatorManagerFactory := operator.NewOperatorManagerFactory()

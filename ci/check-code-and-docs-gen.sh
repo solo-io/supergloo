@@ -2,6 +2,10 @@
 
 set -ex
 
+bash ./ci/ensureGoodImportPaths.bash
+
+exit 0
+
 go mod tidy
 
 if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
@@ -11,6 +15,7 @@ if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
 fi
 
 bash ./ci/assertAllSuitesExist.bash
+
 
 protoc --version
 

@@ -8,7 +8,6 @@ package wire
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
@@ -19,6 +18,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
+	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"

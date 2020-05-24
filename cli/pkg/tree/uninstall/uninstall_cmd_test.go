@@ -10,14 +10,14 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	mock_types "github.com/solo-io/go-utils/installutils/helminstall/types/mocks"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
-	mock_crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd/mocks"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	mock_cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
+	mock_cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	mock_crd_uninstall "github.com/solo-io/service-mesh-hub/pkg/kube/crd/mocks"
 	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -55,7 +55,7 @@ var _ = Describe("Crd Uninstaller", func() {
 		clusterDeregistrationClient := mock_cluster_registration.NewMockClusterDeregistrationClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		releaseName := cliconstants.ServiceMeshHubReleaseName
+		releaseName := constants.ServiceMeshHubReleaseName
 		cluster1 := &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name: "cluster-1",
@@ -128,7 +128,7 @@ Service Mesh Hub has been uninstalled
 		clusterDeregistrationClient := mock_cluster_registration.NewMockClusterDeregistrationClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		releaseName := cliconstants.ServiceMeshHubReleaseName
+		releaseName := constants.ServiceMeshHubReleaseName
 		cluster1 := &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name: "cluster-1",
@@ -213,7 +213,7 @@ Service Mesh Hub has been uninstalled
 		clusterDeregistrationClient := mock_cluster_registration.NewMockClusterDeregistrationClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		releaseName := cliconstants.ServiceMeshHubReleaseName
+		releaseName := constants.ServiceMeshHubReleaseName
 
 		kubeLoader.EXPECT().
 			GetRestConfigForContext("", "").
@@ -275,7 +275,7 @@ Service Mesh Hub has been uninstalled
 		clusterDeregistrationClient := mock_cluster_registration.NewMockClusterDeregistrationClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		releaseName := cliconstants.ServiceMeshHubReleaseName
+		releaseName := constants.ServiceMeshHubReleaseName
 
 		kubeLoader.EXPECT().
 			GetRestConfigForContext("", "").
@@ -342,7 +342,7 @@ Service Mesh Hub has been uninstalled with errors
 		clusterDeregistrationClient := mock_cluster_registration.NewMockClusterDeregistrationClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		releaseName := cliconstants.ServiceMeshHubReleaseName
+		releaseName := constants.ServiceMeshHubReleaseName
 		cluster1 := &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name: "cluster-1",

@@ -6,9 +6,9 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"

@@ -10,8 +10,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	istio_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/istio-enforcer"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	mock_istio_security "github.com/solo-io/service-mesh-hub/test/mocks/clients/istio/security/v1alpha3"
@@ -99,7 +99,7 @@ var _ = Describe("IstioEnforcer", func() {
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      istio_enforcer.GlobalAccessControlAuthPolicyName,
 					Namespace: mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace(),
-					Labels:    constants.OwnedBySMHLabel,
+					Labels:    kube.OwnedBySMHLabel,
 				},
 				Spec: security_v1beta1.AuthorizationPolicy{},
 			}
@@ -111,7 +111,7 @@ var _ = Describe("IstioEnforcer", func() {
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      istio_enforcer.IngressGatewayAuthPolicy,
 					Namespace: mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace(),
-					Labels:    constants.OwnedBySMHLabel,
+					Labels:    kube.OwnedBySMHLabel,
 				},
 				Spec: security_v1beta1.AuthorizationPolicy{
 					Action: security_v1beta1.AuthorizationPolicy_ALLOW,

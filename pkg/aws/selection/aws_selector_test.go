@@ -9,8 +9,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	mock_aws "github.com/solo-io/service-mesh-hub/pkg/aws/parser/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/selection"
-	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
 )
 
 var _ = Describe("AWS Selector", func() {

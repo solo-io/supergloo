@@ -14,14 +14,14 @@ import (
 	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	mock_aws "github.com/solo-io/service-mesh-hub/pkg/aws/parser/mocks"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
 	mock_settings "github.com/solo-io/service-mesh-hub/pkg/aws/selection/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	mock_settings2 "github.com/solo-io/service-mesh-hub/pkg/clients/settings/mocks"
+	mock_settings2 "github.com/solo-io/service-mesh-hub/pkg/aws/settings/mocks"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/metadata"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	aws4 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
-	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
 	zephyr_discovery_appmesh "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/appmesh"
 	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -189,7 +189,7 @@ var _ = Describe("Reconciler", func() {
 		mockMeshClient.EXPECT().ListMesh(ctx).Return(existingMeshes, nil)
 		for _, existingMesh := range existingMeshes.Items[1:] {
 			existingMesh := existingMesh
-			mockMeshClient.EXPECT().DeleteMesh(ctx, clients.ObjectMetaToObjectKey(existingMesh.ObjectMeta)).Return(nil)
+			mockMeshClient.EXPECT().DeleteMesh(ctx, selection.ObjectMetaToObjectKey(existingMesh.ObjectMeta)).Return(nil)
 		}
 	}
 
@@ -316,7 +316,7 @@ var _ = Describe("Reconciler", func() {
 		mockMeshClient.EXPECT().ListMesh(ctx).Return(existingMeshes, nil)
 		for _, existingMesh := range existingMeshes.Items {
 			existingMesh := existingMesh
-			mockMeshClient.EXPECT().DeleteMesh(ctx, clients.ObjectMetaToObjectKey(existingMesh.ObjectMeta)).Return(nil)
+			mockMeshClient.EXPECT().DeleteMesh(ctx, selection.ObjectMetaToObjectKey(existingMesh.ObjectMeta)).Return(nil)
 		}
 		err := appMeshDiscoveryReconciler.Reconcile(ctx, &credentials.Credentials{}, accountID)
 		Expect(err).To(BeNil())
@@ -357,7 +357,7 @@ var _ = Describe("Reconciler", func() {
 		mockMeshClient.EXPECT().ListMesh(ctx).Return(existingMeshes, nil)
 		for _, existingMesh := range existingMeshes.Items {
 			existingMesh := existingMesh
-			mockMeshClient.EXPECT().DeleteMesh(ctx, clients.ObjectMetaToObjectKey(existingMesh.ObjectMeta)).Return(nil)
+			mockMeshClient.EXPECT().DeleteMesh(ctx, selection.ObjectMetaToObjectKey(existingMesh.ObjectMeta)).Return(nil)
 		}
 		err := appMeshDiscoveryReconciler.Reconcile(ctx, &credentials.Credentials{}, accountID)
 		Expect(err).To(BeNil())

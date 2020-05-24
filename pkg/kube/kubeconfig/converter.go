@@ -2,7 +2,7 @@ package kubeconfig
 
 import (
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
+	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
 	k8s_core_v1 "k8s.io/api/core/v1"
 	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"

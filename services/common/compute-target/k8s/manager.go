@@ -6,8 +6,8 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	"github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/errutils"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"go.uber.org/zap"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -38,7 +38,7 @@ func (a *asyncManagerFactory) New(parentCtx context.Context, cfg *rest.Config,
 	}
 	// preload the ctx with the cluster name, as well as preload the logger with the cluster name
 	ctx, cancel := context.WithCancel(contextutils.WithLoggerValues(
-		context.WithValue(parentCtx, constants.COMPUTE_TARGET, opts.Cluster), zap.String(constants.COMPUTE_TARGET, opts.Cluster),
+		context.WithValue(parentCtx, kube.COMPUTE_TARGET, opts.Cluster), zap.String(kube.COMPUTE_TARGET, opts.Cluster),
 	))
 	return &asyncManager{
 		mgr:      mgr,

@@ -11,9 +11,9 @@ import (
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mock_controllers "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
@@ -83,10 +83,10 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	var attachWorkloadDiscoveryLabels = func(workload *zephyr_discovery.MeshWorkload) {
 		workload.Labels = map[string]string{
-			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
-			constants.COMPUTE_TARGET:            clusterName,
-			constants.KUBE_CONTROLLER_NAME:      workload.Spec.GetKubeController().GetKubeControllerRef().GetName(),
-			constants.KUBE_CONTROLLER_NAMESPACE: workload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace(),
+			kube.DISCOVERED_BY:             kube.MESH_WORKLOAD_DISCOVERY,
+			kube.COMPUTE_TARGET:            clusterName,
+			kube.KUBE_CONTROLLER_NAME:      workload.Spec.GetKubeController().GetKubeControllerRef().GetName(),
+			kube.KUBE_CONTROLLER_NAMESPACE: workload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace(),
 		}
 	}
 
@@ -105,7 +105,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshWorkloadClient.
 			EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.COMPUTE_TARGET: clusterName,
+				kube.COMPUTE_TARGET: clusterName,
 			}).
 			Return(extantMeshWorkloadList, nil)
 
@@ -134,7 +134,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		// workload3 should be deleted
 		mockLocalMeshWorkloadClient.
 			EXPECT().
-			DeleteMeshWorkload(ctx, clients.ObjectMetaToObjectKey(extantMeshWorkloadList.Items[2].ObjectMeta)).
+			DeleteMeshWorkload(ctx, selection.ObjectMetaToObjectKey(extantMeshWorkloadList.Items[2].ObjectMeta)).
 			Return(nil)
 		// workload4 should be created
 		mockLocalMeshWorkloadClient.EXPECT().UpsertMeshWorkloadSpec(ctx, discoveredMeshWorkloads[2]).Return(nil)

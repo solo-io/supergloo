@@ -9,8 +9,8 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
-	mock_kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery/mocks"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	mock_kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/kube/discovery/mocks"
 )
 
 var _ = Describe("K8s connectivity check", func() {

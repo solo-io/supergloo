@@ -13,7 +13,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	global_ac_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	mock_global_access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -96,7 +96,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		for _, meshEnforcer := range meshEnforcers {
@@ -131,7 +131,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		for _, meshEnforcer := range meshEnforcers {
@@ -167,7 +167,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		meshEnforcers[0].
@@ -201,7 +201,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		for _, meshEnforcer := range meshEnforcers {

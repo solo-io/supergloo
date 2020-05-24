@@ -15,8 +15,8 @@ import (
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,12 +41,12 @@ type virtualMeshCsrManager struct {
 	meshClient              zephyr_discovery.MeshClient
 	meshRefFinder           vm_validation.VirtualMeshFinder
 	csrClientFactory        zephyr_security.VirtualMeshCertificateSigningRequestClientFactory
-	dynamicClientGetter     mc_manager.DynamicClientGetter
+	dynamicClientGetter     multicluster.DynamicClientGetter
 	istioCertConfigProducer IstioCertConfigProducer
 }
 
 func NewVirtualMeshCsrProcessor(
-	dynamicClientGetter mc_manager.DynamicClientGetter,
+	dynamicClientGetter multicluster.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	meshRefFinder vm_validation.VirtualMeshFinder,
 	csrClientFactory zephyr_security.VirtualMeshCertificateSigningRequestClientFactory,

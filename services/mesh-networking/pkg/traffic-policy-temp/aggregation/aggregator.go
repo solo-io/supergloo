@@ -6,7 +6,6 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
@@ -42,7 +41,7 @@ func (a *aggregator) FindMergeConflict(
 		if conflictErr != nil {
 			return &zephyr_networking_types.TrafficPolicyStatus_ConflictError{
 				ErrorMessage:        conflictErr.Error(),
-				ConfigurationTarget: clients.ObjectMetaToResourceRef(meshService.ObjectMeta),
+				ConfigurationTarget: selection.ObjectMetaToResourceRef(meshService.ObjectMeta),
 			}
 		}
 	}
