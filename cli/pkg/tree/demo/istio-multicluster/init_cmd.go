@@ -1,17 +1,35 @@
-package demo_init
+package istio_multicluster
 
 import (
-	"context"
-
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
+	"github.com/spf13/cobra"
 )
 
-func DemoInit(ctx context.Context, runner exec.Runner) error {
-	return runner.Run("bash", "-c", initDemoScript)
+type InitCmd *cobra.Command
+
+func Init(
+	runner exec.Runner,
+) InitCmd {
+	init := &cobra.Command{
+		Use:   cliconstants.AppmeshEksInitCommand.Use,
+		Short: cliconstants.AppmeshEksInitCommand.Short,
+		Long:  cliconstants.AppmeshEksInitCommand.Long,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return istioMulticlusterDemo(runner)
+		},
+	}
+	// Silence verbose error message for non-zero exit codes.
+	init.SilenceUsage = true
+	return init
+}
+
+func istioMulticlusterDemo(runner exec.Runner) error {
+	return runner.Run("bash", istioKindDemoScript)
 }
 
 const (
-	initDemoScript = `
+	istioKindDemoScript = `
 
 # generate 16-character random suffix on these names
 managementPlane=management-plane-$(xxd -l16 -ps /dev/urandom)

@@ -32,8 +32,8 @@ import (
 	traffic_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/virtualmesh"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/cleanup"
-	demo_init "github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/init"
+	appmesh_eks "github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/appmesh-eks"
+	istio_multicluster "github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/istio-multicluster"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get"
@@ -202,9 +202,13 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	printers := common.PrintersProvider(meshPrinter, meshServicePrinter, meshWorkloadPrinter, kubernetesClusterPrinter, trafficPolicyPrinter, accessControlPolicyPrinter, virtualMeshPrinter, virtualMeshCSRPrinter, resourcePrinter)
 	describeCommand := describe.DescribeCmd(ctx, kubeLoader, kubeClientsFactory, printers, optionsOptions, out)
 	runner := exec.NewShellRunner(in, out)
-	initCmd := demo_init.DemoInitCmd(ctx, runner)
-	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runner)
-	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
+	initCmd := appmesh_eks.Init(runner, optionsOptions)
+	cleanupCmd := appmesh_eks.Cleanup(runner, optionsOptions)
+	appmeshEksCmd := appmesh_eks.AppmeshEks(initCmd, cleanupCmd)
+	istio_multiclusterInitCmd := istio_multicluster.Init(runner)
+	istio_multiclusterCleanupCmd := istio_multicluster.Cleanup(runner, optionsOptions)
+	istioMulticlusterCmd := istio_multicluster.IstioMulticluster(istio_multiclusterInitCmd, istio_multiclusterCleanupCmd)
+	demoCommand := demo.DemoRootCmd(appmeshEksCmd, istioMulticlusterCmd)
 	getMeshCommand := get_mesh.GetMeshRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
 	getWorkloadCommand := get_workload.GetWorkloadRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
 	getServiceCommand := get_service.GetServiceRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
@@ -236,9 +240,13 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
 	describeCommand := describe.DescribeCmd(ctx, kubeLoader, kubeClientsFactory, printers, optionsOptions, out)
-	initCmd := demo_init.DemoInitCmd(ctx, runner)
-	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runner)
-	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
+	initCmd := appmesh_eks.Init(runner, optionsOptions)
+	cleanupCmd := appmesh_eks.Cleanup(runner, optionsOptions)
+	appmeshEksCmd := appmesh_eks.AppmeshEks(initCmd, cleanupCmd)
+	istio_multiclusterInitCmd := istio_multicluster.Init(runner)
+	istio_multiclusterCleanupCmd := istio_multicluster.Cleanup(runner, optionsOptions)
+	istioMulticlusterCmd := istio_multicluster.IstioMulticluster(istio_multiclusterInitCmd, istio_multiclusterCleanupCmd)
+	demoCommand := demo.DemoRootCmd(appmeshEksCmd, istioMulticlusterCmd)
 	getMeshCommand := get_mesh.GetMeshRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
 	getWorkloadCommand := get_workload.GetWorkloadRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
 	getServiceCommand := get_service.GetServiceRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
