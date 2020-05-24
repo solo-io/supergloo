@@ -52,7 +52,7 @@ var (
 type OperatorManager interface {
 	// install an instance of the Mesh operator
 	// we try to make the install attempt atomic; if one of the resources fails to install, the previous successful ones are cleaned up
-	Install() error
+	Install(version IstioVersion) error
 
 	// ensure that the given namespace is appropriate for installing an Mesh operator
 	// will fail with an error if the operator is already present at a different version than we're specifying
@@ -102,8 +102,8 @@ type manager struct {
 	installationConfig     *options.MeshInstallationConfig
 }
 
-func (m *manager) Install() error {
-	installationManifest, err := m.manifestBuilder.Build(m.installationConfig)
+func (m *manager) Install(version IstioVersion) error {
+	installationManifest, err := m.manifestBuilder.Build(version, m.installationConfig)
 	if err != nil {
 		return FailedToGenerateInstallManifest(err)
 	}
@@ -121,7 +121,7 @@ func (m *manager) Install() error {
 			multiErr = multierror.Append(multiErr, FailedToInstallOperator(installErr))
 			multiErr = multierror.Append(multiErr, FailedToCleanFailedInstallation(deleteErr))
 
-			return multiErr
+			return multiErr.ErrorOrNil()
 		}
 
 		return FailedToInstallOperator(installErr)

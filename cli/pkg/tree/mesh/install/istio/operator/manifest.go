@@ -9,10 +9,17 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 )
 
+type IstioVersion string
+
+var (
+	Istio1_5 IstioVersion = "1.5"
+	Istio1_6 IstioVersion = "1.6"
+)
+
 //go:generate mockgen -source ./manifest.go -destination mocks/mock_manifest_builder.go
 type InstallerManifestBuilder interface {
 	// Based on the pending installation config, generate an appropriate installation manifest
-	Build(options *options.MeshInstallationConfig) (installationManifest string, err error)
+	Build(istioVersion IstioVersion, options *options.MeshInstallationConfig) (installationManifest string, err error)
 
 	// Generate an IstioOperator spec that sets up Mesh with its demo profile
 	GetOperatorSpecWithProfile(profile, installationNamespace string) (string, error)
@@ -34,7 +41,7 @@ func NewInstallerManifestBuilder() InstallerManifestBuilder {
 
 type installerManifestBuilder struct{}
 
-func (i *installerManifestBuilder) Build(options *options.MeshInstallationConfig) (string, error) {
+func (i *installerManifestBuilder) Build(istioVersion IstioVersion, options *options.MeshInstallationConfig) (string, error) {
 	tmpl := template.New("")
 	tmpl, err := tmpl.Parse(installationManifestTemplate)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	operator "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 )
 
 // MockOperatorManager is a mock of OperatorManager interface.
@@ -34,17 +35,17 @@ func (m *MockOperatorManager) EXPECT() *MockOperatorManagerMockRecorder {
 }
 
 // Install mocks base method.
-func (m *MockOperatorManager) Install() error {
+func (m *MockOperatorManager) Install(version operator.IstioVersion) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Install")
+	ret := m.ctrl.Call(m, "Install", version)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Install indicates an expected call of Install.
-func (mr *MockOperatorManagerMockRecorder) Install() *gomock.Call {
+func (mr *MockOperatorManagerMockRecorder) Install(version interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Install", reflect.TypeOf((*MockOperatorManager)(nil).Install))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Install", reflect.TypeOf((*MockOperatorManager)(nil).Install), version)
 }
 
 // ValidateOperatorNamespace mocks base method.

@@ -9,6 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	options "github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	operator "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 )
 
 // MockInstallerManifestBuilder is a mock of InstallerManifestBuilder interface.
@@ -35,18 +36,18 @@ func (m *MockInstallerManifestBuilder) EXPECT() *MockInstallerManifestBuilderMoc
 }
 
 // Build mocks base method.
-func (m *MockInstallerManifestBuilder) Build(options *options.MeshInstallationConfig) (string, error) {
+func (m *MockInstallerManifestBuilder) Build(istioVersion operator.IstioVersion, options *options.MeshInstallationConfig) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Build", options)
+	ret := m.ctrl.Call(m, "Build", istioVersion, options)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Build indicates an expected call of Build.
-func (mr *MockInstallerManifestBuilderMockRecorder) Build(options interface{}) *gomock.Call {
+func (mr *MockInstallerManifestBuilderMockRecorder) Build(istioVersion, options interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockInstallerManifestBuilder)(nil).Build), options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockInstallerManifestBuilder)(nil).Build), istioVersion, options)
 }
 
 // GetOperatorSpecWithProfile mocks base method.

@@ -40,7 +40,7 @@ var (
 )
 
 type IstioInstaller interface {
-	Install() error
+	Install(version operator.IstioVersion) error
 }
 
 func NewIstioInstaller(
@@ -108,7 +108,7 @@ type istioInstaller struct {
 	fileReader             files.FileReader
 }
 
-func (i *istioInstaller) Install() error {
+func (i *istioInstaller) Install(version operator.IstioVersion) error {
 	namespace := i.istioInstallOptions.InstallationConfig.InstallNamespace
 
 	istioControlPlane, err := i.loadIstioOperator()
@@ -117,7 +117,7 @@ func (i *istioInstaller) Install() error {
 	}
 
 	if i.istioInstallOptions.DryRun {
-		manifest, err := i.manifestBuilder.Build(&i.istioInstallOptions.InstallationConfig)
+		manifest, err := i.manifestBuilder.Build(version, &i.istioInstallOptions.InstallationConfig)
 		if err != nil {
 			return err
 		}
@@ -130,7 +130,7 @@ func (i *istioInstaller) Install() error {
 		return nil
 	}
 
-	err = i.installOperator(namespace)
+	err = i.installOperator(version, namespace)
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (i *istioInstaller) Install() error {
 	return nil
 }
 
-func (i *istioInstaller) installOperator(namespace string) error {
+func (i *istioInstaller) installOperator(version operator.IstioVersion, namespace string) error {
 	installNeeded, err := i.operatorManager.ValidateOperatorNamespace(i.clusterName)
 	if err != nil {
 		return eris.Wrapf(err, "Istio operator namespace validation failed for cluster '%s' in namespace '%s'", i.clusterName, namespace)
@@ -153,7 +153,7 @@ func (i *istioInstaller) installOperator(namespace string) error {
 	if installNeeded {
 		fmt.Fprintf(i.out, "Installing the Istio operator to cluster '%s' in namespace '%s'\n", i.clusterName, namespace)
 
-		err := i.operatorManager.Install()
+		err := i.operatorManager.Install(version)
 		if err != nil {
 			return err
 		}
