@@ -16,8 +16,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/logging"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver"
 	mock_meshes "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/mock"
@@ -209,7 +208,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 			Status: zephyr_discovery_types.MeshServiceStatus{},
 		}
-		eventCtx := logging.EventContext(ctx, logging.CreateEvent, service1)
+		eventCtx := container_runtime.EventContext(ctx, container_runtime.CreateEvent, service1)
 		meshWorkloadClient.EXPECT().
 			GetMeshWorkload(eventCtx, clients.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[0])).
 			Return(nil, testErr)
@@ -287,7 +286,7 @@ var _ = Describe("Federation Decider", func() {
 
 		federatedServiceRef := &zephyr_core_types.ResourceRef{
 			Name:      "federated-service",
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		}
 		kubeServiceRef := &zephyr_core_types.ResourceRef{
 			Name:      "test-svc",
@@ -304,7 +303,7 @@ var _ = Describe("Federation Decider", func() {
 		clientMesh := &zephyr_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "client-mesh",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
 				Cluster: clientClusterRef,
@@ -322,7 +321,7 @@ var _ = Describe("Federation Decider", func() {
 		serverMesh := &zephyr_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "server-mesh",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
 				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
@@ -363,7 +362,7 @@ var _ = Describe("Federation Decider", func() {
 		externalAddress := "255.255.255.255" // intentional garbage
 		port := uint32(32000)                // equally intentional garbage
 
-		eventCtx := logging.EventContext(ctx, logging.CreateEvent, federatedService)
+		eventCtx := container_runtime.EventContext(ctx, container_runtime.CreateEvent, federatedService)
 		meshWorkloadClient.EXPECT().
 			GetMeshWorkload(eventCtx, clients.ResourceRefToObjectKey(meshWorkloadRef)).
 			Return(federatedToWorkload, nil)

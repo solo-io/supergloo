@@ -3,7 +3,7 @@ package internal
 import (
 	"github.com/rotisserie/eris"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
 )
 
 var (

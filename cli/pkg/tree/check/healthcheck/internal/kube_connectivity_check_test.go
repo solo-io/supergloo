@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	mock_kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 )
 
 var _ = Describe("K8s connectivity check", func() {
@@ -35,7 +35,7 @@ var _ = Describe("K8s connectivity check", func() {
 			Get().
 			Return(nil, testErr)
 
-		runFailure, checkApplies := internal.NewKubeConnectivityCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewKubeConnectivityCheck().Run(ctx, container_runtime.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 
@@ -50,7 +50,7 @@ var _ = Describe("K8s connectivity check", func() {
 			Get().
 			Return(nil, nil)
 
-		runFailure, checkApplies := internal.NewKubeConnectivityCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewKubeConnectivityCheck().Run(ctx, container_runtime.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 

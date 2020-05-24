@@ -7,21 +7,21 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
 var (
 	TrafficPolicyConflictError = eris.New("Found conflicting TrafficPolicy")
 )
 
-func NewAggregator(resourceSelector selector.ResourceSelector) Aggregator {
+func NewAggregator(resourceSelector selection.ResourceSelector) Aggregator {
 	return &aggregator{
 		resourceSelector: resourceSelector,
 	}
 }
 
 type aggregator struct {
-	resourceSelector selector.ResourceSelector
+	resourceSelector selection.ResourceSelector
 }
 
 func (a *aggregator) FindMergeConflict(

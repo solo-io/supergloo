@@ -11,8 +11,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -55,7 +55,7 @@ var _ = Describe("Resource describer", func() {
 			describedMeshService := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "expected-mesh-service",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			}
 
@@ -136,7 +136,7 @@ var _ = Describe("Resource describer", func() {
 			describedMeshWorkload := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			}
 			wrongIdentitySelector := &zephyr_core_types.IdentitySelector{}

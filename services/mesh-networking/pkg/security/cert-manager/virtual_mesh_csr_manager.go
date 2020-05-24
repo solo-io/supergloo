@@ -14,8 +14,8 @@ import (
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -99,7 +99,7 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 		)
 		switch mesh.Spec.GetMeshType().(type) {
 		case *zephyr_discovery_types.MeshSpec_Istio1_5_, *zephyr_discovery_types.MeshSpec_Istio1_6_:
-			meshType, err = enum_conversion.MeshToMeshType(mesh)
+			meshType, err = metadata.MeshToMeshType(mesh)
 			if err != nil {
 				return err
 			}
@@ -123,7 +123,7 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 			ctx,
 			client.ObjectKey{
 				Name:      m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()),
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 		)
 		if !errors.IsNotFound(err) {
@@ -138,7 +138,7 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 		if err = csrClient.CreateVirtualMeshCertificateSigningRequest(ctx, &zephyr_security.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()),
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
 				VirtualMeshRef: &zephyr_core_types.ResourceRef{

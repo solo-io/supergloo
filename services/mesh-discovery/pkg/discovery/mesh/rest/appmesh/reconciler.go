@@ -10,10 +10,10 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	settings_utils "github.com/solo-io/service-mesh-hub/pkg/settings"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
@@ -157,7 +157,7 @@ func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef,
 	return &zephyr_discovery.Mesh{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      meshName,
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		},
 		Spec: zephyr_discovery_types.MeshSpec{
 			MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{

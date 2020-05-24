@@ -43,16 +43,16 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	clients2 "github.com/solo-io/service-mesh-hub/pkg/clients"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/factories"
-	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	version2 "github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/auth"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
@@ -93,7 +93,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		cluster_registration.NewClusterDeregistrationClient,
 		common.KubeClientsProvider,
 		description.NewResourceDescriber,
-		selector.NewResourceSelector,
+		selection.NewResourceSelector,
 		zephyr_discovery.ClientsetFromConfigProvider,
 		zephyr_networking.ClientsetFromConfigProvider,
 		zephyr_security.ClientsetFromConfigProvider,
@@ -105,9 +105,9 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		zephyr_networking.AccessControlPolicyClientFromClientsetProvider,
 		zephyr_networking.VirtualMeshClientFromClientsetProvider,
 		zephyr_security.VirtualMeshCertificateSigningRequestClientFromClientsetProvider,
-		csr.NewCsrAgentInstallerFactory,
-		factories.HelmClientForMemoryConfigFactoryProvider,
-		factories.HelmClientForFileConfigFactoryProvider,
+		installation.NewCsrAgentInstallerFactory,
+		helm.HelmClientForMemoryConfigFactoryProvider,
+		helm.HelmClientForFileConfigFactoryProvider,
 		cluster_registration.NewClusterRegistrationClient,
 		clients2.ClusterAuthClientFromConfigFactoryProvider,
 	)

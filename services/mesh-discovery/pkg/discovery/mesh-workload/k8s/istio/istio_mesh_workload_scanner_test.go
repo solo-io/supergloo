@@ -16,7 +16,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -83,7 +83,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("istio-%s-%s-%s", deploymentName, namespace, clusterName),
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels(zephyr_core_types.MeshType_ISTIO1_5),
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -132,7 +132,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("istio-%s-%s-%s", deploymentName, namespace, clusterName),
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels(zephyr_core_types.MeshType_ISTIO1_6),
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{

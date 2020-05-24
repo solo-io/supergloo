@@ -18,20 +18,20 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
-	"github.com/solo-io/service-mesh-hub/pkg/factories"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	"github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/auth"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"k8s.io/client-go/rest"
 )
 
 // a grab bag of various clients that command implementations may use
 type KubeClients struct {
 	ClusterAuthorization        auth.ClusterAuthorization
-	HelmInstallerFactory        factories.HelmInstallerFactory
-	HelmClientFileConfigFactory factories.HelmClientForFileConfigFactory
+	HelmInstallerFactory        helm.HelmInstallerFactory
+	HelmClientFileConfigFactory helm.HelmClientForFileConfigFactory
 	KubeClusterClient           zephyr_discovery.KubernetesClusterClient // client for KubernetesCluster custom resources
 	MeshServiceClient           zephyr_discovery.MeshServiceClient
 	MeshWorkloadClient          zephyr_discovery.MeshWorkloadClient
@@ -49,7 +49,7 @@ type KubeClients struct {
 	TrafficPolicyClient         zephyr_networking.TrafficPolicyClient
 	AccessControlPolicyClient   zephyr_networking.AccessControlPolicyClient
 	ResourceDescriber           description.ResourceDescriber
-	ResourceSelector            selector.ResourceSelector
+	ResourceSelector            selection.ResourceSelector
 	ClusterRegistrationClient   cluster_registration.ClusterRegistrationClient
 }
 
@@ -126,8 +126,8 @@ func ClientsProvider(
 // facilitates wire codegen
 func KubeClientsProvider(
 	authorization auth.ClusterAuthorization,
-	helmInstallerFactory factories.HelmInstallerFactory,
-	helmClientFileConfigFactory factories.HelmClientForFileConfigFactory,
+	helmInstallerFactory helm.HelmInstallerFactory,
+	helmClientFileConfigFactory helm.HelmClientForFileConfigFactory,
 	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
 	healthCheckClients healthcheck_types.Clients,
 	deployedVersionFinder version.DeployedVersionFinder,
@@ -142,7 +142,7 @@ func KubeClientsProvider(
 	meshClient zephyr_discovery.MeshClient,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	resourceDescriber description.ResourceDescriber,
-	resourceSelector selector.ResourceSelector,
+	resourceSelector selection.ResourceSelector,
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,

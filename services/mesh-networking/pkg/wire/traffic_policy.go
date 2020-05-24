@@ -10,7 +10,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	smi_networking "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
@@ -34,7 +34,7 @@ var (
 		traffic_policy_translator.NewTrafficPolicyTranslatorLoop,
 		preprocess.NewTrafficPolicyPreprocessor,
 		preprocess.NewTrafficPolicyMerger,
-		selector.NewResourceSelector,
+		selection.NewResourceSelector,
 		preprocess.NewTrafficPolicyValidator,
 	)
 )

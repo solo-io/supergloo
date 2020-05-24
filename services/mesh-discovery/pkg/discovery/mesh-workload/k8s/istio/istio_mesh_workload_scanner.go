@@ -8,8 +8,8 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -57,7 +57,7 @@ func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_ty
 	return &zephyr_discovery.MeshWorkload{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      i.buildMeshWorkloadName(deployment.GetName(), deployment.GetNamespace(), clusterName),
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(meshType),
 		},
 		Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -91,7 +91,7 @@ func (i *istioMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clust
 		return 0, nil, err
 	}
 	for _, mesh := range meshList.Items {
-		meshType, err := enum_conversion.MeshToMeshType(&mesh)
+		meshType, err := metadata.MeshToMeshType(&mesh)
 		if err != nil {
 			return 0, nil, err
 		}

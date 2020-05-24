@@ -12,7 +12,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mock_controllers "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
@@ -98,9 +98,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
 
 		extantMeshWorkloadList := &zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload1", Namespace: env.GetWriteNamespace()}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload2", Namespace: env.GetWriteNamespace()}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload3", Namespace: env.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload1", Namespace: container_runtime.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload2", Namespace: container_runtime.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload3", Namespace: container_runtime.GetWriteNamespace()}},
 		}}
 		mockLocalMeshWorkloadClient.
 			EXPECT().
@@ -110,15 +110,15 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(extantMeshWorkloadList, nil)
 
 		podList := &k8s_core.PodList{Items: []k8s_core.Pod{
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod1", Namespace: env.GetWriteNamespace()}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod2", Namespace: env.GetWriteNamespace()}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod4", Namespace: env.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod1", Namespace: container_runtime.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod2", Namespace: container_runtime.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod4", Namespace: container_runtime.GetWriteNamespace()}},
 		}}
 		discoveredMeshWorkloads := []*zephyr_discovery.MeshWorkload{
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload1", Namespace: env.GetWriteNamespace()},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload1", Namespace: container_runtime.GetWriteNamespace()},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{Mesh: &zephyr_core_types.ResourceRef{Name: "mesh"}}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload2", Namespace: env.GetWriteNamespace()}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload4", Namespace: env.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload2", Namespace: container_runtime.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload4", Namespace: container_runtime.GetWriteNamespace()}},
 		}
 		for _, workload := range discoveredMeshWorkloads {
 			attachWorkloadDiscoveryLabels(workload)

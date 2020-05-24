@@ -8,7 +8,7 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/logging"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	k8s_core_types "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -41,7 +41,7 @@ func (c *clusterTenancyFinder) StartRegistration(
 ) (err error) {
 	if err = podEventWatcher.AddEventHandler(ctx, &k8s_core_controller.PodEventHandlerFuncs{
 		OnCreate: func(pod *k8s_core_types.Pod) error {
-			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, pod)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, pod)
 			logger.Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
 			err := c.reconcile(ctx)
 			if err != nil {
@@ -50,7 +50,7 @@ func (c *clusterTenancyFinder) StartRegistration(
 			return nil
 		},
 		OnUpdate: func(_, pod *k8s_core_types.Pod) error {
-			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, pod)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, pod)
 			logger.Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
 			err := c.reconcile(ctx)
 			if err != nil {
@@ -59,7 +59,7 @@ func (c *clusterTenancyFinder) StartRegistration(
 			return nil
 		},
 		OnDelete: func(pod *k8s_core_types.Pod) error {
-			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, pod)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, pod)
 			logger.Debugf("Handling for %s.%s", pod.GetName(), pod.GetNamespace())
 			err := c.reconcile(ctx)
 			if err != nil {
@@ -72,7 +72,7 @@ func (c *clusterTenancyFinder) StartRegistration(
 	}
 	return meshEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshEventHandlerFuncs{
 		OnCreate: func(mesh *zephyr_discovery.Mesh) error {
-			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, mesh)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, mesh)
 			logger.Debugf("Handling for %s.%s", mesh.GetName(), mesh.GetNamespace())
 			err := c.reconcile(ctx)
 			if err != nil {
@@ -81,7 +81,7 @@ func (c *clusterTenancyFinder) StartRegistration(
 			return nil
 		},
 		OnUpdate: func(_, mesh *zephyr_discovery.Mesh) error {
-			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, mesh)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, mesh)
 			logger.Debugf("Handling for %s.%s", mesh.GetName(), mesh.GetNamespace())
 			err := c.reconcile(ctx)
 			if err != nil {

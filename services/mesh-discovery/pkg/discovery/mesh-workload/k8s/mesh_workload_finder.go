@@ -10,8 +10,8 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
-	"github.com/solo-io/service-mesh-hub/pkg/logging"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -61,7 +61,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 		m.ctx,
 		&k8s_core_controller.PodEventHandlerFuncs{
 			OnCreate: func(obj *k8s_core_types.Pod) error {
-				logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, obj)
+				logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.CreateEvent, obj)
 				logger.Debugf("Handling create for pod %s.%s", obj.GetName(), obj.GetNamespace())
 				err = m.reconcile()
 				if err != nil {
@@ -70,7 +70,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 				return err
 			},
 			OnUpdate: func(old, new *k8s_core_types.Pod) error {
-				logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, new)
+				logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.UpdateEvent, new)
 				logger.Debugf("Handling update for pod %s.%s", new.GetName(), new.GetNamespace())
 				err = m.reconcile()
 				if err != nil {
@@ -79,7 +79,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 				return err
 			},
 			OnDelete: func(obj *k8s_core_types.Pod) error {
-				logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, obj)
+				logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.DeleteEvent, obj)
 				logger.Debugf("Handling delete for pod %s.%s", obj.GetName(), obj.GetNamespace())
 				err = m.reconcile()
 				if err != nil {
@@ -96,7 +96,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 		m.ctx,
 		&zephyr_discovery_controller.MeshEventHandlerFuncs{
 			OnCreate: func(obj *zephyr_discovery.Mesh) error {
-				logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, obj)
+				logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.CreateEvent, obj)
 				logger.Debugf("mesh create event for %s.%s", obj.GetName(), obj.GetNamespace())
 				err = m.reconcile()
 				if err != nil {
@@ -105,7 +105,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 				return err
 			},
 			OnUpdate: func(old, new *zephyr_discovery.Mesh) error {
-				logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, new)
+				logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.UpdateEvent, new)
 				logger.Debugf("mesh update event for %s.%s", new.GetName(), new.GetNamespace())
 				err = m.reconcile()
 				if err != nil {
@@ -114,7 +114,7 @@ func (m *meshWorkloadFinder) StartDiscovery(
 				return err
 			},
 			OnDelete: func(obj *zephyr_discovery.Mesh) error {
-				logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, obj)
+				logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.DeleteEvent, obj)
 				logger.Debugf("mesh delete event for %s.%s", obj.GetName(), obj.GetNamespace())
 				err = m.reconcile()
 				if err != nil {
@@ -221,7 +221,7 @@ func (m *meshWorkloadFinder) getDiscoveredMeshTypes(ctx context.Context) (sets.I
 		if !k8s_tenancy.ClusterHostsMesh(m.clusterName, &mesh) {
 			continue
 		}
-		meshType, err := enum_conversion.MeshToMeshType(&mesh)
+		meshType, err := metadata.MeshToMeshType(&mesh)
 		if err != nil {
 			return nil, err
 		}

@@ -10,8 +10,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s"
 	"istio.io/api/mesh/v1alpha1"
 	"istio.io/istio/pkg/util/gogoprotomarshal"
@@ -85,7 +85,7 @@ func (i *istioMeshScanner) ScanDeployment(ctx context.Context, clusterName strin
 	return &zephyr_discovery.Mesh{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      istioDeployment.Name(),
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels,
 		},
 		Spec: *meshSpec,
@@ -101,7 +101,7 @@ func (*istioMeshScanner) buildMeshSpec(
 ) (*zephyr_discovery_types.MeshSpec, error) {
 	cluster := &zephyr_core_types.ResourceRef{
 		Name:      clusterName,
-		Namespace: env.GetWriteNamespace(),
+		Namespace: container_runtime.GetWriteNamespace(),
 	}
 	istioMetadata := &zephyr_discovery_types.MeshSpec_IstioMesh{
 		Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{

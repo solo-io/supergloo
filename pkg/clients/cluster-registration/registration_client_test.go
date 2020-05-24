@@ -12,16 +12,16 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/auth"
-	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/factories"
-	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
-	mock_csr "github.com/solo-io/service-mesh-hub/pkg/installers/csr/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
+	mock_csr "github.com/solo-io/service-mesh-hub/pkg/csr/installation/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/auth"
+	mock_auth "github.com/solo-io/service-mesh-hub/pkg/kube/auth/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mock_k8s_cliendcmd "github.com/solo-io/service-mesh-hub/test/mocks/client-go/clientcmd"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -71,7 +71,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 				return mockNamespaceClient, nil
 			},
 			mockKubeConverter,
-			func(helmInstallerFactory factories.HelmInstallerFactory) csr.CsrAgentInstaller {
+			func(helmInstallerFactory helm.HelmInstallerFactory) installation.CsrAgentInstaller {
 				return mockCsrAgentInstaller
 			},
 			func(remoteAuthConfig *rest.Config) (auth.ClusterAuthorization, error) {
@@ -86,7 +86,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 	var expectClusterNotExists = func() {
 		mockKubernetesClusterClient.
 			EXPECT().
-			GetKubernetesCluster(ctx, client.ObjectKey{Name: remoteClusterName, Namespace: env.GetWriteNamespace()}).
+			GetKubernetesCluster(ctx, client.ObjectKey{Name: remoteClusterName, Namespace: container_runtime.GetWriteNamespace()}).
 			Return(nil, errors.NewNotFound(controllerruntime.GroupResource{}, "test-resource"))
 	}
 
@@ -117,9 +117,9 @@ var _ = Describe("ClusterRegistrationClient", func() {
 
 	var expectInstallRemoteCSRAgent = func(useDevCsrAgentChart bool, restCfg *rest.Config) {
 		mockRemoteConfig.EXPECT().ClientConfig().Return(restCfg, nil)
-		mockCsrAgentInstaller.EXPECT().Install(ctx, &csr.CsrAgentInstallOptions{
-			KubeConfig:           csr.KubeConfig{KubeConfig: mockRemoteConfig},
-			SmhInstallNamespace:  env.GetWriteNamespace(),
+		mockCsrAgentInstaller.EXPECT().Install(ctx, &installation.CsrAgentInstallOptions{
+			KubeConfig:           installation.KubeConfig{KubeConfig: mockRemoteConfig},
+			SmhInstallNamespace:  container_runtime.GetWriteNamespace(),
 			UseDevCsrAgentChart:  useDevCsrAgentChart,
 			ReleaseName:          cliconstants.CsrAgentReleaseName,
 			RemoteWriteNamespace: remoteWriteNamespace,
@@ -152,7 +152,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 		secret := &k8s_core_types.Secret{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "name", Namespace: "namespace"}}
 		mockKubeConverter.EXPECT().ConfigToSecret(
 			remoteClusterName,
-			env.GetWriteNamespace(),
+			container_runtime.GetWriteNamespace(),
 			&kubeconfig.KubeConfig{
 				Config: api.Config{
 					Kind:        "Secret",
@@ -196,7 +196,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 			UpsertKubernetesClusterSpec(ctx, &zephyr_discovery.KubernetesCluster{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      remoteClusterName,
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels:    map[string]string{constants.DISCOVERED_BY: discoverySource},
 				},
 				Spec: zephyr_discovery_types.KubernetesClusterSpec{

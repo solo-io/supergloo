@@ -9,9 +9,9 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
-	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -73,7 +73,7 @@ func (v *virtualMeshCertClient) getOrCreateBuiltinRootCert(
 ) (*k8s_core_types.Secret, error) {
 	// auto-generated cert lives in fixed location
 	rootCaName := DefaultRootCaName(vm)
-	rootCaNamespace := env.GetWriteNamespace()
+	rootCaNamespace := container_runtime.GetWriteNamespace()
 	caSecret, err := v.localSecretClient.GetSecret(ctx, client.ObjectKey{Name: rootCaName, Namespace: rootCaNamespace})
 	if errors.IsNotFound(err) {
 		rootCaData, err := v.rootCertGenerator.GenRootCertAndKey(vm.Spec.GetCertificateAuthority().GetBuiltin())

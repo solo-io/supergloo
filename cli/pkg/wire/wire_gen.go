@@ -60,16 +60,16 @@ import (
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/factories"
-	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	"github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/auth"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
@@ -94,7 +94,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	remoteAuthorityManager := auth.NewRemoteAuthorityManager(serviceAccountClient, rbacClient)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
 	helmInstallerFactory := install.HelmInstallerProvider(kubernetesClientset)
-	helmClientForFileConfigFactory := factories.HelmClientForFileConfigFactoryProvider()
+	helmClientForFileConfigFactory := helm.HelmClientForFileConfigFactoryProvider()
 	v1alpha1Clientset, err := v1alpha1.ClientsetFromConfigProvider(masterConfig)
 	if err != nil {
 		return nil, err
@@ -117,8 +117,8 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	fileReader := files.NewDefaultFileReader()
 	converter := kubeconfig.NewConverter(fileReader)
 	uninstallClients := common.UninstallClientsProvider(crdRemover, converter)
-	helmClientForMemoryConfigFactory := factories.HelmClientForMemoryConfigFactoryProvider()
-	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
+	helmClientForMemoryConfigFactory := helm.HelmClientForMemoryConfigFactoryProvider()
+	csrAgentInstallerFactory := installation.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
 	kubeConfigLookup := kubeconfig.NewKubeConfigLookup(kubernetesClusterClient, secretClient, converter)
 	secretClientFactory := v1.SecretClientFactoryProvider()
 	dynamicClientGetter := config_lookup.NewDynamicClientGetter(kubeConfigLookup)
@@ -139,7 +139,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	accessControlPolicyClient := v1alpha1_3.AccessControlPolicyClientFromClientsetProvider(clientset3)
 	meshWorkloadClient := v1alpha1.MeshWorkloadClientFromClientsetProvider(v1alpha1Clientset)
 	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
-	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
+	resourceSelector := selection.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
 	resourceDescriber := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
 	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
 	clusterAuthClientFromConfigFactory := clients.ClusterAuthClientFromConfigFactoryProvider()

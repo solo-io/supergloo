@@ -14,7 +14,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
 	mock_traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/mocks"
@@ -101,11 +101,11 @@ var _ = Describe("Translator", func() {
 		})
 
 		It("handle create for TrafficPolicy", func() {
-			meshServiceMCKey := selector.MeshServiceId{
+			meshServiceMCKey := selection.MeshServiceId{
 				Name:      "name",
 				Namespace: "namespace",
 			}
-			mergedTPsByMeshService := map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy{
+			mergedTPsByMeshService := map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy{
 				meshServiceMCKey: {},
 			}
 			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
@@ -148,11 +148,11 @@ var _ = Describe("Translator", func() {
 		})
 
 		It("should return translator specific error statuses", func() {
-			meshServiceMCKey := selector.MeshServiceId{
+			meshServiceMCKey := selection.MeshServiceId{
 				Name:      "name",
 				Namespace: "namespace",
 			}
-			mergedTPsByMeshService := map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy{
+			mergedTPsByMeshService := map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy{
 				meshServiceMCKey: {},
 			}
 			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
@@ -225,12 +225,12 @@ var _ = Describe("Translator", func() {
 		})
 
 		It("should upsert policy resources for MeshService", func() {
-			meshServiceMCKey := selector.MeshServiceId{
+			meshServiceMCKey := selection.MeshServiceId{
 				Name:      "name",
 				Namespace: "namespace",
 			}
 			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
-			mergedTPsByMeshService := map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy{meshServiceMCKey: {}}
+			mergedTPsByMeshService := map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy{meshServiceMCKey: {}}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshService := &zephyr_discovery.MeshService{
 				Spec: zephyr_discovery_types.MeshServiceSpec{

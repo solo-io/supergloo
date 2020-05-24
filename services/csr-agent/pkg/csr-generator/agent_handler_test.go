@@ -12,7 +12,7 @@ import (
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/logging"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	mock_csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator/mocks"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
@@ -61,7 +61,7 @@ var _ = Describe("csr-agent controller", func() {
 			Expect(csrHandler.DeleteVirtualMeshCertificateSigningRequest(csr)).NotTo(HaveOccurred())
 			testLogger.EXPECT().NumEntries(1).LastEntry().Level(zapcore.DebugLevel).
 				HaveMessage(csr_generator.UnexpectedEventMsg).
-				Have(logging.EventTypeKey, logging.DeleteEvent.String())
+				Have(container_runtime.EventTypeKey, container_runtime.DeleteEvent.String())
 
 		})
 
@@ -69,7 +69,7 @@ var _ = Describe("csr-agent controller", func() {
 			Expect(csrHandler.GenericVirtualMeshCertificateSigningRequest(csr)).NotTo(HaveOccurred())
 			testLogger.EXPECT().NumEntries(1).LastEntry().Level(zapcore.DebugLevel).
 				HaveMessage(csr_generator.UnexpectedEventMsg).
-				Have(logging.EventTypeKey, logging.GenericEvent.String())
+				Have(container_runtime.EventTypeKey, container_runtime.GenericEvent.String())
 
 		})
 

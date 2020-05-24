@@ -13,8 +13,8 @@ import (
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/logging"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	"go.uber.org/zap"
@@ -54,7 +54,7 @@ type trafficPolicyTranslatorLoop struct {
 func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 	err := t.TrafficPolicyEventWatcher.AddEventHandler(ctx, &zephyr_networking_controller.TrafficPolicyEventHandlerFuncs{
 		OnCreate: func(trafficPolicy *zephyr_networking.TrafficPolicy) error {
-			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, trafficPolicy)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, trafficPolicy)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", trafficPolicy.Spec),
 				zap.Any("status", trafficPolicy.Status),
@@ -69,7 +69,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 		},
 
 		OnUpdate: func(old, new *zephyr_networking.TrafficPolicy) error {
-			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
 			logger.Debugw("event handler enter",
 				zap.Any("old_spec", old.Spec),
 				zap.Any("old_status", old.Status),
@@ -86,13 +86,13 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 		},
 
 		OnDelete: func(trafficPolicy *zephyr_networking.TrafficPolicy) error {
-			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, trafficPolicy)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, trafficPolicy)
 			logger.Debugf("Ignoring event for traffic policy: %s.%s", trafficPolicy.Name, trafficPolicy.Namespace)
 			return nil
 		},
 
 		OnGeneric: func(trafficPolicy *zephyr_networking.TrafficPolicy) error {
-			logging.BuildEventLogger(ctx, logging.GenericEvent, trafficPolicy).
+			container_runtime.BuildEventLogger(ctx, container_runtime.GenericEvent, trafficPolicy).
 				Debugf("Ignoring event for traffic policy: %s.%s", trafficPolicy.Name, trafficPolicy.Namespace)
 			return nil
 		},
@@ -104,7 +104,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 
 	err = t.MeshServiceEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshServiceEventHandlerFuncs{
 		OnCreate: func(meshService *zephyr_discovery.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, meshService)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, meshService)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", meshService.Spec),
 				zap.Any("status", meshService.Status),
@@ -117,7 +117,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 		},
 
 		OnUpdate: func(old, new *zephyr_discovery.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
 			logger.Debugw("event handler enter",
 				zap.Any("old_spec", old.Spec),
 				zap.Any("old_status", old.Status),
@@ -132,7 +132,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 		},
 
 		OnDelete: func(meshService *zephyr_discovery.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, meshService)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, meshService)
 			logger.Debugw("Ignoring event",
 				zap.Any("spec", meshService.Spec),
 				zap.Any("status", meshService.Status),
@@ -141,7 +141,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 		},
 
 		OnGeneric: func(meshService *zephyr_discovery.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, meshService)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, meshService)
 			logger.Debugw("Ignoring event",
 				zap.Any("spec", meshService.Spec),
 				zap.Any("status", meshService.Status),
@@ -187,7 +187,7 @@ func (t *trafficPolicyTranslatorLoop) upsertPolicyResourcesForMeshService(
 
 func (t *trafficPolicyTranslatorLoop) translateMergedTrafficPolicies(
 	ctx context.Context,
-	mergedTrafficPoliciesByMeshService map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy,
+	mergedTrafficPoliciesByMeshService map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy,
 ) ([]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError, error) {
 	var meshTypeStatuses []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError
 	for meshServiceKey, mergedTrafficPolicies := range mergedTrafficPoliciesByMeshService {

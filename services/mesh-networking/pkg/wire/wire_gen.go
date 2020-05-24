@@ -18,9 +18,9 @@ import (
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	access_policy_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
@@ -80,7 +80,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	meshWorkloadClient := v1alpha1_3.MeshWorkloadClientProvider(client)
 	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
 	dynamicClientGetter := mc_wire.DynamicClientGetterProvider(asyncManagerController)
-	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
+	resourceSelector := selection.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
 	meshClient := v1alpha1_3.MeshClientProvider(client)
 	trafficPolicyClient := v1alpha1_2.TrafficPolicyClientProvider(client)
 	trafficPolicyMerger := preprocess.NewTrafficPolicyMerger(resourceSelector, meshClient, trafficPolicyClient)

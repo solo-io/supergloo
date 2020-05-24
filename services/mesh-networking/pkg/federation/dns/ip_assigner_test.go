@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -25,7 +25,7 @@ var _ = Describe("Federation Decider", func() {
 		clusterName3 = "cluster-3"
 		cmRef        = &zephyr_core_types.ResourceRef{
 			Name:      dns.IpRecordName,
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		}
 		mustMarshal = func(obj interface{}) string {
 			bytes, err := json.Marshal(obj)

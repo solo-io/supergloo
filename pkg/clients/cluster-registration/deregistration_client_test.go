@@ -15,16 +15,16 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_security_scheme "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/factories"
-	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
-	mock_csr "github.com/solo-io/service-mesh-hub/pkg/installers/csr/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
-	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
+	mock_csr "github.com/solo-io/service-mesh-hub/pkg/csr/installation/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/auth"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
 	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_k8s_core_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -66,7 +66,7 @@ var _ = Describe("Cluster Deregistration", func() {
 
 		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
 			Name:      "kube-config-secret",
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		}
 		kubeConfigSecret := &v12.Secret{
 			ObjectMeta: clients.ResourceRefToObjectMeta(kubeConfigSecretRef),
@@ -76,7 +76,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
@@ -95,8 +95,8 @@ var _ = Describe("Cluster Deregistration", func() {
 			RestConfig:   remoteRestConfig,
 			ClientConfig: remoteClientConfig,
 		}
-		mockCsrAgentInstaller.EXPECT().Uninstall(&csr.CsrAgentUninstallOptions{
-			KubeConfig:       csr.KubeConfig{KubeConfig: remoteClientConfig},
+		mockCsrAgentInstaller.EXPECT().Uninstall(&installation.CsrAgentUninstallOptions{
+			KubeConfig:       installation.KubeConfig{KubeConfig: remoteClientConfig},
 			ReleaseName:      cliconstants.CsrAgentReleaseName,
 			ReleaseNamespace: clusterToDeregister.Spec.GetWriteNamespace(),
 		}).Return(nil)
@@ -139,7 +139,7 @@ var _ = Describe("Cluster Deregistration", func() {
 
 		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
-			func(helmInstallerFactory factories.HelmInstallerFactory) csr.CsrAgentInstaller {
+			func(helmInstallerFactory helm.HelmInstallerFactory) installation.CsrAgentInstaller {
 				return mockCsrAgentInstaller
 			},
 			configLookup,
@@ -168,14 +168,14 @@ var _ = Describe("Cluster Deregistration", func() {
 		dynamicClientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
 		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
 			Name:      "kube-config-secret",
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		}
 		remoteWriteNamespace := "remote-write-namespace"
 		remoteClusterName := "remote-cluster-name"
 		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
@@ -189,7 +189,7 @@ var _ = Describe("Cluster Deregistration", func() {
 
 		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
-			func(helmInstallerFactory factories.HelmInstallerFactory) csr.CsrAgentInstaller {
+			func(helmInstallerFactory helm.HelmInstallerFactory) installation.CsrAgentInstaller {
 				return mockCsrAgentInstaller
 			},
 			configLookup,
@@ -220,14 +220,14 @@ var _ = Describe("Cluster Deregistration", func() {
 		remoteServiceAccountClient := mock_k8s_core_clients.NewMockServiceAccountClient(ctrl)
 		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
 			Name:      "kube-config-secret",
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
 		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
@@ -240,15 +240,15 @@ var _ = Describe("Cluster Deregistration", func() {
 				RestConfig:   remoteRestConfig,
 				ClientConfig: remoteClientConfig,
 			}, nil)
-		mockCsrAgentInstaller.EXPECT().Uninstall(&csr.CsrAgentUninstallOptions{
-			KubeConfig:       csr.KubeConfig{KubeConfig: remoteClientConfig},
+		mockCsrAgentInstaller.EXPECT().Uninstall(&installation.CsrAgentUninstallOptions{
+			KubeConfig:       installation.KubeConfig{KubeConfig: remoteClientConfig},
 			ReleaseName:      cliconstants.CsrAgentReleaseName,
 			ReleaseNamespace: clusterToDeregister.Spec.GetWriteNamespace(),
 		}).Return(testErr)
 
 		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
-			func(helmInstallerFactory factories.HelmInstallerFactory) csr.CsrAgentInstaller {
+			func(helmInstallerFactory helm.HelmInstallerFactory) installation.CsrAgentInstaller {
 				return mockCsrAgentInstaller
 			},
 			configLookup,
@@ -279,7 +279,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		remoteServiceAccountClient := mock_k8s_core_clients.NewMockServiceAccountClient(ctrl)
 		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
 			Name:      "kube-config-secret",
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		}
 		kubeConfigSecret := &v12.Secret{
 			ObjectMeta: clients.ResourceRefToObjectMeta(kubeConfigSecretRef),
@@ -289,7 +289,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
@@ -310,8 +310,8 @@ var _ = Describe("Cluster Deregistration", func() {
 				RestConfig:   remoteRestConfig,
 				ClientConfig: remoteClientConfig,
 			}, nil)
-		mockCsrAgentInstaller.EXPECT().Uninstall(&csr.CsrAgentUninstallOptions{
-			KubeConfig:       csr.KubeConfig{KubeConfig: remoteClientConfig},
+		mockCsrAgentInstaller.EXPECT().Uninstall(&installation.CsrAgentUninstallOptions{
+			KubeConfig:       installation.KubeConfig{KubeConfig: remoteClientConfig},
 			ReleaseName:      cliconstants.CsrAgentReleaseName,
 			ReleaseNamespace: clusterToDeregister.Spec.GetWriteNamespace(),
 		}).Return(nil)
@@ -341,7 +341,7 @@ var _ = Describe("Cluster Deregistration", func() {
 
 		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
 			crdRemover,
-			func(helmInstallerFactory factories.HelmInstallerFactory) csr.CsrAgentInstaller {
+			func(helmInstallerFactory helm.HelmInstallerFactory) installation.CsrAgentInstaller {
 				return mockCsrAgentInstaller
 			},
 			configLookup,

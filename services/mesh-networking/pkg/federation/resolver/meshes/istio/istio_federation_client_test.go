@@ -16,7 +16,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	mock_dns "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns/mocks"
@@ -91,7 +91,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			clusterName := "istio-cluster"
 			istioMeshRef := &zephyr_core_types.ResourceRef{
 				Name:      "istio-mesh",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}
 			istioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
@@ -132,7 +132,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			virtualMesh := &zephyr_networking.VirtualMesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "virtual-mesh-1",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_networking_types.VirtualMeshSpec{
 					Meshes: []*zephyr_core_types.ResourceRef{istioMeshRef},
@@ -280,7 +280,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			clusterName := "istio-cluster"
 			istioMeshRef := &zephyr_core_types.ResourceRef{
 				Name:      "istio-mesh",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}
 			istioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
@@ -321,7 +321,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			virtualMesh := &zephyr_networking.VirtualMesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "virtual-mesh-1",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_networking_types.VirtualMeshSpec{
 					Meshes: []*zephyr_core_types.ResourceRef{istioMeshRef},
@@ -469,7 +469,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			clusterName := "istio-cluster"
 			istioMeshRef := &zephyr_core_types.ResourceRef{
 				Name:      "istio-mesh",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}
 			istioMesh := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
@@ -510,7 +510,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			virtualMesh := &zephyr_networking.VirtualMesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "virtual-mesh-1",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_networking_types.VirtualMeshSpec{
 					Meshes: []*zephyr_core_types.ResourceRef{istioMeshRef},
@@ -667,11 +667,11 @@ var _ = Describe("Istio Federation Decider", func() {
 
 			istioMeshRefService := &zephyr_core_types.ResourceRef{
 				Name:      "istio-mesh-1",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}
 			istioMeshRefWorkload := &zephyr_core_types.ResourceRef{
 				Name:      "istio-mesh-2",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}
 			istioMeshForService := &zephyr_discovery.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRefService),

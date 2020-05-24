@@ -13,9 +13,9 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/docker/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	mock_docker "github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/istio"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_apps_types "k8s.io/api/apps/v1"
@@ -118,7 +118,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		expectedMesh := &zephyr_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "istio-istio-system-" + clusterName,
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
@@ -139,7 +139,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				},
 				Cluster: &zephyr_core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			},
 		}
@@ -187,7 +187,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		expectedMesh := &zephyr_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "istio-istio-system-" + clusterName,
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
@@ -208,7 +208,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				},
 				Cluster: &zephyr_core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			},
 		}

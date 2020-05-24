@@ -11,11 +11,11 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	settings_utils "github.com/solo-io/service-mesh-hub/pkg/settings"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	eks_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
@@ -197,7 +197,7 @@ func (e *eksReconciler) registerCluster(
 		ctx,
 		config,
 		smhClusterName,
-		env.GetWriteNamespace(), // TODO make this configurable
+		container_runtime.GetWriteNamespace(), // TODO make this configurable
 		rawConfig.CurrentContext,
 		EKSClusterDiscoveryLabel,
 		cluster_registration.ClusterRegisterOpts{

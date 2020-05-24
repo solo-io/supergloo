@@ -14,10 +14,10 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/factories"
-	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
@@ -58,7 +58,7 @@ type clusterRegistrationClient struct {
 	kubernetesClusterClient            zephyr_discovery.KubernetesClusterClient
 	namespaceClientFactory             k8s_core.NamespaceClientFromConfigFactory
 	kubeConverter                      kubeconfig.Converter
-	csrAgentInstallerFactory           csr.CsrAgentInstallerFactory
+	csrAgentInstallerFactory           installation.CsrAgentInstallerFactory
 	clusterAuthClientFromConfigFactory clients.ClusterAuthClientFromConfigFactory
 }
 
@@ -67,7 +67,7 @@ func NewClusterRegistrationClient(
 	kubernetesClusterClient zephyr_discovery.KubernetesClusterClient,
 	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
 	kubeConverter kubeconfig.Converter,
-	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
+	csrAgentInstallerFactory installation.CsrAgentInstallerFactory,
 	clusterAuthClientFromConfigFactory clients.ClusterAuthClientFromConfigFactory,
 ) ClusterRegistrationClient {
 	return &clusterRegistrationClient{
@@ -143,7 +143,7 @@ func (c *clusterRegistrationClient) Register(
 	}
 	err = c.writeKubeClusterToMaster(
 		ctx,
-		env.GetWriteNamespace(),
+		container_runtime.GetWriteNamespace(),
 		remoteClusterName,
 		remoteWriteNamespace,
 		secret,
@@ -164,7 +164,7 @@ func (c *clusterRegistrationClient) checkClusterExistence(
 		ctx,
 		client.ObjectKey{
 			Name:      remoteClusterName,
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		},
 	)
 	if k8s_errs.IsNotFound(err) {
@@ -211,13 +211,13 @@ func (c *clusterRegistrationClient) installRemoteCSRAgent(
 		return err
 	}
 	kubeClient := kubernetes.NewForConfigOrDie(restConfig)
-	helmInstaller := factories.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), ioutil.Discard)
+	helmInstaller := helm.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), ioutil.Discard)
 	csrAgentInstaller := c.csrAgentInstallerFactory(helmInstaller)
 	return csrAgentInstaller.Install(
 		ctx,
-		&csr.CsrAgentInstallOptions{
-			KubeConfig:           csr.KubeConfig{KubeConfig: remoteConfig},
-			SmhInstallNamespace:  env.GetWriteNamespace(),
+		&installation.CsrAgentInstallOptions{
+			KubeConfig:           installation.KubeConfig{KubeConfig: remoteConfig},
+			SmhInstallNamespace:  container_runtime.GetWriteNamespace(),
 			UseDevCsrAgentChart:  useDevCsrAgentChart,
 			ReleaseName:          cliconstants.CsrAgentReleaseName,
 			RemoteWriteNamespace: remoteWriteNamespace,
@@ -273,7 +273,7 @@ func (c *clusterRegistrationClient) writeKubeConfigToMaster(
 	}
 	secret, err := c.kubeConverter.ConfigToSecret(
 		remoteClusterName,
-		env.GetWriteNamespace(),
+		container_runtime.GetWriteNamespace(),
 		&kubeconfig.KubeConfig{
 			Config: api.Config{
 				Kind:        "Secret",

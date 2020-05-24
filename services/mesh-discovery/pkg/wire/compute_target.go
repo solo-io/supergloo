@@ -6,14 +6,14 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/factories"
-	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/auth"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
@@ -43,8 +43,8 @@ var AwsSet = wire.NewSet(
 )
 
 var ClusterRegistrationSet = wire.NewSet(
-	factories.HelmClientForMemoryConfigFactoryProvider,
-	factories.HelmClientForFileConfigFactoryProvider,
+	helm.HelmClientForMemoryConfigFactoryProvider,
+	helm.HelmClientForFileConfigFactoryProvider,
 	k8s_core.SecretClientFromConfigFactoryProvider,
 	k8s_core.NamespaceClientFromConfigFactoryProvider,
 	zephyr_discovery.KubernetesClusterClientFromConfigFactoryProvider,
@@ -52,7 +52,7 @@ var ClusterRegistrationSet = wire.NewSet(
 	k8s_core.ServiceAccountClientFromConfigFactoryProvider,
 	auth.RbacClientFactoryProvider,
 	auth.ClusterAuthorizationFactoryProvider,
-	csr.NewCsrAgentInstallerFactory,
+	installation.NewCsrAgentInstallerFactory,
 	DeployedVersionFinderProvider,
 )
 
@@ -91,7 +91,7 @@ func ClusterRegistrationClientProvider(
 	kubeClusterClient zephyr_discovery.KubernetesClusterClientFromConfigFactory,
 	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
 	kubeConverter kubeconfig.Converter,
-	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
+	csrAgentInstallerFactory installation.CsrAgentInstallerFactory,
 ) (cluster_registration.ClusterRegistrationClient, error) {
 	masterSecretClient, err := secretClientFactory(masterCfg)
 	if err != nil {

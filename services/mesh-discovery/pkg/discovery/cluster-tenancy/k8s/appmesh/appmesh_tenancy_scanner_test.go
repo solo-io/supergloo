@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
@@ -72,7 +72,7 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 		mockAppMeshParser.EXPECT().ScanPodForAppMesh(pod, aws_utils.AwsAccountId(appMeshPod.AwsAccountID)).Return(appMeshPod, nil)
 		mockMeshClient.EXPECT().GetMesh(ctx, client.ObjectKey{
 			Name:      metadata.BuildAppMeshName(appMeshPod.AppMeshName, appMeshPod.Region, appMeshPod.AwsAccountID),
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		}).Return(expectedMesh, nil)
 		mesh, err := appMeshTenancyRegistrar.MeshFromSidecar(ctx, pod)
 		Expect(err).ToNot(HaveOccurred())

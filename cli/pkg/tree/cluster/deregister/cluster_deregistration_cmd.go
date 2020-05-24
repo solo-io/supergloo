@@ -12,8 +12,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -26,7 +26,7 @@ var (
 	ErrorGettingKubeCluster = func(remoteClusterName string, err error) error {
 		return eris.Errorf("Error retrieving KubernetesCluster object %s.%s, %s",
 			remoteClusterName,
-			env.GetWriteNamespace(),
+			container_runtime.GetWriteNamespace(),
 			err.Error())
 	}
 	DeregisterNotPermitted = func(remoteClusterName string) error {
@@ -81,7 +81,7 @@ func deregisterCluster(
 	}
 	kubeCluster, err := masterKubeClients.KubeClusterClient.GetKubernetesCluster(
 		ctx,
-		client.ObjectKey{Name: opts.Cluster.Deregister.RemoteClusterName, Namespace: env.GetWriteNamespace()})
+		client.ObjectKey{Name: opts.Cluster.Deregister.RemoteClusterName, Namespace: container_runtime.GetWriteNamespace()})
 	if err != nil {
 		return ErrorGettingKubeCluster(opts.Cluster.Deregister.RemoteClusterName, err)
 	}

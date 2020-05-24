@@ -7,7 +7,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
 var (
@@ -29,7 +29,7 @@ func NewResourceDescriber(
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
 
-	resourceSelector selector.ResourceSelector,
+	resourceSelector selection.ResourceSelector,
 ) ResourceDescriber {
 	return &resourceDescriber{
 		trafficPolicyClient:       trafficPolicyClient,
@@ -41,7 +41,7 @@ func NewResourceDescriber(
 type resourceDescriber struct {
 	trafficPolicyClient       zephyr_networking.TrafficPolicyClient
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient
-	ResourceSelector          selector.ResourceSelector
+	ResourceSelector          selection.ResourceSelector
 }
 
 func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*DescriptionResult, error) {

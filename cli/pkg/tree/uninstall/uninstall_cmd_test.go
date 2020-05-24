@@ -17,8 +17,8 @@ import (
 	mock_crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd/mocks"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	mock_cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_core "k8s.io/api/core/v1"
@@ -71,13 +71,13 @@ var _ = Describe("Crd Uninstaller", func() {
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall(env.GetWriteNamespace()).
+			NewUninstall(container_runtime.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
 			Return(nil, nil)
 		kubeClusterClient.EXPECT().
-			ListKubernetesCluster(ctx, client.InNamespace(env.GetWriteNamespace())).
+			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(&zephyr_discovery.KubernetesClusterList{
 				Items: []zephyr_discovery.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
@@ -144,13 +144,13 @@ Service Mesh Hub has been uninstalled
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall(env.GetWriteNamespace()).
+			NewUninstall(container_runtime.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
 			Return(nil, nil)
 		kubeClusterClient.EXPECT().
-			ListKubernetesCluster(ctx, client.InNamespace(env.GetWriteNamespace())).
+			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(&zephyr_discovery.KubernetesClusterList{
 				Items: []zephyr_discovery.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
@@ -162,11 +162,11 @@ Service Mesh Hub has been uninstalled
 			Return(nil)
 		ns := &k8s_core.Namespace{
 			ObjectMeta: k8s_meta.ObjectMeta{
-				Name: env.GetWriteNamespace(),
+				Name: container_runtime.GetWriteNamespace(),
 			},
 		}
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
+			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
 			Return(ns, nil)
 		namespaceClient.EXPECT().
 			DeleteNamespace(ctx, client.ObjectKey{Name: ns.GetName()}).
@@ -219,16 +219,16 @@ Service Mesh Hub has been uninstalled
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall(env.GetWriteNamespace()).
+			NewUninstall(container_runtime.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
 			Return(nil, eris.New(uninstall.ReleaseNotFoundHelmErrorMessage))
 		kubeClusterClient.EXPECT().
-			ListKubernetesCluster(ctx, client.InNamespace(env.GetWriteNamespace())).
+			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
+			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
@@ -281,16 +281,16 @@ Service Mesh Hub has been uninstalled
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall(env.GetWriteNamespace()).
+			NewUninstall(container_runtime.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
 			Return(nil, generateNewErr())
 		kubeClusterClient.EXPECT().
-			ListKubernetesCluster(ctx, client.InNamespace(env.GetWriteNamespace())).
+			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(nil, generateNewErr())
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
+			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
 			Return(nil, generateNewErr())
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
@@ -358,13 +358,13 @@ Service Mesh Hub has been uninstalled with errors
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall(env.GetWriteNamespace()).
+			NewUninstall(container_runtime.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
 			Return(nil, generateNewErr())
 		kubeClusterClient.EXPECT().
-			ListKubernetesCluster(ctx, client.InNamespace(env.GetWriteNamespace())).
+			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(&zephyr_discovery.KubernetesClusterList{
 				Items: []zephyr_discovery.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
@@ -372,7 +372,7 @@ Service Mesh Hub has been uninstalled with errors
 			Deregister(ctx, cluster1).
 			Return(generateNewErr())
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: env.GetWriteNamespace()}).
+			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
 			Return(nil, generateNewErr())
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).

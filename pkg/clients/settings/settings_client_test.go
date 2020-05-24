@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
 	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	mock_zephyr_settings_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/settings.zephyr.solo.io/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -38,7 +38,7 @@ var _ = Describe("SettingsClient", func() {
 		settings := &v1alpha1.Settings{Spec: settingsSpec}
 		mockSettingsClient.
 			EXPECT().
-			GetSettings(ctx, client.ObjectKey{Name: metadata.GlobalSettingsName, Namespace: env.GetWriteNamespace()}).
+			GetSettings(ctx, client.ObjectKey{Name: metadata.GlobalSettingsName, Namespace: container_runtime.GetWriteNamespace()}).
 			Return(settings, nil)
 	}
 

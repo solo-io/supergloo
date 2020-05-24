@@ -9,7 +9,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
 )
 
 func NewVirtualMeshPrinter(tableBuilder TableBuilder) VirtualMeshPrinter {

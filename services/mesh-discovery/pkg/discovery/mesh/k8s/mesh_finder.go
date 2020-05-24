@@ -9,7 +9,7 @@ import (
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/logging"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"go.uber.org/zap"
 	apps_v1 "k8s.io/api/apps/v1"
@@ -60,17 +60,17 @@ func (m *meshFinder) StartDiscovery(deploymentEventWatcher controller.Deployment
 }
 
 func (m *meshFinder) CreateDeployment(deployment *apps_v1.Deployment) error {
-	logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, deployment)
+	logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.CreateEvent, deployment)
 	return m.discoverAndUpsertMesh(deployment, logger)
 }
 
 func (m *meshFinder) UpdateDeployment(_, new *apps_v1.Deployment) error {
-	logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, new)
+	logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.UpdateEvent, new)
 	return m.discoverAndUpsertMesh(new, logger)
 }
 
 func (m *meshFinder) DeleteDeployment(deployment *apps_v1.Deployment) error {
-	logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, deployment)
+	logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.DeleteEvent, deployment)
 
 	discoveredMesh, err := m.discoverMesh(deployment)
 	if err != nil {

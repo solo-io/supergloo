@@ -12,7 +12,7 @@ import (
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	types0 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 )
 
 // MockVirtualMeshCertClient is a mock of VirtualMeshCertClient interface.

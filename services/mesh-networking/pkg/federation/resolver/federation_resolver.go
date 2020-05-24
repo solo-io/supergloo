@@ -11,7 +11,7 @@ import (
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/logging"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	"go.uber.org/zap"
@@ -72,7 +72,7 @@ type federationResolver struct {
 func (f *federationResolver) Start(ctx context.Context) error {
 	return f.MeshServiceEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshServiceEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_discovery.MeshService) error {
-			eventCtx := logging.EventContext(ctx, logging.CreateEvent, obj)
+			eventCtx := container_runtime.EventContext(ctx, container_runtime.CreateEvent, obj)
 			contextutils.LoggerFrom(eventCtx).Debugw("event handler enter",
 				zap.Any("spec", obj.Spec),
 				zap.Any("status", obj.Status),
@@ -80,7 +80,7 @@ func (f *federationResolver) Start(ctx context.Context) error {
 			return f.handleServiceUpsert(eventCtx, obj)
 		},
 		OnUpdate: func(old, new *zephyr_discovery.MeshService) error {
-			eventCtx := logging.EventContext(ctx, logging.CreateEvent, new)
+			eventCtx := container_runtime.EventContext(ctx, container_runtime.CreateEvent, new)
 			// for status-only updates, do nothing
 			// this is important to ensure that we eventually get into a consistent state, as
 			// this component is also responsible for writing mesh service statuses

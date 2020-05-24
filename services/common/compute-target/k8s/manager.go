@@ -6,7 +6,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/errutils"
+	"github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/errutils"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"go.uber.org/zap"
 	"k8s.io/client-go/rest"

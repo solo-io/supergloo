@@ -8,7 +8,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
+	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	"istio.io/istio/pkg/spiffe"
 )
 
@@ -66,7 +66,7 @@ func (i *istioCertConfigProducer) ConfigureCertificateInfo(
 		citadelServiceAccount = istioMesh.GetCitadelInfo().GetCitadelServiceAccount()
 	}
 
-	meshType, err := enum_conversion.MeshToMeshType(mesh)
+	meshType, err := metadata.MeshToMeshType(mesh)
 	if err != nil {
 		return nil, err
 	}

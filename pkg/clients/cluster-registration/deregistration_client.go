@@ -10,12 +10,12 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_core_v1_clients "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_security_scheme "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/factories"
-	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/auth"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -49,7 +49,7 @@ var (
 
 func NewClusterDeregistrationClient(
 	crdRemover crd_uninstall.CrdRemover,
-	csrAgentInstallerFactory csr.CsrAgentInstallerFactory,
+	csrAgentInstallerFactory installation.CsrAgentInstallerFactory,
 	kubeConfigLookup kubeconfig.KubeConfigLookup,
 	localKubeClusterClient zephyr_discovery.KubernetesClusterClient,
 	localSecretClient k8s_core_v1_clients.SecretClient,
@@ -72,7 +72,7 @@ func NewClusterDeregistrationClient(
 type clusterDeregistrationClient struct {
 	crdRemover                  crd_uninstall.CrdRemover
 	kubeLoader                  kubeconfig.KubeLoader
-	csrAgentInstallerFactory    csr.CsrAgentInstallerFactory
+	csrAgentInstallerFactory    installation.CsrAgentInstallerFactory
 	kubeConfigLookup            kubeconfig.KubeConfigLookup
 	localKubeClusterClient      zephyr_discovery.KubernetesClusterClient
 	localSecretClient           k8s_core_v1_clients.SecretClient
@@ -89,10 +89,10 @@ func (c *clusterDeregistrationClient) Deregister(ctx context.Context, kubeCluste
 		return FailedToFindClusterCredentials(err, kubeCluster.GetName())
 	}
 	kubeClient := kubernetes.NewForConfigOrDie(config.RestConfig)
-	helmInstallerFactory := factories.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), ioutil.Discard)
+	helmInstallerFactory := helm.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), ioutil.Discard)
 	csrAgentInstaller := c.csrAgentInstallerFactory(helmInstallerFactory)
-	err = csrAgentInstaller.Uninstall(&csr.CsrAgentUninstallOptions{
-		KubeConfig:       csr.KubeConfig{KubeConfig: config.ClientConfig},
+	err = csrAgentInstaller.Uninstall(&installation.CsrAgentUninstallOptions{
+		KubeConfig:       installation.KubeConfig{KubeConfig: config.ClientConfig},
 		ReleaseName:      cliconstants.CsrAgentReleaseName,
 		ReleaseNamespace: kubeCluster.Spec.GetWriteNamespace(),
 	})

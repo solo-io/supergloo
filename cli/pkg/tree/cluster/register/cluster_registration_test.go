@@ -17,8 +17,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	mock_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	"github.com/spf13/afero"
 	"k8s.io/client-go/rest"
@@ -84,7 +84,7 @@ var _ = Describe("Cluster Operations", func() {
 					ctx,
 					remoteKubeConfig,
 					clusterName,
-					env.GetWriteNamespace(),
+					container_runtime.GetWriteNamespace(),
 					"",
 					register.MeshctlDiscoverySource,
 					cluster_registration.ClusterRegisterOpts{},
@@ -114,7 +114,7 @@ var _ = Describe("Cluster Operations", func() {
 					ctx,
 					remoteKubeConfig,
 					clusterName,
-					env.GetWriteNamespace(),
+					container_runtime.GetWriteNamespace(),
 					"",
 					register.MeshctlDiscoverySource,
 					cluster_registration.ClusterRegisterOpts{},
@@ -150,7 +150,7 @@ var _ = Describe("Cluster Operations", func() {
 					ctx,
 					remoteKubeConfig,
 					clusterName,
-					env.GetWriteNamespace(),
+					container_runtime.GetWriteNamespace(),
 					contextDEF,
 					register.MeshctlDiscoverySource,
 					cluster_registration.ClusterRegisterOpts{},
@@ -219,7 +219,7 @@ var _ = Describe("Cluster Operations", func() {
 					ctx,
 					remoteKubeConfig,
 					clusterName,
-					env.GetWriteNamespace(),
+					container_runtime.GetWriteNamespace(),
 					contextDEF,
 					register.MeshctlDiscoverySource,
 					cluster_registration.ClusterRegisterOpts{},
@@ -244,7 +244,7 @@ var _ = Describe("Cluster Operations", func() {
 					ctx,
 					remoteKubeConfig,
 					clusterName,
-					env.GetWriteNamespace(),
+					container_runtime.GetWriteNamespace(),
 					"",
 					register.MeshctlDiscoverySource,
 					cluster_registration.ClusterRegisterOpts{
@@ -273,7 +273,7 @@ var _ = Describe("Cluster Operations", func() {
 					ctx,
 					remoteKubeConfig,
 					clusterName,
-					env.GetWriteNamespace(),
+					container_runtime.GetWriteNamespace(),
 					"",
 					register.MeshctlDiscoverySource,
 					cluster_registration.ClusterRegisterOpts{

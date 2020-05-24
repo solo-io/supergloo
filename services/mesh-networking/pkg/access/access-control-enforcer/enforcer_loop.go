@@ -9,7 +9,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/logging"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"go.uber.org/zap"
 )
 
@@ -37,7 +37,7 @@ func NewEnforcerLoop(
 func (e *enforcerLoop) Start(ctx context.Context) error {
 	return e.virtualMeshEventWatcher.AddEventHandler(ctx, &zephyr_networking_controller.VirtualMeshEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_networking.VirtualMesh) error {
-			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, obj)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", obj.Spec),
 				zap.Any("status", obj.Status),
@@ -50,7 +50,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 			return nil
 		},
 		OnUpdate: func(old, new *zephyr_networking.VirtualMesh) error {
-			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
 			logger.Debugw("event handler enter",
 				zap.Any("old_spec", old.Spec),
 				zap.Any("old_status", old.Status),
@@ -65,7 +65,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 			return nil
 		},
 		OnDelete: func(virtualMesh *zephyr_networking.VirtualMesh) error {
-			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, virtualMesh)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, virtualMesh)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", virtualMesh.Spec),
 				zap.Any("status", virtualMesh.Status),
@@ -83,7 +83,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 			return nil
 		},
 		OnGeneric: func(virtualMesh *zephyr_networking.VirtualMesh) error {
-			logger := logging.BuildEventLogger(ctx, logging.GenericEvent, virtualMesh)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.GenericEvent, virtualMesh)
 			logger.Debugf("Ignoring event: %+v", virtualMesh)
 			return nil
 		},

@@ -5,7 +5,7 @@ import (
 
 	zephyr_settings "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
 	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,7 +22,7 @@ func NewAwsSettingsHelperClient(settingsClient zephyr_settings.SettingsClient) S
 func (a *awsSettingsHelperClient) getSettingsSpec(ctx context.Context) (*zephyr_settings_types.SettingsSpec, error) {
 	settings, err := a.settingsClient.GetSettings(
 		ctx,
-		client.ObjectKey{Name: metadata.GlobalSettingsName, Namespace: env.GetWriteNamespace()},
+		client.ObjectKey{Name: metadata.GlobalSettingsName, Namespace: container_runtime.GetWriteNamespace()},
 	)
 	if errors.IsNotFound(err) {
 		return nil, nil

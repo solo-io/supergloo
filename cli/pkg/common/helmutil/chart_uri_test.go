@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/helmutil"
-	"github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
 )
 
 var _ = Describe("GetChartUri", func() {

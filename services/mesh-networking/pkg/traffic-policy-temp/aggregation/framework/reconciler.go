@@ -9,7 +9,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
+	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
@@ -130,7 +130,7 @@ func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*z
 			return nil, nil, err
 		}
 
-		meshType, err := enum_conversion.MeshToMeshType(meshForService)
+		meshType, err := metadata.MeshToMeshType(meshForService)
 		if err != nil {
 			return nil, nil, err
 		}

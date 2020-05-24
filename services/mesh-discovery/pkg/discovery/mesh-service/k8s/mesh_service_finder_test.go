@@ -12,7 +12,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service/k8s"
 	discovery_mocks "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -93,7 +93,7 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshServiceFinder := k8s.NewMeshServiceFinder(
 			ctx,
 			clusterName,
-			env.GetWriteNamespace(),
+			container_runtime.GetWriteNamespace(),
 			serviceClient,
 			meshServiceClient,
 			meshWorkloadClient,
@@ -137,7 +137,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
 						constants.COMPUTE_TARGET: clusterName,
 					},
@@ -159,7 +159,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkloadEventV2 := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload-v2",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
 						constants.COMPUTE_TARGET: clusterName,
 					},
@@ -257,7 +257,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				EXPECT().
 				GetMeshService(ctx, client.ObjectKey{
 					Name:      meshServiceName,
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				}).
 				Return(nil, errors.NewNotFound(zephyr_discovery.Resource("meshservice"), meshServiceName))
 
@@ -266,7 +266,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				CreateMeshService(ctx, &zephyr_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      meshServiceName,
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 						Labels:    k8s.DiscoveryLabels(zephyr_core_types.MeshType_LINKERD, clusterName, rightService.GetName(), rightService.GetNamespace()),
 					},
 					Spec: zephyr_discovery_types.MeshServiceSpec{
@@ -600,7 +600,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
 						constants.COMPUTE_TARGET: clusterName,
 					},
@@ -622,7 +622,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkloadEventV2 := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload-v2",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
 						constants.COMPUTE_TARGET: clusterName,
 					},
@@ -726,7 +726,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
 						constants.COMPUTE_TARGET: clusterName,
 					},
@@ -748,7 +748,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkloadEventV2 := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload-v2",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
 						constants.COMPUTE_TARGET: clusterName,
 					},
@@ -852,7 +852,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
 						constants.COMPUTE_TARGET: clusterName,
 					},
@@ -874,7 +874,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkloadEventV2 := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload-v2",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
 						constants.COMPUTE_TARGET: clusterName,
 					},
@@ -1093,7 +1093,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				EXPECT().
 				GetMeshService(ctx, client.ObjectKey{
 					Name:      meshServiceName,
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				}).
 				Return(nil, errors.NewNotFound(zephyr_discovery.Resource("meshservice"), meshServiceName))
 
@@ -1102,7 +1102,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				CreateMeshService(ctx, &zephyr_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      meshServiceName,
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 						Labels:    k8s.DiscoveryLabels(zephyr_core_types.MeshType_LINKERD, clusterName, serviceEvent.GetName(), serviceEvent.GetNamespace()),
 					},
 					Spec: zephyr_discovery_types.MeshServiceSpec{
@@ -1482,7 +1482,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			mocks.meshServiceClient.EXPECT().
 				DeleteMeshService(ctx, client.ObjectKey{
 					Name:      "my-svc-my-ns-test-cluster-name",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				}).
 				Return(nil)
 
@@ -1537,7 +1537,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkload := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
 						constants.COMPUTE_TARGET: clusterName,
 					},
@@ -1608,7 +1608,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
 						constants.COMPUTE_TARGET: clusterName,
 					},
@@ -1630,7 +1630,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			meshWorkloadEventV2 := &zephyr_discovery.MeshWorkload{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "test-mesh-workload-v2",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels: map[string]string{
 						constants.COMPUTE_TARGET: clusterName,
 					},

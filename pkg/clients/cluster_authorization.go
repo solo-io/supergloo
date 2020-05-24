@@ -2,7 +2,7 @@ package clients
 
 import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/auth"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/auth"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )

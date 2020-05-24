@@ -14,12 +14,12 @@ import (
 	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
+	mock_settings "github.com/solo-io/service-mesh-hub/pkg/aws/selection/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	mock_settings2 "github.com/solo-io/service-mesh-hub/pkg/clients/settings/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	settings_utils "github.com/solo-io/service-mesh-hub/pkg/settings"
-	mock_settings "github.com/solo-io/service-mesh-hub/pkg/settings/mocks"
 	aws4 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
 	zephyr_discovery_appmesh "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/appmesh"
@@ -146,7 +146,7 @@ var _ = Describe("Reconciler", func() {
 			mesh := &zephyr_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      metadata.BuildAppMeshName(aws2.StringValue(meshRef.MeshName), region, aws2.StringValue(meshRef.MeshOwner)),
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshSpec{
 					MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
