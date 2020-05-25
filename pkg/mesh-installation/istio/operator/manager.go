@@ -95,11 +95,9 @@ func (m *manager) InstallOperatorApplication(installationOptions *InstallationOp
 		if err != nil {
 			return FailedToInstallOperator(err)
 		}
-
-		return m.writeOperatorConfig(installationOptions)
 	}
 
-	return nil
+	return m.writeOperatorConfig(installationOptions)
 }
 
 func (m *manager) InstallDryRun(installationOptions *InstallationOptions) (manifest string, err error) {

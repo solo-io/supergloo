@@ -15,8 +15,8 @@ import (
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 	mock_cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager/mocks"
 	mock_vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation/mocks"
@@ -36,7 +36,7 @@ var _ = Describe("csr manager", func() {
 		csrProcessor        cert_manager.VirtualMeshCertificateManager
 		meshClient          *mock_core.MockMeshClient
 		meshRefFinder       *mock_vm_validation.MockVirtualMeshFinder
-		dynamicClientGetter *mock_mc_manager.MockDynamicClientGetter
+		dynamicClientGetter *mock_multicluster.MockDynamicClientGetter
 		csrClient           *mock_zephyr_security.MockVirtualMeshCertificateSigningRequestClient
 		certConfigProducer  *mock_cert_manager.MockCertConfigProducer
 
@@ -52,7 +52,7 @@ var _ = Describe("csr manager", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		meshClient = mock_core.NewMockMeshClient(ctrl)
 		meshRefFinder = mock_vm_validation.NewMockVirtualMeshFinder(ctrl)
-		dynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+		dynamicClientGetter = mock_multicluster.NewMockDynamicClientGetter(ctrl)
 		certConfigProducer = mock_cert_manager.NewMockCertConfigProducer(ctrl)
 		csrClient = mock_zephyr_security.NewMockVirtualMeshCertificateSigningRequestClient(ctrl)
 		csrProcessor = cert_manager.NewVirtualMeshCsrProcessor(

@@ -84,7 +84,7 @@ var _ = Describe("EnforcerLoop", func() {
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "name1", Namespace: "namespace1"},
 				Spec: types.MeshSpec{
-					MeshType: &types.MeshSpec_Istio{},
+					MeshType: &types.MeshSpec_Istio1_5_{},
 				},
 			},
 			{

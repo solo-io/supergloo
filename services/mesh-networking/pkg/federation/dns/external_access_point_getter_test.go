@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -25,7 +25,7 @@ var _ = Describe("external access point getter", func() {
 		ctx                       context.Context
 		nodeClient                *mock_kubernetes_core.MockNodeClient
 		podClient                 *mock_kubernetes_core.MockPodClient
-		dynamicClientGetter       *mock_mc_manager.MockDynamicClientGetter
+		dynamicClientGetter       *mock_multicluster.MockDynamicClientGetter
 		externalAccessPointGetter dns.ExternalAccessPointGetter
 
 		clusterName = "test-cluster"
@@ -36,7 +36,7 @@ var _ = Describe("external access point getter", func() {
 		ctx = context.TODO()
 		podClient = mock_kubernetes_core.NewMockPodClient(ctrl)
 		nodeClient = mock_kubernetes_core.NewMockNodeClient(ctrl)
-		dynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+		dynamicClientGetter = mock_multicluster.NewMockDynamicClientGetter(ctrl)
 		externalAccessPointGetter = dns.NewExternalAccessPointGetter(
 			dynamicClientGetter,
 			func(client client.Client) k8s_core.PodClient {

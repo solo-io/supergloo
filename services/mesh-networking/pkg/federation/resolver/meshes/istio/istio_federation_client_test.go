@@ -16,8 +16,8 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	mock_dns "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns/mocks"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
@@ -58,7 +58,7 @@ var _ = Describe("Istio Federation Decider", func() {
 
 	Context("FederateServiceSide", func() {
 		It("can resolve federation for a service belonging to an Istio mesh when no resources exist yet", func() {
-			clientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+			clientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
 			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
 			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
 			gatewayClient := mock_istio_networking.NewMockGatewayClient(ctrl)
@@ -247,7 +247,7 @@ var _ = Describe("Istio Federation Decider", func() {
 		})
 
 		It("can resolve federation when the resources exist already and the service has already been federated to the gateway", func() {
-			clientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+			clientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
 			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
 			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
 			gatewayClient := mock_istio_networking.NewMockGatewayClient(ctrl)
@@ -436,7 +436,7 @@ var _ = Describe("Istio Federation Decider", func() {
 		})
 
 		It("can resolve federation when the resources exist already and the service has NOT already been federated to the gateway", func() {
-			clientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+			clientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
 			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
 			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
 			gatewayClient := mock_istio_networking.NewMockGatewayClient(ctrl)
@@ -636,7 +636,7 @@ var _ = Describe("Istio Federation Decider", func() {
 
 	Context("FederateClientSide", func() {
 		It("can resolve federation on the client side", func() {
-			clientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+			clientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
 			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
 			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
 			serviceEntryClient := mock_istio_networking.NewMockServiceEntryClient(ctrl)
