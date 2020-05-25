@@ -18,8 +18,6 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
-echo "continuing"
-
 unformatted=$(gofmt -l $gofiles)
 badimports=$(goimports -l $gofiles)
 [ -z "$unformatted" ] && [ -z "$badimports" ] && exit 0
