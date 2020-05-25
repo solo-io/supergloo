@@ -3,6 +3,7 @@ package table_printing
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
@@ -115,7 +116,7 @@ func (m *virtualMeshPrinter) buildConfigCell(
 			orgName = certType.Builtin.GetOrgName()
 		}
 		items = append(items, fmt.Sprintf("  Org Name: %s", orgName))
-		ttlDays := string(int(certgen.DefaultRootCertTTLDays))
+		ttlDays := strconv.Itoa(certgen.DefaultRootCertTTLDays)
 		if certType.Builtin.GetTtlDays() != 0 {
 			ttlDays = string(certType.Builtin.GetTtlDays())
 		}
