@@ -136,12 +136,20 @@ var (
 		Short: "Manage service meshes",
 	}
 
-	MeshInstallCommand = func(validMeshes []string) cobra.Command {
-		return cobra.Command{
-			Use:     fmt.Sprintf("install (%s)", strings.Join(validMeshes, "|")),
-			Aliases: []string{"i"},
-			Short:   "Install meshes using meshctl",
-		}
+	MeshInstallCommand = cobra.Command{
+		Use:     "install",
+		Aliases: []string{"i"},
+		Short:   "Install meshes using meshctl",
+	}
+
+	Istio1_5Command = cobra.Command{
+		Use:   "istio1.5",
+		Short: "Install Istio version 1.5",
+	}
+
+	Istio1_6Command = cobra.Command{
+		Use:   "istio1.6",
+		Short: "Install Istio version 1.6",
 	}
 
 	CreateCommand = cobra.Command{

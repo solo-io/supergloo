@@ -23,8 +23,8 @@ var (
 	FailedToGenerateInstallManifest = func(err error) error {
 		return eris.Wrap(err, "Install manifest template failed to render. This shouldn't happen")
 	}
-	FailedToValidateExistingOperator = func(err error, clusterName, namespace string) error {
-		return eris.Wrapf(err, "Failed to validate existing Mesh operator deployment in cluster %s namespace %s", clusterName, namespace)
+	FailedToValidateExistingOperator = func(err error, namespace string) error {
+		return eris.Wrapf(err, "Failed to validate existing Mesh operator deployment in namespace %s", namespace)
 	}
 	FailedToDetermineOperatorVersion = func(current string, minimumSupportedVersion versionutils.Version) error {
 		return eris.Errorf("Failed to determine whether the current operator running at version %s is the minimum version %s", current, minimumSupportedVersion.String())
@@ -32,8 +32,8 @@ var (
 	IncompatibleOperatorVersion = func(current string, minimumSupportedVersion string) error {
 		return eris.Errorf("Found istio operator running at version %s, while %s is the minimum supported version", current, minimumSupportedVersion)
 	}
-	FailedToCheckIfOperatorExists = func(err error, clusterName, namespace string) error {
-		return eris.Wrapf(err, "Failed to check whether the Mesh operator is already installed to cluster %s in namespace %s", clusterName, namespace)
+	FailedToCheckIfOperatorExists = func(err error, namespace string) error {
+		return eris.Wrapf(err, "Failed to check whether the Mesh operator is already installed in namespace %s", namespace)
 	}
 
 	istioVersionToMinimumOperatorVersion = map[IstioVersion]versionutils.Version{
@@ -79,14 +79,24 @@ type manager struct {
 }
 
 func (m *manager) InstallOperatorApplication(installationOptions *InstallationOptions) error {
+	namespace := m.getNamespaceFromOptions(installationOptions)
 	manifest, err := m.InstallDryRun(installationOptions)
 	if err != nil {
 		return err
 	}
 
-	err = m.operatorDao.ApplyManifest(m.getNamespaceFromOptions(installationOptions), manifest)
+	installNeeded, err := m.validateOperatorNamespace(installationOptions.IstioVersion, DefaultIstioOperatorDeploymentName, DefaultIstioOperatorDeploymentName)
 	if err != nil {
-		return FailedToInstallOperator(err)
+		return err
+	}
+
+	if installNeeded {
+		err = m.operatorDao.ApplyManifest(namespace, manifest)
+		if err != nil {
+			return FailedToInstallOperator(err)
+		}
+
+		return m.writeOperatorConfig(installationOptions)
 	}
 
 	return nil
@@ -100,7 +110,11 @@ func (m *manager) InstallDryRun(installationOptions *InstallationOptions) (manif
 		return "", FailedToGenerateInstallManifest(err)
 	}
 
-	manifest += "\n---\n" + applicationManifest
+	return applicationManifest, nil
+}
+
+func (m *manager) OperatorConfigDryRun(installationOptions *InstallationOptions) (manifest string, err error) {
+	namespace := m.getNamespaceFromOptions(installationOptions)
 
 	var operatorConfig string
 	if installationOptions.InstallationProfile != "" {
@@ -117,22 +131,40 @@ func (m *manager) InstallDryRun(installationOptions *InstallationOptions) (manif
 		}
 	}
 
-	manifest += "\n---\n" + operatorConfig
-
-	return manifest, nil
+	return operatorConfig, nil
 }
 
-func (m *manager) ValidateOperatorNamespace(istioVersion IstioVersion, operatorName, operatorNamespace, clusterName string) (installNeeded bool, err error) {
+func (m *manager) writeOperatorConfig(installationOptions *InstallationOptions) error {
+	configManifest, err := m.OperatorConfigDryRun(installationOptions)
+	if err != nil {
+		return err
+	}
+
+	err = m.operatorDao.ApplyManifest(m.getNamespaceFromOptions(installationOptions), configManifest)
+	if err != nil {
+		return FailedToInstallOperator(err)
+	}
+
+	return nil
+}
+
+// ensure that the given namespace is appropriate for installing an Mesh operator
+// will fail with an error if the operator is already present at a different version than we're specifying
+// will return (true, nil) if no operator deployment is present yet
+// (false, nil) indicates the operator is present already at an appropriate version, so no need to call .Install()
+//
+// the `clusterName` arg is only used for error reporting
+func (m *manager) validateOperatorNamespace(istioVersion IstioVersion, operatorName, operatorNamespace string) (installNeeded bool, err error) {
 	operatorDeployment, err := m.operatorDao.FindOperatorDeployment(operatorName, operatorNamespace)
 	if err != nil {
-		return false, FailedToCheckIfOperatorExists(err, clusterName, operatorNamespace)
+		return false, FailedToCheckIfOperatorExists(err, operatorNamespace)
 	} else if operatorDeployment == nil {
 		return true, nil
 	}
 
 	err = m.validateExistingOperatorDeployment(istioVersion, operatorDeployment)
 	if err != nil {
-		return false, FailedToValidateExistingOperator(err, clusterName, operatorNamespace)
+		return false, FailedToValidateExistingOperator(err, operatorNamespace)
 	}
 
 	return false, nil

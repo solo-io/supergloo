@@ -35,33 +35,48 @@ func (m *MockOperatorManager) EXPECT() *MockOperatorManagerMockRecorder {
 	return m.recorder
 }
 
-// Install mocks base method.
-func (m *MockOperatorManager) Install(version operator.IstioVersion, installNamespace string, createNamespace bool) error {
+// InstallOperatorApplication mocks base method.
+func (m *MockOperatorManager) InstallOperatorApplication(installationOptions *operator.InstallationOptions) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Install", version, installNamespace, createNamespace)
+	ret := m.ctrl.Call(m, "InstallOperatorApplication", installationOptions)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Install indicates an expected call of Install.
-func (mr *MockOperatorManagerMockRecorder) Install(version, installNamespace, createNamespace interface{}) *gomock.Call {
+// InstallOperatorApplication indicates an expected call of InstallOperatorApplication.
+func (mr *MockOperatorManagerMockRecorder) InstallOperatorApplication(installationOptions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Install", reflect.TypeOf((*MockOperatorManager)(nil).Install), version, installNamespace, createNamespace)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InstallOperatorApplication", reflect.TypeOf((*MockOperatorManager)(nil).InstallOperatorApplication), installationOptions)
 }
 
-// ValidateOperatorNamespace mocks base method.
-func (m *MockOperatorManager) ValidateOperatorNamespace(istioVersion operator.IstioVersion, operatorName, operatorNamespace, clusterName string) (bool, error) {
+// InstallDryRun mocks base method.
+func (m *MockOperatorManager) InstallDryRun(installationOptions *operator.InstallationOptions) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateOperatorNamespace", istioVersion, operatorName, operatorNamespace, clusterName)
-	ret0, _ := ret[0].(bool)
+	ret := m.ctrl.Call(m, "InstallDryRun", installationOptions)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ValidateOperatorNamespace indicates an expected call of ValidateOperatorNamespace.
-func (mr *MockOperatorManagerMockRecorder) ValidateOperatorNamespace(istioVersion, operatorName, operatorNamespace, clusterName interface{}) *gomock.Call {
+// InstallDryRun indicates an expected call of InstallDryRun.
+func (mr *MockOperatorManagerMockRecorder) InstallDryRun(installationOptions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateOperatorNamespace", reflect.TypeOf((*MockOperatorManager)(nil).ValidateOperatorNamespace), istioVersion, operatorName, operatorNamespace, clusterName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InstallDryRun", reflect.TypeOf((*MockOperatorManager)(nil).InstallDryRun), installationOptions)
+}
+
+// OperatorConfigDryRun mocks base method.
+func (m *MockOperatorManager) OperatorConfigDryRun(installationOptions *operator.InstallationOptions) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OperatorConfigDryRun", installationOptions)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OperatorConfigDryRun indicates an expected call of OperatorConfigDryRun.
+func (mr *MockOperatorManagerMockRecorder) OperatorConfigDryRun(installationOptions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OperatorConfigDryRun", reflect.TypeOf((*MockOperatorManager)(nil).OperatorConfigDryRun), installationOptions)
 }
 
 // MockInstallerManifestBuilder is a mock of InstallerManifestBuilder interface.

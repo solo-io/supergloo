@@ -12,6 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_apiextensions "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
+	k8s_apps_v1_clients "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
@@ -51,6 +52,7 @@ type KubeClients struct {
 	ResourceDescriber           description.ResourceDescriber
 	ResourceSelector            selection.ResourceSelector
 	ClusterRegistrationClient   cluster_registration.ClusterRegistrationClient
+	DeploymentClient            k8s_apps_v1_clients.DeploymentClient
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -68,18 +70,21 @@ type Clients struct {
 }
 
 func IstioClientsProvider(
-	manifestBuilder operator.InstallerManifestBuilder,
 	operatorManagerFactory operator.OperatorManagerFactory,
+	operatorDaoFactory operator.OperatorDaoFactory,
+	operatorManifestBuilder operator.InstallerManifestBuilder,
 ) IstioClients {
 	return IstioClients{
-		OperatorManifestBuilder: manifestBuilder,
 		OperatorManagerFactory:  operatorManagerFactory,
+		OperatorDaoFactory:      operatorDaoFactory,
+		OperatorManifestBuilder: operatorManifestBuilder,
 	}
 }
 
 type IstioClients struct {
-	OperatorManifestBuilder operator.InstallerManifestBuilder
 	OperatorManagerFactory  operator.OperatorManagerFactory
+	OperatorDaoFactory      operator.OperatorDaoFactory
+	OperatorManifestBuilder operator.InstallerManifestBuilder
 }
 
 type UninstallClients struct {
@@ -147,6 +152,7 @@ func KubeClientsProvider(
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 	clusterRegistrationClient cluster_registration.ClusterRegistrationClient,
+	deploymentClient k8s_apps_v1_clients.DeploymentClient,
 ) *KubeClients {
 	return &KubeClients{
 		ClusterAuthorization:        authorization,
@@ -171,6 +177,7 @@ func KubeClientsProvider(
 		AccessControlPolicyClient:   accessControlPolicyClient,
 		MeshWorkloadClient:          meshWorkloadClient,
 		ClusterRegistrationClient:   clusterRegistrationClient,
+		DeploymentClient:            deploymentClient,
 	}
 }
 

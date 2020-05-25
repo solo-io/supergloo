@@ -21,16 +21,11 @@ type OperatorManager interface {
 	// we try to make the install attempt atomic; if one of the resources fails to install, the previous successful ones are cleaned up
 	InstallOperatorApplication(installationOptions *InstallationOptions) error
 
-	// produce a string representation of the total manifest (application plus operator config) that would be applied by calling InstallOperatorApplication
+	// produce a string representation of the application manifest (not including operator config) that would be applied by calling InstallOperatorApplication
 	InstallDryRun(installationOptions *InstallationOptions) (manifest string, err error)
 
-	// ensure that the given namespace is appropriate for installing an Mesh operator
-	// will fail with an error if the operator is already present at a different version than we're specifying
-	// will return (true, nil) if no operator deployment is present yet
-	// (false, nil) indicates the operator is present already at an appropriate version, so no need to call .Install()
-	//
-	// the `clusterName` arg is only used for error reporting
-	ValidateOperatorNamespace(istioVersion IstioVersion, operatorName, operatorNamespace, clusterName string) (installNeeded bool, err error)
+	// get the yaml manifest for the oeprator config that would be applied
+	OperatorConfigDryRun(installationOptions *InstallationOptions) (manifest string, err error)
 }
 
 type InstallationOptions struct {

@@ -108,7 +108,7 @@ func AddClusterDeregisterFlags(cmd *cobra.Command, opts *Options) {
 	cobra.MarkFlagRequired(flags, remoteClusterName)
 }
 
-func AddMeshInstallFlags(cmd *cobra.Command, opts *Options) {
+func AddIstioInstallFlags(cmd *cobra.Command, opts *Options) {
 	operatorNsFlag := "operator-namespace"
 	flags := cmd.PersistentFlags()
 	flags.StringVar(&opts.Mesh.Install.InstallationConfig.InstallNamespace, operatorNsFlag, operator.DefaultIstioOperatorNamespace, "Namespace in which to install the Mesh operator")

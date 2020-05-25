@@ -12,6 +12,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type OperatorDaoFactory func(
+	ctx context.Context,
+	unstructuredKubeClient unstructured.UnstructuredKubeClient,
+	deploymentClient k8s_apps_v1_clients.DeploymentClient,
+	imageNameParser docker.ImageNameParser,
+) OperatorDao
+
+func NewOperatorDaoFactory() OperatorDaoFactory {
+	return NewOperatorDao
+}
+
 func NewOperatorDao(
 	ctx context.Context,
 	unstructuredKubeClient unstructured.UnstructuredKubeClient,
