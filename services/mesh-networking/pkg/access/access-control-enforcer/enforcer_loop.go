@@ -8,6 +8,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"go.uber.org/zap"
@@ -42,7 +43,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 				zap.Any("spec", obj.Spec),
 				zap.Any("status", obj.Status),
 			)
-			err := e.enforceGlobalAccessControl(ctx, obj)
+			err := e.enforceGlobalAccessControl(ctx, obj, false)
 			err = e.setStatus(ctx, obj, err)
 			if err != nil {
 				logger.Errorw("Error while handling VirtualMesh create event", err)
@@ -57,7 +58,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 				zap.Any("new_spec", new.Spec),
 				zap.Any("new_status", new.Status),
 			)
-			err := e.enforceGlobalAccessControl(ctx, new)
+			err := e.enforceGlobalAccessControl(ctx, new, false)
 			err = e.setStatus(ctx, new, err)
 			if err != nil {
 				logger.Errorw("Error while handling VirtualMesh update event", err)
@@ -71,13 +72,11 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 				zap.Any("status", virtualMesh.Status),
 			)
 
-			// manually set this to false so that things get cleaned up
-			virtualMesh.Spec.EnforceAccessControl = false
-
 			// TODO https://github.com/solo-io/service-mesh-hub/issues/650 - we probably want to introduce some defensive retries into our code
-			err := e.enforceGlobalAccessControl(ctx, virtualMesh)
+			err := e.enforceGlobalAccessControl(ctx, virtualMesh, true)
 			if err != nil {
 				logger.Errorf("%+v", err)
+				return nil
 			}
 
 			return nil
@@ -90,29 +89,51 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 	})
 }
 
+// If enforceMeshDefault, ignore user declared enforce_access_control setting and use mesh-specific default as defined on the
+// VirtualMesh API, used for VM deletion to clean up mesh resources.
 func (e *enforcerLoop) enforceGlobalAccessControl(
 	ctx context.Context,
 	virtualMesh *zephyr_networking.VirtualMesh,
+	enforceMeshDefault bool,
 ) error {
 	meshes, err := e.fetchMeshes(ctx, virtualMesh)
 	if err != nil {
 		return err
 	}
-	for _, meshEnforcer := range e.meshEnforcers {
-		if virtualMesh.Spec.GetEnforceAccessControl() {
-			if err = meshEnforcer.StartEnforcing(
-				contextutils.WithLogger(ctx, meshEnforcer.Name()),
-				meshes,
-			); err != nil {
+	if len(meshes) == 0 {
+		return nil
+	}
+	for _, mesh := range meshes {
+		var enforceAccessControl bool
+
+		if enforceMeshDefault || virtualMesh.Spec.GetEnforceAccessControl() == types.VirtualMeshSpec_MESH_DEFAULT {
+			enforceAccessControl, err = DefaultAccessControlValueForMesh(mesh)
+			if err != nil {
 				return err
 			}
+		} else if virtualMesh.Spec.GetEnforceAccessControl() == types.VirtualMeshSpec_ENABLED {
+			enforceAccessControl = true
 		} else {
-			if err = meshEnforcer.StopEnforcing(
-				contextutils.WithLogger(ctx, meshEnforcer.Name()),
-				meshes,
-			); err != nil {
-				return err
+			enforceAccessControl = false
+		}
+
+		for _, meshEnforcer := range e.meshEnforcers {
+			if enforceAccessControl {
+				if err = meshEnforcer.StartEnforcing(
+					contextutils.WithLogger(ctx, meshEnforcer.Name()),
+					mesh,
+				); err != nil {
+					return err
+				}
+			} else {
+				if err = meshEnforcer.StopEnforcing(
+					contextutils.WithLogger(ctx, meshEnforcer.Name()),
+					mesh,
+				); err != nil {
+					return err
+				}
 			}
+
 		}
 	}
 	return nil

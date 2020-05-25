@@ -45,38 +45,44 @@ func (i *istioEnforcer) Name() string {
 	return EnforcerId
 }
 
-func (i *istioEnforcer) StartEnforcing(ctx context.Context, meshes []*zephyr_discovery.Mesh) error {
-	for _, mesh := range meshes {
-		istioInstallation := i.getIstioInstallation(mesh)
-		if istioInstallation == nil {
-			continue
-		}
+func (i *istioEnforcer) StartEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
+	if mesh.Spec.GetIstio1_6() == nil && mesh.Spec.GetIstio1_5() == nil {
+		return nil
+	}
+	clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
+	if err != nil {
+		return err
+	}
+	authPolicyClient := i.authPolicyClientFactory(clientForCluster)
 
-		clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
-		if err != nil {
-			return err
-		}
-		authPolicyClient := i.authPolicyClientFactory(clientForCluster)
-		if err := i.ensureIngressGatewayPolicy(ctx, istioInstallation.GetInstallationNamespace(), mesh, authPolicyClient); err != nil {
-			return err
-		}
-		if err := i.ensureGlobalAuthPolicy(ctx, istioInstallation.GetInstallationNamespace(), mesh, authPolicyClient); err != nil {
-			return err
-		}
+	installationNamespace := ""
+	if mesh.Spec.GetIstio1_5() != nil {
+		installationNamespace = mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace()
+	} else {
+		installationNamespace = mesh.Spec.GetIstio1_6().GetMetadata().GetInstallation().GetInstallationNamespace()
+	}
+	if err := i.ensureIngressGatewayPolicy(ctx, installationNamespace, mesh, authPolicyClient); err != nil {
+		return err
+	}
+	if err := i.ensureGlobalAuthPolicy(ctx, installationNamespace, mesh, authPolicyClient); err != nil {
+		return err
 	}
 	return nil
 }
 
-func (i *istioEnforcer) StopEnforcing(ctx context.Context, meshes []*zephyr_discovery.Mesh) error {
-	for _, mesh := range meshes {
-		istioInstallation := i.getIstioInstallation(mesh)
-		if istioInstallation == nil {
-			continue
-		}
+func (i *istioEnforcer) StopEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
+	if mesh.Spec.GetIstio1_5() == nil && mesh.Spec.GetIstio1_6() == nil {
+		return nil
+	}
 
-		if err := i.stopEnforcingForMesh(ctx, istioInstallation.GetInstallationNamespace(), mesh); err != nil {
-			return err
-		}
+	installationNamespace := ""
+	if mesh.Spec.GetIstio1_5() != nil {
+		installationNamespace = mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace()
+	} else {
+		installationNamespace = mesh.Spec.GetIstio1_6().GetMetadata().GetInstallation().GetInstallationNamespace()
+	}
+	if err := i.stopEnforcingForMesh(ctx, installationNamespace, mesh); err != nil {
+		return err
 	}
 	return nil
 }
