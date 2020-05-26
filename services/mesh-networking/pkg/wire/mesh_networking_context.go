@@ -9,9 +9,9 @@ import (
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 )

@@ -9,7 +9,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 	mock_cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager/mocks"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"

@@ -7,7 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

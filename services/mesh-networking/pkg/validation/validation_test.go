@@ -12,7 +12,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
 	mock_vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation/mocks"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"

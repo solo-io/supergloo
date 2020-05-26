@@ -8,7 +8,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot"
 	"go.uber.org/zap"
 )
 
