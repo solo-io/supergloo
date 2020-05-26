@@ -16,15 +16,15 @@
 #####################################
 
 if [ "$1" == "cleanup" ]; then
-  kind get clusters | grep -E  '(management-plane|target-cluster)-[a-z0-9]+' | while read -r r; do kind delete cluster --name $r; done
+  kind get clusters | grep -E '(management-plane|target-cluster)-[a-z0-9]*' | while read -r r; do kind delete cluster --name $r; done
   exit 0
 fi
 
 make clean
 
-# generate 16-character random suffix on these names
-managementPlane=management-plane-$(xxd -l16 -ps /dev/urandom)
-remoteCluster=target-cluster-$(xxd -l16 -ps /dev/urandom)
+# allow to make several envs in parallel
+managementPlane=management-plane-$1
+remoteCluster=target-cluster-$1
 
 # set up each cluster
 # Create NodePort for remote cluster so it can be reachable from the management plane.
@@ -79,9 +79,9 @@ kubectl create ns --context kind-$remoteCluster  service-mesh-hub
 
 # leaving this in for the time being as there is a race with helm installing CRDs
 # register all our CRDs in the management plane
-ls install/helm/charts/custom-resource-definitions/crds | while read f; do kubectl --context kind-$managementPlane apply -f install/helm/charts/custom-resource-definitions/crds/$f; done
+kubectl --context kind-$managementPlane apply -f install/helm/charts/custom-resource-definitions/crds
 # register all the CRDs in the target cluster too
-ls install/helm/charts/custom-resource-definitions/crds | while read f; do kubectl --context kind-$remoteCluster apply -f install/helm/charts/custom-resource-definitions/crds/$f; done
+kubectl --context kind-$remoteCluster apply -f install/helm/charts/custom-resource-definitions/crds
 
 # Build the docker images
 make -B docker
@@ -105,18 +105,36 @@ make meshctl -B
 helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
 ./_output/meshctl install --file ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
 
+case $(uname) in
+  "Darwin")
+  {
+      CLUSTER_DOMAIN_MGMT=host.docker.internal
+      CLUSTER_DOMAIN_REMOTE=host.docker.internal
+  } ;;
+  "Linux")
+  {
+      CLUSTER_DOMAIN_MGMT=$(docker exec $managementPlane-control-plane ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p'):6443
+      CLUSTER_DOMAIN_REMOTE=$(docker exec $remoteCluster-control-plane ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p'):6443
+  } ;;
+  *)
+  {
+      echo "Unsupported OS"
+      exit 1
+  } ;;
+esac
+
 #register the remote cluster, and install Istio onto the management plane cluster
 ./_output/meshctl cluster register \
   --remote-context kind-$managementPlane \
   --remote-cluster-name management-plane-cluster \
-  --local-cluster-domain-override host.docker.internal \
+  --local-cluster-domain-override $CLUSTER_DOMAIN_MGMT \
   --dev-csr-agent-chart
 
 #register the remote cluster, and install Istio onto the remote cluster
 ./_output/meshctl cluster register \
   --remote-context kind-$remoteCluster \
   --remote-cluster-name target-cluster \
-  --local-cluster-domain-override host.docker.internal \
+  --local-cluster-domain-override $CLUSTER_DOMAIN_REMOTE \
   --dev-csr-agent-chart
 
 ./_output/meshctl mesh install istio --context kind-$remoteCluster --operator-spec=- <<EOF
@@ -253,7 +271,7 @@ retries=50
 count=0
 ok=false
 until ${ok}; do
-    numResources=`kubectl --context kind-$managementPlane -n service-mesh-hub get meshes | grep istio -c`
+    numResources=$(kubectl --context kind-$managementPlane -n service-mesh-hub get meshes | grep istio -c || true)
     if [[ ${numResources} -eq 2 ]]; then
         ok=true
         continue
@@ -292,7 +310,7 @@ retries=50
 count=0
 ok=false
 until ${ok}; do
-    numResources=`kubectl --context kind-$managementPlane -n istio-system get secrets | grep cacerts -c`
+    numResources=$(kubectl --context kind-$managementPlane -n istio-system get secrets | grep cacerts -c || true)
     if [[ ${numResources} -eq 1 ]]; then
         ok=true
         continue
@@ -312,7 +330,7 @@ retries=50
 count=0
 ok=false
 until ${ok}; do
-    numResources=`kubectl --context kind-$remoteCluster -n istio-system get secrets | grep cacerts -c`
+    numResources=$(kubectl --context kind-$remoteCluster -n istio-system get secrets | grep cacerts -c || true)
     if [[ ${numResources} -eq 1 ]]; then
         ok=true
         continue
