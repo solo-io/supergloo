@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
+	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -18,14 +19,14 @@ type enforcerLoop struct {
 	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher
 	virtualMeshClient       zephyr_networking.VirtualMeshClient
 	meshClient              zephyr_discovery.MeshClient
-	meshEnforcers           []AccessPolicyMeshEnforcer
+	meshEnforcers           []access_control_enforcer.AccessPolicyMeshEnforcer
 }
 
 func NewEnforcerLoop(
 	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	meshClient zephyr_discovery.MeshClient,
-	meshEnforcers []AccessPolicyMeshEnforcer,
+	meshEnforcers []access_control_enforcer.AccessPolicyMeshEnforcer,
 ) AccessPolicyEnforcerLoop {
 	return &enforcerLoop{
 		virtualMeshEventWatcher: virtualMeshEventWatcher,
@@ -107,7 +108,7 @@ func (e *enforcerLoop) enforceGlobalAccessControl(
 		var enforceAccessControl bool
 
 		if enforceMeshDefault || virtualMesh.Spec.GetEnforceAccessControl() == types.VirtualMeshSpec_MESH_DEFAULT {
-			enforceAccessControl, err = DefaultAccessControlValueForMesh(mesh)
+			enforceAccessControl, err = access_control_enforcer.DefaultAccessControlValueForMesh(mesh)
 			if err != nil {
 				return err
 			}

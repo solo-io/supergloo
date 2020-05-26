@@ -7,13 +7,13 @@ package wire
 
 import (
 	"context"
-
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
+	"github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/istio"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
@@ -21,26 +21,25 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
-	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
-	access_policy_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
-	istio_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/istio-enforcer"
-	acp_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
+	"github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
+	"github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	istio_translator2 "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator/istio-translator"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver"
-	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
-	networking_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster"
-	controller_factories "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/controllers"
-	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
-	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
-	linkerd_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/linkerd-translator"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/controllers"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/linkerd-translator"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
-	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
-	cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer"
-	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
 )
 
 // Injectors from wire.go:
@@ -113,7 +112,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	istio_translatorIstioTranslator := istio_translator2.NewIstioTranslator(meshClient, dynamicClientGetter, authorizationPolicyClientFactory)
 	v3 := AccessControlPolicyMeshTranslatorsProvider(istio_translatorIstioTranslator)
 	acpTranslatorLoop := acp_translator.NewAcpTranslatorLoop(accessControlPolicyEventWatcher, meshServiceEventWatcher, meshClient, accessControlPolicyClient, resourceSelector, v3)
-	istioEnforcer := istio_enforcer.NewIstioEnforcer(dynamicClientGetter, authorizationPolicyClientFactory)
+	istioEnforcer := istio.NewIstioEnforcer(dynamicClientGetter, authorizationPolicyClientFactory)
 	v4 := GlobalAccessControlPolicyMeshEnforcersProvider(istioEnforcer)
 	accessPolicyEnforcerLoop := access_policy_enforcer.NewEnforcerLoop(virtualMeshEventWatcher, virtualMeshClient, meshClient, v4)
 	gatewayClientFactory := v1alpha3.GatewayClientFactoryProvider()

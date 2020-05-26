@@ -8,6 +8,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
+	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
+	mock_access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/mocks"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -16,7 +18,6 @@ import (
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	global_ac_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
-	mock_global_access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking2 "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/networking"
@@ -30,7 +31,7 @@ var _ = Describe("EnforcerLoop", func() {
 		virtualMeshEventWatcher *mock_zephyr_networking2.MockVirtualMeshEventWatcher
 		virtualMeshClient       *mock_zephyr_networking.MockVirtualMeshClient
 		meshClient              *mock_core.MockMeshClient
-		meshEnforcers           []*mock_global_access_control_enforcer.MockAccessPolicyMeshEnforcer
+		meshEnforcers           []*mock_access_control_enforcer.MockAccessPolicyMeshEnforcer
 		enforcerLoop            global_ac_enforcer.AccessPolicyEnforcerLoop
 		// captured event handler
 		virtualMeshHandler *zephyr_networking_controller.VirtualMeshEventHandlerFuncs
@@ -42,15 +43,15 @@ var _ = Describe("EnforcerLoop", func() {
 		virtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 		meshClient = mock_core.NewMockMeshClient(ctrl)
 		virtualMeshEventWatcher = mock_zephyr_networking2.NewMockVirtualMeshEventWatcher(ctrl)
-		meshEnforcers = []*mock_global_access_control_enforcer.MockAccessPolicyMeshEnforcer{
-			mock_global_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
-			mock_global_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
+		meshEnforcers = []*mock_access_control_enforcer.MockAccessPolicyMeshEnforcer{
+			mock_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
+			mock_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
 		}
 		enforcerLoop = global_ac_enforcer.NewEnforcerLoop(
 			virtualMeshEventWatcher,
 			virtualMeshClient,
 			meshClient,
-			[]global_ac_enforcer.AccessPolicyMeshEnforcer{
+			[]access_control_enforcer.AccessPolicyMeshEnforcer{
 				meshEnforcers[0], meshEnforcers[1],
 			},
 		)

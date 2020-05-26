@@ -1,4 +1,4 @@
-package access_policy_enforcer
+package access_control_enforcer
 
 import (
 	"github.com/rotisserie/eris"

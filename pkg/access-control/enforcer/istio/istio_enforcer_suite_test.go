@@ -1,4 +1,4 @@
-package istio_enforcer_test
+package istio_test
 
 import (
 	"testing"
