@@ -10,6 +10,7 @@ See BUILD.md in this repo for instructions on getting a local deve environment u
 
 - [Style Guideline](#style-guideline)
     - [Package Layout](#package-layout)  
+        * [Clean Architecture](#clean-architecture)
         * [Naming](#naming)
         * [Interfaces and Mocks](#interfaces-and-mocks)
         * [Common Clients](#common-clients)
