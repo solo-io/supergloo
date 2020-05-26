@@ -14,7 +14,7 @@ import (
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
-	settings2 "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/settings"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
@@ -58,7 +58,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	appMeshClientFactory := appmesh.AppMeshClientFactoryProvider()
 	settingsClient := v1alpha1_2.SettingsClientProvider(client)
 	settingsHelperClient := settings.NewAwsSettingsHelperClient(settingsClient)
-	awsSelector := settings2.NewAwsSelector(arnParser)
+	awsSelector := selection.NewAwsSelector(arnParser)
 	appMeshDiscoveryReconciler := appmesh2.NewAppMeshDiscoveryReconciler(client, meshClientFactory, arnParser, appMeshClientFactory, settingsHelperClient, awsSelector)
 	kubernetesClusterClient := v1alpha1.KubernetesClusterClientProvider(client)
 	eksClientFactory := eks.EksClientFactoryProvider()
