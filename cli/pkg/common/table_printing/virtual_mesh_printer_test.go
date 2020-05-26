@@ -68,7 +68,7 @@ var _ = Describe("Virtual Mesh Table Printer", func() {
 								},
 							},
 						},
-						EnforceAccessControl: true,
+						EnforceAccessControl: zephyr_networking_types.VirtualMeshSpec_ENABLED,
 					},
 					Status: zephyr_networking_types.VirtualMeshStatus{
 						FederationStatus: &zephyr_core_types.Status{
@@ -103,7 +103,7 @@ var _ = Describe("Virtual Mesh Table Printer", func() {
 								},
 							},
 						},
-						EnforceAccessControl: false,
+						EnforceAccessControl: zephyr_networking_types.VirtualMeshSpec_MESH_DEFAULT,
 					},
 					Status: zephyr_networking_types.VirtualMeshStatus{
 						CertificateStatus: &zephyr_core_types.Status{
