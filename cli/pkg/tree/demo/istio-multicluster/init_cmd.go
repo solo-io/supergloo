@@ -34,7 +34,7 @@ func Init(
 
 func istioMulticlusterDemo(runner exec.Runner) error {
 	// note: "init-demo.sh" is dummy arg 0.
-	return runner.Run("bash", "-c", initDemoScript, "init-demo.sh", fmt.Sprintf("%d", rand.Uint32()))
+	return runner.Run("bash", "-c", istioKindDemoScript, "init-demo.sh", fmt.Sprintf("%d", rand.Uint32()))
 }
 
 const (
