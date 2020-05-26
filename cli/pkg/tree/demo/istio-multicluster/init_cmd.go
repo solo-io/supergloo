@@ -39,7 +39,7 @@ func istioMulticlusterDemo(runner exec.Runner) error {
 
 const (
 	istioKindDemoScript = `
-  set -e
+set -e
 
 managementPlane=management-plane-$1
 remoteCluster=target-cluster-$1
