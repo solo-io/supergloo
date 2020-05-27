@@ -3,7 +3,6 @@ package appmesh
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
@@ -37,24 +36,29 @@ func (a *appmeshEnforcer) StopEnforcing(ctx context.Context, mesh *zephyr_discov
 	if mesh.Spec.GetAwsAppMesh() == nil {
 		return nil
 	}
+	serviceToWorkloads, workloadToServices, err := a.dao.GetServicesAndWorkloadsForMesh(ctx, mesh)
+	if err != nil {
+		return err
+	}
+
 	meshServices, err := a.dao.ListMeshServicesForMesh(ctx, mesh)
 	if err != nil {
 		return err
 	}
 	var virtualServiceNames []string
 	for _, meshService := range meshServices {
-		virtualServiceRef, err := a.dao.EnsureAppmeshVirtualService(ctx, mesh, meshService)
+		virtualServiceName, err := a.dao.EnsureVirtualServicesWithDefaultRoutes(ctx, mesh, meshService)
 		if err != nil {
 			return err
 		}
-		virtualServiceNames = append(virtualServiceNames, aws.StringValue(virtualServiceRef.VirtualServiceName))
+		virtualServiceNames = append(virtualServiceNames, virtualServiceName)
 	}
 	meshWorkloads, err := a.dao.ListMeshWorkloadsForMesh(ctx, mesh)
 	if err != nil {
 		return err
 	}
 	for _, meshWorkload := range meshWorkloads {
-		err = a.dao.EnsureVirtualNodeBackends(ctx, mesh, meshWorkload, virtualServiceNames)
+		err = a.dao.EnsureVirtualNodesWithDefaultBackends(ctx, mesh, meshWorkload, virtualServiceNames)
 		if err != nil {
 			return err
 		}

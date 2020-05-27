@@ -1,11 +1,15 @@
 package metadata
 
-import "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+import zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 
-func BuildVirtualServiceName(meshService *v1alpha1.MeshService) string {
+func BuildVirtualServiceName(meshService *zephyr_discovery.MeshService) string {
 	return meshService.Spec.GetKubeService().GetRef().GetName()
 }
 
-func BuildVirtualRouterName(meshService *v1alpha1.MeshService) string {
+func BuildVirtualRouterName(meshService *zephyr_discovery.MeshService) string {
 	return BuildVirtualServiceName(meshService) + "-virtual-router"
+}
+
+func BuildVirtualNodeName(meshWorkload *zephyr_discovery.MeshWorkload) string {
+	return meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetName()
 }

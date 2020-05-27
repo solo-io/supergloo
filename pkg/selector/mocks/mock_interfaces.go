@@ -6,11 +6,10 @@ package mock_selector
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	reflect "reflect"
 )
 
 // MockResourceSelector is a mock of ResourceSelector interface.
@@ -138,4 +137,19 @@ func (m *MockResourceSelector) GetMeshWorkloadByRefSelector(ctx context.Context,
 func (mr *MockResourceSelectorMockRecorder) GetMeshWorkloadByRefSelector(ctx, podEventWatcherName, podEventWatcherNamespace, podEventWatcherCluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshWorkloadByRefSelector", reflect.TypeOf((*MockResourceSelector)(nil).GetMeshWorkloadByRefSelector), ctx, podEventWatcherName, podEventWatcherNamespace, podEventWatcherCluster)
+}
+
+// GetMeshWorkloadsForMeshService mocks base method.
+func (m *MockResourceSelector) GetMeshWorkloadsForMeshService(ctx context.Context, meshWorkload *v1alpha1.MeshService) ([]*v1alpha1.MeshWorkload, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMeshWorkloadsForMeshService", ctx, meshWorkload)
+	ret0, _ := ret[0].([]*v1alpha1.MeshWorkload)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMeshWorkloadsForMeshService indicates an expected call of GetMeshWorkloadsForMeshService.
+func (mr *MockResourceSelectorMockRecorder) GetMeshWorkloadsForMeshService(ctx, meshWorkload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshWorkloadsForMeshService", reflect.TypeOf((*MockResourceSelector)(nil).GetMeshWorkloadsForMeshService), ctx, meshWorkload)
 }
