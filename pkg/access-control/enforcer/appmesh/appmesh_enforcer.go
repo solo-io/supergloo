@@ -3,7 +3,9 @@ package appmesh
 import (
 	"context"
 
+	aws2 "github.com/aws/aws-sdk-go/aws"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 )
 
 const (
@@ -11,7 +13,8 @@ const (
 )
 
 type appmeshEnforcer struct {
-	dao AppmeshAccessControlDao
+	appmeshTranslator appmesh.AppmeshTranslator
+	dao               AppmeshAccessControlDao
 }
 
 func (a *appmeshEnforcer) Name() string {
@@ -40,25 +43,34 @@ func (a *appmeshEnforcer) StopEnforcing(ctx context.Context, mesh *zephyr_discov
 	if err != nil {
 		return err
 	}
-
-	meshServices, err := a.dao.ListMeshServicesForMesh(ctx, mesh)
-	if err != nil {
-		return err
-	}
-	var virtualServiceNames []string
-	for _, meshService := range meshServices {
-		virtualServiceName, err := a.dao.EnsureVirtualServicesWithDefaultRoutes(ctx, mesh, meshService)
+	appmeshName := aws2.String(mesh.Spec.GetAwsAppMesh().GetName())
+	for service, workloads := range serviceToWorkloads {
+		virtualService := a.appmeshTranslator.BuildVirtualService(appmeshName, service)
+		virtualRouter := a.appmeshTranslator.BuildVirtualRouter(appmeshName, service)
+		defaultRoute, err := a.appmeshTranslator.BuildDefaultRoute(appmeshName, service, workloads)
 		if err != nil {
 			return err
 		}
-		virtualServiceNames = append(virtualServiceNames, virtualServiceName)
+		err = a.dao.EnsureVirtualService(virtualService)
+		if err != nil {
+			return err
+		}
+		err = a.dao.EnsureVirtualRouter(virtualRouter)
+		if err != nil {
+			return err
+		}
+		err = a.dao.EnsureRoute(defaultRoute)
+		if err != nil {
+			return err
+		}
 	}
-	meshWorkloads, err := a.dao.ListMeshWorkloadsForMesh(ctx, mesh)
-	if err != nil {
-		return err
-	}
-	for _, meshWorkload := range meshWorkloads {
-		err = a.dao.EnsureVirtualNodesWithDefaultBackends(ctx, mesh, meshWorkload, virtualServiceNames)
+	for workload, services := range workloadToServices {
+		var service *zephyr_discovery.MeshService
+		if len(services) > 0 {
+			service = services[0]
+		}
+		defaultVirtualNode := a.appmeshTranslator.BuildDefaultVirtualNode(appmeshName, workload, service, services)
+		err = a.dao.EnsureVirtualNode(defaultVirtualNode)
 		if err != nil {
 			return err
 		}

@@ -10,12 +10,12 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/clients/aws/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/settings"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
-	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,7 +34,7 @@ var (
 type appMeshDiscoveryReconciler struct {
 	arnParser            aws_utils.ArnParser
 	meshClient           zephyr_discovery.MeshClient
-	appmeshClientFactory appmesh_client.AppMeshClientFactory
+	appmeshClientFactory appmesh2.AppmeshRawClientFactory
 	settingsClient       settings.SettingsHelperClient
 	awsSelector          settings_utils.AwsSelector
 }
@@ -43,7 +43,7 @@ func NewAppMeshDiscoveryReconciler(
 	masterClient client.Client,
 	meshClientFactory zephyr_discovery.MeshClientFactory,
 	arnParser aws_utils.ArnParser,
-	appmeshClientFactory appmesh_client.AppMeshClientFactory,
+	appmeshClientFactory appmesh2.AppmeshRawClientFactory,
 	settingsClient settings.SettingsHelperClient,
 	awsSelector settings_utils.AwsSelector,
 ) compute_target_aws.AppMeshDiscoveryReconciler {

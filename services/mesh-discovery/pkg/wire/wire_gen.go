@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	appmesh4 "github.com/solo-io/service-mesh-hub/pkg/clients/aws/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/aws/sts"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
@@ -23,7 +24,6 @@ import (
 	settings2 "github.com/solo-io/service-mesh-hub/pkg/settings"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
-	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories"
@@ -55,7 +55,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
 	arnParser := aws_utils.NewArnParser()
-	appMeshClientFactory := appmesh.AppMeshClientFactoryProvider()
+	appMeshClientFactory := appmesh4.AppmeshRawClientFactoryProvider()
 	settingsClient := v1alpha1_2.SettingsClientProvider(client)
 	settingsHelperClient := settings.NewAwsSettingsHelperClient(settingsClient)
 	awsSelector := settings2.NewAwsSelector(arnParser)

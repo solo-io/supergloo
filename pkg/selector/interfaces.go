@@ -58,9 +58,4 @@ type ResourceSelector interface {
 		podEventWatcherNamespace string,
 		podEventWatcherCluster string,
 	) (*zephyr_discovery.MeshWorkload, error)
-
-	GetMeshWorkloadsForMeshService(
-		ctx context.Context,
-		meshService *zephyr_discovery.MeshService,
-	) ([]*zephyr_discovery.MeshWorkload, error)
 }

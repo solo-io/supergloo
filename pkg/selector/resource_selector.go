@@ -12,7 +12,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -310,24 +309,6 @@ func (r *resourceSelector) GetMeshWorkloadByRefSelector(
 	return &meshWorkloadList.Items[0], nil
 }
 
-func (r *resourceSelector) GetMeshWorkloadsForMeshService(
-	ctx context.Context,
-	meshService *zephyr_discovery.MeshService,
-) ([]*zephyr_discovery.MeshWorkload, error) {
-	meshWorkloads, err := r.meshWorkloadClient.ListMeshWorkload(ctx)
-	if err != nil {
-		return nil, err
-	}
-	var backingWorkloads []*zephyr_discovery.MeshWorkload
-	for _, meshWorkloadIter := range meshWorkloads.Items {
-		meshWorkload := meshWorkloadIter
-		if isServiceBackedByWorkload(meshService, &meshWorkload) {
-			backingWorkloads = append(backingWorkloads, &meshWorkload)
-		}
-	}
-	return backingWorkloads, nil
-}
-
 func getMeshServiceByServiceKey(
 	selectedRef *core_types.ResourceRef,
 	meshServices []*zephyr_discovery.MeshService,
@@ -401,21 +382,4 @@ func convertWorkloadsToPointerSlice(meshWorkloads []zephyr_discovery.MeshWorkloa
 		pointerSlice = append(pointerSlice, &meshWorkload)
 	}
 	return pointerSlice
-}
-
-// if either the service has no selector labels or the mesh workload's corresponding pod has no labels,
-// then this service cannot be backed by this mesh workload
-// the library call below returns true for either case, so we explicitly check for it here
-func isServiceBackedByWorkload(
-	meshService *zephyr_discovery.MeshService,
-	meshWorkload *zephyr_discovery.MeshWorkload,
-) bool {
-	if len(meshService.Spec.GetKubeService().GetWorkloadSelectorLabels()) == 0 ||
-		len(meshWorkload.Spec.GetKubeController().GetLabels()) == 0 {
-		return false
-	}
-	return labels.AreLabelsInWhiteList(
-		meshService.Spec.GetKubeService().GetWorkloadSelectorLabels(),
-		meshWorkload.Spec.GetKubeController().GetLabels(),
-	)
 }

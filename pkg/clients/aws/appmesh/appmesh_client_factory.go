@@ -8,9 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
 )
 
-type AppMeshClientFactory func(creds *credentials.Credentials, region string) (appmeshiface.AppMeshAPI, error)
+type AppmeshRawClientFactory func(creds *credentials.Credentials, region string) (appmeshiface.AppMeshAPI, error)
 
-func AppMeshClientFactoryProvider() AppMeshClientFactory {
+func AppmeshRawClientFactoryProvider() AppmeshRawClientFactory {
 	return func(creds *credentials.Credentials, region string) (appmeshiface.AppMeshAPI, error) {
 		sess, err := session.NewSession(&aws.Config{
 			Credentials: creds,

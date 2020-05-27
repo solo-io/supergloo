@@ -138,18 +138,3 @@ func (mr *MockResourceSelectorMockRecorder) GetMeshWorkloadByRefSelector(ctx, po
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshWorkloadByRefSelector", reflect.TypeOf((*MockResourceSelector)(nil).GetMeshWorkloadByRefSelector), ctx, podEventWatcherName, podEventWatcherNamespace, podEventWatcherCluster)
 }
-
-// GetMeshWorkloadsForMeshService mocks base method.
-func (m *MockResourceSelector) GetMeshWorkloadsForMeshService(ctx context.Context, meshWorkload *v1alpha1.MeshService) ([]*v1alpha1.MeshWorkload, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMeshWorkloadsForMeshService", ctx, meshWorkload)
-	ret0, _ := ret[0].([]*v1alpha1.MeshWorkload)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMeshWorkloadsForMeshService indicates an expected call of GetMeshWorkloadsForMeshService.
-func (mr *MockResourceSelectorMockRecorder) GetMeshWorkloadsForMeshService(ctx, meshWorkload interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshWorkloadsForMeshService", reflect.TypeOf((*MockResourceSelector)(nil).GetMeshWorkloadsForMeshService), ctx, meshWorkload)
-}

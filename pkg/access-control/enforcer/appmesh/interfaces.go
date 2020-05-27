@@ -3,6 +3,7 @@ package appmesh
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go/service/appmesh"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
@@ -17,18 +18,11 @@ type AppmeshAccessControlDao interface {
 		map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService,
 		error)
 
-	// For a given MeshService, creates an Appmesh VirtualService if one does not already exist,
-	// backed by a VirtualRouter provider with a set of default routes to all workloads backing the service.
-	// Return the VirtualService name.
-	EnsureVirtualServicesWithDefaultRoutes(
-		mesh *zephyr_discovery.Mesh,
-		serviceToWorkloads map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload,
-	) error
+	EnsureVirtualService(virtualServiceData *appmesh.VirtualServiceData) error
 
-	// For a given MeshWorkload, creates an Appmesh VirtualNode if one does not already exist, and that
-	// all VirtualServices are declared as backends on the VirtualNode.
-	EnsureVirtualNodesWithDefaultBackends(
-		mesh *zephyr_discovery.Mesh,
-		workloadToServices map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService,
-	) error
+	EnsureVirtualRouter(virtualRouter *appmesh.VirtualRouterData) error
+
+	EnsureRoute(route *appmesh.RouteData) error
+
+	EnsureVirtualNode(virtualNode *appmesh.VirtualNodeData) error
 }
