@@ -4,6 +4,7 @@ import (
 	"context"
 
 	aws2 "github.com/aws/aws-sdk-go/aws"
+	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 )
@@ -15,6 +16,15 @@ const (
 type appmeshEnforcer struct {
 	appmeshTranslator appmesh.AppmeshTranslator
 	dao               AppmeshAccessControlDao
+}
+
+type AppmeshEnforcer access_control_enforcer.AccessPolicyMeshEnforcer
+
+func NewAppmeshEnforcer(
+	appmeshTranslator appmesh.AppmeshTranslator,
+	dao AppmeshAccessControlDao,
+) AppmeshEnforcer {
+	return &appmeshEnforcer{appmeshTranslator: appmeshTranslator, dao: dao}
 }
 
 func (a *appmeshEnforcer) Name() string {
@@ -51,15 +61,15 @@ func (a *appmeshEnforcer) StopEnforcing(ctx context.Context, mesh *zephyr_discov
 		if err != nil {
 			return err
 		}
-		err = a.dao.EnsureVirtualService(virtualService)
+		err = a.dao.EnsureVirtualService(mesh, virtualService)
 		if err != nil {
 			return err
 		}
-		err = a.dao.EnsureVirtualRouter(virtualRouter)
+		err = a.dao.EnsureVirtualRouter(mesh, virtualRouter)
 		if err != nil {
 			return err
 		}
-		err = a.dao.EnsureRoute(defaultRoute)
+		err = a.dao.EnsureRoute(mesh, defaultRoute)
 		if err != nil {
 			return err
 		}
@@ -70,7 +80,7 @@ func (a *appmeshEnforcer) StopEnforcing(ctx context.Context, mesh *zephyr_discov
 			service = services[0]
 		}
 		defaultVirtualNode := a.appmeshTranslator.BuildDefaultVirtualNode(appmeshName, workload, service, services)
-		err = a.dao.EnsureVirtualNode(defaultVirtualNode)
+		err = a.dao.EnsureVirtualNode(mesh, defaultVirtualNode)
 		if err != nil {
 			return err
 		}

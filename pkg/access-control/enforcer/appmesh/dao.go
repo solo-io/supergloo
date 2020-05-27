@@ -5,16 +5,30 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/clients/aws/appmesh"
+	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
 type appmeshAccessControlDao struct {
-	meshServiceClient  zephyr_discovery.MeshServiceClient
-	meshWorkloadClient zephyr_discovery.MeshWorkloadClient
-	resourceSelector   selector.ResourceSelector
-	appmeshClient      appmesh2.AppmeshClient
+	meshServiceClient    zephyr_discovery.MeshServiceClient
+	meshWorkloadClient   zephyr_discovery.MeshWorkloadClient
+	resourceSelector     selector.ResourceSelector
+	appmeshClientFactory appmesh2.AppmeshClientFactory
+}
+
+func NewAppmeshAccessControlDao(
+	meshServiceClient zephyr_discovery.MeshServiceClient,
+	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
+	resourceSelector selector.ResourceSelector,
+	appmeshClientFactory appmesh2.AppmeshClientFactory,
+) AppmeshAccessControlDao {
+	return &appmeshAccessControlDao{
+		meshServiceClient:    meshServiceClient,
+		meshWorkloadClient:   meshWorkloadClient,
+		resourceSelector:     resourceSelector,
+		appmeshClientFactory: appmeshClientFactory,
+	}
 }
 
 func (a *appmeshAccessControlDao) GetServicesAndWorkloadsForMesh(
@@ -89,17 +103,45 @@ func (a *appmeshAccessControlDao) listMeshWorkloadsForMesh(
 	return meshWorkloads, nil
 }
 
-func (a *appmeshAccessControlDao) EnsureVirtualService(virtualServiceData *appmesh.VirtualServiceData) error {
-	return a.appmeshClient.EnsureVirtualService(virtualServiceData)
+func (a *appmeshAccessControlDao) EnsureVirtualService(
+	mesh *zephyr_discovery.Mesh,
+	virtualServiceData *appmesh.VirtualServiceData,
+) error {
+	appmeshClient, err := a.appmeshClientFactory(mesh)
+	if err != nil {
+		return err
+	}
+	return appmeshClient.EnsureVirtualService(virtualServiceData)
 }
-func (a *appmeshAccessControlDao) EnsureVirtualRouter(virtualRouter *appmesh.VirtualRouterData) error {
-	return a.appmeshClient.EnsureVirtualRouter(virtualRouter)
+func (a *appmeshAccessControlDao) EnsureVirtualRouter(
+	mesh *zephyr_discovery.Mesh,
+	virtualRouter *appmesh.VirtualRouterData,
+) error {
+	appmeshClient, err := a.appmeshClientFactory(mesh)
+	if err != nil {
+		return err
+	}
+	return appmeshClient.EnsureVirtualRouter(virtualRouter)
 }
-func (a *appmeshAccessControlDao) EnsureRoute(route *appmesh.RouteData) error {
-	return a.appmeshClient.EnsureRoute(route)
+func (a *appmeshAccessControlDao) EnsureRoute(
+	mesh *zephyr_discovery.Mesh,
+	route *appmesh.RouteData,
+) error {
+	appmeshClient, err := a.appmeshClientFactory(mesh)
+	if err != nil {
+		return err
+	}
+	return appmeshClient.EnsureRoute(route)
 }
-func (a *appmeshAccessControlDao) EnsureVirtualNode(virtualNode *appmesh.VirtualNodeData) error {
-	return a.appmeshClient.EnsureVirtualNode(virtualNode)
+func (a *appmeshAccessControlDao) EnsureVirtualNode(
+	mesh *zephyr_discovery.Mesh,
+	virtualNode *appmesh.VirtualNodeData,
+) error {
+	appmeshClient, err := a.appmeshClientFactory(mesh)
+	if err != nil {
+		return err
+	}
+	return appmeshClient.EnsureVirtualNode(virtualNode)
 }
 
 func isServiceBackedByWorkload(

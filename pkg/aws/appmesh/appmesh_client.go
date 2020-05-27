@@ -6,13 +6,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/aws"
-	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 )
 
 type AppmeshClientFactory func(mesh *zephyr_discovery.Mesh) (AppmeshClient, error)
 
 func AppmeshClientFactoryProvider(
-	matcher appmesh2.AppmeshMatcher,
+	matcher AppmeshMatcher,
 	awsCredentialsGetter aws.AwsCredentialsGetter,
 	appmeshRawClientFactory AppmeshRawClientFactory,
 ) AppmeshClientFactory {
@@ -30,7 +29,7 @@ func AppmeshClientFactoryProvider(
 }
 
 type appmeshClient struct {
-	matcher                 appmesh2.AppmeshMatcher
+	matcher                 AppmeshMatcher
 	awsCredentialsGetter    aws.AwsCredentialsGetter
 	appmeshRawClientFactory AppmeshRawClientFactory
 	client                  appmeshiface.AppMeshAPI
@@ -38,7 +37,7 @@ type appmeshClient struct {
 
 func NewAppmeshClient(
 	client appmeshiface.AppMeshAPI,
-	matcher appmesh2.AppmeshMatcher,
+	matcher AppmeshMatcher,
 	awsCredentialsGetter aws.AwsCredentialsGetter,
 	appmeshRawClientFactory AppmeshRawClientFactory,
 ) AppmeshClient {

@@ -18,11 +18,23 @@ type AppmeshAccessControlDao interface {
 		map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService,
 		error)
 
-	EnsureVirtualService(virtualServiceData *appmesh.VirtualServiceData) error
+	EnsureVirtualService(
+		mesh *zephyr_discovery.Mesh,
+		virtualServiceData *appmesh.VirtualServiceData,
+	) error
 
-	EnsureVirtualRouter(virtualRouter *appmesh.VirtualRouterData) error
+	EnsureVirtualRouter(
+		mesh *zephyr_discovery.Mesh,
+		virtualRouter *appmesh.VirtualRouterData,
+	) error
 
-	EnsureRoute(route *appmesh.RouteData) error
+	EnsureRoute(
+		mesh *zephyr_discovery.Mesh,
+		route *appmesh.RouteData,
+	) error
 
-	EnsureVirtualNode(virtualNode *appmesh.VirtualNodeData) error
+	EnsureVirtualNode(
+		mesh *zephyr_discovery.Mesh,
+		virtualNode *appmesh.VirtualNodeData,
+	) error
 }

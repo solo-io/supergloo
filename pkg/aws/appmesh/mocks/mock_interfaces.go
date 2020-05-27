@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	appmesh "github.com/aws/aws-sdk-go/service/appmesh"
+	sts "github.com/aws/aws-sdk-go/service/sts"
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
@@ -169,4 +170,121 @@ func (m *MockAppmeshTranslator) BuildVirtualRouter(appmeshName *string, meshServ
 func (mr *MockAppmeshTranslatorMockRecorder) BuildVirtualRouter(appmeshName, meshService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildVirtualRouter", reflect.TypeOf((*MockAppmeshTranslator)(nil).BuildVirtualRouter), appmeshName, meshService)
+}
+
+// MockAppmeshClient is a mock of AppmeshClient interface.
+type MockAppmeshClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockAppmeshClientMockRecorder
+}
+
+// MockAppmeshClientMockRecorder is the mock recorder for MockAppmeshClient.
+type MockAppmeshClientMockRecorder struct {
+	mock *MockAppmeshClient
+}
+
+// NewMockAppmeshClient creates a new mock instance.
+func NewMockAppmeshClient(ctrl *gomock.Controller) *MockAppmeshClient {
+	mock := &MockAppmeshClient{ctrl: ctrl}
+	mock.recorder = &MockAppmeshClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAppmeshClient) EXPECT() *MockAppmeshClientMockRecorder {
+	return m.recorder
+}
+
+// EnsureVirtualService mocks base method.
+func (m *MockAppmeshClient) EnsureVirtualService(virtualServiceData *appmesh.VirtualServiceData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureVirtualService", virtualServiceData)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureVirtualService indicates an expected call of EnsureVirtualService.
+func (mr *MockAppmeshClientMockRecorder) EnsureVirtualService(virtualServiceData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualService", reflect.TypeOf((*MockAppmeshClient)(nil).EnsureVirtualService), virtualServiceData)
+}
+
+// EnsureVirtualRouter mocks base method.
+func (m *MockAppmeshClient) EnsureVirtualRouter(virtualRouter *appmesh.VirtualRouterData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureVirtualRouter", virtualRouter)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureVirtualRouter indicates an expected call of EnsureVirtualRouter.
+func (mr *MockAppmeshClientMockRecorder) EnsureVirtualRouter(virtualRouter interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualRouter", reflect.TypeOf((*MockAppmeshClient)(nil).EnsureVirtualRouter), virtualRouter)
+}
+
+// EnsureRoute mocks base method.
+func (m *MockAppmeshClient) EnsureRoute(route *appmesh.RouteData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureRoute", route)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureRoute indicates an expected call of EnsureRoute.
+func (mr *MockAppmeshClientMockRecorder) EnsureRoute(route interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureRoute", reflect.TypeOf((*MockAppmeshClient)(nil).EnsureRoute), route)
+}
+
+// EnsureVirtualNode mocks base method.
+func (m *MockAppmeshClient) EnsureVirtualNode(virtualNode *appmesh.VirtualNodeData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureVirtualNode", virtualNode)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureVirtualNode indicates an expected call of EnsureVirtualNode.
+func (mr *MockAppmeshClientMockRecorder) EnsureVirtualNode(virtualNode interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualNode", reflect.TypeOf((*MockAppmeshClient)(nil).EnsureVirtualNode), virtualNode)
+}
+
+// MockSTSClient is a mock of STSClient interface.
+type MockSTSClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockSTSClientMockRecorder
+}
+
+// MockSTSClientMockRecorder is the mock recorder for MockSTSClient.
+type MockSTSClientMockRecorder struct {
+	mock *MockSTSClient
+}
+
+// NewMockSTSClient creates a new mock instance.
+func NewMockSTSClient(ctrl *gomock.Controller) *MockSTSClient {
+	mock := &MockSTSClient{ctrl: ctrl}
+	mock.recorder = &MockSTSClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockSTSClient) EXPECT() *MockSTSClientMockRecorder {
+	return m.recorder
+}
+
+// GetCallerIdentity mocks base method.
+func (m *MockSTSClient) GetCallerIdentity() (*sts.GetCallerIdentityOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCallerIdentity")
+	ret0, _ := ret[0].(*sts.GetCallerIdentityOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCallerIdentity indicates an expected call of GetCallerIdentity.
+func (mr *MockSTSClientMockRecorder) GetCallerIdentity() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCallerIdentity", reflect.TypeOf((*MockSTSClient)(nil).GetCallerIdentity))
 }

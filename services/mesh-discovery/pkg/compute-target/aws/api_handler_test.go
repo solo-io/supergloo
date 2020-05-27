@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	mock_aws_creds "github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/aws/sts"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 	mock_sts "github.com/solo-io/service-mesh-hub/pkg/clients/aws/sts/mocks"
 	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	mock_rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/mocks"
@@ -41,7 +41,7 @@ var _ = Describe("CredsHandler", func() {
 		awsCredsHandler = aws2.NewAwsAPIHandler(
 			mockSecretConverter,
 			[]aws2.RestAPIDiscoveryReconciler{mockReconciler},
-			func(creds *credentials.Credentials, region string) (sts.STSClient, error) {
+			func(creds *credentials.Credentials, region string) (appmesh.STSClient, error) {
 				return mockSTSClient, nil
 			},
 		)

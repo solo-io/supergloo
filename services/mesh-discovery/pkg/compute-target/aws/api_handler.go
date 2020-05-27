@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/aws/sts"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"go.uber.org/zap"
@@ -24,7 +24,7 @@ type awsCredsHandler struct {
 	reconcilerCancelFuncs map[string]context.CancelFunc // Map of computeTargetName -> RestAPIDiscoveryReconciler's cancelFunc
 	secretCredsConverter  aws_creds.SecretAwsCredsConverter
 	reconcilers           []RestAPIDiscoveryReconciler
-	stsClientFactory      sts.STSClientFactory
+	stsClientFactory      appmesh.STSClientFactory
 }
 
 type AwsCredsHandler compute_target.ComputeTargetCredentialsHandler
@@ -32,7 +32,7 @@ type AwsCredsHandler compute_target.ComputeTargetCredentialsHandler
 func NewAwsAPIHandler(
 	secretCredsConverter aws_creds.SecretAwsCredsConverter,
 	reconcilers []RestAPIDiscoveryReconciler,
-	stsClientFactory sts.STSClientFactory,
+	stsClientFactory appmesh.STSClientFactory,
 ) AwsCredsHandler {
 	return &awsCredsHandler{
 		reconcilerCancelFuncs: make(map[string]context.CancelFunc),

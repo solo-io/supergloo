@@ -8,13 +8,13 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	aws3 "github.com/solo-io/service-mesh-hub/pkg/aws"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/aws/sts"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	v1 "k8s.io/api/core/v1"
 )
 
 type networkingAwsCredsHandler struct {
-	stsClientFactory     sts.STSClientFactory
+	stsClientFactory     appmesh.STSClientFactory
 	credentialsMap       aws3.AwsCredentialsGetter
 	secretCredsConverter aws_creds.SecretAwsCredsConverter
 }

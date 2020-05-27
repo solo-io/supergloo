@@ -2,6 +2,7 @@ package appmesh
 
 import (
 	appmesh2 "github.com/aws/aws-sdk-go/service/appmesh"
+	"github.com/aws/aws-sdk-go/service/sts"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
@@ -56,4 +57,21 @@ type AppmeshTranslator interface {
 		appmeshName *string,
 		meshService *zephyr_discovery.MeshService,
 	) *appmesh2.VirtualRouterData
+}
+
+/*
+	Provide methods that ensure the existence of the given Appmesh resource.
+	"Ensure" means create if the resource doesn't exist as identified by its name.
+	If it does exist, update it if its spec doesn't match the provided resource spec. Otherwise do nothing.
+*/
+type AppmeshClient interface {
+	EnsureVirtualService(virtualServiceData *appmesh2.VirtualServiceData) error
+	EnsureVirtualRouter(virtualRouter *appmesh2.VirtualRouterData) error
+	EnsureRoute(route *appmesh2.RouteData) error
+	EnsureVirtualNode(virtualNode *appmesh2.VirtualNodeData) error
+}
+
+type STSClient interface {
+	// Retrieves caller identity metadata by making a request to AWS STS (Secure Token Service).
+	GetCallerIdentity() (*sts.GetCallerIdentityOutput, error)
 }
