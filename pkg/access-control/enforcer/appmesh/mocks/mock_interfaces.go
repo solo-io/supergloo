@@ -6,11 +6,10 @@ package mock_appmesh
 
 import (
 	context "context"
-	reflect "reflect"
-
 	appmesh "github.com/aws/aws-sdk-go/service/appmesh"
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	reflect "reflect"
 )
 
 // MockAppmeshAccessControlDao is a mock of AppmeshAccessControlDao interface.
@@ -53,57 +52,57 @@ func (mr *MockAppmeshAccessControlDaoMockRecorder) GetServicesAndWorkloadsForMes
 }
 
 // EnsureVirtualService mocks base method.
-func (m *MockAppmeshAccessControlDao) EnsureVirtualService(virtualServiceData *appmesh.VirtualServiceData) error {
+func (m *MockAppmeshAccessControlDao) EnsureVirtualService(mesh *v1alpha1.Mesh, virtualServiceData *appmesh.VirtualServiceData) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureVirtualService", virtualServiceData)
+	ret := m.ctrl.Call(m, "EnsureVirtualService", mesh, virtualServiceData)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EnsureVirtualService indicates an expected call of EnsureVirtualService.
-func (mr *MockAppmeshAccessControlDaoMockRecorder) EnsureVirtualService(virtualServiceData interface{}) *gomock.Call {
+func (mr *MockAppmeshAccessControlDaoMockRecorder) EnsureVirtualService(mesh, virtualServiceData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualService", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).EnsureVirtualService), virtualServiceData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualService", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).EnsureVirtualService), mesh, virtualServiceData)
 }
 
 // EnsureVirtualRouter mocks base method.
-func (m *MockAppmeshAccessControlDao) EnsureVirtualRouter(virtualRouter *appmesh.VirtualRouterData) error {
+func (m *MockAppmeshAccessControlDao) EnsureVirtualRouter(mesh *v1alpha1.Mesh, virtualRouter *appmesh.VirtualRouterData) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureVirtualRouter", virtualRouter)
+	ret := m.ctrl.Call(m, "EnsureVirtualRouter", mesh, virtualRouter)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EnsureVirtualRouter indicates an expected call of EnsureVirtualRouter.
-func (mr *MockAppmeshAccessControlDaoMockRecorder) EnsureVirtualRouter(virtualRouter interface{}) *gomock.Call {
+func (mr *MockAppmeshAccessControlDaoMockRecorder) EnsureVirtualRouter(mesh, virtualRouter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualRouter", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).EnsureVirtualRouter), virtualRouter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualRouter", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).EnsureVirtualRouter), mesh, virtualRouter)
 }
 
 // EnsureRoute mocks base method.
-func (m *MockAppmeshAccessControlDao) EnsureRoute(route *appmesh.RouteData) error {
+func (m *MockAppmeshAccessControlDao) EnsureRoute(mesh *v1alpha1.Mesh, route *appmesh.RouteData) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureRoute", route)
+	ret := m.ctrl.Call(m, "EnsureRoute", mesh, route)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EnsureRoute indicates an expected call of EnsureRoute.
-func (mr *MockAppmeshAccessControlDaoMockRecorder) EnsureRoute(route interface{}) *gomock.Call {
+func (mr *MockAppmeshAccessControlDaoMockRecorder) EnsureRoute(mesh, route interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureRoute", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).EnsureRoute), route)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureRoute", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).EnsureRoute), mesh, route)
 }
 
 // EnsureVirtualNode mocks base method.
-func (m *MockAppmeshAccessControlDao) EnsureVirtualNode(virtualNode *appmesh.VirtualNodeData) error {
+func (m *MockAppmeshAccessControlDao) EnsureVirtualNode(mesh *v1alpha1.Mesh, virtualNode *appmesh.VirtualNodeData) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureVirtualNode", virtualNode)
+	ret := m.ctrl.Call(m, "EnsureVirtualNode", mesh, virtualNode)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EnsureVirtualNode indicates an expected call of EnsureVirtualNode.
-func (mr *MockAppmeshAccessControlDaoMockRecorder) EnsureVirtualNode(virtualNode interface{}) *gomock.Call {
+func (mr *MockAppmeshAccessControlDaoMockRecorder) EnsureVirtualNode(mesh, virtualNode interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualNode", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).EnsureVirtualNode), virtualNode)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualNode", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).EnsureVirtualNode), mesh, virtualNode)
 }
