@@ -5,9 +5,10 @@
 package mock_appmesh
 
 import (
+	reflect "reflect"
+
 	appmesh "github.com/aws/aws-sdk-go/service/appmesh"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
 // MockAppmeshClient is a mock of AppmeshClient interface.

@@ -5,10 +5,11 @@
 package mock_appmesh
 
 import (
+	reflect "reflect"
+
 	appmesh "github.com/aws/aws-sdk-go/service/appmesh"
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	reflect "reflect"
 )
 
 // MockAppmeshMatcher is a mock of AppmeshMatcher interface.

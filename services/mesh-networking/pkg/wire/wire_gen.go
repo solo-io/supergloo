@@ -19,6 +19,7 @@ import (
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/aws"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
@@ -28,6 +29,7 @@ import (
 	acp_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	istio_translator2 "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator/istio-translator"
 	networking_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target"
+	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/aws"
 	controller_factories "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/controllers"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
@@ -57,7 +59,8 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	fileReader := files.NewDefaultFileReader()
 	converter := kubeconfig.NewConverter(fileReader)
 	asyncManagerController := mc_wire.KubeClusterCredentialsHandlerProvider(converter)
-	awsCredsHandler := NewNetworkingAwsCredsHandler()
+	awsCredentialsGetter := aws.NewCredentialsGetter()
+	awsCredsHandler := aws2.NewNetworkingAwsCredsHandler(awsCredentialsGetter)
 	v := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)

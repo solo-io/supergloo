@@ -15,7 +15,7 @@ type awsCredentialsGetter struct {
 	meshToCreds map[string]*credentials.Credentials
 }
 
-func NewCredentialsGetter() *awsCredentialsGetter {
+func NewCredentialsGetter() AwsCredentialsGetter {
 	return &awsCredentialsGetter{
 		meshToCreds: make(map[string]*credentials.Credentials),
 	}
