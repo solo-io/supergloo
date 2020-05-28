@@ -4,39 +4,36 @@ import (
 	"context"
 
 	aws2 "github.com/aws/aws-sdk-go/aws"
-	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/collections/sets"
 )
 
-const (
-	EnforcerId = "appmesh_enforcer"
-)
-
-type appmeshEnforcer struct {
+type appmeshAccessControlReconciler struct {
 	appmeshTranslator appmesh.AppmeshTranslator
 	dao               AppmeshAccessControlDao
 }
 
-type AppmeshEnforcer access_control_enforcer.AccessPolicyMeshEnforcer
-
-func NewAppmeshEnforcer(
-	appmeshTranslator appmesh.AppmeshTranslator,
-	dao AppmeshAccessControlDao,
-) AppmeshEnforcer {
-	return &appmeshEnforcer{appmeshTranslator: appmeshTranslator, dao: dao}
+func (a *appmeshAccessControlReconciler) reconcile(
+	ctx context.Context,
+	mesh *zephyr_discovery.Mesh,
+	virtualMesh *zephyr_networking.VirtualMesh,
+) error {
+	switch virtualMesh.Spec.GetEnforceAccessControl() {
+	case zephyr_networking_types.VirtualMeshSpec_ENABLED, zephyr_networking_types.VirtualMeshSpec_MESH_DEFAULT:
+		return a.reconcileWithEnforcement(ctx, mesh)
+	case zephyr_networking_types.VirtualMeshSpec_DISABLED:
+		return a.reconcileWithoutEnforcement(ctx, mesh)
+	}
+	return nil
 }
 
-func (a *appmeshEnforcer) Name() string {
-	return EnforcerId
-}
-
-/*
-	Delete all default routes (those with name "smh-default") and any
-	VirtualServices and VirtualNodes not declared in AccessControlPolicies.
-*/
-func (a *appmeshEnforcer) StartEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
+func (a *appmeshAccessControlReconciler) reconcileWithEnforcement(
+	ctx context.Context,
+	mesh *zephyr_discovery.Mesh,
+) error {
 	if mesh.Spec.GetAwsAppMesh() == nil {
 		return nil
 	}
@@ -75,7 +72,10 @@ func (a *appmeshEnforcer) StartEnforcing(ctx context.Context, mesh *zephyr_disco
 	For every (workload, service) pair, declare the corresponding VirtualService (representing the k8s service)
 	as a backend for the VirtualNode (representing the workload).
 */
-func (a *appmeshEnforcer) StopEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
+func (a *appmeshAccessControlReconciler) reconcileWithoutEnforcement(
+	ctx context.Context,
+	mesh *zephyr_discovery.Mesh,
+) error {
 	if mesh.Spec.GetAwsAppMesh() == nil {
 		return nil
 	}
