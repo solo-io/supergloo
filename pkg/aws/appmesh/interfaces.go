@@ -39,7 +39,7 @@ type AppmeshTranslator interface {
 		upstreamServices []*zephyr_discovery.MeshService,
 	) *appmesh2.VirtualNodeData
 
-	// For a given MeshService, return a Route that targets the given MeshWorkloads with equal weight.
+	// For a given MeshService, return a Route that targets all its backing workloads with equal weight.
 	BuildDefaultRoute(
 		appmeshName *string,
 		meshService *zephyr_discovery.MeshService,
@@ -69,6 +69,8 @@ type AppmeshClient interface {
 	EnsureVirtualRouter(virtualRouter *appmesh2.VirtualRouterData) error
 	EnsureRoute(route *appmesh2.RouteData) error
 	EnsureVirtualNode(virtualNode *appmesh2.VirtualNodeData) error
+
+	DeleteAllDefaultRoutes(meshName string) error
 }
 
 type STSClient interface {

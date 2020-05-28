@@ -1,6 +1,7 @@
 package appmesh
 
 import (
+	aws2 "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
@@ -158,6 +159,56 @@ func (a *appmeshClient) EnsureVirtualNode(virtualNode *appmesh.VirtualNodeData) 
 		Spec:            virtualNode.Spec,
 	})
 	return err
+}
+
+func (a *appmeshClient) DeleteAllDefaultRoutes(meshName string) error {
+	meshNamePtr := aws2.String(meshName)
+	var virtualRouterNames []*string
+	listVirtualRoutersInput := &appmesh.ListVirtualRoutersInput{
+		MeshName: meshNamePtr,
+	}
+	for {
+		resp, err := a.client.ListVirtualRouters(listVirtualRoutersInput)
+		if err != nil {
+			return err
+		}
+		for _, virtualRouterRef := range resp.VirtualRouters {
+			virtualRouterNames = append(virtualRouterNames, virtualRouterRef.VirtualRouterName)
+		}
+		if resp.NextToken == nil {
+			break
+		}
+		listVirtualRoutersInput.NextToken = resp.NextToken
+	}
+	for _, virtualRouterName := range virtualRouterNames {
+		listRoutesInput := &appmesh.ListRoutesInput{
+			MeshName:          meshNamePtr,
+			VirtualRouterName: virtualRouterName,
+		}
+		for {
+			resp, err := a.client.ListRoutes(listRoutesInput)
+			if err != nil {
+				return err
+			}
+			for _, routeRef := range resp.Routes {
+				if aws2.StringValue(routeRef.RouteName) == DefaultRouteName {
+					_, err := a.client.DeleteRoute(&appmesh.DeleteRouteInput{
+						MeshName:          meshNamePtr,
+						VirtualRouterName: virtualRouterName,
+						RouteName:         routeRef.RouteName,
+					})
+					if err != nil {
+						return err
+					}
+				}
+			}
+			if resp.NextToken == nil {
+				break
+			}
+			listRoutesInput.NextToken = resp.NextToken
+		}
+	}
+	return nil
 }
 
 func isNotFound(err error) bool {

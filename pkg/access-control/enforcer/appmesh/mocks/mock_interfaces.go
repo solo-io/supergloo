@@ -6,10 +6,12 @@ package mock_appmesh
 
 import (
 	context "context"
+	reflect "reflect"
+
 	appmesh "github.com/aws/aws-sdk-go/service/appmesh"
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	reflect "reflect"
+	sets "github.com/solo-io/service-mesh-hub/pkg/collections/sets"
 )
 
 // MockAppmeshAccessControlDao is a mock of AppmeshAccessControlDao interface.
@@ -35,20 +37,50 @@ func (m *MockAppmeshAccessControlDao) EXPECT() *MockAppmeshAccessControlDaoMockR
 	return m.recorder
 }
 
-// GetServicesAndWorkloadsForMesh mocks base method.
-func (m *MockAppmeshAccessControlDao) GetServicesAndWorkloadsForMesh(ctx context.Context, mesh *v1alpha1.Mesh) (map[*v1alpha1.MeshService][]*v1alpha1.MeshWorkload, map[*v1alpha1.MeshWorkload][]*v1alpha1.MeshService, error) {
+// GetServicesWorkloadPairsForMesh mocks base method.
+func (m *MockAppmeshAccessControlDao) GetServicesWorkloadPairsForMesh(ctx context.Context, mesh *v1alpha1.Mesh) (map[*v1alpha1.MeshService][]*v1alpha1.MeshWorkload, map[*v1alpha1.MeshWorkload][]*v1alpha1.MeshService, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetServicesAndWorkloadsForMesh", ctx, mesh)
+	ret := m.ctrl.Call(m, "GetServicesWorkloadPairsForMesh", ctx, mesh)
 	ret0, _ := ret[0].(map[*v1alpha1.MeshService][]*v1alpha1.MeshWorkload)
 	ret1, _ := ret[1].(map[*v1alpha1.MeshWorkload][]*v1alpha1.MeshService)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
-// GetServicesAndWorkloadsForMesh indicates an expected call of GetServicesAndWorkloadsForMesh.
-func (mr *MockAppmeshAccessControlDaoMockRecorder) GetServicesAndWorkloadsForMesh(ctx, mesh interface{}) *gomock.Call {
+// GetServicesWorkloadPairsForMesh indicates an expected call of GetServicesWorkloadPairsForMesh.
+func (mr *MockAppmeshAccessControlDaoMockRecorder) GetServicesWorkloadPairsForMesh(ctx, mesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServicesAndWorkloadsForMesh", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).GetServicesAndWorkloadsForMesh), ctx, mesh)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServicesWorkloadPairsForMesh", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).GetServicesWorkloadPairsForMesh), ctx, mesh)
+}
+
+// GetServicesWithACP mocks base method.
+func (m *MockAppmeshAccessControlDao) GetServicesWithACP(ctx context.Context, mesh *v1alpha1.Mesh) (sets.MeshServiceSet, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetServicesWithACP", ctx, mesh)
+	ret0, _ := ret[0].(sets.MeshServiceSet)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetServicesWithACP indicates an expected call of GetServicesWithACP.
+func (mr *MockAppmeshAccessControlDaoMockRecorder) GetServicesWithACP(ctx, mesh interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServicesWithACP", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).GetServicesWithACP), ctx, mesh)
+}
+
+// GetWorkloadsWithACP mocks base method.
+func (m *MockAppmeshAccessControlDao) GetWorkloadsWithACP(ctx context.Context, mesh *v1alpha1.Mesh) (sets.MeshWorkloadSet, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWorkloadsWithACP", ctx, mesh)
+	ret0, _ := ret[0].(sets.MeshWorkloadSet)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWorkloadsWithACP indicates an expected call of GetWorkloadsWithACP.
+func (mr *MockAppmeshAccessControlDaoMockRecorder) GetWorkloadsWithACP(ctx, mesh interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkloadsWithACP", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).GetWorkloadsWithACP), ctx, mesh)
 }
 
 // EnsureVirtualService mocks base method.
@@ -105,4 +137,18 @@ func (m *MockAppmeshAccessControlDao) EnsureVirtualNode(mesh *v1alpha1.Mesh, vir
 func (mr *MockAppmeshAccessControlDaoMockRecorder) EnsureVirtualNode(mesh, virtualNode interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualNode", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).EnsureVirtualNode), mesh, virtualNode)
+}
+
+// DeleteAllDefaultRoutes mocks base method.
+func (m *MockAppmeshAccessControlDao) DeleteAllDefaultRoutes(mesh *v1alpha1.Mesh) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllDefaultRoutes", mesh)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllDefaultRoutes indicates an expected call of DeleteAllDefaultRoutes.
+func (mr *MockAppmeshAccessControlDaoMockRecorder) DeleteAllDefaultRoutes(mesh interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllDefaultRoutes", reflect.TypeOf((*MockAppmeshAccessControlDao)(nil).DeleteAllDefaultRoutes), mesh)
 }

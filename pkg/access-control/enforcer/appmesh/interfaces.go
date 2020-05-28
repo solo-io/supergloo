@@ -5,18 +5,29 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/collections/sets"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
 
 type AppmeshAccessControlDao interface {
-	// Return two maps which associate workloads to services and vice versa.
-	GetServicesAndWorkloadsForMesh(
+	// Return two maps which associate workloads to backing services and vice versa.
+	GetServicesWorkloadPairsForMesh(
 		ctx context.Context,
 		mesh *zephyr_discovery.Mesh,
 	) (map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload,
 		map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService,
 		error)
+
+	GetServicesWithACP(
+		ctx context.Context,
+		mesh *zephyr_discovery.Mesh,
+	) (sets.MeshServiceSet, error)
+
+	GetWorkloadsWithACP(
+		ctx context.Context,
+		mesh *zephyr_discovery.Mesh,
+	) (sets.MeshWorkloadSet, error)
 
 	EnsureVirtualService(
 		mesh *zephyr_discovery.Mesh,
@@ -36,5 +47,9 @@ type AppmeshAccessControlDao interface {
 	EnsureVirtualNode(
 		mesh *zephyr_discovery.Mesh,
 		virtualNode *appmesh.VirtualNodeData,
+	) error
+
+	DeleteAllDefaultRoutes(
+		mesh *zephyr_discovery.Mesh,
 	) error
 }

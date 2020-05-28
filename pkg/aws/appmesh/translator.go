@@ -10,7 +10,7 @@ import (
 
 const (
 	// Canonical name for default route that permits traffic to all workloads backing service with equal weight.
-	DefaultRouteName = "default"
+	DefaultRouteName = "smh-default"
 )
 
 var (
