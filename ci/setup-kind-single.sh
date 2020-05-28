@@ -7,7 +7,7 @@
 #####################################
 
 if [ "$1" == "cleanup" ]; then
-  kind get clusters | while read -r r; do kind delete cluster --name "$r"; done
+  kind delete cluster --name "management-plane"
   exit 0
 fi
 

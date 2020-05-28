@@ -21,7 +21,7 @@ message MeshWorkloadSpec {
         }
 
         // The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container
-        string virtualNodeName = 1;
+        string virtual_node_name = 1;
 
         // Needed for declaring Appmesh VirtualNode listeners
         repeated ContainerPort ports = 2;
