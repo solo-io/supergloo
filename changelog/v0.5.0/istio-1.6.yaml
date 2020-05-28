@@ -1,5 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: Add in-code support for Istio 1.6. Still need to do e2e testing.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/719
-    resolvesIssue: false
