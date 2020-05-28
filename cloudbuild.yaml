@@ -95,7 +95,7 @@ steps:
 
 - name: 'gcr.io/cloud-builders/docker'
   entrypoint: 'bash'
-  args: ['-c', 'docker login --username "soloiobot" --password $$CI_ADMIN_DOCKER_HUB_PASSWORD']
+  args: ['-c', 'docker login --username "soloiobot" --password $$CI_ADMIN_DOCKER_HUB_PASSWORD https://index.docker.io/v1/']
   secretEnv: ['CI_ADMIN_DOCKER_HUB_PASSWORD']
   id: 'docker-login'
   waitFor: ['test']
