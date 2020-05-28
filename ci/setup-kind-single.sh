@@ -14,7 +14,7 @@ fi
 make clean
 
 # generate 16-character random suffix on these names
-managementPlane=management-plane-$(xxd -l16 -ps /dev/urandom)
+managementPlane=management-plane
 
 # set up each cluster
 # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
