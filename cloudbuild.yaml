@@ -96,7 +96,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   entrypoint: 'bash'
   args: ['-c', 'docker login --username "soloiobot" --password $$CI_ADMIN_DOCKER_HUB_PASSWORD']
-  secretEnv: ['QUAY_IO_PASSWORD']
+  secretEnv: ['CI_ADMIN_DOCKER_HUB_PASSWORD']
   id: 'docker-login'
   waitFor: ['test']
 
@@ -118,7 +118,7 @@ steps:
   - 'HELM_HOME=/root/.helm'
   dir: *dir
   waitFor: ['docker-login']
-  secretEnv: ['GITHUB_TOKEN', 'QUAY_IO_PASSWORD']
+  secretEnv: ['GITHUB_TOKEN', 'CI_ADMIN_DOCKER_HUB_PASSWORD']
   id: 'release'
   # 2) Publish Helm charts to GCS
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
