@@ -1,6 +1,6 @@
 global:
   image:
-    registry: quay.io/solo-io
+    registry: soloio
     pullPolicy: IfNotPresent
   stats:
     enabled: true

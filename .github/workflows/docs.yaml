@@ -38,7 +38,7 @@ jobs:
       run: go run codegen/docs/docsgen.go
 
     - name: Docker Login
-      run : docker login quay.io --username "solo-io+solobot" --password ${{ secrets.QUAY_IO_PASSWORD }}
+      run : docker login --username "soloiobot" --password ${{ secrets.CI_ADMIN_DOCKER_HUB_PASSWORD }}
 
     - name: Push latest
       # Found on github community:  https://github.community/t5/GitHub-Actions/Github-Actions-GITHUB-EVENT-PATH-does-not-contain-relevant-PR/td-p/20835
