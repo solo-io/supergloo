@@ -95,7 +95,7 @@ steps:
 
 - name: 'gcr.io/cloud-builders/docker'
   entrypoint: 'bash'
-  args: ['-c', 'docker login --username "soloiobot" --password $$CI_ADMIN_DOCKER_HUB_PASSWORD https://index.docker.io/v1/']
+  args: ['-c', 'docker login --username soloiobot --password $$CI_ADMIN_DOCKER_HUB_PASSWORD']
   secretEnv: ['CI_ADMIN_DOCKER_HUB_PASSWORD']
   id: 'docker-login'
   waitFor: ['test']
@@ -151,7 +151,7 @@ secrets:
 - kmsKeyName: projects/service-mesh-hub/locations/global/keyRings/buildkey/cryptoKeys/buildkey
   secretEnv:
     GITHUB_TOKEN: CiQAKyB5I9fr8p5nvPXPUGM9XiM+33WlWIsqpaTJv3+dHRnWwrcSUQCNH9Xw2VlfjBBwejOc6gsrxSpCBywVSl17DPIJ+D7a1ZUnqWftDabLyMCelzmVFYTZ/HMVycLntO+09UlXmpWKNR/Aly39oumqCMJkd1xTog==
-    CI_ADMIN_DOCKER_HUB_PASSWORD: CiQAKyB5IwhWuTXQqD9yzD95jnbXnjTT3SmfG779/DAfy1nJqUESxgEAsXSFvwrzb2tZ/ZqVUV6M5AbmGjdAnt7KPpxfDij+BBPjX1Ov59g/fDAw0TOQns9aJMmqVP0aMs3LLY7XDVkjUJIGvIRXfm5JRO+NluMX3n1Q88QEtVzH+Ezf1hj2T4AC9ybHW50xBCVKQ+W4NbaTtaC7f2CUl6e6DO7Tf/upRrmdBDFIMhEuStv3Enj7VqE8vHM8ba/VoGlVCKdzGSRdnlUzw/uNdRysptWSXT3YERO0oquhkBPIKH3Pb4Uhb6zdIKQQiMM=
+    CI_ADMIN_DOCKER_HUB_PASSWORD: CiQAKyB5I2PPyxO8/dSDcJ2U3hjdxEZVdCDtXf2JvOD9+A2yl/ASTQCxdIW/67DDP9kEQrslrYKu7CNPOv428R/2maFvnInr/3nzW/NGDVvTC3Rnd8Vijozt94qW2tVhpwvtcQplz/cDGUlvQxksboM1c00q
 timeout: 1800s
 tags: ['service-mesh-hub']
 options:
