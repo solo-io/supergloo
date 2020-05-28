@@ -1,7 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Record Appmesh VirtualNode name
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/732
-  - type: NON_USER_FACING
-    description: Bump solo-kit to get more error logs.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/730
