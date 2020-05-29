@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Update VirtualMesh docs with new enum for global access control enforcement.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/737

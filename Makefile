@@ -25,6 +25,12 @@ GCFLAGS := all="-N -l"
 
 GO_BUILD_FLAGS := GO111MODULE=on CGO_ENABLED=0 GOARCH=amd64
 
+# If you just put your username, then that refers to your account at hub.docker.com
+# To use quay images, set the IMAGE_REPO to "quay.io/solo-io"
+# To use dockerhub images, set the IMAGE_REPO to "soloio"
+# To use gcr images, set the IMAGE_REPO to "gcr.io"
+IMAGE_REPO := soloio
+
 
 #----------------------------------------------------------------------------------
 # Clean
@@ -100,7 +106,7 @@ generated-code:
 
 # $(1) name of container
 define build_container
-docker build -t quay.io/solo-io/$(1):$(VERSION) $(ROOTDIR)/services/$(1)/_output -f $(ROOTDIR)/services/$(1)/cmd/Dockerfile;
+docker build -t ${IMAGE_REPO}/$(1):$(VERSION) $(ROOTDIR)/services/$(1)/_output -f $(ROOTDIR)/services/$(1)/cmd/Dockerfile;
 endef
 
 #----------------------------------------------------------------------------------
@@ -201,7 +207,7 @@ docker: mesh-discovery-docker mesh-networking-docker csr-agent-docker
 
 # $(1) name of component
 define docker_push
-docker push quay.io/solo-io/$(1):$(VERSION);
+docker push ${IMAGE_REPO}/$(1):$(VERSION);
 endef
 
 # Depends on DOCKER_IMAGES, which is set to docker if RELEASE is "true", otherwise empty (making this a no-op).
@@ -214,7 +220,7 @@ docker-push: docker
 
 CLUSTER_NAME := $(if $(CLUSTER_NAME),$(CLUSTER_NAME), $(shell kind get clusters | grep management-plane))
 define kind_load
-kind load docker-image quay.io/solo-io/$(1):$(VERSION) --name $(CLUSTER_NAME);
+kind load docker-image ${IMAGE_REPO}/$(1):$(VERSION) --name $(CLUSTER_NAME);
 endef
 
 .PHONY: kind-load-images

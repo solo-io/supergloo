@@ -95,8 +95,8 @@ steps:
 
 - name: 'gcr.io/cloud-builders/docker'
   entrypoint: 'bash'
-  args: ['-c', 'docker login quay.io --username "solo-io+solobot" --password $$QUAY_IO_PASSWORD']
-  secretEnv: ['QUAY_IO_PASSWORD']
+  args: ['-c', 'docker login --username soloiobot --password $$CI_ADMIN_DOCKER_HUB_PASSWORD']
+  secretEnv: ['CI_ADMIN_DOCKER_HUB_PASSWORD']
   id: 'docker-login'
   waitFor: ['test']
 
@@ -118,7 +118,7 @@ steps:
   - 'HELM_HOME=/root/.helm'
   dir: *dir
   waitFor: ['docker-login']
-  secretEnv: ['GITHUB_TOKEN', 'QUAY_IO_PASSWORD']
+  secretEnv: ['GITHUB_TOKEN', 'CI_ADMIN_DOCKER_HUB_PASSWORD']
   id: 'release'
   # 2) Publish Helm charts to GCS
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
@@ -151,7 +151,7 @@ secrets:
 - kmsKeyName: projects/service-mesh-hub/locations/global/keyRings/buildkey/cryptoKeys/buildkey
   secretEnv:
     GITHUB_TOKEN: CiQAKyB5I9fr8p5nvPXPUGM9XiM+33WlWIsqpaTJv3+dHRnWwrcSUQCNH9Xw2VlfjBBwejOc6gsrxSpCBywVSl17DPIJ+D7a1ZUnqWftDabLyMCelzmVFYTZ/HMVycLntO+09UlXmpWKNR/Aly39oumqCMJkd1xTog==
-    QUAY_IO_PASSWORD: CiQAKyB5I9JZaTwv2wu/GPqBN+tmY2/tx0L3Y2SIHmfGmINY/9ISaQCNH9Xw+TvaCHp5A/5cdmQTlSmgYVWgTDcYDNbgPinb0+VsaiBC61V6Zw7VhsKrfYTGw4KoMbFUrT/36Mqq1QXx2GjNJwdXv/sqJGZmrmGXutXXQ3OO4WcJs98+Ji749Z3XIm/QD38tag==
+    CI_ADMIN_DOCKER_HUB_PASSWORD: CiQAKyB5I2PPyxO8/dSDcJ2U3hjdxEZVdCDtXf2JvOD9+A2yl/ASTQCxdIW/67DDP9kEQrslrYKu7CNPOv428R/2maFvnInr/3nzW/NGDVvTC3Rnd8Vijozt94qW2tVhpwvtcQplz/cDGUlvQxksboM1c00q
 timeout: 1800s
 tags: ['service-mesh-hub']
 options:
