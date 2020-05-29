@@ -10,7 +10,7 @@ const (
 
 	DefaultIstioProfile = "default"
 
-	DefaultIstioOperatorNamespace      = "istio-operator"
+	DefaultIstioOperatorNamespace      = "istio-system"
 	DefaultIstioOperatorDeploymentName = "istio-operator"
 )
 

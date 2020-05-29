@@ -199,9 +199,6 @@ type istioDeployment struct {
 
 // TODO merge with linkerd controller type
 func (i istioDeployment) Name() string {
-	if i.Cluster == "" {
-		return "istio-" + i.Namespace
-	}
 	// TODO: https://github.com/solo-io/service-mesh-hub/issues/141
 	return "istio-" + i.Namespace + "-" + i.Cluster
 }

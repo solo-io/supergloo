@@ -4,8 +4,8 @@ import (
 	"github.com/google/wire"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	istio1_5 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio1.5"
-	istio1_6 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio1.6"
+	istio1_5 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/istio1.5"
+	istio1_6 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/istio1.6"
 	"github.com/spf13/cobra"
 )
 

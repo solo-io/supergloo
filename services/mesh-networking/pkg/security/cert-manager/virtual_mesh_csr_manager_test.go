@@ -248,7 +248,7 @@ var _ = Describe("csr manager", func() {
 				Return(nil, nil)
 
 			csrClient.EXPECT().
-				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio1_5-name-cert-request", Namespace: container_runtime.GetWriteNamespace()}).
+				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio1-5-name-cert-request", Namespace: container_runtime.GetWriteNamespace()}).
 				Return(nil, testErr)
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
@@ -306,13 +306,13 @@ var _ = Describe("csr manager", func() {
 				Return(nil, nil)
 			statusErr := errors.NewNotFound(schema.GroupResource{}, "")
 			csrClient.EXPECT().
-				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio1_5-name-cert-request", Namespace: container_runtime.GetWriteNamespace()}).
+				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio1-5-name-cert-request", Namespace: container_runtime.GetWriteNamespace()}).
 				Return(nil, statusErr)
 
 			csrClient.EXPECT().
 				CreateVirtualMeshCertificateSigningRequest(ctx, &zephyr_security.VirtualMeshCertificateSigningRequest{
 					ObjectMeta: k8s_meta.ObjectMeta{
-						Name:      "istio1_5-name-cert-request",
+						Name:      "istio1-5-name-cert-request",
 						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
@@ -386,13 +386,13 @@ var _ = Describe("csr manager", func() {
 				Return(nil, nil)
 			statusErr := errors.NewNotFound(schema.GroupResource{}, "")
 			csrClient.EXPECT().
-				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio1_6-name-cert-request", Namespace: container_runtime.GetWriteNamespace()}).
+				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio1-6-name-cert-request", Namespace: container_runtime.GetWriteNamespace()}).
 				Return(nil, statusErr)
 
 			csrClient.EXPECT().
 				CreateVirtualMeshCertificateSigningRequest(ctx, &zephyr_security.VirtualMeshCertificateSigningRequest{
 					ObjectMeta: k8s_meta.ObjectMeta{
-						Name:      "istio1_6-name-cert-request",
+						Name:      "istio1-6-name-cert-request",
 						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{

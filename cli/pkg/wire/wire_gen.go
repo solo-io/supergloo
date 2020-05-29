@@ -44,8 +44,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh"
 	mesh_install "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
-	istio1_5 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio1.5"
-	istio1_6 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio1.6"
+	istio1_5 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/istio1.5"
+	istio1_6 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/istio1.6"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
@@ -183,8 +183,8 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
 	imageNameParser := docker.NewImageNameParser()
 	fileReader := files.NewDefaultFileReader()
-	istio1_5Cmd := istio1_5.NewIstio1_5InstallCmd(ctx, kubeLoader, optionsOptions, kubeClientsFactory, clientsFactory, imageNameParser, fileReader)
-	istio1_6Cmd := istio1_6.NewIstio1_6InstallCmd(ctx, kubeLoader, optionsOptions, kubeClientsFactory, clientsFactory, imageNameParser, fileReader)
+	istio1_5Cmd := istio1_5.NewIstio1_5InstallCmd(ctx, out, kubeLoader, optionsOptions, kubeClientsFactory, clientsFactory, imageNameParser, fileReader)
+	istio1_6Cmd := istio1_6.NewIstio1_6InstallCmd(ctx, out, kubeLoader, optionsOptions, kubeClientsFactory, clientsFactory, imageNameParser, fileReader)
 	meshInstallCommand := mesh_install.MeshInstallRootCmd(istio1_5Cmd, istio1_6Cmd)
 	meshCommand := mesh.MeshRootCmd(meshInstallCommand)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
@@ -235,8 +235,8 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	deregistrationCmd := deregister.ClusterDeregistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd, deregistrationCmd)
 	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
-	istio1_5Cmd := istio1_5.NewIstio1_5InstallCmd(ctx, kubeLoader, optionsOptions, kubeClientsFactory, clientsFactory, imageNameParser, fileReader)
-	istio1_6Cmd := istio1_6.NewIstio1_6InstallCmd(ctx, kubeLoader, optionsOptions, kubeClientsFactory, clientsFactory, imageNameParser, fileReader)
+	istio1_5Cmd := istio1_5.NewIstio1_5InstallCmd(ctx, out, kubeLoader, optionsOptions, kubeClientsFactory, clientsFactory, imageNameParser, fileReader)
+	istio1_6Cmd := istio1_6.NewIstio1_6InstallCmd(ctx, out, kubeLoader, optionsOptions, kubeClientsFactory, clientsFactory, imageNameParser, fileReader)
 	meshInstallCommand := mesh_install.MeshInstallRootCmd(istio1_5Cmd, istio1_6Cmd)
 	meshCommand := mesh.MeshRootCmd(meshInstallCommand)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)

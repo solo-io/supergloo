@@ -85,12 +85,15 @@ func (m *manager) InstallOperatorApplication(installationOptions *InstallationOp
 		return err
 	}
 
-	installNeeded, err := m.validateOperatorNamespace(installationOptions.IstioVersion, DefaultIstioOperatorDeploymentName, DefaultIstioOperatorDeploymentName)
+	installNeeded, err := m.validateOperatorNamespace(installationOptions.IstioVersion, DefaultIstioOperatorDeploymentName, DefaultIstioOperatorNamespace)
 	if err != nil {
 		return err
 	}
 
 	if installNeeded {
+		//if installationOptions.IstioVersion == IstioVersion1_6 {
+		//		//	m.operatorDao.CreateNamespace(installationOptions.InstallNamespace)
+		//		//}
 		err = m.operatorDao.ApplyManifest(namespace, manifest)
 		if err != nil {
 			return FailedToInstallOperator(err)
