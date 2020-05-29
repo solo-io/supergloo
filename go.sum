@@ -892,6 +892,7 @@ github.com/pseudomuto/protoc-gen-doc v1.3.0 h1:wpwmaSCWY2lGwkzAxAaqYcGyoklZjZmeX
 github.com/pseudomuto/protoc-gen-doc v1.3.0/go.mod h1:fwtQAY9erXp3mC92O8OTECnDlJT2r0Ff4KSEKbGEmy0=
 github.com/pseudomuto/protokit v0.2.0 h1:hlnBDcy3YEDXH7kc9gV+NLaN0cDzhDvD1s7Y6FZ8RpM=
 github.com/pseudomuto/protokit v0.2.0/go.mod h1:2PdH30hxVHsup8KpBTOXTBeMVhJZVio3Q8ViKSAXT0Q=
+github.com/radovskyb/watcher v1.0.2 h1:9L5TsZUbo1nKhQEQPtICVc+x9UZQ6VPdBepLHyGw/bQ=
 github.com/radovskyb/watcher v1.0.2/go.mod h1:78okwvY5wPdzcb1UYnip1pvrZNIVEIh/Cm+ZuvsUYIg=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
 github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446/go.mod h1:uYEyJGbgTkfkS4+E/PavXkNJcbFIpEtjt2B0KDQ5+9M=
