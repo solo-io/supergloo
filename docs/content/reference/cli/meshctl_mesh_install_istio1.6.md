@@ -20,7 +20,7 @@ meshctl mesh install istio1.6 [flags]
       --create-operator-namespace   Create the namespace specified by --operator-namespace (default true)
       --dry-run                     Dump the manifest that would be used to install the operator to stdout rather than apply it
   -h, --help                        help for istio1.6
-      --operator-namespace string   Namespace in which to install the Mesh operator (default "istio-operator")
+      --operator-namespace string   Namespace in which to install the Mesh operator (default "istio-system")
       --operator-spec string        Optional path to a YAML file containing an installation spec ('-' for stdin)
       --profile string              optional profile
 ```

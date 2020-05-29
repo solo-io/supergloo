@@ -25,6 +25,7 @@ title: "virtual_mesh.proto"
   - [VirtualMeshSpec.SharedTrust](#networking.zephyr.solo.io.VirtualMeshSpec.SharedTrust)
   - [VirtualMeshStatus](#networking.zephyr.solo.io.VirtualMeshStatus)
 
+  - [VirtualMeshSpec.EnforcementPolicy](#networking.zephyr.solo.io.VirtualMeshSpec.EnforcementPolicy)
   - [VirtualMeshSpec.Federation.Mode](#networking.zephyr.solo.io.VirtualMeshSpec.Federation.Mode)
 
 
@@ -46,7 +47,7 @@ title: "virtual_mesh.proto"
 | federation | [VirtualMeshSpec.Federation](#networking.zephyr.solo.io.VirtualMeshSpec.Federation) |  |  |
 | shared | [VirtualMeshSpec.SharedTrust](#networking.zephyr.solo.io.VirtualMeshSpec.SharedTrust) |  |  |
 | limited | [VirtualMeshSpec.LimitedTrust](#networking.zephyr.solo.io.VirtualMeshSpec.LimitedTrust) |  |  |
-| enforceAccessControl | [bool](#bool) |  | If true, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies. If false, by default allow traffic to all Services in the VirtualMesh. Defaults to false when not set. |
+| enforceAccessControl | [VirtualMeshSpec.EnforcementPolicy](#networking.zephyr.solo.io.VirtualMeshSpec.EnforcementPolicy) |  |  |
 
 
 
@@ -154,6 +155,19 @@ Shared trust is a virtual mesh trust model requiring a shared root certificate, 
 
 
  <!-- end messages -->
+
+
+<a name="networking.zephyr.solo.io.VirtualMeshSpec.EnforcementPolicy"></a>
+
+### VirtualMeshSpec.EnforcementPolicy
+If ENABLED, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies. If DISABLED, by default allow traffic to all Services in the VirtualMesh. If MESH_DEFAULT, the default value depends on the type service mesh: Istio: false Appmesh: true
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| MESH_DEFAULT | 0 |  |
+| ENABLED | 1 |  |
+| DISABLED | 2 |  |
+
 
 
 <a name="networking.zephyr.solo.io.VirtualMeshSpec.Federation.Mode"></a>
