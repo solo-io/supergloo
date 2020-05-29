@@ -28,8 +28,10 @@ type AppmeshTranslator interface {
 	) *appmesh.VirtualNodeData
 
 	// For a given MeshService, return a Route that targets all its backing workloads with equal weight.
-	BuildDefaultRoute(
+	BuildRoute(
 		appmeshName *string,
+		routeName string,
+		priority int,
 		meshService *zephyr_discovery.MeshService,
 		meshWorkloads []*zephyr_discovery.MeshWorkload,
 	) (*appmesh.RouteData, error)

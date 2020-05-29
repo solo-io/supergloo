@@ -19,7 +19,7 @@ func NewMeshServiceSet(meshServices ...*zephyr_discovery.MeshService) MeshServic
 		set.Insert(key)
 		mapping[key] = meshService
 	}
-	return &meshServiceSet{set: set}
+	return &meshServiceSet{set: set, mapping: mapping}
 }
 
 func (m *meshServiceSet) Set() sets.String {
@@ -72,10 +72,8 @@ func (m *meshServiceSet) Difference(set MeshServiceSet) MeshServiceSet {
 	newSet := m.set.Difference(set.Set())
 	var newMeshServices []*zephyr_discovery.MeshService
 	for key, _ := range newSet {
-		val, ok := m.mapping[key]
-		if !ok {
-			val, ok = set.Map()[key]
-		}
+		// All elements are guaranteed to exist in m.set
+		val, _ := m.mapping[key]
 		newMeshServices = append(newMeshServices, val)
 	}
 	return NewMeshServiceSet(newMeshServices...)
@@ -85,10 +83,8 @@ func (m *meshServiceSet) Intersection(set MeshServiceSet) MeshServiceSet {
 	newSet := m.set.Intersection(set.Set())
 	var newMeshServices []*zephyr_discovery.MeshService
 	for key, _ := range newSet {
-		val, ok := m.mapping[key]
-		if !ok {
-			val, ok = set.Map()[key]
-		}
+		// All elements are guaranteed to exist in m.set
+		val, _ := m.mapping[key]
 		newMeshServices = append(newMeshServices, val)
 	}
 	return NewMeshServiceSet(newMeshServices...)

@@ -8,11 +8,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 )
 
-const (
-	// Canonical name for default route that permits traffic to all workloads backing service with equal weight.
-	DefaultRouteName = "smh-default"
-)
-
 var (
 	ExceededMaximumWorkloadsError = func(meshService *zephyr_discovery.MeshService) error {
 		return eris.Errorf("Workloads selected by service %s.%s exceeds Appmesh's maximum of 10 weighted targets.",
@@ -58,8 +53,11 @@ func (a *appmeshTranslator) BuildVirtualNode(
 	}
 }
 
-func (a *appmeshTranslator) BuildDefaultRoute(
+// TODO: update this method to accept a Name and Priority so it can be used for creating non-default routes
+func (a *appmeshTranslator) BuildRoute(
 	appmeshName *string,
+	routeName string,
+	priority int,
 	meshService *zephyr_discovery.MeshService,
 	meshWorkloads []*zephyr_discovery.MeshWorkload,
 ) (*appmesh2.RouteData, error) {
@@ -77,7 +75,7 @@ func (a *appmeshTranslator) BuildDefaultRoute(
 	}
 	return &appmesh2.RouteData{
 		MeshName:  appmeshName,
-		RouteName: aws2.String(DefaultRouteName),
+		RouteName: aws2.String(routeName),
 		Spec: &appmesh2.RouteSpec{
 			HttpRoute: &appmesh2.HttpRoute{
 				Action: &appmesh2.HttpRouteAction{
@@ -87,7 +85,7 @@ func (a *appmeshTranslator) BuildDefaultRoute(
 					Prefix: aws2.String("/"),
 				},
 			},
-			Priority: aws2.Int64(0),
+			Priority: aws2.Int64(int64(priority)),
 		},
 		VirtualRouterName: virtualRouterName,
 	}, nil

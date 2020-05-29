@@ -12,6 +12,11 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/collections/sets"
 )
 
+const (
+	// Canonical name for default route that permits traffic to all workloads backing service with equal weight.
+	defaultRouteName = "smh-default"
+)
+
 type appmeshTranslationReconciler struct {
 	appmeshTranslator AppmeshTranslator
 	dao               AppmeshAccessControlDao
@@ -128,7 +133,8 @@ func (a *appmeshTranslationReconciler) reconcile(
 		virtualRouter := a.appmeshTranslator.BuildVirtualRouter(appmeshName, service)
 		virtualServices = append(virtualServices, virtualService)
 		virtualRouters = append(virtualRouters, virtualRouter)
-		route, err := a.appmeshTranslator.BuildDefaultRoute(appmeshName, service, workloads)
+		// Build default Route that routes to all backing workloads with equal weight.
+		route, err := a.appmeshTranslator.BuildRoute(appmeshName, defaultRouteName, 0, service, workloads)
 		if err != nil {
 			return err
 		}

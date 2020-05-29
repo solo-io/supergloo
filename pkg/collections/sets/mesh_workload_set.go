@@ -19,7 +19,7 @@ func NewMeshWorkloadSet(meshWorkloads ...*zephyr_discovery.MeshWorkload) MeshWor
 		set.Insert(key)
 		mapping[key] = meshWorkload
 	}
-	return &meshWorkloadSet{set: set}
+	return &meshWorkloadSet{set: set, mapping: mapping}
 }
 
 func (m *meshWorkloadSet) Set() sets.String {
