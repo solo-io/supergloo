@@ -6,12 +6,13 @@ package mock_translation
 
 import (
 	context "context"
+	reflect "reflect"
+
 	appmesh "github.com/aws/aws-sdk-go/service/appmesh"
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	sets "github.com/solo-io/service-mesh-hub/pkg/collections/sets"
-	reflect "reflect"
 )
 
 // MockAppmeshTranslationReconciler is a mock of AppmeshTranslationReconciler interface.
@@ -89,18 +90,18 @@ func (mr *MockAppmeshTranslatorMockRecorder) BuildVirtualNode(appmeshName, meshW
 }
 
 // BuildRoute mocks base method.
-func (m *MockAppmeshTranslator) BuildRoute(appmeshName *string, routeName string, priority int, meshService *v1alpha1.MeshService, meshWorkloads []*v1alpha1.MeshWorkload) (*appmesh.RouteData, error) {
+func (m *MockAppmeshTranslator) BuildRoute(appmeshName *string, routeName string, priority int, meshService *v1alpha1.MeshService, targetedWorkloads []*v1alpha1.MeshWorkload) (*appmesh.RouteData, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildRoute", appmeshName, routeName, priority, meshService, meshWorkloads)
+	ret := m.ctrl.Call(m, "BuildRoute", appmeshName, routeName, priority, meshService, targetedWorkloads)
 	ret0, _ := ret[0].(*appmesh.RouteData)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BuildRoute indicates an expected call of BuildRoute.
-func (mr *MockAppmeshTranslatorMockRecorder) BuildRoute(appmeshName, routeName, priority, meshService, meshWorkloads interface{}) *gomock.Call {
+func (mr *MockAppmeshTranslatorMockRecorder) BuildRoute(appmeshName, routeName, priority, meshService, targetedWorkloads interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildRoute", reflect.TypeOf((*MockAppmeshTranslator)(nil).BuildRoute), appmeshName, routeName, priority, meshService, meshWorkloads)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildRoute", reflect.TypeOf((*MockAppmeshTranslator)(nil).BuildRoute), appmeshName, routeName, priority, meshService, targetedWorkloads)
 }
 
 // BuildVirtualService mocks base method.

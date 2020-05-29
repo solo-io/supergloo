@@ -29,12 +29,20 @@ func (a *appmeshTranslator) BuildVirtualNode(
 	upstreamServices []*zephyr_discovery.MeshService,
 ) *appmesh2.VirtualNodeData {
 	virtualNodeName := aws2.String(metadata.BuildVirtualNodeName(meshWorkload))
-	virtualServiceNames := virtualServiceNamesForServices(upstreamServices)
 	var backends []*appmesh2.Backend
-	for _, virtualServiceName := range virtualServiceNames {
+	for _, upstreamService := range upstreamServices {
 		backends = append(backends, &appmesh2.Backend{
 			VirtualService: &appmesh2.VirtualServiceBackend{
-				VirtualServiceName: aws2.String(virtualServiceName),
+				VirtualServiceName: aws2.String(metadata.BuildVirtualServiceName(upstreamService)),
+			},
+		})
+	}
+	var listeners []*appmesh2.Listener
+	for _, containerPort := range meshWorkload.Spec.GetAppmesh().GetPorts() {
+		listeners = append(listeners, &appmesh2.Listener{
+			PortMapping: &appmesh2.PortMapping{
+				Port:     aws2.Int64(int64(containerPort.Port)),
+				Protocol: aws2.String(containerPort.Protocol),
 			},
 		})
 	}
@@ -42,7 +50,7 @@ func (a *appmeshTranslator) BuildVirtualNode(
 		VirtualNodeName: virtualNodeName,
 		MeshName:        appmeshName,
 		Spec: &appmesh2.VirtualNodeSpec{
-			Listeners: nil, // TODO update MeshWorkload with container port info
+			Listeners: listeners,
 			Backends:  backends,
 			ServiceDiscovery: &appmesh2.ServiceDiscovery{
 				Dns: &appmesh2.DnsServiceDiscovery{
@@ -53,7 +61,6 @@ func (a *appmeshTranslator) BuildVirtualNode(
 	}
 }
 
-// TODO: update this method to accept a Name and Priority so it can be used for creating non-default routes
 func (a *appmeshTranslator) BuildRoute(
 	appmeshName *string,
 	routeName string,
@@ -61,15 +68,13 @@ func (a *appmeshTranslator) BuildRoute(
 	meshService *zephyr_discovery.MeshService,
 	meshWorkloads []*zephyr_discovery.MeshWorkload,
 ) (*appmesh2.RouteData, error) {
-	virtualRouterName := aws2.String(metadata.BuildVirtualRouterName(meshService))
-	virtualNodeNames := virtualNodeNamesForWorkloads(meshWorkloads)
-	if len(virtualNodeNames) > 10 {
+	if len(meshWorkloads) > 10 {
 		return nil, ExceededMaximumWorkloadsError(meshService)
 	}
 	var weightedTargets []*appmesh2.WeightedTarget
-	for _, virtualNodeName := range virtualNodeNames {
+	for _, meshWorkload := range meshWorkloads {
 		weightedTargets = append(weightedTargets, &appmesh2.WeightedTarget{
-			VirtualNode: aws2.String(virtualNodeName),
+			VirtualNode: aws2.String(metadata.BuildVirtualNodeName(meshWorkload)),
 			Weight:      aws2.Int64(1),
 		})
 	}
@@ -87,7 +92,7 @@ func (a *appmeshTranslator) BuildRoute(
 			},
 			Priority: aws2.Int64(int64(priority)),
 		},
-		VirtualRouterName: virtualRouterName,
+		VirtualRouterName: aws2.String(metadata.BuildVirtualRouterName(meshService)),
 	}, nil
 }
 
@@ -95,18 +100,16 @@ func (a *appmeshTranslator) BuildVirtualService(
 	appmeshName *string,
 	meshService *zephyr_discovery.MeshService,
 ) *appmesh2.VirtualServiceData {
-	virtualServiceName := aws2.String(metadata.BuildVirtualServiceName(meshService))
-	virtualRouterName := aws2.String(metadata.BuildVirtualRouterName(meshService))
 	return &appmesh2.VirtualServiceData{
 		MeshName: appmeshName,
 		Spec: &appmesh2.VirtualServiceSpec{
 			Provider: &appmesh2.VirtualServiceProvider{
 				VirtualRouter: &appmesh2.VirtualRouterServiceProvider{
-					VirtualRouterName: virtualRouterName,
+					VirtualRouterName: aws2.String(metadata.BuildVirtualRouterName(meshService)),
 				},
 			},
 		},
-		VirtualServiceName: virtualServiceName,
+		VirtualServiceName: aws2.String(metadata.BuildVirtualServiceName(meshService)),
 	}
 }
 
@@ -114,7 +117,6 @@ func (a *appmeshTranslator) BuildVirtualRouter(
 	appmeshName *string,
 	meshService *zephyr_discovery.MeshService,
 ) *appmesh2.VirtualRouterData {
-	virtualRouterName := aws2.String(metadata.BuildVirtualRouterName(meshService))
 	var virtualRouterListeners []*appmesh2.VirtualRouterListener
 	for _, servicePort := range meshService.Spec.GetKubeService().GetPorts() {
 		virtualRouterListeners = append(virtualRouterListeners, &appmesh2.VirtualRouterListener{
@@ -126,29 +128,9 @@ func (a *appmeshTranslator) BuildVirtualRouter(
 	}
 	return &appmesh2.VirtualRouterData{
 		MeshName:          appmeshName,
-		VirtualRouterName: virtualRouterName,
+		VirtualRouterName: aws2.String(metadata.BuildVirtualRouterName(meshService)),
 		Spec: &appmesh2.VirtualRouterSpec{
 			Listeners: virtualRouterListeners,
 		},
 	}
-}
-
-func virtualNodeNamesForWorkloads(
-	meshWorkloads []*zephyr_discovery.MeshWorkload,
-) []string {
-	var virtualNodeNames []string
-	for _, meshWorkload := range meshWorkloads {
-		virtualNodeNames = append(virtualNodeNames, metadata.BuildVirtualNodeName(meshWorkload))
-	}
-	return virtualNodeNames
-}
-
-func virtualServiceNamesForServices(
-	meshServices []*zephyr_discovery.MeshService,
-) []string {
-	var virtualServiceNames []string
-	for _, meshService := range meshServices {
-		virtualServiceNames = append(virtualServiceNames, metadata.BuildVirtualServiceName(meshService))
-	}
-	return virtualServiceNames
 }

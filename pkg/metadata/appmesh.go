@@ -11,5 +11,5 @@ func BuildVirtualRouterName(meshService *zephyr_discovery.MeshService) string {
 }
 
 func BuildVirtualNodeName(meshWorkload *zephyr_discovery.MeshWorkload) string {
-	return meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetName()
+	return meshWorkload.Spec.GetAppmesh().GetVirtualNodeName()
 }
