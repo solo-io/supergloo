@@ -5,7 +5,7 @@ import (
 
 	aws2 "github.com/aws/aws-sdk-go/aws"
 	appmesh2 "github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/solo-io/go-utils/contextutils"
+	"github.com/hashicorp/go-multierror"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
@@ -14,17 +14,19 @@ import (
 
 const (
 	// Canonical name for default route that permits traffic to all workloads backing service with equal weight.
-	defaultRouteName = "smh-default"
+	DefaultRouteName = "smh-default"
+	// Default route always takes lowest priority (ranges from 0-1000 inclusive).
+	DefaultRoutePriority = 1000
 )
 
 type appmeshTranslationReconciler struct {
 	appmeshTranslator AppmeshTranslator
-	dao               AppmeshAccessControlDao
+	dao               AppmeshTranslationDao
 }
 
 func NewAppmeshTranslationReconciler(
 	appmeshTranslator AppmeshTranslator,
-	dao AppmeshAccessControlDao,
+	dao AppmeshTranslationDao,
 ) AppmeshTranslationReconciler {
 	return &appmeshTranslationReconciler{
 		appmeshTranslator: appmeshTranslator,
@@ -121,7 +123,6 @@ func (a *appmeshTranslationReconciler) reconcile(
 	workloadsToBackingServices map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService,
 	workloadsToUpstreamServices map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet,
 ) error {
-	logger := contextutils.LoggerFrom(ctx)
 	var virtualServices []*appmesh2.VirtualServiceData
 	var virtualRouters []*appmesh2.VirtualRouterData
 	var routes []*appmesh2.RouteData
@@ -134,37 +135,43 @@ func (a *appmeshTranslationReconciler) reconcile(
 		virtualServices = append(virtualServices, virtualService)
 		virtualRouters = append(virtualRouters, virtualRouter)
 		// Build default Route that routes to all backing workloads with equal weight.
-		route, err := a.appmeshTranslator.BuildRoute(appmeshName, defaultRouteName, 0, service, workloads)
+		route, err := a.appmeshTranslator.BuildRoute(appmeshName, DefaultRouteName, DefaultRoutePriority, service, workloads)
 		if err != nil {
 			return err
 		}
 		routes = append(routes, route)
 	}
 	for workload, services := range workloadsToBackingServices {
-		upstreamServices := workloadsToUpstreamServices[workload]
-		var dnsService *zephyr_discovery.MeshService
-		// For workloads represented by more than one k8s service, simply select the first service for DNS resolution.
-		if len(services) > 0 {
-			dnsService = services[0]
+		// Don't create VirtualNode for workloads not backed by service because there's no DNS resolution.
+		if len(services) == 0 {
+			continue
 		}
-		defaultVirtualNode := a.appmeshTranslator.BuildVirtualNode(appmeshName, workload, dnsService, upstreamServices.List())
+		var upstreamServicesList []*zephyr_discovery.MeshService
+		upstreamServices := workloadsToUpstreamServices[workload]
+		if upstreamServices != nil {
+			upstreamServicesList = upstreamServices.List()
+		}
+		// For workloads represented by more than one k8s service, simply select the first service for DNS resolution.
+		dnsService := services[0]
+		defaultVirtualNode := a.appmeshTranslator.BuildVirtualNode(appmeshName, workload, dnsService, upstreamServicesList)
 		virtualNodes = append(virtualNodes, defaultVirtualNode)
 	}
+	var multierr *multierror.Error
 	err := a.dao.ReconcileVirtualNodes(ctx, mesh, virtualNodes)
 	if err != nil {
-		logger.Warnf("%+v", err)
+		multierr = multierror.Append(multierr, err)
 	}
 	err = a.dao.ReconcileVirtualRouters(ctx, mesh, virtualRouters)
 	if err != nil {
-		logger.Warnf("%+v", err)
+		multierr = multierror.Append(multierr, err)
 	}
 	err = a.dao.ReconcileVirtualServices(ctx, mesh, virtualServices)
 	if err != nil {
-		logger.Warnf("%+v", err)
+		multierr = multierror.Append(multierr, err)
 	}
 	err = a.dao.ReconcileRoutes(ctx, mesh, routes)
 	if err != nil {
-		logger.Warnf("%+v", err)
+		multierr = multierror.Append(multierr, err)
 	}
-	return nil
+	return multierr.ErrorOrNil()
 }

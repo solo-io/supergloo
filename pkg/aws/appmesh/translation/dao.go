@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-type appmeshAccessControlDao struct {
+type appmeshTranslationDao struct {
 	meshServiceClient    zephyr_discovery.MeshServiceClient
 	meshWorkloadClient   zephyr_discovery.MeshWorkloadClient
 	acpClient            zephyr_networking.AccessControlPolicyClient
@@ -27,8 +27,8 @@ func NewAppmeshAccessControlDao(
 	resourceSelector selector.ResourceSelector,
 	appmeshClientFactory appmesh2.AppmeshClientFactory,
 	acpClient zephyr_networking.AccessControlPolicyClient,
-) AppmeshAccessControlDao {
-	return &appmeshAccessControlDao{
+) AppmeshTranslationDao {
+	return &appmeshTranslationDao{
 		meshServiceClient:    meshServiceClient,
 		meshWorkloadClient:   meshWorkloadClient,
 		resourceSelector:     resourceSelector,
@@ -37,7 +37,7 @@ func NewAppmeshAccessControlDao(
 	}
 }
 
-func (a *appmeshAccessControlDao) GetAllServiceWorkloadPairsForMesh(
+func (a *appmeshTranslationDao) GetAllServiceWorkloadPairsForMesh(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 ) (map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload,
@@ -55,7 +55,7 @@ func (a *appmeshAccessControlDao) GetAllServiceWorkloadPairsForMesh(
 	return serviceToWorkloads, workloadToServices, nil
 }
 
-func (a *appmeshAccessControlDao) GetWorkloadsToAllUpstreamServices(
+func (a *appmeshTranslationDao) GetWorkloadsToAllUpstreamServices(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 ) (map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet, error) {
@@ -75,7 +75,7 @@ func (a *appmeshAccessControlDao) GetWorkloadsToAllUpstreamServices(
 	return workloadsToAllUpstreamServices, nil
 }
 
-func (a *appmeshAccessControlDao) GetServicesWithACP(
+func (a *appmeshTranslationDao) GetServicesWithACP(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 ) (sets.MeshServiceSet, error) {
@@ -100,7 +100,7 @@ func (a *appmeshAccessControlDao) GetServicesWithACP(
 	return services, nil
 }
 
-func (a *appmeshAccessControlDao) GetWorkloadsToUpstreamServicesWithACP(
+func (a *appmeshTranslationDao) GetWorkloadsToUpstreamServicesWithACP(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 ) (sets.MeshWorkloadSet, map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet, error) {
@@ -135,7 +135,7 @@ func (a *appmeshAccessControlDao) GetWorkloadsToUpstreamServicesWithACP(
 	return declaredWorkloads, workloadsToUpstreamServices, nil
 }
 
-func (a *appmeshAccessControlDao) buildServiceToWorkloadMaps(
+func (a *appmeshTranslationDao) buildServiceToWorkloadMaps(
 	meshServices []*zephyr_discovery.MeshService,
 	meshWorkloads []*zephyr_discovery.MeshWorkload,
 ) (map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload,
@@ -143,7 +143,7 @@ func (a *appmeshAccessControlDao) buildServiceToWorkloadMaps(
 	serviceToWorkloads := map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload{}
 	workloadToServices := map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService{}
 	for _, workload := range meshWorkloads {
-		workload := workload
+		workloadToServices[workload] = nil
 		for _, service := range meshServices {
 			if isServiceBackedByWorkload(service, workload) {
 				serviceToWorkloads[service] = append(serviceToWorkloads[service], workload)
@@ -160,7 +160,7 @@ func (a *appmeshAccessControlDao) buildServiceToWorkloadMaps(
 	return serviceToWorkloads, workloadToServices
 }
 
-func (a *appmeshAccessControlDao) listMeshServicesForMesh(
+func (a *appmeshTranslationDao) listMeshServicesForMesh(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 ) ([]*zephyr_discovery.MeshService, error) {
@@ -179,7 +179,7 @@ func (a *appmeshAccessControlDao) listMeshServicesForMesh(
 	return meshServices, nil
 }
 
-func (a *appmeshAccessControlDao) listMeshWorkloadsForMesh(
+func (a *appmeshTranslationDao) listMeshWorkloadsForMesh(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 ) ([]*zephyr_discovery.MeshWorkload, error) {
@@ -198,7 +198,7 @@ func (a *appmeshAccessControlDao) listMeshWorkloadsForMesh(
 	return meshWorkloads, nil
 }
 
-func (a *appmeshAccessControlDao) EnsureVirtualService(
+func (a *appmeshTranslationDao) EnsureVirtualService(
 	mesh *zephyr_discovery.Mesh,
 	virtualServiceData *appmesh.VirtualServiceData,
 ) error {
@@ -209,7 +209,7 @@ func (a *appmeshAccessControlDao) EnsureVirtualService(
 	return appmeshClient.EnsureVirtualService(virtualServiceData)
 }
 
-func (a *appmeshAccessControlDao) EnsureVirtualRouter(
+func (a *appmeshTranslationDao) EnsureVirtualRouter(
 	mesh *zephyr_discovery.Mesh,
 	virtualRouter *appmesh.VirtualRouterData,
 ) error {
@@ -220,7 +220,7 @@ func (a *appmeshAccessControlDao) EnsureVirtualRouter(
 	return appmeshClient.EnsureVirtualRouter(virtualRouter)
 }
 
-func (a *appmeshAccessControlDao) EnsureRoute(
+func (a *appmeshTranslationDao) EnsureRoute(
 	mesh *zephyr_discovery.Mesh,
 	route *appmesh.RouteData,
 ) error {
@@ -231,7 +231,7 @@ func (a *appmeshAccessControlDao) EnsureRoute(
 	return appmeshClient.EnsureRoute(route)
 }
 
-func (a *appmeshAccessControlDao) EnsureVirtualNode(
+func (a *appmeshTranslationDao) EnsureVirtualNode(
 	mesh *zephyr_discovery.Mesh,
 	virtualNode *appmesh.VirtualNodeData,
 ) error {
@@ -242,7 +242,7 @@ func (a *appmeshAccessControlDao) EnsureVirtualNode(
 	return appmeshClient.EnsureVirtualNode(virtualNode)
 }
 
-func (a *appmeshAccessControlDao) ReconcileVirtualServices(
+func (a *appmeshTranslationDao) ReconcileVirtualServices(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 	virtualServices []*appmesh.VirtualServiceData,
@@ -255,7 +255,7 @@ func (a *appmeshAccessControlDao) ReconcileVirtualServices(
 	return appmeshClient.ReconcileVirtualServices(ctx, meshName, virtualServices)
 }
 
-func (a *appmeshAccessControlDao) ReconcileVirtualRouters(
+func (a *appmeshTranslationDao) ReconcileVirtualRouters(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 	virtualRouters []*appmesh.VirtualRouterData,
@@ -268,7 +268,7 @@ func (a *appmeshAccessControlDao) ReconcileVirtualRouters(
 	return appmeshClient.ReconcileVirtualRouters(ctx, meshName, virtualRouters)
 }
 
-func (a *appmeshAccessControlDao) ReconcileRoutes(
+func (a *appmeshTranslationDao) ReconcileRoutes(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 	routes []*appmesh.RouteData,
@@ -281,7 +281,7 @@ func (a *appmeshAccessControlDao) ReconcileRoutes(
 	return appmeshClient.ReconcileRoutes(ctx, meshName, routes)
 }
 
-func (a *appmeshAccessControlDao) ReconcileVirtualNodes(
+func (a *appmeshTranslationDao) ReconcileVirtualNodes(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 	virtualNodes []*appmesh.VirtualNodeData,

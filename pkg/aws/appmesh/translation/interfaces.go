@@ -49,7 +49,7 @@ type AppmeshTranslator interface {
 	) *appmesh.VirtualRouterData
 }
 
-type AppmeshAccessControlDao interface {
+type AppmeshTranslationDao interface {
 	// Return two maps which associate workloads to backing services and vice versa.
 	GetAllServiceWorkloadPairsForMesh(
 		ctx context.Context,
