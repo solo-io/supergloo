@@ -160,7 +160,12 @@ make -s package-index-csr-agent-helm -B
 make meshctl -B
 # install the app
 # the helm version needs to strip the leading v out of the git describe output
-helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
+if [ -z "$VERSION" ]; then
+  helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
+else
+  helmVersion=$VERSION
+fi
+
 ./_output/meshctl install --file ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
 
 case $(uname) in
