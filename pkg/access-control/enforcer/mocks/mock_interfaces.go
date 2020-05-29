@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 )
 
 // MockAccessPolicyMeshEnforcer is a mock of AccessPolicyMeshEnforcer interface.
@@ -49,30 +50,16 @@ func (mr *MockAccessPolicyMeshEnforcerMockRecorder) Name() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).Name))
 }
 
-// StartEnforcing mocks base method.
-func (m *MockAccessPolicyMeshEnforcer) StartEnforcing(ctx context.Context, mesh *v1alpha1.Mesh) error {
+// ReconcileAccessControl mocks base method.
+func (m *MockAccessPolicyMeshEnforcer) ReconcileAccessControl(ctx context.Context, mesh *v1alpha1.Mesh, virtualMesh *v1alpha10.VirtualMesh) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartEnforcing", ctx, mesh)
+	ret := m.ctrl.Call(m, "ReconcileAccessControl", ctx, mesh, virtualMesh)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// StartEnforcing indicates an expected call of StartEnforcing.
-func (mr *MockAccessPolicyMeshEnforcerMockRecorder) StartEnforcing(ctx, mesh interface{}) *gomock.Call {
+// ReconcileAccessControl indicates an expected call of ReconcileAccessControl.
+func (mr *MockAccessPolicyMeshEnforcerMockRecorder) ReconcileAccessControl(ctx, mesh, virtualMesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartEnforcing", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).StartEnforcing), ctx, mesh)
-}
-
-// StopEnforcing mocks base method.
-func (m *MockAccessPolicyMeshEnforcer) StopEnforcing(ctx context.Context, mesh *v1alpha1.Mesh) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StopEnforcing", ctx, mesh)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// StopEnforcing indicates an expected call of StopEnforcing.
-func (mr *MockAccessPolicyMeshEnforcerMockRecorder) StopEnforcing(ctx, mesh interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StopEnforcing", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).StopEnforcing), ctx, mesh)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessControl", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).ReconcileAccessControl), ctx, mesh, virtualMesh)
 }

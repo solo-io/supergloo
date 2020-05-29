@@ -6,6 +6,8 @@ import (
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
@@ -44,7 +46,31 @@ func (i *istioEnforcer) Name() string {
 	return EnforcerId
 }
 
-func (i *istioEnforcer) StartEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
+func (i *istioEnforcer) ReconcileAccessControl(
+	ctx context.Context,
+	mesh *zephyr_discovery.Mesh,
+	virtualMesh *zephyr_networking.VirtualMesh,
+) error {
+	var enforceAccessControl bool
+	if virtualMesh == nil || virtualMesh.Spec.GetEnforceAccessControl() == types.VirtualMeshSpec_MESH_DEFAULT {
+		var err error
+		enforceAccessControl, err = access_control_enforcer.DefaultAccessControlValueForMesh(mesh)
+		if err != nil {
+			return err
+		}
+	} else if virtualMesh.Spec.GetEnforceAccessControl() == types.VirtualMeshSpec_ENABLED {
+		enforceAccessControl = true
+	} else {
+		enforceAccessControl = false
+	}
+	if enforceAccessControl {
+		return i.startEnforcing(ctx, mesh)
+	} else {
+		return i.stopEnforcing(ctx, mesh)
+	}
+}
+
+func (i *istioEnforcer) startEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
 	if mesh.Spec.GetIstio() == nil {
 		return nil
 	}
@@ -62,7 +88,7 @@ func (i *istioEnforcer) StartEnforcing(ctx context.Context, mesh *zephyr_discove
 	return nil
 }
 
-func (i *istioEnforcer) StopEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
+func (i *istioEnforcer) stopEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
 	if mesh.Spec.GetIstio() == nil {
 		return nil
 	}

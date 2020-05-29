@@ -79,15 +79,19 @@ func (mr *MockMeshServiceSetMockRecorder) Map() *gomock.Call {
 }
 
 // Insert mocks base method.
-func (m *MockMeshServiceSet) Insert(meshService *v1alpha1.MeshService) {
+func (m *MockMeshServiceSet) Insert(meshService ...*v1alpha1.MeshService) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Insert", meshService)
+	varargs := []interface{}{}
+	for _, a := range meshService {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
 }
 
 // Insert indicates an expected call of Insert.
-func (mr *MockMeshServiceSetMockRecorder) Insert(meshService interface{}) *gomock.Call {
+func (mr *MockMeshServiceSetMockRecorder) Insert(meshService ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockMeshServiceSet)(nil).Insert), meshService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockMeshServiceSet)(nil).Insert), meshService...)
 }
 
 // Equal mocks base method.
@@ -238,15 +242,19 @@ func (mr *MockMeshWorkloadSetMockRecorder) Map() *gomock.Call {
 }
 
 // Insert mocks base method.
-func (m *MockMeshWorkloadSet) Insert(meshWorkload *v1alpha1.MeshWorkload) {
+func (m *MockMeshWorkloadSet) Insert(meshWorkload ...*v1alpha1.MeshWorkload) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Insert", meshWorkload)
+	varargs := []interface{}{}
+	for _, a := range meshWorkload {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
 }
 
 // Insert indicates an expected call of Insert.
-func (mr *MockMeshWorkloadSetMockRecorder) Insert(meshWorkload interface{}) *gomock.Call {
+func (mr *MockMeshWorkloadSetMockRecorder) Insert(meshWorkload ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Insert), meshWorkload)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Insert), meshWorkload...)
 }
 
 // Equal mocks base method.

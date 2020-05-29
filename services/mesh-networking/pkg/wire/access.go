@@ -34,6 +34,7 @@ var (
 		appmesh2.NewAppmeshMatcher,
 		access_control_enforcer.NewEnforcerLoop,
 		GlobalAccessControlPolicyMeshEnforcersProvider,
+		translation.NewAppmeshTranslationReconciler,
 	)
 )
 
