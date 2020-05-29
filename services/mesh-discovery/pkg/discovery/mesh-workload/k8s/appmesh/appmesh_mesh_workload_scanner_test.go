@@ -44,7 +44,21 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		meshName                = "mesh-name-1"
 		region                  = "us-east-1"
 		awsAccountId            = "awsaccountid"
-		pod                     = &k8s_core_types.Pod{
+		ports                   = []*zephyr_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort{
+			{
+				Port:     9080,
+				Protocol: string(k8s_core_types.ProtocolTCP),
+			},
+			{
+				Port:     9081,
+				Protocol: string(k8s_core_types.ProtocolUDP),
+			},
+			{
+				Port:     9082,
+				Protocol: string(k8s_core_types.ProtocolTCP),
+			},
+		}
+		pod = &k8s_core_types.Pod{
 			Spec: k8s_core_types.PodSpec{
 				Containers: []k8s_core_types.Container{
 					{
@@ -71,6 +85,34 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		deployment = &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{Name: deploymentName, Namespace: namespace},
 			TypeMeta:   metav1.TypeMeta{Kind: deploymentKind},
+			Spec: appsv1.DeploymentSpec{
+				Template: k8s_core_types.PodTemplateSpec{
+					Spec: k8s_core_types.PodSpec{
+						Containers: []k8s_core_types.Container{
+							{
+								Ports: []k8s_core_types.ContainerPort{
+									{
+										ContainerPort: int32(ports[0].Port),
+										Protocol:      k8s_core_types.Protocol(ports[0].Protocol),
+									},
+									{
+										ContainerPort: int32(ports[1].Port),
+										Protocol:      k8s_core_types.Protocol(ports[1].Protocol),
+									},
+								},
+							},
+							{
+								Ports: []k8s_core_types.ContainerPort{
+									{
+										ContainerPort: int32(ports[2].Port),
+										Protocol:      k8s_core_types.Protocol(ports[2].Protocol),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		}
 	)
 	BeforeEach(func() {
@@ -95,6 +137,7 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 	})
 
 	It("should scan pod and disambiguate multiple AppMesh Meshes", func() {
+		virtualNodeName := "virtualNodeName"
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)
 		mesh := &zephyr_discovery.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
@@ -140,6 +183,10 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 					Name:      meshName,
 					Namespace: mesh.GetNamespace(),
 				},
+				Appmesh: &zephyr_discovery_types.MeshWorkloadSpec_Appmesh{
+					VirtualNodeName: virtualNodeName,
+					Ports:           ports,
+				},
 			},
 		}
 		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return(aws_utils.AwsAccountId(awsAccountId), nil)
@@ -147,9 +194,10 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 			EXPECT().
 			ScanPodForAppMesh(pod, aws_utils.AwsAccountId(awsAccountId)).
 			Return(&aws_utils.AppMeshPod{
-				Region:       region,
-				AppMeshName:  meshName,
-				AwsAccountID: awsAccountId,
+				Region:          region,
+				AppMeshName:     meshName,
+				AwsAccountID:    awsAccountId,
+				VirtualNodeName: virtualNodeName,
 			}, nil)
 		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
 		Expect(err).NotTo(HaveOccurred())

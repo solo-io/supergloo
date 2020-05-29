@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	meshworkload_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
+	k8s_apps_types "k8s.io/api/apps/v1"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -96,6 +97,7 @@ func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_type
 	if err != nil {
 		return nil, err
 	}
+	containerPorts := a.getContainerPorts(deployment)
 	return &zephyr_discovery.MeshWorkload{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      a.buildMeshWorkloadName(deployment.GetName(), deployment.GetNamespace(), clusterName),
@@ -116,6 +118,10 @@ func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_type
 				Name:      mesh.GetName(),
 				Namespace: mesh.GetNamespace(),
 			},
+			Appmesh: &zephyr_discovery_types.MeshWorkloadSpec_Appmesh{
+				VirtualNodeName: appMeshPod.VirtualNodeName,
+				Ports:           containerPorts,
+			},
 		},
 	}, nil
 }
@@ -123,4 +129,19 @@ func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_type
 func (a *appMeshWorkloadScanner) buildMeshWorkloadName(deploymentName string, namespace string, clusterName string) string {
 	// TODO: https://github.com/solo-io/service-mesh-hub/issues/141
 	return fmt.Sprintf("%s-%s-%s-%s", "appmesh", deploymentName, namespace, clusterName)
+}
+
+func (a *appMeshWorkloadScanner) getContainerPorts(
+	deployment *k8s_apps_types.Deployment,
+) []*zephyr_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort {
+	var ports []*zephyr_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort
+	for _, container := range deployment.Spec.Template.Spec.Containers {
+		for _, containerPort := range container.Ports {
+			ports = append(ports, &zephyr_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort{
+				Port:     uint32(containerPort.ContainerPort),
+				Protocol: string(containerPort.Protocol),
+			})
+		}
+	}
+	return ports
 }
