@@ -407,56 +407,6 @@ func (a *appmeshClient) ReconcileVirtualNodes(
 	return nil
 }
 
-func (a *appmeshClient) DeleteAllDefaultRoutes(meshName string) error {
-	meshNamePtr := aws2.String(meshName)
-	var virtualRouterNames []*string
-	listVirtualRoutersInput := &appmesh.ListVirtualRoutersInput{
-		MeshName: meshNamePtr,
-	}
-	for {
-		resp, err := a.client.ListVirtualRouters(listVirtualRoutersInput)
-		if err != nil {
-			return err
-		}
-		for _, virtualRouterRef := range resp.VirtualRouters {
-			virtualRouterNames = append(virtualRouterNames, virtualRouterRef.VirtualRouterName)
-		}
-		if resp.NextToken == nil {
-			break
-		}
-		listVirtualRoutersInput.NextToken = resp.NextToken
-	}
-	for _, virtualRouterName := range virtualRouterNames {
-		listRoutesInput := &appmesh.ListRoutesInput{
-			MeshName:          meshNamePtr,
-			VirtualRouterName: virtualRouterName,
-		}
-		for {
-			resp, err := a.client.ListRoutes(listRoutesInput)
-			if err != nil {
-				return err
-			}
-			for _, routeRef := range resp.Routes {
-				if aws2.StringValue(routeRef.RouteName) == DefaultRouteName {
-					_, err := a.client.DeleteRoute(&appmesh.DeleteRouteInput{
-						MeshName:          meshNamePtr,
-						VirtualRouterName: virtualRouterName,
-						RouteName:         routeRef.RouteName,
-					})
-					if err != nil {
-						return err
-					}
-				}
-			}
-			if resp.NextToken == nil {
-				break
-			}
-			listRoutesInput.NextToken = resp.NextToken
-		}
-	}
-	return nil
-}
-
 func isNotFound(err error) bool {
 	if aerr, ok := err.(awserr.Error); ok {
 		switch aerr.Code() {

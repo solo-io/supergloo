@@ -1,8 +1,9 @@
-package appmesh
+package translation
 
 import (
 	"context"
 
+	aws2 "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -36,7 +37,7 @@ func NewAppmeshAccessControlDao(
 	}
 }
 
-func (a *appmeshAccessControlDao) GetServicesWorkloadPairsForMesh(
+func (a *appmeshAccessControlDao) GetAllServiceWorkloadPairsForMesh(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 ) (map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload,
@@ -52,6 +53,26 @@ func (a *appmeshAccessControlDao) GetServicesWorkloadPairsForMesh(
 	}
 	serviceToWorkloads, workloadToServices := a.buildServiceToWorkloadMaps(meshServices, meshWorkloads)
 	return serviceToWorkloads, workloadToServices, nil
+}
+
+func (a *appmeshAccessControlDao) GetWorkloadsToAllUpstreamServices(
+	ctx context.Context,
+	mesh *zephyr_discovery.Mesh,
+) (map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet, error) {
+	meshServices, err := a.listMeshServicesForMesh(ctx, mesh)
+	if err != nil {
+		return nil, err
+	}
+	meshWorkloads, err := a.listMeshWorkloadsForMesh(ctx, mesh)
+	if err != nil {
+		return nil, err
+	}
+	meshServiceSet := sets.NewMeshServiceSet(meshServices...)
+	workloadsToAllUpstreamServices := map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet{}
+	for _, meshWorkload := range meshWorkloads {
+		workloadsToAllUpstreamServices[meshWorkload] = meshServiceSet
+	}
+	return workloadsToAllUpstreamServices, nil
 }
 
 func (a *appmeshAccessControlDao) GetServicesWithACP(
@@ -79,29 +100,39 @@ func (a *appmeshAccessControlDao) GetServicesWithACP(
 	return services, nil
 }
 
-func (a *appmeshAccessControlDao) GetWorkloadsWithACP(
+func (a *appmeshAccessControlDao) GetWorkloadsToUpstreamServicesWithACP(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
-) (sets.MeshWorkloadSet, error) {
+) (sets.MeshWorkloadSet, map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet, error) {
 	meshWorkloads, err := a.listMeshWorkloadsForMesh(ctx, mesh)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	workloadsInMesh := sets.NewMeshWorkloadSet(meshWorkloads...)
+	workloadsToUpstreamServices := map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet{}
 	acpList, err := a.acpClient.ListAccessControlPolicy(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	workloads := sets.NewMeshWorkloadSet()
+	declaredWorkloads := sets.NewMeshWorkloadSet()
 	for _, acp := range acpList.Items {
-		acpWorkloads, err := a.resourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, acp.Spec.GetSourceSelector())
+		workloads, err := a.resourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, acp.Spec.GetSourceSelector())
+		upstreamServices, err := a.resourceSelector.GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		acpWorkloadsSet := sets.NewMeshWorkloadSet(acpWorkloads...)
-		workloads.Insert(workloadsInMesh.Intersection(acpWorkloadsSet).List()...)
+		for _, workload := range workloads {
+			upstreamServicesSet, ok := workloadsToUpstreamServices[workload]
+			if !ok {
+				workloadsToUpstreamServices[workload] = sets.NewMeshServiceSet(upstreamServices...)
+			} else {
+				upstreamServicesSet.Insert(upstreamServices...)
+			}
+		}
+		acpWorkloadsSet := sets.NewMeshWorkloadSet(workloads...)
+		declaredWorkloads.Insert(workloadsInMesh.Intersection(acpWorkloadsSet).List()...)
 	}
-	return workloads, nil
+	return declaredWorkloads, workloadsToUpstreamServices, nil
 }
 
 func (a *appmeshAccessControlDao) buildServiceToWorkloadMaps(
@@ -211,14 +242,56 @@ func (a *appmeshAccessControlDao) EnsureVirtualNode(
 	return appmeshClient.EnsureVirtualNode(virtualNode)
 }
 
-func (a *appmeshAccessControlDao) DeleteAllDefaultRoutes(
+func (a *appmeshAccessControlDao) ReconcileVirtualServices(
+	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
+	virtualServices []*appmesh.VirtualServiceData,
 ) error {
 	appmeshClient, err := a.appmeshClientFactory(mesh)
 	if err != nil {
 		return err
 	}
-	return appmeshClient.DeleteAllDefaultRoutes(mesh.Spec.GetAwsAppMesh().GetName())
+	meshName := aws2.String(mesh.Spec.GetAwsAppMesh().GetName())
+	return appmeshClient.ReconcileVirtualServices(ctx, meshName, virtualServices)
+}
+
+func (a *appmeshAccessControlDao) ReconcileVirtualRouters(
+	ctx context.Context,
+	mesh *zephyr_discovery.Mesh,
+	virtualRouters []*appmesh.VirtualRouterData,
+) error {
+	appmeshClient, err := a.appmeshClientFactory(mesh)
+	if err != nil {
+		return err
+	}
+	meshName := aws2.String(mesh.Spec.GetAwsAppMesh().GetName())
+	return appmeshClient.ReconcileVirtualRouters(ctx, meshName, virtualRouters)
+}
+
+func (a *appmeshAccessControlDao) ReconcileRoutes(
+	ctx context.Context,
+	mesh *zephyr_discovery.Mesh,
+	routes []*appmesh.RouteData,
+) error {
+	appmeshClient, err := a.appmeshClientFactory(mesh)
+	if err != nil {
+		return err
+	}
+	meshName := aws2.String(mesh.Spec.GetAwsAppMesh().GetName())
+	return appmeshClient.ReconcileRoutes(ctx, meshName, routes)
+}
+
+func (a *appmeshAccessControlDao) ReconcileVirtualNodes(
+	ctx context.Context,
+	mesh *zephyr_discovery.Mesh,
+	virtualNodes []*appmesh.VirtualNodeData,
+) error {
+	appmeshClient, err := a.appmeshClientFactory(mesh)
+	if err != nil {
+		return err
+	}
+	meshName := aws2.String(mesh.Spec.GetAwsAppMesh().GetName())
+	return appmeshClient.ReconcileVirtualNodes(ctx, meshName, virtualNodes)
 }
 
 func isServiceBackedByWorkload(

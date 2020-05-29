@@ -5,12 +5,11 @@
 package mock_appmesh
 
 import (
-	reflect "reflect"
-
+	context "context"
 	appmesh "github.com/aws/aws-sdk-go/service/appmesh"
 	sts "github.com/aws/aws-sdk-go/service/sts"
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	reflect "reflect"
 )
 
 // MockAppmeshMatcher is a mock of AppmeshMatcher interface.
@@ -92,86 +91,6 @@ func (mr *MockAppmeshMatcherMockRecorder) AreVirtualRoutersEqual(virtualRouterA,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AreVirtualRoutersEqual", reflect.TypeOf((*MockAppmeshMatcher)(nil).AreVirtualRoutersEqual), virtualRouterA, virtualRouterB)
 }
 
-// MockAppmeshTranslator is a mock of AppmeshTranslator interface.
-type MockAppmeshTranslator struct {
-	ctrl     *gomock.Controller
-	recorder *MockAppmeshTranslatorMockRecorder
-}
-
-// MockAppmeshTranslatorMockRecorder is the mock recorder for MockAppmeshTranslator.
-type MockAppmeshTranslatorMockRecorder struct {
-	mock *MockAppmeshTranslator
-}
-
-// NewMockAppmeshTranslator creates a new mock instance.
-func NewMockAppmeshTranslator(ctrl *gomock.Controller) *MockAppmeshTranslator {
-	mock := &MockAppmeshTranslator{ctrl: ctrl}
-	mock.recorder = &MockAppmeshTranslatorMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockAppmeshTranslator) EXPECT() *MockAppmeshTranslatorMockRecorder {
-	return m.recorder
-}
-
-// BuildDefaultVirtualNode mocks base method.
-func (m *MockAppmeshTranslator) BuildDefaultVirtualNode(appmeshName *string, meshWorkload *v1alpha1.MeshWorkload, meshService *v1alpha1.MeshService, upstreamServices []*v1alpha1.MeshService) *appmesh.VirtualNodeData {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildDefaultVirtualNode", appmeshName, meshWorkload, meshService, upstreamServices)
-	ret0, _ := ret[0].(*appmesh.VirtualNodeData)
-	return ret0
-}
-
-// BuildDefaultVirtualNode indicates an expected call of BuildDefaultVirtualNode.
-func (mr *MockAppmeshTranslatorMockRecorder) BuildDefaultVirtualNode(appmeshName, meshWorkload, meshService, upstreamServices interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildDefaultVirtualNode", reflect.TypeOf((*MockAppmeshTranslator)(nil).BuildDefaultVirtualNode), appmeshName, meshWorkload, meshService, upstreamServices)
-}
-
-// BuildDefaultRoute mocks base method.
-func (m *MockAppmeshTranslator) BuildDefaultRoute(appmeshName *string, meshService *v1alpha1.MeshService, meshWorkloads []*v1alpha1.MeshWorkload) (*appmesh.RouteData, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildDefaultRoute", appmeshName, meshService, meshWorkloads)
-	ret0, _ := ret[0].(*appmesh.RouteData)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// BuildDefaultRoute indicates an expected call of BuildDefaultRoute.
-func (mr *MockAppmeshTranslatorMockRecorder) BuildDefaultRoute(appmeshName, meshService, meshWorkloads interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildDefaultRoute", reflect.TypeOf((*MockAppmeshTranslator)(nil).BuildDefaultRoute), appmeshName, meshService, meshWorkloads)
-}
-
-// BuildVirtualService mocks base method.
-func (m *MockAppmeshTranslator) BuildVirtualService(appmeshName *string, meshService *v1alpha1.MeshService) *appmesh.VirtualServiceData {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildVirtualService", appmeshName, meshService)
-	ret0, _ := ret[0].(*appmesh.VirtualServiceData)
-	return ret0
-}
-
-// BuildVirtualService indicates an expected call of BuildVirtualService.
-func (mr *MockAppmeshTranslatorMockRecorder) BuildVirtualService(appmeshName, meshService interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildVirtualService", reflect.TypeOf((*MockAppmeshTranslator)(nil).BuildVirtualService), appmeshName, meshService)
-}
-
-// BuildVirtualRouter mocks base method.
-func (m *MockAppmeshTranslator) BuildVirtualRouter(appmeshName *string, meshService *v1alpha1.MeshService) *appmesh.VirtualRouterData {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildVirtualRouter", appmeshName, meshService)
-	ret0, _ := ret[0].(*appmesh.VirtualRouterData)
-	return ret0
-}
-
-// BuildVirtualRouter indicates an expected call of BuildVirtualRouter.
-func (mr *MockAppmeshTranslatorMockRecorder) BuildVirtualRouter(appmeshName, meshService interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildVirtualRouter", reflect.TypeOf((*MockAppmeshTranslator)(nil).BuildVirtualRouter), appmeshName, meshService)
-}
-
 // MockAppmeshClient is a mock of AppmeshClient interface.
 type MockAppmeshClient struct {
 	ctrl     *gomock.Controller
@@ -249,6 +168,62 @@ func (m *MockAppmeshClient) EnsureVirtualNode(virtualNode *appmesh.VirtualNodeDa
 func (mr *MockAppmeshClientMockRecorder) EnsureVirtualNode(virtualNode interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualNode", reflect.TypeOf((*MockAppmeshClient)(nil).EnsureVirtualNode), virtualNode)
+}
+
+// ReconcileVirtualServices mocks base method.
+func (m *MockAppmeshClient) ReconcileVirtualServices(ctx context.Context, meshName *string, virtualServices []*appmesh.VirtualServiceData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVirtualServices", ctx, meshName, virtualServices)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileVirtualServices indicates an expected call of ReconcileVirtualServices.
+func (mr *MockAppmeshClientMockRecorder) ReconcileVirtualServices(ctx, meshName, virtualServices interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualServices", reflect.TypeOf((*MockAppmeshClient)(nil).ReconcileVirtualServices), ctx, meshName, virtualServices)
+}
+
+// ReconcileVirtualRouters mocks base method.
+func (m *MockAppmeshClient) ReconcileVirtualRouters(ctx context.Context, meshName *string, virtualRouters []*appmesh.VirtualRouterData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVirtualRouters", ctx, meshName, virtualRouters)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileVirtualRouters indicates an expected call of ReconcileVirtualRouters.
+func (mr *MockAppmeshClientMockRecorder) ReconcileVirtualRouters(ctx, meshName, virtualRouters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualRouters", reflect.TypeOf((*MockAppmeshClient)(nil).ReconcileVirtualRouters), ctx, meshName, virtualRouters)
+}
+
+// ReconcileRoutes mocks base method.
+func (m *MockAppmeshClient) ReconcileRoutes(ctx context.Context, meshName *string, routes []*appmesh.RouteData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileRoutes", ctx, meshName, routes)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileRoutes indicates an expected call of ReconcileRoutes.
+func (mr *MockAppmeshClientMockRecorder) ReconcileRoutes(ctx, meshName, routes interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRoutes", reflect.TypeOf((*MockAppmeshClient)(nil).ReconcileRoutes), ctx, meshName, routes)
+}
+
+// ReconcileVirtualNodes mocks base method.
+func (m *MockAppmeshClient) ReconcileVirtualNodes(ctx context.Context, meshName *string, virtualNodes []*appmesh.VirtualNodeData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVirtualNodes", ctx, meshName, virtualNodes)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileVirtualNodes indicates an expected call of ReconcileVirtualNodes.
+func (mr *MockAppmeshClientMockRecorder) ReconcileVirtualNodes(ctx, meshName, virtualNodes interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualNodes", reflect.TypeOf((*MockAppmeshClient)(nil).ReconcileVirtualNodes), ctx, meshName, virtualNodes)
 }
 
 // MockSTSClient is a mock of STSClient interface.

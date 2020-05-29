@@ -1,4 +1,4 @@
-package appmesh
+package translation
 
 import (
 	aws2 "github.com/aws/aws-sdk-go/aws"
@@ -27,7 +27,7 @@ func NewAppmeshTranslator() AppmeshTranslator {
 	return &appmeshTranslator{}
 }
 
-func (a *appmeshTranslator) BuildDefaultVirtualNode(
+func (a *appmeshTranslator) BuildVirtualNode(
 	appmeshName *string,
 	meshWorkload *zephyr_discovery.MeshWorkload,
 	meshService *zephyr_discovery.MeshService,

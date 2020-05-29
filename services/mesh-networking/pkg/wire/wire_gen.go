@@ -22,6 +22,7 @@ import (
 	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/aws"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
@@ -119,11 +120,11 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	v3 := AccessControlPolicyMeshTranslatorsProvider(istio_translatorIstioTranslator)
 	acpTranslatorLoop := acp_translator.NewAcpTranslatorLoop(accessControlPolicyEventWatcher, meshServiceEventWatcher, meshClient, accessControlPolicyClient, resourceSelector, v3)
 	istioEnforcer := istio.NewIstioEnforcer(dynamicClientGetter, authorizationPolicyClientFactory)
-	appmeshTranslator := appmesh.NewAppmeshTranslator()
+	appmeshTranslator := translation.NewAppmeshTranslator()
 	appmeshMatcher := appmesh.NewAppmeshMatcher()
 	appmeshRawClientFactory := appmesh.AppmeshRawClientFactoryProvider()
 	appmeshClientFactory := appmesh.AppmeshClientFactoryProvider(appmeshMatcher, awsCredentialsGetter, appmeshRawClientFactory)
-	appmeshAccessControlDao := appmesh2.NewAppmeshAccessControlDao(meshServiceClient, meshWorkloadClient, resourceSelector, appmeshClientFactory)
+	appmeshAccessControlDao := translation.NewAppmeshAccessControlDao(meshServiceClient, meshWorkloadClient, resourceSelector, appmeshClientFactory)
 	appmeshEnforcer := appmesh2.NewAppmeshEnforcer(appmeshTranslator, appmeshAccessControlDao)
 	v4 := GlobalAccessControlPolicyMeshEnforcersProvider(istioEnforcer, appmeshEnforcer)
 	accessPolicyEnforcerLoop := access_policy_enforcer.NewEnforcerLoop(virtualMeshEventWatcher, virtualMeshClient, meshClient, v4)

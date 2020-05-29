@@ -1,4 +1,4 @@
-package appmesh_test
+package translation_test
 
 import (
 	. "github.com/onsi/ginkgo"
