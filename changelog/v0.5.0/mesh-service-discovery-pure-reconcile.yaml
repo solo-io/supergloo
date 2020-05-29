@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix MeshService discovery not recreating MeshServices by using a pure reconcile approach.
+    issueLink:  https://github.com/solo-io/service-mesh-hub/issues/694
