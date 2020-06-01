@@ -22,7 +22,7 @@ func TestE2e(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
 	/* env := */ StartEnvOnce(ctx)
 	// TODO: deploy test helper?
