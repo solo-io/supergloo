@@ -9,6 +9,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/collections/sets"
 )
 
@@ -117,7 +118,7 @@ func (a *appmeshTranslationReconciler) reconcile(
 	mesh *zephyr_discovery.Mesh,
 	servicesToBackingWorkloads map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload,
 	workloadsToBackingServices map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService,
-	workloadsToUpstreamServices map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet,
+	workloadsToUpstreamServices map[string]sets.MeshServiceSet,
 ) error {
 	var virtualServices []*appmesh2.VirtualServiceData
 	var virtualRouters []*appmesh2.VirtualRouterData
@@ -143,7 +144,7 @@ func (a *appmeshTranslationReconciler) reconcile(
 			continue
 		}
 		var upstreamServicesList []*zephyr_discovery.MeshService
-		upstreamServices := workloadsToUpstreamServices[workload]
+		upstreamServices := workloadsToUpstreamServices[clients.ToUniqueSingleClusterString(workload.ObjectMeta)]
 		if upstreamServices != nil {
 			upstreamServicesList = upstreamServices.List()
 		}

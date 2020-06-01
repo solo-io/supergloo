@@ -61,7 +61,7 @@ type AppmeshTranslationDao interface {
 	GetWorkloadsToAllUpstreamServices(
 		ctx context.Context,
 		mesh *zephyr_discovery.Mesh,
-	) (map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet, error)
+	) (map[string]sets.MeshServiceSet, error)
 
 	GetServicesWithACP(
 		ctx context.Context,
@@ -71,7 +71,7 @@ type AppmeshTranslationDao interface {
 	GetWorkloadsToUpstreamServicesWithACP(
 		ctx context.Context,
 		mesh *zephyr_discovery.Mesh,
-	) (sets.MeshWorkloadSet, map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet, error)
+	) (sets.MeshWorkloadSet, map[string]sets.MeshServiceSet, error)
 
 	EnsureVirtualService(
 		mesh *zephyr_discovery.Mesh,

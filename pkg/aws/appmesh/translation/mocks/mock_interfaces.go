@@ -6,13 +6,12 @@ package mock_translation
 
 import (
 	context "context"
-	reflect "reflect"
-
 	appmesh "github.com/aws/aws-sdk-go/service/appmesh"
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	sets "github.com/solo-io/service-mesh-hub/pkg/collections/sets"
+	reflect "reflect"
 )
 
 // MockAppmeshTranslationReconciler is a mock of AppmeshTranslationReconciler interface.
@@ -172,10 +171,10 @@ func (mr *MockAppmeshTranslationDaoMockRecorder) GetAllServiceWorkloadPairsForMe
 }
 
 // GetWorkloadsToAllUpstreamServices mocks base method.
-func (m *MockAppmeshTranslationDao) GetWorkloadsToAllUpstreamServices(ctx context.Context, mesh *v1alpha1.Mesh) (map[*v1alpha1.MeshWorkload]sets.MeshServiceSet, error) {
+func (m *MockAppmeshTranslationDao) GetWorkloadsToAllUpstreamServices(ctx context.Context, mesh *v1alpha1.Mesh) (map[string]sets.MeshServiceSet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetWorkloadsToAllUpstreamServices", ctx, mesh)
-	ret0, _ := ret[0].(map[*v1alpha1.MeshWorkload]sets.MeshServiceSet)
+	ret0, _ := ret[0].(map[string]sets.MeshServiceSet)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -202,11 +201,11 @@ func (mr *MockAppmeshTranslationDaoMockRecorder) GetServicesWithACP(ctx, mesh in
 }
 
 // GetWorkloadsToUpstreamServicesWithACP mocks base method.
-func (m *MockAppmeshTranslationDao) GetWorkloadsToUpstreamServicesWithACP(ctx context.Context, mesh *v1alpha1.Mesh) (sets.MeshWorkloadSet, map[*v1alpha1.MeshWorkload]sets.MeshServiceSet, error) {
+func (m *MockAppmeshTranslationDao) GetWorkloadsToUpstreamServicesWithACP(ctx context.Context, mesh *v1alpha1.Mesh) (sets.MeshWorkloadSet, map[string]sets.MeshServiceSet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetWorkloadsToUpstreamServicesWithACP", ctx, mesh)
 	ret0, _ := ret[0].(sets.MeshWorkloadSet)
-	ret1, _ := ret[1].(map[*v1alpha1.MeshWorkload]sets.MeshServiceSet)
+	ret1, _ := ret[1].(map[string]sets.MeshServiceSet)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
