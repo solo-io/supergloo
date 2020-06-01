@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 # generate names: $1 allows to make several envs in parallel 
 managementPlane=management-plane-$1
 remoteCluster=target-cluster-$1
