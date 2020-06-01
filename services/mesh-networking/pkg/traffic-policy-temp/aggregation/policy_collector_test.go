@@ -12,8 +12,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/mocks"
-	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
-	mock_mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes/mocks"
+	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
+	mock_mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators/mocks"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -42,7 +42,7 @@ var _ = Describe("PolicyCollector", func() {
 					PoliciesForService(nil, meshService).
 					Return(nil, nil)
 
-				result, err := collector.CollectForService(meshService, nil, nil, nil)
+				result, err := collector.CollectForService(meshService, nil, nil, nil, nil)
 				Expect(err).To(BeNil())
 				Expect(result.PoliciesToRecordOnService).To(BeNil())
 			})
@@ -69,7 +69,7 @@ var _ = Describe("PolicyCollector", func() {
 					PoliciesForService(nil, meshService).
 					Return(nil, nil)
 
-				result, err := collector.CollectForService(meshService, nil, nil, nil)
+				result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, nil, nil, nil)
 				Expect(err).To(BeNil())
 				Expect(result.PoliciesToRecordOnService).To(BeNil())
 			})
@@ -98,7 +98,7 @@ var _ = Describe("PolicyCollector", func() {
 				PoliciesForService(nil, meshService).
 				Return(nil, nil)
 
-			result, err := collector.CollectForService(meshService, mesh, validator, trafficPolicies)
+			result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 			Expect(err).To(BeNil())
 			Expect(result.PoliciesToRecordOnService).To(BeNil())
 		})
@@ -165,7 +165,7 @@ var _ = Describe("PolicyCollector", func() {
 				FindMergeConflict(&trafficPolicies[1].Spec, nil, meshService).
 				Return(nil)
 			validator.EXPECT().
-				GetTranslationErrors(meshService, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				GetTranslationErrors(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 					{
 						Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 						TrafficPolicySpec: &trafficPolicies[1].Spec,
@@ -176,7 +176,7 @@ var _ = Describe("PolicyCollector", func() {
 				FindMergeConflict(&trafficPolicies[2].Spec, []*zephyr_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
 				Return(nil)
 			validator.EXPECT().
-				GetTranslationErrors(meshService, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				GetTranslationErrors(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 					{
 						Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 						TrafficPolicySpec: &trafficPolicies[1].Spec,
@@ -188,7 +188,7 @@ var _ = Describe("PolicyCollector", func() {
 				}).
 				Return(nil)
 
-			result, err := collector.CollectForService(meshService, mesh, validator, trafficPolicies)
+			result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 			Expect(err).To(BeNil())
 			Expect(result.PoliciesToRecordOnService).To(Equal([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
@@ -278,7 +278,7 @@ var _ = Describe("PolicyCollector", func() {
 					PoliciesForService(trafficPolicies[0:3], meshService).
 					Return(trafficPolicies[1:3], nil)
 
-				result, err := collector.CollectForService(meshService, mesh, validator, trafficPolicies)
+				result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 				Expect(err).To(BeNil())
 				Expect(result.PoliciesToRecordOnService).To(Equal(meshService.Status.ValidatedTrafficPolicies))
 			})
@@ -366,7 +366,7 @@ var _ = Describe("PolicyCollector", func() {
 						FindMergeConflict(&trafficPolicies[2].Spec, []*zephyr_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
 						Return(nil)
 					validator.EXPECT().
-						GetTranslationErrors(meshService, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+						GetTranslationErrors(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 							{
 								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 								TrafficPolicySpec: &trafficPolicies[1].Spec,
@@ -378,7 +378,7 @@ var _ = Describe("PolicyCollector", func() {
 						}).
 						Return(nil)
 
-					result, err := collector.CollectForService(meshService, mesh, validator, trafficPolicies)
+					result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 					Expect(err).To(BeNil())
 					Expect(result.PoliciesToRecordOnService).To(Equal([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						meshService.Status.ValidatedTrafficPolicies[0],
@@ -472,7 +472,7 @@ var _ = Describe("PolicyCollector", func() {
 						FindMergeConflict(&trafficPolicies[2].Spec, []*zephyr_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
 						Return(mergeConflict)
 
-					result, err := collector.CollectForService(meshService, mesh, validator, trafficPolicies)
+					result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 					Expect(err).To(BeNil())
 					Expect(result.PoliciesToRecordOnService).To(Equal(meshService.Status.ValidatedTrafficPolicies))
 					Expect(result.PolicyToConflictErrors).To(Equal(map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError{
@@ -561,7 +561,7 @@ var _ = Describe("PolicyCollector", func() {
 						FindMergeConflict(&trafficPolicies[2].Spec, []*zephyr_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
 						Return(nil)
 					validator.EXPECT().
-						GetTranslationErrors(meshService, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+						GetTranslationErrors(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 							{
 								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 								TrafficPolicySpec: &trafficPolicies[1].Spec,
@@ -579,7 +579,7 @@ var _ = Describe("PolicyCollector", func() {
 							TranslatorErrors: []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{translationError},
 						}})
 
-					result, err := collector.CollectForService(meshService, mesh, validator, trafficPolicies)
+					result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 					Expect(err).To(BeNil())
 					Expect(result.PoliciesToRecordOnService).To(Equal(meshService.Status.ValidatedTrafficPolicies))
 					Expect(result.PolicyToTranslatorErrors).To(Equal(map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{

@@ -9,7 +9,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
-	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
+	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -25,6 +25,7 @@ type policyCollector struct {
 
 func (p *policyCollector) CollectForService(
 	meshService *zephyr_discovery.MeshService,
+	allMeshServices []*zephyr_discovery.MeshService,
 	mesh *zephyr_discovery.Mesh,
 	translationValidator mesh_translation.TranslationValidator,
 	allTrafficPolicies []*zephyr_networking.TrafficPolicy,
@@ -54,6 +55,7 @@ func (p *policyCollector) CollectForService(
 
 	policiesToRecordOnService, policyToConflictErrors, policyToTranslatorErrors := p.determineFinalValidState(
 		meshService,
+		allMeshServices,
 		mesh,
 		translationValidator,
 		policiesToCheck,
@@ -68,6 +70,7 @@ func (p *policyCollector) CollectForService(
 
 func (p *policyCollector) determineFinalValidState(
 	meshService *zephyr_discovery.MeshService,
+	allMeshServices []*zephyr_discovery.MeshService,
 	mesh *zephyr_discovery.Mesh,
 	translationValidator mesh_translation.TranslationValidator,
 	policiesToCheckParam []*policyToCheck,
@@ -147,6 +150,7 @@ func (p *policyCollector) determineFinalValidState(
 
 			translationErrors := translationValidator.GetTranslationErrors(
 				meshService,
+				allMeshServices,
 				mesh,
 				mergeableTPs,
 			)

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 #####################################
 #
@@ -29,23 +29,52 @@ remoteCluster=target-cluster-$1
 # set up each cluster
 # Create NodePort for remote cluster so it can be reachable from the management plane.
 # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
-cat <<EOF | kind create cluster --name $managementPlane --config=-
+(cat <<EOF | kind create cluster --name $managementPlane --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
+  extraPortMappings:
+  - containerPort: 32001
+    hostPort: 32001
+    protocol: TCP
   kubeadmConfigPatches:
   - |
     kind: InitConfiguration
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "ingress-ready=true"
-        authorization-mode: "AlwaysAllow"
-  extraPortMappings:
-  - containerPort: 32001
-    hostPort: 32001
-    protocol: TCP
+kubeadmConfigPatches:
+- |
+  kind: InitConfiguration
+  nodeRegistration:
+    kubeletExtraArgs:
+      authorization-mode: "AlwaysAllow"
+      feature-gates: "EphemeralContainers=true"
+- |
+  kind: KubeletConfiguration
+  featureGates:
+    EphemeralContainers: true
+- |
+  kind: KubeProxyConfiguration
+  featureGates:
+    EphemeralContainers: true
+- |
+  kind: ClusterConfiguration
+  metadata:
+    name: config
+  apiServer:
+    extraArgs:
+      "feature-gates": "EphemeralContainers=true"
+  scheduler:
+    extraArgs:
+      "feature-gates": "EphemeralContainers=true"
+  controllerManager:
+    extraArgs:
+      "feature-gates": "EphemeralContainers=true"
 EOF
+)&
+
 # Create NodePort for remote cluster so it can be reachable from the management plane.
 # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
 cat <<EOF | kind create cluster --name $remoteCluster --config=-
@@ -53,18 +82,47 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
+  extraPortMappings:
+  - containerPort: 32000
+    hostPort: 32000
+    protocol: TCP
   kubeadmConfigPatches:
   - |
     kind: InitConfiguration
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "ingress-ready=true"
-        authorization-mode: "AlwaysAllow"
-  extraPortMappings:
-  - containerPort: 32000
-    hostPort: 32000
-    protocol: TCP
+kubeadmConfigPatches:
+- |
+  kind: InitConfiguration
+  nodeRegistration:
+    kubeletExtraArgs:
+      authorization-mode: "AlwaysAllow"
+      feature-gates: "EphemeralContainers=true"
+- |
+  kind: KubeletConfiguration
+  featureGates:
+    EphemeralContainers: true
+- |
+  kind: KubeProxyConfiguration
+  featureGates:
+    EphemeralContainers: true
+- |
+  kind: ClusterConfiguration
+  metadata:
+    name: config
+  apiServer:
+    extraArgs:
+      "feature-gates": "EphemeralContainers=true"
+  scheduler:
+    extraArgs:
+      "feature-gates": "EphemeralContainers=true"
+  controllerManager:
+    extraArgs:
+      "feature-gates": "EphemeralContainers=true"
 EOF
+
+wait
 
 printf "\n\n---\n"
 echo "Finished setting up cluster $managementPlane"
@@ -74,8 +132,8 @@ echo "Finished setting up cluster $remoteCluster"
 kubectl config use-context kind-$managementPlane
 
 # ensure service-mesh-hub ns exists
-kubectl create ns --context kind-$managementPlane  service-mesh-hub
-kubectl create ns --context kind-$remoteCluster  service-mesh-hub
+kubectl --context kind-$managementPlane create ns service-mesh-hub
+kubectl --context kind-$remoteCluster create ns service-mesh-hub
 
 # leaving this in for the time being as there is a race with helm installing CRDs
 # register all our CRDs in the management plane
@@ -102,7 +160,12 @@ make -s package-index-csr-agent-helm -B
 make meshctl -B
 # install the app
 # the helm version needs to strip the leading v out of the git describe output
-helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
+if [ -z "$VERSION" ]; then
+  helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
+else
+  helmVersion=$VERSION
+fi
+
 ./_output/meshctl install --file ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
 
 case $(uname) in
@@ -353,23 +416,36 @@ kubectl --context kind-$managementPlane label namespace default istio-injection=
 kubectl --context kind-$remoteCluster label namespace default istio-injection=enabled
 
 # Apply bookinfo deployments and services
-kubectl apply --context kind-$managementPlane -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml
-kubectl apply --context kind-$remoteCluster -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml
+kubectl --context kind-$managementPlane apply -f ./ci/bookinfo.yaml -l 'app,version notin (v3)'
+kubectl --context kind-$managementPlane apply -f ./ci/bookinfo.yaml -l 'account'
+
+kubectl --context kind-$remoteCluster apply -f ./ci/bookinfo.yaml -l 'app,version in (v3)'
+kubectl --context kind-$remoteCluster apply -f ./ci/bookinfo.yaml -l 'service=reviews'
+kubectl --context kind-$remoteCluster apply -f ./ci/bookinfo.yaml -l 'account=reviews'
+kubectl --context kind-$remoteCluster apply -f ./ci/bookinfo.yaml -l 'app=ratings'
+kubectl --context kind-$remoteCluster apply -f ./ci/bookinfo.yaml -l 'account=ratings'
+
+# wait for deployments to finish
+kubectl --context kind-$managementPlane rollout status deployment/productpage-v1
+kubectl --context kind-$managementPlane rollout status deployment/reviews-v1
+kubectl --context kind-$managementPlane rollout status deployment/reviews-v2
+
+kubectl --context kind-$remoteCluster rollout status deployment/reviews-v3
 
 echo '>>> Waiting for MeshWorkloads to be created'
 retries=50
 count=0
 ok=false
 until ${ok}; do
-    numResources=`kubectl --context kind-$managementPlane -n service-mesh-hub get meshworkloads | grep istio -c`
-    if [[ ${numResources} -eq 14 ]]; then
+    numResources=$(kubectl --context kind-$managementPlane -n service-mesh-hub get meshworkloads | grep istio -c || true)
+    if [[ ${numResources} -eq 9 ]]; then
         ok=true
         continue
     fi
     sleep 5
     count=$(($count + 1))
     if [[ ${count} -eq ${retries} ]]; then
-        echo "No more retries left"
+        echo "Have ${numResources} resources, and no more retries left"
         exit 1
     fi
 done
@@ -381,17 +457,24 @@ retries=50
 count=0
 ok=false
 until ${ok}; do
-    numResources=`kubectl --context kind-$managementPlane -n service-mesh-hub get meshservices | grep default -c`
-    if [[ ${numResources} -eq 8 ]]; then
+    numResources=$(kubectl --context kind-$managementPlane -n service-mesh-hub get meshservices | grep default -c || true)
+    if [[ ${numResources} -eq 6 ]]; then
         ok=true
         continue
     fi
     sleep 5
     count=$(($count + 1))
     if [[ ${count} -eq ${retries} ]]; then
-        echo "No more retries left"
+        echo "Have ${numResources} resources, and no more retries left"
         exit 1
     fi
 done
 
 echo '✔ MeshServices have been created'
+
+
+# echo context to tests if they watch us
+# dont change this line without changing StartEnv in test/e2e/env.go
+if [ -e /proc/self/fd/3 ]; then
+echo kind-$managementPlane kind-$remoteCluster >&3
+fi

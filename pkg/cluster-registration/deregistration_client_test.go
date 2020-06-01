@@ -13,17 +13,17 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_security_scheme "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
+	cluster_registration2 "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
+	cert_secrets2 "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
-	mock_csr "github.com/solo-io/service-mesh-hub/pkg/csr/installation/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/auth"
+	mock_installation "github.com/solo-io/service-mesh-hub/pkg/csr/installation/mocks"
+	auth2 "github.com/solo-io/service-mesh-hub/pkg/kube/auth"
 	mock_crd_uninstall "github.com/solo-io/service-mesh-hub/pkg/kube/crd/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
+	kubeconfig2 "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	mock_kubeconfig2 "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
 	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -55,9 +55,9 @@ var _ = Describe("Cluster Deregistration", func() {
 	})
 
 	It("can deregister a cluster", func() {
-		mockCsrAgentInstaller := mock_csr.NewMockCsrAgentInstaller(ctrl)
+		mockCsrAgentInstaller := mock_installation.NewMockCsrAgentInstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		configLookup := mock_kubeconfig.NewMockKubeConfigLookup(ctrl)
+		configLookup := mock_kubeconfig2.NewMockKubeConfigLookup(ctrl)
 		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		remoteSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
@@ -84,14 +84,14 @@ var _ = Describe("Cluster Deregistration", func() {
 			},
 		}
 		intermediateCertSecret := &v12.Secret{
-			Type: cert_secrets.IntermediateCertSecretType,
+			Type: cert_secrets2.IntermediateCertSecretType,
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "intermediate-cert",
 				Namespace: remoteWriteNamespace,
 			},
 		}
 
-		kubeRestConfig := &kubeconfig.ConvertedConfigs{
+		kubeRestConfig := &kubeconfig2.ConvertedConfigs{
 			RestConfig:   remoteRestConfig,
 			ClientConfig: remoteClientConfig,
 		}
@@ -128,8 +128,8 @@ var _ = Describe("Cluster Deregistration", func() {
 				ctx,
 				client.InNamespace(remoteWriteNamespace),
 				client.MatchingLabels{
-					constants.ManagedByLabel:        constants.ServiceMeshHubApplicationName,
-					auth.RegistrationServiceAccount: auth.RegistrationServiceAccountValue,
+					constants.ManagedByLabel:         constants.ServiceMeshHubApplicationName,
+					auth2.RegistrationServiceAccount: auth2.RegistrationServiceAccountValue,
 				},
 			).
 			Return(nil)
@@ -137,7 +137,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			RemoveCrdGroup(ctx, clusterToDeregister.GetName(), kubeRestConfig.RestConfig, zephyr_security_scheme.SchemeGroupVersion).
 			Return(false, nil)
 
-		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
+		clusterDeregistrationClient := cluster_registration2.NewClusterDeregistrationClient(
 			crdRemover,
 			func(helmInstallerFactory helm.HelmInstallerFactory) installation.CsrAgentInstaller {
 				return mockCsrAgentInstaller
@@ -160,9 +160,9 @@ var _ = Describe("Cluster Deregistration", func() {
 
 	It("responds with the appropriate error if the config lookup fails", func() {
 		testErr := eris.New("test-err")
+		mockCsrAgentInstaller := mock_installation.NewMockCsrAgentInstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		mockCsrAgentInstaller := mock_csr.NewMockCsrAgentInstaller(ctrl)
-		configLookup := mock_kubeconfig.NewMockKubeConfigLookup(ctrl)
+		configLookup := mock_kubeconfig2.NewMockKubeConfigLookup(ctrl)
 		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		dynamicClientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
@@ -187,7 +187,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			FromCluster(ctx, clusterToDeregister.GetName()).
 			Return(nil, testErr)
 
-		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
+		clusterDeregistrationClient := cluster_registration2.NewClusterDeregistrationClient(
 			crdRemover,
 			func(helmInstallerFactory helm.HelmInstallerFactory) installation.CsrAgentInstaller {
 				return mockCsrAgentInstaller
@@ -205,14 +205,14 @@ var _ = Describe("Cluster Deregistration", func() {
 		)
 
 		err := clusterDeregistrationClient.Deregister(ctx, clusterToDeregister)
-		Expect(err).To(testutils.HaveInErrorChain(cluster_registration.FailedToFindClusterCredentials(testErr, remoteClusterName)))
+		Expect(err).To(testutils.HaveInErrorChain(cluster_registration2.FailedToFindClusterCredentials(testErr, remoteClusterName)))
 	})
 
 	It("responds with the appropriate error if CSR uninstallation fails", func() {
 		testErr := eris.New("test-err")
-		mockCsrAgentInstaller := mock_csr.NewMockCsrAgentInstaller(ctrl)
+		mockCsrAgentInstaller := mock_installation.NewMockCsrAgentInstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		configLookup := mock_kubeconfig.NewMockKubeConfigLookup(ctrl)
+		configLookup := mock_kubeconfig2.NewMockKubeConfigLookup(ctrl)
 		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		remoteSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
@@ -236,7 +236,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		}
 		configLookup.EXPECT().
 			FromCluster(ctx, clusterToDeregister.GetName()).
-			Return(&kubeconfig.ConvertedConfigs{
+			Return(&kubeconfig2.ConvertedConfigs{
 				RestConfig:   remoteRestConfig,
 				ClientConfig: remoteClientConfig,
 			}, nil)
@@ -246,7 +246,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			ReleaseNamespace: clusterToDeregister.Spec.GetWriteNamespace(),
 		}).Return(testErr)
 
-		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
+		clusterDeregistrationClient := cluster_registration2.NewClusterDeregistrationClient(
 			crdRemover,
 			func(helmInstallerFactory helm.HelmInstallerFactory) installation.CsrAgentInstaller {
 				return mockCsrAgentInstaller
@@ -264,14 +264,14 @@ var _ = Describe("Cluster Deregistration", func() {
 		)
 
 		err := clusterDeregistrationClient.Deregister(ctx, clusterToDeregister)
-		Expect(err).To(testutils.HaveInErrorChain(cluster_registration.FailedToUninstallCsrAgent(testErr, remoteClusterName)))
+		Expect(err).To(testutils.HaveInErrorChain(cluster_registration2.FailedToUninstallCsrAgent(testErr, remoteClusterName)))
 	})
 
 	It("responds with the appropriate error if CRD removal fails", func() {
 		testErr := eris.New("test-err")
-		mockCsrAgentInstaller := mock_csr.NewMockCsrAgentInstaller(ctrl)
+		mockCsrAgentInstaller := mock_installation.NewMockCsrAgentInstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
-		configLookup := mock_kubeconfig.NewMockKubeConfigLookup(ctrl)
+		configLookup := mock_kubeconfig2.NewMockKubeConfigLookup(ctrl)
 		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		remoteSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
@@ -298,7 +298,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		}
 
 		intermediateCertSecret := &v12.Secret{
-			Type: cert_secrets.IntermediateCertSecretType,
+			Type: cert_secrets2.IntermediateCertSecretType,
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "intermediate-cert",
 				Namespace: remoteWriteNamespace,
@@ -306,7 +306,7 @@ var _ = Describe("Cluster Deregistration", func() {
 		}
 		configLookup.EXPECT().
 			FromCluster(ctx, clusterToDeregister.GetName()).
-			Return(&kubeconfig.ConvertedConfigs{
+			Return(&kubeconfig2.ConvertedConfigs{
 				RestConfig:   remoteRestConfig,
 				ClientConfig: remoteClientConfig,
 			}, nil)
@@ -339,7 +339,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			DeleteKubernetesCluster(ctx, selection.ObjectMetaToObjectKey(clusterToDeregister.ObjectMeta)).
 			Return(nil)
 
-		clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(
+		clusterDeregistrationClient := cluster_registration2.NewClusterDeregistrationClient(
 			crdRemover,
 			func(helmInstallerFactory helm.HelmInstallerFactory) installation.CsrAgentInstaller {
 				return mockCsrAgentInstaller
@@ -357,6 +357,6 @@ var _ = Describe("Cluster Deregistration", func() {
 		)
 
 		err := clusterDeregistrationClient.Deregister(ctx, clusterToDeregister)
-		Expect(err).To(testutils.HaveInErrorChain(cluster_registration.FailedToRemoveCrds(testErr, remoteClusterName)))
+		Expect(err).To(testutils.HaveInErrorChain(cluster_registration2.FailedToRemoveCrds(testErr, remoteClusterName)))
 	})
 })

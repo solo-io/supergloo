@@ -5,7 +5,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
+	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
@@ -22,6 +22,7 @@ type PolicyCollector interface {
 	// Errors can occur due to invalid selectors on policies.
 	CollectForService(
 		meshService *zephyr_discovery.MeshService,
+		allMeshServices []*zephyr_discovery.MeshService,
 		mesh *zephyr_discovery.Mesh,
 		translationValidator mesh_translation.TranslationValidator,
 		allTrafficPolicies []*zephyr_networking.TrafficPolicy,
