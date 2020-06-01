@@ -3,6 +3,7 @@ package access_policy_enforcer
 import (
 	"context"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
@@ -43,12 +44,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 				zap.Any("spec", obj.Spec),
 				zap.Any("status", obj.Status),
 			)
-			err := e.enforceGlobalAccessControl(ctx, obj)
-			err = e.setStatus(ctx, obj, err)
-			if err != nil {
-				logger.Errorw("Error while handling VirtualMesh create event", err)
-			}
-			return nil
+			return e.reconcile(ctx, logging.CreateEvent)
 		},
 		OnUpdate: func(old, new *zephyr_networking.VirtualMesh) error {
 			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
@@ -58,28 +54,15 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 				zap.Any("new_spec", new.Spec),
 				zap.Any("new_status", new.Status),
 			)
-			err := e.enforceGlobalAccessControl(ctx, new)
-			err = e.setStatus(ctx, new, err)
-			if err != nil {
-				logger.Errorw("Error while handling VirtualMesh update event", err)
-			}
-			return nil
+			return e.reconcile(ctx, logging.UpdateEvent)
 		},
-		OnDelete: func(virtualMesh *zephyr_networking.VirtualMesh) error {
-			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, virtualMesh)
+		OnDelete: func(obj *zephyr_networking.VirtualMesh) error {
+			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, obj)
 			logger.Debugw("event handler enter",
-				zap.Any("spec", virtualMesh.Spec),
-				zap.Any("status", virtualMesh.Status),
+				zap.Any("spec", obj.Spec),
+				zap.Any("status", obj.Status),
 			)
-
-			// TODO https://github.com/solo-io/service-mesh-hub/issues/650 - we probably want to introduce some defensive retries into our code
-			err := e.enforceGlobalAccessControl(ctx, nil)
-			if err != nil {
-				logger.Errorf("%+v", err)
-				return nil
-			}
-
-			return nil
+			return e.reconcile(ctx, logging.DeleteEvent)
 		},
 		OnGeneric: func(virtualMesh *zephyr_networking.VirtualMesh) error {
 			logger := logging.BuildEventLogger(ctx, logging.GenericEvent, virtualMesh)
@@ -87,6 +70,29 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 			return nil
 		},
 	})
+}
+
+func (e *enforcerLoop) reconcile(ctx context.Context, eventType logging.EventType) error {
+	vmList, err := e.virtualMeshClient.ListVirtualMesh(ctx)
+	if err != nil {
+		return err
+	}
+	var multierr *multierror.Error
+	for _, vm := range vmList.Items {
+		vm := vm
+		logger := logging.BuildEventLogger(ctx, eventType, &vm)
+		err := e.enforceGlobalAccessControl(ctx, &vm)
+		if err != nil {
+			logger.Errorf("Error while handling VirtualMesh event: %+v", err)
+			multierr = multierror.Append(err)
+		}
+		err = e.setStatus(ctx, &vm, err)
+		if err != nil {
+			logger.Errorf("Error while settings status for VirtualMesh: %+v", err)
+			multierr = multierror.Append(err)
+		}
+	}
+	return multierr.ErrorOrNil()
 }
 
 // If enforceMeshDefault, ignore user declared enforce_access_control setting and use mesh-specific default as defined on the

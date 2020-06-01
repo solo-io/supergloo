@@ -8,6 +8,7 @@ package wire
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/istio"
@@ -63,7 +64,9 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	converter := kubeconfig.NewConverter(fileReader)
 	asyncManagerController := mc_wire.KubeClusterCredentialsHandlerProvider(converter)
 	awsCredentialsGetter := aws.NewCredentialsGetter()
-	awsCredsHandler := aws2.NewNetworkingAwsCredsHandler(awsCredentialsGetter)
+	stsClientFactory := appmesh.STSClientFactoryProvider()
+	secretAwsCredsConverter := aws_creds.DefaultSecretAwsCredsConverter()
+	awsCredsHandler := aws2.NewNetworkingAwsCredsHandler(awsCredentialsGetter, stsClientFactory, secretAwsCredsConverter)
 	v := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
@@ -123,9 +126,9 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	appmeshTranslator := translation.NewAppmeshTranslator()
 	appmeshMatcher := appmesh.NewAppmeshMatcher()
 	appmeshRawClientFactory := appmesh.AppmeshRawClientFactoryProvider()
-	appmeshClientFactory := appmesh.AppmeshClientFactoryProvider(appmeshMatcher, awsCredentialsGetter, appmeshRawClientFactory)
-	appmeshAccessControlDao := translation.NewAppmeshAccessControlDao(meshServiceClient, meshWorkloadClient, resourceSelector, appmeshClientFactory, accessControlPolicyClient)
-	appmeshTranslationReconciler := translation.NewAppmeshTranslationReconciler(appmeshTranslator, appmeshAccessControlDao)
+	appmeshClientFactory := appmesh.AppmeshClientGetterProvider(appmeshMatcher, awsCredentialsGetter, appmeshRawClientFactory)
+	appmeshTranslationDao := translation.NewAppmeshAccessControlDao(meshServiceClient, meshWorkloadClient, resourceSelector, appmeshClientFactory, accessControlPolicyClient)
+	appmeshTranslationReconciler := translation.NewAppmeshTranslationReconciler(appmeshTranslator, appmeshTranslationDao)
 	appmeshEnforcer := appmesh2.NewAppmeshEnforcer(appmeshTranslationReconciler)
 	v4 := GlobalAccessControlPolicyMeshEnforcersProvider(istioEnforcer, appmeshEnforcer)
 	accessPolicyEnforcerLoop := access_policy_enforcer.NewEnforcerLoop(virtualMeshEventWatcher, virtualMeshClient, meshClient, v4)

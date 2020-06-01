@@ -21,9 +21,13 @@ type networkingAwsCredsHandler struct {
 
 func NewNetworkingAwsCredsHandler(
 	credentialsGetter aws3.AwsCredentialsGetter,
+	stsClientFactory appmesh.STSClientFactory,
+	secretCredsConverter aws_creds.SecretAwsCredsConverter,
 ) aws2.AwsCredsHandler {
 	return &networkingAwsCredsHandler{
-		credentialsMap: credentialsGetter,
+		credentialsMap:       credentialsGetter,
+		stsClientFactory:     stsClientFactory,
+		secretCredsConverter: secretCredsConverter,
 	}
 }
 

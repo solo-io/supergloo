@@ -36,5 +36,8 @@ func (a *appmeshEnforcer) ReconcileAccessControl(
 	mesh *zephyr_discovery.Mesh,
 	virtualMesh *zephyr_networking.VirtualMesh,
 ) error {
+	if mesh.Spec.GetAwsAppMesh() == nil {
+		return nil
+	}
 	return a.appmeshTranslationReconciler.Reconcile(ctx, mesh, virtualMesh)
 }

@@ -39,6 +39,9 @@ func (a *appmeshTranslationReconciler) Reconcile(
 	mesh *zephyr_discovery.Mesh,
 	virtualMesh *zephyr_networking.VirtualMesh,
 ) error {
+	if mesh.Spec.GetAwsAppMesh() == nil {
+		return nil
+	}
 	switch virtualMesh.Spec.GetEnforceAccessControl() {
 	case zephyr_networking_types.VirtualMeshSpec_ENABLED, zephyr_networking_types.VirtualMeshSpec_MESH_DEFAULT:
 		return a.reconcileWithEnforcedAccessControl(ctx, mesh)
@@ -59,9 +62,6 @@ func (a *appmeshTranslationReconciler) reconcileWithEnforcedAccessControl(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 ) error {
-	if mesh.Spec.GetAwsAppMesh() == nil {
-		return nil
-	}
 	servicesToBackingWorkloads, workloadsToBackingServices, err := a.dao.GetAllServiceWorkloadPairsForMesh(ctx, mesh)
 	if err != nil {
 		return err
@@ -86,7 +86,7 @@ func (a *appmeshTranslationReconciler) reconcileWithEnforcedAccessControl(
 	}
 	// Create a route to allServices, and to upstream services
 	err = a.reconcile(ctx, mesh, servicesToBackingWorkloads, workloadsToBackingServices, workloadsToUpstreamServices)
-	return nil
+	return err
 }
 
 /*
@@ -100,9 +100,6 @@ func (a *appmeshTranslationReconciler) reconcileWithDisabledAccessControl(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
 ) error {
-	if mesh.Spec.GetAwsAppMesh() == nil {
-		return nil
-	}
 	servicesToBackingWorkloads, workloadsToBackingServices, err := a.dao.GetAllServiceWorkloadPairsForMesh(ctx, mesh)
 	if err != nil {
 		return err
@@ -112,8 +109,7 @@ func (a *appmeshTranslationReconciler) reconcileWithDisabledAccessControl(
 		return err
 	}
 	// Create a route to allServices, and to upstream services
-	err = a.reconcile(ctx, mesh, servicesToBackingWorkloads, workloadsToBackingServices, workloadsToAllUpstreamServices)
-	return nil
+	return a.reconcile(ctx, mesh, servicesToBackingWorkloads, workloadsToBackingServices, workloadsToAllUpstreamServices)
 }
 
 func (a *appmeshTranslationReconciler) reconcile(

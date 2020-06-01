@@ -29,7 +29,7 @@ var (
 		appmesh.NewAppmeshEnforcer,
 		translation.NewAppmeshTranslator,
 		translation.NewAppmeshAccessControlDao,
-		appmesh2.AppmeshClientFactoryProvider,
+		appmesh2.AppmeshClientGetterProvider,
 		appmesh2.AppmeshRawClientFactoryProvider,
 		appmesh2.NewAppmeshMatcher,
 		access_control_enforcer.NewEnforcerLoop,

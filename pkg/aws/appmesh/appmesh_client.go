@@ -17,13 +17,13 @@ var (
 	ListLimit = aws2.Int64(100)
 )
 
-type AppmeshClientFactory func(mesh *zephyr_discovery.Mesh) (AppmeshClient, error)
+type AppmeshClientGetter func(mesh *zephyr_discovery.Mesh) (AppmeshClient, error)
 
-func AppmeshClientFactoryProvider(
+func AppmeshClientGetterProvider(
 	matcher AppmeshMatcher,
 	awsCredentialsGetter aws.AwsCredentialsGetter,
 	appmeshRawClientFactory AppmeshRawClientFactory,
-) AppmeshClientFactory {
+) AppmeshClientGetter {
 	return func(mesh *zephyr_discovery.Mesh) (AppmeshClient, error) {
 		creds, err := awsCredentialsGetter.Get(mesh.Spec.GetAwsAppMesh().GetAwsAccountId())
 		if err != nil {
@@ -33,28 +33,22 @@ func AppmeshClientFactoryProvider(
 		if err != nil {
 			return nil, err
 		}
-		return NewAppmeshClient(rawAppmeshClient, matcher, awsCredentialsGetter, appmeshRawClientFactory), nil
+		return NewAppmeshClient(rawAppmeshClient, matcher), nil
 	}
 }
 
 type appmeshClient struct {
-	matcher                 AppmeshMatcher
-	awsCredentialsGetter    aws.AwsCredentialsGetter
-	appmeshRawClientFactory AppmeshRawClientFactory
-	client                  appmeshiface.AppMeshAPI
+	matcher AppmeshMatcher
+	client  appmeshiface.AppMeshAPI
 }
 
 func NewAppmeshClient(
 	client appmeshiface.AppMeshAPI,
 	matcher AppmeshMatcher,
-	awsCredentialsGetter aws.AwsCredentialsGetter,
-	appmeshRawClientFactory AppmeshRawClientFactory,
 ) AppmeshClient {
 	return &appmeshClient{
-		client:                  client,
-		matcher:                 matcher,
-		awsCredentialsGetter:    awsCredentialsGetter,
-		appmeshRawClientFactory: appmeshRawClientFactory,
+		client:  client,
+		matcher: matcher,
 	}
 }
 
@@ -64,25 +58,26 @@ func (a *appmeshClient) EnsureVirtualService(virtualService *appmesh.VirtualServ
 		VirtualServiceName: virtualService.VirtualServiceName,
 	})
 	if err != nil {
-		if !isNotFound(err) {
-			return err
-		} else if !a.matcher.AreVirtualServicesEqual(resp.VirtualService, virtualService) {
-			_, err := a.client.UpdateVirtualService(&appmesh.UpdateVirtualServiceInput{
+		if isNotFound(err) {
+			_, err = a.client.CreateVirtualService(&appmesh.CreateVirtualServiceInput{
 				MeshName:           virtualService.MeshName,
 				VirtualServiceName: virtualService.VirtualServiceName,
 				Spec:               virtualService.Spec,
 			})
 			return err
 		} else {
-			return nil
+			return err
 		}
 	}
-	_, err = a.client.CreateVirtualService(&appmesh.CreateVirtualServiceInput{
-		MeshName:           virtualService.MeshName,
-		VirtualServiceName: virtualService.VirtualServiceName,
-		Spec:               virtualService.Spec,
-	})
-	return err
+	if !a.matcher.AreVirtualServicesEqual(resp.VirtualService, virtualService) {
+		_, err := a.client.UpdateVirtualService(&appmesh.UpdateVirtualServiceInput{
+			MeshName:           virtualService.MeshName,
+			VirtualServiceName: virtualService.VirtualServiceName,
+			Spec:               virtualService.Spec,
+		})
+		return err
+	}
+	return nil
 }
 
 func (a *appmeshClient) ReconcileVirtualServices(
@@ -93,6 +88,7 @@ func (a *appmeshClient) ReconcileVirtualServices(
 	logger := contextutils.LoggerFrom(ctx)
 	existingVirtualServiceNames := sets.NewString()
 	declaredVirtualServiceNames := sets.NewString()
+	// For each declared VirtualService, ensure it exists with an equivalent spec.
 	for _, vs := range virtualServices {
 		if vs.MeshName != meshName {
 			logger.Warnf("Skipping VirtualService (Name: %s, MeshName: %s) that doesn't belong under the provided Mesh (%s).",
@@ -101,6 +97,11 @@ func (a *appmeshClient) ReconcileVirtualServices(
 				aws2.StringValue(meshName),
 			)
 			continue
+		}
+		err := a.EnsureVirtualService(vs)
+		if err != nil {
+			logger.Errorf("Error ensuring VirtualService. %+v", err)
+			return err
 		}
 		declaredVirtualServiceNames.Insert(aws2.StringValue(vs.VirtualServiceName))
 	}
@@ -121,13 +122,6 @@ func (a *appmeshClient) ReconcileVirtualServices(
 		}
 		req.NextToken = resp.NextToken
 	}
-	// For each declared VirtualService, ensure it exists with an equivalent spec.
-	for _, vs := range virtualServices {
-		err := a.EnsureVirtualService(vs)
-		if err != nil {
-			logger.Errorf("Error ensuring VirtualService. %+v", err)
-		}
-	}
 	// Delete any VirtualServices not declared
 	for vsName, _ := range existingVirtualServiceNames.Difference(declaredVirtualServiceNames) {
 		_, err := a.client.DeleteVirtualService(&appmesh.DeleteVirtualServiceInput{
@@ -136,6 +130,7 @@ func (a *appmeshClient) ReconcileVirtualServices(
 		})
 		if err != nil {
 			logger.Errorf("Error deleting VirtualService. %+v", err)
+			return err
 		}
 	}
 	return nil
@@ -147,25 +142,26 @@ func (a *appmeshClient) EnsureVirtualRouter(virtualRouter *appmesh.VirtualRouter
 		VirtualRouterName: virtualRouter.VirtualRouterName,
 	})
 	if err != nil {
-		if !isNotFound(err) {
-			return err
-		} else if !a.matcher.AreVirtualRoutersEqual(resp.VirtualRouter, virtualRouter) {
-			_, err := a.client.UpdateVirtualRouter(&appmesh.UpdateVirtualRouterInput{
+		if isNotFound(err) {
+			_, err = a.client.CreateVirtualRouter(&appmesh.CreateVirtualRouterInput{
 				MeshName:          virtualRouter.MeshName,
 				VirtualRouterName: virtualRouter.VirtualRouterName,
 				Spec:              virtualRouter.Spec,
 			})
 			return err
 		} else {
-			return nil
+			return err
 		}
 	}
-	_, err = a.client.CreateVirtualRouter(&appmesh.CreateVirtualRouterInput{
-		MeshName:          virtualRouter.MeshName,
-		VirtualRouterName: virtualRouter.VirtualRouterName,
-		Spec:              virtualRouter.Spec,
-	})
-	return err
+	if !a.matcher.AreVirtualRoutersEqual(resp.VirtualRouter, virtualRouter) {
+		_, err := a.client.UpdateVirtualRouter(&appmesh.UpdateVirtualRouterInput{
+			MeshName:          virtualRouter.MeshName,
+			VirtualRouterName: virtualRouter.VirtualRouterName,
+			Spec:              virtualRouter.Spec,
+		})
+		return err
+	}
+	return nil
 }
 
 func (a *appmeshClient) ReconcileVirtualRouters(
@@ -176,6 +172,7 @@ func (a *appmeshClient) ReconcileVirtualRouters(
 	logger := contextutils.LoggerFrom(ctx)
 	existingVirtualRouterNames := sets.NewString()
 	declaredVirtualRouterNames := sets.NewString()
+	// For each declared VirtualRouter, ensure it exists with an equivalent spec.
 	for _, vr := range virtualRouters {
 		if vr.MeshName != meshName {
 			logger.Warnf("Skipping VirtualRouter (Name: %s, MeshName: %s) that doesn't belong under the provided Mesh (%s).",
@@ -184,6 +181,11 @@ func (a *appmeshClient) ReconcileVirtualRouters(
 				aws2.StringValue(meshName),
 			)
 			continue
+		}
+		err := a.EnsureVirtualRouter(vr)
+		if err != nil {
+			logger.Errorf("Error ensuring VirtualRouter. %+v", err)
+			return err
 		}
 		declaredVirtualRouterNames.Insert(aws2.StringValue(vr.VirtualRouterName))
 	}
@@ -203,13 +205,6 @@ func (a *appmeshClient) ReconcileVirtualRouters(
 			break
 		}
 		req.NextToken = resp.NextToken
-	}
-	// For each declared VirtualRouter, ensure it exists with an equivalent spec.
-	for _, vr := range virtualRouters {
-		err := a.EnsureVirtualRouter(vr)
-		if err != nil {
-			logger.Errorf("Error ensuring VirtualRouter. %+v", err)
-		}
 	}
 	// Delete any VirtualRouters not declared
 	for vrName, _ := range existingVirtualRouterNames.Difference(declaredVirtualRouterNames) {
@@ -231,10 +226,8 @@ func (a *appmeshClient) EnsureRoute(route *appmesh.RouteData) error {
 		RouteName:         route.RouteName,
 	})
 	if err != nil {
-		if !isNotFound(err) {
-			return err
-		} else if !a.matcher.AreRoutesEqual(resp.Route, route) {
-			_, err := a.client.UpdateRoute(&appmesh.UpdateRouteInput{
+		if isNotFound(err) {
+			_, err = a.client.CreateRoute(&appmesh.CreateRouteInput{
 				MeshName:          route.MeshName,
 				RouteName:         route.RouteName,
 				VirtualRouterName: route.VirtualRouterName,
@@ -242,16 +235,19 @@ func (a *appmeshClient) EnsureRoute(route *appmesh.RouteData) error {
 			})
 			return err
 		} else {
-			return nil
+			return err
 		}
 	}
-	_, err = a.client.CreateRoute(&appmesh.CreateRouteInput{
-		MeshName:          route.MeshName,
-		RouteName:         route.RouteName,
-		VirtualRouterName: route.VirtualRouterName,
-		Spec:              route.Spec,
-	})
-	return err
+	if !a.matcher.AreRoutesEqual(resp.Route, route) {
+		_, err := a.client.UpdateRoute(&appmesh.UpdateRouteInput{
+			MeshName:          route.MeshName,
+			RouteName:         route.RouteName,
+			VirtualRouterName: route.VirtualRouterName,
+			Spec:              route.Spec,
+		})
+		return err
+	}
+	return nil
 }
 
 func (a *appmeshClient) ReconcileRoutes(
@@ -260,10 +256,8 @@ func (a *appmeshClient) ReconcileRoutes(
 	routes []*appmesh.RouteData,
 ) error {
 	logger := contextutils.LoggerFrom(ctx)
-	existingRouteNames := sets.NewString()
-	declaredRouteToVirtualRouterName := make(map[string]string)
-	declaredRouteNames := sets.NewString()
-	declaredVirtualRouterNames := sets.NewString()
+	declaredVirtualRouterToRoutes := map[string]sets.String{}
+	// For each declared Route, ensure it exists with an equivalent spec.
 	for _, route := range routes {
 		if route.MeshName != meshName {
 			logger.Warnf("Skipping Route (Name: %s, MeshName: %s) that doesn't belong under the provided Mesh (%s).",
@@ -273,11 +267,21 @@ func (a *appmeshClient) ReconcileRoutes(
 			)
 			continue
 		}
-		declaredRouteNames.Insert(aws2.StringValue(route.RouteName))
-		declaredRouteToVirtualRouterName[aws2.StringValue(route.RouteName)] = aws2.StringValue(route.VirtualRouterName)
-		declaredVirtualRouterNames.Insert(aws2.StringValue(route.VirtualRouterName))
+		err := a.EnsureRoute(route)
+		if err != nil {
+			logger.Errorf("Error ensuring Route. %+v", err)
+			return err
+		}
+		routes, ok := declaredVirtualRouterToRoutes[aws2.StringValue(route.VirtualRouterName)]
+		if !ok {
+			declaredVirtualRouterToRoutes[aws2.StringValue(route.VirtualRouterName)] = sets.NewString()
+			routes = declaredVirtualRouterToRoutes[aws2.StringValue(route.VirtualRouterName)]
+		}
+		routes.Insert(aws2.StringValue(route.RouteName))
 	}
-	for vrName, _ := range declaredVirtualRouterNames {
+	// Delete any Routes not declared
+	for vrName, declaredRouteNames := range declaredVirtualRouterToRoutes {
+		existingRouteNames := sets.NewString()
 		req := &appmesh.ListRoutesInput{
 			Limit:             ListLimit,
 			MeshName:          meshName,
@@ -296,29 +300,15 @@ func (a *appmeshClient) ReconcileRoutes(
 			}
 			req.NextToken = resp.NextToken
 		}
-	}
-
-	// For each declared Route, ensure it exists with an equivalent spec.
-	for _, route := range routes {
-		err := a.EnsureRoute(route)
-		if err != nil {
-			logger.Errorf("Error ensuring Route. %+v", err)
-		}
-	}
-	// Delete any Routes not declared
-	for routeName, _ := range existingRouteNames.Difference(declaredRouteNames) {
-		virtualRouterName, ok := declaredRouteToVirtualRouterName[routeName]
-		if !ok {
-			logger.Warn("Could not map Route name to VirtualRoute name.")
-			continue
-		}
-		_, err := a.client.DeleteRoute(&appmesh.DeleteRouteInput{
-			MeshName:          meshName,
-			VirtualRouterName: aws2.String(virtualRouterName),
-			RouteName:         aws2.String(routeName),
-		})
-		if err != nil {
-			logger.Errorf("Error deleting Route. %+v", err)
+		for routeName, _ := range existingRouteNames.Difference(declaredRouteNames) {
+			_, err := a.client.DeleteRoute(&appmesh.DeleteRouteInput{
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String(vrName),
+				RouteName:         aws2.String(routeName),
+			})
+			if err != nil {
+				logger.Errorf("Error deleting Route. %+v", err)
+			}
 		}
 	}
 	return nil
@@ -330,25 +320,26 @@ func (a *appmeshClient) EnsureVirtualNode(virtualNode *appmesh.VirtualNodeData) 
 		VirtualNodeName: virtualNode.VirtualNodeName,
 	})
 	if err != nil {
-		if !isNotFound(err) {
-			return err
-		} else if !a.matcher.AreVirtualNodesEqual(resp.VirtualNode, virtualNode) {
-			_, err := a.client.UpdateVirtualNode(&appmesh.UpdateVirtualNodeInput{
+		if isNotFound(err) {
+			_, err = a.client.CreateVirtualNode(&appmesh.CreateVirtualNodeInput{
 				MeshName:        virtualNode.MeshName,
 				VirtualNodeName: virtualNode.VirtualNodeName,
 				Spec:            virtualNode.Spec,
 			})
 			return err
 		} else {
-			return nil
+			return err
 		}
 	}
-	_, err = a.client.CreateVirtualNode(&appmesh.CreateVirtualNodeInput{
-		MeshName:        virtualNode.MeshName,
-		VirtualNodeName: virtualNode.VirtualNodeName,
-		Spec:            virtualNode.Spec,
-	})
-	return err
+	if !a.matcher.AreVirtualNodesEqual(resp.VirtualNode, virtualNode) {
+		_, err := a.client.UpdateVirtualNode(&appmesh.UpdateVirtualNodeInput{
+			MeshName:        virtualNode.MeshName,
+			VirtualNodeName: virtualNode.VirtualNodeName,
+			Spec:            virtualNode.Spec,
+		})
+		return err
+	}
+	return nil
 }
 
 func (a *appmeshClient) ReconcileVirtualNodes(
@@ -359,6 +350,7 @@ func (a *appmeshClient) ReconcileVirtualNodes(
 	logger := contextutils.LoggerFrom(ctx)
 	existingVirtualNodeNames := sets.NewString()
 	declaredVirtualNodeNames := sets.NewString()
+	// For each declared VirtualNode, ensure it exists with an equivalent spec.
 	for _, vn := range virtualNodes {
 		if vn.MeshName != meshName {
 			logger.Warnf("Skipping VirtualNode (Name: %s, MeshName: %s) that doesn't belong under the provided Mesh (%s).",
@@ -367,6 +359,10 @@ func (a *appmeshClient) ReconcileVirtualNodes(
 				aws2.StringValue(meshName),
 			)
 			continue
+		}
+		err := a.EnsureVirtualNode(vn)
+		if err != nil {
+			logger.Errorf("Error ensuring VirtualNode. %+v", err)
 		}
 		declaredVirtualNodeNames.Insert(aws2.StringValue(vn.VirtualNodeName))
 	}
@@ -386,13 +382,6 @@ func (a *appmeshClient) ReconcileVirtualNodes(
 			break
 		}
 		req.NextToken = resp.NextToken
-	}
-	// For each declared VirtualNode, ensure it exists with an equivalent spec.
-	for _, vn := range virtualNodes {
-		err := a.EnsureVirtualNode(vn)
-		if err != nil {
-			logger.Errorf("Error ensuring VirtualNode. %+v", err)
-		}
 	}
 	// Delete any VirtualNodes not declared
 	for vnName, _ := range existingVirtualNodeNames.Difference(declaredVirtualNodeNames) {

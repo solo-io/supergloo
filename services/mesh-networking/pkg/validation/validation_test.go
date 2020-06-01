@@ -129,7 +129,7 @@ var _ = Describe("validator", func() {
 			Status: zephyr_networking_types.VirtualMeshStatus{
 				CertificateStatus: &zephyr_core_types.Status{
 					State:   zephyr_core_types.Status_INVALID,
-					Message: vm_validation.OnlyIstioSupportedError(mesh.Name).Error(),
+					Message: vm_validation.MeshTypeNotSupportedError(mesh.Name).Error(),
 				},
 			},
 		}

@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	OnlyIstioSupportedError = func(meshName string) error {
-		return eris.Errorf("Illegal mesh type found for virtual mesh %s, currently only Istio is supported", meshName)
+	MeshTypeNotSupportedError = func(meshName string) error {
+		return eris.Errorf("Mesh type for virtual mesh %s is not currently supported.", meshName)
 	}
 )
 
@@ -72,8 +72,8 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *zephyr_networki
 		return err
 	}
 	for _, v := range matchingMeshes {
-		if v.Spec.GetIstio() == nil {
-			wrapped := OnlyIstioSupportedError(v.GetName())
+		if v.Spec.GetIstio() == nil && v.Spec.GetAwsAppMesh() == nil {
+			wrapped := MeshTypeNotSupportedError(v.GetName())
 			vm.Status.ConfigStatus = &zephyr_core_types.Status{
 				State:   zephyr_core_types.Status_INVALID,
 				Message: wrapped.Error(),

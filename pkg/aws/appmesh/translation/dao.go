@@ -18,14 +18,14 @@ type appmeshTranslationDao struct {
 	meshWorkloadClient   zephyr_discovery.MeshWorkloadClient
 	acpClient            zephyr_networking.AccessControlPolicyClient
 	resourceSelector     selector.ResourceSelector
-	appmeshClientFactory appmesh2.AppmeshClientFactory
+	appmeshClientFactory appmesh2.AppmeshClientGetter
 }
 
 func NewAppmeshAccessControlDao(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 	resourceSelector selector.ResourceSelector,
-	appmeshClientFactory appmesh2.AppmeshClientFactory,
+	appmeshClientFactory appmesh2.AppmeshClientGetter,
 	acpClient zephyr_networking.AccessControlPolicyClient,
 ) AppmeshTranslationDao {
 	return &appmeshTranslationDao{
