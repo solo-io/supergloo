@@ -88,6 +88,9 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 	flags.BoolVar(&opts.Cluster.Register.Overwrite, ClusterRegisterOverwriteFlag, false,
 		"Overwrite any cluster registered with the cluster name provided")
 	flags.BoolVar(&opts.Cluster.Register.UseDevCsrAgentChart, devCsrAgentChartName, false, "Use a packaged CSR agent chart from ./_output rather than a release chart")
+	flags.StringSliceVarP(&opts.Cluster.Register.CsrAgentHelmChartValueFileNames, "values", "", nil,
+		"List of files with value overrides for the csr-agent Helm chart, "+
+			"(e.g. --values file1,file2 or --values file1 --values file2)")
 
 	// this flag is mainly for our own debugging purposes
 	// don't show it in usage messages
@@ -114,25 +117,24 @@ func AddMeshInstallFlags(cmd *cobra.Command, opts *Options) {
 	flags.StringVar(&opts.Mesh.Install.Profile, "profile", "", "optional profile")
 }
 
-func AddDemoFlags(cmd *cobra.Command, opts *Options) {
+func AddAppmeshEksInitFlags(cmd *cobra.Command, opts *Options) {
 	flags := cmd.PersistentFlags()
-	devCsrAgentChartName := "dev-csr-agent-chart"
-
-	flags.StringVar(&opts.Demo.DemoLabel, "demo-label", "", "Optionally label namespaces that are created during the demo with 'solo.io/hub-demo:$DEMO-LABEL' so they can be cleaned up later")
-	flags.BoolVar(&opts.Demo.UseKind, "use-kind", false, "If this is set, use KinD (Kubernetes in Docker) to stand up local clusters; can not set if --context")
-	flags.StringVar(&opts.Demo.ClusterName, "cluster-name", "", "Registers the cluster under this name")
-	flags.BoolVar(&opts.Demo.DevMode, devCsrAgentChartName, false, "Use a packaged CSR agent chart from ./_output rather than a release chart")
-
-	flags.StringVar(&opts.Demo.ContextName, "context", "", "The main kubeconfig context to use; this will be the context used for management plane installations")
-
-	flags.Lookup(devCsrAgentChartName).Hidden = true
+	region := "aws-region"
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, region, "us-east-2", "Specify the AWS region for demo entities, defaults to us-east-2.")
+	cobra.MarkFlagRequired(flags, region)
 }
 
-func AddMulticlusterDemoFlags(cmd *cobra.Command, opts *Options) {
+func AddAppmeshEksCleanupFlags(cmd *cobra.Command, opts *Options) {
 	flags := cmd.PersistentFlags()
-
-	flags.StringVar(&opts.Demo.IstioMulticluster.RemoteContextName, "remote-context", "", "In multicluster demos where --use-kind is not specified, use this flag to specify what context to use from your kubeconfig for the remote cluster")
-	flags.StringVar(&opts.Demo.IstioMulticluster.RemoteClusterName, "remote-cluster-name", "", "Name under which to register the second cluster")
+	region := "aws-region"
+	meshName := "mesh-name"
+	eksClusterName := "eks-cluster-name"
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, region, "us-east-2", "Specify the AWS region for demo entities, defaults to us-east-2.")
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, meshName, "", "Specify name of the App mesh to cleanup.")
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, eksClusterName, "", "Specify the name of the EKS cluster to cleanup.")
+	cobra.MarkFlagRequired(flags, region)
+	cobra.MarkFlagRequired(flags, meshName)
+	cobra.MarkFlagRequired(flags, eksClusterName)
 }
 
 func AddUninstallFlags(cmd *cobra.Command, opts *Options) {

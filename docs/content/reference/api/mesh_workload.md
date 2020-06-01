@@ -17,6 +17,8 @@ title: "mesh_workload.proto"
 
 ## Table of Contents
   - [MeshWorkloadSpec](#discovery.zephyr.solo.io.MeshWorkloadSpec)
+  - [MeshWorkloadSpec.Appmesh](#discovery.zephyr.solo.io.MeshWorkloadSpec.Appmesh)
+  - [MeshWorkloadSpec.Appmesh.ContainerPort](#discovery.zephyr.solo.io.MeshWorkloadSpec.Appmesh.ContainerPort)
   - [MeshWorkloadSpec.KubeController](#discovery.zephyr.solo.io.MeshWorkloadSpec.KubeController)
   - [MeshWorkloadSpec.KubeController.LabelsEntry](#discovery.zephyr.solo.io.MeshWorkloadSpec.KubeController.LabelsEntry)
   - [MeshWorkloadStatus](#discovery.zephyr.solo.io.MeshWorkloadStatus)
@@ -37,6 +39,39 @@ The MeshWorkload is an abstraction for a workload/client which we have discovere
 | ----- | ---- | ----- | ----------- |
 | kubeController | [MeshWorkloadSpec.KubeController](#discovery.zephyr.solo.io.MeshWorkloadSpec.KubeController) |  | The controller (e.g. deployment) that owns this workload |
 | mesh | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | The mesh with which this workload is associated |
+| appmesh | [MeshWorkloadSpec.Appmesh](#discovery.zephyr.solo.io.MeshWorkloadSpec.Appmesh) |  | Appmesh specific metadata |
+
+
+
+
+
+
+<a name="discovery.zephyr.solo.io.MeshWorkloadSpec.Appmesh"></a>
+
+### MeshWorkloadSpec.Appmesh
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| virtualNodeName | [string](#string) |  | The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container |
+| ports | [][MeshWorkloadSpec.Appmesh.ContainerPort](#discovery.zephyr.solo.io.MeshWorkloadSpec.Appmesh.ContainerPort) | repeated | Needed for declaring Appmesh VirtualNode listeners |
+
+
+
+
+
+
+<a name="discovery.zephyr.solo.io.MeshWorkloadSpec.Appmesh.ContainerPort"></a>
+
+### MeshWorkloadSpec.Appmesh.ContainerPort
+k8s application container ports
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| port | [uint32](#uint32) |  |  |
+| protocol | [string](#string) |  |  |
 
 
 

@@ -17,6 +17,6 @@ type AccessPolicyEnforcerLoop interface {
 type AccessPolicyMeshEnforcer interface {
 	// The name which will be used to identify the enforcer in the logs
 	Name() string
-	StartEnforcing(ctx context.Context, meshes []*zephyr_discovery.Mesh) error
-	StopEnforcing(ctx context.Context, meshes []*zephyr_discovery.Mesh) error
+	StartEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error
+	StopEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error
 }

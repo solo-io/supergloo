@@ -30,6 +30,28 @@ func (this *MeshWorkloadSpec) UnmarshalJSON(b []byte) error {
 	return MeshWorkloadUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for MeshWorkloadSpec_Appmesh
+func (this *MeshWorkloadSpec_Appmesh) MarshalJSON() ([]byte, error) {
+	str, err := MeshWorkloadMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for MeshWorkloadSpec_Appmesh
+func (this *MeshWorkloadSpec_Appmesh) UnmarshalJSON(b []byte) error {
+	return MeshWorkloadUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for MeshWorkloadSpec_Appmesh_ContainerPort
+func (this *MeshWorkloadSpec_Appmesh_ContainerPort) MarshalJSON() ([]byte, error) {
+	str, err := MeshWorkloadMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for MeshWorkloadSpec_Appmesh_ContainerPort
+func (this *MeshWorkloadSpec_Appmesh_ContainerPort) UnmarshalJSON(b []byte) error {
+	return MeshWorkloadUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for MeshWorkloadSpec_KubeController
 func (this *MeshWorkloadSpec_KubeController) MarshalJSON() ([]byte, error) {
 	str, err := MeshWorkloadMarshaler.MarshalToString(this)

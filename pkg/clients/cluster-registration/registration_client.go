@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/url"
 	"strings"
 
@@ -81,9 +82,10 @@ func NewClusterRegistrationClient(
 }
 
 type ClusterRegisterOpts struct {
-	Overwrite                  bool
-	UseDevCsrAgentChart        bool
-	LocalClusterDomainOverride string
+	Overwrite                        bool
+	UseDevCsrAgentChart              bool
+	LocalClusterDomainOverride       string
+	CsrAgentHelmChartValuesFileNames map[string]interface{}
 }
 
 func (c *clusterRegistrationClient) Register(
@@ -120,10 +122,10 @@ func (c *clusterRegistrationClient) Register(
 	// relevant CRDs must exist before SMH attempts any cross cluster functionality.
 	err = c.installRemoteCSRAgent(
 		ctx,
-		remoteClusterName,
 		remoteWriteNamespace,
 		remoteConfig,
 		clusterRegisterOpts.UseDevCsrAgentChart,
+		clusterRegisterOpts.CsrAgentHelmChartValuesFileNames,
 	)
 	if err != nil {
 		return err
@@ -200,10 +202,10 @@ func (c *clusterRegistrationClient) ensureRemoteNamespace(
 
 func (c *clusterRegistrationClient) installRemoteCSRAgent(
 	ctx context.Context,
-	remoteClusterName string,
 	remoteWriteNamespace string,
 	remoteConfig clientcmd.ClientConfig,
 	useDevCsrAgentChart bool,
+	csrAgentHelmValues map[string]interface{},
 ) error {
 	restConfig, err := remoteConfig.ClientConfig()
 	if err != nil {
@@ -220,6 +222,7 @@ func (c *clusterRegistrationClient) installRemoteCSRAgent(
 			UseDevCsrAgentChart:  useDevCsrAgentChart,
 			ReleaseName:          cliconstants.CsrAgentReleaseName,
 			RemoteWriteNamespace: remoteWriteNamespace,
+			ExtraValues:          csrAgentHelmValues,
 		})
 }
 
@@ -377,7 +380,12 @@ func hackClusterConfigForLocalTestingInKIND(
 	if strings.HasPrefix(remoteContextName, "kind-") &&
 		(serverUrl.Hostname() == "127.0.0.1" || serverUrl.Hostname() == "localhost") &&
 		clusterDomainOverride != "" {
-		remoteCluster.Server = fmt.Sprintf("https://%s:%s", clusterDomainOverride, serverUrl.Port())
+		port := serverUrl.Port()
+		if host, newPort, err := net.SplitHostPort(clusterDomainOverride); err == nil {
+			clusterDomainOverride = host
+			port = newPort
+		}
+		remoteCluster.Server = fmt.Sprintf("https://%s:%s", clusterDomainOverride, port)
 		remoteCluster.InsecureSkipTLSVerify = true
 		remoteCluster.CertificateAuthority = ""
 		remoteCluster.CertificateAuthorityData = []byte("")

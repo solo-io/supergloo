@@ -18,6 +18,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/pkg/factories"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 )
@@ -59,6 +60,7 @@ func InstallCmd(
 	clientFactory common.ClientsFactory,
 	kubeLoader kubeconfig.KubeLoader,
 	out io.Writer,
+	fs afero.Fs,
 ) InstallCommand {
 	cmd := &cobra.Command{
 		Use:     cliconstants.InstallCommand.Use,
@@ -118,6 +120,7 @@ func InstallCmd(
 					clientFactory,
 					opts,
 					kubeLoader,
+					fs,
 				)
 				if err != nil {
 					fmt.Fprintf(out, ErrorRegisteringClusterMessage(opts.SmhInstall.ClusterName, err))

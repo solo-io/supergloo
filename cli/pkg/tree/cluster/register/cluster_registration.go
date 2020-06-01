@@ -3,6 +3,7 @@ package register
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
@@ -11,6 +12,9 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/spf13/afero"
+	"helm.sh/helm/v3/pkg/chartutil"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -30,6 +34,9 @@ var (
 	FailedToWriteKubeCluster = func(err error) error {
 		return eris.Wrap(err, "Could not write KubernetesCluster resource to master cluster")
 	}
+	FailedToReadValuesFiles = func(err error, valuesFiles []string) error {
+		return eris.Wrapf(err, "Failed to read values file: [%s]", strings.Join(valuesFiles, ", "))
+	}
 )
 
 // write a new kube config secret to the master cluster containing creds for talking to the remote cluster as the given service account
@@ -39,6 +46,7 @@ func RegisterCluster(
 	clientsFactory common.ClientsFactory,
 	opts *options.Options,
 	kubeLoader kubeconfig.KubeLoader,
+	fs afero.Fs,
 ) error {
 	if err := cluster_internal.VerifyRemoteContextFlags(opts); err != nil {
 		return err
@@ -70,6 +78,10 @@ func RegisterCluster(
 	if err != nil {
 		return err
 	}
+	helmOverrideValues, err := readValuesFiles(fs, opts.Cluster.Register.CsrAgentHelmChartValueFileNames)
+	if err != nil {
+		return FailedToReadValuesFiles(err, opts.Cluster.Register.CsrAgentHelmChartValueFileNames)
+	}
 	return kubeClients.ClusterRegistrationClient.Register(
 		ctx,
 		remoteConfig,
@@ -78,9 +90,29 @@ func RegisterCluster(
 		remoteContext,
 		MeshctlDiscoverySource,
 		cluster_registration.ClusterRegisterOpts{
-			Overwrite:                  registerOpts.Overwrite,
-			UseDevCsrAgentChart:        registerOpts.UseDevCsrAgentChart,
-			LocalClusterDomainOverride: registerOpts.LocalClusterDomainOverride,
+			Overwrite:                        registerOpts.Overwrite,
+			UseDevCsrAgentChart:              registerOpts.UseDevCsrAgentChart,
+			LocalClusterDomainOverride:       registerOpts.LocalClusterDomainOverride,
+			CsrAgentHelmChartValuesFileNames: helmOverrideValues,
 		},
 	)
+}
+
+func readValuesFiles(fs afero.Fs, valuesFiles []string) (map[string]interface{}, error) {
+	if len(valuesFiles) == 0 {
+		return nil, nil
+	}
+	mergedMap := map[string]interface{}{}
+	for _, valuesFile := range valuesFiles {
+		bytes, err := afero.ReadFile(fs, valuesFile)
+		if err != nil {
+			return nil, err
+		}
+		currentMap := map[string]interface{}{}
+		if err := yaml.Unmarshal(bytes, &currentMap); err != nil {
+			return nil, err
+		}
+		mergedMap = chartutil.CoalesceTables(mergedMap, currentMap)
+	}
+	return mergedMap, nil
 }

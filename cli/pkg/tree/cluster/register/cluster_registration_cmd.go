@@ -10,6 +10,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +27,7 @@ func ClusterRegistrationCmd(
 	opts *options.Options,
 	kubeLoader kubeconfig.KubeLoader,
 	out io.Writer,
+	fs afero.Fs,
 ) RegistrationCmd {
 	register := &cobra.Command{
 		Use:   cliconstants.ClusterRegisterCommand.Use,
@@ -38,6 +40,7 @@ func ClusterRegistrationCmd(
 				clientsFactory,
 				opts,
 				kubeLoader,
+				fs,
 			)
 			if err != nil {
 				fmt.Fprintf(out, "Error registering cluster %s.\n", opts.Cluster.Register.RemoteClusterName)

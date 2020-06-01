@@ -87,29 +87,29 @@ func (mr *MockAccessPolicyMeshEnforcerMockRecorder) Name() *gomock.Call {
 }
 
 // StartEnforcing mocks base method.
-func (m *MockAccessPolicyMeshEnforcer) StartEnforcing(ctx context.Context, meshes []*v1alpha1.Mesh) error {
+func (m *MockAccessPolicyMeshEnforcer) StartEnforcing(ctx context.Context, mesh *v1alpha1.Mesh) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartEnforcing", ctx, meshes)
+	ret := m.ctrl.Call(m, "StartEnforcing", ctx, mesh)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartEnforcing indicates an expected call of StartEnforcing.
-func (mr *MockAccessPolicyMeshEnforcerMockRecorder) StartEnforcing(ctx, meshes interface{}) *gomock.Call {
+func (mr *MockAccessPolicyMeshEnforcerMockRecorder) StartEnforcing(ctx, mesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartEnforcing", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).StartEnforcing), ctx, meshes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartEnforcing", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).StartEnforcing), ctx, mesh)
 }
 
 // StopEnforcing mocks base method.
-func (m *MockAccessPolicyMeshEnforcer) StopEnforcing(ctx context.Context, meshes []*v1alpha1.Mesh) error {
+func (m *MockAccessPolicyMeshEnforcer) StopEnforcing(ctx context.Context, mesh *v1alpha1.Mesh) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StopEnforcing", ctx, meshes)
+	ret := m.ctrl.Call(m, "StopEnforcing", ctx, mesh)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StopEnforcing indicates an expected call of StopEnforcing.
-func (mr *MockAccessPolicyMeshEnforcerMockRecorder) StopEnforcing(ctx, meshes interface{}) *gomock.Call {
+func (mr *MockAccessPolicyMeshEnforcerMockRecorder) StopEnforcing(ctx, mesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StopEnforcing", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).StopEnforcing), ctx, meshes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StopEnforcing", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).StopEnforcing), ctx, mesh)
 }

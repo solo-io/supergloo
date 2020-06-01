@@ -32,8 +32,8 @@ import (
 	traffic_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/virtualmesh"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/cleanup"
-	demo_init "github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/init"
+	appmesh_eks "github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/appmesh-eks"
+	istio_multicluster "github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/istio-multicluster"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get"
@@ -70,6 +70,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -173,7 +174,8 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	kubeClientsFactory := DefaultKubeClientsFactoryProvider()
 	clientsFactory := DefaultClientsFactoryProvider()
 	kubeLoader := kubeconfig.DefaultKubeLoaderProvider(optionsOptions)
-	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out)
+	fs := afero.NewOsFs()
+	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out, fs)
 	deregistrationCmd := deregister.ClusterDeregistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd, deregistrationCmd)
 	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
@@ -182,7 +184,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	meshInstallCommand := mesh_install.MeshInstallRootCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
 	meshCommand := mesh.MeshRootCmd(meshInstallCommand)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
-	installCommand := install.InstallCmd(ctx, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, out)
+	installCommand := install.InstallCmd(ctx, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, out, fs)
 	uninstallCommand := uninstall.UninstallCmd(ctx, out, optionsOptions, kubeClientsFactory, kubeLoader)
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()
@@ -200,9 +202,13 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	printers := common.PrintersProvider(meshPrinter, meshServicePrinter, meshWorkloadPrinter, kubernetesClusterPrinter, trafficPolicyPrinter, accessControlPolicyPrinter, virtualMeshPrinter, virtualMeshCSRPrinter, resourcePrinter)
 	describeCommand := describe.DescribeCmd(ctx, kubeLoader, kubeClientsFactory, printers, optionsOptions, out)
 	runner := exec.NewShellRunner(in, out)
-	initCmd := demo_init.DemoInitCmd(ctx, runner)
-	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runner)
-	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
+	initCmd := appmesh_eks.Init(runner, optionsOptions)
+	cleanupCmd := appmesh_eks.Cleanup(runner, optionsOptions)
+	appmeshEksCmd := appmesh_eks.AppmeshEks(initCmd, cleanupCmd)
+	istio_multiclusterInitCmd := istio_multicluster.Init(runner)
+	istio_multiclusterCleanupCmd := istio_multicluster.Cleanup(runner, optionsOptions)
+	istioMulticlusterCmd := istio_multicluster.IstioMulticluster(istio_multiclusterInitCmd, istio_multiclusterCleanupCmd)
+	demoCommand := demo.DemoRootCmd(appmeshEksCmd, istioMulticlusterCmd)
 	getMeshCommand := get_mesh.GetMeshRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
 	getWorkloadCommand := get_workload.GetWorkloadRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
 	getServiceCommand := get_service.GetServiceRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
@@ -219,24 +225,28 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	return command
 }
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader kubeconfig.KubeLoader, imageNameParser docker.ImageNameParser, fileReader files.FileReader, kubeconfigConverter kubeconfig.Converter, printers common.Printers, runner exec.Runner, interactivePrompt interactive.InteractivePrompt) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader kubeconfig.KubeLoader, imageNameParser docker.ImageNameParser, fileReader files.FileReader, kubeconfigConverter kubeconfig.Converter, printers common.Printers, runner exec.Runner, interactivePrompt interactive.InteractivePrompt, fs afero.Fs) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
-	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out)
+	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out, fs)
 	deregistrationCmd := deregister.ClusterDeregistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, kubeLoader, out)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd, deregistrationCmd)
 	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
 	meshInstallCommand := mesh_install.MeshInstallRootCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
 	meshCommand := mesh.MeshRootCmd(meshInstallCommand)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
-	installCommand := install.InstallCmd(ctx, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, out)
+	installCommand := install.InstallCmd(ctx, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, out, fs)
 	uninstallCommand := uninstall.UninstallCmd(ctx, out, optionsOptions, kubeClientsFactory, kubeLoader)
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
 	describeCommand := describe.DescribeCmd(ctx, kubeLoader, kubeClientsFactory, printers, optionsOptions, out)
-	initCmd := demo_init.DemoInitCmd(ctx, runner)
-	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runner)
-	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
+	initCmd := appmesh_eks.Init(runner, optionsOptions)
+	cleanupCmd := appmesh_eks.Cleanup(runner, optionsOptions)
+	appmeshEksCmd := appmesh_eks.AppmeshEks(initCmd, cleanupCmd)
+	istio_multiclusterInitCmd := istio_multicluster.Init(runner)
+	istio_multiclusterCleanupCmd := istio_multicluster.Cleanup(runner, optionsOptions)
+	istioMulticlusterCmd := istio_multicluster.IstioMulticluster(istio_multiclusterInitCmd, istio_multiclusterCleanupCmd)
+	demoCommand := demo.DemoRootCmd(appmeshEksCmd, istioMulticlusterCmd)
 	getMeshCommand := get_mesh.GetMeshRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
 	getWorkloadCommand := get_workload.GetWorkloadRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
 	getServiceCommand := get_service.GetServiceRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
