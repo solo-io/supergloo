@@ -441,7 +441,7 @@ retries=50
 count=0
 ok=false
 until ${ok}; do
-    numResources=`kubectl --context kind-$managementPlane -n service-mesh-hub get meshworkloads | grep istio -c`
+    numResources=$(kubectl --context kind-$managementPlane -n service-mesh-hub get meshworkloads | grep istio -c || true)
     if [[ ${numResources} -eq 14 ]]; then
         ok=true
         continue
@@ -461,7 +461,7 @@ retries=50
 count=0
 ok=false
 until ${ok}; do
-    numResources=`kubectl --context kind-$managementPlane -n service-mesh-hub get meshservices | grep default -c`
+    numResources=$(kubectl --context kind-$managementPlane -n service-mesh-hub get meshservices | grep default -c || true)
     if [[ ${numResources} -eq 8 ]]; then
         ok=true
         continue
