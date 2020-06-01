@@ -23,12 +23,15 @@ func (a *appmeshMatcher) AreRoutesEqual(routeA *appmesh2.RouteData, routeB *appm
 		routeA.Spec.GrpcRoute != routeB.Spec.GrpcRoute ||
 		routeA.Spec.Http2Route != routeB.Spec.Http2Route ||
 		routeA.Spec.TcpRoute != routeB.Spec.TcpRoute ||
-		routeA.Spec.HttpRoute.RetryPolicy != routeB.Spec.HttpRoute.RetryPolicy ||
-		routeA.Spec.HttpRoute.Match.Scheme != routeB.Spec.HttpRoute.Match.Scheme ||
-		routeA.Spec.HttpRoute.Match.Prefix != routeB.Spec.HttpRoute.Match.Prefix ||
-		routeA.Spec.HttpRoute.Match.Method != routeB.Spec.HttpRoute.Match.Method ||
+		aws2.StringValue(routeA.Spec.HttpRoute.Match.Scheme) != aws2.StringValue(routeB.Spec.HttpRoute.Match.Scheme) ||
+		aws2.StringValue(routeA.Spec.HttpRoute.Match.Prefix) != aws2.StringValue(routeB.Spec.HttpRoute.Match.Prefix) ||
+		aws2.StringValue(routeA.Spec.HttpRoute.Match.Method) != aws2.StringValue(routeB.Spec.HttpRoute.Match.Method) ||
+		// TODO: write a matcher for Header and RetryPolicy objects.
+		// Until then, always perform update if Headers exist to ensure declared headers.
 		routeA.Spec.HttpRoute.Match.Headers != nil ||
-		routeB.Spec.HttpRoute.Match.Headers != nil {
+		routeB.Spec.HttpRoute.Match.Headers != nil ||
+		routeA.Spec.HttpRoute.RetryPolicy != nil ||
+		routeB.Spec.HttpRoute.RetryPolicy != nil {
 		return false
 	}
 	weightedTargetsA := map[string]int64{}
@@ -50,8 +53,8 @@ func (a *appmeshMatcher) AreVirtualNodesEqual(
 	virtualNodeA *appmesh2.VirtualNodeData,
 	virtualNodeB *appmesh2.VirtualNodeData,
 ) bool {
-	if virtualNodeA.MeshName != virtualNodeB.MeshName ||
-		virtualNodeA.VirtualNodeName != virtualNodeB.VirtualNodeName {
+	if aws2.StringValue(virtualNodeA.MeshName) != aws2.StringValue(virtualNodeB.MeshName) ||
+		aws2.StringValue(virtualNodeA.VirtualNodeName) != aws2.StringValue(virtualNodeB.VirtualNodeName) {
 		return false
 	}
 	// TODO check for listener TLS + Healthcheck?
@@ -81,17 +84,28 @@ func (a *appmeshMatcher) AreVirtualServicesEqual(
 	virtualServiceA *appmesh2.VirtualServiceData,
 	virtualServiceB *appmesh2.VirtualServiceData,
 ) bool {
-	return virtualServiceA.MeshName == virtualServiceB.MeshName &&
-		virtualServiceA.VirtualServiceName == virtualServiceB.VirtualServiceName &&
-		virtualServiceA.Spec.Provider.VirtualNode.VirtualNodeName == virtualServiceB.Spec.Provider.VirtualNode.VirtualNodeName &&
-		virtualServiceA.Spec.Provider.VirtualRouter.VirtualRouterName == virtualServiceB.Spec.Provider.VirtualRouter.VirtualRouterName
+	if aws2.StringValue(virtualServiceA.MeshName) != aws2.StringValue(virtualServiceB.MeshName) ||
+		aws2.StringValue(virtualServiceA.VirtualServiceName) != aws2.StringValue(virtualServiceB.VirtualServiceName) {
+		return false
+	}
+	if virtualServiceA.Spec.Provider.VirtualNode != nil && virtualServiceB.Spec.Provider.VirtualNode != nil {
+		return aws2.StringValue(virtualServiceA.Spec.Provider.VirtualNode.VirtualNodeName) ==
+			aws2.StringValue(virtualServiceB.Spec.Provider.VirtualNode.VirtualNodeName)
+	} else if virtualServiceA.Spec.Provider.VirtualRouter != nil && virtualServiceB.Spec.Provider.VirtualRouter != nil {
+		return aws2.StringValue(virtualServiceA.Spec.Provider.VirtualRouter.VirtualRouterName) ==
+			aws2.StringValue(virtualServiceB.Spec.Provider.VirtualRouter.VirtualRouterName)
+	} else {
+		// VirtualServices have different types of Providers
+		return false
+	}
 }
 
 func (a *appmeshMatcher) AreVirtualRoutersEqual(
 	virtualRouterA *appmesh2.VirtualRouterData,
 	virtualRouterB *appmesh2.VirtualRouterData,
 ) bool {
-	if virtualRouterA.MeshName != virtualRouterB.MeshName || virtualRouterA.VirtualRouterName != virtualRouterB.VirtualRouterName {
+	if aws2.StringValue(virtualRouterA.MeshName) != aws2.StringValue(virtualRouterB.MeshName) ||
+		aws2.StringValue(virtualRouterA.VirtualRouterName) != aws2.StringValue(virtualRouterB.VirtualRouterName) {
 		return false
 	}
 	var portMappingsA []*appmesh2.PortMapping
