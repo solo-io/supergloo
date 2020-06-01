@@ -462,7 +462,7 @@ count=0
 ok=false
 until ${ok}; do
     numResources=$(kubectl --context kind-$managementPlane -n service-mesh-hub get meshservices | grep default -c || true)
-    if [[ ${numResources} -eq 8 ]]; then
+    if [[ ${numResources} -eq 6 ]]; then
         ok=true
         continue
     fi
