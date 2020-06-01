@@ -265,7 +265,7 @@ var _ = Describe("Matcher", func() {
 				},
 				ServiceDiscovery: &appmesh2.ServiceDiscovery{
 					Dns: &appmesh2.DnsServiceDiscovery{
-						Hostname: aws2.String("host-name"),
+						Hostname: aws2.String("host-name2"),
 					},
 				},
 			},
