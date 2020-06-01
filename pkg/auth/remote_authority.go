@@ -3,9 +3,9 @@ package auth
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_rbac_types "k8s.io/api/rbac/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
@@ -44,8 +44,8 @@ func (r *remoteAuthorityManager) ApplyRemoteServiceAccount(
 			Name:      newServiceAccountRef.GetName(),
 			Namespace: newServiceAccountRef.GetNamespace(),
 			Labels: map[string]string{
-				cliconstants.ManagedByLabel: cliconstants.ServiceMeshHubApplicationName,
-				RegistrationServiceAccount:  RegistrationServiceAccountValue,
+				constants.ManagedByLabel:   constants.ServiceMeshHubApplicationName,
+				RegistrationServiceAccount: RegistrationServiceAccountValue,
 			},
 		},
 	}

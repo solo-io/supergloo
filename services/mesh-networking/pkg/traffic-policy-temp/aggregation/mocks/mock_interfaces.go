@@ -13,7 +13,7 @@ import (
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	types0 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
-	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
+	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 )
 
 // MockPolicyCollector is a mock of PolicyCollector interface.
@@ -40,18 +40,18 @@ func (m *MockPolicyCollector) EXPECT() *MockPolicyCollectorMockRecorder {
 }
 
 // CollectForService mocks base method.
-func (m *MockPolicyCollector) CollectForService(meshService *v1alpha1.MeshService, mesh *v1alpha1.Mesh, translationValidator mesh_translation.TranslationValidator, allTrafficPolicies []*v1alpha10.TrafficPolicy) (*traffic_policy_aggregation.CollectionResult, error) {
+func (m *MockPolicyCollector) CollectForService(meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh, translationValidator mesh_translation.TranslationValidator, allTrafficPolicies []*v1alpha10.TrafficPolicy) (*traffic_policy_aggregation.CollectionResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CollectForService", meshService, mesh, translationValidator, allTrafficPolicies)
+	ret := m.ctrl.Call(m, "CollectForService", meshService, allMeshServices, mesh, translationValidator, allTrafficPolicies)
 	ret0, _ := ret[0].(*traffic_policy_aggregation.CollectionResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CollectForService indicates an expected call of CollectForService.
-func (mr *MockPolicyCollectorMockRecorder) CollectForService(meshService, mesh, translationValidator, allTrafficPolicies interface{}) *gomock.Call {
+func (mr *MockPolicyCollectorMockRecorder) CollectForService(meshService, allMeshServices, mesh, translationValidator, allTrafficPolicies interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CollectForService", reflect.TypeOf((*MockPolicyCollector)(nil).CollectForService), meshService, mesh, translationValidator, allTrafficPolicies)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CollectForService", reflect.TypeOf((*MockPolicyCollector)(nil).CollectForService), meshService, allMeshServices, mesh, translationValidator, allTrafficPolicies)
 }
 
 // MockInMemoryStatusMutator is a mock of InMemoryStatusMutator interface.

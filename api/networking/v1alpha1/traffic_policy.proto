@@ -48,8 +48,9 @@ message TrafficPolicySpec {
 
     message MultiDestination {
         message WeightedDestination {
+            // Name/namespace/cluster of a kubernetes service.
             core.zephyr.solo.io.ResourceRef destination = 1;
-            // Routing to each destination will be balanced by the ratio of the destination's weight to the total weight on a route.
+            // Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100.
             uint32 weight = 2;
             // Subset routing is currently only supported on Istio.
             map<string, string> subset = 3;

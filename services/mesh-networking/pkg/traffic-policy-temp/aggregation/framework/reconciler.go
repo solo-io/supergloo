@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
 	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
-	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
+	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 )
 
 func NewAggregationReconciler(
@@ -70,7 +70,10 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	for _, meshService := range allMeshServices {
 		collectionResult, err := a.policyCollector.CollectForService(
 			meshService,
+			allMeshServices,
 			serviceToMetadata[meshService].Mesh,
+
+			// intentionally not doing map existence checks here; if it panics, we forgot to implement the validator for this translator
 			a.translationValidators[serviceToMetadata[meshService].MeshType],
 			allTrafficPolicies,
 		)

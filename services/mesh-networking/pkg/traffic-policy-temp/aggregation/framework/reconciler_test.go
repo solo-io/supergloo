@@ -15,8 +15,8 @@ import (
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	aggregation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/framework"
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/mocks"
-	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes"
-	mock_mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/meshes/mocks"
+	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
+	mock_mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators/mocks"
 	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -138,10 +138,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					GetMesh(ctx, clients.ResourceRefToObjectKey(meshServices[1].Spec.Mesh)).
 					Return(mesh2, nil)
 				policyCollector.EXPECT().
-					CollectForService(meshServices[0], mesh1, validator, nil).
+					CollectForService(meshServices[0], meshServices, mesh1, validator, nil).
 					Return(&traffic_policy_aggregation.CollectionResult{}, nil)
 				policyCollector.EXPECT().
-					CollectForService(meshServices[1], mesh2, validator, nil).
+					CollectForService(meshServices[1], meshServices, mesh2, validator, nil).
 					Return(&traffic_policy_aggregation.CollectionResult{}, nil)
 				inMemoryStatusMutator.EXPECT().
 					MutateServicePolicies(meshServices[0], nil).
@@ -292,10 +292,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				GetMesh(ctx, clients.ResourceRefToObjectKey(meshServices[1].Spec.Mesh)).
 				Return(mesh2, nil)
 			policyCollector.EXPECT().
-				CollectForService(meshServices[0], mesh1, validator, trafficPolicies).
+				CollectForService(meshServices[0], meshServices, mesh1, validator, trafficPolicies).
 				Return(&traffic_policy_aggregation.CollectionResult{PoliciesToRecordOnService: newlyValidatedTrafficPolicies[0:2]}, nil)
 			policyCollector.EXPECT().
-				CollectForService(meshServices[1], mesh2, validator, trafficPolicies).
+				CollectForService(meshServices[1], meshServices, mesh2, validator, trafficPolicies).
 				Return(&traffic_policy_aggregation.CollectionResult{
 					PoliciesToRecordOnService: newlyValidatedTrafficPolicies[2:4],
 					PolicyToConflictErrors: map[*zephyr_networking.TrafficPolicy][]*types.TrafficPolicyStatus_ConflictError{

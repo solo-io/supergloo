@@ -276,8 +276,9 @@ func (m *TrafficPolicySpec_MultiDestination) GetDestinations() []*TrafficPolicyS
 }
 
 type TrafficPolicySpec_MultiDestination_WeightedDestination struct {
+	// Name/namespace/cluster of a kubernetes service.
 	Destination *types.ResourceRef `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
-	// Routing to each destination will be balanced by the ratio of the destination's weight to the total weight on a route.
+	// Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100.
 	Weight uint32 `protobuf:"varint,2,opt,name=weight,proto3" json:"weight,omitempty"`
 	// Subset routing is currently only supported on Istio.
 	Subset map[string]string `protobuf:"bytes,3,rep,name=subset,proto3" json:"subset,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
