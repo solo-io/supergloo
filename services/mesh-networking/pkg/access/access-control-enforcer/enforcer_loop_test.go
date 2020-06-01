@@ -111,7 +111,7 @@ var _ = Describe("EnforcerLoop", func() {
 			for _, meshEnforcer := range meshEnforcers {
 				meshEnforcer.
 					EXPECT().
-					StartEnforcing(contextutils.WithLogger(ctx, ""), mesh).
+					ReconcileAccessControl(contextutils.WithLogger(ctx, ""), mesh, vm).
 					Return(nil)
 				meshEnforcer.
 					EXPECT().
@@ -150,7 +150,7 @@ var _ = Describe("EnforcerLoop", func() {
 			for _, meshEnforcer := range meshEnforcers {
 				meshEnforcer.
 					EXPECT().
-					StopEnforcing(contextutils.WithLogger(ctx, ""), mesh).
+					ReconcileAccessControl(contextutils.WithLogger(ctx, ""), mesh, vm).
 					Return(nil)
 				meshEnforcer.
 					EXPECT().
@@ -186,7 +186,7 @@ var _ = Describe("EnforcerLoop", func() {
 		}
 		meshEnforcers[0].
 			EXPECT().
-			StopEnforcing(contextutils.WithLogger(ctx, ""), meshes[0]).
+			ReconcileAccessControl(contextutils.WithLogger(ctx, ""), meshes[0], vm).
 			Return(testErr)
 		meshEnforcers[0].
 			EXPECT().
@@ -223,7 +223,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for _, meshEnforcer := range meshEnforcers {
 			meshEnforcer.
 				EXPECT().
-				StopEnforcing(contextutils.WithLogger(ctx, ""), meshes[0]).
+				ReconcileAccessControl(contextutils.WithLogger(ctx, ""), meshes[0], vm).
 				Return(nil)
 			meshEnforcer.
 				EXPECT().
@@ -234,7 +234,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for _, meshEnforcer := range meshEnforcers {
 			meshEnforcer.
 				EXPECT().
-				StartEnforcing(contextutils.WithLogger(ctx, ""), meshes[1]).
+				ReconcileAccessControl(contextutils.WithLogger(ctx, ""), meshes[1], vm).
 				Return(nil)
 			meshEnforcer.
 				EXPECT().

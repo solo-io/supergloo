@@ -215,9 +215,10 @@ var _ = Describe("Dao", func() {
 		Expect(workloadsToAllUpstreamServices).To(HaveKey(workloads[2]))
 
 		expectedSet := sets.NewMeshServiceSet(services[0], services[1], services[2])
-		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(workloads[0], sets.MatchMeshServiceSet(expectedSet)))
-		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(workloads[1], sets.MatchMeshServiceSet(expectedSet)))
-		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(workloads[2], sets.MatchMeshServiceSet(expectedSet)))
+
+		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(workloads[0], Equal(expectedSet)))
+		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(workloads[1], Equal(expectedSet)))
+		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(workloads[2], Equal(expectedSet)))
 	})
 
 	It("should GetServicesWithACP", func() {
@@ -247,7 +248,7 @@ var _ = Describe("Dao", func() {
 		expectedMeshServices := sets.NewMeshServiceSet(services[0], services[1])
 		acpServicesInMesh, err := dao.GetServicesWithACP(ctx, mesh)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(acpServicesInMesh).To(sets.MatchMeshServiceSet(expectedMeshServices))
+		Expect(acpServicesInMesh).To(Equal(expectedMeshServices))
 	})
 
 	It("should GetWorkloadsToUpstreamServicesWithACP", func() {
@@ -294,10 +295,10 @@ var _ = Describe("Dao", func() {
 		expectedDeclaredWorkloads := sets.NewMeshWorkloadSet(workloads[0], workloads[1])
 		declaredWorkloads, workloadsToUpstreamServices, err := dao.GetWorkloadsToUpstreamServicesWithACP(ctx, mesh)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(declaredWorkloads).To(sets.MatchMeshWorkloadSet(expectedDeclaredWorkloads))
+		Expect(declaredWorkloads).To(Equal(expectedDeclaredWorkloads))
 		Expect(workloadsToUpstreamServices).To(
-			HaveKeyWithValue(workloads[0], sets.MatchMeshServiceSet(sets.NewMeshServiceSet(services[0], services[1], services[2]))))
+			HaveKeyWithValue(workloads[0], Equal(sets.NewMeshServiceSet(services[0], services[1], services[2]))))
 		Expect(workloadsToUpstreamServices).To(
-			HaveKeyWithValue(workloads[1], sets.MatchMeshServiceSet(sets.NewMeshServiceSet(services[1], services[2]))))
+			HaveKeyWithValue(workloads[1], Equal(sets.NewMeshServiceSet(services[1], services[2]))))
 	})
 })
