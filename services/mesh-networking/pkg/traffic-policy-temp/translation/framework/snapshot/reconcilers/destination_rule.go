@@ -78,6 +78,15 @@ func (v *destinationRuleReconcilerBuilder) Build() (DestinationRuleReconciler, e
 	}, nil
 }
 
+// visible for testing
+func NewDestinationRuleReconciler(namespace string, labels map[string]string, client istio_networking_clients.DestinationRuleClient) DestinationRuleReconciler {
+	return &destinationRuleReconciler{
+		namespace: namespace,
+		labels:    labels,
+		client:    client,
+	}
+}
+
 type destinationRuleReconciler struct {
 	client istio_networking_clients.DestinationRuleClient
 

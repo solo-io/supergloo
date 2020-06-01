@@ -46,9 +46,8 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 		return err
 	}
 
-	// need to populate this map from our known clusters, rather than the mesh services we know about
+	// need to populate this map from our known meshes, rather than the mesh services we know about
 	// in the case of deleting all mesh services but the mesh remains, we want to be sure to reconcile properly
-	// an entry
 	var knownMeshes []*zephyr_discovery.Mesh
 	meshIdToMesh := map[string]*zephyr_discovery.Mesh{}
 	for _, meshIter := range meshList.Items {

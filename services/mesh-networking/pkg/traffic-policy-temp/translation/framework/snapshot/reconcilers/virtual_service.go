@@ -78,6 +78,14 @@ func (v *virtualServiceReconcilerBuilder) Build() (VirtualServiceReconciler, err
 	}, nil
 }
 
+func NewVirtualServiceReconciler(namespace string, labels map[string]string, client istio_networking_clients.VirtualServiceClient) VirtualServiceReconciler {
+	return &virtualServiceReconciler{
+		namespace:            namespace,
+		labels:               labels,
+		virtualServiceClient: client,
+	}
+}
+
 type virtualServiceReconciler struct {
 	virtualServiceClient istio_networking_clients.VirtualServiceClient
 
