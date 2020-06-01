@@ -54,7 +54,7 @@ var _ = Describe("Translator", func() {
 			ObjectMeta: v1.ObjectMeta{Name: "service-name", Namespace: "service-namespace"},
 			Spec: types.MeshServiceSpec{
 				KubeService: &types.MeshServiceSpec_KubeService{
-					Ref:                    &types2.ResourceRef{
+					Ref: &types2.ResourceRef{
 						Name: "service-name",
 					},
 				},
