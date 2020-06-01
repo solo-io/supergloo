@@ -1,6 +1,8 @@
 package translation
 
 import (
+	"strings"
+
 	aws2 "github.com/aws/aws-sdk-go/aws"
 	appmesh2 "github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/rotisserie/eris"
@@ -42,7 +44,7 @@ func (a *appmeshTranslator) BuildVirtualNode(
 		listeners = append(listeners, &appmesh2.Listener{
 			PortMapping: &appmesh2.PortMapping{
 				Port:     aws2.Int64(int64(containerPort.Port)),
-				Protocol: aws2.String(containerPort.Protocol),
+				Protocol: aws2.String(strings.ToLower(containerPort.Protocol)),
 			},
 		})
 	}
@@ -54,7 +56,7 @@ func (a *appmeshTranslator) BuildVirtualNode(
 			Backends:  backends,
 			ServiceDiscovery: &appmesh2.ServiceDiscovery{
 				Dns: &appmesh2.DnsServiceDiscovery{
-					Hostname: aws2.String(metadata.BuildLocalFQDN(meshService.GetName())),
+					Hostname: aws2.String(metadata.BuildLocalFQDN(meshService.Spec.GetKubeService().GetRef().GetName())),
 				},
 			},
 		},
@@ -122,7 +124,7 @@ func (a *appmeshTranslator) BuildVirtualRouter(
 		virtualRouterListeners = append(virtualRouterListeners, &appmesh2.VirtualRouterListener{
 			PortMapping: &appmesh2.PortMapping{
 				Port:     aws2.Int64(int64(servicePort.GetPort())),
-				Protocol: aws2.String(servicePort.GetProtocol()),
+				Protocol: aws2.String(strings.ToLower(servicePort.GetProtocol())),
 			},
 		})
 	}

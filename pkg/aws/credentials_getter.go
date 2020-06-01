@@ -23,7 +23,6 @@ func NewCredentialsGetter() AwsCredentialsGetter {
 }
 
 func (c *awsCredentialsGetter) Get(accountID string) (*credentials.Credentials, error) {
-	//creds, ok := c.meshToCreds[accountID]
 	val, ok := c.meshToCreds.Load(accountID)
 	if !ok {
 		return nil, CredsNotFound(accountID)
@@ -37,10 +36,8 @@ func (c *awsCredentialsGetter) Get(accountID string) (*credentials.Credentials, 
 
 func (c *awsCredentialsGetter) Set(accountID string, creds *credentials.Credentials) {
 	c.meshToCreds.Store(accountID, creds)
-	//c.meshToCreds[accountID] = creds
 }
 
 func (c *awsCredentialsGetter) Remove(accountId string) {
 	c.meshToCreds.Delete(accountId)
-	//delete(c.meshToCreds, accountId)
 }

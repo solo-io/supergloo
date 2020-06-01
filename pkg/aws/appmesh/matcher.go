@@ -50,6 +50,7 @@ func (a *appmeshMatcher) AreRoutesEqual(routeA *appmesh2.RouteData, routeB *appm
 }
 
 func (a *appmeshMatcher) AreVirtualNodesEqual(
+
 	virtualNodeA *appmesh2.VirtualNodeData,
 	virtualNodeB *appmesh2.VirtualNodeData,
 ) bool {

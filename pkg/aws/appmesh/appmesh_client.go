@@ -90,7 +90,7 @@ func (a *appmeshClient) ReconcileVirtualServices(
 	declaredVirtualServiceNames := sets.NewString()
 	// For each declared VirtualService, ensure it exists with an equivalent spec.
 	for _, vs := range virtualServices {
-		if vs.MeshName != meshName {
+		if aws2.StringValue(vs.MeshName) != aws2.StringValue(meshName) {
 			logger.Warnf("Skipping VirtualService (Name: %s, MeshName: %s) that doesn't belong under the provided Mesh (%s).",
 				aws2.StringValue(vs.VirtualServiceName),
 				aws2.StringValue(vs.MeshName),
@@ -174,7 +174,7 @@ func (a *appmeshClient) ReconcileVirtualRouters(
 	declaredVirtualRouterNames := sets.NewString()
 	// For each declared VirtualRouter, ensure it exists with an equivalent spec.
 	for _, vr := range virtualRouters {
-		if vr.MeshName != meshName {
+		if aws2.StringValue(vr.MeshName) != aws2.StringValue(meshName) {
 			logger.Warnf("Skipping VirtualRouter (Name: %s, MeshName: %s) that doesn't belong under the provided Mesh (%s).",
 				aws2.StringValue(vr.VirtualRouterName),
 				aws2.StringValue(vr.MeshName),
@@ -259,7 +259,7 @@ func (a *appmeshClient) ReconcileRoutes(
 	declaredVirtualRouterToRoutes := map[string]sets.String{}
 	// For each declared Route, ensure it exists with an equivalent spec.
 	for _, route := range routes {
-		if route.MeshName != meshName {
+		if aws2.StringValue(route.MeshName) != aws2.StringValue(meshName) {
 			logger.Warnf("Skipping Route (Name: %s, MeshName: %s) that doesn't belong under the provided Mesh (%s).",
 				aws2.StringValue(route.RouteName),
 				aws2.StringValue(route.MeshName),
@@ -352,7 +352,7 @@ func (a *appmeshClient) ReconcileVirtualNodes(
 	declaredVirtualNodeNames := sets.NewString()
 	// For each declared VirtualNode, ensure it exists with an equivalent spec.
 	for _, vn := range virtualNodes {
-		if vn.MeshName != meshName {
+		if aws2.StringValue(vn.MeshName) != aws2.StringValue(meshName) {
 			logger.Warnf("Skipping VirtualNode (Name: %s, MeshName: %s) that doesn't belong under the provided Mesh (%s).",
 				aws2.StringValue(vn.VirtualNodeName),
 				aws2.StringValue(vn.MeshName),

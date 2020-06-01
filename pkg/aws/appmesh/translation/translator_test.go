@@ -40,11 +40,11 @@ var _ = Describe("Translator", func() {
 					Ports: []*types.MeshWorkloadSpec_Appmesh_ContainerPort{
 						{
 							Port:     9080,
-							Protocol: "TCP",
+							Protocol: "tcp",
 						},
 						{
 							Port:     9081,
-							Protocol: "UDP",
+							Protocol: "udp",
 						},
 					},
 				},
@@ -52,6 +52,13 @@ var _ = Describe("Translator", func() {
 		}
 		meshService := &v1alpha1.MeshService{
 			ObjectMeta: v1.ObjectMeta{Name: "service-name", Namespace: "service-namespace"},
+			Spec: types.MeshServiceSpec{
+				KubeService: &types.MeshServiceSpec_KubeService{
+					Ref:                    &types2.ResourceRef{
+						Name: "service-name",
+					},
+				},
+			},
 		}
 		upstreamServices := []*v1alpha1.MeshService{
 			{
@@ -77,13 +84,13 @@ var _ = Describe("Translator", func() {
 			{
 				PortMapping: &appmesh.PortMapping{
 					Port:     aws.Int64(9080),
-					Protocol: aws.String("TCP"),
+					Protocol: aws.String("tcp"),
 				},
 			},
 			{
 				PortMapping: &appmesh.PortMapping{
 					Port:     aws.Int64(9081),
-					Protocol: aws.String("UDP"),
+					Protocol: aws.String("udp"),
 				},
 			},
 		}
@@ -107,7 +114,7 @@ var _ = Describe("Translator", func() {
 				Backends:  backends,
 				ServiceDiscovery: &appmesh.ServiceDiscovery{
 					Dns: &appmesh.DnsServiceDiscovery{
-						Hostname: aws.String(metadata.BuildLocalFQDN(meshService.GetName())),
+						Hostname: aws.String(metadata.BuildLocalFQDN(meshService.Spec.GetKubeService().GetRef().GetName())),
 					},
 				},
 			},
@@ -230,11 +237,11 @@ var _ = Describe("Translator", func() {
 					Ports: []*types.MeshServiceSpec_KubeService_KubeServicePort{
 						{
 							Port:     9080,
-							Protocol: "TCP",
+							Protocol: "tcp",
 						},
 						{
 							Port:     9081,
-							Protocol: "UDP",
+							Protocol: "udp",
 						},
 					},
 				},
