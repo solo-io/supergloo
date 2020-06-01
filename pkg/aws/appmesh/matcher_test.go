@@ -341,9 +341,7 @@ var _ = Describe("Matcher", func() {
 			MeshName:           meshName,
 			VirtualServiceName: aws2.String("vs-name"),
 			Spec: &appmesh2.VirtualServiceSpec{
-				Provider: &appmesh2.VirtualServiceProvider{
-
-				},
+				Provider: &appmesh2.VirtualServiceProvider{},
 			},
 		}
 		equal := appmeshMatcher.AreVirtualServicesEqual(vsA, vsB)

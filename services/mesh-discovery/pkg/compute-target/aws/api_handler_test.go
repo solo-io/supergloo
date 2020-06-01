@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
 	mock_aws_creds "github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
-	mock_sts "github.com/solo-io/service-mesh-hub/pkg/clients/aws/sts/mocks"
+	mock_appmesh "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/mocks"
 	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	mock_rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/mocks"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -25,7 +25,7 @@ var _ = Describe("CredsHandler", func() {
 		cancellableCtx      context.Context
 		mockSecretConverter *mock_aws_creds.MockSecretAwsCredsConverter
 		mockReconciler      *mock_rest_api.MockRestAPIDiscoveryReconciler
-		mockSTSClient       *mock_sts.MockSTSClient
+		mockSTSClient       *mock_appmesh.MockSTSClient
 		awsCredsHandler     aws2.AwsCredsHandler
 		secret              *k8s_core_types.Secret
 		cancelFunc          func()
@@ -37,7 +37,7 @@ var _ = Describe("CredsHandler", func() {
 		cancellableCtx, cancelFunc = context.WithCancel(ctx)
 		mockSecretConverter = mock_aws_creds.NewMockSecretAwsCredsConverter(ctrl)
 		mockReconciler = mock_rest_api.NewMockRestAPIDiscoveryReconciler(ctrl)
-		mockSTSClient = mock_sts.NewMockSTSClient(ctrl)
+		mockSTSClient = mock_appmesh.NewMockSTSClient(ctrl)
 		awsCredsHandler = aws2.NewAwsAPIHandler(
 			mockSecretConverter,
 			[]aws2.RestAPIDiscoveryReconciler{mockReconciler},

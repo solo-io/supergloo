@@ -9,7 +9,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/docker/cli v0.0.0-20191017083524-a8ff7f821017 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
-	github.com/docker/docker-credential-helpers v0.6.3
+	github.com/docker/docker-credential-helpers v0.6.3 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/go-logr/zapr v0.1.1
 	github.com/go-test/deep v1.0.3 // indirect
