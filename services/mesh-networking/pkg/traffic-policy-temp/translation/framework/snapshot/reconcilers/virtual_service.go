@@ -6,7 +6,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/rotisserie/eris"
 	istio_networking_clients "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	istio_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -110,20 +110,20 @@ func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalS
 
 	for _, existingVsIter := range virtualServiceList.Items {
 		existingVs := existingVsIter
-		nameNamespaceToExistingState[clients.ToUniqueSingleClusterString(existingVs.ObjectMeta)] = &existingVs
+		nameNamespaceToExistingState[selection.ToUniqueSingleClusterString(existingVs.ObjectMeta)] = &existingVs
 	}
 
 	for _, desiredVsIter := range desiredGlobalState {
 		desiredVs := desiredVsIter
-		nameNamespaceToDesiredState[clients.ToUniqueSingleClusterString(desiredVs.ObjectMeta)] = desiredVs
+		nameNamespaceToDesiredState[selection.ToUniqueSingleClusterString(desiredVs.ObjectMeta)] = desiredVs
 	}
 
 	// update and delete existing VS's
 	for _, existingVirtualService := range virtualServiceList.Items {
-		desiredState, shouldBeAlive := nameNamespaceToDesiredState[clients.ToUniqueSingleClusterString(existingVirtualService.ObjectMeta)]
+		desiredState, shouldBeAlive := nameNamespaceToDesiredState[selection.ToUniqueSingleClusterString(existingVirtualService.ObjectMeta)]
 
 		if !shouldBeAlive {
-			err = v.virtualServiceClient.DeleteVirtualService(ctx, clients.ObjectMetaToObjectKey(existingVirtualService.ObjectMeta))
+			err = v.virtualServiceClient.DeleteVirtualService(ctx, selection.ObjectMetaToObjectKey(existingVirtualService.ObjectMeta))
 			if err != nil {
 				return err
 			}
@@ -137,7 +137,7 @@ func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalS
 
 	// create new VS's
 	for _, desiredVirtualService := range desiredGlobalState {
-		_, isAlreadyExisting := nameNamespaceToExistingState[clients.ToUniqueSingleClusterString(desiredVirtualService.ObjectMeta)]
+		_, isAlreadyExisting := nameNamespaceToExistingState[selection.ToUniqueSingleClusterString(desiredVirtualService.ObjectMeta)]
 
 		if !isAlreadyExisting {
 			err := v.virtualServiceClient.CreateVirtualService(ctx, desiredVirtualService)

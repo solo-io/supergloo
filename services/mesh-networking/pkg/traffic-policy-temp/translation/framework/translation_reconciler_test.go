@@ -9,7 +9,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	translation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 	mock_snapshot "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot/mocks"
@@ -59,19 +59,19 @@ var _ = Describe("TranslationReconciler", func() {
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-1"},
 						Spec: zephyr_discovery_types.MeshSpec{
-							MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+							MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 						},
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-2"},
 						Spec: zephyr_discovery_types.MeshSpec{
-							MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+							MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 						},
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-3"},
 						Spec: zephyr_discovery_types.MeshSpec{
-							MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+							MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 						},
 					},
 				}
@@ -116,21 +116,21 @@ var _ = Describe("TranslationReconciler", func() {
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-1"},
 						Spec: zephyr_discovery_types.MeshSpec{
 							Cluster:  &zephyr_core_types.ResourceRef{Name: "cluster-1"},
-							MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+							MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 						},
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-with-no-services"},
 						Spec: zephyr_discovery_types.MeshSpec{
 							Cluster:  &zephyr_core_types.ResourceRef{Name: "cluster-2"},
-							MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+							MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 						},
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-3"},
 						Spec: zephyr_discovery_types.MeshSpec{
 							Cluster:  &zephyr_core_types.ResourceRef{Name: "cluster-3"},
-							MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+							MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 						},
 					},
 				}
@@ -138,19 +138,19 @@ var _ = Describe("TranslationReconciler", func() {
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "ms1"},
 						Spec: zephyr_discovery_types.MeshServiceSpec{
-							Mesh: clients.ObjectMetaToResourceRef(knownMeshes[0].ObjectMeta),
+							Mesh: selection.ObjectMetaToResourceRef(knownMeshes[0].ObjectMeta),
 						},
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "ms2"},
 						Spec: zephyr_discovery_types.MeshServiceSpec{
-							Mesh: clients.ObjectMetaToResourceRef(knownMeshes[0].ObjectMeta),
+							Mesh: selection.ObjectMetaToResourceRef(knownMeshes[0].ObjectMeta),
 						},
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "ms3"},
 						Spec: zephyr_discovery_types.MeshServiceSpec{
-							Mesh: clients.ObjectMetaToResourceRef(knownMeshes[2].ObjectMeta),
+							Mesh: selection.ObjectMetaToResourceRef(knownMeshes[2].ObjectMeta),
 						},
 					},
 				}

@@ -6,7 +6,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/rotisserie/eris"
 	istio_networking_clients "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	istio_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -111,20 +111,20 @@ func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobal
 
 	for _, existingObjIter := range existingObjList.Items {
 		existingObj := existingObjIter
-		nameNamespaceToExistingState[clients.ToUniqueSingleClusterString(existingObj.ObjectMeta)] = &existingObj
+		nameNamespaceToExistingState[selection.ToUniqueSingleClusterString(existingObj.ObjectMeta)] = &existingObj
 	}
 
 	for _, desiredObjIter := range desiredGlobalState {
 		desiredObj := desiredObjIter
-		nameNamespaceToDesiredState[clients.ToUniqueSingleClusterString(desiredObj.ObjectMeta)] = desiredObj
+		nameNamespaceToDesiredState[selection.ToUniqueSingleClusterString(desiredObj.ObjectMeta)] = desiredObj
 	}
 
 	// update and delete existing objects
 	for _, existingObj := range existingObjList.Items {
-		desiredState, shouldBeAlive := nameNamespaceToDesiredState[clients.ToUniqueSingleClusterString(existingObj.ObjectMeta)]
+		desiredState, shouldBeAlive := nameNamespaceToDesiredState[selection.ToUniqueSingleClusterString(existingObj.ObjectMeta)]
 
 		if !shouldBeAlive {
-			err = v.client.DeleteDestinationRule(ctx, clients.ObjectMetaToObjectKey(existingObj.ObjectMeta))
+			err = v.client.DeleteDestinationRule(ctx, selection.ObjectMetaToObjectKey(existingObj.ObjectMeta))
 			if err != nil {
 				return err
 			}
@@ -138,7 +138,7 @@ func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobal
 
 	// create new objects
 	for _, desiredObj := range desiredGlobalState {
-		_, isAlreadyExisting := nameNamespaceToExistingState[clients.ToUniqueSingleClusterString(desiredObj.ObjectMeta)]
+		_, isAlreadyExisting := nameNamespaceToExistingState[selection.ToUniqueSingleClusterString(desiredObj.ObjectMeta)]
 
 		if !isAlreadyExisting {
 			err := v.client.CreateDestinationRule(ctx, desiredObj)

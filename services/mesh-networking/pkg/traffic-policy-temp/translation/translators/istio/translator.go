@@ -9,9 +9,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/constants"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 	istio_networking_types "istio.io/api/networking/v1alpha3"
 	istio_client_networking_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -22,7 +21,7 @@ const (
 )
 
 func NewIstioTrafficPolicyTranslator(
-	resourceSelector selector.ResourceSelector,
+	resourceSelector selection.ResourceSelector,
 ) mesh_translation.IstioTranslator {
 	return &istioTrafficPolicyTranslator{
 		resourceSelector: resourceSelector,
@@ -30,7 +29,7 @@ func NewIstioTrafficPolicyTranslator(
 }
 
 type istioTrafficPolicyTranslator struct {
-	resourceSelector selector.ResourceSelector
+	resourceSelector selection.ResourceSelector
 }
 
 var (
@@ -60,7 +59,7 @@ func (i *istioTrafficPolicyTranslator) Translate(
 	mesh *zephyr_discovery.Mesh,
 	trafficPolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) (*mesh_translation.IstioTranslationOutput, []*mesh_translation.TranslationError) {
-	if mesh.Spec.GetIstio() == nil {
+	if mesh.Spec.GetIstio1_5() == nil && mesh.Spec.GetIstio1_6() == nil {
 		return nil, nil
 	}
 
@@ -103,7 +102,7 @@ func (i *istioTrafficPolicyTranslator) buildDestinationRule(
 	allMeshServices []*zephyr_discovery.MeshService,
 ) *istio_client_networking_types.DestinationRule {
 	return &istio_client_networking_types.DestinationRule{
-		ObjectMeta: clients.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
+		ObjectMeta: selection.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
 		Spec: istio_networking_types.DestinationRule{
 			Host: i.buildServiceHostname(meshService),
 			TrafficPolicy: &istio_networking_types.TrafficPolicy{
@@ -174,7 +173,7 @@ func (i *istioTrafficPolicyTranslator) translateIntoVirtualService(
 	validatedPolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) (*istio_client_networking_types.VirtualService, []*mesh_translation.TranslationError) {
 	virtualService := &istio_client_networking_types.VirtualService{
-		ObjectMeta: clients.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
+		ObjectMeta: selection.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
 		Spec: istio_networking_types.VirtualService{
 			Hosts: []string{i.buildServiceHostname(meshService)},
 		},
@@ -626,7 +625,7 @@ func (i *istioTrafficPolicyTranslator) getHostnameForKubeService(
 	)
 
 	if destinationMeshService == nil {
-		return "", false, selector.MeshServiceNotFound(destination.GetName(), destination.GetNamespace(), destination.GetCluster())
+		return "", false, selection.MeshServiceNotFound(destination.GetName(), destination.GetNamespace(), destination.GetCluster())
 	}
 
 	if destination.GetCluster() == meshService.Spec.GetKubeService().GetRef().GetCluster() {
