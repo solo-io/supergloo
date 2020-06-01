@@ -449,7 +449,7 @@ until ${ok}; do
     sleep 5
     count=$(($count + 1))
     if [[ ${count} -eq ${retries} ]]; then
-        echo "No more retries left"
+        echo "Have ${numResources} resources, and no more retries left"
         exit 1
     fi
 done
@@ -469,7 +469,7 @@ until ${ok}; do
     sleep 5
     count=$(($count + 1))
     if [[ ${count} -eq ${retries} ]]; then
-        echo "No more retries left"
+        echo "Have ${numResources} resources, and no more retries left"
         exit 1
     fi
 done
