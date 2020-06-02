@@ -41,7 +41,7 @@ func newEnv(mgmt, remote string) Env {
 
 type KubeContext struct {
 	Context             string
-	Client              *kubernetes.Clientset
+	Clientset           *kubernetes.Clientset
 	TrafficPolicyClient v1alpha1.TrafficPolicyClient
 }
 
@@ -58,7 +58,7 @@ func newKubeContext(kubecontext string) KubeContext {
 
 	return KubeContext{
 		Context:             kubecontext,
-		Client:              clientset,
+		Clientset:           clientset,
 		TrafficPolicyClient: v1alpha1.TrafficPolicyClientFromClientsetProvider(clientset2),
 	}
 }
@@ -77,7 +77,7 @@ func (p *Pod) Curl(ctx context.Context, args ...string) string {
 }
 
 func (k *KubeContext) GetPod(ns, app string) *Pod {
-	pl, err := k.Client.CoreV1().Pods(ns).List(v1.ListOptions{LabelSelector: "app=" + app})
+	pl, err := k.Clientset.CoreV1().Pods(ns).List(v1.ListOptions{LabelSelector: "app=" + app})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(pl.Items).NotTo(BeEmpty())
 
