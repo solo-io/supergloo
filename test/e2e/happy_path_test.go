@@ -34,6 +34,7 @@ var _ = Describe("HappyPath", func() {
 	})
 
 	applyTrafficPolicy := func(tpYaml string) {
+		var tp v1alpha1.TrafficPolicy
 		ParseYaml(tpYaml, &tp)
 		err := env.Management.TrafficPolicyClient.CreateTrafficPolicy(context.Background(), &tp)
 		Expect(err).NotTo(HaveOccurred())
@@ -42,11 +43,16 @@ var _ = Describe("HappyPath", func() {
 		Eventually(StatusOf(tp, env.Management), "1m", "1s").Should(Equal(v1alpha1types.Status_ACCEPTED))
 	}
 
-	It("should work with traffic policy to local (v2) reviews", func() {
+	curlReviews := func() string {
 		env := GetEnv()
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute/3)
+		defer cancel()
+		out := env.Management.GetPod("default", "productpage").Curl(ctx, "http://reviews:9080/reviews/1", "-v")
+		GinkgoWriter.Write([]byte(out))
+		return out
+	}
 
-		var tp v1alpha1.TrafficPolicy
-
+	It("should work with traffic policy to local (v2) reviews", func() {
 		const tpYaml = `
 apiVersion: networking.zephyr.solo.io/v1alpha1
 kind: TrafficPolicy
@@ -70,21 +76,16 @@ spec:
         version: v2
 `
 		applyTrafficPolicy(tpYaml)
-		Consistently(func() string {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Minute/3)
-			defer cancel()
-			out := env.Management.GetPod("default", "productpage").Curl(ctx, "http://reviews:9080/reviews/1", "-v")
-			GinkgoWriter.Write([]byte(out))
-			return out
-		}, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
+		// first check that we have a response to reduce flakiness
+		Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
+		// now check that it is consistent 10 times in a row
+		for i := 0; i < 10; i++ {
+			Expect(curlReviews()).Should(ContainSubstring(`"color": "black"`))
+		}
 	})
 
 	// This test assumes that ci script only deploy v3 to remote cluster
-	FIt("should work with traffic policy to remove (v3) reviews", func() {
-		env := GetEnv()
-
-		var tp v1alpha1.TrafficPolicy
-
+	It("should work with traffic policy to remove (v3) reviews", func() {
 		const tpYaml = `
 apiVersion: networking.zephyr.solo.io/v1alpha1
 kind: TrafficPolicy
@@ -107,12 +108,11 @@ spec:
 `
 		applyTrafficPolicy(tpYaml)
 
-		Consistently(func() string {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Minute/3)
-			defer cancel()
-			out := env.Management.GetPod("default", "productpage").Curl(ctx, "http://reviews:9080/reviews/1", "-v")
-			GinkgoWriter.Write([]byte(out))
-			return out
-		}, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
+		// first check that we have a response to reduce flakiness
+		Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
+		// now check that it is consistent 10 times in a row
+		for i := 0; i < 10; i++ {
+			Expect(curlReviews()).Should(ContainSubstring(`"color": "red"`))
+		}
 	})
 })
