@@ -69,7 +69,7 @@ func (m *virtualMeshCsrManager) InitializeCertificateForVirtualMesh(
 	logger := contextutils.LoggerFrom(ctx)
 	meshes, err := m.meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 	if err != nil {
-		logger.Errorf("Hit error case 1 %s", err.Error())
+		logger.Debugf("Hit error case 1 %s", err.Error())
 		vm.Status.CertificateStatus = &zephyr_core_types.Status{
 			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
@@ -77,14 +77,14 @@ func (m *virtualMeshCsrManager) InitializeCertificateForVirtualMesh(
 		return vm.Status
 	}
 	if err = m.attemptCsrCreate(ctx, vm, meshes); err != nil {
-		logger.Errorf("Hit error case 2 %s", err.Error())
+		logger.Debugf("Hit error case 2 %s", err.Error())
 		vm.Status.CertificateStatus = &zephyr_core_types.Status{
 			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
 		}
 		return vm.Status
 	}
-	logger.Errorf("Accepted")
+	logger.Debugf("Accepted")
 	vm.Status.CertificateStatus = &zephyr_core_types.Status{
 		State: zephyr_core_types.Status_ACCEPTED,
 	}
@@ -97,9 +97,9 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 	meshes []*zephyr_discovery.Mesh,
 ) error {
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Errorf("Got %d member meshes", len(meshes))
+	logger.Debugf("Got %d member meshes", len(meshes))
 	for _, mesh := range meshes {
-		logger.Errorf("Processing mesh %s.%s", mesh.Name, mesh.Namespace)
+		logger.Debugf("Processing mesh %s.%s", mesh.Name, mesh.Namespace)
 		var (
 			certConfig *zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig
 			meshType   zephyr_core_types.MeshType
