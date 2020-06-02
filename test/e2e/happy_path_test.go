@@ -50,13 +50,13 @@ spec:
   destinationSelector:
     serviceRefs:
       services:
-      - cluster: istio-istio-system-management-plane-cluster
+      - cluster: management-plane-cluster
         name: reviews
         namespace: default
   trafficShift:
     destinations:
     - destination:
-        cluster: istio-istio-system-management-plane-cluster
+        cluster: management-plane-cluster
         name: reviews
         namespace: default
       weight: 100
