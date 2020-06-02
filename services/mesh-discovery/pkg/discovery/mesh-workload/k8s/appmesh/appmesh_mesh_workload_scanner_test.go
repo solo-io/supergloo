@@ -12,10 +12,10 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
-	mock_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser/mocks"
+	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
+	mock_aws "github.com/solo-io/service-mesh-hub/pkg/aws/parser/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
@@ -142,7 +142,7 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		mesh := &zephyr_discovery.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      meshName,
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
 				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
@@ -160,13 +160,13 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 				ctx,
 				client.ObjectKey{
 					Name:      metadata.BuildAppMeshName(meshName, region, awsAccountId),
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			).Return(mesh, nil)
 		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-%s-%s", "appmesh", deploymentName, namespace, clusterName),
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    appmesh.DiscoveryLabels(),
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{

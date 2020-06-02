@@ -6,7 +6,7 @@ import (
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_mesh_interfaces.go

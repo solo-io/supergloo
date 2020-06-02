@@ -5,7 +5,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/bootstrap"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	md_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
@@ -17,7 +17,7 @@ import (
 )
 
 func Run(rootCtx context.Context) {
-	ctx := bootstrap.CreateRootContext(rootCtx, "mesh-discovery")
+	ctx := container_runtime.CreateRootContext(rootCtx, "mesh-discovery")
 
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -40,9 +40,10 @@ func Run(rootCtx context.Context) {
 			discoveryContext.MeshDiscovery.LinkerdMeshScanner,
 		},
 		md_multicluster.MeshWorkloadScannerFactoryImplementations{
-			types.MeshType_ISTIO:   istio.NewIstioMeshWorkloadScanner,
-			types.MeshType_LINKERD: linkerd.NewLinkerdMeshWorkloadScanner,
-			types.MeshType_APPMESH: discoveryContext.MeshDiscovery.AppMeshWorkloadScannerFactory,
+			types.MeshType_ISTIO1_5: istio.NewIstioMeshWorkloadScanner,
+			types.MeshType_ISTIO1_6: istio.NewIstioMeshWorkloadScanner,
+			types.MeshType_LINKERD:  linkerd.NewLinkerdMeshWorkloadScanner,
+			types.MeshType_APPMESH:  discoveryContext.MeshDiscovery.AppMeshWorkloadScannerFactory,
 		},
 		[]k8s_tenancy.ClusterTenancyScannerFactory{
 			discoveryContext.ClusterTenancy.AppMeshClusterTenancyScannerFactory,

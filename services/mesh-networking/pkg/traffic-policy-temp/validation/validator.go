@@ -11,7 +11,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
 var (
@@ -36,7 +36,7 @@ var (
 )
 
 func NewValidator(
-	resourceSelector selector.ResourceSelector,
+	resourceSelector selection.ResourceSelector,
 ) Validator {
 	return &validator{
 		resourceSelector: resourceSelector,
@@ -44,7 +44,7 @@ func NewValidator(
 }
 
 type validator struct {
-	resourceSelector selector.ResourceSelector
+	resourceSelector selection.ResourceSelector
 }
 
 func (v *validator) ValidateTrafficPolicy(trafficPolicy *zephyr_networking.TrafficPolicy, allMeshServices []*zephyr_discovery.MeshService) (*zephyr_core_types.Status, error) {
@@ -100,6 +100,8 @@ func (v *validator) validateTrafficShift(services []*zephyr_discovery.MeshServic
 	if trafficShift == nil {
 		return nil
 	}
+
+	destinationWeightSum := uint32(0)
 	for _, destination := range trafficShift.GetDestinations() {
 		meshService, err := v.validateKubeService(services, destination.GetDestination())
 		if err != nil {
@@ -111,6 +113,13 @@ func (v *validator) validateTrafficShift(services []*zephyr_discovery.MeshServic
 				return err
 			}
 		}
+		destinationWeightSum += destination.Weight
+	}
+
+	// https://github.com/banzaicloud/istio-client-go/blob/98a770729d7b3a60725b53f90318b411cf1cee78/pkg/networking/v1alpha3/virtualservice_types.go#L526
+	// if there is more than one destination, the weights must be provided and must add to 100
+	if len(trafficShift.GetDestinations()) > 1 && destinationWeightSum != 100 {
+		return eris.New("Traffic shift destination weights must add to 100")
 	}
 	return nil
 }

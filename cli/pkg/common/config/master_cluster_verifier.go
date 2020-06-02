@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"k8s.io/client-go/rest"
 )
 

@@ -11,9 +11,9 @@ import (
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mock_controllers "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
@@ -71,7 +71,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			mockLocalMeshClient,
 			mockLocalMeshWorkloadClient,
 			k8s.MeshWorkloadScannerImplementations{
-				zephyr_core_types.MeshType_ISTIO: mockMeshWorkloadScanner,
+				zephyr_core_types.MeshType_ISTIO1_5: mockMeshWorkloadScanner,
 			},
 			mockPodClient,
 		)
@@ -83,42 +83,42 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	var attachWorkloadDiscoveryLabels = func(workload *zephyr_discovery.MeshWorkload) {
 		workload.Labels = map[string]string{
-			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
-			constants.COMPUTE_TARGET:            clusterName,
-			constants.KUBE_CONTROLLER_NAME:      workload.Spec.GetKubeController().GetKubeControllerRef().GetName(),
-			constants.KUBE_CONTROLLER_NAMESPACE: workload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace(),
+			kube.DISCOVERED_BY:             kube.MESH_WORKLOAD_DISCOVERY,
+			kube.COMPUTE_TARGET:            clusterName,
+			kube.KUBE_CONTROLLER_NAME:      workload.Spec.GetKubeController().GetKubeControllerRef().GetName(),
+			kube.KUBE_CONTROLLER_NAMESPACE: workload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace(),
 		}
 	}
 
 	var expectReconcile = func() {
 		meshList := &zephyr_discovery.MeshList{Items: []zephyr_discovery.Mesh{
-			{Spec: zephyr_discovery_types.MeshSpec{MeshType: &zephyr_discovery_types.MeshSpec_Istio{}, Cluster: &zephyr_core_types.ResourceRef{Name: clusterName}}},
+			{Spec: zephyr_discovery_types.MeshSpec{MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{}, Cluster: &zephyr_core_types.ResourceRef{Name: clusterName}}},
 			{Spec: zephyr_discovery_types.MeshSpec{MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{}}},
 		}}
 		mockLocalMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
 
 		extantMeshWorkloadList := &zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload1", Namespace: env.GetWriteNamespace()}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload2", Namespace: env.GetWriteNamespace()}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload3", Namespace: env.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload1", Namespace: container_runtime.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload2", Namespace: container_runtime.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload3", Namespace: container_runtime.GetWriteNamespace()}},
 		}}
 		mockLocalMeshWorkloadClient.
 			EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.COMPUTE_TARGET: clusterName,
+				kube.COMPUTE_TARGET: clusterName,
 			}).
 			Return(extantMeshWorkloadList, nil)
 
 		podList := &k8s_core.PodList{Items: []k8s_core.Pod{
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod1", Namespace: env.GetWriteNamespace()}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod2", Namespace: env.GetWriteNamespace()}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod4", Namespace: env.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod1", Namespace: container_runtime.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod2", Namespace: container_runtime.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "pod4", Namespace: container_runtime.GetWriteNamespace()}},
 		}}
 		discoveredMeshWorkloads := []*zephyr_discovery.MeshWorkload{
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload1", Namespace: env.GetWriteNamespace()},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload1", Namespace: container_runtime.GetWriteNamespace()},
 				Spec: zephyr_discovery_types.MeshWorkloadSpec{Mesh: &zephyr_core_types.ResourceRef{Name: "mesh"}}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload2", Namespace: env.GetWriteNamespace()}},
-			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload4", Namespace: env.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload2", Namespace: container_runtime.GetWriteNamespace()}},
+			{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "workload4", Namespace: container_runtime.GetWriteNamespace()}},
 		}
 		for _, workload := range discoveredMeshWorkloads {
 			attachWorkloadDiscoveryLabels(workload)
@@ -134,7 +134,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		// workload3 should be deleted
 		mockLocalMeshWorkloadClient.
 			EXPECT().
-			DeleteMeshWorkload(ctx, clients.ObjectMetaToObjectKey(extantMeshWorkloadList.Items[2].ObjectMeta)).
+			DeleteMeshWorkload(ctx, selection.ObjectMetaToObjectKey(extantMeshWorkloadList.Items[2].ObjectMeta)).
 			Return(nil)
 		// workload4 should be created
 		mockLocalMeshWorkloadClient.EXPECT().UpsertMeshWorkloadSpec(ctx, discoveredMeshWorkloads[2]).Return(nil)

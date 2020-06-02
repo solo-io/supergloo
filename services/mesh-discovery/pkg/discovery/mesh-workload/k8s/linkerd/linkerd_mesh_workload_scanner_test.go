@@ -16,7 +16,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
 	k8s_apps_types "k8s.io/api/apps/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -81,7 +81,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      fmt.Sprintf("linkerd-%s-%s-%s", deploymentName, namespace, clusterName),
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    linkerd.DiscoveryLabels(),
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{

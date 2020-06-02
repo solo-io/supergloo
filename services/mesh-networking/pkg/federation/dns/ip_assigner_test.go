@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -25,7 +25,7 @@ var _ = Describe("Federation Decider", func() {
 		clusterName3 = "cluster-3"
 		cmRef        = &zephyr_core_types.ResourceRef{
 			Name:      dns.IpRecordName,
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		}
 		mustMarshal = func(obj interface{}) string {
 			bytes, err := json.Marshal(obj)
@@ -50,13 +50,13 @@ var _ = Describe("Federation Decider", func() {
 
 		cmClient := mock_kubernetes_core.NewMockConfigMapClient(ctrl)
 		cmClient.EXPECT().
-			GetConfigMap(ctx, clients.ResourceRefToObjectKey(cmRef)).
+			GetConfigMap(ctx, selection.ResourceRefToObjectKey(cmRef)).
 			Return(&k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 			}, nil)
 		cmClient.EXPECT().
 			UpdateConfigMap(ctx, &k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 				Data: map[string]string{
 					clusterName1: mustMarshal([]string{expectedIp}),
 				},
@@ -74,16 +74,16 @@ var _ = Describe("Federation Decider", func() {
 
 		cmClient := mock_kubernetes_core.NewMockConfigMapClient(ctrl)
 		cmClient.EXPECT().
-			GetConfigMap(ctx, clients.ResourceRefToObjectKey(cmRef)).
+			GetConfigMap(ctx, selection.ResourceRefToObjectKey(cmRef)).
 			Return(&k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 				Data: map[string]string{
 					clusterName1: mustMarshal([]string{"240.0.0.1", "240.0.0.2"}),
 				},
 			}, nil)
 		cmClient.EXPECT().
 			UpdateConfigMap(ctx, &k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 				Data: map[string]string{
 					clusterName1: mustMarshal([]string{"240.0.0.1", "240.0.0.2", expectedIp}),
 				},
@@ -99,9 +99,9 @@ var _ = Describe("Federation Decider", func() {
 	It("can un-assign issued IPs", func() {
 		cmClient := mock_kubernetes_core.NewMockConfigMapClient(ctrl)
 		cmClient.EXPECT().
-			GetConfigMap(ctx, clients.ResourceRefToObjectKey(cmRef)).
+			GetConfigMap(ctx, selection.ResourceRefToObjectKey(cmRef)).
 			Return(&k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 				Data: map[string]string{
 					clusterName1: mustMarshal([]string{"240.0.0.1", "240.0.0.2", "240.0.0.3"}),
 					clusterName2: mustMarshal([]string{"a.b.c.d"}),
@@ -109,7 +109,7 @@ var _ = Describe("Federation Decider", func() {
 			}, nil)
 
 		firstIpRemovedCM := &k8s_core_types.ConfigMap{
-			ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+			ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 			Data: map[string]string{
 				clusterName1: mustMarshal([]string{"240.0.0.1", "", "240.0.0.3"}),
 				clusterName2: mustMarshal([]string{"a.b.c.d"}), // should be unchanged
@@ -120,12 +120,12 @@ var _ = Describe("Federation Decider", func() {
 			Return(nil)
 
 		cmClient.EXPECT().
-			GetConfigMap(ctx, clients.ResourceRefToObjectKey(cmRef)).
+			GetConfigMap(ctx, selection.ResourceRefToObjectKey(cmRef)).
 			Return(firstIpRemovedCM, nil)
 
 		cmClient.EXPECT().
 			UpdateConfigMap(ctx, &k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 				Data: map[string]string{
 					clusterName1: mustMarshal([]string{"240.0.0.1", "", ""}),
 					clusterName2: mustMarshal([]string{"a.b.c.d"}), // should be unchanged
@@ -143,9 +143,9 @@ var _ = Describe("Federation Decider", func() {
 	It("can re-use un-assigned IPs", func() {
 		cmClient := mock_kubernetes_core.NewMockConfigMapClient(ctrl)
 		cmClient.EXPECT().
-			GetConfigMap(ctx, clients.ResourceRefToObjectKey(cmRef)).
+			GetConfigMap(ctx, selection.ResourceRefToObjectKey(cmRef)).
 			Return(&k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 				Data: map[string]string{
 					clusterName1: mustMarshal([]string{"240.0.0.1", "", "240.0.0.3"}),
 					clusterName2: mustMarshal([]string{"", "240.0.0.2", "240.0.0.3"}),
@@ -155,7 +155,7 @@ var _ = Describe("Federation Decider", func() {
 
 		cmClient.EXPECT().
 			UpdateConfigMap(ctx, &k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 				Data: map[string]string{
 					clusterName1: mustMarshal([]string{"240.0.0.1", "240.0.0.2", "240.0.0.3"}),
 					clusterName2: mustMarshal([]string{"", "240.0.0.2", "240.0.0.3"}),
@@ -171,9 +171,9 @@ var _ = Describe("Federation Decider", func() {
 		Expect(newIp).To(Equal("240.0.0.2"))
 
 		cmClient.EXPECT().
-			GetConfigMap(ctx, clients.ResourceRefToObjectKey(cmRef)).
+			GetConfigMap(ctx, selection.ResourceRefToObjectKey(cmRef)).
 			Return(&k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 				Data: map[string]string{
 					clusterName1: mustMarshal([]string{"240.0.0.1", "240.0.0.2", "240.0.0.3"}),
 					clusterName2: mustMarshal([]string{"", "240.0.0.2", "240.0.0.3"}),
@@ -183,7 +183,7 @@ var _ = Describe("Federation Decider", func() {
 
 		cmClient.EXPECT().
 			UpdateConfigMap(ctx, &k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 				Data: map[string]string{
 					clusterName1: mustMarshal([]string{"240.0.0.1", "240.0.0.2", "240.0.0.3"}),
 					clusterName2: mustMarshal([]string{"240.0.0.1", "240.0.0.2", "240.0.0.3"}),
@@ -197,9 +197,9 @@ var _ = Describe("Federation Decider", func() {
 		Expect(newIp).To(Equal("240.0.0.1"))
 
 		cmClient.EXPECT().
-			GetConfigMap(ctx, clients.ResourceRefToObjectKey(cmRef)).
+			GetConfigMap(ctx, selection.ResourceRefToObjectKey(cmRef)).
 			Return(&k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 				Data: map[string]string{
 					clusterName1: mustMarshal([]string{"240.0.0.1", "240.0.0.2", "240.0.0.3"}),
 					clusterName2: mustMarshal([]string{"240.0.0.1", "240.0.0.2", "240.0.0.3"}),
@@ -209,7 +209,7 @@ var _ = Describe("Federation Decider", func() {
 
 		cmClient.EXPECT().
 			UpdateConfigMap(ctx, &k8s_core_types.ConfigMap{
-				ObjectMeta: clients.ResourceRefToObjectMeta(cmRef),
+				ObjectMeta: selection.ResourceRefToObjectMeta(cmRef),
 				Data: map[string]string{
 					clusterName1: mustMarshal([]string{"240.0.0.1", "240.0.0.2", "240.0.0.3"}),
 					clusterName2: mustMarshal([]string{"240.0.0.1", "240.0.0.2", "240.0.0.3"}),

@@ -9,8 +9,7 @@ import (
 	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
@@ -18,14 +17,14 @@ type appmeshTranslationDao struct {
 	meshServiceClient    zephyr_discovery.MeshServiceClient
 	meshWorkloadClient   zephyr_discovery.MeshWorkloadClient
 	acpClient            zephyr_networking.AccessControlPolicyClient
-	resourceSelector     selector.ResourceSelector
+	resourceSelector     selection.ResourceSelector
 	appmeshClientFactory appmesh2.AppmeshClientGetter
 }
 
 func NewAppmeshAccessControlDao(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
-	resourceSelector selector.ResourceSelector,
+	resourceSelector selection.ResourceSelector,
 	appmeshClientFactory appmesh2.AppmeshClientGetter,
 	acpClient zephyr_networking.AccessControlPolicyClient,
 ) AppmeshTranslationDao {
@@ -71,7 +70,7 @@ func (a *appmeshTranslationDao) GetWorkloadsToAllUpstreamServices(
 	meshServiceSet := zephyr_discovery_sets.NewMeshServiceSet(meshServices...)
 	workloadsToAllUpstreamServices := map[string]zephyr_discovery_sets.MeshServiceSet{}
 	for _, meshWorkload := range meshWorkloads {
-		workloadsToAllUpstreamServices[clients.ToUniqueSingleClusterString(meshWorkload.ObjectMeta)] = meshServiceSet
+		workloadsToAllUpstreamServices[selection.ToUniqueSingleClusterString(meshWorkload.ObjectMeta)] = meshServiceSet
 	}
 	return workloadsToAllUpstreamServices, nil
 }
@@ -123,7 +122,7 @@ func (a *appmeshTranslationDao) GetWorkloadsToUpstreamServicesWithACP(
 			return nil, nil, err
 		}
 		for _, workload := range workloads {
-			workloadKey := clients.ToUniqueSingleClusterString(workload.ObjectMeta)
+			workloadKey := selection.ToUniqueSingleClusterString(workload.ObjectMeta)
 			upstreamServicesSet, ok := workloadsToUpstreamServices[workloadKey]
 			if !ok {
 				workloadsToUpstreamServices[workloadKey] = zephyr_discovery_sets.NewMeshServiceSet(upstreamServices...)

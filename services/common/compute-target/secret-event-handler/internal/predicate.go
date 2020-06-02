@@ -3,7 +3,7 @@ package internal_watcher
 import (
 	"strings"
 
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	k8s_core_types "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,7 +20,7 @@ const (
 func HasRequiredMetadata(metadata metav1.Object, secret runtime.Object) bool {
 	// TODO Choose a consistent secret filtering approach once migrated to skv2
 	val, ok := metadata.GetLabels()[mc_manager.MultiClusterLabel]
-	return ((ok && val == "true") || strings.HasPrefix(string(secret.(*k8s_core_types.Secret).Type), SoloRegistrationSecretPrefix)) && metadata.GetNamespace() == env.GetWriteNamespace()
+	return ((ok && val == "true") || strings.HasPrefix(string(secret.(*k8s_core_types.Secret).Type), SoloRegistrationSecretPrefix)) && metadata.GetNamespace() == container_runtime.GetWriteNamespace()
 }
 
 // This object is used as a predicate interface for the secret event handler above

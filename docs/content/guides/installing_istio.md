@@ -7,6 +7,7 @@ weight: 10
 
 We can use `meshctl mesh` command to easily install any supported service mesh. For Istio, this is accomplished by installing the [Istio Operator](https://istio.io/blog/2019/introducing-istio-operator/) to the cluster and letting it handle the complex Istio installation process.
 
+Currently, the supported versions of Istio are 1.6 and 1.5.
 
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
@@ -34,7 +35,8 @@ An easy way to get up and running quickly with Istio (**but insufficient for a m
 
 
 ```shell
-meshctl mesh install istio --profile=demo --context remote-cluster-context
+# note here that you could replace "istio1.5" with "istio1.6" to install that version
+meshctl mesh install istio1.5 --profile=demo --context remote-cluster-context
 ```
 {{% notice note %}}
 This will NOT install Istio suitable for a multi-cluster installation. For a correct multi-cluster installation, see the next section.
@@ -45,7 +47,8 @@ All configuration profiles supported by Istio should be supported by `meshctl`.
 To uninstall Istio, you can leverage the `--dry-run` command from `meshctl` and pass to `kubectl delete`
 
 ```shell
-meshctl mesh install istio --profile=demo --context remote-cluster-context --dry-run \
+# note here that you could replace "istio1.5" with "istio1.6" to install that version
+meshctl mesh install istio1.5 --profile=demo --context remote-cluster-context --dry-run \
 | k delete -f - --context remote-cluster-context
 ```
 
@@ -59,12 +62,14 @@ kubectl edit istiooperators.install.istio.io -n istio-operator
 
 ## Istio quick install (multi cluster)
 
-For following some of the other Istio guides, we assume two clusters with Istio installed for mult-cluster communication in both of them. We will install Istio with a suitable configuration for a multi-cluster demonstration by overriding some of the Istio Operator values. 
+For following some of the other Istio guides, we assume two clusters with Istio installed for mult-cluster communication in both of them. 
+We will install Istio with a suitable configuration for a multi-cluster demonstration by overriding some of the Istio Operator values.
 
 Let's install Istio into both the `management-plane-context` **AND** the `remote-cluster-context`
 
 ```shell
-meshctl mesh install istio --context management-plane-context --operator-spec=- <<EOF
+# note here that you could replace "istio1.5" with "istio1.6" to install that version
+meshctl mesh install istio1.5 --context management-plane-context --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -86,13 +91,12 @@ spec:
       - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
     prometheus:
       enabled: false
-    security:
-      selfSigned: false
 EOF
 ```
 
 ```shell
-meshctl mesh install istio --context remote-cluster-context --operator-spec=- <<EOF
+# note here that you could replace "istio1.5" with "istio1.6" to install that version
+meshctl mesh install istio1.5 --context remote-cluster-context --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -111,8 +115,6 @@ spec:
       - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
     prometheus:
       enabled: false
-    security:
-      selfSigned: false
 EOF
 ```
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
@@ -23,7 +24,6 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	smi_networking "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
 	linkerd_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/linkerd-translator"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,7 +35,7 @@ var _ = Describe("LinkerdTranslator", func() {
 		ctrl                           *gomock.Controller
 		linkerdTrafficPolicyTranslator linkerd_translator.LinkerdTranslator
 		ctx                            context.Context
-		mockDynamicClientGetter        *mock_mc_manager.MockDynamicClientGetter
+		mockDynamicClientGetter        *mock_multicluster.MockDynamicClientGetter
 		mockMeshClient                 *mock_core.MockMeshClient
 
 		clusterName       = "clusterName"
@@ -86,7 +86,7 @@ var _ = Describe("LinkerdTranslator", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockDynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+		mockDynamicClientGetter = mock_multicluster.NewMockDynamicClientGetter(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		serviceProfileClient = linkerd_networking.NewServiceProfileClient(fakes.InMemoryClient())
 		trafficSplitClient = smi_networking.NewTrafficSplitClient(fakes.InMemoryClient())

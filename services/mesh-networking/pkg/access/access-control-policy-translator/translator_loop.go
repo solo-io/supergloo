@@ -11,9 +11,8 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/logging"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"go.uber.org/zap"
 )
 
@@ -22,7 +21,7 @@ func NewAcpTranslatorLoop(
 	MeshServiceEventWatcher zephyr_discovery_controller.MeshServiceEventWatcher,
 	meshClient zephyr_discovery.MeshClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
-	resourceSelector selector.ResourceSelector,
+	resourceSelector selection.ResourceSelector,
 	meshTranslators []AcpMeshTranslator,
 ) AcpTranslatorLoop {
 	return &translatorLoop{
@@ -41,13 +40,13 @@ type translatorLoop struct {
 	meshClient                zephyr_discovery.MeshClient
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient
 	meshTranslators           []AcpMeshTranslator
-	resourceSelector          selector.ResourceSelector
+	resourceSelector          selection.ResourceSelector
 }
 
 func (t *translatorLoop) Start(ctx context.Context) error {
 	err := t.acpEventWatcher.AddEventHandler(ctx, &zephyr_networking_controller.AccessControlPolicyEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_networking.AccessControlPolicy) error {
-			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, obj)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", obj.Spec),
 				zap.Any("status", obj.Status),
@@ -61,7 +60,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			return nil
 		},
 		OnUpdate: func(old, new *zephyr_networking.AccessControlPolicy) error {
-			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
 			logger.Debugw("event handler enter",
 				zap.Any("old_spec", old.Spec),
 				zap.Any("old_status", old.Status),
@@ -77,7 +76,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			return nil
 		},
 		OnDelete: func(obj *zephyr_networking.AccessControlPolicy) error {
-			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, obj)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, obj)
 			logger.Debugw("ignoring event",
 				zap.Any("spec", obj.Spec),
 				zap.Any("status", obj.Status),
@@ -85,7 +84,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			return nil
 		},
 		OnGeneric: func(obj *zephyr_networking.AccessControlPolicy) error {
-			logger := logging.BuildEventLogger(ctx, logging.GenericEvent, obj)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.GenericEvent, obj)
 			logger.Debugw("ignoring event",
 				zap.Any("spec", obj.Spec),
 				zap.Any("status", obj.Status),
@@ -98,7 +97,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 	}
 	return t.MeshServiceEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshServiceEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_discovery.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, obj)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", obj.Spec),
 				zap.Any("status", obj.Status),
@@ -115,7 +114,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			return nil
 		},
 		OnUpdate: func(old, new *zephyr_discovery.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
 			logger.Debugw("event handler enter",
 				zap.Any("old_spec", old.Spec),
 				zap.Any("old_status", old.Status),
@@ -134,7 +133,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			return nil
 		},
 		OnDelete: func(obj *zephyr_discovery.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, obj)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, obj)
 			logger.Debugw("ignoring event",
 				zap.Any("spec", obj.Spec),
 				zap.Any("status", obj.Status),
@@ -142,7 +141,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			return nil
 		},
 		OnGeneric: func(obj *zephyr_discovery.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.GenericEvent, obj)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.GenericEvent, obj)
 			logger.Debugw("ignoring event",
 				zap.Any("spec", obj.Spec),
 				zap.Any("status", obj.Status),
@@ -182,7 +181,7 @@ func (t *translatorLoop) translateACPsForMeshService(
 	ctx context.Context,
 	meshService *zephyr_discovery.MeshService,
 ) ([]translatorErrorForACP, error) {
-	mesh, err := t.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	mesh, err := t.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +222,7 @@ func (t *translatorLoop) getTargetServices(ctx context.Context, acp *zephyr_netw
 	}
 	var targetServices []TargetService
 	for _, meshService := range meshServices {
-		mesh, err := t.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+		mesh, err := t.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 		if err != nil {
 			return nil, err
 		}
@@ -245,7 +244,7 @@ func (t *translatorLoop) getApplicableAccessControlPolicies(
 	if err != nil {
 		return nil, err
 	}
-	meshServiceKey, err := selector.BuildIdForMeshService(ctx, t.meshClient, meshService)
+	meshServiceKey, err := selection.BuildIdForMeshService(ctx, t.meshClient, meshService)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +255,7 @@ func (t *translatorLoop) getApplicableAccessControlPolicies(
 			return nil, err
 		}
 		for _, meshServiceForACP := range meshServicesForACP {
-			meshServiceForACPKey, err := selector.BuildIdForMeshService(ctx, t.meshClient, meshServiceForACP)
+			meshServiceForACPKey, err := selection.BuildIdForMeshService(ctx, t.meshClient, meshServiceForACP)
 			if err != nil {
 				return nil, err
 			}

@@ -11,10 +11,10 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
-	"github.com/solo-io/service-mesh-hub/pkg/logging"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -25,11 +25,11 @@ import (
 var (
 	DiscoveryLabels = func(meshType zephyr_core_types.MeshType, cluster, kubeServiceName, kubeServiceNamespace string) map[string]string {
 		return map[string]string{
-			constants.DISCOVERED_BY:          constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_TYPE:              strings.ToLower(meshType.String()),
-			constants.KUBE_SERVICE_NAME:      kubeServiceName,
-			constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
-			constants.COMPUTE_TARGET:         cluster,
+			kube.DISCOVERED_BY:          kube.MESH_WORKLOAD_DISCOVERY,
+			kube.MESH_TYPE:              strings.ToLower(meshType.String()),
+			kube.KUBE_SERVICE_NAME:      kubeServiceName,
+			kube.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
+			kube.COMPUTE_TARGET:         cluster,
 		}
 	}
 
@@ -69,7 +69,7 @@ func (m *meshServiceFinder) StartDiscovery(
 
 	err = serviceEventWatcher.AddEventHandler(m.ctx, &k8s_core_controller.ServiceEventHandlerFuncs{
 		OnCreate: func(obj *k8s_core_types.Service) error {
-			logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, obj)
+			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.CreateEvent, obj)
 			err := m.reconcileMeshServices()
 			if err != nil {
 				logger.Errorf("%+v", err)
@@ -77,7 +77,7 @@ func (m *meshServiceFinder) StartDiscovery(
 			return nil
 		},
 		OnUpdate: func(_, new *k8s_core_types.Service) error {
-			logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, new)
+			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.UpdateEvent, new)
 			err := m.reconcileMeshServices()
 			if err != nil {
 				logger.Errorf("%+v", err)
@@ -85,7 +85,7 @@ func (m *meshServiceFinder) StartDiscovery(
 			return nil
 		},
 		OnDelete: func(obj *k8s_core_types.Service) error {
-			logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, obj)
+			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.DeleteEvent, obj)
 			err := m.reconcileMeshServices()
 			if err != nil {
 				logger.Errorf("%+v", err)
@@ -98,7 +98,7 @@ func (m *meshServiceFinder) StartDiscovery(
 	}
 	return meshWorkloadEventWatcher.AddEventHandler(m.ctx, &zephyr_discovery_controller.MeshWorkloadEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_discovery.MeshWorkload) error {
-			logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, obj)
+			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.CreateEvent, obj)
 			err := m.reconcileMeshServices()
 			if err != nil {
 				logger.Errorf("%+v", err)
@@ -106,7 +106,7 @@ func (m *meshServiceFinder) StartDiscovery(
 			return nil
 		},
 		OnUpdate: func(_, new *zephyr_discovery.MeshWorkload) error {
-			logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, new)
+			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.UpdateEvent, new)
 			err := m.reconcileMeshServices()
 			if err != nil {
 				logger.Errorf("%+v", err)
@@ -114,7 +114,7 @@ func (m *meshServiceFinder) StartDiscovery(
 			return nil
 		},
 		OnDelete: func(obj *zephyr_discovery.MeshWorkload) error {
-			logger := logging.BuildEventLogger(m.ctx, logging.DeleteEvent, obj)
+			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.DeleteEvent, obj)
 			err := m.reconcileMeshServices()
 			if err != nil {
 				logger.Errorf("%+v", err)
@@ -159,7 +159,7 @@ func (m *meshServiceFinder) reconcileMeshServices() error {
 		if !ok {
 			continue
 		}
-		err = m.meshServiceClient.DeleteMeshService(m.ctx, clients.ObjectMetaToObjectKey(existingMeshService.ObjectMeta))
+		err = m.meshServiceClient.DeleteMeshService(m.ctx, selection.ObjectMetaToObjectKey(existingMeshService.ObjectMeta))
 		if err != nil {
 			return err
 		}
@@ -170,7 +170,7 @@ func (m *meshServiceFinder) reconcileMeshServices() error {
 func (m *meshServiceFinder) getExistingMeshServices() (map[string]*zephyr_discovery.MeshService, sets.String, error) {
 	meshServiceNames := sets.NewString()
 	existingMeshServices, err := m.meshServiceClient.ListMeshService(m.ctx, client.MatchingLabels{
-		constants.COMPUTE_TARGET: m.clusterName,
+		kube.COMPUTE_TARGET: m.clusterName,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -219,7 +219,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(
 		return nil, nil, nil
 	}
 	meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
-		constants.COMPUTE_TARGET: m.clusterName,
+		kube.COMPUTE_TARGET: m.clusterName,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -228,7 +228,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(
 	var mesh *zephyr_discovery.Mesh
 	for _, meshWorkloadIter := range meshWorkloads.Items {
 		meshWorkload := meshWorkloadIter
-		meshForWorkload, err := m.meshClient.GetMesh(m.ctx, clients.ResourceRefToObjectKey(meshWorkload.Spec.GetMesh()))
+		meshForWorkload, err := m.meshClient.GetMesh(m.ctx, selection.ResourceRefToObjectKey(meshWorkload.Spec.GetMesh()))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -279,7 +279,7 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(
 	service *k8s_core_types.Service,
 	meshWorkload *zephyr_discovery.MeshWorkload,
 ) bool {
-	workloadCluster := meshWorkload.Labels[constants.COMPUTE_TARGET]
+	workloadCluster := meshWorkload.Labels[kube.COMPUTE_TARGET]
 
 	// If the meshworkload is not on the same cluster as the service, it can be skipped safely
 	// The event handler accepts events from MeshWorkloads which may "match" the incoming service
@@ -304,7 +304,7 @@ func (m *meshServiceFinder) buildMeshService(
 	subsets map[string]*zephyr_discovery_types.MeshServiceSpec_Subset,
 	clusterName string,
 ) (*zephyr_discovery.MeshService, error) {
-	meshType, err := enum_conversion.MeshToMeshType(mesh)
+	meshType, err := metadata.MeshToMeshType(mesh)
 	if err != nil {
 		return nil, err
 	}
@@ -326,7 +326,7 @@ func (m *meshServiceFinder) buildMeshService(
 				Labels:                 service.GetLabels(),
 				Ports:                  m.convertPorts(service),
 			},
-			Mesh:    clients.ObjectMetaToResourceRef(mesh.ObjectMeta),
+			Mesh:    selection.ObjectMetaToResourceRef(mesh.ObjectMeta),
 			Subsets: subsets,
 		},
 	}, nil

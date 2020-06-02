@@ -10,17 +10,17 @@ import (
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	mock_types "github.com/solo-io/go-utils/installutils/helminstall/types/mocks"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
-	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
-	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
-	mock_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
+	mock_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/constants"
+	mock_auth "github.com/solo-io/service-mesh-hub/pkg/kube/auth/mocks"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	"k8s.io/client-go/rest"
@@ -74,7 +74,7 @@ var _ = Describe("Install", func() {
 			CreateNamespace:    true,
 			Verbose:            false,
 			InstallNamespace:   "service-mesh-hub",
-			ReleaseName:        cliconstants.ServiceMeshHubReleaseName,
+			ReleaseName:        constants.ServiceMeshHubReleaseName,
 			ReleaseUri:         chartOverride,
 			ValuesFiles:        []string{},
 			PreInstallMessage:  install.PreInstallMessage,

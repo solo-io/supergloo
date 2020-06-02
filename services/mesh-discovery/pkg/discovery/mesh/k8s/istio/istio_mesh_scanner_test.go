@@ -13,9 +13,9 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/docker/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	mock_docker "github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/istio"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_apps_types "k8s.io/api/apps/v1"
@@ -99,6 +99,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 	It("discovers Istiod deployment", func() {
 		serviceAccountName := "service-account-name"
 		trustDomain := "cluster.local"
+		imageVersion := "1.5.minor-version"
 		deployment := &k8s_apps_types.Deployment{
 			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: istioNs, ClusterName: clusterName, Name: istio.IstiodDeploymentName},
 			Spec: k8s_apps_types.DeploymentSpec{
@@ -106,7 +107,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 					Spec: k8s_core_types.PodSpec{
 						Containers: []k8s_core_types.Container{
 							{
-								Image: "istio-pilot:latest",
+								Image: "istio-pilot:" + imageVersion,
 							},
 						},
 						ServiceAccountName: serviceAccountName,
@@ -117,36 +118,38 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		expectedMesh := &zephyr_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "istio-istio-system-" + clusterName,
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-							InstallationNamespace: deployment.GetNamespace(),
-							Version:               "latest",
-						},
-						CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
-							TrustDomain:           trustDomain,
-							CitadelNamespace:      istioNs,
-							CitadelServiceAccount: serviceAccountName,
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+								InstallationNamespace: deployment.GetNamespace(),
+								Version:               imageVersion,
+							},
+							CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+								TrustDomain:           trustDomain,
+								CitadelNamespace:      istioNs,
+								CitadelServiceAccount: serviceAccountName,
+							},
 						},
 					},
 				},
 				Cluster: &zephyr_core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			},
 		}
 		mockImageNameParser.
 			EXPECT().
-			Parse("istio-pilot:latest").
+			Parse("istio-pilot:"+imageVersion).
 			Return(&docker.Image{
 				Domain: "test.com",
 				Path:   "istio",
-				Tag:    "latest",
+				Tag:    imageVersion,
 			}, nil)
 		configMap := &k8s_core_types.ConfigMap{
 			Data: map[string]string{
@@ -165,6 +168,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 	It("discovers istio-citadel deployment", func() {
 		serviceAccountName := "service-account-name"
 		trustDomain := "cluster.local"
+		imageVersion := "1.6.minor-version"
 		deployment := &k8s_apps_types.Deployment{
 			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: istioNs, ClusterName: clusterName, Name: istio.CitadelDeploymentName},
 			Spec: k8s_apps_types.DeploymentSpec{
@@ -172,7 +176,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 					Spec: k8s_core_types.PodSpec{
 						Containers: []k8s_core_types.Container{
 							{
-								Image: "istio-citadel:latest",
+								Image: "istio-citadel:" + imageVersion,
 							},
 						},
 						ServiceAccountName: serviceAccountName,
@@ -183,36 +187,38 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		expectedMesh := &zephyr_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "istio-istio-system-" + clusterName,
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-							InstallationNamespace: deployment.GetNamespace(),
-							Version:               "latest",
-						},
-						CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
-							TrustDomain:           trustDomain,
-							CitadelNamespace:      istioNs,
-							CitadelServiceAccount: serviceAccountName,
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_6_{
+					Istio1_6: &zephyr_discovery_types.MeshSpec_Istio1_6{
+						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+								InstallationNamespace: deployment.GetNamespace(),
+								Version:               imageVersion,
+							},
+							CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+								TrustDomain:           trustDomain,
+								CitadelNamespace:      istioNs,
+								CitadelServiceAccount: serviceAccountName,
+							},
 						},
 					},
 				},
 				Cluster: &zephyr_core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			},
 		}
 		mockImageNameParser.
 			EXPECT().
-			Parse("istio-citadel:latest").
+			Parse("istio-citadel:"+imageVersion).
 			Return(&docker.Image{
 				Domain: "test.com",
 				Path:   "istio",
-				Tag:    "latest",
+				Tag:    imageVersion,
 			}, nil)
 		configMap := &k8s_core_types.ConfigMap{
 			Data: map[string]string{

@@ -15,8 +15,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 	mock_appmesh "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/translation"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -211,15 +211,15 @@ var _ = Describe("Dao", func() {
 		workloads, services := expectListMeshWorkloadsAndServicesForMesh()
 		workloadsToAllUpstreamServices, err := dao.GetWorkloadsToAllUpstreamServices(ctx, mesh)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(workloadsToAllUpstreamServices).To(HaveKey(clients.ToUniqueSingleClusterString(workloads[0].ObjectMeta)))
-		Expect(workloadsToAllUpstreamServices).To(HaveKey(clients.ToUniqueSingleClusterString(workloads[1].ObjectMeta)))
-		Expect(workloadsToAllUpstreamServices).To(HaveKey(clients.ToUniqueSingleClusterString(workloads[2].ObjectMeta)))
+		Expect(workloadsToAllUpstreamServices).To(HaveKey(selection.ToUniqueSingleClusterString(workloads[0].ObjectMeta)))
+		Expect(workloadsToAllUpstreamServices).To(HaveKey(selection.ToUniqueSingleClusterString(workloads[1].ObjectMeta)))
+		Expect(workloadsToAllUpstreamServices).To(HaveKey(selection.ToUniqueSingleClusterString(workloads[2].ObjectMeta)))
 
 		expectedSet := zephyr_discovery_sets.NewMeshServiceSet(services[0], services[1], services[2])
 
-		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(clients.ToUniqueSingleClusterString(workloads[0].ObjectMeta), Equal(expectedSet)))
-		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(clients.ToUniqueSingleClusterString(workloads[1].ObjectMeta), Equal(expectedSet)))
-		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(clients.ToUniqueSingleClusterString(workloads[2].ObjectMeta), Equal(expectedSet)))
+		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(selection.ToUniqueSingleClusterString(workloads[0].ObjectMeta), Equal(expectedSet)))
+		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(selection.ToUniqueSingleClusterString(workloads[1].ObjectMeta), Equal(expectedSet)))
+		Expect(workloadsToAllUpstreamServices).To(HaveKeyWithValue(selection.ToUniqueSingleClusterString(workloads[2].ObjectMeta), Equal(expectedSet)))
 	})
 
 	It("should GetServicesWithACP", func() {
@@ -298,10 +298,10 @@ var _ = Describe("Dao", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(declaredWorkloads).To(Equal(expectedDeclaredWorkloads))
 		Expect(workloadsToUpstreamServices).To(
-			HaveKeyWithValue(clients.ToUniqueSingleClusterString(workloads[0].ObjectMeta),
+			HaveKeyWithValue(selection.ToUniqueSingleClusterString(workloads[0].ObjectMeta),
 				Equal(zephyr_discovery_sets.NewMeshServiceSet(services[0], services[1], services[2]))))
 		Expect(workloadsToUpstreamServices).To(
-			HaveKeyWithValue(clients.ToUniqueSingleClusterString(workloads[1].ObjectMeta),
+			HaveKeyWithValue(selection.ToUniqueSingleClusterString(workloads[1].ObjectMeta),
 				Equal(zephyr_discovery_sets.NewMeshServiceSet(services[1], services[2]))))
 	})
 })

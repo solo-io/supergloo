@@ -64,6 +64,28 @@ func (this *MeshSpec_IstioMesh_CitadelInfo) UnmarshalJSON(b []byte) error {
 	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for MeshSpec_Istio1_5
+func (this *MeshSpec_Istio1_5) MarshalJSON() ([]byte, error) {
+	str, err := MeshMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for MeshSpec_Istio1_5
+func (this *MeshSpec_Istio1_5) UnmarshalJSON(b []byte) error {
+	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for MeshSpec_Istio1_6
+func (this *MeshSpec_Istio1_6) MarshalJSON() ([]byte, error) {
+	str, err := MeshMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for MeshSpec_Istio1_6
+func (this *MeshSpec_Istio1_6) UnmarshalJSON(b []byte) error {
+	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for MeshSpec_AwsAppMesh
 func (this *MeshSpec_AwsAppMesh) MarshalJSON() ([]byte, error) {
 	str, err := MeshMarshaler.MarshalToString(this)

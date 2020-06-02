@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/avast/retry-go"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewDynamicClientGetter(kubeConfigLookup kubeconfig.KubeConfigLookup) mc_manager.DynamicClientGetter {
+func NewDynamicClientGetter(kubeConfigLookup kubeconfig.KubeConfigLookup) multicluster.DynamicClientGetter {
 	return &dynamicClientGetter{kubeConfigLookup: kubeConfigLookup}
 }
 

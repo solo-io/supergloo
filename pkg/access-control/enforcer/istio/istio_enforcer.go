@@ -5,11 +5,12 @@ import (
 
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	istio_api_security "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
@@ -26,14 +27,14 @@ const (
 )
 
 type istioEnforcer struct {
-	dynamicClientGetter     mc_manager.DynamicClientGetter
+	dynamicClientGetter     multicluster.DynamicClientGetter
 	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory
 }
 
 type IstioEnforcer access_control_enforcer.AccessPolicyMeshEnforcer
 
 func NewIstioEnforcer(
-	dynamicClientGetter mc_manager.DynamicClientGetter,
+	dynamicClientGetter multicluster.DynamicClientGetter,
 	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory,
 ) IstioEnforcer {
 	return &istioEnforcer{
@@ -51,7 +52,7 @@ func (i *istioEnforcer) ReconcileAccessControl(
 	mesh *zephyr_discovery.Mesh,
 	virtualMesh *zephyr_networking.VirtualMesh,
 ) error {
-	if mesh.Spec.GetIstio() == nil {
+	if mesh.Spec.GetIstio1_6() == nil && mesh.Spec.GetIstio1_5() == nil {
 		return nil
 	}
 	switch virtualMesh.Spec.GetEnforceAccessControl() {
@@ -64,29 +65,55 @@ func (i *istioEnforcer) ReconcileAccessControl(
 }
 
 func (i *istioEnforcer) startEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
+	installationNamespace := ""
+	if mesh.Spec.GetIstio1_5() != nil {
+		installationNamespace = mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace()
+	} else {
+		installationNamespace = mesh.Spec.GetIstio1_6().GetMetadata().GetInstallation().GetInstallationNamespace()
+	}
+
 	clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
 	if err != nil {
 		return err
 	}
 	authPolicyClient := i.authPolicyClientFactory(clientForCluster)
-	if err := i.ensureIngressGatewayPolicy(ctx, mesh, authPolicyClient); err != nil {
+	if err := i.ensureIngressGatewayPolicy(ctx, installationNamespace, mesh, authPolicyClient); err != nil {
 		return err
 	}
-	if err := i.ensureGlobalAuthPolicy(ctx, mesh, authPolicyClient); err != nil {
+	if err := i.ensureGlobalAuthPolicy(ctx, installationNamespace, mesh, authPolicyClient); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (i *istioEnforcer) stopEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
-	if err := i.stopEnforcingForMesh(ctx, mesh); err != nil {
+	installationNamespace := ""
+	if mesh.Spec.GetIstio1_5() != nil {
+		installationNamespace = mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace()
+	} else {
+		installationNamespace = mesh.Spec.GetIstio1_6().GetMetadata().GetInstallation().GetInstallationNamespace()
+	}
+	if err := i.stopEnforcingForMesh(ctx, installationNamespace, mesh); err != nil {
 		return err
 	}
 	return nil
 }
 
+// returns nil if not an Istio installation
+func (*istioEnforcer) getIstioInstallation(mesh *zephyr_discovery.Mesh) *zephyr_discovery_types.MeshSpec_MeshInstallation {
+	var istioInstallation *zephyr_discovery_types.MeshSpec_MeshInstallation
+	if mesh.Spec.GetIstio1_6() != nil {
+		istioInstallation = mesh.Spec.GetIstio1_6().GetMetadata().GetInstallation()
+	} else if mesh.Spec.GetIstio1_5() != nil {
+		istioInstallation = mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation()
+	}
+
+	return istioInstallation
+}
+
 func (i *istioEnforcer) ensureGlobalAuthPolicy(
 	ctx context.Context,
+	installationNamespace string,
 	mesh *zephyr_discovery.Mesh,
 	authPolicyClient istio_security.AuthorizationPolicyClient,
 ) error {
@@ -96,8 +123,8 @@ func (i *istioEnforcer) ensureGlobalAuthPolicy(
 	globalAccessControlAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      GlobalAccessControlAuthPolicyName,
-			Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
-			Labels:    constants.OwnedBySMHLabel,
+			Namespace: installationNamespace,
+			Labels:    kube.OwnedBySMHLabel,
 		},
 		Spec: istio_api_security.AuthorizationPolicy{},
 	}
@@ -106,6 +133,7 @@ func (i *istioEnforcer) ensureGlobalAuthPolicy(
 
 func (i *istioEnforcer) ensureIngressGatewayPolicy(
 	ctx context.Context,
+	installationNamespace string,
 	mesh *zephyr_discovery.Mesh,
 	authPolicyClient istio_security.AuthorizationPolicyClient,
 ) error {
@@ -115,8 +143,8 @@ func (i *istioEnforcer) ensureIngressGatewayPolicy(
 	ingressGatewayAllowAllPolicy := &client_security_v1beta1.AuthorizationPolicy{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      IngressGatewayAuthPolicy,
-			Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
-			Labels:    constants.OwnedBySMHLabel,
+			Namespace: installationNamespace,
+			Labels:    kube.OwnedBySMHLabel,
 		},
 		Spec: istio_api_security.AuthorizationPolicy{
 			Action: istio_api_security.AuthorizationPolicy_ALLOW,
@@ -133,6 +161,7 @@ func (i *istioEnforcer) ensureIngressGatewayPolicy(
 
 func (i *istioEnforcer) stopEnforcingForMesh(
 	ctx context.Context,
+	installationNamespace string,
 	mesh *zephyr_discovery.Mesh,
 ) error {
 	clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
@@ -142,14 +171,14 @@ func (i *istioEnforcer) stopEnforcingForMesh(
 	authPolicyClient := i.authPolicyClientFactory(clientForCluster)
 	globalAuthPolicyKey := client.ObjectKey{
 		Name:      GlobalAccessControlAuthPolicyName,
-		Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
+		Namespace: installationNamespace,
 	}
 	if err = i.deleteIfExists(ctx, globalAuthPolicyKey, authPolicyClient); err != nil {
 		return err
 	}
 	gatewayAuthPolicyKey := client.ObjectKey{
 		Name:      IngressGatewayAuthPolicy,
-		Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
+		Namespace: installationNamespace,
 	}
 	return i.deleteIfExists(ctx, gatewayAuthPolicyKey, authPolicyClient)
 }

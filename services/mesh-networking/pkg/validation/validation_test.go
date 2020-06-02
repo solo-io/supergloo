@@ -90,8 +90,8 @@ var _ = Describe("validator", func() {
 				Namespace: ref.GetNamespace(),
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{},
 				},
 			},
 		}
@@ -157,8 +157,8 @@ var _ = Describe("validator", func() {
 				Namespace: ref.GetNamespace(),
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{},
 				},
 			},
 		}

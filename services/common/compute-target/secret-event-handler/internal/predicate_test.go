@@ -3,7 +3,7 @@ package internal_watcher_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	. "github.com/solo-io/service-mesh-hub/services/common/compute-target/secret-event-handler/internal"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -23,14 +23,14 @@ var _ = Describe("common", func() {
 		})
 		It("will not work with just namespace", func() {
 			meta = &metav1.ObjectMeta{
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}
 			Expect(HasRequiredMetadata(meta, obj)).To(BeFalse())
 		})
 		It("will not work with one condition", func() {
 			meta = &metav1.ObjectMeta{
 				Labels:    map[string]string{mc_manager.MultiClusterLabel: "true"},
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}
 			Expect(HasRequiredMetadata(meta, obj)).To(BeTrue())
 		})
@@ -42,7 +42,7 @@ var _ = Describe("common", func() {
 
 			matchingMeta = &metav1.ObjectMeta{
 				Labels:    map[string]string{mc_manager.MultiClusterLabel: "true"},
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}
 
 			badMeta = &metav1.ObjectMeta{

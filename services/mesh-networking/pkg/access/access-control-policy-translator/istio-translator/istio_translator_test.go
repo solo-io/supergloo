@@ -14,7 +14,7 @@ import (
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
+	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
 	access_control_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator/istio-translator"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -33,7 +33,7 @@ var _ = Describe("IstioTranslator", func() {
 		authPolicyClient    *mock_istio_security.MockAuthorizationPolicyClient
 		meshClient          *mock_core.MockMeshClient
 		istioTranslator     istio_translator.IstioTranslator
-		dynamicClientGetter *mock_mc_manager.MockDynamicClientGetter
+		dynamicClientGetter *mock_multicluster.MockDynamicClientGetter
 	)
 
 	BeforeEach(func() {
@@ -41,7 +41,7 @@ var _ = Describe("IstioTranslator", func() {
 		ctx = context.TODO()
 		authPolicyClient = mock_istio_security.NewMockAuthorizationPolicyClient(ctrl)
 		meshClient = mock_core.NewMockMeshClient(ctrl)
-		dynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+		dynamicClientGetter = mock_multicluster.NewMockDynamicClientGetter(ctrl)
 		istioTranslator = istio_translator.NewIstioTranslator(
 			meshClient,
 			dynamicClientGetter,
@@ -87,9 +87,11 @@ var _ = Describe("IstioTranslator", func() {
 		allowedPortsString := []string{"8080", "9080"}
 		istioMesh1 := &zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-						CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
+						},
 					},
 				},
 				Cluster: &zephyr_core_types.ResourceRef{Name: clusterNames[0]},
@@ -97,9 +99,11 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		istioMesh2 := &zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-						CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[1]},
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[1]},
+						},
 					},
 				},
 				Cluster: &zephyr_core_types.ResourceRef{Name: clusterNames[1]},
@@ -307,9 +311,11 @@ var _ = Describe("IstioTranslator", func() {
 				},
 				Mesh: &zephyr_discovery.Mesh{
 					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-							Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-								CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
+						MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+							Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+								Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+									CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
+								},
 							},
 						},
 						Cluster: &zephyr_core_types.ResourceRef{Name: clusterNames[0]},
@@ -385,9 +391,11 @@ var _ = Describe("IstioTranslator", func() {
 				},
 				Mesh: &zephyr_discovery.Mesh{
 					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-							Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-								CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
+						MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+							Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+								Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+									CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
+								},
 							},
 						},
 						Cluster: &zephyr_core_types.ResourceRef{Name: clusterNames[0]},

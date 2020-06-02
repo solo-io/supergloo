@@ -279,8 +279,8 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destination | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  |  |
-| weight | [uint32](#uint32) |  | Routing to each destination will be balanced by the ratio of the destination's weight to the total weight on a route. |
+| destination | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | Name/namespace/cluster of a kubernetes service. |
+| weight | [uint32](#uint32) |  | Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100. |
 | subset | [][TrafficPolicySpec.MultiDestination.WeightedDestination.SubsetEntry](#networking.zephyr.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.SubsetEntry) | repeated | Subset routing is currently only supported on Istio. |
 | port | [uint32](#uint32) |  | Port on the destination service to receive traffic. If multiple are found, and none are specified, then the configuration will be considered invalid |
 

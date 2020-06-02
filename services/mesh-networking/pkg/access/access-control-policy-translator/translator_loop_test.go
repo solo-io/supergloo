@@ -15,8 +15,8 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	access_control_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	mock_access_control_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -132,7 +132,7 @@ var _ = Describe("Translator", func() {
 			for i, meshService := range matchingMeshServices {
 				meshClient.
 					EXPECT().
-					GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
+					GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
 					Return(meshesForService[i], nil)
 				expectedTargetServices = append(
 					expectedTargetServices,
@@ -197,7 +197,7 @@ var _ = Describe("Translator", func() {
 			for i, meshService := range matchingMeshServices {
 				meshClient.
 					EXPECT().
-					GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
+					GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
 					Return(meshesForService[i], nil)
 				expectedTargetServices = append(
 					expectedTargetServices,
@@ -264,7 +264,7 @@ var _ = Describe("Translator", func() {
 			}
 			meshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
 				Return(mesh, nil).
 				Times(5)
 			acpList := &zephyr_networking.AccessControlPolicyList{
@@ -368,7 +368,7 @@ var _ = Describe("Translator", func() {
 			}
 			meshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
 				Return(mesh, nil).
 				Times(5)
 			acpList := &zephyr_networking.AccessControlPolicyList{

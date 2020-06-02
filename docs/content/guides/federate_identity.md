@@ -109,7 +109,7 @@ spec:
   federation: 
     mode: PERMISSIVE
   shared: {}
-  enforceAccessControl: false
+  enforceAccessControl: MESH_DEFAULT
   meshes:
   - name: istio-istio-system-management-plane 
     namespace: service-mesh-hub

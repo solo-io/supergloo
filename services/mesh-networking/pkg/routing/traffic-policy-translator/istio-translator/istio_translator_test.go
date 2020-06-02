@@ -14,8 +14,8 @@ import (
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
+	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
+	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_istio_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/istio/networking/v1beta1"
@@ -43,7 +43,7 @@ var _ = Describe("IstioTranslator", func() {
 		ctrl                         *gomock.Controller
 		istioTrafficPolicyTranslator istio_translator.IstioTranslator
 		ctx                          context.Context
-		mockDynamicClientGetter      *mock_mc_manager.MockDynamicClientGetter
+		mockDynamicClientGetter      *mock_multicluster.MockDynamicClientGetter
 		mockMeshClient               *mock_core.MockMeshClient
 		mockMeshServiceClient        *mock_core.MockMeshServiceClient
 		mockVirtualServiceClient     *mock_istio_networking.MockVirtualServiceClient
@@ -53,7 +53,7 @@ var _ = Describe("IstioTranslator", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockDynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+		mockDynamicClientGetter = mock_multicluster.NewMockDynamicClientGetter(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockMeshServiceClient = mock_core.NewMockMeshServiceClient(ctrl)
 		mockVirtualServiceClient = mock_istio_networking.NewMockVirtualServiceClient(ctrl)
@@ -118,8 +118,10 @@ var _ = Describe("IstioTranslator", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+						},
 					},
 				},
 			}

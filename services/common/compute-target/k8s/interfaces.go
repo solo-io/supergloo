@@ -3,9 +3,7 @@ package mc_manager
 import (
 	"context"
 
-	"github.com/avast/retry-go"
 	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -49,10 +47,4 @@ type AsyncManager interface {
 type AsyncManagerFactory interface {
 	New(parentCtx context.Context, cfg *rest.Config,
 		opts AsyncManagerOptions) (AsyncManager, error)
-}
-
-// Simple map get interface to expose the map of dynamic clients to the local controller
-type DynamicClientGetter interface {
-	// Return (client, true) if found, otherwise (nil, false)
-	GetClientForCluster(ctx context.Context, clusterName string, opts ...retry.Option) (client.Client, error)
 }

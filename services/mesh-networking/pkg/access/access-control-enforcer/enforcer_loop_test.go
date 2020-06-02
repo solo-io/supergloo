@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/go-utils/testutils"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	mock_access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/mocks"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
@@ -16,7 +17,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	global_ac_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
@@ -85,7 +86,7 @@ var _ = Describe("EnforcerLoop", func() {
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "name1", Namespace: "namespace1"},
 				Spec: types.MeshSpec{
-					MeshType: &types.MeshSpec_Istio{},
+					MeshType: &types.MeshSpec_Istio1_5_{},
 				},
 			},
 			{
@@ -108,7 +109,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			mockMeshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		for _, mesh := range meshes {
@@ -151,7 +152,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			mockMeshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		for _, mesh := range meshes {
@@ -194,7 +195,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			mockMeshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		mockMeshEnforcers[0].
@@ -218,7 +219,7 @@ var _ = Describe("EnforcerLoop", func() {
 			Message: testErr.Error(),
 		}
 		err := virtualMeshHandler.CreateVirtualMesh(vm)
-		Expect(err).ToNot(HaveOccurred())
+		Expect(err).To(testutils.HaveInErrorChain(testErr))
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
 	})
 
@@ -232,7 +233,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			mockMeshClient.
 				EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 

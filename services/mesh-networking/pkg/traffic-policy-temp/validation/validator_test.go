@@ -12,8 +12,8 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	traffic_policy_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/validation"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -61,9 +61,9 @@ var _ = Describe("Validator", func() {
 		mockResourceSelector.
 			EXPECT().
 			FilterMeshServicesByServiceSelector(meshServices, tp.Spec.GetDestinationSelector()).
-			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
+			Return(nil, selection.MeshServiceNotFound(name, namespace, cluster))
 		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
-		expectSingleErrorOf(err, selector.MeshServiceNotFound(name, namespace, cluster))
+		expectSingleErrorOf(err, selection.MeshServiceNotFound(name, namespace, cluster))
 		Expect(status.State).To(Equal(zephyr_core_types.Status_INVALID))
 	})
 

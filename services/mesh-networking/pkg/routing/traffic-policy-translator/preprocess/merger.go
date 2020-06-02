@@ -8,18 +8,18 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	networking_errors "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
 )
 
 type trafficPolicyMerger struct {
-	resourceSelector    selector.ResourceSelector
+	resourceSelector    selection.ResourceSelector
 	meshClient          zephyr_discovery.MeshClient
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient
 }
 
 func NewTrafficPolicyMerger(
-	resourceSelector selector.ResourceSelector,
+	resourceSelector selection.ResourceSelector,
 	meshClient zephyr_discovery.MeshClient,
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 ) TrafficPolicyMerger {
@@ -33,7 +33,7 @@ func NewTrafficPolicyMerger(
 func (t *trafficPolicyMerger) MergeTrafficPoliciesForMeshServices(
 	ctx context.Context,
 	meshServices []*zephyr_discovery.MeshService,
-) (map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
+) (map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
 	trafficPoliciesByMeshService, err := t.getTrafficPoliciesByMeshService(ctx, meshServices)
 	if err != nil {
 		return nil, err
@@ -49,11 +49,11 @@ func (t *trafficPolicyMerger) MergeTrafficPoliciesForMeshServices(
 func (t *trafficPolicyMerger) getTrafficPoliciesByMeshService(
 	ctx context.Context,
 	meshServices []*zephyr_discovery.MeshService,
-) (map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
-	trafficPoliciesByMeshService := map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy{}
+) (map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
+	trafficPoliciesByMeshService := map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy{}
 	// initialize map with given meshServices
 	for _, meshService := range meshServices {
-		meshServiceKey, err := selector.BuildIdForMeshService(ctx, t.meshClient, meshService)
+		meshServiceKey, err := selection.BuildIdForMeshService(ctx, t.meshClient, meshService)
 		if err != nil {
 			return nil, err
 		}
@@ -75,7 +75,7 @@ func (t *trafficPolicyMerger) getTrafficPoliciesByMeshService(
 			return nil, err
 		}
 		for _, meshServiceForTP := range meshServicesForTP {
-			meshServiceKey, err := selector.BuildIdForMeshService(ctx, t.meshClient, meshServiceForTP)
+			meshServiceKey, err := selection.BuildIdForMeshService(ctx, t.meshClient, meshServiceForTP)
 			if err != nil {
 				return nil, err
 			}
@@ -95,8 +95,8 @@ func (t *trafficPolicyMerger) getTrafficPoliciesByMeshService(
 		3. If conflict encountered, do not apply any of its configuration, update conflicting TrafficPolicy with CONFLICT status and continue.
 */
 func mergeTrafficPoliciesByMeshService(
-	trafficPoliciesByMeshService map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy,
-) (map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
+	trafficPoliciesByMeshService map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy,
+) (map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
 	for meshServiceKey, trafficPolicies := range trafficPoliciesByMeshService {
 		sort.Slice(trafficPolicies, func(a, b int) bool {
 			timestampA := trafficPolicies[a].GetCreationTimestamp()

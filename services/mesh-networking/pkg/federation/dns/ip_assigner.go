@@ -10,8 +10,8 @@ import (
 	"github.com/rotisserie/eris"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 )
@@ -68,10 +68,10 @@ type ipAssigner struct {
 func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) (string, error) {
 	ipRecordRef := &zephyr_core_types.ResourceRef{
 		Name:      IpRecordName,
-		Namespace: env.GetWriteNamespace(),
+		Namespace: container_runtime.GetWriteNamespace(),
 	}
 
-	ipRecordConfigMap, err := i.configMapClient.GetConfigMap(ctx, clients.ResourceRefToObjectKey(ipRecordRef))
+	ipRecordConfigMap, err := i.configMapClient.GetConfigMap(ctx, selection.ResourceRefToObjectKey(ipRecordRef))
 
 	if errors.IsNotFound(err) {
 		newIpRecord := map[string]string{}
@@ -81,7 +81,7 @@ func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) 
 		}
 
 		return newIp, i.configMapClient.CreateConfigMap(ctx, &k8s_core_types.ConfigMap{
-			ObjectMeta: clients.ResourceRefToObjectMeta(ipRecordRef),
+			ObjectMeta: selection.ResourceRefToObjectMeta(ipRecordRef),
 			Data:       newIpRecord,
 		})
 	} else if err != nil {
@@ -106,12 +106,12 @@ func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) 
 func (i *ipAssigner) UnAssignIPOnCluster(ctx context.Context, clusterName, ipToUnassign string) error {
 	ipRecordRef := &zephyr_core_types.ResourceRef{
 		Name:      IpRecordName,
-		Namespace: env.GetWriteNamespace(),
+		Namespace: container_runtime.GetWriteNamespace(),
 	}
 
 	var ipRecordConfigMap *k8s_core_types.ConfigMap
 	err := retry.Do(func() error {
-		cm, err := i.configMapClient.GetConfigMap(ctx, clients.ResourceRefToObjectKey(ipRecordRef))
+		cm, err := i.configMapClient.GetConfigMap(ctx, selection.ResourceRefToObjectKey(ipRecordRef))
 		if err != nil {
 			return err
 		}

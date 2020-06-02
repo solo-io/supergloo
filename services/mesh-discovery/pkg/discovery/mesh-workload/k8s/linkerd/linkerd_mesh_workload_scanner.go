@@ -8,8 +8,8 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,7 +19,7 @@ import (
 var (
 	DiscoveryLabels = func() map[string]string {
 		return map[string]string{
-			constants.MESH_TYPE: strings.ToLower(zephyr_core_types.MeshType_LINKERD.String()),
+			kube.MESH_TYPE: strings.ToLower(zephyr_core_types.MeshType_LINKERD.String()),
 		}
 	}
 )
@@ -56,7 +56,7 @@ func (l *linkerdMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_
 	return &zephyr_discovery.MeshWorkload{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      l.buildMeshWorkloadName(deployment.GetName(), deployment.GetNamespace(), clusterName),
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(),
 		},
 		Spec: zephyr_discovery_types.MeshWorkloadSpec{

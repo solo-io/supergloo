@@ -2,6 +2,8 @@
 
 set -ex
 
+bash ./ci/ensureGoodImportPaths.bash
+
 go mod tidy
 
 if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then

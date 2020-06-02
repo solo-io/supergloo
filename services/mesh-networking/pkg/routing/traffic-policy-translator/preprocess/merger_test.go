@@ -12,8 +12,8 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
@@ -226,12 +226,12 @@ var _ = Describe("Merger", func() {
 				},
 			},
 		}
-		meshServiceKey1 := selector.MeshServiceId{
+		meshServiceKey1 := selection.MeshServiceId{
 			Name:        meshServiceName1,
 			Namespace:   meshServiceNamespace1,
 			ClusterName: meshClusterName1,
 		}
-		meshServiceKey2 := selector.MeshServiceId{
+		meshServiceKey2 := selection.MeshServiceId{
 			Name:        meshServiceName2,
 			Namespace:   meshServiceNamespace2,
 			ClusterName: meshClusterName2,

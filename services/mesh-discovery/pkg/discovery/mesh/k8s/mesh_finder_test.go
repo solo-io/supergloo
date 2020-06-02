@@ -12,8 +12,8 @@ import (
 	mp_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s"
 	mock_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -357,7 +357,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				DeleteMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				DeleteMesh(ctx, selection.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(nil)
 
 			err := eventHandler.DeleteDeployment(deployment)
@@ -396,7 +396,7 @@ var _ = Describe("Mesh Finder", func() {
 			deploymentClient := mock_k8s_apps_clients.NewMockDeploymentClient(ctrl)
 
 			localMeshClient.EXPECT().
-				ListMesh(ctx, client.MatchingLabels{constants.COMPUTE_TARGET: clusterName}).
+				ListMesh(ctx, client.MatchingLabels{kube.COMPUTE_TARGET: clusterName}).
 				Return(&mp_v1alpha1.MeshList{Items: []mp_v1alpha1.Mesh{}}, nil)
 
 			eventHandler := k8s.NewMeshFinder(
@@ -421,7 +421,7 @@ var _ = Describe("Mesh Finder", func() {
 			mesh := BuildMesh(meshObjectMeta)
 
 			localMeshClient.EXPECT().
-				ListMesh(ctx, client.MatchingLabels{constants.COMPUTE_TARGET: clusterName}).
+				ListMesh(ctx, client.MatchingLabels{kube.COMPUTE_TARGET: clusterName}).
 				Return(&mp_v1alpha1.MeshList{Items: []mp_v1alpha1.Mesh{*mesh}}, nil)
 
 			deploymentClient.EXPECT().
@@ -454,7 +454,7 @@ var _ = Describe("Mesh Finder", func() {
 			mesh := BuildMesh(meshObjectMeta)
 
 			localMeshClient.EXPECT().
-				ListMesh(ctx, client.MatchingLabels{constants.COMPUTE_TARGET: clusterName}).
+				ListMesh(ctx, client.MatchingLabels{kube.COMPUTE_TARGET: clusterName}).
 				Return(&mp_v1alpha1.MeshList{Items: []mp_v1alpha1.Mesh{*mesh}}, nil)
 
 			deploymentClient.EXPECT().
@@ -462,7 +462,7 @@ var _ = Describe("Mesh Finder", func() {
 				Return(&appsv1.DeploymentList{Items: []appsv1.Deployment{}}, nil)
 
 			localMeshClient.EXPECT().
-				DeleteMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				DeleteMesh(ctx, selection.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(nil)
 
 			eventHandler := k8s.NewMeshFinder(
@@ -486,17 +486,19 @@ var _ = Describe("Mesh Finder", func() {
 			meshObjectMeta := metav1.ObjectMeta{Name: "test-mesh", Namespace: remoteNamespace}
 			mesh := BuildMesh(meshObjectMeta)
 			mesh.Spec = types.MeshSpec{
-				MeshType: &types.MeshSpec_Istio{
-					Istio: &types.MeshSpec_IstioMesh{
-						Installation: &types.MeshSpec_MeshInstallation{
-							Version: "1.4.0",
+				MeshType: &types.MeshSpec_Istio1_5_{
+					Istio1_5: &types.MeshSpec_Istio1_5{
+						Metadata: &types.MeshSpec_IstioMesh{
+							Installation: &types.MeshSpec_MeshInstallation{
+								Version: "1.5.0",
+							},
 						},
 					},
 				},
 			}
 
 			localMeshClient.EXPECT().
-				ListMesh(ctx, client.MatchingLabels{constants.COMPUTE_TARGET: clusterName}).
+				ListMesh(ctx, client.MatchingLabels{kube.COMPUTE_TARGET: clusterName}).
 				Return(&mp_v1alpha1.MeshList{Items: []mp_v1alpha1.Mesh{*mesh}}, nil)
 
 			deploymentClient.EXPECT().
@@ -505,10 +507,12 @@ var _ = Describe("Mesh Finder", func() {
 
 			updatedMesh := *mesh
 			updatedMesh.Spec = types.MeshSpec{
-				MeshType: &types.MeshSpec_Istio{
-					Istio: &types.MeshSpec_IstioMesh{
-						Installation: &types.MeshSpec_MeshInstallation{
-							Version: "1.5.0",
+				MeshType: &types.MeshSpec_Istio1_5_{
+					Istio1_5: &types.MeshSpec_Istio1_5{
+						Metadata: &types.MeshSpec_IstioMesh{
+							Installation: &types.MeshSpec_MeshInstallation{
+								Version: "1.5.1",
+							},
 						},
 					},
 				},

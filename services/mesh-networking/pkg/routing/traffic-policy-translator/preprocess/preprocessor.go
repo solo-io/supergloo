@@ -5,17 +5,17 @@ import (
 
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
 type trafficPolicyPreprocessor struct {
-	resourceSelector selector.ResourceSelector
+	resourceSelector selection.ResourceSelector
 	merger           TrafficPolicyMerger
 	validator        TrafficPolicyValidator
 }
 
 func NewTrafficPolicyPreprocessor(
-	resourceSelector selector.ResourceSelector,
+	resourceSelector selection.ResourceSelector,
 	merger TrafficPolicyMerger,
 	validator TrafficPolicyValidator,
 ) TrafficPolicyPreprocessor {
@@ -38,7 +38,7 @@ func NewTrafficPolicyPreprocessor(
 func (d *trafficPolicyPreprocessor) PreprocessTrafficPolicy(
 	ctx context.Context,
 	trafficPolicy *zephyr_networking.TrafficPolicy,
-) (map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
+) (map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
 	err := d.validator.Validate(ctx, trafficPolicy)
 	if err != nil {
 		return nil, err
@@ -63,6 +63,6 @@ func (d *trafficPolicyPreprocessor) PreprocessTrafficPolicy(
 func (d *trafficPolicyPreprocessor) PreprocessTrafficPoliciesForMeshService(
 	ctx context.Context,
 	meshService *zephyr_discovery.MeshService,
-) (map[selector.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
+) (map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
 	return d.merger.MergeTrafficPoliciesForMeshServices(ctx, []*zephyr_discovery.MeshService{meshService})
 }

@@ -5,14 +5,14 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/bootstrap"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/wire"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 func Run(ctx context.Context) {
-	ctx = bootstrap.CreateRootContext(ctx, "csr-agent")
+	ctx = container_runtime.CreateRootContext(ctx, "csr-agent")
 	logger := contextutils.LoggerFrom(ctx)
 
 	// build all the objects needed for multicluster operations

@@ -5,7 +5,7 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	k8s_core_types "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"

@@ -11,12 +11,12 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	settings_utils "github.com/solo-io/service-mesh-hub/pkg/settings"
+	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
+	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/settings"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -157,7 +157,7 @@ func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef,
 	return &zephyr_discovery.Mesh{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      meshName,
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		},
 		Spec: zephyr_discovery_types.MeshSpec{
 			MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{

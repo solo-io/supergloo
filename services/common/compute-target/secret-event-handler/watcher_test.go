@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	mc_watcher "github.com/solo-io/service-mesh-hub/services/common/compute-target/secret-event-handler"
 	mock_internal_watcher "github.com/solo-io/service-mesh-hub/services/common/compute-target/secret-event-handler/internal/mocks"
@@ -82,11 +82,11 @@ var _ = Describe("multicluster-watcher", func() {
 				BeforeEach(func() {
 					oldSecret = &kubev1.Secret{
 						ObjectMeta: metav1.ObjectMeta{
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 							Labels:    map[string]string{mc_manager.MultiClusterLabel: "true"},
 						},
 					}
-					secret.Namespace = env.GetWriteNamespace()
+					secret.Namespace = container_runtime.GetWriteNamespace()
 				})
 				It("will return an error if resync is true", func() {
 					csh.EXPECT().ComputeTargetSecretRemoved(ctx, secret).Return(true, testErr)
@@ -104,10 +104,10 @@ var _ = Describe("multicluster-watcher", func() {
 				BeforeEach(func() {
 					oldSecret = &kubev1.Secret{
 						ObjectMeta: metav1.ObjectMeta{
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						},
 					}
-					secret.Namespace = env.GetWriteNamespace()
+					secret.Namespace = container_runtime.GetWriteNamespace()
 					secret.Labels = map[string]string{mc_manager.MultiClusterLabel: "true"}
 				})
 				It("will return an error if resync is true", func() {
@@ -126,11 +126,11 @@ var _ = Describe("multicluster-watcher", func() {
 			It("will return nil if metadata hasn't changed", func() {
 				oldSecret = &kubev1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 						Labels:    map[string]string{mc_manager.MultiClusterLabel: "true"},
 					},
 				}
-				secret.Namespace = env.GetWriteNamespace()
+				secret.Namespace = container_runtime.GetWriteNamespace()
 				secret.Labels = map[string]string{mc_manager.MultiClusterLabel: "true"}
 				err := mcHandler.UpdateSecret(oldSecret, secret)
 				Expect(err).NotTo(HaveOccurred())

@@ -12,8 +12,8 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s"
 	k8s_apps_v1 "k8s.io/api/apps/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -86,7 +86,7 @@ func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, clusterName str
 	return &zephyr_discovery.Mesh{
 		ObjectMeta: k8s_meta_v1.ObjectMeta{
 			Name:      linkerdController.name(),
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels,
 		},
 		Spec: zephyr_discovery_types.MeshSpec{
@@ -101,7 +101,7 @@ func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, clusterName str
 			},
 			Cluster: &zephyr_core_types.ResourceRef{
 				Name:      clusterName,
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 		},
 	}, nil

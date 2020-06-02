@@ -8,23 +8,23 @@ package wire
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/aws_creds"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/settings"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/factories"
-	"github.com/solo-io/service-mesh-hub/pkg/installers/csr"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	settings2 "github.com/solo-io/service-mesh-hub/pkg/settings"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
+	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/selection"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/settings"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
+	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
-	aws_utils "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/parser"
 	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories"
 	appmesh_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s/appmesh"
 	eks2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s-cluster/rest/eks"
@@ -57,7 +57,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	appmeshRawClientFactory := appmesh.AppmeshRawClientFactoryProvider()
 	settingsClient := v1alpha1_2.SettingsClientProvider(client)
 	settingsHelperClient := settings.NewAwsSettingsHelperClient(settingsClient)
-	awsSelector := settings2.NewAwsSelector(arnParser)
+	awsSelector := selection.NewAwsSelector(arnParser)
 	appMeshDiscoveryReconciler := appmesh2.NewAppMeshDiscoveryReconciler(client, meshClientFactory, arnParser, appmeshRawClientFactory, settingsHelperClient, awsSelector)
 	kubernetesClusterClient := v1alpha1.KubernetesClusterClientProvider(client)
 	eksClientFactory := eks.EksClientFactoryProvider()
@@ -65,15 +65,15 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	secretClientFromConfigFactory := v1.SecretClientFromConfigFactoryProvider()
 	kubernetesClusterClientFromConfigFactory := v1alpha1.KubernetesClusterClientFromConfigFactoryProvider()
 	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
-	helmClientForFileConfigFactory := factories.HelmClientForFileConfigFactoryProvider()
-	helmClientForMemoryConfigFactory := factories.HelmClientForMemoryConfigFactoryProvider()
+	helmClientForFileConfigFactory := helm.HelmClientForFileConfigFactoryProvider()
+	helmClientForMemoryConfigFactory := helm.HelmClientForMemoryConfigFactoryProvider()
 	deploymentClientFromConfigFactory := v1_2.DeploymentClientFromConfigFactoryProvider()
 	imageNameParser := docker.NewImageNameParser()
 	deployedVersionFinder, err := DeployedVersionFinderProvider(config, deploymentClientFromConfigFactory, imageNameParser)
 	if err != nil {
 		return DiscoveryContext{}, err
 	}
-	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
+	csrAgentInstallerFactory := installation.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
 	clusterRegistrationClient, err := ClusterRegistrationClientProvider(config, secretClientFromConfigFactory, kubernetesClusterClientFromConfigFactory, namespaceClientFromConfigFactory, converter, csrAgentInstallerFactory)
 	if err != nil {
 		return DiscoveryContext{}, err

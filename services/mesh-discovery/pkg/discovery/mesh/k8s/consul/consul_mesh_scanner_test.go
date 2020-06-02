@@ -12,9 +12,9 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/docker/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	mock_docker "github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/consul"
 	mock_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/consul/mocks"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
@@ -120,7 +120,7 @@ var _ = Describe("Consul Mesh Finder", func() {
 		expectedMesh := &zephyr_discovery.Mesh{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name:      "consul-minidc-consul-ns",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    consul.DiscoveryLabels,
 			},
 			Spec: zephyr_discovery_types.MeshSpec{
@@ -134,7 +134,7 @@ var _ = Describe("Consul Mesh Finder", func() {
 				},
 				Cluster: &zephyr_core_types.ResourceRef{
 					Name:      clusterName,
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			},
 		}

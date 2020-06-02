@@ -11,9 +11,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service/k8s"
 	discovery_mocks "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
@@ -86,7 +86,7 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshServiceFinder := k8s.NewMeshServiceFinder(
 			ctx,
 			clusterName,
-			env.GetWriteNamespace(),
+			container_runtime.GetWriteNamespace(),
 			serviceClient,
 			meshServiceClient,
 			meshWorkloadClient,
@@ -123,9 +123,9 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "test-mesh-workload",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 				Labels: map[string]string{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				},
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -145,9 +145,9 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshWorkloadEventV2 := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "test-mesh-workload-v2",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 				Labels: map[string]string{
-					constants.COMPUTE_TARGET: clusterName,
+					kube.COMPUTE_TARGET: clusterName,
 				},
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
@@ -214,13 +214,13 @@ var _ = Describe("Mesh Service Finder", func() {
 		// this list call is the real one we care about
 		mocks.meshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
-				constants.COMPUTE_TARGET: clusterName,
+				kube.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil).
 			Times(2)
 		mocks.meshServiceClient.EXPECT().
 			ListMeshService(ctx, client.MatchingLabels{
-				constants.COMPUTE_TARGET: clusterName,
+				kube.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&zephyr_discovery.MeshServiceList{
 				Items: []zephyr_discovery.MeshService{*meshServiceToBeDeleted},
@@ -233,7 +233,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			}, nil)
 		mocks.meshClient.
 			EXPECT().
-			GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+			GetMesh(ctx, selection.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 			Return(mesh, nil).
 			Times(4)
 		mocks.meshServiceClient.
@@ -241,7 +241,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			UpsertMeshServiceSpec(ctx, &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      meshServiceName,
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 					Labels:    k8s.DiscoveryLabels(zephyr_core_types.MeshType_LINKERD, clusterName, rightService.GetName(), rightService.GetNamespace()),
 				},
 				Spec: zephyr_discovery_types.MeshServiceSpec{

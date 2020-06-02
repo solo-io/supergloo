@@ -10,7 +10,7 @@ import (
 	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
 const (
@@ -144,7 +144,7 @@ func (a *appmeshTranslationReconciler) reconcile(
 			continue
 		}
 		var upstreamServicesList []*zephyr_discovery.MeshService
-		upstreamServices := workloadsToUpstreamServices[clients.ToUniqueSingleClusterString(workload.ObjectMeta)]
+		upstreamServices := workloadsToUpstreamServices[selection.ToUniqueSingleClusterString(workload.ObjectMeta)]
 		if upstreamServices != nil {
 			upstreamServicesList = upstreamServices.List()
 		}

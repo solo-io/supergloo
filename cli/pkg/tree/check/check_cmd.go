@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/spf13/cobra"
 )
 

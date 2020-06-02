@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot"
 	mock_snapshot "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot/mocks"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
@@ -28,13 +28,13 @@ var _ = Describe("Networking Snapshot", func() {
 		meshService1 = &zephyr_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "ms-1",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 		}
 		meshService2 = &zephyr_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "ms-2",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 		}
 	)
@@ -277,7 +277,7 @@ var _ = Describe("Networking Snapshot", func() {
 		updatedService := &zephyr_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "ms-2",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 		}
 

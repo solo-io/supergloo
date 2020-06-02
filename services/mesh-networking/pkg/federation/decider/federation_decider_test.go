@@ -13,7 +13,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
@@ -49,7 +49,7 @@ var _ = Describe("Federation Decider", func() {
 				Spec: zephyr_networking_types.VirtualMeshSpec{
 					Meshes: []*zephyr_core_types.ResourceRef{{
 						Name:      "mesh-1",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					}},
 					Federation: &zephyr_networking_types.VirtualMeshSpec_Federation{
 						Mode: zephyr_networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
@@ -73,7 +73,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient.EXPECT().
 			GetMesh(ctx, client.ObjectKey{
 				Name:      "mesh-1",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}).
 			Return(&zephyr_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -103,12 +103,12 @@ var _ = Describe("Federation Decider", func() {
 		meshService1 := &zephyr_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "mesh-service-1-mesh-1",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.MeshServiceSpec{
 				Mesh: &zephyr_core_types.ResourceRef{
 					Name:      "mesh-1",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 					Ref: &zephyr_core_types.ResourceRef{
@@ -121,12 +121,12 @@ var _ = Describe("Federation Decider", func() {
 		meshService2 := &zephyr_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "mesh-service-2-mesh-2",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.MeshServiceSpec{
 				Mesh: &zephyr_core_types.ResourceRef{
 					Name:      "mesh-2",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 					Ref: &zephyr_core_types.ResourceRef{
@@ -139,12 +139,12 @@ var _ = Describe("Federation Decider", func() {
 		meshService3 := &zephyr_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "mesh-service-3-mesh-3",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.MeshServiceSpec{
 				Mesh: &zephyr_core_types.ResourceRef{
 					Name:      "mesh-3",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 					Ref: &zephyr_core_types.ResourceRef{
@@ -157,12 +157,12 @@ var _ = Describe("Federation Decider", func() {
 		meshService4 := &zephyr_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "mesh-service-4-mesh-4",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_discovery_types.MeshServiceSpec{
 				Mesh: &zephyr_core_types.ResourceRef{
 					Name:      "mesh-4",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 					Ref: &zephyr_core_types.ResourceRef{
@@ -180,15 +180,15 @@ var _ = Describe("Federation Decider", func() {
 						Meshes: []*zephyr_core_types.ResourceRef{
 							{
 								Name:      "mesh-1",
-								Namespace: env.GetWriteNamespace(),
+								Namespace: container_runtime.GetWriteNamespace(),
 							},
 							{
 								Name:      "mesh-2",
-								Namespace: env.GetWriteNamespace(),
+								Namespace: container_runtime.GetWriteNamespace(),
 							},
 							{
 								Name:      "mesh-3",
-								Namespace: env.GetWriteNamespace(),
+								Namespace: container_runtime.GetWriteNamespace(),
 							},
 						},
 						Federation: nil, // should default to the permissive mode for demo purposes
@@ -198,7 +198,7 @@ var _ = Describe("Federation Decider", func() {
 					Spec: zephyr_networking_types.VirtualMeshSpec{
 						Meshes: []*zephyr_core_types.ResourceRef{{
 							Name:      "mesh-4",
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						}},
 						Federation: &zephyr_networking_types.VirtualMeshSpec_Federation{
 							Mode: zephyr_networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
@@ -211,48 +211,48 @@ var _ = Describe("Federation Decider", func() {
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-workload-1-mesh-1",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_discovery_types.MeshWorkloadSpec{
 						Mesh: &zephyr_core_types.ResourceRef{
 							Name:      "mesh-1",
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						},
 					},
 				},
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-workload-2-mesh-2",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_discovery_types.MeshWorkloadSpec{
 						Mesh: &zephyr_core_types.ResourceRef{
 							Name:      "mesh-2",
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						},
 					},
 				},
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-workload-3-mesh-3",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_discovery_types.MeshWorkloadSpec{
 						Mesh: &zephyr_core_types.ResourceRef{
 							Name:      "mesh-3",
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						},
 					},
 				},
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-workload-4-mesh-4",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_discovery_types.MeshWorkloadSpec{
 						Mesh: &zephyr_core_types.ResourceRef{
 							Name:      "mesh-4",
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						},
 					},
 				},
@@ -285,7 +285,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient.EXPECT().
 			GetMesh(ctx, client.ObjectKey{
 				Name:      "mesh-1",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}).
 			Return(&zephyr_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -300,7 +300,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient.EXPECT().
 			GetMesh(ctx, client.ObjectKey{
 				Name:      "mesh-2",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}).
 			Return(&zephyr_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -315,7 +315,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient.EXPECT().
 			GetMesh(ctx, client.ObjectKey{
 				Name:      "mesh-3",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}).
 			Return(&zephyr_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -330,7 +330,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient.EXPECT().
 			GetMesh(ctx, client.ObjectKey{
 				Name:      "mesh-4",
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			}).
 			Return(&zephyr_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -350,11 +350,11 @@ var _ = Describe("Federation Decider", func() {
 			FederatedToWorkloads: []*zephyr_core_types.ResourceRef{
 				{
 					Name:      "mesh-workload-2-mesh-2",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				{
 					Name:      "mesh-workload-3-mesh-3",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			},
 		}
@@ -369,11 +369,11 @@ var _ = Describe("Federation Decider", func() {
 			FederatedToWorkloads: []*zephyr_core_types.ResourceRef{
 				{
 					Name:      "mesh-workload-1-mesh-1",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				{
 					Name:      "mesh-workload-3-mesh-3",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			},
 		}
@@ -388,11 +388,11 @@ var _ = Describe("Federation Decider", func() {
 			FederatedToWorkloads: []*zephyr_core_types.ResourceRef{
 				{
 					Name:      "mesh-workload-1-mesh-1",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				{
 					Name:      "mesh-workload-2-mesh-2",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			},
 		}
@@ -422,15 +422,15 @@ var _ = Describe("Federation Decider", func() {
 				Meshes: []*zephyr_core_types.ResourceRef{
 					{
 						Name:      "mesh-1",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					{
 						Name:      "mesh-2",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					{
 						Name:      "mesh-3",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 				},
 				Federation: nil, // should default to the permissive mode for demo purposes
@@ -443,7 +443,7 @@ var _ = Describe("Federation Decider", func() {
 			Spec: zephyr_networking_types.VirtualMeshSpec{
 				Meshes: []*zephyr_core_types.ResourceRef{{
 					Name:      "mesh-4",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				}},
 				Federation: &zephyr_networking_types.VirtualMeshSpec_Federation{
 					Mode: zephyr_networking_types.VirtualMeshSpec_Federation_PERMISSIVE,

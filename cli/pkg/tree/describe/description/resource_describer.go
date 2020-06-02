@@ -6,8 +6,7 @@ import (
 	"github.com/rotisserie/eris"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
 var (
@@ -29,7 +28,7 @@ func NewResourceDescriber(
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
 
-	resourceSelector selector.ResourceSelector,
+	resourceSelector selection.ResourceSelector,
 ) ResourceDescriber {
 	return &resourceDescriber{
 		trafficPolicyClient:       trafficPolicyClient,
@@ -41,7 +40,7 @@ func NewResourceDescriber(
 type resourceDescriber struct {
 	trafficPolicyClient       zephyr_networking.TrafficPolicyClient
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient
-	ResourceSelector          selector.ResourceSelector
+	ResourceSelector          selection.ResourceSelector
 }
 
 func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*DescriptionResult, error) {
@@ -69,7 +68,7 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 		}
 
 		for _, matchingMeshService := range matchingMeshServices {
-			if clients.SameObject(matchingMeshService.ObjectMeta, meshServiceForKubeService.ObjectMeta) {
+			if selection.SameObject(matchingMeshService.ObjectMeta, meshServiceForKubeService.ObjectMeta) {
 				relevantAccessControlPolicies = append(relevantAccessControlPolicies, &acp)
 
 				// as soon as we find our desired service in the list, add this ACP and go on to the next one
@@ -87,7 +86,7 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 		}
 
 		for _, matchingMeshService := range matchingMeshServices {
-			if clients.SameObject(matchingMeshService.ObjectMeta, meshServiceForKubeService.ObjectMeta) {
+			if selection.SameObject(matchingMeshService.ObjectMeta, meshServiceForKubeService.ObjectMeta) {
 				relevantTrafficPolicies = append(relevantTrafficPolicies, &tp)
 
 				// as soon as we find our desired service in the list, add this TP and go on to the next one
@@ -129,7 +128,7 @@ func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceId
 		}
 
 		for _, matchingMeshWorkload := range matchingMeshWorkloads {
-			if clients.SameObject(matchingMeshWorkload.ObjectMeta, meshWorkloadForController.ObjectMeta) {
+			if selection.SameObject(matchingMeshWorkload.ObjectMeta, meshWorkloadForController.ObjectMeta) {
 				relevantAccessControlPolicies = append(relevantAccessControlPolicies, &acp)
 
 				break
@@ -146,7 +145,7 @@ func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceId
 		}
 
 		for _, matchingMeshService := range matchingMeshWorkloads {
-			if clients.SameObject(matchingMeshService.ObjectMeta, meshWorkloadForController.ObjectMeta) {
+			if selection.SameObject(matchingMeshService.ObjectMeta, meshWorkloadForController.ObjectMeta) {
 				relevantTrafficPolicies = append(relevantTrafficPolicies, &tp)
 
 				break

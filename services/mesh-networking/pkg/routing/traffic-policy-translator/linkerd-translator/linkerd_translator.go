@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"sort"
 
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
@@ -24,7 +25,6 @@ import (
 	linkerd_client "github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 )
 
@@ -47,7 +47,7 @@ var (
 type LinkerdTranslator traffic_policy_translator.TrafficPolicyMeshTranslator
 
 func NewLinkerdTrafficPolicyTranslator(
-	dynamicClientGetter mc_manager.DynamicClientGetter,
+	dynamicClientGetter multicluster.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	serviceProfileClientFactory linkerd_client.ServiceProfileClientFactory,
 	trafficSplitClientFactory smi_networking.TrafficSplitClientFactory,
@@ -61,7 +61,7 @@ func NewLinkerdTrafficPolicyTranslator(
 }
 
 type linkerdTrafficPolicyTranslator struct {
-	dynamicClientGetter         mc_manager.DynamicClientGetter
+	dynamicClientGetter         multicluster.DynamicClientGetter
 	meshClient                  zephyr_discovery.MeshClient
 	serviceProfileClientFactory linkerd_client.ServiceProfileClientFactory
 	trafficSplitClientFactory   smi_networking.TrafficSplitClientFactory
@@ -123,7 +123,7 @@ func (i *linkerdTrafficPolicyTranslator) getMesh(
 	ctx context.Context,
 	meshService *zephyr_discovery.MeshService,
 ) (*zephyr_discovery.Mesh, error) {
-	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	mesh, err := i.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return nil, err
 	}
