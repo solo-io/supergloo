@@ -7,10 +7,10 @@ on:
 
 jobs:
   e2e:
-    if: contains(github.event.pull_request.labels.*.name, 'e2e-appmesh-eks')
     name: e2e-appmesh-eks
     runs-on: ubuntu-18.04
     steps:
       - name: test
+        if: contains(github.event.pull_request.labels.*.name, 'e2e-appmesh-eks')
         run: |
           echo "Hello World!"
