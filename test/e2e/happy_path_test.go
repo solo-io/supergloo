@@ -33,7 +33,7 @@ var _ = Describe("HappyPath", func() {
 		}, "1m", "1s").Should(ContainSubstring("The slapstick humour is refreshing!"))
 	})
 
-	It("should work with traffic policy", func() {
+	It("should work with traffic policy to local (v2) reviews", func() {
 		env := GetEnv()
 
 		var tp v1alpha1.TrafficPolicy
@@ -47,12 +47,9 @@ metadata:
   labels:
     test: true
 spec:
-  destinationSelector:
-    serviceRefs:
-      services:
-      - cluster: management-plane-cluster
-        name: reviews
-        namespace: default
+  sourceSelector:
+    labels:
+      app: productpage
   trafficShift:
     destinations:
     - destination:
@@ -77,5 +74,47 @@ spec:
 			GinkgoWriter.Write([]byte(out))
 			return out
 		}, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
+	})
+
+	// This test assumes that ci script only deploy v3 to remote cluster
+	FIt("should work with traffic policy to remove (v3) reviews", func() {
+		env := GetEnv()
+
+		var tp v1alpha1.TrafficPolicy
+
+		const tpYaml = `
+apiVersion: networking.zephyr.solo.io/v1alpha1
+kind: TrafficPolicy
+metadata:
+  namespace: service-mesh-hub
+  name: simplev3
+  labels:
+    test: true
+spec:
+  sourceSelector:
+    labels:
+      app: productpage
+  trafficShift:
+    destinations:
+    - destination:
+        cluster: target-cluster
+        name: reviews
+        namespace: default
+      weight: 100
+`
+		ParseYaml(tpYaml, &tp)
+		err := env.Management.TrafficPolicyClient.CreateTrafficPolicy(context.Background(), &tp)
+		Expect(err).NotTo(HaveOccurred())
+		// see that it was accepted
+
+		Eventually(StatusOf(tp, env.Management), "1m", "1s").Should(Equal(v1alpha1types.Status_ACCEPTED))
+
+		Consistently(func() string {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute/3)
+			defer cancel()
+			out := env.Management.GetPod("default", "productpage").Curl(ctx, "http://reviews:9080/reviews/1", "-v")
+			GinkgoWriter.Write([]byte(out))
+			return out
+		}, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
 	})
 })
