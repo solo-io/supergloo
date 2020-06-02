@@ -16,8 +16,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -74,8 +74,8 @@ var _ = Describe("VirtualMeshCmd", func() {
 				{ObjectMeta: metav1.ObjectMeta{Name: "name3"}},
 			}}
 			expectedMeshRefs := []*zephyr_core_types.ResourceRef{
-				{Name: meshList.Items[0].GetName(), Namespace: env.GetWriteNamespace()},
-				{Name: meshList.Items[2].GetName(), Namespace: env.GetWriteNamespace()},
+				{Name: meshList.Items[0].GetName(), Namespace: container_runtime.GetWriteNamespace()},
+				{Name: meshList.Items[2].GetName(), Namespace: container_runtime.GetWriteNamespace()},
 			}
 			expectedCA := &networking_types.VirtualMeshSpec_CertificateAuthority{
 				Type: &networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
@@ -90,7 +90,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 				TypeMeta: metav1.TypeMeta{Kind: "VirtualMesh"},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      displayName,
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: networking_types.VirtualMeshSpec{
 					DisplayName:          displayName,
@@ -147,8 +147,8 @@ var _ = Describe("VirtualMeshCmd", func() {
 				{ObjectMeta: metav1.ObjectMeta{Name: "name3"}},
 			}}
 			expectedMeshRefs := []*zephyr_core_types.ResourceRef{
-				{Name: meshList.Items[0].GetName(), Namespace: env.GetWriteNamespace()},
-				{Name: meshList.Items[2].GetName(), Namespace: env.GetWriteNamespace()},
+				{Name: meshList.Items[0].GetName(), Namespace: container_runtime.GetWriteNamespace()},
+				{Name: meshList.Items[2].GetName(), Namespace: container_runtime.GetWriteNamespace()},
 			}
 			expectedCA := &networking_types.VirtualMeshSpec_CertificateAuthority{
 				Type: &networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
@@ -163,7 +163,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 				TypeMeta: metav1.TypeMeta{Kind: "VirtualMesh"},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      displayName,
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: networking_types.VirtualMeshSpec{
 					DisplayName:          displayName,
@@ -220,8 +220,8 @@ var _ = Describe("VirtualMeshCmd", func() {
 				{ObjectMeta: metav1.ObjectMeta{Name: "name3"}},
 			}}
 			expectedMeshRefs := []*zephyr_core_types.ResourceRef{
-				{Name: meshList.Items[0].GetName(), Namespace: env.GetWriteNamespace()},
-				{Name: meshList.Items[2].GetName(), Namespace: env.GetWriteNamespace()},
+				{Name: meshList.Items[0].GetName(), Namespace: container_runtime.GetWriteNamespace()},
+				{Name: meshList.Items[2].GetName(), Namespace: container_runtime.GetWriteNamespace()},
 			}
 			expectedCA := &networking_types.VirtualMeshSpec_CertificateAuthority{
 				Type: &networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
@@ -236,7 +236,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 				TypeMeta: metav1.TypeMeta{Kind: "VirtualMesh"},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      displayName,
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: networking_types.VirtualMeshSpec{
 					DisplayName:          displayName,

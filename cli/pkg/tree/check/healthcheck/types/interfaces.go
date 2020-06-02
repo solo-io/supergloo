@@ -6,7 +6,7 @@ import (
 
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	k8s_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
+	k8s_discovery "github.com/solo-io/service-mesh-hub/pkg/kube/discovery"
 )
 
 type Category struct {

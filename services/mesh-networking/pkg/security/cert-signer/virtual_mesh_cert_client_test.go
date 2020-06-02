@@ -11,9 +11,9 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/security/certgen/mocks"
-	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/mocks"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 	cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
@@ -163,7 +163,7 @@ var _ = Describe("virtual mesh cert client", func() {
 		virtualMeshClient.EXPECT().GetVirtualMesh(ctx, client.ObjectKey{Name: meshRef.Name, Namespace: meshRef.Namespace}).Return(vm, nil)
 		secretClient.
 			EXPECT().
-			GetSecret(ctx, client.ObjectKey{Name: cert_signer.DefaultRootCaName(vm), Namespace: env.GetWriteNamespace()}).
+			GetSecret(ctx, client.ObjectKey{Name: cert_signer.DefaultRootCaName(vm), Namespace: container_runtime.GetWriteNamespace()}).
 			Return(nil, errors.NewNotFound(k8s_core_types.Resource("secret"), "non-extant-secret"))
 		expectedRootCaData := &cert_secrets.RootCAData{}
 		rootCertGenerator.
@@ -172,7 +172,7 @@ var _ = Describe("virtual mesh cert client", func() {
 			Return(expectedRootCaData, nil)
 		secretClient.
 			EXPECT().
-			CreateSecret(ctx, expectedRootCaData.BuildSecret(cert_signer.DefaultRootCaName(vm), env.GetWriteNamespace())).
+			CreateSecret(ctx, expectedRootCaData.BuildSecret(cert_signer.DefaultRootCaName(vm), container_runtime.GetWriteNamespace())).
 			Return(nil)
 		rootCaData, err := virtualMeshCertClient.GetRootCaBundle(ctx, meshRef)
 		Expect(err).ToNot(HaveOccurred())
@@ -201,8 +201,8 @@ var _ = Describe("virtual mesh cert client", func() {
 		expectedRootCaData := &cert_secrets.RootCAData{}
 		secretClient.
 			EXPECT().
-			GetSecret(ctx, client.ObjectKey{Name: cert_signer.DefaultRootCaName(vm), Namespace: env.GetWriteNamespace()}).
-			Return(expectedRootCaData.BuildSecret(cert_signer.DefaultRootCaName(vm), env.GetWriteNamespace()), nil)
+			GetSecret(ctx, client.ObjectKey{Name: cert_signer.DefaultRootCaName(vm), Namespace: container_runtime.GetWriteNamespace()}).
+			Return(expectedRootCaData.BuildSecret(cert_signer.DefaultRootCaName(vm), container_runtime.GetWriteNamespace()), nil)
 		rootCaData, err := virtualMeshCertClient.GetRootCaBundle(ctx, meshRef)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(rootCaData).To(Equal(expectedRootCaData))
@@ -224,8 +224,8 @@ var _ = Describe("virtual mesh cert client", func() {
 		expectedRootCaData := &cert_secrets.RootCAData{}
 		secretClient.
 			EXPECT().
-			GetSecret(ctx, client.ObjectKey{Name: cert_signer.DefaultRootCaName(vm), Namespace: env.GetWriteNamespace()}).
-			Return(expectedRootCaData.BuildSecret(cert_signer.DefaultRootCaName(vm), env.GetWriteNamespace()), nil)
+			GetSecret(ctx, client.ObjectKey{Name: cert_signer.DefaultRootCaName(vm), Namespace: container_runtime.GetWriteNamespace()}).
+			Return(expectedRootCaData.BuildSecret(cert_signer.DefaultRootCaName(vm), container_runtime.GetWriteNamespace()), nil)
 		rootCaData, err := virtualMeshCertClient.GetRootCaBundle(ctx, meshRef)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(rootCaData).To(Equal(expectedRootCaData))

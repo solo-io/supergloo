@@ -6,8 +6,8 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/enum_conversion"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 )
@@ -53,7 +53,7 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 	for _, meshIter := range meshList.Items {
 		mesh := meshIter
 		knownMeshes = append(knownMeshes, &mesh)
-		meshIdToMesh[clients.ToUniqueSingleClusterString(mesh.ObjectMeta)] = &mesh
+		meshIdToMesh[selection.ToUniqueSingleClusterString(mesh.ObjectMeta)] = &mesh
 	}
 
 	if len(knownMeshes) == 0 {
@@ -76,14 +76,14 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 	for _, meshServiceIter := range meshServiceList.Items {
 		meshService := meshServiceIter
 
-		meshId := clients.ToUniqueSingleClusterString(clients.ResourceRefToObjectMeta(meshService.Spec.GetMesh()))
+		meshId := selection.ToUniqueSingleClusterString(selection.ResourceRefToObjectMeta(meshService.Spec.GetMesh()))
 		mesh, ok := meshIdToMesh[meshId]
 		if !ok {
 			return eris.Errorf("Got a mesh service %s.%s belonging to a mesh %s.%s that does not exist", meshService.GetName(), meshService.GetNamespace(), mesh.GetName(), mesh.GetNamespace())
 		}
 
 		clusterName := mesh.Spec.GetCluster().GetName()
-		meshType, err := enum_conversion.MeshToMeshType(mesh)
+		meshType, err := metadata.MeshToMeshType(mesh)
 		if err != nil {
 			return err
 		}

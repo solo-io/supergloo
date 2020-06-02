@@ -13,11 +13,11 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/helmutil"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/semver"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
-	"github.com/solo-io/service-mesh-hub/pkg/factories"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/semver"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
@@ -49,8 +49,8 @@ var (
 	PostInstallMessage = "Service Mesh Hub successfully installed!\n"
 )
 
-func HelmInstallerProvider(kubeClient kubernetes.Interface) factories.HelmInstallerFactory {
-	return factories.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), os.Stdout)
+func HelmInstallerProvider(kubeClient kubernetes.Interface) helm.HelmInstallerFactory {
+	return helm.NewHelmInstallerFactory(kubeClient.CoreV1().Namespaces(), os.Stdout)
 }
 
 func InstallCmd(

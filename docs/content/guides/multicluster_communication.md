@@ -98,6 +98,11 @@ EOF
 {{< /tab >}}
 {{< /tabs >}}
 
+{{% notice warning %}}
+You may need to restart your workloads to ensure that they pick up the newly-distributed certs. Istio currently does not have support
+for workloads detecting a change in root cert and re-issuing an SDS request.
+{{% /notice %}}
+
 Once you apply this resource to the `management-plane-context` cluster, you should occasionally see traffic being routed to the reviews-v3 service, which will produce red-colored stars on the product page.
 
 To go into slightly more detail here: The above TrafficPolicy says that:

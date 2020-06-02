@@ -8,13 +8,18 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 var (
 	OnlyIstioSupportedError = func(meshName string) error {
 		return eris.Errorf("Illegal mesh type found for virtual mesh %s, currently only Istio is supported", meshName)
+	}
+	OnlyHomogenousVirtualMeshesSupported = func(vmName, vmNamespace string, numMeshTypes int) error {
+		return eris.Errorf("Virtual mesh %s.%s contains %d different mesh types, but only homogenous virtual meshes (one mesh type) supported", vmName, vmNamespace, numMeshTypes)
 	}
 )
 
@@ -71,8 +76,10 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *zephyr_networki
 		}
 		return err
 	}
+
+	representedMeshTypes := sets.NewInt32()
 	for _, v := range matchingMeshes {
-		if v.Spec.GetIstio() == nil {
+		if v.Spec.GetIstio1_5() == nil && v.Spec.GetIstio1_6() == nil {
 			wrapped := OnlyIstioSupportedError(v.GetName())
 			vm.Status.ConfigStatus = &zephyr_core_types.Status{
 				State:   zephyr_core_types.Status_INVALID,
@@ -80,6 +87,17 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *zephyr_networki
 			}
 			return wrapped
 		}
+
+		meshType, err := metadata.MeshToMeshType(v)
+		if err != nil {
+			return err
+		}
+
+		representedMeshTypes.Insert(int32(meshType))
+	}
+
+	if representedMeshTypes.Len() > 1 {
+		return OnlyHomogenousVirtualMeshesSupported(vm.Name, vm.Namespace, representedMeshTypes.Len())
 	}
 
 	vm.Status.ConfigStatus = &zephyr_core_types.Status{

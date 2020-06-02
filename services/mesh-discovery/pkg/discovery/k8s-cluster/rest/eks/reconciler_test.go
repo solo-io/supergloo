@@ -11,14 +11,14 @@ import (
 	. "github.com/onsi/gomega"
 	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration"
-	mock_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
-	mock_settings2 "github.com/solo-io/service-mesh-hub/pkg/clients/settings/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/metadata"
-	settings_utils "github.com/solo-io/service-mesh-hub/pkg/settings"
-	mock_settings "github.com/solo-io/service-mesh-hub/pkg/settings/mocks"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
+	mock_settings "github.com/solo-io/service-mesh-hub/pkg/aws/selection/mocks"
+	mock_settings2 "github.com/solo-io/service-mesh-hub/pkg/aws/settings/mocks"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
+	mock_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	discovery_eks "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s-cluster/rest/eks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -122,7 +122,7 @@ var _ = Describe("Reconciler", func() {
 		mockKubeClusterClient.
 			EXPECT().
 			ListKubernetesCluster(ctx, client.MatchingLabels(
-				map[string]string{constants.DISCOVERED_BY: discovery_eks.EKSClusterDiscoveryLabel}),
+				map[string]string{kube.DISCOVERED_BY: discovery_eks.EKSClusterDiscoveryLabel}),
 			).Return(clusterList, nil)
 		return sets.NewString(clusterList.Items[0].GetName())
 	}
@@ -136,7 +136,7 @@ var _ = Describe("Reconciler", func() {
 			ctx,
 			configForEksCluster,
 			smhName,
-			env.GetWriteNamespace(),
+			container_runtime.GetWriteNamespace(),
 			"",
 			discovery_eks.EKSClusterDiscoveryLabel,
 			cluster_registration.ClusterRegisterOpts{},

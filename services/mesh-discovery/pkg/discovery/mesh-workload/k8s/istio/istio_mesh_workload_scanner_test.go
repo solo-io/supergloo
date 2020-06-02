@@ -16,7 +16,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -70,8 +70,10 @@ var _ = Describe("MeshWorkloadScanner", func() {
 					},
 					Spec: zephyr_discovery_types.MeshSpec{
 						Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-							Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+						MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+							Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+								Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+							},
 						},
 					},
 				},
@@ -81,8 +83,57 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("istio-%s-%s-%s", deploymentName, namespace, clusterName),
-				Namespace: env.GetWriteNamespace(),
-				Labels:    istio.DiscoveryLabels(),
+				Namespace: container_runtime.GetWriteNamespace(),
+				Labels:    istio.DiscoveryLabels(zephyr_core_types.MeshType_ISTIO1_5),
+			},
+			Spec: zephyr_discovery_types.MeshWorkloadSpec{
+				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &zephyr_core_types.ResourceRef{
+						Name:      deployment.Name,
+						Namespace: deployment.Namespace,
+						Cluster:   clusterName,
+					},
+					Labels:             nil,
+					ServiceAccountName: "",
+				},
+				Mesh: &zephyr_core_types.ResourceRef{
+					Name:      meshList.Items[0].GetName(),
+					Namespace: meshList.Items[0].GetNamespace(),
+					Cluster:   clusterName,
+				},
+			},
+		}
+		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(meshWorkload).To(Equal(expectedMeshWorkload))
+	})
+
+	It("should work for istio 1.6", func() {
+		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)
+		meshList := &zephyr_discovery.MeshList{
+			Items: []zephyr_discovery.Mesh{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "mesh-name",
+						Namespace: "mesh-namespace",
+					},
+					Spec: zephyr_discovery_types.MeshSpec{
+						Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
+						MeshType: &zephyr_discovery_types.MeshSpec_Istio1_6_{
+							Istio1_6: &zephyr_discovery_types.MeshSpec_Istio1_6{
+								Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+							},
+						},
+					},
+				},
+			},
+		}
+		mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
+		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("istio-%s-%s-%s", deploymentName, namespace, clusterName),
+				Namespace: container_runtime.GetWriteNamespace(),
+				Labels:    istio.DiscoveryLabels(zephyr_core_types.MeshType_ISTIO1_6),
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
 				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{

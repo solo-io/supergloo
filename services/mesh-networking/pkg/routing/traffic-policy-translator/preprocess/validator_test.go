@@ -14,8 +14,8 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -66,9 +66,9 @@ var _ = Describe("Validator", func() {
 		mockResourceSelector.
 			EXPECT().
 			GetAllMeshServicesByServiceSelector(ctx, tp.Spec.GetDestinationSelector()).
-			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
+			Return(nil, selection.MeshServiceNotFound(name, namespace, cluster))
 		err := validator.Validate(ctx, tp)
-		expectSingleErrorOf(err, selector.MeshServiceNotFound(name, namespace, cluster))
+		expectSingleErrorOf(err, selection.MeshServiceNotFound(name, namespace, cluster))
 	})
 
 	It("should return error for RetryPolicy with negative num attempts", func() {
@@ -119,11 +119,11 @@ var _ = Describe("Validator", func() {
 		mockResourceSelector.
 			EXPECT().
 			GetAllMeshServiceByRefSelector(ctx, name, namespace, cluster).
-			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
+			Return(nil, selection.MeshServiceNotFound(name, namespace, cluster))
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(selector.MeshServiceNotFound(name, namespace, cluster))))
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(selection.MeshServiceNotFound(name, namespace, cluster))))
 	})
 
 	It("should return error if TrafficShift has subsets that can't be found", func() {
@@ -291,11 +291,11 @@ var _ = Describe("Validator", func() {
 		mockResourceSelector.
 			EXPECT().
 			GetAllMeshServiceByRefSelector(ctx, serviceKey.Name, serviceKey.Namespace, "").
-			Return(nil, selector.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))
+			Return(nil, selection.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(selector.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))))
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(selection.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))))
 	})
 })
 

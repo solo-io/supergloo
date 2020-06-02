@@ -7,6 +7,7 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -14,8 +15,9 @@ import (
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,12 +42,12 @@ type virtualMeshCsrManager struct {
 	meshClient              zephyr_discovery.MeshClient
 	meshRefFinder           vm_validation.VirtualMeshFinder
 	csrClientFactory        zephyr_security.VirtualMeshCertificateSigningRequestClientFactory
-	dynamicClientGetter     mc_manager.DynamicClientGetter
+	dynamicClientGetter     multicluster.DynamicClientGetter
 	istioCertConfigProducer IstioCertConfigProducer
 }
 
 func NewVirtualMeshCsrProcessor(
-	dynamicClientGetter mc_manager.DynamicClientGetter,
+	dynamicClientGetter multicluster.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	meshRefFinder vm_validation.VirtualMeshFinder,
 	csrClientFactory zephyr_security.VirtualMeshCertificateSigningRequestClientFactory,
@@ -64,8 +66,10 @@ func (m *virtualMeshCsrManager) InitializeCertificateForVirtualMesh(
 	ctx context.Context,
 	vm *zephyr_networking.VirtualMesh,
 ) zephyr_networking_types.VirtualMeshStatus {
+	logger := contextutils.LoggerFrom(ctx)
 	meshes, err := m.meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 	if err != nil {
+		logger.Errorf("Hit error case 1 %s", err.Error())
 		vm.Status.CertificateStatus = &zephyr_core_types.Status{
 			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
@@ -73,12 +77,14 @@ func (m *virtualMeshCsrManager) InitializeCertificateForVirtualMesh(
 		return vm.Status
 	}
 	if err = m.attemptCsrCreate(ctx, vm, meshes); err != nil {
+		logger.Errorf("Hit error case 2 %s", err.Error())
 		vm.Status.CertificateStatus = &zephyr_core_types.Status{
 			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
 		}
 		return vm.Status
 	}
+	logger.Errorf("Accepted")
 	vm.Status.CertificateStatus = &zephyr_core_types.Status{
 		State: zephyr_core_types.Status_ACCEPTED,
 	}
@@ -90,15 +96,22 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 	vm *zephyr_networking.VirtualMesh,
 	meshes []*zephyr_discovery.Mesh,
 ) error {
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Errorf("Got %d member meshes", len(meshes))
 	for _, mesh := range meshes {
+		logger.Errorf("Processing mesh %s.%s", mesh.Name, mesh.Namespace)
 		var (
 			certConfig *zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig
 			meshType   zephyr_core_types.MeshType
 			err        error
 		)
 		switch mesh.Spec.GetMeshType().(type) {
-		case *zephyr_discovery_types.MeshSpec_Istio:
-			meshType = zephyr_core_types.MeshType_ISTIO
+		case *zephyr_discovery_types.MeshSpec_Istio1_5_, *zephyr_discovery_types.MeshSpec_Istio1_6_:
+			meshType, err = metadata.MeshToMeshType(mesh)
+			if err != nil {
+				return err
+			}
+
 			certConfig, err = m.istioCertConfigProducer.ConfigureCertificateInfo(vm, mesh)
 		default:
 			return UnsupportedMeshTypeError(mesh)
@@ -118,7 +131,7 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 			ctx,
 			client.ObjectKey{
 				Name:      m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()),
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 		)
 		if !errors.IsNotFound(err) {
@@ -133,7 +146,7 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 		if err = csrClient.CreateVirtualMeshCertificateSigningRequest(ctx, &zephyr_security.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()),
-				Namespace: env.GetWriteNamespace(),
+				Namespace: container_runtime.GetWriteNamespace(),
 			},
 			Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
 				VirtualMeshRef: &zephyr_core_types.ResourceRef{
@@ -155,5 +168,5 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 }
 
 func (m *virtualMeshCsrManager) buildCsrName(meshType, virtualMeshName string) string {
-	return fmt.Sprintf("%s-%s-cert-request", meshType, virtualMeshName)
+	return strings.ReplaceAll(fmt.Sprintf("%s-%s-cert-request", meshType, virtualMeshName), "_", "-")
 }

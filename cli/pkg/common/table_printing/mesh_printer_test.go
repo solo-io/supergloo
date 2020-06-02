@@ -50,16 +50,18 @@ var _ = Describe("Mesh Table Printer", func() {
 						Name: "istio-mesh-1",
 					},
 					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-							Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-									InstallationNamespace: "istio-system",
-									Version:               "1.5.1",
-								},
-								CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
-									TrustDomain:           "cluster.local",
-									CitadelNamespace:      "istio-system",
-									CitadelServiceAccount: "istiod",
+						MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+							Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+								Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+									Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+										InstallationNamespace: "istio-system",
+										Version:               "1.5.1",
+									},
+									CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+										TrustDomain:           "cluster.local",
+										CitadelNamespace:      "istio-system",
+										CitadelServiceAccount: "istiod",
+									},
 								},
 							},
 						},

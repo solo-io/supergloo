@@ -10,8 +10,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s"
 	"istio.io/api/mesh/v1alpha1"
 	"istio.io/istio/pkg/util/gogoprotomarshal"
@@ -70,33 +70,73 @@ func (i *istioMeshScanner) ScanDeployment(ctx context.Context, clusterName strin
 	if err != nil {
 		return nil, err
 	}
+
+	meshSpec, err := i.buildMeshSpec(
+		istioDeployment,
+		clusterName,
+		trustDomain,
+		deployment.GetNamespace(),
+		deployment.Spec.Template.Spec.ServiceAccountName,
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	return &zephyr_discovery.Mesh{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      istioDeployment.Name(),
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels,
 		},
-		Spec: zephyr_discovery_types.MeshSpec{
-			MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-				Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-					Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-						InstallationNamespace: deployment.GetNamespace(),
-						Version:               istioDeployment.Version,
-					},
-					CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
-						TrustDomain:      trustDomain,
-						CitadelNamespace: deployment.GetNamespace(),
-						// This assumes that the istiod deployment is the cert provider
-						CitadelServiceAccount: deployment.Spec.Template.Spec.ServiceAccountName,
-					},
+		Spec: *meshSpec,
+	}, nil
+}
+
+func (*istioMeshScanner) buildMeshSpec(
+	deployment *istioDeployment,
+	clusterName string,
+	trustDomain string,
+	citadelNamespace string,
+	citadelServiceAccountName string,
+) (*zephyr_discovery_types.MeshSpec, error) {
+	cluster := &zephyr_core_types.ResourceRef{
+		Name:      clusterName,
+		Namespace: container_runtime.GetWriteNamespace(),
+	}
+	istioMetadata := &zephyr_discovery_types.MeshSpec_IstioMesh{
+		Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+			InstallationNamespace: deployment.Namespace,
+			Version:               deployment.Version,
+		},
+		CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+			TrustDomain:      trustDomain,
+			CitadelNamespace: citadelNamespace,
+			// This assumes that the istiod deployment is the cert provider
+			CitadelServiceAccount: citadelServiceAccountName,
+		},
+	}
+
+	if strings.HasPrefix(deployment.Version, "1.5") {
+		return &zephyr_discovery_types.MeshSpec{
+			Cluster: cluster,
+			MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+				Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+					Metadata: istioMetadata,
 				},
 			},
-			Cluster: &zephyr_core_types.ResourceRef{
-				Name:      clusterName,
-				Namespace: env.GetWriteNamespace(),
+		}, nil
+	} else if strings.HasPrefix(deployment.Version, "1.6") {
+		return &zephyr_discovery_types.MeshSpec{
+			Cluster: cluster,
+			MeshType: &zephyr_discovery_types.MeshSpec_Istio1_6_{
+				Istio1_6: &zephyr_discovery_types.MeshSpec_Istio1_6{
+					Metadata: istioMetadata,
+				},
 			},
-		},
-	}, nil
+		}, nil
+	} else {
+		return nil, eris.Errorf("Unrecognized Istio version: %s", deployment.Version)
+	}
 }
 
 // TODO: Delete once fully migrated to Istio 1.5
@@ -159,9 +199,6 @@ type istioDeployment struct {
 
 // TODO merge with linkerd controller type
 func (i istioDeployment) Name() string {
-	if i.Cluster == "" {
-		return "istio-" + i.Namespace
-	}
 	// TODO: https://github.com/solo-io/service-mesh-hub/issues/141
 	return "istio-" + i.Namespace + "-" + i.Cluster
 }

@@ -12,7 +12,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -38,7 +38,7 @@ var _ = Describe("Federation decision health check", func() {
 			ListMeshService(ctx).
 			Return(&zephyr_discovery.MeshServiceList{}, nil)
 
-		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, container_runtime.GetWriteNamespace(), healthcheck_types.Clients{
 			MeshServiceClient: meshServiceClient,
 		})
 
@@ -61,7 +61,7 @@ var _ = Describe("Federation decision health check", func() {
 				},
 			}, nil)
 
-		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, container_runtime.GetWriteNamespace(), healthcheck_types.Clients{
 			MeshServiceClient: meshServiceClient,
 		})
 
@@ -94,7 +94,7 @@ var _ = Describe("Federation decision health check", func() {
 				},
 			}, nil)
 
-		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, container_runtime.GetWriteNamespace(), healthcheck_types.Clients{
 			MeshServiceClient: meshServiceClient,
 		})
 
@@ -109,7 +109,7 @@ var _ = Describe("Federation decision health check", func() {
 			Return(&zephyr_discovery.MeshServiceList{
 				Items: []zephyr_discovery.MeshService{
 					{
-						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-1", Namespace: env.GetWriteNamespace()},
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-1", Namespace: container_runtime.GetWriteNamespace()},
 						Status: zephyr_discovery_types.MeshServiceStatus{
 							FederationStatus: &zephyr_core_types.Status{
 								State: zephyr_core_types.Status_ACCEPTED,
@@ -117,7 +117,7 @@ var _ = Describe("Federation decision health check", func() {
 						},
 					},
 					{
-						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-2", Namespace: env.GetWriteNamespace()},
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-2", Namespace: container_runtime.GetWriteNamespace()},
 						Status: zephyr_discovery_types.MeshServiceStatus{
 							FederationStatus: &zephyr_core_types.Status{
 								State: zephyr_core_types.Status_INVALID,
@@ -131,11 +131,11 @@ var _ = Describe("Federation decision health check", func() {
 		clients := healthcheck_types.Clients{
 			MeshServiceClient: meshServiceClient,
 		}
-		runFailure, checkApplies := federationChecker.Run(ctx, env.GetWriteNamespace(), clients)
+		runFailure, checkApplies := federationChecker.Run(ctx, container_runtime.GetWriteNamespace(), clients)
 
 		Expect(checkApplies).To(BeTrue())
 		Expect(runFailure).NotTo(BeNil())
-		Expect(runFailure.ErrorMessage).To(Equal(internal.FederationRecordingHasFailed("test-2", env.GetWriteNamespace(), zephyr_core_types.Status_INVALID).Error()))
-		Expect(runFailure.Hint).To(Equal(fmt.Sprintf("get details from the failing MeshService: `kubectl -n %s get meshservice %s -oyaml`", env.GetWriteNamespace(), "test-2")))
+		Expect(runFailure.ErrorMessage).To(Equal(internal.FederationRecordingHasFailed("test-2", container_runtime.GetWriteNamespace(), zephyr_core_types.Status_INVALID).Error()))
+		Expect(runFailure.Hint).To(Equal(fmt.Sprintf("get details from the failing MeshService: `kubectl -n %s get meshservice %s -oyaml`", container_runtime.GetWriteNamespace(), "test-2")))
 	})
 })

@@ -186,7 +186,7 @@ func (m *VirtualMeshCertificateSigningRequestSpec_CertConfig) GetMeshType() type
 	if m != nil {
 		return m.MeshType
 	}
-	return types.MeshType_ISTIO
+	return types.MeshType_ISTIO1_5
 }
 
 type VirtualMeshCertificateSigningRequestStatus struct {

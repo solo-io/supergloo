@@ -11,9 +11,8 @@ import (
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_networking_types "istio.io/api/networking/v1alpha3"
 	istio_client_networking_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -28,10 +27,10 @@ const (
 type IstioTranslator traffic_policy_translator.TrafficPolicyMeshTranslator
 
 func NewIstioTrafficPolicyTranslator(
-	dynamicClientGetter mc_manager.DynamicClientGetter,
+	dynamicClientGetter multicluster.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
-	resourceSelector selector.ResourceSelector,
+	resourceSelector selection.ResourceSelector,
 	virtualServiceClientFactory istio_networking.VirtualServiceClientFactory,
 	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory,
 ) IstioTranslator {
@@ -46,12 +45,12 @@ func NewIstioTrafficPolicyTranslator(
 }
 
 type istioTrafficPolicyTranslator struct {
-	dynamicClientGetter          mc_manager.DynamicClientGetter
+	dynamicClientGetter          multicluster.DynamicClientGetter
 	meshClient                   zephyr_discovery.MeshClient
 	meshServiceClient            zephyr_discovery.MeshServiceClient
 	virtualServiceClientFactory  istio_networking.VirtualServiceClientFactory
 	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory
-	resourceSelector             selector.ResourceSelector
+	resourceSelector             selection.ResourceSelector
 }
 
 var (
@@ -81,7 +80,7 @@ func (i *istioTrafficPolicyTranslator) TranslateTrafficPolicy(
 	mesh *zephyr_discovery.Mesh,
 	mergedTrafficPolicies []*zephyr_networking.TrafficPolicy,
 ) *zephyr_networking_types.TrafficPolicyStatus_TranslatorError {
-	if mesh.Spec.GetIstio() == nil {
+	if mesh.Spec.GetIstio1_5() == nil && mesh.Spec.GetIstio1_6() == nil {
 		return nil
 	}
 	destinationRuleClient, virtualServiceClient, err := i.fetchClientsForMeshService(ctx, meshService)
@@ -121,7 +120,7 @@ func (i *istioTrafficPolicyTranslator) ensureDestinationRule(
 	destinationRuleClient istio_networking.DestinationRuleClient,
 ) *zephyr_networking_types.TrafficPolicyStatus_TranslatorError {
 	destinationRule := &istio_client_networking_types.DestinationRule{
-		ObjectMeta: clients.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
+		ObjectMeta: selection.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
 		Spec: istio_networking_types.DestinationRule{
 			Host: buildServiceHostname(meshService),
 			TrafficPolicy: &istio_networking_types.TrafficPolicy{
@@ -169,7 +168,7 @@ func (i *istioTrafficPolicyTranslator) translateIntoVirtualService(
 	trafficPolicies []*zephyr_networking.TrafficPolicy,
 ) (*istio_client_networking_types.VirtualService, error) {
 	virtualService := &istio_client_networking_types.VirtualService{
-		ObjectMeta: clients.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
+		ObjectMeta: selection.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
 		Spec: istio_networking_types.VirtualService{
 			Hosts: []string{buildServiceHostname(meshService)},
 		},
@@ -393,7 +392,7 @@ func (i *istioTrafficPolicyTranslator) translateSubset(
 		return "", err
 	}
 	destinationRuleClient := i.destinationRuleClientFactory(dynamicClient)
-	destinationRule, err := destinationRuleClient.GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destination.GetDestination()))
+	destinationRule, err := destinationRuleClient.GetDestinationRule(ctx, selection.ResourceRefToObjectKey(destination.GetDestination()))
 	if err != nil {
 		return "", err
 	}
@@ -626,7 +625,7 @@ func (i *istioTrafficPolicyTranslator) getClusterNameForMeshService(
 	ctx context.Context,
 	meshService *zephyr_discovery.MeshService,
 ) (string, error) {
-	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	mesh, err := i.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return "", err
 	}

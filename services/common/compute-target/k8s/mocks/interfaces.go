@@ -8,11 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	retry "github.com/avast/retry-go"
 	gomock "github.com/golang/mock/gomock"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	rest "k8s.io/client-go/rest"
-	client "sigs.k8s.io/controller-runtime/pkg/client"
 	manager "sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -263,47 +261,4 @@ func (m *MockAsyncManagerFactory) New(parentCtx context.Context, cfg *rest.Confi
 func (mr *MockAsyncManagerFactoryMockRecorder) New(parentCtx, cfg, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "New", reflect.TypeOf((*MockAsyncManagerFactory)(nil).New), parentCtx, cfg, opts)
-}
-
-// MockDynamicClientGetter is a mock of DynamicClientGetter interface.
-type MockDynamicClientGetter struct {
-	ctrl     *gomock.Controller
-	recorder *MockDynamicClientGetterMockRecorder
-}
-
-// MockDynamicClientGetterMockRecorder is the mock recorder for MockDynamicClientGetter.
-type MockDynamicClientGetterMockRecorder struct {
-	mock *MockDynamicClientGetter
-}
-
-// NewMockDynamicClientGetter creates a new mock instance.
-func NewMockDynamicClientGetter(ctrl *gomock.Controller) *MockDynamicClientGetter {
-	mock := &MockDynamicClientGetter{ctrl: ctrl}
-	mock.recorder = &MockDynamicClientGetterMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockDynamicClientGetter) EXPECT() *MockDynamicClientGetterMockRecorder {
-	return m.recorder
-}
-
-// GetClientForCluster mocks base method.
-func (m *MockDynamicClientGetter) GetClientForCluster(ctx context.Context, clusterName string, opts ...retry.Option) (client.Client, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, clusterName}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "GetClientForCluster", varargs...)
-	ret0, _ := ret[0].(client.Client)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetClientForCluster indicates an expected call of GetClientForCluster.
-func (mr *MockDynamicClientGetterMockRecorder) GetClientForCluster(ctx, clusterName interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, clusterName}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClientForCluster", reflect.TypeOf((*MockDynamicClientGetter)(nil).GetClientForCluster), varargs...)
 }

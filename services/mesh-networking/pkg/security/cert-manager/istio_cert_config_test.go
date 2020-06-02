@@ -39,10 +39,12 @@ var _ = Describe("istio cert config", func() {
 	It("will return default values if citadel info isn't discovered", func() {
 		mesh := &zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-							InstallationNamespace: istioNamespace,
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+								InstallationNamespace: istioNamespace,
+							},
 						},
 					},
 				},
@@ -57,7 +59,7 @@ var _ = Describe("istio cert config", func() {
 				),
 			},
 			Org:      cert_manager.DefaultIstioOrg,
-			MeshType: zephyr_core_types.MeshType_ISTIO,
+			MeshType: zephyr_core_types.MeshType_ISTIO1_5,
 		}
 		certConfig, err := istioConfigProdcer.ConfigureCertificateInfo(nil, mesh)
 		Expect(err).NotTo(HaveOccurred())
@@ -72,12 +74,14 @@ var _ = Describe("istio cert config", func() {
 		}
 		mesh := &zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-							InstallationNamespace: istioNamespace,
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_6_{
+					Istio1_6: &zephyr_discovery_types.MeshSpec_Istio1_6{
+						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
+							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+								InstallationNamespace: istioNamespace,
+							},
+							CitadelInfo: citadelInfo,
 						},
-						CitadelInfo: citadelInfo,
 					},
 				},
 			},
@@ -91,7 +95,7 @@ var _ = Describe("istio cert config", func() {
 				),
 			},
 			Org:      cert_manager.DefaultIstioOrg,
-			MeshType: zephyr_core_types.MeshType_ISTIO,
+			MeshType: zephyr_core_types.MeshType_ISTIO1_6,
 		}
 		certConfig, err := istioConfigProdcer.ConfigureCertificateInfo(nil, mesh)
 		Expect(err).NotTo(HaveOccurred())

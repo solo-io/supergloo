@@ -5,8 +5,8 @@ import (
 
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
-	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

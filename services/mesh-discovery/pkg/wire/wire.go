@@ -6,15 +6,15 @@ import (
 	"context"
 
 	"github.com/google/wire"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	settings_clients "github.com/solo-io/service-mesh-hub/pkg/clients/settings"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/pkg/settings"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/selection"
+	settings_clients "github.com/solo-io/service-mesh-hub/pkg/aws/settings"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/sts"
 	event_watcher_factories "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories"
@@ -56,7 +56,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		ClusterRegistrationClientProvider,
 		v1alpha1.SettingsClientProvider,
 		settings_clients.NewAwsSettingsHelperClient,
-		settings.NewAwsSelector,
+		selection.NewAwsSelector,
 		sts.STSClientFactoryProvider,
 	)
 

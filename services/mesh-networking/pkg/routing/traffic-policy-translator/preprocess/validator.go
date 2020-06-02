@@ -12,7 +12,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
 var (
@@ -38,12 +38,12 @@ var (
 
 type trafficPolicyValidator struct {
 	meshServiceClient zephyr_discovery.MeshServiceClient
-	resourceSelector  selector.ResourceSelector
+	resourceSelector  selection.ResourceSelector
 }
 
 func NewTrafficPolicyValidator(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
-	resourceSelector selector.ResourceSelector,
+	resourceSelector selection.ResourceSelector,
 ) TrafficPolicyValidator {
 	return &trafficPolicyValidator{
 		meshServiceClient: meshServiceClient,

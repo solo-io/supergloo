@@ -7,7 +7,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/logging"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	"go.uber.org/zap"
 )
@@ -29,7 +29,7 @@ func NewVirtualMeshCSRDataSource(
 ) zephyr_security_controller.VirtualMeshCertificateSigningRequestEventHandler {
 	return &zephyr_security_controller.VirtualMeshCertificateSigningRequestEventHandlerFuncs{
 		OnCreate: func(obj *zephyr_security.VirtualMeshCertificateSigningRequest) error {
-			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, obj)
 			status := processor.ProcessUpsert(ctx, obj)
 			if status == nil {
 				logger.Debugw("csr event was not processed")
@@ -47,7 +47,7 @@ func NewVirtualMeshCSRDataSource(
 			return nil
 		},
 		OnUpdate: func(_, new *zephyr_security.VirtualMeshCertificateSigningRequest) error {
-			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
 			status := processor.ProcessUpsert(ctx, new)
 			if status == nil {
 				logger.Debugw("csr event was not processed")
@@ -65,11 +65,11 @@ func NewVirtualMeshCSRDataSource(
 			return nil
 		},
 		OnDelete: func(obj *zephyr_security.VirtualMeshCertificateSigningRequest) error {
-			logging.BuildEventLogger(ctx, logging.DeleteEvent, obj).Debugf(UnexpectedEventMsg)
+			container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, obj).Debugf(UnexpectedEventMsg)
 			return nil
 		},
 		OnGeneric: func(obj *zephyr_security.VirtualMeshCertificateSigningRequest) error {
-			logging.BuildEventLogger(ctx, logging.GenericEvent, obj).Debugf(UnexpectedEventMsg)
+			container_runtime.BuildEventLogger(ctx, container_runtime.GenericEvent, obj).Debugf(UnexpectedEventMsg)
 			return nil
 		},
 	}

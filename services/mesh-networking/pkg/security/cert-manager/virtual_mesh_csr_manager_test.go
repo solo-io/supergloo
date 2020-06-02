@@ -14,9 +14,9 @@ import (
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
-	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 	mock_cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager/mocks"
 	mock_vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation/mocks"
@@ -36,7 +36,7 @@ var _ = Describe("csr manager", func() {
 		csrProcessor        cert_manager.VirtualMeshCertificateManager
 		meshClient          *mock_core.MockMeshClient
 		meshRefFinder       *mock_vm_validation.MockVirtualMeshFinder
-		dynamicClientGetter *mock_mc_manager.MockDynamicClientGetter
+		dynamicClientGetter *mock_multicluster.MockDynamicClientGetter
 		csrClient           *mock_zephyr_security.MockVirtualMeshCertificateSigningRequestClient
 		certConfigProducer  *mock_cert_manager.MockCertConfigProducer
 
@@ -52,7 +52,7 @@ var _ = Describe("csr manager", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		meshClient = mock_core.NewMockMeshClient(ctrl)
 		meshRefFinder = mock_vm_validation.NewMockVirtualMeshFinder(ctrl)
-		dynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+		dynamicClientGetter = mock_multicluster.NewMockDynamicClientGetter(ctrl)
 		certConfigProducer = mock_cert_manager.NewMockCertConfigProducer(ctrl)
 		csrClient = mock_zephyr_security.NewMockVirtualMeshCertificateSigningRequestClient(ctrl)
 		csrProcessor = cert_manager.NewVirtualMeshCsrProcessor(
@@ -140,8 +140,8 @@ var _ = Describe("csr manager", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{},
 					},
 				},
 				Status: zephyr_discovery_types.MeshStatus{},
@@ -180,8 +180,8 @@ var _ = Describe("csr manager", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{},
 					},
 				},
 				Status: zephyr_discovery_types.MeshStatus{},
@@ -228,8 +228,8 @@ var _ = Describe("csr manager", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{},
 					},
 				},
 				Status: zephyr_discovery_types.MeshStatus{},
@@ -248,7 +248,7 @@ var _ = Describe("csr manager", func() {
 				Return(nil, nil)
 
 			csrClient.EXPECT().
-				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio-name-cert-request", Namespace: env.GetWriteNamespace()}).
+				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio1-5-name-cert-request", Namespace: container_runtime.GetWriteNamespace()}).
 				Return(nil, testErr)
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
@@ -280,8 +280,8 @@ var _ = Describe("csr manager", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{},
 					},
 				},
 				Status: zephyr_discovery_types.MeshStatus{},
@@ -290,7 +290,7 @@ var _ = Describe("csr manager", func() {
 			certConfig := &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 				Hosts:    []string{"hello", "world"},
 				Org:      "test",
-				MeshType: zephyr_core_types.MeshType_ISTIO,
+				MeshType: zephyr_core_types.MeshType_ISTIO1_5,
 			}
 
 			certConfigProducer.EXPECT().
@@ -306,14 +306,14 @@ var _ = Describe("csr manager", func() {
 				Return(nil, nil)
 			statusErr := errors.NewNotFound(schema.GroupResource{}, "")
 			csrClient.EXPECT().
-				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio-name-cert-request", Namespace: env.GetWriteNamespace()}).
+				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio1-5-name-cert-request", Namespace: container_runtime.GetWriteNamespace()}).
 				Return(nil, statusErr)
 
 			csrClient.EXPECT().
 				CreateVirtualMeshCertificateSigningRequest(ctx, &zephyr_security.VirtualMeshCertificateSigningRequest{
 					ObjectMeta: k8s_meta.ObjectMeta{
-						Name:      "istio-name-cert-request",
-						Namespace: env.GetWriteNamespace(),
+						Name:      "istio1-5-name-cert-request",
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
 						VirtualMeshRef: &zephyr_core_types.ResourceRef{
@@ -360,8 +360,8 @@ var _ = Describe("csr manager", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-						Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_6_{
+						Istio1_6: &zephyr_discovery_types.MeshSpec_Istio1_6{},
 					},
 				},
 				Status: zephyr_discovery_types.MeshStatus{},
@@ -370,7 +370,7 @@ var _ = Describe("csr manager", func() {
 			certConfig := &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 				Hosts:    []string{"hello", "world"},
 				Org:      "test",
-				MeshType: zephyr_core_types.MeshType_ISTIO,
+				MeshType: zephyr_core_types.MeshType_ISTIO1_6,
 			}
 
 			certConfigProducer.EXPECT().
@@ -386,14 +386,14 @@ var _ = Describe("csr manager", func() {
 				Return(nil, nil)
 			statusErr := errors.NewNotFound(schema.GroupResource{}, "")
 			csrClient.EXPECT().
-				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio-name-cert-request", Namespace: env.GetWriteNamespace()}).
+				GetVirtualMeshCertificateSigningRequest(ctx, client.ObjectKey{Name: "istio1-6-name-cert-request", Namespace: container_runtime.GetWriteNamespace()}).
 				Return(nil, statusErr)
 
 			csrClient.EXPECT().
 				CreateVirtualMeshCertificateSigningRequest(ctx, &zephyr_security.VirtualMeshCertificateSigningRequest{
 					ObjectMeta: k8s_meta.ObjectMeta{
-						Name:      "istio-name-cert-request",
-						Namespace: env.GetWriteNamespace(),
+						Name:      "istio1-6-name-cert-request",
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
 						VirtualMeshRef: &zephyr_core_types.ResourceRef{

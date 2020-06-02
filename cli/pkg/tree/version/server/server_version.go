@@ -3,9 +3,9 @@ package server
 import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	k8s_apps "k8s.io/api/apps/v1"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -89,7 +89,7 @@ func NewServerVersionClient(namespace string, configClient DeploymentClient, ima
 }
 
 func (k *serverVersionClient) GetServerVersion() (*ServerVersion, error) {
-	deployments, err := k.configClient.GetDeployments(k.namespace, "app="+env.GetWriteNamespace())
+	deployments, err := k.configClient.GetDeployments(k.namespace, "app="+container_runtime.GetWriteNamespace())
 	if err != nil {
 		return nil, ConfigClientError(err)
 	}

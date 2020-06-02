@@ -200,12 +200,12 @@ esac
   --local-cluster-domain-override $CLUSTER_DOMAIN_REMOTE \
   --dev-csr-agent-chart
 
-./_output/meshctl mesh install istio --context kind-$remoteCluster --operator-spec=- <<EOF
+./_output/meshctl mesh install istio1.5 --context kind-$remoteCluster --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
   name: example-istiooperator
-  namespace: istio-operator
+  namespace: istio-system
 spec:
   profile: minimal
   components:
@@ -260,16 +260,14 @@ spec:
       podDNSSearchNamespaces:
       - global
       - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
-    security:
-      selfSigned: false
 EOF
 
-./_output/meshctl mesh install istio --context kind-$managementPlane --operator-spec=- <<EOF
+./_output/meshctl mesh install istio1.5 --context kind-$managementPlane --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
   name: example-istiooperator
-  namespace: istio-operator
+  namespace: istio-system
 spec:
   profile: minimal
   components:
@@ -324,8 +322,6 @@ spec:
       podDNSSearchNamespaces:
       - global
       - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
-    security:
-      selfSigned: false
 EOF
 
 

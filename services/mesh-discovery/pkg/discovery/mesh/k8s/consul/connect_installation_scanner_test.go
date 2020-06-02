@@ -3,7 +3,7 @@ package consul_test
 import (
 	"errors"
 
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"

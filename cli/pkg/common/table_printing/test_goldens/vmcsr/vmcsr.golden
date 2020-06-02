@@ -4,7 +4,7 @@
 | Name: vm-1                     | Certificate Config:            | Issuer Status:                             |
 | Namespace: service-mesh-hub    |   Hosts: [host1 host2]         |   State: ACCEPTED                          |
 | VirtualMesh:                   |   Org: my-org                  |                                            |
-|   Name: name-1                 |   Mesh Type: istio             | Approval Workflow:                         |
+|   Name: name-1                 |   Mesh Type: istio1_5          | Approval Workflow:                         |
 |   Namespace: namespace-1       |                                |                                            |
 |                                | CSR Data: PRESENT (redacted)   |   Last Updated: (timestamp: nil Timestamp) |
 |                                |                                |   Status: APPROVED                         |

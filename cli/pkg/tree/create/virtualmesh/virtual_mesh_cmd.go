@@ -15,9 +15,9 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/spf13/cobra"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -93,7 +93,7 @@ func populateVirtualMeshInteractive(
 		TypeMeta: k8s_meta_types.TypeMeta{Kind: "VirtualMesh"}, // k8s resource printers will complain unless this is set
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      displayName,
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		},
 		Spec: zephyr_networking_types.VirtualMeshSpec{
 			DisplayName:          displayName,
@@ -122,7 +122,7 @@ func selectVirtualMeshesInteractive(
 	for _, selection := range selections {
 		selectedMeshNames = append(selectedMeshNames, &zephyr_core_types.ResourceRef{
 			Name:      selection,
-			Namespace: env.GetWriteNamespace(),
+			Namespace: container_runtime.GetWriteNamespace(),
 		})
 	}
 	return selectedMeshNames, nil

@@ -7,9 +7,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/helmutil"
-	"github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
 )
 
 var _ = Describe("GetChartUri", func() {
@@ -21,7 +21,7 @@ var _ = Describe("GetChartUri", func() {
 		versionOverride := "v2.0.0"
 		chartUri, err := helmutil.GetChartUri("", versionOverride)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(chartUri).To(Equal(fmt.Sprintf(cliconstants.ServiceMeshHubChartUriTemplate, strings.TrimPrefix(versionOverride, "v"))))
+		Expect(chartUri).To(Equal(fmt.Sprintf(constants.ServiceMeshHubChartUriTemplate, strings.TrimPrefix(versionOverride, "v"))))
 	})
 
 	It("should respect chart uri override", func() {

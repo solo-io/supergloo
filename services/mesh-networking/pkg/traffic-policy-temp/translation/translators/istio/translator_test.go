@@ -9,9 +9,9 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	mock_selection "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 	istio_networking_types "istio.io/api/networking/v1alpha3"
 	istio_client_networking_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -25,8 +25,8 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		ctrl      *gomock.Controller
 		istioMesh = &zephyr_discovery.Mesh{
 			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-					Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{},
+				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{},
 				},
 			},
 		}
@@ -42,14 +42,14 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 	When("a service has no policies applying to it", func() {
 		It("should not error", func() {
-			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 			serviceBeingTranslated := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-svc",
@@ -68,7 +68,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			)
 			Expect(errs).To(HaveLen(0))
 			Expect(result.DestinationRules).To(Equal([]*istio_client_networking_types.DestinationRule{{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.DestinationRule{
 					Host: serviceBeingTranslated.Spec.KubeService.Ref.Name,
 					TrafficPolicy: &istio_networking_types.TrafficPolicy{
@@ -84,7 +84,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 	When("there are policies that need to be translated", func() {
 		It("should yield a virtual service", func() {
-			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
 					Ref:               &zephyr_core_types.ResourceRef{Name: "policy-1"},
@@ -94,10 +94,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			serviceBeingTranslated := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-svc",
@@ -121,7 +121,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			)
 			Expect(errs).To(HaveLen(0))
 			Expect(result.DestinationRules).To(Equal([]*istio_client_networking_types.DestinationRule{{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.DestinationRule{
 					Host: serviceBeingTranslated.Spec.KubeService.Ref.Name,
 					TrafficPolicy: &istio_networking_types.TrafficPolicy{
@@ -132,7 +132,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}}))
 			Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.VirtualService{
 					Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 					Http: []*istio_networking_types.HTTPRoute{{
@@ -152,7 +152,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		When("no destination is specified on the policy", func() {
 			When("no ports are set on the service", func() {
 				It("should report an error", func() {
-					resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+					resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 					policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
 							Ref:               &zephyr_core_types.ResourceRef{Name: "policy-1"},
@@ -162,10 +162,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					serviceBeingTranslated := &zephyr_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service",
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						},
 						Spec: zephyr_discovery_types.MeshServiceSpec{
-							Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 								Ref: &zephyr_core_types.ResourceRef{
 									Name:      "kube-svc",
@@ -195,7 +195,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 			When("multiple ports are set on the service", func() {
 				It("should report an error", func() {
-					resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+					resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 					policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
 							Ref:               &zephyr_core_types.ResourceRef{Name: "policy-1"},
@@ -205,10 +205,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					serviceBeingTranslated := &zephyr_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service",
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						},
 						Spec: zephyr_discovery_types.MeshServiceSpec{
-							Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 								Ref: &zephyr_core_types.ResourceRef{
 									Name:      "kube-svc",
@@ -246,7 +246,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		})
 
 		It("should translate retries", func() {
-			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
 					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
@@ -261,10 +261,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			serviceBeingTranslated := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-svc",
@@ -288,7 +288,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			)
 			Expect(errs).To(HaveLen(0))
 			Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.VirtualService{
 					Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 					Http: []*istio_networking_types.HTTPRoute{{
@@ -310,7 +310,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		})
 
 		It("should translate CORS policy", func() {
-			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
 					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
@@ -333,10 +333,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			serviceBeingTranslated := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-svc",
@@ -360,7 +360,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			)
 			Expect(errs).To(HaveLen(0))
 			Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.VirtualService{
 					Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 					Http: []*istio_networking_types.HTTPRoute{{
@@ -390,7 +390,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		})
 
 		It("should translate HeaderManipulation", func() {
-			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
 					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
@@ -407,10 +407,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			serviceBeingTranslated := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-svc",
@@ -434,7 +434,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			)
 			Expect(errs).To(HaveLen(0))
 			Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.VirtualService{
 					Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 					Http: []*istio_networking_types.HTTPRoute{{
@@ -464,7 +464,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		When("translating mirror destinations", func() {
 			Context("and the mirror destination is on the same cluster", func() {
 				It("should translate the Mirror config properly", func() {
-					resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+					resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 					destName := "name"
 					destNamespace := "namespace"
 					port := uint32(9080)
@@ -488,10 +488,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					serviceBeingTranslated := &zephyr_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service",
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						},
 						Spec: zephyr_discovery_types.MeshServiceSpec{
-							Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 								Ref: &zephyr_core_types.ResourceRef{
 									Name:      destName,
@@ -509,10 +509,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					otherService := &zephyr_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service-being-mirrored-to",
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						},
 						Spec: zephyr_discovery_types.MeshServiceSpec{
-							Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 								Ref: &zephyr_core_types.ResourceRef{
 									Name:      destName,
@@ -547,7 +547,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					)
 					Expect(errs).To(HaveLen(0))
 					Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-						ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+						ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 						Spec: istio_networking_types.VirtualService{
 							Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 							Http: []*istio_networking_types.HTTPRoute{{
@@ -574,7 +574,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 			Context("the mirror destination is on a remote cluster", func() {
 				It("should translate the mirror config properly", func() {
-					resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+					resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 					destName := "name"
 					destNamespace := "namespace"
 					port := uint32(9080)
@@ -598,10 +598,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					serviceBeingTranslated := &zephyr_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service",
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						},
 						Spec: zephyr_discovery_types.MeshServiceSpec{
-							Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 								Ref: &zephyr_core_types.ResourceRef{
 									Name:      destName,
@@ -619,10 +619,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					otherService := &zephyr_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service-being-mirrored-to",
-							Namespace: env.GetWriteNamespace(),
+							Namespace: container_runtime.GetWriteNamespace(),
 						},
 						Spec: zephyr_discovery_types.MeshServiceSpec{
-							Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 								Ref: &zephyr_core_types.ResourceRef{
 									Name:      destName,
@@ -660,7 +660,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					)
 					Expect(errs).To(HaveLen(0))
 					Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-						ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+						ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 						Spec: istio_networking_types.VirtualService{
 							Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 							Http: []*istio_networking_types.HTTPRoute{{
@@ -687,7 +687,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		})
 
 		It("should translate fault injections", func() {
-			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
 					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
@@ -708,10 +708,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			serviceBeingTranslated := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-svc",
@@ -735,7 +735,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			)
 			Expect(errs).To(HaveLen(0))
 			Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.VirtualService{
 					Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 					Http: []*istio_networking_types.HTTPRoute{{
@@ -759,7 +759,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		})
 
 		It("should translate retries", func() {
-			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
 					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
@@ -774,10 +774,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			serviceBeingTranslated := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-svc",
@@ -801,7 +801,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			)
 			Expect(errs).To(HaveLen(0))
 			Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.VirtualService{
 					Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 					Http: []*istio_networking_types.HTTPRoute{{
@@ -823,7 +823,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		})
 
 		It("should translate HeaderMatchers", func() {
-			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
 					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
@@ -857,10 +857,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			serviceBeingTranslated := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-svc",
@@ -884,7 +884,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			)
 			Expect(errs).To(HaveLen(0))
 			Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.VirtualService{
 					Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 					Http: []*istio_networking_types.HTTPRoute{{
@@ -928,7 +928,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		})
 
 		It("should translate query param matchers", func() {
-			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
 					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
@@ -954,10 +954,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			serviceBeingTranslated := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-svc",
@@ -981,7 +981,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			)
 			Expect(errs).To(HaveLen(0))
 			Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.VirtualService{
 					Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 					Http: []*istio_networking_types.HTTPRoute{{
@@ -1015,7 +1015,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 		When("translating traffic shifts", func() {
 			It("should translate traffic shifts without subsets", func() {
-				resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+				resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 				destName := "name"
 				destNamespace := "namespace"
 				multiClusterDnsName := "multicluster-dns-name"
@@ -1044,10 +1044,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				serviceBeingTranslated := &zephyr_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-service",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_discovery_types.MeshServiceSpec{
-						Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+						Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 							Ref: &zephyr_core_types.ResourceRef{
 								Name:      "kube-svc",
@@ -1067,10 +1067,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				otherService := &zephyr_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-service-being-shifted-to",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_discovery_types.MeshServiceSpec{
-						Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+						Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 							Ref: &zephyr_core_types.ResourceRef{
 								Name:      destName,
@@ -1108,7 +1108,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				)
 				Expect(errs).To(HaveLen(0))
 				Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-					ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+					ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 					Spec: istio_networking_types.VirtualService{
 						Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 						Http: []*istio_networking_types.HTTPRoute{{
@@ -1127,7 +1127,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			})
 
 			It("should translate traffic shifts with subsets", func() {
-				resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+				resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 				destName := "name"
 				destNamespace := "namespace"
 				declaredSubset := map[string]string{"env": "dev", "version": "v1"}
@@ -1159,10 +1159,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				serviceBeingTranslated := &zephyr_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-service",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_discovery_types.MeshServiceSpec{
-						Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+						Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 							Ref: &zephyr_core_types.ResourceRef{
 								Name:      "kube-svc",
@@ -1183,10 +1183,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				otherService := &zephyr_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-service-being-shifted-to",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Spec: zephyr_discovery_types.MeshServiceSpec{
-						Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+						Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 							Ref: &zephyr_core_types.ResourceRef{
 								Name:      destName,
@@ -1224,7 +1224,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				)
 				Expect(errs).To(HaveLen(0))
 				Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-					ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+					ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 					Spec: istio_networking_types.VirtualService{
 						Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 						Http: []*istio_networking_types.HTTPRoute{{
@@ -1245,7 +1245,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		})
 
 		It("should deterministically order HTTPRoutes according to decreasing specificity", func() {
-			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
+			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 			sourceNamespace := "source-namespace"
 			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
@@ -1317,10 +1317,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			serviceBeingTranslated := &zephyr_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
-					Namespace: env.GetWriteNamespace(),
+					Namespace: container_runtime.GetWriteNamespace(),
 				},
 				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: clients.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
 					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
 						Ref: &zephyr_core_types.ResourceRef{
 							Name:      "kube-svc",
@@ -1355,7 +1355,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			)
 			Expect(errs).To(HaveLen(0))
 			Expect(result.VirtualServices).To(Equal([]*istio_client_networking_types.VirtualService{{
-				ObjectMeta: clients.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.VirtualService{
 					Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 					Http: []*istio_networking_types.HTTPRoute{

@@ -5,7 +5,8 @@ import (
 
 	"github.com/google/wire"
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	mc_watcher "github.com/solo-io/service-mesh-hub/services/common/compute-target/secret-event-handler"
@@ -64,7 +65,7 @@ func KubeClusterCredentialsHandlerProvider(
 	return mc_manager.NewAsyncManagerController(mc_manager.NewAsyncManagerFactory(), kubeConverter)
 }
 
-func DynamicClientGetterProvider(controller *mc_manager.AsyncManagerController) mc_manager.DynamicClientGetter {
+func DynamicClientGetterProvider(controller *mc_manager.AsyncManagerController) multicluster.DynamicClientGetter {
 	return controller
 }
 

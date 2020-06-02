@@ -52,6 +52,14 @@ message MeshSpec {
         CitadelInfo citadel_info = 2;
     }
 
+    message Istio1_5 {
+        IstioMesh metadata = 1;
+    }
+
+    message Istio1_6 {
+        IstioMesh metadata = 1;
+    }
+
     // Mesh object representing AWS AppMesh
     message AwsAppMesh {
         // AWS name for the AppMesh instance, must be unique across the AWS account.
@@ -78,10 +86,11 @@ message MeshSpec {
     }
 
     oneof mesh_type {
-        IstioMesh istio = 1;
-        AwsAppMesh aws_app_mesh = 2;
-        LinkerdMesh linkerd = 3;
-        ConsulConnectMesh consul_connect = 4;
+        Istio1_5 istio1_5 = 1;
+        Istio1_6 istio1_6 = 2;
+        AwsAppMesh aws_app_mesh = 3;
+        LinkerdMesh linkerd = 4;
+        ConsulConnectMesh consul_connect = 5;
     }
 
     /*
@@ -89,7 +98,7 @@ message MeshSpec {
         This field may not apply to all Mesh types, such as AppMesh, whose control planes
         are located externally to any user accessible compute platform.
     */
-    core.zephyr.solo.io.ResourceRef cluster = 5;
+    core.zephyr.solo.io.ResourceRef cluster = 6;
 }
 
 message MeshStatus {

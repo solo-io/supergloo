@@ -11,7 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	selector "github.com/solo-io/service-mesh-hub/pkg/selector"
+	selection "github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
 // MockTrafficPolicyPreprocessor is a mock of TrafficPolicyPreprocessor interface.
@@ -38,10 +38,10 @@ func (m *MockTrafficPolicyPreprocessor) EXPECT() *MockTrafficPolicyPreprocessorM
 }
 
 // PreprocessTrafficPolicy mocks base method.
-func (m *MockTrafficPolicyPreprocessor) PreprocessTrafficPolicy(ctx context.Context, trafficPolicy *v1alpha10.TrafficPolicy) (map[selector.MeshServiceId][]*v1alpha10.TrafficPolicy, error) {
+func (m *MockTrafficPolicyPreprocessor) PreprocessTrafficPolicy(ctx context.Context, trafficPolicy *v1alpha10.TrafficPolicy) (map[selection.MeshServiceId][]*v1alpha10.TrafficPolicy, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PreprocessTrafficPolicy", ctx, trafficPolicy)
-	ret0, _ := ret[0].(map[selector.MeshServiceId][]*v1alpha10.TrafficPolicy)
+	ret0, _ := ret[0].(map[selection.MeshServiceId][]*v1alpha10.TrafficPolicy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -53,10 +53,10 @@ func (mr *MockTrafficPolicyPreprocessorMockRecorder) PreprocessTrafficPolicy(ctx
 }
 
 // PreprocessTrafficPoliciesForMeshService mocks base method.
-func (m *MockTrafficPolicyPreprocessor) PreprocessTrafficPoliciesForMeshService(ctx context.Context, meshService *v1alpha1.MeshService) (map[selector.MeshServiceId][]*v1alpha10.TrafficPolicy, error) {
+func (m *MockTrafficPolicyPreprocessor) PreprocessTrafficPoliciesForMeshService(ctx context.Context, meshService *v1alpha1.MeshService) (map[selection.MeshServiceId][]*v1alpha10.TrafficPolicy, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PreprocessTrafficPoliciesForMeshService", ctx, meshService)
-	ret0, _ := ret[0].(map[selector.MeshServiceId][]*v1alpha10.TrafficPolicy)
+	ret0, _ := ret[0].(map[selection.MeshServiceId][]*v1alpha10.TrafficPolicy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -91,10 +91,10 @@ func (m *MockTrafficPolicyMerger) EXPECT() *MockTrafficPolicyMergerMockRecorder 
 }
 
 // MergeTrafficPoliciesForMeshServices mocks base method.
-func (m *MockTrafficPolicyMerger) MergeTrafficPoliciesForMeshServices(ctx context.Context, meshServices []*v1alpha1.MeshService) (map[selector.MeshServiceId][]*v1alpha10.TrafficPolicy, error) {
+func (m *MockTrafficPolicyMerger) MergeTrafficPoliciesForMeshServices(ctx context.Context, meshServices []*v1alpha1.MeshService) (map[selection.MeshServiceId][]*v1alpha10.TrafficPolicy, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MergeTrafficPoliciesForMeshServices", ctx, meshServices)
-	ret0, _ := ret[0].(map[selector.MeshServiceId][]*v1alpha10.TrafficPolicy)
+	ret0, _ := ret[0].(map[selection.MeshServiceId][]*v1alpha10.TrafficPolicy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

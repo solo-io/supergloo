@@ -11,7 +11,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	aggregation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/framework"
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/mocks"
@@ -51,7 +51,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				meshClient,
 				policyCollector,
 				map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
-					zephyr_core_types.MeshType_ISTIO: validator,
+					zephyr_core_types.MeshType_ISTIO1_5: validator,
 				},
 				inMemoryStatusMutator,
 			)
@@ -83,7 +83,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					meshClient,
 					policyCollector,
 					map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
-						zephyr_core_types.MeshType_ISTIO: validator,
+						zephyr_core_types.MeshType_ISTIO1_5: validator,
 					},
 					inMemoryStatusMutator,
 				)
@@ -95,7 +95,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 						Cluster: &zephyr_core_types.ResourceRef{
 							Name: "cluster1",
 						},
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+						MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 					},
 				}
 				mesh2 := &zephyr_discovery.Mesh{
@@ -106,7 +106,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 						Cluster: &zephyr_core_types.ResourceRef{
 							Name: "cluster2",
 						},
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+						MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 					},
 				}
 				meshServices := []*zephyr_discovery.MeshService{
@@ -115,7 +115,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 							Name: "ms1",
 						},
 						Spec: zephyr_discovery_types.MeshServiceSpec{
-							Mesh: clients.ObjectMetaToResourceRef(mesh1.ObjectMeta),
+							Mesh: selection.ObjectMetaToResourceRef(mesh1.ObjectMeta),
 						},
 					},
 					{
@@ -123,7 +123,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 							Name: "ms2",
 						},
 						Spec: zephyr_discovery_types.MeshServiceSpec{
-							Mesh: clients.ObjectMetaToResourceRef(mesh2.ObjectMeta),
+							Mesh: selection.ObjectMetaToResourceRef(mesh2.ObjectMeta),
 						},
 					},
 				}
@@ -132,10 +132,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					ListMeshService(ctx).
 					Return(&zephyr_discovery.MeshServiceList{Items: []zephyr_discovery.MeshService{*meshServices[0], *meshServices[1]}}, nil)
 				meshClient.EXPECT().
-					GetMesh(ctx, clients.ResourceRefToObjectKey(meshServices[0].Spec.Mesh)).
+					GetMesh(ctx, selection.ResourceRefToObjectKey(meshServices[0].Spec.Mesh)).
 					Return(mesh1, nil)
 				meshClient.EXPECT().
-					GetMesh(ctx, clients.ResourceRefToObjectKey(meshServices[1].Spec.Mesh)).
+					GetMesh(ctx, selection.ResourceRefToObjectKey(meshServices[1].Spec.Mesh)).
 					Return(mesh2, nil)
 				policyCollector.EXPECT().
 					CollectForService(meshServices[0], meshServices, mesh1, validator, nil).
@@ -174,7 +174,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				meshClient,
 				policyCollector,
 				map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
-					zephyr_core_types.MeshType_ISTIO: validator,
+					zephyr_core_types.MeshType_ISTIO1_5: validator,
 				},
 				inMemoryStatusMutator,
 			)
@@ -186,7 +186,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "cluster1",
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 				},
 			}
 			mesh2 := &zephyr_discovery.Mesh{
@@ -197,7 +197,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					Cluster: &zephyr_core_types.ResourceRef{
 						Name: "cluster2",
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio{},
+					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
 				},
 			}
 			meshServices := []*zephyr_discovery.MeshService{
@@ -206,7 +206,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 						Name: "ms1",
 					},
 					Spec: zephyr_discovery_types.MeshServiceSpec{
-						Mesh: clients.ObjectMetaToResourceRef(mesh1.ObjectMeta),
+						Mesh: selection.ObjectMetaToResourceRef(mesh1.ObjectMeta),
 					},
 					Status: zephyr_discovery_types.MeshServiceStatus{
 						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
@@ -219,7 +219,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 						Name: "ms2",
 					},
 					Spec: zephyr_discovery_types.MeshServiceSpec{
-						Mesh: clients.ObjectMetaToResourceRef(mesh2.ObjectMeta),
+						Mesh: selection.ObjectMetaToResourceRef(mesh2.ObjectMeta),
 					},
 					Status: zephyr_discovery_types.MeshServiceStatus{
 						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
@@ -256,19 +256,19 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			}
 			newlyValidatedTrafficPolicies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[0].ObjectMeta),
+					Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[0].ObjectMeta),
 					TrafficPolicySpec: &trafficPolicies[0].Spec,
 				},
 				{
-					Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
+					Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 					TrafficPolicySpec: &trafficPolicies[1].Spec,
 				},
 				{
-					Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
+					Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 					TrafficPolicySpec: &trafficPolicies[2].Spec,
 				},
 				{
-					Ref:               clients.ObjectMetaToResourceRef(trafficPolicies[3].ObjectMeta),
+					Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[3].ObjectMeta),
 					TrafficPolicySpec: &trafficPolicies[3].Spec,
 				},
 			}
@@ -286,10 +286,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				ListMeshService(ctx).
 				Return(&zephyr_discovery.MeshServiceList{Items: []zephyr_discovery.MeshService{*meshServices[0], *meshServices[1]}}, nil)
 			meshClient.EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshServices[0].Spec.Mesh)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshServices[0].Spec.Mesh)).
 				Return(mesh1, nil)
 			meshClient.EXPECT().
-				GetMesh(ctx, clients.ResourceRefToObjectKey(meshServices[1].Spec.Mesh)).
+				GetMesh(ctx, selection.ResourceRefToObjectKey(meshServices[1].Spec.Mesh)).
 				Return(mesh2, nil)
 			policyCollector.EXPECT().
 				CollectForService(meshServices[0], meshServices, mesh1, validator, trafficPolicies).
