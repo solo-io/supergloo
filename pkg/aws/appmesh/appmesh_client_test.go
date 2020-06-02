@@ -180,7 +180,54 @@ var _ = Describe("AppmeshClient", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	It("ReconcileVirtualServices", func() {
+	It("should ReconcileVirtualRoutersAndRoutesAndVirtualServices", func() {
+		declaredVr := []*appmesh.VirtualRouterData{
+			{
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-1"),
+			}, {
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-2"),
+			}, {
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-3"),
+			},
+			{
+				MeshName:          aws2.String("some-other-mesh"),
+				VirtualRouterName: aws2.String("vr-name-3"),
+			},
+		}
+		for _, vr := range declaredVr[:3] {
+			expectVirtualRouterCreate(vr)
+		}
+		declaredRoutes := []*appmesh.RouteData{
+			{
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-1"),
+				RouteName:         aws2.String("r-name-1"),
+			}, {
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-2"),
+				RouteName:         aws2.String("r-name-2"),
+			}, {
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-3"),
+				RouteName:         aws2.String("r-name-3a"),
+			},
+			{
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-3"),
+				RouteName:         aws2.String("r-name-3b"),
+			},
+			{
+				MeshName:          aws2.String("some-other-mesh"),
+				VirtualRouterName: aws2.String("vr-name-3"),
+				RouteName:         aws2.String("r-name-3"),
+			},
+		}
+		for _, route := range declaredRoutes[:4] {
+			expectRouteCreate(route)
+		}
 		declaredVs := []*appmesh.VirtualServiceData{
 			{
 				MeshName:           meshName,
@@ -226,7 +273,88 @@ var _ = Describe("AppmeshClient", func() {
 				VirtualServiceName: existingVs[1].VirtualServiceName,
 			}).
 			Return(nil, nil)
-		err := appmeshClient.ReconcileVirtualServices(ctx, meshName, declaredVs)
+		existingVr := []*appmesh.VirtualRouterRef{
+			{
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-3"),
+			},
+			{
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-4"),
+			},
+		}
+		mockAppmeshRawClient.
+			EXPECT().
+			ListVirtualRouters(&appmesh.ListVirtualRoutersInput{
+				Limit:    appmesh2.ListLimit,
+				MeshName: meshName,
+			}).
+			Return(&appmesh.ListVirtualRoutersOutput{
+				VirtualRouters: existingVr,
+			}, nil)
+		existingRoutesForVr3 := []*appmesh.RouteRef{
+			{
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-3"),
+				RouteName:         aws2.String("r-name-3a"),
+			},
+			{
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-3"),
+				RouteName:         aws2.String("r-name-4"),
+			},
+		}
+		existingRoutesForVr4 := []*appmesh.RouteRef{
+			{
+				MeshName:          meshName,
+				VirtualRouterName: aws2.String("vr-name-4"),
+				RouteName:         aws2.String("r-name-4a"),
+			},
+		}
+		mockAppmeshRawClient.
+			EXPECT().
+			ListRoutes(&appmesh.ListRoutesInput{
+				Limit:             appmesh2.ListLimit,
+				VirtualRouterName: existingVr[0].VirtualRouterName,
+				MeshName:          meshName,
+			}).
+			Return(&appmesh.ListRoutesOutput{
+				Routes: existingRoutesForVr3,
+			}, nil)
+		mockAppmeshRawClient.
+			EXPECT().
+			ListRoutes(&appmesh.ListRoutesInput{
+				Limit:             appmesh2.ListLimit,
+				VirtualRouterName: existingVr[1].VirtualRouterName,
+				MeshName:          meshName,
+			}).
+			Return(&appmesh.ListRoutesOutput{
+				Routes: existingRoutesForVr4,
+			}, nil)
+		mockAppmeshRawClient.
+			EXPECT().
+			DeleteRoute(&appmesh.DeleteRouteInput{
+				MeshName:          meshName,
+				VirtualRouterName: existingRoutesForVr3[1].VirtualRouterName,
+				RouteName:         existingRoutesForVr3[1].RouteName,
+			}).
+			Return(nil, nil)
+		mockAppmeshRawClient.
+			EXPECT().
+			DeleteRoute(&appmesh.DeleteRouteInput{
+				MeshName:          meshName,
+				VirtualRouterName: existingRoutesForVr4[0].VirtualRouterName,
+				RouteName:         existingRoutesForVr4[0].RouteName,
+			}).
+			Return(nil, nil)
+		mockAppmeshRawClient.
+			EXPECT().
+			DeleteVirtualRouter(&appmesh.DeleteVirtualRouterInput{
+				MeshName:          meshName,
+				VirtualRouterName: existingVr[1].VirtualRouterName,
+			}).
+			Return(nil, nil)
+		err := appmeshClient.ReconcileVirtualRoutersAndRoutesAndVirtualServices(ctx, meshName, declaredVr, declaredRoutes, declaredVs)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -288,56 +416,6 @@ var _ = Describe("AppmeshClient", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	It("ReconcileVirtualRouters", func() {
-		declaredVr := []*appmesh.VirtualRouterData{
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-1"),
-			}, {
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-2"),
-			}, {
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-3"),
-			},
-			{
-				MeshName:          aws2.String("some-other-mesh"),
-				VirtualRouterName: aws2.String("vr-name-3"),
-			},
-		}
-		for _, vr := range declaredVr[:3] {
-			expectVirtualRouterCreate(vr)
-		}
-		existingVr := []*appmesh.VirtualRouterRef{
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-3"),
-			},
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-4"),
-			},
-		}
-		mockAppmeshRawClient.
-			EXPECT().
-			ListVirtualRouters(&appmesh.ListVirtualRoutersInput{
-				Limit:    appmesh2.ListLimit,
-				MeshName: meshName,
-			}).
-			Return(&appmesh.ListVirtualRoutersOutput{
-				VirtualRouters: existingVr,
-			}, nil)
-		mockAppmeshRawClient.
-			EXPECT().
-			DeleteVirtualRouter(&appmesh.DeleteVirtualRouterInput{
-				MeshName:          meshName,
-				VirtualRouterName: existingVr[1].VirtualRouterName,
-			}).
-			Return(nil, nil)
-		err := appmeshClient.ReconcileVirtualRouters(ctx, meshName, declaredVr)
-		Expect(err).ToNot(HaveOccurred())
-	})
-
 	It("EnsureRoute should create if not exist", func() {
 		route := &appmesh.RouteData{
 			MeshName:  meshName,
@@ -393,83 +471,6 @@ var _ = Describe("AppmeshClient", func() {
 			}).
 			Return(nil, nil)
 		err := appmeshClient.EnsureRoute(route)
-		Expect(err).ToNot(HaveOccurred())
-	})
-
-	It("ReconcileRoutes", func() {
-		declaredRoutes := []*appmesh.RouteData{
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-1"),
-				RouteName:         aws2.String("r-name-1"),
-			}, {
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-2"),
-				RouteName:         aws2.String("r-name-2"),
-			}, {
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-3"),
-				RouteName:         aws2.String("r-name-3a"),
-			},
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-3"),
-				RouteName:         aws2.String("r-name-3b"),
-			},
-			{
-				MeshName:          aws2.String("some-other-mesh"),
-				VirtualRouterName: aws2.String("vr-name-3"),
-				RouteName:         aws2.String("r-name-3"),
-			},
-		}
-		existingRoutes := []*appmesh.RouteRef{
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-3"),
-				RouteName:         aws2.String("r-name-3a"),
-			},
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-3"),
-				RouteName:         aws2.String("r-name-4"),
-			},
-		}
-
-		for _, route := range declaredRoutes[:2] {
-			mockAppmeshRawClient.
-				EXPECT().
-				ListRoutes(&appmesh.ListRoutesInput{
-					Limit:             appmesh2.ListLimit,
-					VirtualRouterName: route.VirtualRouterName,
-					MeshName:          meshName,
-				}).
-				Return(&appmesh.ListRoutesOutput{
-					Routes: nil,
-				}, nil)
-			expectRouteCreate(route)
-		}
-		expectRouteCreate(declaredRoutes[2])
-		expectRouteCreate(declaredRoutes[3])
-		mockAppmeshRawClient.
-			EXPECT().
-			ListRoutes(&appmesh.ListRoutesInput{
-				Limit:             appmesh2.ListLimit,
-				VirtualRouterName: declaredRoutes[2].VirtualRouterName,
-				MeshName:          meshName,
-			}).
-			Return(&appmesh.ListRoutesOutput{
-				Routes: existingRoutes,
-			}, nil)
-
-		mockAppmeshRawClient.
-			EXPECT().
-			DeleteRoute(&appmesh.DeleteRouteInput{
-				MeshName:          meshName,
-				VirtualRouterName: existingRoutes[1].VirtualRouterName,
-				RouteName:         existingRoutes[1].RouteName,
-			}).
-			Return(nil, nil)
-		err := appmeshClient.ReconcileRoutes(ctx, meshName, declaredRoutes)
 		Expect(err).ToNot(HaveOccurred())
 	})
 

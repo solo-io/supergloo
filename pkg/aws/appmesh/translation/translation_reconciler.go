@@ -158,15 +158,7 @@ func (a *appmeshTranslationReconciler) reconcile(
 	if err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
-	err = a.dao.ReconcileVirtualRouters(ctx, mesh, virtualRouters)
-	if err != nil {
-		multierr = multierror.Append(multierr, err)
-	}
-	err = a.dao.ReconcileVirtualServices(ctx, mesh, virtualServices)
-	if err != nil {
-		multierr = multierror.Append(multierr, err)
-	}
-	err = a.dao.ReconcileRoutes(ctx, mesh, routes)
+	err = a.dao.ReconcileVirtualRoutersAndRoutesAndVirtualServices(ctx, mesh, virtualRouters, routes, virtualServices)
 	if err != nil {
 		multierr = multierror.Append(multierr, err)
 	}

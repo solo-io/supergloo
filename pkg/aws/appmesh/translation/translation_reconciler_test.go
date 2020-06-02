@@ -140,9 +140,13 @@ var _ = Describe("TranslationReconciler", func() {
 				workloadsToBackingServices[meshWorkload3][0],
 				workloadsToUpstreamServices[selection.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta)].List()).
 			Return(vn3)
-		mockDao.EXPECT().ReconcileVirtualRouters(ctx, mesh, []*appmesh2.VirtualRouterData{vr1, vr2}).Return(nil)
-		mockDao.EXPECT().ReconcileVirtualServices(ctx, mesh, []*appmesh2.VirtualServiceData{vs1, vs2}).Return(nil)
-		mockDao.EXPECT().ReconcileRoutes(ctx, mesh, []*appmesh2.RouteData{r1, r2}).Return(nil)
+		mockDao.EXPECT().ReconcileVirtualRoutersAndRoutesAndVirtualServices(
+			ctx,
+			mesh,
+			[]*appmesh2.VirtualRouterData{vr1, vr2},
+			[]*appmesh2.RouteData{r1, r2},
+			[]*appmesh2.VirtualServiceData{vs1, vs2},
+		).Return(nil)
 		mockDao.EXPECT().ReconcileVirtualNodes(ctx, mesh, []*appmesh2.VirtualNodeData{vn1, vn3}).Return(nil)
 
 		err := appmeshTranslationReconciler.Reconcile(ctx, mesh, &v1alpha1.VirtualMesh{
@@ -258,9 +262,13 @@ var _ = Describe("TranslationReconciler", func() {
 				workloadsToBackingServices[meshWorkload3][0],
 				workloadsToUpstreamServices[selection.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta)].List()).
 			Return(vn3)
-		mockDao.EXPECT().ReconcileVirtualRouters(ctx, mesh, []*appmesh2.VirtualRouterData{vr1, vr2, vr3}).Return(nil)
-		mockDao.EXPECT().ReconcileVirtualServices(ctx, mesh, []*appmesh2.VirtualServiceData{vs1, vs2, vs3}).Return(nil)
-		mockDao.EXPECT().ReconcileRoutes(ctx, mesh, []*appmesh2.RouteData{r1, r2, r3}).Return(nil)
+		mockDao.EXPECT().ReconcileVirtualRoutersAndRoutesAndVirtualServices(
+			ctx,
+			mesh,
+			[]*appmesh2.VirtualRouterData{vr1, vr2, vr3},
+			[]*appmesh2.RouteData{r1, r2, r3},
+			[]*appmesh2.VirtualServiceData{vs1, vs2, vs3},
+		).Return(nil)
 		mockDao.EXPECT().ReconcileVirtualNodes(ctx, mesh, []*appmesh2.VirtualNodeData{vn1, vn2, vn3}).Return(nil)
 
 		err := appmeshTranslationReconciler.Reconcile(ctx, mesh, &v1alpha1.VirtualMesh{

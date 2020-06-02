@@ -243,9 +243,11 @@ func (a *appmeshTranslationDao) EnsureVirtualNode(
 	return appmeshClient.EnsureVirtualNode(virtualNode)
 }
 
-func (a *appmeshTranslationDao) ReconcileVirtualServices(
+func (a *appmeshTranslationDao) ReconcileVirtualRoutersAndRoutesAndVirtualServices(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
+	virtualRouters []*appmesh.VirtualRouterData,
+	routes []*appmesh.RouteData,
 	virtualServices []*appmesh.VirtualServiceData,
 ) error {
 	appmeshClient, err := a.appmeshClientFactory(mesh)
@@ -253,33 +255,7 @@ func (a *appmeshTranslationDao) ReconcileVirtualServices(
 		return err
 	}
 	meshName := aws2.String(mesh.Spec.GetAwsAppMesh().GetName())
-	return appmeshClient.ReconcileVirtualServices(ctx, meshName, virtualServices)
-}
-
-func (a *appmeshTranslationDao) ReconcileVirtualRouters(
-	ctx context.Context,
-	mesh *zephyr_discovery.Mesh,
-	virtualRouters []*appmesh.VirtualRouterData,
-) error {
-	appmeshClient, err := a.appmeshClientFactory(mesh)
-	if err != nil {
-		return err
-	}
-	meshName := aws2.String(mesh.Spec.GetAwsAppMesh().GetName())
-	return appmeshClient.ReconcileVirtualRouters(ctx, meshName, virtualRouters)
-}
-
-func (a *appmeshTranslationDao) ReconcileRoutes(
-	ctx context.Context,
-	mesh *zephyr_discovery.Mesh,
-	routes []*appmesh.RouteData,
-) error {
-	appmeshClient, err := a.appmeshClientFactory(mesh)
-	if err != nil {
-		return err
-	}
-	meshName := aws2.String(mesh.Spec.GetAwsAppMesh().GetName())
-	return appmeshClient.ReconcileRoutes(ctx, meshName, routes)
+	return appmeshClient.ReconcileVirtualRoutersAndRoutesAndVirtualServices(ctx, meshName, virtualRouters, routes, virtualServices)
 }
 
 func (a *appmeshTranslationDao) ReconcileVirtualNodes(

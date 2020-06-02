@@ -42,21 +42,14 @@ type AppmeshClient interface {
 	EnsureRoute(route *appmesh2.RouteData) error
 	EnsureVirtualNode(virtualNode *appmesh2.VirtualNodeData) error
 
-	ReconcileVirtualServices(
-		ctx context.Context,
-		meshName *string,
-		virtualServices []*appmesh2.VirtualServiceData,
-	) error
-	ReconcileVirtualRouters(
+	ReconcileVirtualRoutersAndRoutesAndVirtualServices(
 		ctx context.Context,
 		meshName *string,
 		virtualRouters []*appmesh2.VirtualRouterData,
-	) error
-	ReconcileRoutes(
-		ctx context.Context,
-		meshName *string,
 		routes []*appmesh2.RouteData,
+		virtualServices []*appmesh2.VirtualServiceData,
 	) error
+
 	ReconcileVirtualNodes(
 		ctx context.Context,
 		meshName *string,

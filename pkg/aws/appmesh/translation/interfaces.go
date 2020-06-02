@@ -93,22 +93,13 @@ type AppmeshTranslationDao interface {
 		virtualNode *appmesh.VirtualNodeData,
 	) error
 
-	ReconcileVirtualServices(
-		ctx context.Context,
-		mesh *zephyr_discovery.Mesh,
-		virtualServices []*appmesh.VirtualServiceData,
-	) error
-
-	ReconcileVirtualRouters(
+	// These need to be reconciled as a unit because of the ordering constraints imposed by the AWS API.
+	ReconcileVirtualRoutersAndRoutesAndVirtualServices(
 		ctx context.Context,
 		mesh *zephyr_discovery.Mesh,
 		virtualRouters []*appmesh.VirtualRouterData,
-	) error
-
-	ReconcileRoutes(
-		ctx context.Context,
-		mesh *zephyr_discovery.Mesh,
 		routes []*appmesh.RouteData,
+		virtualServices []*appmesh.VirtualServiceData,
 	) error
 
 	ReconcileVirtualNodes(

@@ -171,46 +171,18 @@ func (mr *MockAppmeshClientMockRecorder) EnsureVirtualNode(virtualNode interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVirtualNode", reflect.TypeOf((*MockAppmeshClient)(nil).EnsureVirtualNode), virtualNode)
 }
 
-// ReconcileVirtualServices mocks base method.
-func (m *MockAppmeshClient) ReconcileVirtualServices(ctx context.Context, meshName *string, virtualServices []*appmesh.VirtualServiceData) error {
+// ReconcileVirtualRoutersAndRoutesAndVirtualServices mocks base method.
+func (m *MockAppmeshClient) ReconcileVirtualRoutersAndRoutesAndVirtualServices(ctx context.Context, meshName *string, virtualRouters []*appmesh.VirtualRouterData, routes []*appmesh.RouteData, virtualServices []*appmesh.VirtualServiceData) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileVirtualServices", ctx, meshName, virtualServices)
+	ret := m.ctrl.Call(m, "ReconcileVirtualRoutersAndRoutesAndVirtualServices", ctx, meshName, virtualRouters, routes, virtualServices)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ReconcileVirtualServices indicates an expected call of ReconcileVirtualServices.
-func (mr *MockAppmeshClientMockRecorder) ReconcileVirtualServices(ctx, meshName, virtualServices interface{}) *gomock.Call {
+// ReconcileVirtualRoutersAndRoutesAndVirtualServices indicates an expected call of ReconcileVirtualRoutersAndRoutesAndVirtualServices.
+func (mr *MockAppmeshClientMockRecorder) ReconcileVirtualRoutersAndRoutesAndVirtualServices(ctx, meshName, virtualRouters, routes, virtualServices interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualServices", reflect.TypeOf((*MockAppmeshClient)(nil).ReconcileVirtualServices), ctx, meshName, virtualServices)
-}
-
-// ReconcileVirtualRouters mocks base method.
-func (m *MockAppmeshClient) ReconcileVirtualRouters(ctx context.Context, meshName *string, virtualRouters []*appmesh.VirtualRouterData) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileVirtualRouters", ctx, meshName, virtualRouters)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ReconcileVirtualRouters indicates an expected call of ReconcileVirtualRouters.
-func (mr *MockAppmeshClientMockRecorder) ReconcileVirtualRouters(ctx, meshName, virtualRouters interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualRouters", reflect.TypeOf((*MockAppmeshClient)(nil).ReconcileVirtualRouters), ctx, meshName, virtualRouters)
-}
-
-// ReconcileRoutes mocks base method.
-func (m *MockAppmeshClient) ReconcileRoutes(ctx context.Context, meshName *string, routes []*appmesh.RouteData) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileRoutes", ctx, meshName, routes)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ReconcileRoutes indicates an expected call of ReconcileRoutes.
-func (mr *MockAppmeshClientMockRecorder) ReconcileRoutes(ctx, meshName, routes interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRoutes", reflect.TypeOf((*MockAppmeshClient)(nil).ReconcileRoutes), ctx, meshName, routes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualRoutersAndRoutesAndVirtualServices", reflect.TypeOf((*MockAppmeshClient)(nil).ReconcileVirtualRoutersAndRoutesAndVirtualServices), ctx, meshName, virtualRouters, routes, virtualServices)
 }
 
 // ReconcileVirtualNodes mocks base method.
