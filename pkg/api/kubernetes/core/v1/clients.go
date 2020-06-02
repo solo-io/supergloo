@@ -5,7 +5,9 @@ package v1
 import (
 	"context"
 
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -119,6 +121,10 @@ type SecretReader interface {
 	ListSecret(ctx context.Context, opts ...client.ListOption) (*SecretList, error)
 }
 
+// SecretTransitionFunction instructs the SecretWriter how to transition between an existing
+// Secret object and a desired on an Upsert
+type SecretTransitionFunction func(existing, desired *Secret) error
+
 // Writer knows how to create, delete, and update Secrets.
 type SecretWriter interface {
 	// Create saves the Secret object.
@@ -135,6 +141,9 @@ type SecretWriter interface {
 
 	// DeleteAllOf deletes all Secret objects matching the given options.
 	DeleteAllOfSecret(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the Secret object.
+	UpsertSecret(ctx context.Context, obj *Secret, transitionFuncs ...SecretTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a Secret object.
@@ -202,6 +211,19 @@ func (c *secretClient) DeleteAllOfSecret(ctx context.Context, opts ...client.Del
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
+func (c *secretClient) UpsertSecret(ctx context.Context, obj *Secret, transitionFuncs ...SecretTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*Secret), desired.(*Secret)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
 func (c *secretClient) UpdateSecretStatus(ctx context.Context, obj *Secret, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
@@ -219,6 +241,10 @@ type ServiceAccountReader interface {
 	ListServiceAccount(ctx context.Context, opts ...client.ListOption) (*ServiceAccountList, error)
 }
 
+// ServiceAccountTransitionFunction instructs the ServiceAccountWriter how to transition between an existing
+// ServiceAccount object and a desired on an Upsert
+type ServiceAccountTransitionFunction func(existing, desired *ServiceAccount) error
+
 // Writer knows how to create, delete, and update ServiceAccounts.
 type ServiceAccountWriter interface {
 	// Create saves the ServiceAccount object.
@@ -235,6 +261,9 @@ type ServiceAccountWriter interface {
 
 	// DeleteAllOf deletes all ServiceAccount objects matching the given options.
 	DeleteAllOfServiceAccount(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the ServiceAccount object.
+	UpsertServiceAccount(ctx context.Context, obj *ServiceAccount, transitionFuncs ...ServiceAccountTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a ServiceAccount object.
@@ -302,6 +331,19 @@ func (c *serviceAccountClient) DeleteAllOfServiceAccount(ctx context.Context, op
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
+func (c *serviceAccountClient) UpsertServiceAccount(ctx context.Context, obj *ServiceAccount, transitionFuncs ...ServiceAccountTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*ServiceAccount), desired.(*ServiceAccount)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
 func (c *serviceAccountClient) UpdateServiceAccountStatus(ctx context.Context, obj *ServiceAccount, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
@@ -319,6 +361,10 @@ type ConfigMapReader interface {
 	ListConfigMap(ctx context.Context, opts ...client.ListOption) (*ConfigMapList, error)
 }
 
+// ConfigMapTransitionFunction instructs the ConfigMapWriter how to transition between an existing
+// ConfigMap object and a desired on an Upsert
+type ConfigMapTransitionFunction func(existing, desired *ConfigMap) error
+
 // Writer knows how to create, delete, and update ConfigMaps.
 type ConfigMapWriter interface {
 	// Create saves the ConfigMap object.
@@ -335,6 +381,9 @@ type ConfigMapWriter interface {
 
 	// DeleteAllOf deletes all ConfigMap objects matching the given options.
 	DeleteAllOfConfigMap(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the ConfigMap object.
+	UpsertConfigMap(ctx context.Context, obj *ConfigMap, transitionFuncs ...ConfigMapTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a ConfigMap object.
@@ -402,6 +451,19 @@ func (c *configMapClient) DeleteAllOfConfigMap(ctx context.Context, opts ...clie
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
+func (c *configMapClient) UpsertConfigMap(ctx context.Context, obj *ConfigMap, transitionFuncs ...ConfigMapTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*ConfigMap), desired.(*ConfigMap)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
 func (c *configMapClient) UpdateConfigMapStatus(ctx context.Context, obj *ConfigMap, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
@@ -419,6 +481,10 @@ type ServiceReader interface {
 	ListService(ctx context.Context, opts ...client.ListOption) (*ServiceList, error)
 }
 
+// ServiceTransitionFunction instructs the ServiceWriter how to transition between an existing
+// Service object and a desired on an Upsert
+type ServiceTransitionFunction func(existing, desired *Service) error
+
 // Writer knows how to create, delete, and update Services.
 type ServiceWriter interface {
 	// Create saves the Service object.
@@ -435,6 +501,9 @@ type ServiceWriter interface {
 
 	// DeleteAllOf deletes all Service objects matching the given options.
 	DeleteAllOfService(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the Service object.
+	UpsertService(ctx context.Context, obj *Service, transitionFuncs ...ServiceTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a Service object.
@@ -502,6 +571,19 @@ func (c *serviceClient) DeleteAllOfService(ctx context.Context, opts ...client.D
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
+func (c *serviceClient) UpsertService(ctx context.Context, obj *Service, transitionFuncs ...ServiceTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*Service), desired.(*Service)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
 func (c *serviceClient) UpdateServiceStatus(ctx context.Context, obj *Service, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
@@ -519,6 +601,10 @@ type PodReader interface {
 	ListPod(ctx context.Context, opts ...client.ListOption) (*PodList, error)
 }
 
+// PodTransitionFunction instructs the PodWriter how to transition between an existing
+// Pod object and a desired on an Upsert
+type PodTransitionFunction func(existing, desired *Pod) error
+
 // Writer knows how to create, delete, and update Pods.
 type PodWriter interface {
 	// Create saves the Pod object.
@@ -535,6 +621,9 @@ type PodWriter interface {
 
 	// DeleteAllOf deletes all Pod objects matching the given options.
 	DeleteAllOfPod(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the Pod object.
+	UpsertPod(ctx context.Context, obj *Pod, transitionFuncs ...PodTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a Pod object.
@@ -602,6 +691,19 @@ func (c *podClient) DeleteAllOfPod(ctx context.Context, opts ...client.DeleteAll
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
+func (c *podClient) UpsertPod(ctx context.Context, obj *Pod, transitionFuncs ...PodTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*Pod), desired.(*Pod)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
 func (c *podClient) UpdatePodStatus(ctx context.Context, obj *Pod, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
@@ -619,6 +721,10 @@ type NamespaceReader interface {
 	ListNamespace(ctx context.Context, opts ...client.ListOption) (*NamespaceList, error)
 }
 
+// NamespaceTransitionFunction instructs the NamespaceWriter how to transition between an existing
+// Namespace object and a desired on an Upsert
+type NamespaceTransitionFunction func(existing, desired *Namespace) error
+
 // Writer knows how to create, delete, and update Namespaces.
 type NamespaceWriter interface {
 	// Create saves the Namespace object.
@@ -635,6 +741,9 @@ type NamespaceWriter interface {
 
 	// DeleteAllOf deletes all Namespace objects matching the given options.
 	DeleteAllOfNamespace(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the Namespace object.
+	UpsertNamespace(ctx context.Context, obj *Namespace, transitionFuncs ...NamespaceTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a Namespace object.
@@ -702,6 +811,19 @@ func (c *namespaceClient) DeleteAllOfNamespace(ctx context.Context, opts ...clie
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
+func (c *namespaceClient) UpsertNamespace(ctx context.Context, obj *Namespace, transitionFuncs ...NamespaceTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*Namespace), desired.(*Namespace)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
 func (c *namespaceClient) UpdateNamespaceStatus(ctx context.Context, obj *Namespace, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
@@ -719,6 +841,10 @@ type NodeReader interface {
 	ListNode(ctx context.Context, opts ...client.ListOption) (*NodeList, error)
 }
 
+// NodeTransitionFunction instructs the NodeWriter how to transition between an existing
+// Node object and a desired on an Upsert
+type NodeTransitionFunction func(existing, desired *Node) error
+
 // Writer knows how to create, delete, and update Nodes.
 type NodeWriter interface {
 	// Create saves the Node object.
@@ -735,6 +861,9 @@ type NodeWriter interface {
 
 	// DeleteAllOf deletes all Node objects matching the given options.
 	DeleteAllOfNode(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the Node object.
+	UpsertNode(ctx context.Context, obj *Node, transitionFuncs ...NodeTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a Node object.
@@ -800,6 +929,19 @@ func (c *nodeClient) PatchNode(ctx context.Context, obj *Node, patch client.Patc
 func (c *nodeClient) DeleteAllOfNode(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &Node{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *nodeClient) UpsertNode(ctx context.Context, obj *Node, transitionFuncs ...NodeTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*Node), desired.(*Node)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *nodeClient) UpdateNodeStatus(ctx context.Context, obj *Node, opts ...client.UpdateOption) error {

@@ -5,8 +5,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/collections/sets"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
@@ -61,17 +61,17 @@ type AppmeshTranslationDao interface {
 	GetWorkloadsToAllUpstreamServices(
 		ctx context.Context,
 		mesh *zephyr_discovery.Mesh,
-	) (map[string]sets.MeshServiceSet, error)
+	) (map[string]zephyr_discovery_sets.MeshServiceSet, error)
 
 	GetServicesWithACP(
 		ctx context.Context,
 		mesh *zephyr_discovery.Mesh,
-	) (sets.MeshServiceSet, error)
+	) (zephyr_discovery_sets.MeshServiceSet, error)
 
 	GetWorkloadsToUpstreamServicesWithACP(
 		ctx context.Context,
 		mesh *zephyr_discovery.Mesh,
-	) (sets.MeshWorkloadSet, map[string]sets.MeshServiceSet, error)
+	) (zephyr_discovery_sets.MeshWorkloadSet, map[string]zephyr_discovery_sets.MeshServiceSet, error)
 
 	EnsureVirtualService(
 		mesh *zephyr_discovery.Mesh,

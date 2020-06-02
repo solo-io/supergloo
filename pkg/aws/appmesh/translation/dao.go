@@ -6,10 +6,10 @@ import (
 	aws2 "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/collections/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -59,7 +59,7 @@ func (a *appmeshTranslationDao) GetAllServiceWorkloadPairsForMesh(
 func (a *appmeshTranslationDao) GetWorkloadsToAllUpstreamServices(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
-) (map[string]sets.MeshServiceSet, error) {
+) (map[string]zephyr_discovery_sets.MeshServiceSet, error) {
 	meshServices, err := a.listMeshServicesForMesh(ctx, mesh)
 	if err != nil {
 		return nil, err
@@ -68,8 +68,8 @@ func (a *appmeshTranslationDao) GetWorkloadsToAllUpstreamServices(
 	if err != nil {
 		return nil, err
 	}
-	meshServiceSet := sets.NewMeshServiceSet(meshServices...)
-	workloadsToAllUpstreamServices := map[string]sets.MeshServiceSet{}
+	meshServiceSet := zephyr_discovery_sets.NewMeshServiceSet(meshServices...)
+	workloadsToAllUpstreamServices := map[string]zephyr_discovery_sets.MeshServiceSet{}
 	for _, meshWorkload := range meshWorkloads {
 		workloadsToAllUpstreamServices[clients.ToUniqueSingleClusterString(meshWorkload.ObjectMeta)] = meshServiceSet
 	}
@@ -79,23 +79,23 @@ func (a *appmeshTranslationDao) GetWorkloadsToAllUpstreamServices(
 func (a *appmeshTranslationDao) GetServicesWithACP(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
-) (sets.MeshServiceSet, error) {
+) (zephyr_discovery_sets.MeshServiceSet, error) {
 	meshServices, err := a.listMeshServicesForMesh(ctx, mesh)
 	if err != nil {
 		return nil, err
 	}
-	servicesInMesh := sets.NewMeshServiceSet(meshServices...)
+	servicesInMesh := zephyr_discovery_sets.NewMeshServiceSet(meshServices...)
 	acpList, err := a.acpClient.ListAccessControlPolicy(ctx)
 	if err != nil {
 		return nil, err
 	}
-	services := sets.NewMeshServiceSet()
+	services := zephyr_discovery_sets.NewMeshServiceSet()
 	for _, acp := range acpList.Items {
 		acpServices, err := a.resourceSelector.GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
 		if err != nil {
 			return nil, err
 		}
-		acpServicesSet := sets.NewMeshServiceSet(acpServices...)
+		acpServicesSet := zephyr_discovery_sets.NewMeshServiceSet(acpServices...)
 		services.Insert(servicesInMesh.Intersection(acpServicesSet).List()...)
 	}
 	return services, nil
@@ -104,18 +104,18 @@ func (a *appmeshTranslationDao) GetServicesWithACP(
 func (a *appmeshTranslationDao) GetWorkloadsToUpstreamServicesWithACP(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
-) (sets.MeshWorkloadSet, map[string]sets.MeshServiceSet, error) {
+) (zephyr_discovery_sets.MeshWorkloadSet, map[string]zephyr_discovery_sets.MeshServiceSet, error) {
 	meshWorkloads, err := a.listMeshWorkloadsForMesh(ctx, mesh)
 	if err != nil {
 		return nil, nil, err
 	}
-	workloadsInMesh := sets.NewMeshWorkloadSet(meshWorkloads...)
-	workloadsToUpstreamServices := map[string]sets.MeshServiceSet{}
+	workloadsInMesh := zephyr_discovery_sets.NewMeshWorkloadSet(meshWorkloads...)
+	workloadsToUpstreamServices := map[string]zephyr_discovery_sets.MeshServiceSet{}
 	acpList, err := a.acpClient.ListAccessControlPolicy(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
-	declaredWorkloads := sets.NewMeshWorkloadSet()
+	declaredWorkloads := zephyr_discovery_sets.NewMeshWorkloadSet()
 	for _, acp := range acpList.Items {
 		workloads, err := a.resourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, acp.Spec.GetSourceSelector())
 		upstreamServices, err := a.resourceSelector.GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
@@ -126,12 +126,12 @@ func (a *appmeshTranslationDao) GetWorkloadsToUpstreamServicesWithACP(
 			workloadKey := clients.ToUniqueSingleClusterString(workload.ObjectMeta)
 			upstreamServicesSet, ok := workloadsToUpstreamServices[workloadKey]
 			if !ok {
-				workloadsToUpstreamServices[workloadKey] = sets.NewMeshServiceSet(upstreamServices...)
+				workloadsToUpstreamServices[workloadKey] = zephyr_discovery_sets.NewMeshServiceSet(upstreamServices...)
 			} else {
 				upstreamServicesSet.Insert(upstreamServices...)
 			}
 		}
-		acpWorkloadsSet := sets.NewMeshWorkloadSet(workloads...)
+		acpWorkloadsSet := zephyr_discovery_sets.NewMeshWorkloadSet(workloads...)
 		declaredWorkloads.Insert(workloadsInMesh.Intersection(acpWorkloadsSet).List()...)
 	}
 	return declaredWorkloads, workloadsToUpstreamServices, nil

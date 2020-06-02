@@ -7,10 +7,10 @@ import (
 	appmesh2 "github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/hashicorp/go-multierror"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/collections/sets"
 )
 
 const (
@@ -118,7 +118,7 @@ func (a *appmeshTranslationReconciler) reconcile(
 	mesh *zephyr_discovery.Mesh,
 	servicesToBackingWorkloads map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload,
 	workloadsToBackingServices map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService,
-	workloadsToUpstreamServices map[string]sets.MeshServiceSet,
+	workloadsToUpstreamServices map[string]zephyr_discovery_sets.MeshServiceSet,
 ) error {
 	var virtualServices []*appmesh2.VirtualServiceData
 	var virtualRouters []*appmesh2.VirtualRouterData
