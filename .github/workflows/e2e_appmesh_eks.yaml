@@ -10,7 +10,11 @@ jobs:
     name: e2e-appmesh-eks
     runs-on: ubuntu-18.04
     steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
       - name: test
-        if: contains(github.event.pull_request.labels.*.name, 'e2e-appmesh-eks')
+        if: contains( github.event.pull_request.labels.*.name, 'e2e-appmesh-eks')
         run: |
           echo "Hello World!"
