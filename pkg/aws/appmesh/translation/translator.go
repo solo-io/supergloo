@@ -1,8 +1,6 @@
 package translation
 
 import (
-	"strings"
-
 	aws2 "github.com/aws/aws-sdk-go/aws"
 	appmesh2 "github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/rotisserie/eris"
@@ -44,7 +42,9 @@ func (a *appmeshTranslator) BuildVirtualNode(
 		listeners = append(listeners, &appmesh2.Listener{
 			PortMapping: &appmesh2.PortMapping{
 				Port:     aws2.Int64(int64(containerPort.Port)),
-				Protocol: aws2.String(strings.ToLower(containerPort.Protocol)),
+				// TODO https://github.com/solo-io/service-mesh-hub/issues/741
+				//Protocol: aws2.String(strings.ToLower(containerPort.Protocol)),
+				Protocol: aws2.String("http"),
 			},
 		})
 	}
@@ -124,7 +124,9 @@ func (a *appmeshTranslator) BuildVirtualRouter(
 		virtualRouterListeners = append(virtualRouterListeners, &appmesh2.VirtualRouterListener{
 			PortMapping: &appmesh2.PortMapping{
 				Port:     aws2.Int64(int64(servicePort.GetPort())),
-				Protocol: aws2.String(strings.ToLower(servicePort.GetProtocol())),
+				// TODO https://github.com/solo-io/service-mesh-hub/issues/741
+				//Protocol: aws2.String(strings.ToLower(servicePort.GetProtocol())),
+				Protocol: aws2.String("http"),
 			},
 		})
 	}
