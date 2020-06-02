@@ -33,6 +33,15 @@ var _ = Describe("HappyPath", func() {
 		}, "1m", "1s").Should(ContainSubstring("The slapstick humour is refreshing!"))
 	})
 
+	applyTrafficPolicy := func(tpYaml string) {
+		ParseYaml(tpYaml, &tp)
+		err := env.Management.TrafficPolicyClient.CreateTrafficPolicy(context.Background(), &tp)
+		Expect(err).NotTo(HaveOccurred())
+		// see that it was accepted
+
+		Eventually(StatusOf(tp, env.Management), "1m", "1s").Should(Equal(v1alpha1types.Status_ACCEPTED))
+	}
+
 	It("should work with traffic policy to local (v2) reviews", func() {
 		env := GetEnv()
 
@@ -60,13 +69,7 @@ spec:
       subset:
         version: v2
 `
-		ParseYaml(tpYaml, &tp)
-		err := env.Management.TrafficPolicyClient.CreateTrafficPolicy(context.Background(), &tp)
-		Expect(err).NotTo(HaveOccurred())
-		// see that it was accepted
-
-		Eventually(StatusOf(tp, env.Management), "1m", "1s").Should(Equal(v1alpha1types.Status_ACCEPTED))
-
+		applyTrafficPolicy(tpYaml)
 		Consistently(func() string {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute/3)
 			defer cancel()
@@ -102,12 +105,7 @@ spec:
         namespace: default
       weight: 100
 `
-		ParseYaml(tpYaml, &tp)
-		err := env.Management.TrafficPolicyClient.CreateTrafficPolicy(context.Background(), &tp)
-		Expect(err).NotTo(HaveOccurred())
-		// see that it was accepted
-
-		Eventually(StatusOf(tp, env.Management), "1m", "1s").Should(Equal(v1alpha1types.Status_ACCEPTED))
+		applyTrafficPolicy(tpYaml)
 
 		Consistently(func() string {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute/3)
