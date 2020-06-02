@@ -27,7 +27,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/resolver"
 	istio_federation "github.com/solo-io/service-mesh-hub/pkg/federation/resolver/meshes/istio"
-	strategies2 "github.com/solo-io/service-mesh-hub/pkg/federation/strategies"
+	"github.com/solo-io/service-mesh-hub/pkg/federation/strategies"
 	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
@@ -112,7 +112,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	istioCertConfigProducer := cert_manager.NewIstioCertConfigProducer()
 	virtualMeshCertificateManager := cert_manager.NewVirtualMeshCsrProcessor(dynamicClientGetter, meshClient, virtualMeshFinder, virtualMeshCertificateSigningRequestClientFactory, istioCertConfigProducer)
 	vmcsrSnapshotListener := cert_manager.NewVMCSRSnapshotListener(virtualMeshCertificateManager, virtualMeshClient)
-	federationStrategyChooser := strategies2.NewFederationStrategyChooser()
+	federationStrategyChooser := strategies.NewFederationStrategyChooser()
 	federationDecider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, federationStrategyChooser)
 	federationDeciderSnapshotListener := decider.NewFederationSnapshotListener(federationDecider)
 	meshNetworkingSnapshotContext := MeshNetworkingSnapshotContextProvider(meshWorkloadEventWatcher, meshServiceEventWatcher, virtualMeshEventWatcher, meshNetworkingSnapshotValidator, vmcsrSnapshotListener, federationDeciderSnapshotListener)
