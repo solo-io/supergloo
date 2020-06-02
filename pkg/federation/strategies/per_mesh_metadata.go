@@ -7,7 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -52,7 +52,7 @@ type ErrorReport struct {
 
 func BuildPerMeshMetadataFromSnapshot(
 	ctx context.Context,
-	snapshot *snapshot.MeshNetworkingSnapshot,
+	snapshot *networking_snapshot.MeshNetworkingSnapshot,
 	meshClient zephyr_discovery.MeshClient,
 ) (PerMeshMetadata, []ErrorReport) {
 	var errors []ErrorReport

@@ -7,7 +7,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
+	"github.com/solo-io/service-mesh-hub/pkg/federation/dns"
 )
 
 func NewPermissiveFederation(meshServiceClient zephyr_discovery.MeshServiceClient) FederationStrategy {

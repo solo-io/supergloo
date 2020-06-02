@@ -1,4 +1,4 @@
-package snapshot
+package networking_snapshot
 
 import (
 	"context"

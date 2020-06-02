@@ -1,4 +1,4 @@
-package snapshot_test
+package networking_snapshot_test
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot"
-	mock_snapshot "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot/mocks"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
+	mock_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot/mocks"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/networking"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,7 +49,7 @@ var _ = Describe("Networking Snapshot", func() {
 	})
 
 	It("can receive events", func() {
-		updatedSnapshot := snapshot.MeshNetworkingSnapshot{
+		updatedSnapshot := networking_snapshot.MeshNetworkingSnapshot{
 			MeshServices: []*zephyr_discovery.MeshService{meshService1},
 		}
 
@@ -75,7 +75,7 @@ var _ = Describe("Networking Snapshot", func() {
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		generator, err := snapshot.NewMeshNetworkingSnapshotGenerator(
+		generator, err := networking_snapshot.NewMeshNetworkingSnapshotGenerator(
 			ctx,
 			validator,
 			MeshServiceEventWatcher,
@@ -88,7 +88,7 @@ var _ = Describe("Networking Snapshot", func() {
 		listener := mock_snapshot.NewMockMeshNetworkingSnapshotListener(ctrl)
 		listener.EXPECT().
 			Sync(gomock.Any(), &updatedSnapshot).
-			DoAndReturn(func(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot) {
+			DoAndReturn(func(ctx context.Context, snap *networking_snapshot.MeshNetworkingSnapshot) {
 				didReceiveSnapshot <- struct{}{}
 			})
 
@@ -103,7 +103,7 @@ var _ = Describe("Networking Snapshot", func() {
 	})
 
 	It("should not push snapshots if nothing has changed", func() {
-		updatedSnapshot := snapshot.MeshNetworkingSnapshot{
+		updatedSnapshot := networking_snapshot.MeshNetworkingSnapshot{
 			MeshServices: []*zephyr_discovery.MeshService{meshService1},
 		}
 
@@ -129,7 +129,7 @@ var _ = Describe("Networking Snapshot", func() {
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		generator, err := snapshot.NewMeshNetworkingSnapshotGenerator(
+		generator, err := networking_snapshot.NewMeshNetworkingSnapshotGenerator(
 			ctx,
 			validator,
 			MeshServiceEventWatcher,
@@ -142,7 +142,7 @@ var _ = Describe("Networking Snapshot", func() {
 		listener := mock_snapshot.NewMockMeshNetworkingSnapshotListener(ctrl)
 		listener.EXPECT().
 			Sync(gomock.Any(), &updatedSnapshot).
-			DoAndReturn(func(ctx context.Context, networkingSnapshot *snapshot.MeshNetworkingSnapshot) {
+			DoAndReturn(func(ctx context.Context, networkingSnapshot *networking_snapshot.MeshNetworkingSnapshot) {
 				didReceiveSnapshot <- struct{}{}
 			})
 		generator.RegisterListener(listener)
@@ -161,7 +161,7 @@ var _ = Describe("Networking Snapshot", func() {
 	})
 
 	It("can aggregate multiple events that roll in close to each other", func() {
-		originalSnapshot := &snapshot.MeshNetworkingSnapshot{
+		originalSnapshot := &networking_snapshot.MeshNetworkingSnapshot{
 			MeshServices: []*zephyr_discovery.MeshService{meshService1},
 		}
 
@@ -170,7 +170,7 @@ var _ = Describe("Networking Snapshot", func() {
 			ValidateMeshServiceUpsert(gomock.Any(), meshService1, originalSnapshot).
 			Return(true)
 
-		updatedSnapshot := &snapshot.MeshNetworkingSnapshot{
+		updatedSnapshot := &networking_snapshot.MeshNetworkingSnapshot{
 			MeshServices: append(originalSnapshot.MeshServices, meshService2),
 		}
 		validator.EXPECT().
@@ -196,7 +196,7 @@ var _ = Describe("Networking Snapshot", func() {
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		generator, err := snapshot.NewMeshNetworkingSnapshotGenerator(
+		generator, err := networking_snapshot.NewMeshNetworkingSnapshotGenerator(
 			ctx,
 			validator,
 			MeshServiceEventWatcher,
@@ -209,7 +209,7 @@ var _ = Describe("Networking Snapshot", func() {
 		listener := mock_snapshot.NewMockMeshNetworkingSnapshotListener(ctrl)
 		listener.EXPECT().
 			Sync(gomock.Any(), updatedSnapshot).
-			DoAndReturn(func(ctx context.Context, networkingSnapshot *snapshot.MeshNetworkingSnapshot) {
+			DoAndReturn(func(ctx context.Context, networkingSnapshot *networking_snapshot.MeshNetworkingSnapshot) {
 				didReceiveSnapshot <- struct{}{}
 			})
 
@@ -231,7 +231,7 @@ var _ = Describe("Networking Snapshot", func() {
 	})
 
 	It("can accurately swap out updated resources from the current state of the world", func() {
-		originalSnapshot := &snapshot.MeshNetworkingSnapshot{
+		originalSnapshot := &networking_snapshot.MeshNetworkingSnapshot{
 			MeshServices: []*zephyr_discovery.MeshService{meshService1},
 		}
 		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
@@ -239,7 +239,7 @@ var _ = Describe("Networking Snapshot", func() {
 			ValidateMeshServiceUpsert(gomock.Any(), meshService1, originalSnapshot).
 			Return(true)
 
-		updatedSnapshot := &snapshot.MeshNetworkingSnapshot{
+		updatedSnapshot := &networking_snapshot.MeshNetworkingSnapshot{
 			MeshServices: append(originalSnapshot.MeshServices, meshService2),
 		}
 		validator.EXPECT().
@@ -265,7 +265,7 @@ var _ = Describe("Networking Snapshot", func() {
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		generator, err := snapshot.NewMeshNetworkingSnapshotGenerator(
+		generator, err := networking_snapshot.NewMeshNetworkingSnapshotGenerator(
 			ctx,
 			validator,
 			MeshServiceEventWatcher,
@@ -285,13 +285,13 @@ var _ = Describe("Networking Snapshot", func() {
 		listener := mock_snapshot.NewMockMeshNetworkingSnapshotListener(ctrl)
 		listener.EXPECT().
 			Sync(gomock.Any(), updatedSnapshot).
-			DoAndReturn(func(ctx context.Context, networkingSnapshot *snapshot.MeshNetworkingSnapshot) {
+			DoAndReturn(func(ctx context.Context, networkingSnapshot *networking_snapshot.MeshNetworkingSnapshot) {
 				didReceiveSnapshot <- struct{}{}
 			}).Times(1)
 
 		generator.RegisterListener(listener)
 
-		newSnapshot := &snapshot.MeshNetworkingSnapshot{
+		newSnapshot := &networking_snapshot.MeshNetworkingSnapshot{
 			MeshServices: []*zephyr_discovery.MeshService{
 				updatedSnapshot.MeshServices[0],
 				updatedService,
@@ -303,7 +303,7 @@ var _ = Describe("Networking Snapshot", func() {
 
 		listener.EXPECT().
 			Sync(gomock.Any(), newSnapshot).
-			DoAndReturn(func(ctx context.Context, networkingSnapshot *snapshot.MeshNetworkingSnapshot) {
+			DoAndReturn(func(ctx context.Context, networkingSnapshot *networking_snapshot.MeshNetworkingSnapshot) {
 				didReceiveSnapshot <- struct{}{}
 			}).Times(1)
 

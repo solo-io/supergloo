@@ -12,7 +12,7 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
+	strategies2 "github.com/solo-io/service-mesh-hub/pkg/federation/strategies"
 	mock_discovery_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -60,7 +60,7 @@ var _ = Describe("Permissive Federation", func() {
 				},
 			},
 		}
-		perMeshResources := map[string]*strategies.MeshMetadata{
+		perMeshResources := map[string]*strategies2.MeshMetadata{
 			"mesh-1": {
 				MeshServices: []*zephyr_discovery.MeshService{service},
 				ClusterName:  "application-cluster",
@@ -76,7 +76,7 @@ var _ = Describe("Permissive Federation", func() {
 			UpsertMeshServiceSpec(ctx, &serviceCopy).
 			Return(nil)
 
-		err := strategies.NewPermissiveFederation(meshServiceClient).WriteFederationToServices(ctx, vm, perMeshResources)
+		err := strategies2.NewPermissiveFederation(meshServiceClient).WriteFederationToServices(ctx, vm, perMeshResources)
 		Expect(err).NotTo(HaveOccurred())
 	})
 })

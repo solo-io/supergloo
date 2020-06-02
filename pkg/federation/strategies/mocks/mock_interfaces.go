@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	strategies "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
+	strategies2 "github.com/solo-io/service-mesh-hub/pkg/federation/strategies"
 )
 
 // MockFederationStrategy is a mock of FederationStrategy interface.
@@ -37,7 +37,7 @@ func (m *MockFederationStrategy) EXPECT() *MockFederationStrategyMockRecorder {
 }
 
 // WriteFederationToServices mocks base method.
-func (m *MockFederationStrategy) WriteFederationToServices(ctx context.Context, vm *v1alpha1.VirtualMesh, meshNameToMetadata strategies.MeshNameToMetadata) error {
+func (m *MockFederationStrategy) WriteFederationToServices(ctx context.Context, vm *v1alpha1.VirtualMesh, meshNameToMetadata strategies2.MeshNameToMetadata) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WriteFederationToServices", ctx, vm, meshNameToMetadata)
 	ret0, _ := ret[0].(error)

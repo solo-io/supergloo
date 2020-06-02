@@ -8,8 +8,8 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
+	strategies2 "github.com/solo-io/service-mesh-hub/pkg/federation/strategies"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	"go.uber.org/zap"
 )
 
@@ -24,24 +24,24 @@ var (
 )
 
 func NewFederationSnapshotListener(decider FederationDecider) FederationDeciderSnapshotListener {
-	return &snapshot.MeshNetworkingSnapshotListenerFunc{
-		OnSync: func(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot) {
+	return &networking_snapshot.MeshNetworkingSnapshotListenerFunc{
+		OnSync: func(ctx context.Context, snap *networking_snapshot.MeshNetworkingSnapshot) {
 			decider.DecideFederation(contextutils.WithLogger(ctx, "federation_decider"), snap)
 		},
 	}
 }
 
-type FederationDeciderSnapshotListener snapshot.MeshNetworkingSnapshotListener
+type FederationDeciderSnapshotListener networking_snapshot.MeshNetworkingSnapshotListener
 
 type FederationDecider interface {
-	DecideFederation(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot)
+	DecideFederation(ctx context.Context, snap *networking_snapshot.MeshNetworkingSnapshot)
 }
 
 func NewFederationDecider(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshClient zephyr_discovery.MeshClient,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
-	federationStrategyChooser strategies.FederationStrategyChooser,
+	federationStrategyChooser strategies2.FederationStrategyChooser,
 ) FederationDecider {
 	return &federationDecider{
 		meshServiceClient:         meshServiceClient,
@@ -55,13 +55,13 @@ type federationDecider struct {
 	meshServiceClient         zephyr_discovery.MeshServiceClient
 	meshClient                zephyr_discovery.MeshClient
 	virtualMeshClient         zephyr_networking.VirtualMeshClient
-	federationStrategyChooser strategies.FederationStrategyChooser
+	federationStrategyChooser strategies2.FederationStrategyChooser
 }
 
-func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnapshot *snapshot.MeshNetworkingSnapshot) {
+func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnapshot *networking_snapshot.MeshNetworkingSnapshot) {
 	logger := contextutils.LoggerFrom(ctx)
 
-	perMeshMetadata, errorReports := strategies.BuildPerMeshMetadataFromSnapshot(ctx, networkingSnapshot, f.meshClient)
+	perMeshMetadata, errorReports := strategies2.BuildPerMeshMetadataFromSnapshot(ctx, networkingSnapshot, f.meshClient)
 
 	// log and update the status just for the ones that failed, then continue
 	if len(errorReports) > 0 {
@@ -89,7 +89,7 @@ func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnap
 func (f *federationDecider) federateVirtualMesh(
 	ctx context.Context,
 	vm *zephyr_networking.VirtualMesh,
-	perMeshMetadata strategies.PerMeshMetadata,
+	perMeshMetadata strategies2.PerMeshMetadata,
 ) {
 	logger := contextutils.LoggerFrom(ctx)
 

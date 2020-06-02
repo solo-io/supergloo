@@ -9,7 +9,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/snapshot"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -26,7 +26,7 @@ var (
 func NewVirtualMeshValidator(
 	meshFinder VirtualMeshFinder,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
-) snapshot.MeshNetworkingSnapshotValidator {
+) networking_snapshot.MeshNetworkingSnapshotValidator {
 	return &virtualMeshValidator{
 		meshFinder:        meshFinder,
 		virtualMeshClient: virtualMeshClient,
@@ -38,31 +38,31 @@ type virtualMeshValidator struct {
 	virtualMeshClient zephyr_networking.VirtualMeshClient
 }
 
-func (m *virtualMeshValidator) ValidateVirtualMeshUpsert(ctx context.Context, obj *zephyr_networking.VirtualMesh, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateVirtualMeshUpsert(ctx context.Context, obj *zephyr_networking.VirtualMesh, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	err := m.validate(ctx, obj)
 	m.updateVirtualMeshStatus(ctx, obj)
 	return err == nil
 }
 
-func (m *virtualMeshValidator) ValidateVirtualMeshDelete(ctx context.Context, obj *zephyr_networking.VirtualMesh, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateVirtualMeshDelete(ctx context.Context, obj *zephyr_networking.VirtualMesh, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	err := m.validate(ctx, obj)
 	m.updateVirtualMeshStatus(ctx, obj)
 	return err == nil
 }
 
-func (m *virtualMeshValidator) ValidateMeshServiceUpsert(ctx context.Context, obj *zephyr_discovery.MeshService, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateMeshServiceUpsert(ctx context.Context, obj *zephyr_discovery.MeshService, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	return true
 }
 
-func (m *virtualMeshValidator) ValidateMeshServiceDelete(ctx context.Context, obj *zephyr_discovery.MeshService, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateMeshServiceDelete(ctx context.Context, obj *zephyr_discovery.MeshService, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	return true
 }
 
-func (m *virtualMeshValidator) ValidateMeshWorkloadUpsert(ctx context.Context, obj *zephyr_discovery.MeshWorkload, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateMeshWorkloadUpsert(ctx context.Context, obj *zephyr_discovery.MeshWorkload, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	return true
 }
 
-func (m *virtualMeshValidator) ValidateMeshWorkloadDelete(ctx context.Context, obj *zephyr_discovery.MeshWorkload, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateMeshWorkloadDelete(ctx context.Context, obj *zephyr_discovery.MeshWorkload, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	return true
 }
 

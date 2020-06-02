@@ -24,6 +24,10 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
+	"github.com/solo-io/service-mesh-hub/pkg/federation/dns"
+	"github.com/solo-io/service-mesh-hub/pkg/federation/resolver"
+	istio_federation "github.com/solo-io/service-mesh-hub/pkg/federation/resolver/meshes/istio"
+	strategies2 "github.com/solo-io/service-mesh-hub/pkg/federation/strategies"
 	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
@@ -36,10 +40,6 @@ import (
 	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/aws"
 	controller_factories "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/controllers"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver"
-	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
 	linkerd_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/linkerd-translator"
@@ -112,7 +112,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	istioCertConfigProducer := cert_manager.NewIstioCertConfigProducer()
 	virtualMeshCertificateManager := cert_manager.NewVirtualMeshCsrProcessor(dynamicClientGetter, meshClient, virtualMeshFinder, virtualMeshCertificateSigningRequestClientFactory, istioCertConfigProducer)
 	vmcsrSnapshotListener := cert_manager.NewVMCSRSnapshotListener(virtualMeshCertificateManager, virtualMeshClient)
-	federationStrategyChooser := strategies.NewFederationStrategyChooser()
+	federationStrategyChooser := strategies2.NewFederationStrategyChooser()
 	federationDecider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, federationStrategyChooser)
 	federationDeciderSnapshotListener := decider.NewFederationSnapshotListener(federationDecider)
 	meshNetworkingSnapshotContext := MeshNetworkingSnapshotContextProvider(meshWorkloadEventWatcher, meshServiceEventWatcher, virtualMeshEventWatcher, meshNetworkingSnapshotValidator, vmcsrSnapshotListener, federationDeciderSnapshotListener)

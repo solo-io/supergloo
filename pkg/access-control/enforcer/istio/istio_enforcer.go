@@ -9,9 +9,9 @@ import (
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	istio_federation "github.com/solo-io/service-mesh-hub/pkg/federation/resolver/meshes/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
-	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	istio_api_security "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	client_security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -77,10 +77,10 @@ func (i *istioEnforcer) startEnforcing(ctx context.Context, mesh *zephyr_discove
 		return err
 	}
 	authPolicyClient := i.authPolicyClientFactory(clientForCluster)
-	if err := i.ensureIngressGatewayPolicy(ctx, installationNamespace, mesh, authPolicyClient); err != nil {
+	if err := i.ensureIngressGatewayPolicy(ctx, installationNamespace, authPolicyClient); err != nil {
 		return err
 	}
-	if err := i.ensureGlobalAuthPolicy(ctx, installationNamespace, mesh, authPolicyClient); err != nil {
+	if err := i.ensureGlobalAuthPolicy(ctx, installationNamespace, authPolicyClient); err != nil {
 		return err
 	}
 	return nil
@@ -114,7 +114,6 @@ func (*istioEnforcer) getIstioInstallation(mesh *zephyr_discovery.Mesh) *zephyr_
 func (i *istioEnforcer) ensureGlobalAuthPolicy(
 	ctx context.Context,
 	installationNamespace string,
-	mesh *zephyr_discovery.Mesh,
 	authPolicyClient istio_security.AuthorizationPolicyClient,
 ) error {
 	// The following config denies all traffic in the mesh because it defaults to an ALLOW rule that doesn't match any requests,
@@ -134,7 +133,6 @@ func (i *istioEnforcer) ensureGlobalAuthPolicy(
 func (i *istioEnforcer) ensureIngressGatewayPolicy(
 	ctx context.Context,
 	installationNamespace string,
-	mesh *zephyr_discovery.Mesh,
 	authPolicyClient istio_security.AuthorizationPolicyClient,
 ) error {
 	// The following config allows all traffic into the "istio-ingressgateway", which in Service Mesh Hub is

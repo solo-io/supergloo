@@ -9,8 +9,8 @@ import (
 	. "github.com/onsi/gomega"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_core_types "k8s.io/api/core/v1"
 )
