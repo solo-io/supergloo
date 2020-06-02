@@ -1,0 +1,17 @@
+name: e2e_test
+
+on:
+  pull_request:
+    branches:
+      - 'master'
+
+jobs:
+  e2e:
+    if: contains(github.event.pull_request.labels.*.name, 'e2e-appmesh-eks')
+    name: e2e-appmesh-eks
+    runs-on: ubuntu-18.04
+    steps:
+      - name: test
+        uses: actions/cache@v1
+        run: |
+          echo "Hello World!"
