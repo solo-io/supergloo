@@ -10,7 +10,8 @@ kubectl --context kind-$managementPlane get pod -A
 kubectl --context kind-$remoteCluster get pod -A
 kubectl --context kind-$managementPlane get meshworkloads -A
 kubectl --context kind-$managementPlane get meshservices -A
+kubectl --context kind-$managementPlane get trafficpolicies -A -o yaml
 
 # and process and disk info to debug out of disk space issues in CI
-ps -auxf
+# this is too verbose: ps -auxf
 df -h

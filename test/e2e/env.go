@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"bytes"
 	"context"
 	"io/ioutil"
 	"os"
@@ -10,8 +11,10 @@ import (
 	"sync"
 	"time"
 
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -36,25 +39,27 @@ func newEnv(mgmt, remote string) Env {
 	}
 }
 
-func clientFor(context string) *kubernetes.Clientset {
+type KubeContext struct {
+	Context             string
+	Clientset           *kubernetes.Clientset
+	TrafficPolicyClient v1alpha1.TrafficPolicyClient
+}
+
+func newKubeContext(kubecontext string) KubeContext {
 	cfg, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
-	config := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, nil)
+	config := clientcmd.NewNonInteractiveClientConfig(*cfg, kubecontext, &clientcmd.ConfigOverrides{}, nil)
 	restcfg, err := config.ClientConfig()
 	Expect(err).NotTo(HaveOccurred())
 	clientset, err := kubernetes.NewForConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
-	return clientset
-}
 
-type KubeContext struct {
-	Context string
-	Client  *kubernetes.Clientset
-}
+	clientset2, err := v1alpha1.ClientsetFromConfigProvider(restcfg)
+	Expect(err).NotTo(HaveOccurred())
 
-func newKubeContext(kubecontext string) KubeContext {
 	return KubeContext{
-		Context: kubecontext,
-		Client:  clientFor(kubecontext),
+		Context:             kubecontext,
+		Clientset:           clientset,
+		TrafficPolicyClient: v1alpha1.TrafficPolicyClientFromClientsetProvider(clientset2),
 	}
 }
 
@@ -72,7 +77,7 @@ func (p *Pod) Curl(ctx context.Context, args ...string) string {
 }
 
 func (k *KubeContext) GetPod(ns, app string) *Pod {
-	pl, err := k.Client.CoreV1().Pods(ns).List(v1.ListOptions{LabelSelector: "app=" + app})
+	pl, err := k.Clientset.CoreV1().Pods(ns).List(v1.ListOptions{LabelSelector: "app=" + app})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(pl.Items).NotTo(BeEmpty())
 
@@ -166,4 +171,12 @@ func dumpState() {
 	dbgCmd.Stdout = GinkgoWriter
 	dbgCmd.Stderr = GinkgoWriter
 	dbgCmd.Run()
+}
+
+func ParseYaml(yml string, msg interface{}) {
+	var buf bytes.Buffer
+	buf.WriteString(yml)
+	decoder := yaml.NewYAMLOrJSONDecoder(&buf, 1024)
+	err := decoder.Decode(msg)
+	Expect(err).NotTo(HaveOccurred())
 }
