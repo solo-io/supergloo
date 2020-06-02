@@ -70,7 +70,6 @@ func main() {
 				RenderTypes:      renderTypes,
 				RenderController: true,
 				RenderProtos:     true,
-				RenderClients:    true,
 				CustomTemplates: []model.CustomTemplates{
 					{
 						Templates: map[string]string{

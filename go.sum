@@ -1524,6 +1524,7 @@ istio.io/api v0.0.0-20200218013118-7fd43ea7fc2b h1:9m5PCO7B94jCHne9O49k1v7RUMZ75
 istio.io/api v0.0.0-20200218013118-7fd43ea7fc2b/go.mod h1:bcY3prusO/6vA6zGHz4PNG2v79clPyTw06Xx3fprJSQ=
 istio.io/client-go v0.0.0-20200218195608-60c238c92aa0 h1:lBc91fYDwrrr9opyDd4jLqV1SQ4l3U4kSzSpWFs/TIE=
 istio.io/client-go v0.0.0-20200218195608-60c238c92aa0/go.mod h1:XO8/fQxkYfiWaMVFTHnwYgAUGEWSUKOv+Ik8OQfYUr4=
+istio.io/client-go v0.0.0-20200601150742-08b47b9edf56 h1:qPAM/4iodFVcLvwaTyqAo2na9h298JIaRoRBGzZIhC8=
 istio.io/gogo-genproto v0.0.0-20190124151557-6d926a6e6feb/go.mod h1:eIDJ6jNk/IeJz6ODSksHl5Aiczy5JUq6vFhJWI5OtiI=
 istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a/go.mod h1:OzpAts7jljZceG4Vqi5/zXy/pOg1b209T3jb7Nv5wIs=
 istio.io/gogo-genproto v0.0.0-20191009201739-17d570f95998/go.mod h1:OzpAts7jljZceG4Vqi5/zXy/pOg1b209T3jb7Nv5wIs=

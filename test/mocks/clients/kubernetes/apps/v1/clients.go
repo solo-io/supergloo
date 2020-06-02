@@ -9,7 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1 "k8s.io/api/apps/v1"
+	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	v10 "k8s.io/api/apps/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -38,7 +39,7 @@ func (m *MockDeploymentClient) EXPECT() *MockDeploymentClientMockRecorder {
 }
 
 // CreateDeployment mocks base method.
-func (m *MockDeploymentClient) CreateDeployment(arg0 context.Context, arg1 *v1.Deployment, arg2 ...client.CreateOption) error {
+func (m *MockDeploymentClient) CreateDeployment(arg0 context.Context, arg1 *v10.Deployment, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -95,10 +96,10 @@ func (mr *MockDeploymentClientMockRecorder) DeleteDeployment(arg0, arg1 interfac
 }
 
 // GetDeployment mocks base method.
-func (m *MockDeploymentClient) GetDeployment(arg0 context.Context, arg1 types.NamespacedName) (*v1.Deployment, error) {
+func (m *MockDeploymentClient) GetDeployment(arg0 context.Context, arg1 types.NamespacedName) (*v10.Deployment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeployment", arg0, arg1)
-	ret0, _ := ret[0].(*v1.Deployment)
+	ret0, _ := ret[0].(*v10.Deployment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -110,14 +111,14 @@ func (mr *MockDeploymentClientMockRecorder) GetDeployment(arg0, arg1 interface{}
 }
 
 // ListDeployment mocks base method.
-func (m *MockDeploymentClient) ListDeployment(arg0 context.Context, arg1 ...client.ListOption) (*v1.DeploymentList, error) {
+func (m *MockDeploymentClient) ListDeployment(arg0 context.Context, arg1 ...client.ListOption) (*v10.DeploymentList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ListDeployment", varargs...)
-	ret0, _ := ret[0].(*v1.DeploymentList)
+	ret0, _ := ret[0].(*v10.DeploymentList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -130,7 +131,7 @@ func (mr *MockDeploymentClientMockRecorder) ListDeployment(arg0 interface{}, arg
 }
 
 // PatchDeployment mocks base method.
-func (m *MockDeploymentClient) PatchDeployment(arg0 context.Context, arg1 *v1.Deployment, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockDeploymentClient) PatchDeployment(arg0 context.Context, arg1 *v10.Deployment, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -149,7 +150,7 @@ func (mr *MockDeploymentClientMockRecorder) PatchDeployment(arg0, arg1, arg2 int
 }
 
 // PatchDeploymentStatus mocks base method.
-func (m *MockDeploymentClient) PatchDeploymentStatus(arg0 context.Context, arg1 *v1.Deployment, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockDeploymentClient) PatchDeploymentStatus(arg0 context.Context, arg1 *v10.Deployment, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -168,7 +169,7 @@ func (mr *MockDeploymentClientMockRecorder) PatchDeploymentStatus(arg0, arg1, ar
 }
 
 // UpdateDeployment mocks base method.
-func (m *MockDeploymentClient) UpdateDeployment(arg0 context.Context, arg1 *v1.Deployment, arg2 ...client.UpdateOption) error {
+func (m *MockDeploymentClient) UpdateDeployment(arg0 context.Context, arg1 *v10.Deployment, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -187,7 +188,7 @@ func (mr *MockDeploymentClientMockRecorder) UpdateDeployment(arg0, arg1 interfac
 }
 
 // UpdateDeploymentStatus mocks base method.
-func (m *MockDeploymentClient) UpdateDeploymentStatus(arg0 context.Context, arg1 *v1.Deployment, arg2 ...client.UpdateOption) error {
+func (m *MockDeploymentClient) UpdateDeploymentStatus(arg0 context.Context, arg1 *v10.Deployment, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -203,6 +204,25 @@ func (mr *MockDeploymentClientMockRecorder) UpdateDeploymentStatus(arg0, arg1 in
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeploymentStatus", reflect.TypeOf((*MockDeploymentClient)(nil).UpdateDeploymentStatus), varargs...)
+}
+
+// UpsertDeployment mocks base method.
+func (m *MockDeploymentClient) UpsertDeployment(arg0 context.Context, arg1 *v10.Deployment, arg2 ...v1.DeploymentTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertDeployment", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertDeployment indicates an expected call of UpsertDeployment.
+func (mr *MockDeploymentClientMockRecorder) UpsertDeployment(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertDeployment", reflect.TypeOf((*MockDeploymentClient)(nil).UpsertDeployment), varargs...)
 }
 
 // MockReplicaSetClient is a mock of ReplicaSetClient interface.
@@ -229,7 +249,7 @@ func (m *MockReplicaSetClient) EXPECT() *MockReplicaSetClientMockRecorder {
 }
 
 // CreateReplicaSet mocks base method.
-func (m *MockReplicaSetClient) CreateReplicaSet(arg0 context.Context, arg1 *v1.ReplicaSet, arg2 ...client.CreateOption) error {
+func (m *MockReplicaSetClient) CreateReplicaSet(arg0 context.Context, arg1 *v10.ReplicaSet, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -286,10 +306,10 @@ func (mr *MockReplicaSetClientMockRecorder) DeleteReplicaSet(arg0, arg1 interfac
 }
 
 // GetReplicaSet mocks base method.
-func (m *MockReplicaSetClient) GetReplicaSet(arg0 context.Context, arg1 types.NamespacedName) (*v1.ReplicaSet, error) {
+func (m *MockReplicaSetClient) GetReplicaSet(arg0 context.Context, arg1 types.NamespacedName) (*v10.ReplicaSet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetReplicaSet", arg0, arg1)
-	ret0, _ := ret[0].(*v1.ReplicaSet)
+	ret0, _ := ret[0].(*v10.ReplicaSet)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -301,14 +321,14 @@ func (mr *MockReplicaSetClientMockRecorder) GetReplicaSet(arg0, arg1 interface{}
 }
 
 // ListReplicaSet mocks base method.
-func (m *MockReplicaSetClient) ListReplicaSet(arg0 context.Context, arg1 ...client.ListOption) (*v1.ReplicaSetList, error) {
+func (m *MockReplicaSetClient) ListReplicaSet(arg0 context.Context, arg1 ...client.ListOption) (*v10.ReplicaSetList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ListReplicaSet", varargs...)
-	ret0, _ := ret[0].(*v1.ReplicaSetList)
+	ret0, _ := ret[0].(*v10.ReplicaSetList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -321,7 +341,7 @@ func (mr *MockReplicaSetClientMockRecorder) ListReplicaSet(arg0 interface{}, arg
 }
 
 // PatchReplicaSet mocks base method.
-func (m *MockReplicaSetClient) PatchReplicaSet(arg0 context.Context, arg1 *v1.ReplicaSet, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockReplicaSetClient) PatchReplicaSet(arg0 context.Context, arg1 *v10.ReplicaSet, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -340,7 +360,7 @@ func (mr *MockReplicaSetClientMockRecorder) PatchReplicaSet(arg0, arg1, arg2 int
 }
 
 // PatchReplicaSetStatus mocks base method.
-func (m *MockReplicaSetClient) PatchReplicaSetStatus(arg0 context.Context, arg1 *v1.ReplicaSet, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockReplicaSetClient) PatchReplicaSetStatus(arg0 context.Context, arg1 *v10.ReplicaSet, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -359,7 +379,7 @@ func (mr *MockReplicaSetClientMockRecorder) PatchReplicaSetStatus(arg0, arg1, ar
 }
 
 // UpdateReplicaSet mocks base method.
-func (m *MockReplicaSetClient) UpdateReplicaSet(arg0 context.Context, arg1 *v1.ReplicaSet, arg2 ...client.UpdateOption) error {
+func (m *MockReplicaSetClient) UpdateReplicaSet(arg0 context.Context, arg1 *v10.ReplicaSet, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -378,7 +398,7 @@ func (mr *MockReplicaSetClientMockRecorder) UpdateReplicaSet(arg0, arg1 interfac
 }
 
 // UpdateReplicaSetStatus mocks base method.
-func (m *MockReplicaSetClient) UpdateReplicaSetStatus(arg0 context.Context, arg1 *v1.ReplicaSet, arg2 ...client.UpdateOption) error {
+func (m *MockReplicaSetClient) UpdateReplicaSetStatus(arg0 context.Context, arg1 *v10.ReplicaSet, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -394,4 +414,23 @@ func (mr *MockReplicaSetClientMockRecorder) UpdateReplicaSetStatus(arg0, arg1 in
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReplicaSetStatus", reflect.TypeOf((*MockReplicaSetClient)(nil).UpdateReplicaSetStatus), varargs...)
+}
+
+// UpsertReplicaSet mocks base method.
+func (m *MockReplicaSetClient) UpsertReplicaSet(arg0 context.Context, arg1 *v10.ReplicaSet, arg2 ...v1.ReplicaSetTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertReplicaSet", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertReplicaSet indicates an expected call of UpsertReplicaSet.
+func (mr *MockReplicaSetClientMockRecorder) UpsertReplicaSet(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertReplicaSet", reflect.TypeOf((*MockReplicaSetClient)(nil).UpsertReplicaSet), varargs...)
 }
