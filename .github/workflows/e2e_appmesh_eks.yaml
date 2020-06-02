@@ -12,6 +12,5 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - name: test
-        uses: actions/cache@v1
         run: |
           echo "Hello World!"
