@@ -79,19 +79,19 @@ func (e *enforcerLoop) reconcile(ctx context.Context, eventType logging.EventTyp
 	for _, vm := range vmList.Items {
 		vm := vm
 		logger := logging.BuildEventLogger(ctx, eventType, &vm)
-		err := e.enforceGlobalAccessControl(ctx, &vm)
+		err = e.enforceGlobalAccessControl(ctx, &vm)
 		if err != nil {
 			logger.Errorf("Error while handling VirtualMesh event: %+v", err)
 		}
 		if eventType != logging.DeleteEvent {
-			err = e.setStatus(ctx, &vm, err)
-			if err != nil {
-				logger.Errorf("Error while settings status for VirtualMesh: %+v", err)
-				return err
+			statusErr := e.setStatus(ctx, &vm, err)
+			if statusErr != nil {
+				logger.Errorf("Error while settings status for VirtualMesh: %+v", statusErr)
+				return statusErr
 			}
 		}
 	}
-	return nil
+	return err
 }
 
 // If enforceMeshDefault, ignore user declared enforce_access_control setting and use mesh-specific default as defined on the
