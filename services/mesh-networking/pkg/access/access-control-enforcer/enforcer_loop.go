@@ -3,7 +3,6 @@ package access_policy_enforcer
 import (
 	"context"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
@@ -77,22 +76,22 @@ func (e *enforcerLoop) reconcile(ctx context.Context, eventType logging.EventTyp
 	if err != nil {
 		return err
 	}
-	var multierr *multierror.Error
 	for _, vm := range vmList.Items {
 		vm := vm
 		logger := logging.BuildEventLogger(ctx, eventType, &vm)
 		err := e.enforceGlobalAccessControl(ctx, &vm)
 		if err != nil {
 			logger.Errorf("Error while handling VirtualMesh event: %+v", err)
-			multierr = multierror.Append(err)
 		}
-		err = e.setStatus(ctx, &vm, err)
-		if err != nil {
-			logger.Errorf("Error while settings status for VirtualMesh: %+v", err)
-			multierr = multierror.Append(err)
+		if eventType != logging.DeleteEvent {
+			err = e.setStatus(ctx, &vm, err)
+			if err != nil {
+				logger.Errorf("Error while settings status for VirtualMesh: %+v", err)
+				return err
+			}
 		}
 	}
-	return multierr.ErrorOrNil()
+	return nil
 }
 
 // If enforceMeshDefault, ignore user declared enforce_access_control setting and use mesh-specific default as defined on the

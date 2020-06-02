@@ -83,14 +83,16 @@ var _ = Describe("Translator", func() {
 		listeners := []*appmesh.Listener{
 			{
 				PortMapping: &appmesh.PortMapping{
-					Port:     aws.Int64(9080),
-					Protocol: aws.String("tcp"),
+					Port: aws.Int64(9080),
+					//Protocol: aws.String("tcp"),
+					Protocol: aws.String("http"),
 				},
 			},
 			{
 				PortMapping: &appmesh.PortMapping{
-					Port:     aws.Int64(9081),
-					Protocol: aws.String("udp"),
+					Port: aws.Int64(9081),
+					//Protocol: aws.String("udp"),
+					Protocol: aws.String("http"),
 				},
 			},
 		}
@@ -250,14 +252,16 @@ var _ = Describe("Translator", func() {
 		virtualRouterListeners := []*appmesh.VirtualRouterListener{
 			{
 				PortMapping: &appmesh.PortMapping{
-					Port:     aws.Int64(int64(meshService.Spec.GetKubeService().GetPorts()[0].GetPort())),
-					Protocol: aws.String(meshService.Spec.GetKubeService().GetPorts()[0].GetProtocol()),
+					Port: aws.Int64(int64(meshService.Spec.GetKubeService().GetPorts()[0].GetPort())),
+					//Protocol: aws.String(meshService.Spec.GetKubeService().GetPorts()[0].GetProtocol()),
+					Protocol: aws.String("http"),
 				},
 			},
 			{
 				PortMapping: &appmesh.PortMapping{
-					Port:     aws.Int64(int64(meshService.Spec.GetKubeService().GetPorts()[1].GetPort())),
-					Protocol: aws.String(meshService.Spec.GetKubeService().GetPorts()[1].GetProtocol()),
+					Port: aws.Int64(int64(meshService.Spec.GetKubeService().GetPorts()[1].GetPort())),
+					//Protocol: aws.String(meshService.Spec.GetKubeService().GetPorts()[1].GetProtocol()),
+					Protocol: aws.String("http"),
 				},
 			},
 		}

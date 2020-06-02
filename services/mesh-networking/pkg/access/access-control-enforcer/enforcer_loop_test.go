@@ -26,13 +26,13 @@ import (
 
 var _ = Describe("EnforcerLoop", func() {
 	var (
-		ctrl                    *gomock.Controller
-		ctx                     context.Context
-		virtualMeshEventWatcher *mock_zephyr_networking2.MockVirtualMeshEventWatcher
-		virtualMeshClient       *mock_zephyr_networking.MockVirtualMeshClient
-		meshClient              *mock_core.MockMeshClient
-		meshEnforcers           []*mock_access_control_enforcer.MockAccessPolicyMeshEnforcer
-		enforcerLoop            global_ac_enforcer.AccessPolicyEnforcerLoop
+		ctrl                        *gomock.Controller
+		ctx                         context.Context
+		mockVirtualMeshEventWatcher *mock_zephyr_networking2.MockVirtualMeshEventWatcher
+		mockVirtualMeshClient       *mock_zephyr_networking.MockVirtualMeshClient
+		mockMeshClient              *mock_core.MockMeshClient
+		mockMeshEnforcers           []*mock_access_control_enforcer.MockAccessPolicyMeshEnforcer
+		enforcerLoop                global_ac_enforcer.AccessPolicyEnforcerLoop
 		// captured event handler
 		virtualMeshHandler *zephyr_networking_controller.VirtualMeshEventHandlerFuncs
 	)
@@ -40,22 +40,22 @@ var _ = Describe("EnforcerLoop", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		virtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
-		meshClient = mock_core.NewMockMeshClient(ctrl)
-		virtualMeshEventWatcher = mock_zephyr_networking2.NewMockVirtualMeshEventWatcher(ctrl)
-		meshEnforcers = []*mock_access_control_enforcer.MockAccessPolicyMeshEnforcer{
+		mockVirtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
+		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
+		mockVirtualMeshEventWatcher = mock_zephyr_networking2.NewMockVirtualMeshEventWatcher(ctrl)
+		mockMeshEnforcers = []*mock_access_control_enforcer.MockAccessPolicyMeshEnforcer{
 			mock_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
 			mock_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
 		}
 		enforcerLoop = global_ac_enforcer.NewEnforcerLoop(
-			virtualMeshEventWatcher,
-			virtualMeshClient,
-			meshClient,
+			mockVirtualMeshEventWatcher,
+			mockVirtualMeshClient,
+			mockMeshClient,
 			[]access_control_enforcer.AccessPolicyMeshEnforcer{
-				meshEnforcers[0], meshEnforcers[1],
+				mockMeshEnforcers[0], mockMeshEnforcers[1],
 			},
 		)
-		virtualMeshEventWatcher.
+		mockVirtualMeshEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_networking_controller.VirtualMeshEventHandlerFuncs) error {
@@ -100,15 +100,19 @@ var _ = Describe("EnforcerLoop", func() {
 	It("should start enforcing access control on VirtualMesh creates", func() {
 		vm := buildVirtualMesh()
 		vm.Spec.EnforceAccessControl = zephyr_networking_types.VirtualMeshSpec_ENABLED
+		mockVirtualMeshClient.
+			EXPECT().
+			ListVirtualMesh(ctx).
+			Return(&zephyr_networking.VirtualMeshList{Items: []zephyr_networking.VirtualMesh{*vm}}, nil)
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		for i, meshRef := range vm.Spec.GetMeshes() {
-			meshClient.
+			mockMeshClient.
 				EXPECT().
 				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		for _, mesh := range meshes {
-			for _, meshEnforcer := range meshEnforcers {
+			for _, meshEnforcer := range mockMeshEnforcers {
 				meshEnforcer.
 					EXPECT().
 					ReconcileAccessControl(contextutils.WithLogger(ctx, ""), mesh, vm).
@@ -121,7 +125,7 @@ var _ = Describe("EnforcerLoop", func() {
 		}
 
 		var capturedVM *zephyr_networking.VirtualMesh
-		virtualMeshClient.
+		mockVirtualMeshClient.
 			EXPECT().
 			UpdateVirtualMeshStatus(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
@@ -139,15 +143,19 @@ var _ = Describe("EnforcerLoop", func() {
 	It("should stop enforcing access control on VirtualMesh creates", func() {
 		vm := buildVirtualMesh()
 		vm.Spec.EnforceAccessControl = zephyr_networking_types.VirtualMeshSpec_DISABLED
+		mockVirtualMeshClient.
+			EXPECT().
+			ListVirtualMesh(ctx).
+			Return(&zephyr_networking.VirtualMeshList{Items: []zephyr_networking.VirtualMesh{*vm}}, nil)
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		for i, meshRef := range vm.Spec.GetMeshes() {
-			meshClient.
+			mockMeshClient.
 				EXPECT().
 				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		for _, mesh := range meshes {
-			for _, meshEnforcer := range meshEnforcers {
+			for _, meshEnforcer := range mockMeshEnforcers {
 				meshEnforcer.
 					EXPECT().
 					ReconcileAccessControl(contextutils.WithLogger(ctx, ""), mesh, vm).
@@ -159,7 +167,7 @@ var _ = Describe("EnforcerLoop", func() {
 			}
 		}
 		var capturedVM *zephyr_networking.VirtualMesh
-		virtualMeshClient.
+		mockVirtualMeshClient.
 			EXPECT().
 			UpdateVirtualMeshStatus(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
@@ -176,24 +184,29 @@ var _ = Describe("EnforcerLoop", func() {
 
 	It("should handle errors on VirtualMesh create", func() {
 		vm := buildVirtualMesh()
+		mockVirtualMeshClient.
+			EXPECT().
+			ListVirtualMesh(ctx).
+			Return(&zephyr_networking.VirtualMeshList{Items: []zephyr_networking.VirtualMesh{*vm}}, nil)
+
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		testErr := eris.New("err")
 		for i, meshRef := range vm.Spec.GetMeshes() {
-			meshClient.
+			mockMeshClient.
 				EXPECT().
 				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
-		meshEnforcers[0].
+		mockMeshEnforcers[0].
 			EXPECT().
 			ReconcileAccessControl(contextutils.WithLogger(ctx, ""), meshes[0], vm).
 			Return(testErr)
-		meshEnforcers[0].
+		mockMeshEnforcers[0].
 			EXPECT().
 			Name().
 			Return("")
 		var capturedVM *zephyr_networking.VirtualMesh
-		virtualMeshClient.
+		mockVirtualMeshClient.
 			EXPECT().
 			UpdateVirtualMeshStatus(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
@@ -211,16 +224,20 @@ var _ = Describe("EnforcerLoop", func() {
 
 	It("should clean up translated resources when a virtual mesh is deleted and stop enforcing if default access control is false", func() {
 		vm := buildVirtualMesh()
+		mockVirtualMeshClient.
+			EXPECT().
+			ListVirtualMesh(ctx).
+			Return(&zephyr_networking.VirtualMeshList{Items: []zephyr_networking.VirtualMesh{*vm}}, nil)
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		for i, meshRef := range vm.Spec.GetMeshes() {
-			meshClient.
+			mockMeshClient.
 				EXPECT().
 				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 
 		// Istio should stop enforcing by default
-		for _, meshEnforcer := range meshEnforcers {
+		for _, meshEnforcer := range mockMeshEnforcers {
 			meshEnforcer.
 				EXPECT().
 				ReconcileAccessControl(contextutils.WithLogger(ctx, ""), meshes[0], vm).
@@ -231,7 +248,7 @@ var _ = Describe("EnforcerLoop", func() {
 				Return("")
 		}
 		// Appmesh should start enforcing by default
-		for _, meshEnforcer := range meshEnforcers {
+		for _, meshEnforcer := range mockMeshEnforcers {
 			meshEnforcer.
 				EXPECT().
 				ReconcileAccessControl(contextutils.WithLogger(ctx, ""), meshes[1], vm).

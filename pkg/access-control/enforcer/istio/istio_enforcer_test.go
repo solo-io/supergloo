@@ -11,6 +11,8 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s/mocks"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
@@ -67,6 +69,11 @@ var _ = Describe("IstioEnforcer", func() {
 	}
 
 	It("should start enforcing for Meshes", func() {
+		vm := &v1alpha1.VirtualMesh{
+			Spec: types.VirtualMeshSpec{
+				EnforceAccessControl: types.VirtualMeshSpec_ENABLED,
+			},
+		}
 		mesh := buildMesh()
 		dynamicClientGetter.
 			EXPECT().
@@ -102,11 +109,16 @@ var _ = Describe("IstioEnforcer", func() {
 			EXPECT().
 			UpsertAuthorizationPolicySpec(ctx, ingressAuthPolicy).
 			Return(nil)
-		err := istioEnforcer.StartEnforcing(ctx, mesh)
+		err := istioEnforcer.ReconcileAccessControl(ctx, mesh, vm)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	It("should disable for Meshes", func() {
+	It("should stop enforcing for Meshes", func() {
+		vm := &v1alpha1.VirtualMesh{
+			Spec: types.VirtualMeshSpec{
+				EnforceAccessControl: types.VirtualMeshSpec_DISABLED,
+			},
+		}
 		mesh := buildMesh()
 		dynamicClientGetter.
 			EXPECT().
@@ -136,7 +148,7 @@ var _ = Describe("IstioEnforcer", func() {
 				ingressAuthPolicyKey,
 			).
 			Return(nil)
-		err := istioEnforcer.StopEnforcing(ctx, mesh)
+		err := istioEnforcer.ReconcileAccessControl(ctx, mesh, vm)
 		Expect(err).ToNot(HaveOccurred())
 	})
 })

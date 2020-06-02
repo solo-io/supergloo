@@ -41,7 +41,7 @@ func (a *appmeshTranslator) BuildVirtualNode(
 	for _, containerPort := range meshWorkload.Spec.GetAppmesh().GetPorts() {
 		listeners = append(listeners, &appmesh2.Listener{
 			PortMapping: &appmesh2.PortMapping{
-				Port:     aws2.Int64(int64(containerPort.Port)),
+				Port: aws2.Int64(int64(containerPort.Port)),
 				// TODO https://github.com/solo-io/service-mesh-hub/issues/741
 				//Protocol: aws2.String(strings.ToLower(containerPort.Protocol)),
 				Protocol: aws2.String("http"),
@@ -123,7 +123,7 @@ func (a *appmeshTranslator) BuildVirtualRouter(
 	for _, servicePort := range meshService.Spec.GetKubeService().GetPorts() {
 		virtualRouterListeners = append(virtualRouterListeners, &appmesh2.VirtualRouterListener{
 			PortMapping: &appmesh2.PortMapping{
-				Port:     aws2.Int64(int64(servicePort.GetPort())),
+				Port: aws2.Int64(int64(servicePort.GetPort())),
 				// TODO https://github.com/solo-io/service-mesh-hub/issues/741
 				//Protocol: aws2.String(strings.ToLower(servicePort.GetProtocol())),
 				Protocol: aws2.String("http"),

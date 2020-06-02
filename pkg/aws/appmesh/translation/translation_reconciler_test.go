@@ -14,6 +14,7 @@ import (
 	types2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/translation"
 	mock_translation "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/translation/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/collections/sets"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -87,10 +88,10 @@ var _ = Describe("TranslationReconciler", func() {
 		}
 		servicesWithACP := sets.NewMeshServiceSet(meshService1, meshService2)
 		workloadsWithACP := sets.NewMeshWorkloadSet(meshWorkload1, meshWorkload3)
-		workloadsToUpstreamServices := map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet{
-			meshWorkload1: sets.NewMeshServiceSet(meshService4),
-			meshWorkload3: sets.NewMeshServiceSet(meshService5, meshService6),
-			meshWorkload2: sets.NewMeshServiceSet(meshService1), // excluded
+		workloadsToUpstreamServices := map[string]sets.MeshServiceSet{
+			clients.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta): sets.NewMeshServiceSet(meshService4),
+			clients.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta): sets.NewMeshServiceSet(meshService5, meshService6),
+			clients.ToUniqueSingleClusterString(meshWorkload2.ObjectMeta): sets.NewMeshServiceSet(meshService1), // excluded
 		}
 		mockDao.EXPECT().GetAllServiceWorkloadPairsForMesh(ctx, mesh).Return(servicesToBackingWorkloads, workloadsToBackingServices, nil)
 		mockDao.EXPECT().GetServicesWithACP(ctx, mesh).Return(servicesWithACP, nil)
@@ -129,7 +130,7 @@ var _ = Describe("TranslationReconciler", func() {
 				appmeshName,
 				meshWorkload1,
 				workloadsToBackingServices[meshWorkload1][0],
-				workloadsToUpstreamServices[meshWorkload1].List()).
+				workloadsToUpstreamServices[clients.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta)].List()).
 			Return(vn1)
 		mockAppmeshTranslator.
 			EXPECT().
@@ -137,7 +138,7 @@ var _ = Describe("TranslationReconciler", func() {
 				appmeshName,
 				meshWorkload3,
 				workloadsToBackingServices[meshWorkload3][0],
-				workloadsToUpstreamServices[meshWorkload3].List()).
+				workloadsToUpstreamServices[clients.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta)].List()).
 			Return(vn3)
 		mockDao.EXPECT().ReconcileVirtualRouters(ctx, mesh, []*appmesh2.VirtualRouterData{vr1, vr2}).Return(nil)
 		mockDao.EXPECT().ReconcileVirtualServices(ctx, mesh, []*appmesh2.VirtualServiceData{vs1, vs2}).Return(nil)
@@ -186,9 +187,9 @@ var _ = Describe("TranslationReconciler", func() {
 				{ObjectMeta: v1.ObjectMeta{Name: "workload3-service3"}},
 			},
 		}
-		workloadsToUpstreamServices := map[*zephyr_discovery.MeshWorkload]sets.MeshServiceSet{
-			meshWorkload1: sets.NewMeshServiceSet(meshService4),
-			meshWorkload3: sets.NewMeshServiceSet(meshService5, meshService6),
+		workloadsToUpstreamServices := map[string]sets.MeshServiceSet{
+			clients.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta): sets.NewMeshServiceSet(meshService4),
+			clients.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta): sets.NewMeshServiceSet(meshService5, meshService6),
 		}
 		mockDao.EXPECT().GetAllServiceWorkloadPairsForMesh(ctx, mesh).Return(servicesToBackingWorkloads, workloadsToBackingServices, nil)
 		mockDao.EXPECT().GetWorkloadsToAllUpstreamServices(ctx, mesh).Return(workloadsToUpstreamServices, nil)
@@ -239,7 +240,7 @@ var _ = Describe("TranslationReconciler", func() {
 				appmeshName,
 				meshWorkload1,
 				workloadsToBackingServices[meshWorkload1][0],
-				workloadsToUpstreamServices[meshWorkload1].List()).
+				workloadsToUpstreamServices[clients.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta)].List()).
 			Return(vn1)
 		mockAppmeshTranslator.
 			EXPECT().
@@ -255,7 +256,7 @@ var _ = Describe("TranslationReconciler", func() {
 				appmeshName,
 				meshWorkload3,
 				workloadsToBackingServices[meshWorkload3][0],
-				workloadsToUpstreamServices[meshWorkload3].List()).
+				workloadsToUpstreamServices[clients.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta)].List()).
 			Return(vn3)
 		mockDao.EXPECT().ReconcileVirtualRouters(ctx, mesh, []*appmesh2.VirtualRouterData{vr1, vr2, vr3}).Return(nil)
 		mockDao.EXPECT().ReconcileVirtualServices(ctx, mesh, []*appmesh2.VirtualServiceData{vs1, vs2, vs3}).Return(nil)

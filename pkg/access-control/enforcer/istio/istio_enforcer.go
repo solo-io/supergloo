@@ -51,29 +51,19 @@ func (i *istioEnforcer) ReconcileAccessControl(
 	mesh *zephyr_discovery.Mesh,
 	virtualMesh *zephyr_networking.VirtualMesh,
 ) error {
-	var enforceAccessControl bool
-	if virtualMesh == nil || virtualMesh.Spec.GetEnforceAccessControl() == types.VirtualMeshSpec_MESH_DEFAULT {
-		var err error
-		enforceAccessControl, err = access_control_enforcer.DefaultAccessControlValueForMesh(mesh)
-		if err != nil {
-			return err
-		}
-	} else if virtualMesh.Spec.GetEnforceAccessControl() == types.VirtualMeshSpec_ENABLED {
-		enforceAccessControl = true
-	} else {
-		enforceAccessControl = false
-	}
-	if enforceAccessControl {
-		return i.startEnforcing(ctx, mesh)
-	} else {
-		return i.stopEnforcing(ctx, mesh)
-	}
-}
-
-func (i *istioEnforcer) startEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
 	if mesh.Spec.GetIstio() == nil {
 		return nil
 	}
+	switch virtualMesh.Spec.GetEnforceAccessControl() {
+	case types.VirtualMeshSpec_DISABLED, types.VirtualMeshSpec_MESH_DEFAULT:
+		return i.stopEnforcing(ctx, mesh)
+	case types.VirtualMeshSpec_ENABLED:
+		return i.startEnforcing(ctx, mesh)
+	}
+	return nil
+}
+
+func (i *istioEnforcer) startEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
 	clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
 	if err != nil {
 		return err
@@ -89,9 +79,6 @@ func (i *istioEnforcer) startEnforcing(ctx context.Context, mesh *zephyr_discove
 }
 
 func (i *istioEnforcer) stopEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
-	if mesh.Spec.GetIstio() == nil {
-		return nil
-	}
 	if err := i.stopEnforcingForMesh(ctx, mesh); err != nil {
 		return err
 	}
