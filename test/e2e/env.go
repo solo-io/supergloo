@@ -11,7 +11,10 @@ import (
 	"sync"
 	"time"
 
-	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -35,14 +38,17 @@ func (e Env) DumpState() {
 func newEnv(mgmt, remote string) Env {
 	return Env{
 		Management: newKubeContext(mgmt),
-		Remote:     newKubeContext(remote),
+		//Remote:     newKubeContext(remote),
 	}
 }
 
 type KubeContext struct {
 	Context             string
 	Clientset           *kubernetes.Clientset
-	TrafficPolicyClient v1alpha1.TrafficPolicyClient
+	TrafficPolicyClient zephyr_networking.TrafficPolicyClient
+	KubeClusterClient   zephyr_discovery.KubernetesClusterClient
+	SettingsClient      zephyr_core.SettingsClient
+	SecretClient        kubernetes_core.SecretClient
 }
 
 func newKubeContext(kubecontext string) KubeContext {
@@ -50,16 +56,29 @@ func newKubeContext(kubecontext string) KubeContext {
 	config := clientcmd.NewNonInteractiveClientConfig(*cfg, kubecontext, &clientcmd.ConfigOverrides{}, nil)
 	restcfg, err := config.ClientConfig()
 	Expect(err).NotTo(HaveOccurred())
+
 	clientset, err := kubernetes.NewForConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	clientset2, err := v1alpha1.ClientsetFromConfigProvider(restcfg)
+	kubeCoreClientset, err := kubernetes_core.ClientsetFromConfigProvider(restcfg)
+	Expect(err).NotTo(HaveOccurred())
+
+	networkingClientset, err := zephyr_networking.ClientsetFromConfigProvider(restcfg)
+	Expect(err).NotTo(HaveOccurred())
+
+	discoveryClientset, err := zephyr_discovery.ClientsetFromConfigProvider(restcfg)
+	Expect(err).NotTo(HaveOccurred())
+
+	coreClientset, err := zephyr_core.ClientsetFromConfigProvider(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
 	return KubeContext{
 		Context:             kubecontext,
 		Clientset:           clientset,
-		TrafficPolicyClient: v1alpha1.TrafficPolicyClientFromClientsetProvider(clientset2),
+		TrafficPolicyClient: zephyr_networking.TrafficPolicyClientFromClientsetProvider(networkingClientset),
+		KubeClusterClient:   zephyr_discovery.KubernetesClusterClientFromClientsetProvider(discoveryClientset),
+		SettingsClient:      zephyr_core.SettingsClientFromClientsetProvider(coreClientset),
+		SecretClient:        kubernetes_core.SecretClientFromClientsetProvider(kubeCoreClientset),
 	}
 }
 
@@ -119,7 +138,7 @@ func StartEnv(ctx context.Context) Env {
 	if useExisting := os.Getenv("USE_EXISTING"); useExisting != "" {
 		mgmt := "kind-management-plane-1"
 		target := "kind-target-cluster-1"
-		if fields := strings.Fields(useExisting); len(fields) == 2 {
+		if fields := strings.Split(useExisting, ","); len(fields) == 2 {
 			mgmt = fields[0]
 			target = fields[1]
 		}
