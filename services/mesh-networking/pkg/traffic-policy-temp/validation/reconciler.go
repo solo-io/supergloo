@@ -57,9 +57,9 @@ func (v *validationLoop) Reconcile(ctx context.Context) error {
 			logger.Infof("Traffic policy %s.%s failed validation for reason: %+v", trafficPolicy.GetName(), trafficPolicy.GetNamespace(), validationErr)
 		}
 
-		trafficPolicy.Status.ObservedGeneration = trafficPolicy.Generation
 		if !trafficPolicy.Status.GetValidationStatus().Equal(newValidationStatus) ||
 			trafficPolicy.Status.ObservedGeneration != trafficPolicy.Generation {
+			trafficPolicy.Status.ObservedGeneration = trafficPolicy.Generation
 			trafficPolicy.Status.ValidationStatus = newValidationStatus
 
 			err := v.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, &trafficPolicy)
