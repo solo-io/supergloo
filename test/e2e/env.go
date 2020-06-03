@@ -38,7 +38,7 @@ func (e Env) DumpState() {
 func newEnv(mgmt, remote string) Env {
 	return Env{
 		Management: newKubeContext(mgmt),
-		//Remote:     newKubeContext(remote),
+		Remote:     newKubeContext(remote),
 	}
 }
 
