@@ -2,6 +2,8 @@ package e2e
 
 import (
 	"context"
+	"os/exec"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -30,4 +32,13 @@ func StatusOfTrafficPolicy(tp v1alpha1.TrafficPolicy, kc KubeContext) v1alpha1ty
 	newtp, err := kc.TrafficPolicyClient.GetTrafficPolicy(context.Background(), key)
 	Expect(err).NotTo(HaveOccurred())
 	return newtp.Status.GetTranslationStatus().GetState()
+}
+
+func MeshCtl(args string) error {
+	return MeshCtlCommand(strings.Fields(args)...).Run()
+}
+
+func MeshCtlCommand(arg ...string) *exec.Cmd {
+	arg = append([]string{"--context", GetEnv().Management.Context}, arg...)
+	return exec.Command("../../_output/meshctl", arg...)
 }

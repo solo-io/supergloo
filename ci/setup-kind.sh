@@ -166,7 +166,7 @@ else
   helmVersion=$VERSION
 fi
 
-./_output/meshctl install --file ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
+./_output/meshctl --context kind-$managementPlane install --file ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
 
 case $(uname) in
   "Darwin")
@@ -187,20 +187,20 @@ case $(uname) in
 esac
 
 #register the remote cluster, and install Istio onto the management plane cluster
-./_output/meshctl cluster register \
+./_output/meshctl --context kind-$managementPlane cluster register \
   --remote-context kind-$managementPlane \
   --remote-cluster-name management-plane-cluster \
   --local-cluster-domain-override $CLUSTER_DOMAIN_MGMT \
   --dev-csr-agent-chart
 
 #register the remote cluster, and install Istio onto the remote cluster
-./_output/meshctl cluster register \
+./_output/meshctl --context kind-$managementPlane cluster register \
   --remote-context kind-$remoteCluster \
   --remote-cluster-name target-cluster \
   --local-cluster-domain-override $CLUSTER_DOMAIN_REMOTE \
   --dev-csr-agent-chart
 
-./_output/meshctl mesh install istio1.5 --context kind-$remoteCluster --operator-spec=- <<EOF
+./_output/meshctl --context kind-$remoteCluster mesh install istio1.5 --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -262,7 +262,7 @@ spec:
       - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
 EOF
 
-./_output/meshctl mesh install istio1.5 --context kind-$managementPlane --operator-spec=- <<EOF
+./_output/meshctl --context kind-$managementPlane mesh install istio1.5 --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
