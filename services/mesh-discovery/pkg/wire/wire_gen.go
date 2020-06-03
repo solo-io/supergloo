@@ -12,8 +12,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/clients"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/settings"
@@ -29,11 +29,11 @@ import (
 	appmesh_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s/appmesh"
 	eks2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s-cluster/rest/eks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
-	appmesh3 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
+	appmesh2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/consul"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/istio"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/k8s/linkerd"
-	appmesh2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/appmesh"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/appmesh"
 )
 
 // Injectors from wire.go:
@@ -54,11 +54,11 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
 	arnParser := aws_utils.NewArnParser()
-	appmeshRawClientFactory := appmesh.AppmeshRawClientFactoryProvider()
+	appmeshRawClientFactory := clients.AppmeshRawClientFactoryProvider()
 	settingsClient := v1alpha1_2.SettingsClientProvider(client)
 	settingsHelperClient := settings.NewAwsSettingsHelperClient(settingsClient)
 	awsSelector := selection.NewAwsSelector(arnParser)
-	appMeshDiscoveryReconciler := appmesh2.NewAppMeshDiscoveryReconciler(client, meshClientFactory, arnParser, appmeshRawClientFactory, settingsHelperClient, awsSelector)
+	appMeshDiscoveryReconciler := appmesh.NewAppMeshDiscoveryReconciler(client, meshClientFactory, arnParser, appmeshRawClientFactory, settingsHelperClient, awsSelector)
 	kubernetesClusterClient := v1alpha1.KubernetesClusterClientProvider(client)
 	eksClientFactory := eks.EksClientFactoryProvider()
 	eksConfigBuilderFactory := eks.EksConfigBuilderFactoryProvider()
@@ -80,7 +80,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	}
 	eksDiscoveryReconciler := eks2.NewEksDiscoveryReconciler(kubernetesClusterClient, eksClientFactory, eksConfigBuilderFactory, clusterRegistrationClient, settingsHelperClient, awsSelector)
 	v := AwsDiscoveryReconcilersProvider(appMeshDiscoveryReconciler, eksDiscoveryReconciler)
-	stsClientFactory := appmesh.STSClientFactoryProvider()
+	stsClientFactory := clients.STSClientFactoryProvider()
 	awsCredsHandler := aws.NewAwsAPIHandler(secretAwsCredsConverter, v, stsClientFactory)
 	v2 := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v2)
@@ -104,7 +104,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	meshEventWatcherFactory := event_watcher_factories.NewMeshEventWatcherFactory()
 	appMeshScanner := aws_utils.NewAppMeshScanner(arnParser)
 	awsAccountIdFetcher := aws_utils.NewAwsAccountIdFetcher(arnParser, configMapClientFactory)
-	meshWorkloadScannerFactory := appmesh3.AppMeshWorkloadScannerFactoryProvider(appMeshScanner, awsAccountIdFetcher)
+	meshWorkloadScannerFactory := appmesh2.AppMeshWorkloadScannerFactoryProvider(appMeshScanner, awsAccountIdFetcher)
 	clusterTenancyScannerFactory := appmesh_tenancy.AppMeshTenancyScannerFactoryProvider(appMeshScanner, awsAccountIdFetcher)
 	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podEventWatcherFactory, serviceEventWatcherFactory, meshWorkloadEventWatcherFactory, deploymentEventWatcherFactory, meshClientFactory, podClientFactory, meshEventWatcherFactory, meshWorkloadScannerFactory, clusterTenancyScannerFactory)
 	return discoveryContext, nil

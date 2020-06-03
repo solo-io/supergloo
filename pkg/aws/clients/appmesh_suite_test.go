@@ -1,4 +1,4 @@
-package appmesh_test
+package clients_test
 
 import (
 	"testing"

@@ -13,8 +13,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	types2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/translation"
-	mock_translation "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/translation/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/translation"
+	mock_translation "github.com/solo-io/service-mesh-hub/pkg/aws/translation/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

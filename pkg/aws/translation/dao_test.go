@@ -12,9 +12,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	types3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
-	mock_appmesh "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/translation"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/clients"
+	mock_appmesh "github.com/solo-io/service-mesh-hub/pkg/aws/clients/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
@@ -59,7 +59,7 @@ var _ = Describe("Dao", func() {
 			mockMeshServiceClient,
 			mockMeshWorkloadClient,
 			mockResourceSelector,
-			func(mesh *zephyr_discovery.Mesh) (appmesh.AppmeshClient, error) {
+			func(mesh *zephyr_discovery.Mesh) (clients.AppmeshClient, error) {
 				return mockAppmeshClient, nil
 			},
 			mockAcpClient,

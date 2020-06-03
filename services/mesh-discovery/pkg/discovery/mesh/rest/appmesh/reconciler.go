@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
+	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/clients"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/settings"

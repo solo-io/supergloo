@@ -9,10 +9,10 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
-	mock_appmesh "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
 	mock_aws_creds "github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/clients"
+	mock_appmesh "github.com/solo-io/service-mesh-hub/pkg/aws/clients/mocks"
 	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	mock_rest_api "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/mocks"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -41,7 +41,7 @@ var _ = Describe("CredsHandler", func() {
 		awsCredsHandler = aws2.NewAwsAPIHandler(
 			mockSecretConverter,
 			[]aws2.RestAPIDiscoveryReconciler{mockReconciler},
-			func(creds *credentials.Credentials, region string) (appmesh.STSClient, error) {
+			func(creds *credentials.Credentials, region string) (clients.STSClient, error) {
 				return mockSTSClient, nil
 			},
 		)

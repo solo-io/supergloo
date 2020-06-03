@@ -1,4 +1,4 @@
-package appmesh_test
+package matcher_test
 
 import (
 	aws2 "github.com/aws/aws-sdk-go/aws"
@@ -6,19 +6,19 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/matcher"
 )
 
 var _ = Describe("Matcher", func() {
 	var (
 		ctrl           *gomock.Controller
 		meshName       = aws2.String("mesh-name")
-		appmeshMatcher AppmeshMatcher
+		appmeshMatcher matcher.AppmeshMatcher
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		appmeshMatcher = NewAppmeshMatcher()
+		appmeshMatcher = matcher.NewAppmeshMatcher()
 	})
 
 	AfterEach(func() {

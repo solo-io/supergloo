@@ -1,4 +1,4 @@
-package appmesh_test
+package clients_test
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
-	mock_appmesh "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/mocks"
+	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/clients"
+	mock_matcher "github.com/solo-io/service-mesh-hub/pkg/aws/matcher/mocks"
 	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
 )
 
@@ -20,7 +20,7 @@ var _ = Describe("AppmeshClient", func() {
 	var (
 		ctrl                 *gomock.Controller
 		ctx                  context.Context
-		mockAppmeshMatcher   *mock_appmesh.MockAppmeshMatcher
+		mockAppmeshMatcher   *mock_matcher.MockAppmeshMatcher
 		mockAppmeshRawClient *mock_appmesh_clients.MockAppMeshAPI
 		appmeshClient        appmesh2.AppmeshClient
 		meshName             = aws2.String("mesh-name")
@@ -29,7 +29,7 @@ var _ = Describe("AppmeshClient", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockAppmeshMatcher = mock_appmesh.NewMockAppmeshMatcher(ctrl)
+		mockAppmeshMatcher = mock_matcher.NewMockAppmeshMatcher(ctrl)
 		mockAppmeshRawClient = mock_appmesh_clients.NewMockAppMeshAPI(ctrl)
 		appmeshClient = appmesh2.NewAppmeshClient(mockAppmeshRawClient, mockAppmeshMatcher)
 	})

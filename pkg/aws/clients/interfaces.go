@@ -1,4 +1,4 @@
-package appmesh
+package clients
 
 import (
 	"context"
@@ -8,28 +8,6 @@ import (
 )
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
-
-type AppmeshMatcher interface {
-	AreRoutesEqual(
-		routeA *appmesh2.RouteData,
-		routeB *appmesh2.RouteData,
-	) bool
-
-	AreVirtualNodesEqual(
-		virtualNodeA *appmesh2.VirtualNodeData,
-		virtualNodeB *appmesh2.VirtualNodeData,
-	) bool
-
-	AreVirtualServicesEqual(
-		virtualServiceA *appmesh2.VirtualServiceData,
-		virtualServiceB *appmesh2.VirtualServiceData,
-	) bool
-
-	AreVirtualRoutersEqual(
-		virtualRouterA *appmesh2.VirtualRouterData,
-		virtualRouterB *appmesh2.VirtualRouterData,
-	) bool
-}
 
 /*
 	Provide methods that ensure the existence of the given Appmesh resource.

@@ -8,7 +8,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
+	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"k8s.io/apimachinery/pkg/labels"
 )

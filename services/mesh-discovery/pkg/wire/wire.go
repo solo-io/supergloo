@@ -10,7 +10,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/selection"
 	settings_clients "github.com/solo-io/service-mesh-hub/pkg/aws/settings"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
@@ -57,7 +57,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		v1alpha1.SettingsClientProvider,
 		settings_clients.NewAwsSettingsHelperClient,
 		selection.NewAwsSelector,
-		appmesh.STSClientFactoryProvider,
+		clients.STSClientFactoryProvider,
 	)
 
 	return DiscoveryContext{}, nil

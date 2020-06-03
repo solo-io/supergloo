@@ -6,22 +6,22 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/solo-io/go-utils/contextutils"
-	aws3 "github.com/solo-io/service-mesh-hub/pkg/aws"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/clients"
+	credentials2 "github.com/solo-io/service-mesh-hub/pkg/aws/credentials"
 	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	v1 "k8s.io/api/core/v1"
 )
 
 type networkingAwsCredsHandler struct {
-	stsClientFactory     appmesh.STSClientFactory
-	credentialsMap       aws3.AwsCredentialsGetter
+	stsClientFactory     clients.STSClientFactory
+	credentialsMap       credentials2.AwsCredentialsGetter
 	secretCredsConverter aws_creds.SecretAwsCredsConverter
 }
 
 func NewNetworkingAwsCredsHandler(
-	credentialsGetter aws3.AwsCredentialsGetter,
-	stsClientFactory appmesh.STSClientFactory,
+	credentialsGetter credentials2.AwsCredentialsGetter,
+	stsClientFactory clients.STSClientFactory,
 	secretCredsConverter aws_creds.SecretAwsCredsConverter,
 ) aws2.AwsCredsHandler {
 	return &networkingAwsCredsHandler{

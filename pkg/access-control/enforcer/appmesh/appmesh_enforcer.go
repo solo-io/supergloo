@@ -6,7 +6,7 @@ import (
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/translation"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/translation"
 )
 
 const (

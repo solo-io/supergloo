@@ -8,8 +8,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/translation"
+	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/matcher"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/translation"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
@@ -31,7 +32,7 @@ var (
 		translation.NewAppmeshAccessControlDao,
 		appmesh2.AppmeshClientGetterProvider,
 		appmesh2.AppmeshRawClientFactoryProvider,
-		appmesh2.NewAppmeshMatcher,
+		matcher.NewAppmeshMatcher,
 		access_control_enforcer.NewEnforcerLoop,
 		GlobalAccessControlPolicyMeshEnforcersProvider,
 		translation.NewAppmeshTranslationReconciler,

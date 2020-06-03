@@ -1,10 +1,11 @@
-package appmesh
+package matcher
 
 import (
 	"strings"
 
 	aws2 "github.com/aws/aws-sdk-go/aws"
 	appmesh2 "github.com/aws/aws-sdk-go/service/appmesh"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/wrappers"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -16,8 +17,8 @@ func NewAppmeshMatcher() AppmeshMatcher {
 }
 
 func (a *appmeshMatcher) AreRoutesEqual(routeA *appmesh2.RouteData, routeB *appmesh2.RouteData) bool {
-	rA := Route{Data: routeA}
-	rB := Route{Data: routeB}
+	rA := wrappers.Route{Data: routeA}
+	rB := wrappers.Route{Data: routeB}
 	if rA.Name() != rB.Name() ||
 		rA.MeshName() != rB.MeshName() ||
 		rA.VirtualRouterName() != rB.VirtualRouterName() ||
@@ -55,8 +56,8 @@ func (a *appmeshMatcher) AreVirtualNodesEqual(
 	virtualNodeA *appmesh2.VirtualNodeData,
 	virtualNodeB *appmesh2.VirtualNodeData,
 ) bool {
-	vnA := VirtualNode{Data: virtualNodeA}
-	vnB := VirtualNode{Data: virtualNodeB}
+	vnA := wrappers.VirtualNode{Data: virtualNodeA}
+	vnB := wrappers.VirtualNode{Data: virtualNodeB}
 	if vnA.Name() != vnB.Name() || vnA.MeshName() != vnB.MeshName() || vnA.HostName() != vnB.HostName() {
 		return false
 	}
@@ -87,8 +88,8 @@ func (a *appmeshMatcher) AreVirtualServicesEqual(
 	virtualServiceA *appmesh2.VirtualServiceData,
 	virtualServiceB *appmesh2.VirtualServiceData,
 ) bool {
-	vsA := VirtualService{Data: virtualServiceA}
-	vsB := VirtualService{Data: virtualServiceB}
+	vsA := wrappers.VirtualService{Data: virtualServiceA}
+	vsB := wrappers.VirtualService{Data: virtualServiceB}
 	return vsA.Name() == vsB.Name() &&
 		vsA.MeshName() == vsB.MeshName() &&
 		vsA.VirtualNodeName() == vsB.VirtualNodeName() &&
@@ -99,8 +100,8 @@ func (a *appmeshMatcher) AreVirtualRoutersEqual(
 	virtualRouterA *appmesh2.VirtualRouterData,
 	virtualRouterB *appmesh2.VirtualRouterData,
 ) bool {
-	vrA := VirtualRouter{Data: virtualRouterA}
-	vrB := VirtualRouter{Data: virtualRouterB}
+	vrA := wrappers.VirtualRouter{Data: virtualRouterA}
+	vrB := wrappers.VirtualRouter{Data: virtualRouterB}
 	if vrA.Name() != vrB.Name() || vrA.MeshName() != vrB.MeshName() {
 		return false
 	}

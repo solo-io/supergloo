@@ -8,7 +8,7 @@ package wire
 import (
 	"context"
 
-	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/appmesh"
+	"github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/istio"
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
@@ -19,10 +19,11 @@ import (
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/aws"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/appmesh/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/credentials"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/matcher"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/resolver"
@@ -37,7 +38,7 @@ import (
 	acp_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	istio_translator2 "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator/istio-translator"
 	networking_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target"
-	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/aws"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/aws"
 	controller_factories "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/controllers"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
@@ -63,10 +64,10 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	fileReader := files.NewDefaultFileReader()
 	converter := kubeconfig.NewConverter(fileReader)
 	asyncManagerController := mc_wire.KubeClusterCredentialsHandlerProvider(converter)
-	awsCredentialsGetter := aws.NewCredentialsGetter()
-	stsClientFactory := appmesh.STSClientFactoryProvider()
+	awsCredentialsGetter := credentials.NewCredentialsGetter()
+	stsClientFactory := clients.STSClientFactoryProvider()
 	secretAwsCredsConverter := aws_creds.DefaultSecretAwsCredsConverter()
-	awsCredsHandler := aws2.NewNetworkingAwsCredsHandler(awsCredentialsGetter, stsClientFactory, secretAwsCredsConverter)
+	awsCredsHandler := aws.NewNetworkingAwsCredsHandler(awsCredentialsGetter, stsClientFactory, secretAwsCredsConverter)
 	v := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
@@ -124,12 +125,12 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	acpTranslatorLoop := acp_translator.NewAcpTranslatorLoop(accessControlPolicyEventWatcher, meshServiceEventWatcher, meshClient, accessControlPolicyClient, resourceSelector, v3)
 	istioEnforcer := istio.NewIstioEnforcer(dynamicClientGetter, authorizationPolicyClientFactory)
 	appmeshTranslator := translation.NewAppmeshTranslator()
-	appmeshMatcher := appmesh.NewAppmeshMatcher()
-	appmeshRawClientFactory := appmesh.AppmeshRawClientFactoryProvider()
-	appmeshClientGetter := appmesh.AppmeshClientGetterProvider(appmeshMatcher, awsCredentialsGetter, appmeshRawClientFactory)
+	appmeshMatcher := matcher.NewAppmeshMatcher()
+	appmeshRawClientFactory := clients.AppmeshRawClientFactoryProvider()
+	appmeshClientGetter := clients.AppmeshClientGetterProvider(appmeshMatcher, awsCredentialsGetter, appmeshRawClientFactory)
 	appmeshTranslationDao := translation.NewAppmeshAccessControlDao(meshServiceClient, meshWorkloadClient, resourceSelector, appmeshClientGetter, accessControlPolicyClient)
 	appmeshTranslationReconciler := translation.NewAppmeshTranslationReconciler(appmeshTranslator, appmeshTranslationDao)
-	appmeshEnforcer := appmesh2.NewAppmeshEnforcer(appmeshTranslationReconciler)
+	appmeshEnforcer := appmesh.NewAppmeshEnforcer(appmeshTranslationReconciler)
 	v4 := GlobalAccessControlPolicyMeshEnforcersProvider(istioEnforcer, appmeshEnforcer)
 	accessPolicyEnforcerLoop := access_policy_enforcer.NewEnforcerLoop(virtualMeshEventWatcher, virtualMeshClient, meshClient, v4)
 	gatewayClientFactory := v1alpha3.GatewayClientFactoryProvider()
