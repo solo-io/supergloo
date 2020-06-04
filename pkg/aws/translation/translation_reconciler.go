@@ -9,7 +9,6 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
@@ -38,21 +37,17 @@ func NewAppmeshTranslationReconciler(
 func (a *appmeshTranslationReconciler) Reconcile(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
-	virtualMesh *zephyr_networking.VirtualMesh,
+	_ *zephyr_networking.VirtualMesh,
 ) error {
 	if mesh.Spec.GetAwsAppMesh() == nil {
 		return nil
 	}
-	switch virtualMesh.Spec.GetEnforceAccessControl() {
-	case zephyr_networking_types.VirtualMeshSpec_ENABLED, zephyr_networking_types.VirtualMeshSpec_MESH_DEFAULT:
-		return a.reconcileWithEnforcedAccessControl(ctx, mesh)
-	case zephyr_networking_types.VirtualMeshSpec_DISABLED:
-		return a.reconcileWithDisabledAccessControl(ctx, mesh)
-	}
-	return nil
+	// Be default, configure Appmesh envoy sidecars to allow traffic from any workload to any service.
+	return a.reconcileWithDisabledAccessControl(ctx, mesh)
 }
 
 /*
+	TODO: wire up this method when SMH API exposes sidecar configuration options
 	For every services declared as a target in at least one AccessControlPolicy, create an Appmesh VirtualService
 	that routes to the VirtualNodes for the services' backing workloads.
 
@@ -92,11 +87,7 @@ func (a *appmeshTranslationReconciler) reconcileWithEnforcedAccessControl(
 }
 
 /*
-	For every services declared as a target in at least one AccessControlPolicy, create an Appmesh VirtualService
-	that routes to the VirtualNodes for the services' backing workloads.
-
-	For every workload declared as a source in at least one AccessControlPolicy, create an Appmesh VirtualNode
-	with VirtualServices corresponding to all other upstream services in the Mesh as backends.
+	Configure Appmesh envoy sidecars to allow traffic between any (workload, service) pair.
 */
 func (a *appmeshTranslationReconciler) reconcileWithDisabledAccessControl(
 	ctx context.Context,

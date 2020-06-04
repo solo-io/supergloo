@@ -49,110 +49,111 @@ var _ = Describe("TranslationReconciler", func() {
 		ctrl.Finish()
 	})
 
-	It("should reconcile with global access control enabled", func() {
-		meshService1 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service1"}}
-		meshService2 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service2"}}
-		meshService3 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service3"}}
-		meshService4 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service4"}}
-		meshService5 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service5"}}
-		meshService6 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service6"}}
-
-		meshWorkload1 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload1"}}
-		meshWorkload2 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload2"}}
-		meshWorkload3 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload3"}}
-		servicesToBackingWorkloads := map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload{
-			meshService1: {
-				{ObjectMeta: v1.ObjectMeta{Name: "service1-workload1"}},
-				{ObjectMeta: v1.ObjectMeta{Name: "service1-workload2"}},
-			},
-			meshService2: {
-				{ObjectMeta: v1.ObjectMeta{Name: "service2-workload2"}},
-			},
-			meshService3: {
-				{ObjectMeta: v1.ObjectMeta{Name: "service3-workload1"}},
-				{ObjectMeta: v1.ObjectMeta{Name: "service3-workload3"}},
-			},
-		}
-		workloadsToBackingServices := map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService{
-			meshWorkload1: {
-				{ObjectMeta: v1.ObjectMeta{Name: "workload1-service1"}},
-				{ObjectMeta: v1.ObjectMeta{Name: "workload1-service3"}},
-			},
-			meshWorkload2: {
-				{ObjectMeta: v1.ObjectMeta{Name: "workload2-service1"}},
-				{ObjectMeta: v1.ObjectMeta{Name: "workload2-service2"}},
-			},
-			meshWorkload3: {
-				{ObjectMeta: v1.ObjectMeta{Name: "workload3-service3"}},
-			},
-		}
-		servicesWithACP := zephyr_discovery_sets.NewMeshServiceSet(meshService1, meshService2)
-		workloadsWithACP := zephyr_discovery_sets.NewMeshWorkloadSet(meshWorkload1, meshWorkload3)
-		workloadsToUpstreamServices := map[string]zephyr_discovery_sets.MeshServiceSet{
-			selection.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta): zephyr_discovery_sets.NewMeshServiceSet(meshService4),
-			selection.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta): zephyr_discovery_sets.NewMeshServiceSet(meshService5, meshService6),
-			selection.ToUniqueSingleClusterString(meshWorkload2.ObjectMeta): zephyr_discovery_sets.NewMeshServiceSet(meshService1), // excluded
-		}
-		mockDao.EXPECT().GetAllServiceWorkloadPairsForMesh(ctx, mesh).Return(servicesToBackingWorkloads, workloadsToBackingServices, nil)
-		mockDao.EXPECT().GetServicesWithACP(ctx, mesh).Return(servicesWithACP, nil)
-		mockDao.EXPECT().GetWorkloadsToUpstreamServicesWithACP(ctx, mesh).Return(workloadsWithACP, workloadsToUpstreamServices, nil)
-
-		appmeshName := aws2.String(mesh.Spec.GetAwsAppMesh().GetName())
-		vs1 := &appmesh2.VirtualServiceData{}
-		vs2 := &appmesh2.VirtualServiceData{}
-		vr1 := &appmesh2.VirtualRouterData{}
-		vr2 := &appmesh2.VirtualRouterData{}
-		r1 := &appmesh2.RouteData{}
-		r2 := &appmesh2.RouteData{}
-		vn1 := &appmesh2.VirtualNodeData{}
-		vn3 := &appmesh2.VirtualNodeData{}
-		mockAppmeshTranslator.EXPECT().BuildVirtualService(appmeshName, meshService1).Return(vs1)
-		mockAppmeshTranslator.EXPECT().BuildVirtualService(appmeshName, meshService2).Return(vs2)
-		mockAppmeshTranslator.EXPECT().BuildVirtualRouter(appmeshName, meshService1).Return(vr1)
-		mockAppmeshTranslator.EXPECT().BuildVirtualRouter(appmeshName, meshService2).Return(vr2)
-		mockAppmeshTranslator.EXPECT().
-			BuildRoute(appmeshName,
-				translation.DefaultRouteName,
-				translation.DefaultRoutePriority,
-				meshService1,
-				servicesToBackingWorkloads[meshService1]).
-			Return(r1, nil)
-		mockAppmeshTranslator.EXPECT().
-			BuildRoute(appmeshName,
-				translation.DefaultRouteName,
-				translation.DefaultRoutePriority,
-				meshService2,
-				servicesToBackingWorkloads[meshService2]).
-			Return(r2, nil)
-		mockAppmeshTranslator.
-			EXPECT().
-			BuildVirtualNode(
-				appmeshName,
-				meshWorkload1,
-				workloadsToBackingServices[meshWorkload1][0],
-				workloadsToUpstreamServices[selection.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta)].List()).
-			Return(vn1)
-		mockAppmeshTranslator.
-			EXPECT().
-			BuildVirtualNode(
-				appmeshName,
-				meshWorkload3,
-				workloadsToBackingServices[meshWorkload3][0],
-				workloadsToUpstreamServices[selection.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta)].List()).
-			Return(vn3)
-		mockDao.EXPECT().ReconcileVirtualRoutersAndRoutesAndVirtualServices(
-			ctx,
-			mesh,
-			[]*appmesh2.VirtualRouterData{vr1, vr2},
-			[]*appmesh2.RouteData{r1, r2},
-			[]*appmesh2.VirtualServiceData{vs1, vs2},
-		).Return(nil)
-		mockDao.EXPECT().ReconcileVirtualNodes(ctx, mesh, []*appmesh2.VirtualNodeData{vn1, vn3}).Return(nil)
-
-		err := appmeshTranslationReconciler.Reconcile(ctx, mesh, &v1alpha1.VirtualMesh{
-			Spec: types2.VirtualMeshSpec{EnforceAccessControl: types2.VirtualMeshSpec_ENABLED}})
-		Expect(err).To(BeNil())
-	})
+	// TODO: restore test when SMH API exposes sidecar configuration options and global access control can be enabled
+	//It("should reconcile with global access control enabled", func() {
+	//	meshService1 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service1"}}
+	//	meshService2 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service2"}}
+	//	meshService3 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service3"}}
+	//	meshService4 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service4"}}
+	//	meshService5 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service5"}}
+	//	meshService6 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service6"}}
+	//
+	//	meshWorkload1 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload1"}}
+	//	meshWorkload2 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload2"}}
+	//	meshWorkload3 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload3"}}
+	//	servicesToBackingWorkloads := map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload{
+	//		meshService1: {
+	//			{ObjectMeta: v1.ObjectMeta{Name: "service1-workload1"}},
+	//			{ObjectMeta: v1.ObjectMeta{Name: "service1-workload2"}},
+	//		},
+	//		meshService2: {
+	//			{ObjectMeta: v1.ObjectMeta{Name: "service2-workload2"}},
+	//		},
+	//		meshService3: {
+	//			{ObjectMeta: v1.ObjectMeta{Name: "service3-workload1"}},
+	//			{ObjectMeta: v1.ObjectMeta{Name: "service3-workload3"}},
+	//		},
+	//	}
+	//	workloadsToBackingServices := map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService{
+	//		meshWorkload1: {
+	//			{ObjectMeta: v1.ObjectMeta{Name: "workload1-service1"}},
+	//			{ObjectMeta: v1.ObjectMeta{Name: "workload1-service3"}},
+	//		},
+	//		meshWorkload2: {
+	//			{ObjectMeta: v1.ObjectMeta{Name: "workload2-service1"}},
+	//			{ObjectMeta: v1.ObjectMeta{Name: "workload2-service2"}},
+	//		},
+	//		meshWorkload3: {
+	//			{ObjectMeta: v1.ObjectMeta{Name: "workload3-service3"}},
+	//		},
+	//	}
+	//	servicesWithACP := zephyr_discovery_sets.NewMeshServiceSet(meshService1, meshService2)
+	//	workloadsWithACP := zephyr_discovery_sets.NewMeshWorkloadSet(meshWorkload1, meshWorkload3)
+	//	workloadsToUpstreamServices := map[string]zephyr_discovery_sets.MeshServiceSet{
+	//		selection.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta): zephyr_discovery_sets.NewMeshServiceSet(meshService4),
+	//		selection.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta): zephyr_discovery_sets.NewMeshServiceSet(meshService5, meshService6),
+	//		selection.ToUniqueSingleClusterString(meshWorkload2.ObjectMeta): zephyr_discovery_sets.NewMeshServiceSet(meshService1), // excluded
+	//	}
+	//	mockDao.EXPECT().GetAllServiceWorkloadPairsForMesh(ctx, mesh).Return(servicesToBackingWorkloads, workloadsToBackingServices, nil)
+	//	mockDao.EXPECT().GetServicesWithACP(ctx, mesh).Return(servicesWithACP, nil)
+	//	mockDao.EXPECT().GetWorkloadsToUpstreamServicesWithACP(ctx, mesh).Return(workloadsWithACP, workloadsToUpstreamServices, nil)
+	//
+	//	appmeshName := aws2.String(mesh.Spec.GetAwsAppMesh().GetName())
+	//	vs1 := &appmesh2.VirtualServiceData{}
+	//	vs2 := &appmesh2.VirtualServiceData{}
+	//	vr1 := &appmesh2.VirtualRouterData{}
+	//	vr2 := &appmesh2.VirtualRouterData{}
+	//	r1 := &appmesh2.RouteData{}
+	//	r2 := &appmesh2.RouteData{}
+	//	vn1 := &appmesh2.VirtualNodeData{}
+	//	vn3 := &appmesh2.VirtualNodeData{}
+	//	mockAppmeshTranslator.EXPECT().BuildVirtualService(appmeshName, meshService1).Return(vs1)
+	//	mockAppmeshTranslator.EXPECT().BuildVirtualService(appmeshName, meshService2).Return(vs2)
+	//	mockAppmeshTranslator.EXPECT().BuildVirtualRouter(appmeshName, meshService1).Return(vr1)
+	//	mockAppmeshTranslator.EXPECT().BuildVirtualRouter(appmeshName, meshService2).Return(vr2)
+	//	mockAppmeshTranslator.EXPECT().
+	//		BuildRoute(appmeshName,
+	//			translation.DefaultRouteName,
+	//			translation.DefaultRoutePriority,
+	//			meshService1,
+	//			servicesToBackingWorkloads[meshService1]).
+	//		Return(r1, nil)
+	//	mockAppmeshTranslator.EXPECT().
+	//		BuildRoute(appmeshName,
+	//			translation.DefaultRouteName,
+	//			translation.DefaultRoutePriority,
+	//			meshService2,
+	//			servicesToBackingWorkloads[meshService2]).
+	//		Return(r2, nil)
+	//	mockAppmeshTranslator.
+	//		EXPECT().
+	//		BuildVirtualNode(
+	//			appmeshName,
+	//			meshWorkload1,
+	//			workloadsToBackingServices[meshWorkload1][0],
+	//			workloadsToUpstreamServices[selection.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta)].List()).
+	//		Return(vn1)
+	//	mockAppmeshTranslator.
+	//		EXPECT().
+	//		BuildVirtualNode(
+	//			appmeshName,
+	//			meshWorkload3,
+	//			workloadsToBackingServices[meshWorkload3][0],
+	//			workloadsToUpstreamServices[selection.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta)].List()).
+	//		Return(vn3)
+	//	mockDao.EXPECT().ReconcileVirtualRoutersAndRoutesAndVirtualServices(
+	//		ctx,
+	//		mesh,
+	//		[]*appmesh2.VirtualRouterData{vr1, vr2},
+	//		[]*appmesh2.RouteData{r1, r2},
+	//		[]*appmesh2.VirtualServiceData{vs1, vs2},
+	//	).Return(nil)
+	//	mockDao.EXPECT().ReconcileVirtualNodes(ctx, mesh, []*appmesh2.VirtualNodeData{vn1, vn3}).Return(nil)
+	//
+	//	err := appmeshTranslationReconciler.Reconcile(ctx, mesh, &v1alpha1.VirtualMesh{
+	//		Spec: types2.VirtualMeshSpec{EnforceAccessControl: types2.VirtualMeshSpec_ENABLED}})
+	//	Expect(err).To(BeNil())
+	//})
 
 	It("should reconcile with global access control disabled", func() {
 		meshService1 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service1"}}
