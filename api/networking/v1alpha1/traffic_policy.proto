@@ -368,7 +368,7 @@ message TrafficPolicyStatus {
     }
 
     message ConflictError {
-        // The service or workload on which this Traffic Policy conflicts with other Traffic policies.
+        // The service on which this Traffic Policy conflicts with other Traffic policies.
         core.zephyr.solo.io.ResourceRef configuration_target = 1;
 
         // Details about the nature of the conflict.
@@ -386,4 +386,9 @@ message TrafficPolicyStatus {
 
     // Provides details on any configuration conflicts between this TrafficPolicy and other TrafficPolicies that apply to the same configuration target. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config.
     repeated ConflictError conflict_errors = 4;
+
+    // The generation the validation_status was observed on. Note that translation_status, translation_errors
+    // conflict_errors can still appear even if validation_status is accepted, as these errors
+    // can happen due to other traffic policies and specific mesh implementation.
+    int64 observed_generation = 5;
 }

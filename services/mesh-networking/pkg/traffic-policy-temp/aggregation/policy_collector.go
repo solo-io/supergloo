@@ -193,7 +193,7 @@ func (p *policyCollector) aggregateTrafficPolicies(
 		trafficPolicy := tpIter
 
 		allIds.Insert(selection.ToUniqueSingleClusterString(trafficPolicy.ObjectMeta))
-		if trafficPolicy.Status.GetValidationStatus().GetState() == zephyr_core_types.Status_ACCEPTED {
+		if trafficPolicy.Status.ObservedGeneration == trafficPolicy.Generation && trafficPolicy.Status.GetValidationStatus().GetState() == zephyr_core_types.Status_ACCEPTED {
 			allValidatedTrafficPolicies = append(allValidatedTrafficPolicies, trafficPolicy)
 			uniqueStringToValidatedTrafficPolicy[selection.ToUniqueSingleClusterString(trafficPolicy.ObjectMeta)] = trafficPolicy
 		}

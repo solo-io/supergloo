@@ -17,6 +17,7 @@ require (
 	github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/subcommands v1.2.0 // indirect
 	github.com/google/wire v0.4.0
 	github.com/gophercloud/gophercloud v0.6.0 // indirect
 	github.com/gorilla/handlers v1.4.2 // indirect
@@ -27,6 +28,7 @@ require (
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
 	github.com/keikoproj/aws-auth v0.0.0-20200510193503-dcb7aa6350e1
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
+	github.com/lyft/protoc-gen-star v0.4.15 // indirect
 	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/mattn/go-shellwords v1.0.7
 	github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
@@ -49,10 +51,11 @@ require (
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.5
 	go.uber.org/zap v1.13.0
+	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
-	google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24 // indirect
-	google.golang.org/grpc v1.26.0
+	golang.org/x/tools v0.0.0-20200603170713-0310561d584d
+	google.golang.org/grpc v1.27.0
 	helm.sh/helm/v3 v3.0.0
 	istio.io/api v0.0.0-20200218013118-7fd43ea7fc2b
 	istio.io/client-go v0.0.0-20200218195608-60c238c92aa0

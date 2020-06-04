@@ -51,14 +51,15 @@ func (v *validationLoop) Reconcile(ctx context.Context) error {
 
 	for _, trafficPolicy := range trafficPolicies.Items {
 		newValidationStatus, validationErr := v.validator.ValidateTrafficPolicy(&trafficPolicy, meshServices)
-
 		if validationErr == nil {
 			logger.Debugf("Traffic policy %s.%s passed validation", trafficPolicy.GetName(), trafficPolicy.GetNamespace())
 		} else {
 			logger.Infof("Traffic policy %s.%s failed validation for reason: %+v", trafficPolicy.GetName(), trafficPolicy.GetNamespace(), validationErr)
 		}
 
-		if !trafficPolicy.Status.GetValidationStatus().Equal(newValidationStatus) {
+		if !trafficPolicy.Status.GetValidationStatus().Equal(newValidationStatus) ||
+			trafficPolicy.Status.ObservedGeneration != trafficPolicy.Generation {
+			trafficPolicy.Status.ObservedGeneration = trafficPolicy.Generation
 			trafficPolicy.Status.ValidationStatus = newValidationStatus
 
 			err := v.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, &trafficPolicy)

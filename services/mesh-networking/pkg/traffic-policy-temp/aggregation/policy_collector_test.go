@@ -388,6 +388,59 @@ var _ = Describe("PolicyCollector", func() {
 						},
 					}))
 				})
+
+				It("updates the service status appropriately only with observed policies", func() {
+					aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
+					collector := traffic_policy_aggregation.NewPolicyCollector(aggregator)
+					validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
+					mesh := &zephyr_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
+					validatedSpec := &zephyr_networking_types.TrafficPolicySpec{
+						Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Attempts: 1,
+						},
+					}
+					trafficPolicies := []*zephyr_networking.TrafficPolicy{
+						// the first one will not be associated with the service
+						{
+							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp1", Generation: 2},
+							Spec: zephyr_networking_types.TrafficPolicySpec{
+								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+									Attempts: 2,
+								},
+							},
+							Status: zephyr_networking_types.TrafficPolicyStatus{
+								ObservedGeneration: 1,
+								ValidationStatus:   validationSuccess,
+							},
+						},
+					}
+					meshService := &zephyr_discovery.MeshService{
+						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh-service"},
+						Status: zephyr_discovery_types.MeshServiceStatus{
+							ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+								{
+									Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[0].ObjectMeta),
+									TrafficPolicySpec: validatedSpec,
+								},
+							},
+						},
+					}
+
+					// validatedPolicies will be empty as no validated policies exist (the one we have is ignored as generation != observedGeneration)
+					var validatedPolicies []*zephyr_networking.TrafficPolicy
+					aggregator.EXPECT().
+						PoliciesForService(validatedPolicies, meshService).
+						Return(trafficPolicies, nil)
+
+					result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
+					Expect(err).To(BeNil())
+					Expect(result.PoliciesToRecordOnService).To(Equal([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+						{
+							Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[0].ObjectMeta),
+							TrafficPolicySpec: validatedSpec,
+						},
+					}))
+				})
 			})
 
 			When("there are validation errors to report", func() {
