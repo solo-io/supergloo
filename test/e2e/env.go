@@ -15,6 +15,7 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/test/e2e/kubectl"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -37,8 +38,8 @@ func (e Env) DumpState() {
 
 func newEnv(mgmt, remote string) Env {
 	return Env{
-		Management: newKubeContext(mgmt),
-		Remote:     newKubeContext(remote),
+		Management: NewKubeContext(mgmt),
+		Remote:     NewKubeContext(remote),
 	}
 }
 
@@ -51,9 +52,18 @@ type KubeContext struct {
 	SecretClient        kubernetes_core.SecretClient
 }
 
-func newKubeContext(kubecontext string) KubeContext {
+// If kubecontext is empty string, use current context.
+func NewKubeContext(kubecontext string) KubeContext {
 	cfg, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
-	config := clientcmd.NewNonInteractiveClientConfig(*cfg, kubecontext, &clientcmd.ConfigOverrides{}, nil)
+	var config clientcmd.ClientConfig
+	if kubecontext == "" {
+		config = clientcmd.NewDefaultClientConfig(*cfg, &clientcmd.ConfigOverrides{})
+		rawConfig, err := config.RawConfig()
+		Expect(err).ToNot(HaveOccurred())
+		kubecontext = rawConfig.CurrentContext
+	} else {
+		config = clientcmd.NewNonInteractiveClientConfig(*cfg, kubecontext, &clientcmd.ConfigOverrides{}, nil)
+	}
 	restcfg, err := config.ClientConfig()
 	Expect(err).NotTo(HaveOccurred())
 
@@ -83,7 +93,23 @@ func newKubeContext(kubecontext string) KubeContext {
 }
 
 func (k *KubeContext) Curl(ctx context.Context, fromns, fromworkload string, args ...string) string {
-	return Curl(ctx, k.Context, fromns, fromworkload, args...)
+	return kubectl.Curl(ctx, k.Context, fromns, fromworkload, args...)
+}
+
+func (k *KubeContext) DeployBookInfo(ctx context.Context, ns string) string {
+	return kubectl.DeployBookInfo(ctx, k.Context, ns)
+}
+
+func (k *KubeContext) CreateNamespace(ctx context.Context, ns string) string {
+	return kubectl.CreateNamespace(ctx, k.Context, ns)
+}
+
+func (k *KubeContext) DeleteNamespace(ctx context.Context, ns string) string {
+	return kubectl.DeleteNamespace(ctx, k.Context, ns)
+}
+
+func (k *KubeContext) LabelNamespace(ctx context.Context, ns, label string) string {
+	return kubectl.LabelNamespace(ctx, k.Context, ns, label)
 }
 
 type Pod struct {
@@ -92,7 +118,7 @@ type Pod struct {
 }
 
 func (p *Pod) Curl(ctx context.Context, args ...string) string {
-	return Curl(ctx, p.Cluster.Context, p.Namespace, p.Name, args...)
+	return kubectl.Curl(ctx, p.Cluster.Context, p.Namespace, p.Name, args...)
 }
 
 func (k *KubeContext) GetPod(ns, app string) *Pod {
