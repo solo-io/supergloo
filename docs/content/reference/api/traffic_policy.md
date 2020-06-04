@@ -367,7 +367,7 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 | translatorErrors | [][TrafficPolicyStatus.TranslatorError](#networking.zephyr.solo.io.TrafficPolicyStatus.TranslatorError) | repeated | Provides details on any translation errors that occurred. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config. |
 | validationStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  | Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific routing configuration. |
 | conflictErrors | [][TrafficPolicyStatus.ConflictError](#networking.zephyr.solo.io.TrafficPolicyStatus.ConflictError) | repeated | Provides details on any configuration conflicts between this TrafficPolicy and other TrafficPolicies that apply to the same configuration target. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config. |
-| observedGeneration | [int64](#int64) |  | The generation the validation_status was observed on. Note that translation_status, translation_errors conflict_errors can still appear even if validation_status is accepted, as these errors can happen due to other traffic poilicies and specific mesh implementaiton. |
+| observedGeneration | [int64](#int64) |  | The generation the validation_status was observed on. Note that translation_status, translation_errors conflict_errors can still appear even if validation_status is accepted, as these errors can happen due to other traffic policies and specific mesh implementation. |
 
 
 

@@ -1234,7 +1234,7 @@ type TrafficPolicyStatus struct {
 	ConflictErrors []*TrafficPolicyStatus_ConflictError `protobuf:"bytes,4,rep,name=conflict_errors,json=conflictErrors,proto3" json:"conflict_errors,omitempty"`
 	// The generation the validation_status was observed on. Note that translation_status, translation_errors
 	// conflict_errors can still appear even if validation_status is accepted, as these errors
-	// can happen due to other traffic poilicies and specific mesh implementaiton.
+	// can happen due to other traffic policies and specific mesh implementation.
 	ObservedGeneration   int64    `protobuf:"varint,5,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
