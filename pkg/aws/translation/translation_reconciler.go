@@ -75,6 +75,7 @@ func (a *appmeshTranslationReconciler) reconcileWithEnforcedAccessControl(
 	if err != nil {
 		return err
 	}
+	// Filter out services/workloads that are not declared in ACPs
 	for service, _ := range servicesToBackingWorkloads {
 		if !servicesWithACP.Has(service) {
 			delete(servicesToBackingWorkloads, service)

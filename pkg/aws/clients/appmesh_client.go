@@ -14,10 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-var (
-	ListLimit = aws2.Int64(100)
-)
-
 type AppmeshClientGetter func(mesh *zephyr_discovery.Mesh) (AppmeshClient, error)
 
 func AppmeshClientGetterProvider(
@@ -199,7 +195,7 @@ func (a *appmeshClient) ReconcileVirtualRoutersAndRoutesAndVirtualServices(
 	if err != nil {
 		return err
 	}
-	existingVirtualRouterNames, err := a.listAllVirtualRouterNames(meshName)
+	existingVirtualRouterNames, err := a.listAllVirtualRouterNames(ctx, meshName)
 	if err != nil {
 		return err
 	}
@@ -216,7 +212,6 @@ func (a *appmeshClient) ReconcileVirtualNodes(
 	virtualNodes []*appmesh.VirtualNodeData,
 ) error {
 	logger := contextutils.LoggerFrom(ctx)
-	existingVirtualNodeNames := sets.NewString()
 	declaredVirtualNodeNames := sets.NewString()
 	// For each declared VirtualNode, ensure it exists with an equivalent spec.
 	for _, vn := range virtualNodes {
@@ -234,22 +229,9 @@ func (a *appmeshClient) ReconcileVirtualNodes(
 		}
 		declaredVirtualNodeNames.Insert(aws2.StringValue(vn.VirtualNodeName))
 	}
-	req := &appmesh.ListVirtualNodesInput{
-		Limit:    ListLimit,
-		MeshName: meshName,
-	}
-	for {
-		resp, err := a.client.ListVirtualNodes(req)
-		if err != nil {
-			return err
-		}
-		for _, vsRef := range resp.VirtualNodes {
-			existingVirtualNodeNames.Insert(aws2.StringValue(vsRef.VirtualNodeName))
-		}
-		if resp.NextToken == nil {
-			break
-		}
-		req.NextToken = resp.NextToken
+	existingVirtualNodeNames, err := a.listVirtualNodeNames(ctx, meshName)
+	if err != nil {
+		return err
 	}
 	// Delete any VirtualNodes not declared
 	for vnName, _ := range existingVirtualNodeNames.Difference(declaredVirtualNodeNames) {
@@ -289,22 +271,9 @@ func (a *appmeshClient) reconcileVirtualServices(
 		}
 		declaredVirtualServiceNames.Insert(aws2.StringValue(vs.VirtualServiceName))
 	}
-	req := &appmesh.ListVirtualServicesInput{
-		Limit:    ListLimit,
-		MeshName: meshName,
-	}
-	for {
-		resp, err := a.client.ListVirtualServices(req)
-		if err != nil {
-			return err
-		}
-		for _, vsRef := range resp.VirtualServices {
-			existingVirtualServiceNames.Insert(aws2.StringValue(vsRef.VirtualServiceName))
-		}
-		if resp.NextToken == nil {
-			break
-		}
-		req.NextToken = resp.NextToken
+	existingVirtualServiceNames, err := a.listVirtualServiceNames(ctx, meshName)
+	if err != nil {
+		return err
 	}
 	// Delete any VirtualServices not declared
 	for vsName, _ := range existingVirtualServiceNames.Difference(declaredVirtualServiceNames) {
@@ -373,24 +342,9 @@ func (a *appmeshClient) deleteRoutes(
 			// If no routes declared for VirtualRouter, delete all of its Routes.
 			declaredRouteNames = sets.NewString()
 		}
-		existingRouteNames := sets.NewString()
-		req := &appmesh.ListRoutesInput{
-			Limit:             ListLimit,
-			MeshName:          meshName,
-			VirtualRouterName: aws2.String(vrName),
-		}
-		for {
-			resp, err := a.client.ListRoutes(req)
-			if err != nil {
-				return err
-			}
-			for _, vsRef := range resp.Routes {
-				existingRouteNames.Insert(aws2.StringValue(vsRef.RouteName))
-			}
-			if resp.NextToken == nil {
-				break
-			}
-			req.NextToken = resp.NextToken
+		existingRouteNames, err := a.listRouteNames(ctx, meshName, aws2.String(vrName))
+		if err != nil {
+			return err
 		}
 		for routeName, _ := range existingRouteNames.Difference(declaredRouteNames) {
 			_, err := a.client.DeleteRoute(&appmesh.DeleteRouteInput{
@@ -460,26 +414,95 @@ func (a *appmeshClient) deleteVirtualRouters(
 	return nil
 }
 
-func (a *appmeshClient) listAllVirtualRouterNames(meshName *string) (sets.String, error) {
+func (a *appmeshClient) listAllVirtualRouterNames(ctx context.Context, meshName *string) (sets.String, error) {
 	vrNames := sets.NewString()
 	req := &appmesh.ListVirtualRoutersInput{
-		Limit:    ListLimit,
 		MeshName: meshName,
 	}
-	for {
-		resp, err := a.client.ListVirtualRouters(req)
-		if err != nil {
-			return nil, err
+	err := a.client.ListVirtualRoutersPagesWithContext(ctx, req, func(page *appmesh.ListVirtualRoutersOutput, isLast bool) bool {
+		if page == nil {
+			return !isLast
 		}
-		for _, vsRef := range resp.VirtualRouters {
+		for _, vsRef := range page.VirtualRouters {
 			vrNames.Insert(aws2.StringValue(vsRef.VirtualRouterName))
 		}
-		if resp.NextToken == nil {
-			break
-		}
-		req.NextToken = resp.NextToken
+		return !isLast
+	})
+	if err != nil {
+		return nil, err
 	}
 	return vrNames, nil
+}
+
+func (a *appmeshClient) listRouteNames(
+	ctx context.Context,
+	meshName *string,
+	virtualRouterName *string,
+) (sets.String, error) {
+	existingRouteNames := sets.NewString()
+	req := &appmesh.ListRoutesInput{
+		MeshName:          meshName,
+		VirtualRouterName: virtualRouterName,
+	}
+	err := a.client.ListRoutesPagesWithContext(ctx, req, func(page *appmesh.ListRoutesOutput, isLast bool) bool {
+		if page == nil {
+			return !isLast
+		}
+		for _, vsRef := range page.Routes {
+			existingRouteNames.Insert(aws2.StringValue(vsRef.RouteName))
+		}
+		return !isLast
+	})
+	if err != nil {
+		return nil, err
+	}
+	return existingRouteNames, nil
+}
+
+func (a *appmeshClient) listVirtualNodeNames(
+	ctx context.Context,
+	meshName *string,
+) (sets.String, error) {
+	virtualNodeNames := sets.NewString()
+	req := &appmesh.ListVirtualNodesInput{
+		MeshName: meshName,
+	}
+	err := a.client.ListVirtualNodesPagesWithContext(ctx, req, func(page *appmesh.ListVirtualNodesOutput, isLast bool) bool {
+		if page == nil {
+			return !isLast
+		}
+		for _, vsRef := range page.VirtualNodes {
+			virtualNodeNames.Insert(aws2.StringValue(vsRef.VirtualNodeName))
+		}
+		return !isLast
+	})
+	if err != nil {
+		return nil, err
+	}
+	return virtualNodeNames, nil
+}
+
+func (a *appmeshClient) listVirtualServiceNames(
+	ctx context.Context,
+	meshName *string,
+) (sets.String, error) {
+	virtualServiceNames := sets.NewString()
+	req := &appmesh.ListVirtualServicesInput{
+		MeshName: meshName,
+	}
+	err := a.client.ListVirtualServicesPagesWithContext(ctx, req, func(page *appmesh.ListVirtualServicesOutput, isLast bool) bool {
+		if page == nil {
+			return !isLast
+		}
+		for _, vsRef := range page.VirtualServices {
+			virtualServiceNames.Insert(aws2.StringValue(vsRef.VirtualServiceName))
+		}
+		return !isLast
+	})
+	if err != nil {
+		return nil, err
+	}
+	return virtualServiceNames, nil
 }
 
 func isNotFound(err error) bool {

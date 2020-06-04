@@ -247,113 +247,18 @@ var _ = Describe("AppmeshClient", func() {
 		for _, vs := range declaredVs[:3] {
 			expectVirtualServiceCreate(vs)
 		}
-		existingVs := []*appmesh.VirtualServiceRef{
-			{
-				MeshName:           meshName,
-				VirtualServiceName: aws2.String("vs-name-3"),
-			},
-			{
-				MeshName:           meshName,
-				VirtualServiceName: aws2.String("vs-name-4"),
-			},
-		}
 		mockAppmeshRawClient.
 			EXPECT().
-			ListVirtualServices(&appmesh.ListVirtualServicesInput{
-				Limit:    appmesh2.ListLimit,
+			ListVirtualServicesPagesWithContext(ctx, &appmesh.ListVirtualServicesInput{
 				MeshName: meshName,
-			}).
-			Return(&appmesh.ListVirtualServicesOutput{
-				VirtualServices: existingVs,
-			}, nil)
+			}, gomock.Any()).
+			Return(nil)
 		mockAppmeshRawClient.
 			EXPECT().
-			DeleteVirtualService(&appmesh.DeleteVirtualServiceInput{
-				MeshName:           meshName,
-				VirtualServiceName: existingVs[1].VirtualServiceName,
-			}).
-			Return(nil, nil)
-		existingVr := []*appmesh.VirtualRouterRef{
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-3"),
-			},
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-4"),
-			},
-		}
-		mockAppmeshRawClient.
-			EXPECT().
-			ListVirtualRouters(&appmesh.ListVirtualRoutersInput{
-				Limit:    appmesh2.ListLimit,
+			ListVirtualRoutersPagesWithContext(ctx, &appmesh.ListVirtualRoutersInput{
 				MeshName: meshName,
-			}).
-			Return(&appmesh.ListVirtualRoutersOutput{
-				VirtualRouters: existingVr,
-			}, nil)
-		existingRoutesForVr3 := []*appmesh.RouteRef{
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-3"),
-				RouteName:         aws2.String("r-name-3a"),
-			},
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-3"),
-				RouteName:         aws2.String("r-name-4"),
-			},
-		}
-		existingRoutesForVr4 := []*appmesh.RouteRef{
-			{
-				MeshName:          meshName,
-				VirtualRouterName: aws2.String("vr-name-4"),
-				RouteName:         aws2.String("r-name-4a"),
-			},
-		}
-		mockAppmeshRawClient.
-			EXPECT().
-			ListRoutes(&appmesh.ListRoutesInput{
-				Limit:             appmesh2.ListLimit,
-				VirtualRouterName: existingVr[0].VirtualRouterName,
-				MeshName:          meshName,
-			}).
-			Return(&appmesh.ListRoutesOutput{
-				Routes: existingRoutesForVr3,
-			}, nil)
-		mockAppmeshRawClient.
-			EXPECT().
-			ListRoutes(&appmesh.ListRoutesInput{
-				Limit:             appmesh2.ListLimit,
-				VirtualRouterName: existingVr[1].VirtualRouterName,
-				MeshName:          meshName,
-			}).
-			Return(&appmesh.ListRoutesOutput{
-				Routes: existingRoutesForVr4,
-			}, nil)
-		mockAppmeshRawClient.
-			EXPECT().
-			DeleteRoute(&appmesh.DeleteRouteInput{
-				MeshName:          meshName,
-				VirtualRouterName: existingRoutesForVr3[1].VirtualRouterName,
-				RouteName:         existingRoutesForVr3[1].RouteName,
-			}).
-			Return(nil, nil)
-		mockAppmeshRawClient.
-			EXPECT().
-			DeleteRoute(&appmesh.DeleteRouteInput{
-				MeshName:          meshName,
-				VirtualRouterName: existingRoutesForVr4[0].VirtualRouterName,
-				RouteName:         existingRoutesForVr4[0].RouteName,
-			}).
-			Return(nil, nil)
-		mockAppmeshRawClient.
-			EXPECT().
-			DeleteVirtualRouter(&appmesh.DeleteVirtualRouterInput{
-				MeshName:          meshName,
-				VirtualRouterName: existingVr[1].VirtualRouterName,
-			}).
-			Return(nil, nil)
+			}, gomock.Any()).
+			Return(nil)
 		err := appmeshClient.ReconcileVirtualRoutersAndRoutesAndVirtualServices(ctx, meshName, declaredVr, declaredRoutes, declaredVs)
 		Expect(err).ToNot(HaveOccurred())
 	})
@@ -552,32 +457,12 @@ var _ = Describe("AppmeshClient", func() {
 		for _, vn := range declaredVs[:3] {
 			expectVirtualNodeCreate(vn)
 		}
-		existingVs := []*appmesh.VirtualNodeRef{
-			{
-				MeshName:        meshName,
-				VirtualNodeName: aws2.String("vn-name-3"),
-			},
-			{
-				MeshName:        meshName,
-				VirtualNodeName: aws2.String("vn-name-4"),
-			},
-		}
 		mockAppmeshRawClient.
 			EXPECT().
-			ListVirtualNodes(&appmesh.ListVirtualNodesInput{
-				Limit:    appmesh2.ListLimit,
+			ListVirtualNodesPagesWithContext(ctx, &appmesh.ListVirtualNodesInput{
 				MeshName: meshName,
-			}).
-			Return(&appmesh.ListVirtualNodesOutput{
-				VirtualNodes: existingVs,
-			}, nil)
-		mockAppmeshRawClient.
-			EXPECT().
-			DeleteVirtualNode(&appmesh.DeleteVirtualNodeInput{
-				MeshName:        meshName,
-				VirtualNodeName: existingVs[1].VirtualNodeName,
-			}).
-			Return(nil, nil)
+			}, gomock.Any()).
+			Return(nil)
 		err := appmeshClient.ReconcileVirtualNodes(ctx, meshName, declaredVs)
 		Expect(err).ToNot(HaveOccurred())
 	})
