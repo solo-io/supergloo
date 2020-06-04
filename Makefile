@@ -61,13 +61,13 @@ mod-download:
 update-deps: mod-download
 	cd $(shell go list -f '{{ .Dir }}' -m istio.io/tools) && \
 	  go install ./cmd/protoc-gen-jsonshim
-	GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
-	GO111MODULE=off go get -u github.com/gogo/protobuf/gogoproto
-	GO111MODULE=off go get -u github.com/gogo/protobuf/protoc-gen-gogo
-	GO111MODULE=off go get -u github.com/solo-io/protoc-gen-ext
-	GO111MODULE=off go get -u github.com/google/wire/cmd/wire
-	GO111MODULE=off go get -u github.com/golang/mock/gomock
-	GO111MODULE=off go install github.com/golang/mock/mockgen
+	go get golang.org/x/tools/cmd/goimports
+	go get github.com/gogo/protobuf/gogoproto
+	go get github.com/gogo/protobuf/protoc-gen-gogo
+	go get github.com/solo-io/protoc-gen-ext
+	go get github.com/google/wire/cmd/wire
+	go get github.com/golang/mock/gomock
+	go install github.com/golang/mock/mockgen
 
 
 .PHONY: fmt-changed
