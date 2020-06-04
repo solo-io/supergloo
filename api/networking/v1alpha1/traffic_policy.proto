@@ -389,6 +389,6 @@ message TrafficPolicyStatus {
 
     // The generation the validation_status was observed on. Note that translation_status, translation_errors
     // conflict_errors can still appear even if validation_status is accepted, as these errors
-    // can happen due to other traffic poilicies and specific mesh implementaiton.
+    // can happen due to other traffic policies and specific mesh implementation.
     int64 observed_generation = 5;
 }
