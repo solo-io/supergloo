@@ -56,7 +56,7 @@ There are many ways to get involved in an open source community and contribute t
 ### Community Meetings 
 Calls will be held every other Wednesday at **10am Pacific Time** and are open to the general public. These meetings will be recorded and posted publicly to YouTube. 
  - [Zoom meeting link](https://solo.zoom.us/j/98337720715) - open to the public and recorded
- - [Download the iCalendar Invite ics](https://solo.zoom.us/meeting/tJwudO6vrDstG9HTxJndHTG61YOjE20lrtG1/ics?icsToken=98tyKuCgrTgtHdaVtxiCRow-A4jCKO3zpmJajfp1qAfPDSR7ViSgZ9ttOJctQNTC)
+ - [Meeting Calendar](https://calendar.google.com/calendar/embed?src=solo.io_c144salt3ffnlfto3p1qnkbmdo%40group.calendar.google.com&ctz=America%2FLos_Angeles)
  - [Meeting notes](https://bit.ly/ServiceMeshHub-CommunityMeeting) - this document is open to the public
  - [Recorded meetings](https://www.youtube.com/playlist?list=PLBOtlFtGznBiF3Dti9WbPBjPj5KPmoalq) - YouTube playlist for all previous meetings
 
