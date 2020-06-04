@@ -84,10 +84,6 @@ data:
 )
 
 func getEksKubeContext(ctx context.Context) KubeContext {
-	//cmd := exec.Command("aws", "eks", "--region", Region, "update-kubeconfig", "--name", EksClusterName)
-	//err := cmd.Run()
-	//Expect(err).NotTo(HaveOccurred())
-
 	eg, ctx := errgroup.WithContext(ctx)
 
 	r, w, err := os.Pipe()
