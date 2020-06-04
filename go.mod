@@ -54,7 +54,7 @@ require (
 	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
-	golang.org/x/tools v0.0.0-20200603170713-0310561d584d
+	golang.org/x/tools v0.0.0-20200604183345-4d5ea46c79fe
 	google.golang.org/grpc v1.27.0
 	helm.sh/helm/v3 v3.0.0
 	istio.io/api v0.0.0-20200218013118-7fd43ea7fc2b
