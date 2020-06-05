@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/ginkgo"
 )
 
-func TestE2e(t *testing.T) {
+func TestE2E(t *testing.T) {
 	if os.Getenv("RUN_E2E") == "" {
 		return
 	}
@@ -21,15 +21,19 @@ func TestE2e(t *testing.T) {
 	RunSpecs(t, "E2e Suite")
 }
 
+var eksNamespace string
+
 var _ = BeforeSuite(func() {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
 	/* env := */ StartEnvOnce(ctx)
 	// TODO: deploy test helper?
+	eksNamespace = setupAppmeshEksEnvironment()
 })
 
 var _ = AfterSuite(func() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	ClearEnv(ctx)
+	cleanupAppmeshEksEnvironment(eksNamespace)
 })

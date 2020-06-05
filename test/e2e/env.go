@@ -11,7 +11,11 @@ import (
 	"sync"
 	"time"
 
-	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/test/e2e/kubectl"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -34,37 +38,93 @@ func (e Env) DumpState() {
 
 func newEnv(mgmt, remote string) Env {
 	return Env{
-		Management: newKubeContext(mgmt),
-		Remote:     newKubeContext(remote),
+		Management: NewKubeContext(mgmt),
+		Remote:     NewKubeContext(remote),
 	}
 }
 
 type KubeContext struct {
 	Context             string
 	Clientset           *kubernetes.Clientset
-	TrafficPolicyClient v1alpha1.TrafficPolicyClient
+	TrafficPolicyClient zephyr_networking.TrafficPolicyClient
+	KubeClusterClient   zephyr_discovery.KubernetesClusterClient
+	SettingsClient      zephyr_core.SettingsClient
+	SecretClient        kubernetes_core.SecretClient
+	VirtualMeshClient   zephyr_networking.VirtualMeshClient
 }
 
-func newKubeContext(kubecontext string) KubeContext {
+// If kubecontext is empty string, use current context.
+func NewKubeContext(kubecontext string) KubeContext {
 	cfg, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
-	config := clientcmd.NewNonInteractiveClientConfig(*cfg, kubecontext, &clientcmd.ConfigOverrides{}, nil)
+	var config clientcmd.ClientConfig
+	if kubecontext == "" {
+		config = clientcmd.NewDefaultClientConfig(*cfg, &clientcmd.ConfigOverrides{})
+		rawConfig, err := config.RawConfig()
+		Expect(err).ToNot(HaveOccurred())
+		kubecontext = rawConfig.CurrentContext
+	} else {
+		config = clientcmd.NewNonInteractiveClientConfig(*cfg, kubecontext, &clientcmd.ConfigOverrides{}, nil)
+	}
 	restcfg, err := config.ClientConfig()
 	Expect(err).NotTo(HaveOccurred())
+
 	clientset, err := kubernetes.NewForConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	clientset2, err := v1alpha1.ClientsetFromConfigProvider(restcfg)
+	kubeCoreClientset, err := kubernetes_core.ClientsetFromConfigProvider(restcfg)
+	Expect(err).NotTo(HaveOccurred())
+
+	networkingClientset, err := zephyr_networking.ClientsetFromConfigProvider(restcfg)
+	Expect(err).NotTo(HaveOccurred())
+
+	discoveryClientset, err := zephyr_discovery.ClientsetFromConfigProvider(restcfg)
+	Expect(err).NotTo(HaveOccurred())
+
+	coreClientset, err := zephyr_core.ClientsetFromConfigProvider(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
 	return KubeContext{
 		Context:             kubecontext,
 		Clientset:           clientset,
-		TrafficPolicyClient: v1alpha1.TrafficPolicyClientFromClientsetProvider(clientset2),
+		TrafficPolicyClient: zephyr_networking.TrafficPolicyClientFromClientsetProvider(networkingClientset),
+		VirtualMeshClient:   zephyr_networking.VirtualMeshClientFromClientsetProvider(networkingClientset),
+		KubeClusterClient:   zephyr_discovery.KubernetesClusterClientFromClientsetProvider(discoveryClientset),
+		SettingsClient:      zephyr_core.SettingsClientFromClientsetProvider(coreClientset),
+		SecretClient:        kubernetes_core.SecretClientFromClientsetProvider(kubeCoreClientset),
 	}
 }
 
-func (k *KubeContext) Curl(ctx context.Context, fromns, fromworkload string, args ...string) string {
-	return Curl(ctx, k.Context, fromns, fromworkload, args...)
+func (k *KubeContext) Curl(ctx context.Context, ns, fromDeployment, fromContainer, url string) string {
+	return kubectl.Curl(ctx, k.Context, ns, fromDeployment, fromContainer, url)
+}
+
+func (k *KubeContext) WaitForRollout(ctx context.Context, ns, deployment string) {
+	kubectl.WaitForRollout(ctx, k.Context, ns, deployment)
+}
+
+func (k *KubeContext) DeployBookInfo(ctx context.Context, ns string) {
+	kubectl.DeployBookInfo(ctx, k.Context, ns)
+}
+
+func (k *KubeContext) CreateNamespace(ctx context.Context, ns string) {
+	kubectl.CreateNamespace(ctx, k.Context, ns)
+}
+
+func (k *KubeContext) DeleteNamespace(ctx context.Context, ns string) {
+	kubectl.DeleteNamespace(ctx, k.Context, ns)
+}
+
+func (k *KubeContext) LabelNamespace(ctx context.Context, ns, label string) {
+	kubectl.LabelNamespace(ctx, k.Context, ns, label)
+}
+
+func (k *KubeContext) SetDeploymentEnvVars(
+	ctx context.Context,
+	ns string,
+	deploymentName string,
+	containerName string,
+	envVars map[string]string) {
+	kubectl.SetDeploymentEnvVars(ctx, k.Context, ns, deploymentName, containerName, envVars)
 }
 
 type Pod struct {
@@ -73,7 +133,7 @@ type Pod struct {
 }
 
 func (p *Pod) Curl(ctx context.Context, args ...string) string {
-	return Curl(ctx, p.Cluster.Context, p.Namespace, p.Name, args...)
+	return kubectl.CurlWithEphemeralPod(ctx, p.Cluster.Context, p.Namespace, p.Name, args...)
 }
 
 func (k *KubeContext) GetPod(ns, app string) *Pod {
@@ -119,7 +179,7 @@ func StartEnv(ctx context.Context) Env {
 	if useExisting := os.Getenv("USE_EXISTING"); useExisting != "" {
 		mgmt := "kind-management-plane-1"
 		target := "kind-target-cluster-1"
-		if fields := strings.Fields(useExisting); len(fields) == 2 {
+		if fields := strings.Split(useExisting, ","); len(fields) == 2 {
 			mgmt = fields[0]
 			target = fields[1]
 		}
