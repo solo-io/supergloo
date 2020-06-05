@@ -173,13 +173,13 @@ func (m *meshWorkloadFinder) getExistingWorkloads() (map[string]*zephyr_discover
 		return nil, nil, err
 	}
 	workloadsByName := make(map[string]*zephyr_discovery.MeshWorkload)
-	workloadNames := sets.NewString()
+	workloadKeys := sets.NewString()
 	for _, meshWorkload := range meshWorkloadList.Items {
 		meshWorkload := meshWorkload
 		workloadsByName[meshWorkload.GetName()] = &meshWorkload
-		workloadNames.Insert(meshWorkload.GetName())
+		workloadKeys.Insert(selection.ToUniqueSingleClusterString(meshWorkload.ObjectMeta))
 	}
-	return workloadsByName, workloadNames, nil
+	return workloadsByName, workloadKeys, nil
 }
 
 func (m *meshWorkloadFinder) discoverAllWorkloads(discoveredMeshTypes sets.Int32) ([]*zephyr_discovery.MeshWorkload, sets.String, error) {
@@ -188,7 +188,7 @@ func (m *meshWorkloadFinder) discoverAllWorkloads(discoveredMeshTypes sets.Int32
 		return nil, nil, err
 	}
 	var meshWorkloads []*zephyr_discovery.MeshWorkload
-	meshWorkloadNames := sets.NewString()
+	meshWorkloadKeys := sets.NewString()
 	for _, pod := range podList.Items {
 		pod := pod
 		discoveredWorkload, err := m.discoverMeshWorkload(&pod, discoveredMeshTypes)
@@ -199,9 +199,9 @@ func (m *meshWorkloadFinder) discoverAllWorkloads(discoveredMeshTypes sets.Int32
 			continue
 		}
 		meshWorkloads = append(meshWorkloads, discoveredWorkload)
-		meshWorkloadNames.Insert(discoveredWorkload.GetName())
+		meshWorkloadKeys.Insert(selection.ToUniqueSingleClusterString(discoveredWorkload.ObjectMeta))
 	}
-	return meshWorkloads, meshWorkloadNames, nil
+	return meshWorkloads, meshWorkloadKeys, nil
 }
 
 func (m *meshWorkloadFinder) getDiscoveredMeshTypes(ctx context.Context) (sets.Int32, error) {
