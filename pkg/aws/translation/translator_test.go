@@ -116,7 +116,7 @@ var _ = Describe("Translator", func() {
 				Backends:  backends,
 				ServiceDiscovery: &appmesh.ServiceDiscovery{
 					Dns: &appmesh.DnsServiceDiscovery{
-						Hostname: aws.String(metadata.BuildLocalFQDN(meshService.Spec.GetKubeService().GetRef().GetName())),
+						Hostname: aws.String(metadata.BuildLocalFQDN(meshService)),
 					},
 				},
 			},

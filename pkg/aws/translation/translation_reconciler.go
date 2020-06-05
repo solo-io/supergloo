@@ -131,6 +131,7 @@ func (a *appmeshTranslationReconciler) reconcile(
 		routes = append(routes, route)
 	}
 	for workload, services := range workloadsToBackingServices {
+		// TODO: add Cloudmap support, https://github.com/solo-io/service-mesh-hub/issues/755
 		// Don't create VirtualNode for workloads not backed by service because there's no DNS resolution.
 		if len(services) == 0 {
 			continue

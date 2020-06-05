@@ -8,6 +8,11 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 )
 
+const (
+	// Reference: https://docs.aws.amazon.com/app-mesh/latest/APIReference/API_HttpRouteAction.html
+	MaximumTargetsPerRoute = 10
+)
+
 var (
 	ExceededMaximumWorkloadsError = func(meshService *zephyr_discovery.MeshService) error {
 		return eris.Errorf("Workloads selected by service %s.%s exceeds Appmesh's maximum of 10 weighted targets.",
@@ -56,7 +61,7 @@ func (a *appmeshTranslator) BuildVirtualNode(
 			Backends:  backends,
 			ServiceDiscovery: &appmesh2.ServiceDiscovery{
 				Dns: &appmesh2.DnsServiceDiscovery{
-					Hostname: aws2.String(metadata.BuildLocalFQDN(meshService.Spec.GetKubeService().GetRef().GetName())),
+					Hostname: aws2.String(metadata.BuildLocalFQDN(meshService)),
 				},
 			},
 		},
@@ -70,7 +75,7 @@ func (a *appmeshTranslator) BuildRoute(
 	meshService *zephyr_discovery.MeshService,
 	meshWorkloads []*zephyr_discovery.MeshWorkload,
 ) (*appmesh2.RouteData, error) {
-	if len(meshWorkloads) > 10 {
+	if len(meshWorkloads) > MaximumTargetsPerRoute {
 		return nil, ExceededMaximumWorkloadsError(meshService)
 	}
 	var weightedTargets []*appmesh2.WeightedTarget
