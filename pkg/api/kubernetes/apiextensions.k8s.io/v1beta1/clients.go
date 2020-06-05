@@ -5,7 +5,9 @@ package v1beta1
 import (
 	"context"
 
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -77,6 +79,10 @@ type CustomResourceDefinitionReader interface {
 	ListCustomResourceDefinition(ctx context.Context, opts ...client.ListOption) (*CustomResourceDefinitionList, error)
 }
 
+// CustomResourceDefinitionTransitionFunction instructs the CustomResourceDefinitionWriter how to transition between an existing
+// CustomResourceDefinition object and a desired on an Upsert
+type CustomResourceDefinitionTransitionFunction func(existing, desired *CustomResourceDefinition) error
+
 // Writer knows how to create, delete, and update CustomResourceDefinitions.
 type CustomResourceDefinitionWriter interface {
 	// Create saves the CustomResourceDefinition object.
@@ -93,6 +99,9 @@ type CustomResourceDefinitionWriter interface {
 
 	// DeleteAllOf deletes all CustomResourceDefinition objects matching the given options.
 	DeleteAllOfCustomResourceDefinition(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the CustomResourceDefinition object.
+	UpsertCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, transitionFuncs ...CustomResourceDefinitionTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a CustomResourceDefinition object.
@@ -158,6 +167,19 @@ func (c *customResourceDefinitionClient) PatchCustomResourceDefinition(ctx conte
 func (c *customResourceDefinitionClient) DeleteAllOfCustomResourceDefinition(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &CustomResourceDefinition{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *customResourceDefinitionClient) UpsertCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, transitionFuncs ...CustomResourceDefinitionTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*CustomResourceDefinition), desired.(*CustomResourceDefinition)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *customResourceDefinitionClient) UpdateCustomResourceDefinitionStatus(ctx context.Context, obj *CustomResourceDefinition, opts ...client.UpdateOption) error {

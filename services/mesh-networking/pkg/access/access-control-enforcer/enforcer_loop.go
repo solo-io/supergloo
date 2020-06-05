@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
+	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"go.uber.org/zap"
@@ -18,14 +18,14 @@ type enforcerLoop struct {
 	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher
 	virtualMeshClient       zephyr_networking.VirtualMeshClient
 	meshClient              zephyr_discovery.MeshClient
-	meshEnforcers           []AccessPolicyMeshEnforcer
+	meshEnforcers           []access_control_enforcer.AccessPolicyMeshEnforcer
 }
 
 func NewEnforcerLoop(
 	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	meshClient zephyr_discovery.MeshClient,
-	meshEnforcers []AccessPolicyMeshEnforcer,
+	meshEnforcers []access_control_enforcer.AccessPolicyMeshEnforcer,
 ) AccessPolicyEnforcerLoop {
 	return &enforcerLoop{
 		virtualMeshEventWatcher: virtualMeshEventWatcher,
@@ -43,12 +43,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 				zap.Any("spec", obj.Spec),
 				zap.Any("status", obj.Status),
 			)
-			err := e.enforceGlobalAccessControl(ctx, obj, false)
-			err = e.setStatus(ctx, obj, err)
-			if err != nil {
-				logger.Errorw("Error while handling VirtualMesh create event", err)
-			}
-			return nil
+			return e.reconcile(ctx, container_runtime.CreateEvent)
 		},
 		OnUpdate: func(old, new *zephyr_networking.VirtualMesh) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
@@ -58,28 +53,15 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 				zap.Any("new_spec", new.Spec),
 				zap.Any("new_status", new.Status),
 			)
-			err := e.enforceGlobalAccessControl(ctx, new, false)
-			err = e.setStatus(ctx, new, err)
-			if err != nil {
-				logger.Errorw("Error while handling VirtualMesh update event", err)
-			}
-			return nil
+			return e.reconcile(ctx, container_runtime.UpdateEvent)
 		},
-		OnDelete: func(virtualMesh *zephyr_networking.VirtualMesh) error {
-			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, virtualMesh)
+		OnDelete: func(obj *zephyr_networking.VirtualMesh) error {
+			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, obj)
 			logger.Debugw("event handler enter",
-				zap.Any("spec", virtualMesh.Spec),
-				zap.Any("status", virtualMesh.Status),
+				zap.Any("spec", obj.Spec),
+				zap.Any("status", obj.Status),
 			)
-
-			// TODO https://github.com/solo-io/service-mesh-hub/issues/650 - we probably want to introduce some defensive retries into our code
-			err := e.enforceGlobalAccessControl(ctx, virtualMesh, true)
-			if err != nil {
-				logger.Errorf("%+v", err)
-				return nil
-			}
-
-			return nil
+			return e.reconcile(ctx, container_runtime.DeleteEvent)
 		},
 		OnGeneric: func(virtualMesh *zephyr_networking.VirtualMesh) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.GenericEvent, virtualMesh)
@@ -89,12 +71,35 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 	})
 }
 
+func (e *enforcerLoop) reconcile(ctx context.Context, eventType container_runtime.EventType) error {
+	vmList, err := e.virtualMeshClient.ListVirtualMesh(ctx)
+	if err != nil {
+		return err
+	}
+	for _, vm := range vmList.Items {
+		vm := vm
+		logger := container_runtime.BuildEventLogger(ctx, eventType, &vm)
+		err = e.enforceGlobalAccessControl(ctx, &vm)
+		if err != nil {
+			logger.Errorf("Error while handling VirtualMesh event: %+v", err)
+		}
+		if eventType != container_runtime.DeleteEvent {
+			statusErr := e.setStatus(ctx, &vm, err)
+			if statusErr != nil {
+				logger.Errorf("Error while settings status for VirtualMesh: %+v", statusErr)
+				return statusErr
+			}
+		}
+	}
+	return err
+}
+
 // If enforceMeshDefault, ignore user declared enforce_access_control setting and use mesh-specific default as defined on the
 // VirtualMesh API, used for VM deletion to clean up mesh resources.
+// If virtualMesh is nil, enforce the mesh specific default.
 func (e *enforcerLoop) enforceGlobalAccessControl(
 	ctx context.Context,
 	virtualMesh *zephyr_networking.VirtualMesh,
-	enforceMeshDefault bool,
 ) error {
 	meshes, err := e.fetchMeshes(ctx, virtualMesh)
 	if err != nil {
@@ -104,36 +109,15 @@ func (e *enforcerLoop) enforceGlobalAccessControl(
 		return nil
 	}
 	for _, mesh := range meshes {
-		var enforceAccessControl bool
-
-		if enforceMeshDefault || virtualMesh.Spec.GetEnforceAccessControl() == types.VirtualMeshSpec_MESH_DEFAULT {
-			enforceAccessControl, err = DefaultAccessControlValueForMesh(mesh)
+		for _, meshEnforcer := range e.meshEnforcers {
+			err = meshEnforcer.ReconcileAccessControl(
+				contextutils.WithLogger(ctx, meshEnforcer.Name()),
+				mesh,
+				virtualMesh,
+			)
 			if err != nil {
 				return err
 			}
-		} else if virtualMesh.Spec.GetEnforceAccessControl() == types.VirtualMeshSpec_ENABLED {
-			enforceAccessControl = true
-		} else {
-			enforceAccessControl = false
-		}
-
-		for _, meshEnforcer := range e.meshEnforcers {
-			if enforceAccessControl {
-				if err = meshEnforcer.StartEnforcing(
-					contextutils.WithLogger(ctx, meshEnforcer.Name()),
-					mesh,
-				); err != nil {
-					return err
-				}
-			} else {
-				if err = meshEnforcer.StopEnforcing(
-					contextutils.WithLogger(ctx, meshEnforcer.Name()),
-					mesh,
-				); err != nil {
-					return err
-				}
-			}
-
 		}
 	}
 	return nil

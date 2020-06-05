@@ -9,7 +9,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 	mock_cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager/mocks"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
@@ -42,7 +42,7 @@ var _ = Describe("snapshot listener", func() {
 	})
 
 	It("will do nothing if there are no updated virtual meshes", func() {
-		snap := &snapshot.MeshNetworkingSnapshot{}
+		snap := &networking_snapshot.MeshNetworkingSnapshot{}
 		csrSnapshotListener.Sync(ctx, snap)
 		testLogger.EXPECT().
 			LastEntry().
@@ -71,7 +71,7 @@ var _ = Describe("snapshot listener", func() {
 				},
 			},
 		}
-		snap := &snapshot.MeshNetworkingSnapshot{
+		snap := &networking_snapshot.MeshNetworkingSnapshot{
 			VirtualMeshes: []*zephyr_networking.VirtualMesh{vm1, vm2},
 		}
 		csrProcessor.EXPECT().InitializeCertificateForVirtualMesh(ctx, vm1).Return(vm1.Status)

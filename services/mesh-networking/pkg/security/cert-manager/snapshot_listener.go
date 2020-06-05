@@ -8,7 +8,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	"go.uber.org/zap"
 )
 
@@ -22,14 +22,14 @@ var (
 	NoVirtualMeshesChangedMessage = "no virtual meshes were created or updated during this sync"
 )
 
-type VMCSRSnapshotListener snapshot.MeshNetworkingSnapshotListener
+type VMCSRSnapshotListener networking_snapshot.MeshNetworkingSnapshotListener
 
 func NewVMCSRSnapshotListener(
 	csrProcessor VirtualMeshCertificateManager,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 ) VMCSRSnapshotListener {
-	return &snapshot.MeshNetworkingSnapshotListenerFunc{
-		OnSync: func(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot) {
+	return &networking_snapshot.MeshNetworkingSnapshotListenerFunc{
+		OnSync: func(ctx context.Context, snap *networking_snapshot.MeshNetworkingSnapshot) {
 			logger := contextutils.LoggerFrom(ctx)
 			// If no virtual meshes have been updated return immediately
 			if len(snap.VirtualMeshes) == 0 {

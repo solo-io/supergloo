@@ -6,12 +6,12 @@ import (
 
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	"github.com/solo-io/service-mesh-hub/pkg/federation/resolver"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 )
@@ -51,7 +51,7 @@ type MeshNetworkingSnapshotContext struct {
 	MeshWorkloadEventWatcher          zephyr_discovery_controller.MeshWorkloadEventWatcher
 	MeshServiceEventWatcher           zephyr_discovery_controller.MeshServiceEventWatcher
 	VirtualMeshEventWatcher           zephyr_networking_controller.VirtualMeshEventWatcher
-	SnapshotValidator                 snapshot.MeshNetworkingSnapshotValidator
+	SnapshotValidator                 networking_snapshot.MeshNetworkingSnapshotValidator
 	VMCSRSnapshotListener             cert_manager.VMCSRSnapshotListener
 	FederationDeciderSnapshotListener decider.FederationDeciderSnapshotListener
 }
@@ -60,7 +60,7 @@ func MeshNetworkingSnapshotContextProvider(
 	meshWorkloadEventWatcher zephyr_discovery_controller.MeshWorkloadEventWatcher,
 	meshServiceEventWatcher zephyr_discovery_controller.MeshServiceEventWatcher,
 	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher,
-	snapshotValidator snapshot.MeshNetworkingSnapshotValidator,
+	snapshotValidator networking_snapshot.MeshNetworkingSnapshotValidator,
 	vmcsrSnapshotListener cert_manager.VMCSRSnapshotListener,
 	federationDeciderSnapshotListener decider.FederationDeciderSnapshotListener,
 ) *MeshNetworkingSnapshotContext {
@@ -75,7 +75,7 @@ func MeshNetworkingSnapshotContextProvider(
 }
 
 func (m *MeshNetworkingSnapshotContext) StartListening(ctx context.Context) error {
-	listenerGenerator, err := snapshot.NewMeshNetworkingSnapshotGenerator(
+	listenerGenerator, err := networking_snapshot.NewMeshNetworkingSnapshotGenerator(
 		ctx,
 		m.SnapshotValidator,
 		m.MeshServiceEventWatcher,
