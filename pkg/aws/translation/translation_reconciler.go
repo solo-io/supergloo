@@ -34,13 +34,20 @@ func NewAppmeshTranslationReconciler(
 	}
 }
 
+// If vm is populated, then output Appmesh resources to enable all workload/service communication.
+// If vm is nil, then ensure that no Appmesh resources exist.
+// See https://github.com/solo-io/service-mesh-hub/issues/750
 func (a *appmeshTranslationReconciler) Reconcile(
 	ctx context.Context,
 	mesh *zephyr_discovery.Mesh,
-	_ *zephyr_networking.VirtualMesh,
+	vm *zephyr_networking.VirtualMesh,
 ) error {
 	if mesh.Spec.GetAwsAppMesh() == nil {
 		return nil
+	}
+	if vm == nil {
+		// Delete all translated Appmesh resources.
+		return a.reconcile(ctx, mesh, nil, nil, nil)
 	}
 	// Be default, configure Appmesh envoy sidecars to allow traffic from any workload to any service.
 	return a.reconcileWithDisabledAccessControl(ctx, mesh)

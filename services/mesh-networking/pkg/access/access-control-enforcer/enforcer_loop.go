@@ -7,11 +7,13 @@ import (
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"go.uber.org/zap"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type enforcerLoop struct {
@@ -91,7 +93,59 @@ func (e *enforcerLoop) reconcile(ctx context.Context, eventType container_runtim
 			}
 		}
 	}
+	// TODO: temporary logic, see comment on function definition
+	e.cleanupAppmeshResources(ctx)
 	return err
+}
+
+// Temporary logic: currently if an Appmesh instance is grouped into a VirtualMesh,
+// translation occurs implicitly to allow communication between all workloads and services.
+// We have an outstanding issue, https://github.com/solo-io/service-mesh-hub/issues/750, for extending
+// the SMH API to support configuration of sidecar traffic mediation.
+// So for now, we need a way to delete implicitly translated Appmesh resources if a Mesh is removed from a VirtualMesh.
+func (e *enforcerLoop) cleanupAppmeshResources(ctx context.Context) error {
+	meshList, err := e.meshClient.ListMesh(ctx)
+	if err != nil {
+		return err
+	}
+	allMeshes := zephyr_discovery_sets.NewMeshSet()
+	meshesInVirtualMesh := zephyr_discovery_sets.NewMeshSet()
+	for _, mesh := range meshList.Items {
+		mesh := mesh
+		if mesh.Spec.GetAwsAppMesh() == nil {
+			continue
+		}
+		allMeshes.Insert(&mesh)
+	}
+	virtualMeshList, err := e.virtualMeshClient.ListVirtualMesh(ctx)
+	if err != nil {
+		return err
+	}
+	for _, vm := range virtualMeshList.Items {
+		vm := vm
+		for _, meshRef := range vm.Spec.GetMeshes() {
+			meshesInVirtualMesh.Insert(&zephyr_discovery.Mesh{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      meshRef.GetName(),
+					Namespace: meshRef.GetNamespace(),
+				},
+			})
+		}
+	}
+	meshesWithoutVM := allMeshes.Difference(meshesInVirtualMesh).List()
+	for _, mesh := range meshesWithoutVM {
+		for _, meshEnforcer := range e.meshEnforcers {
+			err = meshEnforcer.ReconcileAccessControl(
+				contextutils.WithLogger(ctx, meshEnforcer.Name()),
+				mesh,
+				nil,
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // If enforceMeshDefault, ignore user declared enforce_access_control setting and use mesh-specific default as defined on the

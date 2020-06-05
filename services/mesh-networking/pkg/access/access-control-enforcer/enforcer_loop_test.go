@@ -98,6 +98,12 @@ var _ = Describe("EnforcerLoop", func() {
 		}
 	}
 
+	// Temporary, see function definition for "cleanupAppmeshResources" in enforcer_loop.go for more details
+	var expectAppmeshCleanup = func() {
+		mockMeshClient.EXPECT().ListMesh(ctx).Return(&zephyr_discovery.MeshList{}, nil)
+		mockVirtualMeshClient.EXPECT().ListVirtualMesh(ctx).Return(&zephyr_networking.VirtualMeshList{}, nil)
+	}
+
 	It("should start enforcing access control on VirtualMesh creates", func() {
 		vm := buildVirtualMesh()
 		vm.Spec.EnforceAccessControl = zephyr_networking_types.VirtualMeshSpec_ENABLED
@@ -136,6 +142,7 @@ var _ = Describe("EnforcerLoop", func() {
 		expectedVMStatus := &zephyr_core_types.Status{
 			State: zephyr_core_types.Status_ACCEPTED,
 		}
+		expectAppmeshCleanup()
 		err := virtualMeshHandler.CreateVirtualMesh(vm)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
@@ -178,6 +185,7 @@ var _ = Describe("EnforcerLoop", func() {
 		expectedVMStatus := &zephyr_core_types.Status{
 			State: zephyr_core_types.Status_ACCEPTED,
 		}
+		expectAppmeshCleanup()
 		err := virtualMeshHandler.CreateVirtualMesh(vm)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
@@ -218,6 +226,7 @@ var _ = Describe("EnforcerLoop", func() {
 			State:   zephyr_core_types.Status_PROCESSING_ERROR,
 			Message: testErr.Error(),
 		}
+		expectAppmeshCleanup()
 		err := virtualMeshHandler.CreateVirtualMesh(vm)
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
@@ -259,7 +268,7 @@ var _ = Describe("EnforcerLoop", func() {
 				Name().
 				Return("")
 		}
-
+		expectAppmeshCleanup()
 		err := virtualMeshHandler.DeleteVirtualMesh(vm)
 		Expect(err).ToNot(HaveOccurred())
 	})

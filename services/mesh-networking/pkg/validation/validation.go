@@ -46,7 +46,6 @@ func (m *virtualMeshValidator) ValidateVirtualMeshUpsert(ctx context.Context, ob
 
 func (m *virtualMeshValidator) ValidateVirtualMeshDelete(ctx context.Context, obj *zephyr_networking.VirtualMesh, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	err := m.validate(ctx, obj)
-	m.updateVirtualMeshStatus(ctx, obj)
 	return err == nil
 }
 
