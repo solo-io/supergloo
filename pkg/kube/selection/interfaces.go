@@ -9,17 +9,29 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
 
-// Find Service Mesh Hub resources that correspond to k8s-native resources.
-// Methods that do not receive a list of resources to filter or to select from will do a client lookup for those resources.
-type ResourceSelector interface {
-	// fetch all MeshServices that match the given selector
-	GetAllMeshServicesByServiceSelector(
-		ctx context.Context,
+// these can technically be static functions
+type BaseResourceSelector interface {
+	FilterMeshServicesByServiceSelector(
+		meshServices []*zephyr_discovery.MeshService,
 		selector *zephyr_core_types.ServiceSelector,
 	) ([]*zephyr_discovery.MeshService, error)
 
-	FilterMeshServicesByServiceSelector(
+	FindMeshServiceByRefSelector(
 		meshServices []*zephyr_discovery.MeshService,
+		kubeServiceName string,
+		kubeServiceNamespace string,
+		kubeServiceCluster string,
+	) *zephyr_discovery.MeshService
+}
+
+// Find Service Mesh Hub resources that correspond to k8s-native resources.
+// Methods that do not receive a list of resources to filter or to select from will do a client lookup for those resources.
+type ResourceSelector interface {
+	BaseResourceSelector
+
+	// fetch all MeshServices that match the given selector
+	GetAllMeshServicesByServiceSelector(
+		ctx context.Context,
 		selector *zephyr_core_types.ServiceSelector,
 	) ([]*zephyr_discovery.MeshService, error)
 
@@ -43,13 +55,6 @@ type ResourceSelector interface {
 		kubeServiceNamespace string,
 		kubeServiceCluster string,
 	) (*zephyr_discovery.MeshService, error)
-
-	FindMeshServiceByRefSelector(
-		meshServices []*zephyr_discovery.MeshService,
-		kubeServiceName string,
-		kubeServiceNamespace string,
-		kubeServiceCluster string,
-	) *zephyr_discovery.MeshService
 
 	// get the Mesh Workload corresponding to the indicated pod controller (eg deployment)
 	GetMeshWorkloadByRefSelector(

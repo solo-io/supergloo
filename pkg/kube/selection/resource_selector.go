@@ -50,13 +50,18 @@ var (
 	}
 )
 
+func NewBaseResourceSelector() BaseResourceSelector {
+	return &baseResourceSelector{}
+}
+
 func NewResourceSelector(
-	meshServiceClient zephyr_discovery.MeshServiceClient,
-	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
+	meshServiceClient zephyr_discovery.MeshServiceReader,
+	meshWorkloadClient zephyr_discovery.MeshWorkloadReader,
 	deploymentClientFactory kubernetes_apps.DeploymentClientFactory,
 	dynamicClientGetter multicluster.DynamicClientGetter,
 ) ResourceSelector {
 	return &resourceSelector{
+		BaseResourceSelector:    NewBaseResourceSelector(),
 		meshServiceClient:       meshServiceClient,
 		meshWorkloadClient:      meshWorkloadClient,
 		deploymentClientFactory: deploymentClientFactory,
@@ -64,14 +69,17 @@ func NewResourceSelector(
 	}
 }
 
+type baseResourceSelector struct{}
+
 type resourceSelector struct {
-	meshServiceClient       zephyr_discovery.MeshServiceClient
-	meshWorkloadClient      zephyr_discovery.MeshWorkloadClient
+	BaseResourceSelector
+	meshServiceClient       zephyr_discovery.MeshServiceReader
+	meshWorkloadClient      zephyr_discovery.MeshWorkloadReader
 	deploymentClientFactory kubernetes_apps.DeploymentClientFactory
 	dynamicClientGetter     multicluster.DynamicClientGetter
 }
 
-func (r *resourceSelector) FindMeshServiceByRefSelector(
+func (r *baseResourceSelector) FindMeshServiceByRefSelector(
 	meshServices []*zephyr_discovery.MeshService,
 	kubeServiceName string,
 	kubeServiceNamespace string,
@@ -131,7 +139,7 @@ func (r *resourceSelector) GetAllMeshServicesByServiceSelector(
 	return r.FilterMeshServicesByServiceSelector(allMeshServices, selector)
 }
 
-func (r *resourceSelector) FilterMeshServicesByServiceSelector(
+func (r *baseResourceSelector) FilterMeshServicesByServiceSelector(
 	meshServices []*zephyr_discovery.MeshService,
 	selector *core_types.ServiceSelector,
 ) ([]*zephyr_discovery.MeshService, error) {

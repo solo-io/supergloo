@@ -2,19 +2,23 @@ package traffic_policy_validation_test
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	v1alpha12 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	traffic_policy_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/validation"
 	mock_traffic_policy_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/validation/mocks"
 	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Validation Reconciler", func() {
@@ -150,4 +154,94 @@ var _ = Describe("Validation Reconciler", func() {
 		err := reconciler.Reconcile(ctx)
 		Expect(err).NotTo(HaveOccurred())
 	})
+
+	Context("benchmarks", func() {
+
+		Measure("it reconciles traffic policies", func(b Benchmarker) {
+			// not using mock client, as we don't want to measure their (lack of) overhead
+			var tp trafficPolicyBenchmarkClient
+			var ms meshServiceBenchmarkClient
+
+			const trafficPolicies = 1000
+			const meshServices = 1000
+
+			for i := 0; i < trafficPolicies; i++ {
+				tp.policies.Items = append(tp.policies.Items, v1alpha12.TrafficPolicy{
+					ObjectMeta: v1.ObjectMeta{Name: fmt.Sprintf("tp-%d", i)},
+					Spec: types.TrafficPolicySpec{
+						SourceSelector: &zephyr_core_types.WorkloadSelector{
+							Labels: map[string]string{
+								"foo": "bar",
+							},
+						},
+						TrafficShift: &types.TrafficPolicySpec_MultiDestination{
+							Destinations: []*types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+								{
+									Destination: &zephyr_core_types.ResourceRef{
+										Name: "reviews",
+									},
+									Weight: 100,
+								},
+							},
+						},
+					},
+				})
+			}
+			for i := 0; i < meshServices; i++ {
+				ms.services.Items = append(ms.services.Items, v1alpha1.MeshService{
+					ObjectMeta: v1.ObjectMeta{
+						Name: fmt.Sprintf("sm-%d", i),
+						Labels: map[string]string{
+							"foo": "bar",
+						},
+					},
+					Spec: discovery_types.MeshServiceSpec{},
+				})
+			}
+
+			validator := traffic_policy_validation.NewValidator(selection.NewBaseResourceSelector())
+
+			reconciler := traffic_policy_validation.NewValidationReconciler(&tp, &ms, validator)
+			ctx := context.Background()
+			runtime := b.Time("runtime", func() {
+				//	output := SomethingHard()
+				//	Expect(output).To(Equal(17))
+				reconciler.Reconcile(ctx)
+			})
+
+			Ω(runtime.Seconds()).Should(BeNumerically("<", 0.2), "SomethingHard() shouldn't take too long.")
+
+			//	b.RecordValue("disk usage (in MB)", HowMuchDiskSpaceDidYouUse())
+		}, 10)
+
+	})
 })
+
+type trafficPolicyBenchmarkClient struct {
+	policies v1alpha12.TrafficPolicyList
+}
+
+func (t *trafficPolicyBenchmarkClient) GetTrafficPolicy(ctx context.Context, key client.ObjectKey) (*v1alpha12.TrafficPolicy, error) {
+	panic("not implemented")
+}
+func (t *trafficPolicyBenchmarkClient) ListTrafficPolicy(ctx context.Context, opts ...client.ListOption) (*v1alpha12.TrafficPolicyList, error) {
+	return &t.policies, nil
+}
+func (t *trafficPolicyBenchmarkClient) UpdateTrafficPolicyStatus(ctx context.Context, obj *v1alpha12.TrafficPolicy, opts ...client.UpdateOption) error {
+	return nil
+}
+func (t *trafficPolicyBenchmarkClient) PatchTrafficPolicyStatus(ctx context.Context, obj *v1alpha12.TrafficPolicy, patch client.Patch, opts ...client.PatchOption) error {
+	return nil
+}
+
+type meshServiceBenchmarkClient struct {
+	services v1alpha1.MeshServiceList
+}
+
+func (t *meshServiceBenchmarkClient) GetMeshService(ctx context.Context, key client.ObjectKey) (*v1alpha1.MeshService, error) {
+	panic("not implemented")
+}
+
+func (t *meshServiceBenchmarkClient) ListMeshService(ctx context.Context, opts ...client.ListOption) (*v1alpha1.MeshServiceList, error) {
+	return &t.services, nil
+}
