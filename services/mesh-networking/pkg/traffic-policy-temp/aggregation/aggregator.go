@@ -12,7 +12,9 @@ import (
 )
 
 var (
-	TrafficPolicyConflictError = func(s string) error { return eris.Errorf("Found conflicts in TrafficPolicy on the following fields: %s", s) }
+	TrafficPolicyConflictError = func(s string) error {
+		return eris.Errorf("Found conflicts in TrafficPolicy on the following fields: %s", s)
+	}
 )
 
 func NewAggregator(resourceSelector selection.ResourceSelector) Aggregator {
