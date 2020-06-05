@@ -125,7 +125,7 @@ var _ = Describe("Aggregator", func() {
 			}
 			conflictError := aggregator.FindMergeConflict(&trafficPolicies[0].Spec, specs, meshService)
 			Expect(conflictError).NotTo(BeNil())
-			Expect(conflictError.ErrorMessage).To(Equal(traffic_policy_aggregation.TrafficPolicyConflictError.Error()))
+			Expect(conflictError.ErrorMessage).To(Equal(traffic_policy_aggregation.TrafficPolicyConflictError("Retries").Error()))
 		})
 
 		It("does not report an error when no conflict", func() {
