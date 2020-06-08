@@ -3,6 +3,7 @@ package traffic_policy_validation_test
 import (
 	"context"
 	"fmt"
+	"math/rand"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -179,7 +180,7 @@ var _ = Describe("Validation Reconciler", func() {
 							Destinations: []*types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 								{
 									Destination: &zephyr_core_types.ResourceRef{
-										Name:      "reviews",
+										Name:      fmt.Sprintf("reviews-%d", i),
 										Namespace: "reviews",
 										Cluster:   "test",
 									},
@@ -196,7 +197,7 @@ var _ = Describe("Validation Reconciler", func() {
 						Name: fmt.Sprintf("sm-%d", i),
 						Labels: map[string]string{
 							"foo":                       "bar",
-							kube.KUBE_SERVICE_NAME:      "reviews",
+							kube.KUBE_SERVICE_NAME:      fmt.Sprintf("reviews-%d", i),
 							kube.KUBE_SERVICE_NAMESPACE: "reviews",
 							kube.COMPUTE_TARGET:         "test",
 						},
@@ -204,6 +205,12 @@ var _ = Describe("Validation Reconciler", func() {
 					Spec: discovery_types.MeshServiceSpec{},
 				})
 			}
+			// suffle things for more realistic test
+			rand.Shuffle(len(ms.services.Items), func(i, j int) {
+				item := ms.services.Items[j]
+				ms.services.Items[j] = ms.services.Items[i]
+				ms.services.Items[i] = item
+			})
 
 			validator := traffic_policy_validation.NewValidator(selection.NewBaseResourceSelector())
 
@@ -212,8 +219,8 @@ var _ = Describe("Validation Reconciler", func() {
 			runtime := b.Time("runtime", func() {
 				reconciler.Reconcile(ctx)
 			})
-
-			Ω(runtime.Seconds()).Should(BeNumerically("<", 0.01), "validator.Reconcile() shouldn't take too long.")
+			// ideally should be less than 1ms; but 100ms is good for now. in practice it's around 10ms.
+			Ω(runtime.Seconds()).Should(BeNumerically("<", 0.1), "validator.Reconcile() shouldn't take too long.")
 		}, 10)
 
 	})
