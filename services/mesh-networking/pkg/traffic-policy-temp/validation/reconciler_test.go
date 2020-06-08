@@ -156,7 +156,7 @@ var _ = Describe("Validation Reconciler", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	FContext("benchmarks", func() {
+	Context("benchmarks", func() {
 
 		Measure("it reconciles traffic policies", func(b Benchmarker) {
 			// not using mock client, as we don't want to measure their (lack of) overhead
