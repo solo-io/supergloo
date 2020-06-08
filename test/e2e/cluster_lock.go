@@ -11,10 +11,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-const (
-	ClusterLockTimeout = 20 * time.Minute
-)
-
 type clusterLock struct {
 	started chan struct{}
 }
@@ -30,7 +26,11 @@ func (c *clusterLock) Start(stop <-chan struct{}) error {
 
 // Blocks on acquiring a cluster lock shared among all ongoing e2e tests for the cluster referenced by the config.
 // If ClusterLockTimeout duration is exceeded, the test fails.
-func WaitForClusterLock(ctx context.Context, config *rest.Config) {
+func WaitForClusterLock(
+	ctx context.Context,
+	config *rest.Config,
+	timeout time.Duration,
+) {
 	mgr, err := manager.New(config, manager.Options{
 		LeaderElection:          true,
 		LeaderElectionNamespace: "default",
@@ -48,13 +48,13 @@ func WaitForClusterLock(ctx context.Context, config *rest.Config) {
 	lock := &clusterLock{started: make(chan struct{})}
 	err = mgr.Add(lock)
 	Expect(err).NotTo(HaveOccurred())
-
+	fmt.Fprintln(GinkgoWriter, "Waiting to acquire cluster lock...")
 	select {
 	case <-ctx.Done():
-		fmt.Fprint(GinkgoWriter, "Releasing cluster lock")
-	case <-time.After(ClusterLockTimeout):
-		fmt.Fprint(GinkgoWriter, "Timed out waiting for cluster lock")
+		fmt.Fprintln(GinkgoWriter, "Releasing cluster lock")
+	case <-time.After(timeout):
+		fmt.Fprintln(GinkgoWriter, "Timed out waiting for cluster lock")
 	case <-lock.started:
-		fmt.Fprint(GinkgoWriter, "Acquired cluster lock")
+		fmt.Fprintln(GinkgoWriter, "Acquired cluster lock")
 	}
 }

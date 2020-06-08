@@ -31,6 +31,7 @@ const (
 	EksClusterName        = "smh-e2e-test"
 	SmhNamespace          = "service-mesh-hub"
 	AppmeshInjectionLabel = "appmesh.k8s.aws/sidecarInjectorWebhook=enabled"
+	ClusterLockTimeout    = 20 * time.Minute
 )
 
 var (
@@ -147,7 +148,7 @@ func setupAppmeshEksEnvironment() string {
 	eksContext := getEksKubeContext(ctx)
 	config, err := eksContext.Config.ClientConfig()
 	Expect(err).ToNot(HaveOccurred())
-	WaitForClusterLock(ctx, config)
+	WaitForClusterLock(ctx, config, ClusterLockTimeout)
 
 	randomString, err := goutils.RandomAlphabetic(4)
 	Expect(err).ToNot(HaveOccurred())

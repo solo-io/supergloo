@@ -38,25 +38,25 @@ func Curl(ctx context.Context, kubecontext, ns, fromDeployment, fromContainer, u
 func DeployBookInfo(ctx context.Context, kubeContext, ns string) {
 	args := []string{"--namespace", ns, "apply", "-f", "../../ci/bookinfo.yaml"}
 	out := execute(ctx, kubeContext, args...)
-	fmt.Fprint(GinkgoWriter, out)
+	fmt.Fprintln(GinkgoWriter, out)
 }
 
 func CreateNamespace(ctx context.Context, kubeContext, ns string) {
 	args := []string{"create", "namespace", ns}
 	out := execute(ctx, kubeContext, args...)
-	fmt.Fprint(GinkgoWriter, out)
+	fmt.Fprintln(GinkgoWriter, out)
 }
 
 func DeleteNamespace(ctx context.Context, kubeContext, ns string) {
 	args := []string{"delete", "namespace", ns}
 	out := execute(ctx, kubeContext, args...)
-	fmt.Fprint(GinkgoWriter, out)
+	fmt.Fprintln(GinkgoWriter, out)
 }
 
 func LabelNamespace(ctx context.Context, kubeContext, ns, label string) {
 	args := []string{"label", "namespace", ns, label}
 	out := execute(ctx, kubeContext, args...)
-	fmt.Fprint(GinkgoWriter, out)
+	fmt.Fprintln(GinkgoWriter, out)
 }
 
 func SetDeploymentEnvVars(
@@ -73,12 +73,12 @@ func SetDeploymentEnvVars(
 	}
 	args := append([]string{"set", "env", "-n", ns, fmt.Sprintf("deployment/%s", deploymentName), "-c", containerName}, envVarStrings...)
 	out := execute(ctx, kubeContext, args...)
-	fmt.Fprint(GinkgoWriter, out)
+	fmt.Fprintln(GinkgoWriter, out)
 }
 
 func execute(ctx context.Context, kubeContext string, args ...string) string {
 	args = append([]string{"--context", kubeContext}, args...)
-	fmt.Fprintf(GinkgoWriter, "Executing: kubectl %v", args)
+	fmt.Fprintf(GinkgoWriter, "Executing: kubectl %v \n", args)
 	readerChan, done, err := testutils.KubectlOutChan(&bytes.Buffer{}, args...)
 	Expect(err).NotTo(HaveOccurred())
 	defer close(done)
