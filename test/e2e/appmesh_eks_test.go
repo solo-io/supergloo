@@ -162,35 +162,37 @@ func setupAppmeshEksEnvironment() string {
 }
 
 func cleanupAppmeshEksEnvironment(ns string) {
-	// Cleans up discovery resources on management cluster
-	// Reset back to default settings. This must be done before removing the AWS secret.
-	settings, err := env.Management.SettingsClient.GetSettings(context.Background(), settingsObjKey)
-	Expect(err).NotTo(HaveOccurred())
-	var defaultSettings zephyr_core.Settings
-	ParseYaml(defaultSettingsYaml, &defaultSettings)
-	settings.Spec = defaultSettings.Spec
-	err = env.Management.SettingsClient.UpdateSettings(context.Background(), settings)
-	Expect(err).NotTo(HaveOccurred())
-	// Wait for mesh-discovery to clean up discovered resources
-	time.Sleep(10 * time.Second)
-	// Delete AWS credentials
-	err = env.Management.SecretClient.DeleteSecret(context.Background(), secretObjKey)
-	if errors.IsNotFound(err) {
-		err = nil
+	if useExisting := os.Getenv("USE_EXISTING"); useExisting != "" {
+		// Cleans up discovery resources on management cluster
+		// Reset back to default settings. This must be done before removing the AWS secret.
+		settings, err := env.Management.SettingsClient.GetSettings(context.Background(), settingsObjKey)
+		Expect(err).NotTo(HaveOccurred())
+		var defaultSettings zephyr_core.Settings
+		ParseYaml(defaultSettingsYaml, &defaultSettings)
+		settings.Spec = defaultSettings.Spec
+		err = env.Management.SettingsClient.UpdateSettings(context.Background(), settings)
+		Expect(err).NotTo(HaveOccurred())
+		// Wait for mesh-discovery to clean up discovered resources
+		time.Sleep(10 * time.Second)
+		// Delete AWS credentials
+		err = env.Management.SecretClient.DeleteSecret(context.Background(), secretObjKey)
+		if errors.IsNotFound(err) {
+			err = nil
+		}
+		Expect(err).NotTo(HaveOccurred())
+		// Delete remote cluster k8s credentials
+		err = env.Management.SecretClient.DeleteSecret(context.Background(), kubeClusterObjKey)
+		if errors.IsNotFound(err) {
+			err = nil
+		}
+		Expect(err).NotTo(HaveOccurred())
+		// Delete KubernetesCluster
+		err = env.Management.KubeClusterClient.DeleteKubernetesCluster(context.Background(), kubeClusterObjKey)
+		if errors.IsNotFound(err) {
+			err = nil
+		}
+		Expect(err).NotTo(HaveOccurred())
 	}
-	Expect(err).NotTo(HaveOccurred())
-	// Delete remote cluster k8s credentials
-	err = env.Management.SecretClient.DeleteSecret(context.Background(), kubeClusterObjKey)
-	if errors.IsNotFound(err) {
-		err = nil
-	}
-	Expect(err).NotTo(HaveOccurred())
-	// Delete KubernetesCluster
-	err = env.Management.KubeClusterClient.DeleteKubernetesCluster(context.Background(), kubeClusterObjKey)
-	if errors.IsNotFound(err) {
-		err = nil
-	}
-	Expect(err).NotTo(HaveOccurred())
 
 	// Clean up resources on remote EKS cluster
 	ctx := context.Background()

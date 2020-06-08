@@ -34,6 +34,6 @@ var _ = BeforeSuite(func() {
 var _ = AfterSuite(func() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	ClearEnv(ctx)
 	cleanupAppmeshEksEnvironment(eksNamespace)
+	ClearEnv(ctx)
 })
