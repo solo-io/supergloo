@@ -6,6 +6,7 @@ import (
 	aws2 "github.com/aws/aws-sdk-go/aws"
 	appmesh2 "github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -131,9 +132,12 @@ func (a *appmeshTranslationReconciler) reconcile(
 		virtualNodes = append(virtualNodes, defaultVirtualNode)
 	}
 	var multierr *multierror.Error
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infof("Applying VirtualNodes: %+v", virtualNodes)
 	err := a.dao.ReconcileVirtualNodes(ctx, mesh, virtualNodes)
 	if err != nil {
 		multierr = multierror.Append(multierr, err)
+		logger.Errorf("Error applying VirtualNodes: %+v", err)
 	}
 	err = a.dao.ReconcileVirtualRoutersAndRoutesAndVirtualServices(ctx, mesh, virtualRouters, routes, virtualServices)
 	if err != nil {

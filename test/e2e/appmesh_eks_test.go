@@ -290,6 +290,7 @@ var _ = Describe("Appmesh EKS ", func() {
 
 	It("should translate Appmesh resources to enable all communication between workloads and services", func() {
 		applyVirtualMesh()
+		time.Sleep(200 * time.Second)
 		curlReviewsWithExpectedOutput("The slapstick humour is refreshing", true)
 	})
 
