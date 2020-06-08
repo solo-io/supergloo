@@ -200,7 +200,7 @@ func cleanupAppmeshEksEnvironment(ns string) {
 	eksContext.DeleteNamespace(ctx, ns)
 }
 
-var _ = FDescribe("Appmesh EKS ", func() {
+var _ = Describe("Appmesh EKS ", func() {
 	AfterEach(func() {
 		testLabels := map[string]string{"test": "true"}
 		opts := &client.DeleteAllOfOptions{}
