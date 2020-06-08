@@ -200,7 +200,7 @@ func cleanupAppmeshEksEnvironment(ns string) {
 	eksContext.DeleteNamespace(ctx, ns)
 }
 
-var _ = Describe("Appmesh EKS ", func() {
+var _ = FDescribe("Appmesh EKS ", func() {
 	AfterEach(func() {
 		testLabels := map[string]string{"test": "true"}
 		opts := &client.DeleteAllOfOptions{}
@@ -254,6 +254,13 @@ var _ = Describe("Appmesh EKS ", func() {
 			ShouldNot(BeNil())
 	}
 
+	var expectGetMesh = func(name string) {
+		Eventually(
+			MeshShouldExist(client.ObjectKey{Name: name, Namespace: SmhNamespace}, env.Management),
+			"60s", "1s").
+			ShouldNot(BeNil())
+	}
+
 	var curlReviewsWithExpectedOutput = func(expectedString string, shouldExpect bool) {
 		productPageDeployment := "productpage-v1"
 		ctx := context.Background()
@@ -286,12 +293,11 @@ var _ = Describe("Appmesh EKS ", func() {
 		// Discover Appmesh mesh and EKS cluster
 		applySettings()
 		expectGetKubeCluster(kubeClusterName)
-		// TODO assert mesh existence
+		expectGetMesh("appmesh-smh-e2e-test-us-east-2-410461945957")
 	})
 
 	It("should translate Appmesh resources to enable all communication between workloads and services", func() {
 		applyVirtualMesh()
-		time.Sleep(200 * time.Second)
 		curlReviewsWithExpectedOutput("The slapstick humour is refreshing", true)
 	})
 

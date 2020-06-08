@@ -14,7 +14,6 @@ kubectl --context kind-$managementPlane get meshservices -A
 kubectl --context kind-$managementPlane get trafficpolicies -A -o yaml
 kubectl --context kind-$managementPlane get settings -A -o yaml
 kubectl --context kind-$managementPlane get virtualmesh -A -o yaml
-kubectl --context kind-$managementPlane -n service-mesh-hub get secrets -o yaml
 
 kubectl --context kind-$managementPlane -n service-mesh-hub logs deployment/mesh-discovery
 kubectl --context kind-$managementPlane -n service-mesh-hub logs deployment/mesh-networking

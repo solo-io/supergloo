@@ -42,6 +42,13 @@ func KubeClusterShouldExist(key client.ObjectKey, kc KubeContext) func() *zephyr
 	}
 }
 
+func MeshShouldExist(key client.ObjectKey, kc KubeContext) func() *zephyr_discovery.Mesh {
+	return func() *zephyr_discovery.Mesh {
+		mesh, _ := kc.MeshClient.GetMesh(context.Background(), key)
+		return mesh
+	}
+}
+
 func MeshCtl(args string) error {
 	return MeshCtlCommand(strings.Fields(args)...).Run()
 }

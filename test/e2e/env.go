@@ -48,6 +48,7 @@ type KubeContext struct {
 	Clientset           *kubernetes.Clientset
 	TrafficPolicyClient zephyr_networking.TrafficPolicyClient
 	KubeClusterClient   zephyr_discovery.KubernetesClusterClient
+	MeshClient          zephyr_discovery.MeshClient
 	SettingsClient      zephyr_core.SettingsClient
 	SecretClient        kubernetes_core.SecretClient
 	VirtualMeshClient   zephyr_networking.VirtualMeshClient
@@ -88,6 +89,7 @@ func NewKubeContext(kubecontext string) KubeContext {
 		Clientset:           clientset,
 		TrafficPolicyClient: zephyr_networking.TrafficPolicyClientFromClientsetProvider(networkingClientset),
 		VirtualMeshClient:   zephyr_networking.VirtualMeshClientFromClientsetProvider(networkingClientset),
+		MeshClient:          zephyr_discovery.MeshClientFromClientsetProvider(discoveryClientset),
 		KubeClusterClient:   zephyr_discovery.KubernetesClusterClientFromClientsetProvider(discoveryClientset),
 		SettingsClient:      zephyr_core.SettingsClientFromClientsetProvider(coreClientset),
 		SecretClient:        kubernetes_core.SecretClientFromClientsetProvider(kubeCoreClientset),
