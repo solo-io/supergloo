@@ -48,6 +48,7 @@ import (
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 	cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Injectors from wire.go:
@@ -86,14 +87,15 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	if err != nil {
 		return MeshNetworkingContext{}, err
 	}
-	meshServiceClient := v1alpha1_3.MeshServiceClientProvider(client)
-	meshWorkloadClient := v1alpha1_3.MeshWorkloadClientProvider(client)
+	meshServiceReader := MeshServiceReaderProvider(client)
+	meshWorkloadReader := MeshWorkloadReaderProvider(client)
 	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
 	dynamicClientGetter := mc_wire.DynamicClientGetterProvider(asyncManagerController)
-	resourceSelector := selection.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
+	resourceSelector := selection.NewResourceSelector(meshServiceReader, meshWorkloadReader, deploymentClientFactory, dynamicClientGetter)
 	meshClient := v1alpha1_3.MeshClientProvider(client)
 	trafficPolicyClient := v1alpha1_2.TrafficPolicyClientProvider(client)
 	trafficPolicyMerger := preprocess.NewTrafficPolicyMerger(resourceSelector, meshClient, trafficPolicyClient)
+	meshServiceClient := v1alpha1_3.MeshServiceClientProvider(client)
 	trafficPolicyValidator := preprocess.NewTrafficPolicyValidator(meshServiceClient, resourceSelector)
 	trafficPolicyPreprocessor := preprocess.NewTrafficPolicyPreprocessor(resourceSelector, trafficPolicyMerger, trafficPolicyValidator)
 	virtualServiceClientFactory := v1alpha3.VirtualServiceClientFactoryProvider()
@@ -125,6 +127,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	acpTranslatorLoop := acp_translator.NewAcpTranslatorLoop(accessControlPolicyEventWatcher, meshServiceEventWatcher, meshClient, accessControlPolicyClient, resourceSelector, v3)
 	istioEnforcer := istio.NewIstioEnforcer(dynamicClientGetter, authorizationPolicyClientFactory)
 	appmeshTranslator := translation.NewAppmeshTranslator()
+	meshWorkloadClient := v1alpha1_3.MeshWorkloadClientProvider(client)
 	appmeshMatcher := matcher.NewAppmeshMatcher()
 	appmeshRawClientFactory := clients.AppmeshRawClientFactoryProvider()
 	appmeshClientGetter := clients.AppmeshClientGetterProvider(appmeshMatcher, awsCredentialsGetter, appmeshRawClientFactory)
@@ -147,4 +150,14 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	federationResolver := resolver.NewFederationResolver(meshClient, meshWorkloadClient, meshServiceClient, virtualMeshClient, perMeshFederationClients, meshServiceEventWatcher)
 	meshNetworkingContext := MeshNetworkingContextProvider(multiClusterDependencies, asyncManagerHandler, trafficPolicyTranslatorLoop, meshNetworkingSnapshotContext, acpTranslatorLoop, accessPolicyEnforcerLoop, federationResolver)
 	return meshNetworkingContext, nil
+}
+
+// wire.go:
+
+func MeshServiceReaderProvider(client2 client.Client) v1alpha1_3.MeshServiceReader {
+	return v1alpha1_3.MeshServiceClientProvider(client2)
+}
+
+func MeshWorkloadReaderProvider(client2 client.Client) v1alpha1_3.MeshWorkloadReader {
+	return v1alpha1_3.MeshWorkloadClientProvider(client2)
 }
