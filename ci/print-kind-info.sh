@@ -8,6 +8,7 @@ remoteCluster=target-cluster-$1
 
 kubectl --context kind-$managementPlane get pod -A
 kubectl --context kind-$remoteCluster get pod -A
+kubectl --context kind-$managementPlane get mesh -A
 kubectl --context kind-$managementPlane get meshworkloads -A
 kubectl --context kind-$managementPlane get meshservices -A
 kubectl --context kind-$managementPlane get trafficpolicies -A -o yaml

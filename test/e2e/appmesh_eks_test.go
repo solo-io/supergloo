@@ -286,6 +286,7 @@ var _ = Describe("Appmesh EKS ", func() {
 		// Discover Appmesh mesh and EKS cluster
 		applySettings()
 		expectGetKubeCluster(kubeClusterName)
+		// TODO assert mesh existence
 	})
 
 	It("should translate Appmesh resources to enable all communication between workloads and services", func() {
