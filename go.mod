@@ -8,7 +8,6 @@ require (
 	github.com/avast/retry-go v2.4.3+incompatible
 	github.com/aws/aws-sdk-go v1.30.15
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
-	github.com/coreos/etcd v3.3.15+incompatible
 	github.com/docker/cli v0.0.0-20191017083524-a8ff7f821017 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker-credential-helpers v0.6.3 // indirect
