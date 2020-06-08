@@ -9,13 +9,13 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
 )
 
-type trafficPolicyReaderStatusUpdated interface {
+type trafficPolicyReaderStatusUpdater interface {
 	zephyr_networking.TrafficPolicyReader
 	zephyr_networking.TrafficPolicyStatusWriter
 }
 
 func NewValidationReconciler(
-	trafficPolicyClient trafficPolicyReaderStatusUpdated,
+	trafficPolicyClient trafficPolicyReaderStatusUpdater,
 	meshServiceReader zephyr_discovery.MeshServiceReader,
 	validator Validator,
 ) reconciliation.Reconciler {
@@ -27,7 +27,7 @@ func NewValidationReconciler(
 }
 
 type validationLoop struct {
-	trafficPolicyClient trafficPolicyReaderStatusUpdated
+	trafficPolicyClient trafficPolicyReaderStatusUpdater
 	meshServiceReader   zephyr_discovery.MeshServiceReader
 	validator           Validator
 }
