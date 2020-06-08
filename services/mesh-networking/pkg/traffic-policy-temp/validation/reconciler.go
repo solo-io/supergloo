@@ -16,19 +16,19 @@ type trafficPolicyReaderStatusUpdated interface {
 
 func NewValidationReconciler(
 	trafficPolicyClient trafficPolicyReaderStatusUpdated,
-	meshServiceClient zephyr_discovery.MeshServiceReader,
+	meshServiceReader zephyr_discovery.MeshServiceReader,
 	validator Validator,
 ) reconciliation.Reconciler {
 	return &validationLoop{
 		trafficPolicyClient: trafficPolicyClient,
 		validator:           validator,
-		meshServiceClient:   meshServiceClient,
+		meshServiceReader:   meshServiceReader,
 	}
 }
 
 type validationLoop struct {
 	trafficPolicyClient trafficPolicyReaderStatusUpdated
-	meshServiceClient   zephyr_discovery.MeshServiceReader
+	meshServiceReader   zephyr_discovery.MeshServiceReader
 	validator           Validator
 }
 
@@ -43,7 +43,7 @@ func (v *validationLoop) Reconcile(ctx context.Context) error {
 		return err
 	}
 
-	meshServiceList, err := v.meshServiceClient.ListMeshService(ctx)
+	meshServiceList, err := v.meshServiceReader.ListMeshService(ctx)
 	if err != nil {
 		return err
 	}
