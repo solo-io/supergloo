@@ -2,6 +2,7 @@ package k8s_test
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -108,6 +109,7 @@ var _ = Describe("Mesh Service Finder", func() {
 	}
 
 	var expectReconcile = func(mocks mocks) {
+		workloadNamespace := "workload-namespace"
 		mesh := &zephyr_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "istio-test-mesh",
@@ -130,6 +132,9 @@ var _ = Describe("Mesh Service Finder", func() {
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
 				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &zephyr_core_types.ResourceRef{
+						Namespace: workloadNamespace,
+					},
 					Labels: map[string]string{
 						"label":                "value",
 						"version":              "v1",
@@ -152,6 +157,9 @@ var _ = Describe("Mesh Service Finder", func() {
 			},
 			Spec: zephyr_discovery_types.MeshWorkloadSpec{
 				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &zephyr_core_types.ResourceRef{
+						Namespace: workloadNamespace,
+					},
 					Labels: map[string]string{
 						"label":                "value",
 						"version":              "v2",
@@ -185,7 +193,7 @@ var _ = Describe("Mesh Service Finder", func() {
 		rightService := k8s_core_types.Service{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "right-service",
-				Namespace: "ns1",
+				Namespace: workloadNamespace,
 				Labels: map[string]string{
 					"k1": "v1",
 					"k2": "v2",
@@ -210,7 +218,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				Namespace: "ns1",
 			},
 		}
-		meshServiceName := "right-service-ns1-test-cluster-name"
+		meshServiceName := fmt.Sprintf("right-service-%s-test-cluster-name", workloadNamespace)
 		// this list call is the real one we care about
 		mocks.meshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
