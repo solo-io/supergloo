@@ -252,19 +252,30 @@ var _ = Describe("Appmesh EKS ", func() {
 			ShouldNot(BeNil())
 	}
 
-	var curlReviewsWithExpectedOutput = func(expectedString string) {
+	var curlReviewsWithExpectedOutput = func(expectedString string, shouldExpect bool) {
 		productPageDeployment := "productpage-v1"
 		ctx := context.Background()
 		eksContext := getEksKubeContext(ctx)
 		eksContext.WaitForRollout(ctx, generatedNamespace, productPageDeployment)
-		Eventually(func() string {
-			return eksContext.Curl(
-				context.Background(),
-				generatedNamespace,
-				productPageDeployment,
-				"curl",
-				fmt.Sprintf("http://reviews.%s:9080/reviews/1", generatedNamespace))
-		}, "60s", "1s").Should(ContainSubstring(expectedString))
+		if shouldExpect {
+			Eventually(func() string {
+				return eksContext.Curl(
+					context.Background(),
+					generatedNamespace,
+					productPageDeployment,
+					"curl",
+					fmt.Sprintf("http://reviews.%s:9080/reviews/1", generatedNamespace))
+			}, "120s", "1s").Should(ContainSubstring(expectedString))
+		} else {
+			Eventually(func() string {
+				return eksContext.Curl(
+					context.Background(),
+					generatedNamespace,
+					productPageDeployment,
+					"curl",
+					fmt.Sprintf("http://reviews.%s:9080/reviews/1", generatedNamespace))
+			}, "120s", "1s").ShouldNot(ContainSubstring(expectedString))
+		}
 	}
 
 	It("should discover Appmesh mesh and EKS cluster", func() {
@@ -277,11 +288,11 @@ var _ = Describe("Appmesh EKS ", func() {
 
 	It("should translate Appmesh resources to enable all communication between workloads and services", func() {
 		applyVirtualMesh()
-		curlReviewsWithExpectedOutput("The slapstick humour is refreshing")
+		curlReviewsWithExpectedOutput("The slapstick humour is refreshing", true)
 	})
 
 	It("should cleanup translated Appmesh resources and disable communication between workloads and services", func() {
 		deleteVirtualMesh()
-		// Not sure how to test this, the envoy configuration doesn't appear to update on Appmesh resource deletion
+		curlReviewsWithExpectedOutput("The slapstick humour is refreshing", false)
 	})
 })
