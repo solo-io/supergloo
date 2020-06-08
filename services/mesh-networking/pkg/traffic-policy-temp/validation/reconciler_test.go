@@ -12,6 +12,7 @@ import (
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	v1alpha12 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	traffic_policy_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/validation"
 	mock_traffic_policy_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/validation/mocks"
@@ -155,7 +156,7 @@ var _ = Describe("Validation Reconciler", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	Context("benchmarks", func() {
+	FContext("benchmarks", func() {
 
 		Measure("it reconciles traffic policies", func(b Benchmarker) {
 			// not using mock client, as we don't want to measure their (lack of) overhead
@@ -178,7 +179,9 @@ var _ = Describe("Validation Reconciler", func() {
 							Destinations: []*types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 								{
 									Destination: &zephyr_core_types.ResourceRef{
-										Name: "reviews",
+										Name:      "reviews",
+										Namespace: "reviews",
+										Cluster:   "test",
 									},
 									Weight: 100,
 								},
@@ -192,7 +195,10 @@ var _ = Describe("Validation Reconciler", func() {
 					ObjectMeta: v1.ObjectMeta{
 						Name: fmt.Sprintf("sm-%d", i),
 						Labels: map[string]string{
-							"foo": "bar",
+							"foo":                       "bar",
+							kube.KUBE_SERVICE_NAME:      "reviews",
+							kube.KUBE_SERVICE_NAMESPACE: "reviews",
+							kube.COMPUTE_TARGET:         "test",
 						},
 					},
 					Spec: discovery_types.MeshServiceSpec{},
@@ -209,7 +215,7 @@ var _ = Describe("Validation Reconciler", func() {
 				reconciler.Reconcile(ctx)
 			})
 
-			Ω(runtime.Seconds()).Should(BeNumerically("<", 0.2), "SomethingHard() shouldn't take too long.")
+			Ω(runtime.Seconds()).Should(BeNumerically("<", 0.01), "validator.Reconcile() shouldn't take too long.")
 
 			//	b.RecordValue("disk usage (in MB)", HowMuchDiskSpaceDidYouUse())
 		}, 10)
