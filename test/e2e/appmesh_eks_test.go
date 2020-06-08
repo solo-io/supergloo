@@ -11,6 +11,8 @@ import (
 
 	"github.com/aokoli/goutils"
 	"github.com/golang/sync/errgroup"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
@@ -18,9 +20,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 const (
@@ -146,6 +145,10 @@ func setupAppmeshEksEnvironment() string {
 	// Deploy bookinfo into a new namespace on the EKS cluster
 	ctx := context.Background()
 	eksContext := getEksKubeContext(ctx)
+	config, err := eksContext.Config.ClientConfig()
+	Expect(err).ToNot(HaveOccurred())
+	WaitForClusterLock(ctx, config)
+
 	randomString, err := goutils.RandomAlphabetic(4)
 	Expect(err).ToNot(HaveOccurred())
 	generatedNamespace = strings.ToLower(randomString)

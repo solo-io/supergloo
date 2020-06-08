@@ -11,20 +11,19 @@ import (
 	"sync"
 	"time"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/test/e2e/kubectl"
+	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"golang.org/x/sync/errgroup"
 )
 
 type Env struct {
@@ -45,6 +44,7 @@ func newEnv(mgmt, remote string) Env {
 
 type KubeContext struct {
 	Context             string
+	Config              clientcmd.ClientConfig
 	Clientset           *kubernetes.Clientset
 	TrafficPolicyClient zephyr_networking.TrafficPolicyClient
 	KubeClusterClient   zephyr_discovery.KubernetesClusterClient
@@ -86,6 +86,7 @@ func NewKubeContext(kubecontext string) KubeContext {
 
 	return KubeContext{
 		Context:             kubecontext,
+		Config:              config,
 		Clientset:           clientset,
 		TrafficPolicyClient: zephyr_networking.TrafficPolicyClientFromClientsetProvider(networkingClientset),
 		VirtualMeshClient:   zephyr_networking.VirtualMeshClientFromClientsetProvider(networkingClientset),
