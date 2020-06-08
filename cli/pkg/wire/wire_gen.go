@@ -138,10 +138,12 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	virtualMeshClient := v1alpha1_3.VirtualMeshClientFromClientsetProvider(clientset3)
 	trafficPolicyClient := v1alpha1_3.TrafficPolicyClientFromClientsetProvider(clientset3)
 	accessControlPolicyClient := v1alpha1_3.AccessControlPolicyClientFromClientsetProvider(clientset3)
-	meshWorkloadClient := v1alpha1.MeshWorkloadClientFromClientsetProvider(v1alpha1Clientset)
+	meshServiceReader := MeshServiceReaderProvider(v1alpha1Clientset)
+	meshWorkloadReader := MeshWorkloadReaderProvider(v1alpha1Clientset)
 	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
-	resourceSelector := selection.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
+	resourceSelector := selection.NewResourceSelector(meshServiceReader, meshWorkloadReader, deploymentClientFactory, dynamicClientGetter)
 	resourceDescriber := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
+	meshWorkloadClient := v1alpha1.MeshWorkloadClientFromClientsetProvider(v1alpha1Clientset)
 	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
 	clusterAuthClientFromConfigFactory := auth.ClusterAuthClientFromConfigFactoryProvider()
 	clusterRegistrationClient := cluster_registration.NewClusterRegistrationClient(secretClient, kubernetesClusterClient, namespaceClientFromConfigFactory, converter, csrAgentInstallerFactory, clusterAuthClientFromConfigFactory)
@@ -266,4 +268,14 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	createRootCmd := create.CreateRootCommand(optionsOptions, createVirtualMeshCmd, createTrafficPolicyCmd, createAccessControlPolicyCmd)
 	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, meshCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, describeCommand, demoCommand, getCommand, createRootCmd)
 	return command
+}
+
+// wire.go:
+
+func MeshServiceReaderProvider(clients v1alpha1.Clientset) v1alpha1.MeshServiceReader {
+	return v1alpha1.MeshServiceClientFromClientsetProvider(clients)
+}
+
+func MeshWorkloadReaderProvider(clients v1alpha1.Clientset) v1alpha1.MeshWorkloadReader {
+	return v1alpha1.MeshWorkloadClientFromClientsetProvider(clients)
 }

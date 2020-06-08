@@ -55,14 +55,14 @@ func NewBaseResourceSelector() BaseResourceSelector {
 }
 
 func NewResourceSelector(
-	meshServiceClient zephyr_discovery.MeshServiceReader,
+	meshServiceReader zephyr_discovery.MeshServiceReader,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadReader,
 	deploymentClientFactory kubernetes_apps.DeploymentClientFactory,
 	dynamicClientGetter multicluster.DynamicClientGetter,
 ) ResourceSelector {
 	return &resourceSelector{
 		BaseResourceSelector:    NewBaseResourceSelector(),
-		meshServiceClient:       meshServiceClient,
+		meshServiceReader:       meshServiceReader,
 		meshWorkloadClient:      meshWorkloadClient,
 		deploymentClientFactory: deploymentClientFactory,
 		dynamicClientGetter:     dynamicClientGetter,
@@ -73,7 +73,7 @@ type baseResourceSelector struct{}
 
 type resourceSelector struct {
 	BaseResourceSelector
-	meshServiceClient       zephyr_discovery.MeshServiceReader
+	meshServiceReader       zephyr_discovery.MeshServiceReader
 	meshWorkloadClient      zephyr_discovery.MeshWorkloadReader
 	deploymentClientFactory kubernetes_apps.DeploymentClientFactory
 	dynamicClientGetter     multicluster.DynamicClientGetter
@@ -112,7 +112,7 @@ func (r *resourceSelector) GetAllMeshServiceByRefSelector(
 		kube.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
 		kube.COMPUTE_TARGET:         kubeServiceCluster,
 	}
-	meshServiceList, err := r.meshServiceClient.ListMeshService(ctx, destinationKey)
+	meshServiceList, err := r.meshServiceReader.ListMeshService(ctx, destinationKey)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (r *resourceSelector) GetAllMeshServicesByServiceSelector(
 	ctx context.Context,
 	selector *core_types.ServiceSelector,
 ) ([]*zephyr_discovery.MeshService, error) {
-	meshServiceList, err := r.meshServiceClient.ListMeshService(ctx)
+	meshServiceList, err := r.meshServiceReader.ListMeshService(ctx)
 	if err != nil {
 		return nil, err
 	}
