@@ -210,14 +210,10 @@ var _ = Describe("Validation Reconciler", func() {
 			reconciler := traffic_policy_validation.NewValidationReconciler(&tp, &ms, validator)
 			ctx := context.Background()
 			runtime := b.Time("runtime", func() {
-				//	output := SomethingHard()
-				//	Expect(output).To(Equal(17))
 				reconciler.Reconcile(ctx)
 			})
 
 			Ω(runtime.Seconds()).Should(BeNumerically("<", 0.01), "validator.Reconcile() shouldn't take too long.")
-
-			//	b.RecordValue("disk usage (in MB)", HowMuchDiskSpaceDidYouUse())
 		}, 10)
 
 	})
