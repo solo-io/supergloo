@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	EksKubeContext        = "smh-e2e-test"
+	EksKubeContextName    = "smh-e2e-test"
 	AwsAccountId          = "410461945957"
 	Region                = "us-east-2"
 	AppmeshArn            = "arn:aws:appmesh:us-east-2:410461945957:mesh/smh-e2e-test"
@@ -42,6 +42,7 @@ var (
 
 	// Populated during setup
 	generatedNamespace string
+	eksKubeContext KubeContext
 
 	defaultSettingsYaml = fmt.Sprintf(`
 apiVersion: core.zephyr.solo.io/zephyr_networking
@@ -119,7 +120,7 @@ func getEksKubeContext(ctx context.Context) KubeContext {
 		"--region", Region,
 		"update-kubeconfig",
 		"--name", EksClusterName,
-		"--alias", EksKubeContext)
+		"--alias", EksKubeContextName)
 	cmd.Dir = "../.."
 	cmd.Stdout = GinkgoWriter
 	cmd.Stderr = GinkgoWriter
@@ -136,29 +137,29 @@ func getEksKubeContext(ctx context.Context) KubeContext {
 	Expect(err).NotTo(HaveOccurred())
 
 	// Use current context
-	return NewKubeContext(EksKubeContext)
+	return NewKubeContext(EksKubeContextName)
 }
 
 func setupAppmeshEksEnvironment() string {
 	// Deploy bookinfo into a new namespace on the EKS cluster
 	ctx := context.Background()
-	eksContext := getEksKubeContext(ctx)
-	config, err := eksContext.Config.ClientConfig()
+	eksKubeContext = getEksKubeContext(ctx)
+	config, err := eksKubeContext.Config.ClientConfig()
 	Expect(err).ToNot(HaveOccurred())
 	WaitForClusterLock(ctx, config, ClusterLockTimeout)
 
 	randomString, err := goutils.RandomAlphabetic(4)
 	Expect(err).ToNot(HaveOccurred())
 	generatedNamespace = strings.ToLower(randomString)
-	eksContext.CreateNamespace(ctx, generatedNamespace)
-	eksContext.LabelNamespace(ctx, generatedNamespace, AppmeshInjectionLabel)
-	eksContext.DeployBookInfo(ctx, generatedNamespace)
+	eksKubeContext.CreateNamespace(ctx, generatedNamespace)
+	eksKubeContext.LabelNamespace(ctx, generatedNamespace, AppmeshInjectionLabel)
+	eksKubeContext.DeployBookInfo(ctx, generatedNamespace)
 	// Set SERVICES_DOMAIN env var on productpage-v1 to point at services within generated namespace
 	// https://github.com/istio/istio/blob/1.5.0/samples/bookinfo/src/productpage/productpage.py#L60
-	eksContext.SetDeploymentEnvVars(ctx, generatedNamespace, "productpage-v1", "productpage", map[string]string{"SERVICES_DOMAIN": generatedNamespace})
-	eksContext.SetDeploymentEnvVars(ctx, generatedNamespace, "reviews-v1", "reviews", map[string]string{"SERVICES_DOMAIN": generatedNamespace})
-	eksContext.SetDeploymentEnvVars(ctx, generatedNamespace, "reviews-v2", "reviews", map[string]string{"SERVICES_DOMAIN": generatedNamespace})
-	eksContext.SetDeploymentEnvVars(ctx, generatedNamespace, "reviews-v3", "reviews", map[string]string{"SERVICES_DOMAIN": generatedNamespace})
+	eksKubeContext.SetDeploymentEnvVars(ctx, generatedNamespace, "productpage-v1", "productpage", map[string]string{"SERVICES_DOMAIN": generatedNamespace})
+	eksKubeContext.SetDeploymentEnvVars(ctx, generatedNamespace, "reviews-v1", "reviews", map[string]string{"SERVICES_DOMAIN": generatedNamespace})
+	eksKubeContext.SetDeploymentEnvVars(ctx, generatedNamespace, "reviews-v2", "reviews", map[string]string{"SERVICES_DOMAIN": generatedNamespace})
+	eksKubeContext.SetDeploymentEnvVars(ctx, generatedNamespace, "reviews-v3", "reviews", map[string]string{"SERVICES_DOMAIN": generatedNamespace})
 	return generatedNamespace
 }
 
@@ -197,8 +198,7 @@ func cleanupAppmeshEksEnvironment(ns string) {
 
 	// Clean up resources on remote EKS cluster
 	ctx := context.Background()
-	eksContext := getEksKubeContext(ctx)
-	eksContext.DeleteNamespace(ctx, ns)
+	eksKubeContext.DeleteNamespace(ctx, ns)
 }
 
 var _ = Describe("Appmesh EKS ", func() {
@@ -256,10 +256,9 @@ var _ = Describe("Appmesh EKS ", func() {
 	var curlReviewsWithExpectedOutput = func(expectedString string, shouldExpect bool) {
 		productPageDeployment := "productpage-v1"
 		ctx := context.Background()
-		eksContext := getEksKubeContext(ctx)
-		eksContext.WaitForRollout(ctx, generatedNamespace, productPageDeployment)
+		eksKubeContext.WaitForRollout(ctx, generatedNamespace, productPageDeployment)
 		eventuallyCurl := Eventually(func() string {
-			return eksContext.Curl(
+			return eksKubeContext.Curl(
 				context.Background(),
 				generatedNamespace,
 				productPageDeployment,
