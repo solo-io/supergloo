@@ -42,7 +42,7 @@ var (
 
 	// Populated during setup
 	generatedNamespace string
-	eksKubeContext KubeContext
+	eksKubeContext     KubeContext
 
 	defaultSettingsYaml = fmt.Sprintf(`
 apiVersion: core.zephyr.solo.io/zephyr_networking
