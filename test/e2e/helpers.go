@@ -35,14 +35,14 @@ func StatusOfTrafficPolicy(tp zephyr_networking.TrafficPolicy, kc KubeContext) z
 	return newtp.Status.GetTranslationStatus().GetState()
 }
 
-func KubeClusterShouldExist(key client.ObjectKey, kc KubeContext) func() *zephyr_discovery.KubernetesCluster {
+func KubeCluster(key client.ObjectKey, kc KubeContext) func() *zephyr_discovery.KubernetesCluster {
 	return func() *zephyr_discovery.KubernetesCluster {
 		kubeCluster, _ := kc.KubeClusterClient.GetKubernetesCluster(context.Background(), key)
 		return kubeCluster
 	}
 }
 
-func MeshShouldExist(key client.ObjectKey, kc KubeContext) func() *zephyr_discovery.Mesh {
+func Mesh(key client.ObjectKey, kc KubeContext) func() *zephyr_discovery.Mesh {
 	return func() *zephyr_discovery.Mesh {
 		mesh, _ := kc.MeshClient.GetMesh(context.Background(), key)
 		return mesh

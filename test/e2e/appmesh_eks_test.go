@@ -2,7 +2,6 @@ package e2e
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"os/exec"
@@ -18,11 +17,11 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
+	EksKubeContext        = "smh-e2e-test"
 	AwsAccountId          = "410461945957"
 	Region                = "us-east-2"
 	AppmeshArn            = "arn:aws:appmesh:us-east-2:410461945957:mesh/smh-e2e-test"
@@ -103,7 +102,7 @@ type: solo.io/register/aws-credentials
 metadata:
   name: %s
   namespace: %s
-data:
+stringData:
   aws_access_key_id: %s
   aws_secret_access_key: %s
 `, secretObjKey.Name, secretObjKey.Namespace, awsAccessKeyId, awsSecretAccessKey)
@@ -115,19 +114,17 @@ data:
 func getEksKubeContext(ctx context.Context) KubeContext {
 	eg, ctx := errgroup.WithContext(ctx)
 
-	r, w, err := os.Pipe()
-	Expect(err).NotTo(HaveOccurred())
-	defer r.Close()
-
-	cmd := exec.CommandContext(ctx, "aws", "eks", "--region", Region, "update-kubeconfig", "--name", EksClusterName)
+	cmd := exec.CommandContext(ctx,
+		"aws", "eks",
+		"--region", Region,
+		"update-kubeconfig",
+		"--name", EksClusterName,
+		"--alias", EksKubeContext)
 	cmd.Dir = "../.."
 	cmd.Stdout = GinkgoWriter
 	cmd.Stderr = GinkgoWriter
-	cmd.ExtraFiles = append(cmd.ExtraFiles, w)
-	err = cmd.Start()
+	err := cmd.Start()
 	// close this end after start, as we dont need it.
-	w.Close()
-	Expect(err).NotTo(HaveOccurred())
 
 	eg.Go(cmd.Wait)
 
@@ -139,7 +136,7 @@ func getEksKubeContext(ctx context.Context) KubeContext {
 	Expect(err).NotTo(HaveOccurred())
 
 	// Use current context
-	return NewKubeContext("")
+	return NewKubeContext(EksKubeContext)
 }
 
 func setupAppmeshEksEnvironment() string {
@@ -205,21 +202,12 @@ func cleanupAppmeshEksEnvironment(ns string) {
 }
 
 var _ = Describe("Appmesh EKS ", func() {
-	AfterEach(func() {
-		testLabels := map[string]string{"test": "true"}
-		opts := &client.DeleteAllOfOptions{}
-		opts.LabelSelector = labels.SelectorFromSet(testLabels)
-		opts.Namespace = "service-mesh-hub"
-	})
-
 	// Fetch base64 encoded AWS credentials from environment
 	var registerAwsSecret = func() {
 		awsAccessKeyId := os.Getenv("AWS_ACCESS_KEY_ID")
 		awsSecretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
-		awsAccessKeyIdBase64 := base64.StdEncoding.EncodeToString([]byte(awsAccessKeyId))
-		awsSecretAccessKeyBase64 := base64.StdEncoding.EncodeToString([]byte(awsSecretAccessKey))
 		var secret v1.Secret
-		secretYaml := buildSecretYaml(awsAccessKeyIdBase64, awsSecretAccessKeyBase64)
+		secretYaml := buildSecretYaml(awsAccessKeyId, awsSecretAccessKey)
 		ParseYaml(secretYaml, &secret)
 		err := env.Management.SecretClient.CreateSecret(context.Background(), &secret)
 		Expect(err).NotTo(HaveOccurred())
@@ -253,14 +241,14 @@ var _ = Describe("Appmesh EKS ", func() {
 
 	var expectGetKubeCluster = func(name string) {
 		Eventually(
-			KubeClusterShouldExist(client.ObjectKey{Name: name, Namespace: SmhNamespace}, env.Management),
+			KubeCluster(client.ObjectKey{Name: name, Namespace: SmhNamespace}, env.Management),
 			"30s", "1s").
 			ShouldNot(BeNil())
 	}
 
 	var expectGetMesh = func(name string) {
 		Eventually(
-			MeshShouldExist(client.ObjectKey{Name: name, Namespace: SmhNamespace}, env.Management),
+			Mesh(client.ObjectKey{Name: name, Namespace: SmhNamespace}, env.Management),
 			"60s", "1s").
 			ShouldNot(BeNil())
 	}
@@ -270,24 +258,18 @@ var _ = Describe("Appmesh EKS ", func() {
 		ctx := context.Background()
 		eksContext := getEksKubeContext(ctx)
 		eksContext.WaitForRollout(ctx, generatedNamespace, productPageDeployment)
+		eventuallyCurl := Eventually(func() string {
+			return eksContext.Curl(
+				context.Background(),
+				generatedNamespace,
+				productPageDeployment,
+				"curl",
+				fmt.Sprintf("http://reviews.%s:9080/reviews/1", generatedNamespace))
+		}, "120s", "1s")
 		if shouldExpect {
-			Eventually(func() string {
-				return eksContext.Curl(
-					context.Background(),
-					generatedNamespace,
-					productPageDeployment,
-					"curl",
-					fmt.Sprintf("http://reviews.%s:9080/reviews/1", generatedNamespace))
-			}, "120s", "1s").Should(ContainSubstring(expectedString))
+			eventuallyCurl.Should(ContainSubstring(expectedString))
 		} else {
-			Eventually(func() string {
-				return eksContext.Curl(
-					context.Background(),
-					generatedNamespace,
-					productPageDeployment,
-					"curl",
-					fmt.Sprintf("http://reviews.%s:9080/reviews/1", generatedNamespace))
-			}, "120s", "1s").ShouldNot(ContainSubstring(expectedString))
+			eventuallyCurl.ShouldNot(ContainSubstring(expectedString))
 		}
 	}
 

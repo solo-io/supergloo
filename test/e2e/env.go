@@ -57,15 +57,7 @@ type KubeContext struct {
 // If kubecontext is empty string, use current context.
 func NewKubeContext(kubecontext string) KubeContext {
 	cfg, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
-	var config clientcmd.ClientConfig
-	if kubecontext == "" {
-		config = clientcmd.NewDefaultClientConfig(*cfg, &clientcmd.ConfigOverrides{})
-		rawConfig, err := config.RawConfig()
-		Expect(err).ToNot(HaveOccurred())
-		kubecontext = rawConfig.CurrentContext
-	} else {
-		config = clientcmd.NewNonInteractiveClientConfig(*cfg, kubecontext, &clientcmd.ConfigOverrides{}, nil)
-	}
+	config := clientcmd.NewNonInteractiveClientConfig(*cfg, kubecontext, &clientcmd.ConfigOverrides{}, nil)
 	restcfg, err := config.ClientConfig()
 	Expect(err).NotTo(HaveOccurred())
 
