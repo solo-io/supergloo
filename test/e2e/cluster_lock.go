@@ -50,10 +50,11 @@ func WaitForClusterLock(
 	Expect(err).NotTo(HaveOccurred())
 	fmt.Fprintln(GinkgoWriter, "Waiting to acquire cluster lock...")
 	select {
+	// This ctx will never be cancelled manually, instead the test will simply end, allowing the leader lock to be acquired by another test.
 	case <-ctx.Done():
 		fmt.Fprintln(GinkgoWriter, "Releasing cluster lock")
 	case <-time.After(timeout):
-		fmt.Fprintln(GinkgoWriter, "Timed out waiting for cluster lock")
+		Fail("Timed out waiting for cluster lock")
 	case <-lock.started:
 		fmt.Fprintln(GinkgoWriter, "Acquired cluster lock")
 	}
