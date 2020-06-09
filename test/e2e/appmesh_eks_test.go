@@ -164,6 +164,8 @@ func setupAppmeshEksEnvironment() string {
 }
 
 func cleanupAppmeshEksEnvironment(ns string) {
+	// Only clean up management-cluster resources if we're running multiple iterations of this test against the same management-cluster.
+	// Otherwise the cluster will be torn down anyways, so no need to clean anything up.
 	if useExisting := os.Getenv("USE_EXISTING"); useExisting != "" {
 		// Cleans up discovery resources on management cluster
 		// Reset back to default settings. This must be done before removing the AWS secret.
