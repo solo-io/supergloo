@@ -3,6 +3,7 @@ package aggregation_framework
 import (
 	"context"
 
+	"github.com/hashicorp/go-multierror"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -58,9 +59,70 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		allTrafficPolicies = append(allTrafficPolicies, &trafficPolicy)
 	}
 
-	allMeshServices, serviceToMetadata, err := a.aggregateMeshServices(ctx)
+	processor := NewAggregationProcessor(a.meshServiceClient,
+		a.meshClient,
+		a.policyCollector,
+		a.translationValidators,
+		a.inMemoryStatusMutator,
+	)
+
+	objToUpdate, err := processor.Process(ctx, allTrafficPolicies)
 	if err != nil {
 		return err
+	}
+
+	var multierr error
+
+	for _, service := range objToUpdate.MeshServices {
+		err := a.meshServiceClient.UpdateMeshServiceStatus(ctx, service)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+		}
+	}
+
+	for _, policy := range objToUpdate.TrafficPolicies {
+		err := a.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, policy)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+		}
+	}
+	return multierr
+}
+
+type ProcessedObjects struct {
+	TrafficPolicies []*zephyr_networking.TrafficPolicy
+	MeshServices    []*zephyr_discovery.MeshService
+}
+
+func NewAggregationProcessor(
+	meshServiceReader zephyr_discovery.MeshServiceReader,
+	meshReader zephyr_discovery.MeshReader,
+	policyCollector traffic_policy_aggregation.PolicyCollector,
+	translationValidators map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator,
+	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator,
+) *aggregationProcessor {
+	return &aggregationProcessor{
+		meshServiceReader:     meshServiceReader,
+		meshReader:            meshReader,
+		policyCollector:       policyCollector,
+		translationValidators: translationValidators,
+		inMemoryStatusMutator: inMemoryStatusMutator,
+	}
+}
+
+type aggregationProcessor struct {
+	meshServiceReader     zephyr_discovery.MeshServiceReader
+	meshReader            zephyr_discovery.MeshReader
+	policyCollector       traffic_policy_aggregation.PolicyCollector
+	translationValidators map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator
+	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator
+}
+
+func (a *aggregationProcessor) Process(ctx context.Context, allTrafficPolicies []*zephyr_networking.TrafficPolicy) (*ProcessedObjects, error) {
+
+	allMeshServices, serviceToMetadata, err := a.aggregateMeshServices(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	trafficPolicyToAllConflicts := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError{}
@@ -78,7 +140,7 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 			allTrafficPolicies,
 		)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		serviceToUpdatedStatus[meshService] = collectionResult.PoliciesToRecordOnService
@@ -91,13 +153,11 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		}
 	}
 
+	var objectsToUpdate ProcessedObjects
 	for service, validatedPolicies := range serviceToUpdatedStatus {
 		needsUpdating := a.inMemoryStatusMutator.MutateServicePolicies(service, validatedPolicies)
 		if needsUpdating {
-			err := a.meshServiceClient.UpdateMeshServiceStatus(ctx, service)
-			if err != nil {
-				return err
-			}
+			objectsToUpdate.MeshServices = append(objectsToUpdate.MeshServices, service)
 		}
 	}
 
@@ -107,18 +167,15 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		// invalid policies have their merge/translation errors zeroed out
 		needsUpdating := a.inMemoryStatusMutator.MutateConflictAndTranslatorErrors(policy, trafficPolicyToAllConflicts[policy], trafficPolicyToAllTranslationErrs[policy])
 		if needsUpdating {
-			err := a.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, policy)
-			if err != nil {
-				return err
-			}
+			objectsToUpdate.TrafficPolicies = append(objectsToUpdate.TrafficPolicies, policy)
 		}
 	}
 
-	return nil
+	return &objectsToUpdate, nil
 }
 
-func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*zephyr_discovery.MeshService, map[*zephyr_discovery.MeshService]*meshServiceInfo, error) {
-	meshServiceList, err := a.meshServiceClient.ListMeshService(ctx)
+func (a *aggregationProcessor) aggregateMeshServices(ctx context.Context) ([]*zephyr_discovery.MeshService, map[*zephyr_discovery.MeshService]*meshServiceInfo, error) {
+	meshServiceList, err := a.meshServiceReader.ListMeshService(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -128,7 +185,7 @@ func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*z
 	for _, ms := range meshServiceList.Items {
 		meshService := ms
 
-		meshForService, err := a.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+		meshForService, err := a.meshReader.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 		if err != nil {
 			return nil, nil, err
 		}

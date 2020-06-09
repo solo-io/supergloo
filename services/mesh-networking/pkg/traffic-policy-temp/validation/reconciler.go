@@ -3,6 +3,7 @@ package traffic_policy_validation
 import (
 	"context"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -37,10 +38,16 @@ func (*validationLoop) GetName() string {
 }
 
 func (v *validationLoop) Reconcile(ctx context.Context) error {
-	logger := contextutils.LoggerFrom(ctx)
+
 	trafficPolicies, err := v.trafficPolicyClient.ListTrafficPolicy(ctx)
 	if err != nil {
 		return err
+	}
+
+	var allTrafficPolicies []*zephyr_networking.TrafficPolicy
+	for _, tp := range trafficPolicies.Items {
+		trafficPolicy := tp
+		allTrafficPolicies = append(allTrafficPolicies, &trafficPolicy)
 	}
 
 	meshServiceList, err := v.meshServiceReader.ListMeshService(ctx)
@@ -54,25 +61,36 @@ func (v *validationLoop) Reconcile(ctx context.Context) error {
 		meshServices = append(meshServices, &meshService)
 	}
 
-	for _, trafficPolicy := range trafficPolicies.Items {
-		newValidationStatus, validationErr := v.validator.ValidateTrafficPolicy(&trafficPolicy, meshServices)
+	trafficPoliciesToUpdate := v.Process(ctx, allTrafficPolicies, meshServices)
+	var multierr error
+	for _, trafficPolicy := range trafficPoliciesToUpdate {
+		err := v.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, trafficPolicy)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+		}
+	}
+	return multierr
+
+}
+
+func (v *validationLoop) Process(ctx context.Context, allTrafficPolicies []*zephyr_networking.TrafficPolicy, meshServices []*zephyr_discovery.MeshService) []*zephyr_networking.TrafficPolicy {
+	logger := contextutils.LoggerFrom(ctx)
+	var updatedPolicies []*zephyr_networking.TrafficPolicy
+
+	for _, trafficPolicy := range allTrafficPolicies {
+		newValidationStatus, validationErr := v.validator.ValidateTrafficPolicy(trafficPolicy, meshServices)
 		if validationErr == nil {
 			logger.Debugf("Traffic policy %s.%s passed validation", trafficPolicy.GetName(), trafficPolicy.GetNamespace())
 		} else {
 			logger.Infof("Traffic policy %s.%s failed validation for reason: %+v", trafficPolicy.GetName(), trafficPolicy.GetNamespace(), validationErr)
 		}
-
 		if !trafficPolicy.Status.GetValidationStatus().Equal(newValidationStatus) ||
 			trafficPolicy.Status.ObservedGeneration != trafficPolicy.Generation {
 			trafficPolicy.Status.ObservedGeneration = trafficPolicy.Generation
 			trafficPolicy.Status.ValidationStatus = newValidationStatus
-
-			err := v.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, &trafficPolicy)
-			if err != nil {
-				return err
-			}
+			updatedPolicies = append(updatedPolicies, trafficPolicy)
 		}
 	}
 
-	return nil
+	return updatedPolicies
 }
