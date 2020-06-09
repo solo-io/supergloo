@@ -6,6 +6,7 @@ import (
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
+	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/clients"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
@@ -17,7 +18,6 @@ import (
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
-	appmesh_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/appmesh"
 	eks_client "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws/clients/eks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s-cluster/rest/eks"
 	meshworkload_appmesh "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
@@ -35,7 +35,7 @@ var AwsSet = wire.NewSet(
 	zephyr_discovery.KubernetesClusterClientProvider,
 	eks_client.EksClientFactoryProvider,
 	eks_client.EksConfigBuilderFactoryProvider,
-	appmesh_client.AppMeshClientFactoryProvider,
+	appmesh2.AppmeshRawClientFactoryProvider,
 	AwsDiscoveryReconcilersProvider,
 	appmesh.NewAppMeshDiscoveryReconciler,
 	eks.NewEksDiscoveryReconciler,

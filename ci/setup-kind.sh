@@ -26,10 +26,14 @@ make clean
 managementPlane=management-plane-$1
 remoteCluster=target-cluster-$1
 
+# The default version of k8s under Linux is 1.18
+# https://github.com/solo-io/service-mesh-hub/issues/700
+kindImage=kindest/node:v1.17.5
+
 # set up each cluster
 # Create NodePort for remote cluster so it can be reachable from the management plane.
 # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
-(cat <<EOF | kind create cluster --name $managementPlane --config=-
+(cat <<EOF | kind create cluster --name $managementPlane --image $kindImage --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
@@ -77,7 +81,7 @@ EOF
 
 # Create NodePort for remote cluster so it can be reachable from the management plane.
 # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
-cat <<EOF | kind create cluster --name $remoteCluster --config=-
+cat <<EOF | kind create cluster --name $remoteCluster --image $kindImage --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:

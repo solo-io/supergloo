@@ -14,9 +14,9 @@ import (
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	strategies2 "github.com/solo-io/service-mesh-hub/pkg/federation/strategies"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
 	mock_discovery_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
@@ -44,7 +44,7 @@ var _ = Describe("Federation Decider", func() {
 	})
 
 	It("doesn't federate anything for a virtual mesh with only one member", func() {
-		snapshot := snapshot.MeshNetworkingSnapshot{
+		snapshot := networking_snapshot.MeshNetworkingSnapshot{
 			VirtualMeshes: []*zephyr_networking.VirtualMesh{{
 				Spec: zephyr_networking_types.VirtualMeshSpec{
 					Meshes: []*zephyr_core_types.ResourceRef{{
@@ -82,8 +82,8 @@ var _ = Describe("Federation Decider", func() {
 				},
 			}, nil)
 
-		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, func(mode zephyr_networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient zephyr_discovery.MeshServiceClient) (strategies.FederationStrategy, error) {
-			return strategies.NewPermissiveFederation(meshServiceClient), nil
+		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, func(mode zephyr_networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient zephyr_discovery.MeshServiceClient) (strategies2.FederationStrategy, error) {
+			return strategies2.NewPermissiveFederation(meshServiceClient), nil
 		})
 		decider.DecideFederation(ctx, &snapshot)
 	})
@@ -173,7 +173,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 
-		snapshot := snapshot.MeshNetworkingSnapshot{
+		snapshot := networking_snapshot.MeshNetworkingSnapshot{
 			VirtualMeshes: []*zephyr_networking.VirtualMesh{
 				{
 					Spec: zephyr_networking_types.VirtualMeshSpec{
@@ -409,7 +409,7 @@ var _ = Describe("Federation Decider", func() {
 			UpsertMeshServiceSpec(ctx, &meshService4Copy).
 			Return(nil)
 
-		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, strategies.GetFederationStrategyFromMode)
+		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, strategies2.GetFederationStrategyFromMode)
 		decider.DecideFederation(ctx, &snapshot)
 	})
 
@@ -451,7 +451,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 
-		snapshot := snapshot.MeshNetworkingSnapshot{
+		snapshot := networking_snapshot.MeshNetworkingSnapshot{
 			VirtualMeshes: []*zephyr_networking.VirtualMesh{vm1, vm2},
 			MeshServices:  []*zephyr_discovery.MeshService{},
 			MeshWorkloads: []*zephyr_discovery.MeshWorkload{},
@@ -491,7 +491,7 @@ var _ = Describe("Federation Decider", func() {
 			UpdateVirtualMeshStatus(ctx, &vm2Copy).
 			Return(nil)
 
-		strategyDecider := func(mode zephyr_networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient zephyr_discovery.MeshServiceClient) (strategies.FederationStrategy, error) {
+		strategyDecider := func(mode zephyr_networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient zephyr_discovery.MeshServiceClient) (strategies2.FederationStrategy, error) {
 			// these don't matter, we'll bail out before this point
 			return nil, nil
 		}

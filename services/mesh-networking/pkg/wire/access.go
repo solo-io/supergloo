@@ -2,12 +2,17 @@ package wire
 
 import (
 	"github.com/google/wire"
+	access_control_enforcer2 "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
+	"github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/appmesh"
+	"github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/matcher"
+	"github.com/solo-io/service-mesh-hub/pkg/aws/translation"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
-	istio_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/istio-enforcer"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator/istio-translator"
 )
@@ -21,9 +26,16 @@ var (
 		AccessControlPolicyMeshTranslatorsProvider,
 		zephyr_networking.NewAccessControlPolicyClient,
 		// Global AccessControlPolicy enforcer
-		istio_enforcer.NewIstioEnforcer,
+		istio.NewIstioEnforcer,
+		appmesh.NewAppmeshEnforcer,
+		translation.NewAppmeshTranslator,
+		translation.NewAppmeshAccessControlDao,
+		appmesh2.AppmeshClientGetterProvider,
+		appmesh2.AppmeshRawClientFactoryProvider,
+		matcher.NewAppmeshMatcher,
 		access_control_enforcer.NewEnforcerLoop,
 		GlobalAccessControlPolicyMeshEnforcersProvider,
+		translation.NewAppmeshTranslationReconciler,
 	)
 )
 
@@ -40,9 +52,11 @@ func AccessControlPolicyMeshTranslatorsProvider(
 }
 
 func GlobalAccessControlPolicyMeshEnforcersProvider(
-	istioEnforcer istio_enforcer.IstioEnforcer,
-) []access_control_enforcer.AccessPolicyMeshEnforcer {
-	return []access_control_enforcer.AccessPolicyMeshEnforcer{
+	istioEnforcer istio.IstioEnforcer,
+	appmeshEnforcer appmesh.AppmeshEnforcer,
+) []access_control_enforcer2.AccessPolicyMeshEnforcer {
+	return []access_control_enforcer2.AccessPolicyMeshEnforcer{
 		istioEnforcer,
+		appmeshEnforcer,
 	}
 }

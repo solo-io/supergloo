@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Enable access control translation on Appmesh meshes
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/742

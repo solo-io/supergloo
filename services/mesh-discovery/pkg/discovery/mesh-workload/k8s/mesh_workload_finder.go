@@ -7,6 +7,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
@@ -132,17 +133,18 @@ func (m *meshWorkloadFinder) reconcile() error {
 	if err != nil {
 		return err
 	}
-	existingWorkloadsByName, existingWorkloadNames, err := m.getExistingWorkloads()
+	existingWorkloads, err := m.getExistingWorkloads()
 	if err != nil {
 		return err
 	}
-	discoveredWorkloads, discoveredWorkloadNames, err := m.discoverAllWorkloads(discoveredMeshTypes)
+	discoveredWorkloads, err := m.discoverAllWorkloads(discoveredMeshTypes)
 	if err != nil {
 		return err
 	}
+	existingWorkloadMap := existingWorkloads.Map()
 	// For each workload that is discovered, create if it doesn't exist or update it if the spec has changed.
-	for _, discoveredWorkload := range discoveredWorkloads {
-		existingWorkload, ok := existingWorkloadsByName[discoveredWorkload.GetName()]
+	for discoveredWorkloadKey, discoveredWorkload := range discoveredWorkloads.Map() {
+		existingWorkload, ok := existingWorkloadMap[discoveredWorkloadKey]
 		if !ok || !existingWorkload.Spec.Equal(discoveredWorkload.Spec) {
 			err = m.localMeshWorkloadClient.UpsertMeshWorkloadSpec(m.ctx, discoveredWorkload)
 			if err != nil {
@@ -151,11 +153,7 @@ func (m *meshWorkloadFinder) reconcile() error {
 		}
 	}
 	// Delete MeshWorkloads that no longer exist.
-	for _, existingWorkloadName := range existingWorkloadNames.Difference(discoveredWorkloadNames).List() {
-		existingWorkload, ok := existingWorkloadsByName[existingWorkloadName]
-		if !ok {
-			continue
-		}
+	for _, existingWorkload := range existingWorkloads.Difference(discoveredWorkloads).List() {
 		err = m.localMeshWorkloadClient.DeleteMeshWorkload(m.ctx, selection.ObjectMetaToObjectKey(existingWorkload.ObjectMeta))
 		if err != nil {
 			return err
@@ -164,31 +162,28 @@ func (m *meshWorkloadFinder) reconcile() error {
 	return nil
 }
 
-func (m *meshWorkloadFinder) getExistingWorkloads() (map[string]*zephyr_discovery.MeshWorkload, sets.String, error) {
+func (m *meshWorkloadFinder) getExistingWorkloads() (zephyr_discovery_sets.MeshWorkloadSet, error) {
 	inThisCluster := client.MatchingLabels{
 		kube.COMPUTE_TARGET: m.clusterName,
 	}
 	meshWorkloadList, err := m.localMeshWorkloadClient.ListMeshWorkload(m.ctx, inThisCluster)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	workloadsByName := make(map[string]*zephyr_discovery.MeshWorkload)
-	workloadNames := sets.NewString()
+	workloads := zephyr_discovery_sets.NewMeshWorkloadSet()
 	for _, meshWorkload := range meshWorkloadList.Items {
 		meshWorkload := meshWorkload
-		workloadsByName[meshWorkload.GetName()] = &meshWorkload
-		workloadNames.Insert(meshWorkload.GetName())
+		workloads.Insert(&meshWorkload)
 	}
-	return workloadsByName, workloadNames, nil
+	return workloads, nil
 }
 
-func (m *meshWorkloadFinder) discoverAllWorkloads(discoveredMeshTypes sets.Int32) ([]*zephyr_discovery.MeshWorkload, sets.String, error) {
+func (m *meshWorkloadFinder) discoverAllWorkloads(discoveredMeshTypes sets.Int32) (zephyr_discovery_sets.MeshWorkloadSet, error) {
 	podList, err := m.podClient.ListPod(m.ctx)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	var meshWorkloads []*zephyr_discovery.MeshWorkload
-	meshWorkloadNames := sets.NewString()
+	workloads := zephyr_discovery_sets.NewMeshWorkloadSet()
 	for _, pod := range podList.Items {
 		pod := pod
 		discoveredWorkload, err := m.discoverMeshWorkload(&pod, discoveredMeshTypes)
@@ -198,10 +193,9 @@ func (m *meshWorkloadFinder) discoverAllWorkloads(discoveredMeshTypes sets.Int32
 		} else if discoveredWorkload == nil {
 			continue
 		}
-		meshWorkloads = append(meshWorkloads, discoveredWorkload)
-		meshWorkloadNames.Insert(discoveredWorkload.GetName())
+		workloads.Insert(discoveredWorkload)
 	}
-	return meshWorkloads, meshWorkloadNames, nil
+	return workloads, nil
 }
 
 func (m *meshWorkloadFinder) getDiscoveredMeshTypes(ctx context.Context) (sets.Int32, error) {

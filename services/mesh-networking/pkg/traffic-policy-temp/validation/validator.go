@@ -36,7 +36,7 @@ var (
 )
 
 func NewValidator(
-	resourceSelector selection.ResourceSelector,
+	resourceSelector selection.BaseResourceSelector,
 ) Validator {
 	return &validator{
 		resourceSelector: resourceSelector,
@@ -44,7 +44,7 @@ func NewValidator(
 }
 
 type validator struct {
-	resourceSelector selection.ResourceSelector
+	resourceSelector selection.BaseResourceSelector
 }
 
 func (v *validator) ValidateTrafficPolicy(trafficPolicy *zephyr_networking.TrafficPolicy, allMeshServices []*zephyr_discovery.MeshService) (*zephyr_core_types.Status, error) {

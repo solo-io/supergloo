@@ -15,12 +15,20 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
-	networking_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster"
-	controller_factories "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/controllers"
+	networking_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target"
+	controller_factories "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/controllers"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 	cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+func MeshServiceReaderProvider(client client.Client) zephyr_discovery.MeshServiceReader {
+	return zephyr_discovery.MeshServiceClientProvider(client)
+}
+func MeshWorkloadReaderProvider(client client.Client) zephyr_discovery.MeshWorkloadReader {
+	return zephyr_discovery.MeshWorkloadClientProvider(client)
+}
 
 func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error) {
 	wire.Build(
@@ -30,8 +38,10 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		kubernetes_core.NodeClientFactoryProvider,
 		kubernetes_apps.DeploymentClientFactoryProvider,
 		zephyr_discovery.MeshClientProvider,
+		MeshServiceReaderProvider,
 		zephyr_discovery.MeshServiceClientProvider,
 		zephyr_discovery.MeshWorkloadClientProvider,
+		MeshWorkloadReaderProvider,
 		zephyr_networking.VirtualMeshClientProvider,
 		zephyr_networking.TrafficPolicyClientProvider,
 		zephyr_networking.AccessControlPolicyClientProvider,

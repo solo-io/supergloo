@@ -12,7 +12,7 @@ import (
 	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
 	mock_vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation/mocks"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
@@ -23,7 +23,7 @@ var _ = Describe("validator", func() {
 
 	var (
 		ctrl              *gomock.Controller
-		validator         snapshot.MeshNetworkingSnapshotValidator
+		validator         networking_snapshot.MeshNetworkingSnapshotValidator
 		meshFinder        *mock_vm_validation.MockVirtualMeshFinder
 		virtualMeshClient *mock_zephyr_networking.MockVirtualMeshClient
 		ctx               context.Context
@@ -129,7 +129,7 @@ var _ = Describe("validator", func() {
 			Status: zephyr_networking_types.VirtualMeshStatus{
 				CertificateStatus: &zephyr_core_types.Status{
 					State:   zephyr_core_types.Status_INVALID,
-					Message: vm_validation.OnlyIstioSupportedError(mesh.Name).Error(),
+					Message: vm_validation.MeshTypeNotSupportedError(mesh.Name).Error(),
 				},
 			},
 		}

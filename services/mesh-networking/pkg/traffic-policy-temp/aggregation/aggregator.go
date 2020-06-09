@@ -1,6 +1,8 @@
 package traffic_policy_aggregation
 
 import (
+	"strings"
+
 	"github.com/rotisserie/eris"
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
@@ -10,7 +12,9 @@ import (
 )
 
 var (
-	TrafficPolicyConflictError = eris.New("Found conflicting TrafficPolicy")
+	TrafficPolicyConflictError = func(s string) error {
+		return eris.Errorf("Found conflicts in TrafficPolicy on the following fields: %s", s)
+	}
 )
 
 func NewAggregator(resourceSelector selection.ResourceSelector) Aggregator {
@@ -174,40 +178,44 @@ func (a *aggregator) mergeTrafficPolicySpec(
 	this *zephyr_networking_types.TrafficPolicySpec,
 	that *zephyr_networking_types.TrafficPolicySpec,
 ) (*zephyr_networking_types.TrafficPolicySpec, error) {
+	var conflicts []string
 	if this.GetTrafficShift() == nil {
 		this.TrafficShift = that.TrafficShift
 	} else if that.GetTrafficShift() != nil && !this.GetTrafficShift().Equal(that.GetTrafficShift()) {
-		return nil, TrafficPolicyConflictError
+		conflicts = append(conflicts, "TrafficShift")
 	}
 	if this.GetFaultInjection() == nil {
 		this.FaultInjection = that.FaultInjection
 	} else if that.GetFaultInjection() != nil && !this.GetFaultInjection().Equal(that.GetFaultInjection()) {
-		return nil, TrafficPolicyConflictError
+		conflicts = append(conflicts, "FaultInjection")
 	}
 	if this.GetRequestTimeout() == nil {
 		this.RequestTimeout = that.RequestTimeout
 	} else if that.GetRequestTimeout() != nil && !this.GetRequestTimeout().Equal(that.GetRequestTimeout()) {
-		return nil, TrafficPolicyConflictError
+		conflicts = append(conflicts, "RequestTimeout")
 	}
 	if this.GetRetries() == nil {
 		this.Retries = that.Retries
 	} else if that.GetRetries() != nil && !this.GetRetries().Equal(that.GetRetries()) {
-		return nil, TrafficPolicyConflictError
+		conflicts = append(conflicts, "Retries")
 	}
 	if this.GetCorsPolicy() == nil {
 		this.CorsPolicy = that.CorsPolicy
 	} else if that.GetCorsPolicy() != nil && !this.GetCorsPolicy().Equal(that.GetCorsPolicy()) {
-		return nil, TrafficPolicyConflictError
+		conflicts = append(conflicts, "CorsPolicy")
 	}
 	if this.GetMirror() == nil {
 		this.Mirror = that.Mirror
 	} else if that.GetMirror() != nil && !this.GetMirror().Equal(that.GetMirror()) {
-		return nil, TrafficPolicyConflictError
+		conflicts = append(conflicts, "Mirror")
 	}
 	if this.GetHeaderManipulation() == nil {
 		this.HeaderManipulation = that.HeaderManipulation
 	} else if that.GetHeaderManipulation() != nil && !this.GetHeaderManipulation().Equal(that.GetHeaderManipulation()) {
-		return nil, TrafficPolicyConflictError
+		conflicts = append(conflicts, "HeaderManipulation")
+	}
+	if len(conflicts) != 0 {
+		return nil, TrafficPolicyConflictError(strings.Join(conflicts, ", "))
 	}
 	return this, nil
 }

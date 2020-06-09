@@ -5,7 +5,9 @@ package v1
 import (
 	"context"
 
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -84,6 +86,10 @@ type DeploymentReader interface {
 	ListDeployment(ctx context.Context, opts ...client.ListOption) (*DeploymentList, error)
 }
 
+// DeploymentTransitionFunction instructs the DeploymentWriter how to transition between an existing
+// Deployment object and a desired on an Upsert
+type DeploymentTransitionFunction func(existing, desired *Deployment) error
+
 // Writer knows how to create, delete, and update Deployments.
 type DeploymentWriter interface {
 	// Create saves the Deployment object.
@@ -100,6 +106,9 @@ type DeploymentWriter interface {
 
 	// DeleteAllOf deletes all Deployment objects matching the given options.
 	DeleteAllOfDeployment(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the Deployment object.
+	UpsertDeployment(ctx context.Context, obj *Deployment, transitionFuncs ...DeploymentTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a Deployment object.
@@ -167,6 +176,19 @@ func (c *deploymentClient) DeleteAllOfDeployment(ctx context.Context, opts ...cl
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
+func (c *deploymentClient) UpsertDeployment(ctx context.Context, obj *Deployment, transitionFuncs ...DeploymentTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*Deployment), desired.(*Deployment)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
 func (c *deploymentClient) UpdateDeploymentStatus(ctx context.Context, obj *Deployment, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
@@ -184,6 +206,10 @@ type ReplicaSetReader interface {
 	ListReplicaSet(ctx context.Context, opts ...client.ListOption) (*ReplicaSetList, error)
 }
 
+// ReplicaSetTransitionFunction instructs the ReplicaSetWriter how to transition between an existing
+// ReplicaSet object and a desired on an Upsert
+type ReplicaSetTransitionFunction func(existing, desired *ReplicaSet) error
+
 // Writer knows how to create, delete, and update ReplicaSets.
 type ReplicaSetWriter interface {
 	// Create saves the ReplicaSet object.
@@ -200,6 +226,9 @@ type ReplicaSetWriter interface {
 
 	// DeleteAllOf deletes all ReplicaSet objects matching the given options.
 	DeleteAllOfReplicaSet(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the ReplicaSet object.
+	UpsertReplicaSet(ctx context.Context, obj *ReplicaSet, transitionFuncs ...ReplicaSetTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a ReplicaSet object.
@@ -265,6 +294,19 @@ func (c *replicaSetClient) PatchReplicaSet(ctx context.Context, obj *ReplicaSet,
 func (c *replicaSetClient) DeleteAllOfReplicaSet(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &ReplicaSet{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *replicaSetClient) UpsertReplicaSet(ctx context.Context, obj *ReplicaSet, transitionFuncs ...ReplicaSetTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*ReplicaSet), desired.(*ReplicaSet)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *replicaSetClient) UpdateReplicaSetStatus(ctx context.Context, obj *ReplicaSet, opts ...client.UpdateOption) error {

@@ -34,6 +34,7 @@ var (
 		traffic_policy_translator.NewTrafficPolicyTranslatorLoop,
 		preprocess.NewTrafficPolicyPreprocessor,
 		preprocess.NewTrafficPolicyMerger,
+		selection.NewBaseResourceSelector,
 		selection.NewResourceSelector,
 		preprocess.NewTrafficPolicyValidator,
 	)

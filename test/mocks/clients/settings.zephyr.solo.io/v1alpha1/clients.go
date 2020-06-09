@@ -204,3 +204,22 @@ func (mr *MockSettingsClientMockRecorder) UpdateSettingsStatus(arg0, arg1 interf
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSettingsStatus", reflect.TypeOf((*MockSettingsClient)(nil).UpdateSettingsStatus), varargs...)
 }
+
+// UpsertSettings mocks base method.
+func (m *MockSettingsClient) UpsertSettings(arg0 context.Context, arg1 *v1alpha1.Settings, arg2 ...v1alpha1.SettingsTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertSettings", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertSettings indicates an expected call of UpsertSettings.
+func (mr *MockSettingsClientMockRecorder) UpsertSettings(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSettings", reflect.TypeOf((*MockSettingsClient)(nil).UpsertSettings), varargs...)
+}

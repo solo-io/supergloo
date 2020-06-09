@@ -58,6 +58,13 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+func MeshServiceReaderProvider(clients zephyr_discovery.Clientset) zephyr_discovery.MeshServiceReader {
+	return zephyr_discovery.MeshServiceClientFromClientsetProvider(clients)
+}
+func MeshWorkloadReaderProvider(clients zephyr_discovery.Clientset) zephyr_discovery.MeshWorkloadReader {
+	return zephyr_discovery.MeshWorkloadClientFromClientsetProvider(clients)
+}
+
 func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string) (clients *common.KubeClients, err error) {
 	wire.Build(
 		kubernetes.NewForConfig,
@@ -98,7 +105,9 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		zephyr_security.ClientsetFromConfigProvider,
 		zephyr_discovery.KubernetesClusterClientFromClientsetProvider,
 		zephyr_discovery.MeshServiceClientFromClientsetProvider,
+		MeshServiceReaderProvider,
 		zephyr_discovery.MeshWorkloadClientFromClientsetProvider,
+		MeshWorkloadReaderProvider,
 		zephyr_discovery.MeshClientFromClientsetProvider,
 		zephyr_networking.TrafficPolicyClientFromClientsetProvider,
 		zephyr_networking.AccessControlPolicyClientFromClientsetProvider,
