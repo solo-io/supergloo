@@ -56,8 +56,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
     - name: Testing
+      working-directory: ./test/e2e
       run: |
-        cd ./test/e2e && PATH=/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH VERSION=$GITHUB_SHA RUN_E2E=1 go test -timeout 30m -ginkgo.v
+        PATH=/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH VERSION=$GITHUB_SHA RUN_E2E=1 AWS_ACCESS_KEY_ID=${{ secrets.SOLO_BOT_AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.SOLO_BOT_AWS_SECRET_ACCESS_KEY }} go test -timeout 30m -ginkgo.v
     - name: Debug Info
       if: failure()
       run: |

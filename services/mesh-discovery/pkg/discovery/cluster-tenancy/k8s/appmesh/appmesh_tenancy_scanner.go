@@ -82,7 +82,7 @@ func (a *appmeshTenancyScanner) MeshFromSidecar(
 }
 
 func (a *appmeshTenancyScanner) ClusterHostsMesh(clusterName string, mesh *zephyr_discovery.Mesh) bool {
-	return utils.ContainsString(mesh.Spec.GetAwsAppMesh().Clusters, clusterName)
+	return utils.ContainsString(mesh.Spec.GetAwsAppMesh().GetClusters(), clusterName)
 }
 
 func (a *appmeshTenancyScanner) RegisterMesh(ctx context.Context, clusterName string, mesh *zephyr_discovery.Mesh) error {

@@ -295,6 +295,11 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(
 		return false
 	}
 
+	// If service not in same namespace as workload, continue
+	if service.GetNamespace() != meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace() {
+		return false
+	}
+
 	return labels.AreLabelsInWhiteList(service.Spec.Selector, meshWorkload.Spec.GetKubeController().GetLabels())
 }
 

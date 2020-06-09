@@ -7,24 +7,25 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	v1alpha1types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func StatusOf(something interface{}, kc KubeContext) func() v1alpha1types.Status_State {
+func StatusOf(something interface{}, kc KubeContext) func() zephyr_core_types.Status_State {
 	switch obj := something.(type) {
-	case v1alpha1.TrafficPolicy:
-		return func() v1alpha1types.Status_State { return StatusOfTrafficPolicy(obj, kc) }
-	case *v1alpha1.TrafficPolicy:
-		return func() v1alpha1types.Status_State { return StatusOfTrafficPolicy(*obj, kc) }
+	case zephyr_networking.TrafficPolicy:
+		return func() zephyr_core_types.Status_State { return StatusOfTrafficPolicy(obj, kc) }
+	case *zephyr_networking.TrafficPolicy:
+		return func() zephyr_core_types.Status_State { return StatusOfTrafficPolicy(*obj, kc) }
 	default:
 		Fail("unknown object")
 	}
 	panic("never happens")
 }
 
-func StatusOfTrafficPolicy(tp v1alpha1.TrafficPolicy, kc KubeContext) v1alpha1types.Status_State {
+func StatusOfTrafficPolicy(tp zephyr_networking.TrafficPolicy, kc KubeContext) zephyr_core_types.Status_State {
 	key := client.ObjectKey{
 		Name:      tp.Name,
 		Namespace: tp.Namespace,
@@ -32,6 +33,20 @@ func StatusOfTrafficPolicy(tp v1alpha1.TrafficPolicy, kc KubeContext) v1alpha1ty
 	newtp, err := kc.TrafficPolicyClient.GetTrafficPolicy(context.Background(), key)
 	Expect(err).NotTo(HaveOccurred())
 	return newtp.Status.GetTranslationStatus().GetState()
+}
+
+func KubeCluster(key client.ObjectKey, kc KubeContext) func() *zephyr_discovery.KubernetesCluster {
+	return func() *zephyr_discovery.KubernetesCluster {
+		kubeCluster, _ := kc.KubeClusterClient.GetKubernetesCluster(context.Background(), key)
+		return kubeCluster
+	}
+}
+
+func Mesh(key client.ObjectKey, kc KubeContext) func() *zephyr_discovery.Mesh {
+	return func() *zephyr_discovery.Mesh {
+		mesh, _ := kc.MeshClient.GetMesh(context.Background(), key)
+		return mesh
+	}
 }
 
 func MeshCtl(args string) error {
