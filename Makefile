@@ -117,7 +117,7 @@ MESH_DISCOVERY_OUTPUT_DIR=$(ROOTDIR)/$(MESH_DISCOVERY_DIR)/_output
 MESH_DISCOVERY_SOURCES=$(shell find $(MESH_DISCOVERY_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
 $(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64: $(MESH_DISCOVERY_SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_DISCOVERY_DIR)/cmd/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_DISCOVERY_DIR)/main.go
 
 .PHONY: mesh-discovery-docker
 mesh-discovery-docker: $(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64
@@ -132,7 +132,7 @@ MESH_NETWORKING_OUTPUT_DIR=$(ROOTDIR)/$(MESH_NETWORKING_DIR)/_output
 MESH_NETWORKING_SOURCES=$(shell find $(MESH_NETWORKING_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
 $(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64: $(MESH_NETWORKING_SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_NETWORKING_DIR)/cmd/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_NETWORKING_DIR)/main.go
 
 .PHONY: mesh-networking-docker
 mesh-networking-docker: $(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64
@@ -146,7 +146,7 @@ CSR_AGENT_OUTPUT_DIR=$(ROOTDIR)/$(CSR_AGENT_DIR)/_output
 CSR_AGENT_SOURCES=$(shell find $(CSR_AGENT_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
 $(CSR_AGENT_OUTPUT_DIR)/csr-agent-linux-amd64: $(CSR_AGENT_SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CSR_AGENT_DIR)/cmd/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CSR_AGENT_DIR)/main.go
 
 .PHONY: csr-agent-docker
 csr-agent-docker: $(CSR_AGENT_OUTPUT_DIR)/csr-agent-linux-amd64
