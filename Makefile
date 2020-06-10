@@ -106,7 +106,7 @@ generated-code:
 
 # $(1) name of container
 define build_container
-docker build -t ${IMAGE_REPO}/$(1):$(VERSION) $(ROOTDIR)/cmd/$(1)/_output -f $(ROOTDIR)/cmd/$(1)/cmd/Dockerfile;
+docker build -t ${IMAGE_REPO}/$(1):$(VERSION) $(ROOTDIR)/cmd/$(1)/_output -f $(ROOTDIR)/cmd/$(1)/Dockerfile;
 endef
 
 #----------------------------------------------------------------------------------
