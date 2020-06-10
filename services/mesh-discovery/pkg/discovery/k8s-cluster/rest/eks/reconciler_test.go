@@ -79,9 +79,9 @@ var _ = Describe("Reconciler", func() {
 	) (sets.String, map[string]string) {
 		nextToken := "next-token"
 		awsCluster1Name := "cluster1"
-		smhCluster1Name := metadata.BuildEksClusterName(awsCluster1Name, region)
+		smhCluster1Name := metadata.BuildEksKubernetesClusterName(awsCluster1Name, region)
 		awsCluster2Name := "cluster2"
-		smhCluster2Name := metadata.BuildEksClusterName(awsCluster2Name, region)
+		smhCluster2Name := metadata.BuildEksKubernetesClusterName(awsCluster2Name, region)
 		smhToAwsClusterNames := map[string]string{
 			smhCluster1Name: awsCluster1Name,
 			smhCluster2Name: awsCluster2Name,

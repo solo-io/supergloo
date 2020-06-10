@@ -275,7 +275,8 @@ func isServiceBackedByWorkload(
 	meshService *smh_discovery.MeshService,
 	meshWorkload *smh_discovery.MeshWorkload,
 ) bool {
-	if len(meshService.Spec.GetKubeService().GetWorkloadSelectorLabels()) == 0 ||
+	if meshService.Spec.GetKubeService().GetRef().GetNamespace() != meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace() ||
+		len(meshService.Spec.GetKubeService().GetWorkloadSelectorLabels()) == 0 ||
 		len(meshWorkload.Spec.GetKubeController().GetLabels()) == 0 {
 		return false
 	}

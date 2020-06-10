@@ -6,8 +6,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	v1alpha1types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
-	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -17,7 +17,7 @@ var _ = Describe("HappyPath", func() {
 	AfterEach(func() {
 		testLabels := map[string]string{"test": "true"}
 		opts := &client.DeleteAllOfOptions{}
-		opts.LabelSelector = labels.SelectorFromSet(labels.Set(testLabels))
+		opts.LabelSelector = labels.SelectorFromSet(testLabels)
 		opts.Namespace = "service-mesh-hub"
 		env.Management.TrafficPolicyClient.DeleteAllOfTrafficPolicy(context.Background(), opts)
 	})
@@ -34,13 +34,13 @@ var _ = Describe("HappyPath", func() {
 	})
 
 	applyTrafficPolicy := func(tpYaml string) {
-		var tp v1alpha1.TrafficPolicy
+		var tp smh_networking.TrafficPolicy
 		ParseYaml(tpYaml, &tp)
 		err := env.Management.TrafficPolicyClient.CreateTrafficPolicy(context.Background(), &tp)
 		Expect(err).NotTo(HaveOccurred())
 		// see that it was accepted
 
-		Eventually(StatusOf(tp, env.Management), "1m", "1s").Should(Equal(v1alpha1types.Status_ACCEPTED))
+		Eventually(StatusOf(tp, env.Management), "1m", "1s").Should(Equal(smh_core_types.Status_ACCEPTED))
 	}
 
 	curlReviews := func() string {

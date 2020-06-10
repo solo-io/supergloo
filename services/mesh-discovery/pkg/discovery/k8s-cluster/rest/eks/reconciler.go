@@ -147,7 +147,7 @@ func (e *eksReconciler) fetchEksClustersOnAWS(
 			if !matched {
 				continue
 			}
-			smhClusterName := metadata.BuildEksClusterName(clusterName, region)
+			smhClusterName := metadata.BuildEksKubernetesClusterName(clusterName, region)
 			clusterNames = append(clusterNames, smhClusterName)
 			smhToAwsClusterNames[smhClusterName] = clusterName
 		}

@@ -46,22 +46,18 @@ func (a *appmeshTranslationReconciler) Reconcile(
 		return nil
 	}
 	if vm == nil {
-		// Delete all translated Appmesh resources.
-		return a.reconcile(ctx, mesh, nil, nil, nil)
+		// Remove all backends from VirtualNodes, preventing workloads from talking to any service.
+		return a.reconcileWithLimitedRoutability(ctx, mesh)
 	}
-	// Be default, configure Appmesh envoy sidecars to allow traffic from any workload to any service.
-	return a.reconcileWithDisabledAccessControl(ctx, mesh)
+	// Be default, configure Appmesh envoy sidecars to allow workloads to talk to any service.
+	return a.reconcileWithCompleteRoutability(ctx, mesh)
 }
 
 /*
 	TODO: wire up this method when SMH API exposes sidecar configuration options
-	For every services declared as a target in at least one AccessControlPolicy, create an Appmesh VirtualService
-	that routes to the VirtualNodes for the services' backing workloads.
-
-	For every workload declared as a source in at least one AccessControlPolicy, create an Appmesh VirtualNode
-	with VirtualServices corresponding to ACP declared upstream services as backends.
+	Do not permit workloads to communicate to any other service in the mesh.
 */
-func (a *appmeshTranslationReconciler) reconcileWithEnforcedAccessControl(
+func (a *appmeshTranslationReconciler) reconcileWithLimitedRoutability(
 	ctx context.Context,
 	mesh *smh_discovery.Mesh,
 ) error {
@@ -69,34 +65,15 @@ func (a *appmeshTranslationReconciler) reconcileWithEnforcedAccessControl(
 	if err != nil {
 		return err
 	}
-	servicesWithACP, err := a.dao.GetServicesWithACP(ctx, mesh)
-	if err != nil {
-		return err
-	}
-	workloadsWithACP, workloadsToUpstreamServices, err := a.dao.GetWorkloadsToUpstreamServicesWithACP(ctx, mesh)
-	if err != nil {
-		return err
-	}
-	// Filter out services/workloads that are not declared in ACPs
-	for service, _ := range servicesToBackingWorkloads {
-		if !servicesWithACP.Has(service) {
-			delete(servicesToBackingWorkloads, service)
-		}
-	}
-	for workload, _ := range workloadsToBackingServices {
-		if !workloadsWithACP.Has(workload) {
-			delete(workloadsToBackingServices, workload)
-		}
-	}
-	// Create a route to allServices, and to upstream services
-	err = a.reconcile(ctx, mesh, servicesToBackingWorkloads, workloadsToBackingServices, workloadsToUpstreamServices)
+	// Passing nil for `workloadsToUpstreamServices` prevents any workload from communicating to any service.
+	err = a.reconcile(ctx, mesh, servicesToBackingWorkloads, workloadsToBackingServices, nil)
 	return err
 }
 
 /*
 	Configure Appmesh envoy sidecars to allow traffic between any (workload, service) pair.
 */
-func (a *appmeshTranslationReconciler) reconcileWithDisabledAccessControl(
+func (a *appmeshTranslationReconciler) reconcileWithCompleteRoutability(
 	ctx context.Context,
 	mesh *smh_discovery.Mesh,
 ) error {
