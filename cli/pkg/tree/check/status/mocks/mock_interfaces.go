@@ -14,30 +14,30 @@ import (
 	status "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
 )
 
-// MockStatusClient is a mock of StatusClient interface
+// MockStatusClient is a mock of StatusClient interface.
 type MockStatusClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockStatusClientMockRecorder
 }
 
-// MockStatusClientMockRecorder is the mock recorder for MockStatusClient
+// MockStatusClientMockRecorder is the mock recorder for MockStatusClient.
 type MockStatusClientMockRecorder struct {
 	mock *MockStatusClient
 }
 
-// NewMockStatusClient creates a new mock instance
+// NewMockStatusClient creates a new mock instance.
 func NewMockStatusClient(ctrl *gomock.Controller) *MockStatusClient {
 	mock := &MockStatusClient{ctrl: ctrl}
 	mock.recorder = &MockStatusClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockStatusClient) EXPECT() *MockStatusClientMockRecorder {
 	return m.recorder
 }
 
-// Check mocks base method
+// Check mocks base method.
 func (m *MockStatusClient) Check(ctx context.Context, installNamespace string, healthCheckSuite healthcheck_types.HealthCheckSuite) *status.StatusReport {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Check", ctx, installNamespace, healthCheckSuite)
@@ -45,42 +45,42 @@ func (m *MockStatusClient) Check(ctx context.Context, installNamespace string, h
 	return ret0
 }
 
-// Check indicates an expected call of Check
+// Check indicates an expected call of Check.
 func (mr *MockStatusClientMockRecorder) Check(ctx, installNamespace, healthCheckSuite interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Check", reflect.TypeOf((*MockStatusClient)(nil).Check), ctx, installNamespace, healthCheckSuite)
 }
 
-// MockStatusPrinter is a mock of StatusPrinter interface
+// MockStatusPrinter is a mock of StatusPrinter interface.
 type MockStatusPrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockStatusPrinterMockRecorder
 }
 
-// MockStatusPrinterMockRecorder is the mock recorder for MockStatusPrinter
+// MockStatusPrinterMockRecorder is the mock recorder for MockStatusPrinter.
 type MockStatusPrinterMockRecorder struct {
 	mock *MockStatusPrinter
 }
 
-// NewMockStatusPrinter creates a new mock instance
+// NewMockStatusPrinter creates a new mock instance.
 func NewMockStatusPrinter(ctrl *gomock.Controller) *MockStatusPrinter {
 	mock := &MockStatusPrinter{ctrl: ctrl}
 	mock.recorder = &MockStatusPrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockStatusPrinter) EXPECT() *MockStatusPrinterMockRecorder {
 	return m.recorder
 }
 
-// Print mocks base method
+// Print mocks base method.
 func (m *MockStatusPrinter) Print(out io.Writer, report *status.StatusReport) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Print", out, report)
 }
 
-// Print indicates an expected call of Print
+// Print indicates an expected call of Print.
 func (mr *MockStatusPrinterMockRecorder) Print(out, report interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockStatusPrinter)(nil).Print), out, report)

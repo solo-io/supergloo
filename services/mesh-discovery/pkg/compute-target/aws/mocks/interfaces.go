@@ -12,30 +12,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockRestAPIDiscoveryReconciler is a mock of RestAPIDiscoveryReconciler interface
+// MockRestAPIDiscoveryReconciler is a mock of RestAPIDiscoveryReconciler interface.
 type MockRestAPIDiscoveryReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockRestAPIDiscoveryReconcilerMockRecorder
 }
 
-// MockRestAPIDiscoveryReconcilerMockRecorder is the mock recorder for MockRestAPIDiscoveryReconciler
+// MockRestAPIDiscoveryReconcilerMockRecorder is the mock recorder for MockRestAPIDiscoveryReconciler.
 type MockRestAPIDiscoveryReconcilerMockRecorder struct {
 	mock *MockRestAPIDiscoveryReconciler
 }
 
-// NewMockRestAPIDiscoveryReconciler creates a new mock instance
+// NewMockRestAPIDiscoveryReconciler creates a new mock instance.
 func NewMockRestAPIDiscoveryReconciler(ctrl *gomock.Controller) *MockRestAPIDiscoveryReconciler {
 	mock := &MockRestAPIDiscoveryReconciler{ctrl: ctrl}
 	mock.recorder = &MockRestAPIDiscoveryReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRestAPIDiscoveryReconciler) EXPECT() *MockRestAPIDiscoveryReconcilerMockRecorder {
 	return m.recorder
 }
 
-// Reconcile mocks base method
+// Reconcile mocks base method.
 func (m *MockRestAPIDiscoveryReconciler) Reconcile(ctx context.Context, creds *credentials.Credentials, accountID string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Reconcile", ctx, creds, accountID)
@@ -43,13 +43,13 @@ func (m *MockRestAPIDiscoveryReconciler) Reconcile(ctx context.Context, creds *c
 	return ret0
 }
 
-// Reconcile indicates an expected call of Reconcile
+// Reconcile indicates an expected call of Reconcile.
 func (mr *MockRestAPIDiscoveryReconcilerMockRecorder) Reconcile(ctx, creds, accountID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reconcile", reflect.TypeOf((*MockRestAPIDiscoveryReconciler)(nil).Reconcile), ctx, creds, accountID)
 }
 
-// GetName mocks base method
+// GetName mocks base method.
 func (m *MockRestAPIDiscoveryReconciler) GetName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetName")
@@ -57,7 +57,7 @@ func (m *MockRestAPIDiscoveryReconciler) GetName() string {
 	return ret0
 }
 
-// GetName indicates an expected call of GetName
+// GetName indicates an expected call of GetName.
 func (mr *MockRestAPIDiscoveryReconcilerMockRecorder) GetName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetName", reflect.TypeOf((*MockRestAPIDiscoveryReconciler)(nil).GetName))

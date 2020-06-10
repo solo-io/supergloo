@@ -11,30 +11,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockAppmeshMatcher is a mock of AppmeshMatcher interface
+// MockAppmeshMatcher is a mock of AppmeshMatcher interface.
 type MockAppmeshMatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockAppmeshMatcherMockRecorder
 }
 
-// MockAppmeshMatcherMockRecorder is the mock recorder for MockAppmeshMatcher
+// MockAppmeshMatcherMockRecorder is the mock recorder for MockAppmeshMatcher.
 type MockAppmeshMatcherMockRecorder struct {
 	mock *MockAppmeshMatcher
 }
 
-// NewMockAppmeshMatcher creates a new mock instance
+// NewMockAppmeshMatcher creates a new mock instance.
 func NewMockAppmeshMatcher(ctrl *gomock.Controller) *MockAppmeshMatcher {
 	mock := &MockAppmeshMatcher{ctrl: ctrl}
 	mock.recorder = &MockAppmeshMatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAppmeshMatcher) EXPECT() *MockAppmeshMatcherMockRecorder {
 	return m.recorder
 }
 
-// AreRoutesEqual mocks base method
+// AreRoutesEqual mocks base method.
 func (m *MockAppmeshMatcher) AreRoutesEqual(routeA, routeB *appmesh.RouteData) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AreRoutesEqual", routeA, routeB)
@@ -42,13 +42,13 @@ func (m *MockAppmeshMatcher) AreRoutesEqual(routeA, routeB *appmesh.RouteData) b
 	return ret0
 }
 
-// AreRoutesEqual indicates an expected call of AreRoutesEqual
+// AreRoutesEqual indicates an expected call of AreRoutesEqual.
 func (mr *MockAppmeshMatcherMockRecorder) AreRoutesEqual(routeA, routeB interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AreRoutesEqual", reflect.TypeOf((*MockAppmeshMatcher)(nil).AreRoutesEqual), routeA, routeB)
 }
 
-// AreVirtualNodesEqual mocks base method
+// AreVirtualNodesEqual mocks base method.
 func (m *MockAppmeshMatcher) AreVirtualNodesEqual(virtualNodeA, virtualNodeB *appmesh.VirtualNodeData) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AreVirtualNodesEqual", virtualNodeA, virtualNodeB)
@@ -56,13 +56,13 @@ func (m *MockAppmeshMatcher) AreVirtualNodesEqual(virtualNodeA, virtualNodeB *ap
 	return ret0
 }
 
-// AreVirtualNodesEqual indicates an expected call of AreVirtualNodesEqual
+// AreVirtualNodesEqual indicates an expected call of AreVirtualNodesEqual.
 func (mr *MockAppmeshMatcherMockRecorder) AreVirtualNodesEqual(virtualNodeA, virtualNodeB interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AreVirtualNodesEqual", reflect.TypeOf((*MockAppmeshMatcher)(nil).AreVirtualNodesEqual), virtualNodeA, virtualNodeB)
 }
 
-// AreVirtualServicesEqual mocks base method
+// AreVirtualServicesEqual mocks base method.
 func (m *MockAppmeshMatcher) AreVirtualServicesEqual(virtualServiceA, virtualServiceB *appmesh.VirtualServiceData) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AreVirtualServicesEqual", virtualServiceA, virtualServiceB)
@@ -70,13 +70,13 @@ func (m *MockAppmeshMatcher) AreVirtualServicesEqual(virtualServiceA, virtualSer
 	return ret0
 }
 
-// AreVirtualServicesEqual indicates an expected call of AreVirtualServicesEqual
+// AreVirtualServicesEqual indicates an expected call of AreVirtualServicesEqual.
 func (mr *MockAppmeshMatcherMockRecorder) AreVirtualServicesEqual(virtualServiceA, virtualServiceB interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AreVirtualServicesEqual", reflect.TypeOf((*MockAppmeshMatcher)(nil).AreVirtualServicesEqual), virtualServiceA, virtualServiceB)
 }
 
-// AreVirtualRoutersEqual mocks base method
+// AreVirtualRoutersEqual mocks base method.
 func (m *MockAppmeshMatcher) AreVirtualRoutersEqual(virtualRouterA, virtualRouterB *appmesh.VirtualRouterData) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AreVirtualRoutersEqual", virtualRouterA, virtualRouterB)
@@ -84,7 +84,7 @@ func (m *MockAppmeshMatcher) AreVirtualRoutersEqual(virtualRouterA, virtualRoute
 	return ret0
 }
 
-// AreVirtualRoutersEqual indicates an expected call of AreVirtualRoutersEqual
+// AreVirtualRoutersEqual indicates an expected call of AreVirtualRoutersEqual.
 func (mr *MockAppmeshMatcherMockRecorder) AreVirtualRoutersEqual(virtualRouterA, virtualRouterB interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AreVirtualRoutersEqual", reflect.TypeOf((*MockAppmeshMatcher)(nil).AreVirtualRoutersEqual), virtualRouterA, virtualRouterB)

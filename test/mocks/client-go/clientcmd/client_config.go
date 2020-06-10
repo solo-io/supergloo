@@ -13,30 +13,30 @@ import (
 	api "k8s.io/client-go/tools/clientcmd/api"
 )
 
-// MockClientConfig is a mock of ClientConfig interface
+// MockClientConfig is a mock of ClientConfig interface.
 type MockClientConfig struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientConfigMockRecorder
 }
 
-// MockClientConfigMockRecorder is the mock recorder for MockClientConfig
+// MockClientConfigMockRecorder is the mock recorder for MockClientConfig.
 type MockClientConfigMockRecorder struct {
 	mock *MockClientConfig
 }
 
-// NewMockClientConfig creates a new mock instance
+// NewMockClientConfig creates a new mock instance.
 func NewMockClientConfig(ctrl *gomock.Controller) *MockClientConfig {
 	mock := &MockClientConfig{ctrl: ctrl}
 	mock.recorder = &MockClientConfigMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockClientConfig) EXPECT() *MockClientConfigMockRecorder {
 	return m.recorder
 }
 
-// ClientConfig mocks base method
+// ClientConfig mocks base method.
 func (m *MockClientConfig) ClientConfig() (*rest.Config, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClientConfig")
@@ -45,13 +45,13 @@ func (m *MockClientConfig) ClientConfig() (*rest.Config, error) {
 	return ret0, ret1
 }
 
-// ClientConfig indicates an expected call of ClientConfig
+// ClientConfig indicates an expected call of ClientConfig.
 func (mr *MockClientConfigMockRecorder) ClientConfig() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClientConfig", reflect.TypeOf((*MockClientConfig)(nil).ClientConfig))
 }
 
-// ConfigAccess mocks base method
+// ConfigAccess mocks base method.
 func (m *MockClientConfig) ConfigAccess() clientcmd.ConfigAccess {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigAccess")
@@ -59,13 +59,13 @@ func (m *MockClientConfig) ConfigAccess() clientcmd.ConfigAccess {
 	return ret0
 }
 
-// ConfigAccess indicates an expected call of ConfigAccess
+// ConfigAccess indicates an expected call of ConfigAccess.
 func (mr *MockClientConfigMockRecorder) ConfigAccess() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigAccess", reflect.TypeOf((*MockClientConfig)(nil).ConfigAccess))
 }
 
-// Namespace mocks base method
+// Namespace mocks base method.
 func (m *MockClientConfig) Namespace() (string, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Namespace")
@@ -75,13 +75,13 @@ func (m *MockClientConfig) Namespace() (string, bool, error) {
 	return ret0, ret1, ret2
 }
 
-// Namespace indicates an expected call of Namespace
+// Namespace indicates an expected call of Namespace.
 func (mr *MockClientConfigMockRecorder) Namespace() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Namespace", reflect.TypeOf((*MockClientConfig)(nil).Namespace))
 }
 
-// RawConfig mocks base method
+// RawConfig mocks base method.
 func (m *MockClientConfig) RawConfig() (api.Config, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RawConfig")
@@ -90,7 +90,7 @@ func (m *MockClientConfig) RawConfig() (api.Config, error) {
 	return ret0, ret1
 }
 
-// RawConfig indicates an expected call of RawConfig
+// RawConfig indicates an expected call of RawConfig.
 func (mr *MockClientConfigMockRecorder) RawConfig() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RawConfig", reflect.TypeOf((*MockClientConfig)(nil).RawConfig))

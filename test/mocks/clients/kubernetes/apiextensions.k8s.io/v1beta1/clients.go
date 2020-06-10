@@ -15,30 +15,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockCustomResourceDefinitionClient is a mock of CustomResourceDefinitionClient interface
+// MockCustomResourceDefinitionClient is a mock of CustomResourceDefinitionClient interface.
 type MockCustomResourceDefinitionClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockCustomResourceDefinitionClientMockRecorder
 }
 
-// MockCustomResourceDefinitionClientMockRecorder is the mock recorder for MockCustomResourceDefinitionClient
+// MockCustomResourceDefinitionClientMockRecorder is the mock recorder for MockCustomResourceDefinitionClient.
 type MockCustomResourceDefinitionClientMockRecorder struct {
 	mock *MockCustomResourceDefinitionClient
 }
 
-// NewMockCustomResourceDefinitionClient creates a new mock instance
+// NewMockCustomResourceDefinitionClient creates a new mock instance.
 func NewMockCustomResourceDefinitionClient(ctrl *gomock.Controller) *MockCustomResourceDefinitionClient {
 	mock := &MockCustomResourceDefinitionClient{ctrl: ctrl}
 	mock.recorder = &MockCustomResourceDefinitionClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCustomResourceDefinitionClient) EXPECT() *MockCustomResourceDefinitionClientMockRecorder {
 	return m.recorder
 }
 
-// CreateCustomResourceDefinition mocks base method
+// CreateCustomResourceDefinition mocks base method.
 func (m *MockCustomResourceDefinitionClient) CreateCustomResourceDefinition(arg0 context.Context, arg1 *v1beta10.CustomResourceDefinition, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -50,14 +50,14 @@ func (m *MockCustomResourceDefinitionClient) CreateCustomResourceDefinition(arg0
 	return ret0
 }
 
-// CreateCustomResourceDefinition indicates an expected call of CreateCustomResourceDefinition
+// CreateCustomResourceDefinition indicates an expected call of CreateCustomResourceDefinition.
 func (mr *MockCustomResourceDefinitionClientMockRecorder) CreateCustomResourceDefinition(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCustomResourceDefinition", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).CreateCustomResourceDefinition), varargs...)
 }
 
-// DeleteAllOfCustomResourceDefinition mocks base method
+// DeleteAllOfCustomResourceDefinition mocks base method.
 func (m *MockCustomResourceDefinitionClient) DeleteAllOfCustomResourceDefinition(arg0 context.Context, arg1 ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
@@ -69,14 +69,14 @@ func (m *MockCustomResourceDefinitionClient) DeleteAllOfCustomResourceDefinition
 	return ret0
 }
 
-// DeleteAllOfCustomResourceDefinition indicates an expected call of DeleteAllOfCustomResourceDefinition
+// DeleteAllOfCustomResourceDefinition indicates an expected call of DeleteAllOfCustomResourceDefinition.
 func (mr *MockCustomResourceDefinitionClientMockRecorder) DeleteAllOfCustomResourceDefinition(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfCustomResourceDefinition", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).DeleteAllOfCustomResourceDefinition), varargs...)
 }
 
-// DeleteCustomResourceDefinition mocks base method
+// DeleteCustomResourceDefinition mocks base method.
 func (m *MockCustomResourceDefinitionClient) DeleteCustomResourceDefinition(arg0 context.Context, arg1 types.NamespacedName, arg2 ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -88,14 +88,14 @@ func (m *MockCustomResourceDefinitionClient) DeleteCustomResourceDefinition(arg0
 	return ret0
 }
 
-// DeleteCustomResourceDefinition indicates an expected call of DeleteCustomResourceDefinition
+// DeleteCustomResourceDefinition indicates an expected call of DeleteCustomResourceDefinition.
 func (mr *MockCustomResourceDefinitionClientMockRecorder) DeleteCustomResourceDefinition(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCustomResourceDefinition", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).DeleteCustomResourceDefinition), varargs...)
 }
 
-// GetCustomResourceDefinition mocks base method
+// GetCustomResourceDefinition mocks base method.
 func (m *MockCustomResourceDefinitionClient) GetCustomResourceDefinition(arg0 context.Context, arg1 types.NamespacedName) (*v1beta10.CustomResourceDefinition, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCustomResourceDefinition", arg0, arg1)
@@ -104,13 +104,13 @@ func (m *MockCustomResourceDefinitionClient) GetCustomResourceDefinition(arg0 co
 	return ret0, ret1
 }
 
-// GetCustomResourceDefinition indicates an expected call of GetCustomResourceDefinition
+// GetCustomResourceDefinition indicates an expected call of GetCustomResourceDefinition.
 func (mr *MockCustomResourceDefinitionClientMockRecorder) GetCustomResourceDefinition(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomResourceDefinition", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).GetCustomResourceDefinition), arg0, arg1)
 }
 
-// ListCustomResourceDefinition mocks base method
+// ListCustomResourceDefinition mocks base method.
 func (m *MockCustomResourceDefinitionClient) ListCustomResourceDefinition(arg0 context.Context, arg1 ...client.ListOption) (*v1beta10.CustomResourceDefinitionList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
@@ -123,14 +123,14 @@ func (m *MockCustomResourceDefinitionClient) ListCustomResourceDefinition(arg0 c
 	return ret0, ret1
 }
 
-// ListCustomResourceDefinition indicates an expected call of ListCustomResourceDefinition
+// ListCustomResourceDefinition indicates an expected call of ListCustomResourceDefinition.
 func (mr *MockCustomResourceDefinitionClientMockRecorder) ListCustomResourceDefinition(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCustomResourceDefinition", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).ListCustomResourceDefinition), varargs...)
 }
 
-// PatchCustomResourceDefinition mocks base method
+// PatchCustomResourceDefinition mocks base method.
 func (m *MockCustomResourceDefinitionClient) PatchCustomResourceDefinition(arg0 context.Context, arg1 *v1beta10.CustomResourceDefinition, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
@@ -142,14 +142,14 @@ func (m *MockCustomResourceDefinitionClient) PatchCustomResourceDefinition(arg0 
 	return ret0
 }
 
-// PatchCustomResourceDefinition indicates an expected call of PatchCustomResourceDefinition
+// PatchCustomResourceDefinition indicates an expected call of PatchCustomResourceDefinition.
 func (mr *MockCustomResourceDefinitionClientMockRecorder) PatchCustomResourceDefinition(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCustomResourceDefinition", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).PatchCustomResourceDefinition), varargs...)
 }
 
-// PatchCustomResourceDefinitionStatus mocks base method
+// PatchCustomResourceDefinitionStatus mocks base method.
 func (m *MockCustomResourceDefinitionClient) PatchCustomResourceDefinitionStatus(arg0 context.Context, arg1 *v1beta10.CustomResourceDefinition, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
@@ -161,14 +161,14 @@ func (m *MockCustomResourceDefinitionClient) PatchCustomResourceDefinitionStatus
 	return ret0
 }
 
-// PatchCustomResourceDefinitionStatus indicates an expected call of PatchCustomResourceDefinitionStatus
+// PatchCustomResourceDefinitionStatus indicates an expected call of PatchCustomResourceDefinitionStatus.
 func (mr *MockCustomResourceDefinitionClientMockRecorder) PatchCustomResourceDefinitionStatus(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCustomResourceDefinitionStatus", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).PatchCustomResourceDefinitionStatus), varargs...)
 }
 
-// UpdateCustomResourceDefinition mocks base method
+// UpdateCustomResourceDefinition mocks base method.
 func (m *MockCustomResourceDefinitionClient) UpdateCustomResourceDefinition(arg0 context.Context, arg1 *v1beta10.CustomResourceDefinition, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -180,14 +180,14 @@ func (m *MockCustomResourceDefinitionClient) UpdateCustomResourceDefinition(arg0
 	return ret0
 }
 
-// UpdateCustomResourceDefinition indicates an expected call of UpdateCustomResourceDefinition
+// UpdateCustomResourceDefinition indicates an expected call of UpdateCustomResourceDefinition.
 func (mr *MockCustomResourceDefinitionClientMockRecorder) UpdateCustomResourceDefinition(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCustomResourceDefinition", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).UpdateCustomResourceDefinition), varargs...)
 }
 
-// UpdateCustomResourceDefinitionStatus mocks base method
+// UpdateCustomResourceDefinitionStatus mocks base method.
 func (m *MockCustomResourceDefinitionClient) UpdateCustomResourceDefinitionStatus(arg0 context.Context, arg1 *v1beta10.CustomResourceDefinition, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -199,14 +199,14 @@ func (m *MockCustomResourceDefinitionClient) UpdateCustomResourceDefinitionStatu
 	return ret0
 }
 
-// UpdateCustomResourceDefinitionStatus indicates an expected call of UpdateCustomResourceDefinitionStatus
+// UpdateCustomResourceDefinitionStatus indicates an expected call of UpdateCustomResourceDefinitionStatus.
 func (mr *MockCustomResourceDefinitionClientMockRecorder) UpdateCustomResourceDefinitionStatus(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCustomResourceDefinitionStatus", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).UpdateCustomResourceDefinitionStatus), varargs...)
 }
 
-// UpsertCustomResourceDefinition mocks base method
+// UpsertCustomResourceDefinition mocks base method.
 func (m *MockCustomResourceDefinitionClient) UpsertCustomResourceDefinition(arg0 context.Context, arg1 *v1beta10.CustomResourceDefinition, arg2 ...v1beta1.CustomResourceDefinitionTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -218,7 +218,7 @@ func (m *MockCustomResourceDefinitionClient) UpsertCustomResourceDefinition(arg0
 	return ret0
 }
 
-// UpsertCustomResourceDefinition indicates an expected call of UpsertCustomResourceDefinition
+// UpsertCustomResourceDefinition indicates an expected call of UpsertCustomResourceDefinition.
 func (mr *MockCustomResourceDefinitionClientMockRecorder) UpsertCustomResourceDefinition(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)

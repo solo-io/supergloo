@@ -14,30 +14,30 @@ import (
 	acp_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 )
 
-// MockAcpTranslatorLoop is a mock of AcpTranslatorLoop interface
+// MockAcpTranslatorLoop is a mock of AcpTranslatorLoop interface.
 type MockAcpTranslatorLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockAcpTranslatorLoopMockRecorder
 }
 
-// MockAcpTranslatorLoopMockRecorder is the mock recorder for MockAcpTranslatorLoop
+// MockAcpTranslatorLoopMockRecorder is the mock recorder for MockAcpTranslatorLoop.
 type MockAcpTranslatorLoopMockRecorder struct {
 	mock *MockAcpTranslatorLoop
 }
 
-// NewMockAcpTranslatorLoop creates a new mock instance
+// NewMockAcpTranslatorLoop creates a new mock instance.
 func NewMockAcpTranslatorLoop(ctrl *gomock.Controller) *MockAcpTranslatorLoop {
 	mock := &MockAcpTranslatorLoop{ctrl: ctrl}
 	mock.recorder = &MockAcpTranslatorLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAcpTranslatorLoop) EXPECT() *MockAcpTranslatorLoopMockRecorder {
 	return m.recorder
 }
 
-// Start mocks base method
+// Start mocks base method.
 func (m *MockAcpTranslatorLoop) Start(ctx context.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start", ctx)
@@ -45,36 +45,36 @@ func (m *MockAcpTranslatorLoop) Start(ctx context.Context) error {
 	return ret0
 }
 
-// Start indicates an expected call of Start
+// Start indicates an expected call of Start.
 func (mr *MockAcpTranslatorLoopMockRecorder) Start(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockAcpTranslatorLoop)(nil).Start), ctx)
 }
 
-// MockAcpMeshTranslator is a mock of AcpMeshTranslator interface
+// MockAcpMeshTranslator is a mock of AcpMeshTranslator interface.
 type MockAcpMeshTranslator struct {
 	ctrl     *gomock.Controller
 	recorder *MockAcpMeshTranslatorMockRecorder
 }
 
-// MockAcpMeshTranslatorMockRecorder is the mock recorder for MockAcpMeshTranslator
+// MockAcpMeshTranslatorMockRecorder is the mock recorder for MockAcpMeshTranslator.
 type MockAcpMeshTranslatorMockRecorder struct {
 	mock *MockAcpMeshTranslator
 }
 
-// NewMockAcpMeshTranslator creates a new mock instance
+// NewMockAcpMeshTranslator creates a new mock instance.
 func NewMockAcpMeshTranslator(ctrl *gomock.Controller) *MockAcpMeshTranslator {
 	mock := &MockAcpMeshTranslator{ctrl: ctrl}
 	mock.recorder = &MockAcpMeshTranslatorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAcpMeshTranslator) EXPECT() *MockAcpMeshTranslatorMockRecorder {
 	return m.recorder
 }
 
-// Name mocks base method
+// Name mocks base method.
 func (m *MockAcpMeshTranslator) Name() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Name")
@@ -82,13 +82,13 @@ func (m *MockAcpMeshTranslator) Name() string {
 	return ret0
 }
 
-// Name indicates an expected call of Name
+// Name indicates an expected call of Name.
 func (mr *MockAcpMeshTranslatorMockRecorder) Name() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockAcpMeshTranslator)(nil).Name))
 }
 
-// Translate mocks base method
+// Translate mocks base method.
 func (m *MockAcpMeshTranslator) Translate(ctx context.Context, targetServices []acp_translator.TargetService, acp *v1alpha1.AccessControlPolicy) *types.AccessControlPolicyStatus_TranslatorError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", ctx, targetServices, acp)
@@ -96,7 +96,7 @@ func (m *MockAcpMeshTranslator) Translate(ctx context.Context, targetServices []
 	return ret0
 }
 
-// Translate indicates an expected call of Translate
+// Translate indicates an expected call of Translate.
 func (mr *MockAcpMeshTranslatorMockRecorder) Translate(ctx, targetServices, acp interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockAcpMeshTranslator)(nil).Translate), ctx, targetServices, acp)

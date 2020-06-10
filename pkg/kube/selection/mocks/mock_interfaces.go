@@ -13,30 +13,30 @@ import (
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 )
 
-// MockBaseResourceSelector is a mock of BaseResourceSelector interface
+// MockBaseResourceSelector is a mock of BaseResourceSelector interface.
 type MockBaseResourceSelector struct {
 	ctrl     *gomock.Controller
 	recorder *MockBaseResourceSelectorMockRecorder
 }
 
-// MockBaseResourceSelectorMockRecorder is the mock recorder for MockBaseResourceSelector
+// MockBaseResourceSelectorMockRecorder is the mock recorder for MockBaseResourceSelector.
 type MockBaseResourceSelectorMockRecorder struct {
 	mock *MockBaseResourceSelector
 }
 
-// NewMockBaseResourceSelector creates a new mock instance
+// NewMockBaseResourceSelector creates a new mock instance.
 func NewMockBaseResourceSelector(ctrl *gomock.Controller) *MockBaseResourceSelector {
 	mock := &MockBaseResourceSelector{ctrl: ctrl}
 	mock.recorder = &MockBaseResourceSelectorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockBaseResourceSelector) EXPECT() *MockBaseResourceSelectorMockRecorder {
 	return m.recorder
 }
 
-// FilterMeshServicesByServiceSelector mocks base method
+// FilterMeshServicesByServiceSelector mocks base method.
 func (m *MockBaseResourceSelector) FilterMeshServicesByServiceSelector(meshServices []*v1alpha1.MeshService, selector *types.ServiceSelector) ([]*v1alpha1.MeshService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FilterMeshServicesByServiceSelector", meshServices, selector)
@@ -45,13 +45,13 @@ func (m *MockBaseResourceSelector) FilterMeshServicesByServiceSelector(meshServi
 	return ret0, ret1
 }
 
-// FilterMeshServicesByServiceSelector indicates an expected call of FilterMeshServicesByServiceSelector
+// FilterMeshServicesByServiceSelector indicates an expected call of FilterMeshServicesByServiceSelector.
 func (mr *MockBaseResourceSelectorMockRecorder) FilterMeshServicesByServiceSelector(meshServices, selector interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterMeshServicesByServiceSelector", reflect.TypeOf((*MockBaseResourceSelector)(nil).FilterMeshServicesByServiceSelector), meshServices, selector)
 }
 
-// FindMeshServiceByRefSelector mocks base method
+// FindMeshServiceByRefSelector mocks base method.
 func (m *MockBaseResourceSelector) FindMeshServiceByRefSelector(meshServices []*v1alpha1.MeshService, kubeServiceName, kubeServiceNamespace, kubeServiceCluster string) *v1alpha1.MeshService {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindMeshServiceByRefSelector", meshServices, kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
@@ -59,36 +59,36 @@ func (m *MockBaseResourceSelector) FindMeshServiceByRefSelector(meshServices []*
 	return ret0
 }
 
-// FindMeshServiceByRefSelector indicates an expected call of FindMeshServiceByRefSelector
+// FindMeshServiceByRefSelector indicates an expected call of FindMeshServiceByRefSelector.
 func (mr *MockBaseResourceSelectorMockRecorder) FindMeshServiceByRefSelector(meshServices, kubeServiceName, kubeServiceNamespace, kubeServiceCluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindMeshServiceByRefSelector", reflect.TypeOf((*MockBaseResourceSelector)(nil).FindMeshServiceByRefSelector), meshServices, kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
 }
 
-// MockResourceSelector is a mock of ResourceSelector interface
+// MockResourceSelector is a mock of ResourceSelector interface.
 type MockResourceSelector struct {
 	ctrl     *gomock.Controller
 	recorder *MockResourceSelectorMockRecorder
 }
 
-// MockResourceSelectorMockRecorder is the mock recorder for MockResourceSelector
+// MockResourceSelectorMockRecorder is the mock recorder for MockResourceSelector.
 type MockResourceSelectorMockRecorder struct {
 	mock *MockResourceSelector
 }
 
-// NewMockResourceSelector creates a new mock instance
+// NewMockResourceSelector creates a new mock instance.
 func NewMockResourceSelector(ctrl *gomock.Controller) *MockResourceSelector {
 	mock := &MockResourceSelector{ctrl: ctrl}
 	mock.recorder = &MockResourceSelectorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockResourceSelector) EXPECT() *MockResourceSelectorMockRecorder {
 	return m.recorder
 }
 
-// FilterMeshServicesByServiceSelector mocks base method
+// FilterMeshServicesByServiceSelector mocks base method.
 func (m *MockResourceSelector) FilterMeshServicesByServiceSelector(meshServices []*v1alpha1.MeshService, selector *types.ServiceSelector) ([]*v1alpha1.MeshService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FilterMeshServicesByServiceSelector", meshServices, selector)
@@ -97,13 +97,13 @@ func (m *MockResourceSelector) FilterMeshServicesByServiceSelector(meshServices 
 	return ret0, ret1
 }
 
-// FilterMeshServicesByServiceSelector indicates an expected call of FilterMeshServicesByServiceSelector
+// FilterMeshServicesByServiceSelector indicates an expected call of FilterMeshServicesByServiceSelector.
 func (mr *MockResourceSelectorMockRecorder) FilterMeshServicesByServiceSelector(meshServices, selector interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterMeshServicesByServiceSelector", reflect.TypeOf((*MockResourceSelector)(nil).FilterMeshServicesByServiceSelector), meshServices, selector)
 }
 
-// FindMeshServiceByRefSelector mocks base method
+// FindMeshServiceByRefSelector mocks base method.
 func (m *MockResourceSelector) FindMeshServiceByRefSelector(meshServices []*v1alpha1.MeshService, kubeServiceName, kubeServiceNamespace, kubeServiceCluster string) *v1alpha1.MeshService {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindMeshServiceByRefSelector", meshServices, kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
@@ -111,13 +111,13 @@ func (m *MockResourceSelector) FindMeshServiceByRefSelector(meshServices []*v1al
 	return ret0
 }
 
-// FindMeshServiceByRefSelector indicates an expected call of FindMeshServiceByRefSelector
+// FindMeshServiceByRefSelector indicates an expected call of FindMeshServiceByRefSelector.
 func (mr *MockResourceSelectorMockRecorder) FindMeshServiceByRefSelector(meshServices, kubeServiceName, kubeServiceNamespace, kubeServiceCluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindMeshServiceByRefSelector", reflect.TypeOf((*MockResourceSelector)(nil).FindMeshServiceByRefSelector), meshServices, kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
 }
 
-// GetAllMeshServicesByServiceSelector mocks base method
+// GetAllMeshServicesByServiceSelector mocks base method.
 func (m *MockResourceSelector) GetAllMeshServicesByServiceSelector(ctx context.Context, selector *types.ServiceSelector) ([]*v1alpha1.MeshService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllMeshServicesByServiceSelector", ctx, selector)
@@ -126,13 +126,13 @@ func (m *MockResourceSelector) GetAllMeshServicesByServiceSelector(ctx context.C
 	return ret0, ret1
 }
 
-// GetAllMeshServicesByServiceSelector indicates an expected call of GetAllMeshServicesByServiceSelector
+// GetAllMeshServicesByServiceSelector indicates an expected call of GetAllMeshServicesByServiceSelector.
 func (mr *MockResourceSelectorMockRecorder) GetAllMeshServicesByServiceSelector(ctx, selector interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMeshServicesByServiceSelector", reflect.TypeOf((*MockResourceSelector)(nil).GetAllMeshServicesByServiceSelector), ctx, selector)
 }
 
-// GetMeshWorkloadsByIdentitySelector mocks base method
+// GetMeshWorkloadsByIdentitySelector mocks base method.
 func (m *MockResourceSelector) GetMeshWorkloadsByIdentitySelector(ctx context.Context, identitySelector *types.IdentitySelector) ([]*v1alpha1.MeshWorkload, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMeshWorkloadsByIdentitySelector", ctx, identitySelector)
@@ -141,13 +141,13 @@ func (m *MockResourceSelector) GetMeshWorkloadsByIdentitySelector(ctx context.Co
 	return ret0, ret1
 }
 
-// GetMeshWorkloadsByIdentitySelector indicates an expected call of GetMeshWorkloadsByIdentitySelector
+// GetMeshWorkloadsByIdentitySelector indicates an expected call of GetMeshWorkloadsByIdentitySelector.
 func (mr *MockResourceSelectorMockRecorder) GetMeshWorkloadsByIdentitySelector(ctx, identitySelector interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshWorkloadsByIdentitySelector", reflect.TypeOf((*MockResourceSelector)(nil).GetMeshWorkloadsByIdentitySelector), ctx, identitySelector)
 }
 
-// GetMeshWorkloadsByWorkloadSelector mocks base method
+// GetMeshWorkloadsByWorkloadSelector mocks base method.
 func (m *MockResourceSelector) GetMeshWorkloadsByWorkloadSelector(ctx context.Context, workloadSelector *types.WorkloadSelector) ([]*v1alpha1.MeshWorkload, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMeshWorkloadsByWorkloadSelector", ctx, workloadSelector)
@@ -156,13 +156,13 @@ func (m *MockResourceSelector) GetMeshWorkloadsByWorkloadSelector(ctx context.Co
 	return ret0, ret1
 }
 
-// GetMeshWorkloadsByWorkloadSelector indicates an expected call of GetMeshWorkloadsByWorkloadSelector
+// GetMeshWorkloadsByWorkloadSelector indicates an expected call of GetMeshWorkloadsByWorkloadSelector.
 func (mr *MockResourceSelectorMockRecorder) GetMeshWorkloadsByWorkloadSelector(ctx, workloadSelector interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshWorkloadsByWorkloadSelector", reflect.TypeOf((*MockResourceSelector)(nil).GetMeshWorkloadsByWorkloadSelector), ctx, workloadSelector)
 }
 
-// GetAllMeshServiceByRefSelector mocks base method
+// GetAllMeshServiceByRefSelector mocks base method.
 func (m *MockResourceSelector) GetAllMeshServiceByRefSelector(ctx context.Context, kubeServiceName, kubeServiceNamespace, kubeServiceCluster string) (*v1alpha1.MeshService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllMeshServiceByRefSelector", ctx, kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
@@ -171,13 +171,13 @@ func (m *MockResourceSelector) GetAllMeshServiceByRefSelector(ctx context.Contex
 	return ret0, ret1
 }
 
-// GetAllMeshServiceByRefSelector indicates an expected call of GetAllMeshServiceByRefSelector
+// GetAllMeshServiceByRefSelector indicates an expected call of GetAllMeshServiceByRefSelector.
 func (mr *MockResourceSelectorMockRecorder) GetAllMeshServiceByRefSelector(ctx, kubeServiceName, kubeServiceNamespace, kubeServiceCluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMeshServiceByRefSelector", reflect.TypeOf((*MockResourceSelector)(nil).GetAllMeshServiceByRefSelector), ctx, kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
 }
 
-// GetMeshWorkloadByRefSelector mocks base method
+// GetMeshWorkloadByRefSelector mocks base method.
 func (m *MockResourceSelector) GetMeshWorkloadByRefSelector(ctx context.Context, podEventWatcherName, podEventWatcherNamespace, podEventWatcherCluster string) (*v1alpha1.MeshWorkload, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMeshWorkloadByRefSelector", ctx, podEventWatcherName, podEventWatcherNamespace, podEventWatcherCluster)
@@ -186,7 +186,7 @@ func (m *MockResourceSelector) GetMeshWorkloadByRefSelector(ctx context.Context,
 	return ret0, ret1
 }
 
-// GetMeshWorkloadByRefSelector indicates an expected call of GetMeshWorkloadByRefSelector
+// GetMeshWorkloadByRefSelector indicates an expected call of GetMeshWorkloadByRefSelector.
 func (mr *MockResourceSelectorMockRecorder) GetMeshWorkloadByRefSelector(ctx, podEventWatcherName, podEventWatcherNamespace, podEventWatcherCluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshWorkloadByRefSelector", reflect.TypeOf((*MockResourceSelector)(nil).GetMeshWorkloadByRefSelector), ctx, podEventWatcherName, podEventWatcherNamespace, podEventWatcherCluster)

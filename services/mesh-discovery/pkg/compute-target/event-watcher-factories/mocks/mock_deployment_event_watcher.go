@@ -13,30 +13,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockDeploymentEventWatcher is a mock of DeploymentEventWatcher interface
+// MockDeploymentEventWatcher is a mock of DeploymentEventWatcher interface.
 type MockDeploymentEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockDeploymentEventWatcherMockRecorder
 }
 
-// MockDeploymentEventWatcherMockRecorder is the mock recorder for MockDeploymentEventWatcher
+// MockDeploymentEventWatcherMockRecorder is the mock recorder for MockDeploymentEventWatcher.
 type MockDeploymentEventWatcherMockRecorder struct {
 	mock *MockDeploymentEventWatcher
 }
 
-// NewMockDeploymentEventWatcher creates a new mock instance
+// NewMockDeploymentEventWatcher creates a new mock instance.
 func NewMockDeploymentEventWatcher(ctrl *gomock.Controller) *MockDeploymentEventWatcher {
 	mock := &MockDeploymentEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockDeploymentEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDeploymentEventWatcher) EXPECT() *MockDeploymentEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockDeploymentEventWatcher) AddEventHandler(arg0 context.Context, arg1 controller.DeploymentEventHandler, arg2 ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -48,7 +48,7 @@ func (m *MockDeploymentEventWatcher) AddEventHandler(arg0 context.Context, arg1 
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockDeploymentEventWatcherMockRecorder) AddEventHandler(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)

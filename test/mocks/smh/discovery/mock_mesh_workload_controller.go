@@ -13,30 +13,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockMeshWorkloadEventWatcher is a mock of MeshWorkloadEventWatcher interface
+// MockMeshWorkloadEventWatcher is a mock of MeshWorkloadEventWatcher interface.
 type MockMeshWorkloadEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshWorkloadEventWatcherMockRecorder
 }
 
-// MockMeshWorkloadEventWatcherMockRecorder is the mock recorder for MockMeshWorkloadEventWatcher
+// MockMeshWorkloadEventWatcherMockRecorder is the mock recorder for MockMeshWorkloadEventWatcher.
 type MockMeshWorkloadEventWatcherMockRecorder struct {
 	mock *MockMeshWorkloadEventWatcher
 }
 
-// NewMockMeshWorkloadEventWatcher creates a new mock instance
+// NewMockMeshWorkloadEventWatcher creates a new mock instance.
 func NewMockMeshWorkloadEventWatcher(ctrl *gomock.Controller) *MockMeshWorkloadEventWatcher {
 	mock := &MockMeshWorkloadEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockMeshWorkloadEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshWorkloadEventWatcher) EXPECT() *MockMeshWorkloadEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockMeshWorkloadEventWatcher) AddEventHandler(arg0 context.Context, arg1 controller.MeshWorkloadEventHandler, arg2 ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -48,37 +48,37 @@ func (m *MockMeshWorkloadEventWatcher) AddEventHandler(arg0 context.Context, arg
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockMeshWorkloadEventWatcherMockRecorder) AddEventHandler(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockMeshWorkloadEventWatcher)(nil).AddEventHandler), varargs...)
 }
 
-// MockMeshServiceEventWatcher is a mock of MeshServiceEventWatcher interface
+// MockMeshServiceEventWatcher is a mock of MeshServiceEventWatcher interface.
 type MockMeshServiceEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshServiceEventWatcherMockRecorder
 }
 
-// MockMeshServiceEventWatcherMockRecorder is the mock recorder for MockMeshServiceEventWatcher
+// MockMeshServiceEventWatcherMockRecorder is the mock recorder for MockMeshServiceEventWatcher.
 type MockMeshServiceEventWatcherMockRecorder struct {
 	mock *MockMeshServiceEventWatcher
 }
 
-// NewMockMeshServiceEventWatcher creates a new mock instance
+// NewMockMeshServiceEventWatcher creates a new mock instance.
 func NewMockMeshServiceEventWatcher(ctrl *gomock.Controller) *MockMeshServiceEventWatcher {
 	mock := &MockMeshServiceEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockMeshServiceEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshServiceEventWatcher) EXPECT() *MockMeshServiceEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockMeshServiceEventWatcher) AddEventHandler(arg0 context.Context, arg1 controller.MeshServiceEventHandler, arg2 ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -90,37 +90,37 @@ func (m *MockMeshServiceEventWatcher) AddEventHandler(arg0 context.Context, arg1
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockMeshServiceEventWatcherMockRecorder) AddEventHandler(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockMeshServiceEventWatcher)(nil).AddEventHandler), varargs...)
 }
 
-// MockMeshEventWatcher is a mock of MeshEventWatcher interface
+// MockMeshEventWatcher is a mock of MeshEventWatcher interface.
 type MockMeshEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshEventWatcherMockRecorder
 }
 
-// MockMeshEventWatcherMockRecorder is the mock recorder for MockMeshEventWatcher
+// MockMeshEventWatcherMockRecorder is the mock recorder for MockMeshEventWatcher.
 type MockMeshEventWatcherMockRecorder struct {
 	mock *MockMeshEventWatcher
 }
 
-// NewMockMeshEventWatcher creates a new mock instance
+// NewMockMeshEventWatcher creates a new mock instance.
 func NewMockMeshEventWatcher(ctrl *gomock.Controller) *MockMeshEventWatcher {
 	mock := &MockMeshEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockMeshEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshEventWatcher) EXPECT() *MockMeshEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockMeshEventWatcher) AddEventHandler(arg0 context.Context, arg1 controller.MeshEventHandler, arg2 ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -132,7 +132,7 @@ func (m *MockMeshEventWatcher) AddEventHandler(arg0 context.Context, arg1 contro
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockMeshEventWatcherMockRecorder) AddEventHandler(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)

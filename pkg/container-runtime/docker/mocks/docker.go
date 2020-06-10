@@ -11,30 +11,30 @@ import (
 	docker "github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
 )
 
-// MockImageNameParser is a mock of ImageNameParser interface
+// MockImageNameParser is a mock of ImageNameParser interface.
 type MockImageNameParser struct {
 	ctrl     *gomock.Controller
 	recorder *MockImageNameParserMockRecorder
 }
 
-// MockImageNameParserMockRecorder is the mock recorder for MockImageNameParser
+// MockImageNameParserMockRecorder is the mock recorder for MockImageNameParser.
 type MockImageNameParserMockRecorder struct {
 	mock *MockImageNameParser
 }
 
-// NewMockImageNameParser creates a new mock instance
+// NewMockImageNameParser creates a new mock instance.
 func NewMockImageNameParser(ctrl *gomock.Controller) *MockImageNameParser {
 	mock := &MockImageNameParser{ctrl: ctrl}
 	mock.recorder = &MockImageNameParserMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockImageNameParser) EXPECT() *MockImageNameParserMockRecorder {
 	return m.recorder
 }
 
-// Parse mocks base method
+// Parse mocks base method.
 func (m *MockImageNameParser) Parse(image string) (*docker.Image, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Parse", image)
@@ -43,7 +43,7 @@ func (m *MockImageNameParser) Parse(image string) (*docker.Image, error) {
 	return ret0, ret1
 }
 
-// Parse indicates an expected call of Parse
+// Parse indicates an expected call of Parse.
 func (mr *MockImageNameParserMockRecorder) Parse(image interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Parse", reflect.TypeOf((*MockImageNameParser)(nil).Parse), image)

@@ -14,30 +14,30 @@ import (
 	util "istio.io/istio/security/pkg/pki/util"
 )
 
-// MockRootCertGenerator is a mock of RootCertGenerator interface
+// MockRootCertGenerator is a mock of RootCertGenerator interface.
 type MockRootCertGenerator struct {
 	ctrl     *gomock.Controller
 	recorder *MockRootCertGeneratorMockRecorder
 }
 
-// MockRootCertGeneratorMockRecorder is the mock recorder for MockRootCertGenerator
+// MockRootCertGeneratorMockRecorder is the mock recorder for MockRootCertGenerator.
 type MockRootCertGeneratorMockRecorder struct {
 	mock *MockRootCertGenerator
 }
 
-// NewMockRootCertGenerator creates a new mock instance
+// NewMockRootCertGenerator creates a new mock instance.
 func NewMockRootCertGenerator(ctrl *gomock.Controller) *MockRootCertGenerator {
 	mock := &MockRootCertGenerator{ctrl: ctrl}
 	mock.recorder = &MockRootCertGeneratorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRootCertGenerator) EXPECT() *MockRootCertGeneratorMockRecorder {
 	return m.recorder
 }
 
-// GenRootCertAndKey mocks base method
+// GenRootCertAndKey mocks base method.
 func (m *MockRootCertGenerator) GenRootCertAndKey(builtinCA *types.VirtualMeshSpec_CertificateAuthority_Builtin) (*cert_secrets.RootCAData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenRootCertAndKey", builtinCA)
@@ -46,36 +46,36 @@ func (m *MockRootCertGenerator) GenRootCertAndKey(builtinCA *types.VirtualMeshSp
 	return ret0, ret1
 }
 
-// GenRootCertAndKey indicates an expected call of GenRootCertAndKey
+// GenRootCertAndKey indicates an expected call of GenRootCertAndKey.
 func (mr *MockRootCertGeneratorMockRecorder) GenRootCertAndKey(builtinCA interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenRootCertAndKey", reflect.TypeOf((*MockRootCertGenerator)(nil).GenRootCertAndKey), builtinCA)
 }
 
-// MockSigner is a mock of Signer interface
+// MockSigner is a mock of Signer interface.
 type MockSigner struct {
 	ctrl     *gomock.Controller
 	recorder *MockSignerMockRecorder
 }
 
-// MockSignerMockRecorder is the mock recorder for MockSigner
+// MockSignerMockRecorder is the mock recorder for MockSigner.
 type MockSignerMockRecorder struct {
 	mock *MockSigner
 }
 
-// NewMockSigner creates a new mock instance
+// NewMockSigner creates a new mock instance.
 func NewMockSigner(ctrl *gomock.Controller) *MockSigner {
 	mock := &MockSigner{ctrl: ctrl}
 	mock.recorder = &MockSignerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSigner) EXPECT() *MockSignerMockRecorder {
 	return m.recorder
 }
 
-// GenCertFromEncodedCSR mocks base method
+// GenCertFromEncodedCSR mocks base method.
 func (m *MockSigner) GenCertFromEncodedCSR(csrPem, signingCertPem, signingKey []byte, subjectIDs []string, ttl time.Duration, isCA bool) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenCertFromEncodedCSR", csrPem, signingCertPem, signingKey, subjectIDs, ttl, isCA)
@@ -84,13 +84,13 @@ func (m *MockSigner) GenCertFromEncodedCSR(csrPem, signingCertPem, signingKey []
 	return ret0, ret1
 }
 
-// GenCertFromEncodedCSR indicates an expected call of GenCertFromEncodedCSR
+// GenCertFromEncodedCSR indicates an expected call of GenCertFromEncodedCSR.
 func (mr *MockSignerMockRecorder) GenCertFromEncodedCSR(csrPem, signingCertPem, signingKey, subjectIDs, ttl, isCA interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenCertFromEncodedCSR", reflect.TypeOf((*MockSigner)(nil).GenCertFromEncodedCSR), csrPem, signingCertPem, signingKey, subjectIDs, ttl, isCA)
 }
 
-// GenCSRWithKey mocks base method
+// GenCSRWithKey mocks base method.
 func (m *MockSigner) GenCSRWithKey(options util.CertOptions) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenCSRWithKey", options)
@@ -99,13 +99,13 @@ func (m *MockSigner) GenCSRWithKey(options util.CertOptions) ([]byte, error) {
 	return ret0, ret1
 }
 
-// GenCSRWithKey indicates an expected call of GenCSRWithKey
+// GenCSRWithKey indicates an expected call of GenCSRWithKey.
 func (mr *MockSignerMockRecorder) GenCSRWithKey(options interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenCSRWithKey", reflect.TypeOf((*MockSigner)(nil).GenCSRWithKey), options)
 }
 
-// GenCSR mocks base method
+// GenCSR mocks base method.
 func (m *MockSigner) GenCSR(options util.CertOptions) ([]byte, []byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenCSR", options)
@@ -115,7 +115,7 @@ func (m *MockSigner) GenCSR(options util.CertOptions) ([]byte, []byte, error) {
 	return ret0, ret1, ret2
 }
 
-// GenCSR indicates an expected call of GenCSR
+// GenCSR indicates an expected call of GenCSR.
 func (mr *MockSignerMockRecorder) GenCSR(options interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenCSR", reflect.TypeOf((*MockSigner)(nil).GenCSR), options)

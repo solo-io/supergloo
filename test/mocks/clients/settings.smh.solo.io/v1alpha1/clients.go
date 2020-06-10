@@ -14,30 +14,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockSettingsClient is a mock of SettingsClient interface
+// MockSettingsClient is a mock of SettingsClient interface.
 type MockSettingsClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockSettingsClientMockRecorder
 }
 
-// MockSettingsClientMockRecorder is the mock recorder for MockSettingsClient
+// MockSettingsClientMockRecorder is the mock recorder for MockSettingsClient.
 type MockSettingsClientMockRecorder struct {
 	mock *MockSettingsClient
 }
 
-// NewMockSettingsClient creates a new mock instance
+// NewMockSettingsClient creates a new mock instance.
 func NewMockSettingsClient(ctrl *gomock.Controller) *MockSettingsClient {
 	mock := &MockSettingsClient{ctrl: ctrl}
 	mock.recorder = &MockSettingsClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSettingsClient) EXPECT() *MockSettingsClientMockRecorder {
 	return m.recorder
 }
 
-// CreateSettings mocks base method
+// CreateSettings mocks base method.
 func (m *MockSettingsClient) CreateSettings(arg0 context.Context, arg1 *v1alpha1.Settings, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -49,14 +49,14 @@ func (m *MockSettingsClient) CreateSettings(arg0 context.Context, arg1 *v1alpha1
 	return ret0
 }
 
-// CreateSettings indicates an expected call of CreateSettings
+// CreateSettings indicates an expected call of CreateSettings.
 func (mr *MockSettingsClientMockRecorder) CreateSettings(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSettings", reflect.TypeOf((*MockSettingsClient)(nil).CreateSettings), varargs...)
 }
 
-// DeleteAllOfSettings mocks base method
+// DeleteAllOfSettings mocks base method.
 func (m *MockSettingsClient) DeleteAllOfSettings(arg0 context.Context, arg1 ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
@@ -68,14 +68,14 @@ func (m *MockSettingsClient) DeleteAllOfSettings(arg0 context.Context, arg1 ...c
 	return ret0
 }
 
-// DeleteAllOfSettings indicates an expected call of DeleteAllOfSettings
+// DeleteAllOfSettings indicates an expected call of DeleteAllOfSettings.
 func (mr *MockSettingsClientMockRecorder) DeleteAllOfSettings(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfSettings", reflect.TypeOf((*MockSettingsClient)(nil).DeleteAllOfSettings), varargs...)
 }
 
-// DeleteSettings mocks base method
+// DeleteSettings mocks base method.
 func (m *MockSettingsClient) DeleteSettings(arg0 context.Context, arg1 types.NamespacedName, arg2 ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -87,14 +87,14 @@ func (m *MockSettingsClient) DeleteSettings(arg0 context.Context, arg1 types.Nam
 	return ret0
 }
 
-// DeleteSettings indicates an expected call of DeleteSettings
+// DeleteSettings indicates an expected call of DeleteSettings.
 func (mr *MockSettingsClientMockRecorder) DeleteSettings(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSettings", reflect.TypeOf((*MockSettingsClient)(nil).DeleteSettings), varargs...)
 }
 
-// GetSettings mocks base method
+// GetSettings mocks base method.
 func (m *MockSettingsClient) GetSettings(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha1.Settings, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSettings", arg0, arg1)
@@ -103,13 +103,13 @@ func (m *MockSettingsClient) GetSettings(arg0 context.Context, arg1 types.Namesp
 	return ret0, ret1
 }
 
-// GetSettings indicates an expected call of GetSettings
+// GetSettings indicates an expected call of GetSettings.
 func (mr *MockSettingsClientMockRecorder) GetSettings(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSettings", reflect.TypeOf((*MockSettingsClient)(nil).GetSettings), arg0, arg1)
 }
 
-// ListSettings mocks base method
+// ListSettings mocks base method.
 func (m *MockSettingsClient) ListSettings(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha1.SettingsList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
@@ -122,14 +122,14 @@ func (m *MockSettingsClient) ListSettings(arg0 context.Context, arg1 ...client.L
 	return ret0, ret1
 }
 
-// ListSettings indicates an expected call of ListSettings
+// ListSettings indicates an expected call of ListSettings.
 func (mr *MockSettingsClientMockRecorder) ListSettings(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSettings", reflect.TypeOf((*MockSettingsClient)(nil).ListSettings), varargs...)
 }
 
-// PatchSettings mocks base method
+// PatchSettings mocks base method.
 func (m *MockSettingsClient) PatchSettings(arg0 context.Context, arg1 *v1alpha1.Settings, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
@@ -141,14 +141,14 @@ func (m *MockSettingsClient) PatchSettings(arg0 context.Context, arg1 *v1alpha1.
 	return ret0
 }
 
-// PatchSettings indicates an expected call of PatchSettings
+// PatchSettings indicates an expected call of PatchSettings.
 func (mr *MockSettingsClientMockRecorder) PatchSettings(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchSettings", reflect.TypeOf((*MockSettingsClient)(nil).PatchSettings), varargs...)
 }
 
-// PatchSettingsStatus mocks base method
+// PatchSettingsStatus mocks base method.
 func (m *MockSettingsClient) PatchSettingsStatus(arg0 context.Context, arg1 *v1alpha1.Settings, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
@@ -160,14 +160,14 @@ func (m *MockSettingsClient) PatchSettingsStatus(arg0 context.Context, arg1 *v1a
 	return ret0
 }
 
-// PatchSettingsStatus indicates an expected call of PatchSettingsStatus
+// PatchSettingsStatus indicates an expected call of PatchSettingsStatus.
 func (mr *MockSettingsClientMockRecorder) PatchSettingsStatus(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchSettingsStatus", reflect.TypeOf((*MockSettingsClient)(nil).PatchSettingsStatus), varargs...)
 }
 
-// UpdateSettings mocks base method
+// UpdateSettings mocks base method.
 func (m *MockSettingsClient) UpdateSettings(arg0 context.Context, arg1 *v1alpha1.Settings, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -179,14 +179,14 @@ func (m *MockSettingsClient) UpdateSettings(arg0 context.Context, arg1 *v1alpha1
 	return ret0
 }
 
-// UpdateSettings indicates an expected call of UpdateSettings
+// UpdateSettings indicates an expected call of UpdateSettings.
 func (mr *MockSettingsClientMockRecorder) UpdateSettings(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSettings", reflect.TypeOf((*MockSettingsClient)(nil).UpdateSettings), varargs...)
 }
 
-// UpdateSettingsStatus mocks base method
+// UpdateSettingsStatus mocks base method.
 func (m *MockSettingsClient) UpdateSettingsStatus(arg0 context.Context, arg1 *v1alpha1.Settings, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -198,14 +198,14 @@ func (m *MockSettingsClient) UpdateSettingsStatus(arg0 context.Context, arg1 *v1
 	return ret0
 }
 
-// UpdateSettingsStatus indicates an expected call of UpdateSettingsStatus
+// UpdateSettingsStatus indicates an expected call of UpdateSettingsStatus.
 func (mr *MockSettingsClientMockRecorder) UpdateSettingsStatus(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSettingsStatus", reflect.TypeOf((*MockSettingsClient)(nil).UpdateSettingsStatus), varargs...)
 }
 
-// UpsertSettingsSpec mocks base method
+// UpsertSettingsSpec mocks base method.
 func (m *MockSettingsClient) UpsertSettingsSpec(arg0 context.Context, arg1 *v1alpha1.Settings, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -217,7 +217,7 @@ func (m *MockSettingsClient) UpsertSettingsSpec(arg0 context.Context, arg1 *v1al
 	return ret0
 }
 
-// UpsertSettingsSpec indicates an expected call of UpsertSettingsSpec
+// UpsertSettingsSpec indicates an expected call of UpsertSettingsSpec.
 func (mr *MockSettingsClientMockRecorder) UpsertSettingsSpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)

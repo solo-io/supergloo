@@ -11,30 +11,30 @@ import (
 	interactive "github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
 )
 
-// MockInteractivePrompt is a mock of InteractivePrompt interface
+// MockInteractivePrompt is a mock of InteractivePrompt interface.
 type MockInteractivePrompt struct {
 	ctrl     *gomock.Controller
 	recorder *MockInteractivePromptMockRecorder
 }
 
-// MockInteractivePromptMockRecorder is the mock recorder for MockInteractivePrompt
+// MockInteractivePromptMockRecorder is the mock recorder for MockInteractivePrompt.
 type MockInteractivePromptMockRecorder struct {
 	mock *MockInteractivePrompt
 }
 
-// NewMockInteractivePrompt creates a new mock instance
+// NewMockInteractivePrompt creates a new mock instance.
 func NewMockInteractivePrompt(ctrl *gomock.Controller) *MockInteractivePrompt {
 	mock := &MockInteractivePrompt{ctrl: ctrl}
 	mock.recorder = &MockInteractivePromptMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockInteractivePrompt) EXPECT() *MockInteractivePromptMockRecorder {
 	return m.recorder
 }
 
-// PromptValue mocks base method
+// PromptValue mocks base method.
 func (m *MockInteractivePrompt) PromptValue(message, defaultValue string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PromptValue", message, defaultValue)
@@ -43,13 +43,13 @@ func (m *MockInteractivePrompt) PromptValue(message, defaultValue string) (strin
 	return ret0, ret1
 }
 
-// PromptValue indicates an expected call of PromptValue
+// PromptValue indicates an expected call of PromptValue.
 func (mr *MockInteractivePromptMockRecorder) PromptValue(message, defaultValue interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromptValue", reflect.TypeOf((*MockInteractivePrompt)(nil).PromptValue), message, defaultValue)
 }
 
-// PromptRequiredValue mocks base method
+// PromptRequiredValue mocks base method.
 func (m *MockInteractivePrompt) PromptRequiredValue(message string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PromptRequiredValue", message)
@@ -58,13 +58,13 @@ func (m *MockInteractivePrompt) PromptRequiredValue(message string) (string, err
 	return ret0, ret1
 }
 
-// PromptRequiredValue indicates an expected call of PromptRequiredValue
+// PromptRequiredValue indicates an expected call of PromptRequiredValue.
 func (mr *MockInteractivePromptMockRecorder) PromptRequiredValue(message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromptRequiredValue", reflect.TypeOf((*MockInteractivePrompt)(nil).PromptRequiredValue), message)
 }
 
-// PromptValueWithValidator mocks base method
+// PromptValueWithValidator mocks base method.
 func (m *MockInteractivePrompt) PromptValueWithValidator(message, defaultValue string, validator interactive.Validator) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PromptValueWithValidator", message, defaultValue, validator)
@@ -73,13 +73,13 @@ func (m *MockInteractivePrompt) PromptValueWithValidator(message, defaultValue s
 	return ret0, ret1
 }
 
-// PromptValueWithValidator indicates an expected call of PromptValueWithValidator
+// PromptValueWithValidator indicates an expected call of PromptValueWithValidator.
 func (mr *MockInteractivePromptMockRecorder) PromptValueWithValidator(message, defaultValue, validator interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromptValueWithValidator", reflect.TypeOf((*MockInteractivePrompt)(nil).PromptValueWithValidator), message, defaultValue, validator)
 }
 
-// SelectValue mocks base method
+// SelectValue mocks base method.
 func (m *MockInteractivePrompt) SelectValue(message string, options []string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelectValue", message, options)
@@ -88,13 +88,13 @@ func (m *MockInteractivePrompt) SelectValue(message string, options []string) (s
 	return ret0, ret1
 }
 
-// SelectValue indicates an expected call of SelectValue
+// SelectValue indicates an expected call of SelectValue.
 func (mr *MockInteractivePromptMockRecorder) SelectValue(message, options interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectValue", reflect.TypeOf((*MockInteractivePrompt)(nil).SelectValue), message, options)
 }
 
-// SelectMultipleValues mocks base method
+// SelectMultipleValues mocks base method.
 func (m *MockInteractivePrompt) SelectMultipleValues(message string, options []string) ([]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelectMultipleValues", message, options)
@@ -103,7 +103,7 @@ func (m *MockInteractivePrompt) SelectMultipleValues(message string, options []s
 	return ret0, ret1
 }
 
-// SelectMultipleValues indicates an expected call of SelectMultipleValues
+// SelectMultipleValues indicates an expected call of SelectMultipleValues.
 func (mr *MockInteractivePromptMockRecorder) SelectMultipleValues(message, options interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectMultipleValues", reflect.TypeOf((*MockInteractivePrompt)(nil).SelectMultipleValues), message, options)

@@ -13,30 +13,30 @@ import (
 	description "github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 )
 
-// MockResourceDescriber is a mock of ResourceDescriber interface
+// MockResourceDescriber is a mock of ResourceDescriber interface.
 type MockResourceDescriber struct {
 	ctrl     *gomock.Controller
 	recorder *MockResourceDescriberMockRecorder
 }
 
-// MockResourceDescriberMockRecorder is the mock recorder for MockResourceDescriber
+// MockResourceDescriberMockRecorder is the mock recorder for MockResourceDescriber.
 type MockResourceDescriberMockRecorder struct {
 	mock *MockResourceDescriber
 }
 
-// NewMockResourceDescriber creates a new mock instance
+// NewMockResourceDescriber creates a new mock instance.
 func NewMockResourceDescriber(ctrl *gomock.Controller) *MockResourceDescriber {
 	mock := &MockResourceDescriber{ctrl: ctrl}
 	mock.recorder = &MockResourceDescriberMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockResourceDescriber) EXPECT() *MockResourceDescriberMockRecorder {
 	return m.recorder
 }
 
-// DescribeService mocks base method
+// DescribeService mocks base method.
 func (m *MockResourceDescriber) DescribeService(ctx context.Context, kubeResourceIdentifier description.FullyQualifiedKubeResource) (*description.DescriptionResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DescribeService", ctx, kubeResourceIdentifier)
@@ -45,13 +45,13 @@ func (m *MockResourceDescriber) DescribeService(ctx context.Context, kubeResourc
 	return ret0, ret1
 }
 
-// DescribeService indicates an expected call of DescribeService
+// DescribeService indicates an expected call of DescribeService.
 func (mr *MockResourceDescriberMockRecorder) DescribeService(ctx, kubeResourceIdentifier interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeService", reflect.TypeOf((*MockResourceDescriber)(nil).DescribeService), ctx, kubeResourceIdentifier)
 }
 
-// DescribeWorkload mocks base method
+// DescribeWorkload mocks base method.
 func (m *MockResourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceIdentifier description.FullyQualifiedKubeResource) (*description.DescriptionResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DescribeWorkload", ctx, kubeResourceIdentifier)
@@ -60,36 +60,36 @@ func (m *MockResourceDescriber) DescribeWorkload(ctx context.Context, kubeResour
 	return ret0, ret1
 }
 
-// DescribeWorkload indicates an expected call of DescribeWorkload
+// DescribeWorkload indicates an expected call of DescribeWorkload.
 func (mr *MockResourceDescriberMockRecorder) DescribeWorkload(ctx, kubeResourceIdentifier interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeWorkload", reflect.TypeOf((*MockResourceDescriber)(nil).DescribeWorkload), ctx, kubeResourceIdentifier)
 }
 
-// MockPrinter is a mock of Printer interface
+// MockPrinter is a mock of Printer interface.
 type MockPrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockPrinterMockRecorder
 }
 
-// MockPrinterMockRecorder is the mock recorder for MockPrinter
+// MockPrinterMockRecorder is the mock recorder for MockPrinter.
 type MockPrinterMockRecorder struct {
 	mock *MockPrinter
 }
 
-// NewMockPrinter creates a new mock instance
+// NewMockPrinter creates a new mock instance.
 func NewMockPrinter(ctrl *gomock.Controller) *MockPrinter {
 	mock := &MockPrinter{ctrl: ctrl}
 	mock.recorder = &MockPrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPrinter) EXPECT() *MockPrinterMockRecorder {
 	return m.recorder
 }
 
-// PrintForService mocks base method
+// PrintForService mocks base method.
 func (m *MockPrinter) PrintForService(out io.Writer, serviceName *description.FullyQualifiedKubeResource, result *description.DescriptionResult) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PrintForService", out, serviceName, result)
@@ -97,7 +97,7 @@ func (m *MockPrinter) PrintForService(out io.Writer, serviceName *description.Fu
 	return ret0
 }
 
-// PrintForService indicates an expected call of PrintForService
+// PrintForService indicates an expected call of PrintForService.
 func (mr *MockPrinterMockRecorder) PrintForService(out, serviceName, result interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrintForService", reflect.TypeOf((*MockPrinter)(nil).PrintForService), out, serviceName, result)

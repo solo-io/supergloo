@@ -12,30 +12,30 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// MockComputeTargetSecretHandler is a mock of ComputeTargetSecretHandler interface
+// MockComputeTargetSecretHandler is a mock of ComputeTargetSecretHandler interface.
 type MockComputeTargetSecretHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockComputeTargetSecretHandlerMockRecorder
 }
 
-// MockComputeTargetSecretHandlerMockRecorder is the mock recorder for MockComputeTargetSecretHandler
+// MockComputeTargetSecretHandlerMockRecorder is the mock recorder for MockComputeTargetSecretHandler.
 type MockComputeTargetSecretHandlerMockRecorder struct {
 	mock *MockComputeTargetSecretHandler
 }
 
-// NewMockComputeTargetSecretHandler creates a new mock instance
+// NewMockComputeTargetSecretHandler creates a new mock instance.
 func NewMockComputeTargetSecretHandler(ctrl *gomock.Controller) *MockComputeTargetSecretHandler {
 	mock := &MockComputeTargetSecretHandler{ctrl: ctrl}
 	mock.recorder = &MockComputeTargetSecretHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockComputeTargetSecretHandler) EXPECT() *MockComputeTargetSecretHandlerMockRecorder {
 	return m.recorder
 }
 
-// ComputeTargetSecretAdded mocks base method
+// ComputeTargetSecretAdded mocks base method.
 func (m *MockComputeTargetSecretHandler) ComputeTargetSecretAdded(ctx context.Context, s *v1.Secret) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ComputeTargetSecretAdded", ctx, s)
@@ -44,13 +44,13 @@ func (m *MockComputeTargetSecretHandler) ComputeTargetSecretAdded(ctx context.Co
 	return ret0, ret1
 }
 
-// ComputeTargetSecretAdded indicates an expected call of ComputeTargetSecretAdded
+// ComputeTargetSecretAdded indicates an expected call of ComputeTargetSecretAdded.
 func (mr *MockComputeTargetSecretHandlerMockRecorder) ComputeTargetSecretAdded(ctx, s interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ComputeTargetSecretAdded", reflect.TypeOf((*MockComputeTargetSecretHandler)(nil).ComputeTargetSecretAdded), ctx, s)
 }
 
-// ComputeTargetSecretRemoved mocks base method
+// ComputeTargetSecretRemoved mocks base method.
 func (m *MockComputeTargetSecretHandler) ComputeTargetSecretRemoved(ctx context.Context, s *v1.Secret) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ComputeTargetSecretRemoved", ctx, s)
@@ -59,7 +59,7 @@ func (m *MockComputeTargetSecretHandler) ComputeTargetSecretRemoved(ctx context.
 	return ret0, ret1
 }
 
-// ComputeTargetSecretRemoved indicates an expected call of ComputeTargetSecretRemoved
+// ComputeTargetSecretRemoved indicates an expected call of ComputeTargetSecretRemoved.
 func (mr *MockComputeTargetSecretHandlerMockRecorder) ComputeTargetSecretRemoved(ctx, s interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ComputeTargetSecretRemoved", reflect.TypeOf((*MockComputeTargetSecretHandler)(nil).ComputeTargetSecretRemoved), ctx, s)
