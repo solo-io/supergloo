@@ -5,10 +5,10 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,12 +17,12 @@ import (
 var _ = Describe("Aggregator", func() {
 	var (
 		ctrl            *gomock.Controller
-		trafficPolicies = []*zephyr_networking.TrafficPolicy{
+		trafficPolicies = []*smh_networking.TrafficPolicy{
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp-1"},
 				Spec: types.TrafficPolicySpec{
-					DestinationSelector: &zephyr_core_types.ServiceSelector{
-						ServiceSelectorType: &zephyr_core_types.ServiceSelector_Matcher_{},
+					DestinationSelector: &smh_core_types.ServiceSelector{
+						ServiceSelectorType: &smh_core_types.ServiceSelector_Matcher_{},
 					},
 					Retries: &types.TrafficPolicySpec_RetryPolicy{
 						Attempts: 1,
@@ -32,8 +32,8 @@ var _ = Describe("Aggregator", func() {
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp-2"},
 				Spec: types.TrafficPolicySpec{
-					DestinationSelector: &zephyr_core_types.ServiceSelector{
-						ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{},
+					DestinationSelector: &smh_core_types.ServiceSelector{
+						ServiceSelectorType: &smh_core_types.ServiceSelector_ServiceRefs_{},
 					},
 					Retries: &types.TrafficPolicySpec_RetryPolicy{
 						Attempts: 2,
@@ -41,7 +41,7 @@ var _ = Describe("Aggregator", func() {
 				},
 			},
 		}
-		meshService = &zephyr_discovery.MeshService{
+		meshService = &smh_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{Name: "ms-1"},
 		}
 	)
@@ -59,7 +59,7 @@ var _ = Describe("Aggregator", func() {
 			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
 			aggregator := traffic_policy_aggregation.NewAggregator(resourceSelector)
 
-			policies, err := aggregator.PoliciesForService([]*zephyr_networking.TrafficPolicy{}, meshService)
+			policies, err := aggregator.PoliciesForService([]*smh_networking.TrafficPolicy{}, meshService)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(policies).To(BeEmpty())
 		})
@@ -70,16 +70,16 @@ var _ = Describe("Aggregator", func() {
 
 			resourceSelector.EXPECT().
 				FilterMeshServicesByServiceSelector(
-					[]*zephyr_discovery.MeshService{meshService},
+					[]*smh_discovery.MeshService{meshService},
 					trafficPolicies[0].Spec.DestinationSelector,
 				).
-				Return([]*zephyr_discovery.MeshService{meshService}, nil)
+				Return([]*smh_discovery.MeshService{meshService}, nil)
 			resourceSelector.EXPECT().
 				FilterMeshServicesByServiceSelector(
-					[]*zephyr_discovery.MeshService{meshService},
+					[]*smh_discovery.MeshService{meshService},
 					trafficPolicies[1].Spec.DestinationSelector,
 				).
-				Return([]*zephyr_discovery.MeshService{meshService}, nil)
+				Return([]*smh_discovery.MeshService{meshService}, nil)
 
 			policies, err := aggregator.PoliciesForService(trafficPolicies, meshService)
 			Expect(err).NotTo(HaveOccurred())
@@ -92,13 +92,13 @@ var _ = Describe("Aggregator", func() {
 
 			resourceSelector.EXPECT().
 				FilterMeshServicesByServiceSelector(
-					[]*zephyr_discovery.MeshService{meshService},
+					[]*smh_discovery.MeshService{meshService},
 					trafficPolicies[0].Spec.DestinationSelector,
 				).
-				Return([]*zephyr_discovery.MeshService{meshService}, nil)
+				Return([]*smh_discovery.MeshService{meshService}, nil)
 			resourceSelector.EXPECT().
 				FilterMeshServicesByServiceSelector(
-					[]*zephyr_discovery.MeshService{meshService},
+					[]*smh_discovery.MeshService{meshService},
 					trafficPolicies[1].Spec.DestinationSelector,
 				).
 				Return(nil, nil)

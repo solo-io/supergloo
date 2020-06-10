@@ -9,7 +9,7 @@ import (
 	"context"
 
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"

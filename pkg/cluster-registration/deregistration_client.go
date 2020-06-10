@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 
 	"github.com/rotisserie/eris"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	k8s_core_v1_clients "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	zephyr_security_scheme "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	smh_security_scheme "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/installation"
@@ -51,7 +51,7 @@ func NewClusterDeregistrationClient(
 	crdRemover crd_uninstall.CrdRemover,
 	csrAgentInstallerFactory installation.CsrAgentInstallerFactory,
 	kubeConfigLookup kubeconfig.KubeConfigLookup,
-	localKubeClusterClient zephyr_discovery.KubernetesClusterClient,
+	localKubeClusterClient smh_discovery.KubernetesClusterClient,
 	localSecretClient k8s_core_v1_clients.SecretClient,
 	secretClientFactory k8s_core_v1_clients.SecretClientFactory,
 	dynamicClientGetter multicluster.DynamicClientGetter,
@@ -74,14 +74,14 @@ type clusterDeregistrationClient struct {
 	kubeLoader                  kubeconfig.KubeLoader
 	csrAgentInstallerFactory    installation.CsrAgentInstallerFactory
 	kubeConfigLookup            kubeconfig.KubeConfigLookup
-	localKubeClusterClient      zephyr_discovery.KubernetesClusterClient
+	localKubeClusterClient      smh_discovery.KubernetesClusterClient
 	localSecretClient           k8s_core_v1_clients.SecretClient
 	secretClientFactory         k8s_core_v1_clients.SecretClientFactory
 	serviceAccountClientFactory k8s_core_v1_clients.ServiceAccountClientFactory
 	dynamicClientGetter         multicluster.DynamicClientGetter
 }
 
-func (c *clusterDeregistrationClient) Deregister(ctx context.Context, kubeCluster *zephyr_discovery.KubernetesCluster) error {
+func (c *clusterDeregistrationClient) Deregister(ctx context.Context, kubeCluster *smh_discovery.KubernetesCluster) error {
 	config, err := c.kubeConfigLookup.FromCluster(ctx, kubeCluster.GetName())
 	if meta.IsNoMatchError(err) {
 		return nil
@@ -121,7 +121,7 @@ func (c *clusterDeregistrationClient) Deregister(ctx context.Context, kubeCluste
 	}
 
 	// the CSR agent installs only CRDs from the security group. Remove only those
-	_, err = c.crdRemover.RemoveCrdGroup(ctx, kubeCluster.GetName(), config.RestConfig, zephyr_security_scheme.SchemeGroupVersion)
+	_, err = c.crdRemover.RemoveCrdGroup(ctx, kubeCluster.GetName(), config.RestConfig, smh_security_scheme.SchemeGroupVersion)
 	if err != nil && !meta.IsNoMatchError(err) {
 		return FailedToRemoveCrds(err, kubeCluster.GetName())
 	}
@@ -135,7 +135,7 @@ func (c *clusterDeregistrationClient) Deregister(ctx context.Context, kubeCluste
 	return nil
 }
 
-func (c *clusterDeregistrationClient) cleanUpServiceAccounts(ctx context.Context, clientForCluster client.Client, kubeCluster *zephyr_discovery.KubernetesCluster) error {
+func (c *clusterDeregistrationClient) cleanUpServiceAccounts(ctx context.Context, clientForCluster client.Client, kubeCluster *smh_discovery.KubernetesCluster) error {
 	serviceAccountClient := c.serviceAccountClientFactory(clientForCluster)
 	err := serviceAccountClient.DeleteAllOfServiceAccount(
 		ctx,
@@ -152,7 +152,7 @@ func (c *clusterDeregistrationClient) cleanUpServiceAccounts(ctx context.Context
 	return nil
 }
 
-func (c *clusterDeregistrationClient) cleanUpCertSecrets(ctx context.Context, clientForCluster client.Client, kubeCluster *zephyr_discovery.KubernetesCluster) error {
+func (c *clusterDeregistrationClient) cleanUpCertSecrets(ctx context.Context, clientForCluster client.Client, kubeCluster *smh_discovery.KubernetesCluster) error {
 	secretClientForCluster := c.secretClientFactory(clientForCluster)
 	allSecrets, err := secretClientForCluster.ListSecret(ctx, client.InNamespace(kubeCluster.Spec.GetWriteNamespace()))
 	if err != nil {
@@ -175,7 +175,7 @@ func (c *clusterDeregistrationClient) cleanUpCertSecrets(ctx context.Context, cl
 	return nil
 }
 
-func (c *clusterDeregistrationClient) cleanUpKubeConfigSecret(ctx context.Context, kubeCluster *zephyr_discovery.KubernetesCluster) error {
+func (c *clusterDeregistrationClient) cleanUpKubeConfigSecret(ctx context.Context, kubeCluster *smh_discovery.KubernetesCluster) error {
 	kubeConfigSecret, err := c.localSecretClient.GetSecret(ctx, selection.ResourceRefToObjectKey(kubeCluster.Spec.GetSecretRef()))
 	if err != nil {
 		return err

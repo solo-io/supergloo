@@ -5,9 +5,9 @@ import (
 
 	"github.com/google/wire"
 	"github.com/olekukonko/tablewriter"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 )
 
 var TablePrintingSet = wire.NewSet(
@@ -37,33 +37,33 @@ const (
 )
 
 type TrafficPolicyPrinter interface {
-	Print(out io.Writer, printMode PrintMode, trafficPolicies []*zephyr_networking.TrafficPolicy) error
+	Print(out io.Writer, printMode PrintMode, trafficPolicies []*smh_networking.TrafficPolicy) error
 }
 
 type AccessControlPolicyPrinter interface {
-	Print(out io.Writer, printMode PrintMode, accessControlPolicies []*zephyr_networking.AccessControlPolicy) error
+	Print(out io.Writer, printMode PrintMode, accessControlPolicies []*smh_networking.AccessControlPolicy) error
 }
 
 type VirtualMeshPrinter interface {
-	Print(out io.Writer, virtualMeshes []*zephyr_networking.VirtualMesh) error
+	Print(out io.Writer, virtualMeshes []*smh_networking.VirtualMesh) error
 }
 
 type VirtualMeshCSRPrinter interface {
-	Print(out io.Writer, vmcsrs []*zephyr_security.VirtualMeshCertificateSigningRequest) error
+	Print(out io.Writer, vmcsrs []*smh_security.VirtualMeshCertificateSigningRequest) error
 }
 
 type MeshPrinter interface {
-	Print(out io.Writer, meshes []*zephyr_discovery.Mesh) error
+	Print(out io.Writer, meshes []*smh_discovery.Mesh) error
 }
 
 type MeshWorkloadPrinter interface {
-	Print(out io.Writer, meshWorkloads []*zephyr_discovery.MeshWorkload) error
+	Print(out io.Writer, meshWorkloads []*smh_discovery.MeshWorkload) error
 }
 
 type MeshServicePrinter interface {
-	Print(out io.Writer, meshServices []*zephyr_discovery.MeshService) error
+	Print(out io.Writer, meshServices []*smh_discovery.MeshService) error
 }
 
 type KubernetesClusterPrinter interface {
-	Print(out io.Writer, meshes []*zephyr_discovery.KubernetesCluster) error
+	Print(out io.Writer, meshes []*smh_discovery.KubernetesCluster) error
 }

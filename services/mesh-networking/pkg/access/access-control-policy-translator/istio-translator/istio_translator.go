@@ -7,12 +7,12 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/stringutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	istio_security_types "istio.io/api/security/v1beta1"
@@ -26,17 +26,17 @@ const (
 )
 
 var (
-	ACPProcessingError = func(err error, acp *zephyr_networking.AccessControlPolicy) error {
+	ACPProcessingError = func(err error, acp *smh_networking.AccessControlPolicy) error {
 		return eris.Wrapf(err, "Error processing AccessControlPolicy: %s.%s", acp.GetName(), acp.GetNamespace())
 	}
 	AuthPolicyUpsertError = func(err error, authPolicy *istio_security_client_types.AuthorizationPolicy) error {
 		return eris.Wrapf(err, "Error while upserting AuthorizationPolicy: %s.%s",
 			authPolicy.Name, authPolicy.Namespace)
 	}
-	EmptyTrustDomainForMeshError = func(mesh *zephyr_discovery.Mesh, info *zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo) error {
+	EmptyTrustDomainForMeshError = func(mesh *smh_discovery.Mesh, info *smh_discovery_types.MeshSpec_IstioMesh_CitadelInfo) error {
 		return eris.Errorf("Empty trust domain for Istio Mesh: %s.%s, (%+v)", mesh.Name, mesh.Namespace, info)
 	}
-	ServiceAccountRefNonexistent = func(saRef *zephyr_core_types.ResourceRef) error {
+	ServiceAccountRefNonexistent = func(saRef *smh_core_types.ResourceRef) error {
 		return eris.Errorf("Service account ref did not match a real service account: %s.%s.%s", saRef.Name, saRef.Namespace, saRef.Cluster)
 	}
 )
@@ -45,12 +45,12 @@ type IstioTranslator access_control_policy.AcpMeshTranslator
 
 type istioTranslator struct {
 	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory
-	meshClient              zephyr_discovery.MeshClient
+	meshClient              smh_discovery.MeshClient
 	dynamicClientGetter     multicluster.DynamicClientGetter
 }
 
 func NewIstioTranslator(
-	meshClient zephyr_discovery.MeshClient,
+	meshClient smh_discovery.MeshClient,
 	dynamicClientGetter multicluster.DynamicClientGetter,
 	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory,
 ) IstioTranslator {
@@ -73,12 +73,12 @@ in the case of processing errors.
 func (i *istioTranslator) Translate(
 	ctx context.Context,
 	targetServices []access_control_policy.TargetService,
-	acp *zephyr_networking.AccessControlPolicy,
-) *zephyr_networking_types.AccessControlPolicyStatus_TranslatorError {
+	acp *smh_networking.AccessControlPolicy,
+) *smh_networking_types.AccessControlPolicyStatus_TranslatorError {
 	authPoliciesWithClients := make([]authPolicyClientPair, 0, len(targetServices))
 	fromSources, err := i.buildSources(ctx, acp.Spec.GetSourceSelector())
 	if err != nil {
-		return &zephyr_networking_types.AccessControlPolicyStatus_TranslatorError{
+		return &smh_networking_types.AccessControlPolicyStatus_TranslatorError{
 			TranslatorId: TranslatorId,
 			ErrorMessage: ACPProcessingError(err, acp).Error(),
 		}
@@ -93,7 +93,7 @@ func (i *istioTranslator) Translate(
 		}
 		client, err := i.dynamicClientGetter.GetClientForCluster(ctx, targetService.Mesh.Spec.GetCluster().GetName())
 		if err != nil {
-			return &zephyr_networking_types.AccessControlPolicyStatus_TranslatorError{
+			return &smh_networking_types.AccessControlPolicyStatus_TranslatorError{
 				TranslatorId: TranslatorId,
 				ErrorMessage: err.Error(),
 			}
@@ -108,7 +108,7 @@ func (i *istioTranslator) Translate(
 	for _, authPolicyWithClient := range authPoliciesWithClients {
 		err := authPolicyWithClient.client.UpsertAuthorizationPolicySpec(ctx, authPolicyWithClient.authPolicy)
 		if err != nil {
-			return &zephyr_networking_types.AccessControlPolicyStatus_TranslatorError{
+			return &smh_networking_types.AccessControlPolicyStatus_TranslatorError{
 				TranslatorId: TranslatorId,
 				ErrorMessage: AuthPolicyUpsertError(err, authPolicyWithClient.authPolicy).Error(),
 			}
@@ -119,8 +119,8 @@ func (i *istioTranslator) Translate(
 
 func (i *istioTranslator) translateForDestination(
 	fromSources *istio_security_types.Rule_From,
-	acp *zephyr_networking.AccessControlPolicy,
-	meshService *zephyr_discovery.MeshService,
+	acp *smh_networking.AccessControlPolicy,
+	meshService *smh_discovery.MeshService,
 ) *istio_security_client_types.AuthorizationPolicy {
 	allowedMethods := methodsToString(acp.Spec.GetAllowedMethods())
 	// Istio considers AuthorizationPolicies without at least one defined To.Operation invalid,
@@ -164,7 +164,7 @@ func (i *istioTranslator) translateForDestination(
 // Reference: https://istio.io/docs/reference/config/security/authorization-policy/#Source
 func (i *istioTranslator) buildSources(
 	ctx context.Context,
-	source *zephyr_core_types.IdentitySelector,
+	source *smh_core_types.IdentitySelector,
 ) (*istio_security_types.Rule_From, error) {
 	var principals []string
 	var namespaces []string
@@ -177,7 +177,7 @@ func (i *istioTranslator) buildSources(
 		}, nil
 	}
 	switch selectorType := source.GetIdentitySelectorType().(type) {
-	case *zephyr_core_types.IdentitySelector_Matcher_:
+	case *smh_core_types.IdentitySelector_Matcher_:
 		if len(source.GetMatcher().GetClusters()) > 0 {
 			// select by clusters and specifiedNamespaces
 			trustDomains, err := i.getTrustDomainForClusters(ctx, source.GetMatcher().GetClusters())
@@ -203,7 +203,7 @@ func (i *istioTranslator) buildSources(
 			// select by namespaces, permit any cluster
 			namespaces = source.GetMatcher().GetNamespaces()
 		}
-	case *zephyr_core_types.IdentitySelector_ServiceAccountRefs_:
+	case *smh_core_types.IdentitySelector_ServiceAccountRefs_:
 		// select by direct reference to ServiceAccounts
 		for _, serviceAccountRef := range source.GetServiceAccountRefs().GetServiceAccounts() {
 			trustDomains, err := i.getTrustDomainForClusters(ctx, []string{serviceAccountRef.GetCluster()})
@@ -249,7 +249,7 @@ func (i *istioTranslator) getTrustDomainForClusters(ctx context.Context, cluster
 			continue
 		}
 
-		var citadelInfo *zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo
+		var citadelInfo *smh_discovery_types.MeshSpec_IstioMesh_CitadelInfo
 		if mesh.Spec.GetIstio1_5() != nil {
 			citadelInfo = mesh.Spec.GetIstio1_5().GetMetadata().GetCitadelInfo()
 		} else {
@@ -265,7 +265,7 @@ func (i *istioTranslator) getTrustDomainForClusters(ctx context.Context, cluster
 	return trustDomains, nil
 }
 
-func methodsToString(methodEnums []zephyr_core_types.HttpMethodValue) []string {
+func methodsToString(methodEnums []smh_core_types.HttpMethodValue) []string {
 	var methods []string
 	for _, methodEnum := range methodEnums {
 		methods = append(methods, methodEnum.String())
@@ -279,7 +279,7 @@ type authPolicyClientPair struct {
 	client     istio_security.AuthorizationPolicyClient
 }
 
-func buildAuthPolicyName(acp *zephyr_networking.AccessControlPolicy, svc *zephyr_discovery.MeshService) string {
+func buildAuthPolicyName(acp *smh_networking.AccessControlPolicy, svc *smh_discovery.MeshService) string {
 	return fmt.Sprintf("%s-%s", acp.GetName(), svc.GetName())
 }
 

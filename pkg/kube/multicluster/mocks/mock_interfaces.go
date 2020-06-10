@@ -13,30 +13,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockDynamicClientGetter is a mock of DynamicClientGetter interface.
+// MockDynamicClientGetter is a mock of DynamicClientGetter interface
 type MockDynamicClientGetter struct {
 	ctrl     *gomock.Controller
 	recorder *MockDynamicClientGetterMockRecorder
 }
 
-// MockDynamicClientGetterMockRecorder is the mock recorder for MockDynamicClientGetter.
+// MockDynamicClientGetterMockRecorder is the mock recorder for MockDynamicClientGetter
 type MockDynamicClientGetterMockRecorder struct {
 	mock *MockDynamicClientGetter
 }
 
-// NewMockDynamicClientGetter creates a new mock instance.
+// NewMockDynamicClientGetter creates a new mock instance
 func NewMockDynamicClientGetter(ctrl *gomock.Controller) *MockDynamicClientGetter {
 	mock := &MockDynamicClientGetter{ctrl: ctrl}
 	mock.recorder = &MockDynamicClientGetterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockDynamicClientGetter) EXPECT() *MockDynamicClientGetterMockRecorder {
 	return m.recorder
 }
 
-// GetClientForCluster mocks base method.
+// GetClientForCluster mocks base method
 func (m *MockDynamicClientGetter) GetClientForCluster(ctx context.Context, clusterName string, opts ...retry.Option) (client.Client, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, clusterName}
@@ -49,7 +49,7 @@ func (m *MockDynamicClientGetter) GetClientForCluster(ctx context.Context, clust
 	return ret0, ret1
 }
 
-// GetClientForCluster indicates an expected call of GetClientForCluster.
+// GetClientForCluster indicates an expected call of GetClientForCluster
 func (mr *MockDynamicClientGetterMockRecorder) GetClientForCluster(ctx, clusterName interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, clusterName}, opts...)

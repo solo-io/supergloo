@@ -3,8 +3,8 @@ package k8s_tenancy
 import (
 	"context"
 
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
@@ -17,14 +17,14 @@ type clusterTenancyFinder struct {
 	clusterName       string
 	tenancyRegistrars []ClusterTenancyRegistrar
 	podClient         k8s_core.PodClient
-	localMeshClient   zephyr_discovery.MeshClient
+	localMeshClient   smh_discovery.MeshClient
 }
 
 func NewClusterTenancyFinder(
 	clusterName string,
 	tenancyRegistrars []ClusterTenancyRegistrar,
 	podClient k8s_core.PodClient,
-	localMeshClient zephyr_discovery.MeshClient,
+	localMeshClient smh_discovery.MeshClient,
 ) ClusterTenancyRegistrarLoop {
 	return &clusterTenancyFinder{
 		clusterName:       clusterName,
@@ -37,7 +37,7 @@ func NewClusterTenancyFinder(
 func (c *clusterTenancyFinder) StartRegistration(
 	ctx context.Context,
 	podEventWatcher k8s_core_controller.PodEventWatcher,
-	meshEventWatcher zephyr_discovery_controller.MeshEventWatcher,
+	meshEventWatcher smh_discovery_controller.MeshEventWatcher,
 ) (err error) {
 	if err = podEventWatcher.AddEventHandler(ctx, &k8s_core_controller.PodEventHandlerFuncs{
 		OnCreate: func(pod *k8s_core_types.Pod) error {
@@ -70,8 +70,8 @@ func (c *clusterTenancyFinder) StartRegistration(
 	}); err != nil {
 		return err
 	}
-	return meshEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshEventHandlerFuncs{
-		OnCreate: func(mesh *zephyr_discovery.Mesh) error {
+	return meshEventWatcher.AddEventHandler(ctx, &smh_discovery_controller.MeshEventHandlerFuncs{
+		OnCreate: func(mesh *smh_discovery.Mesh) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, mesh)
 			logger.Debugf("Handling for %s.%s", mesh.GetName(), mesh.GetNamespace())
 			err := c.reconcile(ctx)
@@ -80,7 +80,7 @@ func (c *clusterTenancyFinder) StartRegistration(
 			}
 			return nil
 		},
-		OnUpdate: func(_, mesh *zephyr_discovery.Mesh) error {
+		OnUpdate: func(_, mesh *smh_discovery.Mesh) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, mesh)
 			logger.Debugf("Handling for %s.%s", mesh.GetName(), mesh.GetNamespace())
 			err := c.reconcile(ctx)
@@ -155,7 +155,7 @@ func (c *clusterTenancyFinder) meshFromPod(
 func (c *clusterTenancyFinder) reconcileClusterTenancyForMesh(
 	ctx context.Context,
 	meshesOnClusterByRegistrar map[ClusterTenancyRegistrar][]client.ObjectKey,
-	mesh *zephyr_discovery.Mesh,
+	mesh *smh_discovery.Mesh,
 ) error {
 	meshObjKey := selection.ObjectMetaToObjectKey(mesh.ObjectMeta)
 	for registrar, meshesOnCluster := range meshesOnClusterByRegistrar {

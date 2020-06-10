@@ -9,9 +9,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
-	mock_security_config "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.zephyr.solo.io/v1alpha1"
+	mock_security_config "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.smh.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -51,7 +51,7 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 
 	It("will call the VirtualMeshCSR Printer with the proper data", func() {
 
-		virtualMeshes := []*zephyr_security.VirtualMeshCertificateSigningRequest{
+		virtualMeshes := []*smh_security.VirtualMeshCertificateSigningRequest{
 			{
 				ObjectMeta: v1.ObjectMeta{
 					Name: "mesh-csr-1",
@@ -68,8 +68,8 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 			Return(nil, nil)
 		mockVirtualMeshCSRClient.EXPECT().
 			ListVirtualMeshCertificateSigningRequest(ctx).
-			Return(&zephyr_security.VirtualMeshCertificateSigningRequestList{
-				Items: []zephyr_security.VirtualMeshCertificateSigningRequest{*virtualMeshes[0], *virtualMeshes[1]},
+			Return(&smh_security.VirtualMeshCertificateSigningRequestList{
+				Items: []smh_security.VirtualMeshCertificateSigningRequest{*virtualMeshes[0], *virtualMeshes[1]},
 			}, nil)
 		mockVirtualMeshCSRPrinter.EXPECT().
 			Print(gomock.Any(), virtualMeshes).

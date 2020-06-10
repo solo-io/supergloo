@@ -14,10 +14,10 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/prompts"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/validate"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/spf13/cobra"
 	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,15 +32,15 @@ const (
 
 var (
 	AllowedMethods = []string{
-		zephyr_core_types.HttpMethodValue_GET.String(),
-		zephyr_core_types.HttpMethodValue_PUT.String(),
-		zephyr_core_types.HttpMethodValue_POST.String(),
-		zephyr_core_types.HttpMethodValue_DELETE.String(),
-		zephyr_core_types.HttpMethodValue_HEAD.String(),
-		zephyr_core_types.HttpMethodValue_CONNECT.String(),
-		zephyr_core_types.HttpMethodValue_OPTIONS.String(),
-		zephyr_core_types.HttpMethodValue_PATCH.String(),
-		zephyr_core_types.HttpMethodValue_TRACE.String(),
+		smh_core_types.HttpMethodValue_GET.String(),
+		smh_core_types.HttpMethodValue_PUT.String(),
+		smh_core_types.HttpMethodValue_POST.String(),
+		smh_core_types.HttpMethodValue_DELETE.String(),
+		smh_core_types.HttpMethodValue_HEAD.String(),
+		smh_core_types.HttpMethodValue_CONNECT.String(),
+		smh_core_types.HttpMethodValue_OPTIONS.String(),
+		smh_core_types.HttpMethodValue_PATCH.String(),
+		smh_core_types.HttpMethodValue_TRACE.String(),
 	}
 )
 
@@ -74,10 +74,10 @@ func createAccessControlPolicy(
 	var err error
 	var masterCfg *rest.Config
 	var masterKubeClients *common.KubeClients
-	var sourceSelector *zephyr_core_types.IdentitySelector
-	var targetSelector *zephyr_core_types.ServiceSelector
+	var sourceSelector *smh_core_types.IdentitySelector
+	var targetSelector *smh_core_types.ServiceSelector
 	var allowedPaths []string
-	var allowedMethods []zephyr_core_types.HttpMethodValue
+	var allowedMethods []smh_core_types.HttpMethodValue
 	var allowedPorts []uint32
 	if masterCfg, err = kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext); err != nil {
 		return err
@@ -100,11 +100,11 @@ func createAccessControlPolicy(
 	if allowedPorts, err = selectAllowedPortsInteractively(prompt); err != nil {
 		return err
 	}
-	accessControlPolicy := &zephyr_networking.AccessControlPolicy{
+	accessControlPolicy := &smh_networking.AccessControlPolicy{
 		TypeMeta: k8s_meta_v1.TypeMeta{
 			Kind: "AccessControlPolicy",
 		},
-		Spec: zephyr_networking_types.AccessControlPolicySpec{
+		Spec: smh_networking_types.AccessControlPolicySpec{
 			SourceSelector:      sourceSelector,
 			DestinationSelector: targetSelector,
 			AllowedPaths:        allowedPaths,
@@ -121,14 +121,14 @@ func createAccessControlPolicy(
 
 func selectSourcesInteractively(
 	ctx context.Context,
-	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
+	meshWorkloadClient smh_discovery.MeshWorkloadClient,
 	interactivePrompt interactive.InteractivePrompt,
-) (*zephyr_core_types.IdentitySelector, error) {
+) (*smh_core_types.IdentitySelector, error) {
 	var err error
 	var identitySelectorType string
 	var serviceAccountNames, clusters, namespaces []string
-	var serviceAccountNamesToRefs map[string]*zephyr_core_types.ResourceRef
-	sourceSelector := &zephyr_core_types.IdentitySelector{}
+	var serviceAccountNamesToRefs map[string]*smh_core_types.ResourceRef
+	sourceSelector := &smh_core_types.IdentitySelector{}
 	identitySelectorTypes := []string{MatcherSelectorOptionName, RefSelectorOptionName}
 	if identitySelectorType, err = interactivePrompt.SelectValue("Select identity selector type", identitySelectorTypes); err != nil {
 		return nil, err
@@ -142,8 +142,8 @@ func selectSourcesInteractively(
 			"Specify clusters for selecting source workloads, omit to permit any cluster", interactivePrompt); err != nil {
 			return nil, err
 		}
-		sourceSelector.IdentitySelectorType = &zephyr_core_types.IdentitySelector_Matcher_{
-			Matcher: &zephyr_core_types.IdentitySelector_Matcher{
+		sourceSelector.IdentitySelectorType = &smh_core_types.IdentitySelector_Matcher_{
+			Matcher: &smh_core_types.IdentitySelector_Matcher{
 				Namespaces: namespaces,
 				Clusters:   clusters,
 			},
@@ -157,12 +157,12 @@ func selectSourcesInteractively(
 			"Specify service account references for selecting source workloads", serviceAccountNames); err != nil {
 			return nil, err
 		}
-		var serviceAccountRefs []*zephyr_core_types.ResourceRef
+		var serviceAccountRefs []*smh_core_types.ResourceRef
 		for _, selection := range selections {
 			serviceAccountRefs = append(serviceAccountRefs, serviceAccountNamesToRefs[selection])
 		}
-		sourceSelector.IdentitySelectorType = &zephyr_core_types.IdentitySelector_ServiceAccountRefs_{
-			ServiceAccountRefs: &zephyr_core_types.IdentitySelector_ServiceAccountRefs{
+		sourceSelector.IdentitySelectorType = &smh_core_types.IdentitySelector_ServiceAccountRefs_{
+			ServiceAccountRefs: &smh_core_types.IdentitySelector_ServiceAccountRefs{
 				ServiceAccounts: serviceAccountRefs,
 			},
 		}
@@ -172,9 +172,9 @@ func selectSourcesInteractively(
 
 func selectTargetsInteractively(
 	ctx context.Context,
-	meshServiceClient zephyr_discovery.MeshServiceClient,
+	meshServiceClient smh_discovery.MeshServiceClient,
 	interactivePrompt interactive.InteractivePrompt,
-) (*zephyr_core_types.ServiceSelector, error) {
+) (*smh_core_types.ServiceSelector, error) {
 	meshServiceNames, meshServiceNamesToRefs, err := fetchMeshServiceRefs(ctx, meshServiceClient)
 	if err != nil {
 		return nil, err
@@ -202,18 +202,18 @@ func promptAllowedPathsInteractively(prompt interactive.InteractivePrompt) ([]st
 	return allowedPaths, nil
 }
 
-func selectAllowedHttpMethodsInteractively(prompt interactive.InteractivePrompt) ([]zephyr_core_types.HttpMethodValue, error) {
-	var httpMethods []zephyr_core_types.HttpMethodValue
+func selectAllowedHttpMethodsInteractively(prompt interactive.InteractivePrompt) ([]smh_core_types.HttpMethodValue, error) {
+	var httpMethods []smh_core_types.HttpMethodValue
 	selections, err := prompt.SelectMultipleValues("Select allowed HTTP methods", AllowedMethods)
 	if err != nil {
 		return nil, err
 	}
 	for _, selection := range selections {
-		value, ok := zephyr_core_types.HttpMethodValue_value[selection]
+		value, ok := smh_core_types.HttpMethodValue_value[selection]
 		if !ok {
 			return nil, eris.Errorf("Unrecognized HTTP enum value: %s", selection)
 		}
-		httpMethods = append(httpMethods, zephyr_core_types.HttpMethodValue(value))
+		httpMethods = append(httpMethods, smh_core_types.HttpMethodValue(value))
 	}
 	return httpMethods, nil
 }
@@ -241,9 +241,9 @@ func selectAllowedPortsInteractively(prompt interactive.InteractivePrompt) ([]ui
 // Fetch ServiceAccount names from MeshWorkload spec, thus avoiding having to look up ServiceAccounts in all remote clusters.
 func fetchServiceAccountRefs(
 	ctx context.Context,
-	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
-) ([]string, map[string]*zephyr_core_types.ResourceRef, error) {
-	serviceAccountNamesToRef := map[string]*zephyr_core_types.ResourceRef{}
+	meshWorkloadClient smh_discovery.MeshWorkloadClient,
+) ([]string, map[string]*smh_core_types.ResourceRef, error) {
+	serviceAccountNamesToRef := map[string]*smh_core_types.ResourceRef{}
 	meshWorkloadList, err := meshWorkloadClient.ListMeshWorkload(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -259,7 +259,7 @@ func fetchServiceAccountRefs(
 		serviceAccountNames.Insert(displayName)
 		_, ok := serviceAccountNamesToRef[displayName]
 		if !ok {
-			serviceAccountNamesToRef[displayName] = &zephyr_core_types.ResourceRef{
+			serviceAccountNamesToRef[displayName] = &smh_core_types.ResourceRef{
 				Name:      serviceAccountName,
 				Namespace: namespace,
 				Cluster:   cluster,
@@ -275,19 +275,19 @@ func buildServiceAccountDisplayName(name, namespace, cluster string) string {
 
 func fetchMeshServiceRefs(
 	ctx context.Context,
-	meshServiceClient zephyr_discovery.MeshServiceClient,
-) ([]string, map[string]*zephyr_core_types.ResourceRef, error) {
+	meshServiceClient smh_discovery.MeshServiceClient,
+) ([]string, map[string]*smh_core_types.ResourceRef, error) {
 	meshServices, err := meshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
 	var meshServiceNames []string
-	meshServiceNamesToRef := map[string]*zephyr_core_types.ResourceRef{}
+	meshServiceNamesToRef := map[string]*smh_core_types.ResourceRef{}
 	for _, meshService := range meshServices.Items {
 		meshService := meshService
 		serviceDisplayName := buildServiceDisplayName(&meshService)
 		meshServiceNames = append(meshServiceNames, serviceDisplayName)
-		meshServiceNamesToRef[serviceDisplayName] = &zephyr_core_types.ResourceRef{
+		meshServiceNamesToRef[serviceDisplayName] = &smh_core_types.ResourceRef{
 			Name:      meshService.GetName(),
 			Namespace: meshService.GetNamespace(),
 			Cluster:   meshService.GetClusterName(),
@@ -296,6 +296,6 @@ func fetchMeshServiceRefs(
 	return meshServiceNames, meshServiceNamesToRef, nil
 }
 
-func buildServiceDisplayName(meshService *zephyr_discovery.MeshService) string {
+func buildServiceDisplayName(meshService *smh_discovery.MeshService) string {
 	return fmt.Sprintf("%s.%s.%s", meshService.GetName(), meshService.GetNamespace(), meshService.Spec.GetKubeService().GetRef().GetCluster())
 }

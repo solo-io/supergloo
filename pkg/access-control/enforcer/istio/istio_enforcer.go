@@ -4,11 +4,11 @@ import (
 	"context"
 
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	istio_federation "github.com/solo-io/service-mesh-hub/pkg/federation/resolver/meshes/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
@@ -49,8 +49,8 @@ func (i *istioEnforcer) Name() string {
 
 func (i *istioEnforcer) ReconcileAccessControl(
 	ctx context.Context,
-	mesh *zephyr_discovery.Mesh,
-	virtualMesh *zephyr_networking.VirtualMesh,
+	mesh *smh_discovery.Mesh,
+	virtualMesh *smh_networking.VirtualMesh,
 ) error {
 	if mesh.Spec.GetIstio1_6() == nil && mesh.Spec.GetIstio1_5() == nil {
 		return nil
@@ -64,7 +64,7 @@ func (i *istioEnforcer) ReconcileAccessControl(
 	return nil
 }
 
-func (i *istioEnforcer) startEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
+func (i *istioEnforcer) startEnforcing(ctx context.Context, mesh *smh_discovery.Mesh) error {
 	installationNamespace := ""
 	if mesh.Spec.GetIstio1_5() != nil {
 		installationNamespace = mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace()
@@ -86,7 +86,7 @@ func (i *istioEnforcer) startEnforcing(ctx context.Context, mesh *zephyr_discove
 	return nil
 }
 
-func (i *istioEnforcer) stopEnforcing(ctx context.Context, mesh *zephyr_discovery.Mesh) error {
+func (i *istioEnforcer) stopEnforcing(ctx context.Context, mesh *smh_discovery.Mesh) error {
 	installationNamespace := ""
 	if mesh.Spec.GetIstio1_5() != nil {
 		installationNamespace = mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace()
@@ -100,8 +100,8 @@ func (i *istioEnforcer) stopEnforcing(ctx context.Context, mesh *zephyr_discover
 }
 
 // returns nil if not an Istio installation
-func (*istioEnforcer) getIstioInstallation(mesh *zephyr_discovery.Mesh) *zephyr_discovery_types.MeshSpec_MeshInstallation {
-	var istioInstallation *zephyr_discovery_types.MeshSpec_MeshInstallation
+func (*istioEnforcer) getIstioInstallation(mesh *smh_discovery.Mesh) *smh_discovery_types.MeshSpec_MeshInstallation {
+	var istioInstallation *smh_discovery_types.MeshSpec_MeshInstallation
 	if mesh.Spec.GetIstio1_6() != nil {
 		istioInstallation = mesh.Spec.GetIstio1_6().GetMetadata().GetInstallation()
 	} else if mesh.Spec.GetIstio1_5() != nil {
@@ -160,7 +160,7 @@ func (i *istioEnforcer) ensureIngressGatewayPolicy(
 func (i *istioEnforcer) stopEnforcingForMesh(
 	ctx context.Context,
 	installationNamespace string,
-	mesh *zephyr_discovery.Mesh,
+	mesh *smh_discovery.Mesh,
 ) error {
 	clientForCluster, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
 	if err != nil {

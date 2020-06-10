@@ -1,10 +1,10 @@
 package traffic_policy_aggregation
 
 import (
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 )
 
@@ -21,20 +21,20 @@ type PolicyCollector interface {
 	// same (by reference equality) as the references that came in through the service.
 	// Errors can occur due to invalid selectors on policies.
 	CollectForService(
-		meshService *zephyr_discovery.MeshService,
-		allMeshServices []*zephyr_discovery.MeshService,
-		mesh *zephyr_discovery.Mesh,
+		meshService *smh_discovery.MeshService,
+		allMeshServices []*smh_discovery.MeshService,
+		mesh *smh_discovery.Mesh,
 		translationValidator mesh_translation.TranslationValidator,
-		allTrafficPolicies []*zephyr_networking.TrafficPolicy,
+		allTrafficPolicies []*smh_networking.TrafficPolicy,
 	) (*CollectionResult, error)
 }
 
 type CollectionResult struct {
 	// the policies (a mix of updated and last-known good state) that should be recorded next on the service
-	PoliciesToRecordOnService []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy
+	PoliciesToRecordOnService []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy
 
-	PolicyToConflictErrors   map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError
-	PolicyToTranslatorErrors map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError
+	PolicyToConflictErrors   map[*smh_networking.TrafficPolicy][]*smh_networking_types.TrafficPolicyStatus_ConflictError
+	PolicyToTranslatorErrors map[*smh_networking.TrafficPolicy][]*smh_networking_types.TrafficPolicyStatus_TranslatorError
 }
 
 // This interface serves to abstract away the details of merging new entries into various objects' statuses. Its behavior needs to
@@ -43,13 +43,13 @@ type CollectionResult struct {
 // These methods can change the objects they are handed- they return true if the object was changed in memory and should be updated in the persistence layer
 type InMemoryStatusMutator interface {
 	MutateServicePolicies(
-		meshService *zephyr_discovery.MeshService,
-		newlyComputedMergeablePolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
+		meshService *smh_discovery.MeshService,
+		newlyComputedMergeablePolicies []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 	) (policyNeedsUpdating bool)
 	MutateConflictAndTranslatorErrors(
-		policy *zephyr_networking.TrafficPolicy,
-		newConflictErrors []*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
-		newTranslationErrors []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError,
+		policy *smh_networking.TrafficPolicy,
+		newConflictErrors []*smh_networking_types.TrafficPolicyStatus_ConflictError,
+		newTranslationErrors []*smh_networking_types.TrafficPolicyStatus_TranslatorError,
 	) (policyNeedsUpdating bool)
 }
 
@@ -57,14 +57,14 @@ type Aggregator interface {
 	// Check whether any of this incoming policy's configuration directly conflicts with the policies in the given list.
 	// This is agnostic of source/destination; instead, we just a look at the actual routing configuration in the list.
 	FindMergeConflict(
-		trafficPolicyToMerge *zephyr_networking_types.TrafficPolicySpec,
-		policiesToMergeWith []*zephyr_networking_types.TrafficPolicySpec,
-		meshService *zephyr_discovery.MeshService,
-	) *zephyr_networking_types.TrafficPolicyStatus_ConflictError
+		trafficPolicyToMerge *smh_networking_types.TrafficPolicySpec,
+		policiesToMergeWith []*smh_networking_types.TrafficPolicySpec,
+		meshService *smh_discovery.MeshService,
+	) *smh_networking_types.TrafficPolicyStatus_ConflictError
 
 	// return the policies that have the given mesh service as a destination
 	PoliciesForService(
-		trafficPolicies []*zephyr_networking.TrafficPolicy,
-		meshService *zephyr_discovery.MeshService,
-	) ([]*zephyr_networking.TrafficPolicy, error)
+		trafficPolicies []*smh_networking.TrafficPolicy,
+		meshService *smh_discovery.MeshService,
+	) ([]*smh_networking.TrafficPolicy, error)
 }

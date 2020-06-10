@@ -10,35 +10,35 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
-	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	v1alpha11 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	v1alpha11 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 )
 
-// MockTrafficPolicyPrinter is a mock of TrafficPolicyPrinter interface.
+// MockTrafficPolicyPrinter is a mock of TrafficPolicyPrinter interface
 type MockTrafficPolicyPrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockTrafficPolicyPrinterMockRecorder
 }
 
-// MockTrafficPolicyPrinterMockRecorder is the mock recorder for MockTrafficPolicyPrinter.
+// MockTrafficPolicyPrinterMockRecorder is the mock recorder for MockTrafficPolicyPrinter
 type MockTrafficPolicyPrinterMockRecorder struct {
 	mock *MockTrafficPolicyPrinter
 }
 
-// NewMockTrafficPolicyPrinter creates a new mock instance.
+// NewMockTrafficPolicyPrinter creates a new mock instance
 func NewMockTrafficPolicyPrinter(ctrl *gomock.Controller) *MockTrafficPolicyPrinter {
 	mock := &MockTrafficPolicyPrinter{ctrl: ctrl}
 	mock.recorder = &MockTrafficPolicyPrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockTrafficPolicyPrinter) EXPECT() *MockTrafficPolicyPrinterMockRecorder {
 	return m.recorder
 }
 
-// Print mocks base method.
+// Print mocks base method
 func (m *MockTrafficPolicyPrinter) Print(out io.Writer, printMode table_printing.PrintMode, trafficPolicies []*v1alpha10.TrafficPolicy) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", out, printMode, trafficPolicies)
@@ -46,36 +46,36 @@ func (m *MockTrafficPolicyPrinter) Print(out io.Writer, printMode table_printing
 	return ret0
 }
 
-// Print indicates an expected call of Print.
+// Print indicates an expected call of Print
 func (mr *MockTrafficPolicyPrinterMockRecorder) Print(out, printMode, trafficPolicies interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockTrafficPolicyPrinter)(nil).Print), out, printMode, trafficPolicies)
 }
 
-// MockAccessControlPolicyPrinter is a mock of AccessControlPolicyPrinter interface.
+// MockAccessControlPolicyPrinter is a mock of AccessControlPolicyPrinter interface
 type MockAccessControlPolicyPrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockAccessControlPolicyPrinterMockRecorder
 }
 
-// MockAccessControlPolicyPrinterMockRecorder is the mock recorder for MockAccessControlPolicyPrinter.
+// MockAccessControlPolicyPrinterMockRecorder is the mock recorder for MockAccessControlPolicyPrinter
 type MockAccessControlPolicyPrinterMockRecorder struct {
 	mock *MockAccessControlPolicyPrinter
 }
 
-// NewMockAccessControlPolicyPrinter creates a new mock instance.
+// NewMockAccessControlPolicyPrinter creates a new mock instance
 func NewMockAccessControlPolicyPrinter(ctrl *gomock.Controller) *MockAccessControlPolicyPrinter {
 	mock := &MockAccessControlPolicyPrinter{ctrl: ctrl}
 	mock.recorder = &MockAccessControlPolicyPrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockAccessControlPolicyPrinter) EXPECT() *MockAccessControlPolicyPrinterMockRecorder {
 	return m.recorder
 }
 
-// Print mocks base method.
+// Print mocks base method
 func (m *MockAccessControlPolicyPrinter) Print(out io.Writer, printMode table_printing.PrintMode, accessControlPolicies []*v1alpha10.AccessControlPolicy) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", out, printMode, accessControlPolicies)
@@ -83,36 +83,36 @@ func (m *MockAccessControlPolicyPrinter) Print(out io.Writer, printMode table_pr
 	return ret0
 }
 
-// Print indicates an expected call of Print.
+// Print indicates an expected call of Print
 func (mr *MockAccessControlPolicyPrinterMockRecorder) Print(out, printMode, accessControlPolicies interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockAccessControlPolicyPrinter)(nil).Print), out, printMode, accessControlPolicies)
 }
 
-// MockVirtualMeshPrinter is a mock of VirtualMeshPrinter interface.
+// MockVirtualMeshPrinter is a mock of VirtualMeshPrinter interface
 type MockVirtualMeshPrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockVirtualMeshPrinterMockRecorder
 }
 
-// MockVirtualMeshPrinterMockRecorder is the mock recorder for MockVirtualMeshPrinter.
+// MockVirtualMeshPrinterMockRecorder is the mock recorder for MockVirtualMeshPrinter
 type MockVirtualMeshPrinterMockRecorder struct {
 	mock *MockVirtualMeshPrinter
 }
 
-// NewMockVirtualMeshPrinter creates a new mock instance.
+// NewMockVirtualMeshPrinter creates a new mock instance
 func NewMockVirtualMeshPrinter(ctrl *gomock.Controller) *MockVirtualMeshPrinter {
 	mock := &MockVirtualMeshPrinter{ctrl: ctrl}
 	mock.recorder = &MockVirtualMeshPrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockVirtualMeshPrinter) EXPECT() *MockVirtualMeshPrinterMockRecorder {
 	return m.recorder
 }
 
-// Print mocks base method.
+// Print mocks base method
 func (m *MockVirtualMeshPrinter) Print(out io.Writer, virtualMeshes []*v1alpha10.VirtualMesh) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", out, virtualMeshes)
@@ -120,36 +120,36 @@ func (m *MockVirtualMeshPrinter) Print(out io.Writer, virtualMeshes []*v1alpha10
 	return ret0
 }
 
-// Print indicates an expected call of Print.
+// Print indicates an expected call of Print
 func (mr *MockVirtualMeshPrinterMockRecorder) Print(out, virtualMeshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockVirtualMeshPrinter)(nil).Print), out, virtualMeshes)
 }
 
-// MockVirtualMeshCSRPrinter is a mock of VirtualMeshCSRPrinter interface.
+// MockVirtualMeshCSRPrinter is a mock of VirtualMeshCSRPrinter interface
 type MockVirtualMeshCSRPrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockVirtualMeshCSRPrinterMockRecorder
 }
 
-// MockVirtualMeshCSRPrinterMockRecorder is the mock recorder for MockVirtualMeshCSRPrinter.
+// MockVirtualMeshCSRPrinterMockRecorder is the mock recorder for MockVirtualMeshCSRPrinter
 type MockVirtualMeshCSRPrinterMockRecorder struct {
 	mock *MockVirtualMeshCSRPrinter
 }
 
-// NewMockVirtualMeshCSRPrinter creates a new mock instance.
+// NewMockVirtualMeshCSRPrinter creates a new mock instance
 func NewMockVirtualMeshCSRPrinter(ctrl *gomock.Controller) *MockVirtualMeshCSRPrinter {
 	mock := &MockVirtualMeshCSRPrinter{ctrl: ctrl}
 	mock.recorder = &MockVirtualMeshCSRPrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockVirtualMeshCSRPrinter) EXPECT() *MockVirtualMeshCSRPrinterMockRecorder {
 	return m.recorder
 }
 
-// Print mocks base method.
+// Print mocks base method
 func (m *MockVirtualMeshCSRPrinter) Print(out io.Writer, vmcsrs []*v1alpha11.VirtualMeshCertificateSigningRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", out, vmcsrs)
@@ -157,36 +157,36 @@ func (m *MockVirtualMeshCSRPrinter) Print(out io.Writer, vmcsrs []*v1alpha11.Vir
 	return ret0
 }
 
-// Print indicates an expected call of Print.
+// Print indicates an expected call of Print
 func (mr *MockVirtualMeshCSRPrinterMockRecorder) Print(out, vmcsrs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockVirtualMeshCSRPrinter)(nil).Print), out, vmcsrs)
 }
 
-// MockMeshPrinter is a mock of MeshPrinter interface.
+// MockMeshPrinter is a mock of MeshPrinter interface
 type MockMeshPrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshPrinterMockRecorder
 }
 
-// MockMeshPrinterMockRecorder is the mock recorder for MockMeshPrinter.
+// MockMeshPrinterMockRecorder is the mock recorder for MockMeshPrinter
 type MockMeshPrinterMockRecorder struct {
 	mock *MockMeshPrinter
 }
 
-// NewMockMeshPrinter creates a new mock instance.
+// NewMockMeshPrinter creates a new mock instance
 func NewMockMeshPrinter(ctrl *gomock.Controller) *MockMeshPrinter {
 	mock := &MockMeshPrinter{ctrl: ctrl}
 	mock.recorder = &MockMeshPrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMeshPrinter) EXPECT() *MockMeshPrinterMockRecorder {
 	return m.recorder
 }
 
-// Print mocks base method.
+// Print mocks base method
 func (m *MockMeshPrinter) Print(out io.Writer, meshes []*v1alpha1.Mesh) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", out, meshes)
@@ -194,36 +194,36 @@ func (m *MockMeshPrinter) Print(out io.Writer, meshes []*v1alpha1.Mesh) error {
 	return ret0
 }
 
-// Print indicates an expected call of Print.
+// Print indicates an expected call of Print
 func (mr *MockMeshPrinterMockRecorder) Print(out, meshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockMeshPrinter)(nil).Print), out, meshes)
 }
 
-// MockMeshWorkloadPrinter is a mock of MeshWorkloadPrinter interface.
+// MockMeshWorkloadPrinter is a mock of MeshWorkloadPrinter interface
 type MockMeshWorkloadPrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshWorkloadPrinterMockRecorder
 }
 
-// MockMeshWorkloadPrinterMockRecorder is the mock recorder for MockMeshWorkloadPrinter.
+// MockMeshWorkloadPrinterMockRecorder is the mock recorder for MockMeshWorkloadPrinter
 type MockMeshWorkloadPrinterMockRecorder struct {
 	mock *MockMeshWorkloadPrinter
 }
 
-// NewMockMeshWorkloadPrinter creates a new mock instance.
+// NewMockMeshWorkloadPrinter creates a new mock instance
 func NewMockMeshWorkloadPrinter(ctrl *gomock.Controller) *MockMeshWorkloadPrinter {
 	mock := &MockMeshWorkloadPrinter{ctrl: ctrl}
 	mock.recorder = &MockMeshWorkloadPrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMeshWorkloadPrinter) EXPECT() *MockMeshWorkloadPrinterMockRecorder {
 	return m.recorder
 }
 
-// Print mocks base method.
+// Print mocks base method
 func (m *MockMeshWorkloadPrinter) Print(out io.Writer, meshWorkloads []*v1alpha1.MeshWorkload) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", out, meshWorkloads)
@@ -231,36 +231,36 @@ func (m *MockMeshWorkloadPrinter) Print(out io.Writer, meshWorkloads []*v1alpha1
 	return ret0
 }
 
-// Print indicates an expected call of Print.
+// Print indicates an expected call of Print
 func (mr *MockMeshWorkloadPrinterMockRecorder) Print(out, meshWorkloads interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockMeshWorkloadPrinter)(nil).Print), out, meshWorkloads)
 }
 
-// MockMeshServicePrinter is a mock of MeshServicePrinter interface.
+// MockMeshServicePrinter is a mock of MeshServicePrinter interface
 type MockMeshServicePrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshServicePrinterMockRecorder
 }
 
-// MockMeshServicePrinterMockRecorder is the mock recorder for MockMeshServicePrinter.
+// MockMeshServicePrinterMockRecorder is the mock recorder for MockMeshServicePrinter
 type MockMeshServicePrinterMockRecorder struct {
 	mock *MockMeshServicePrinter
 }
 
-// NewMockMeshServicePrinter creates a new mock instance.
+// NewMockMeshServicePrinter creates a new mock instance
 func NewMockMeshServicePrinter(ctrl *gomock.Controller) *MockMeshServicePrinter {
 	mock := &MockMeshServicePrinter{ctrl: ctrl}
 	mock.recorder = &MockMeshServicePrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMeshServicePrinter) EXPECT() *MockMeshServicePrinterMockRecorder {
 	return m.recorder
 }
 
-// Print mocks base method.
+// Print mocks base method
 func (m *MockMeshServicePrinter) Print(out io.Writer, meshServices []*v1alpha1.MeshService) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", out, meshServices)
@@ -268,36 +268,36 @@ func (m *MockMeshServicePrinter) Print(out io.Writer, meshServices []*v1alpha1.M
 	return ret0
 }
 
-// Print indicates an expected call of Print.
+// Print indicates an expected call of Print
 func (mr *MockMeshServicePrinterMockRecorder) Print(out, meshServices interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockMeshServicePrinter)(nil).Print), out, meshServices)
 }
 
-// MockKubernetesClusterPrinter is a mock of KubernetesClusterPrinter interface.
+// MockKubernetesClusterPrinter is a mock of KubernetesClusterPrinter interface
 type MockKubernetesClusterPrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubernetesClusterPrinterMockRecorder
 }
 
-// MockKubernetesClusterPrinterMockRecorder is the mock recorder for MockKubernetesClusterPrinter.
+// MockKubernetesClusterPrinterMockRecorder is the mock recorder for MockKubernetesClusterPrinter
 type MockKubernetesClusterPrinterMockRecorder struct {
 	mock *MockKubernetesClusterPrinter
 }
 
-// NewMockKubernetesClusterPrinter creates a new mock instance.
+// NewMockKubernetesClusterPrinter creates a new mock instance
 func NewMockKubernetesClusterPrinter(ctrl *gomock.Controller) *MockKubernetesClusterPrinter {
 	mock := &MockKubernetesClusterPrinter{ctrl: ctrl}
 	mock.recorder = &MockKubernetesClusterPrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockKubernetesClusterPrinter) EXPECT() *MockKubernetesClusterPrinterMockRecorder {
 	return m.recorder
 }
 
-// Print mocks base method.
+// Print mocks base method
 func (m *MockKubernetesClusterPrinter) Print(out io.Writer, meshes []*v1alpha1.KubernetesCluster) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", out, meshes)
@@ -305,7 +305,7 @@ func (m *MockKubernetesClusterPrinter) Print(out io.Writer, meshes []*v1alpha1.K
 	return ret0
 }
 
-// Print indicates an expected call of Print.
+// Print indicates an expected call of Print
 func (mr *MockKubernetesClusterPrinterMockRecorder) Print(out, meshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockKubernetesClusterPrinter)(nil).Print), out, meshes)

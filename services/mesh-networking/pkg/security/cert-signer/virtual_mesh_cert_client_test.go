@@ -8,15 +8,15 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/mocks"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 	cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
+	mock_smh_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.smh.solo.io/v1alpha1"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +28,7 @@ var _ = Describe("virtual mesh cert client", func() {
 		ctrl                  *gomock.Controller
 		ctx                   context.Context
 		secretClient          *mock_kubernetes_core.MockSecretClient
-		virtualMeshClient     *mock_zephyr_networking.MockVirtualMeshClient
+		virtualMeshClient     *mock_smh_networking.MockVirtualMeshClient
 		virtualMeshCertClient cert_signer.VirtualMeshCertClient
 		rootCertGenerator     *mock_certgen.MockRootCertGenerator
 		testErr               = eris.New("hello")
@@ -38,13 +38,13 @@ var _ = Describe("virtual mesh cert client", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		secretClient = mock_kubernetes_core.NewMockSecretClient(ctrl)
-		virtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
+		virtualMeshClient = mock_smh_networking.NewMockVirtualMeshClient(ctrl)
 		rootCertGenerator = mock_certgen.NewMockRootCertGenerator(ctrl)
 		virtualMeshCertClient = cert_signer.NewVirtualMeshCertClient(secretClient, virtualMeshClient, rootCertGenerator)
 	})
 
 	It("will fail if virtualMesh cannot be found", func() {
-		meshRef := &zephyr_core_types.ResourceRef{
+		meshRef := &smh_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
@@ -55,20 +55,20 @@ var _ = Describe("virtual mesh cert client", func() {
 	})
 
 	It("will use user provided trust bundle in vm if set", func() {
-		meshRef := &zephyr_core_types.ResourceRef{
+		meshRef := &smh_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
-		vm := &zephyr_networking.VirtualMesh{
+		vm := &smh_networking.VirtualMesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
 			},
-			Spec: zephyr_networking_types.VirtualMeshSpec{
-				CertificateAuthority: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
-					Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_{
-						Provided: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided{
-							Certificate: &zephyr_core_types.ResourceRef{
+			Spec: smh_networking_types.VirtualMeshSpec{
+				CertificateAuthority: &smh_networking_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &smh_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_{
+						Provided: &smh_networking_types.VirtualMeshSpec_CertificateAuthority_Provided{
+							Certificate: &smh_core_types.ResourceRef{
 								Name:      "tb_name",
 								Namespace: "tb_namespace",
 							},
@@ -91,20 +91,20 @@ var _ = Describe("virtual mesh cert client", func() {
 	})
 
 	It("will return proper CA data", func() {
-		meshRef := &zephyr_core_types.ResourceRef{
+		meshRef := &smh_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
-		vm := &zephyr_networking.VirtualMesh{
+		vm := &smh_networking.VirtualMesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
 			},
-			Spec: zephyr_networking_types.VirtualMeshSpec{
-				CertificateAuthority: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
-					Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_{
-						Provided: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided{
-							Certificate: &zephyr_core_types.ResourceRef{
+			Spec: smh_networking_types.VirtualMeshSpec{
+				CertificateAuthority: &smh_networking_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &smh_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_{
+						Provided: &smh_networking_types.VirtualMeshSpec_CertificateAuthority_Provided{
+							Certificate: &smh_core_types.ResourceRef{
 								Name:      "tb_name",
 								Namespace: "tb_namespace",
 							},
@@ -143,19 +143,19 @@ var _ = Describe("virtual mesh cert client", func() {
 	})
 
 	It("will create auto-generated root cert if CertificateAuthority is not user provided", func() {
-		meshRef := &zephyr_core_types.ResourceRef{
+		meshRef := &smh_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
-		vm := &zephyr_networking.VirtualMesh{
+		vm := &smh_networking.VirtualMesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
 			},
-			Spec: zephyr_networking_types.VirtualMeshSpec{
-				CertificateAuthority: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
-					Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
-						Builtin: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{},
+			Spec: smh_networking_types.VirtualMeshSpec{
+				CertificateAuthority: &smh_networking_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &smh_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
+						Builtin: &smh_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{},
 					},
 				},
 			},
@@ -180,19 +180,19 @@ var _ = Describe("virtual mesh cert client", func() {
 	})
 
 	It("will get auto-generated root cert if CertificateAuthority is not user provided and already exists", func() {
-		meshRef := &zephyr_core_types.ResourceRef{
+		meshRef := &smh_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
-		vm := &zephyr_networking.VirtualMesh{
+		vm := &smh_networking.VirtualMesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
 			},
-			Spec: zephyr_networking_types.VirtualMeshSpec{
-				CertificateAuthority: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority{
-					Type: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
-						Builtin: &zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{},
+			Spec: smh_networking_types.VirtualMeshSpec{
+				CertificateAuthority: &smh_networking_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &smh_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
+						Builtin: &smh_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin{},
 					},
 				},
 			},
@@ -209,16 +209,16 @@ var _ = Describe("virtual mesh cert client", func() {
 	})
 
 	It("will default to using builtin cert", func() {
-		meshRef := &zephyr_core_types.ResourceRef{
+		meshRef := &smh_core_types.ResourceRef{
 			Name:      "name",
 			Namespace: "namespace",
 		}
-		vm := &zephyr_networking.VirtualMesh{
+		vm := &smh_networking.VirtualMesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      meshRef.Name,
 				Namespace: meshRef.Namespace,
 			},
-			Spec: zephyr_networking_types.VirtualMeshSpec{},
+			Spec: smh_networking_types.VirtualMeshSpec{},
 		}
 		virtualMeshClient.EXPECT().GetVirtualMesh(ctx, client.ObjectKey{Name: meshRef.Name, Namespace: meshRef.Namespace}).Return(vm, nil)
 		expectedRootCaData := &cert_secrets.RootCAData{}

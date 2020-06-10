@@ -1,7 +1,7 @@
 package event_watcher_factories
 
 import (
-	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	k8s_apps_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
@@ -23,11 +23,11 @@ type PodEventWatcherFactory interface {
 }
 
 type MeshEventWatcherFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) zephyr_discovery_controller.MeshEventWatcher
+	Build(mgr mc_manager.AsyncManager, clusterName string) smh_discovery_controller.MeshEventWatcher
 }
 
 type MeshWorkloadEventWatcherFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) zephyr_discovery_controller.MeshWorkloadEventWatcher
+	Build(mgr mc_manager.AsyncManager, clusterName string) smh_discovery_controller.MeshWorkloadEventWatcher
 }
 
 type ServiceEventWatcherFactory interface {

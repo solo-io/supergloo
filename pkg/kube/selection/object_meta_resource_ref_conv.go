@@ -3,7 +3,7 @@ package selection
 import (
 	"fmt"
 
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -19,8 +19,8 @@ func ToUniqueSingleClusterString(obj k8s_meta_types.ObjectMeta) string {
 	return fmt.Sprintf("%s+%s", obj.Name, obj.Namespace)
 }
 
-func ObjectMetaToResourceRef(objMeta k8s_meta_types.ObjectMeta) *zephyr_core_types.ResourceRef {
-	return &zephyr_core_types.ResourceRef{
+func ObjectMetaToResourceRef(objMeta k8s_meta_types.ObjectMeta) *smh_core_types.ResourceRef {
+	return &smh_core_types.ResourceRef{
 		Name:      objMeta.GetName(),
 		Namespace: objMeta.GetNamespace(),
 	}
@@ -33,14 +33,14 @@ func ObjectMetaToObjectKey(objMeta k8s_meta_types.ObjectMeta) client.ObjectKey {
 	}
 }
 
-func ResourceRefToObjectMeta(ref *zephyr_core_types.ResourceRef) k8s_meta_types.ObjectMeta {
+func ResourceRefToObjectMeta(ref *smh_core_types.ResourceRef) k8s_meta_types.ObjectMeta {
 	return k8s_meta_types.ObjectMeta{
 		Name:      ref.GetName(),
 		Namespace: ref.GetNamespace(),
 	}
 }
 
-func ResourceRefToObjectKey(ref *zephyr_core_types.ResourceRef) client.ObjectKey {
+func ResourceRefToObjectKey(ref *smh_core_types.ResourceRef) client.ObjectKey {
 	return client.ObjectKey{
 		Name:      ref.GetName(),
 		Namespace: ref.GetNamespace(),

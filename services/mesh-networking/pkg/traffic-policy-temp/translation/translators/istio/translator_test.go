@@ -5,10 +5,10 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mock_selection "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
@@ -23,10 +23,10 @@ import (
 var _ = Describe("Istio Traffic Policy Translator", func() {
 	var (
 		ctrl      *gomock.Controller
-		istioMesh = &zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{},
+		istioMesh = &smh_discovery.Mesh{
+			Spec: smh_discovery_types.MeshSpec{
+				MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{},
 				},
 			},
 		}
@@ -43,15 +43,15 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 	When("a service has no policies applying to it", func() {
 		It("should not error", func() {
 			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
-			serviceBeingTranslated := &zephyr_discovery.MeshService{
+			serviceBeingTranslated := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      "kube-svc",
 							Namespace: "application-namespace",
 						},
@@ -62,7 +62,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 			result, errs := translator.Translate(
 				serviceBeingTranslated,
-				[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
 				nil,
 			)
@@ -85,25 +85,25 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 	When("there are policies that need to be translated", func() {
 		It("should yield a virtual service", func() {
 			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
-			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref:               &zephyr_core_types.ResourceRef{Name: "policy-1"},
-					TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{},
+					Ref:               &smh_core_types.ResourceRef{Name: "policy-1"},
+					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{},
 				},
 			}
-			serviceBeingTranslated := &zephyr_discovery.MeshService{
+			serviceBeingTranslated := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      "kube-svc",
 							Namespace: "application-namespace",
 						},
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 							Port:     8000,
 							Name:     "test-port",
 							Protocol: "tcp",
@@ -115,7 +115,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 			result, errs := translator.Translate(
 				serviceBeingTranslated,
-				[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
 				policies,
 			)
@@ -153,21 +153,21 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			When("no ports are set on the service", func() {
 				It("should report an error", func() {
 					resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
-					policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+					policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Ref:               &zephyr_core_types.ResourceRef{Name: "policy-1"},
-							TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{},
+							Ref:               &smh_core_types.ResourceRef{Name: "policy-1"},
+							TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{},
 						},
 					}
-					serviceBeingTranslated := &zephyr_discovery.MeshService{
+					serviceBeingTranslated := &smh_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service",
 							Namespace: container_runtime.GetWriteNamespace(),
 						},
-						Spec: zephyr_discovery_types.MeshServiceSpec{
+						Spec: smh_discovery_types.MeshServiceSpec{
 							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-								Ref: &zephyr_core_types.ResourceRef{
+							KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+								Ref: &smh_core_types.ResourceRef{
 									Name:      "kube-svc",
 									Namespace: "application-namespace",
 								},
@@ -178,13 +178,13 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 					result, errs := translator.Translate(
 						serviceBeingTranslated,
-						[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+						[]*smh_discovery.MeshService{serviceBeingTranslated},
 						istioMesh,
 						policies,
 					)
 					Expect(errs).To(Equal([]*mesh_translation.TranslationError{{
 						Policy: policies[0],
-						TranslatorErrors: []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{{
+						TranslatorErrors: []*smh_networking_types.TrafficPolicyStatus_TranslatorError{{
 							TranslatorId: translator.Name(),
 							ErrorMessage: NoSpecifiedPortError(serviceBeingTranslated).Error(),
 						}},
@@ -196,25 +196,25 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			When("multiple ports are set on the service", func() {
 				It("should report an error", func() {
 					resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
-					policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+					policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Ref:               &zephyr_core_types.ResourceRef{Name: "policy-1"},
-							TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{},
+							Ref:               &smh_core_types.ResourceRef{Name: "policy-1"},
+							TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{},
 						},
 					}
-					serviceBeingTranslated := &zephyr_discovery.MeshService{
+					serviceBeingTranslated := &smh_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service",
 							Namespace: container_runtime.GetWriteNamespace(),
 						},
-						Spec: zephyr_discovery_types.MeshServiceSpec{
+						Spec: smh_discovery_types.MeshServiceSpec{
 							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-								Ref: &zephyr_core_types.ResourceRef{
+							KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+								Ref: &smh_core_types.ResourceRef{
 									Name:      "kube-svc",
 									Namespace: "application-namespace",
 								},
-								Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
+								Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 									{
 										Name: "port-1",
 									},
@@ -229,13 +229,13 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 					result, errs := translator.Translate(
 						serviceBeingTranslated,
-						[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+						[]*smh_discovery.MeshService{serviceBeingTranslated},
 						istioMesh,
 						policies,
 					)
 					Expect(errs).To(Equal([]*mesh_translation.TranslationError{{
 						Policy: policies[0],
-						TranslatorErrors: []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{{
+						TranslatorErrors: []*smh_networking_types.TrafficPolicyStatus_TranslatorError{{
 							TranslatorId: translator.Name(),
 							ErrorMessage: NoSpecifiedPortError(serviceBeingTranslated).Error(),
 						}},
@@ -247,30 +247,30 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 		It("should translate retries", func() {
 			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
-			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-					TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-						Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 							Attempts:      5,
 							PerTryTimeout: &proto_types.Duration{Seconds: 2},
 						},
 					},
 				},
 			}
-			serviceBeingTranslated := &zephyr_discovery.MeshService{
+			serviceBeingTranslated := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      "kube-svc",
 							Namespace: "application-namespace",
 						},
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 							Port:     8000,
 							Name:     "test-port",
 							Protocol: "tcp",
@@ -282,7 +282,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 			result, errs := translator.Translate(
 				serviceBeingTranslated,
-				[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
 				policies,
 			)
@@ -311,15 +311,15 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 		It("should translate CORS policy", func() {
 			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
-			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-					TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-						CorsPolicy: &zephyr_networking_types.TrafficPolicySpec_CorsPolicy{
-							AllowOrigins: []*zephyr_networking_types.TrafficPolicySpec_StringMatch{
-								{MatchType: &zephyr_networking_types.TrafficPolicySpec_StringMatch_Exact{Exact: "exact"}},
-								{MatchType: &zephyr_networking_types.TrafficPolicySpec_StringMatch_Prefix{Prefix: "prefix"}},
-								{MatchType: &zephyr_networking_types.TrafficPolicySpec_StringMatch_Regex{Regex: "regex"}},
+					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						CorsPolicy: &smh_networking_types.TrafficPolicySpec_CorsPolicy{
+							AllowOrigins: []*smh_networking_types.TrafficPolicySpec_StringMatch{
+								{MatchType: &smh_networking_types.TrafficPolicySpec_StringMatch_Exact{Exact: "exact"}},
+								{MatchType: &smh_networking_types.TrafficPolicySpec_StringMatch_Prefix{Prefix: "prefix"}},
+								{MatchType: &smh_networking_types.TrafficPolicySpec_StringMatch_Regex{Regex: "regex"}},
 							},
 							AllowMethods:     []string{"GET", "POST"},
 							AllowHeaders:     []string{"Header1", "Header2"},
@@ -330,19 +330,19 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					},
 				},
 			}
-			serviceBeingTranslated := &zephyr_discovery.MeshService{
+			serviceBeingTranslated := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      "kube-svc",
 							Namespace: "application-namespace",
 						},
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 							Port:     8000,
 							Name:     "test-port",
 							Protocol: "tcp",
@@ -354,7 +354,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 			result, errs := translator.Translate(
 				serviceBeingTranslated,
-				[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
 				policies,
 			)
@@ -391,11 +391,11 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 		It("should translate HeaderManipulation", func() {
 			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
-			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-					TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-						HeaderManipulation: &zephyr_networking_types.TrafficPolicySpec_HeaderManipulation{
+					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						HeaderManipulation: &smh_networking_types.TrafficPolicySpec_HeaderManipulation{
 							AppendRequestHeaders:  map[string]string{"a": "b"},
 							RemoveRequestHeaders:  []string{"3", "4"},
 							AppendResponseHeaders: map[string]string{"foo": "bar"},
@@ -404,19 +404,19 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					},
 				},
 			}
-			serviceBeingTranslated := &zephyr_discovery.MeshService{
+			serviceBeingTranslated := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      "kube-svc",
 							Namespace: "application-namespace",
 						},
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 							Port:     8000,
 							Name:     "test-port",
 							Protocol: "tcp",
@@ -428,7 +428,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 			result, errs := translator.Translate(
 				serviceBeingTranslated,
-				[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
 				policies,
 			)
@@ -469,12 +469,12 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					destNamespace := "namespace"
 					port := uint32(9080)
 					destCluster := "test-cluster"
-					policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+					policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-							TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-								Mirror: &zephyr_networking_types.TrafficPolicySpec_Mirror{
-									Destination: &zephyr_core_types.ResourceRef{
+							Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+							TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+								Mirror: &smh_networking_types.TrafficPolicySpec_Mirror{
+									Destination: &smh_core_types.ResourceRef{
 										Name:      destName,
 										Namespace: destNamespace,
 										Cluster:   destCluster,
@@ -485,20 +485,20 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							},
 						},
 					}
-					serviceBeingTranslated := &zephyr_discovery.MeshService{
+					serviceBeingTranslated := &smh_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service",
 							Namespace: container_runtime.GetWriteNamespace(),
 						},
-						Spec: zephyr_discovery_types.MeshServiceSpec{
+						Spec: smh_discovery_types.MeshServiceSpec{
 							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-								Ref: &zephyr_core_types.ResourceRef{
+							KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+								Ref: &smh_core_types.ResourceRef{
 									Name:      destName,
 									Namespace: destNamespace,
 									Cluster:   destCluster,
 								},
-								Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+								Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 									Port:     8000,
 									Name:     "test-port",
 									Protocol: "tcp",
@@ -506,20 +506,20 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							},
 						},
 					}
-					otherService := &zephyr_discovery.MeshService{
+					otherService := &smh_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service-being-mirrored-to",
 							Namespace: container_runtime.GetWriteNamespace(),
 						},
-						Spec: zephyr_discovery_types.MeshServiceSpec{
+						Spec: smh_discovery_types.MeshServiceSpec{
 							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-								Ref: &zephyr_core_types.ResourceRef{
+							KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+								Ref: &smh_core_types.ResourceRef{
 									Name:      destName,
 									Namespace: destNamespace,
 									Cluster:   destCluster,
 								},
-								Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+								Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 									Port:     8000,
 									Name:     "test-port",
 									Protocol: "tcp",
@@ -527,7 +527,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							},
 						},
 					}
-					allServices := []*zephyr_discovery.MeshService{serviceBeingTranslated, serviceBeingTranslated}
+					allServices := []*smh_discovery.MeshService{serviceBeingTranslated, serviceBeingTranslated}
 
 					resourceSelector.EXPECT().
 						FindMeshServiceByRefSelector(
@@ -579,12 +579,12 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					destNamespace := "namespace"
 					port := uint32(9080)
 					destCluster := "test-cluster"
-					policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+					policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-							TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-								Mirror: &zephyr_networking_types.TrafficPolicySpec_Mirror{
-									Destination: &zephyr_core_types.ResourceRef{
+							Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+							TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+								Mirror: &smh_networking_types.TrafficPolicySpec_Mirror{
+									Destination: &smh_core_types.ResourceRef{
 										Name:      destName,
 										Namespace: destNamespace,
 										Cluster:   destCluster + "-remote-version",
@@ -595,20 +595,20 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							},
 						},
 					}
-					serviceBeingTranslated := &zephyr_discovery.MeshService{
+					serviceBeingTranslated := &smh_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service",
 							Namespace: container_runtime.GetWriteNamespace(),
 						},
-						Spec: zephyr_discovery_types.MeshServiceSpec{
+						Spec: smh_discovery_types.MeshServiceSpec{
 							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-								Ref: &zephyr_core_types.ResourceRef{
+							KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+								Ref: &smh_core_types.ResourceRef{
 									Name:      destName,
 									Namespace: destNamespace,
 									Cluster:   destCluster,
 								},
-								Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+								Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 									Port:     8000,
 									Name:     "test-port",
 									Protocol: "tcp",
@@ -616,31 +616,31 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							},
 						},
 					}
-					otherService := &zephyr_discovery.MeshService{
+					otherService := &smh_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service-being-mirrored-to",
 							Namespace: container_runtime.GetWriteNamespace(),
 						},
-						Spec: zephyr_discovery_types.MeshServiceSpec{
+						Spec: smh_discovery_types.MeshServiceSpec{
 							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-							KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-								Ref: &zephyr_core_types.ResourceRef{
+							KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+								Ref: &smh_core_types.ResourceRef{
 									Name:      destName,
 									Namespace: destNamespace,
 									Cluster:   destCluster,
 								},
-								Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+								Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 									Port:     8000,
 									Name:     "test-port",
 									Protocol: "tcp",
 								}},
 							},
-							Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
+							Federation: &smh_discovery_types.MeshServiceSpec_Federation{
 								MulticlusterDnsName: "multicluster.dns.name",
 							},
 						},
 					}
-					allServices := []*zephyr_discovery.MeshService{serviceBeingTranslated, serviceBeingTranslated}
+					allServices := []*smh_discovery.MeshService{serviceBeingTranslated, serviceBeingTranslated}
 
 					resourceSelector.EXPECT().
 						FindMeshServiceByRefSelector(
@@ -688,14 +688,14 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 		It("should translate fault injections", func() {
 			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
-			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-					TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-						FaultInjection: &zephyr_networking_types.TrafficPolicySpec_FaultInjection{
-							FaultInjectionType: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay_{
-								Delay: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay{
-									HttpDelayType: &zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay{
+					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						FaultInjection: &smh_networking_types.TrafficPolicySpec_FaultInjection{
+							FaultInjectionType: &smh_networking_types.TrafficPolicySpec_FaultInjection_Delay_{
+								Delay: &smh_networking_types.TrafficPolicySpec_FaultInjection_Delay{
+									HttpDelayType: &smh_networking_types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay{
 										FixedDelay: &proto_types.Duration{Seconds: 2},
 									},
 								},
@@ -705,19 +705,19 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					},
 				},
 			}
-			serviceBeingTranslated := &zephyr_discovery.MeshService{
+			serviceBeingTranslated := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      "kube-svc",
 							Namespace: "application-namespace",
 						},
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 							Port:     8000,
 							Name:     "test-port",
 							Protocol: "tcp",
@@ -729,7 +729,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 			result, errs := translator.Translate(
 				serviceBeingTranslated,
-				[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
 				policies,
 			)
@@ -760,30 +760,30 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 		It("should translate retries", func() {
 			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
-			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-					TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-						Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 							Attempts:      5,
 							PerTryTimeout: &proto_types.Duration{Seconds: 2},
 						},
 					},
 				},
 			}
-			serviceBeingTranslated := &zephyr_discovery.MeshService{
+			serviceBeingTranslated := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      "kube-svc",
 							Namespace: "application-namespace",
 						},
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 							Port:     8000,
 							Name:     "test-port",
 							Protocol: "tcp",
@@ -795,7 +795,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 			result, errs := translator.Translate(
 				serviceBeingTranslated,
-				[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
 				policies,
 			)
@@ -824,13 +824,13 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 		It("should translate HeaderMatchers", func() {
 			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
-			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-					TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-						HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{{
-							Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
-							Headers: []*zephyr_networking_types.TrafficPolicySpec_HeaderMatcher{
+					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						HttpRequestMatchers: []*smh_networking_types.TrafficPolicySpec_HttpMatcher{{
+							Method: &smh_networking_types.TrafficPolicySpec_HttpMethod{Method: smh_core_types.HttpMethodValue_GET},
+							Headers: []*smh_networking_types.TrafficPolicySpec_HeaderMatcher{
 								{
 									Name:        "name1",
 									Value:       "value1",
@@ -854,19 +854,19 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					},
 				},
 			}
-			serviceBeingTranslated := &zephyr_discovery.MeshService{
+			serviceBeingTranslated := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      "kube-svc",
 							Namespace: "application-namespace",
 						},
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 							Port:     8000,
 							Name:     "test-port",
 							Protocol: "tcp",
@@ -878,7 +878,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 			result, errs := translator.Translate(
 				serviceBeingTranslated,
-				[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
 				policies,
 			)
@@ -929,13 +929,13 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 
 		It("should translate query param matchers", func() {
 			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
-			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-					TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-						HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{{
-							Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
-							QueryParameters: []*zephyr_networking_types.TrafficPolicySpec_QueryParameterMatcher{
+					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						HttpRequestMatchers: []*smh_networking_types.TrafficPolicySpec_HttpMatcher{{
+							Method: &smh_networking_types.TrafficPolicySpec_HttpMethod{Method: smh_core_types.HttpMethodValue_GET},
+							QueryParameters: []*smh_networking_types.TrafficPolicySpec_QueryParameterMatcher{
 								{
 									Name:  "qp1",
 									Value: "qpv1",
@@ -951,19 +951,19 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					},
 				},
 			}
-			serviceBeingTranslated := &zephyr_discovery.MeshService{
+			serviceBeingTranslated := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      "kube-svc",
 							Namespace: "application-namespace",
 						},
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 							Port:     8000,
 							Name:     "test-port",
 							Protocol: "tcp",
@@ -975,7 +975,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 			result, errs := translator.Translate(
 				serviceBeingTranslated,
-				[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
 				policies,
 			)
@@ -1021,14 +1021,14 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				multiClusterDnsName := "multicluster-dns-name"
 				port := uint32(9080)
 				destCluster := "remote-cluster-1"
-				policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 					{
-						Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-						TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-							TrafficShift: &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
-								Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+						Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+						TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+							TrafficShift: &smh_networking_types.TrafficPolicySpec_MultiDestination{
+								Destinations: []*smh_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 									{
-										Destination: &zephyr_core_types.ResourceRef{
+										Destination: &smh_core_types.ResourceRef{
 											Name:      destName,
 											Namespace: destNamespace,
 											Cluster:   destCluster,
@@ -1041,54 +1041,54 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						},
 					},
 				}
-				serviceBeingTranslated := &zephyr_discovery.MeshService{
+				serviceBeingTranslated := &smh_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-service",
 						Namespace: container_runtime.GetWriteNamespace(),
 					},
-					Spec: zephyr_discovery_types.MeshServiceSpec{
+					Spec: smh_discovery_types.MeshServiceSpec{
 						Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-							Ref: &zephyr_core_types.ResourceRef{
+						KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &smh_core_types.ResourceRef{
 								Name:      "kube-svc",
 								Namespace: "application-namespace",
 							},
-							Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+							Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 								Port:     8000,
 								Name:     "test-port",
 								Protocol: "tcp",
 							}},
 						},
-						Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
+						Federation: &smh_discovery_types.MeshServiceSpec_Federation{
 							MulticlusterDnsName: multiClusterDnsName,
 						},
 					},
 				}
-				otherService := &zephyr_discovery.MeshService{
+				otherService := &smh_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-service-being-shifted-to",
 						Namespace: container_runtime.GetWriteNamespace(),
 					},
-					Spec: zephyr_discovery_types.MeshServiceSpec{
+					Spec: smh_discovery_types.MeshServiceSpec{
 						Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-							Ref: &zephyr_core_types.ResourceRef{
+						KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &smh_core_types.ResourceRef{
 								Name:      destName,
 								Namespace: destNamespace,
 								Cluster:   destCluster,
 							},
-							Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+							Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 								Port:     8000,
 								Name:     "test-port",
 								Protocol: "tcp",
 							}},
 						},
-						Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
+						Federation: &smh_discovery_types.MeshServiceSpec_Federation{
 							MulticlusterDnsName: multiClusterDnsName,
 						},
 					},
 				}
-				allServices := []*zephyr_discovery.MeshService{serviceBeingTranslated, otherService}
+				allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
 
 				resourceSelector.EXPECT().
 					FindMeshServiceByRefSelector(
@@ -1135,14 +1135,14 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				port := uint32(9080)
 				multiClusterDnsName := "multi-cluster-dns-name"
 				clusterName := "test-cluster"
-				policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 					{
-						Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-						TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-							TrafficShift: &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
-								Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+						Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+						TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+							TrafficShift: &smh_networking_types.TrafficPolicySpec_MultiDestination{
+								Destinations: []*smh_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 									{
-										Destination: &zephyr_core_types.ResourceRef{
+										Destination: &smh_core_types.ResourceRef{
 											Name:      destName,
 											Namespace: destNamespace,
 											Cluster:   clusterName,
@@ -1156,55 +1156,55 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						},
 					},
 				}
-				serviceBeingTranslated := &zephyr_discovery.MeshService{
+				serviceBeingTranslated := &smh_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-service",
 						Namespace: container_runtime.GetWriteNamespace(),
 					},
-					Spec: zephyr_discovery_types.MeshServiceSpec{
+					Spec: smh_discovery_types.MeshServiceSpec{
 						Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-							Ref: &zephyr_core_types.ResourceRef{
+						KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &smh_core_types.ResourceRef{
 								Name:      "kube-svc",
 								Namespace: "application-namespace",
 								Cluster:   clusterName,
 							},
-							Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+							Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 								Port:     8000,
 								Name:     "test-port",
 								Protocol: "tcp",
 							}},
 						},
-						Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
+						Federation: &smh_discovery_types.MeshServiceSpec_Federation{
 							MulticlusterDnsName: multiClusterDnsName,
 						},
 					},
 				}
-				otherService := &zephyr_discovery.MeshService{
+				otherService := &smh_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-service-being-shifted-to",
 						Namespace: container_runtime.GetWriteNamespace(),
 					},
-					Spec: zephyr_discovery_types.MeshServiceSpec{
+					Spec: smh_discovery_types.MeshServiceSpec{
 						Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-							Ref: &zephyr_core_types.ResourceRef{
+						KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &smh_core_types.ResourceRef{
 								Name:      destName,
 								Namespace: destNamespace,
 								Cluster:   clusterName,
 							},
-							Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+							Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 								Port:     8000,
 								Name:     "test-port",
 								Protocol: "tcp",
 							}},
 						},
-						Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
+						Federation: &smh_discovery_types.MeshServiceSpec_Federation{
 							MulticlusterDnsName: multiClusterDnsName,
 						},
 					},
 				}
-				allServices := []*zephyr_discovery.MeshService{serviceBeingTranslated, otherService}
+				allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
 
 				resourceSelector.EXPECT().
 					FindMeshServiceByRefSelector(
@@ -1247,50 +1247,50 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		It("should deterministically order HTTPRoutes according to decreasing specificity", func() {
 			resourceSelector := mock_selection.NewMockResourceSelector(ctrl)
 			sourceNamespace := "source-namespace"
-			policies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref: &zephyr_core_types.ResourceRef{Name: "policy-1"},
-					TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-						HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						HttpRequestMatchers: []*smh_networking_types.TrafficPolicySpec_HttpMatcher{
 							{
-								PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
+								PathSpecifier: &smh_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 									Exact: "exact-path",
 								},
 							},
 							{
-								PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+								PathSpecifier: &smh_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 									Prefix: "/prefix",
 								},
-								Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{
-									Method: zephyr_core_types.HttpMethodValue_GET,
+								Method: &smh_networking_types.TrafficPolicySpec_HttpMethod{
+									Method: smh_core_types.HttpMethodValue_GET,
 								},
 							},
 							{
-								PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
+								PathSpecifier: &smh_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 									Exact: "exact-path",
 								},
-								Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{
-									Method: zephyr_core_types.HttpMethodValue_GET,
+								Method: &smh_networking_types.TrafficPolicySpec_HttpMethod{
+									Method: smh_core_types.HttpMethodValue_GET,
 								},
 							},
 							{
-								PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
+								PathSpecifier: &smh_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 									Exact: "exact-path",
 								},
-								Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{
-									Method: zephyr_core_types.HttpMethodValue_PUT,
+								Method: &smh_networking_types.TrafficPolicySpec_HttpMethod{
+									Method: smh_core_types.HttpMethodValue_PUT,
 								},
 							},
 							{
-								PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Regex{
+								PathSpecifier: &smh_networking_types.TrafficPolicySpec_HttpMatcher_Regex{
 									Regex: "www*",
 								},
 							},
 							{
-								PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+								PathSpecifier: &smh_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 									Prefix: "/",
 								},
-								Headers: []*zephyr_networking_types.TrafficPolicySpec_HeaderMatcher{
+								Headers: []*smh_networking_types.TrafficPolicySpec_HeaderMatcher{
 									{
 										Name:        "set-cookie",
 										Value:       "foo=bar",
@@ -1299,10 +1299,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 								},
 							},
 							{
-								PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+								PathSpecifier: &smh_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 									Prefix: "/",
 								},
-								Headers: []*zephyr_networking_types.TrafficPolicySpec_HeaderMatcher{
+								Headers: []*smh_networking_types.TrafficPolicySpec_HeaderMatcher{
 									{
 										Name:        "content-type",
 										Value:       "text/html",
@@ -1314,20 +1314,20 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					},
 				},
 			}
-			serviceBeingTranslated := &zephyr_discovery.MeshService{
+			serviceBeingTranslated := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "mesh-service",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      "kube-svc",
 							Namespace: "application-namespace",
 							Cluster:   sourceNamespace,
 						},
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 							Port:     9000,
 							Name:     "test-port",
 							Protocol: "tcp",
@@ -1349,7 +1349,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			translator := NewIstioTrafficPolicyTranslator(resourceSelector)
 			result, errs := translator.Translate(
 				serviceBeingTranslated,
-				[]*zephyr_discovery.MeshService{serviceBeingTranslated},
+				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
 				policies,
 			)

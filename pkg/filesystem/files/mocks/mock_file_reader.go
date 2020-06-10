@@ -10,30 +10,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockFileReader is a mock of FileReader interface.
+// MockFileReader is a mock of FileReader interface
 type MockFileReader struct {
 	ctrl     *gomock.Controller
 	recorder *MockFileReaderMockRecorder
 }
 
-// MockFileReaderMockRecorder is the mock recorder for MockFileReader.
+// MockFileReaderMockRecorder is the mock recorder for MockFileReader
 type MockFileReaderMockRecorder struct {
 	mock *MockFileReader
 }
 
-// NewMockFileReader creates a new mock instance.
+// NewMockFileReader creates a new mock instance
 func NewMockFileReader(ctrl *gomock.Controller) *MockFileReader {
 	mock := &MockFileReader{ctrl: ctrl}
 	mock.recorder = &MockFileReaderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockFileReader) EXPECT() *MockFileReaderMockRecorder {
 	return m.recorder
 }
 
-// Read mocks base method.
+// Read mocks base method
 func (m *MockFileReader) Read(filePath string) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Read", filePath)
@@ -42,13 +42,13 @@ func (m *MockFileReader) Read(filePath string) ([]byte, error) {
 	return ret0, ret1
 }
 
-// Read indicates an expected call of Read.
+// Read indicates an expected call of Read
 func (mr *MockFileReaderMockRecorder) Read(filePath interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockFileReader)(nil).Read), filePath)
 }
 
-// Exists mocks base method.
+// Exists mocks base method
 func (m *MockFileReader) Exists(filePath string) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Exists", filePath)
@@ -57,7 +57,7 @@ func (m *MockFileReader) Exists(filePath string) (bool, error) {
 	return ret0, ret1
 }
 
-// Exists indicates an expected call of Exists.
+// Exists indicates an expected call of Exists
 func (mr *MockFileReaderMockRecorder) Exists(filePath interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockFileReader)(nil).Exists), filePath)

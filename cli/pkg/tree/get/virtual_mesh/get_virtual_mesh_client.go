@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 )
 
@@ -31,7 +31,7 @@ func GetVirtualMeshes(
 	if err != nil {
 		return err
 	}
-	virtualMeshList := make([]*zephyr_networking.VirtualMesh, 0, len(virtualMeshes.Items))
+	virtualMeshList := make([]*smh_networking.VirtualMesh, 0, len(virtualMeshes.Items))
 	for _, v := range virtualMeshes.Items {
 		v := v
 		virtualMeshList = append(virtualMeshList, &v)

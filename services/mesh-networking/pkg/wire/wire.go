@@ -6,10 +6,10 @@ import (
 	"context"
 
 	"github.com/google/wire"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
@@ -23,11 +23,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func MeshServiceReaderProvider(client client.Client) zephyr_discovery.MeshServiceReader {
-	return zephyr_discovery.MeshServiceClientProvider(client)
+func MeshServiceReaderProvider(client client.Client) smh_discovery.MeshServiceReader {
+	return smh_discovery.MeshServiceClientProvider(client)
 }
-func MeshWorkloadReaderProvider(client client.Client) zephyr_discovery.MeshWorkloadReader {
-	return zephyr_discovery.MeshWorkloadClientProvider(client)
+func MeshWorkloadReaderProvider(client client.Client) smh_discovery.MeshWorkloadReader {
+	return smh_discovery.MeshWorkloadClientProvider(client)
 }
 
 func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error) {
@@ -37,14 +37,14 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		kubernetes_core.PodClientFactoryProvider,
 		kubernetes_core.NodeClientFactoryProvider,
 		kubernetes_apps.DeploymentClientFactoryProvider,
-		zephyr_discovery.MeshClientProvider,
+		smh_discovery.MeshClientProvider,
 		MeshServiceReaderProvider,
-		zephyr_discovery.MeshServiceClientProvider,
-		zephyr_discovery.MeshWorkloadClientProvider,
+		smh_discovery.MeshServiceClientProvider,
+		smh_discovery.MeshWorkloadClientProvider,
 		MeshWorkloadReaderProvider,
-		zephyr_networking.VirtualMeshClientProvider,
-		zephyr_networking.TrafficPolicyClientProvider,
-		zephyr_networking.AccessControlPolicyClientProvider,
+		smh_networking.VirtualMeshClientProvider,
+		smh_networking.TrafficPolicyClientProvider,
+		smh_networking.AccessControlPolicyClientProvider,
 		csr_generator.NewVirtualMeshCSRDataSourceFactory,
 		vm_validation.NewVirtualMeshFinder,
 		cert_signer.NewVirtualMeshCertClient,

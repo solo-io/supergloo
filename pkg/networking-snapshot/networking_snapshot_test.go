@@ -7,13 +7,13 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	mock_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot/mocks"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/networking"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/smh/discovery"
+	mock_smh_networking "github.com/solo-io/service-mesh-hub/test/mocks/smh/networking"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -25,13 +25,13 @@ var _ = Describe("Networking Snapshot", func() {
 		eventuallyTimeout = time.Second
 		pollFrequency     = time.Millisecond
 
-		meshService1 = &zephyr_discovery.MeshService{
+		meshService1 = &smh_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "ms-1",
 				Namespace: container_runtime.GetWriteNamespace(),
 			},
 		}
-		meshService2 = &zephyr_discovery.MeshService{
+		meshService2 = &smh_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "ms-2",
 				Namespace: container_runtime.GetWriteNamespace(),
@@ -50,7 +50,7 @@ var _ = Describe("Networking Snapshot", func() {
 
 	It("can receive events", func() {
 		updatedSnapshot := networking_snapshot.MeshNetworkingSnapshot{
-			MeshServices: []*zephyr_discovery.MeshService{meshService1},
+			MeshServices: []*smh_discovery.MeshService{meshService1},
 		}
 
 		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
@@ -58,19 +58,19 @@ var _ = Describe("Networking Snapshot", func() {
 			ValidateMeshServiceUpsert(gomock.Any(), meshService1, &updatedSnapshot).
 			Return(true)
 
-		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		MeshServiceEventWatcher := mock_smh_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs) error {
+			DoAndReturn(func(ctx context.Context, eventHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs) error {
 				return eventHandler.OnCreate(meshService1)
 			})
 
-		virtualMeshEventWatcher := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
+		virtualMeshEventWatcher := mock_smh_networking.NewMockVirtualMeshEventWatcher(ctrl)
 		virtualMeshEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
+		meshWorkloadEventWatcher := mock_smh_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 		meshWorkloadEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
@@ -104,7 +104,7 @@ var _ = Describe("Networking Snapshot", func() {
 
 	It("should not push snapshots if nothing has changed", func() {
 		updatedSnapshot := networking_snapshot.MeshNetworkingSnapshot{
-			MeshServices: []*zephyr_discovery.MeshService{meshService1},
+			MeshServices: []*smh_discovery.MeshService{meshService1},
 		}
 
 		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
@@ -112,19 +112,19 @@ var _ = Describe("Networking Snapshot", func() {
 			ValidateMeshServiceUpsert(gomock.Any(), meshService1, &updatedSnapshot).
 			Return(true)
 
-		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		MeshServiceEventWatcher := mock_smh_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs) error {
+			DoAndReturn(func(ctx context.Context, eventHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs) error {
 				return eventHandler.OnCreate(meshService1)
 			})
 
-		virtualMeshEventWatcher := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
+		virtualMeshEventWatcher := mock_smh_networking.NewMockVirtualMeshEventWatcher(ctrl)
 		virtualMeshEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
+		meshWorkloadEventWatcher := mock_smh_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 		meshWorkloadEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
@@ -162,7 +162,7 @@ var _ = Describe("Networking Snapshot", func() {
 
 	It("can aggregate multiple events that roll in close to each other", func() {
 		originalSnapshot := &networking_snapshot.MeshNetworkingSnapshot{
-			MeshServices: []*zephyr_discovery.MeshService{meshService1},
+			MeshServices: []*smh_discovery.MeshService{meshService1},
 		}
 
 		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
@@ -177,21 +177,21 @@ var _ = Describe("Networking Snapshot", func() {
 			ValidateMeshServiceUpsert(gomock.Any(), meshService2, updatedSnapshot).
 			Return(true)
 
-		var capturedEventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs
-		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		var capturedEventHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs
+		MeshServiceEventWatcher := mock_smh_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs) error {
+			DoAndReturn(func(ctx context.Context, eventHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs) error {
 				capturedEventHandler = eventHandler
 				return nil
 			})
 
-		virtualMeshEventWatcher := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
+		virtualMeshEventWatcher := mock_smh_networking.NewMockVirtualMeshEventWatcher(ctrl)
 		virtualMeshEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
+		meshWorkloadEventWatcher := mock_smh_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 		meshWorkloadEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
@@ -232,7 +232,7 @@ var _ = Describe("Networking Snapshot", func() {
 
 	It("can accurately swap out updated resources from the current state of the world", func() {
 		originalSnapshot := &networking_snapshot.MeshNetworkingSnapshot{
-			MeshServices: []*zephyr_discovery.MeshService{meshService1},
+			MeshServices: []*smh_discovery.MeshService{meshService1},
 		}
 		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
 		validator.EXPECT().
@@ -246,21 +246,21 @@ var _ = Describe("Networking Snapshot", func() {
 			ValidateMeshServiceUpsert(gomock.Any(), meshService2, updatedSnapshot).
 			Return(true)
 
-		var capturedEventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs
-		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		var capturedEventHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs
+		MeshServiceEventWatcher := mock_smh_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs) error {
+			DoAndReturn(func(ctx context.Context, eventHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs) error {
 				capturedEventHandler = eventHandler
 				return nil
 			})
 
-		virtualMeshEventWatcher := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
+		virtualMeshEventWatcher := mock_smh_networking.NewMockVirtualMeshEventWatcher(ctrl)
 		virtualMeshEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
+		meshWorkloadEventWatcher := mock_smh_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 		meshWorkloadEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
@@ -274,7 +274,7 @@ var _ = Describe("Networking Snapshot", func() {
 		)
 		Expect(err).NotTo(HaveOccurred())
 
-		updatedService := &zephyr_discovery.MeshService{
+		updatedService := &smh_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "ms-2",
 				Namespace: container_runtime.GetWriteNamespace(),
@@ -292,7 +292,7 @@ var _ = Describe("Networking Snapshot", func() {
 		generator.RegisterListener(listener)
 
 		newSnapshot := &networking_snapshot.MeshNetworkingSnapshot{
-			MeshServices: []*zephyr_discovery.MeshService{
+			MeshServices: []*smh_discovery.MeshService{
 				updatedSnapshot.MeshServices[0],
 				updatedService,
 			},

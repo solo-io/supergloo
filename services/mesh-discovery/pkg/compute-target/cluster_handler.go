@@ -3,9 +3,9 @@ package compute_target
 import (
 	"context"
 
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_apps_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
@@ -63,13 +63,13 @@ type discoveryClusterHandler struct {
 	discoveryContext wire.DiscoveryContext
 
 	// clients that operate against the local cluster
-	localMeshClient         zephyr_discovery.MeshClient
-	localMeshWorkloadClient zephyr_discovery.MeshWorkloadClient
-	localMeshServiceClient  zephyr_discovery.MeshServiceClient
+	localMeshClient         smh_discovery.MeshClient
+	localMeshWorkloadClient smh_discovery.MeshWorkloadClient
+	localMeshServiceClient  smh_discovery.MeshServiceClient
 
 	// controllers that operate against the local cluster
-	localMeshWorkloadEventWatcher zephyr_discovery_controller.MeshWorkloadEventWatcher
-	localMeshEventWatcher         zephyr_discovery_controller.MeshEventWatcher
+	localMeshWorkloadEventWatcher smh_discovery_controller.MeshWorkloadEventWatcher
+	localMeshEventWatcher         smh_discovery_controller.MeshEventWatcher
 
 	// scanners
 	meshScanners                   []k8s.MeshScanner

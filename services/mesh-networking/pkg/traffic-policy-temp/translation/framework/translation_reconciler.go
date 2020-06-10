@@ -5,7 +5,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
@@ -13,8 +13,8 @@ import (
 )
 
 func NewTranslationReconciler(
-	meshServiceClient zephyr_discovery.MeshServiceClient,
-	meshClient zephyr_discovery.MeshClient,
+	meshServiceClient smh_discovery.MeshServiceClient,
+	meshClient smh_discovery.MeshClient,
 	translationSnapshotBuilderGetter snapshot.TranslationSnapshotAccumulatorGetter,
 	snapshotReconciler snapshot.TranslationSnapshotReconciler,
 ) reconciliation.Reconciler {
@@ -27,8 +27,8 @@ func NewTranslationReconciler(
 }
 
 type translationReconciler struct {
-	meshServiceClient                zephyr_discovery.MeshServiceClient
-	meshClient                       zephyr_discovery.MeshClient
+	meshServiceClient                smh_discovery.MeshServiceClient
+	meshClient                       smh_discovery.MeshClient
 	translationSnapshotBuilderGetter snapshot.TranslationSnapshotAccumulatorGetter
 	snapshotReconciler               snapshot.TranslationSnapshotReconciler
 }
@@ -48,8 +48,8 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 
 	// need to populate this map from our known meshes, rather than the mesh services we know about
 	// in the case of deleting all mesh services but the mesh remains, we want to be sure to reconcile properly
-	var knownMeshes []*zephyr_discovery.Mesh
-	meshIdToMesh := map[string]*zephyr_discovery.Mesh{}
+	var knownMeshes []*smh_discovery.Mesh
+	meshIdToMesh := map[string]*smh_discovery.Mesh{}
 	for _, meshIter := range meshList.Items {
 		mesh := meshIter
 		knownMeshes = append(knownMeshes, &mesh)
@@ -67,7 +67,7 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 		return err
 	}
 
-	var allMeshServices []*zephyr_discovery.MeshService
+	var allMeshServices []*smh_discovery.MeshService
 	for _, meshService := range meshServiceList.Items {
 		meshService := meshService
 		allMeshServices = append(allMeshServices, &meshService)

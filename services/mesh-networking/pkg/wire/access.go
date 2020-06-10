@@ -6,8 +6,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
 	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/matcher"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/translation"
@@ -24,7 +24,7 @@ var (
 		access_control_policy.NewAcpTranslatorLoop,
 		istio_translator.NewIstioTranslator,
 		AccessControlPolicyMeshTranslatorsProvider,
-		zephyr_networking.NewAccessControlPolicyClient,
+		smh_networking.NewAccessControlPolicyClient,
 		// Global AccessControlPolicy enforcer
 		istio.NewIstioEnforcer,
 		appmesh.NewAppmeshEnforcer,
@@ -39,8 +39,8 @@ var (
 	)
 )
 
-func LocalAccessControlPolicyEventWatcherProvider(mgr mc_manager.AsyncManager) zephyr_networking_controller.AccessControlPolicyEventWatcher {
-	return zephyr_networking_controller.NewAccessControlPolicyEventWatcher("management-plane-access-control-event-watcher", mgr.Manager())
+func LocalAccessControlPolicyEventWatcherProvider(mgr mc_manager.AsyncManager) smh_networking_controller.AccessControlPolicyEventWatcher {
+	return smh_networking_controller.NewAccessControlPolicyEventWatcher("management-plane-access-control-event-watcher", mgr.Manager())
 }
 
 func AccessControlPolicyMeshTranslatorsProvider(

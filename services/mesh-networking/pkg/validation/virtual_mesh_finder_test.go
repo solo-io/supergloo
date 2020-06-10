@@ -9,12 +9,12 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -22,7 +22,7 @@ var _ = Describe("mesh ref finder", func() {
 	var (
 		ctrl          *gomock.Controller
 		ctx           context.Context
-		meshClient    *mock_zephyr_discovery.MockMeshClient
+		meshClient    *mock_smh_discovery.MockMeshClient
 		meshRefFinder vm_validation.VirtualMeshFinder
 
 		testErr = eris.New("hello")
@@ -31,7 +31,7 @@ var _ = Describe("mesh ref finder", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		meshClient = mock_zephyr_discovery.NewMockMeshClient(ctrl)
+		meshClient = mock_smh_discovery.NewMockMeshClient(ctrl)
 		meshRefFinder = vm_validation.NewVirtualMeshFinder(meshClient)
 	})
 
@@ -44,7 +44,7 @@ var _ = Describe("mesh ref finder", func() {
 			ListMesh(ctx).
 			Return(nil, testErr)
 
-		_, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &zephyr_networking.VirtualMesh{})
+		_, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &smh_networking.VirtualMesh{})
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(HaveInErrorChain(testErr))
 	})
@@ -53,14 +53,14 @@ var _ = Describe("mesh ref finder", func() {
 		meshClient.EXPECT().
 			ListMesh(ctx).
 			Return(nil, nil)
-		list, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &zephyr_networking.VirtualMesh{})
+		list, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &smh_networking.VirtualMesh{})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(list).To(BeNil())
 	})
 
 	It("will return an error containing all invalid refs", func() {
-		meshList := &zephyr_discovery.MeshList{}
-		refs := []*zephyr_core_types.ResourceRef{
+		meshList := &smh_discovery.MeshList{}
+		refs := []*smh_core_types.ResourceRef{
 			{
 				Name:      "name1",
 				Namespace: "namespace1",
@@ -70,8 +70,8 @@ var _ = Describe("mesh ref finder", func() {
 				Namespace: "namespace2",
 			},
 		}
-		vm := &zephyr_networking.VirtualMesh{
-			Spec: zephyr_networking_types.VirtualMeshSpec{
+		vm := &smh_networking.VirtualMesh{
+			Spec: smh_networking_types.VirtualMeshSpec{
 				Meshes: refs,
 			},
 		}
@@ -87,8 +87,8 @@ var _ = Describe("mesh ref finder", func() {
 	})
 
 	It("will return an error containing all invalid refs", func() {
-		meshList := &zephyr_discovery.MeshList{
-			Items: []zephyr_discovery.Mesh{
+		meshList := &smh_discovery.MeshList{
+			Items: []smh_discovery.Mesh{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "name1",
@@ -103,7 +103,7 @@ var _ = Describe("mesh ref finder", func() {
 				},
 			},
 		}
-		refs := []*zephyr_core_types.ResourceRef{
+		refs := []*smh_core_types.ResourceRef{
 			{
 				Name:      "name1",
 				Namespace: "namespace1",
@@ -113,8 +113,8 @@ var _ = Describe("mesh ref finder", func() {
 				Namespace: "namespace2",
 			},
 		}
-		vm := &zephyr_networking.VirtualMesh{
-			Spec: zephyr_networking_types.VirtualMeshSpec{
+		vm := &smh_networking.VirtualMesh{
+			Spec: smh_networking_types.VirtualMeshSpec{
 				Meshes: refs,
 			},
 		}

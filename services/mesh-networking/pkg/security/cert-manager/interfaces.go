@@ -3,10 +3,10 @@ package cert_manager
 import (
 	"context"
 
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
 )
 
 //go:generate mockgen -destination ./mocks/mock_interfaces.go -source ./interfaces.go
@@ -17,15 +17,15 @@ import (
 */
 type CertConfigProducer interface {
 	ConfigureCertificateInfo(
-		vm *zephyr_networking.VirtualMesh,
-		mesh *zephyr_discovery.Mesh,
-	) (*zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig, error)
+		vm *smh_networking.VirtualMesh,
+		mesh *smh_discovery.Mesh,
+	) (*smh_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig, error)
 }
 
 // VirtualMeshCertificateManager is the higher level event handler interface for VirtualMeshes
 type VirtualMeshCertificateManager interface {
 	InitializeCertificateForVirtualMesh(
 		ctx context.Context,
-		new *zephyr_networking.VirtualMesh,
-	) zephyr_networking_types.VirtualMeshStatus
+		new *smh_networking.VirtualMesh,
+	) smh_networking_types.VirtualMeshStatus
 }

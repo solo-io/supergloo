@@ -1,6 +1,6 @@
 syntax = "proto3";
-package core.zephyr.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types";
+package core.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types";
 
 enum HttpMethodValue {
     GET = 0;

@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/settings"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
@@ -120,7 +120,7 @@ func (e *eksReconciler) fetchEksClustersOnAWS(
 	ctx context.Context,
 	eksClient cloud.EksClient,
 	region string,
-	selectors []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
+	selectors []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
 ) (sets.String, map[string]string, error) {
 	logger := contextutils.LoggerFrom(ctx)
 	var clusterNames []string

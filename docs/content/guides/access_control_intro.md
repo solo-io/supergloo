@@ -43,7 +43,7 @@ Let's use the Service Mesh Hub [AccessControlPolicy]({{% versioned_link_path fro
 In the previous guide, [we created a VirtualMesh resource]({{% versioned_link_path fromRoot="/guides/federate_identity/#creating-a-virtual-mesh" %}}), but we had access control disabled. Let's take a look at the same VirtualService, with access control enabled:
 
 {{< highlight yaml "hl_lines=16" >}}
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
@@ -72,7 +72,7 @@ If you saved this VirtualMesh CR to a file named `demo-virtual-mesh.yaml`, you c
 ```shell
 kubectl --context management-plane-context apply -f demo-virtual-mesh.yaml
 
-virtualmesh.networking.zephyr.solo.io/virtual-mesh configured
+virtualmesh.networking.smh.solo.io/virtual-mesh configured
 ```
 
 With the `enforceAccessControl` setting `enabled` and with no other `AccessControlPolicies`, we should see a `deny-all` access posture. Try going back to [http://localhost:9080](http://localhost:9080) and refresh the bookinfo sample and you should see the `details` and `reviews` services blocked.
@@ -93,7 +93,7 @@ configs:
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: AccessControlPolicy
 metadata:
   namespace: service-mesh-hub
@@ -127,7 +127,7 @@ In this next configuration, we enable traffic from `reviews` to `ratings`:
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: AccessControlPolicy
 metadata:
   namespace: service-mesh-hub
@@ -146,7 +146,7 @@ spec:
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context management-plane-context -f - << EOF
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: AccessControlPolicy
 metadata:
   namespace: service-mesh-hub
@@ -180,7 +180,7 @@ In this next configuration, we enable traffic from `reviews` to `ratings`:
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: AccessControlPolicy
 metadata:
   namespace: service-mesh-hub
@@ -201,7 +201,7 @@ spec:
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context management-plane-context -f - <<EOF
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: AccessControlPolicy
 metadata:
   namespace: service-mesh-hub

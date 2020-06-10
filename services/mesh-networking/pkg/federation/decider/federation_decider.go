@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	strategies2 "github.com/solo-io/service-mesh-hub/pkg/federation/strategies"
 	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	"go.uber.org/zap"
@@ -38,9 +38,9 @@ type FederationDecider interface {
 }
 
 func NewFederationDecider(
-	meshServiceClient zephyr_discovery.MeshServiceClient,
-	meshClient zephyr_discovery.MeshClient,
-	virtualMeshClient zephyr_networking.VirtualMeshClient,
+	meshServiceClient smh_discovery.MeshServiceClient,
+	meshClient smh_discovery.MeshClient,
+	virtualMeshClient smh_networking.VirtualMeshClient,
 	federationStrategyChooser strategies2.FederationStrategyChooser,
 ) FederationDecider {
 	return &federationDecider{
@@ -52,9 +52,9 @@ func NewFederationDecider(
 }
 
 type federationDecider struct {
-	meshServiceClient         zephyr_discovery.MeshServiceClient
-	meshClient                zephyr_discovery.MeshClient
-	virtualMeshClient         zephyr_networking.VirtualMeshClient
+	meshServiceClient         smh_discovery.MeshServiceClient
+	meshClient                smh_discovery.MeshClient
+	virtualMeshClient         smh_networking.VirtualMeshClient
 	federationStrategyChooser strategies2.FederationStrategyChooser
 }
 
@@ -66,8 +66,8 @@ func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnap
 	// log and update the status just for the ones that failed, then continue
 	if len(errorReports) > 0 {
 		for _, failedVirtualMeshReport := range errorReports {
-			failedVirtualMeshReport.VirtualMesh.Status.FederationStatus = &zephyr_core_types.Status{
-				State:   zephyr_core_types.Status_PROCESSING_ERROR,
+			failedVirtualMeshReport.VirtualMesh.Status.FederationStatus = &smh_core_types.Status{
+				State:   smh_core_types.Status_PROCESSING_ERROR,
 				Message: ErrorLoadingMeshMetadata(failedVirtualMeshReport.Err),
 			}
 
@@ -88,7 +88,7 @@ func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnap
 
 func (f *federationDecider) federateVirtualMesh(
 	ctx context.Context,
-	vm *zephyr_networking.VirtualMesh,
+	vm *smh_networking.VirtualMesh,
 	perMeshMetadata strategies2.PerMeshMetadata,
 ) {
 	logger := contextutils.LoggerFrom(ctx)
@@ -101,8 +101,8 @@ func (f *federationDecider) federateVirtualMesh(
 	// determine what strategy we should use to federate
 	federationStrategy, err := f.federationStrategyChooser(federationMode, f.meshServiceClient)
 	if err != nil {
-		vm.Status.FederationStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_INVALID,
+		vm.Status.FederationStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_INVALID,
 			Message: UnsupportedFederationMode,
 		}
 		f.updateVirtualMeshStatus(ctx, vm)
@@ -112,13 +112,13 @@ func (f *federationDecider) federateVirtualMesh(
 	// actually write our federation decision to the mesh services
 	err = federationStrategy.WriteFederationToServices(ctx, vm, perMeshMetadata.MeshNameToMetadata)
 	if err == nil {
-		vm.Status.FederationStatus = &zephyr_core_types.Status{
-			State: zephyr_core_types.Status_ACCEPTED,
+		vm.Status.FederationStatus = &smh_core_types.Status{
+			State: smh_core_types.Status_ACCEPTED,
 		}
 	} else {
 		logger.Debugf("Recording error to virtual mesh %s.%s", vm.Name, vm.Namespace, zap.Error(err))
-		vm.Status.FederationStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_PROCESSING_ERROR,
+		vm.Status.FederationStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_PROCESSING_ERROR,
 			Message: ErrorUpdatingMeshServices(err),
 		}
 	}
@@ -127,7 +127,7 @@ func (f *federationDecider) federateVirtualMesh(
 }
 
 // once the virtual mesh has had its federation status updated, call this function to write it into the cluster
-func (f *federationDecider) updateVirtualMeshStatus(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) {
+func (f *federationDecider) updateVirtualMeshStatus(ctx context.Context, virtualMesh *smh_networking.VirtualMesh) {
 	logger := contextutils.LoggerFrom(ctx)
 
 	err := f.virtualMeshClient.UpdateVirtualMeshStatus(ctx, virtualMesh)

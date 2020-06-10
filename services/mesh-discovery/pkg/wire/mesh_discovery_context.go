@@ -1,7 +1,7 @@
 package wire
 
 import (
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
@@ -27,9 +27,9 @@ type ClientFactories struct {
 	DeploymentClientFactory   k8s_apps.DeploymentClientFactory
 	OwnerFetcherClientFactory meshworkload_discovery.OwnerFetcherFactory
 	ServiceClientFactory      k8s_core.ServiceClientFactory
-	MeshServiceClientFactory  zephyr_discovery.MeshServiceClientFactory
-	MeshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory
-	MeshClientFactory         zephyr_discovery.MeshClientFactory
+	MeshServiceClientFactory  smh_discovery.MeshServiceClientFactory
+	MeshWorkloadClientFactory smh_discovery.MeshWorkloadClientFactory
+	MeshClientFactory         smh_discovery.MeshClientFactory
 	PodClientFactory          k8s_core.PodClientFactory
 }
 
@@ -61,13 +61,13 @@ func DiscoveryContextProvider(
 	deploymentClientFactory k8s_apps.DeploymentClientFactory,
 	ownerFetcherClientFactory meshworkload_discovery.OwnerFetcherFactory,
 	serviceClientFactory k8s_core.ServiceClientFactory,
-	meshServiceClientFactory zephyr_discovery.MeshServiceClientFactory,
-	meshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory,
+	meshServiceClientFactory smh_discovery.MeshServiceClientFactory,
+	meshWorkloadClientFactory smh_discovery.MeshWorkloadClientFactory,
 	podEventWatcherFactory event_watcher_factories.PodEventWatcherFactory,
 	serviceEventWatcherFactory event_watcher_factories.ServiceEventWatcherFactory,
 	meshWorkloadControllerFactory event_watcher_factories.MeshWorkloadEventWatcherFactory,
 	deploymentEventWatcherFactory event_watcher_factories.DeploymentEventWatcherFactory,
-	meshClientFactory zephyr_discovery.MeshClientFactory,
+	meshClientFactory smh_discovery.MeshClientFactory,
 	podClientFactory k8s_core.PodClientFactory,
 	meshControllerFactory event_watcher_factories.MeshEventWatcherFactory,
 	appMeshWorkloadScannerFactory meshworkload_discovery.MeshWorkloadScannerFactory,

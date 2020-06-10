@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
@@ -19,7 +19,7 @@ import (
 var (
 	DiscoveryLabels = func() map[string]string {
 		return map[string]string{
-			kube.MESH_TYPE: strings.ToLower(zephyr_core_types.MeshType_LINKERD.String()),
+			kube.MESH_TYPE: strings.ToLower(smh_core_types.MeshType_LINKERD.String()),
 		}
 	}
 )
@@ -27,7 +27,7 @@ var (
 // visible for testing
 func NewLinkerdMeshWorkloadScanner(
 	ownerFetcher k8s.OwnerFetcher,
-	meshClient zephyr_discovery.MeshClient,
+	meshClient smh_discovery.MeshClient,
 	_ client.Client,
 ) k8s.MeshWorkloadScanner {
 	return &linkerdMeshWorkloadScanner{
@@ -38,10 +38,10 @@ func NewLinkerdMeshWorkloadScanner(
 
 type linkerdMeshWorkloadScanner struct {
 	ownerFetcher k8s.OwnerFetcher
-	meshClient   zephyr_discovery.MeshClient
+	meshClient   smh_discovery.MeshClient
 }
 
-func (l *linkerdMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
+func (l *linkerdMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*smh_discovery.MeshWorkload, error) {
 	if !l.isLinkerdPod(pod) {
 		return nil, nil
 	}
@@ -53,15 +53,15 @@ func (l *linkerdMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_
 	if err != nil {
 		return nil, err
 	}
-	return &zephyr_discovery.MeshWorkload{
+	return &smh_discovery.MeshWorkload{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      l.buildMeshWorkloadName(deployment.GetName(), deployment.GetNamespace(), clusterName),
 			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(),
 		},
-		Spec: zephyr_discovery_types.MeshWorkloadSpec{
-			KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-				KubeControllerRef: &zephyr_core_types.ResourceRef{
+		Spec: smh_discovery_types.MeshWorkloadSpec{
+			KubeController: &smh_discovery_types.MeshWorkloadSpec_KubeController{
+				KubeControllerRef: &smh_core_types.ResourceRef{
 					Name:      deployment.GetName(),
 					Namespace: deployment.GetNamespace(),
 					Cluster:   clusterName,
@@ -84,7 +84,7 @@ func (l *linkerdMeshWorkloadScanner) isLinkerdPod(pod *k8s_core_types.Pod) bool 
 	return false
 }
 
-func (l *linkerdMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clusterName string) (*zephyr_core_types.ResourceRef, error) {
+func (l *linkerdMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clusterName string) (*smh_core_types.ResourceRef, error) {
 	meshList, err := l.meshClient.ListMesh(ctx)
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func (l *linkerdMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clu
 	for _, mesh := range meshList.Items {
 		// Assume single tenancy for clusters with Linkerd mesh
 		if mesh.Spec.GetLinkerd() != nil && mesh.Spec.GetCluster().GetName() == clusterName {
-			return &zephyr_core_types.ResourceRef{
+			return &smh_core_types.ResourceRef{
 				Name:      mesh.GetName(),
 				Namespace: mesh.GetNamespace(),
 				Cluster:   clusterName,

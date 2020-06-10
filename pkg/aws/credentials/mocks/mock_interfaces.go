@@ -11,30 +11,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockAwsCredentialsGetter is a mock of AwsCredentialsGetter interface.
+// MockAwsCredentialsGetter is a mock of AwsCredentialsGetter interface
 type MockAwsCredentialsGetter struct {
 	ctrl     *gomock.Controller
 	recorder *MockAwsCredentialsGetterMockRecorder
 }
 
-// MockAwsCredentialsGetterMockRecorder is the mock recorder for MockAwsCredentialsGetter.
+// MockAwsCredentialsGetterMockRecorder is the mock recorder for MockAwsCredentialsGetter
 type MockAwsCredentialsGetterMockRecorder struct {
 	mock *MockAwsCredentialsGetter
 }
 
-// NewMockAwsCredentialsGetter creates a new mock instance.
+// NewMockAwsCredentialsGetter creates a new mock instance
 func NewMockAwsCredentialsGetter(ctrl *gomock.Controller) *MockAwsCredentialsGetter {
 	mock := &MockAwsCredentialsGetter{ctrl: ctrl}
 	mock.recorder = &MockAwsCredentialsGetterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockAwsCredentialsGetter) EXPECT() *MockAwsCredentialsGetterMockRecorder {
 	return m.recorder
 }
 
-// Get mocks base method.
+// Get mocks base method
 func (m *MockAwsCredentialsGetter) Get(accountId string) (*credentials.Credentials, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", accountId)
@@ -43,31 +43,31 @@ func (m *MockAwsCredentialsGetter) Get(accountId string) (*credentials.Credentia
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get.
+// Get indicates an expected call of Get
 func (mr *MockAwsCredentialsGetterMockRecorder) Get(accountId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockAwsCredentialsGetter)(nil).Get), accountId)
 }
 
-// Set mocks base method.
+// Set mocks base method
 func (m *MockAwsCredentialsGetter) Set(accountId string, creds *credentials.Credentials) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Set", accountId, creds)
 }
 
-// Set indicates an expected call of Set.
+// Set indicates an expected call of Set
 func (mr *MockAwsCredentialsGetterMockRecorder) Set(accountId, creds interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockAwsCredentialsGetter)(nil).Set), accountId, creds)
 }
 
-// Remove mocks base method.
+// Remove mocks base method
 func (m *MockAwsCredentialsGetter) Remove(accountId string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Remove", accountId)
 }
 
-// Remove indicates an expected call of Remove.
+// Remove indicates an expected call of Remove
 func (mr *MockAwsCredentialsGetterMockRecorder) Remove(accountId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockAwsCredentialsGetter)(nil).Remove), accountId)

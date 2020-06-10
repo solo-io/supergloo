@@ -3,9 +3,9 @@ package traffic_policy_translator
 import (
 	"context"
 
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
@@ -17,9 +17,9 @@ type TrafficPolicyMeshTranslator interface {
 	// the presence of a TranslatorError indicates an error during translation
 	TranslateTrafficPolicy(
 		ctx context.Context,
-		meshService *zephyr_discovery.MeshService,
-		mesh *zephyr_discovery.Mesh,
-		mergedTrafficPolicy []*zephyr_networking.TrafficPolicy,
+		meshService *smh_discovery.MeshService,
+		mesh *smh_discovery.Mesh,
+		mergedTrafficPolicy []*smh_networking.TrafficPolicy,
 	) *types.TrafficPolicyStatus_TranslatorError
 }
 

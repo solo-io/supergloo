@@ -1,10 +1,10 @@
 package traffic_policy_aggregation
 
 import (
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 )
 
 func NewInMemoryStatusMutator() InMemoryStatusMutator {
@@ -14,8 +14,8 @@ func NewInMemoryStatusMutator() InMemoryStatusMutator {
 type inMemoryStatusMutator struct{}
 
 func (*inMemoryStatusMutator) MutateServicePolicies(
-	meshService *zephyr_discovery.MeshService,
-	newlyComputedMergeablePolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
+	meshService *smh_discovery.MeshService,
+	newlyComputedMergeablePolicies []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) (serviceNeedsUpdating bool) {
 	if len(newlyComputedMergeablePolicies) != len(meshService.Status.ValidatedTrafficPolicies) {
 		serviceNeedsUpdating = true
@@ -33,9 +33,9 @@ func (*inMemoryStatusMutator) MutateServicePolicies(
 }
 
 func (*inMemoryStatusMutator) MutateConflictAndTranslatorErrors(
-	policy *zephyr_networking.TrafficPolicy,
-	newConflictErrors []*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
-	newTranslationErrors []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError,
+	policy *smh_networking.TrafficPolicy,
+	newConflictErrors []*smh_networking_types.TrafficPolicyStatus_ConflictError,
+	newTranslationErrors []*smh_networking_types.TrafficPolicyStatus_TranslatorError,
 ) (policyNeedsUpdating bool) {
 	if len(newConflictErrors) != len(policy.Status.GetConflictErrors()) {
 		policyNeedsUpdating = true

@@ -141,7 +141,7 @@ kubectl label namespace <namespace> appmesh.k8s.aws/sidecarInjectorWebhook=enabl
 
 ## Configure EKS discovery
 
-Upon installation of Service Mesh Hub v0.4.12+, you should see a `settings.core.zephyr.solo.io` CRD instance with the name 
+Upon installation of Service Mesh Hub v0.4.12+, you should see a `settings.core.smh.solo.io` CRD instance with the name 
 `settings` in the SMH write namespace (by default this is `service-mesh-hub`), populated with
 
 ```yaml
@@ -154,7 +154,7 @@ By default discovery for AWS resources is disabled. To enable discovery for your
 making the relevant substitutions (note for simplicity we disable Appmesh discovery, see the guides section for a tutorial on Appmesh discovery):
 
 ```yaml
-apiVersion: core.zephyr.solo.io/v1alpha1
+apiVersion: core.smh.solo.io/v1alpha1
 kind: Settings
 metadata:
   namespace: service-mesh-hub
@@ -178,11 +178,11 @@ The name of the KubernetesCluster takes the form `eks-<eks-cluster-name>-<region
 Note that workload (MeshWorkload CRD) and service (MeshService CRD) discovery will not occur unless the workloads correspond
 to an existing discovered Mesh.
 
-The [DiscoverySelector]({{% versioned_link_path fromRoot="/reference/api/settings/#core.zephyr.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher" %}}) API
+The [DiscoverySelector]({{% versioned_link_path fromRoot="/reference/api/settings/#core.smh.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher" %}}) API
 allows for matching by region and tags. For instance, to discover all EKS clusters in `us-east-2`, apply the following Settings config:
 
 ```yaml
-apiVersion: core.zephyr.solo.io/v1alpha1
+apiVersion: core.smh.solo.io/v1alpha1
 kind: Settings
 metadata:
   namespace: service-mesh-hub

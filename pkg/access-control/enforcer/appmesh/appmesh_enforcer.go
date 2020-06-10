@@ -4,8 +4,8 @@ import (
 	"context"
 
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/translation"
 )
 
@@ -33,8 +33,8 @@ func (a *appmeshEnforcer) Name() string {
 
 func (a *appmeshEnforcer) ReconcileAccessControl(
 	ctx context.Context,
-	mesh *zephyr_discovery.Mesh,
-	virtualMesh *zephyr_networking.VirtualMesh,
+	mesh *smh_discovery.Mesh,
+	virtualMesh *smh_networking.VirtualMesh,
 ) error {
 	if mesh.Spec.GetAwsAppMesh() == nil {
 		return nil

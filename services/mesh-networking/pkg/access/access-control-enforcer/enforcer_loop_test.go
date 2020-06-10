@@ -11,17 +11,17 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
 	mock_access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/mocks"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	global_ac_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
-	mock_zephyr_networking2 "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/networking"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
+	mock_smh_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.smh.solo.io/v1alpha1"
+	mock_smh_networking2 "github.com/solo-io/service-mesh-hub/test/mocks/smh/networking"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -29,21 +29,21 @@ var _ = Describe("EnforcerLoop", func() {
 	var (
 		ctrl                        *gomock.Controller
 		ctx                         context.Context
-		mockVirtualMeshEventWatcher *mock_zephyr_networking2.MockVirtualMeshEventWatcher
-		mockVirtualMeshClient       *mock_zephyr_networking.MockVirtualMeshClient
+		mockVirtualMeshEventWatcher *mock_smh_networking2.MockVirtualMeshEventWatcher
+		mockVirtualMeshClient       *mock_smh_networking.MockVirtualMeshClient
 		mockMeshClient              *mock_core.MockMeshClient
 		mockMeshEnforcers           []*mock_access_control_enforcer.MockAccessPolicyMeshEnforcer
 		enforcerLoop                global_ac_enforcer.AccessPolicyEnforcerLoop
 		// captured event handler
-		virtualMeshHandler *zephyr_networking_controller.VirtualMeshEventHandlerFuncs
+		virtualMeshHandler *smh_networking_controller.VirtualMeshEventHandlerFuncs
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockVirtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
+		mockVirtualMeshClient = mock_smh_networking.NewMockVirtualMeshClient(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
-		mockVirtualMeshEventWatcher = mock_zephyr_networking2.NewMockVirtualMeshEventWatcher(ctrl)
+		mockVirtualMeshEventWatcher = mock_smh_networking2.NewMockVirtualMeshEventWatcher(ctrl)
 		mockMeshEnforcers = []*mock_access_control_enforcer.MockAccessPolicyMeshEnforcer{
 			mock_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
 			mock_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
@@ -59,7 +59,7 @@ var _ = Describe("EnforcerLoop", func() {
 		mockVirtualMeshEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_networking_controller.VirtualMeshEventHandlerFuncs) error {
+			DoAndReturn(func(ctx context.Context, eventHandler *smh_networking_controller.VirtualMeshEventHandlerFuncs) error {
 				virtualMeshHandler = eventHandler
 				return nil
 			})
@@ -70,10 +70,10 @@ var _ = Describe("EnforcerLoop", func() {
 		ctrl.Finish()
 	})
 
-	var buildVirtualMesh = func() *zephyr_networking.VirtualMesh {
-		return &zephyr_networking.VirtualMesh{
-			Spec: zephyr_networking_types.VirtualMeshSpec{
-				Meshes: []*zephyr_core_types.ResourceRef{
+	var buildVirtualMesh = func() *smh_networking.VirtualMesh {
+		return &smh_networking.VirtualMesh{
+			Spec: smh_networking_types.VirtualMeshSpec{
+				Meshes: []*smh_core_types.ResourceRef{
 					{Name: "name1", Namespace: "namespace1"},
 					{Name: "name2", Namespace: "namespace2"},
 				},
@@ -81,8 +81,8 @@ var _ = Describe("EnforcerLoop", func() {
 		}
 	}
 
-	var buildMeshesWithDefaultAccessControlEnabled = func() []*zephyr_discovery.Mesh {
-		return []*zephyr_discovery.Mesh{
+	var buildMeshesWithDefaultAccessControlEnabled = func() []*smh_discovery.Mesh {
+		return []*smh_discovery.Mesh{
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Name: "name1", Namespace: "namespace1"},
 				Spec: types.MeshSpec{
@@ -100,17 +100,17 @@ var _ = Describe("EnforcerLoop", func() {
 
 	// Temporary, see function definition for "cleanupAppmeshResources" in enforcer_loop.go for more details
 	var expectAppmeshCleanup = func() {
-		mockMeshClient.EXPECT().ListMesh(ctx).Return(&zephyr_discovery.MeshList{}, nil)
-		mockVirtualMeshClient.EXPECT().ListVirtualMesh(ctx).Return(&zephyr_networking.VirtualMeshList{}, nil)
+		mockMeshClient.EXPECT().ListMesh(ctx).Return(&smh_discovery.MeshList{}, nil)
+		mockVirtualMeshClient.EXPECT().ListVirtualMesh(ctx).Return(&smh_networking.VirtualMeshList{}, nil)
 	}
 
 	It("should start enforcing access control on VirtualMesh creates", func() {
 		vm := buildVirtualMesh()
-		vm.Spec.EnforceAccessControl = zephyr_networking_types.VirtualMeshSpec_ENABLED
+		vm.Spec.EnforceAccessControl = smh_networking_types.VirtualMeshSpec_ENABLED
 		mockVirtualMeshClient.
 			EXPECT().
 			ListVirtualMesh(ctx).
-			Return(&zephyr_networking.VirtualMeshList{Items: []zephyr_networking.VirtualMesh{*vm}}, nil)
+			Return(&smh_networking.VirtualMeshList{Items: []smh_networking.VirtualMesh{*vm}}, nil)
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			mockMeshClient.
@@ -131,16 +131,16 @@ var _ = Describe("EnforcerLoop", func() {
 			}
 		}
 
-		var capturedVM *zephyr_networking.VirtualMesh
+		var capturedVM *smh_networking.VirtualMesh
 		mockVirtualMeshClient.
 			EXPECT().
 			UpdateVirtualMeshStatus(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
+			DoAndReturn(func(ctx context.Context, virtualMesh *smh_networking.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &zephyr_core_types.Status{
-			State: zephyr_core_types.Status_ACCEPTED,
+		expectedVMStatus := &smh_core_types.Status{
+			State: smh_core_types.Status_ACCEPTED,
 		}
 		expectAppmeshCleanup()
 		err := virtualMeshHandler.CreateVirtualMesh(vm)
@@ -150,11 +150,11 @@ var _ = Describe("EnforcerLoop", func() {
 
 	It("should stop enforcing access control on VirtualMesh creates", func() {
 		vm := buildVirtualMesh()
-		vm.Spec.EnforceAccessControl = zephyr_networking_types.VirtualMeshSpec_DISABLED
+		vm.Spec.EnforceAccessControl = smh_networking_types.VirtualMeshSpec_DISABLED
 		mockVirtualMeshClient.
 			EXPECT().
 			ListVirtualMesh(ctx).
-			Return(&zephyr_networking.VirtualMeshList{Items: []zephyr_networking.VirtualMesh{*vm}}, nil)
+			Return(&smh_networking.VirtualMeshList{Items: []smh_networking.VirtualMesh{*vm}}, nil)
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			mockMeshClient.
@@ -174,16 +174,16 @@ var _ = Describe("EnforcerLoop", func() {
 					Return("")
 			}
 		}
-		var capturedVM *zephyr_networking.VirtualMesh
+		var capturedVM *smh_networking.VirtualMesh
 		mockVirtualMeshClient.
 			EXPECT().
 			UpdateVirtualMeshStatus(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
+			DoAndReturn(func(ctx context.Context, virtualMesh *smh_networking.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &zephyr_core_types.Status{
-			State: zephyr_core_types.Status_ACCEPTED,
+		expectedVMStatus := &smh_core_types.Status{
+			State: smh_core_types.Status_ACCEPTED,
 		}
 		expectAppmeshCleanup()
 		err := virtualMeshHandler.CreateVirtualMesh(vm)
@@ -196,7 +196,7 @@ var _ = Describe("EnforcerLoop", func() {
 		mockVirtualMeshClient.
 			EXPECT().
 			ListVirtualMesh(ctx).
-			Return(&zephyr_networking.VirtualMeshList{Items: []zephyr_networking.VirtualMesh{*vm}}, nil)
+			Return(&smh_networking.VirtualMeshList{Items: []smh_networking.VirtualMesh{*vm}}, nil)
 
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		testErr := eris.New("err")
@@ -214,16 +214,16 @@ var _ = Describe("EnforcerLoop", func() {
 			EXPECT().
 			Name().
 			Return("")
-		var capturedVM *zephyr_networking.VirtualMesh
+		var capturedVM *smh_networking.VirtualMesh
 		mockVirtualMeshClient.
 			EXPECT().
 			UpdateVirtualMeshStatus(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) error {
+			DoAndReturn(func(ctx context.Context, virtualMesh *smh_networking.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_PROCESSING_ERROR,
+		expectedVMStatus := &smh_core_types.Status{
+			State:   smh_core_types.Status_PROCESSING_ERROR,
 			Message: testErr.Error(),
 		}
 		expectAppmeshCleanup()
@@ -237,7 +237,7 @@ var _ = Describe("EnforcerLoop", func() {
 		mockVirtualMeshClient.
 			EXPECT().
 			ListVirtualMesh(ctx).
-			Return(&zephyr_networking.VirtualMeshList{Items: []zephyr_networking.VirtualMesh{*vm}}, nil)
+			Return(&smh_networking.VirtualMeshList{Items: []smh_networking.VirtualMesh{*vm}}, nil)
 		meshes := buildMeshesWithDefaultAccessControlEnabled()
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			mockMeshClient.

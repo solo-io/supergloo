@@ -11,30 +11,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockDeployedVersionFinder is a mock of DeployedVersionFinder interface.
+// MockDeployedVersionFinder is a mock of DeployedVersionFinder interface
 type MockDeployedVersionFinder struct {
 	ctrl     *gomock.Controller
 	recorder *MockDeployedVersionFinderMockRecorder
 }
 
-// MockDeployedVersionFinderMockRecorder is the mock recorder for MockDeployedVersionFinder.
+// MockDeployedVersionFinderMockRecorder is the mock recorder for MockDeployedVersionFinder
 type MockDeployedVersionFinderMockRecorder struct {
 	mock *MockDeployedVersionFinder
 }
 
-// NewMockDeployedVersionFinder creates a new mock instance.
+// NewMockDeployedVersionFinder creates a new mock instance
 func NewMockDeployedVersionFinder(ctrl *gomock.Controller) *MockDeployedVersionFinder {
 	mock := &MockDeployedVersionFinder{ctrl: ctrl}
 	mock.recorder = &MockDeployedVersionFinderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockDeployedVersionFinder) EXPECT() *MockDeployedVersionFinderMockRecorder {
 	return m.recorder
 }
 
-// OpenSourceVersion mocks base method.
+// OpenSourceVersion mocks base method
 func (m *MockDeployedVersionFinder) OpenSourceVersion(ctx context.Context, installNamespace string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OpenSourceVersion", ctx, installNamespace)
@@ -43,7 +43,7 @@ func (m *MockDeployedVersionFinder) OpenSourceVersion(ctx context.Context, insta
 	return ret0, ret1
 }
 
-// OpenSourceVersion indicates an expected call of OpenSourceVersion.
+// OpenSourceVersion indicates an expected call of OpenSourceVersion
 func (mr *MockDeployedVersionFinderMockRecorder) OpenSourceVersion(ctx, installNamespace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpenSourceVersion", reflect.TypeOf((*MockDeployedVersionFinder)(nil).OpenSourceVersion), ctx, installNamespace)

@@ -5,9 +5,9 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/stringutils"
-	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
@@ -55,8 +55,8 @@ func NewBaseResourceSelector() BaseResourceSelector {
 }
 
 func NewResourceSelector(
-	meshServiceReader zephyr_discovery.MeshServiceReader,
-	meshWorkloadClient zephyr_discovery.MeshWorkloadReader,
+	meshServiceReader smh_discovery.MeshServiceReader,
+	meshWorkloadClient smh_discovery.MeshWorkloadReader,
 	deploymentClientFactory kubernetes_apps.DeploymentClientFactory,
 	dynamicClientGetter multicluster.DynamicClientGetter,
 ) ResourceSelector {
@@ -73,18 +73,18 @@ type baseResourceSelector struct{}
 
 type resourceSelector struct {
 	BaseResourceSelector
-	meshServiceReader       zephyr_discovery.MeshServiceReader
-	meshWorkloadClient      zephyr_discovery.MeshWorkloadReader
+	meshServiceReader       smh_discovery.MeshServiceReader
+	meshWorkloadClient      smh_discovery.MeshWorkloadReader
 	deploymentClientFactory kubernetes_apps.DeploymentClientFactory
 	dynamicClientGetter     multicluster.DynamicClientGetter
 }
 
 func (r *baseResourceSelector) FindMeshServiceByRefSelector(
-	meshServices []*zephyr_discovery.MeshService,
+	meshServices []*smh_discovery.MeshService,
 	kubeServiceName string,
 	kubeServiceNamespace string,
 	kubeServiceCluster string,
-) *zephyr_discovery.MeshService {
+) *smh_discovery.MeshService {
 	for _, meshService := range meshServices {
 		matchesCriteria := meshService.Labels[kube.KUBE_SERVICE_NAME] == kubeServiceName &&
 			meshService.Labels[kube.KUBE_SERVICE_NAMESPACE] == kubeServiceNamespace &&
@@ -103,7 +103,7 @@ func (r *resourceSelector) GetAllMeshServiceByRefSelector(
 	kubeServiceName string,
 	kubeServiceNamespace string,
 	kubeServiceCluster string,
-) (*zephyr_discovery.MeshService, error) {
+) (*smh_discovery.MeshService, error) {
 	if kubeServiceCluster == "" {
 		return nil, MustProvideClusterName(&core_types.ResourceRef{Name: kubeServiceName, Namespace: kubeServiceNamespace})
 	}
@@ -129,7 +129,7 @@ func (r *resourceSelector) GetAllMeshServiceByRefSelector(
 func (r *resourceSelector) GetAllMeshServicesByServiceSelector(
 	ctx context.Context,
 	selector *core_types.ServiceSelector,
-) ([]*zephyr_discovery.MeshService, error) {
+) ([]*smh_discovery.MeshService, error) {
 	meshServiceList, err := r.meshServiceReader.ListMeshService(ctx)
 	if err != nil {
 		return nil, err
@@ -140,10 +140,10 @@ func (r *resourceSelector) GetAllMeshServicesByServiceSelector(
 }
 
 func (r *baseResourceSelector) FilterMeshServicesByServiceSelector(
-	meshServices []*zephyr_discovery.MeshService,
+	meshServices []*smh_discovery.MeshService,
 	selector *core_types.ServiceSelector,
-) ([]*zephyr_discovery.MeshService, error) {
-	var selectedMeshServices []*zephyr_discovery.MeshService
+) ([]*smh_discovery.MeshService, error) {
+	var selectedMeshServices []*smh_discovery.MeshService
 
 	// select all MeshServices
 	if selector.GetServiceSelectorType() == nil {
@@ -179,7 +179,7 @@ func (r *baseResourceSelector) FilterMeshServicesByServiceSelector(
 func (r *resourceSelector) GetMeshWorkloadsByIdentitySelector(
 	ctx context.Context,
 	identitySelector *core_types.IdentitySelector,
-) ([]*zephyr_discovery.MeshWorkload, error) {
+) ([]*smh_discovery.MeshWorkload, error) {
 	meshWorkloadList, err := r.meshWorkloadClient.ListMeshWorkload(ctx)
 	if err != nil {
 		return nil, err
@@ -189,7 +189,7 @@ func (r *resourceSelector) GetMeshWorkloadsByIdentitySelector(
 		return convertWorkloadsToPointerSlice(meshWorkloadList.Items), nil
 	}
 
-	var matches []*zephyr_discovery.MeshWorkload
+	var matches []*smh_discovery.MeshWorkload
 	for _, workloadIter := range meshWorkloadList.Items {
 		workload := workloadIter // careful not to close over the loop var
 		switch identitySelector.GetIdentitySelectorType().(type) {
@@ -225,7 +225,7 @@ func (r *resourceSelector) GetMeshWorkloadsByIdentitySelector(
 func (r *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 	ctx context.Context,
 	workloadSelector *core_types.WorkloadSelector,
-) ([]*zephyr_discovery.MeshWorkload, error) {
+) ([]*smh_discovery.MeshWorkload, error) {
 	meshWorkloadList, err := r.meshWorkloadClient.ListMeshWorkload(ctx)
 	if err != nil {
 		return nil, err
@@ -236,7 +236,7 @@ func (r *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 		return convertWorkloadsToPointerSlice(meshWorkloadList.Items), nil
 	}
 
-	var matches []*zephyr_discovery.MeshWorkload
+	var matches []*smh_discovery.MeshWorkload
 
 	// for each mesh workload we know about:
 	//   - load its deployment
@@ -294,7 +294,7 @@ func (r *resourceSelector) GetMeshWorkloadByRefSelector(
 	podEventWatcherName string,
 	podEventWatcherNamespace string,
 	podEventWatcherCluster string,
-) (*zephyr_discovery.MeshWorkload, error) {
+) (*smh_discovery.MeshWorkload, error) {
 	if podEventWatcherCluster == "" {
 		return nil, MustProvideClusterName(&core_types.ResourceRef{Name: podEventWatcherName, Namespace: podEventWatcherNamespace})
 	}
@@ -318,8 +318,8 @@ func (r *resourceSelector) GetMeshWorkloadByRefSelector(
 
 func getMeshServiceByServiceKey(
 	selectedRef *core_types.ResourceRef,
-	meshServices []*zephyr_discovery.MeshService,
-) *zephyr_discovery.MeshService {
+	meshServices []*smh_discovery.MeshService,
+) *smh_discovery.MeshService {
 	for _, meshService := range meshServices {
 		kubeServiceRef := meshService.Spec.GetKubeService().GetRef()
 		if selectedRef.GetName() == kubeServiceRef.GetName() &&
@@ -335,9 +335,9 @@ func getMeshServicesBySelectorNamespace(
 	selectors map[string]string,
 	namespaces []string,
 	clusters []string,
-	meshServices []*zephyr_discovery.MeshService,
-) []*zephyr_discovery.MeshService {
-	var selectedMeshServices []*zephyr_discovery.MeshService
+	meshServices []*smh_discovery.MeshService,
+) []*smh_discovery.MeshService {
+	var selectedMeshServices []*smh_discovery.MeshService
 	for _, meshService := range meshServices {
 		kubeService := meshService.Spec.GetKubeService()
 		if kubeServiceMatches(selectors, namespaces, clusters, kubeService) {
@@ -373,8 +373,8 @@ func kubeServiceMatches(
 	return true
 }
 
-func convertServicesToPointerSlice(meshServices []zephyr_discovery.MeshService) []*zephyr_discovery.MeshService {
-	pointerSlice := make([]*zephyr_discovery.MeshService, 0, len(meshServices))
+func convertServicesToPointerSlice(meshServices []smh_discovery.MeshService) []*smh_discovery.MeshService {
+	pointerSlice := make([]*smh_discovery.MeshService, 0, len(meshServices))
 	for _, meshService := range meshServices {
 		meshService := meshService
 		pointerSlice = append(pointerSlice, &meshService)
@@ -382,8 +382,8 @@ func convertServicesToPointerSlice(meshServices []zephyr_discovery.MeshService) 
 	return pointerSlice
 }
 
-func convertWorkloadsToPointerSlice(meshWorkloads []zephyr_discovery.MeshWorkload) []*zephyr_discovery.MeshWorkload {
-	pointerSlice := []*zephyr_discovery.MeshWorkload{}
+func convertWorkloadsToPointerSlice(meshWorkloads []smh_discovery.MeshWorkload) []*smh_discovery.MeshWorkload {
+	pointerSlice := []*smh_discovery.MeshWorkload{}
 	for _, meshWorkloadIter := range meshWorkloads {
 		meshWorkload := meshWorkloadIter
 		pointerSlice = append(pointerSlice, &meshWorkload)

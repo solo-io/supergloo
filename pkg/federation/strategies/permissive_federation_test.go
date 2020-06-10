@@ -6,14 +6,14 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	strategies2 "github.com/solo-io/service-mesh-hub/pkg/federation/strategies"
-	mock_discovery_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_discovery_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -33,27 +33,27 @@ var _ = Describe("Permissive Federation", func() {
 	})
 
 	It("doesn't federate anything for a virtual mesh with only one member", func() {
-		meshRef := &zephyr_core_types.ResourceRef{
+		meshRef := &smh_core_types.ResourceRef{
 			Name:      "mesh-1",
 			Namespace: container_runtime.GetWriteNamespace(),
 		}
-		vm := &zephyr_networking.VirtualMesh{
-			Spec: zephyr_networking_types.VirtualMeshSpec{
-				Meshes: []*zephyr_core_types.ResourceRef{meshRef},
-				Federation: &zephyr_networking_types.VirtualMeshSpec_Federation{
-					Mode: zephyr_networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
+		vm := &smh_networking.VirtualMesh{
+			Spec: smh_networking_types.VirtualMeshSpec{
+				Meshes: []*smh_core_types.ResourceRef{meshRef},
+				Federation: &smh_networking_types.VirtualMeshSpec_Federation{
+					Mode: smh_networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
 				},
 			},
 		}
 
-		service := &zephyr_discovery.MeshService{
+		service := &smh_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name: "svc-1",
 			},
-			Spec: zephyr_discovery_types.MeshServiceSpec{
+			Spec: smh_discovery_types.MeshServiceSpec{
 				Mesh: meshRef,
-				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-					Ref: &zephyr_core_types.ResourceRef{
+				KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+					Ref: &smh_core_types.ResourceRef{
 						Name:      "application-svc",
 						Namespace: "application-ns",
 					},
@@ -62,14 +62,14 @@ var _ = Describe("Permissive Federation", func() {
 		}
 		perMeshResources := map[string]*strategies2.MeshMetadata{
 			"mesh-1": {
-				MeshServices: []*zephyr_discovery.MeshService{service},
+				MeshServices: []*smh_discovery.MeshService{service},
 				ClusterName:  "application-cluster",
 			},
 		}
 
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
 		serviceCopy := *service
-		serviceCopy.Spec.Federation = &zephyr_discovery_types.MeshServiceSpec_Federation{
+		serviceCopy.Spec.Federation = &smh_discovery_types.MeshServiceSpec_Federation{
 			MulticlusterDnsName: "application-svc.application-ns.application-cluster",
 		}
 		meshServiceClient.EXPECT().

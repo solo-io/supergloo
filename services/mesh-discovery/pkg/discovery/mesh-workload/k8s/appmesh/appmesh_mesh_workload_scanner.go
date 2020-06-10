@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube"
@@ -23,7 +23,7 @@ import (
 var (
 	DiscoveryLabels = func() map[string]string {
 		return map[string]string{
-			kube.MESH_TYPE: strings.ToLower(zephyr_core_types.MeshType_APPMESH.String()),
+			kube.MESH_TYPE: strings.ToLower(smh_core_types.MeshType_APPMESH.String()),
 		}
 	}
 )
@@ -34,7 +34,7 @@ func AppMeshWorkloadScannerFactoryProvider(
 ) meshworkload_discovery.MeshWorkloadScannerFactory {
 	return func(
 		ownerFetcher meshworkload_discovery.OwnerFetcher,
-		meshClient zephyr_discovery.MeshClient,
+		meshClient smh_discovery.MeshClient,
 		remoteClient client.Client,
 	) meshworkload_discovery.MeshWorkloadScanner {
 		return NewAppMeshWorkloadScanner(
@@ -51,7 +51,7 @@ func AppMeshWorkloadScannerFactoryProvider(
 func NewAppMeshWorkloadScanner(
 	ownerFetcher meshworkload_discovery.OwnerFetcher,
 	appMeshParser aws_utils.AppMeshScanner,
-	meshClient zephyr_discovery.MeshClient,
+	meshClient smh_discovery.MeshClient,
 	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher,
 	remoteClient client.Client,
 ) meshworkload_discovery.MeshWorkloadScanner {
@@ -67,12 +67,12 @@ func NewAppMeshWorkloadScanner(
 type appMeshWorkloadScanner struct {
 	ownerFetcher        meshworkload_discovery.OwnerFetcher
 	appmeshScanner      aws_utils.AppMeshScanner
-	meshClient          zephyr_discovery.MeshClient
+	meshClient          smh_discovery.MeshClient
 	remoteClient        client.Client
 	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher
 }
 
-func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
+func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*smh_discovery.MeshWorkload, error) {
 	awsAccountId, err := a.awsAccountIdFetcher.GetEksAccountId(ctx, a.remoteClient)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Warnf("Error fetching AWS Account ID from ConfigMap: %+v", err)
@@ -98,15 +98,15 @@ func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_type
 		return nil, err
 	}
 	containerPorts := a.getContainerPorts(deployment)
-	return &zephyr_discovery.MeshWorkload{
+	return &smh_discovery.MeshWorkload{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      a.buildMeshWorkloadName(deployment.GetName(), deployment.GetNamespace(), clusterName),
 			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(),
 		},
-		Spec: zephyr_discovery_types.MeshWorkloadSpec{
-			KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-				KubeControllerRef: &zephyr_core_types.ResourceRef{
+		Spec: smh_discovery_types.MeshWorkloadSpec{
+			KubeController: &smh_discovery_types.MeshWorkloadSpec_KubeController{
+				KubeControllerRef: &smh_core_types.ResourceRef{
 					Name:      deployment.GetName(),
 					Namespace: deployment.GetNamespace(),
 					Cluster:   clusterName,
@@ -114,11 +114,11 @@ func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_type
 				Labels:             pod.GetLabels(),
 				ServiceAccountName: pod.Spec.ServiceAccountName,
 			},
-			Mesh: &zephyr_core_types.ResourceRef{
+			Mesh: &smh_core_types.ResourceRef{
 				Name:      mesh.GetName(),
 				Namespace: mesh.GetNamespace(),
 			},
-			Appmesh: &zephyr_discovery_types.MeshWorkloadSpec_Appmesh{
+			Appmesh: &smh_discovery_types.MeshWorkloadSpec_Appmesh{
 				VirtualNodeName: appMeshPod.VirtualNodeName,
 				Ports:           containerPorts,
 			},
@@ -133,11 +133,11 @@ func (a *appMeshWorkloadScanner) buildMeshWorkloadName(deploymentName string, na
 
 func (a *appMeshWorkloadScanner) getContainerPorts(
 	deployment *k8s_apps_types.Deployment,
-) []*zephyr_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort {
-	var ports []*zephyr_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort
+) []*smh_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort {
+	var ports []*smh_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		for _, containerPort := range container.Ports {
-			ports = append(ports, &zephyr_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort{
+			ports = append(ports, &smh_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort{
 				Port:     uint32(containerPort.ContainerPort),
 				Protocol: string(containerPort.Protocol),
 			})

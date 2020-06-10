@@ -7,10 +7,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	networking_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
@@ -47,16 +47,16 @@ var _ = Describe("Merger", func() {
 	})
 
 	It("should process TrafficPolicy", func() {
-		selector := &zephyr_core_types.ServiceSelector{}
+		selector := &smh_core_types.ServiceSelector{}
 		namespace := "namespace"
-		tp := &zephyr_networking.TrafficPolicy{
-			Spec: zephyr_networking_types.TrafficPolicySpec{
+		tp := &smh_networking.TrafficPolicy{
+			Spec: smh_networking_types.TrafficPolicySpec{
 				DestinationSelector: selector,
 			},
 			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: namespace},
 		}
-		ms := []*zephyr_discovery.MeshService{}
-		expectedMergedTPs := map[networking_selector.MeshServiceId][]*zephyr_networking.TrafficPolicy{}
+		ms := []*smh_discovery.MeshService{}
+		expectedMergedTPs := map[networking_selector.MeshServiceId][]*smh_networking.TrafficPolicy{}
 		mockResourceSelector.
 			EXPECT().
 			GetAllMeshServicesByServiceSelector(ctx, selector).
@@ -72,15 +72,15 @@ var _ = Describe("Merger", func() {
 	})
 
 	It("should update triggering TrafficPolicy status to CONFLICT if conflict found during processing", func() {
-		selector := &zephyr_core_types.ServiceSelector{}
+		selector := &smh_core_types.ServiceSelector{}
 		namespace := "namespace"
-		tp := &zephyr_networking.TrafficPolicy{
-			Spec: zephyr_networking_types.TrafficPolicySpec{
+		tp := &smh_networking.TrafficPolicy{
+			Spec: smh_networking_types.TrafficPolicySpec{
 				DestinationSelector: selector,
 			},
 			ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: namespace},
 		}
-		ms := []*zephyr_discovery.MeshService{}
+		ms := []*smh_discovery.MeshService{}
 		mockResourceSelector.
 			EXPECT().
 			GetAllMeshServicesByServiceSelector(ctx, selector).
@@ -95,9 +95,9 @@ var _ = Describe("Merger", func() {
 	})
 
 	It("should process TrafficPolicies for MeshService", func() {
-		ms := &zephyr_discovery.MeshService{}
-		msList := []*zephyr_discovery.MeshService{ms}
-		mergedTpsByMs := map[networking_selector.MeshServiceId][]*zephyr_networking.TrafficPolicy{}
+		ms := &smh_discovery.MeshService{}
+		msList := []*smh_discovery.MeshService{ms}
+		mergedTpsByMs := map[networking_selector.MeshServiceId][]*smh_networking.TrafficPolicy{}
 		mockMerger.
 			EXPECT().
 			MergeTrafficPoliciesForMeshServices(ctx, msList).

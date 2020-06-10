@@ -13,13 +13,13 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	mock_cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mock_crd_uninstall "github.com/solo-io/service-mesh-hub/pkg/kube/crd/mocks"
 	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -51,17 +51,17 @@ var _ = Describe("Crd Uninstaller", func() {
 		kubeLoader := mock_kubeconfig.NewMockKubeLoader(ctrl)
 		helmClient := mock_types.NewMockHelmClient(ctrl)
 		helmUninstaller := mock_types.NewMockHelmUninstaller(ctrl)
-		kubeClusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
+		kubeClusterClient := mock_smh_discovery.NewMockKubernetesClusterClient(ctrl)
 		clusterDeregistrationClient := mock_cluster_registration.NewMockClusterDeregistrationClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		releaseName := constants.ServiceMeshHubReleaseName
-		cluster1 := &zephyr_discovery.KubernetesCluster{
+		cluster1 := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name: "cluster-1",
 			},
 		}
-		cluster2 := &zephyr_discovery.KubernetesCluster{
+		cluster2 := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name: "cluster-2",
 			},
@@ -78,8 +78,8 @@ var _ = Describe("Crd Uninstaller", func() {
 			Return(nil, nil)
 		kubeClusterClient.EXPECT().
 			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
-			Return(&zephyr_discovery.KubernetesClusterList{
-				Items: []zephyr_discovery.KubernetesCluster{*cluster1, *cluster2},
+			Return(&smh_discovery.KubernetesClusterList{
+				Items: []smh_discovery.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
 		clusterDeregistrationClient.EXPECT().
 			Deregister(ctx, cluster1).
@@ -88,7 +88,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			Deregister(ctx, cluster2).
 			Return(nil)
 		crdRemover.EXPECT().
-			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
+			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(true, nil)
 
 		meshctl := cli_test.MockMeshctl{
@@ -124,17 +124,17 @@ Service Mesh Hub has been uninstalled
 		kubeLoader := mock_kubeconfig.NewMockKubeLoader(ctrl)
 		helmClient := mock_types.NewMockHelmClient(ctrl)
 		helmUninstaller := mock_types.NewMockHelmUninstaller(ctrl)
-		kubeClusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
+		kubeClusterClient := mock_smh_discovery.NewMockKubernetesClusterClient(ctrl)
 		clusterDeregistrationClient := mock_cluster_registration.NewMockClusterDeregistrationClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		releaseName := constants.ServiceMeshHubReleaseName
-		cluster1 := &zephyr_discovery.KubernetesCluster{
+		cluster1 := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name: "cluster-1",
 			},
 		}
-		cluster2 := &zephyr_discovery.KubernetesCluster{
+		cluster2 := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name: "cluster-2",
 			},
@@ -151,8 +151,8 @@ Service Mesh Hub has been uninstalled
 			Return(nil, nil)
 		kubeClusterClient.EXPECT().
 			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
-			Return(&zephyr_discovery.KubernetesClusterList{
-				Items: []zephyr_discovery.KubernetesCluster{*cluster1, *cluster2},
+			Return(&smh_discovery.KubernetesClusterList{
+				Items: []smh_discovery.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
 		clusterDeregistrationClient.EXPECT().
 			Deregister(ctx, cluster1).
@@ -172,7 +172,7 @@ Service Mesh Hub has been uninstalled
 			DeleteNamespace(ctx, client.ObjectKey{Name: ns.GetName()}).
 			Return(nil)
 		crdRemover.EXPECT().
-			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
+			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(true, nil)
 
 		meshctl := cli_test.MockMeshctl{
@@ -209,7 +209,7 @@ Service Mesh Hub has been uninstalled
 		kubeLoader := mock_kubeconfig.NewMockKubeLoader(ctrl)
 		helmClient := mock_types.NewMockHelmClient(ctrl)
 		helmUninstaller := mock_types.NewMockHelmUninstaller(ctrl)
-		kubeClusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
+		kubeClusterClient := mock_smh_discovery.NewMockKubernetesClusterClient(ctrl)
 		clusterDeregistrationClient := mock_cluster_registration.NewMockClusterDeregistrationClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
@@ -231,7 +231,7 @@ Service Mesh Hub has been uninstalled
 			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 		crdRemover.EXPECT().
-			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
+			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(false, nil)
 
 		meshctl := cli_test.MockMeshctl{
@@ -271,7 +271,7 @@ Service Mesh Hub has been uninstalled
 		kubeLoader := mock_kubeconfig.NewMockKubeLoader(ctrl)
 		helmClient := mock_types.NewMockHelmClient(ctrl)
 		helmUninstaller := mock_types.NewMockHelmUninstaller(ctrl)
-		kubeClusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
+		kubeClusterClient := mock_smh_discovery.NewMockKubernetesClusterClient(ctrl)
 		clusterDeregistrationClient := mock_cluster_registration.NewMockClusterDeregistrationClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
@@ -293,7 +293,7 @@ Service Mesh Hub has been uninstalled
 			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
 			Return(nil, generateNewErr())
 		crdRemover.EXPECT().
-			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
+			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(true, generateNewErr())
 
 		meshctl := cli_test.MockMeshctl{
@@ -338,17 +338,17 @@ Service Mesh Hub has been uninstalled with errors
 		kubeLoader := mock_kubeconfig.NewMockKubeLoader(ctrl)
 		helmClient := mock_types.NewMockHelmClient(ctrl)
 		helmUninstaller := mock_types.NewMockHelmUninstaller(ctrl)
-		kubeClusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
+		kubeClusterClient := mock_smh_discovery.NewMockKubernetesClusterClient(ctrl)
 		clusterDeregistrationClient := mock_cluster_registration.NewMockClusterDeregistrationClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		releaseName := constants.ServiceMeshHubReleaseName
-		cluster1 := &zephyr_discovery.KubernetesCluster{
+		cluster1 := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name: "cluster-1",
 			},
 		}
-		cluster2 := &zephyr_discovery.KubernetesCluster{
+		cluster2 := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name: "cluster-2",
 			},
@@ -365,8 +365,8 @@ Service Mesh Hub has been uninstalled with errors
 			Return(nil, generateNewErr())
 		kubeClusterClient.EXPECT().
 			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
-			Return(&zephyr_discovery.KubernetesClusterList{
-				Items: []zephyr_discovery.KubernetesCluster{*cluster1, *cluster2},
+			Return(&smh_discovery.KubernetesClusterList{
+				Items: []smh_discovery.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
 		clusterDeregistrationClient.EXPECT().
 			Deregister(ctx, cluster1).
@@ -375,7 +375,7 @@ Service Mesh Hub has been uninstalled with errors
 			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
 			Return(nil, generateNewErr())
 		crdRemover.EXPECT().
-			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
+			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(true, generateNewErr())
 
 		meshctl := cli_test.MockMeshctl{
@@ -416,18 +416,18 @@ Service Mesh Hub has been uninstalled with errors
 		kubeLoader := mock_kubeconfig.NewMockKubeLoader(ctrl)
 		helmClient := mock_types.NewMockHelmClient(ctrl)
 		helmUninstaller := mock_types.NewMockHelmUninstaller(ctrl)
-		kubeClusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
+		kubeClusterClient := mock_smh_discovery.NewMockKubernetesClusterClient(ctrl)
 		clusterDeregistrationClient := mock_cluster_registration.NewMockClusterDeregistrationClient(ctrl)
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		releaseName := "different-release-name"
 		smhInstallNamespace := "smh-management-plane-namespace"
-		cluster1 := &zephyr_discovery.KubernetesCluster{
+		cluster1 := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name: "cluster-1",
 			},
 		}
-		cluster2 := &zephyr_discovery.KubernetesCluster{
+		cluster2 := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name: "cluster-2",
 			},
@@ -444,8 +444,8 @@ Service Mesh Hub has been uninstalled with errors
 			Return(nil, nil)
 		kubeClusterClient.EXPECT().
 			ListKubernetesCluster(ctx, client.InNamespace(smhInstallNamespace)).
-			Return(&zephyr_discovery.KubernetesClusterList{
-				Items: []zephyr_discovery.KubernetesCluster{*cluster1, *cluster2},
+			Return(&smh_discovery.KubernetesClusterList{
+				Items: []smh_discovery.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
 		clusterDeregistrationClient.EXPECT().
 			Deregister(ctx, cluster1).
@@ -465,7 +465,7 @@ Service Mesh Hub has been uninstalled with errors
 			DeleteNamespace(ctx, client.ObjectKey{Name: ns.GetName()}).
 			Return(nil)
 		crdRemover.EXPECT().
-			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
+			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(true, nil)
 
 		meshctl := cli_test.MockMeshctl{

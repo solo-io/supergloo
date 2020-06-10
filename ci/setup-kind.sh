@@ -353,7 +353,7 @@ kubectl --context kind-$managementPlane -n istio-system rollout status deploymen
 kubectl --context kind-$remoteCluster -n istio-system rollout status deployment istiod
 
 kubectl --context kind-$managementPlane apply -f - <<EOF
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: VirtualMesh
 metadata:
   name: virtual-mesh

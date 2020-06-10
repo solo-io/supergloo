@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
@@ -17,19 +17,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func DefaultRootCaName(vm *zephyr_networking.VirtualMesh) string {
+func DefaultRootCaName(vm *smh_networking.VirtualMesh) string {
 	return fmt.Sprintf("%s-ca-certs", vm.GetName())
 }
 
 type virtualMeshCertClient struct {
 	localSecretClient      k8s_core.SecretClient
-	localVirtualMeshClient zephyr_networking.VirtualMeshClient
+	localVirtualMeshClient smh_networking.VirtualMeshClient
 	rootCertGenerator      certgen.RootCertGenerator
 }
 
 func NewVirtualMeshCertClient(
 	localSecretClient k8s_core.SecretClient,
-	localVirtualMeshClient zephyr_networking.VirtualMeshClient,
+	localVirtualMeshClient smh_networking.VirtualMeshClient,
 	rootCertGenerator certgen.RootCertGenerator,
 ) VirtualMeshCertClient {
 	return &virtualMeshCertClient{
@@ -42,16 +42,16 @@ func NewVirtualMeshCertClient(
 // Fetch the root certificate, which can either be a resource ref to a user-supplied cert or an auto-generated cert.
 func (v *virtualMeshCertClient) GetRootCaBundle(
 	ctx context.Context,
-	meshRef *zephyr_core_types.ResourceRef,
+	meshRef *smh_core_types.ResourceRef,
 ) (*cert_secrets.RootCAData, error) {
 	vm, err := v.localVirtualMeshClient.GetVirtualMesh(ctx, selection.ResourceRefToObjectKey(meshRef))
 	if err != nil {
 		return nil, err
 	}
 	var caSecret *k8s_core_types.Secret
-	var trustBundleSecretRef *zephyr_core_types.ResourceRef
+	var trustBundleSecretRef *smh_core_types.ResourceRef
 	switch vm.Spec.GetCertificateAuthority().GetType().(type) {
-	case *zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_:
+	case *smh_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_:
 		trustBundleSecretRef = vm.Spec.GetCertificateAuthority().GetProvided().GetCertificate()
 		caSecret, err = v.localSecretClient.GetSecret(
 			ctx, client.ObjectKey{Name: trustBundleSecretRef.GetName(), Namespace: trustBundleSecretRef.GetNamespace()})
@@ -69,7 +69,7 @@ func (v *virtualMeshCertClient) GetRootCaBundle(
 
 func (v *virtualMeshCertClient) getOrCreateBuiltinRootCert(
 	ctx context.Context,
-	vm *zephyr_networking.VirtualMesh,
+	vm *smh_networking.VirtualMesh,
 ) (*k8s_core_types.Secret, error) {
 	// auto-generated cert lives in fixed location
 	rootCaName := DefaultRootCaName(vm)

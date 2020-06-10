@@ -9,36 +9,36 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	v1 "k8s.io/api/apps/v1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockMeshFinder is a mock of MeshFinder interface.
+// MockMeshFinder is a mock of MeshFinder interface
 type MockMeshFinder struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshFinderMockRecorder
 }
 
-// MockMeshFinderMockRecorder is the mock recorder for MockMeshFinder.
+// MockMeshFinderMockRecorder is the mock recorder for MockMeshFinder
 type MockMeshFinderMockRecorder struct {
 	mock *MockMeshFinder
 }
 
-// NewMockMeshFinder creates a new mock instance.
+// NewMockMeshFinder creates a new mock instance
 func NewMockMeshFinder(ctrl *gomock.Controller) *MockMeshFinder {
 	mock := &MockMeshFinder{ctrl: ctrl}
 	mock.recorder = &MockMeshFinderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMeshFinder) EXPECT() *MockMeshFinderMockRecorder {
 	return m.recorder
 }
 
-// StartDiscovery mocks base method.
+// StartDiscovery mocks base method
 func (m *MockMeshFinder) StartDiscovery(deploymentEventWatcher controller.DeploymentEventWatcher) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StartDiscovery", deploymentEventWatcher)
@@ -46,13 +46,13 @@ func (m *MockMeshFinder) StartDiscovery(deploymentEventWatcher controller.Deploy
 	return ret0
 }
 
-// StartDiscovery indicates an expected call of StartDiscovery.
+// StartDiscovery indicates an expected call of StartDiscovery
 func (mr *MockMeshFinderMockRecorder) StartDiscovery(deploymentEventWatcher interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshFinder)(nil).StartDiscovery), deploymentEventWatcher)
 }
 
-// CreateDeployment mocks base method.
+// CreateDeployment mocks base method
 func (m *MockMeshFinder) CreateDeployment(obj *v1.Deployment) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateDeployment", obj)
@@ -60,13 +60,13 @@ func (m *MockMeshFinder) CreateDeployment(obj *v1.Deployment) error {
 	return ret0
 }
 
-// CreateDeployment indicates an expected call of CreateDeployment.
+// CreateDeployment indicates an expected call of CreateDeployment
 func (mr *MockMeshFinderMockRecorder) CreateDeployment(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDeployment", reflect.TypeOf((*MockMeshFinder)(nil).CreateDeployment), obj)
 }
 
-// UpdateDeployment mocks base method.
+// UpdateDeployment mocks base method
 func (m *MockMeshFinder) UpdateDeployment(old, new *v1.Deployment) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateDeployment", old, new)
@@ -74,13 +74,13 @@ func (m *MockMeshFinder) UpdateDeployment(old, new *v1.Deployment) error {
 	return ret0
 }
 
-// UpdateDeployment indicates an expected call of UpdateDeployment.
+// UpdateDeployment indicates an expected call of UpdateDeployment
 func (mr *MockMeshFinderMockRecorder) UpdateDeployment(old, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeployment", reflect.TypeOf((*MockMeshFinder)(nil).UpdateDeployment), old, new)
 }
 
-// DeleteDeployment mocks base method.
+// DeleteDeployment mocks base method
 func (m *MockMeshFinder) DeleteDeployment(obj *v1.Deployment) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteDeployment", obj)
@@ -88,13 +88,13 @@ func (m *MockMeshFinder) DeleteDeployment(obj *v1.Deployment) error {
 	return ret0
 }
 
-// DeleteDeployment indicates an expected call of DeleteDeployment.
+// DeleteDeployment indicates an expected call of DeleteDeployment
 func (mr *MockMeshFinderMockRecorder) DeleteDeployment(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDeployment", reflect.TypeOf((*MockMeshFinder)(nil).DeleteDeployment), obj)
 }
 
-// GenericDeployment mocks base method.
+// GenericDeployment mocks base method
 func (m *MockMeshFinder) GenericDeployment(obj *v1.Deployment) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenericDeployment", obj)
@@ -102,36 +102,36 @@ func (m *MockMeshFinder) GenericDeployment(obj *v1.Deployment) error {
 	return ret0
 }
 
-// GenericDeployment indicates an expected call of GenericDeployment.
+// GenericDeployment indicates an expected call of GenericDeployment
 func (mr *MockMeshFinderMockRecorder) GenericDeployment(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericDeployment", reflect.TypeOf((*MockMeshFinder)(nil).GenericDeployment), obj)
 }
 
-// MockMeshScanner is a mock of MeshScanner interface.
+// MockMeshScanner is a mock of MeshScanner interface
 type MockMeshScanner struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshScannerMockRecorder
 }
 
-// MockMeshScannerMockRecorder is the mock recorder for MockMeshScanner.
+// MockMeshScannerMockRecorder is the mock recorder for MockMeshScanner
 type MockMeshScannerMockRecorder struct {
 	mock *MockMeshScanner
 }
 
-// NewMockMeshScanner creates a new mock instance.
+// NewMockMeshScanner creates a new mock instance
 func NewMockMeshScanner(ctrl *gomock.Controller) *MockMeshScanner {
 	mock := &MockMeshScanner{ctrl: ctrl}
 	mock.recorder = &MockMeshScannerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMeshScanner) EXPECT() *MockMeshScannerMockRecorder {
 	return m.recorder
 }
 
-// ScanDeployment mocks base method.
+// ScanDeployment mocks base method
 func (m *MockMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *v1.Deployment, clusterScopedClient client.Client) (*v1alpha1.Mesh, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanDeployment", ctx, clusterName, deployment, clusterScopedClient)
@@ -140,7 +140,7 @@ func (m *MockMeshScanner) ScanDeployment(ctx context.Context, clusterName string
 	return ret0, ret1
 }
 
-// ScanDeployment indicates an expected call of ScanDeployment.
+// ScanDeployment indicates an expected call of ScanDeployment
 func (mr *MockMeshScannerMockRecorder) ScanDeployment(ctx, clusterName, deployment, clusterScopedClient interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDeployment", reflect.TypeOf((*MockMeshScanner)(nil).ScanDeployment), ctx, clusterName, deployment, clusterScopedClient)

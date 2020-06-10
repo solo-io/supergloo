@@ -3,7 +3,7 @@ package certgen
 import (
 	"time"
 
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 	"istio.io/istio/security/pkg/pki/util"
 )

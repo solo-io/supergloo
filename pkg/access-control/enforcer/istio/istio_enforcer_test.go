@@ -7,12 +7,12 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer/istio"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	istio_federation "github.com/solo-io/service-mesh-hub/pkg/federation/resolver/meshes/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
@@ -51,16 +51,16 @@ var _ = Describe("IstioEnforcer", func() {
 		ctrl.Finish()
 	})
 
-	var buildMesh = func() *zephyr_discovery.Mesh {
-		return &zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &zephyr_core_types.ResourceRef{
+	var buildMesh = func() *smh_discovery.Mesh {
+		return &smh_discovery.Mesh{
+			Spec: smh_discovery_types.MeshSpec{
+				Cluster: &smh_core_types.ResourceRef{
 					Name: "cluster1",
 				},
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
-						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+				MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
+						Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+							Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system-1",
 							},
 						},

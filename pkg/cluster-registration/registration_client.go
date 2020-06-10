@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	constants2 "github.com/solo-io/service-mesh-hub/pkg/constants"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
@@ -56,7 +56,7 @@ var (
 
 type clusterRegistrationClient struct {
 	secretClient                       k8s_core.SecretClient
-	kubernetesClusterClient            zephyr_discovery.KubernetesClusterClient
+	kubernetesClusterClient            smh_discovery.KubernetesClusterClient
 	namespaceClientFactory             k8s_core.NamespaceClientFromConfigFactory
 	kubeConverter                      kubeconfig.Converter
 	csrAgentInstallerFactory           installation.CsrAgentInstallerFactory
@@ -65,7 +65,7 @@ type clusterRegistrationClient struct {
 
 func NewClusterRegistrationClient(
 	secretClient k8s_core.SecretClient,
-	kubernetesClusterClient zephyr_discovery.KubernetesClusterClient,
+	kubernetesClusterClient smh_discovery.KubernetesClusterClient,
 	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
 	kubeConverter kubeconfig.Converter,
 	csrAgentInstallerFactory installation.CsrAgentInstallerFactory,
@@ -232,7 +232,7 @@ func (c *clusterRegistrationClient) generateServiceAccountBearerToken(
 	remoteClusterName string,
 	remoteWriteNamespace string,
 ) (string, error) {
-	serviceAccountRef := &zephyr_core_types.ResourceRef{
+	serviceAccountRef := &smh_core_types.ResourceRef{
 		Name:      remoteClusterName,
 		Namespace: remoteWriteNamespace,
 	}
@@ -320,7 +320,7 @@ func (c *clusterRegistrationClient) writeKubeClusterToMaster(
 	secret *k8s_core_types.Secret,
 	discoverySource string,
 ) error {
-	cluster := &zephyr_discovery.KubernetesCluster{
+	cluster := &smh_discovery.KubernetesCluster{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      remoteClusterName,
 			Namespace: writeNamespace,
@@ -328,8 +328,8 @@ func (c *clusterRegistrationClient) writeKubeClusterToMaster(
 				kube.DISCOVERED_BY: discoverySource,
 			},
 		},
-		Spec: zephyr_discovery_types.KubernetesClusterSpec{
-			SecretRef: &zephyr_core_types.ResourceRef{
+		Spec: smh_discovery_types.KubernetesClusterSpec{
+			SecretRef: &smh_core_types.ResourceRef{
 				Name:      secret.GetName(),
 				Namespace: secret.GetNamespace(),
 			},

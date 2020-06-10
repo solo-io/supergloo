@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
@@ -115,21 +115,21 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				},
 			},
 		}
-		expectedMesh := &zephyr_discovery.Mesh{
+		expectedMesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "istio-istio-system-" + clusterName,
 				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
-						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+			Spec: smh_discovery_types.MeshSpec{
+				MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
+						Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+							Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: deployment.GetNamespace(),
 								Version:               imageVersion,
 							},
-							CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+							CitadelInfo: &smh_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
 								TrustDomain:           trustDomain,
 								CitadelNamespace:      istioNs,
 								CitadelServiceAccount: serviceAccountName,
@@ -137,7 +137,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 						},
 					},
 				},
-				Cluster: &zephyr_core_types.ResourceRef{
+				Cluster: &smh_core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
@@ -184,21 +184,21 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				},
 			},
 		}
-		expectedMesh := &zephyr_discovery.Mesh{
+		expectedMesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "istio-istio-system-" + clusterName,
 				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_6_{
-					Istio1_6: &zephyr_discovery_types.MeshSpec_Istio1_6{
-						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+			Spec: smh_discovery_types.MeshSpec{
+				MeshType: &smh_discovery_types.MeshSpec_Istio1_6_{
+					Istio1_6: &smh_discovery_types.MeshSpec_Istio1_6{
+						Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+							Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: deployment.GetNamespace(),
 								Version:               imageVersion,
 							},
-							CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+							CitadelInfo: &smh_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
 								TrustDomain:           trustDomain,
 								CitadelNamespace:      istioNs,
 								CitadelServiceAccount: serviceAccountName,
@@ -206,7 +206,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 						},
 					},
 				},
-				Cluster: &zephyr_core_types.ResourceRef{
+				Cluster: &smh_core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
 					Namespace: container_runtime.GetWriteNamespace(),
 				},

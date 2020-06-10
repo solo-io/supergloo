@@ -4,7 +4,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: csr-agent-clusterrole
 rules:
-  - apiGroups: ["security.zephyr.solo.io"]
+  - apiGroups: ["security.smh.solo.io"]
     resources: ["virtualmeshcertificatesigningrequests", "virtualmeshcertificatesigningrequests/status"]
     verbs: ["*"]
   - apiGroups: [""]

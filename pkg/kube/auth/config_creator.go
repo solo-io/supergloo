@@ -6,7 +6,7 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -47,7 +47,7 @@ type remoteAuthorityConfigCreator struct {
 func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 	ctx context.Context,
 	targetClusterCfg *rest.Config,
-	serviceAccountRef *zephyr_core_types.ResourceRef,
+	serviceAccountRef *smh_core_types.ResourceRef,
 ) (*rest.Config, error) {
 
 	tokenSecret, err := r.waitForSecret(ctx, serviceAccountRef)
@@ -72,7 +72,7 @@ func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 
 func (r *remoteAuthorityConfigCreator) waitForSecret(
 	ctx context.Context,
-	serviceAccountRef *zephyr_core_types.ResourceRef,
+	serviceAccountRef *smh_core_types.ResourceRef,
 ) (foundSecret *k8s_core_types.Secret, err error) {
 
 	err = retry.Do(func() error {

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
@@ -37,7 +37,7 @@ func NewCertClient(
 // Persist the intermediate cert's private key as a secret of type cert_secrets.IntermediateCertSecretType
 func (c *certClient) EnsureSecretKey(
 	ctx context.Context,
-	obj *zephyr_security.VirtualMeshCertificateSigningRequest,
+	obj *smh_security.VirtualMeshCertificateSigningRequest,
 ) (*cert_secrets.IntermediateCAData, error) {
 	secret, err := c.secretClient.GetSecret(ctx, client.ObjectKey{Name: buildSecretName(obj), Namespace: obj.GetNamespace()})
 	if err != nil {
@@ -63,6 +63,6 @@ func (c *certClient) EnsureSecretKey(
 
 // suffix the name of the CSR with "-private-key" to avoid confusion, since we're reusing the
 // cert_secrets.IntermediateCertSecretType secret type
-func buildSecretName(obj *zephyr_security.VirtualMeshCertificateSigningRequest) string {
+func buildSecretName(obj *smh_security.VirtualMeshCertificateSigningRequest) string {
 	return obj.GetName() + PrivateKeyNameSuffix
 }

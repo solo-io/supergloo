@@ -3,8 +3,8 @@ package preprocess
 import (
 	"context"
 
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
@@ -13,22 +13,22 @@ import (
 type TrafficPolicyPreprocessor interface {
 	PreprocessTrafficPolicy(
 		ctx context.Context,
-		trafficPolicy *zephyr_networking.TrafficPolicy,
-	) (map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy, error)
+		trafficPolicy *smh_networking.TrafficPolicy,
+	) (map[selection.MeshServiceId][]*smh_networking.TrafficPolicy, error)
 
 	PreprocessTrafficPoliciesForMeshService(
 		ctx context.Context,
-		meshService *zephyr_discovery.MeshService,
-	) (map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy, error)
+		meshService *smh_discovery.MeshService,
+	) (map[selection.MeshServiceId][]*smh_networking.TrafficPolicy, error)
 }
 
 type TrafficPolicyMerger interface {
 	MergeTrafficPoliciesForMeshServices(
 		ctx context.Context,
-		meshServices []*zephyr_discovery.MeshService,
-	) (map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy, error)
+		meshServices []*smh_discovery.MeshService,
+	) (map[selection.MeshServiceId][]*smh_networking.TrafficPolicy, error)
 }
 
 type TrafficPolicyValidator interface {
-	Validate(ctx context.Context, trafficPolicy *zephyr_networking.TrafficPolicy) error
+	Validate(ctx context.Context, trafficPolicy *smh_networking.TrafficPolicy) error
 }

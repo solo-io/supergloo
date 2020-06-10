@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	DiscoveryLabels = func(meshType zephyr_core_types.MeshType) map[string]string {
+	DiscoveryLabels = func(meshType smh_core_types.MeshType) map[string]string {
 		return map[string]string{
 			kube.MESH_TYPE: strings.ToLower(meshType.String()),
 		}
@@ -28,7 +28,7 @@ var (
 // visible for testing
 func NewIstioMeshWorkloadScanner(
 	ownerFetcher k8s.OwnerFetcher,
-	meshClient zephyr_discovery.MeshClient,
+	meshClient smh_discovery.MeshClient,
 	_ client.Client,
 ) k8s.MeshWorkloadScanner {
 	return &istioMeshWorkloadScanner{
@@ -39,10 +39,10 @@ func NewIstioMeshWorkloadScanner(
 
 type istioMeshWorkloadScanner struct {
 	ownerFetcher k8s.OwnerFetcher
-	meshClient   zephyr_discovery.MeshClient
+	meshClient   smh_discovery.MeshClient
 }
 
-func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*zephyr_discovery.MeshWorkload, error) {
+func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*smh_discovery.MeshWorkload, error) {
 	if !i.isIstioPod(pod) {
 		return nil, nil
 	}
@@ -54,15 +54,15 @@ func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_ty
 	if err != nil {
 		return nil, err
 	}
-	return &zephyr_discovery.MeshWorkload{
+	return &smh_discovery.MeshWorkload{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      i.buildMeshWorkloadName(deployment.GetName(), deployment.GetNamespace(), clusterName),
 			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(meshType),
 		},
-		Spec: zephyr_discovery_types.MeshWorkloadSpec{
-			KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-				KubeControllerRef: &zephyr_core_types.ResourceRef{
+		Spec: smh_discovery_types.MeshWorkloadSpec{
+			KubeController: &smh_discovery_types.MeshWorkloadSpec_KubeController{
+				KubeControllerRef: &smh_core_types.ResourceRef{
 					Name:      deployment.GetName(),
 					Namespace: deployment.GetNamespace(),
 					Cluster:   clusterName,
@@ -85,7 +85,7 @@ func (i *istioMeshWorkloadScanner) isIstioPod(pod *k8s_core_types.Pod) bool {
 	return false
 }
 
-func (i *istioMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clusterName string) (zephyr_core_types.MeshType, *zephyr_core_types.ResourceRef, error) {
+func (i *istioMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clusterName string) (smh_core_types.MeshType, *smh_core_types.ResourceRef, error) {
 	meshList, err := i.meshClient.ListMesh(ctx)
 	if err != nil {
 		return 0, nil, err
@@ -96,11 +96,11 @@ func (i *istioMeshWorkloadScanner) getMeshResourceRef(ctx context.Context, clust
 			return 0, nil, err
 		}
 
-		isIstio5Or6 := meshType == zephyr_core_types.MeshType_ISTIO1_5 || meshType == zephyr_core_types.MeshType_ISTIO1_6
+		isIstio5Or6 := meshType == smh_core_types.MeshType_ISTIO1_5 || meshType == smh_core_types.MeshType_ISTIO1_6
 
 		// Assume single tenancy for clusters with Istio mesh
 		if isIstio5Or6 && mesh.Spec.GetCluster().GetName() == clusterName {
-			return meshType, &zephyr_core_types.ResourceRef{
+			return meshType, &smh_core_types.ResourceRef{
 				Name:      mesh.GetName(),
 				Namespace: mesh.GetNamespace(),
 				Cluster:   clusterName,

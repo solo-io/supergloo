@@ -6,16 +6,16 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/linkerd"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
 	k8s_apps_types "k8s.io/api/apps/v1"
@@ -61,32 +61,32 @@ var _ = Describe("MeshWorkloadScanner", func() {
 
 	It("should scan pod", func() {
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)
-		meshList := &zephyr_discovery.MeshList{
-			Items: []zephyr_discovery.Mesh{
+		meshList := &smh_discovery.MeshList{
+			Items: []smh_discovery.Mesh{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-name",
 						Namespace: "mesh-namespace",
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
-						MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{
-							Linkerd: &zephyr_discovery_types.MeshSpec_LinkerdMesh{},
+					Spec: smh_discovery_types.MeshSpec{
+						Cluster: &smh_core_types.ResourceRef{Name: clusterName},
+						MeshType: &smh_discovery_types.MeshSpec_Linkerd{
+							Linkerd: &smh_discovery_types.MeshSpec_LinkerdMesh{},
 						},
 					},
 				},
 			},
 		}
 		mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
-		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
+		expectedMeshWorkload := &smh_discovery.MeshWorkload{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      fmt.Sprintf("linkerd-%s-%s-%s", deploymentName, namespace, clusterName),
 				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    linkerd.DiscoveryLabels(),
 			},
-			Spec: zephyr_discovery_types.MeshWorkloadSpec{
-				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-					KubeControllerRef: &zephyr_core_types.ResourceRef{
+			Spec: smh_discovery_types.MeshWorkloadSpec{
+				KubeController: &smh_discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &smh_core_types.ResourceRef{
 						Name:      deployment.Name,
 						Namespace: deployment.Namespace,
 						Cluster:   clusterName,
@@ -94,7 +94,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 					Labels:             nil,
 					ServiceAccountName: "",
 				},
-				Mesh: &zephyr_core_types.ResourceRef{
+				Mesh: &smh_core_types.ResourceRef{
 					Name:      meshList.Items[0].GetName(),
 					Namespace: meshList.Items[0].GetNamespace(),
 					Cluster:   clusterName,

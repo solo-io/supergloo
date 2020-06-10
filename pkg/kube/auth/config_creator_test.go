@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/auth"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -20,7 +20,7 @@ var _ = Describe("Config creator", func() {
 	var (
 		ctx               context.Context
 		ctrl              *gomock.Controller
-		serviceAccountRef = &zephyr_core_types.ResourceRef{
+		serviceAccountRef = &smh_core_types.ResourceRef{
 			Name:      "test-sa",
 			Namespace: "test-ns",
 		}

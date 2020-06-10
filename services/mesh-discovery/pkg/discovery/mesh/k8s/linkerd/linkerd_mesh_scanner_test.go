@@ -13,9 +13,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
 	mock_docker "github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker/mocks"
@@ -123,23 +123,23 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 				Tag:    "0.6.9",
 			}, nil)
 
-		expectedMesh := &zephyr_discovery.Mesh{
+		expectedMesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "linkerd-linkerd-" + clusterName,
 				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    linkerd.DiscoveryLabels,
 			},
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{
-					Linkerd: &zephyr_discovery_types.MeshSpec_LinkerdMesh{
-						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+			Spec: smh_discovery_types.MeshSpec{
+				MeshType: &smh_discovery_types.MeshSpec_Linkerd{
+					Linkerd: &smh_discovery_types.MeshSpec_LinkerdMesh{
+						Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               "0.6.9",
 						},
 						ClusterDomain: "applebees.com",
 					},
 				},
-				Cluster: &zephyr_core_types.ResourceRef{
+				Cluster: &smh_core_types.ResourceRef{
 					Name:      clusterName,
 					Namespace: container_runtime.GetWriteNamespace(),
 				},

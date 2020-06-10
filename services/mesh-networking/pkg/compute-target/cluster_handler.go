@@ -3,8 +3,8 @@ package networking_multicluster
 import (
 	"context"
 
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	smh_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
@@ -41,8 +41,8 @@ type meshNetworkingClusterHandler struct {
 }
 
 type clusterDependentDeps struct {
-	csrEventWatcher zephyr_security_controller.VirtualMeshCertificateSigningRequestEventWatcher
-	csrClient       zephyr_security.VirtualMeshCertificateSigningRequestClient
+	csrEventWatcher smh_security_controller.VirtualMeshCertificateSigningRequestEventWatcher
+	csrClient       smh_security.VirtualMeshCertificateSigningRequestClient
 }
 
 func (m *meshNetworkingClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {

@@ -3,8 +3,8 @@ package selection
 import (
 	"context"
 
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
@@ -12,16 +12,16 @@ import (
 // these can technically be static functions
 type BaseResourceSelector interface {
 	FilterMeshServicesByServiceSelector(
-		meshServices []*zephyr_discovery.MeshService,
-		selector *zephyr_core_types.ServiceSelector,
-	) ([]*zephyr_discovery.MeshService, error)
+		meshServices []*smh_discovery.MeshService,
+		selector *smh_core_types.ServiceSelector,
+	) ([]*smh_discovery.MeshService, error)
 
 	FindMeshServiceByRefSelector(
-		meshServices []*zephyr_discovery.MeshService,
+		meshServices []*smh_discovery.MeshService,
 		kubeServiceName string,
 		kubeServiceNamespace string,
 		kubeServiceCluster string,
-	) *zephyr_discovery.MeshService
+	) *smh_discovery.MeshService
 }
 
 // Find Service Mesh Hub resources that correspond to k8s-native resources.
@@ -32,20 +32,20 @@ type ResourceSelector interface {
 	// fetch all MeshServices that match the given selector
 	GetAllMeshServicesByServiceSelector(
 		ctx context.Context,
-		selector *zephyr_core_types.ServiceSelector,
-	) ([]*zephyr_discovery.MeshService, error)
+		selector *smh_core_types.ServiceSelector,
+	) ([]*smh_discovery.MeshService, error)
 
 	// get the workloads that the given IdentitySelector applies to
 	GetMeshWorkloadsByIdentitySelector(
 		ctx context.Context,
-		identitySelector *zephyr_core_types.IdentitySelector,
-	) ([]*zephyr_discovery.MeshWorkload, error)
+		identitySelector *smh_core_types.IdentitySelector,
+	) ([]*smh_discovery.MeshWorkload, error)
 
 	// get the workloads that the given WorkloadSelector applies to
 	GetMeshWorkloadsByWorkloadSelector(
 		ctx context.Context,
-		workloadSelector *zephyr_core_types.WorkloadSelector,
-	) ([]*zephyr_discovery.MeshWorkload, error)
+		workloadSelector *smh_core_types.WorkloadSelector,
+	) ([]*smh_discovery.MeshWorkload, error)
 
 	// fetch the MeshService backing a k8s Service by the Service's name, namespace, cluster name
 	// return error if no MeshService found, or multiple
@@ -54,7 +54,7 @@ type ResourceSelector interface {
 		kubeServiceName string,
 		kubeServiceNamespace string,
 		kubeServiceCluster string,
-	) (*zephyr_discovery.MeshService, error)
+	) (*smh_discovery.MeshService, error)
 
 	// get the Mesh Workload corresponding to the indicated pod controller (eg deployment)
 	GetMeshWorkloadByRefSelector(
@@ -62,5 +62,5 @@ type ResourceSelector interface {
 		podEventWatcherName string,
 		podEventWatcherNamespace string,
 		podEventWatcherCluster string,
-	) (*zephyr_discovery.MeshWorkload, error)
+	) (*smh_discovery.MeshWorkload, error)
 }

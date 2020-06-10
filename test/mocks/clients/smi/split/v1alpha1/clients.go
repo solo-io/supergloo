@@ -14,30 +14,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockTrafficSplitClient is a mock of TrafficSplitClient interface.
+// MockTrafficSplitClient is a mock of TrafficSplitClient interface
 type MockTrafficSplitClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockTrafficSplitClientMockRecorder
 }
 
-// MockTrafficSplitClientMockRecorder is the mock recorder for MockTrafficSplitClient.
+// MockTrafficSplitClientMockRecorder is the mock recorder for MockTrafficSplitClient
 type MockTrafficSplitClientMockRecorder struct {
 	mock *MockTrafficSplitClient
 }
 
-// NewMockTrafficSplitClient creates a new mock instance.
+// NewMockTrafficSplitClient creates a new mock instance
 func NewMockTrafficSplitClient(ctrl *gomock.Controller) *MockTrafficSplitClient {
 	mock := &MockTrafficSplitClient{ctrl: ctrl}
 	mock.recorder = &MockTrafficSplitClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockTrafficSplitClient) EXPECT() *MockTrafficSplitClientMockRecorder {
 	return m.recorder
 }
 
-// CreateTrafficSplit mocks base method.
+// CreateTrafficSplit mocks base method
 func (m *MockTrafficSplitClient) CreateTrafficSplit(arg0 context.Context, arg1 *v1alpha1.TrafficSplit, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -49,14 +49,14 @@ func (m *MockTrafficSplitClient) CreateTrafficSplit(arg0 context.Context, arg1 *
 	return ret0
 }
 
-// CreateTrafficSplit indicates an expected call of CreateTrafficSplit.
+// CreateTrafficSplit indicates an expected call of CreateTrafficSplit
 func (mr *MockTrafficSplitClientMockRecorder) CreateTrafficSplit(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTrafficSplit", reflect.TypeOf((*MockTrafficSplitClient)(nil).CreateTrafficSplit), varargs...)
 }
 
-// DeleteAllOfTrafficSplit mocks base method.
+// DeleteAllOfTrafficSplit mocks base method
 func (m *MockTrafficSplitClient) DeleteAllOfTrafficSplit(arg0 context.Context, arg1 ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
@@ -68,14 +68,14 @@ func (m *MockTrafficSplitClient) DeleteAllOfTrafficSplit(arg0 context.Context, a
 	return ret0
 }
 
-// DeleteAllOfTrafficSplit indicates an expected call of DeleteAllOfTrafficSplit.
+// DeleteAllOfTrafficSplit indicates an expected call of DeleteAllOfTrafficSplit
 func (mr *MockTrafficSplitClientMockRecorder) DeleteAllOfTrafficSplit(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfTrafficSplit", reflect.TypeOf((*MockTrafficSplitClient)(nil).DeleteAllOfTrafficSplit), varargs...)
 }
 
-// DeleteTrafficSplit mocks base method.
+// DeleteTrafficSplit mocks base method
 func (m *MockTrafficSplitClient) DeleteTrafficSplit(arg0 context.Context, arg1 types.NamespacedName, arg2 ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -87,14 +87,14 @@ func (m *MockTrafficSplitClient) DeleteTrafficSplit(arg0 context.Context, arg1 t
 	return ret0
 }
 
-// DeleteTrafficSplit indicates an expected call of DeleteTrafficSplit.
+// DeleteTrafficSplit indicates an expected call of DeleteTrafficSplit
 func (mr *MockTrafficSplitClientMockRecorder) DeleteTrafficSplit(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTrafficSplit", reflect.TypeOf((*MockTrafficSplitClient)(nil).DeleteTrafficSplit), varargs...)
 }
 
-// GetTrafficSplit mocks base method.
+// GetTrafficSplit mocks base method
 func (m *MockTrafficSplitClient) GetTrafficSplit(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha1.TrafficSplit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTrafficSplit", arg0, arg1)
@@ -103,13 +103,13 @@ func (m *MockTrafficSplitClient) GetTrafficSplit(arg0 context.Context, arg1 type
 	return ret0, ret1
 }
 
-// GetTrafficSplit indicates an expected call of GetTrafficSplit.
+// GetTrafficSplit indicates an expected call of GetTrafficSplit
 func (mr *MockTrafficSplitClientMockRecorder) GetTrafficSplit(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrafficSplit", reflect.TypeOf((*MockTrafficSplitClient)(nil).GetTrafficSplit), arg0, arg1)
 }
 
-// ListTrafficSplit mocks base method.
+// ListTrafficSplit mocks base method
 func (m *MockTrafficSplitClient) ListTrafficSplit(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha1.TrafficSplitList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
@@ -122,14 +122,14 @@ func (m *MockTrafficSplitClient) ListTrafficSplit(arg0 context.Context, arg1 ...
 	return ret0, ret1
 }
 
-// ListTrafficSplit indicates an expected call of ListTrafficSplit.
+// ListTrafficSplit indicates an expected call of ListTrafficSplit
 func (mr *MockTrafficSplitClientMockRecorder) ListTrafficSplit(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTrafficSplit", reflect.TypeOf((*MockTrafficSplitClient)(nil).ListTrafficSplit), varargs...)
 }
 
-// PatchTrafficSplit mocks base method.
+// PatchTrafficSplit mocks base method
 func (m *MockTrafficSplitClient) PatchTrafficSplit(arg0 context.Context, arg1 *v1alpha1.TrafficSplit, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
@@ -141,14 +141,14 @@ func (m *MockTrafficSplitClient) PatchTrafficSplit(arg0 context.Context, arg1 *v
 	return ret0
 }
 
-// PatchTrafficSplit indicates an expected call of PatchTrafficSplit.
+// PatchTrafficSplit indicates an expected call of PatchTrafficSplit
 func (mr *MockTrafficSplitClientMockRecorder) PatchTrafficSplit(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficSplit", reflect.TypeOf((*MockTrafficSplitClient)(nil).PatchTrafficSplit), varargs...)
 }
 
-// PatchTrafficSplitStatus mocks base method.
+// PatchTrafficSplitStatus mocks base method
 func (m *MockTrafficSplitClient) PatchTrafficSplitStatus(arg0 context.Context, arg1 *v1alpha1.TrafficSplit, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
@@ -160,14 +160,14 @@ func (m *MockTrafficSplitClient) PatchTrafficSplitStatus(arg0 context.Context, a
 	return ret0
 }
 
-// PatchTrafficSplitStatus indicates an expected call of PatchTrafficSplitStatus.
+// PatchTrafficSplitStatus indicates an expected call of PatchTrafficSplitStatus
 func (mr *MockTrafficSplitClientMockRecorder) PatchTrafficSplitStatus(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficSplitStatus", reflect.TypeOf((*MockTrafficSplitClient)(nil).PatchTrafficSplitStatus), varargs...)
 }
 
-// UpdateTrafficSplit mocks base method.
+// UpdateTrafficSplit mocks base method
 func (m *MockTrafficSplitClient) UpdateTrafficSplit(arg0 context.Context, arg1 *v1alpha1.TrafficSplit, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -179,14 +179,14 @@ func (m *MockTrafficSplitClient) UpdateTrafficSplit(arg0 context.Context, arg1 *
 	return ret0
 }
 
-// UpdateTrafficSplit indicates an expected call of UpdateTrafficSplit.
+// UpdateTrafficSplit indicates an expected call of UpdateTrafficSplit
 func (mr *MockTrafficSplitClientMockRecorder) UpdateTrafficSplit(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficSplit", reflect.TypeOf((*MockTrafficSplitClient)(nil).UpdateTrafficSplit), varargs...)
 }
 
-// UpdateTrafficSplitStatus mocks base method.
+// UpdateTrafficSplitStatus mocks base method
 func (m *MockTrafficSplitClient) UpdateTrafficSplitStatus(arg0 context.Context, arg1 *v1alpha1.TrafficSplit, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -198,14 +198,14 @@ func (m *MockTrafficSplitClient) UpdateTrafficSplitStatus(arg0 context.Context, 
 	return ret0
 }
 
-// UpdateTrafficSplitStatus indicates an expected call of UpdateTrafficSplitStatus.
+// UpdateTrafficSplitStatus indicates an expected call of UpdateTrafficSplitStatus
 func (mr *MockTrafficSplitClientMockRecorder) UpdateTrafficSplitStatus(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficSplitStatus", reflect.TypeOf((*MockTrafficSplitClient)(nil).UpdateTrafficSplitStatus), varargs...)
 }
 
-// UpsertTrafficSplitSpec mocks base method.
+// UpsertTrafficSplitSpec mocks base method
 func (m *MockTrafficSplitClient) UpsertTrafficSplitSpec(arg0 context.Context, arg1 *v1alpha1.TrafficSplit, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -217,7 +217,7 @@ func (m *MockTrafficSplitClient) UpsertTrafficSplitSpec(arg0 context.Context, ar
 	return ret0
 }
 
-// UpsertTrafficSplitSpec indicates an expected call of UpsertTrafficSplitSpec.
+// UpsertTrafficSplitSpec indicates an expected call of UpsertTrafficSplitSpec
 func (mr *MockTrafficSplitClientMockRecorder) UpsertTrafficSplitSpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)

@@ -6,12 +6,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/rotisserie/eris"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
 	"github.com/solo-io/skv2/pkg/utils"
 )
 
-var UnknownSelectorType = func(selector *zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector) error {
+var UnknownSelectorType = func(selector *smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector) error {
 	return eris.Errorf("Unknown SettingsSpec_AwsAccount_ResourceSelector type: %+v", selector)
 }
 
@@ -24,30 +24,30 @@ func NewAwsSelector(arnParser aws_utils.ArnParser) AwsSelector {
 }
 
 func (a *awsSelector) ResourceSelectorsByRegion(
-	resourceSelectors []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
+	resourceSelectors []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
 ) (AwsSelectorsByRegion, error) {
 	resourceSelectorsByRegion := make(AwsSelectorsByRegion)
 	for _, resourceSelector := range resourceSelectors {
 		switch resourceSelector.GetMatcherType().(type) {
-		case *zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_:
+		case *smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_:
 			for _, region := range resourceSelector.GetMatcher().GetRegions() {
 				selectors, ok := resourceSelectorsByRegion[region]
 				if !ok {
-					resourceSelectorsByRegion[region] = []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{}
+					resourceSelectorsByRegion[region] = []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{}
 				}
 				// If matches contains region but no specified tags, this indicates selection of all resources in that region.
 				if resourceSelector.GetMatcher().GetTags() != nil {
 					resourceSelectorsByRegion[region] = append(selectors, resourceSelector)
 				}
 			}
-		case *zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Arn:
+		case *smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Arn:
 			region, err := a.arnParser.ParseRegion(resourceSelector.GetArn())
 			if err != nil {
 				return nil, err
 			}
 			selectors, ok := resourceSelectorsByRegion[region]
 			if !ok {
-				resourceSelectorsByRegion[region] = []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{}
+				resourceSelectorsByRegion[region] = []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{}
 			}
 			resourceSelectorsByRegion[region] = append(selectors, resourceSelector)
 		default:
@@ -57,8 +57,8 @@ func (a *awsSelector) ResourceSelectorsByRegion(
 	return resourceSelectorsByRegion, nil
 }
 
-func (a *awsSelector) IsDiscoverAll(discoverySettings *zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector) bool {
-	discoverAll := &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{}
+func (a *awsSelector) IsDiscoverAll(discoverySettings *smh_settings_types.SettingsSpec_AwsAccount_DiscoverySelector) bool {
+	discoverAll := &smh_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{}
 	return discoverySettings.Equal(discoverAll) || discoverySettings == nil
 }
 
@@ -76,7 +76,7 @@ func (a *awsSelector) AwsSelectorsForAllRegions() AwsSelectorsByRegion {
 func (a *awsSelector) AppMeshMatchedBySelectors(
 	appmeshRef *appmesh.MeshRef,
 	appmeshTags []*appmesh.TagRef,
-	selectors []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
+	selectors []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
 ) (bool, error) {
 	if len(selectors) == 0 {
 		return true, nil
@@ -96,7 +96,7 @@ func (a *awsSelector) AppMeshMatchedBySelectors(
 // Return true if EKS cluster is matched by any selector, or if selectors is nil.
 func (a *awsSelector) EKSMatchedBySelectors(
 	eksCluster *eks.Cluster,
-	selectors []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
+	selectors []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
 ) (bool, error) {
 	if len(selectors) == 0 {
 		return true, nil
@@ -116,10 +116,10 @@ func (a *awsSelector) EKSMatchedBySelectors(
 func (a *awsSelector) appMeshMatchedBySelector(
 	appmeshRef *appmesh.MeshRef,
 	appmeshTags []*appmesh.TagRef,
-	selector *zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
+	selector *smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
 ) (bool, error) {
 	switch selector.GetMatcherType().(type) {
-	case *zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_:
+	case *smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_:
 		appMeshRegion, err := a.arnParser.ParseRegion(aws.StringValue(appmeshRef.Arn))
 		if err != nil {
 			return false, err
@@ -127,7 +127,7 @@ func (a *awsSelector) appMeshMatchedBySelector(
 		matcherApplies := utils.ContainsString(selector.GetMatcher().GetRegions(), appMeshRegion) &&
 			appmeshContainsTags(selector.GetMatcher().GetTags(), appmeshTags)
 		return matcherApplies, nil
-	case *zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Arn:
+	case *smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Arn:
 		return aws.StringValue(appmeshRef.Arn) == selector.GetArn(), nil
 	default:
 		return false, UnknownSelectorType(selector)
@@ -136,17 +136,17 @@ func (a *awsSelector) appMeshMatchedBySelector(
 
 func (a *awsSelector) eksMatchedBySelector(
 	eksCluster *eks.Cluster,
-	selector *zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
+	selector *smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
 ) (bool, error) {
 	switch selector.GetMatcherType().(type) {
-	case *zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_:
+	case *smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_:
 		eksRegion, err := a.arnParser.ParseRegion(aws.StringValue(eksCluster.Arn))
 		if err != nil {
 			return false, err
 		}
 		return utils.ContainsString(selector.GetMatcher().GetRegions(), eksRegion) &&
 			eksContainsTags(selector.GetMatcher().GetTags(), eksCluster.Tags), nil
-	case *zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Arn:
+	case *smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Arn:
 		return aws.StringValue(eksCluster.Arn) == selector.GetArn(), nil
 	default:
 		return false, UnknownSelectorType(selector)

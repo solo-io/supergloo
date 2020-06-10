@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
 	mock_aws "github.com/solo-io/service-mesh-hub/pkg/aws/parser/mocks"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
@@ -19,7 +19,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/appmesh"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/k8s/mocks"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	appsv1 "k8s.io/api/apps/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -44,7 +44,7 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 		meshName                = "mesh-name-1"
 		region                  = "us-east-1"
 		awsAccountId            = "awsaccountid"
-		ports                   = []*zephyr_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort{
+		ports                   = []*smh_discovery_types.MeshWorkloadSpec_Appmesh_ContainerPort{
 			{
 				Port:     9080,
 				Protocol: string(k8s_core_types.ProtocolTCP),
@@ -139,15 +139,15 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 	It("should scan pod and disambiguate multiple AppMesh Meshes", func() {
 		virtualNodeName := "virtualNodeName"
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)
-		mesh := &zephyr_discovery.Mesh{
+		mesh := &smh_discovery.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      meshName,
 				Namespace: container_runtime.GetWriteNamespace(),
 			},
-			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &zephyr_core_types.ResourceRef{Name: clusterName},
-				MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-					AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
+			Spec: smh_discovery_types.MeshSpec{
+				Cluster: &smh_core_types.ResourceRef{Name: clusterName},
+				MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+					AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{
 						Name:   meshName,
 						Region: region,
 					},
@@ -163,15 +163,15 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
 			).Return(mesh, nil)
-		expectedMeshWorkload := &zephyr_discovery.MeshWorkload{
+		expectedMeshWorkload := &smh_discovery.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-%s-%s", "appmesh", deploymentName, namespace, clusterName),
 				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    appmesh.DiscoveryLabels(),
 			},
-			Spec: zephyr_discovery_types.MeshWorkloadSpec{
-				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-					KubeControllerRef: &zephyr_core_types.ResourceRef{
+			Spec: smh_discovery_types.MeshWorkloadSpec{
+				KubeController: &smh_discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &smh_core_types.ResourceRef{
 						Name:      deployment.Name,
 						Namespace: deployment.Namespace,
 						Cluster:   clusterName,
@@ -179,11 +179,11 @@ var _ = Describe("AppmeshMeshWorkloadScanner", func() {
 					Labels:             nil,
 					ServiceAccountName: "",
 				},
-				Mesh: &zephyr_core_types.ResourceRef{
+				Mesh: &smh_core_types.ResourceRef{
 					Name:      meshName,
 					Namespace: mesh.GetNamespace(),
 				},
-				Appmesh: &zephyr_discovery_types.MeshWorkloadSpec_Appmesh{
+				Appmesh: &smh_discovery_types.MeshWorkloadSpec_Appmesh{
 					VirtualNodeName: virtualNodeName,
 					Ports:           ports,
 				},

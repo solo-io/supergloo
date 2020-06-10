@@ -13,30 +13,30 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-// MockResourcePrinter is a mock of ResourcePrinter interface.
+// MockResourcePrinter is a mock of ResourcePrinter interface
 type MockResourcePrinter struct {
 	ctrl     *gomock.Controller
 	recorder *MockResourcePrinterMockRecorder
 }
 
-// MockResourcePrinterMockRecorder is the mock recorder for MockResourcePrinter.
+// MockResourcePrinterMockRecorder is the mock recorder for MockResourcePrinter
 type MockResourcePrinterMockRecorder struct {
 	mock *MockResourcePrinter
 }
 
-// NewMockResourcePrinter creates a new mock instance.
+// NewMockResourcePrinter creates a new mock instance
 func NewMockResourcePrinter(ctrl *gomock.Controller) *MockResourcePrinter {
 	mock := &MockResourcePrinter{ctrl: ctrl}
 	mock.recorder = &MockResourcePrinterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockResourcePrinter) EXPECT() *MockResourcePrinterMockRecorder {
 	return m.recorder
 }
 
-// Print mocks base method.
+// Print mocks base method
 func (m *MockResourcePrinter) Print(out io.Writer, object runtime.Object, format resource_printing.OutputFormat) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", out, object, format)
@@ -44,7 +44,7 @@ func (m *MockResourcePrinter) Print(out io.Writer, object runtime.Object, format
 	return ret0
 }
 
-// Print indicates an expected call of Print.
+// Print indicates an expected call of Print
 func (mr *MockResourcePrinterMockRecorder) Print(out, object, format interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockResourcePrinter)(nil).Print), out, object, format)

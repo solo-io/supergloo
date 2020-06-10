@@ -1,7 +1,7 @@
 package controller_factories
 
 import (
-	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
+	smh_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 )
 
@@ -9,14 +9,14 @@ import (
 type VirtualMeshCSRControllerFactory func(
 	mgr mc_manager.AsyncManager,
 	clusterName string,
-) zephyr_security_controller.VirtualMeshCertificateSigningRequestEventWatcher
+) smh_security_controller.VirtualMeshCertificateSigningRequestEventWatcher
 
 func NewVirtualMeshCSRControllerFactory() VirtualMeshCSRControllerFactory {
 	return func(
 		mgr mc_manager.AsyncManager,
 		clusterName string,
-	) zephyr_security_controller.VirtualMeshCertificateSigningRequestEventWatcher {
+	) smh_security_controller.VirtualMeshCertificateSigningRequestEventWatcher {
 		// just directly return the generated autopilot implementation
-		return zephyr_security_controller.NewVirtualMeshCertificateSigningRequestEventWatcher(clusterName, mgr.Manager())
+		return smh_security_controller.NewVirtualMeshCertificateSigningRequestEventWatcher(clusterName, mgr.Manager())
 	}
 }

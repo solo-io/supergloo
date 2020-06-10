@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -81,7 +81,7 @@ func UninstallCmd(
 				fmt.Fprintf(out, "Failed to find registered clusters - Continuing...\n\t(%s)\n", err.Error())
 
 				// failed to find the clusters, but continue through to the other steps, making this one a no-op
-				kubeClusters = &zephyr_discovery.KubernetesClusterList{}
+				kubeClusters = &smh_discovery.KubernetesClusterList{}
 				uninstallErrorOccurred = true
 			} else {
 				// can only do this step if we definitely have kube clusters to read from
@@ -99,10 +99,10 @@ func UninstallCmd(
 				fmt.Fprintf(out, "Failed to remove management plane namespace - Continuing...\n\t(%s)\n", err.Error())
 			}
 
-			fmt.Println("About to remove zephyr CRDs from management plane")
+			fmt.Println("About to remove smh CRDs from management plane")
 
 			// remove all SMH CRDs from management plane cluster
-			deletedCrds, err := masterKubeClients.UninstallClients.CrdRemover.RemoveZephyrCrds(ctx, "management plane cluster", masterCfg)
+			deletedCrds, err := masterKubeClients.UninstallClients.CrdRemover.RemovesmhCrds(ctx, "management plane cluster", masterCfg)
 			if err == nil && deletedCrds {
 				fmt.Fprintf(out, "Service Mesh Hub CRDs have been de-registered from the management plane...\n")
 			} else if err == nil && !deletedCrds {
@@ -166,7 +166,7 @@ func cleanUpManagementPlaneComponents(out io.Writer, masterKubeClients *common.K
 	return nil
 }
 
-func deregisterClusters(ctx context.Context, out io.Writer, kubeClusters *zephyr_discovery.KubernetesClusterList, masterKubeClients *common.KubeClients) error {
+func deregisterClusters(ctx context.Context, out io.Writer, kubeClusters *smh_discovery.KubernetesClusterList, masterKubeClients *common.KubeClients) error {
 	if len(kubeClusters.Items) == 0 {
 		// don't want to print anything out in this case
 		return nil

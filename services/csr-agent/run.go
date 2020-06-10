@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/wire"
 	"go.uber.org/zap"

@@ -12,30 +12,30 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// MockSecretAwsCredsConverter is a mock of SecretAwsCredsConverter interface.
+// MockSecretAwsCredsConverter is a mock of SecretAwsCredsConverter interface
 type MockSecretAwsCredsConverter struct {
 	ctrl     *gomock.Controller
 	recorder *MockSecretAwsCredsConverterMockRecorder
 }
 
-// MockSecretAwsCredsConverterMockRecorder is the mock recorder for MockSecretAwsCredsConverter.
+// MockSecretAwsCredsConverterMockRecorder is the mock recorder for MockSecretAwsCredsConverter
 type MockSecretAwsCredsConverterMockRecorder struct {
 	mock *MockSecretAwsCredsConverter
 }
 
-// NewMockSecretAwsCredsConverter creates a new mock instance.
+// NewMockSecretAwsCredsConverter creates a new mock instance
 func NewMockSecretAwsCredsConverter(ctrl *gomock.Controller) *MockSecretAwsCredsConverter {
 	mock := &MockSecretAwsCredsConverter{ctrl: ctrl}
 	mock.recorder = &MockSecretAwsCredsConverterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSecretAwsCredsConverter) EXPECT() *MockSecretAwsCredsConverterMockRecorder {
 	return m.recorder
 }
 
-// CredsFileToSecret mocks base method.
+// CredsFileToSecret mocks base method
 func (m *MockSecretAwsCredsConverter) CredsFileToSecret(secretName, secretNamespace, credsFilename, credsProfile string) (*v1.Secret, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CredsFileToSecret", secretName, secretNamespace, credsFilename, credsProfile)
@@ -44,13 +44,13 @@ func (m *MockSecretAwsCredsConverter) CredsFileToSecret(secretName, secretNamesp
 	return ret0, ret1
 }
 
-// CredsFileToSecret indicates an expected call of CredsFileToSecret.
+// CredsFileToSecret indicates an expected call of CredsFileToSecret
 func (mr *MockSecretAwsCredsConverterMockRecorder) CredsFileToSecret(secretName, secretNamespace, credsFilename, credsProfile interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CredsFileToSecret", reflect.TypeOf((*MockSecretAwsCredsConverter)(nil).CredsFileToSecret), secretName, secretNamespace, credsFilename, credsProfile)
 }
 
-// SecretToCreds mocks base method.
+// SecretToCreds mocks base method
 func (m *MockSecretAwsCredsConverter) SecretToCreds(secret *v1.Secret) (*credentials.Credentials, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SecretToCreds", secret)
@@ -59,7 +59,7 @@ func (m *MockSecretAwsCredsConverter) SecretToCreds(secret *v1.Secret) (*credent
 	return ret0, ret1
 }
 
-// SecretToCreds indicates an expected call of SecretToCreds.
+// SecretToCreds indicates an expected call of SecretToCreds
 func (mr *MockSecretAwsCredsConverterMockRecorder) SecretToCreds(secret interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SecretToCreds", reflect.TypeOf((*MockSecretAwsCredsConverter)(nil).SecretToCreds), secret)

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-multierror"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
@@ -23,7 +23,7 @@ func NewMeshFinder(
 	ctx context.Context,
 	clusterName string,
 	meshScanners []MeshScanner,
-	localMeshClient zephyr_discovery.MeshClient,
+	localMeshClient smh_discovery.MeshClient,
 	clusterClient client.Client,
 	clusterScopedDeploymentClient k8s_apps.DeploymentClient,
 ) MeshFinder {
@@ -40,7 +40,7 @@ func NewMeshFinder(
 type meshFinder struct {
 	clusterName                   string
 	meshScanners                  []MeshScanner
-	localMeshClient               zephyr_discovery.MeshClient
+	localMeshClient               smh_discovery.MeshClient
 	ctx                           context.Context
 	clusterClient                 client.Client
 	clusterScopedDeploymentClient k8s_apps.DeploymentClient

@@ -4,24 +4,24 @@ import (
 	"context"
 	"sort"
 
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	networking_errors "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
 )
 
 type trafficPolicyMerger struct {
 	resourceSelector    selection.ResourceSelector
-	meshClient          zephyr_discovery.MeshClient
-	trafficPolicyClient zephyr_networking.TrafficPolicyClient
+	meshClient          smh_discovery.MeshClient
+	trafficPolicyClient smh_networking.TrafficPolicyClient
 }
 
 func NewTrafficPolicyMerger(
 	resourceSelector selection.ResourceSelector,
-	meshClient zephyr_discovery.MeshClient,
-	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
+	meshClient smh_discovery.MeshClient,
+	trafficPolicyClient smh_networking.TrafficPolicyClient,
 ) TrafficPolicyMerger {
 	return &trafficPolicyMerger{
 		resourceSelector:    resourceSelector,
@@ -32,8 +32,8 @@ func NewTrafficPolicyMerger(
 
 func (t *trafficPolicyMerger) MergeTrafficPoliciesForMeshServices(
 	ctx context.Context,
-	meshServices []*zephyr_discovery.MeshService,
-) (map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
+	meshServices []*smh_discovery.MeshService,
+) (map[selection.MeshServiceId][]*smh_networking.TrafficPolicy, error) {
 	trafficPoliciesByMeshService, err := t.getTrafficPoliciesByMeshService(ctx, meshServices)
 	if err != nil {
 		return nil, err
@@ -48,16 +48,16 @@ func (t *trafficPolicyMerger) MergeTrafficPoliciesForMeshServices(
 // Given a set of MeshServices, fetch applicable TrafficPolicies for each
 func (t *trafficPolicyMerger) getTrafficPoliciesByMeshService(
 	ctx context.Context,
-	meshServices []*zephyr_discovery.MeshService,
-) (map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
-	trafficPoliciesByMeshService := map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy{}
+	meshServices []*smh_discovery.MeshService,
+) (map[selection.MeshServiceId][]*smh_networking.TrafficPolicy, error) {
+	trafficPoliciesByMeshService := map[selection.MeshServiceId][]*smh_networking.TrafficPolicy{}
 	// initialize map with given meshServices
 	for _, meshService := range meshServices {
 		meshServiceKey, err := selection.BuildIdForMeshService(ctx, t.meshClient, meshService)
 		if err != nil {
 			return nil, err
 		}
-		trafficPoliciesByMeshService[*meshServiceKey] = []*zephyr_networking.TrafficPolicy{}
+		trafficPoliciesByMeshService[*meshServiceKey] = []*smh_networking.TrafficPolicy{}
 	}
 	// List all TrafficPolicies, for each add to map if it applies to any MeshService in meshServices
 	trafficPolicyList, err := t.trafficPolicyClient.ListTrafficPolicy(ctx)
@@ -95,8 +95,8 @@ func (t *trafficPolicyMerger) getTrafficPoliciesByMeshService(
 		3. If conflict encountered, do not apply any of its configuration, update conflicting TrafficPolicy with CONFLICT status and continue.
 */
 func mergeTrafficPoliciesByMeshService(
-	trafficPoliciesByMeshService map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy,
-) (map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy, error) {
+	trafficPoliciesByMeshService map[selection.MeshServiceId][]*smh_networking.TrafficPolicy,
+) (map[selection.MeshServiceId][]*smh_networking.TrafficPolicy, error) {
 	for meshServiceKey, trafficPolicies := range trafficPoliciesByMeshService {
 		sort.Slice(trafficPolicies, func(a, b int) bool {
 			timestampA := trafficPolicies[a].GetCreationTimestamp()
@@ -107,7 +107,7 @@ func mergeTrafficPoliciesByMeshService(
 		var mergeableHttpTrafficPolicies []*MergeableHttpTrafficPolicy
 		for _, trafficPolicy := range trafficPolicies {
 			// ignore TrafficPolicy with bad statuses
-			if trafficPolicy.Status.GetTranslationStatus().GetState() == zephyr_core_types.Status_ACCEPTED {
+			if trafficPolicy.Status.GetTranslationStatus().GetState() == smh_core_types.Status_ACCEPTED {
 				mergedHttpTrafficPolicies, conflictErr := mergeHttpTrafficPolicies(trafficPolicy, mergeableHttpTrafficPolicies)
 				mergeableHttpTrafficPolicies = mergedHttpTrafficPolicies
 				if conflictErr != nil {
@@ -116,7 +116,7 @@ func mergeTrafficPoliciesByMeshService(
 			}
 		}
 		// convert map[HttpMatcher]TrafficPolicySpec to []TrafficPolicy by consolidating equivalent TrafficPolicySpecs by appending HttpMatchers
-		mergedTrafficPolicies := []*zephyr_networking.TrafficPolicy{}
+		mergedTrafficPolicies := []*smh_networking.TrafficPolicy{}
 		for _, mergeableHttpTp := range mergeableHttpTrafficPolicies {
 			trafficPolicyExists := false
 			for _, mergedTrafficPolicy := range mergedTrafficPolicies {
@@ -138,7 +138,7 @@ func mergeTrafficPoliciesByMeshService(
 			}
 			// Create new merged TrafficPolicySpec
 			if !trafficPolicyExists {
-				newMergedTrafficPolicy := &zephyr_networking.TrafficPolicy{
+				newMergedTrafficPolicy := &smh_networking.TrafficPolicy{
 					Spec: *mergeableHttpTp.TrafficPolicySpec,
 				}
 				mergedTrafficPolicies = append(mergedTrafficPolicies, newMergedTrafficPolicy)
@@ -150,7 +150,7 @@ func mergeTrafficPoliciesByMeshService(
 				*/
 				if mergeableHttpTp.HttpMatcher != nil {
 					newMergedTrafficPolicy.Spec.HttpRequestMatchers =
-						[]*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{mergeableHttpTp.HttpMatcher}
+						[]*smh_networking_types.TrafficPolicySpec_HttpMatcher{mergeableHttpTp.HttpMatcher}
 				}
 			}
 		}
@@ -167,7 +167,7 @@ func mergeTrafficPoliciesByMeshService(
 		3) there exists a TrafficPolicy rule field (any field not including Source, Destination, or HttpMatcher) that does not equal
 */
 func mergeHttpTrafficPolicies(
-	trafficPolicy *zephyr_networking.TrafficPolicy,
+	trafficPolicy *smh_networking.TrafficPolicy,
 	mergeableTrafficPolicies []*MergeableHttpTrafficPolicy,
 ) ([]*MergeableHttpTrafficPolicy, error) {
 	if len(trafficPolicy.Spec.GetHttpRequestMatchers()) == 0 {
@@ -200,9 +200,9 @@ func mergeHttpTrafficPolicies(
 	If a new one must be created, the function will return the (newTP, nil)
 */
 func attemptTrafficPolicyMerge(
-	trafficPolicy *zephyr_networking.TrafficPolicy,
+	trafficPolicy *smh_networking.TrafficPolicy,
 	mergeableTrafficPolicies []*MergeableHttpTrafficPolicy,
-	httpMatcher *zephyr_networking_types.TrafficPolicySpec_HttpMatcher,
+	httpMatcher *smh_networking_types.TrafficPolicySpec_HttpMatcher,
 ) (*MergeableHttpTrafficPolicy, error) {
 	var merged bool
 	for _, mergeableTp := range mergeableTrafficPolicies {
@@ -223,7 +223,7 @@ func attemptTrafficPolicyMerge(
 		return nil, nil
 	}
 	// copy all spec fields except HttpMatchers and Destination rules
-	newTPSpec, err := mergeTrafficPolicySpec(&zephyr_networking_types.TrafficPolicySpec{}, &trafficPolicy.Spec)
+	newTPSpec, err := mergeTrafficPolicySpec(&smh_networking_types.TrafficPolicySpec{}, &trafficPolicy.Spec)
 	if err != nil {
 		return nil, err
 	}
@@ -237,9 +237,9 @@ func attemptTrafficPolicyMerge(
 // For fields that exist in that but not this, merge into this.
 // Return conflict error if any field exists in both this and that TrafficPolicySpec
 func mergeTrafficPolicySpec(
-	this *zephyr_networking_types.TrafficPolicySpec,
-	that *zephyr_networking_types.TrafficPolicySpec,
-) (*zephyr_networking_types.TrafficPolicySpec, error) {
+	this *smh_networking_types.TrafficPolicySpec,
+	that *smh_networking_types.TrafficPolicySpec,
+) (*smh_networking_types.TrafficPolicySpec, error) {
 	if this.GetTrafficShift() == nil {
 		this.TrafficShift = that.TrafficShift
 	} else if that.GetTrafficShift() != nil && !this.GetTrafficShift().Equal(that.GetTrafficShift()) {
@@ -280,8 +280,8 @@ func mergeTrafficPolicySpec(
 
 // Return true if all fields except DestinationSelector and HttpRequestMatchers are equal
 func areTrafficPolicyActionsEqual(
-	this *zephyr_networking_types.TrafficPolicySpec,
-	that *zephyr_networking_types.TrafficPolicySpec,
+	this *smh_networking_types.TrafficPolicySpec,
+	that *smh_networking_types.TrafficPolicySpec,
 ) bool {
 	if !this.GetTrafficShift().Equal(that.GetTrafficShift()) {
 		return false
@@ -308,7 +308,7 @@ func areTrafficPolicyActionsEqual(
 }
 
 type MergeableHttpTrafficPolicy struct {
-	HttpMatcher       *zephyr_networking_types.TrafficPolicySpec_HttpMatcher
-	SourceSelector    *zephyr_core_types.WorkloadSelector
-	TrafficPolicySpec *zephyr_networking_types.TrafficPolicySpec
+	HttpMatcher       *smh_networking_types.TrafficPolicySpec_HttpMatcher
+	SourceSelector    *smh_core_types.WorkloadSelector
+	TrafficPolicySpec *smh_networking_types.TrafficPolicySpec
 }

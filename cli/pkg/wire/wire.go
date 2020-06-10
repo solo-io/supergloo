@@ -33,12 +33,12 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
 	version2 "github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
@@ -58,11 +58,11 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-func MeshServiceReaderProvider(clients zephyr_discovery.Clientset) zephyr_discovery.MeshServiceReader {
-	return zephyr_discovery.MeshServiceClientFromClientsetProvider(clients)
+func MeshServiceReaderProvider(clients smh_discovery.Clientset) smh_discovery.MeshServiceReader {
+	return smh_discovery.MeshServiceClientFromClientsetProvider(clients)
 }
-func MeshWorkloadReaderProvider(clients zephyr_discovery.Clientset) zephyr_discovery.MeshWorkloadReader {
-	return zephyr_discovery.MeshWorkloadClientFromClientsetProvider(clients)
+func MeshWorkloadReaderProvider(clients smh_discovery.Clientset) smh_discovery.MeshWorkloadReader {
+	return smh_discovery.MeshWorkloadClientFromClientsetProvider(clients)
 }
 
 func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string) (clients *common.KubeClients, err error) {
@@ -100,19 +100,19 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		common.KubeClientsProvider,
 		description.NewResourceDescriber,
 		selection.NewResourceSelector,
-		zephyr_discovery.ClientsetFromConfigProvider,
-		zephyr_networking.ClientsetFromConfigProvider,
-		zephyr_security.ClientsetFromConfigProvider,
-		zephyr_discovery.KubernetesClusterClientFromClientsetProvider,
-		zephyr_discovery.MeshServiceClientFromClientsetProvider,
+		smh_discovery.ClientsetFromConfigProvider,
+		smh_networking.ClientsetFromConfigProvider,
+		smh_security.ClientsetFromConfigProvider,
+		smh_discovery.KubernetesClusterClientFromClientsetProvider,
+		smh_discovery.MeshServiceClientFromClientsetProvider,
 		MeshServiceReaderProvider,
-		zephyr_discovery.MeshWorkloadClientFromClientsetProvider,
+		smh_discovery.MeshWorkloadClientFromClientsetProvider,
 		MeshWorkloadReaderProvider,
-		zephyr_discovery.MeshClientFromClientsetProvider,
-		zephyr_networking.TrafficPolicyClientFromClientsetProvider,
-		zephyr_networking.AccessControlPolicyClientFromClientsetProvider,
-		zephyr_networking.VirtualMeshClientFromClientsetProvider,
-		zephyr_security.VirtualMeshCertificateSigningRequestClientFromClientsetProvider,
+		smh_discovery.MeshClientFromClientsetProvider,
+		smh_networking.TrafficPolicyClientFromClientsetProvider,
+		smh_networking.AccessControlPolicyClientFromClientsetProvider,
+		smh_networking.VirtualMeshClientFromClientsetProvider,
+		smh_security.VirtualMeshCertificateSigningRequestClientFromClientsetProvider,
 		installation.NewCsrAgentInstallerFactory,
 		helm.HelmClientForMemoryConfigFactoryProvider,
 		helm.HelmClientForFileConfigFactoryProvider,

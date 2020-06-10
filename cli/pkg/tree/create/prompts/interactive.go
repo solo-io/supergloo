@@ -5,27 +5,27 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/validate"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
 func SelectServiceSelector(
 	message string,
 	meshServiceNames []string,
-	meshServiceNamesToRef map[string]*zephyr_core_types.ResourceRef,
+	meshServiceNamesToRef map[string]*smh_core_types.ResourceRef,
 	interactivePrompt interactive.InteractivePrompt,
-) (*zephyr_core_types.ServiceSelector, error) {
+) (*smh_core_types.ServiceSelector, error) {
 	selections, err := interactivePrompt.SelectMultipleValues(message, meshServiceNames)
 	if err != nil {
 		return nil, err
 	}
-	var selectedTargets []*zephyr_core_types.ResourceRef
+	var selectedTargets []*smh_core_types.ResourceRef
 	for _, selection := range selections {
 		selectedTargets = append(selectedTargets, meshServiceNamesToRef[selection])
 	}
-	return &zephyr_core_types.ServiceSelector{
-		ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
-			ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
+	return &smh_core_types.ServiceSelector{
+		ServiceSelectorType: &smh_core_types.ServiceSelector_ServiceRefs_{
+			ServiceRefs: &smh_core_types.ServiceSelector_ServiceRefs{
 				Services: selectedTargets,
 			},
 		},

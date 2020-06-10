@@ -4,19 +4,19 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
 )
 
 type trafficPolicyReaderStatusUpdater interface {
-	zephyr_networking.TrafficPolicyReader
-	zephyr_networking.TrafficPolicyStatusWriter
+	smh_networking.TrafficPolicyReader
+	smh_networking.TrafficPolicyStatusWriter
 }
 
 func NewValidationReconciler(
 	trafficPolicyClient trafficPolicyReaderStatusUpdater,
-	meshServiceReader zephyr_discovery.MeshServiceReader,
+	meshServiceReader smh_discovery.MeshServiceReader,
 	validator Validator,
 ) reconciliation.Reconciler {
 	return &validationLoop{
@@ -28,7 +28,7 @@ func NewValidationReconciler(
 
 type validationLoop struct {
 	trafficPolicyClient trafficPolicyReaderStatusUpdater
-	meshServiceReader   zephyr_discovery.MeshServiceReader
+	meshServiceReader   smh_discovery.MeshServiceReader
 	validator           Validator
 }
 
@@ -48,7 +48,7 @@ func (v *validationLoop) Reconcile(ctx context.Context) error {
 		return err
 	}
 
-	var meshServices []*zephyr_discovery.MeshService
+	var meshServices []*smh_discovery.MeshService
 	for _, ms := range meshServiceList.Items {
 		meshService := ms
 		meshServices = append(meshServices, &meshService)

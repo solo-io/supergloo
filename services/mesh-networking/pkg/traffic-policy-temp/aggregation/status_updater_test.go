@@ -3,11 +3,11 @@ package traffic_policy_aggregation_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 )
 
@@ -17,47 +17,47 @@ var _ = Describe("StatusUpdater", func() {
 	Context("when updating service policies", func() {
 		Context("if the length of the status policies is different than the length of the new policies", func() {
 			It("returns true when going from nonzero -> nil", func() {
-				ms := &zephyr_discovery.MeshService{
-					Status: zephyr_discovery_types.MeshServiceStatus{
-						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
-							Ref: &zephyr_core_types.ResourceRef{Name: "foo"},
+				ms := &smh_discovery.MeshService{
+					Status: smh_discovery_types.MeshServiceStatus{
+						ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+							Ref: &smh_core_types.ResourceRef{Name: "foo"},
 						}},
 					},
 				}
-				newPolicies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil)
+				newPolicies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil)
 
 				Expect(statusUpdater.MutateServicePolicies(ms, newPolicies)).To(BeTrue())
 				Expect(ms.Status.ValidatedTrafficPolicies).To(BeNil())
 			})
 
 			It("returns true when going from nonzero -> non-nil and empty", func() {
-				ms := &zephyr_discovery.MeshService{
-					Status: zephyr_discovery_types.MeshServiceStatus{
-						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
-							Ref: &zephyr_core_types.ResourceRef{Name: "foo"},
+				ms := &smh_discovery.MeshService{
+					Status: smh_discovery_types.MeshServiceStatus{
+						ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+							Ref: &smh_core_types.ResourceRef{Name: "foo"},
 						}},
 					},
 				}
-				newPolicies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{}
+				newPolicies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{}
 
 				Expect(statusUpdater.MutateServicePolicies(ms, newPolicies)).To(BeTrue())
 				Expect(ms.Status.ValidatedTrafficPolicies).To(BeEmpty())
 			})
 
 			It("returns true when the lengths are different", func() {
-				ms := &zephyr_discovery.MeshService{
-					Status: zephyr_discovery_types.MeshServiceStatus{
-						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
-							Ref: &zephyr_core_types.ResourceRef{Name: "foo"},
+				ms := &smh_discovery.MeshService{
+					Status: smh_discovery_types.MeshServiceStatus{
+						ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+							Ref: &smh_core_types.ResourceRef{Name: "foo"},
 						}},
 					},
 				}
-				newPolicies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				newPolicies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 					{
-						Ref: &zephyr_core_types.ResourceRef{Name: "bar"},
+						Ref: &smh_core_types.ResourceRef{Name: "bar"},
 					},
 					{
-						Ref: &zephyr_core_types.ResourceRef{Name: "bar-2.0"},
+						Ref: &smh_core_types.ResourceRef{Name: "bar-2.0"},
 					},
 				}
 
@@ -68,15 +68,15 @@ var _ = Describe("StatusUpdater", func() {
 
 		Context("if the length of the status has not changed compared to the incoming length", func() {
 			It("returns true if an entry in the list has changed", func() {
-				ms := &zephyr_discovery.MeshService{
-					Status: zephyr_discovery_types.MeshServiceStatus{
-						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
-							Ref: &zephyr_core_types.ResourceRef{Name: "foo"},
+				ms := &smh_discovery.MeshService{
+					Status: smh_discovery_types.MeshServiceStatus{
+						ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+							Ref: &smh_core_types.ResourceRef{Name: "foo"},
 						}},
 					},
 				}
-				newPolicies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
-					Ref: &zephyr_core_types.ResourceRef{Name: "bar"},
+				newPolicies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+					Ref: &smh_core_types.ResourceRef{Name: "bar"},
 				}}
 
 				Expect(statusUpdater.MutateServicePolicies(ms, newPolicies)).To(BeTrue())
@@ -84,15 +84,15 @@ var _ = Describe("StatusUpdater", func() {
 			})
 
 			It("returns false if the list has not changed", func() {
-				ms := &zephyr_discovery.MeshService{
-					Status: zephyr_discovery_types.MeshServiceStatus{
-						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
-							Ref: &zephyr_core_types.ResourceRef{Name: "foo"},
+				ms := &smh_discovery.MeshService{
+					Status: smh_discovery_types.MeshServiceStatus{
+						ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+							Ref: &smh_core_types.ResourceRef{Name: "foo"},
 						}},
 					},
 				}
-				newPolicies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
-					Ref: &zephyr_core_types.ResourceRef{Name: "foo"},
+				newPolicies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+					Ref: &smh_core_types.ResourceRef{Name: "foo"},
 				}}
 
 				Expect(statusUpdater.MutateServicePolicies(ms, newPolicies)).To(BeFalse())
@@ -104,8 +104,8 @@ var _ = Describe("StatusUpdater", func() {
 	Context("when updating policy statuses", func() {
 		Context("when only the conflict errors have changed", func() {
 			It("returns true if going from zero -> nonzero", func() {
-				policy := &zephyr_networking.TrafficPolicy{}
-				conflictErrors := []*zephyr_networking_types.TrafficPolicyStatus_ConflictError{{
+				policy := &smh_networking.TrafficPolicy{}
+				conflictErrors := []*smh_networking_types.TrafficPolicyStatus_ConflictError{{
 					ErrorMessage: "whoops",
 				}}
 
@@ -114,11 +114,11 @@ var _ = Describe("StatusUpdater", func() {
 			})
 
 			It("returns true if going from nonzero -> zero", func() {
-				conflictErrors := []*zephyr_networking_types.TrafficPolicyStatus_ConflictError{{
+				conflictErrors := []*smh_networking_types.TrafficPolicyStatus_ConflictError{{
 					ErrorMessage: "whoops",
 				}}
-				policy := &zephyr_networking.TrafficPolicy{
-					Status: zephyr_networking_types.TrafficPolicyStatus{
+				policy := &smh_networking.TrafficPolicy{
+					Status: smh_networking_types.TrafficPolicyStatus{
 						ConflictErrors: conflictErrors,
 					},
 				}
@@ -127,16 +127,16 @@ var _ = Describe("StatusUpdater", func() {
 			})
 
 			It("can compare items in the list for changes", func() {
-				conflictErrors := []*zephyr_networking_types.TrafficPolicyStatus_ConflictError{{
+				conflictErrors := []*smh_networking_types.TrafficPolicyStatus_ConflictError{{
 					ErrorMessage: "whoops",
 				}}
-				policy := &zephyr_networking.TrafficPolicy{
-					Status: zephyr_networking_types.TrafficPolicyStatus{
+				policy := &smh_networking.TrafficPolicy{
+					Status: smh_networking_types.TrafficPolicyStatus{
 						ConflictErrors: conflictErrors,
 					},
 				}
 
-				newConflictErrors := []*zephyr_networking_types.TrafficPolicyStatus_ConflictError{{
+				newConflictErrors := []*smh_networking_types.TrafficPolicyStatus_ConflictError{{
 					ErrorMessage: "new message",
 				}}
 				Expect(statusUpdater.MutateConflictAndTranslatorErrors(policy, newConflictErrors, nil)).To(BeTrue())

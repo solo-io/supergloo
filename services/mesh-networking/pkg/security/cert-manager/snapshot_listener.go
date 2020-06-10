@@ -6,8 +6,8 @@ import (
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	"go.uber.org/zap"
 )
@@ -26,7 +26,7 @@ type VMCSRSnapshotListener networking_snapshot.MeshNetworkingSnapshotListener
 
 func NewVMCSRSnapshotListener(
 	csrProcessor VirtualMeshCertificateManager,
-	virtualMeshClient zephyr_networking.VirtualMeshClient,
+	virtualMeshClient smh_networking.VirtualMeshClient,
 ) VMCSRSnapshotListener {
 	return &networking_snapshot.MeshNetworkingSnapshotListenerFunc{
 		OnSync: func(ctx context.Context, snap *networking_snapshot.MeshNetworkingSnapshot) {
@@ -39,7 +39,7 @@ func NewVMCSRSnapshotListener(
 
 			for _, virtualMesh := range snap.VirtualMeshes {
 				status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, virtualMesh)
-				if status.CertificateStatus.State != zephyr_core_types.Status_ACCEPTED {
+				if status.CertificateStatus.State != smh_core_types.Status_ACCEPTED {
 					logger.Debugw("csr processor failed", zap.Error(eris.New(status.CertificateStatus.Message)))
 				}
 				virtualMesh.Status = status
