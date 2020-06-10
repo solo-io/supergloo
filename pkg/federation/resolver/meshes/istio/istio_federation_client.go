@@ -6,12 +6,12 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/resolver/meshes"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/resolver/meshes/istio/proto_conversion"
@@ -25,10 +25,10 @@ import (
 )
 
 var (
-	ServiceNotInIstio = func(service *zephyr_discovery.MeshService) error {
+	ServiceNotInIstio = func(service *smh_discovery.MeshService) error {
 		return eris.Errorf("Service %s.%s does not belong to an Istio mesh", service.Name, service.Namespace)
 	}
-	WorkloadNotInIstio = func(workload *zephyr_discovery.MeshWorkload) error {
+	WorkloadNotInIstio = func(workload *smh_discovery.MeshWorkload) error {
 		return eris.Errorf("Workload %s.%s does not belong to an Istio mesh", workload.Name, workload.Namespace)
 	}
 	ClusterNotReady = func(clusterName string) error {
@@ -50,7 +50,7 @@ type IstioFederationClient meshes.MeshFederationClient
 // istio-specific implementation of federation resolution
 func NewIstioFederationClient(
 	dynamicClientGetter multicluster.DynamicClientGetter,
-	meshClient zephyr_discovery.MeshClient,
+	meshClient smh_discovery.MeshClient,
 	gatewayClientFactory istio_networking.GatewayClientFactory,
 	envoyFilterClientFactory istio_networking.EnvoyFilterClientFactory,
 	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory,
@@ -74,7 +74,7 @@ func NewIstioFederationClient(
 
 type istioFederationClient struct {
 	dynamicClientGetter          multicluster.DynamicClientGetter
-	meshClient                   zephyr_discovery.MeshClient
+	meshClient                   smh_discovery.MeshClient
 	gatewayClientFactory         istio_networking.GatewayClientFactory
 	envoyFilterClientFactory     istio_networking.EnvoyFilterClientFactory
 	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory
@@ -87,8 +87,8 @@ type istioFederationClient struct {
 func (i *istioFederationClient) FederateServiceSide(
 	ctx context.Context,
 	installationNamespace string,
-	virtualMesh *zephyr_networking.VirtualMesh,
-	meshService *zephyr_discovery.MeshService,
+	virtualMesh *smh_networking.VirtualMesh,
+	meshService *smh_discovery.MeshService,
 ) (eap dns.ExternalAccessPoint, err error) {
 	meshForService, dynamicClient, err := i.getClientForMesh(ctx, meshService.Spec.GetMesh())
 	if err != nil {
@@ -117,8 +117,8 @@ func (i *istioFederationClient) FederateClientSide(
 	ctx context.Context,
 	installationNamespace string,
 	eap dns.ExternalAccessPoint,
-	meshService *zephyr_discovery.MeshService,
-	meshWorkload *zephyr_discovery.MeshWorkload,
+	meshService *smh_discovery.MeshService,
+	meshWorkload *smh_discovery.MeshWorkload,
 ) error {
 	meshForWorkload, clientForWorkloadMesh, err := i.getClientForMesh(ctx, meshWorkload.Spec.GetMesh())
 	if err != nil {
@@ -153,7 +153,7 @@ func (i *istioFederationClient) setUpDestinationRule(
 	serviceMulticlusterName string,
 	installNamespace string,
 ) error {
-	destinationRuleRef := &zephyr_core_types.ResourceRef{
+	destinationRuleRef := &smh_core_types.ResourceRef{
 		Name:      serviceMulticlusterName,
 		Namespace: installNamespace,
 	}
@@ -182,13 +182,13 @@ func (i *istioFederationClient) setUpServiceEntry(
 	ctx context.Context,
 	clientForWorkloadMesh client.Client,
 	eap dns.ExternalAccessPoint,
-	meshService *zephyr_discovery.MeshService,
+	meshService *smh_discovery.MeshService,
 	installNamespace,
 	workloadClusterName string,
 ) error {
 	serviceEntryClient := i.serviceEntryClientFactory(clientForWorkloadMesh)
 
-	computedRef := &zephyr_core_types.ResourceRef{
+	computedRef := &smh_core_types.ResourceRef{
 		Name:      meshService.Spec.GetFederation().GetMulticlusterDnsName(),
 		Namespace: installNamespace,
 	}
@@ -278,7 +278,7 @@ func (i *istioFederationClient) ensureEnvoyFilterExists(
 ) error {
 
 	envoyFilterClient := i.envoyFilterClientFactory(dynamicClient)
-	computedRef := &zephyr_core_types.ResourceRef{
+	computedRef := &smh_core_types.ResourceRef{
 		Name:      fmt.Sprintf("smh-%s-filter", vmName),
 		Namespace: installNamespace,
 	}
@@ -323,13 +323,13 @@ func (i *istioFederationClient) ensureGatewayExists(
 	ctx context.Context,
 	dynamicClient client.Client,
 	virtualMeshName string,
-	meshService *zephyr_discovery.MeshService,
+	meshService *smh_discovery.MeshService,
 	installNamespace string,
 ) error {
 
 	gatewayClient := i.gatewayClientFactory(dynamicClient)
 
-	computedGatewayRef := &zephyr_core_types.ResourceRef{
+	computedGatewayRef := &smh_core_types.ResourceRef{
 		Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMeshName),
 		Namespace: installNamespace,
 	}
@@ -404,7 +404,7 @@ func BuildMatchingMultiClusterHostName(federationInfo *discovery_types.MeshServi
 	return fmt.Sprintf("*.%s", federationInfo.GetMulticlusterDnsName())
 }
 
-func (i *istioFederationClient) getClientForMesh(ctx context.Context, meshRef *zephyr_core_types.ResourceRef) (*zephyr_discovery.Mesh, client.Client, error) {
+func (i *istioFederationClient) getClientForMesh(ctx context.Context, meshRef *smh_core_types.ResourceRef) (*smh_discovery.Mesh, client.Client, error) {
 	mesh, err := i.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef))
 	if err != nil {
 		return nil, nil, err

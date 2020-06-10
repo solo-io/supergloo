@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -19,7 +19,7 @@ var (
 )
 
 func NewKubeConfigLookup(
-	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
+	kubeClusterClient smh_discovery.KubernetesClusterClient,
 	secretClient k8s_core.SecretClient,
 	kubeConverter Converter,
 ) KubeConfigLookup {
@@ -32,12 +32,12 @@ func NewKubeConfigLookup(
 
 type kubeConfigLookup struct {
 	secretsClient     k8s_core.SecretClient
-	kubeClusterClient zephyr_discovery.KubernetesClusterClient
+	kubeClusterClient smh_discovery.KubernetesClusterClient
 	kubeConverter     Converter
 }
 
 func (k *kubeConfigLookup) FromCluster(ctx context.Context, clusterName string) (config *ConvertedConfigs, err error) {
-	var kubeCluster *zephyr_discovery.KubernetesCluster
+	var kubeCluster *smh_discovery.KubernetesCluster
 	allClusters, err := k.kubeClusterClient.ListKubernetesCluster(ctx)
 	if err != nil {
 		return nil, err

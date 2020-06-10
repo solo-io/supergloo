@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
@@ -18,7 +18,7 @@ import (
 type appmeshTenancyScanner struct {
 	appmeshScanner      aws_utils.AppMeshScanner
 	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher
-	meshClient          zephyr_discovery.MeshClient
+	meshClient          smh_discovery.MeshClient
 	remoteClient        client.Client
 }
 
@@ -27,7 +27,7 @@ func AppMeshTenancyScannerFactoryProvider(
 	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher,
 ) k8s_tenancy.ClusterTenancyScannerFactory {
 	return func(
-		meshClient zephyr_discovery.MeshClient,
+		meshClient smh_discovery.MeshClient,
 		remoteClient client.Client,
 	) k8s_tenancy.ClusterTenancyRegistrar {
 		return NewAppmeshTenancyScanner(
@@ -41,7 +41,7 @@ func AppMeshTenancyScannerFactoryProvider(
 
 func NewAppmeshTenancyScanner(
 	appmeshScanner aws_utils.AppMeshScanner,
-	meshClient zephyr_discovery.MeshClient,
+	meshClient smh_discovery.MeshClient,
 	remoteClient client.Client,
 	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher,
 ) k8s_tenancy.ClusterTenancyRegistrar {
@@ -56,7 +56,7 @@ func NewAppmeshTenancyScanner(
 func (a *appmeshTenancyScanner) MeshFromSidecar(
 	ctx context.Context,
 	pod *k8s_core_types.Pod,
-) (*zephyr_discovery.Mesh, error) {
+) (*smh_discovery.Mesh, error) {
 	awsAccountId, err := a.awsAccountIdFetcher.GetEksAccountId(ctx, a.remoteClient)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Warnf("Error fetching AWS Account ID from ConfigMap: %+v", err)
@@ -81,11 +81,11 @@ func (a *appmeshTenancyScanner) MeshFromSidecar(
 	return mesh, nil
 }
 
-func (a *appmeshTenancyScanner) ClusterHostsMesh(clusterName string, mesh *zephyr_discovery.Mesh) bool {
+func (a *appmeshTenancyScanner) ClusterHostsMesh(clusterName string, mesh *smh_discovery.Mesh) bool {
 	return utils.ContainsString(mesh.Spec.GetAwsAppMesh().GetClusters(), clusterName)
 }
 
-func (a *appmeshTenancyScanner) RegisterMesh(ctx context.Context, clusterName string, mesh *zephyr_discovery.Mesh) error {
+func (a *appmeshTenancyScanner) RegisterMesh(ctx context.Context, clusterName string, mesh *smh_discovery.Mesh) error {
 	if !isAppMesh(mesh) {
 		return nil
 	}
@@ -97,7 +97,7 @@ func (a *appmeshTenancyScanner) RegisterMesh(ctx context.Context, clusterName st
 	return a.meshClient.UpdateMesh(ctx, mesh)
 }
 
-func (a *appmeshTenancyScanner) DeregisterMesh(ctx context.Context, clusterName string, mesh *zephyr_discovery.Mesh) error {
+func (a *appmeshTenancyScanner) DeregisterMesh(ctx context.Context, clusterName string, mesh *smh_discovery.Mesh) error {
 	if !isAppMesh(mesh) {
 		return nil
 	}
@@ -109,6 +109,6 @@ func (a *appmeshTenancyScanner) DeregisterMesh(ctx context.Context, clusterName 
 	return a.meshClient.UpdateMesh(ctx, mesh)
 }
 
-func isAppMesh(mesh *zephyr_discovery.Mesh) bool {
+func isAppMesh(mesh *smh_discovery.Mesh) bool {
 	return mesh.Spec.GetAwsAppMesh() != nil
 }

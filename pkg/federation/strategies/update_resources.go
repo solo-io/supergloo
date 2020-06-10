@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"go.uber.org/zap"
 )
 
 // once the mesh services have had their federation metadata updated, call this function to write both that metadata and their new federation status to the cluster
-func updateServices(ctx context.Context, federatedServices []*zephyr_discovery.MeshService, meshServiceClient zephyr_discovery.MeshServiceClient) error {
+func updateServices(ctx context.Context, federatedServices []*smh_discovery.MeshService, meshServiceClient smh_discovery.MeshServiceClient) error {
 	logger := contextutils.LoggerFrom(ctx)
 
 	for _, federatedService := range federatedServices {

@@ -7,10 +7,10 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 	pki_util "istio.io/istio/security/pkg/pki/util"
@@ -49,22 +49,22 @@ func NewCsrAgentIstioProcessor(
 	return &VirtualMeshCSRProcessorFuncs{
 		OnProcessUpsert: func(
 			ctx context.Context,
-			csr *zephyr_security.VirtualMeshCertificateSigningRequest,
-		) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
+			csr *smh_security.VirtualMeshCertificateSigningRequest,
+		) *smh_security_types.VirtualMeshCertificateSigningRequestStatus {
 			return generator.GenerateIstioCSR(ctx, csr)
 		},
 	}
 }
 
 type istioCSRGenerator struct {
-	csrClient    zephyr_security.VirtualMeshCertificateSigningRequestClient
+	csrClient    smh_security.VirtualMeshCertificateSigningRequestClient
 	secretClient k8s_core.SecretClient
 	certClient   CertClient
 	signer       certgen.Signer
 }
 
 func NewIstioCSRGenerator(
-	csrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
+	csrClient smh_security.VirtualMeshCertificateSigningRequestClient,
 	secretClient k8s_core.SecretClient,
 	certClient CertClient,
 	signer certgen.Signer,
@@ -74,20 +74,20 @@ func NewIstioCSRGenerator(
 
 func (i *istioCSRGenerator) GenerateIstioCSR(
 	ctx context.Context,
-	obj *zephyr_security.VirtualMeshCertificateSigningRequest,
-) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
+	obj *smh_security.VirtualMeshCertificateSigningRequest,
+) *smh_security_types.VirtualMeshCertificateSigningRequestStatus {
 	return i.process(ctx, obj)
 }
 
 func (i *istioCSRGenerator) process(
 	ctx context.Context,
-	obj *zephyr_security.VirtualMeshCertificateSigningRequest,
-) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
+	obj *smh_security.VirtualMeshCertificateSigningRequest,
+) *smh_security_types.VirtualMeshCertificateSigningRequestStatus {
 	rootCaData, err := i.certClient.EnsureSecretKey(ctx, obj)
 	if err != nil {
 		wrapped := FailedToRetrievePrivateKeyError(err)
-		obj.Status.ComputedStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_INVALID,
+		obj.Status.ComputedStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_INVALID,
 			Message: wrapped.Error(),
 		}
 		return &obj.Status
@@ -100,13 +100,13 @@ func (i *istioCSRGenerator) process(
 		// csr data has been saturated, this csr is ready to be reprocessed
 		if err = i.updateCa(ctx, obj, rootCaData); err != nil {
 			wrapped := FailedToUpdateCaError(err)
-			obj.Status.ComputedStatus = &zephyr_core_types.Status{
-				State:   zephyr_core_types.Status_INVALID,
+			obj.Status.ComputedStatus = &smh_core_types.Status{
+				State:   smh_core_types.Status_INVALID,
 				Message: wrapped.Error(),
 			}
 			return &obj.Status
 		}
-		obj.Status.ComputedStatus = &zephyr_core_types.Status{State: zephyr_core_types.Status_ACCEPTED}
+		obj.Status.ComputedStatus = &smh_core_types.Status{State: smh_core_types.Status_ACCEPTED}
 	}
 
 	return &obj.Status
@@ -114,9 +114,9 @@ func (i *istioCSRGenerator) process(
 
 func (i *istioCSRGenerator) generateCsr(
 	ctx context.Context,
-	obj *zephyr_security.VirtualMeshCertificateSigningRequest,
+	obj *smh_security.VirtualMeshCertificateSigningRequest,
 	intermediateCAData *cert_secrets.IntermediateCAData,
-) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
+) *smh_security_types.VirtualMeshCertificateSigningRequestStatus {
 	csr, err := i.signer.GenCSRWithKey(pki_util.CertOptions{
 		Host:          strings.Join(obj.Spec.GetCertConfig().GetHosts(), ","),
 		Org:           obj.Spec.GetCertConfig().GetOrg(),
@@ -124,8 +124,8 @@ func (i *istioCSRGenerator) generateCsr(
 	})
 	if err != nil {
 		wrapped := FailedToGenerateCSRError(err)
-		obj.Status.ComputedStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_INVALID,
+		obj.Status.ComputedStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_INVALID,
 			Message: wrapped.Error(),
 		}
 		return &obj.Status
@@ -134,19 +134,19 @@ func (i *istioCSRGenerator) generateCsr(
 	obj.Spec.CsrData = csr
 	if err = i.csrClient.UpdateVirtualMeshCertificateSigningRequest(ctx, obj); err != nil {
 		wrapped := FailedToAddCsrToResource(err)
-		obj.Status.ComputedStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_INVALID,
+		obj.Status.ComputedStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_INVALID,
 			Message: wrapped.Error(),
 		}
 		return &obj.Status
 	}
-	obj.Status.ComputedStatus = &zephyr_core_types.Status{State: zephyr_core_types.Status_ACCEPTED}
+	obj.Status.ComputedStatus = &smh_core_types.Status{State: smh_core_types.Status_ACCEPTED}
 	return &obj.Status
 }
 
 func (i *istioCSRGenerator) updateCa(
 	ctx context.Context,
-	obj *zephyr_security.VirtualMeshCertificateSigningRequest,
+	obj *smh_security.VirtualMeshCertificateSigningRequest,
 	intermediateCAData *cert_secrets.IntermediateCAData,
 ) error {
 	intermediateCAData.CaCert = obj.Status.GetResponse().GetCaCertificate()

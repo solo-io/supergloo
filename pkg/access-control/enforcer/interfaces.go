@@ -3,8 +3,8 @@ package access_control_enforcer
 import (
 	"context"
 
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
@@ -21,7 +21,7 @@ type AccessPolicyMeshEnforcer interface {
 	// Reconcile mesh specific resources to reflect the intended access control state as declared in the VirtualMesh.
 	ReconcileAccessControl(
 		ctx context.Context,
-		mesh *zephyr_discovery.Mesh,
-		virtualMesh *zephyr_networking.VirtualMesh,
+		mesh *smh_discovery.Mesh,
+		virtualMesh *smh_networking.VirtualMesh,
 	) error
 }

@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/stringutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
@@ -25,10 +25,10 @@ var (
 	InvalidPercentageError = func(pct float64) error {
 		return eris.Errorf("Percentage must be between 0.0 and 100.0 inclusive, got %f", pct)
 	}
-	DestinationsNotFound = func(selector *zephyr_core_types.ServiceSelector) error {
+	DestinationsNotFound = func(selector *smh_core_types.ServiceSelector) error {
 		return eris.Errorf("No destinations found with Selector %+v", selector)
 	}
-	SubsetSelectorNotFound = func(meshService *zephyr_discovery.MeshService, subsetKey string, subsetValue string) error {
+	SubsetSelectorNotFound = func(meshService *smh_discovery.MeshService, subsetKey string, subsetValue string) error {
 		return eris.Errorf("Subset selector with key: %s, value: %s not found on k8s service of name: %s, namespace: %s",
 			subsetKey, subsetValue, meshService.GetName(), meshService.GetNamespace())
 	}
@@ -37,12 +37,12 @@ var (
 )
 
 type trafficPolicyValidator struct {
-	meshServiceClient zephyr_discovery.MeshServiceClient
+	meshServiceClient smh_discovery.MeshServiceClient
 	resourceSelector  selection.ResourceSelector
 }
 
 func NewTrafficPolicyValidator(
-	meshServiceClient zephyr_discovery.MeshServiceClient,
+	meshServiceClient smh_discovery.MeshServiceClient,
 	resourceSelector selection.ResourceSelector,
 ) TrafficPolicyValidator {
 	return &trafficPolicyValidator{
@@ -51,7 +51,7 @@ func NewTrafficPolicyValidator(
 	}
 }
 
-func (t *trafficPolicyValidator) Validate(ctx context.Context, trafficPolicy *zephyr_networking.TrafficPolicy) error {
+func (t *trafficPolicyValidator) Validate(ctx context.Context, trafficPolicy *smh_networking.TrafficPolicy) error {
 	var multiErr *multierror.Error
 	if err := t.validateDestination(ctx, trafficPolicy.Spec.GetDestinationSelector()); err != nil {
 		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in Destination"))
@@ -77,7 +77,7 @@ func (t *trafficPolicyValidator) Validate(ctx context.Context, trafficPolicy *ze
 	return multiErr.ErrorOrNil()
 }
 
-func (t *trafficPolicyValidator) validateDestination(ctx context.Context, selector *zephyr_core_types.ServiceSelector) error {
+func (t *trafficPolicyValidator) validateDestination(ctx context.Context, selector *smh_core_types.ServiceSelector) error {
 	if selector == nil {
 		return nil
 	}
@@ -90,7 +90,7 @@ func (t *trafficPolicyValidator) validateDestination(ctx context.Context, select
 
 // Validate that the TrafficShift destination k8s Service exist
 // and if subsets are specified, that they exist on the k8s Service
-func (t *trafficPolicyValidator) validateTrafficShift(ctx context.Context, trafficShift *zephyr_networking_types.TrafficPolicySpec_MultiDestination) error {
+func (t *trafficPolicyValidator) validateTrafficShift(ctx context.Context, trafficShift *smh_networking_types.TrafficPolicySpec_MultiDestination) error {
 	if trafficShift == nil {
 		return nil
 	}
@@ -109,7 +109,7 @@ func (t *trafficPolicyValidator) validateTrafficShift(ctx context.Context, traff
 	return nil
 }
 
-func (t *trafficPolicyValidator) validateMirror(ctx context.Context, mirror *zephyr_networking_types.TrafficPolicySpec_Mirror) error {
+func (t *trafficPolicyValidator) validateMirror(ctx context.Context, mirror *smh_networking_types.TrafficPolicySpec_Mirror) error {
 	if mirror == nil {
 		return nil
 	}
@@ -127,7 +127,7 @@ func (t *trafficPolicyValidator) validateRequestTimeout(requestTimeout *types.Du
 	return t.validateDuration(requestTimeout)
 }
 
-func (t *trafficPolicyValidator) validateFaultInjection(faultInjection *zephyr_networking_types.TrafficPolicySpec_FaultInjection) error {
+func (t *trafficPolicyValidator) validateFaultInjection(faultInjection *smh_networking_types.TrafficPolicySpec_FaultInjection) error {
 	if faultInjection == nil {
 		return nil
 	}
@@ -136,20 +136,20 @@ func (t *trafficPolicyValidator) validateFaultInjection(faultInjection *zephyr_n
 		return err
 	}
 	switch injectionType := faultInjection.GetFaultInjectionType().(type) {
-	case *zephyr_networking_types.TrafficPolicySpec_FaultInjection_Abort_:
+	case *smh_networking_types.TrafficPolicySpec_FaultInjection_Abort_:
 		abort := faultInjection.GetAbort()
 		switch abortType := abort.GetErrorType().(type) {
-		case *zephyr_networking_types.TrafficPolicySpec_FaultInjection_Abort_HttpStatus:
+		case *smh_networking_types.TrafficPolicySpec_FaultInjection_Abort_HttpStatus:
 			return t.validateHttpStatus(abort.GetHttpStatus())
 		default:
 			return eris.Errorf("TrafficPolicy.Spec.FaultInjection.Abort.ErrorType has unexpected type %T", abortType)
 		}
-	case *zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay_:
+	case *smh_networking_types.TrafficPolicySpec_FaultInjection_Delay_:
 		delay := faultInjection.GetDelay()
 		switch delayType := delay.GetHttpDelayType().(type) {
-		case *zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay:
+		case *smh_networking_types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay:
 			return t.validateDuration(delay.GetFixedDelay())
-		case *zephyr_networking_types.TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay:
+		case *smh_networking_types.TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay:
 			return t.validateDuration(delay.GetExponentialDelay())
 		default:
 			return eris.Errorf("TrafficPolicy.Spec.FaultInjection.Delay.HTTPDelayType has unexpected type %T", delayType)
@@ -159,7 +159,7 @@ func (t *trafficPolicyValidator) validateFaultInjection(faultInjection *zephyr_n
 	}
 }
 
-func (t *trafficPolicyValidator) validateRetryPolicy(retryPolicy *zephyr_networking_types.TrafficPolicySpec_RetryPolicy) error {
+func (t *trafficPolicyValidator) validateRetryPolicy(retryPolicy *smh_networking_types.TrafficPolicySpec_RetryPolicy) error {
 	if retryPolicy == nil {
 		return nil
 	}
@@ -169,7 +169,7 @@ func (t *trafficPolicyValidator) validateRetryPolicy(retryPolicy *zephyr_network
 	return t.validateDuration(retryPolicy.GetPerTryTimeout())
 }
 
-func (t *trafficPolicyValidator) validateCorsPolicy(corsPolicy *zephyr_networking_types.TrafficPolicySpec_CorsPolicy) error {
+func (t *trafficPolicyValidator) validateCorsPolicy(corsPolicy *smh_networking_types.TrafficPolicySpec_CorsPolicy) error {
 	if corsPolicy == nil {
 		return nil
 	}
@@ -199,8 +199,8 @@ func (t *trafficPolicyValidator) validateDuration(duration *types.Duration) erro
 
 func (t *trafficPolicyValidator) validateKubeService(
 	ctx context.Context,
-	ref *zephyr_core_types.ResourceRef,
-) (*zephyr_discovery.MeshService, error) {
+	ref *smh_core_types.ResourceRef,
+) (*smh_discovery.MeshService, error) {
 	if ref == nil {
 		return nil, NilDestinationRef
 	}
@@ -212,7 +212,7 @@ func (t *trafficPolicyValidator) validateKubeService(
 }
 
 func (t *trafficPolicyValidator) validateSubsetSelectors(
-	meshService *zephyr_discovery.MeshService,
+	meshService *smh_discovery.MeshService,
 	subsetSelectors map[string]string,
 ) error {
 	for subsetKey, subsetValue := range subsetSelectors {

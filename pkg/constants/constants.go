@@ -13,7 +13,7 @@ const (
 	DefaultReleaseTag        = "latest"
 	DefaultKubeClientTimeout = 5 * time.Second
 
-	ServiceMeshHubApiGroupSuffix = "zephyr.solo.io"
+	ServiceMeshHubApiGroupSuffix = "smh.solo.io"
 
 	CsrAgentReleaseName = "csr-agent"
 )

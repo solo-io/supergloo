@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/aws/clients"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
@@ -33,7 +33,7 @@ var (
 
 type appMeshDiscoveryReconciler struct {
 	arnParser            aws_utils.ArnParser
-	meshClient           zephyr_discovery.MeshClient
+	meshClient           smh_discovery.MeshClient
 	appmeshClientFactory appmesh2.AppmeshRawClientFactory
 	settingsClient       settings.SettingsHelperClient
 	awsSelector          settings_utils.AwsSelector
@@ -41,7 +41,7 @@ type appMeshDiscoveryReconciler struct {
 
 func NewAppMeshDiscoveryReconciler(
 	masterClient client.Client,
-	meshClientFactory zephyr_discovery.MeshClientFactory,
+	meshClientFactory smh_discovery.MeshClientFactory,
 	arnParser aws_utils.ArnParser,
 	appmeshClientFactory appmesh2.AppmeshRawClientFactory,
 	settingsClient settings.SettingsHelperClient,
@@ -148,20 +148,20 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *crede
 	return errors.ErrorOrNil()
 }
 
-func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef, region string) (*zephyr_discovery.Mesh, error) {
+func (a *appMeshDiscoveryReconciler) convertAppMesh(appMeshRef *appmesh.MeshRef, region string) (*smh_discovery.Mesh, error) {
 	meshName := metadata.BuildAppMeshName(aws.StringValue(appMeshRef.MeshName), region, aws.StringValue(appMeshRef.MeshOwner))
 	awsAccountID, err := a.arnParser.ParseAccountID(aws.StringValue(appMeshRef.Arn))
 	if err != nil {
 		return nil, err
 	}
-	return &zephyr_discovery.Mesh{
+	return &smh_discovery.Mesh{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      meshName,
 			Namespace: container_runtime.GetWriteNamespace(),
 		},
-		Spec: zephyr_discovery_types.MeshSpec{
-			MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-				AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
+		Spec: smh_discovery_types.MeshSpec{
+			MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+				AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{
 					Name:         aws.StringValue(appMeshRef.MeshName),
 					AwsAccountId: awsAccountID,
 					Region:       region,

@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
 	"github.com/spf13/afero"
@@ -25,7 +25,7 @@ var (
 	FailedLoadingRemoteConfig = func(err error) error {
 		return eris.Wrap(err, "Failed to load the kube config for the remote cluster")
 	}
-	FailedToCreateAuthToken = func(saRef *zephyr_core_types.ResourceRef, remoteKubeConfig, remoteContext string) string {
+	FailedToCreateAuthToken = func(saRef *smh_core_types.ResourceRef, remoteKubeConfig, remoteContext string) string {
 		return fmt.Sprintf("Failed to create an auth token for service account %s.%s in cluster "+
 			"pointed to by kube config %s with context %s. This operation is not atomic, so the service account may "+
 			"have been created and left in the cluster while a later step failed. \n",

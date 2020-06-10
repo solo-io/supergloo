@@ -3,7 +3,6 @@ package main
 import (
 	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	"github.com/solo-io/skv2/codegen"
@@ -16,13 +15,6 @@ import (
 
 func main() {
 	log.Println("starting generate CSR agent")
-
-	var renderTypes bool
-	if os.Getenv("REGENERATE_TYPES") == "" {
-		log.Println("REGENERATE_TYPES is not set, skipping autopilot client gen")
-	} else {
-		renderTypes = true
-	}
 
 	// load custom client template
 	customClientTemplateBytes, err := ioutil.ReadFile("../custom_client.gotmpl")
@@ -55,17 +47,17 @@ func main() {
 						Spec: model.Field{
 							Type: model.Type{
 								Name:      "VirtualMeshCertificateSigningRequestSpec",
-								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types",
 							},
 						},
 						Status: &model.Field{Type: model.Type{
 							Name:      "VirtualMeshCertificateSigningRequestStatus",
-							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types",
 						}},
 					},
 				},
 				RenderManifests:  true,
-				RenderTypes:      renderTypes,
+				RenderTypes:      true,
 				RenderController: true,
 				RenderProtos:     true,
 				CustomTemplates: []model.CustomTemplates{

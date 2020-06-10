@@ -10,9 +10,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -22,7 +22,7 @@ var UPDATE_CLUSTER_GOLDENS = false
 
 var _ = Describe("KubernetesCluster Table Printer", func() {
 	const clusterGoldenDirectory = "cluster"
-	var runTest = func(fileName string, clusters []*zephyr_discovery.KubernetesCluster) {
+	var runTest = func(fileName string, clusters []*smh_discovery.KubernetesCluster) {
 		goldenFilename := test_goldens.GoldenFilePath(clusterGoldenDirectory, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
@@ -44,13 +44,13 @@ var _ = Describe("KubernetesCluster Table Printer", func() {
 		Entry(
 			"can print multiple kuberenetes clusters",
 			"multi_cluster",
-			[]*zephyr_discovery.KubernetesCluster{
+			[]*smh_discovery.KubernetesCluster{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "management-plane",
 					},
-					Spec: zephyr_discovery_types.KubernetesClusterSpec{
-						SecretRef: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.KubernetesClusterSpec{
+						SecretRef: &smh_core_types.ResourceRef{
 							Name:      "management-plane",
 							Namespace: "service-mesh-hub",
 						},
@@ -62,8 +62,8 @@ var _ = Describe("KubernetesCluster Table Printer", func() {
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "remote-cluster",
 					},
-					Spec: zephyr_discovery_types.KubernetesClusterSpec{
-						SecretRef: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.KubernetesClusterSpec{
+						SecretRef: &smh_core_types.ResourceRef{
 							Name:      "remote-cluster",
 							Namespace: "service-mesh-hub",
 						},

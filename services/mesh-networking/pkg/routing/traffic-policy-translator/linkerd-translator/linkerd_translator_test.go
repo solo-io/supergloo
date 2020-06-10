@@ -17,15 +17,15 @@ import (
 	linkerd_config "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	linkerd_networking "github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	smi_networking "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 	linkerd_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/linkerd-translator"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -42,24 +42,24 @@ var _ = Describe("LinkerdTranslator", func() {
 		meshObjKey        = client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 		meshServiceObjKey = client.ObjectKey{Name: "mesh-service-name", Namespace: "mesh-service-namespace"}
 		kubeServiceObjKey = client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
-		meshService       = &zephyr_discovery.MeshService{
+		meshService       = &smh_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:        meshServiceObjKey.Name,
 				Namespace:   meshServiceObjKey.Namespace,
 				ClusterName: clusterName,
 			},
-			Spec: zephyr_discovery_types.MeshServiceSpec{
-				Mesh: &zephyr_core_types.ResourceRef{
+			Spec: smh_discovery_types.MeshServiceSpec{
+				Mesh: &smh_core_types.ResourceRef{
 					Name:      meshObjKey.Name,
 					Namespace: meshObjKey.Namespace,
 				},
-				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-					Ref: &zephyr_core_types.ResourceRef{
+				KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+					Ref: &smh_core_types.ResourceRef{
 						Name:      kubeServiceObjKey.Name,
 						Namespace: kubeServiceObjKey.Namespace,
 						Cluster:   clusterName,
 					},
-					Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
+					Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 						{
 							Port: 9080,
 							Name: "http",
@@ -68,13 +68,13 @@ var _ = Describe("LinkerdTranslator", func() {
 				},
 			},
 		}
-		mesh = &zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &zephyr_core_types.ResourceRef{
+		mesh = &smh_discovery.Mesh{
+			Spec: smh_discovery_types.MeshSpec{
+				Cluster: &smh_core_types.ResourceRef{
 					Name: clusterName,
 				},
-				MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{
-					Linkerd: &zephyr_discovery_types.MeshSpec_LinkerdMesh{
+				MeshType: &smh_discovery_types.MeshSpec_Linkerd{
+					Linkerd: &smh_discovery_types.MeshSpec_LinkerdMesh{
 						ClusterDomain: "cluster.domain",
 					},
 				},
@@ -109,12 +109,12 @@ var _ = Describe("LinkerdTranslator", func() {
 	})
 	Context("no relevant config provided", func() {
 
-		trafficPolicy := []*zephyr_networking.TrafficPolicy{{
-			Spec: zephyr_networking_types.TrafficPolicySpec{
-				FaultInjection: &zephyr_networking_types.TrafficPolicySpec_FaultInjection{
+		trafficPolicy := []*smh_networking.TrafficPolicy{{
+			Spec: smh_networking_types.TrafficPolicySpec{
+				FaultInjection: &smh_networking_types.TrafficPolicySpec_FaultInjection{
 					Percentage: 100,
 				},
-				HeaderManipulation: &zephyr_networking_types.TrafficPolicySpec_HeaderManipulation{
+				HeaderManipulation: &smh_networking_types.TrafficPolicySpec_HeaderManipulation{
 					AppendResponseHeaders: map[string]string{"foo": "bar"},
 				},
 			}},
@@ -135,10 +135,10 @@ var _ = Describe("LinkerdTranslator", func() {
 	})
 
 	Context("basic traffic policy", func() {
-		trafficPolicy := []*zephyr_networking.TrafficPolicy{
+		trafficPolicy := []*smh_networking.TrafficPolicy{
 			{
-				Spec: zephyr_networking_types.TrafficPolicySpec{
-					HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+				Spec: smh_networking_types.TrafficPolicySpec{
+					HttpRequestMatchers: []*smh_networking_types.TrafficPolicySpec_HttpMatcher{
 						{}, // one default matcher
 					},
 				},
@@ -166,16 +166,16 @@ var _ = Describe("LinkerdTranslator", func() {
 
 	Context("prefix matcher provided", func() {
 
-		trafficPolicy := []*zephyr_networking.TrafficPolicy{
+		trafficPolicy := []*smh_networking.TrafficPolicy{
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: "ns", Name: "tp"},
-				Spec: zephyr_networking_types.TrafficPolicySpec{
-					HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+				Spec: smh_networking_types.TrafficPolicySpec{
+					HttpRequestMatchers: []*smh_networking_types.TrafficPolicySpec_HttpMatcher{
 						{
-							PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+							PathSpecifier: &smh_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 								Prefix: "/prefix/",
 							},
-							Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
+							Method: &smh_networking_types.TrafficPolicySpec_HttpMethod{Method: smh_core_types.HttpMethodValue_GET},
 						},
 					},
 				},
@@ -214,18 +214,18 @@ var _ = Describe("LinkerdTranslator", func() {
 
 	Context("traffic shift provided", func() {
 
-		trafficPolicy := []*zephyr_networking.TrafficPolicy{
+		trafficPolicy := []*smh_networking.TrafficPolicy{
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: "ns", Name: "tp"},
-				Spec: zephyr_networking_types.TrafficPolicySpec{
-					TrafficShift: &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
-						Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+				Spec: smh_networking_types.TrafficPolicySpec{
+					TrafficShift: &smh_networking_types.TrafficPolicySpec_MultiDestination{
+						Destinations: []*smh_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 							{
-								Destination: &zephyr_core_types.ResourceRef{Name: "foo-svc", Namespace: meshService.Spec.KubeService.Ref.Namespace},
+								Destination: &smh_core_types.ResourceRef{Name: "foo-svc", Namespace: meshService.Spec.KubeService.Ref.Namespace},
 								Weight:      5,
 							},
 							{
-								Destination: &zephyr_core_types.ResourceRef{Name: "bar-svc", Namespace: meshService.Spec.KubeService.Ref.Namespace},
+								Destination: &smh_core_types.ResourceRef{Name: "bar-svc", Namespace: meshService.Spec.KubeService.Ref.Namespace},
 								Weight:      15,
 							},
 						},
@@ -271,10 +271,10 @@ var _ = Describe("LinkerdTranslator", func() {
 
 	Context("timeout provided", func() {
 
-		trafficPolicy := []*zephyr_networking.TrafficPolicy{
+		trafficPolicy := []*smh_networking.TrafficPolicy{
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: "ns", Name: "tp"},
-				Spec: zephyr_networking_types.TrafficPolicySpec{
+				Spec: smh_networking_types.TrafficPolicySpec{
 					RequestTimeout: types.DurationProto(time.Minute),
 				},
 			},
@@ -313,29 +313,29 @@ var _ = Describe("LinkerdTranslator", func() {
 
 	Context("multiple policies defined", func() {
 
-		trafficPolicy := []*zephyr_networking.TrafficPolicy{
+		trafficPolicy := []*smh_networking.TrafficPolicy{
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: "ns", Name: "tp1"},
-				Spec: zephyr_networking_types.TrafficPolicySpec{
-					HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+				Spec: smh_networking_types.TrafficPolicySpec{
+					HttpRequestMatchers: []*smh_networking_types.TrafficPolicySpec_HttpMatcher{
 						{
-							PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+							PathSpecifier: &smh_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 								Prefix: "/short",
 							},
-							Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
+							Method: &smh_networking_types.TrafficPolicySpec_HttpMethod{Method: smh_core_types.HttpMethodValue_GET},
 						},
 					},
 				},
 			},
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: "ns", Name: "tp2"},
-				Spec: zephyr_networking_types.TrafficPolicySpec{
-					HttpRequestMatchers: []*zephyr_networking_types.TrafficPolicySpec_HttpMatcher{
+				Spec: smh_networking_types.TrafficPolicySpec{
+					HttpRequestMatchers: []*smh_networking_types.TrafficPolicySpec_HttpMatcher{
 						{
-							PathSpecifier: &zephyr_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
+							PathSpecifier: &smh_networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 								Prefix: "/longer",
 							},
-							Method: &zephyr_networking_types.TrafficPolicySpec_HttpMethod{Method: zephyr_core_types.HttpMethodValue_GET},
+							Method: &smh_networking_types.TrafficPolicySpec_HttpMethod{Method: smh_core_types.HttpMethodValue_GET},
 						},
 					},
 				},
@@ -384,16 +384,16 @@ var _ = Describe("LinkerdTranslator", func() {
 	})
 	Context("cross-namespace defined in destination", func() {
 
-		dest := &zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
-			Destination: &zephyr_core_types.ResourceRef{Namespace: "another-namespace"},
+		dest := &smh_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+			Destination: &smh_core_types.ResourceRef{Namespace: "another-namespace"},
 			Subset:      map[string]string{},
 		}
-		trafficPolicy := []*zephyr_networking.TrafficPolicy{
+		trafficPolicy := []*smh_networking.TrafficPolicy{
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: "ns", Name: "tp"},
-				Spec: zephyr_networking_types.TrafficPolicySpec{
-					TrafficShift: &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
-						Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{dest},
+				Spec: smh_networking_types.TrafficPolicySpec{
+					TrafficShift: &smh_networking_types.TrafficPolicySpec_MultiDestination{
+						Destinations: []*smh_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{dest},
 					},
 				},
 			},
@@ -405,7 +405,7 @@ var _ = Describe("LinkerdTranslator", func() {
 				meshService,
 				mesh,
 				trafficPolicy)
-			Expect(translatorError).To(Equal(&zephyr_networking_types.TrafficPolicyStatus_TranslatorError{
+			Expect(translatorError).To(Equal(&smh_networking_types.TrafficPolicyStatus_TranslatorError{
 				TranslatorId: linkerd_translator.TranslatorId,
 				ErrorMessage: multierror.Append(nil, linkerd_translator.CrossNamespaceSplitNotSupportedErr).Error(),
 			}))
@@ -413,16 +413,16 @@ var _ = Describe("LinkerdTranslator", func() {
 	})
 	Context("subsets defined in destination", func() {
 
-		dest := &zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
-			Destination: &zephyr_core_types.ResourceRef{Namespace: meshService.Spec.KubeService.Ref.Namespace},
+		dest := &smh_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+			Destination: &smh_core_types.ResourceRef{Namespace: meshService.Spec.KubeService.Ref.Namespace},
 			Subset:      map[string]string{},
 		}
-		trafficPolicy := []*zephyr_networking.TrafficPolicy{
+		trafficPolicy := []*smh_networking.TrafficPolicy{
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: "ns", Name: "tp"},
-				Spec: zephyr_networking_types.TrafficPolicySpec{
-					TrafficShift: &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
-						Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{dest},
+				Spec: smh_networking_types.TrafficPolicySpec{
+					TrafficShift: &smh_networking_types.TrafficPolicySpec_MultiDestination{
+						Destinations: []*smh_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{dest},
 					},
 				},
 			},
@@ -434,7 +434,7 @@ var _ = Describe("LinkerdTranslator", func() {
 				meshService,
 				mesh,
 				trafficPolicy)
-			Expect(translatorError).To(Equal(&zephyr_networking_types.TrafficPolicyStatus_TranslatorError{
+			Expect(translatorError).To(Equal(&smh_networking_types.TrafficPolicyStatus_TranslatorError{
 				TranslatorId: linkerd_translator.TranslatorId,
 				ErrorMessage: multierror.Append(nil, linkerd_translator.SubsetsNotSupportedErr(dest)).Error(),
 			}))
@@ -442,17 +442,17 @@ var _ = Describe("LinkerdTranslator", func() {
 	})
 	Context("multiple policies defined with traffic shift", func() {
 
-		trafficPolicy := []*zephyr_networking.TrafficPolicy{
+		trafficPolicy := []*smh_networking.TrafficPolicy{
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: "ns", Name: "tp1"},
-				Spec: zephyr_networking_types.TrafficPolicySpec{
-					TrafficShift: &zephyr_networking_types.TrafficPolicySpec_MultiDestination{},
+				Spec: smh_networking_types.TrafficPolicySpec{
+					TrafficShift: &smh_networking_types.TrafficPolicySpec_MultiDestination{},
 				},
 			},
 			{
 				ObjectMeta: k8s_meta_types.ObjectMeta{Namespace: "ns", Name: "tp2"},
-				Spec: zephyr_networking_types.TrafficPolicySpec{
-					TrafficShift: &zephyr_networking_types.TrafficPolicySpec_MultiDestination{},
+				Spec: smh_networking_types.TrafficPolicySpec{
+					TrafficShift: &smh_networking_types.TrafficPolicySpec_MultiDestination{},
 				},
 			},
 		}
@@ -463,9 +463,9 @@ var _ = Describe("LinkerdTranslator", func() {
 				meshService,
 				mesh,
 				trafficPolicy)
-			Expect(translatorError).To(Equal(&zephyr_networking_types.TrafficPolicyStatus_TranslatorError{
+			Expect(translatorError).To(Equal(&smh_networking_types.TrafficPolicyStatus_TranslatorError{
 				TranslatorId: linkerd_translator.TranslatorId,
-				ErrorMessage: multierror.Append(nil, linkerd_translator.TrafficShiftRedefinedErr(meshService, []zephyr_core_types.ResourceRef{
+				ErrorMessage: multierror.Append(nil, linkerd_translator.TrafficShiftRedefinedErr(meshService, []smh_core_types.ResourceRef{
 					{Namespace: "ns", Name: "tp1"},
 					{Namespace: "ns", Name: "tp2"},
 				})).Error(),

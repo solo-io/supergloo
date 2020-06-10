@@ -8,7 +8,7 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
@@ -66,7 +66,7 @@ type ipAssigner struct {
 }
 
 func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) (string, error) {
-	ipRecordRef := &zephyr_core_types.ResourceRef{
+	ipRecordRef := &smh_core_types.ResourceRef{
 		Name:      IpRecordName,
 		Namespace: container_runtime.GetWriteNamespace(),
 	}
@@ -104,7 +104,7 @@ func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) 
 }
 
 func (i *ipAssigner) UnAssignIPOnCluster(ctx context.Context, clusterName, ipToUnassign string) error {
-	ipRecordRef := &zephyr_core_types.ResourceRef{
+	ipRecordRef := &smh_core_types.ResourceRef{
 		Name:      IpRecordName,
 		Namespace: container_runtime.GetWriteNamespace(),
 	}

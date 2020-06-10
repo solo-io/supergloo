@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 )
 
 var (
@@ -20,14 +20,14 @@ var (
 type FederationStrategy interface {
 	WriteFederationToServices(
 		ctx context.Context,
-		vm *zephyr_networking.VirtualMesh,
+		vm *smh_networking.VirtualMesh,
 		meshNameToMetadata MeshNameToMetadata,
 	) error
 }
 
 type FederationStrategyChooser func(
 	mode networking_types.VirtualMeshSpec_Federation_Mode,
-	meshServiceClient zephyr_discovery.MeshServiceClient,
+	meshServiceClient smh_discovery.MeshServiceClient,
 ) (FederationStrategy, error)
 
 func NewFederationStrategyChooser() FederationStrategyChooser {
@@ -36,7 +36,7 @@ func NewFederationStrategyChooser() FederationStrategyChooser {
 
 var GetFederationStrategyFromMode FederationStrategyChooser = func(
 	mode networking_types.VirtualMeshSpec_Federation_Mode,
-	meshServiceClient zephyr_discovery.MeshServiceClient,
+	meshServiceClient smh_discovery.MeshServiceClient,
 ) (FederationStrategy, error) {
 
 	switch mode {

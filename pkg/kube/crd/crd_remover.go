@@ -37,7 +37,7 @@ type crdRemover struct {
 	crdClientFactory kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactory
 }
 
-func (c *crdRemover) RemoveZephyrCrds(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config) (crdsDeleted bool, err error) {
+func (c *crdRemover) RemovesmhCrds(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config) (crdsDeleted bool, err error) {
 	return c.removeCrdsWithNameSuffix(ctx, clusterName, remoteKubeConfig, constants.ServiceMeshHubApiGroupSuffix)
 }
 

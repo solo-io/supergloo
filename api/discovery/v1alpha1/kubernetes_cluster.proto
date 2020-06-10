@@ -1,6 +1,6 @@
 syntax = "proto3";
-package discovery.zephyr.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types";
+package discovery.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types";
 
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 
@@ -9,7 +9,7 @@ import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 */
 message KubernetesClusterSpec {
     // pointer to secret which contains the kubeconfig with information to connect to the remote cluster.
-    core.zephyr.solo.io.ResourceRef secret_ref = 1;
+    core.smh.solo.io.ResourceRef secret_ref = 1;
     // context to use within the kubeconfig pointed to by the above reference
     string context = 2;
     // version of kubernetes

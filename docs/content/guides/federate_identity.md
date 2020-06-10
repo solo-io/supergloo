@@ -94,7 +94,7 @@ You should notice that the root certificates that signed the workload certificat
 Service Mesh Hub uses the [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}) Custom Resource to configure a Virtual Mesh, which is a logical grouping of one or multiple service meshes for the purposes of federation according to some parameters. Let's take a look at a VirtualMesh configuration that can help unify our two service meshes and establish a *shared trust* model for identity:
 
 {{< highlight yaml "hl_lines=8-15 17-21" >}}
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: VirtualMesh
 metadata:
   name: virtual-mesh

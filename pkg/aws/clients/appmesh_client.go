@@ -8,20 +8,20 @@ import (
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/credentials"
 	matcher2 "github.com/solo-io/service-mesh-hub/pkg/aws/matcher"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type AppmeshClientGetter func(mesh *zephyr_discovery.Mesh) (AppmeshClient, error)
+type AppmeshClientGetter func(mesh *smh_discovery.Mesh) (AppmeshClient, error)
 
 func AppmeshClientGetterProvider(
 	matcher matcher2.AppmeshMatcher,
 	awsCredentialsGetter credentials.AwsCredentialsGetter,
 	appmeshRawClientFactory AppmeshRawClientFactory,
 ) AppmeshClientGetter {
-	return func(mesh *zephyr_discovery.Mesh) (AppmeshClient, error) {
+	return func(mesh *smh_discovery.Mesh) (AppmeshClient, error) {
 		creds, err := awsCredentialsGetter.Get(mesh.Spec.GetAwsAppMesh().GetAwsAccountId())
 		if err != nil {
 			return nil, err

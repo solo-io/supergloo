@@ -1,6 +1,6 @@
 syntax = "proto3";
-package networking.zephyr.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types";
+package networking.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types";
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
@@ -49,7 +49,7 @@ message TrafficPolicySpec {
     message MultiDestination {
         message WeightedDestination {
             // Name/namespace/cluster of a kubernetes service.
-            core.zephyr.solo.io.ResourceRef destination = 1;
+            core.smh.solo.io.ResourceRef destination = 1;
             // Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100.
             uint32 weight = 2;
             // Subset routing is currently only supported on Istio.
@@ -284,7 +284,7 @@ message TrafficPolicySpec {
 
     message Mirror {
         // Destination to mirror traffic to
-        core.zephyr.solo.io.ResourceRef destination = 1;
+        core.smh.solo.io.ResourceRef destination = 1;
 
         /*
             Percentage of traffic to mirror. If absent, 100% will be mirrored.
@@ -298,7 +298,7 @@ message TrafficPolicySpec {
 
     // Express an optional HttpMethod by wrapping it in a nillable message.
     message HttpMethod {
-        core.zephyr.solo.io.HttpMethodValue method = 1;
+        core.smh.solo.io.HttpMethodValue method = 1;
     }
 
     /*
@@ -311,13 +311,13 @@ message TrafficPolicySpec {
 
         Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio.
     */
-    core.zephyr.solo.io.WorkloadSelector source_selector = 1;
+    core.smh.solo.io.WorkloadSelector source_selector = 1;
 
     /*
         Requests destined for these k8s services will have the rule applied.
         Leave empty to apply to all destination k8s services in the mesh.
     */
-    core.zephyr.solo.io.ServiceSelector destination_selector = 2;
+    core.smh.solo.io.ServiceSelector destination_selector = 2;
 
     /*
         If specified, this rule will only apply to http requests matching these conditions.
@@ -369,20 +369,20 @@ message TrafficPolicyStatus {
 
     message ConflictError {
         // The service on which this Traffic Policy conflicts with other Traffic policies.
-        core.zephyr.solo.io.ResourceRef configuration_target = 1;
+        core.smh.solo.io.ResourceRef configuration_target = 1;
 
         // Details about the nature of the conflict.
         string error_message = 2;
     }
 
     // Whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration.
-    core.zephyr.solo.io.Status translation_status = 1;
+    core.smh.solo.io.Status translation_status = 1;
 
     // Provides details on any translation errors that occurred. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config.
     repeated TranslatorError translator_errors = 2;
 
     // Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific routing configuration.
-    core.zephyr.solo.io.Status validation_status = 3;
+    core.smh.solo.io.Status validation_status = 3;
 
     // Provides details on any configuration conflicts between this TrafficPolicy and other TrafficPolicies that apply to the same configuration target. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config.
     repeated ConflictError conflict_errors = 4;

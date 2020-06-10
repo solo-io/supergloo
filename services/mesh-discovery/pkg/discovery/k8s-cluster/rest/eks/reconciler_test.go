@@ -9,8 +9,8 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
 	mock_settings "github.com/solo-io/service-mesh-hub/pkg/aws/selection/mocks"
 	mock_settings2 "github.com/solo-io/service-mesh-hub/pkg/aws/settings/mocks"
@@ -21,7 +21,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	compute_target_aws "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	discovery_eks "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/k8s-cluster/rest/eks"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/pkg/multicluster/discovery"
 	"github.com/solo-io/skv2/pkg/multicluster/discovery/cloud"
 	mock_cloud "github.com/solo-io/skv2/pkg/multicluster/discovery/cloud/mocks"
@@ -75,7 +75,7 @@ var _ = Describe("Reconciler", func() {
 
 	var expectFetchEksClustersOnAWS = func(
 		region string,
-		selectors []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
+		selectors []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector,
 	) (sets.String, map[string]string) {
 		nextToken := "next-token"
 		awsCluster1Name := "cluster1"
@@ -114,8 +114,8 @@ var _ = Describe("Reconciler", func() {
 	}
 
 	var expectFetchEksClustersOnSMH = func() sets.String {
-		clusterList := &zephyr_discovery.KubernetesClusterList{
-			Items: []zephyr_discovery.KubernetesCluster{
+		clusterList := &smh_discovery.KubernetesClusterList{
+			Items: []smh_discovery.KubernetesCluster{
 				{ObjectMeta: v1.ObjectMeta{Name: "cluster1"}},
 			},
 		}
@@ -146,19 +146,19 @@ var _ = Describe("Reconciler", func() {
 	It("should reconcile for all regions with empty eks_discovery object", func() {
 		region := "region"
 		selectors := settings_utils.AwsSelectorsByRegion{
-			region: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
-					MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
-						Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
+					MatcherType: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+						Matcher: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
 							Regions: []string{region},
 						},
 					},
 				},
 			},
 		}
-		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
+		settings := &smh_settings_types.SettingsSpec_AwsAccount{
 			AccountId:    accountID,
-			EksDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+			EksDiscovery: &smh_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
 		}
 		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetEksDiscovery()).Return(true)
 		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
@@ -177,20 +177,20 @@ var _ = Describe("Reconciler", func() {
 	It("should reconcile for all regions with eks_discovery populated with empty resource_selectors", func() {
 		region := "region"
 		selectors := settings_utils.AwsSelectorsByRegion{
-			region: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
-					MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
-						Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
+					MatcherType: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+						Matcher: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
 							Regions: []string{region},
 						},
 					},
 				},
 			},
 		}
-		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
+		settings := &smh_settings_types.SettingsSpec_AwsAccount{
 			AccountId: accountID,
-			EksDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{
-				ResourceSelectors: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{},
+			EksDiscovery: &smh_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{
+				ResourceSelectors: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{},
 			},
 		}
 		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
@@ -210,17 +210,17 @@ var _ = Describe("Reconciler", func() {
 	It("should reconcile all regions if eks_discovery is nil", func() {
 		region := "region"
 		selectors := settings_utils.AwsSelectorsByRegion{
-			region: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
-					MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
-						Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
+					MatcherType: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+						Matcher: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
 							Regions: []string{region},
 						},
 					},
 				},
 			},
 		}
-		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{}
+		settings := &smh_settings_types.SettingsSpec_AwsAccount{}
 		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
 		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetEksDiscovery()).Return(true)
 		mockAwsSelector.EXPECT().AwsSelectorsForAllRegions().Return(selectors)

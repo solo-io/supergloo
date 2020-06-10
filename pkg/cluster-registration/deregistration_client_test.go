@@ -8,11 +8,11 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	zephyr_security_scheme "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	smh_security_scheme "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	cluster_registration2 "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
@@ -26,7 +26,7 @@ import (
 	mock_kubeconfig2 "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
 	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
-	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_smh_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	mock_k8s_core_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	v12 "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,13 +58,13 @@ var _ = Describe("Cluster Deregistration", func() {
 		mockCsrAgentInstaller := mock_installation.NewMockCsrAgentInstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		configLookup := mock_kubeconfig2.NewMockKubeConfigLookup(ctrl)
-		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
+		kubeClusterClient := mock_smh_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		remoteSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		dynamicClientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
 		remoteServiceAccountClient := mock_k8s_core_clients.NewMockServiceAccountClient(ctrl)
 
-		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
+		kubeConfigSecretRef := &smh_core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: container_runtime.GetWriteNamespace(),
 		}
@@ -73,12 +73,12 @@ var _ = Describe("Cluster Deregistration", func() {
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
-		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
+		clusterToDeregister := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: container_runtime.GetWriteNamespace(),
 			},
-			Spec: zephyr_discovery_types.KubernetesClusterSpec{
+			Spec: smh_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
 				WriteNamespace: remoteWriteNamespace,
 			},
@@ -134,7 +134,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			).
 			Return(nil)
 		crdRemover.EXPECT().
-			RemoveCrdGroup(ctx, clusterToDeregister.GetName(), kubeRestConfig.RestConfig, zephyr_security_scheme.SchemeGroupVersion).
+			RemoveCrdGroup(ctx, clusterToDeregister.GetName(), kubeRestConfig.RestConfig, smh_security_scheme.SchemeGroupVersion).
 			Return(false, nil)
 
 		clusterDeregistrationClient := cluster_registration2.NewClusterDeregistrationClient(
@@ -163,21 +163,21 @@ var _ = Describe("Cluster Deregistration", func() {
 		mockCsrAgentInstaller := mock_installation.NewMockCsrAgentInstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		configLookup := mock_kubeconfig2.NewMockKubeConfigLookup(ctrl)
-		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
+		kubeClusterClient := mock_smh_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		dynamicClientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
-		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
+		kubeConfigSecretRef := &smh_core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: container_runtime.GetWriteNamespace(),
 		}
 		remoteWriteNamespace := "remote-write-namespace"
 		remoteClusterName := "remote-cluster-name"
-		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
+		clusterToDeregister := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: container_runtime.GetWriteNamespace(),
 			},
-			Spec: zephyr_discovery_types.KubernetesClusterSpec{
+			Spec: smh_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
 				WriteNamespace: remoteWriteNamespace,
 			},
@@ -213,23 +213,23 @@ var _ = Describe("Cluster Deregistration", func() {
 		mockCsrAgentInstaller := mock_installation.NewMockCsrAgentInstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		configLookup := mock_kubeconfig2.NewMockKubeConfigLookup(ctrl)
-		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
+		kubeClusterClient := mock_smh_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		remoteSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		dynamicClientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
 		remoteServiceAccountClient := mock_k8s_core_clients.NewMockServiceAccountClient(ctrl)
-		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
+		kubeConfigSecretRef := &smh_core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: container_runtime.GetWriteNamespace(),
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
-		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
+		clusterToDeregister := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: container_runtime.GetWriteNamespace(),
 			},
-			Spec: zephyr_discovery_types.KubernetesClusterSpec{
+			Spec: smh_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
 				WriteNamespace: remoteWriteNamespace,
 			},
@@ -272,12 +272,12 @@ var _ = Describe("Cluster Deregistration", func() {
 		mockCsrAgentInstaller := mock_installation.NewMockCsrAgentInstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		configLookup := mock_kubeconfig2.NewMockKubeConfigLookup(ctrl)
-		kubeClusterClient := mock_zephyr_discovery_clients.NewMockKubernetesClusterClient(ctrl)
+		kubeClusterClient := mock_smh_discovery_clients.NewMockKubernetesClusterClient(ctrl)
 		localSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		remoteSecretClient := mock_k8s_core_clients.NewMockSecretClient(ctrl)
 		dynamicClientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
 		remoteServiceAccountClient := mock_k8s_core_clients.NewMockServiceAccountClient(ctrl)
-		kubeConfigSecretRef := &zephyr_core_types.ResourceRef{
+		kubeConfigSecretRef := &smh_core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: container_runtime.GetWriteNamespace(),
 		}
@@ -286,12 +286,12 @@ var _ = Describe("Cluster Deregistration", func() {
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
-		clusterToDeregister := &zephyr_discovery.KubernetesCluster{
+		clusterToDeregister := &smh_discovery.KubernetesCluster{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      remoteClusterName,
 				Namespace: container_runtime.GetWriteNamespace(),
 			},
-			Spec: zephyr_discovery_types.KubernetesClusterSpec{
+			Spec: smh_discovery_types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
 				WriteNamespace: remoteWriteNamespace,
 			},
@@ -316,7 +316,7 @@ var _ = Describe("Cluster Deregistration", func() {
 			ReleaseNamespace: clusterToDeregister.Spec.GetWriteNamespace(),
 		}).Return(nil)
 		crdRemover.EXPECT().
-			RemoveCrdGroup(ctx, clusterToDeregister.GetName(), remoteRestConfig, zephyr_security_scheme.SchemeGroupVersion).
+			RemoveCrdGroup(ctx, clusterToDeregister.GetName(), remoteRestConfig, smh_security_scheme.SchemeGroupVersion).
 			Return(false, testErr)
 		dynamicClientGetter.EXPECT().
 			GetClientForCluster(ctx, remoteClusterName).

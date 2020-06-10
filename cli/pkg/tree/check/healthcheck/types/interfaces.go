@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/url"
 
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_discovery "github.com/solo-io/service-mesh-hub/pkg/kube/discovery"
 )
@@ -47,5 +47,5 @@ type Clients struct {
 	NamespaceClient     k8s_core.NamespaceClient
 	ServerVersionClient k8s_discovery.ServerVersionClient
 	PodClient           k8s_core.PodClient
-	MeshServiceClient   zephyr_discovery.MeshServiceClient
+	MeshServiceClient   smh_discovery.MeshServiceClient
 }

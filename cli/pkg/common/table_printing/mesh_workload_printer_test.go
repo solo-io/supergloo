@@ -10,9 +10,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -22,7 +22,7 @@ var UPDATE_MESH_WORKLOAD_GOLDENS = false
 
 var _ = Describe("Mesh Workload Table Printer", func() {
 	const workloadGoldenDirectory = "workload"
-	var runTest = func(fileName string, meshWorkloads []*zephyr_discovery.MeshWorkload) {
+	var runTest = func(fileName string, meshWorkloads []*smh_discovery.MeshWorkload) {
 		goldenFilename := test_goldens.GoldenFilePath(workloadGoldenDirectory, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
@@ -45,21 +45,21 @@ var _ = Describe("Mesh Workload Table Printer", func() {
 		Entry(
 			"can print multiple mesh workloads",
 			"workloads",
-			[]*zephyr_discovery.MeshWorkload{
+			[]*smh_discovery.MeshWorkload{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "istio-mesh-1",
 					},
-					Spec: zephyr_discovery_types.MeshWorkloadSpec{
-						KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-							KubeControllerRef: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.MeshWorkloadSpec{
+						KubeController: &smh_discovery_types.MeshWorkloadSpec_KubeController{
+							KubeControllerRef: &smh_core_types.ResourceRef{
 								Name:      "deployment",
 								Namespace: "default",
 								Cluster:   "management-plane",
 							},
 							ServiceAccountName: "service-account-1",
 						},
-						Mesh: &zephyr_core_types.ResourceRef{
+						Mesh: &smh_core_types.ResourceRef{
 							Name: "istio-1",
 						},
 					},
@@ -68,9 +68,9 @@ var _ = Describe("Mesh Workload Table Printer", func() {
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "linkerd-mesh-1",
 					},
-					Spec: zephyr_discovery_types.MeshWorkloadSpec{
-						KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-							KubeControllerRef: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.MeshWorkloadSpec{
+						KubeController: &smh_discovery_types.MeshWorkloadSpec_KubeController{
+							KubeControllerRef: &smh_core_types.ResourceRef{
 								Name:      "deployment",
 								Namespace: "default",
 								Cluster:   "remote-cluster",
@@ -80,7 +80,7 @@ var _ = Describe("Mesh Workload Table Printer", func() {
 								"app":     "test",
 							},
 						},
-						Mesh: &zephyr_core_types.ResourceRef{
+						Mesh: &smh_core_types.ResourceRef{
 							Name: "istio-1",
 						}},
 				},

@@ -11,9 +11,9 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	mock_aws "github.com/solo-io/service-mesh-hub/pkg/aws/parser/mocks"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/aws/selection"
 	mock_settings "github.com/solo-io/service-mesh-hub/pkg/aws/selection/mocks"
@@ -22,9 +22,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	aws4 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
-	zephyr_discovery_appmesh "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/appmesh"
+	smh_discovery_appmesh "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/rest/appmesh"
 	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -53,9 +53,9 @@ var _ = Describe("Reconciler", func() {
 		mockAppMeshClient = mock_appmesh_clients.NewMockAppMeshAPI(ctrl)
 		mockSettingsHelperClient = mock_settings2.NewMockSettingsHelperClient(ctrl)
 		mockAwsSelector = mock_settings.NewMockAwsSelector(ctrl)
-		appMeshDiscoveryReconciler = zephyr_discovery_appmesh.NewAppMeshDiscoveryReconciler(
+		appMeshDiscoveryReconciler = smh_discovery_appmesh.NewAppMeshDiscoveryReconciler(
 			nil,
-			func(client client.Client) zephyr_discovery.MeshClient {
+			func(client client.Client) smh_discovery.MeshClient {
 				return mockMeshClient
 			},
 			mockArnParser,
@@ -71,43 +71,43 @@ var _ = Describe("Reconciler", func() {
 		ctrl.Finish()
 	})
 
-	var expectReconcileMeshesByRegion = func(region string, selectors []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector) {
+	var expectReconcileMeshesByRegion = func(region string, selectors []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector) {
 		page1Input := &appmesh.ListMeshesInput{
-			Limit: zephyr_discovery_appmesh.NumItemsPerRequest,
+			Limit: smh_discovery_appmesh.NumItemsPerRequest,
 		}
 		page2Input := &appmesh.ListMeshesInput{
-			Limit:     zephyr_discovery_appmesh.NumItemsPerRequest,
+			Limit:     smh_discovery_appmesh.NumItemsPerRequest,
 			NextToken: aws2.String("page-2-token"),
 		}
 		meshRefs := []*appmesh.MeshRef{
 			{
 				MeshName:  aws2.String("mesh-name-1"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-1", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:smh_discovery_appmesh:%s:%s:mesh/smh_discovery_appmesh-1", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
 				MeshName:  aws2.String("mesh-name-2"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-2", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:smh_discovery_appmesh:%s:%s:mesh/smh_discovery_appmesh-2", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
 				MeshName:  aws2.String("mesh-name-3"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-3", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:smh_discovery_appmesh:%s:%s:mesh/smh_discovery_appmesh-3", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
 				MeshName:  aws2.String("mesh-name-4"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-4", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:smh_discovery_appmesh:%s:%s:mesh/smh_discovery_appmesh-4", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
 				MeshName:  aws2.String("mesh-name-5"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-5", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:smh_discovery_appmesh:%s:%s:mesh/smh_discovery_appmesh-5", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 			{
 				MeshName:  aws2.String("mesh-name-6"),
-				Arn:       aws2.String(fmt.Sprintf("arn:aws:zephyr_discovery_appmesh:%s:%s:mesh/zephyr_discovery_appmesh-6", region, awsAccountID)),
+				Arn:       aws2.String(fmt.Sprintf("arn:aws:smh_discovery_appmesh:%s:%s:mesh/smh_discovery_appmesh-6", region, awsAccountID)),
 				MeshOwner: aws2.String(awsAccountID),
 			},
 		}
@@ -143,14 +143,14 @@ var _ = Describe("Reconciler", func() {
 			mockAwsSelector.EXPECT().AppMeshMatchedBySelectors(appmeshRef, tagsOutput.Tags, selectors).Return(true, nil)
 		}
 		for _, meshRef := range meshRefs {
-			mesh := &zephyr_discovery.Mesh{
+			mesh := &smh_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      metadata.BuildAppMeshName(aws2.StringValue(meshRef.MeshName), region, aws2.StringValue(meshRef.MeshOwner)),
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_discovery_types.MeshSpec{
-					MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-						AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{
+				Spec: smh_discovery_types.MeshSpec{
+					MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+						AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{
 							Name:         *meshRef.MeshName,
 							AwsAccountId: awsAccountID,
 							Region:       region,
@@ -167,23 +167,23 @@ var _ = Describe("Reconciler", func() {
 				CreateMesh(ctx, mesh).
 				Return(nil)
 		}
-		existingMeshes := &zephyr_discovery.MeshList{
-			Items: []zephyr_discovery.Mesh{
+		existingMeshes := &smh_discovery.MeshList{
+			Items: []smh_discovery.Mesh{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{ // should not be deleted
 						Name: metadata.BuildAppMeshName(aws2.StringValue(meshRefs[0].MeshName), region, aws2.StringValue(meshRefs[0].MeshOwner)),
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}}},
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{}}}},
 				{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "non-existent-1"},
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}}}, // should be deleted
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{}}}}, // should be deleted
 				{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "non-existent-2"},
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}}}, // should be deleted
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{}}}}, // should be deleted
 			},
 		}
 		mockMeshClient.EXPECT().ListMesh(ctx).Return(existingMeshes, nil)
@@ -197,19 +197,19 @@ var _ = Describe("Reconciler", func() {
 		accountID := "accountID"
 		region := "region"
 		selectors := settings_utils.AwsSelectorsByRegion{
-			region: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
-					MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
-						Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
+					MatcherType: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+						Matcher: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
 							Regions: []string{region},
 						},
 					},
 				},
 			},
 		}
-		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
+		settings := &smh_settings_types.SettingsSpec_AwsAccount{
 			AccountId:     accountID,
-			MeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
+			MeshDiscovery: &smh_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
 		}
 		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetMeshDiscovery()).Return(true)
 		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
@@ -224,17 +224,17 @@ var _ = Describe("Reconciler", func() {
 		accountID := "accountID"
 		region := "region"
 		selectors := settings_utils.AwsSelectorsByRegion{
-			region: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
-					MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
-						Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
+					MatcherType: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+						Matcher: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
 							Regions: []string{region},
 						},
 					},
 				},
 			},
 		}
-		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
+		settings := &smh_settings_types.SettingsSpec_AwsAccount{
 			AccountId: accountID,
 		}
 		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetMeshDiscovery()).Return(true)
@@ -250,20 +250,20 @@ var _ = Describe("Reconciler", func() {
 		accountID := "accountID"
 		region := "region"
 		selectors := settings_utils.AwsSelectorsByRegion{
-			region: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
+			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
-					MatcherType: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
-						Matcher: &zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
+					MatcherType: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher_{
+						Matcher: &smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector_Matcher{
 							Regions: []string{region},
 						},
 					},
 				},
 			},
 		}
-		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
+		settings := &smh_settings_types.SettingsSpec_AwsAccount{
 			AccountId: accountID,
-			MeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{
-				ResourceSelectors: []*zephyr_settings_types.SettingsSpec_AwsAccount_ResourceSelector{},
+			MeshDiscovery: &smh_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{
+				ResourceSelectors: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{},
 			},
 		}
 		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetMeshDiscovery()).Return(true)
@@ -277,39 +277,39 @@ var _ = Describe("Reconciler", func() {
 
 	It("should not reconcile if mesh_discovery is disabled and clear all Appmeshes from SMH", func() {
 		accountID := "accountID"
-		settings := &zephyr_settings_types.SettingsSpec_AwsAccount{
+		settings := &smh_settings_types.SettingsSpec_AwsAccount{
 			AccountId: "",
-			MeshDiscovery: &zephyr_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{
+			MeshDiscovery: &smh_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{
 				Disabled: true,
 			},
 		}
 		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
 
-		existingMeshes := &zephyr_discovery.MeshList{
-			Items: []zephyr_discovery.Mesh{
+		existingMeshes := &smh_discovery.MeshList{
+			Items: []smh_discovery.Mesh{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "appmesh1",
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{}}},
 				},
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "appmesh2",
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{}}},
 				},
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "appmesh3",
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{}}},
 				},
 			},
 		}
@@ -326,31 +326,31 @@ var _ = Describe("Reconciler", func() {
 		accountID := "accountID"
 		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(nil, nil)
 
-		existingMeshes := &zephyr_discovery.MeshList{
-			Items: []zephyr_discovery.Mesh{
+		existingMeshes := &smh_discovery.MeshList{
+			Items: []smh_discovery.Mesh{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "appmesh1",
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{}}},
 				},
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "appmesh2",
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{}}},
 				},
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "appmesh3",
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_AwsAppMesh_{
-							AwsAppMesh: &zephyr_discovery_types.MeshSpec_AwsAppMesh{}}},
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{}}},
 				},
 			},
 		}

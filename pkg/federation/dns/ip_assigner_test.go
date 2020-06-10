@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
@@ -23,7 +23,7 @@ var _ = Describe("Federation Decider", func() {
 		clusterName1 = "cluster-1"
 		clusterName2 = "cluster-2"
 		clusterName3 = "cluster-3"
-		cmRef        = &zephyr_core_types.ResourceRef{
+		cmRef        = &smh_core_types.ResourceRef{
 			Name:      dns.IpRecordName,
 			Namespace: container_runtime.GetWriteNamespace(),
 		}

@@ -6,9 +6,9 @@ import (
 	aws2 "github.com/aws/aws-sdk-go/aws"
 	appmesh2 "github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/hashicorp/go-multierror"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 )
 
@@ -39,8 +39,8 @@ func NewAppmeshTranslationReconciler(
 // See https://github.com/solo-io/service-mesh-hub/issues/750
 func (a *appmeshTranslationReconciler) Reconcile(
 	ctx context.Context,
-	mesh *zephyr_discovery.Mesh,
-	vm *zephyr_networking.VirtualMesh,
+	mesh *smh_discovery.Mesh,
+	vm *smh_networking.VirtualMesh,
 ) error {
 	if mesh.Spec.GetAwsAppMesh() == nil {
 		return nil
@@ -59,7 +59,7 @@ func (a *appmeshTranslationReconciler) Reconcile(
 */
 func (a *appmeshTranslationReconciler) reconcileWithLimitedRoutability(
 	ctx context.Context,
-	mesh *zephyr_discovery.Mesh,
+	mesh *smh_discovery.Mesh,
 ) error {
 	servicesToBackingWorkloads, workloadsToBackingServices, err := a.dao.GetAllServiceWorkloadPairsForMesh(ctx, mesh)
 	if err != nil {
@@ -75,7 +75,7 @@ func (a *appmeshTranslationReconciler) reconcileWithLimitedRoutability(
 */
 func (a *appmeshTranslationReconciler) reconcileWithCompleteRoutability(
 	ctx context.Context,
-	mesh *zephyr_discovery.Mesh,
+	mesh *smh_discovery.Mesh,
 ) error {
 	servicesToBackingWorkloads, workloadsToBackingServices, err := a.dao.GetAllServiceWorkloadPairsForMesh(ctx, mesh)
 	if err != nil {
@@ -91,10 +91,10 @@ func (a *appmeshTranslationReconciler) reconcileWithCompleteRoutability(
 
 func (a *appmeshTranslationReconciler) reconcile(
 	ctx context.Context,
-	mesh *zephyr_discovery.Mesh,
-	servicesToBackingWorkloads map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload,
-	workloadsToBackingServices map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService,
-	workloadsToUpstreamServices map[string]zephyr_discovery_sets.MeshServiceSet,
+	mesh *smh_discovery.Mesh,
+	servicesToBackingWorkloads map[*smh_discovery.MeshService][]*smh_discovery.MeshWorkload,
+	workloadsToBackingServices map[*smh_discovery.MeshWorkload][]*smh_discovery.MeshService,
+	workloadsToUpstreamServices map[string]smh_discovery_sets.MeshServiceSet,
 ) error {
 	var virtualServices []*appmesh2.VirtualServiceData
 	var virtualRouters []*appmesh2.VirtualRouterData
@@ -120,7 +120,7 @@ func (a *appmeshTranslationReconciler) reconcile(
 		if len(services) == 0 {
 			continue
 		}
-		var upstreamServicesList []*zephyr_discovery.MeshService
+		var upstreamServicesList []*smh_discovery.MeshService
 		upstreamServices := workloadsToUpstreamServices[selection.ToUniqueSingleClusterString(workload.ObjectMeta)]
 		if upstreamServices != nil {
 			upstreamServicesList = upstreamServices.List()

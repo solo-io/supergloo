@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
+	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/resolver"
 	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
@@ -48,18 +48,18 @@ func MeshNetworkingContextProvider(
 }
 
 type MeshNetworkingSnapshotContext struct {
-	MeshWorkloadEventWatcher          zephyr_discovery_controller.MeshWorkloadEventWatcher
-	MeshServiceEventWatcher           zephyr_discovery_controller.MeshServiceEventWatcher
-	VirtualMeshEventWatcher           zephyr_networking_controller.VirtualMeshEventWatcher
+	MeshWorkloadEventWatcher          smh_discovery_controller.MeshWorkloadEventWatcher
+	MeshServiceEventWatcher           smh_discovery_controller.MeshServiceEventWatcher
+	VirtualMeshEventWatcher           smh_networking_controller.VirtualMeshEventWatcher
 	SnapshotValidator                 networking_snapshot.MeshNetworkingSnapshotValidator
 	VMCSRSnapshotListener             cert_manager.VMCSRSnapshotListener
 	FederationDeciderSnapshotListener decider.FederationDeciderSnapshotListener
 }
 
 func MeshNetworkingSnapshotContextProvider(
-	meshWorkloadEventWatcher zephyr_discovery_controller.MeshWorkloadEventWatcher,
-	meshServiceEventWatcher zephyr_discovery_controller.MeshServiceEventWatcher,
-	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher,
+	meshWorkloadEventWatcher smh_discovery_controller.MeshWorkloadEventWatcher,
+	meshServiceEventWatcher smh_discovery_controller.MeshServiceEventWatcher,
+	virtualMeshEventWatcher smh_networking_controller.VirtualMeshEventWatcher,
 	snapshotValidator networking_snapshot.MeshNetworkingSnapshotValidator,
 	vmcsrSnapshotListener cert_manager.VMCSRSnapshotListener,
 	federationDeciderSnapshotListener decider.FederationDeciderSnapshotListener,

@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
@@ -59,7 +59,7 @@ type istioMeshScanner struct {
 	configMapClientFactory k8s_core.ConfigMapClientFactory
 }
 
-func (i *istioMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *k8s_apps_types.Deployment, clusterScopedClient client.Client) (*zephyr_discovery.Mesh, error) {
+func (i *istioMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *k8s_apps_types.Deployment, clusterScopedClient client.Client) (*smh_discovery.Mesh, error) {
 	istioDeployment, err := i.detectIstioDeployment(clusterName, deployment)
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (i *istioMeshScanner) ScanDeployment(ctx context.Context, clusterName strin
 		return nil, err
 	}
 
-	return &zephyr_discovery.Mesh{
+	return &smh_discovery.Mesh{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      istioDeployment.Name(),
 			Namespace: container_runtime.GetWriteNamespace(),
@@ -98,17 +98,17 @@ func (*istioMeshScanner) buildMeshSpec(
 	trustDomain string,
 	citadelNamespace string,
 	citadelServiceAccountName string,
-) (*zephyr_discovery_types.MeshSpec, error) {
-	cluster := &zephyr_core_types.ResourceRef{
+) (*smh_discovery_types.MeshSpec, error) {
+	cluster := &smh_core_types.ResourceRef{
 		Name:      clusterName,
 		Namespace: container_runtime.GetWriteNamespace(),
 	}
-	istioMetadata := &zephyr_discovery_types.MeshSpec_IstioMesh{
-		Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+	istioMetadata := &smh_discovery_types.MeshSpec_IstioMesh{
+		Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 			InstallationNamespace: deployment.Namespace,
 			Version:               deployment.Version,
 		},
-		CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+		CitadelInfo: &smh_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
 			TrustDomain:      trustDomain,
 			CitadelNamespace: citadelNamespace,
 			// This assumes that the istiod deployment is the cert provider
@@ -117,19 +117,19 @@ func (*istioMeshScanner) buildMeshSpec(
 	}
 
 	if strings.HasPrefix(deployment.Version, "1.5") {
-		return &zephyr_discovery_types.MeshSpec{
+		return &smh_discovery_types.MeshSpec{
 			Cluster: cluster,
-			MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-				Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
+			MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+				Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
 					Metadata: istioMetadata,
 				},
 			},
 		}, nil
 	} else if strings.HasPrefix(deployment.Version, "1.6") {
-		return &zephyr_discovery_types.MeshSpec{
+		return &smh_discovery_types.MeshSpec{
 			Cluster: cluster,
-			MeshType: &zephyr_discovery_types.MeshSpec_Istio1_6_{
-				Istio1_6: &zephyr_discovery_types.MeshSpec_Istio1_6{
+			MeshType: &smh_discovery_types.MeshSpec_Istio1_6_{
+				Istio1_6: &smh_discovery_types.MeshSpec_Istio1_6{
 					Metadata: istioMetadata,
 				},
 			},

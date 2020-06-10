@@ -5,9 +5,9 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
 	"go.uber.org/zap"
@@ -25,7 +25,7 @@ var (
 
 func NewVirtualMeshValidator(
 	meshFinder VirtualMeshFinder,
-	virtualMeshClient zephyr_networking.VirtualMeshClient,
+	virtualMeshClient smh_networking.VirtualMeshClient,
 ) networking_snapshot.MeshNetworkingSnapshotValidator {
 	return &virtualMeshValidator{
 		meshFinder:        meshFinder,
@@ -35,42 +35,42 @@ func NewVirtualMeshValidator(
 
 type virtualMeshValidator struct {
 	meshFinder        VirtualMeshFinder
-	virtualMeshClient zephyr_networking.VirtualMeshClient
+	virtualMeshClient smh_networking.VirtualMeshClient
 }
 
-func (m *virtualMeshValidator) ValidateVirtualMeshUpsert(ctx context.Context, obj *zephyr_networking.VirtualMesh, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateVirtualMeshUpsert(ctx context.Context, obj *smh_networking.VirtualMesh, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	err := m.validate(ctx, obj)
 	m.updateVirtualMeshStatus(ctx, obj)
 	return err == nil
 }
 
-func (m *virtualMeshValidator) ValidateVirtualMeshDelete(ctx context.Context, obj *zephyr_networking.VirtualMesh, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateVirtualMeshDelete(ctx context.Context, obj *smh_networking.VirtualMesh, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	err := m.validate(ctx, obj)
 	return err == nil
 }
 
-func (m *virtualMeshValidator) ValidateMeshServiceUpsert(ctx context.Context, obj *zephyr_discovery.MeshService, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateMeshServiceUpsert(ctx context.Context, obj *smh_discovery.MeshService, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	return true
 }
 
-func (m *virtualMeshValidator) ValidateMeshServiceDelete(ctx context.Context, obj *zephyr_discovery.MeshService, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateMeshServiceDelete(ctx context.Context, obj *smh_discovery.MeshService, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	return true
 }
 
-func (m *virtualMeshValidator) ValidateMeshWorkloadUpsert(ctx context.Context, obj *zephyr_discovery.MeshWorkload, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateMeshWorkloadUpsert(ctx context.Context, obj *smh_discovery.MeshWorkload, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	return true
 }
 
-func (m *virtualMeshValidator) ValidateMeshWorkloadDelete(ctx context.Context, obj *zephyr_discovery.MeshWorkload, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
+func (m *virtualMeshValidator) ValidateMeshWorkloadDelete(ctx context.Context, obj *smh_discovery.MeshWorkload, snapshot *networking_snapshot.MeshNetworkingSnapshot) bool {
 	return true
 }
 
-func (m *virtualMeshValidator) validate(ctx context.Context, vm *zephyr_networking.VirtualMesh) error {
+func (m *virtualMeshValidator) validate(ctx context.Context, vm *smh_networking.VirtualMesh) error {
 	// TODO: Currently we are listing meshes from all namespaces, however, the namespace(s) should be configurable.
 	matchingMeshes, err := m.meshFinder.GetMeshesForVirtualMesh(ctx, vm)
 	if err != nil {
-		vm.Status.ConfigStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_INVALID,
+		vm.Status.ConfigStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_INVALID,
 			Message: err.Error(),
 		}
 		return err
@@ -80,8 +80,8 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *zephyr_networki
 	for _, v := range matchingMeshes {
 		if v.Spec.GetIstio1_5() == nil && v.Spec.GetIstio1_6() == nil && v.Spec.GetAwsAppMesh() == nil {
 			wrapped := MeshTypeNotSupportedError(v.GetName())
-			vm.Status.ConfigStatus = &zephyr_core_types.Status{
-				State:   zephyr_core_types.Status_INVALID,
+			vm.Status.ConfigStatus = &smh_core_types.Status{
+				State:   smh_core_types.Status_INVALID,
 				Message: wrapped.Error(),
 			}
 			return wrapped
@@ -99,15 +99,15 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *zephyr_networki
 		return OnlyHomogenousVirtualMeshesSupported(vm.Name, vm.Namespace, representedMeshTypes.Len())
 	}
 
-	vm.Status.ConfigStatus = &zephyr_core_types.Status{
-		State: zephyr_core_types.Status_ACCEPTED,
+	vm.Status.ConfigStatus = &smh_core_types.Status{
+		State: smh_core_types.Status_ACCEPTED,
 	}
 
 	return nil
 }
 
 // once the virtual mesh has had its config status updated, call this function to write it into the cluster
-func (m *virtualMeshValidator) updateVirtualMeshStatus(ctx context.Context, virtualMesh *zephyr_networking.VirtualMesh) {
+func (m *virtualMeshValidator) updateVirtualMeshStatus(ctx context.Context, virtualMesh *smh_networking.VirtualMesh) {
 	logger := contextutils.LoggerFrom(ctx)
 
 	err := m.virtualMeshClient.UpdateVirtualMeshStatus(ctx, virtualMesh)

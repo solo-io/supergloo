@@ -3,8 +3,8 @@ package meshes
 import (
 	"context"
 
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/dns"
 )
 
@@ -17,8 +17,8 @@ type MeshFederationClient interface {
 	FederateServiceSide(
 		ctx context.Context,
 		installationNamespace string,
-		virtualMesh *zephyr_networking.VirtualMesh,
-		meshService *zephyr_discovery.MeshService,
+		virtualMesh *smh_networking.VirtualMesh,
+		meshService *smh_discovery.MeshService,
 	) (eap dns.ExternalAccessPoint, err error)
 
 	// set up appropriate resources in the cluster of the mesh workload (the client cluster) where the traffic will originate
@@ -26,7 +26,7 @@ type MeshFederationClient interface {
 		ctx context.Context,
 		installationNamespace string,
 		eap dns.ExternalAccessPoint,
-		meshService *zephyr_discovery.MeshService,
-		meshWorkload *zephyr_discovery.MeshWorkload,
+		meshService *smh_discovery.MeshService,
+		meshWorkload *smh_discovery.MeshWorkload,
 	) error
 }

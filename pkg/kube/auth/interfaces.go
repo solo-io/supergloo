@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_rbac_types "k8s.io/api/rbac/v1"
@@ -28,7 +28,7 @@ type RemoteAuthorityConfigCreator interface {
 	ConfigFromRemoteServiceAccount(
 		ctx context.Context,
 		targetClusterCfg *rest.Config,
-		serviceAccountRef *zephyr_core_types.ResourceRef,
+		serviceAccountRef *smh_core_types.ResourceRef,
 	) (*rest.Config, error)
 }
 
@@ -39,7 +39,7 @@ type ClusterAuthorization interface {
 	BuildRemoteBearerToken(
 		ctx context.Context,
 		targetClusterCfg *rest.Config,
-		serviceAccountRef *zephyr_core_types.ResourceRef,
+		serviceAccountRef *smh_core_types.ResourceRef,
 	) (bearerToken string, err error)
 }
 
@@ -51,7 +51,7 @@ type RemoteAuthorityManager interface {
 	// NB: if role assignment fails, the service account is left in the cluster; this is not an atomic operation
 	ApplyRemoteServiceAccount(
 		ctx context.Context,
-		newServiceAccountRef *zephyr_core_types.ResourceRef,
+		newServiceAccountRef *smh_core_types.ResourceRef,
 		roles []*k8s_rbac_types.ClusterRole,
 	) (*k8s_core_types.ServiceAccount, error)
 }

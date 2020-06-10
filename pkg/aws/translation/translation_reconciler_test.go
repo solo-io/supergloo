@@ -8,11 +8,11 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	types2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	types2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/translation"
 	mock_translation "github.com/solo-io/service-mesh-hub/pkg/aws/translation/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
@@ -26,7 +26,7 @@ var _ = Describe("TranslationReconciler", func() {
 		mockAppmeshTranslator        *mock_translation.MockAppmeshTranslator
 		mockDao                      *mock_translation.MockAppmeshTranslationDao
 		appmeshTranslationReconciler translation.AppmeshTranslationReconciler
-		mesh                         = &zephyr_discovery.Mesh{
+		mesh                         = &smh_discovery.Mesh{
 			Spec: types.MeshSpec{
 				MeshType: &types.MeshSpec_AwsAppMesh_{
 					AwsAppMesh: &types.MeshSpec_AwsAppMesh{
@@ -51,17 +51,17 @@ var _ = Describe("TranslationReconciler", func() {
 
 	// TODO: restore test when SMH API exposes sidecar configuration options and global access control can be enabled
 	//It("should reconcile with global access control enabled", func() {
-	//	meshService1 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service1"}}
-	//	meshService2 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service2"}}
-	//	meshService3 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service3"}}
-	//	meshService4 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service4"}}
-	//	meshService5 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service5"}}
-	//	meshService6 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service6"}}
+	//	meshService1 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service1"}}
+	//	meshService2 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service2"}}
+	//	meshService3 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service3"}}
+	//	meshService4 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service4"}}
+	//	meshService5 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service5"}}
+	//	meshService6 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service6"}}
 	//
-	//	meshWorkload1 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload1"}}
-	//	meshWorkload2 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload2"}}
-	//	meshWorkload3 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload3"}}
-	//	servicesToBackingWorkloads := map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload{
+	//	meshWorkload1 := &smh_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload1"}}
+	//	meshWorkload2 := &smh_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload2"}}
+	//	meshWorkload3 := &smh_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload3"}}
+	//	servicesToBackingWorkloads := map[*smh_discovery.MeshService][]*smh_discovery.MeshWorkload{
 	//		meshService1: {
 	//			{ObjectMeta: v1.ObjectMeta{Name: "service1-workload1"}},
 	//			{ObjectMeta: v1.ObjectMeta{Name: "service1-workload2"}},
@@ -74,7 +74,7 @@ var _ = Describe("TranslationReconciler", func() {
 	//			{ObjectMeta: v1.ObjectMeta{Name: "service3-workload3"}},
 	//		},
 	//	}
-	//	workloadsToBackingServices := map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService{
+	//	workloadsToBackingServices := map[*smh_discovery.MeshWorkload][]*smh_discovery.MeshService{
 	//		meshWorkload1: {
 	//			{ObjectMeta: v1.ObjectMeta{Name: "workload1-service1"}},
 	//			{ObjectMeta: v1.ObjectMeta{Name: "workload1-service3"}},
@@ -87,12 +87,12 @@ var _ = Describe("TranslationReconciler", func() {
 	//			{ObjectMeta: v1.ObjectMeta{Name: "workload3-service3"}},
 	//		},
 	//	}
-	//	servicesWithACP := zephyr_discovery_sets.NewMeshServiceSet(meshService1, meshService2)
-	//	workloadsWithACP := zephyr_discovery_sets.NewMeshWorkloadSet(meshWorkload1, meshWorkload3)
-	//	workloadsToUpstreamServices := map[string]zephyr_discovery_sets.MeshServiceSet{
-	//		selection.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta): zephyr_discovery_sets.NewMeshServiceSet(meshService4),
-	//		selection.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta): zephyr_discovery_sets.NewMeshServiceSet(meshService5, meshService6),
-	//		selection.ToUniqueSingleClusterString(meshWorkload2.ObjectMeta): zephyr_discovery_sets.NewMeshServiceSet(meshService1), // excluded
+	//	servicesWithACP := smh_discovery_sets.NewMeshServiceSet(meshService1, meshService2)
+	//	workloadsWithACP := smh_discovery_sets.NewMeshWorkloadSet(meshWorkload1, meshWorkload3)
+	//	workloadsToUpstreamServices := map[string]smh_discovery_sets.MeshServiceSet{
+	//		selection.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta): smh_discovery_sets.NewMeshServiceSet(meshService4),
+	//		selection.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta): smh_discovery_sets.NewMeshServiceSet(meshService5, meshService6),
+	//		selection.ToUniqueSingleClusterString(meshWorkload2.ObjectMeta): smh_discovery_sets.NewMeshServiceSet(meshService1), // excluded
 	//	}
 	//	mockDao.EXPECT().GetAllServiceWorkloadPairsForMesh(ctx, mesh).Return(servicesToBackingWorkloads, workloadsToBackingServices, nil)
 	//	mockDao.EXPECT().GetServicesWithACP(ctx, mesh).Return(servicesWithACP, nil)
@@ -156,17 +156,17 @@ var _ = Describe("TranslationReconciler", func() {
 	//})
 
 	It("should reconcile with global access control disabled", func() {
-		meshService1 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service1"}}
-		meshService2 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service2"}}
-		meshService3 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service3"}}
-		meshService4 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service4"}}
-		meshService5 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service5"}}
-		meshService6 := &zephyr_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service6"}}
+		meshService1 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service1"}}
+		meshService2 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service2"}}
+		meshService3 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service3"}}
+		meshService4 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service4"}}
+		meshService5 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service5"}}
+		meshService6 := &smh_discovery.MeshService{ObjectMeta: v1.ObjectMeta{Name: "service6"}}
 
-		meshWorkload1 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload1"}}
-		meshWorkload2 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload2"}}
-		meshWorkload3 := &zephyr_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload3"}}
-		servicesToBackingWorkloads := map[*zephyr_discovery.MeshService][]*zephyr_discovery.MeshWorkload{
+		meshWorkload1 := &smh_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload1"}}
+		meshWorkload2 := &smh_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload2"}}
+		meshWorkload3 := &smh_discovery.MeshWorkload{ObjectMeta: v1.ObjectMeta{Name: "workload3"}}
+		servicesToBackingWorkloads := map[*smh_discovery.MeshService][]*smh_discovery.MeshWorkload{
 			meshService1: {
 				{ObjectMeta: v1.ObjectMeta{Name: "service1-workload1"}},
 				{ObjectMeta: v1.ObjectMeta{Name: "service1-workload2"}},
@@ -179,7 +179,7 @@ var _ = Describe("TranslationReconciler", func() {
 				{ObjectMeta: v1.ObjectMeta{Name: "service3-workload3"}},
 			},
 		}
-		workloadsToBackingServices := map[*zephyr_discovery.MeshWorkload][]*zephyr_discovery.MeshService{
+		workloadsToBackingServices := map[*smh_discovery.MeshWorkload][]*smh_discovery.MeshService{
 			meshWorkload1: {
 				{ObjectMeta: v1.ObjectMeta{Name: "workload1-service1"}},
 				{ObjectMeta: v1.ObjectMeta{Name: "workload1-service3"}},
@@ -192,9 +192,9 @@ var _ = Describe("TranslationReconciler", func() {
 				{ObjectMeta: v1.ObjectMeta{Name: "workload3-service3"}},
 			},
 		}
-		workloadsToUpstreamServices := map[string]zephyr_discovery_sets.MeshServiceSet{
-			selection.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta): zephyr_discovery_sets.NewMeshServiceSet(meshService4),
-			selection.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta): zephyr_discovery_sets.NewMeshServiceSet(meshService5, meshService6),
+		workloadsToUpstreamServices := map[string]smh_discovery_sets.MeshServiceSet{
+			selection.ToUniqueSingleClusterString(meshWorkload1.ObjectMeta): smh_discovery_sets.NewMeshServiceSet(meshService4),
+			selection.ToUniqueSingleClusterString(meshWorkload3.ObjectMeta): smh_discovery_sets.NewMeshServiceSet(meshService5, meshService6),
 		}
 		mockDao.EXPECT().GetAllServiceWorkloadPairsForMesh(ctx, mesh).Return(servicesToBackingWorkloads, workloadsToBackingServices, nil)
 		mockDao.EXPECT().GetWorkloadsToAllUpstreamServices(ctx, mesh).Return(workloadsToUpstreamServices, nil)

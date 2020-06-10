@@ -8,13 +8,13 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
@@ -25,13 +25,13 @@ import (
 )
 
 var (
-	UnsupportedMeshTypeError = func(mesh *zephyr_discovery.Mesh) error {
+	UnsupportedMeshTypeError = func(mesh *smh_discovery.Mesh) error {
 		return eris.Errorf("unsupported mesh type: %T found", mesh.Spec.GetMeshType())
 	}
 	UnableToGatherCertConfigInfo = func(
 		err error,
-		mesh *zephyr_discovery.Mesh,
-		vm *zephyr_networking.VirtualMesh,
+		mesh *smh_discovery.Mesh,
+		vm *smh_networking.VirtualMesh,
 	) error {
 		return eris.Wrapf(err, "unable to produce cert config info for mesh %s in virtual mesh %s",
 			mesh.GetName(), vm.GetName())
@@ -39,18 +39,18 @@ var (
 )
 
 type virtualMeshCsrManager struct {
-	meshClient              zephyr_discovery.MeshClient
+	meshClient              smh_discovery.MeshClient
 	meshRefFinder           vm_validation.VirtualMeshFinder
-	csrClientFactory        zephyr_security.VirtualMeshCertificateSigningRequestClientFactory
+	csrClientFactory        smh_security.VirtualMeshCertificateSigningRequestClientFactory
 	dynamicClientGetter     multicluster.DynamicClientGetter
 	istioCertConfigProducer IstioCertConfigProducer
 }
 
 func NewVirtualMeshCsrProcessor(
 	dynamicClientGetter multicluster.DynamicClientGetter,
-	meshClient zephyr_discovery.MeshClient,
+	meshClient smh_discovery.MeshClient,
 	meshRefFinder vm_validation.VirtualMeshFinder,
-	csrClientFactory zephyr_security.VirtualMeshCertificateSigningRequestClientFactory,
+	csrClientFactory smh_security.VirtualMeshCertificateSigningRequestClientFactory,
 	istioCertConfigProducer IstioCertConfigProducer,
 ) VirtualMeshCertificateManager {
 	return &virtualMeshCsrManager{
@@ -64,49 +64,49 @@ func NewVirtualMeshCsrProcessor(
 
 func (m *virtualMeshCsrManager) InitializeCertificateForVirtualMesh(
 	ctx context.Context,
-	vm *zephyr_networking.VirtualMesh,
-) zephyr_networking_types.VirtualMeshStatus {
+	vm *smh_networking.VirtualMesh,
+) smh_networking_types.VirtualMeshStatus {
 	logger := contextutils.LoggerFrom(ctx)
 	meshes, err := m.meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 	if err != nil {
 		logger.Debugf("Hit error case 1 %s", err.Error())
-		vm.Status.CertificateStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_PROCESSING_ERROR,
+		vm.Status.CertificateStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
 		}
 		return vm.Status
 	}
 	if err = m.attemptCsrCreate(ctx, vm, meshes); err != nil {
 		logger.Debugf("Hit error case 2 %s", err.Error())
-		vm.Status.CertificateStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_PROCESSING_ERROR,
+		vm.Status.CertificateStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
 		}
 		return vm.Status
 	}
 	logger.Debugf("Accepted")
-	vm.Status.CertificateStatus = &zephyr_core_types.Status{
-		State: zephyr_core_types.Status_ACCEPTED,
+	vm.Status.CertificateStatus = &smh_core_types.Status{
+		State: smh_core_types.Status_ACCEPTED,
 	}
 	return vm.Status
 }
 
 func (m *virtualMeshCsrManager) attemptCsrCreate(
 	ctx context.Context,
-	vm *zephyr_networking.VirtualMesh,
-	meshes []*zephyr_discovery.Mesh,
+	vm *smh_networking.VirtualMesh,
+	meshes []*smh_discovery.Mesh,
 ) error {
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Debugf("Got %d member meshes", len(meshes))
 	for _, mesh := range meshes {
 		logger.Debugf("Processing mesh %s.%s", mesh.Name, mesh.Namespace)
 		var (
-			certConfig *zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig
-			meshType   zephyr_core_types.MeshType
+			certConfig *smh_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig
+			meshType   smh_core_types.MeshType
 			err        error
 		)
 		switch mesh.Spec.GetMeshType().(type) {
-		case *zephyr_discovery_types.MeshSpec_Istio1_5_, *zephyr_discovery_types.MeshSpec_Istio1_6_:
+		case *smh_discovery_types.MeshSpec_Istio1_5_, *smh_discovery_types.MeshSpec_Istio1_6_:
 			meshType, err = metadata.MeshToMeshType(mesh)
 			if err != nil {
 				return err
@@ -143,20 +143,20 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 			continue
 		}
 
-		if err = csrClient.CreateVirtualMeshCertificateSigningRequest(ctx, &zephyr_security.VirtualMeshCertificateSigningRequest{
+		if err = csrClient.CreateVirtualMeshCertificateSigningRequest(ctx, &smh_security.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()),
 				Namespace: container_runtime.GetWriteNamespace(),
 			},
-			Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
-				VirtualMeshRef: &zephyr_core_types.ResourceRef{
+			Spec: smh_security_types.VirtualMeshCertificateSigningRequestSpec{
+				VirtualMeshRef: &smh_core_types.ResourceRef{
 					Name:      vm.GetName(),
 					Namespace: vm.GetNamespace(),
 				},
 				CertConfig: certConfig,
 			},
-			Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &zephyr_core_types.Status{
+			Status: smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+				ComputedStatus: &smh_core_types.Status{
 					Message: "awaiting automated csr generation",
 				},
 			},

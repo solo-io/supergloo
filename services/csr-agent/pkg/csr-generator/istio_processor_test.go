@@ -8,16 +8,16 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
 	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/mocks"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	mock_csr_agent_controller "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator/mocks"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
-	mock_security_config "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.zephyr.solo.io/v1alpha1"
+	mock_security_config "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.smh.solo.io/v1alpha1"
 	pki_util "istio.io/istio/security/pkg/pki/util"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -52,15 +52,15 @@ var _ = Describe("csr processor", func() {
 	})
 
 	It("will return an error if secret key cannot be ensured", func() {
-		csr := &zephyr_security.VirtualMeshCertificateSigningRequest{}
+		csr := &smh_security.VirtualMeshCertificateSigningRequest{}
 		certClient.EXPECT().
 			EnsureSecretKey(ctx, csr).
 			Return(nil, testErr)
 
 		status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)
-		Expect(status).To(Equal(&zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-			ComputedStatus: &zephyr_core_types.Status{
-				State:   zephyr_core_types.Status_INVALID,
+		Expect(status).To(Equal(&smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+			ComputedStatus: &smh_core_types.Status{
+				State:   smh_core_types.Status_INVALID,
 				Message: csr_generator.FailedToRetrievePrivateKeyError(testErr).Error(),
 			},
 		}))
@@ -69,9 +69,9 @@ var _ = Describe("csr processor", func() {
 	Context("no csr", func() {
 
 		It("will return an error if csr cannot be generated", func() {
-			csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
-				Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
-					CertConfig: &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
+			csr := &smh_security.VirtualMeshCertificateSigningRequest{
+				Spec: smh_security_types.VirtualMeshCertificateSigningRequestSpec{
+					CertConfig: &smh_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 						Hosts: []string{"host1", "host2"},
 						Org:   "Istio",
 					},
@@ -94,18 +94,18 @@ var _ = Describe("csr processor", func() {
 				Return(nil, testErr)
 
 			status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)
-			Expect(status).To(Equal(&zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &zephyr_core_types.Status{
-					State:   zephyr_core_types.Status_INVALID,
+			Expect(status).To(Equal(&smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+				ComputedStatus: &smh_core_types.Status{
+					State:   smh_core_types.Status_INVALID,
 					Message: csr_generator.FailedToGenerateCSRError(testErr).Error(),
 				},
 			}))
 		})
 
 		It("will return an error mgcsr cannot be updated with csr bytes", func() {
-			csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
-				Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
-					CertConfig: &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
+			csr := &smh_security.VirtualMeshCertificateSigningRequest{
+				Spec: smh_security_types.VirtualMeshCertificateSigningRequestSpec{
+					CertConfig: &smh_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 						Hosts: []string{"host1", "host2"},
 						Org:   "Istio",
 					},
@@ -136,18 +136,18 @@ var _ = Describe("csr processor", func() {
 				Return(testErr)
 
 			status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)
-			Expect(status).To(Equal(&zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &zephyr_core_types.Status{
-					State:   zephyr_core_types.Status_INVALID,
+			Expect(status).To(Equal(&smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+				ComputedStatus: &smh_core_types.Status{
+					State:   smh_core_types.Status_INVALID,
 					Message: csr_generator.FailedToAddCsrToResource(testErr).Error(),
 				},
 			}))
 		})
 
 		It("will return an error mgcsr cannot be updated with csr bytes", func() {
-			csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
-				Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
-					CertConfig: &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
+			csr := &smh_security.VirtualMeshCertificateSigningRequest{
+				Spec: smh_security_types.VirtualMeshCertificateSigningRequestSpec{
+					CertConfig: &smh_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 						Hosts: []string{"host1", "host2"},
 						Org:   "Istio",
 					},
@@ -178,9 +178,9 @@ var _ = Describe("csr processor", func() {
 				Return(nil)
 
 			status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)
-			Expect(status).To(Equal(&zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &zephyr_core_types.Status{
-					State: zephyr_core_types.Status_ACCEPTED,
+			Expect(status).To(Equal(&smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+				ComputedStatus: &smh_core_types.Status{
+					State: smh_core_types.Status_ACCEPTED,
 				},
 			}))
 		})
@@ -190,12 +190,12 @@ var _ = Describe("csr processor", func() {
 	Context("with cert data", func() {
 
 		It("will fail if istio CA cannot be updated", func() {
-			csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
-				Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
+			csr := &smh_security.VirtualMeshCertificateSigningRequest{
+				Spec: smh_security_types.VirtualMeshCertificateSigningRequestSpec{
 					CsrData: []byte("csr-data"),
 				},
-				Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-					Response: &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_Response{
+				Status: smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+					Response: &smh_security_types.VirtualMeshCertificateSigningRequestStatus_Response{
 						CaCertificate:   []byte("ca-cert"),
 						RootCertificate: []byte("root-cert"),
 					},
@@ -212,9 +212,9 @@ var _ = Describe("csr processor", func() {
 
 			matchErr := csr_generator.FailedToUpdateCaError(testErr)
 			status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)
-			Expect(status).To(Equal(&zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &zephyr_core_types.Status{
-					State:   zephyr_core_types.Status_INVALID,
+			Expect(status).To(Equal(&smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+				ComputedStatus: &smh_core_types.Status{
+					State:   smh_core_types.Status_INVALID,
 					Message: matchErr.Error(),
 				},
 				Response: csr.Status.GetResponse(),
@@ -222,12 +222,12 @@ var _ = Describe("csr processor", func() {
 		})
 
 		It("will create a new resource if the secret doesn't exist", func() {
-			csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
-				Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
+			csr := &smh_security.VirtualMeshCertificateSigningRequest{
+				Spec: smh_security_types.VirtualMeshCertificateSigningRequestSpec{
 					CsrData: []byte("csr-data"),
 				},
-				Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-					Response: &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_Response{
+				Status: smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+					Response: &smh_security_types.VirtualMeshCertificateSigningRequestStatus_Response{
 						CaCertificate:   []byte("ca-cert"),
 						RootCertificate: []byte("root-cert"),
 					},
@@ -251,9 +251,9 @@ var _ = Describe("csr processor", func() {
 
 			matchErr := csr_generator.FailedToUpdateCaError(testErr)
 			status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)
-			Expect(status).To(Equal(&zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &zephyr_core_types.Status{
-					State:   zephyr_core_types.Status_INVALID,
+			Expect(status).To(Equal(&smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+				ComputedStatus: &smh_core_types.Status{
+					State:   smh_core_types.Status_INVALID,
 					Message: matchErr.Error(),
 				},
 				Response: csr.Status.GetResponse(),
@@ -261,12 +261,12 @@ var _ = Describe("csr processor", func() {
 		})
 
 		It("won't try to update istio CA if it already exists, and the content is equal", func() {
-			csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
-				Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
+			csr := &smh_security.VirtualMeshCertificateSigningRequest{
+				Spec: smh_security_types.VirtualMeshCertificateSigningRequestSpec{
 					CsrData: []byte("csr-data"),
 				},
-				Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-					Response: &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_Response{
+				Status: smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+					Response: &smh_security_types.VirtualMeshCertificateSigningRequestStatus_Response{
 						CaCertificate:   []byte("ca-cert"),
 						RootCertificate: []byte("root-cert"),
 					},
@@ -285,21 +285,21 @@ var _ = Describe("csr processor", func() {
 				Return(certData.BuildSecret(csr_generator.IstioCaSecretName, "istio-system"), nil)
 
 			status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)
-			Expect(status).To(Equal(&zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &zephyr_core_types.Status{
-					State: zephyr_core_types.Status_ACCEPTED,
+			Expect(status).To(Equal(&smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+				ComputedStatus: &smh_core_types.Status{
+					State: smh_core_types.Status_ACCEPTED,
 				},
 				Response: csr.Status.GetResponse(),
 			}))
 		})
 
 		It("will update cacerts with new data if it is different", func() {
-			csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
-				Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
+			csr := &smh_security.VirtualMeshCertificateSigningRequest{
+				Spec: smh_security_types.VirtualMeshCertificateSigningRequestSpec{
 					CsrData: []byte("csr-data"),
 				},
-				Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-					Response: &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_Response{
+				Status: smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+					Response: &smh_security_types.VirtualMeshCertificateSigningRequestStatus_Response{
 						CaCertificate:   []byte("ca-cert"),
 						RootCertificate: []byte("root-cert"),
 					},
@@ -332,9 +332,9 @@ var _ = Describe("csr processor", func() {
 				Return(nil)
 
 			status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)
-			Expect(status).To(Equal(&zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &zephyr_core_types.Status{
-					State: zephyr_core_types.Status_ACCEPTED,
+			Expect(status).To(Equal(&smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+				ComputedStatus: &smh_core_types.Status{
+					State: smh_core_types.Status_ACCEPTED,
 				},
 				Response: csr.Status.GetResponse(),
 			}))

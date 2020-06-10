@@ -7,19 +7,19 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-service/k8s"
-	discovery_mocks "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	discovery_mocks "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_corev1 "github.com/solo-io/service-mesh-hub/test/mocks/corev1"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/smh/discovery"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -32,14 +32,14 @@ type mocks struct {
 	meshWorkloadClient       *discovery_mocks.MockMeshWorkloadClient
 	meshClient               *discovery_mocks.MockMeshClient
 	serviceEventWatcher      *mock_corev1.MockServiceEventWatcher
-	meshWorkloadEventWatcher *mock_zephyr_discovery.MockMeshWorkloadEventWatcher
+	meshWorkloadEventWatcher *mock_smh_discovery.MockMeshWorkloadEventWatcher
 
 	meshServiceFinder k8s.MeshServiceFinder
 
 	serviceCreateCallback      *func(service *k8s_core_types.Service) error
 	serviceDeleteCallback      *func(service *k8s_core_types.Service) error
-	meshWorkloadCreateCallback *func(meshWorkload *zephyr_discovery.MeshWorkload) error
-	meshWorkloadDeleteCallback *func(meshWorkload *zephyr_discovery.MeshWorkload) error
+	meshWorkloadCreateCallback *func(meshWorkload *smh_discovery.MeshWorkload) error
+	meshWorkloadDeleteCallback *func(meshWorkload *smh_discovery.MeshWorkload) error
 }
 
 var _ = Describe("Mesh Service Finder", func() {
@@ -63,11 +63,11 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshWorkloadClient := discovery_mocks.NewMockMeshWorkloadClient(ctrl)
 		meshClient := discovery_mocks.NewMockMeshClient(ctrl)
 		serviceEventWatcher := mock_corev1.NewMockServiceEventWatcher(ctrl)
-		meshWorkloadEventWatcher := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
+		meshWorkloadEventWatcher := mock_smh_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 		serviceCreateCallback := new(func(service *k8s_core_types.Service) error)
-		meshWorkloadCreateCallback := new(func(meshWorkload *zephyr_discovery.MeshWorkload) error)
+		meshWorkloadCreateCallback := new(func(meshWorkload *smh_discovery.MeshWorkload) error)
 		serviceDeleteCallback := new(func(service *k8s_core_types.Service) error)
-		meshWorkloadDeleteCallback := new(func(meshWorkload *zephyr_discovery.MeshWorkload) error)
+		meshWorkloadDeleteCallback := new(func(meshWorkload *smh_discovery.MeshWorkload) error)
 		serviceEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
@@ -110,19 +110,19 @@ var _ = Describe("Mesh Service Finder", func() {
 
 	var expectReconcile = func(mocks mocks) {
 		workloadNamespace := "workload-namespace"
-		mesh := &zephyr_discovery.Mesh{
+		mesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "istio-test-mesh",
 				Namespace: "isito-system",
 			},
-			Spec: zephyr_discovery_types.MeshSpec{
-				Cluster: &zephyr_core_types.ResourceRef{
+			Spec: smh_discovery_types.MeshSpec{
+				Cluster: &smh_core_types.ResourceRef{
 					Name: clusterName,
 				},
-				MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{},
+				MeshType: &smh_discovery_types.MeshSpec_Linkerd{},
 			},
 		}
-		meshWorkloadEvent := &zephyr_discovery.MeshWorkload{
+		meshWorkloadEvent := &smh_discovery.MeshWorkload{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "test-mesh-workload",
 				Namespace: container_runtime.GetWriteNamespace(),
@@ -130,9 +130,9 @@ var _ = Describe("Mesh Service Finder", func() {
 					kube.COMPUTE_TARGET: clusterName,
 				},
 			},
-			Spec: zephyr_discovery_types.MeshWorkloadSpec{
-				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-					KubeControllerRef: &zephyr_core_types.ResourceRef{
+			Spec: smh_discovery_types.MeshWorkloadSpec{
+				KubeController: &smh_discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &smh_core_types.ResourceRef{
 						Namespace: workloadNamespace,
 					},
 					Labels: map[string]string{
@@ -141,13 +141,13 @@ var _ = Describe("Mesh Service Finder", func() {
 						"istio-injected-label": "doesn't matter",
 					},
 				},
-				Mesh: &zephyr_core_types.ResourceRef{
+				Mesh: &smh_core_types.ResourceRef{
 					Name:      mesh.Name,
 					Namespace: mesh.Namespace,
 				},
 			},
 		}
-		meshWorkloadEventV2 := &zephyr_discovery.MeshWorkload{
+		meshWorkloadEventV2 := &smh_discovery.MeshWorkload{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "test-mesh-workload-v2",
 				Namespace: container_runtime.GetWriteNamespace(),
@@ -155,9 +155,9 @@ var _ = Describe("Mesh Service Finder", func() {
 					kube.COMPUTE_TARGET: clusterName,
 				},
 			},
-			Spec: zephyr_discovery_types.MeshWorkloadSpec{
-				KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
-					KubeControllerRef: &zephyr_core_types.ResourceRef{
+			Spec: smh_discovery_types.MeshWorkloadSpec{
+				KubeController: &smh_discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &smh_core_types.ResourceRef{
 						Namespace: workloadNamespace,
 					},
 					Labels: map[string]string{
@@ -166,7 +166,7 @@ var _ = Describe("Mesh Service Finder", func() {
 						"istio-injected-label": "doesn't matter",
 					},
 				},
-				Mesh: &zephyr_core_types.ResourceRef{
+				Mesh: &smh_core_types.ResourceRef{
 					Name:      mesh.Name,
 					Namespace: mesh.Namespace,
 				},
@@ -212,7 +212,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				}},
 			},
 		}
-		meshServiceToBeDeleted := &zephyr_discovery.MeshService{
+		meshServiceToBeDeleted := &smh_discovery.MeshService{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "service-with-no-corresponding-k8s-service",
 				Namespace: "ns1",
@@ -224,14 +224,14 @@ var _ = Describe("Mesh Service Finder", func() {
 			ListMeshWorkload(ctx, client.MatchingLabels{
 				kube.COMPUTE_TARGET: clusterName,
 			}).
-			Return(&zephyr_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil).
+			Return(&smh_discovery.MeshWorkloadList{Items: []smh_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil).
 			Times(2)
 		mocks.meshServiceClient.EXPECT().
 			ListMeshService(ctx, client.MatchingLabels{
 				kube.COMPUTE_TARGET: clusterName,
 			}).
-			Return(&zephyr_discovery.MeshServiceList{
-				Items: []zephyr_discovery.MeshService{*meshServiceToBeDeleted},
+			Return(&smh_discovery.MeshServiceList{
+				Items: []smh_discovery.MeshService{*meshServiceToBeDeleted},
 			}, nil)
 		mocks.serviceClient.
 			EXPECT().
@@ -246,29 +246,29 @@ var _ = Describe("Mesh Service Finder", func() {
 			Times(4)
 		mocks.meshServiceClient.
 			EXPECT().
-			UpsertMeshServiceSpec(ctx, &zephyr_discovery.MeshService{
+			UpsertMeshServiceSpec(ctx, &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      meshServiceName,
 					Namespace: container_runtime.GetWriteNamespace(),
-					Labels:    k8s.DiscoveryLabels(zephyr_core_types.MeshType_LINKERD, clusterName, rightService.GetName(), rightService.GetNamespace()),
+					Labels:    k8s.DiscoveryLabels(smh_core_types.MeshType_LINKERD, clusterName, rightService.GetName(), rightService.GetNamespace()),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+				Spec: smh_discovery_types.MeshServiceSpec{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      rightService.GetName(),
 							Namespace: rightService.GetNamespace(),
 							Cluster:   clusterName,
 						},
 						WorkloadSelectorLabels: rightService.Spec.Selector,
 						Labels:                 rightService.GetLabels(),
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 							Name:     "correct-service-port",
 							Port:     443,
 							Protocol: "TCP",
 						}},
 					},
 					Mesh: meshWorkloadEvent.Spec.Mesh,
-					Subsets: map[string]*zephyr_discovery_types.MeshServiceSpec_Subset{
+					Subsets: map[string]*smh_discovery_types.MeshServiceSpec_Subset{
 						"version": {
 							Values: []string{"v1", "v2"},
 						},
@@ -295,7 +295,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			)
 			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 			expectReconcile(mocks)
-			err = (*mocks.meshWorkloadCreateCallback)(&zephyr_discovery.MeshWorkload{})
+			err = (*mocks.meshWorkloadCreateCallback)(&smh_discovery.MeshWorkload{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("reconciles MeshServices upon MeshWorkload deletion", func() {
@@ -307,7 +307,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			)
 			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 			expectReconcile(mocks)
-			err = (*mocks.meshWorkloadDeleteCallback)(&zephyr_discovery.MeshWorkload{})
+			err = (*mocks.meshWorkloadDeleteCallback)(&smh_discovery.MeshWorkload{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("reconciles MeshServices upon k8s Service creation", func() {

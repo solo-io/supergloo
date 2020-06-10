@@ -3,8 +3,8 @@ package acp_translator
 import (
 	"context"
 
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
@@ -20,6 +20,6 @@ type AcpMeshTranslator interface {
 	Translate(
 		ctx context.Context,
 		targetServices []TargetService,
-		acp *zephyr_networking.AccessControlPolicy,
+		acp *smh_networking.AccessControlPolicy,
 	) *networking_types.AccessControlPolicyStatus_TranslatorError
 }

@@ -2,7 +2,7 @@ package wire
 
 import (
 	"github.com/google/wire"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
@@ -32,7 +32,7 @@ var AwsSet = wire.NewSet(
 	aws_utils.NewAppMeshScanner,
 	aws_utils.NewAwsAccountIdFetcher,
 	meshworkload_appmesh.AppMeshWorkloadScannerFactoryProvider,
-	zephyr_discovery.KubernetesClusterClientProvider,
+	smh_discovery.KubernetesClusterClientProvider,
 	eks_client.EksClientFactoryProvider,
 	eks_client.EksConfigBuilderFactoryProvider,
 	appmesh2.AppmeshRawClientFactoryProvider,
@@ -46,7 +46,7 @@ var ClusterRegistrationSet = wire.NewSet(
 	helm.HelmClientForFileConfigFactoryProvider,
 	k8s_core.SecretClientFromConfigFactoryProvider,
 	k8s_core.NamespaceClientFromConfigFactoryProvider,
-	zephyr_discovery.KubernetesClusterClientFromConfigFactoryProvider,
+	smh_discovery.KubernetesClusterClientFromConfigFactoryProvider,
 	k8s_apps.DeploymentClientFromConfigFactoryProvider,
 	k8s_core.ServiceAccountClientFromConfigFactoryProvider,
 	auth.RbacClientFactoryProvider,
@@ -87,7 +87,7 @@ func DeployedVersionFinderProvider(
 func ClusterRegistrationClientProvider(
 	masterCfg *rest.Config,
 	secretClientFactory k8s_core.SecretClientFromConfigFactory,
-	kubeClusterClient zephyr_discovery.KubernetesClusterClientFromConfigFactory,
+	kubeClusterClient smh_discovery.KubernetesClusterClientFromConfigFactory,
 	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
 	kubeConverter kubeconfig.Converter,
 	csrAgentInstallerFactory installation.CsrAgentInstallerFactory,

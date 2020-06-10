@@ -3,9 +3,9 @@ package csr_generator
 import (
 	"context"
 
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	zephyr_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
-	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	smh_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/controller"
+	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 )
 
@@ -20,7 +20,7 @@ type CertClient interface {
 	*/
 	EnsureSecretKey(
 		ctx context.Context,
-		obj *zephyr_security.VirtualMeshCertificateSigningRequest,
+		obj *smh_security.VirtualMeshCertificateSigningRequest,
 	) (secret *cert_secrets.IntermediateCAData, err error)
 }
 
@@ -32,15 +32,15 @@ type PrivateKeyGenerator interface {
 type IstioCSRGenerator interface {
 	GenerateIstioCSR(
 		ctx context.Context,
-		obj *zephyr_security.VirtualMeshCertificateSigningRequest,
-	) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus
+		obj *smh_security.VirtualMeshCertificateSigningRequest,
+	) *smh_security_types.VirtualMeshCertificateSigningRequestStatus
 }
 
 type VirtualMeshCSRDataSourceFactory func(
 	ctx context.Context,
-	csrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
+	csrClient smh_security.VirtualMeshCertificateSigningRequestClient,
 	processor VirtualMeshCSRProcessor,
-) zephyr_security_controller.VirtualMeshCertificateSigningRequestEventHandler
+) smh_security_controller.VirtualMeshCertificateSigningRequestEventHandler
 
 /*
 	VirtualMeshCSRProcessor is meant to be an extension to the autopilot handler pattern.
@@ -52,29 +52,29 @@ type VirtualMeshCSRDataSourceFactory func(
 type VirtualMeshCSRProcessor interface {
 	ProcessUpsert(
 		ctx context.Context,
-		csr *zephyr_security.VirtualMeshCertificateSigningRequest,
-	) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus
+		csr *smh_security.VirtualMeshCertificateSigningRequest,
+	) *smh_security_types.VirtualMeshCertificateSigningRequestStatus
 	ProcessDelete(
 		ctx context.Context,
-		csr *zephyr_security.VirtualMeshCertificateSigningRequest,
-	) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus
+		csr *smh_security.VirtualMeshCertificateSigningRequest,
+	) *smh_security_types.VirtualMeshCertificateSigningRequestStatus
 }
 
 type VirtualMeshCSRProcessorFuncs struct {
 	OnProcessUpsert func(
 		ctx context.Context,
-		csr *zephyr_security.VirtualMeshCertificateSigningRequest,
-	) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus
+		csr *smh_security.VirtualMeshCertificateSigningRequest,
+	) *smh_security_types.VirtualMeshCertificateSigningRequestStatus
 	OnProcessDelete func(
 		ctx context.Context,
-		csr *zephyr_security.VirtualMeshCertificateSigningRequest,
-	) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus
+		csr *smh_security.VirtualMeshCertificateSigningRequest,
+	) *smh_security_types.VirtualMeshCertificateSigningRequestStatus
 }
 
 func (m *VirtualMeshCSRProcessorFuncs) ProcessUpsert(
 	ctx context.Context,
-	csr *zephyr_security.VirtualMeshCertificateSigningRequest,
-) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
+	csr *smh_security.VirtualMeshCertificateSigningRequest,
+) *smh_security_types.VirtualMeshCertificateSigningRequestStatus {
 	if m.OnProcessUpsert != nil {
 		return m.OnProcessUpsert(ctx, csr)
 	}
@@ -83,8 +83,8 @@ func (m *VirtualMeshCSRProcessorFuncs) ProcessUpsert(
 
 func (m *VirtualMeshCSRProcessorFuncs) ProcessDelete(
 	ctx context.Context,
-	csr *zephyr_security.VirtualMeshCertificateSigningRequest,
-) *zephyr_security_types.VirtualMeshCertificateSigningRequestStatus {
+	csr *smh_security.VirtualMeshCertificateSigningRequest,
+) *smh_security_types.VirtualMeshCertificateSigningRequestStatus {
 	if m.OnProcessDelete != nil {
 		return m.OnProcessDelete(ctx, csr)
 	}

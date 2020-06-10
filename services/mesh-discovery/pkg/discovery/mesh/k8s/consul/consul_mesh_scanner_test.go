@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
 	mock_docker "github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker/mocks"
@@ -117,22 +117,22 @@ var _ = Describe("Consul Mesh Finder", func() {
 				Tag:    consulVersion,
 			}, nil)
 
-		expectedMesh := &zephyr_discovery.Mesh{
+		expectedMesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name:      "consul-minidc-consul-ns",
 				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    consul.DiscoveryLabels,
 			},
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_ConsulConnect{
-					ConsulConnect: &zephyr_discovery_types.MeshSpec_ConsulConnectMesh{
-						Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+			Spec: smh_discovery_types.MeshSpec{
+				MeshType: &smh_discovery_types.MeshSpec_ConsulConnect{
+					ConsulConnect: &smh_discovery_types.MeshSpec_ConsulConnectMesh{
+						Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               consulVersion,
 						},
 					},
 				},
-				Cluster: &zephyr_core_types.ResourceRef{
+				Cluster: &smh_core_types.ResourceRef{
 					Name:      clusterName,
 					Namespace: container_runtime.GetWriteNamespace(),
 				},

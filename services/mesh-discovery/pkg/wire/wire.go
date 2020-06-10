@@ -6,8 +6,8 @@ import (
 	"context"
 
 	"github.com/google/wire"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/clients"
@@ -34,14 +34,14 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		k8s_apps.ReplicaSetClientFactoryProvider,
 		k8s_core.ServiceClientFactoryProvider,
 		k8s_core.PodClientFactoryProvider,
-		zephyr_discovery.MeshServiceClientFactoryProvider,
-		zephyr_discovery.MeshWorkloadClientFactoryProvider,
+		smh_discovery.MeshServiceClientFactoryProvider,
+		smh_discovery.MeshWorkloadClientFactoryProvider,
 		event_watcher_factories.NewDeploymentEventWatcherFactory,
 		event_watcher_factories.NewPodEventWatcherFactory,
 		event_watcher_factories.NewServiceEventWatcherFactory,
 		event_watcher_factories.NewMeshWorkloadEventWatcherFactory,
 		event_watcher_factories.NewMeshEventWatcherFactory,
-		zephyr_discovery.MeshClientFactoryProvider,
+		smh_discovery.MeshClientFactoryProvider,
 		k8s_core.ConfigMapClientFactoryProvider,
 		mesh_istio.WireProviderSet,
 		mesh_consul.WireProviderSet,

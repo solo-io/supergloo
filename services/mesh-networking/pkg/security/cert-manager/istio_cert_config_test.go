@@ -4,10 +4,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 )
 
@@ -24,10 +24,10 @@ var _ = Describe("istio cert config", func() {
 	})
 
 	It("will fail if mesh is not type istio", func() {
-		mesh := &zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{
-					Linkerd: &zephyr_discovery_types.MeshSpec_LinkerdMesh{},
+		mesh := &smh_discovery.Mesh{
+			Spec: smh_discovery_types.MeshSpec{
+				MeshType: &smh_discovery_types.MeshSpec_Linkerd{
+					Linkerd: &smh_discovery_types.MeshSpec_LinkerdMesh{},
 				},
 			},
 		}
@@ -37,12 +37,12 @@ var _ = Describe("istio cert config", func() {
 	})
 
 	It("will return default values if citadel info isn't discovered", func() {
-		mesh := &zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
-						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+		mesh := &smh_discovery.Mesh{
+			Spec: smh_discovery_types.MeshSpec{
+				MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
+						Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+							Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: istioNamespace,
 							},
 						},
@@ -50,7 +50,7 @@ var _ = Describe("istio cert config", func() {
 				},
 			},
 		}
-		matchCertConfig := &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
+		matchCertConfig := &smh_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 			Hosts: []string{
 				cert_manager.BuildSpiffeURI(
 					cert_manager.DefaultTrustDomain,
@@ -59,7 +59,7 @@ var _ = Describe("istio cert config", func() {
 				),
 			},
 			Org:      cert_manager.DefaultIstioOrg,
-			MeshType: zephyr_core_types.MeshType_ISTIO1_5,
+			MeshType: smh_core_types.MeshType_ISTIO1_5,
 		}
 		certConfig, err := istioConfigProdcer.ConfigureCertificateInfo(nil, mesh)
 		Expect(err).NotTo(HaveOccurred())
@@ -67,17 +67,17 @@ var _ = Describe("istio cert config", func() {
 	})
 
 	It("will return default the values present in the cert config when discovered", func() {
-		citadelInfo := &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+		citadelInfo := &smh_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
 			TrustDomain:           "test.domain",
 			CitadelNamespace:      "testns",
 			CitadelServiceAccount: "testsa",
 		}
-		mesh := &zephyr_discovery.Mesh{
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_6_{
-					Istio1_6: &zephyr_discovery_types.MeshSpec_Istio1_6{
-						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+		mesh := &smh_discovery.Mesh{
+			Spec: smh_discovery_types.MeshSpec{
+				MeshType: &smh_discovery_types.MeshSpec_Istio1_6_{
+					Istio1_6: &smh_discovery_types.MeshSpec_Istio1_6{
+						Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+							Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: istioNamespace,
 							},
 							CitadelInfo: citadelInfo,
@@ -86,7 +86,7 @@ var _ = Describe("istio cert config", func() {
 				},
 			},
 		}
-		matchCertConfig := &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
+		matchCertConfig := &smh_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 			Hosts: []string{
 				cert_manager.BuildSpiffeURI(
 					citadelInfo.GetTrustDomain(),
@@ -95,7 +95,7 @@ var _ = Describe("istio cert config", func() {
 				),
 			},
 			Org:      cert_manager.DefaultIstioOrg,
-			MeshType: zephyr_core_types.MeshType_ISTIO1_6,
+			MeshType: smh_core_types.MeshType_ISTIO1_6,
 		}
 		certConfig, err := istioConfigProdcer.ConfigureCertificateInfo(nil, mesh)
 		Expect(err).NotTo(HaveOccurred())

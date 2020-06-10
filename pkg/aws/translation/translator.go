@@ -4,7 +4,7 @@ import (
 	aws2 "github.com/aws/aws-sdk-go/aws"
 	appmesh2 "github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/rotisserie/eris"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/metadata"
 )
 
@@ -14,7 +14,7 @@ const (
 )
 
 var (
-	ExceededMaximumWorkloadsError = func(meshService *zephyr_discovery.MeshService) error {
+	ExceededMaximumWorkloadsError = func(meshService *smh_discovery.MeshService) error {
 		return eris.Errorf("Workloads selected by service %s.%s exceeds Appmesh's maximum of 10 weighted targets.",
 			meshService.GetName(), meshService.GetNamespace())
 	}
@@ -29,9 +29,9 @@ func NewAppmeshTranslator() AppmeshTranslator {
 
 func (a *appmeshTranslator) BuildVirtualNode(
 	appmeshName *string,
-	meshWorkload *zephyr_discovery.MeshWorkload,
-	meshService *zephyr_discovery.MeshService,
-	upstreamServices []*zephyr_discovery.MeshService,
+	meshWorkload *smh_discovery.MeshWorkload,
+	meshService *smh_discovery.MeshService,
+	upstreamServices []*smh_discovery.MeshService,
 ) *appmesh2.VirtualNodeData {
 	virtualNodeName := aws2.String(metadata.BuildVirtualNodeName(meshWorkload))
 	var backends []*appmesh2.Backend
@@ -72,8 +72,8 @@ func (a *appmeshTranslator) BuildRoute(
 	appmeshName *string,
 	routeName string,
 	priority int,
-	meshService *zephyr_discovery.MeshService,
-	meshWorkloads []*zephyr_discovery.MeshWorkload,
+	meshService *smh_discovery.MeshService,
+	meshWorkloads []*smh_discovery.MeshWorkload,
 ) (*appmesh2.RouteData, error) {
 	if len(meshWorkloads) > MaximumTargetsPerRoute {
 		return nil, ExceededMaximumWorkloadsError(meshService)
@@ -105,7 +105,7 @@ func (a *appmeshTranslator) BuildRoute(
 
 func (a *appmeshTranslator) BuildVirtualService(
 	appmeshName *string,
-	meshService *zephyr_discovery.MeshService,
+	meshService *smh_discovery.MeshService,
 ) *appmesh2.VirtualServiceData {
 	return &appmesh2.VirtualServiceData{
 		MeshName: appmeshName,
@@ -122,7 +122,7 @@ func (a *appmeshTranslator) BuildVirtualService(
 
 func (a *appmeshTranslator) BuildVirtualRouter(
 	appmeshName *string,
-	meshService *zephyr_discovery.MeshService,
+	meshService *smh_discovery.MeshService,
 ) *appmesh2.VirtualRouterData {
 	var virtualRouterListeners []*appmesh2.VirtualRouterListener
 	for _, servicePort := range meshService.Spec.GetKubeService().GetPorts() {

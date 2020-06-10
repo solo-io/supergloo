@@ -8,21 +8,21 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
 	access_control_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	mock_access_control_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator/mocks"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
-	mock_zephyr_networking2 "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/networking"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
+	mock_smh_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.smh.solo.io/v1alpha1"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/smh/discovery"
+	mock_smh_networking2 "github.com/solo-io/service-mesh-hub/test/mocks/smh/networking"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -30,28 +30,28 @@ var _ = Describe("Translator", func() {
 	var (
 		ctrl                      *gomock.Controller
 		ctx                       context.Context
-		acpEventWatcher           *mock_zephyr_networking2.MockAccessControlPolicyEventWatcher
-		MeshServiceEventWatcher   *mock_zephyr_discovery.MockMeshServiceEventWatcher
+		acpEventWatcher           *mock_smh_networking2.MockAccessControlPolicyEventWatcher
+		MeshServiceEventWatcher   *mock_smh_discovery.MockMeshServiceEventWatcher
 		meshClient                *mock_core.MockMeshClient
-		accessControlPolicyClient *mock_zephyr_networking.MockAccessControlPolicyClient
+		accessControlPolicyClient *mock_smh_networking.MockAccessControlPolicyClient
 		resourceSelector          *mock_selector.MockResourceSelector
 		mockMeshTranslator1       *mock_access_control_policy_translator.MockAcpMeshTranslator
 		mockMeshTranslator2       *mock_access_control_policy_translator.MockAcpMeshTranslator
 		meshTranslators           []*mock_access_control_policy_translator.MockAcpMeshTranslator
 
 		// captured event handlers
-		acpHandler         *zephyr_networking_controller.AccessControlPolicyEventHandlerFuncs
-		meshServiceHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs
+		acpHandler         *smh_networking_controller.AccessControlPolicyEventHandlerFuncs
+		meshServiceHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs
 		acpTranslator      access_control_policy_translator.AcpTranslatorLoop
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		acpEventWatcher = mock_zephyr_networking2.NewMockAccessControlPolicyEventWatcher(ctrl)
-		MeshServiceEventWatcher = mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		acpEventWatcher = mock_smh_networking2.NewMockAccessControlPolicyEventWatcher(ctrl)
+		MeshServiceEventWatcher = mock_smh_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		meshClient = mock_core.NewMockMeshClient(ctrl)
-		accessControlPolicyClient = mock_zephyr_networking.NewMockAccessControlPolicyClient(ctrl)
+		accessControlPolicyClient = mock_smh_networking.NewMockAccessControlPolicyClient(ctrl)
 		resourceSelector = mock_selector.NewMockResourceSelector(ctrl)
 		mockMeshTranslator1 = mock_access_control_policy_translator.NewMockAcpMeshTranslator(ctrl)
 		mockMeshTranslator2 = mock_access_control_policy_translator.NewMockAcpMeshTranslator(ctrl)
@@ -72,14 +72,14 @@ var _ = Describe("Translator", func() {
 		acpEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_networking_controller.AccessControlPolicyEventHandlerFuncs) error {
+			DoAndReturn(func(ctx context.Context, eventHandler *smh_networking_controller.AccessControlPolicyEventHandlerFuncs) error {
 				acpHandler = eventHandler
 				return nil
 			})
 		MeshServiceEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs) error {
+			DoAndReturn(func(ctx context.Context, eventHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs) error {
 
 				meshServiceHandler = eventHandler
 				return nil
@@ -91,10 +91,10 @@ var _ = Describe("Translator", func() {
 		ctrl.Finish()
 	})
 
-	var acp = func() *zephyr_networking.AccessControlPolicy {
-		return &zephyr_networking.AccessControlPolicy{
-			Spec: zephyr_networking_types.AccessControlPolicySpec{
-				DestinationSelector: &zephyr_core_types.ServiceSelector{},
+	var acp = func() *smh_networking.AccessControlPolicy {
+		return &smh_networking.AccessControlPolicy{
+			Spec: smh_networking_types.AccessControlPolicySpec{
+				DestinationSelector: &smh_core_types.ServiceSelector{},
 			},
 		}
 	}
@@ -102,25 +102,25 @@ var _ = Describe("Translator", func() {
 	Describe("It should handle AccessControlPolicy events", func() {
 		It("should handle AccessControlPolicy create", func() {
 			acp := acp()
-			matchingMeshServices := []*zephyr_discovery.MeshService{
+			matchingMeshServices := []*smh_discovery.MeshService{
 				{
-					Spec: zephyr_discovery_types.MeshServiceSpec{
-						Mesh: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.MeshServiceSpec{
+						Mesh: &smh_core_types.ResourceRef{
 							Name:      "mesh-name-1",
 							Namespace: "mesh-namespace-1",
 						},
 					},
 				},
 				{
-					Spec: zephyr_discovery_types.MeshServiceSpec{
-						Mesh: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.MeshServiceSpec{
+						Mesh: &smh_core_types.ResourceRef{
 							Name:      "mesh-name-2",
 							Namespace: "mesh-namespace-2",
 						},
 					},
 				},
 			}
-			meshesForService := []*zephyr_discovery.Mesh{
+			meshesForService := []*smh_discovery.Mesh{
 				{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-name-1", Namespace: "mesh-namespace-1"}},
 				{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-name-22", Namespace: "mesh-namespace-22"}},
 			}
@@ -146,17 +146,17 @@ var _ = Describe("Translator", func() {
 				meshTranslator.EXPECT().Translate(contextutils.WithLogger(ctx, ""), expectedTargetServices, acp).Return(nil)
 				meshTranslator.EXPECT().Name().Return("")
 			}
-			var capturedACPWithStatus *zephyr_networking.AccessControlPolicy
+			var capturedACPWithStatus *smh_networking.AccessControlPolicy
 			accessControlPolicyClient.
 				EXPECT().
 				UpdateAccessControlPolicyStatus(ctx, gomock.Any()).
-				DoAndReturn(func(ctx context.Context, acp *zephyr_networking.AccessControlPolicy) error {
+				DoAndReturn(func(ctx context.Context, acp *smh_networking.AccessControlPolicy) error {
 					capturedACPWithStatus = acp
 					return nil
 				})
-			expectedStatus := zephyr_networking_types.AccessControlPolicyStatus{
-				TranslationStatus: &zephyr_core_types.Status{
-					State: zephyr_core_types.Status_ACCEPTED,
+			expectedStatus := smh_networking_types.AccessControlPolicyStatus{
+				TranslationStatus: &smh_core_types.Status{
+					State: smh_core_types.Status_ACCEPTED,
 				},
 				TranslatorErrors: nil,
 			}
@@ -167,25 +167,25 @@ var _ = Describe("Translator", func() {
 
 		It("should aggregate list of translator errors", func() {
 			acp := acp()
-			matchingMeshServices := []*zephyr_discovery.MeshService{
+			matchingMeshServices := []*smh_discovery.MeshService{
 				{
-					Spec: zephyr_discovery_types.MeshServiceSpec{
-						Mesh: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.MeshServiceSpec{
+						Mesh: &smh_core_types.ResourceRef{
 							Name:      "mesh-name-1",
 							Namespace: "mesh-namespace-1",
 						},
 					},
 				},
 				{
-					Spec: zephyr_discovery_types.MeshServiceSpec{
-						Mesh: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.MeshServiceSpec{
+						Mesh: &smh_core_types.ResourceRef{
 							Name:      "mesh-name-2",
 							Namespace: "mesh-namespace-2",
 						},
 					},
 				},
 			}
-			meshesForService := []*zephyr_discovery.Mesh{
+			meshesForService := []*smh_discovery.Mesh{
 				{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-name-1", Namespace: "mesh-namespace-1"}},
 				{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-name-22", Namespace: "mesh-namespace-22"}},
 			}
@@ -207,9 +207,9 @@ var _ = Describe("Translator", func() {
 					},
 				)
 			}
-			var translatorErrors []*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError
+			var translatorErrors []*smh_networking_types.AccessControlPolicyStatus_TranslatorError
 			for _, meshTranslator := range meshTranslators {
-				translatorErr := &zephyr_networking_types.AccessControlPolicyStatus_TranslatorError{
+				translatorErr := &smh_networking_types.AccessControlPolicyStatus_TranslatorError{
 					TranslatorId: "translator-id",
 					ErrorMessage: "",
 				}
@@ -220,17 +220,17 @@ var _ = Describe("Translator", func() {
 					Return(translatorErr)
 				meshTranslator.EXPECT().Name().Return("")
 			}
-			var capturedACPWithStatus *zephyr_networking.AccessControlPolicy
+			var capturedACPWithStatus *smh_networking.AccessControlPolicy
 			accessControlPolicyClient.
 				EXPECT().
 				UpdateAccessControlPolicyStatus(ctx, gomock.Any()).
-				DoAndReturn(func(ctx context.Context, acp *zephyr_networking.AccessControlPolicy) error {
+				DoAndReturn(func(ctx context.Context, acp *smh_networking.AccessControlPolicy) error {
 					capturedACPWithStatus = acp
 					return nil
 				})
-			expectedStatus := zephyr_networking_types.AccessControlPolicyStatus{
-				TranslationStatus: &zephyr_core_types.Status{
-					State:   zephyr_core_types.Status_PROCESSING_ERROR,
+			expectedStatus := smh_networking_types.AccessControlPolicyStatus{
+				TranslationStatus: &smh_core_types.Status{
+					State:   smh_core_types.Status_PROCESSING_ERROR,
 					Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
 				},
 				TranslatorErrors: translatorErrors,
@@ -243,17 +243,17 @@ var _ = Describe("Translator", func() {
 
 	Describe("It should handle MeshService events", func() {
 		It("should handle MeshService create", func() {
-			meshService := &zephyr_discovery.MeshService{
-				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: &zephyr_core_types.ResourceRef{
+			meshService := &smh_discovery.MeshService{
+				Spec: smh_discovery_types.MeshServiceSpec{
+					Mesh: &smh_core_types.ResourceRef{
 						Name:      "mesh-name-1",
 						Namespace: "mesh-namespace-1",
 					},
 				},
 			}
-			mesh := &zephyr_discovery.Mesh{
-				Spec: zephyr_discovery_types.MeshSpec{
-					Cluster: &zephyr_core_types.ResourceRef{
+			mesh := &smh_discovery.Mesh{
+				Spec: smh_discovery_types.MeshSpec{
+					Cluster: &smh_core_types.ResourceRef{
 						Name: "cluster-name",
 					},
 				},
@@ -267,14 +267,14 @@ var _ = Describe("Translator", func() {
 				GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
 				Return(mesh, nil).
 				Times(5)
-			acpList := &zephyr_networking.AccessControlPolicyList{
-				Items: []zephyr_networking.AccessControlPolicy{
+			acpList := &smh_networking.AccessControlPolicyList{
+				Items: []smh_networking.AccessControlPolicy{
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "acp-name-1"},
-						Spec: zephyr_networking_types.AccessControlPolicySpec{
-							DestinationSelector: &zephyr_core_types.ServiceSelector{
-								ServiceSelectorType: &zephyr_core_types.ServiceSelector_Matcher_{
-									Matcher: &zephyr_core_types.ServiceSelector_Matcher{
+						Spec: smh_networking_types.AccessControlPolicySpec{
+							DestinationSelector: &smh_core_types.ServiceSelector{
+								ServiceSelectorType: &smh_core_types.ServiceSelector_Matcher_{
+									Matcher: &smh_core_types.ServiceSelector_Matcher{
 										Namespaces: []string{"dest-namespace-1"},
 									},
 								},
@@ -283,10 +283,10 @@ var _ = Describe("Translator", func() {
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "acp-name-2"},
-						Spec: zephyr_networking_types.AccessControlPolicySpec{
-							DestinationSelector: &zephyr_core_types.ServiceSelector{
-								ServiceSelectorType: &zephyr_core_types.ServiceSelector_Matcher_{
-									Matcher: &zephyr_core_types.ServiceSelector_Matcher{
+						Spec: smh_networking_types.AccessControlPolicySpec{
+							DestinationSelector: &smh_core_types.ServiceSelector{
+								ServiceSelectorType: &smh_core_types.ServiceSelector_Matcher_{
+									Matcher: &smh_core_types.ServiceSelector_Matcher{
 										Namespaces: []string{"dest-namespace-2"},
 									},
 								},
@@ -295,10 +295,10 @@ var _ = Describe("Translator", func() {
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "acp-name-3"},
-						Spec: zephyr_networking_types.AccessControlPolicySpec{
-							DestinationSelector: &zephyr_core_types.ServiceSelector{
-								ServiceSelectorType: &zephyr_core_types.ServiceSelector_Matcher_{
-									Matcher: &zephyr_core_types.ServiceSelector_Matcher{
+						Spec: smh_networking_types.AccessControlPolicySpec{
+							DestinationSelector: &smh_core_types.ServiceSelector{
+								ServiceSelectorType: &smh_core_types.ServiceSelector_Matcher_{
+									Matcher: &smh_core_types.ServiceSelector_Matcher{
 										Namespaces: []string{"dest-namespace-3"},
 									},
 								},
@@ -311,13 +311,13 @@ var _ = Describe("Translator", func() {
 				EXPECT().
 				ListAccessControlPolicy(ctx).
 				Return(acpList, nil)
-			var capturedACPsWithStatus []*zephyr_networking.AccessControlPolicy
+			var capturedACPsWithStatus []*smh_networking.AccessControlPolicy
 			for _, acp := range acpList.Items {
 				acp := acp
 				resourceSelector.
 					EXPECT().
 					GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
-					Return([]*zephyr_discovery.MeshService{meshService}, nil)
+					Return([]*smh_discovery.MeshService{meshService}, nil)
 				for _, meshTranslator := range meshTranslators {
 					meshTranslator.
 						EXPECT().
@@ -328,16 +328,16 @@ var _ = Describe("Translator", func() {
 				accessControlPolicyClient.
 					EXPECT().
 					UpdateAccessControlPolicyStatus(ctx, gomock.Any()).
-					DoAndReturn(func(ctx context.Context, acp *zephyr_networking.AccessControlPolicy) error {
+					DoAndReturn(func(ctx context.Context, acp *smh_networking.AccessControlPolicy) error {
 						capturedACPsWithStatus = append(capturedACPsWithStatus, acp)
 						return nil
 					})
 			}
 			err := meshServiceHandler.OnCreate(meshService)
 			Expect(err).ToNot(HaveOccurred())
-			expectedStatus := zephyr_networking_types.AccessControlPolicyStatus{
-				TranslationStatus: &zephyr_core_types.Status{
-					State: zephyr_core_types.Status_ACCEPTED,
+			expectedStatus := smh_networking_types.AccessControlPolicyStatus{
+				TranslationStatus: &smh_core_types.Status{
+					State: smh_core_types.Status_ACCEPTED,
 				},
 				TranslatorErrors: nil,
 			}
@@ -347,17 +347,17 @@ var _ = Describe("Translator", func() {
 		})
 
 		It("should aggregate translator errors for each applicable ACP for MeshService", func() {
-			meshService := &zephyr_discovery.MeshService{
-				Spec: zephyr_discovery_types.MeshServiceSpec{
-					Mesh: &zephyr_core_types.ResourceRef{
+			meshService := &smh_discovery.MeshService{
+				Spec: smh_discovery_types.MeshServiceSpec{
+					Mesh: &smh_core_types.ResourceRef{
 						Name:      "mesh-name-1",
 						Namespace: "mesh-namespace-1",
 					},
 				},
 			}
-			mesh := &zephyr_discovery.Mesh{
-				Spec: zephyr_discovery_types.MeshSpec{
-					Cluster: &zephyr_core_types.ResourceRef{
+			mesh := &smh_discovery.Mesh{
+				Spec: smh_discovery_types.MeshSpec{
+					Cluster: &smh_core_types.ResourceRef{
 						Name: "cluster-name",
 					},
 				},
@@ -371,14 +371,14 @@ var _ = Describe("Translator", func() {
 				GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
 				Return(mesh, nil).
 				Times(5)
-			acpList := &zephyr_networking.AccessControlPolicyList{
-				Items: []zephyr_networking.AccessControlPolicy{
+			acpList := &smh_networking.AccessControlPolicyList{
+				Items: []smh_networking.AccessControlPolicy{
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "acp-name-1"},
-						Spec: zephyr_networking_types.AccessControlPolicySpec{
-							DestinationSelector: &zephyr_core_types.ServiceSelector{
-								ServiceSelectorType: &zephyr_core_types.ServiceSelector_Matcher_{
-									Matcher: &zephyr_core_types.ServiceSelector_Matcher{
+						Spec: smh_networking_types.AccessControlPolicySpec{
+							DestinationSelector: &smh_core_types.ServiceSelector{
+								ServiceSelectorType: &smh_core_types.ServiceSelector_Matcher_{
+									Matcher: &smh_core_types.ServiceSelector_Matcher{
 										Namespaces: []string{"dest-namespace-1"},
 									},
 								},
@@ -387,10 +387,10 @@ var _ = Describe("Translator", func() {
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "acp-name-2"},
-						Spec: zephyr_networking_types.AccessControlPolicySpec{
-							DestinationSelector: &zephyr_core_types.ServiceSelector{
-								ServiceSelectorType: &zephyr_core_types.ServiceSelector_Matcher_{
-									Matcher: &zephyr_core_types.ServiceSelector_Matcher{
+						Spec: smh_networking_types.AccessControlPolicySpec{
+							DestinationSelector: &smh_core_types.ServiceSelector{
+								ServiceSelectorType: &smh_core_types.ServiceSelector_Matcher_{
+									Matcher: &smh_core_types.ServiceSelector_Matcher{
 										Namespaces: []string{"dest-namespace-2"},
 									},
 								},
@@ -399,10 +399,10 @@ var _ = Describe("Translator", func() {
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "acp-name-3"},
-						Spec: zephyr_networking_types.AccessControlPolicySpec{
-							DestinationSelector: &zephyr_core_types.ServiceSelector{
-								ServiceSelectorType: &zephyr_core_types.ServiceSelector_Matcher_{
-									Matcher: &zephyr_core_types.ServiceSelector_Matcher{
+						Spec: smh_networking_types.AccessControlPolicySpec{
+							DestinationSelector: &smh_core_types.ServiceSelector{
+								ServiceSelectorType: &smh_core_types.ServiceSelector_Matcher_{
+									Matcher: &smh_core_types.ServiceSelector_Matcher{
 										Namespaces: []string{"dest-namespace-3"},
 									},
 								},
@@ -415,19 +415,19 @@ var _ = Describe("Translator", func() {
 				EXPECT().
 				ListAccessControlPolicy(ctx).
 				Return(acpList, nil)
-			var newTranslatorError = func() *zephyr_networking_types.AccessControlPolicyStatus_TranslatorError {
-				return &zephyr_networking_types.AccessControlPolicyStatus_TranslatorError{
+			var newTranslatorError = func() *smh_networking_types.AccessControlPolicyStatus_TranslatorError {
+				return &smh_networking_types.AccessControlPolicyStatus_TranslatorError{
 					TranslatorId: "translator-id",
 					ErrorMessage: "",
 				}
 			}
-			var capturedACPsWithStatus []*zephyr_networking.AccessControlPolicy
+			var capturedACPsWithStatus []*smh_networking.AccessControlPolicy
 			for _, acp := range acpList.Items {
 				acp := acp
 				resourceSelector.
 					EXPECT().
 					GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
-					Return([]*zephyr_discovery.MeshService{meshService}, nil)
+					Return([]*smh_discovery.MeshService{meshService}, nil)
 				for _, meshTranslator := range meshTranslators {
 					meshTranslator.
 						EXPECT().
@@ -438,20 +438,20 @@ var _ = Describe("Translator", func() {
 				accessControlPolicyClient.
 					EXPECT().
 					UpdateAccessControlPolicyStatus(ctx, gomock.Any()).
-					DoAndReturn(func(ctx context.Context, acp *zephyr_networking.AccessControlPolicy) error {
+					DoAndReturn(func(ctx context.Context, acp *smh_networking.AccessControlPolicy) error {
 						capturedACPsWithStatus = append(capturedACPsWithStatus, acp)
 						return nil
 					})
 			}
 			err := meshServiceHandler.OnCreate(meshService)
 			Expect(err).ToNot(HaveOccurred())
-			var expectedTranslatorErrors []*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError
+			var expectedTranslatorErrors []*smh_networking_types.AccessControlPolicyStatus_TranslatorError
 			for range meshTranslators {
 				expectedTranslatorErrors = append(expectedTranslatorErrors, newTranslatorError())
 			}
-			expectedStatus := zephyr_networking_types.AccessControlPolicyStatus{
-				TranslationStatus: &zephyr_core_types.Status{
-					State:   zephyr_core_types.Status_PROCESSING_ERROR,
+			expectedStatus := smh_networking_types.AccessControlPolicyStatus{
+				TranslationStatus: &smh_core_types.Status{
+					State:   smh_core_types.Status_PROCESSING_ERROR,
 					Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
 				},
 				TranslatorErrors: expectedTranslatorErrors,

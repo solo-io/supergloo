@@ -44,17 +44,17 @@ var _ = Describe("Crd Uninstaller", func() {
 		ctrl.Finish()
 	})
 
-	It("only removes zephyr CRDs", func() {
+	It("only removes smh CRDs", func() {
 		crdClient := mock_k8s_extension_clients.NewMockCustomResourceDefinitionClient(ctrl)
 
 		crd1 := v1beta1.CustomResourceDefinition{
 			ObjectMeta: v1.ObjectMeta{
-				Name: "test.abc.zephyr.solo.io",
+				Name: "test.abc.smh.solo.io",
 			},
 		}
 		crd2 := v1beta1.CustomResourceDefinition{
 			ObjectMeta: v1.ObjectMeta{
-				Name: "test.def.zephyr.solo.io",
+				Name: "test.def.smh.solo.io",
 			},
 		}
 		crdClient.EXPECT().
@@ -87,7 +87,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			DeleteCustomResourceDefinition(ctx, client.ObjectKey{Name: crd2.GetName()}).
 			Return(nil)
 
-		deletedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds(ctx, "cluster-1", restConfig)
+		deletedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemovesmhCrds(ctx, "cluster-1", restConfig)
 		Expect(deletedCrds).To(BeTrue())
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -99,7 +99,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			ListCustomResourceDefinition(ctx).
 			Return(nil, testErr)
 
-		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds(ctx, "cluster-1", restConfig)
+		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemovesmhCrds(ctx, "cluster-1", restConfig)
 		Expect(removedCrds).To(BeFalse())
 		Expect(err).To(testutils.HaveInErrorChain(crd_uninstall.FailedToListCrds(testErr, "cluster-1")))
 	})
@@ -110,7 +110,7 @@ var _ = Describe("Crd Uninstaller", func() {
 
 		crd := v1beta1.CustomResourceDefinition{
 			ObjectMeta: v1.ObjectMeta{
-				Name: "test.abc.zephyr.solo.io",
+				Name: "test.abc.smh.solo.io",
 			},
 		}
 		crdClient.EXPECT().
@@ -120,7 +120,7 @@ var _ = Describe("Crd Uninstaller", func() {
 					crd,
 					{
 						ObjectMeta: v1.ObjectMeta{
-							Name: "test.def.zephyr.solo.io",
+							Name: "test.def.smh.solo.io",
 						},
 					},
 					{
@@ -139,21 +139,21 @@ var _ = Describe("Crd Uninstaller", func() {
 			DeleteCustomResourceDefinition(ctx, client.ObjectKey{Name: crd.GetName()}).
 			Return(testErr)
 
-		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds(ctx, "cluster-1", restConfig)
+		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemovesmhCrds(ctx, "cluster-1", restConfig)
 		Expect(removedCrds).To(BeFalse())
-		Expect(err).To(testutils.HaveInErrorChain(crd_uninstall.FailedToDeleteCrd(testErr, "cluster-1", "test.abc.zephyr.solo.io")))
+		Expect(err).To(testutils.HaveInErrorChain(crd_uninstall.FailedToDeleteCrd(testErr, "cluster-1", "test.abc.smh.solo.io")))
 	})
 
 	It("does not return an error if the CRDs have been deleted concurrently in the background", func() {
 		crdClient := mock_k8s_extension_clients.NewMockCustomResourceDefinitionClient(ctrl)
 		crd1 := v1beta1.CustomResourceDefinition{
 			ObjectMeta: v1.ObjectMeta{
-				Name: "test.abc.zephyr.solo.io",
+				Name: "test.abc.smh.solo.io",
 			},
 		}
 		crd2 := v1beta1.CustomResourceDefinition{
 			ObjectMeta: v1.ObjectMeta{
-				Name: "test.def.zephyr.solo.io",
+				Name: "test.def.smh.solo.io",
 			},
 		}
 		crdClient.EXPECT().
@@ -177,7 +177,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd2.GetName()}).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, "test-name"))
 
-		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds(ctx, "cluster-1", restConfig)
+		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemovesmhCrds(ctx, "cluster-1", restConfig)
 		Expect(removedCrds).To(BeTrue())
 		Expect(err).NotTo(HaveOccurred())
 	})

@@ -6,15 +6,15 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	mock_controllers "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/event-watcher-factories/mocks"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s"
 	mock_k8s_tenancy "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/cluster-tenancy/k8s/mocks"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	mock_k8s_core_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/smh/discovery"
 	k8s_core "k8s.io/api/core/v1"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -28,9 +28,9 @@ var _ = Describe("ClusterTenancyRegistrarLoop", func() {
 		mockPodClient         *mock_k8s_core_clients.MockPodClient
 		mockMeshClient        *mock_core.MockMeshClient
 		mockPodEventWatcher   *mock_controllers.MockPodEventWatcher
-		mockMeshEventWatcher  *mock_zephyr_discovery.MockMeshEventWatcher
+		mockMeshEventWatcher  *mock_smh_discovery.MockMeshEventWatcher
 		podEventHandlerFuncs  k8s_core_controller.PodEventHandler
-		meshEventHandlerFuncs zephyr_discovery_controller.MeshEventHandler
+		meshEventHandlerFuncs smh_discovery_controller.MeshEventHandler
 		clusterTenancyFinder  k8s_tenancy.ClusterTenancyRegistrarLoop
 	)
 
@@ -40,7 +40,7 @@ var _ = Describe("ClusterTenancyRegistrarLoop", func() {
 		mockPodClient = mock_k8s_core_clients.NewMockPodClient(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockPodEventWatcher = mock_controllers.NewMockPodEventWatcher(ctrl)
-		mockMeshEventWatcher = mock_zephyr_discovery.NewMockMeshEventWatcher(ctrl)
+		mockMeshEventWatcher = mock_smh_discovery.NewMockMeshEventWatcher(ctrl)
 		clusterTenancyFinder = k8s_tenancy.NewClusterTenancyFinder(
 			clusterName,
 			[]k8s_tenancy.ClusterTenancyRegistrar{mockTenancyRegistrar},
@@ -57,7 +57,7 @@ var _ = Describe("ClusterTenancyRegistrarLoop", func() {
 		mockMeshEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, eventHandlerFuncs zephyr_discovery_controller.MeshEventHandler) error {
+			DoAndReturn(func(ctx context.Context, eventHandlerFuncs smh_discovery_controller.MeshEventHandler) error {
 				meshEventHandlerFuncs = eventHandlerFuncs
 				return nil
 			})
@@ -82,8 +82,8 @@ var _ = Describe("ClusterTenancyRegistrarLoop", func() {
 			},
 		}
 		mockPodClient.EXPECT().ListPod(ctx).Return(podList, nil)
-		meshList := &zephyr_discovery.MeshList{
-			Items: []zephyr_discovery.Mesh{
+		meshList := &smh_discovery.MeshList{
+			Items: []smh_discovery.Mesh{
 				{ObjectMeta: k8s_meta.ObjectMeta{Name: "mesh1", Namespace: namespace}},
 				{ObjectMeta: k8s_meta.ObjectMeta{Name: "mesh2", Namespace: namespace}},
 				{ObjectMeta: k8s_meta.ObjectMeta{Name: "mesh3", Namespace: namespace}},
@@ -127,13 +127,13 @@ var _ = Describe("ClusterTenancyRegistrarLoop", func() {
 
 	It("should reconcile tenancy upon Mesh create", func() {
 		expectReconcile()
-		err := meshEventHandlerFuncs.CreateMesh(&zephyr_discovery.Mesh{})
+		err := meshEventHandlerFuncs.CreateMesh(&smh_discovery.Mesh{})
 		Expect(err).To(BeNil())
 	})
 
 	It("should reconcile tenancy upon Mesh update", func() {
 		expectReconcile()
-		err := meshEventHandlerFuncs.UpdateMesh(&zephyr_discovery.Mesh{}, &zephyr_discovery.Mesh{})
+		err := meshEventHandlerFuncs.UpdateMesh(&smh_discovery.Mesh{}, &smh_discovery.Mesh{})
 		Expect(err).To(BeNil())
 	})
 })

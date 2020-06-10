@@ -7,9 +7,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
 	constants2 "github.com/solo-io/service-mesh-hub/pkg/constants"
@@ -24,7 +24,7 @@ import (
 	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	mock_k8s_cliendcmd "github.com/solo-io/service-mesh-hub/test/mocks/client-go/clientcmd"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -106,7 +106,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 	}
 
 	var expectGenServiceAccountBearerToken = func(cfg *rest.Config) string {
-		serviceAccountRef := &zephyr_core_types.ResourceRef{
+		serviceAccountRef := &smh_core_types.ResourceRef{
 			Name:      remoteClusterName,
 			Namespace: remoteWriteNamespace,
 		}
@@ -193,14 +193,14 @@ var _ = Describe("ClusterRegistrationClient", func() {
 	var expectWriteKubeClusterToMaster = func(secret *k8s_core_types.Secret) {
 		mockKubernetesClusterClient.
 			EXPECT().
-			UpsertKubernetesClusterSpec(ctx, &zephyr_discovery.KubernetesCluster{
+			UpsertKubernetesClusterSpec(ctx, &smh_discovery.KubernetesCluster{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      remoteClusterName,
 					Namespace: container_runtime.GetWriteNamespace(),
 					Labels:    map[string]string{kube.DISCOVERED_BY: discoverySource},
 				},
-				Spec: zephyr_discovery_types.KubernetesClusterSpec{
-					SecretRef: &zephyr_core_types.ResourceRef{
+				Spec: smh_discovery_types.KubernetesClusterSpec{
+					SecretRef: &smh_core_types.ResourceRef{
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},

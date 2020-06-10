@@ -8,20 +8,20 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/dns"
 	mock_dns "github.com/solo-io/service-mesh-hub/pkg/federation/dns/mocks"
 	istio_federation "github.com/solo-io/service-mesh-hub/pkg/federation/resolver/meshes/istio"
 	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	mock_istio_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/istio/networking/v1beta1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
@@ -59,7 +59,7 @@ var _ = Describe("Istio Federation Decider", func() {
 	Context("FederateServiceSide", func() {
 		It("can resolve federation for a service belonging to an Istio mesh when no resources exist yet", func() {
 			clientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
-			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
+			meshClient := mock_smh_discovery.NewMockMeshClient(ctrl)
 			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
 			gatewayClient := mock_istio_networking.NewMockGatewayClient(ctrl)
 			envoyFilterClient := mock_istio_networking.NewMockEnvoyFilterClient(ctrl)
@@ -89,20 +89,20 @@ var _ = Describe("Istio Federation Decider", func() {
 			)
 
 			clusterName := "istio-cluster"
-			istioMeshRef := &zephyr_core_types.ResourceRef{
+			istioMeshRef := &smh_core_types.ResourceRef{
 				Name:      "istio-mesh",
 				Namespace: container_runtime.GetWriteNamespace(),
 			}
-			istioMesh := &zephyr_discovery.Mesh{
+			istioMesh := &smh_discovery.Mesh{
 				ObjectMeta: selection.ResourceRefToObjectMeta(istioMeshRef),
-				Spec: zephyr_discovery_types.MeshSpec{
-					Cluster: &zephyr_core_types.ResourceRef{
+				Spec: smh_discovery_types.MeshSpec{
+					Cluster: &smh_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
-							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+					MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+								Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 									InstallationNamespace: installationNamespace,
 								},
 							},
@@ -110,32 +110,32 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			backingKubeService := &zephyr_core_types.ResourceRef{
+			backingKubeService := &smh_core_types.ResourceRef{
 				Name:      "k8s-svc",
 				Namespace: "application-ns",
 			}
-			istioMeshService := &zephyr_discovery.MeshService{
+			istioMeshService := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: istioMeshRef,
-					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
+					Federation: &smh_discovery_types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, clusterName),
 					},
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
 						Ref: backingKubeService,
 					},
 				},
 			}
-			virtualMesh := &zephyr_networking.VirtualMesh{
+			virtualMesh := &smh_networking.VirtualMesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "virtual-mesh-1",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_networking_types.VirtualMeshSpec{
-					Meshes: []*zephyr_core_types.ResourceRef{istioMeshRef},
+				Spec: smh_networking_types.VirtualMeshSpec{
+					Meshes: []*smh_core_types.ResourceRef{istioMeshRef},
 				},
 			}
 			meshClient.EXPECT().
@@ -248,7 +248,7 @@ var _ = Describe("Istio Federation Decider", func() {
 
 		It("can resolve federation when the resources exist already and the service has already been federated to the gateway", func() {
 			clientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
-			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
+			meshClient := mock_smh_discovery.NewMockMeshClient(ctrl)
 			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
 			gatewayClient := mock_istio_networking.NewMockGatewayClient(ctrl)
 			envoyFilterClient := mock_istio_networking.NewMockEnvoyFilterClient(ctrl)
@@ -278,20 +278,20 @@ var _ = Describe("Istio Federation Decider", func() {
 			)
 
 			clusterName := "istio-cluster"
-			istioMeshRef := &zephyr_core_types.ResourceRef{
+			istioMeshRef := &smh_core_types.ResourceRef{
 				Name:      "istio-mesh",
 				Namespace: container_runtime.GetWriteNamespace(),
 			}
-			istioMesh := &zephyr_discovery.Mesh{
+			istioMesh := &smh_discovery.Mesh{
 				ObjectMeta: selection.ResourceRefToObjectMeta(istioMeshRef),
-				Spec: zephyr_discovery_types.MeshSpec{
-					Cluster: &zephyr_core_types.ResourceRef{
+				Spec: smh_discovery_types.MeshSpec{
+					Cluster: &smh_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
-							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+					MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+								Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 									InstallationNamespace: installationNamespace,
 								},
 							},
@@ -299,32 +299,32 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			backingKubeService := &zephyr_core_types.ResourceRef{
+			backingKubeService := &smh_core_types.ResourceRef{
 				Name:      "k8s-svc",
 				Namespace: "application-ns",
 			}
-			istioMeshService := &zephyr_discovery.MeshService{
+			istioMeshService := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: istioMeshRef,
-					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
+					Federation: &smh_discovery_types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, "istio-cluster"),
 					},
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
 						Ref: backingKubeService,
 					},
 				},
 			}
-			virtualMesh := &zephyr_networking.VirtualMesh{
+			virtualMesh := &smh_networking.VirtualMesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "virtual-mesh-1",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_networking_types.VirtualMeshSpec{
-					Meshes: []*zephyr_core_types.ResourceRef{istioMeshRef},
+				Spec: smh_networking_types.VirtualMeshSpec{
+					Meshes: []*smh_core_types.ResourceRef{istioMeshRef},
 				},
 			}
 			meshClient.EXPECT().
@@ -437,7 +437,7 @@ var _ = Describe("Istio Federation Decider", func() {
 
 		It("can resolve federation when the resources exist already and the service has NOT already been federated to the gateway", func() {
 			clientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
-			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
+			meshClient := mock_smh_discovery.NewMockMeshClient(ctrl)
 			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
 			gatewayClient := mock_istio_networking.NewMockGatewayClient(ctrl)
 			envoyFilterClient := mock_istio_networking.NewMockEnvoyFilterClient(ctrl)
@@ -467,20 +467,20 @@ var _ = Describe("Istio Federation Decider", func() {
 			)
 
 			clusterName := "istio-cluster"
-			istioMeshRef := &zephyr_core_types.ResourceRef{
+			istioMeshRef := &smh_core_types.ResourceRef{
 				Name:      "istio-mesh",
 				Namespace: container_runtime.GetWriteNamespace(),
 			}
-			istioMesh := &zephyr_discovery.Mesh{
+			istioMesh := &smh_discovery.Mesh{
 				ObjectMeta: selection.ResourceRefToObjectMeta(istioMeshRef),
-				Spec: zephyr_discovery_types.MeshSpec{
-					Cluster: &zephyr_core_types.ResourceRef{
+				Spec: smh_discovery_types.MeshSpec{
+					Cluster: &smh_core_types.ResourceRef{
 						Name: clusterName,
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
-							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+					MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+								Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 									InstallationNamespace: installationNamespace,
 								},
 							},
@@ -488,32 +488,32 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			backingKubeService := &zephyr_core_types.ResourceRef{
+			backingKubeService := &smh_core_types.ResourceRef{
 				Name:      "k8s-svc",
 				Namespace: "application-ns",
 			}
-			istioMeshService := &zephyr_discovery.MeshService{
+			istioMeshService := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: istioMeshRef,
-					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
+					Federation: &smh_discovery_types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, clusterName),
 					},
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
 						Ref: backingKubeService,
 					},
 				},
 			}
-			virtualMesh := &zephyr_networking.VirtualMesh{
+			virtualMesh := &smh_networking.VirtualMesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "virtual-mesh-1",
 					Namespace: container_runtime.GetWriteNamespace(),
 				},
-				Spec: zephyr_networking_types.VirtualMeshSpec{
-					Meshes: []*zephyr_core_types.ResourceRef{istioMeshRef},
+				Spec: smh_networking_types.VirtualMeshSpec{
+					Meshes: []*smh_core_types.ResourceRef{istioMeshRef},
 				},
 			}
 			meshClient.EXPECT().
@@ -637,7 +637,7 @@ var _ = Describe("Istio Federation Decider", func() {
 	Context("FederateClientSide", func() {
 		It("can resolve federation on the client side", func() {
 			clientGetter := mock_multicluster.NewMockDynamicClientGetter(ctrl)
-			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
+			meshClient := mock_smh_discovery.NewMockMeshClient(ctrl)
 			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
 			serviceEntryClient := mock_istio_networking.NewMockServiceEntryClient(ctrl)
 			destinationRuleClient := mock_istio_networking.NewMockDestinationRuleClient(ctrl)
@@ -665,24 +665,24 @@ var _ = Describe("Istio Federation Decider", func() {
 				externalAccessPointGetter,
 			)
 
-			istioMeshRefService := &zephyr_core_types.ResourceRef{
+			istioMeshRefService := &smh_core_types.ResourceRef{
 				Name:      "istio-mesh-1",
 				Namespace: container_runtime.GetWriteNamespace(),
 			}
-			istioMeshRefWorkload := &zephyr_core_types.ResourceRef{
+			istioMeshRefWorkload := &smh_core_types.ResourceRef{
 				Name:      "istio-mesh-2",
 				Namespace: container_runtime.GetWriteNamespace(),
 			}
-			istioMeshForService := &zephyr_discovery.Mesh{
+			istioMeshForService := &smh_discovery.Mesh{
 				ObjectMeta: selection.ResourceRefToObjectMeta(istioMeshRefService),
-				Spec: zephyr_discovery_types.MeshSpec{
-					Cluster: &zephyr_core_types.ResourceRef{
+				Spec: smh_discovery_types.MeshSpec{
+					Cluster: &smh_core_types.ResourceRef{
 						Name: "istio-cluster-svc",
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
-							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+					MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+								Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 									InstallationNamespace: installationNamespace,
 								},
 							},
@@ -690,16 +690,16 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			istioMeshForWorkload := &zephyr_discovery.Mesh{
+			istioMeshForWorkload := &smh_discovery.Mesh{
 				ObjectMeta: selection.ResourceRefToObjectMeta(istioMeshRefWorkload),
-				Spec: zephyr_discovery_types.MeshSpec{
-					Cluster: &zephyr_core_types.ResourceRef{
+				Spec: smh_discovery_types.MeshSpec{
+					Cluster: &smh_core_types.ResourceRef{
 						Name: "istio-cluster-workload",
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-						Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
-							Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+					MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+						Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
+							Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+								Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 									InstallationNamespace: installationNamespace,
 								},
 							},
@@ -707,34 +707,34 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			meshWorkload := &zephyr_discovery.MeshWorkload{
-				Spec: zephyr_discovery_types.MeshWorkloadSpec{
+			meshWorkload := &smh_discovery.MeshWorkload{
+				Spec: smh_discovery_types.MeshWorkloadSpec{
 					Mesh: istioMeshRefWorkload,
 				},
 			}
-			backingKubeSvc := &zephyr_core_types.ResourceRef{
+			backingKubeSvc := &smh_core_types.ResourceRef{
 				Name:      "application-svc",
 				Namespace: "application-ns",
 			}
 			serviceMulticlusterDnsName := dns.BuildMulticlusterDnsName(backingKubeSvc, istioMeshForService.Spec.Cluster.Name)
-			svcPort := &zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
+			svcPort := &smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 				Port:     9080,
 				Name:     "http1",
 				Protocol: "http",
 			}
-			meshService := &zephyr_discovery.MeshService{
+			meshService := &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      "istio-svc",
 					Namespace: "application-ns",
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
+				Spec: smh_discovery_types.MeshServiceSpec{
 					Mesh: istioMeshRefService,
-					Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
+					Federation: &smh_discovery_types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: serviceMulticlusterDnsName,
 					},
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
 						Ref: backingKubeSvc,
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 							svcPort,
 						},
 					},
@@ -750,7 +750,7 @@ var _ = Describe("Istio Federation Decider", func() {
 
 			externalAddress := "externally-resolvable-hostname.com"
 			port := uint32(32000)
-			serviceEntryRef := &zephyr_core_types.ResourceRef{
+			serviceEntryRef := &smh_core_types.ResourceRef{
 				Name:      serviceMulticlusterDnsName,
 				Namespace: "istio-system",
 			}
@@ -783,7 +783,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			serviceEntryClient.EXPECT().
 				CreateServiceEntry(ctx, serviceEntry).
 				Return(nil)
-			destinationRuleRef := &zephyr_core_types.ResourceRef{
+			destinationRuleRef := &smh_core_types.ResourceRef{
 				Name:      serviceMulticlusterDnsName,
 				Namespace: "istio-system",
 			}

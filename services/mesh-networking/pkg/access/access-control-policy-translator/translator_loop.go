@@ -5,22 +5,22 @@ import (
 	"fmt"
 
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"go.uber.org/zap"
 )
 
 func NewAcpTranslatorLoop(
-	acpEventWatcher zephyr_networking_controller.AccessControlPolicyEventWatcher,
-	MeshServiceEventWatcher zephyr_discovery_controller.MeshServiceEventWatcher,
-	meshClient zephyr_discovery.MeshClient,
-	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
+	acpEventWatcher smh_networking_controller.AccessControlPolicyEventWatcher,
+	MeshServiceEventWatcher smh_discovery_controller.MeshServiceEventWatcher,
+	meshClient smh_discovery.MeshClient,
+	accessControlPolicyClient smh_networking.AccessControlPolicyClient,
 	resourceSelector selection.ResourceSelector,
 	meshTranslators []AcpMeshTranslator,
 ) AcpTranslatorLoop {
@@ -35,17 +35,17 @@ func NewAcpTranslatorLoop(
 }
 
 type translatorLoop struct {
-	acpEventWatcher           zephyr_networking_controller.AccessControlPolicyEventWatcher
-	MeshServiceEventWatcher   zephyr_discovery_controller.MeshServiceEventWatcher
-	meshClient                zephyr_discovery.MeshClient
-	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient
+	acpEventWatcher           smh_networking_controller.AccessControlPolicyEventWatcher
+	MeshServiceEventWatcher   smh_discovery_controller.MeshServiceEventWatcher
+	meshClient                smh_discovery.MeshClient
+	accessControlPolicyClient smh_networking.AccessControlPolicyClient
 	meshTranslators           []AcpMeshTranslator
 	resourceSelector          selection.ResourceSelector
 }
 
 func (t *translatorLoop) Start(ctx context.Context) error {
-	err := t.acpEventWatcher.AddEventHandler(ctx, &zephyr_networking_controller.AccessControlPolicyEventHandlerFuncs{
-		OnCreate: func(obj *zephyr_networking.AccessControlPolicy) error {
+	err := t.acpEventWatcher.AddEventHandler(ctx, &smh_networking_controller.AccessControlPolicyEventHandlerFuncs{
+		OnCreate: func(obj *smh_networking.AccessControlPolicy) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, obj)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", obj.Spec),
@@ -59,7 +59,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			}
 			return nil
 		},
-		OnUpdate: func(old, new *zephyr_networking.AccessControlPolicy) error {
+		OnUpdate: func(old, new *smh_networking.AccessControlPolicy) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
 			logger.Debugw("event handler enter",
 				zap.Any("old_spec", old.Spec),
@@ -75,7 +75,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			}
 			return nil
 		},
-		OnDelete: func(obj *zephyr_networking.AccessControlPolicy) error {
+		OnDelete: func(obj *smh_networking.AccessControlPolicy) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, obj)
 			logger.Debugw("ignoring event",
 				zap.Any("spec", obj.Spec),
@@ -83,7 +83,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			)
 			return nil
 		},
-		OnGeneric: func(obj *zephyr_networking.AccessControlPolicy) error {
+		OnGeneric: func(obj *smh_networking.AccessControlPolicy) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.GenericEvent, obj)
 			logger.Debugw("ignoring event",
 				zap.Any("spec", obj.Spec),
@@ -95,8 +95,8 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return t.MeshServiceEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshServiceEventHandlerFuncs{
-		OnCreate: func(obj *zephyr_discovery.MeshService) error {
+	return t.MeshServiceEventWatcher.AddEventHandler(ctx, &smh_discovery_controller.MeshServiceEventHandlerFuncs{
+		OnCreate: func(obj *smh_discovery.MeshService) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, obj)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", obj.Spec),
@@ -113,7 +113,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			}
 			return nil
 		},
-		OnUpdate: func(old, new *zephyr_discovery.MeshService) error {
+		OnUpdate: func(old, new *smh_discovery.MeshService) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
 			logger.Debugw("event handler enter",
 				zap.Any("old_spec", old.Spec),
@@ -132,7 +132,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			}
 			return nil
 		},
-		OnDelete: func(obj *zephyr_discovery.MeshService) error {
+		OnDelete: func(obj *smh_discovery.MeshService) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, obj)
 			logger.Debugw("ignoring event",
 				zap.Any("spec", obj.Spec),
@@ -140,7 +140,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			)
 			return nil
 		},
-		OnGeneric: func(obj *zephyr_discovery.MeshService) error {
+		OnGeneric: func(obj *smh_discovery.MeshService) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.GenericEvent, obj)
 			logger.Debugw("ignoring event",
 				zap.Any("spec", obj.Spec),
@@ -154,13 +154,13 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 // Translate AccessControlPolicy to AuthorizationPolicy for all targeted k8s Services
 func (t *translatorLoop) translateAccessControlPolicy(
 	ctx context.Context,
-	acp *zephyr_networking.AccessControlPolicy,
-) ([]*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError, error) {
+	acp *smh_networking.AccessControlPolicy,
+) ([]*smh_networking_types.AccessControlPolicyStatus_TranslatorError, error) {
 	targetServices, err := t.getTargetServices(ctx, acp)
 	if err != nil {
 		return nil, err
 	}
-	var translatorErrors []*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError
+	var translatorErrors []*smh_networking_types.AccessControlPolicyStatus_TranslatorError
 	for _, meshTranslator := range t.meshTranslators {
 
 		translatorError := meshTranslator.Translate(
@@ -179,7 +179,7 @@ func (t *translatorLoop) translateAccessControlPolicy(
 // for that MeshService to reflect any changes to the underlying k8s Service.
 func (t *translatorLoop) translateACPsForMeshService(
 	ctx context.Context,
-	meshService *zephyr_discovery.MeshService,
+	meshService *smh_discovery.MeshService,
 ) ([]translatorErrorForACP, error) {
 	mesh, err := t.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
@@ -195,7 +195,7 @@ func (t *translatorLoop) translateACPsForMeshService(
 	}
 	var translatorErrorsForACPs []translatorErrorForACP
 	for _, acp := range acps {
-		var translatorErrors []*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError
+		var translatorErrors []*smh_networking_types.AccessControlPolicyStatus_TranslatorError
 		for _, meshTranslator := range t.meshTranslators {
 			translatorError := meshTranslator.Translate(
 				contextutils.WithLogger(ctx, meshTranslator.Name()),
@@ -215,7 +215,7 @@ func (t *translatorLoop) translateACPsForMeshService(
 }
 
 // Get all destination services' MeshService and backing Mesh selected by the AccessControlPolicy
-func (t *translatorLoop) getTargetServices(ctx context.Context, acp *zephyr_networking.AccessControlPolicy) ([]TargetService, error) {
+func (t *translatorLoop) getTargetServices(ctx context.Context, acp *smh_networking.AccessControlPolicy) ([]TargetService, error) {
 	meshServices, err := t.resourceSelector.GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
 	if err != nil {
 		return nil, err
@@ -237,9 +237,9 @@ func (t *translatorLoop) getTargetServices(ctx context.Context, acp *zephyr_netw
 // Get all AccessControlPolicies that are applicable to the given MeshService
 func (t *translatorLoop) getApplicableAccessControlPolicies(
 	ctx context.Context,
-	meshService *zephyr_discovery.MeshService,
-) ([]*zephyr_networking.AccessControlPolicy, error) {
-	var applicableACPs []*zephyr_networking.AccessControlPolicy
+	meshService *smh_discovery.MeshService,
+) ([]*smh_networking.AccessControlPolicy, error) {
+	var applicableACPs []*smh_networking.AccessControlPolicy
 	acpList, err := t.accessControlPolicyClient.ListAccessControlPolicy(ctx)
 	if err != nil {
 		return nil, err
@@ -272,24 +272,24 @@ func (t *translatorLoop) getApplicableAccessControlPolicies(
 // translatorErrors represent errors during translation to mesh-specific config
 func (t *translatorLoop) setStatus(
 	err error,
-	translatorErrors []*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError,
-	acp *zephyr_networking.AccessControlPolicy) {
+	translatorErrors []*smh_networking_types.AccessControlPolicyStatus_TranslatorError,
+	acp *smh_networking.AccessControlPolicy) {
 	if err != nil {
-		acp.Status.TranslationStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_PROCESSING_ERROR,
+		acp.Status.TranslationStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_PROCESSING_ERROR,
 			Message: fmt.Sprintf("Error while processing TrafficPolicy: %s", err.Error()),
 		}
 		// Clear any prior TranslatorErrors
 		acp.Status.TranslatorErrors = nil
 	} else if translatorErrors != nil {
-		acp.Status.TranslationStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_PROCESSING_ERROR,
+		acp.Status.TranslationStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_PROCESSING_ERROR,
 			Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
 		}
 		acp.Status.TranslatorErrors = translatorErrors
 	} else {
-		acp.Status.TranslationStatus = &zephyr_core_types.Status{
-			State: zephyr_core_types.Status_ACCEPTED,
+		acp.Status.TranslationStatus = &smh_core_types.Status{
+			State: smh_core_types.Status_ACCEPTED,
 		}
 		// Clear any prior TranslatorErrors
 		acp.Status.TranslatorErrors = nil
@@ -298,12 +298,12 @@ func (t *translatorLoop) setStatus(
 
 // Represents an AccessControlPolicy target, consisting of a MeshService and its associated Mesh
 type TargetService struct {
-	MeshService *zephyr_discovery.MeshService
-	Mesh        *zephyr_discovery.Mesh
+	MeshService *smh_discovery.MeshService
+	Mesh        *smh_discovery.Mesh
 }
 
 // Struct that pairs TranslatorErrors with the AccessControlPolicy they apply to
 type translatorErrorForACP struct {
-	accessControlPolicy *zephyr_networking.AccessControlPolicy
-	translatorErrors    []*zephyr_networking_types.AccessControlPolicyStatus_TranslatorError
+	accessControlPolicy *smh_networking.AccessControlPolicy
+	translatorErrors    []*smh_networking_types.AccessControlPolicyStatus_TranslatorError
 }

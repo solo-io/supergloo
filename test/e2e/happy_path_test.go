@@ -6,8 +6,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -34,13 +34,13 @@ var _ = Describe("HappyPath", func() {
 	})
 
 	applyTrafficPolicy := func(tpYaml string) {
-		var tp zephyr_networking.TrafficPolicy
+		var tp smh_networking.TrafficPolicy
 		ParseYaml(tpYaml, &tp)
 		err := env.Management.TrafficPolicyClient.CreateTrafficPolicy(context.Background(), &tp)
 		Expect(err).NotTo(HaveOccurred())
 		// see that it was accepted
 
-		Eventually(StatusOf(tp, env.Management), "1m", "1s").Should(Equal(zephyr_core_types.Status_ACCEPTED))
+		Eventually(StatusOf(tp, env.Management), "1m", "1s").Should(Equal(smh_core_types.Status_ACCEPTED))
 	}
 
 	curlReviews := func() string {
@@ -54,7 +54,7 @@ var _ = Describe("HappyPath", func() {
 
 	It("should work with traffic policy to local (v2) reviews", func() {
 		const tpYaml = `
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: TrafficPolicy
 metadata:
   namespace: service-mesh-hub
@@ -87,7 +87,7 @@ spec:
 	// This test assumes that ci script only deploy v3 to remote cluster
 	It("should work with traffic policy to remove (v3) reviews", func() {
 		const tpYaml = `
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: TrafficPolicy
 metadata:
   namespace: service-mesh-hub

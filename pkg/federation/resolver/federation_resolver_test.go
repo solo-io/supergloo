@@ -9,21 +9,21 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/dns"
 	"github.com/solo-io/service-mesh-hub/pkg/federation/resolver"
 	mock_meshes "github.com/solo-io/service-mesh-hub/pkg/federation/resolver/meshes/mock"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
-	mock_discovery_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
+	mock_discovery_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
+	mock_smh_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.smh.solo.io/v1alpha1"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/smh/discovery"
 	"go.uber.org/zap/zapcore"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -51,19 +51,19 @@ var _ = Describe("Federation Decider", func() {
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
 		meshWorkloadClient := mock_discovery_core.NewMockMeshWorkloadClient(ctrl)
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
-		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
+		virtualMeshClient := mock_smh_networking.NewMockVirtualMeshClient(ctrl)
 		meshFederationClient := mock_meshes.NewMockMeshFederationClient(ctrl)
 
 		federationClients := resolver.PerMeshFederationClients{
 			Istio: meshFederationClient,
 		}
 
-		var capturedEventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs
+		var capturedEventHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs
 
-		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		MeshServiceEventWatcher := mock_smh_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(_ context.Context, funcs *zephyr_discovery_controller.MeshServiceEventHandlerFuncs) error {
+			DoAndReturn(func(_ context.Context, funcs *smh_discovery_controller.MeshServiceEventHandlerFuncs) error {
 				capturedEventHandler = funcs
 				return nil
 			})
@@ -77,22 +77,22 @@ var _ = Describe("Federation Decider", func() {
 			MeshServiceEventWatcher,
 		).Start(ctx)
 
-		oldMeshService := &zephyr_discovery.MeshService{
-			Spec: zephyr_discovery_types.MeshServiceSpec{
-				Mesh: &zephyr_core_types.ResourceRef{
+		oldMeshService := &smh_discovery.MeshService{
+			Spec: smh_discovery_types.MeshServiceSpec{
+				Mesh: &smh_core_types.ResourceRef{
 					Name: "doesn't matter",
 				},
 			},
-			Status: zephyr_discovery_types.MeshServiceStatus{
-				FederationStatus: &zephyr_core_types.Status{
-					State: zephyr_core_types.Status_ACCEPTED,
+			Status: smh_discovery_types.MeshServiceStatus{
+				FederationStatus: &smh_core_types.Status{
+					State: smh_core_types.Status_ACCEPTED,
 				},
 			},
 		}
 		newMeshService := *oldMeshService
-		newMeshService.Status = zephyr_discovery_types.MeshServiceStatus{
-			FederationStatus: &zephyr_core_types.Status{
-				State: zephyr_core_types.Status_INVALID,
+		newMeshService.Status = smh_discovery_types.MeshServiceStatus{
+			FederationStatus: &smh_core_types.Status{
+				State: smh_core_types.Status_INVALID,
 			},
 		}
 		err := capturedEventHandler.UpdateMeshService(oldMeshService, &newMeshService)
@@ -103,19 +103,19 @@ var _ = Describe("Federation Decider", func() {
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
 		meshWorkloadClient := mock_discovery_core.NewMockMeshWorkloadClient(ctrl)
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
-		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
+		virtualMeshClient := mock_smh_networking.NewMockVirtualMeshClient(ctrl)
 		meshFederationClient := mock_meshes.NewMockMeshFederationClient(ctrl)
 
 		federationClients := resolver.PerMeshFederationClients{
 			Istio: meshFederationClient,
 		}
 
-		var capturedEventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs
+		var capturedEventHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs
 
-		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		MeshServiceEventWatcher := mock_smh_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(_ context.Context, funcs *zephyr_discovery_controller.MeshServiceEventHandlerFuncs) error {
+			DoAndReturn(func(_ context.Context, funcs *smh_discovery_controller.MeshServiceEventHandlerFuncs) error {
 				capturedEventHandler = funcs
 				return nil
 			})
@@ -129,13 +129,13 @@ var _ = Describe("Federation Decider", func() {
 			MeshServiceEventWatcher,
 		).Start(ctx)
 
-		service1 := &zephyr_discovery.MeshService{
-			Spec: zephyr_discovery_types.MeshServiceSpec{
-				Mesh: &zephyr_core_types.ResourceRef{
+		service1 := &smh_discovery.MeshService{
+			Spec: smh_discovery_types.MeshServiceSpec{
+				Mesh: &smh_core_types.ResourceRef{
 					Name: "doesn't matter",
 				},
 			},
-			Status: zephyr_discovery_types.MeshServiceStatus{},
+			Status: smh_discovery_types.MeshServiceStatus{},
 		}
 
 		err := capturedEventHandler.CreateMeshService(service1)
@@ -146,19 +146,19 @@ var _ = Describe("Federation Decider", func() {
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
 		meshWorkloadClient := mock_discovery_core.NewMockMeshWorkloadClient(ctrl)
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
-		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
+		virtualMeshClient := mock_smh_networking.NewMockVirtualMeshClient(ctrl)
 		meshFederationClient := mock_meshes.NewMockMeshFederationClient(ctrl)
 
 		federationClients := resolver.PerMeshFederationClients{
 			Istio: meshFederationClient,
 		}
 
-		var capturedEventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs
+		var capturedEventHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs
 
-		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		MeshServiceEventWatcher := mock_smh_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(_ context.Context, funcs *zephyr_discovery_controller.MeshServiceEventHandlerFuncs) error {
+			DoAndReturn(func(_ context.Context, funcs *smh_discovery_controller.MeshServiceEventHandlerFuncs) error {
 				capturedEventHandler = funcs
 				return nil
 			})
@@ -172,29 +172,29 @@ var _ = Describe("Federation Decider", func() {
 			MeshServiceEventWatcher,
 		).Start(ctx)
 
-		workload1 := &zephyr_discovery.MeshWorkload{
+		workload1 := &smh_discovery.MeshWorkload{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "workload-1",
 				Namespace: "ns",
 			},
-			Spec: zephyr_discovery_types.MeshWorkloadSpec{},
+			Spec: smh_discovery_types.MeshWorkloadSpec{},
 		}
 
-		workload2 := &zephyr_discovery.MeshWorkload{
+		workload2 := &smh_discovery.MeshWorkload{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "workload-2",
 				Namespace: "ns",
 			},
-			Spec: zephyr_discovery_types.MeshWorkloadSpec{},
+			Spec: smh_discovery_types.MeshWorkloadSpec{},
 		}
 
-		service1 := &zephyr_discovery.MeshService{
-			Spec: zephyr_discovery_types.MeshServiceSpec{
-				Mesh: &zephyr_core_types.ResourceRef{
+		service1 := &smh_discovery.MeshService{
+			Spec: smh_discovery_types.MeshServiceSpec{
+				Mesh: &smh_core_types.ResourceRef{
 					Name: "doesn't matter",
 				},
-				Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
-					FederatedToWorkloads: []*zephyr_core_types.ResourceRef{
+				Federation: &smh_discovery_types.MeshServiceSpec_Federation{
+					FederatedToWorkloads: []*smh_core_types.ResourceRef{
 						{
 							Name:      workload1.Name,
 							Namespace: workload1.Namespace,
@@ -206,7 +206,7 @@ var _ = Describe("Federation Decider", func() {
 					},
 				},
 			},
-			Status: zephyr_discovery_types.MeshServiceStatus{},
+			Status: smh_discovery_types.MeshServiceStatus{},
 		}
 		eventCtx := container_runtime.EventContext(ctx, container_runtime.CreateEvent, service1)
 		meshWorkloadClient.EXPECT().
@@ -220,11 +220,11 @@ var _ = Describe("Federation Decider", func() {
 		meshServiceClient.EXPECT().
 			UpdateMeshServiceStatus(
 				eventCtx,
-				&zephyr_discovery.MeshService{
+				&smh_discovery.MeshService{
 					Spec: service1.Spec,
-					Status: zephyr_discovery_types.MeshServiceStatus{
-						FederationStatus: &zephyr_core_types.Status{
-							State: zephyr_core_types.Status_PROCESSING_ERROR,
+					Status: smh_discovery_types.MeshServiceStatus{
+						FederationStatus: &smh_core_types.Status{
+							State: smh_core_types.Status_PROCESSING_ERROR,
 							Message: resolver.FailedToFederateServices(
 								service1,
 								service1.Spec.GetFederation().GetFederatedToWorkloads(),
@@ -258,19 +258,19 @@ var _ = Describe("Federation Decider", func() {
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
 		meshWorkloadClient := mock_discovery_core.NewMockMeshWorkloadClient(ctrl)
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
-		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
+		virtualMeshClient := mock_smh_networking.NewMockVirtualMeshClient(ctrl)
 		meshFederationClient := mock_meshes.NewMockMeshFederationClient(ctrl)
 
 		federationClients := resolver.PerMeshFederationClients{
 			Istio: meshFederationClient,
 		}
 
-		var capturedEventHandler *zephyr_discovery_controller.MeshServiceEventHandlerFuncs
+		var capturedEventHandler *smh_discovery_controller.MeshServiceEventHandlerFuncs
 
-		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		MeshServiceEventWatcher := mock_smh_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(_ context.Context, funcs *zephyr_discovery_controller.MeshServiceEventHandlerFuncs) error {
+			DoAndReturn(func(_ context.Context, funcs *smh_discovery_controller.MeshServiceEventHandlerFuncs) error {
 				capturedEventHandler = funcs
 				return nil
 			})
@@ -284,33 +284,33 @@ var _ = Describe("Federation Decider", func() {
 			MeshServiceEventWatcher,
 		).Start(ctx)
 
-		federatedServiceRef := &zephyr_core_types.ResourceRef{
+		federatedServiceRef := &smh_core_types.ResourceRef{
 			Name:      "federated-service",
 			Namespace: container_runtime.GetWriteNamespace(),
 		}
-		kubeServiceRef := &zephyr_core_types.ResourceRef{
+		kubeServiceRef := &smh_core_types.ResourceRef{
 			Name:      "test-svc",
 			Namespace: "application-ns",
 		}
-		meshWorkloadRef := &zephyr_core_types.ResourceRef{
+		meshWorkloadRef := &smh_core_types.ResourceRef{
 			Name:      "client-workload",
 			Namespace: "client-ns",
 		}
 		serverClusterName := "server-cluster"
-		clientClusterRef := &zephyr_core_types.ResourceRef{
+		clientClusterRef := &smh_core_types.ResourceRef{
 			Name: "client-cluster",
 		}
-		clientMesh := &zephyr_discovery.Mesh{
+		clientMesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "client-mesh",
 				Namespace: container_runtime.GetWriteNamespace(),
 			},
-			Spec: zephyr_discovery_types.MeshSpec{
+			Spec: smh_discovery_types.MeshSpec{
 				Cluster: clientClusterRef,
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
-						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+				MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
+						Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+							Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
@@ -318,16 +318,16 @@ var _ = Describe("Federation Decider", func() {
 				},
 			},
 		}
-		serverMesh := &zephyr_discovery.Mesh{
+		serverMesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "server-mesh",
 				Namespace: container_runtime.GetWriteNamespace(),
 			},
-			Spec: zephyr_discovery_types.MeshSpec{
-				MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{
-					Istio1_5: &zephyr_discovery_types.MeshSpec_Istio1_5{
-						Metadata: &zephyr_discovery_types.MeshSpec_IstioMesh{
-							Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+			Spec: smh_discovery_types.MeshSpec{
+				MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+					Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
+						Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+							Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
@@ -336,27 +336,27 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 
-		federatedService := &zephyr_discovery.MeshService{
+		federatedService := &smh_discovery.MeshService{
 			ObjectMeta: selection.ResourceRefToObjectMeta(federatedServiceRef),
-			Spec: zephyr_discovery_types.MeshServiceSpec{
-				Federation: &zephyr_discovery_types.MeshServiceSpec_Federation{
+			Spec: smh_discovery_types.MeshServiceSpec{
+				Federation: &smh_discovery_types.MeshServiceSpec_Federation{
 					MulticlusterDnsName:  dns.BuildMulticlusterDnsName(kubeServiceRef, serverClusterName),
-					FederatedToWorkloads: []*zephyr_core_types.ResourceRef{meshWorkloadRef},
+					FederatedToWorkloads: []*smh_core_types.ResourceRef{meshWorkloadRef},
 				},
-				KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
+				KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
 					Ref: kubeServiceRef,
 				},
 				Mesh: selection.ObjectMetaToResourceRef(serverMesh.ObjectMeta),
 			},
 		}
-		federatedToWorkload := &zephyr_discovery.MeshWorkload{
-			Spec: zephyr_discovery_types.MeshWorkloadSpec{
+		federatedToWorkload := &smh_discovery.MeshWorkload{
+			Spec: smh_discovery_types.MeshWorkloadSpec{
 				Mesh: selection.ObjectMetaToResourceRef(clientMesh.ObjectMeta),
 			},
 		}
-		virtualMeshContainingService := &zephyr_networking.VirtualMesh{
-			Spec: zephyr_networking_types.VirtualMeshSpec{
-				Meshes: []*zephyr_core_types.ResourceRef{selection.ObjectMetaToResourceRef(serverMesh.ObjectMeta)},
+		virtualMeshContainingService := &smh_networking.VirtualMesh{
+			Spec: smh_networking_types.VirtualMeshSpec{
+				Meshes: []*smh_core_types.ResourceRef{selection.ObjectMetaToResourceRef(serverMesh.ObjectMeta)},
 			},
 		}
 		externalAddress := "255.255.255.255" // intentional garbage
@@ -374,8 +374,8 @@ var _ = Describe("Federation Decider", func() {
 			Return(serverMesh, nil)
 		virtualMeshClient.EXPECT().
 			ListVirtualMesh(eventCtx).
-			Return(&zephyr_networking.VirtualMeshList{
-				Items: []zephyr_networking.VirtualMesh{*virtualMeshContainingService},
+			Return(&smh_networking.VirtualMeshList{
+				Items: []smh_networking.VirtualMesh{*virtualMeshContainingService},
 			}, nil)
 		eap := dns.ExternalAccessPoint{
 			Address: externalAddress,
@@ -388,8 +388,8 @@ var _ = Describe("Federation Decider", func() {
 			FederateClientSide(contextutils.WithLogger(eventCtx, "istio"), "istio-system", eap, federatedService, federatedToWorkload).
 			Return(nil)
 		serviceCopy := *federatedService
-		serviceCopy.Status.FederationStatus = &zephyr_core_types.Status{
-			State: zephyr_core_types.Status_ACCEPTED,
+		serviceCopy.Status.FederationStatus = &smh_core_types.Status{
+			State: smh_core_types.Status_ACCEPTED,
 		}
 		meshServiceClient.EXPECT().
 			UpdateMeshServiceStatus(eventCtx, &serviceCopy).

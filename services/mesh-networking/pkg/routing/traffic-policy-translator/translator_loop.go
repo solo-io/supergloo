@@ -6,12 +6,12 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
@@ -23,11 +23,11 @@ import (
 func NewTrafficPolicyTranslatorLoop(
 	preprocessor preprocess.TrafficPolicyPreprocessor,
 	meshTranslators []TrafficPolicyMeshTranslator,
-	meshClient zephyr_discovery.MeshClient,
-	meshServiceClient zephyr_discovery.MeshServiceClient,
-	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
-	TrafficPolicyEventWatcher zephyr_networking_controller.TrafficPolicyEventWatcher,
-	MeshServiceEventWatcher zephyr_discovery_controller.MeshServiceEventWatcher,
+	meshClient smh_discovery.MeshClient,
+	meshServiceClient smh_discovery.MeshServiceClient,
+	trafficPolicyClient smh_networking.TrafficPolicyClient,
+	TrafficPolicyEventWatcher smh_networking_controller.TrafficPolicyEventWatcher,
+	MeshServiceEventWatcher smh_discovery_controller.MeshServiceEventWatcher,
 ) TrafficPolicyTranslatorLoop {
 	return &trafficPolicyTranslatorLoop{
 		preprocessor:              preprocessor,
@@ -43,16 +43,16 @@ func NewTrafficPolicyTranslatorLoop(
 type trafficPolicyTranslatorLoop struct {
 	preprocessor              preprocess.TrafficPolicyPreprocessor
 	meshTranslators           []TrafficPolicyMeshTranslator
-	meshClient                zephyr_discovery.MeshClient
-	meshServiceClient         zephyr_discovery.MeshServiceClient
-	trafficPolicyClient       zephyr_networking.TrafficPolicyClient
-	TrafficPolicyEventWatcher zephyr_networking_controller.TrafficPolicyEventWatcher
-	MeshServiceEventWatcher   zephyr_discovery_controller.MeshServiceEventWatcher
+	meshClient                smh_discovery.MeshClient
+	meshServiceClient         smh_discovery.MeshServiceClient
+	trafficPolicyClient       smh_networking.TrafficPolicyClient
+	TrafficPolicyEventWatcher smh_networking_controller.TrafficPolicyEventWatcher
+	MeshServiceEventWatcher   smh_discovery_controller.MeshServiceEventWatcher
 }
 
 func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
-	err := t.TrafficPolicyEventWatcher.AddEventHandler(ctx, &zephyr_networking_controller.TrafficPolicyEventHandlerFuncs{
-		OnCreate: func(trafficPolicy *zephyr_networking.TrafficPolicy) error {
+	err := t.TrafficPolicyEventWatcher.AddEventHandler(ctx, &smh_networking_controller.TrafficPolicyEventHandlerFuncs{
+		OnCreate: func(trafficPolicy *smh_networking.TrafficPolicy) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, trafficPolicy)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", trafficPolicy.Spec),
@@ -67,7 +67,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 			return nil
 		},
 
-		OnUpdate: func(old, new *zephyr_networking.TrafficPolicy) error {
+		OnUpdate: func(old, new *smh_networking.TrafficPolicy) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
 			logger.Debugw("event handler enter",
 				zap.Any("old_spec", old.Spec),
@@ -84,13 +84,13 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 			return nil
 		},
 
-		OnDelete: func(trafficPolicy *zephyr_networking.TrafficPolicy) error {
+		OnDelete: func(trafficPolicy *smh_networking.TrafficPolicy) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, trafficPolicy)
 			logger.Debugf("Ignoring event for traffic policy: %s.%s", trafficPolicy.Name, trafficPolicy.Namespace)
 			return nil
 		},
 
-		OnGeneric: func(trafficPolicy *zephyr_networking.TrafficPolicy) error {
+		OnGeneric: func(trafficPolicy *smh_networking.TrafficPolicy) error {
 			container_runtime.BuildEventLogger(ctx, container_runtime.GenericEvent, trafficPolicy).
 				Debugf("Ignoring event for traffic policy: %s.%s", trafficPolicy.Name, trafficPolicy.Namespace)
 			return nil
@@ -101,8 +101,8 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 		return err
 	}
 
-	err = t.MeshServiceEventWatcher.AddEventHandler(ctx, &zephyr_discovery_controller.MeshServiceEventHandlerFuncs{
-		OnCreate: func(meshService *zephyr_discovery.MeshService) error {
+	err = t.MeshServiceEventWatcher.AddEventHandler(ctx, &smh_discovery_controller.MeshServiceEventHandlerFuncs{
+		OnCreate: func(meshService *smh_discovery.MeshService) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, meshService)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", meshService.Spec),
@@ -115,7 +115,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 			return nil
 		},
 
-		OnUpdate: func(old, new *zephyr_discovery.MeshService) error {
+		OnUpdate: func(old, new *smh_discovery.MeshService) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
 			logger.Debugw("event handler enter",
 				zap.Any("old_spec", old.Spec),
@@ -130,7 +130,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 			return nil
 		},
 
-		OnDelete: func(meshService *zephyr_discovery.MeshService) error {
+		OnDelete: func(meshService *smh_discovery.MeshService) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, meshService)
 			logger.Debugw("Ignoring event",
 				zap.Any("spec", meshService.Spec),
@@ -139,7 +139,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 			return nil
 		},
 
-		OnGeneric: func(meshService *zephyr_discovery.MeshService) error {
+		OnGeneric: func(meshService *smh_discovery.MeshService) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, meshService)
 			logger.Debugw("Ignoring event",
 				zap.Any("spec", meshService.Spec),
@@ -158,8 +158,8 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 // Compute and upsert all Mesh-specific configuration needed to reflect TrafficPolicy
 func (t *trafficPolicyTranslatorLoop) upsertPolicyResourcesForTrafficPolicy(
 	ctx context.Context,
-	trafficPolicy *zephyr_networking.TrafficPolicy,
-) ([]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError, error) {
+	trafficPolicy *smh_networking.TrafficPolicy,
+) ([]*smh_networking_types.TrafficPolicyStatus_TranslatorError, error) {
 	mergedTrafficPoliciesByMeshService, err := t.preprocessor.PreprocessTrafficPolicy(ctx, trafficPolicy)
 	if err != nil {
 		return nil, err
@@ -170,7 +170,7 @@ func (t *trafficPolicyTranslatorLoop) upsertPolicyResourcesForTrafficPolicy(
 // Compute and upsert all Mesh-specific configuration needed to reflect TrafficPolicies for the given MeshService
 func (t *trafficPolicyTranslatorLoop) upsertPolicyResourcesForMeshService(
 	ctx context.Context,
-	meshService *zephyr_discovery.MeshService,
+	meshService *smh_discovery.MeshService,
 ) error {
 	mergedTrafficPoliciesByMeshService, err := t.preprocessor.PreprocessTrafficPoliciesForMeshService(ctx, meshService)
 	if err != nil {
@@ -186,9 +186,9 @@ func (t *trafficPolicyTranslatorLoop) upsertPolicyResourcesForMeshService(
 
 func (t *trafficPolicyTranslatorLoop) translateMergedTrafficPolicies(
 	ctx context.Context,
-	mergedTrafficPoliciesByMeshService map[selection.MeshServiceId][]*zephyr_networking.TrafficPolicy,
-) ([]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError, error) {
-	var meshTypeStatuses []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError
+	mergedTrafficPoliciesByMeshService map[selection.MeshServiceId][]*smh_networking.TrafficPolicy,
+) ([]*smh_networking_types.TrafficPolicyStatus_TranslatorError, error) {
+	var meshTypeStatuses []*smh_networking_types.TrafficPolicyStatus_TranslatorError
 	for meshServiceKey, mergedTrafficPolicies := range mergedTrafficPoliciesByMeshService {
 		meshServiceObjectKey := client.ObjectKey{Name: meshServiceKey.Name, Namespace: meshServiceKey.Namespace}
 		meshService, err := t.meshServiceClient.GetMeshService(ctx, meshServiceObjectKey)
@@ -218,31 +218,31 @@ func (t *trafficPolicyTranslatorLoop) translateMergedTrafficPolicies(
 // translatorErrors represent errors during translation to mesh-specific config
 func (t *trafficPolicyTranslatorLoop) setStatus(
 	err error,
-	translatorErrors []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError,
-	trafficPolicy *zephyr_networking.TrafficPolicy) {
+	translatorErrors []*smh_networking_types.TrafficPolicyStatus_TranslatorError,
+	trafficPolicy *smh_networking.TrafficPolicy) {
 	if err != nil {
 		// clear out any previous translator errors
 		trafficPolicy.Status.TranslatorErrors = nil
 		if eris.Is(err, errors.TrafficPolicyConflictError) {
-			trafficPolicy.Status.TranslationStatus = &zephyr_core_types.Status{
-				State:   zephyr_core_types.Status_CONFLICT,
+			trafficPolicy.Status.TranslationStatus = &smh_core_types.Status{
+				State:   smh_core_types.Status_CONFLICT,
 				Message: "TrafficPolicy conflicts with existing set of TrafficPolicies",
 			}
 		} else {
-			trafficPolicy.Status.TranslationStatus = &zephyr_core_types.Status{
-				State:   zephyr_core_types.Status_PROCESSING_ERROR,
+			trafficPolicy.Status.TranslationStatus = &smh_core_types.Status{
+				State:   smh_core_types.Status_PROCESSING_ERROR,
 				Message: fmt.Sprintf("Error while processing TrafficPolicy: %s", err.Error()),
 			}
 		}
 	} else if translatorErrors != nil {
-		trafficPolicy.Status.TranslationStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_PROCESSING_ERROR,
+		trafficPolicy.Status.TranslationStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_PROCESSING_ERROR,
 			Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
 		}
 		trafficPolicy.Status.TranslatorErrors = translatorErrors
 	} else {
-		trafficPolicy.Status.TranslationStatus = &zephyr_core_types.Status{
-			State: zephyr_core_types.Status_ACCEPTED,
+		trafficPolicy.Status.TranslationStatus = &smh_core_types.Status{
+			State: smh_core_types.Status_ACCEPTED,
 		}
 		// clear out any previous translator errors
 		trafficPolicy.Status.TranslatorErrors = nil

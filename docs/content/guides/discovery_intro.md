@@ -101,7 +101,7 @@ kubectl -n service-mesh-hub get mesh istio-istio-system-new-remote-cluster -oyam
 (snipped for brevity)
 
 {{< highlight yaml >}}
-apiVersion: discovery.zephyr.solo.io/v1alpha1
+apiVersion: discovery.smh.solo.io/v1alpha1
 kind: Mesh
 metadata:  
   ... 

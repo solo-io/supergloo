@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	k8s_rbac_types "k8s.io/api/rbac/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
@@ -39,7 +39,7 @@ func NewClusterAuthorization(
 func (c *clusterAuthorization) BuildRemoteBearerToken(
 	ctx context.Context,
 	targetClusterCfg *rest.Config,
-	serviceAccountRef *zephyr_core_types.ResourceRef,
+	serviceAccountRef *smh_core_types.ResourceRef,
 ) (bearerToken string, err error) {
 	_, err = c.remoteAuthorityManager.ApplyRemoteServiceAccount(ctx, serviceAccountRef, ServiceAccountRoles)
 	if err != nil {

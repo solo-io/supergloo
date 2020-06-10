@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/mocks"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
@@ -46,7 +46,7 @@ var _ = Describe("agent client", func() {
 	})
 
 	It("will return the errror if secret client does not return is not found", func() {
-		csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
+		csr := &smh_security.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
@@ -61,7 +61,7 @@ var _ = Describe("agent client", func() {
 	})
 
 	It("will attempt to marshal into cert secret if secret is found", func() {
-		csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
+		csr := &smh_security.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
@@ -77,7 +77,7 @@ var _ = Describe("agent client", func() {
 	})
 
 	It("will attempt to marshal into cert secret, will return data if successful", func() {
-		csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
+		csr := &smh_security.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
@@ -104,7 +104,7 @@ var _ = Describe("agent client", func() {
 	})
 
 	It("will attempt to create new secret if old one cannot be found", func() {
-		csr := &zephyr_security.VirtualMeshCertificateSigningRequest{
+		csr := &smh_security.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",

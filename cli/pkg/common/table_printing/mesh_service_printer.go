@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 )
 
 func NewMeshServicePrinter(tableBuilder TableBuilder) MeshServicePrinter {
@@ -23,7 +23,7 @@ type meshServicePrinter struct {
 
 func (m *meshServicePrinter) Print(
 	out io.Writer,
-	meshServices []*zephyr_discovery.MeshService,
+	meshServices []*smh_discovery.MeshService,
 ) error {
 	if len(meshServices) == 0 {
 		return nil
@@ -70,7 +70,7 @@ func (m *meshServicePrinter) Print(
 	return nil
 }
 
-func (m *meshServicePrinter) buildLabelCell(meshSvc *zephyr_discovery.MeshService) string {
+func (m *meshServicePrinter) buildLabelCell(meshSvc *smh_discovery.MeshService) string {
 	var items []string
 
 	svc := meshSvc.Spec.GetKubeService()

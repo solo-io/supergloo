@@ -3,7 +3,7 @@
 title: "http.proto"
 ---
 
-## Package : `core.zephyr.solo.io`
+## Package : `core.smh.solo.io`
 
 
 
@@ -17,7 +17,7 @@ title: "http.proto"
 
 ## Table of Contents
 
-  - [HttpMethodValue](#core.zephyr.solo.io.HttpMethodValue)
+  - [HttpMethodValue](#core.smh.solo.io.HttpMethodValue)
 
 
 
@@ -26,7 +26,7 @@ title: "http.proto"
  <!-- end messages -->
 
 
-<a name="core.zephyr.solo.io.HttpMethodValue"></a>
+<a name="core.smh.solo.io.HttpMethodValue"></a>
 
 ### HttpMethodValue
 

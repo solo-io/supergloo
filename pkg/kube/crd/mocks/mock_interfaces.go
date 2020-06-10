@@ -36,19 +36,19 @@ func (m *MockCrdRemover) EXPECT() *MockCrdRemoverMockRecorder {
 	return m.recorder
 }
 
-// RemoveZephyrCrds mocks base method.
-func (m *MockCrdRemover) RemoveZephyrCrds(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config) (bool, error) {
+// RemovesmhCrds mocks base method.
+func (m *MockCrdRemover) RemovesmhCrds(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveZephyrCrds", ctx, clusterName, remoteKubeConfig)
+	ret := m.ctrl.Call(m, "RemovesmhCrds", ctx, clusterName, remoteKubeConfig)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RemoveZephyrCrds indicates an expected call of RemoveZephyrCrds.
-func (mr *MockCrdRemoverMockRecorder) RemoveZephyrCrds(ctx, clusterName, remoteKubeConfig interface{}) *gomock.Call {
+// RemovesmhCrds indicates an expected call of RemovesmhCrds.
+func (mr *MockCrdRemoverMockRecorder) RemovesmhCrds(ctx, clusterName, remoteKubeConfig interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveZephyrCrds", reflect.TypeOf((*MockCrdRemover)(nil).RemoveZephyrCrds), ctx, clusterName, remoteKubeConfig)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovesmhCrds", reflect.TypeOf((*MockCrdRemover)(nil).RemovesmhCrds), ctx, clusterName, remoteKubeConfig)
 }
 
 // RemoveCrdGroup mocks base method.

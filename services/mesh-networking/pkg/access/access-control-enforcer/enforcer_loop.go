@@ -5,11 +5,11 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/access-control/enforcer"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/sets"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"go.uber.org/zap"
@@ -17,16 +17,16 @@ import (
 )
 
 type enforcerLoop struct {
-	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher
-	virtualMeshClient       zephyr_networking.VirtualMeshClient
-	meshClient              zephyr_discovery.MeshClient
+	virtualMeshEventWatcher smh_networking_controller.VirtualMeshEventWatcher
+	virtualMeshClient       smh_networking.VirtualMeshClient
+	meshClient              smh_discovery.MeshClient
 	meshEnforcers           []access_control_enforcer.AccessPolicyMeshEnforcer
 }
 
 func NewEnforcerLoop(
-	virtualMeshEventWatcher zephyr_networking_controller.VirtualMeshEventWatcher,
-	virtualMeshClient zephyr_networking.VirtualMeshClient,
-	meshClient zephyr_discovery.MeshClient,
+	virtualMeshEventWatcher smh_networking_controller.VirtualMeshEventWatcher,
+	virtualMeshClient smh_networking.VirtualMeshClient,
+	meshClient smh_discovery.MeshClient,
 	meshEnforcers []access_control_enforcer.AccessPolicyMeshEnforcer,
 ) AccessPolicyEnforcerLoop {
 	return &enforcerLoop{
@@ -38,8 +38,8 @@ func NewEnforcerLoop(
 }
 
 func (e *enforcerLoop) Start(ctx context.Context) error {
-	return e.virtualMeshEventWatcher.AddEventHandler(ctx, &zephyr_networking_controller.VirtualMeshEventHandlerFuncs{
-		OnCreate: func(obj *zephyr_networking.VirtualMesh) error {
+	return e.virtualMeshEventWatcher.AddEventHandler(ctx, &smh_networking_controller.VirtualMeshEventHandlerFuncs{
+		OnCreate: func(obj *smh_networking.VirtualMesh) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.CreateEvent, obj)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", obj.Spec),
@@ -47,7 +47,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 			)
 			return e.reconcile(ctx, container_runtime.CreateEvent)
 		},
-		OnUpdate: func(old, new *zephyr_networking.VirtualMesh) error {
+		OnUpdate: func(old, new *smh_networking.VirtualMesh) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.UpdateEvent, new)
 			logger.Debugw("event handler enter",
 				zap.Any("old_spec", old.Spec),
@@ -57,7 +57,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 			)
 			return e.reconcile(ctx, container_runtime.UpdateEvent)
 		},
-		OnDelete: func(obj *zephyr_networking.VirtualMesh) error {
+		OnDelete: func(obj *smh_networking.VirtualMesh) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.DeleteEvent, obj)
 			logger.Debugw("event handler enter",
 				zap.Any("spec", obj.Spec),
@@ -65,7 +65,7 @@ func (e *enforcerLoop) Start(ctx context.Context) error {
 			)
 			return e.reconcile(ctx, container_runtime.DeleteEvent)
 		},
-		OnGeneric: func(virtualMesh *zephyr_networking.VirtualMesh) error {
+		OnGeneric: func(virtualMesh *smh_networking.VirtualMesh) error {
 			logger := container_runtime.BuildEventLogger(ctx, container_runtime.GenericEvent, virtualMesh)
 			logger.Debugf("Ignoring event: %+v", virtualMesh)
 			return nil
@@ -108,8 +108,8 @@ func (e *enforcerLoop) cleanupAppmeshResources(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	allMeshes := zephyr_discovery_sets.NewMeshSet()
-	meshesInVirtualMesh := zephyr_discovery_sets.NewMeshSet()
+	allMeshes := smh_discovery_sets.NewMeshSet()
+	meshesInVirtualMesh := smh_discovery_sets.NewMeshSet()
 	for _, mesh := range meshList.Items {
 		mesh := mesh
 		if mesh.Spec.GetAwsAppMesh() == nil {
@@ -124,7 +124,7 @@ func (e *enforcerLoop) cleanupAppmeshResources(ctx context.Context) error {
 	for _, vm := range virtualMeshList.Items {
 		vm := vm
 		for _, meshRef := range vm.Spec.GetMeshes() {
-			meshesInVirtualMesh.Insert(&zephyr_discovery.Mesh{
+			meshesInVirtualMesh.Insert(&smh_discovery.Mesh{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      meshRef.GetName(),
 					Namespace: meshRef.GetNamespace(),
@@ -153,7 +153,7 @@ func (e *enforcerLoop) cleanupAppmeshResources(ctx context.Context) error {
 // If virtualMesh is nil, enforce the mesh specific default.
 func (e *enforcerLoop) enforceGlobalAccessControl(
 	ctx context.Context,
-	virtualMesh *zephyr_networking.VirtualMesh,
+	virtualMesh *smh_networking.VirtualMesh,
 ) error {
 	meshes, err := e.fetchMeshes(ctx, virtualMesh)
 	if err != nil {
@@ -179,9 +179,9 @@ func (e *enforcerLoop) enforceGlobalAccessControl(
 
 func (e *enforcerLoop) fetchMeshes(
 	ctx context.Context,
-	virtualMesh *zephyr_networking.VirtualMesh,
-) ([]*zephyr_discovery.Mesh, error) {
-	var meshes []*zephyr_discovery.Mesh
+	virtualMesh *smh_networking.VirtualMesh,
+) ([]*smh_discovery.Mesh, error) {
+	var meshes []*smh_discovery.Mesh
 	for _, meshRef := range virtualMesh.Spec.GetMeshes() {
 		mesh, err := e.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshRef))
 		if err != nil {
@@ -194,17 +194,17 @@ func (e *enforcerLoop) fetchMeshes(
 
 func (e *enforcerLoop) setStatus(
 	ctx context.Context,
-	virtualMesh *zephyr_networking.VirtualMesh,
+	virtualMesh *smh_networking.VirtualMesh,
 	err error,
 ) error {
 	if err != nil {
-		virtualMesh.Status.AccessControlEnforcementStatus = &zephyr_core_types.Status{
-			State:   zephyr_core_types.Status_PROCESSING_ERROR,
+		virtualMesh.Status.AccessControlEnforcementStatus = &smh_core_types.Status{
+			State:   smh_core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
 		}
 	} else {
-		virtualMesh.Status.AccessControlEnforcementStatus = &zephyr_core_types.Status{
-			State: zephyr_core_types.Status_ACCEPTED,
+		virtualMesh.Status.AccessControlEnforcementStatus = &smh_core_types.Status{
+			State: smh_core_types.Status_ACCEPTED,
 		}
 	}
 	return e.virtualMeshClient.UpdateVirtualMeshStatus(ctx, virtualMesh)
