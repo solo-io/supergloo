@@ -39,7 +39,7 @@ IMAGE_REPO := soloio
 # Important to clean before pushing new releases. Dockerfiles and binaries may not update properly
 .PHONY: clean
 clean: helm-clean
-	# delete all _output directories, even those in services/*
+	# delete all _output directories, even those in cmd/*
 	# -prune prevents searching directories that we just deleted
 	find . -name '*_output' -prune -exec rm -rf {} \;
 
@@ -80,7 +80,7 @@ fmt-changed:
 # the vendor directory, even though we have excluded the directory in the .yamllint config file
 .PHONY: check-format
 check-format:
-	NOT_FORMATTED=$$(gofmt -l ./services/ ./ci/) && if [ -n "$$NOT_FORMATTED" ]; then echo These files are not formatted: $$NOT_FORMATTED; exit 1; fi
+	NOT_FORMATTED=$$(gofmt -l ./cmd/ ./ci/) && if [ -n "$$NOT_FORMATTED" ]; then echo These files are not formatted: $$NOT_FORMATTED; exit 1; fi
 
 .PHONY: check-spelling
 check-spelling:
@@ -106,13 +106,13 @@ generated-code:
 
 # $(1) name of container
 define build_container
-docker build -t ${IMAGE_REPO}/$(1):$(VERSION) $(ROOTDIR)/services/$(1)/_output -f $(ROOTDIR)/services/$(1)/cmd/Dockerfile;
+docker build -t ${IMAGE_REPO}/$(1):$(VERSION) $(ROOTDIR)/cmd/$(1)/_output -f $(ROOTDIR)/cmd/$(1)/cmd/Dockerfile;
 endef
 
 #----------------------------------------------------------------------------------
 # Mesh Discovery
 #----------------------------------------------------------------------------------
-MESH_DISCOVERY_DIR=services/mesh-discovery
+MESH_DISCOVERY_DIR=cmd/mesh-discovery
 MESH_DISCOVERY_OUTPUT_DIR=$(ROOTDIR)/$(MESH_DISCOVERY_DIR)/_output
 MESH_DISCOVERY_SOURCES=$(shell find $(MESH_DISCOVERY_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 

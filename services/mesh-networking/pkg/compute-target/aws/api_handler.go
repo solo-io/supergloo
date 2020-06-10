@@ -3,13 +3,14 @@ package aws
 import (
 	"context"
 
+	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
 	"github.com/solo-io/service-mesh-hub/pkg/aws/clients"
 	credentials2 "github.com/solo-io/service-mesh-hub/pkg/aws/credentials"
-	aws2 "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/compute-target/aws"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -23,7 +24,7 @@ func NewNetworkingAwsCredsHandler(
 	credentialsGetter credentials2.AwsCredentialsGetter,
 	stsClientFactory clients.STSClientFactory,
 	secretCredsConverter aws_creds.SecretAwsCredsConverter,
-) aws2.AwsCredsHandler {
+) compute_target.ComputeTargetCredentialsHandler {
 	return &networkingAwsCredsHandler{
 		credentialsMap:       credentialsGetter,
 		stsClientFactory:     stsClientFactory,
