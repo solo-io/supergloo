@@ -7,8 +7,8 @@ import (
 	smh_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	"github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen"
+	csr_generator "github.com/solo-io/service-mesh-hub/pkg/csr-agent/csr-generator"
 	cert_signer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/security/cert-signer"
-	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 )
 
 // this is the main entrypoint for all virtual-mesh multi cluster logic

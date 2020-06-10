@@ -141,7 +141,7 @@ mesh-networking-docker: $(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd6
 #----------------------------------------------------------------------------------
 # Csr Agent
 #----------------------------------------------------------------------------------
-CSR_AGENT_DIR=services/csr-agent
+CSR_AGENT_DIR=cmd/csr-agent
 CSR_AGENT_OUTPUT_DIR=$(ROOTDIR)/$(CSR_AGENT_DIR)/_output
 CSR_AGENT_SOURCES=$(shell find $(CSR_AGENT_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 

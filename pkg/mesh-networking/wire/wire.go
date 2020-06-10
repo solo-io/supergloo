@@ -14,12 +14,12 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/common/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
+	csr_generator "github.com/solo-io/service-mesh-hub/pkg/csr-agent/csr-generator"
 	networking_multicluster "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/compute-target"
 	controller_factories "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/compute-target/controllers"
 	cert_manager "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/security/cert-manager"
 	cert_signer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/security/cert-signer"
 	vm_validation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/validation"
-	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

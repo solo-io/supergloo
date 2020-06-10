@@ -33,6 +33,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
+	csr_generator "github.com/solo-io/service-mesh-hub/pkg/csr-agent/csr-generator"
 	access_policy_enforcer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer"
 	acp_translator "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-policy-translator"
 	istio_translator2 "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-policy-translator/istio-translator"
@@ -47,7 +48,6 @@ import (
 	cert_manager "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/security/cert-manager"
 	cert_signer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/security/cert-signer"
 	vm_validation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/validation"
-	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
