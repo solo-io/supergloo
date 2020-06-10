@@ -10,6 +10,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 func NewTranslationReconciler(
@@ -38,12 +39,53 @@ func (*translationReconciler) GetName() string {
 }
 
 func (t *translationReconciler) Reconcile(ctx context.Context) error {
+	processor := translationProcessor{
+		meshServiceReader:                t.meshServiceClient,
+		meshReader:                       t.meshClient,
+		translationSnapshotBuilderGetter: t.translationSnapshotBuilderGetter,
+	}
+	clusterNameToSnapshot, err := processor.Process(ctx)
+	if err != nil {
+		return err
+	}
+	if clusterNameToSnapshot == nil {
+		return nil
+	}
+	// reconcile everything at once
+	return t.snapshotReconciler.ReconcileAllSnapshots(ctx, clusterNameToSnapshot)
+
+}
+
+type translationProcessor struct {
+	meshServiceReader                zephyr_discovery.MeshServiceReader
+	meshReader                       zephyr_discovery.MeshReader
+	translationSnapshotBuilderGetter snapshot.TranslationSnapshotAccumulatorGetter
+}
+
+func ClusterKeyFromMesh(mesh *zephyr_discovery.Mesh) types.NamespacedName {
+	return types.NamespacedName{
+		Name:      mesh.Spec.Cluster.Name,
+		Namespace: mesh.Spec.Cluster.Namespace,
+	}
+}
+
+// return a map that's pre-populated for every cluster name referenced in the meshes
+// we still want to run reconciliation for clusters where there are no mesh services
+func NewClusterNameToSnapshot(knownMeshes []*zephyr_discovery.Mesh) snapshot.ClusterNameToSnapshot {
+	m := snapshot.ClusterNameToSnapshot{}
+	for _, mesh := range knownMeshes {
+		m[ClusterKeyFromMesh(mesh)] = &snapshot.TranslatedSnapshot{}
+	}
+	return m
+}
+
+func (t *translationProcessor) Process(ctx context.Context) (snapshot.ClusterNameToSnapshot, error) {
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Debug("Running iteration of traffic policy translator")
 
-	meshList, err := t.meshClient.ListMesh(ctx)
+	meshList, err := t.meshReader.ListMesh(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// need to populate this map from our known meshes, rather than the mesh services we know about
@@ -57,14 +99,14 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 	}
 
 	if len(knownMeshes) == 0 {
-		return nil
+		return nil, nil
 	}
 
-	clusterNameToSnapshot := t.snapshotReconciler.InitializeClusterNameToSnapshot(knownMeshes)
+	clusterNameToSnapshot := NewClusterNameToSnapshot(knownMeshes)
 
-	meshServiceList, err := t.meshServiceClient.ListMeshService(ctx)
+	meshServiceList, err := t.meshServiceReader.ListMeshService(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var allMeshServices []*zephyr_discovery.MeshService
@@ -79,33 +121,31 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 		meshId := selection.ToUniqueSingleClusterString(selection.ResourceRefToObjectMeta(meshService.Spec.GetMesh()))
 		mesh, ok := meshIdToMesh[meshId]
 		if !ok {
-			return eris.Errorf("Got a mesh service %s.%s belonging to a mesh %s.%s that does not exist", meshService.GetName(), meshService.GetNamespace(), mesh.GetName(), mesh.GetNamespace())
+			return nil, eris.Errorf("Got a mesh service %s.%s belonging to a mesh %s.%s that does not exist", meshService.GetName(), meshService.GetNamespace(), mesh.GetName(), mesh.GetNamespace())
 		}
 
-		clusterName := mesh.Spec.GetCluster().GetName()
 		meshType, err := metadata.MeshToMeshType(mesh)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		snapshotAccumulator, err := t.translationSnapshotBuilderGetter(meshType)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// run one round of translation just for this service, accumulating the results into our map
 		err = snapshotAccumulator.AccumulateFromTranslation(
-			clusterNameToSnapshot[clusterName],
+			clusterNameToSnapshot[ClusterKeyFromMesh(mesh)],
 			&meshService,
 			allMeshServices,
 			mesh,
 		)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 	}
 
-	// reconcile everything at once
-	return t.snapshotReconciler.ReconcileAllSnapshots(ctx, clusterNameToSnapshot)
+	return clusterNameToSnapshot, nil
 }

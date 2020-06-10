@@ -2,7 +2,9 @@ package translation_framework_test
 
 import (
 	"context"
+	"reflect"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -77,8 +79,8 @@ var _ = Describe("TranslationReconciler", func() {
 				}
 				// contents don't matter
 				clusterNameToSnapshot := map[string]*snapshot.TranslatedSnapshot{
-					"cluster1": nil,
-					"cluster2": nil,
+					"cluster1": {},
+					"cluster2": {},
 				}
 
 				meshClient.EXPECT().
@@ -90,9 +92,6 @@ var _ = Describe("TranslationReconciler", func() {
 					ListMeshService(ctx).
 					Return(&zephyr_discovery.MeshServiceList{}, nil)
 				snapshotReconciler.EXPECT().
-					InitializeClusterNameToSnapshot(knownMeshes).
-					Return(clusterNameToSnapshot)
-				snapshotReconciler.EXPECT().
 					ReconcileAllSnapshots(ctx, clusterNameToSnapshot).
 					Return(nil)
 
@@ -102,7 +101,7 @@ var _ = Describe("TranslationReconciler", func() {
 		})
 
 		When("we have traffic targets (services or workloads) on those meshes", func() {
-			It("generates the correct resources to be reconciled", func() {
+			FIt("generates the correct resources to be reconciled", func() {
 				meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
 				meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
 				snapshotReconciler := mock_snapshot.NewMockTranslationSnapshotReconciler(ctrl)
@@ -152,17 +151,6 @@ var _ = Describe("TranslationReconciler", func() {
 						Spec: zephyr_discovery_types.MeshServiceSpec{
 							Mesh: selection.ObjectMetaToResourceRef(knownMeshes[2].ObjectMeta),
 						},
-					},
-				}
-				clusterNameToSnapshot := map[string]*snapshot.TranslatedSnapshot{
-					knownMeshes[0].Spec.Cluster.Name: {
-						Istio: &snapshot.IstioSnapshot{},
-					},
-					knownMeshes[1].Spec.Cluster.Name: {
-						Istio: &snapshot.IstioSnapshot{},
-					},
-					knownMeshes[2].Spec.Cluster.Name: {
-						Istio: &snapshot.IstioSnapshot{},
 					},
 				}
 
@@ -220,11 +208,22 @@ var _ = Describe("TranslationReconciler", func() {
 						return nil
 					})
 
+				expectedClusterNameToSnapshot := translation_framework.NewClusterNameToSnapshot(knownMeshes)
+				expectedClusterNameToSnapshot[translation_framework.ClusterKeyFromMesh(knownMeshes[0])].Istio = &snapshot.IstioSnapshot{
+					DestinationRules: []*istio_networking.DestinationRule{{
+						Host: "host-1",
+					}, {
+						Host: "host-2",
+					}},
+				}
+				expectedClusterNameToSnapshot[translation_framework.ClusterKeyFromMesh(knownMeshes[2])].Istio = &snapshot.IstioSnapshot{
+					DestinationRules: []*istio_networking.DestinationRule{{
+						Host: "host-3",
+					}},
+				}
+
 				snapshotReconciler.EXPECT().
-					InitializeClusterNameToSnapshot(knownMeshes).
-					Return(clusterNameToSnapshot)
-				snapshotReconciler.EXPECT().
-					ReconcileAllSnapshots(ctx, clusterNameToSnapshot).
+					ReconcileAllSnapshots(ctx, ClusterSnapshotMatcher(expectedClusterNameToSnapshot)).
 					Return(nil)
 
 				err := reconciler.Reconcile(ctx)
@@ -233,3 +232,42 @@ var _ = Describe("TranslationReconciler", func() {
 		})
 	})
 })
+
+func ClusterSnapshotMatcher(cnts snapshot.ClusterNameToSnapshot) gomock.Matcher {
+	return gomock.GotFormatterAdapter(
+		gomock.GotFormatterFunc(func(i interface{}) string {
+			return spew.Sdump(i)
+		}), &clusterSnapshotMatcher{
+			this: cnts,
+		},
+	)
+}
+
+type clusterSnapshotMatcher struct {
+	this snapshot.ClusterNameToSnapshot
+}
+
+// Matches returns whether x is a match.
+func (c *clusterSnapshotMatcher) Matches(x interface{}) bool {
+	if other, ok := x.(snapshot.ClusterNameToSnapshot); ok {
+		if len(other) != len(c.this) {
+			return false
+		}
+		for k, v := range other {
+			if v2, ok := c.this[k]; ok {
+				if !reflect.DeepEqual(v, v2) {
+					return false
+				}
+			} else {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
+// String describes what the matcher matches.
+func (c *clusterSnapshotMatcher) String() string {
+	return spew.Sdump(c.this)
+}

@@ -6,6 +6,7 @@ import (
 	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	istio_networking "istio.io/api/networking/v1alpha3"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go
@@ -22,10 +23,7 @@ type TranslationSnapshotAccumulator interface {
 }
 
 type TranslationSnapshotReconciler interface {
-	// return a map that's pre-populated for every cluster name referenced in the meshes
-	// we still want to run reconciliation for clusters where there are no mesh services
-	InitializeClusterNameToSnapshot(knownMeshes []*zephyr_discovery.Mesh) map[string]*TranslatedSnapshot
-	ReconcileAllSnapshots(ctx context.Context, clusterNameToSnapshot map[string]*TranslatedSnapshot) error
+	ReconcileAllSnapshots(ctx context.Context, clusterNameToSnapshot ClusterNameToSnapshot) error
 }
 
 type TranslationSnapshotAccumulatorGetter func(meshType zephyr_core_types.MeshType) (TranslationSnapshotAccumulator, error)
@@ -40,3 +38,5 @@ type IstioSnapshot struct {
 	DestinationRules  []*istio_networking.DestinationRule
 	VirtualServices   []*istio_networking.VirtualService
 }
+
+type ClusterNameToSnapshot map[types.NamespacedName]*TranslatedSnapshot
