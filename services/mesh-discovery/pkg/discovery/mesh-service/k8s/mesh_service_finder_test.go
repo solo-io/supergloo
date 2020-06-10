@@ -224,14 +224,14 @@ var _ = Describe("Mesh Service Finder", func() {
 			ListMeshWorkload(ctx, client.MatchingLabels{
 				kube.COMPUTE_TARGET: clusterName,
 			}).
-			Return(&smh_discovery.MeshWorkloadList{Items: []zephyr_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil).
+			Return(&smh_discovery.MeshWorkloadList{Items: []smh_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil).
 			Times(2)
 		mocks.meshServiceClient.EXPECT().
 			ListMeshService(ctx, client.MatchingLabels{
 				kube.COMPUTE_TARGET: clusterName,
 			}).
-			Return(&zephyr_discovery.MeshServiceList{
-				Items: []zephyr_discovery.MeshService{*meshServiceToBeDeleted},
+			Return(&smh_discovery.MeshServiceList{
+				Items: []smh_discovery.MeshService{*meshServiceToBeDeleted},
 			}, nil)
 		mocks.serviceClient.
 			EXPECT().
@@ -246,29 +246,29 @@ var _ = Describe("Mesh Service Finder", func() {
 			Times(4)
 		mocks.meshServiceClient.
 			EXPECT().
-			UpsertMeshServiceSpec(ctx, &zephyr_discovery.MeshService{
+			UpsertMeshServiceSpec(ctx, &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      meshServiceName,
 					Namespace: container_runtime.GetWriteNamespace(),
-					Labels:    k8s.DiscoveryLabels(zephyr_core_types.MeshType_LINKERD, clusterName, rightService.GetName(), rightService.GetNamespace()),
+					Labels:    k8s.DiscoveryLabels(smh_core_types.MeshType_LINKERD, clusterName, rightService.GetName(), rightService.GetNamespace()),
 				},
-				Spec: zephyr_discovery_types.MeshServiceSpec{
-					KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-						Ref: &zephyr_core_types.ResourceRef{
+				Spec: smh_discovery_types.MeshServiceSpec{
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
 							Name:      rightService.GetName(),
 							Namespace: rightService.GetNamespace(),
 							Cluster:   clusterName,
 						},
 						WorkloadSelectorLabels: rightService.Spec.Selector,
 						Labels:                 rightService.GetLabels(),
-						Ports: []*zephyr_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 							Name:     "correct-service-port",
 							Port:     443,
 							Protocol: "TCP",
 						}},
 					},
 					Mesh: meshWorkloadEvent.Spec.Mesh,
-					Subsets: map[string]*zephyr_discovery_types.MeshServiceSpec_Subset{
+					Subsets: map[string]*smh_discovery_types.MeshServiceSpec_Subset{
 						"version": {
 							Values: []string{"v1", "v2"},
 						},
@@ -295,7 +295,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			)
 			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 			expectReconcile(mocks)
-			err = (*mocks.meshWorkloadCreateCallback)(&zephyr_discovery.MeshWorkload{})
+			err = (*mocks.meshWorkloadCreateCallback)(&smh_discovery.MeshWorkload{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("reconciles MeshServices upon MeshWorkload deletion", func() {
@@ -307,7 +307,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			)
 			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 			expectReconcile(mocks)
-			err = (*mocks.meshWorkloadDeleteCallback)(&zephyr_discovery.MeshWorkload{})
+			err = (*mocks.meshWorkloadDeleteCallback)(&smh_discovery.MeshWorkload{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("reconciles MeshServices upon k8s Service creation", func() {
