@@ -3,12 +3,12 @@ package istio
 import (
 	"context"
 
-	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer"
 	istio_federation "github.com/solo-io/service-mesh-hub/pkg/common/federation/resolver/meshes/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"

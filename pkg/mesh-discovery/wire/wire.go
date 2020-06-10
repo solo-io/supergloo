@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/selection"
 	settings_clients "github.com/solo-io/service-mesh-hub/pkg/common/aws/settings"
+	multicluster_wire "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/wire"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/common/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
@@ -22,7 +23,6 @@ import (
 	mesh_consul "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/consul"
 	mesh_istio "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/istio"
 	mesh_linkerd "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/linkerd"
-	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 )
 
 func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {

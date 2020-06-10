@@ -5,11 +5,11 @@ import (
 
 	"github.com/google/wire"
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	compute_target "github.com/solo-io/service-mesh-hub/pkg/common/compute-target"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	mc_watcher "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/secret-event-handler"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	k8s_manager "sigs.k8s.io/controller-runtime/pkg/manager"

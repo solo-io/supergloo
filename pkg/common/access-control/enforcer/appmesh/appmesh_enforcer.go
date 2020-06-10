@@ -3,9 +3,9 @@ package appmesh
 import (
 	"context"
 
-	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/translation"
 )
 

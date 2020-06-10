@@ -9,6 +9,8 @@ import (
 	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration"
+	compute_target "github.com/solo-io/service-mesh-hub/pkg/common/compute-target"
+	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/version"
 	"github.com/solo-io/service-mesh-hub/pkg/common/csr/installation"
@@ -20,8 +22,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/k8s-cluster/rest/eks"
 	meshworkload_appmesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/rest/appmesh"
-	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	"k8s.io/client-go/rest"
 )
 

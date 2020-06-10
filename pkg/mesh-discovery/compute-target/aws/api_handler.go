@@ -10,8 +10,8 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/aws_creds"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
+	compute_target "github.com/solo-io/service-mesh-hub/pkg/common/compute-target"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
-	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	"go.uber.org/zap"
 	k8s_core_types "k8s.io/api/core/v1"
 )

@@ -17,6 +17,7 @@ import (
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/settings"
+	mc_wire "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/wire"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/common/csr/installation"
 	"github.com/solo-io/service-mesh-hub/pkg/common/filesystem/files"
@@ -33,7 +34,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/linkerd"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/rest/appmesh"
-	mc_wire "github.com/solo-io/service-mesh-hub/services/common/compute-target/wire"
 )
 
 // Injectors from wire.go:

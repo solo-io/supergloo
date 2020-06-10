@@ -3,9 +3,9 @@ package internal_watcher_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	. "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/secret-event-handler/internal"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	k8s_core_types "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/event"

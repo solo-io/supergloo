@@ -4,7 +4,7 @@ import (
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	k8s_apps_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
+	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 )
 
 //go:generate mockgen -destination ./mocks/mock_deployment_event_watcher.go -package mock_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller" DeploymentEventWatcher

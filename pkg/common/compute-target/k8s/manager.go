@@ -6,8 +6,8 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s/errutils"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"go.uber.org/zap"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"

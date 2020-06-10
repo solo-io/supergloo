@@ -3,8 +3,8 @@ package internal_watcher
 import (
 	"strings"
 
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	k8s_core_types "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

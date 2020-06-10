@@ -5,6 +5,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	md_multicluster "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s"
@@ -12,7 +13,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s/linkerd"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/wire"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	"go.uber.org/zap"
 )
 

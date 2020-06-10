@@ -8,10 +8,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	mc_watcher "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/secret-event-handler"
 	mock_internal_watcher "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/secret-event-handler/internal/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

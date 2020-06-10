@@ -2,7 +2,7 @@ package event_watcher_factories
 
 import (
 	core_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
+	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 )
 
 func NewServiceEventWatcherFactory() ServiceEventWatcherFactory {

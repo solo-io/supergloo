@@ -10,13 +10,13 @@ import (
 	k8s_apps_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s"
 	meshservice_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-service/k8s"
 	meshworkload_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/wire"
-	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 )
 
 type MeshWorkloadScannerFactoryImplementations map[core_types.MeshType]meshworkload_discovery.MeshWorkloadScannerFactory

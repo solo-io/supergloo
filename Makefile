@@ -127,7 +127,7 @@ mesh-discovery-docker: $(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64
 #----------------------------------------------------------------------------------
 # Mesh Networking
 #----------------------------------------------------------------------------------
-MESH_NETWORKING_DIR=services/mesh-networking
+MESH_NETWORKING_DIR=cmd/mesh-networking
 MESH_NETWORKING_OUTPUT_DIR=$(ROOTDIR)/$(MESH_NETWORKING_DIR)/_output
 MESH_NETWORKING_SOURCES=$(shell find $(MESH_NETWORKING_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
