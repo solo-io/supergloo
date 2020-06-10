@@ -11,7 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
-	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen/secrets"
 )
 
 // MockCertClient is a mock of CertClient interface.

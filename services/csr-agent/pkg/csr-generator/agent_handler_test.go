@@ -12,7 +12,7 @@ import (
 	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	smh_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/controller"
 	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	mock_csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator/mocks"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"

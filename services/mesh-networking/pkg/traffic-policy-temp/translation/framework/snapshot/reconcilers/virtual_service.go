@@ -6,7 +6,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/rotisserie/eris"
 	istio_networking_clients "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	istio_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

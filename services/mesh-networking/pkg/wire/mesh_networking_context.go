@@ -6,8 +6,8 @@ import (
 
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/federation/resolver"
-	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
+	"github.com/solo-io/service-mesh-hub/pkg/common/federation/resolver"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/common/networking-snapshot"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"

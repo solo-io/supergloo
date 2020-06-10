@@ -2,9 +2,9 @@ package wire
 
 import (
 	"github.com/google/wire"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/credentials"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/aws_creds"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/credentials"
 	compute_target "github.com/solo-io/service-mesh-hub/services/common/compute-target"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/compute-target/aws"

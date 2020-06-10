@@ -9,7 +9,7 @@ import (
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
-	mock_selector "github.com/solo-io/service-mesh-hub/pkg/kube/selection/mocks"
+	mock_selector "github.com/solo-io/service-mesh-hub/pkg/common/kube/selection/mocks"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

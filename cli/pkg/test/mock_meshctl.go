@@ -14,9 +14,9 @@ import (
 	usage_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/common/usage/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/wire"
-	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/common/filesystem/files"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
 	"github.com/spf13/afero"
 	"k8s.io/client-go/rest"
 )

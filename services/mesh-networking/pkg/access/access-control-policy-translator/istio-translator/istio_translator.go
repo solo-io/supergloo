@@ -13,7 +13,7 @@ import (
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	istio_security_types "istio.io/api/security/v1beta1"
 	istio_types "istio.io/api/type/v1beta1"

@@ -6,7 +6,7 @@ import (
 	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	smh_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/controller"
 	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
-	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/csr/certgen/secrets"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen/secrets"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_mesh_interfaces.go

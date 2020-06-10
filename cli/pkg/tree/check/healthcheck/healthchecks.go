@@ -5,7 +5,7 @@ import (
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	k8s_discovery "github.com/solo-io/service-mesh-hub/pkg/kube/discovery"
+	k8s_discovery "github.com/solo-io/service-mesh-hub/pkg/common/kube/discovery"
 )
 
 var (

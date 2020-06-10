@@ -5,7 +5,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	md_multicluster "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s/istio"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/kube/multicluster/mocks"
+	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster/mocks"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"

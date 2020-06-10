@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
 
 	consulconfig "github.com/hashicorp/consul/agent/config"
 	"github.com/hashicorp/hcl"

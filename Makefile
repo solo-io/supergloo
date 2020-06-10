@@ -20,7 +20,7 @@ ifeq ($(TAGGED_VERSION),)
 endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
 
-LDFLAGS := "-X github.com/solo-io/service-mesh-hub/pkg/version.Version=$(VERSION)"
+LDFLAGS := "-X github.com/solo-io/service-mesh-hub/pkg/common/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
 GO_BUILD_FLAGS := GO111MODULE=on CGO_ENABLED=0 GOARCH=amd64

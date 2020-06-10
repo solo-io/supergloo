@@ -5,9 +5,9 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	aws_utils "github.com/solo-io/service-mesh-hub/pkg/aws/parser"
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
+	aws_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s"
 	"github.com/solo-io/skv2/pkg/utils"
 	k8s_core_types "k8s.io/api/core/v1"

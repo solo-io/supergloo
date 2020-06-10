@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"

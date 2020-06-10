@@ -9,9 +9,9 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	mock_server "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server/mocks"
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
-	mock_docker "github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
+	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker/mocks"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )

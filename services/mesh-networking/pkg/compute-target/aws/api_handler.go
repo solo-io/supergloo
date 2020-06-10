@@ -8,9 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/aws_creds"
-	"github.com/solo-io/service-mesh-hub/pkg/aws/clients"
-	credentials2 "github.com/solo-io/service-mesh-hub/pkg/aws/credentials"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/aws_creds"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
+	credentials2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/credentials"
 	v1 "k8s.io/api/core/v1"
 )
 

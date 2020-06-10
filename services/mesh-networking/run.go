@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/compute-target/k8s"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/wire"
 	"go.uber.org/zap"

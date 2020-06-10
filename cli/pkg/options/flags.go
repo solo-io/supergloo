@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/solo-io/service-mesh-hub/pkg/constants"
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-installation/istio/operator"
+	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/common/mesh-installation/istio/operator"
 	"github.com/spf13/cobra"
 )
 

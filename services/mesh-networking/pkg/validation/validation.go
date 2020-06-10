@@ -8,8 +8,8 @@ import (
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
-	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/networking-snapshot"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/common/networking-snapshot"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
