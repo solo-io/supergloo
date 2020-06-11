@@ -1,4 +1,4 @@
-package networking_snapshot_test
+package snapshot_test
 
 import (
 	"testing"

@@ -11,7 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	dns "github.com/solo-io/service-mesh-hub/pkg/common/federation/dns"
+	dns "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
 )
 
 // MockMeshFederationClient is a mock of MeshFederationClient interface.

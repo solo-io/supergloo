@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/common/federation/dns"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_core_types "k8s.io/api/core/v1"

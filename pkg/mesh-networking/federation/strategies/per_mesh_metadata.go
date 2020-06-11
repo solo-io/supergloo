@@ -7,7 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/common/networking-snapshot"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/common/snapshot"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

@@ -9,7 +9,7 @@ import (
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer"
-	istio_federation "github.com/solo-io/service-mesh-hub/pkg/common/federation/resolver/meshes/istio"
+	istio_federation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver/meshes/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	istio_api_security "istio.io/api/security/v1beta1"

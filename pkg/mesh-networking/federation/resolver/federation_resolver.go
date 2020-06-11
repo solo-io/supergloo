@@ -12,8 +12,8 @@ import (
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/common/federation/dns"
-	istio_federation "github.com/solo-io/service-mesh-hub/pkg/common/federation/resolver/meshes/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
+	istio_federation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver/meshes/istio"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

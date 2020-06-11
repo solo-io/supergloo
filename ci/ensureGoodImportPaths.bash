@@ -16,43 +16,36 @@
 # I haven't been able to find a way in Go tooling to enforce this, so bash it is >:)
 #
 ######################################################################################
-
-badImportsInPkg=$(find pkg -name '*.go' | \
+badImportsInPkg=$(find pkg/mesh-discovery -name '*.go' | \
   grep -v .pb.go | \
   xargs grep -E '"github.com/solo-io/service-mesh-hub/.*"' | \
-  grep -v service-mesh-hub/pkg | \
-  grep -v service-mesh-hub/test)
+  grep service-mesh-hub/pkg/mesh-discovery | \
+  grep service-mesh-hub/pkg/common)
 if [ $? = 0 ]; then
-  printf "Code in top-level pkg/ must only import Service Mesh Hub code from itself, not cli/ or services/\n\n"
+  printf "Code in pkg/mesh-discovery should only import from pkg/mesh-discovery or pkg/common"
   echo "Problem files:"
   echo "$badImportsInPkg"
   exit 1
 fi
-
-badImportsInCli=$(find cli -name '*.go' | \
+badImportsInPkg=$(find pkg/mesh-networking -name '*.go' | \
   grep -v .pb.go | \
   xargs grep -E '"github.com/solo-io/service-mesh-hub/.*"' | \
-  grep -v service-mesh-hub/cli | \
-  grep -v service-mesh-hub/pkg | \
-  grep -v service-mesh-hub/test \
-)
+  grep service-mesh-hub/pkg/mesh-networking | \
+  grep service-mesh-hub/pkg/common)
 if [ $? = 0 ]; then
-  printf "Code in cli/ must only import Service Mesh Hub code from itself, pkg/ or test/\n\n"
+  printf "Code in pkg/mesh-networking should only import from pkg/mesh-networking or pkg/common"
   echo "Problem files:"
-  echo "$badImportsInCli"
+  echo "$badImportsInPkg"
   exit 1
 fi
-
-badImportsInServices=$(find services -name '*.go' | \
+badImportsInPkg=$(find pkg/csr-agent -name '*.go' | \
   grep -v .pb.go | \
   xargs grep -E '"github.com/solo-io/service-mesh-hub/.*"' | \
-  grep -v service-mesh-hub/services | \
-  grep -v service-mesh-hub/pkg | \
-  grep -v service-mesh-hub/test \
-)
+  grep service-mesh-hub/pkg/csr-agent | \
+  grep service-mesh-hub/pkg/common)
 if [ $? = 0 ]; then
-  printf "Code in services/ must only import Service Mesh Hub code from itself, pkg/ or test/\n\n"
+  printf "Code in pkg/csr-agent should only import from pkg/csr-agent or pkg/common"
   echo "Problem files:"
-  echo "$badImportsInServices"
+  echo "$badImportsInPkg"
   exit 1
 fi

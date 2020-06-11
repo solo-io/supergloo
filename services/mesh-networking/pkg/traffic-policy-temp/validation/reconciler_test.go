@@ -219,8 +219,8 @@ var _ = Describe("Validation Reconciler", func() {
 			runtime := b.Time("runtime", func() {
 				reconciler.Reconcile(ctx)
 			})
-			// ideally should be less than 1ms; but 100ms is good for now. in practice it's around 10ms.
-			Ω(runtime.Seconds()).Should(BeNumerically("<", 0.1), "validator.Reconcile() shouldn't take too long.")
+			// ideally should be less than 1ms; but 1s is good for now. in practice it's around 10ms.
+			Ω(runtime.Seconds()).Should(BeNumerically("<", 1), "validator.Reconcile() shouldn't take too long.")
 		}, 10)
 
 	})
