@@ -11,7 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockAwsCredentialsGetter is a mock of AwsCredentialsGetter interface.
+// MockAwsCredentialsGetter is a mock of AwsCredentialsStore interface.
 type MockAwsCredentialsGetter struct {
 	ctrl     *gomock.Controller
 	recorder *MockAwsCredentialsGetterMockRecorder
