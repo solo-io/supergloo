@@ -9,7 +9,6 @@ import (
 	smh_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
-	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"go.uber.org/zap"
@@ -20,14 +19,14 @@ type enforcerLoop struct {
 	virtualMeshEventWatcher smh_networking_controller.VirtualMeshEventWatcher
 	virtualMeshClient       smh_networking.VirtualMeshClient
 	meshClient              smh_discovery.MeshClient
-	meshEnforcers           []access_control_enforcer.AccessPolicyMeshEnforcer
+	meshEnforcers           []AccessPolicyMeshEnforcer
 }
 
 func NewEnforcerLoop(
 	virtualMeshEventWatcher smh_networking_controller.VirtualMeshEventWatcher,
 	virtualMeshClient smh_networking.VirtualMeshClient,
 	meshClient smh_discovery.MeshClient,
-	meshEnforcers []access_control_enforcer.AccessPolicyMeshEnforcer,
+	meshEnforcers []AccessPolicyMeshEnforcer,
 ) AccessPolicyEnforcerLoop {
 	return &enforcerLoop{
 		virtualMeshEventWatcher: virtualMeshEventWatcher,

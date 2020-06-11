@@ -15,10 +15,9 @@ import (
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
-	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer"
-	mock_access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	global_ac_enforcer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer"
+	mock_access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	mock_smh_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.smh.solo.io/v1alpha1"
 	mock_smh_networking2 "github.com/solo-io/service-mesh-hub/test/mocks/smh/networking"
@@ -52,7 +51,7 @@ var _ = Describe("EnforcerLoop", func() {
 			mockVirtualMeshEventWatcher,
 			mockVirtualMeshClient,
 			mockMeshClient,
-			[]access_control_enforcer.AccessPolicyMeshEnforcer{
+			[]global_ac_enforcer.AccessPolicyMeshEnforcer{
 				mockMeshEnforcers[0], mockMeshEnforcers[1],
 			},
 		)

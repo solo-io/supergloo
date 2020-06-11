@@ -3,15 +3,16 @@ package istio
 import (
 	"context"
 
+	access_policy_enforcer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer"
+
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
-	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer"
-	istio_federation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver/meshes/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
+	istio_federation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver/meshes/istio"
 	istio_api_security "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	client_security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -31,7 +32,7 @@ type istioEnforcer struct {
 	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory
 }
 
-type IstioEnforcer access_control_enforcer.AccessPolicyMeshEnforcer
+type IstioEnforcer access_policy_enforcer.AccessPolicyMeshEnforcer
 
 func NewIstioEnforcer(
 	dynamicClientGetter multicluster.DynamicClientGetter,

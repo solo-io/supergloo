@@ -5,14 +5,13 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
-	access_control_enforcer2 "github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer"
-	"github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer/appmesh"
-	"github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer/istio"
 	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/matcher"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/translation"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer/appmesh"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer/istio"
 	access_control_policy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-policy-translator"
 	istio_translator "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-policy-translator/istio-translator"
 )
@@ -54,8 +53,8 @@ func AccessControlPolicyMeshTranslatorsProvider(
 func GlobalAccessControlPolicyMeshEnforcersProvider(
 	istioEnforcer istio.IstioEnforcer,
 	appmeshEnforcer appmesh.AppmeshEnforcer,
-) []access_control_enforcer2.AccessPolicyMeshEnforcer {
-	return []access_control_enforcer2.AccessPolicyMeshEnforcer{
+) []access_control_enforcer.AccessPolicyMeshEnforcer {
+	return []access_control_enforcer.AccessPolicyMeshEnforcer{
 		istioEnforcer,
 		appmeshEnforcer,
 	}

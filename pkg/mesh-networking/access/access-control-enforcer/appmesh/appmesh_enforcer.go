@@ -3,9 +3,10 @@ package appmesh
 import (
 	"context"
 
+	access_policy_enforcer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer"
+
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/common/access-control/enforcer"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/translation"
 )
 
@@ -17,7 +18,7 @@ type appmeshEnforcer struct {
 	appmeshTranslationReconciler translation.AppmeshTranslationReconciler
 }
 
-type AppmeshEnforcer access_control_enforcer.AccessPolicyMeshEnforcer
+type AppmeshEnforcer access_policy_enforcer.AccessPolicyMeshEnforcer
 
 func NewAppmeshEnforcer(
 	appmeshTranslationReconciler translation.AppmeshTranslationReconciler,

@@ -7,13 +7,13 @@ import (
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver"
-	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/snapshot"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer"
 	access_control_policy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-policy-translator"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/decider"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/routing/traffic-policy-translator"
 	cert_manager "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/security/cert-manager"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/snapshot"
 )
 
 // just used to package everything up for wire

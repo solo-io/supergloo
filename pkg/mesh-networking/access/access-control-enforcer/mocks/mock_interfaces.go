@@ -9,6 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 )
 
 // MockAccessPolicyEnforcerLoop is a mock of AccessPolicyEnforcerLoop interface.
@@ -46,4 +48,55 @@ func (m *MockAccessPolicyEnforcerLoop) Start(ctx context.Context) error {
 func (mr *MockAccessPolicyEnforcerLoopMockRecorder) Start(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockAccessPolicyEnforcerLoop)(nil).Start), ctx)
+}
+
+// MockAccessPolicyMeshEnforcer is a mock of AccessPolicyMeshEnforcer interface.
+type MockAccessPolicyMeshEnforcer struct {
+	ctrl     *gomock.Controller
+	recorder *MockAccessPolicyMeshEnforcerMockRecorder
+}
+
+// MockAccessPolicyMeshEnforcerMockRecorder is the mock recorder for MockAccessPolicyMeshEnforcer.
+type MockAccessPolicyMeshEnforcerMockRecorder struct {
+	mock *MockAccessPolicyMeshEnforcer
+}
+
+// NewMockAccessPolicyMeshEnforcer creates a new mock instance.
+func NewMockAccessPolicyMeshEnforcer(ctrl *gomock.Controller) *MockAccessPolicyMeshEnforcer {
+	mock := &MockAccessPolicyMeshEnforcer{ctrl: ctrl}
+	mock.recorder = &MockAccessPolicyMeshEnforcerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAccessPolicyMeshEnforcer) EXPECT() *MockAccessPolicyMeshEnforcerMockRecorder {
+	return m.recorder
+}
+
+// Name mocks base method.
+func (m *MockAccessPolicyMeshEnforcer) Name() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Name")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Name indicates an expected call of Name.
+func (mr *MockAccessPolicyMeshEnforcerMockRecorder) Name() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).Name))
+}
+
+// ReconcileAccessControl mocks base method.
+func (m *MockAccessPolicyMeshEnforcer) ReconcileAccessControl(ctx context.Context, mesh *v1alpha1.Mesh, virtualMesh *v1alpha10.VirtualMesh) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileAccessControl", ctx, mesh, virtualMesh)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileAccessControl indicates an expected call of ReconcileAccessControl.
+func (mr *MockAccessPolicyMeshEnforcerMockRecorder) ReconcileAccessControl(ctx, mesh, virtualMesh interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessControl", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).ReconcileAccessControl), ctx, mesh, virtualMesh)
 }
