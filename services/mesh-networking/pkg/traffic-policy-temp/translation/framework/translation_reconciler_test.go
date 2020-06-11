@@ -16,7 +16,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 	mock_snapshot "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot/mocks"
 	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	istio_networking "istio.io/api/networking/v1alpha3"
+	"istio.io/api/networking/v1alpha3"
+	istio_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -174,7 +175,9 @@ var _ = Describe("TranslationReconciler", func() {
 					) error {
 						snapshotInProgress.Istio = &snapshot.IstioSnapshot{
 							DestinationRules: []*istio_networking.DestinationRule{{
-								Host: "host-1",
+								Spec: v1alpha3.DestinationRule{
+									Host: "host-1",
+								},
 							}},
 						}
 						return nil
@@ -188,7 +191,9 @@ var _ = Describe("TranslationReconciler", func() {
 						mesh *zephyr_discovery.Mesh,
 					) error {
 						snapshotInProgress.Istio.DestinationRules = append(snapshotInProgress.Istio.DestinationRules, &istio_networking.DestinationRule{
-							Host: "host-2",
+							Spec: v1alpha3.DestinationRule{
+								Host: "host-2",
+							},
 						})
 						return nil
 					})
@@ -202,7 +207,9 @@ var _ = Describe("TranslationReconciler", func() {
 					) error {
 						snapshotInProgress.Istio = &snapshot.IstioSnapshot{
 							DestinationRules: []*istio_networking.DestinationRule{{
-								Host: "host-3",
+								Spec: v1alpha3.DestinationRule{
+									Host: "host-3",
+								},
 							}},
 						}
 						return nil
@@ -211,14 +218,20 @@ var _ = Describe("TranslationReconciler", func() {
 				expectedClusterNameToSnapshot := translation_framework.NewClusterNameToSnapshot(knownMeshes)
 				expectedClusterNameToSnapshot[translation_framework.ClusterKeyFromMesh(knownMeshes[0])].Istio = &snapshot.IstioSnapshot{
 					DestinationRules: []*istio_networking.DestinationRule{{
-						Host: "host-1",
+						Spec: v1alpha3.DestinationRule{
+							Host: "host-1",
+						},
 					}, {
-						Host: "host-2",
+						Spec: v1alpha3.DestinationRule{
+							Host: "host-2",
+						},
 					}},
 				}
 				expectedClusterNameToSnapshot[translation_framework.ClusterKeyFromMesh(knownMeshes[2])].Istio = &snapshot.IstioSnapshot{
 					DestinationRules: []*istio_networking.DestinationRule{{
-						Host: "host-3",
+						Spec: v1alpha3.DestinationRule{
+							Host: "host-3",
+						},
 					}},
 				}
 

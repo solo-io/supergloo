@@ -11,6 +11,7 @@ import (
 	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/constants"
 	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 	istio_networking_types "istio.io/api/networking/v1alpha3"
 	istio_client_networking_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -21,7 +22,7 @@ const (
 )
 
 func NewIstioTrafficPolicyTranslator(
-	resourceSelector selection.ResourceSelector,
+	resourceSelector selection.BaseResourceSelector,
 ) mesh_translation.IstioTranslator {
 	return &istioTrafficPolicyTranslator{
 		resourceSelector: resourceSelector,
@@ -29,7 +30,7 @@ func NewIstioTrafficPolicyTranslator(
 }
 
 type istioTrafficPolicyTranslator struct {
-	resourceSelector selection.ResourceSelector
+	resourceSelector selection.BaseResourceSelector
 }
 
 var (
@@ -44,6 +45,29 @@ var (
 
 func (i *istioTrafficPolicyTranslator) Name() string {
 	return TranslatorId
+}
+
+// mutate the translated snapshot, adding the translation results in where appropriate
+func (i *istioTrafficPolicyTranslator) AccumulateFromTranslation(
+	snapshotInProgress *snapshot.TranslatedSnapshot,
+	meshService *zephyr_discovery.MeshService,
+	allMeshServices []*zephyr_discovery.MeshService,
+	mesh *zephyr_discovery.Mesh,
+) error {
+	if snapshotInProgress.Istio == nil {
+		snapshotInProgress.Istio = &snapshot.IstioSnapshot{}
+	}
+
+	out, errs := i.Translate(meshService, allMeshServices, mesh, meshService.Status.ValidatedTrafficPolicies)
+
+	snapshotInProgress.Istio.DestinationRules = append(snapshotInProgress.Istio.DestinationRules, out.DestinationRules...)
+	snapshotInProgress.Istio.VirtualServices = append(snapshotInProgress.Istio.VirtualServices, out.VirtualServices...)
+	// assuming all went well in the previous stages, there should be no errors
+	if len(errs) != 0 {
+		// ?? panic ??
+	}
+
+	return nil
 }
 
 /*

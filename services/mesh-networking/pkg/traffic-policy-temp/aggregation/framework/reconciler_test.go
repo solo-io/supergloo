@@ -2,6 +2,7 @@ package aggregation_framework_test
 
 import (
 	"context"
+	"errors"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -26,33 +27,47 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 	var (
 		ctx  context.Context
 		ctrl *gomock.Controller
+
+		trafficPolicyClient   *mock_zephyr_networking_clients.MockTrafficPolicyClient
+		meshServiceClient     *mock_zephyr_discovery_clients.MockMeshServiceClient
+		meshClient            *mock_zephyr_discovery_clients.MockMeshClient
+		policyCollector       *mock_traffic_policy_aggregation.MockPolicyCollector
+		validator             *mock_mesh_translation.MockTranslationValidator
+		inMemoryStatusMutator *mock_traffic_policy_aggregation.MockInMemoryStatusMutator
 	)
 
 	BeforeEach(func() {
 		ctx = context.TODO()
 		ctrl = gomock.NewController(GinkgoT())
+
+		trafficPolicyClient = mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
+		meshServiceClient = mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
+		meshClient = mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
+		policyCollector = mock_traffic_policy_aggregation.NewMockPolicyCollector(ctrl)
+		validator = mock_mesh_translation.NewMockTranslationValidator(ctrl)
+		inMemoryStatusMutator = mock_traffic_policy_aggregation.NewMockInMemoryStatusMutator(ctrl)
+
 	})
 
 	AfterEach(func() {
 		ctrl.Finish()
 	})
 
+	meshMap := func(mt zephyr_core_types.MeshType) (mesh_translation.TranslationValidator, error) {
+		if mt == zephyr_core_types.MeshType_ISTIO1_5 {
+			return validator, nil
+		}
+		return nil, errors.New("no such mesh")
+	}
+
 	Context("when no resources exist in the cluster", func() {
 		It("does nothing", func() {
-			trafficPolicyClient := mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
-			meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
-			meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
-			policyCollector := mock_traffic_policy_aggregation.NewMockPolicyCollector(ctrl)
-			validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-			inMemoryStatusMutator := mock_traffic_policy_aggregation.NewMockInMemoryStatusMutator(ctrl)
 			reconciler := aggregation_framework.NewAggregationReconciler(
 				trafficPolicyClient,
 				meshServiceClient,
 				meshClient,
 				policyCollector,
-				map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
-					zephyr_core_types.MeshType_ISTIO1_5: validator,
-				},
+				meshMap,
 				inMemoryStatusMutator,
 			)
 
@@ -71,20 +86,12 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 	Context("when no policies have been written yet, but there are services", func() {
 		Context("and the services have no previously-written policies on their status", func() {
 			It("does nothing", func() {
-				trafficPolicyClient := mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
-				meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
-				meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
-				policyCollector := mock_traffic_policy_aggregation.NewMockPolicyCollector(ctrl)
-				validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-				inMemoryStatusMutator := mock_traffic_policy_aggregation.NewMockInMemoryStatusMutator(ctrl)
 				reconciler := aggregation_framework.NewAggregationReconciler(
 					trafficPolicyClient,
 					meshServiceClient,
 					meshClient,
 					policyCollector,
-					map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
-						zephyr_core_types.MeshType_ISTIO1_5: validator,
-					},
+					meshMap,
 					inMemoryStatusMutator,
 				)
 				mesh1 := &zephyr_discovery.Mesh{
@@ -162,20 +169,12 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 
 	Context("when there are both policies and services to process", func() {
 		It("computes new statuses accordingly", func() {
-			trafficPolicyClient := mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
-			meshServiceClient := mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
-			meshClient := mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
-			policyCollector := mock_traffic_policy_aggregation.NewMockPolicyCollector(ctrl)
-			validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-			inMemoryStatusMutator := mock_traffic_policy_aggregation.NewMockInMemoryStatusMutator(ctrl)
 			reconciler := aggregation_framework.NewAggregationReconciler(
 				trafficPolicyClient,
 				meshServiceClient,
 				meshClient,
 				policyCollector,
-				map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator{
-					zephyr_core_types.MeshType_ISTIO1_5: validator,
-				},
+				meshMap,
 				inMemoryStatusMutator,
 			)
 			mesh1 := &zephyr_discovery.Mesh{

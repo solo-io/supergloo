@@ -1,27 +1,92 @@
-package aggregation_framework
+package reconcile
+
+
+package traffic_policy_validation
 
 import (
 	"context"
 
-	"github.com/hashicorp/go-multierror"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/go-utils/contextutils"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
-	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
-	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
+	"k8s.io/apimachinery/pkg/types"
 )
+
+type trafficPolicyReaderStatusUpdater interface {
+	zephyr_networking.TrafficPolicyReader
+	zephyr_networking.TrafficPolicyStatusWriter
+}
+
+func NewValidationReconciler(
+	trafficPolicyClient trafficPolicyReaderStatusUpdater,
+	meshServiceReader zephyr_discovery.MeshServiceReader,
+	validator Validator,
+) reconciliation.Reconciler {
+	return &validationLoop{
+		trafficPolicyClient: trafficPolicyClient,
+		validator:           validator,
+		meshServiceReader:   meshServiceReader,
+	}
+}
+
+type validationLoop struct {
+	trafficPolicyClient trafficPolicyReaderStatusUpdater
+	meshServiceReader   zephyr_discovery.MeshServiceReader
+	validator           Validator
+}
+
+func (*validationLoop) GetName() string {
+	return "traffic-policy-validation"
+}
+
+func (v *validationLoop) Reconcile(ctx context.Context) error {
+	logger := contextutils.LoggerFrom(ctx)
+	trafficPolicies, err := v.trafficPolicyClient.ListTrafficPolicy(ctx)
+	if err != nil {
+		return err
+	}
+
+	meshServiceList, err := v.meshServiceReader.ListMeshService(ctx)
+	if err != nil {
+		return err
+	}
+
+	var meshServices []*zephyr_discovery.MeshService
+	for _, ms := range meshServiceList.Items {
+		meshService := ms
+		meshServices = append(meshServices, &meshService)
+	}
+
+	for _, trafficPolicy := range trafficPolicies.Items {
+		newValidationStatus, validationErr := v.validator.ValidateTrafficPolicy(&trafficPolicy, meshServices)
+		if validationErr == nil {
+			logger.Debugf("Traffic policy %s.%s passed validation", trafficPolicy.GetName(), trafficPolicy.GetNamespace())
+		} else {
+			logger.Infof("Traffic policy %s.%s failed validation for reason: %+v", trafficPolicy.GetName(), trafficPolicy.GetNamespace(), validationErr)
+		}
+
+		if !trafficPolicy.Status.GetValidationStatus().Equal(newValidationStatus) ||
+			trafficPolicy.Status.ObservedGeneration != trafficPolicy.Generation {
+			trafficPolicy.Status.ObservedGeneration = trafficPolicy.Generation
+			trafficPolicy.Status.ValidationStatus = newValidationStatus
+
+			err := v.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, &trafficPolicy)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
 
 func NewAggregationReconciler(
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshClient zephyr_discovery.MeshClient,
 	policyCollector traffic_policy_aggregation.PolicyCollector,
-	translationValidators func(meshType zephyr_core_types.MeshType) (mesh_translation.TranslationValidator, error),
+	translationValidators map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator,
 	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator,
 ) reconciliation.Reconciler {
 	return &aggregationReconciler{
@@ -39,7 +104,7 @@ type aggregationReconciler struct {
 	meshServiceClient     zephyr_discovery.MeshServiceClient
 	meshClient            zephyr_discovery.MeshClient
 	policyCollector       traffic_policy_aggregation.PolicyCollector
-	translationValidators func(meshType zephyr_core_types.MeshType) (mesh_translation.TranslationValidator, error)
+	translationValidators map[zephyr_core_types.MeshType]mesh_translation.TranslationValidator
 	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator
 }
 
@@ -59,70 +124,9 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		allTrafficPolicies = append(allTrafficPolicies, &trafficPolicy)
 	}
 
-	processor := NewAggregationProcessor(a.meshServiceClient,
-		a.meshClient,
-		a.policyCollector,
-		a.translationValidators,
-		a.inMemoryStatusMutator,
-	)
-
-	objToUpdate, err := processor.Process(ctx, allTrafficPolicies)
-	if err != nil {
-		return err
-	}
-
-	var multierr error
-
-	for _, service := range objToUpdate.MeshServices {
-		err := a.meshServiceClient.UpdateMeshServiceStatus(ctx, service)
-		if err != nil {
-			multierr = multierror.Append(multierr, err)
-		}
-	}
-
-	for _, policy := range objToUpdate.TrafficPolicies {
-		err := a.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, policy)
-		if err != nil {
-			multierr = multierror.Append(multierr, err)
-		}
-	}
-	return multierr
-}
-
-type ProcessedObjects struct {
-	TrafficPolicies []*zephyr_networking.TrafficPolicy
-	MeshServices    []*zephyr_discovery.MeshService
-}
-
-func NewAggregationProcessor(
-	meshServiceReader zephyr_discovery.MeshServiceReader,
-	meshReader zephyr_discovery.MeshReader,
-	policyCollector traffic_policy_aggregation.PolicyCollector,
-	translationValidators func(meshType zephyr_core_types.MeshType) (mesh_translation.TranslationValidator, error),
-	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator,
-) *aggregationProcessor {
-	return &aggregationProcessor{
-		meshServiceReader:     meshServiceReader,
-		meshReader:            meshReader,
-		policyCollector:       policyCollector,
-		translationValidators: translationValidators,
-		inMemoryStatusMutator: inMemoryStatusMutator,
-	}
-}
-
-type aggregationProcessor struct {
-	meshServiceReader     zephyr_discovery.MeshServiceReader
-	meshReader            zephyr_discovery.MeshReader
-	policyCollector       traffic_policy_aggregation.PolicyCollector
-	translationValidators func(meshType zephyr_core_types.MeshType) (mesh_translation.TranslationValidator, error)
-	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator
-}
-
-func (a *aggregationProcessor) Process(ctx context.Context, allTrafficPolicies []*zephyr_networking.TrafficPolicy) (*ProcessedObjects, error) {
-
 	allMeshServices, serviceToMetadata, err := a.aggregateMeshServices(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	trafficPolicyToAllConflicts := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError{}
@@ -130,21 +134,17 @@ func (a *aggregationProcessor) Process(ctx context.Context, allTrafficPolicies [
 	serviceToUpdatedStatus := map[*zephyr_discovery.MeshService][]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{}
 
 	for _, meshService := range allMeshServices {
-		validator, err := a.translationValidators(serviceToMetadata[meshService].MeshType)
-		if err != nil {
-			// intentionally not doing map existence checks here; if it panics, we forgot to implement the validator for this translator
-			// TODO: un-panic this
-			panic(err)
-		}
 		collectionResult, err := a.policyCollector.CollectForService(
 			meshService,
 			allMeshServices,
 			serviceToMetadata[meshService].Mesh,
-			validator,
+
+			// intentionally not doing map existence checks here; if it panics, we forgot to implement the validator for this translator
+			a.translationValidators[serviceToMetadata[meshService].MeshType],
 			allTrafficPolicies,
 		)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		serviceToUpdatedStatus[meshService] = collectionResult.PoliciesToRecordOnService
@@ -157,11 +157,13 @@ func (a *aggregationProcessor) Process(ctx context.Context, allTrafficPolicies [
 		}
 	}
 
-	var objectsToUpdate ProcessedObjects
 	for service, validatedPolicies := range serviceToUpdatedStatus {
 		needsUpdating := a.inMemoryStatusMutator.MutateServicePolicies(service, validatedPolicies)
 		if needsUpdating {
-			objectsToUpdate.MeshServices = append(objectsToUpdate.MeshServices, service)
+			err := a.meshServiceClient.UpdateMeshServiceStatus(ctx, service)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -171,15 +173,18 @@ func (a *aggregationProcessor) Process(ctx context.Context, allTrafficPolicies [
 		// invalid policies have their merge/translation errors zeroed out
 		needsUpdating := a.inMemoryStatusMutator.MutateConflictAndTranslatorErrors(policy, trafficPolicyToAllConflicts[policy], trafficPolicyToAllTranslationErrs[policy])
 		if needsUpdating {
-			objectsToUpdate.TrafficPolicies = append(objectsToUpdate.TrafficPolicies, policy)
+			err := a.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, policy)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	return &objectsToUpdate, nil
+	return nil
 }
 
-func (a *aggregationProcessor) aggregateMeshServices(ctx context.Context) ([]*zephyr_discovery.MeshService, map[*zephyr_discovery.MeshService]*meshServiceInfo, error) {
-	meshServiceList, err := a.meshServiceReader.ListMeshService(ctx)
+func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*zephyr_discovery.MeshService, map[*zephyr_discovery.MeshService]*meshServiceInfo, error) {
+	meshServiceList, err := a.meshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -189,7 +194,7 @@ func (a *aggregationProcessor) aggregateMeshServices(ctx context.Context) ([]*ze
 	for _, ms := range meshServiceList.Items {
 		meshService := ms
 
-		meshForService, err := a.meshReader.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+		meshForService, err := a.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 		if err != nil {
 			return nil, nil, err
 		}
