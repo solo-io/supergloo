@@ -6,9 +6,9 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
-	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
+	"github.com/solo-io/service-mesh-hub/pkg/common/reconciliation"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 )
 

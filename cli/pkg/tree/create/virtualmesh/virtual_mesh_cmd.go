@@ -15,9 +15,9 @@ import (
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
 	"github.com/spf13/cobra"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

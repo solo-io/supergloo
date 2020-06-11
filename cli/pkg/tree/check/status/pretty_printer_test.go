@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
-	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/version"
 )
 
 var _ = Describe("Status pretty printer", func() {

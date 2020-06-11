@@ -13,8 +13,8 @@ import (
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
 	mock_status "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status/mocks"
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/container-runtime"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig/mocks"
 )
 
 var _ = Describe("Meshctl check command", func() {

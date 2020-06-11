@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/pkg/constants"
-	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
+	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/version"
 )
 
 var (

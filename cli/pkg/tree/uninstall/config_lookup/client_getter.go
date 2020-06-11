@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/avast/retry-go"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/multicluster"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

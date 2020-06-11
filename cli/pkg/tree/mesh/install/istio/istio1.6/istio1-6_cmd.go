@@ -8,10 +8,10 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/filesystem/files"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-installation/istio/operator"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/common/filesystem/files"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/common/mesh-installation/istio/operator"
 	"github.com/spf13/cobra"
 )
 

@@ -20,7 +20,7 @@ ifeq ($(TAGGED_VERSION),)
 endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
 
-LDFLAGS := "-X github.com/solo-io/service-mesh-hub/pkg/version.Version=$(VERSION)"
+LDFLAGS := "-X github.com/solo-io/service-mesh-hub/pkg/common/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
 GO_BUILD_FLAGS := GO111MODULE=on CGO_ENABLED=0 GOARCH=amd64
@@ -39,7 +39,7 @@ IMAGE_REPO := soloio
 # Important to clean before pushing new releases. Dockerfiles and binaries may not update properly
 .PHONY: clean
 clean: helm-clean
-	# delete all _output directories, even those in services/*
+	# delete all _output directories, even those in cmd/*
 	# -prune prevents searching directories that we just deleted
 	find . -name '*_output' -prune -exec rm -rf {} \;
 
@@ -80,7 +80,7 @@ fmt-changed:
 # the vendor directory, even though we have excluded the directory in the .yamllint config file
 .PHONY: check-format
 check-format:
-	NOT_FORMATTED=$$(gofmt -l ./services/ ./ci/) && if [ -n "$$NOT_FORMATTED" ]; then echo These files are not formatted: $$NOT_FORMATTED; exit 1; fi
+	NOT_FORMATTED=$$(gofmt -l ./cmd/ ./ci/) && if [ -n "$$NOT_FORMATTED" ]; then echo These files are not formatted: $$NOT_FORMATTED; exit 1; fi
 
 .PHONY: check-spelling
 check-spelling:
@@ -106,18 +106,18 @@ generated-code:
 
 # $(1) name of container
 define build_container
-docker build -t ${IMAGE_REPO}/$(1):$(VERSION) $(ROOTDIR)/services/$(1)/_output -f $(ROOTDIR)/services/$(1)/cmd/Dockerfile;
+docker build -t ${IMAGE_REPO}/$(1):$(VERSION) $(ROOTDIR)/cmd/$(1)/_output -f $(ROOTDIR)/cmd/$(1)/Dockerfile;
 endef
 
 #----------------------------------------------------------------------------------
 # Mesh Discovery
 #----------------------------------------------------------------------------------
-MESH_DISCOVERY_DIR=services/mesh-discovery
+MESH_DISCOVERY_DIR=cmd/mesh-discovery
 MESH_DISCOVERY_OUTPUT_DIR=$(ROOTDIR)/$(MESH_DISCOVERY_DIR)/_output
 MESH_DISCOVERY_SOURCES=$(shell find $(MESH_DISCOVERY_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
 $(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64: $(MESH_DISCOVERY_SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_DISCOVERY_DIR)/cmd/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_DISCOVERY_DIR)/main.go
 
 .PHONY: mesh-discovery-docker
 mesh-discovery-docker: $(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64
@@ -127,12 +127,12 @@ mesh-discovery-docker: $(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64
 #----------------------------------------------------------------------------------
 # Mesh Networking
 #----------------------------------------------------------------------------------
-MESH_NETWORKING_DIR=services/mesh-networking
+MESH_NETWORKING_DIR=cmd/mesh-networking
 MESH_NETWORKING_OUTPUT_DIR=$(ROOTDIR)/$(MESH_NETWORKING_DIR)/_output
 MESH_NETWORKING_SOURCES=$(shell find $(MESH_NETWORKING_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
 $(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64: $(MESH_NETWORKING_SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_NETWORKING_DIR)/cmd/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_NETWORKING_DIR)/main.go
 
 .PHONY: mesh-networking-docker
 mesh-networking-docker: $(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64
@@ -141,12 +141,12 @@ mesh-networking-docker: $(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd6
 #----------------------------------------------------------------------------------
 # Csr Agent
 #----------------------------------------------------------------------------------
-CSR_AGENT_DIR=services/csr-agent
+CSR_AGENT_DIR=cmd/csr-agent
 CSR_AGENT_OUTPUT_DIR=$(ROOTDIR)/$(CSR_AGENT_DIR)/_output
 CSR_AGENT_SOURCES=$(shell find $(CSR_AGENT_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
 $(CSR_AGENT_OUTPUT_DIR)/csr-agent-linux-amd64: $(CSR_AGENT_SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CSR_AGENT_DIR)/cmd/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CSR_AGENT_DIR)/main.go
 
 .PHONY: csr-agent-docker
 csr-agent-docker: $(CSR_AGENT_OUTPUT_DIR)/csr-agent-linux-amd64
