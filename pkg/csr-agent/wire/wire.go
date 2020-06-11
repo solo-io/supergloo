@@ -9,8 +9,8 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	mc_wire "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/wire"
-	"github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen"
 	csr_generator "github.com/solo-io/service-mesh-hub/pkg/common/csr-generator"
+	"github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen"
 )
 
 func InitializeCsrAgent(ctx context.Context) (CsrAgentContext, error) {
