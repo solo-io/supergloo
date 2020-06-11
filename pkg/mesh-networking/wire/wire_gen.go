@@ -27,7 +27,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
-	csr_generator "github.com/solo-io/service-mesh-hub/pkg/csr-agent/csr-generator"
+	csr_generator "github.com/solo-io/service-mesh-hub/pkg/common/csr-generator"
 	access_policy_enforcer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer/istio"

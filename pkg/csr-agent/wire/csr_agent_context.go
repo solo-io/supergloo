@@ -6,7 +6,7 @@ import (
 	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	smh_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
-	csr_generator "github.com/solo-io/service-mesh-hub/pkg/csr-agent/csr-generator"
+	csr_generator "github.com/solo-io/service-mesh-hub/pkg/common/csr-generator"
 )
 
 type CsrAgentContext struct {

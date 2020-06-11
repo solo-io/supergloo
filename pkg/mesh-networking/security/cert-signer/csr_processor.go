@@ -8,7 +8,7 @@ import (
 	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen"
-	csr_generator "github.com/solo-io/service-mesh-hub/pkg/csr-agent/csr-generator"
+	csr_generator "github.com/solo-io/service-mesh-hub/pkg/common/csr-generator"
 )
 
 var (

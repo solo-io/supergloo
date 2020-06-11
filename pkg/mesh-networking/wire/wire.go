@@ -14,7 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/common/filesystem/files"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
-	csr_generator "github.com/solo-io/service-mesh-hub/pkg/csr-agent/csr-generator"
+	csr_generator "github.com/solo-io/service-mesh-hub/pkg/common/csr-generator"
 	networking_multicluster "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/compute-target"
 	controller_factories "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/compute-target/controllers"
 	cert_manager "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/security/cert-manager"
