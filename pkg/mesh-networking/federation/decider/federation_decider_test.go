@@ -15,7 +15,7 @@ import (
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	strategies2 "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/strategies"
-	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/common/snapshot"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/snapshot"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/decider"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
 	mock_discovery_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"

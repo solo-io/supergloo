@@ -8,7 +8,7 @@ import (
 	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver"
-	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/common/snapshot"
+	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/snapshot"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer"
 	access_control_policy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-policy-translator"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/decider"
