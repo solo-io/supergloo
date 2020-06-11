@@ -13,6 +13,10 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+type TranslationProcessor interface {
+	Process(ctx context.Context) (snapshot.ClusterNameToSnapshot, error)
+}
+
 func NewTranslationReconciler(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshClient zephyr_discovery.MeshClient,

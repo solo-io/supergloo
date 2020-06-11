@@ -16,6 +16,10 @@ import (
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 )
 
+type AggregateProcessor interface {
+	Process(ctx context.Context, allTrafficPolicies []*zephyr_networking.TrafficPolicy) (*ProcessedObjects, error)
+}
+
 func NewAggregationReconciler(
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
