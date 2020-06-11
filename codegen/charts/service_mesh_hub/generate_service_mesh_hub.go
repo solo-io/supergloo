@@ -3,9 +3,8 @@ package main
 import (
 	"io/ioutil"
 	"log"
-	"os"
 
-	"github.com/solo-io/service-mesh-hub/pkg/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/contrib"
@@ -18,13 +17,6 @@ import (
 func main() {
 	log.Println("starting generate SMH")
 
-	var renderTypes bool
-	if os.Getenv("REGENERATE_TYPES") == "" {
-		log.Println("REGENERATE_TYPES is not set, skipping autopilot client gen")
-	} else {
-		renderTypes = true
-	}
-
 	// load custom client template
 	customClientTemplateBytes, err := ioutil.ReadFile("../custom_client.gotmpl")
 	customClientTemplate := string(customClientTemplateBytes)
@@ -36,6 +28,15 @@ func main() {
 	customClientProviders := string(customClientProvidersBytes)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	customTemplates := []model.CustomTemplates{
+		{
+			Templates: map[string]string{
+				"clients.go":          customClientTemplate,
+				"client_providers.go": customClientProviders,
+			},
+		},
 	}
 
 	apImports := sk_anyvendor.CreateDefaultMatchOptions([]string{
@@ -56,27 +57,21 @@ func main() {
 						Spec: model.Field{
 							Type: model.Type{
 								Name:      "SettingsSpec",
-								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types",
 							},
 						},
 						Status: &model.Field{Type: model.Type{
 							Name:      "SettingsStatus",
-							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types",
 						}},
 					},
 				},
 				ApiRoot:          "pkg/api/",
 				RenderManifests:  true,
-				RenderTypes:      renderTypes,
+				RenderTypes:      true,
 				RenderController: true,
 				RenderProtos:     true,
-				CustomTemplates: []model.CustomTemplates{
-					{
-						Templates: map[string]string{
-							"client_providers.go": customClientProviders,
-						},
-					},
-				},
+				CustomTemplates:  customTemplates,
 			},
 			{
 				GroupVersion: schema.GroupVersion{
@@ -90,12 +85,12 @@ func main() {
 						Spec: model.Field{
 							Type: model.Type{
 								Name:      "TrafficPolicySpec",
-								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types",
 							},
 						},
 						Status: &model.Field{Type: model.Type{
 							Name:      "TrafficPolicyStatus",
-							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types",
 						}},
 					},
 					{
@@ -103,12 +98,12 @@ func main() {
 						Spec: model.Field{
 							Type: model.Type{
 								Name:      "AccessControlPolicySpec",
-								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types",
 							},
 						},
 						Status: &model.Field{Type: model.Type{
 							Name:      "AccessControlPolicyStatus",
-							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types",
 						}},
 					},
 					{
@@ -116,28 +111,21 @@ func main() {
 						Spec: model.Field{
 							Type: model.Type{
 								Name:      "VirtualMeshSpec",
-								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types",
 							},
 						},
 						Status: &model.Field{Type: model.Type{
 							Name:      "VirtualMeshStatus",
-							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types",
 						}},
 					},
 				},
 				RenderManifests:  true,
-				RenderTypes:      renderTypes,
+				RenderTypes:      true,
 				RenderController: true,
 				RenderProtos:     true,
-				CustomTemplates: []model.CustomTemplates{
-					{
-						Templates: map[string]string{
-							"clients.go":          customClientTemplate,
-							"client_providers.go": customClientProviders,
-						},
-					},
-				},
-				ApiRoot: "pkg/api",
+				CustomTemplates:  customTemplates,
+				ApiRoot:          "pkg/api",
 			},
 			{
 				GroupVersion: schema.GroupVersion{
@@ -151,7 +139,7 @@ func main() {
 						Spec: model.Field{
 							Type: model.Type{
 								Name:      "KubernetesClusterSpec",
-								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types",
 							},
 						},
 					},
@@ -160,12 +148,12 @@ func main() {
 						Spec: model.Field{
 							Type: model.Type{
 								Name:      "MeshServiceSpec",
-								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types",
 							},
 						},
 						Status: &model.Field{Type: model.Type{
 							Name:      "MeshServiceStatus",
-							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types",
 						}},
 					},
 					{
@@ -173,12 +161,12 @@ func main() {
 						Spec: model.Field{
 							Type: model.Type{
 								Name:      "MeshWorkloadSpec",
-								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types",
 							},
 						},
 						Status: &model.Field{Type: model.Type{
 							Name:      "MeshWorkloadStatus",
-							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types",
 						}},
 					},
 					{
@@ -186,17 +174,17 @@ func main() {
 						Spec: model.Field{
 							Type: model.Type{
 								Name:      "MeshSpec",
-								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types",
 							},
 						},
 						Status: &model.Field{Type: model.Type{
 							Name:      "MeshStatus",
-							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types",
 						}},
 					},
 				},
 				RenderManifests:  true,
-				RenderTypes:      renderTypes,
+				RenderTypes:      true,
 				RenderController: true,
 				RenderProtos:     true,
 				CustomTemplates: []model.CustomTemplates{
@@ -323,15 +311,8 @@ func main() {
 					},
 				},
 				CustomTypesImportPath: "istio.io/client-go/pkg/apis/networking/v1alpha3",
-				CustomTemplates: []model.CustomTemplates{
-					{
-						Templates: map[string]string{
-							"clients.go":          customClientTemplate,
-							"client_providers.go": customClientProviders,
-						},
-					},
-				},
-				ApiRoot: "pkg/api/istio",
+				CustomTemplates:       customTemplates,
+				ApiRoot:               "pkg/api/istio",
 			},
 			{
 				GroupVersion: schema.GroupVersion{
@@ -345,15 +326,8 @@ func main() {
 					},
 				},
 				CustomTypesImportPath: "istio.io/client-go/pkg/apis/security/v1beta1",
-				CustomTemplates: []model.CustomTemplates{
-					{
-						Templates: map[string]string{
-							"clients.go":          customClientTemplate,
-							"client_providers.go": customClientProviders,
-						},
-					},
-				},
-				ApiRoot: "pkg/api/istio",
+				CustomTemplates:       customTemplates,
+				ApiRoot:               "pkg/api/istio",
 			},
 			{
 				GroupVersion: schema.GroupVersion{
@@ -367,15 +341,8 @@ func main() {
 					},
 				},
 				CustomTypesImportPath: "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2",
-				CustomTemplates: []model.CustomTemplates{
-					{
-						Templates: map[string]string{
-							"clients.go":          customClientTemplate,
-							"client_providers.go": customClientProviders,
-						},
-					},
-				},
-				ApiRoot: "pkg/api/linkerd",
+				CustomTemplates:       customTemplates,
+				ApiRoot:               "pkg/api/linkerd",
 			},
 			{
 				GroupVersion: schema.GroupVersion{
@@ -389,15 +356,8 @@ func main() {
 					},
 				},
 				CustomTypesImportPath: "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1",
-				CustomTemplates: []model.CustomTemplates{
-					{
-						Templates: map[string]string{
-							"clients.go":          customClientTemplate,
-							"client_providers.go": customClientProviders,
-						},
-					},
-				},
-				ApiRoot: "pkg/api/smi",
+				CustomTemplates:       customTemplates,
+				ApiRoot:               "pkg/api/smi",
 			},
 		},
 		AnyVendorConfig: apImports,

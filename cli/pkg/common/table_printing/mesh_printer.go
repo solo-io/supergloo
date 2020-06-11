@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 )
 
 func NewMeshPrinter(tableBuilder TableBuilder) MeshPrinter {
@@ -27,7 +27,7 @@ type meshPrinter struct {
 	commonHeaderRows []string
 }
 
-func (m *meshPrinter) Print(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
+func (m *meshPrinter) Print(out io.Writer, meshes []*smh_discovery.Mesh) error {
 
 	meshesByType := getMeshByType(meshes)
 
@@ -102,7 +102,7 @@ func (m *meshPrinter) buildCitadelInfo(info *types.MeshSpec_IstioMesh_CitadelInf
 	return strings.Join(lines, "\n")
 }
 
-func (m *meshPrinter) printLinkerdMeshes(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
+func (m *meshPrinter) printLinkerdMeshes(out io.Writer, meshes []*smh_discovery.Mesh) error {
 	// Do nothing if no meshes exist
 	if len(meshes) == 0 {
 		return nil
@@ -143,7 +143,7 @@ func (m *meshPrinter) printLinkerdMeshes(out io.Writer, meshes []*zephyr_discove
 	return nil
 }
 
-func (m *meshPrinter) printConsulConnectMeshes(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
+func (m *meshPrinter) printConsulConnectMeshes(out io.Writer, meshes []*smh_discovery.Mesh) error {
 	// Do nothing if no meshes exist
 	if len(meshes) == 0 {
 		return nil
@@ -184,7 +184,7 @@ func (m *meshPrinter) printConsulConnectMeshes(out io.Writer, meshes []*zephyr_d
 	return nil
 }
 
-func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
+func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*smh_discovery.Mesh) error {
 	// Do nothing if no meshes exist
 	if len(meshes) == 0 {
 		return nil
@@ -235,12 +235,12 @@ type istioMesh struct {
 type meshByType struct {
 	istio1_5      []*istioMesh
 	istio1_6      []*istioMesh
-	linkerd       []*zephyr_discovery.Mesh
-	consulConnect []*zephyr_discovery.Mesh
-	awsAppMesh    []*zephyr_discovery.Mesh
+	linkerd       []*smh_discovery.Mesh
+	consulConnect []*smh_discovery.Mesh
+	awsAppMesh    []*smh_discovery.Mesh
 }
 
-func getMeshByType(meshes []*zephyr_discovery.Mesh) *meshByType {
+func getMeshByType(meshes []*smh_discovery.Mesh) *meshByType {
 	mbt := &meshByType{}
 	for _, mesh := range meshes {
 		switch mesh.Spec.GetMeshType().(type) {

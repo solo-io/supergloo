@@ -120,7 +120,7 @@ meshARN=$(echo $(aws appmesh describe-mesh --mesh-name=$meshName --query 'mesh.m
 eksClusterARN=$(echo $(aws eks describe-cluster --name=$clusterName --query 'cluster.arn'))
 
 kubectl -n service-mesh-hub replace -f - <<EOF
-apiVersion: core.zephyr.solo.io/v1alpha1
+apiVersion: core.smh.solo.io/v1alpha1
 kind: Settings
 metadata:
   namespace: service-mesh-hub

@@ -1,6 +1,6 @@
 syntax = "proto3";
-package discovery.zephyr.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types";
+package discovery.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types";
 
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
@@ -33,7 +33,7 @@ message MeshWorkloadSpec {
            It has the generic name kube_controller as it can represent either a deployment or a daemonset. Or potentially
            any other kubernetes object which creates injected pods.
         */
-        core.zephyr.solo.io.ResourceRef kube_controller_ref = 1;
+        core.smh.solo.io.ResourceRef kube_controller_ref = 1;
 
         /**
             these are the labels directly from the pods that this controller owns
@@ -51,7 +51,7 @@ message MeshWorkloadSpec {
     KubeController kube_controller = 1;
 
     // The mesh with which this workload is associated
-    core.zephyr.solo.io.ResourceRef mesh = 2;
+    core.smh.solo.io.ResourceRef mesh = 2;
 
     // Appmesh specific metadata
     Appmesh appmesh = 3;

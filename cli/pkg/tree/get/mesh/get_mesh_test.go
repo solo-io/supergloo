@@ -9,9 +9,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig/mocks"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -22,7 +22,7 @@ var _ = Describe("Get Mesh Cmd", func() {
 		meshctl         *cli_test.MockMeshctl
 		mockKubeLoader  *mock_kubeconfig.MockKubeLoader
 		mockMeshPrinter *mock_table_printing.MockMeshPrinter
-		mockMeshClient  *mock_zephyr_discovery.MockMeshClient
+		mockMeshClient  *mock_smh_discovery.MockMeshClient
 	)
 
 	BeforeEach(func() {
@@ -30,7 +30,7 @@ var _ = Describe("Get Mesh Cmd", func() {
 		ctx = context.TODO()
 		mockKubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
 		mockMeshPrinter = mock_table_printing.NewMockMeshPrinter(ctrl)
-		mockMeshClient = mock_zephyr_discovery.NewMockMeshClient(ctrl)
+		mockMeshClient = mock_smh_discovery.NewMockMeshClient(ctrl)
 		meshctl = &cli_test.MockMeshctl{
 			MockController: ctrl,
 			Ctx:            ctx,
@@ -51,7 +51,7 @@ var _ = Describe("Get Mesh Cmd", func() {
 
 	It("will call the Mesh Printer with the proper data", func() {
 
-		meshes := []*zephyr_discovery.Mesh{
+		meshes := []*smh_discovery.Mesh{
 			{
 				ObjectMeta: v1.ObjectMeta{
 					Name: "mesh-1",
@@ -68,8 +68,8 @@ var _ = Describe("Get Mesh Cmd", func() {
 			Return(nil, nil)
 		mockMeshClient.EXPECT().
 			ListMesh(ctx).
-			Return(&zephyr_discovery.MeshList{
-				Items: []zephyr_discovery.Mesh{*meshes[0], *meshes[1]},
+			Return(&smh_discovery.MeshList{
+				Items: []smh_discovery.Mesh{*meshes[0], *meshes[1]},
 			}, nil)
 		mockMeshPrinter.EXPECT().
 			Print(gomock.Any(), meshes).

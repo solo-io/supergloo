@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
@@ -24,8 +24,8 @@ type DescriptionResult struct {
 }
 
 type Policies struct {
-	AccessControlPolicies []*zephyr_networking.AccessControlPolicy
-	TrafficPolicies       []*zephyr_networking.TrafficPolicy
+	AccessControlPolicies []*smh_networking.AccessControlPolicy
+	TrafficPolicies       []*smh_networking.TrafficPolicy
 }
 
 // the name/namespace/cluster of a kube-native resource, like a Service or a Pod

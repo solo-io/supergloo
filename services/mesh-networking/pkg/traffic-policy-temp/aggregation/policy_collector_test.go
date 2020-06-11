@@ -4,12 +4,12 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/mocks"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
@@ -20,7 +20,7 @@ import (
 var _ = Describe("PolicyCollector", func() {
 	var (
 		ctrl              *gomock.Controller
-		validationSuccess = &zephyr_core_types.Status{State: zephyr_core_types.Status_ACCEPTED}
+		validationSuccess = &smh_core_types.Status{State: smh_core_types.Status_ACCEPTED}
 	)
 
 	BeforeEach(func() {
@@ -36,7 +36,7 @@ var _ = Describe("PolicyCollector", func() {
 			It("does not do anything", func() {
 				aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 				collector := traffic_policy_aggregation.NewPolicyCollector(aggregator)
-				meshService := &zephyr_discovery.MeshService{}
+				meshService := &smh_discovery.MeshService{}
 
 				aggregator.EXPECT().
 					PoliciesForService(nil, meshService).
@@ -52,14 +52,14 @@ var _ = Describe("PolicyCollector", func() {
 			It("should indicate that all policies be removed from the service", func() {
 				aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 				collector := traffic_policy_aggregation.NewPolicyCollector(aggregator)
-				meshService := &zephyr_discovery.MeshService{
-					Status: zephyr_discovery_types.MeshServiceStatus{
-						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				meshService := &smh_discovery.MeshService{
+					Status: smh_discovery_types.MeshServiceStatus{
+						ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 							{
-								Ref: &zephyr_core_types.ResourceRef{Name: "tp1"},
+								Ref: &smh_core_types.ResourceRef{Name: "tp1"},
 							},
 							{
-								Ref: &zephyr_core_types.ResourceRef{Name: "tp2"},
+								Ref: &smh_core_types.ResourceRef{Name: "tp2"},
 							},
 						},
 					},
@@ -69,7 +69,7 @@ var _ = Describe("PolicyCollector", func() {
 					PoliciesForService(nil, meshService).
 					Return(nil, nil)
 
-				result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, nil, nil, nil)
+				result, err := collector.CollectForService(meshService, []*smh_discovery.MeshService{meshService}, nil, nil, nil)
 				Expect(err).To(BeNil())
 				Expect(result.PoliciesToRecordOnService).To(BeNil())
 			})
@@ -81,15 +81,15 @@ var _ = Describe("PolicyCollector", func() {
 			aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 			collector := traffic_policy_aggregation.NewPolicyCollector(aggregator)
 			validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-			meshService := &zephyr_discovery.MeshService{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh-service"}}
-			mesh := &zephyr_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
-			trafficPolicies := []*zephyr_networking.TrafficPolicy{
+			meshService := &smh_discovery.MeshService{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh-service"}}
+			mesh := &smh_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
+			trafficPolicies := []*smh_networking.TrafficPolicy{
 				{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp1"}},
 				{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp2"}},
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp3"},
-					Status: zephyr_networking_types.TrafficPolicyStatus{
-						ValidationStatus: &zephyr_core_types.Status{State: zephyr_core_types.Status_INVALID},
+					Status: smh_networking_types.TrafficPolicyStatus{
+						ValidationStatus: &smh_core_types.Status{State: smh_core_types.Status_INVALID},
 					},
 				},
 			}
@@ -98,7 +98,7 @@ var _ = Describe("PolicyCollector", func() {
 				PoliciesForService(nil, meshService).
 				Return(nil, nil)
 
-			result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
+			result, err := collector.CollectForService(meshService, []*smh_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 			Expect(err).To(BeNil())
 			Expect(result.PoliciesToRecordOnService).To(BeNil())
 		})
@@ -107,52 +107,52 @@ var _ = Describe("PolicyCollector", func() {
 			aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 			collector := traffic_policy_aggregation.NewPolicyCollector(aggregator)
 			validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-			meshService := &zephyr_discovery.MeshService{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh-service"}}
-			mesh := &zephyr_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
-			trafficPolicies := []*zephyr_networking.TrafficPolicy{
+			meshService := &smh_discovery.MeshService{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh-service"}}
+			mesh := &smh_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
+			trafficPolicies := []*smh_networking.TrafficPolicy{
 
 				// the first one will not be associated with the service
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp1"},
-					Spec: zephyr_networking_types.TrafficPolicySpec{
-						Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+					Spec: smh_networking_types.TrafficPolicySpec{
+						Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 							Attempts: 1,
 						},
 					},
-					Status: zephyr_networking_types.TrafficPolicyStatus{
+					Status: smh_networking_types.TrafficPolicyStatus{
 						ValidationStatus: validationSuccess,
 					},
 				},
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp2"},
-					Spec: zephyr_networking_types.TrafficPolicySpec{
-						Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+					Spec: smh_networking_types.TrafficPolicySpec{
+						Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 							Attempts: 2,
 						},
 					},
-					Status: zephyr_networking_types.TrafficPolicyStatus{
+					Status: smh_networking_types.TrafficPolicyStatus{
 						ValidationStatus: validationSuccess,
 					},
 				},
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp3"},
-					Spec: zephyr_networking_types.TrafficPolicySpec{
-						Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+					Spec: smh_networking_types.TrafficPolicySpec{
+						Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 							Attempts: 3,
 						},
 					},
-					Status: zephyr_networking_types.TrafficPolicyStatus{
+					Status: smh_networking_types.TrafficPolicyStatus{
 						ValidationStatus: validationSuccess,
 					},
 				},
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp4"},
-					Spec: zephyr_networking_types.TrafficPolicySpec{
-						Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+					Spec: smh_networking_types.TrafficPolicySpec{
+						Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 							Attempts: 4,
 						},
 					},
-					Status: zephyr_networking_types.TrafficPolicyStatus{
+					Status: smh_networking_types.TrafficPolicyStatus{
 						// un-validated
 					},
 				},
@@ -165,7 +165,7 @@ var _ = Describe("PolicyCollector", func() {
 				FindMergeConflict(&trafficPolicies[1].Spec, nil, meshService).
 				Return(nil)
 			validator.EXPECT().
-				GetTranslationErrors(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				GetTranslationErrors(meshService, []*smh_discovery.MeshService{meshService}, mesh, []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 					{
 						Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 						TrafficPolicySpec: &trafficPolicies[1].Spec,
@@ -173,10 +173,10 @@ var _ = Describe("PolicyCollector", func() {
 				}).
 				Return(nil)
 			aggregator.EXPECT().
-				FindMergeConflict(&trafficPolicies[2].Spec, []*zephyr_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
+				FindMergeConflict(&trafficPolicies[2].Spec, []*smh_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
 				Return(nil)
 			validator.EXPECT().
-				GetTranslationErrors(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				GetTranslationErrors(meshService, []*smh_discovery.MeshService{meshService}, mesh, []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 					{
 						Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 						TrafficPolicySpec: &trafficPolicies[1].Spec,
@@ -188,9 +188,9 @@ var _ = Describe("PolicyCollector", func() {
 				}).
 				Return(nil)
 
-			result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
+			result, err := collector.CollectForService(meshService, []*smh_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 			Expect(err).To(BeNil())
-			Expect(result.PoliciesToRecordOnService).To(Equal([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			Expect(result.PoliciesToRecordOnService).To(Equal([]*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
 					Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 					TrafficPolicySpec: &trafficPolicies[1].Spec,
@@ -209,59 +209,59 @@ var _ = Describe("PolicyCollector", func() {
 				aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 				collector := traffic_policy_aggregation.NewPolicyCollector(aggregator)
 				validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-				mesh := &zephyr_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
-				trafficPolicies := []*zephyr_networking.TrafficPolicy{
+				mesh := &smh_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
+				trafficPolicies := []*smh_networking.TrafficPolicy{
 
 					// the first one will not be associated with the service
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp1"},
-						Spec: zephyr_networking_types.TrafficPolicySpec{
-							Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+						Spec: smh_networking_types.TrafficPolicySpec{
+							Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 								Attempts: 1,
 							},
 						},
-						Status: zephyr_networking_types.TrafficPolicyStatus{
+						Status: smh_networking_types.TrafficPolicyStatus{
 							ValidationStatus: validationSuccess,
 						},
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp2"},
-						Spec: zephyr_networking_types.TrafficPolicySpec{
-							Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+						Spec: smh_networking_types.TrafficPolicySpec{
+							Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 								Attempts: 2,
 							},
 						},
-						Status: zephyr_networking_types.TrafficPolicyStatus{
+						Status: smh_networking_types.TrafficPolicyStatus{
 							ValidationStatus: validationSuccess,
 						},
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp3"},
-						Spec: zephyr_networking_types.TrafficPolicySpec{
-							Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+						Spec: smh_networking_types.TrafficPolicySpec{
+							Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 								Attempts: 3,
 							},
 						},
-						Status: zephyr_networking_types.TrafficPolicyStatus{
+						Status: smh_networking_types.TrafficPolicyStatus{
 							ValidationStatus: validationSuccess,
 						},
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp4"},
-						Spec: zephyr_networking_types.TrafficPolicySpec{
-							Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+						Spec: smh_networking_types.TrafficPolicySpec{
+							Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 								Attempts: 4,
 							},
 						},
-						Status: zephyr_networking_types.TrafficPolicyStatus{
+						Status: smh_networking_types.TrafficPolicyStatus{
 							// un-validated
 						},
 					},
 				}
-				meshService := &zephyr_discovery.MeshService{
+				meshService := &smh_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh-service"},
-					Status: zephyr_discovery_types.MeshServiceStatus{
-						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+					Status: smh_discovery_types.MeshServiceStatus{
+						ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 							{
 								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 								TrafficPolicySpec: &trafficPolicies[1].Spec,
@@ -278,7 +278,7 @@ var _ = Describe("PolicyCollector", func() {
 					PoliciesForService(trafficPolicies[0:3], meshService).
 					Return(trafficPolicies[1:3], nil)
 
-				result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
+				result, err := collector.CollectForService(meshService, []*smh_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 				Expect(err).To(BeNil())
 				Expect(result.PoliciesToRecordOnService).To(Equal(meshService.Status.ValidatedTrafficPolicies))
 			})
@@ -290,67 +290,67 @@ var _ = Describe("PolicyCollector", func() {
 					aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 					collector := traffic_policy_aggregation.NewPolicyCollector(aggregator)
 					validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-					mesh := &zephyr_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
-					trafficPolicies := []*zephyr_networking.TrafficPolicy{
+					mesh := &smh_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
+					trafficPolicies := []*smh_networking.TrafficPolicy{
 
 						// the first one will not be associated with the service
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp1"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 1,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								ValidationStatus: validationSuccess,
 							},
 						},
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp2"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 2,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								ValidationStatus: validationSuccess,
 							},
 						},
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp3"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 3,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								ValidationStatus: validationSuccess,
 							},
 						},
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp4"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 4,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								// un-validated
 							},
 						},
 					}
-					meshService := &zephyr_discovery.MeshService{
+					meshService := &smh_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh-service"},
-						Status: zephyr_discovery_types.MeshServiceStatus{
-							ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+						Status: smh_discovery_types.MeshServiceStatus{
+							ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 								{
 									Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 									TrafficPolicySpec: &trafficPolicies[1].Spec,
 								},
 								{
 									Ref: selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
-									TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-										Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+									TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+										Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 											Attempts: 9999, // this is getting updated to the value "2"
 										},
 									},
@@ -363,10 +363,10 @@ var _ = Describe("PolicyCollector", func() {
 						PoliciesForService(trafficPolicies[0:3], meshService).
 						Return(trafficPolicies[1:3], nil)
 					aggregator.EXPECT().
-						FindMergeConflict(&trafficPolicies[2].Spec, []*zephyr_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
+						FindMergeConflict(&trafficPolicies[2].Spec, []*smh_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
 						Return(nil)
 					validator.EXPECT().
-						GetTranslationErrors(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+						GetTranslationErrors(meshService, []*smh_discovery.MeshService{meshService}, mesh, []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 							{
 								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 								TrafficPolicySpec: &trafficPolicies[1].Spec,
@@ -378,9 +378,9 @@ var _ = Describe("PolicyCollector", func() {
 						}).
 						Return(nil)
 
-					result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
+					result, err := collector.CollectForService(meshService, []*smh_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 					Expect(err).To(BeNil())
-					Expect(result.PoliciesToRecordOnService).To(Equal([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+					Expect(result.PoliciesToRecordOnService).To(Equal([]*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						meshService.Status.ValidatedTrafficPolicies[0],
 						{
 							Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
@@ -393,31 +393,31 @@ var _ = Describe("PolicyCollector", func() {
 					aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 					collector := traffic_policy_aggregation.NewPolicyCollector(aggregator)
 					validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-					mesh := &zephyr_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
-					validatedSpec := &zephyr_networking_types.TrafficPolicySpec{
-						Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+					mesh := &smh_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
+					validatedSpec := &smh_networking_types.TrafficPolicySpec{
+						Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 							Attempts: 1,
 						},
 					}
-					trafficPolicies := []*zephyr_networking.TrafficPolicy{
+					trafficPolicies := []*smh_networking.TrafficPolicy{
 						// the first one will not be associated with the service
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp1", Generation: 2},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 2,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								ObservedGeneration: 1,
 								ValidationStatus:   validationSuccess,
 							},
 						},
 					}
-					meshService := &zephyr_discovery.MeshService{
+					meshService := &smh_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh-service"},
-						Status: zephyr_discovery_types.MeshServiceStatus{
-							ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+						Status: smh_discovery_types.MeshServiceStatus{
+							ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 								{
 									Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[0].ObjectMeta),
 									TrafficPolicySpec: validatedSpec,
@@ -427,14 +427,14 @@ var _ = Describe("PolicyCollector", func() {
 					}
 
 					// validatedPolicies will be empty as no validated policies exist (the one we have is ignored as generation != observedGeneration)
-					var validatedPolicies []*zephyr_networking.TrafficPolicy
+					var validatedPolicies []*smh_networking.TrafficPolicy
 					aggregator.EXPECT().
 						PoliciesForService(validatedPolicies, meshService).
 						Return(trafficPolicies, nil)
 
-					result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
+					result, err := collector.CollectForService(meshService, []*smh_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 					Expect(err).To(BeNil())
-					Expect(result.PoliciesToRecordOnService).To(Equal([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+					Expect(result.PoliciesToRecordOnService).To(Equal([]*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
 							Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[0].ObjectMeta),
 							TrafficPolicySpec: validatedSpec,
@@ -448,67 +448,67 @@ var _ = Describe("PolicyCollector", func() {
 					aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 					collector := traffic_policy_aggregation.NewPolicyCollector(aggregator)
 					validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-					mesh := &zephyr_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
-					trafficPolicies := []*zephyr_networking.TrafficPolicy{
+					mesh := &smh_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
+					trafficPolicies := []*smh_networking.TrafficPolicy{
 
 						// the first one will not be associated with the service
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp1"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 1,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								ValidationStatus: validationSuccess,
 							},
 						},
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp2"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 2,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								ValidationStatus: validationSuccess,
 							},
 						},
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp3"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 3,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								ValidationStatus: validationSuccess,
 							},
 						},
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp4"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 4,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								// un-validated
 							},
 						},
 					}
-					meshService := &zephyr_discovery.MeshService{
+					meshService := &smh_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh-service"},
-						Status: zephyr_discovery_types.MeshServiceStatus{
-							ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+						Status: smh_discovery_types.MeshServiceStatus{
+							ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 								{
 									Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 									TrafficPolicySpec: &trafficPolicies[1].Spec,
 								},
 								{
 									Ref: selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
-									TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-										Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+									TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+										Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 											Attempts: 9999, // this is getting updated to the value "2"
 										},
 									},
@@ -516,19 +516,19 @@ var _ = Describe("PolicyCollector", func() {
 							},
 						},
 					}
-					mergeConflict := &zephyr_networking_types.TrafficPolicyStatus_ConflictError{ErrorMessage: "whoops conflict"}
+					mergeConflict := &smh_networking_types.TrafficPolicyStatus_ConflictError{ErrorMessage: "whoops conflict"}
 
 					aggregator.EXPECT().
 						PoliciesForService(trafficPolicies[0:3], meshService).
 						Return(trafficPolicies[1:3], nil)
 					aggregator.EXPECT().
-						FindMergeConflict(&trafficPolicies[2].Spec, []*zephyr_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
+						FindMergeConflict(&trafficPolicies[2].Spec, []*smh_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
 						Return(mergeConflict)
 
-					result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
+					result, err := collector.CollectForService(meshService, []*smh_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 					Expect(err).To(BeNil())
 					Expect(result.PoliciesToRecordOnService).To(Equal(meshService.Status.ValidatedTrafficPolicies))
-					Expect(result.PolicyToConflictErrors).To(Equal(map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError{
+					Expect(result.PolicyToConflictErrors).To(Equal(map[*smh_networking.TrafficPolicy][]*smh_networking_types.TrafficPolicyStatus_ConflictError{
 						trafficPolicies[2]: {mergeConflict},
 					}))
 				})
@@ -537,67 +537,67 @@ var _ = Describe("PolicyCollector", func() {
 					aggregator := mock_traffic_policy_aggregation.NewMockAggregator(ctrl)
 					collector := traffic_policy_aggregation.NewPolicyCollector(aggregator)
 					validator := mock_mesh_translation.NewMockTranslationValidator(ctrl)
-					mesh := &zephyr_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
-					trafficPolicies := []*zephyr_networking.TrafficPolicy{
+					mesh := &smh_discovery.Mesh{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh"}}
+					trafficPolicies := []*smh_networking.TrafficPolicy{
 
 						// the first one will not be associated with the service
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp1"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 1,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								ValidationStatus: validationSuccess,
 							},
 						},
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp2"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 2,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								ValidationStatus: validationSuccess,
 							},
 						},
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp3"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 3,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								ValidationStatus: validationSuccess,
 							},
 						},
 						{
 							ObjectMeta: k8s_meta_types.ObjectMeta{Name: "tp4"},
-							Spec: zephyr_networking_types.TrafficPolicySpec{
-								Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+							Spec: smh_networking_types.TrafficPolicySpec{
+								Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 									Attempts: 4,
 								},
 							},
-							Status: zephyr_networking_types.TrafficPolicyStatus{
+							Status: smh_networking_types.TrafficPolicyStatus{
 								// un-validated
 							},
 						},
 					}
-					meshService := &zephyr_discovery.MeshService{
+					meshService := &smh_discovery.MeshService{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "test-mesh-service"},
-						Status: zephyr_discovery_types.MeshServiceStatus{
-							ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+						Status: smh_discovery_types.MeshServiceStatus{
+							ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 								{
 									Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 									TrafficPolicySpec: &trafficPolicies[1].Spec,
 								},
 								{
 									Ref: selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
-									TrafficPolicySpec: &zephyr_networking_types.TrafficPolicySpec{
-										Retries: &zephyr_networking_types.TrafficPolicySpec_RetryPolicy{
+									TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+										Retries: &smh_networking_types.TrafficPolicySpec_RetryPolicy{
 											Attempts: 9999, // this is getting updated to the value "2"
 										},
 									},
@@ -605,16 +605,16 @@ var _ = Describe("PolicyCollector", func() {
 							},
 						},
 					}
-					translationError := &zephyr_networking_types.TrafficPolicyStatus_TranslatorError{ErrorMessage: "whoops translator error"}
+					translationError := &smh_networking_types.TrafficPolicyStatus_TranslatorError{ErrorMessage: "whoops translator error"}
 
 					aggregator.EXPECT().
 						PoliciesForService(trafficPolicies[0:3], meshService).
 						Return(trafficPolicies[1:3], nil)
 					aggregator.EXPECT().
-						FindMergeConflict(&trafficPolicies[2].Spec, []*zephyr_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
+						FindMergeConflict(&trafficPolicies[2].Spec, []*smh_networking_types.TrafficPolicySpec{&trafficPolicies[1].Spec}, meshService).
 						Return(nil)
 					validator.EXPECT().
-						GetTranslationErrors(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+						GetTranslationErrors(meshService, []*smh_discovery.MeshService{meshService}, mesh, []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 							{
 								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[1].ObjectMeta),
 								TrafficPolicySpec: &trafficPolicies[1].Spec,
@@ -625,17 +625,17 @@ var _ = Describe("PolicyCollector", func() {
 							},
 						}).
 						Return([]*mesh_translation.TranslationError{{
-							Policy: &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+							Policy: &smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 								TrafficPolicySpec: &trafficPolicies[2].Spec,
 								Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[2].ObjectMeta),
 							},
-							TranslatorErrors: []*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{translationError},
+							TranslatorErrors: []*smh_networking_types.TrafficPolicyStatus_TranslatorError{translationError},
 						}})
 
-					result, err := collector.CollectForService(meshService, []*zephyr_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
+					result, err := collector.CollectForService(meshService, []*smh_discovery.MeshService{meshService}, mesh, validator, trafficPolicies)
 					Expect(err).To(BeNil())
 					Expect(result.PoliciesToRecordOnService).To(Equal(meshService.Status.ValidatedTrafficPolicies))
-					Expect(result.PolicyToTranslatorErrors).To(Equal(map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{
+					Expect(result.PolicyToTranslatorErrors).To(Equal(map[*smh_networking.TrafficPolicy][]*smh_networking_types.TrafficPolicyStatus_TranslatorError{
 						trafficPolicies[2]: {translationError},
 					}))
 				})

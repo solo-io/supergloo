@@ -1,6 +1,6 @@
 syntax = "proto3";
-package security.zephyr.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types";
+package security.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types";
 
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
@@ -31,7 +31,7 @@ message VirtualMeshCertificateSigningRequestSpec {
             In the future, the type of mesh, and level of trust will need to be specified here,
             but for the time being we are only supporting shared trust in Istio.
         */
-        core.zephyr.solo.io.MeshType mesh_type = 5;
+        core.smh.solo.io.MeshType mesh_type = 5;
     }
 
     // Base64-encoded PKCS#10 CSR data
@@ -48,7 +48,7 @@ message VirtualMeshCertificateSigningRequestSpec {
         it can be retrieved when the cert is going to expire.
         TODO: Decide how exactly we want to store this data.
     */
-    core.zephyr.solo.io.ResourceRef virtual_mesh_ref = 3;
+    core.smh.solo.io.ResourceRef virtual_mesh_ref = 3;
 
 }
 
@@ -81,5 +81,5 @@ message VirtualMeshCertificateSigningRequestStatus {
     // Workflow for approving Certificate Signing Requests
     ThirdPartyApprovalWorkflow third_party_approval = 2;
 
-    core.zephyr.solo.io.Status computed_status = 3;
+    core.smh.solo.io.Status computed_status = 3;
 }

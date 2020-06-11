@@ -4,16 +4,16 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 )
 
 var (
-	FailedToFindMeshServicesBySelector = func(err error, selector *zephyr_core_types.ServiceSelector) error {
+	FailedToFindMeshServicesBySelector = func(err error, selector *smh_core_types.ServiceSelector) error {
 		return eris.Wrapf(err, "Failed to find services for selector %+v", selector)
 	}
-	FailedToFindMeshWorkloadsByIdentity = func(err error, selector *zephyr_core_types.IdentitySelector) error {
+	FailedToFindMeshWorkloadsByIdentity = func(err error, selector *smh_core_types.IdentitySelector) error {
 		return eris.Wrapf(err, "Failed to find workloads with identity %+v", selector)
 	}
 	FailedToListAccessControlPolicies = func(err error) error {
@@ -25,8 +25,8 @@ var (
 )
 
 func NewResourceDescriber(
-	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
-	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
+	trafficPolicyClient smh_networking.TrafficPolicyClient,
+	accessControlPolicyClient smh_networking.AccessControlPolicyClient,
 
 	resourceSelector selection.ResourceSelector,
 ) ResourceDescriber {
@@ -38,8 +38,8 @@ func NewResourceDescriber(
 }
 
 type resourceDescriber struct {
-	trafficPolicyClient       zephyr_networking.TrafficPolicyClient
-	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient
+	trafficPolicyClient       smh_networking.TrafficPolicyClient
+	accessControlPolicyClient smh_networking.AccessControlPolicyClient
 	ResourceSelector          selection.ResourceSelector
 }
 
@@ -59,7 +59,7 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 		return nil, FailedToListTrafficPolicies(err)
 	}
 
-	var relevantAccessControlPolicies []*zephyr_networking.AccessControlPolicy
+	var relevantAccessControlPolicies []*smh_networking.AccessControlPolicy
 	for _, acpIter := range allAccessControlPolicies.Items {
 		acp := acpIter
 		matchingMeshServices, err := r.ResourceSelector.GetAllMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
@@ -77,7 +77,7 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 		}
 	}
 
-	var relevantTrafficPolicies []*zephyr_networking.TrafficPolicy
+	var relevantTrafficPolicies []*smh_networking.TrafficPolicy
 	for _, tpIter := range allTrafficControlPolicies.Items {
 		tp := tpIter
 		matchingMeshServices, err := r.ResourceSelector.GetAllMeshServicesByServiceSelector(ctx, tp.Spec.GetDestinationSelector())
@@ -119,7 +119,7 @@ func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceId
 		return nil, FailedToListTrafficPolicies(err)
 	}
 
-	var relevantAccessControlPolicies []*zephyr_networking.AccessControlPolicy
+	var relevantAccessControlPolicies []*smh_networking.AccessControlPolicy
 	for _, acpIter := range allAccessControlPolicies.Items {
 		acp := acpIter
 		matchingMeshWorkloads, err := r.ResourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, acp.Spec.GetSourceSelector())
@@ -136,7 +136,7 @@ func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceId
 		}
 	}
 
-	var relevantTrafficPolicies []*zephyr_networking.TrafficPolicy
+	var relevantTrafficPolicies []*smh_networking.TrafficPolicy
 	for _, tpIter := range allTrafficControlPolicies.Items {
 		tp := tpIter
 		matchingMeshWorkloads, err := r.ResourceSelector.GetMeshWorkloadsByWorkloadSelector(ctx, tp.Spec.GetSourceSelector())

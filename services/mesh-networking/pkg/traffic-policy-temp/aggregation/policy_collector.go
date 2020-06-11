@@ -3,12 +3,12 @@ package traffic_policy_aggregation
 import (
 	"sort"
 
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -24,11 +24,11 @@ type policyCollector struct {
 }
 
 func (p *policyCollector) CollectForService(
-	meshService *zephyr_discovery.MeshService,
-	allMeshServices []*zephyr_discovery.MeshService,
-	mesh *zephyr_discovery.Mesh,
+	meshService *smh_discovery.MeshService,
+	allMeshServices []*smh_discovery.MeshService,
+	mesh *smh_discovery.Mesh,
 	translationValidator mesh_translation.TranslationValidator,
-	allTrafficPolicies []*zephyr_networking.TrafficPolicy,
+	allTrafficPolicies []*smh_networking.TrafficPolicy,
 ) (*CollectionResult, error) {
 	allTrafficPolicyIds, uniqueStringToNewlyValidatedTrafficPolicy, policiesForService, err := p.aggregateTrafficPolicies(
 		meshService,
@@ -69,15 +69,15 @@ func (p *policyCollector) CollectForService(
 }
 
 func (p *policyCollector) determineFinalValidState(
-	meshService *zephyr_discovery.MeshService,
-	allMeshServices []*zephyr_discovery.MeshService,
-	mesh *zephyr_discovery.Mesh,
+	meshService *smh_discovery.MeshService,
+	allMeshServices []*smh_discovery.MeshService,
+	mesh *smh_discovery.Mesh,
 	translationValidator mesh_translation.TranslationValidator,
 	policiesToCheckParam []*policyToCheck,
 ) (
-	policiesToRecordOnService []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
-	policyToConflictErrors map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError,
-	policyToTranslatorErrors map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError,
+	policiesToRecordOnService []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
+	policyToConflictErrors map[*smh_networking.TrafficPolicy][]*smh_networking_types.TrafficPolicyStatus_ConflictError,
+	policyToTranslatorErrors map[*smh_networking.TrafficPolicy][]*smh_networking_types.TrafficPolicyStatus_TranslatorError,
 ) {
 	// avoid mutating the input parameter
 	policiesToCheck := append([]*policyToCheck(nil), policiesToCheckParam...)
@@ -95,8 +95,8 @@ func (p *policyCollector) determineFinalValidState(
 		return policiesToCheck[i].UpdatedTrafficPolicy == nil
 	})
 
-	policiesInConflict := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_ConflictError{}
-	untranslatablePolicies := map[*zephyr_networking.TrafficPolicy][]*zephyr_networking_types.TrafficPolicyStatus_TranslatorError{}
+	policiesInConflict := map[*smh_networking.TrafficPolicy][]*smh_networking_types.TrafficPolicyStatus_ConflictError{}
+	untranslatablePolicies := map[*smh_networking.TrafficPolicy][]*smh_networking_types.TrafficPolicyStatus_TranslatorError{}
 	for _, policyToCheckIter := range policiesToCheck {
 		policyToProcess := policyToCheckIter
 
@@ -105,34 +105,34 @@ func (p *policyCollector) determineFinalValidState(
 		// ELSE with a nil Updated field, so we can avoid doing expensive merge/translate validations on all of those.
 		// That has the added benefit of allowing us to avoid reporting errors on policies that have not changed.
 		if policyToProcess.UpdatedTrafficPolicy == nil {
-			policiesToRecordOnService = append(policiesToRecordOnService, &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			policiesToRecordOnService = append(policiesToRecordOnService, &smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				Ref:               policyToProcess.Ref,
 				TrafficPolicySpec: policyToProcess.LastKnownGoodSpecState,
 			})
 			continue
 		}
 
-		var toValidate *zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy
+		var toValidate *smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy
 		if policyToProcess.UpdatedTrafficPolicy == nil {
-			toValidate = &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			toValidate = &smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				Ref:               policyToProcess.Ref,
 				TrafficPolicySpec: policyToProcess.LastKnownGoodSpecState,
 			}
 		} else {
-			toValidate = &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			toValidate = &smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				Ref:               policyToProcess.Ref,
 				TrafficPolicySpec: &policyToProcess.UpdatedTrafficPolicy.Spec,
 			}
 		}
 
-		successfullyValidated := &zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+		successfullyValidated := &smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 			Ref: policyToProcess.Ref,
 
 			// may be nil, if this is a new policy that we're adding
 			TrafficPolicySpec: policyToProcess.LastKnownGoodSpecState,
 		}
 
-		var mergeabilityCheckCopy []*zephyr_networking_types.TrafficPolicySpec
+		var mergeabilityCheckCopy []*smh_networking_types.TrafficPolicySpec
 		for _, tp := range policiesToRecordOnService {
 			// Add everything that we've approved so far (the whole contents of `policiesToRecordOnService`).
 			// We don't need to skip any entries in the list in here, since we won't process a traffic policy twice.
@@ -145,7 +145,7 @@ func (p *policyCollector) determineFinalValidState(
 			policiesInConflict[policyToProcess.UpdatedTrafficPolicy] = append(policiesInConflict[policyToProcess.UpdatedTrafficPolicy], mergeConflict)
 		} else {
 			// we know they're mergeable now, let's see if they can be translated all together
-			mergeableTPs := append([]*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil), policiesToRecordOnService...)
+			mergeableTPs := append([]*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil), policiesToRecordOnService...)
 			mergeableTPs = append(mergeableTPs, toValidate)
 
 			translationErrors := translationValidator.GetTranslationErrors(
@@ -177,23 +177,23 @@ func (p *policyCollector) determineFinalValidState(
 }
 
 func (p *policyCollector) aggregateTrafficPolicies(
-	meshService *zephyr_discovery.MeshService,
-	allTrafficPolicies []*zephyr_networking.TrafficPolicy,
+	meshService *smh_discovery.MeshService,
+	allTrafficPolicies []*smh_networking.TrafficPolicy,
 ) (
 	allPolicyIds sets.String, // clients.ToUniqueString results for ALL policies, regardless of validation status
-	uniqueStringToValidatedTrafficPolicy map[string]*zephyr_networking.TrafficPolicy, // all validated policies collected into a map
-	policiesForService []*zephyr_networking.TrafficPolicy, // just the validated policies that apply to this service
+	uniqueStringToValidatedTrafficPolicy map[string]*smh_networking.TrafficPolicy, // all validated policies collected into a map
+	policiesForService []*smh_networking.TrafficPolicy, // just the validated policies that apply to this service
 	err error,
 ) {
 	allIds := sets.NewString()
-	uniqueStringToValidatedTrafficPolicy = map[string]*zephyr_networking.TrafficPolicy{}
-	var allValidatedTrafficPolicies []*zephyr_networking.TrafficPolicy // all validated policies
+	uniqueStringToValidatedTrafficPolicy = map[string]*smh_networking.TrafficPolicy{}
+	var allValidatedTrafficPolicies []*smh_networking.TrafficPolicy // all validated policies
 
 	for _, tpIter := range allTrafficPolicies {
 		trafficPolicy := tpIter
 
 		allIds.Insert(selection.ToUniqueSingleClusterString(trafficPolicy.ObjectMeta))
-		if trafficPolicy.Status.ObservedGeneration == trafficPolicy.Generation && trafficPolicy.Status.GetValidationStatus().GetState() == zephyr_core_types.Status_ACCEPTED {
+		if trafficPolicy.Status.ObservedGeneration == trafficPolicy.Generation && trafficPolicy.Status.GetValidationStatus().GetState() == smh_core_types.Status_ACCEPTED {
 			allValidatedTrafficPolicies = append(allValidatedTrafficPolicies, trafficPolicy)
 			uniqueStringToValidatedTrafficPolicy[selection.ToUniqueSingleClusterString(trafficPolicy.ObjectMeta)] = trafficPolicy
 		}
@@ -212,10 +212,10 @@ func (p *policyCollector) aggregateTrafficPolicies(
 //   - policiesToCheck: a summary of policies with their last-known good state that apply to this service, both updated and new policies
 //        NOTE: `policiesToCheck` is always the *complete* set of policies applying to the given service
 func (*policyCollector) buildPoliciesToCheck(
-	meshService *zephyr_discovery.MeshService,
+	meshService *smh_discovery.MeshService,
 	allTrafficPolicyIds sets.String,
-	uniqueStringToNewlyValidatedTrafficPolicy map[string]*zephyr_networking.TrafficPolicy,
-	policiesForService []*zephyr_networking.TrafficPolicy,
+	uniqueStringToNewlyValidatedTrafficPolicy map[string]*smh_networking.TrafficPolicy,
+	policiesForService []*smh_networking.TrafficPolicy,
 ) (anyPolicyChanged bool, policiesToCheck []*policyToCheck) {
 	previouslyRecordedTrafficPolicyIDs := sets.NewString()
 	anyPolicyChangedSinceLastReconcile := false
@@ -273,12 +273,12 @@ func (*policyCollector) buildPoliciesToCheck(
 }
 
 type policyToCheck struct {
-	Ref *zephyr_core_types.ResourceRef
+	Ref *smh_core_types.ResourceRef
 
 	// If this is non-nil, then the traffic policy is both 1. valid, and 2. changed from the last reconcile iteration.
 	// That implies that this field will be nil if the policy was invalid.
-	UpdatedTrafficPolicy *zephyr_networking.TrafficPolicy
+	UpdatedTrafficPolicy *smh_networking.TrafficPolicy
 
 	// if this is non-nil, then we previously recorded a last-known-good state for this policy
-	LastKnownGoodSpecState *zephyr_networking_types.TrafficPolicySpec
+	LastKnownGoodSpecState *smh_networking_types.TrafficPolicySpec
 }

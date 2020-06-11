@@ -12,9 +12,9 @@ import (
 	"github.com/golang/sync/errgroup"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/metadata"
+	smh_core "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -45,7 +45,7 @@ var (
 	eksKubeContext     KubeContext
 
 	defaultSettingsYaml = fmt.Sprintf(`
-apiVersion: core.zephyr.solo.io/zephyr_networking
+apiVersion: core.smh.solo.io/smh_networking
 kind: Settings
 metadata:
   name: %s
@@ -56,7 +56,7 @@ spec:
 `, settingsObjKey.Name, settingsObjKey.Namespace)
 
 	settingsYaml = fmt.Sprintf(`
-apiVersion: core.zephyr.solo.io/zephyr_networking
+apiVersion: core.smh.solo.io/smh_networking
 kind: Settings
 metadata:
   name: %s
@@ -74,7 +74,7 @@ spec:
           - arn: %s
 `, settingsObjKey.Name, settingsObjKey.Namespace, AwsAccountId, AppmeshArn, EksArn)
 	virtualMeshYaml = fmt.Sprintf(`
-apiVersion: networking.zephyr.solo.io/zephyr_networking
+apiVersion: networking.smh.solo.io/smh_networking
 kind: VirtualMesh
 metadata:
   name: %s
@@ -171,7 +171,7 @@ func cleanupAppmeshEksEnvironment(ns string) {
 		// Reset back to default settings. This must be done before removing the AWS secret.
 		settings, err := env.Management.SettingsClient.GetSettings(context.Background(), settingsObjKey)
 		Expect(err).NotTo(HaveOccurred())
-		var defaultSettings zephyr_core.Settings
+		var defaultSettings smh_core.Settings
 		ParseYaml(defaultSettingsYaml, &defaultSettings)
 		settings.Spec = defaultSettings.Spec
 		err = env.Management.SettingsClient.UpdateSettings(context.Background(), settings)
@@ -216,7 +216,7 @@ var _ = Describe("Appmesh EKS ", func() {
 	}
 
 	var applySettings = func() {
-		var newSettings zephyr_core.Settings
+		var newSettings smh_core.Settings
 		ParseYaml(settingsYaml, &newSettings)
 		existingSettings, err := env.Management.SettingsClient.GetSettings(context.Background(), settingsObjKey)
 		Expect(err).NotTo(HaveOccurred())
@@ -228,7 +228,7 @@ var _ = Describe("Appmesh EKS ", func() {
 	}
 
 	var applyVirtualMesh = func() {
-		var virtualMesh zephyr_networking.VirtualMesh
+		var virtualMesh smh_networking.VirtualMesh
 		ParseYaml(virtualMeshYaml, &virtualMesh)
 		err := env.Management.VirtualMeshClient.CreateVirtualMesh(context.Background(), &virtualMesh)
 		Expect(err).NotTo(HaveOccurred())

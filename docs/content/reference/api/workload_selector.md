@@ -3,7 +3,7 @@
 title: "workload_selector.proto"
 ---
 
-## Package : `core.zephyr.solo.io`
+## Package : `core.smh.solo.io`
 
 
 
@@ -16,8 +16,8 @@ title: "workload_selector.proto"
 
 
 ## Table of Contents
-  - [WorkloadSelector](#core.zephyr.solo.io.WorkloadSelector)
-  - [WorkloadSelector.LabelsEntry](#core.zephyr.solo.io.WorkloadSelector.LabelsEntry)
+  - [WorkloadSelector](#core.smh.solo.io.WorkloadSelector)
+  - [WorkloadSelector.LabelsEntry](#core.smh.solo.io.WorkloadSelector.LabelsEntry)
 
 
 
@@ -25,7 +25,7 @@ title: "workload_selector.proto"
 
 
 
-<a name="core.zephyr.solo.io.WorkloadSelector"></a>
+<a name="core.smh.solo.io.WorkloadSelector"></a>
 
 ### WorkloadSelector
 Select Kubernetes workloads directly using label and/or namespace criteria. See comments on the fields for detailed semantics.
@@ -33,7 +33,7 @@ Select Kubernetes workloads directly using label and/or namespace criteria. See 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| labels | [][WorkloadSelector.LabelsEntry](#core.zephyr.solo.io.WorkloadSelector.LabelsEntry) | repeated | If specified, all labels must exist on workloads, else match on any labels. |
+| labels | [][WorkloadSelector.LabelsEntry](#core.smh.solo.io.WorkloadSelector.LabelsEntry) | repeated | If specified, all labels must exist on workloads, else match on any labels. |
 | namespaces | [][string](#string) | repeated | If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace. |
 
 
@@ -41,7 +41,7 @@ Select Kubernetes workloads directly using label and/or namespace criteria. See 
 
 
 
-<a name="core.zephyr.solo.io.WorkloadSelector.LabelsEntry"></a>
+<a name="core.smh.solo.io.WorkloadSelector.LabelsEntry"></a>
 
 ### WorkloadSelector.LabelsEntry
 

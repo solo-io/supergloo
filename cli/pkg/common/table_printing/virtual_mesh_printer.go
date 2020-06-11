@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/csr/certgen"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen"
 )
 
 func NewVirtualMeshPrinter(tableBuilder TableBuilder) VirtualMeshPrinter {
@@ -25,7 +25,7 @@ type virtualMeshPrinter struct {
 
 func (m *virtualMeshPrinter) Print(
 	out io.Writer,
-	virtualMeshes []*zephyr_networking.VirtualMesh,
+	virtualMeshes []*smh_networking.VirtualMesh,
 ) error {
 	if len(virtualMeshes) == 0 {
 		return nil
@@ -69,7 +69,7 @@ func (m *virtualMeshPrinter) Print(
 	return nil
 }
 
-func (m *virtualMeshPrinter) buildMetadataCell(virtualMesh *zephyr_networking.VirtualMesh) string {
+func (m *virtualMeshPrinter) buildMetadataCell(virtualMesh *smh_networking.VirtualMesh) string {
 	var items []string
 
 	items = append(items, fmt.Sprintf("Name: %s", virtualMesh.GetName()))
@@ -79,7 +79,7 @@ func (m *virtualMeshPrinter) buildMetadataCell(virtualMesh *zephyr_networking.Vi
 	return strings.Join(items, "\n")
 }
 
-func (m *virtualMeshPrinter) buildMeshesCell(meshList []*zephyr_core_types.ResourceRef) string {
+func (m *virtualMeshPrinter) buildMeshesCell(meshList []*smh_core_types.ResourceRef) string {
 	if len(meshList) == 0 {
 		return ""
 	}
@@ -93,12 +93,12 @@ func (m *virtualMeshPrinter) buildMeshesCell(meshList []*zephyr_core_types.Resou
 }
 
 func (m *virtualMeshPrinter) buildConfigCell(
-	spec zephyr_networking_types.VirtualMeshSpec,
+	spec smh_networking_types.VirtualMeshSpec,
 ) (string, error) {
 	var items []string
 
 	switch spec.GetTrustModel().(type) {
-	case *zephyr_networking_types.VirtualMeshSpec_Limited:
+	case *smh_networking_types.VirtualMeshSpec_Limited:
 		items = append(items, "Trust Mode: Limited")
 	default:
 		// Defaults to shared
@@ -106,7 +106,7 @@ func (m *virtualMeshPrinter) buildConfigCell(
 	}
 
 	switch certType := spec.GetCertificateAuthority().GetType().(type) {
-	case *zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_:
+	case *smh_networking_types.VirtualMeshSpec_CertificateAuthority_Builtin_:
 		items = append(items,
 			"\nCertificate Authority:",
 			"  Type: Self Signed",
@@ -126,7 +126,7 @@ func (m *virtualMeshPrinter) buildConfigCell(
 			keySize = int(certType.Builtin.GetRsaKeySizeBytes())
 		}
 		items = append(items, fmt.Sprintf("  Key Size: %d", keySize))
-	case *zephyr_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_:
+	case *smh_networking_types.VirtualMeshSpec_CertificateAuthority_Provided_:
 		items = append(items,
 			"\nCertificate Authority:",
 			"  Type: Provided",
@@ -151,7 +151,7 @@ func (m *virtualMeshPrinter) buildConfigCell(
 	return strings.Join(items, "\n"), nil
 }
 
-func (m *virtualMeshPrinter) buildStatusCell(status zephyr_networking_types.VirtualMeshStatus) string {
+func (m *virtualMeshPrinter) buildStatusCell(status smh_networking_types.VirtualMeshStatus) string {
 	var items []string
 
 	if federationCell := BuildSimpleStatusCell(

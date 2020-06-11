@@ -16,12 +16,12 @@ import (
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
-	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration"
-	mock_registration "github.com/solo-io/service-mesh-hub/pkg/cluster-registration/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/constants"
-	mock_auth "github.com/solo-io/service-mesh-hub/pkg/kube/auth/mocks"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration"
+	mock_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
+	mock_auth "github.com/solo-io/service-mesh-hub/pkg/common/kube/auth/mocks"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig/mocks"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -162,7 +162,7 @@ var _ = Describe("Install", func() {
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		authClient := mock_auth.NewMockClusterAuthorization(ctrl)
 		configVerifier := cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
-		clusterClient := mock_zephyr_discovery.NewMockKubernetesClusterClient(ctrl)
+		clusterClient := mock_smh_discovery.NewMockKubernetesClusterClient(ctrl)
 		kubeConverter := mock_kubeconfig.NewMockConverter(ctrl)
 
 		configVerifier.EXPECT().Verify("", "").Return(nil)

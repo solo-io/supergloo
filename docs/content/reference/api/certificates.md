@@ -3,7 +3,7 @@
 title: "certificates.proto"
 ---
 
-## Package : `security.zephyr.solo.io`
+## Package : `security.smh.solo.io`
 
 
 
@@ -16,20 +16,20 @@ title: "certificates.proto"
 
 
 ## Table of Contents
-  - [VirtualMeshCertificateSigningRequestSpec](#security.zephyr.solo.io.VirtualMeshCertificateSigningRequestSpec)
-  - [VirtualMeshCertificateSigningRequestSpec.CertConfig](#security.zephyr.solo.io.VirtualMeshCertificateSigningRequestSpec.CertConfig)
-  - [VirtualMeshCertificateSigningRequestStatus](#security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus)
-  - [VirtualMeshCertificateSigningRequestStatus.Response](#security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus.Response)
-  - [VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow](#security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow)
+  - [VirtualMeshCertificateSigningRequestSpec](#security.smh.solo.io.VirtualMeshCertificateSigningRequestSpec)
+  - [VirtualMeshCertificateSigningRequestSpec.CertConfig](#security.smh.solo.io.VirtualMeshCertificateSigningRequestSpec.CertConfig)
+  - [VirtualMeshCertificateSigningRequestStatus](#security.smh.solo.io.VirtualMeshCertificateSigningRequestStatus)
+  - [VirtualMeshCertificateSigningRequestStatus.Response](#security.smh.solo.io.VirtualMeshCertificateSigningRequestStatus.Response)
+  - [VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow](#security.smh.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow)
 
-  - [VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow.ApprovalStatus](#security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow.ApprovalStatus)
-
-
+  - [VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow.ApprovalStatus](#security.smh.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow.ApprovalStatus)
 
 
 
 
-<a name="security.zephyr.solo.io.VirtualMeshCertificateSigningRequestSpec"></a>
+
+
+<a name="security.smh.solo.io.VirtualMeshCertificateSigningRequestSpec"></a>
 
 ### VirtualMeshCertificateSigningRequestSpec
 
@@ -38,15 +38,15 @@ title: "certificates.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | csrData | [bytes](#bytes) |  | Base64-encoded PKCS#10 CSR data |
-| certConfig | [VirtualMeshCertificateSigningRequestSpec.CertConfig](#security.zephyr.solo.io.VirtualMeshCertificateSigningRequestSpec.CertConfig) |  |  |
-| virtualMeshRef | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | Reference to the virtual mesh which this CSR corresponds to. This is important as it allows the virtual mesh operator to know which trust bundle to use when signing the new certificates.<br>When the CSR is first created by the Virtual Mesh operator, this data will be added by it. However, during a cert rotation scenario this is not possible. Therefore, the csr-agent will write this data to the secret so that it can be retrieved when the cert is going to expire. TODO: Decide how exactly we want to store this data. |
+| certConfig | [VirtualMeshCertificateSigningRequestSpec.CertConfig](#security.smh.solo.io.VirtualMeshCertificateSigningRequestSpec.CertConfig) |  |  |
+| virtualMeshRef | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | Reference to the virtual mesh which this CSR corresponds to. This is important as it allows the virtual mesh operator to know which trust bundle to use when signing the new certificates.<br>When the CSR is first created by the Virtual Mesh operator, this data will be added by it. However, during a cert rotation scenario this is not possible. Therefore, the csr-agent will write this data to the secret so that it can be retrieved when the cert is going to expire. TODO: Decide how exactly we want to store this data. |
 
 
 
 
 
 
-<a name="security.zephyr.solo.io.VirtualMeshCertificateSigningRequestSpec.CertConfig"></a>
+<a name="security.smh.solo.io.VirtualMeshCertificateSigningRequestSpec.CertConfig"></a>
 
 ### VirtualMeshCertificateSigningRequestSpec.CertConfig
 
@@ -56,14 +56,14 @@ title: "certificates.proto"
 | ----- | ---- | ----- | ----------- |
 | hosts | [][string](#string) | repeated | list of hostnames and IPs to generate a certificate for. This can also be set to the identity running the workload, like kubernetes service account.<br>Generally for an Istio CA this will take the form `spiffe://cluster.local/ns/istio-system/sa/citadel`.<br>"cluster.local" may be replaced by the root of trust domain for the mesh. |
 | org | [string](#string) |  | Organization for this certificate. |
-| meshType | [core.zephyr.solo.io.MeshType](#core.zephyr.solo.io.MeshType) |  | In the future, the type of mesh, and level of trust will need to be specified here, but for the time being we are only supporting shared trust in Istio. |
+| meshType | [core.smh.solo.io.MeshType](#core.smh.solo.io.MeshType) |  | In the future, the type of mesh, and level of trust will need to be specified here, but for the time being we are only supporting shared trust in Istio. |
 
 
 
 
 
 
-<a name="security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus"></a>
+<a name="security.smh.solo.io.VirtualMeshCertificateSigningRequestStatus"></a>
 
 ### VirtualMeshCertificateSigningRequestStatus
 
@@ -71,16 +71,16 @@ title: "certificates.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| response | [VirtualMeshCertificateSigningRequestStatus.Response](#security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus.Response) |  | Response from the certificate authority |
-| thirdPartyApproval | [VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow](#security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow) |  | Workflow for approving Certificate Signing Requests |
-| computedStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  |  |
+| response | [VirtualMeshCertificateSigningRequestStatus.Response](#security.smh.solo.io.VirtualMeshCertificateSigningRequestStatus.Response) |  | Response from the certificate authority |
+| thirdPartyApproval | [VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow](#security.smh.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow) |  | Workflow for approving Certificate Signing Requests |
+| computedStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  |  |
 
 
 
 
 
 
-<a name="security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus.Response"></a>
+<a name="security.smh.solo.io.VirtualMeshCertificateSigningRequestStatus.Response"></a>
 
 ### VirtualMeshCertificateSigningRequestStatus.Response
 
@@ -96,7 +96,7 @@ title: "certificates.proto"
 
 
 
-<a name="security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow"></a>
+<a name="security.smh.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow"></a>
 
 ### VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow
 
@@ -106,7 +106,7 @@ title: "certificates.proto"
 | ----- | ---- | ----- | ----------- |
 | lastUpdatedTime | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | time when the status was last updated |
 | message | [string](#string) |  | a user readable message regarding the status of the CSR |
-| approvalStatus | [VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow.ApprovalStatus](#security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow.ApprovalStatus) |  |  |
+| approvalStatus | [VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow.ApprovalStatus](#security.smh.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow.ApprovalStatus) |  |  |
 
 
 
@@ -115,7 +115,7 @@ title: "certificates.proto"
  <!-- end messages -->
 
 
-<a name="security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow.ApprovalStatus"></a>
+<a name="security.smh.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow.ApprovalStatus"></a>
 
 ### VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow.ApprovalStatus
 

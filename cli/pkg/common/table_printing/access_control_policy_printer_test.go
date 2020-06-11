@@ -10,9 +10,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -25,7 +25,7 @@ var _ = Describe("Access Control Printer", func() {
 	var runTest = func(
 		fileName string,
 		printMode table_printing.PrintMode,
-		accessControlPolicies []*zephyr_networking.AccessControlPolicy,
+		accessControlPolicies []*smh_networking.AccessControlPolicy,
 	) {
 		goldenFilename := test_goldens.GoldenFilePath(acpGoldenDirectory, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
@@ -50,16 +50,16 @@ var _ = Describe("Access Control Printer", func() {
 			"can print multiple complex AC policies",
 			"multiple_complex_access_control_policies",
 			table_printing.ServicePrintMode,
-			[]*zephyr_networking.AccessControlPolicy{
+			[]*smh_networking.AccessControlPolicy{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "simple",
 					},
-					Spec: zephyr_networking_types.AccessControlPolicySpec{
+					Spec: smh_networking_types.AccessControlPolicySpec{
 						AllowedPorts: []uint32{8080, 8443},
-						AllowedMethods: []zephyr_core_types.HttpMethodValue{
-							zephyr_core_types.HttpMethodValue_GET,
-							zephyr_core_types.HttpMethodValue_POST,
+						AllowedMethods: []smh_core_types.HttpMethodValue{
+							smh_core_types.HttpMethodValue_GET,
+							smh_core_types.HttpMethodValue_POST,
 						},
 					},
 				},
@@ -67,10 +67,10 @@ var _ = Describe("Access Control Printer", func() {
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "simple",
 					},
-					Spec: zephyr_networking_types.AccessControlPolicySpec{
-						SourceSelector: &zephyr_core_types.IdentitySelector{
-							IdentitySelectorType: &zephyr_core_types.IdentitySelector_Matcher_{
-								Matcher: &zephyr_core_types.IdentitySelector_Matcher{
+					Spec: smh_networking_types.AccessControlPolicySpec{
+						SourceSelector: &smh_core_types.IdentitySelector{
+							IdentitySelectorType: &smh_core_types.IdentitySelector_Matcher_{
+								Matcher: &smh_core_types.IdentitySelector_Matcher{
 									Namespaces: []string{"ns1", "ns2"},
 								},
 							},

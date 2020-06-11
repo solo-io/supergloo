@@ -7,8 +7,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
 )
 
 func GetMeshes(
@@ -31,7 +31,7 @@ func GetMeshes(
 	if err != nil {
 		return err
 	}
-	meshList := make([]*zephyr_discovery.Mesh, 0, len(meshes.Items))
+	meshList := make([]*smh_discovery.Mesh, 0, len(meshes.Items))
 	for _, v := range meshes.Items {
 		v := v
 		meshList = append(meshList, &v)

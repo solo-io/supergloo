@@ -10,8 +10,8 @@ import (
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	mock_server "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/container-runtime/version"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/version"
 )
 
 var _ = Describe("Version", func() {

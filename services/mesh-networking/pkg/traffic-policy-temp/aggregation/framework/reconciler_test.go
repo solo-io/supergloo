@@ -7,19 +7,19 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	aggregation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/framework"
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/mocks"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 	mock_mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators/mocks"
-	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	mock_zephyr_networking_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
+	mock_smh_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
+	mock_smh_networking_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.smh.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,9 +28,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		ctx  context.Context
 		ctrl *gomock.Controller
 
-		trafficPolicyClient   *mock_zephyr_networking_clients.MockTrafficPolicyClient
-		meshServiceClient     *mock_zephyr_discovery_clients.MockMeshServiceClient
-		meshClient            *mock_zephyr_discovery_clients.MockMeshClient
+		trafficPolicyClient   *mock_smh_networking_clients.MockTrafficPolicyClient
+		meshServiceClient     *mock_smh_discovery_clients.MockMeshServiceClient
+		meshClient            *mock_smh_discovery_clients.MockMeshClient
 		policyCollector       *mock_traffic_policy_aggregation.MockPolicyCollector
 		validator             *mock_mesh_translation.MockTranslationValidator
 		inMemoryStatusMutator *mock_traffic_policy_aggregation.MockInMemoryStatusMutator
@@ -40,9 +40,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		ctx = context.TODO()
 		ctrl = gomock.NewController(GinkgoT())
 
-		trafficPolicyClient = mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
-		meshServiceClient = mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
-		meshClient = mock_zephyr_discovery_clients.NewMockMeshClient(ctrl)
+		trafficPolicyClient = mock_smh_networking_clients.NewMockTrafficPolicyClient(ctrl)
+		meshServiceClient = mock_smh_discovery_clients.NewMockMeshServiceClient(ctrl)
+		meshClient = mock_smh_discovery_clients.NewMockMeshClient(ctrl)
 		policyCollector = mock_traffic_policy_aggregation.NewMockPolicyCollector(ctrl)
 		validator = mock_mesh_translation.NewMockTranslationValidator(ctrl)
 		inMemoryStatusMutator = mock_traffic_policy_aggregation.NewMockInMemoryStatusMutator(ctrl)
@@ -53,8 +53,8 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		ctrl.Finish()
 	})
 
-	meshMap := func(mt zephyr_core_types.MeshType) (mesh_translation.TranslationValidator, error) {
-		if mt == zephyr_core_types.MeshType_ISTIO1_5 {
+	meshMap := func(mt smh_core_types.MeshType) (mesh_translation.TranslationValidator, error) {
+		if mt == smh_core_types.MeshType_ISTIO1_5 {
 			return validator, nil
 		}
 		return nil, errors.New("no such mesh")
@@ -73,10 +73,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 
 			trafficPolicyClient.EXPECT().
 				ListTrafficPolicy(ctx).
-				Return(&zephyr_networking.TrafficPolicyList{}, nil)
+				Return(&smh_networking.TrafficPolicyList{}, nil)
 			meshServiceClient.EXPECT().
 				ListMeshService(ctx).
-				Return(&zephyr_discovery.MeshServiceList{}, nil)
+				Return(&smh_discovery.MeshServiceList{}, nil)
 
 			err := reconciler.Reconcile(ctx)
 			Expect(err).NotTo(HaveOccurred())
@@ -94,34 +94,34 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					meshMap,
 					inMemoryStatusMutator,
 				)
-				mesh1 := &zephyr_discovery.Mesh{
+				mesh1 := &smh_discovery.Mesh{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "mesh-1",
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						Cluster: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.MeshSpec{
+						Cluster: &smh_core_types.ResourceRef{
 							Name: "cluster1",
 						},
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
+						MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
 					},
 				}
-				mesh2 := &zephyr_discovery.Mesh{
+				mesh2 := &smh_discovery.Mesh{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "mesh-2",
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						Cluster: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.MeshSpec{
+						Cluster: &smh_core_types.ResourceRef{
 							Name: "cluster2",
 						},
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
+						MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
 					},
 				}
-				meshServices := []*zephyr_discovery.MeshService{
+				meshServices := []*smh_discovery.MeshService{
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name: "ms1",
 						},
-						Spec: zephyr_discovery_types.MeshServiceSpec{
+						Spec: smh_discovery_types.MeshServiceSpec{
 							Mesh: selection.ObjectMetaToResourceRef(mesh1.ObjectMeta),
 						},
 					},
@@ -129,7 +129,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name: "ms2",
 						},
-						Spec: zephyr_discovery_types.MeshServiceSpec{
+						Spec: smh_discovery_types.MeshServiceSpec{
 							Mesh: selection.ObjectMetaToResourceRef(mesh2.ObjectMeta),
 						},
 					},
@@ -137,7 +137,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 
 				meshServiceClient.EXPECT().
 					ListMeshService(ctx).
-					Return(&zephyr_discovery.MeshServiceList{Items: []zephyr_discovery.MeshService{*meshServices[0], *meshServices[1]}}, nil)
+					Return(&smh_discovery.MeshServiceList{Items: []smh_discovery.MeshService{*meshServices[0], *meshServices[1]}}, nil)
 				meshClient.EXPECT().
 					GetMesh(ctx, selection.ResourceRefToObjectKey(meshServices[0].Spec.Mesh)).
 					Return(mesh1, nil)
@@ -159,7 +159,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 
 				trafficPolicyClient.EXPECT().
 					ListTrafficPolicy(ctx).
-					Return(&zephyr_networking.TrafficPolicyList{}, nil)
+					Return(&smh_networking.TrafficPolicyList{}, nil)
 
 				err := reconciler.Reconcile(ctx)
 				Expect(err).NotTo(HaveOccurred())
@@ -177,39 +177,39 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				meshMap,
 				inMemoryStatusMutator,
 			)
-			mesh1 := &zephyr_discovery.Mesh{
+			mesh1 := &smh_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "mesh-1",
 				},
-				Spec: zephyr_discovery_types.MeshSpec{
-					Cluster: &zephyr_core_types.ResourceRef{
+				Spec: smh_discovery_types.MeshSpec{
+					Cluster: &smh_core_types.ResourceRef{
 						Name: "cluster1",
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
+					MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
 				},
 			}
-			mesh2 := &zephyr_discovery.Mesh{
+			mesh2 := &smh_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "mesh-2",
 				},
-				Spec: zephyr_discovery_types.MeshSpec{
-					Cluster: &zephyr_core_types.ResourceRef{
+				Spec: smh_discovery_types.MeshSpec{
+					Cluster: &smh_core_types.ResourceRef{
 						Name: "cluster2",
 					},
-					MeshType: &zephyr_discovery_types.MeshSpec_Istio1_5_{},
+					MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
 				},
 			}
-			meshServices := []*zephyr_discovery.MeshService{
+			meshServices := []*smh_discovery.MeshService{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "ms1",
 					},
-					Spec: zephyr_discovery_types.MeshServiceSpec{
+					Spec: smh_discovery_types.MeshServiceSpec{
 						Mesh: selection.ObjectMetaToResourceRef(mesh1.ObjectMeta),
 					},
-					Status: zephyr_discovery_types.MeshServiceStatus{
-						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
-							Ref: &zephyr_core_types.ResourceRef{Name: "validated-1"},
+					Status: smh_discovery_types.MeshServiceStatus{
+						ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+							Ref: &smh_core_types.ResourceRef{Name: "validated-1"},
 						}},
 					},
 				},
@@ -217,17 +217,17 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "ms2",
 					},
-					Spec: zephyr_discovery_types.MeshServiceSpec{
+					Spec: smh_discovery_types.MeshServiceSpec{
 						Mesh: selection.ObjectMetaToResourceRef(mesh2.ObjectMeta),
 					},
-					Status: zephyr_discovery_types.MeshServiceStatus{
-						ValidatedTrafficPolicies: []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
-							Ref: &zephyr_core_types.ResourceRef{Name: "validated-2"},
+					Status: smh_discovery_types.MeshServiceStatus{
+						ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+							Ref: &smh_core_types.ResourceRef{Name: "validated-2"},
 						}},
 					},
 				},
 			}
-			trafficPolicies := []*zephyr_networking.TrafficPolicy{
+			trafficPolicies := []*smh_networking.TrafficPolicy{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Name: "trafficPolicies[0]"},
 					Spec: types.TrafficPolicySpec{
@@ -253,7 +253,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					},
 				},
 			}
-			newlyValidatedTrafficPolicies := []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+			newlyValidatedTrafficPolicies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
 					Ref:               selection.ObjectMetaToResourceRef(trafficPolicies[0].ObjectMeta),
 					TrafficPolicySpec: &trafficPolicies[0].Spec,
@@ -275,7 +275,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 
 			trafficPolicyClient.EXPECT().
 				ListTrafficPolicy(ctx).
-				Return(&zephyr_networking.TrafficPolicyList{Items: []zephyr_networking.TrafficPolicy{
+				Return(&smh_networking.TrafficPolicyList{Items: []smh_networking.TrafficPolicy{
 					*trafficPolicies[0],
 					*trafficPolicies[1],
 					*trafficPolicies[2],
@@ -283,7 +283,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				}}, nil)
 			meshServiceClient.EXPECT().
 				ListMeshService(ctx).
-				Return(&zephyr_discovery.MeshServiceList{Items: []zephyr_discovery.MeshService{*meshServices[0], *meshServices[1]}}, nil)
+				Return(&smh_discovery.MeshServiceList{Items: []smh_discovery.MeshService{*meshServices[0], *meshServices[1]}}, nil)
 			meshClient.EXPECT().
 				GetMesh(ctx, selection.ResourceRefToObjectKey(meshServices[0].Spec.Mesh)).
 				Return(mesh1, nil)
@@ -297,17 +297,17 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				CollectForService(meshServices[1], meshServices, mesh2, validator, trafficPolicies).
 				Return(&traffic_policy_aggregation.CollectionResult{
 					PoliciesToRecordOnService: newlyValidatedTrafficPolicies[2:4],
-					PolicyToConflictErrors: map[*zephyr_networking.TrafficPolicy][]*types.TrafficPolicyStatus_ConflictError{
+					PolicyToConflictErrors: map[*smh_networking.TrafficPolicy][]*types.TrafficPolicyStatus_ConflictError{
 						trafficPolicies[3]: conflictErrors,
 					},
 				}, nil)
 
 			ms1Copy := *meshServices[0]
-			ms1Copy.Status = zephyr_discovery_types.MeshServiceStatus{
+			ms1Copy.Status = smh_discovery_types.MeshServiceStatus{
 				ValidatedTrafficPolicies: newlyValidatedTrafficPolicies[0:2],
 			}
 			ms2Copy := *meshServices[1]
-			ms2Copy.Status = zephyr_discovery_types.MeshServiceStatus{
+			ms2Copy.Status = smh_discovery_types.MeshServiceStatus{
 				ValidatedTrafficPolicies: newlyValidatedTrafficPolicies[2:4],
 			}
 			policy4Copy := *trafficPolicies[3]
@@ -318,10 +318,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			inMemoryStatusMutator.EXPECT().
 				MutateServicePolicies(meshServices[0], newlyValidatedTrafficPolicies[0:2]).
 				DoAndReturn(func(
-					meshService *zephyr_discovery.MeshService,
-					newlyComputedMergeablePolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
+					meshService *smh_discovery.MeshService,
+					newlyComputedMergeablePolicies []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 				) (policyNeedsUpdating bool) {
-					meshService.Status = zephyr_discovery_types.MeshServiceStatus{
+					meshService.Status = smh_discovery_types.MeshServiceStatus{
 						ValidatedTrafficPolicies: newlyComputedMergeablePolicies,
 					}
 					return true
@@ -329,10 +329,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			inMemoryStatusMutator.EXPECT().
 				MutateServicePolicies(meshServices[1], newlyValidatedTrafficPolicies[2:4]).
 				DoAndReturn(func(
-					meshService *zephyr_discovery.MeshService,
-					newlyComputedMergeablePolicies []*zephyr_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
+					meshService *smh_discovery.MeshService,
+					newlyComputedMergeablePolicies []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 				) (policyNeedsUpdating bool) {
-					meshService.Status = zephyr_discovery_types.MeshServiceStatus{
+					meshService.Status = smh_discovery_types.MeshServiceStatus{
 						ValidatedTrafficPolicies: newlyComputedMergeablePolicies,
 					}
 					return true
@@ -340,7 +340,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			inMemoryStatusMutator.EXPECT().
 				MutateConflictAndTranslatorErrors(gomock.Any(), gomock.Any(), nil).
 				DoAndReturn(func(
-					policy *zephyr_networking.TrafficPolicy,
+					policy *smh_networking.TrafficPolicy,
 					newConflictErrors []*types.TrafficPolicyStatus_ConflictError,
 					newTranslationErrors []*types.TrafficPolicyStatus_TranslatorError,
 				) (policyNeedsUpdating bool) {

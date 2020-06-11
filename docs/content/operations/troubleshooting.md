@@ -92,7 +92,7 @@ istiod                 ClusterIP      10.8.51.94    <none>           15012/TCP,4
 
 ```
 
-Note, the external-ip. Any `ServiceEntry` created for cross-cluster service discovery will use this external ip. The logic for getting the `ingressgateway` IP can be found in the [federation code base](https://github.com/solo-io/service-mesh-hub/blob/master/services/mesh-networking/pkg/federation/dns/external_access_point_getter.go#L85) of the `mesh-networking` service.
+Note, the external-ip. Any `ServiceEntry` created for cross-cluster service discovery will use this external ip. The logic for getting the `ingressgateway` IP can be found in the [federation code base](https://github.com/solo-io/service-mesh-hub/blob/master/pkg/mesh-networking/federation/dns/external_access_point_getter.go#L85) of the `mesh-networking` service.
 
 ##### Do cross-cluster service entries resolve DNS?
 

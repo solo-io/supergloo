@@ -1,6 +1,6 @@
 syntax = "proto3";
-package discovery.zephyr.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types";
+package discovery.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types";
 
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "google/protobuf/wrappers.proto";
@@ -98,7 +98,7 @@ message MeshSpec {
         This field may not apply to all Mesh types, such as AppMesh, whose control planes
         are located externally to any user accessible compute platform.
     */
-    core.zephyr.solo.io.ResourceRef cluster = 6;
+    core.smh.solo.io.ResourceRef cluster = 6;
 }
 
 message MeshStatus {

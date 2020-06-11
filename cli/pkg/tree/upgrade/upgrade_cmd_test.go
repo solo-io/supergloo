@@ -16,7 +16,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
 	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	mock_upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/constants"
+	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
 )
 
 var _ = Describe("Upgrade", func() {

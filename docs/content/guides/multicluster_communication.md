@@ -25,7 +25,7 @@ We will now perform a *multi-cluster traffic split*, splitting traffic from the 
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: TrafficPolicy
 metadata:
   namespace: service-mesh-hub
@@ -61,7 +61,7 @@ spec:
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context management-plane-context -f - << EOF
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: TrafficPolicy
 metadata:
   namespace: service-mesh-hub

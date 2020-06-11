@@ -10,9 +10,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	zephyr_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -23,7 +23,7 @@ var UPDATE_VMCSR_GOLDENS = false
 var _ = Describe("VMCSR Table Printer", func() {
 	const tpGoldenDirectory = "vmcsr"
 
-	var runTest = func(fileName string, vmcsrs []*zephyr_security.VirtualMeshCertificateSigningRequest) {
+	var runTest = func(fileName string, vmcsrs []*smh_security.VirtualMeshCertificateSigningRequest) {
 		goldenFilename := test_goldens.GoldenFilePath(tpGoldenDirectory, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
@@ -45,30 +45,30 @@ var _ = Describe("VMCSR Table Printer", func() {
 		Entry(
 			"can print different kinds of virtual mesh certificate signing requestss",
 			"vmcsr",
-			[]*zephyr_security.VirtualMeshCertificateSigningRequest{
+			[]*smh_security.VirtualMeshCertificateSigningRequest{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "vm-1",
 						Namespace: "service-mesh-hub",
 					},
-					Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
+					Spec: smh_security_types.VirtualMeshCertificateSigningRequestSpec{
 						CsrData: []byte("test-csr"),
-						CertConfig: &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
+						CertConfig: &smh_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 							Hosts:    []string{"host1", "host2"},
 							Org:      "my-org",
-							MeshType: zephyr_core_types.MeshType_ISTIO1_5,
+							MeshType: smh_core_types.MeshType_ISTIO1_5,
 						},
-						VirtualMeshRef: &zephyr_core_types.ResourceRef{
+						VirtualMeshRef: &smh_core_types.ResourceRef{
 							Name:      "name-1",
 							Namespace: "namespace-1",
 						},
 					},
-					Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-						ThirdPartyApproval: &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
-							ApprovalStatus: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_APPROVED,
+					Status: smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+						ThirdPartyApproval: &smh_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
+							ApprovalStatus: smh_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_APPROVED,
 						},
-						ComputedStatus: &zephyr_core_types.Status{
-							State: zephyr_core_types.Status_ACCEPTED,
+						ComputedStatus: &smh_core_types.Status{
+							State: smh_core_types.Status_ACCEPTED,
 						},
 					},
 				},
@@ -77,27 +77,27 @@ var _ = Describe("VMCSR Table Printer", func() {
 						Name:      "vm-2",
 						Namespace: "service-mesh-hub",
 					},
-					Spec: zephyr_security_types.VirtualMeshCertificateSigningRequestSpec{
+					Spec: smh_security_types.VirtualMeshCertificateSigningRequestSpec{
 						CsrData: nil,
-						CertConfig: &zephyr_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
+						CertConfig: &smh_security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 							Hosts:    []string{"host2", "host4"},
 							Org:      "linkerd-org",
-							MeshType: zephyr_core_types.MeshType_LINKERD,
+							MeshType: smh_core_types.MeshType_LINKERD,
 						},
-						VirtualMeshRef: &zephyr_core_types.ResourceRef{
+						VirtualMeshRef: &smh_core_types.ResourceRef{
 							Name:      "name-2",
 							Namespace: "namespace-2",
 						},
 					},
-					Status: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus{
-						ThirdPartyApproval: &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
-							ApprovalStatus: zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_DENIED,
+					Status: smh_security_types.VirtualMeshCertificateSigningRequestStatus{
+						ThirdPartyApproval: &smh_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
+							ApprovalStatus: smh_security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_DENIED,
 						},
-						ComputedStatus: &zephyr_core_types.Status{
-							State:   zephyr_core_types.Status_CONFLICT,
+						ComputedStatus: &smh_core_types.Status{
+							State:   smh_core_types.Status_CONFLICT,
 							Message: "there was a conflict",
 						},
-						Response: &zephyr_security_types.VirtualMeshCertificateSigningRequestStatus_Response{},
+						Response: &smh_security_types.VirtualMeshCertificateSigningRequestStatus_Response{},
 					},
 				},
 			},

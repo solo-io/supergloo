@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/sets"
 )

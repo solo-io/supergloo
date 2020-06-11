@@ -14,14 +14,14 @@ import (
 	mock_resource_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	traffic_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kube/kubeconfig/mocks"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig/mocks"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
+	mock_smh_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.smh.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
@@ -33,7 +33,7 @@ var _ = Describe("TrafficPolicyCmd", func() {
 		ctx                     context.Context
 		mockKubeLoader          *mock_kubeconfig.MockKubeLoader
 		mockMeshServiceClient   *mock_core.MockMeshServiceClient
-		mockTrafficPolicyClient *mock_zephyr_networking.MockTrafficPolicyClient
+		mockTrafficPolicyClient *mock_smh_networking.MockTrafficPolicyClient
 		mockInteractivePrompt   *mock_interactive.MockInteractivePrompt
 		mockResourcePrinter     *mock_resource_printing.MockResourcePrinter
 		meshctl                 *cli_test.MockMeshctl
@@ -44,7 +44,7 @@ var _ = Describe("TrafficPolicyCmd", func() {
 		ctx = context.TODO()
 		mockKubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
 		mockMeshServiceClient = mock_core.NewMockMeshServiceClient(ctrl)
-		mockTrafficPolicyClient = mock_zephyr_networking.NewMockTrafficPolicyClient(ctrl)
+		mockTrafficPolicyClient = mock_smh_networking.NewMockTrafficPolicyClient(ctrl)
 		mockInteractivePrompt = mock_interactive.NewMockInteractivePrompt(ctrl)
 		mockResourcePrinter = mock_resource_printing.NewMockResourcePrinter(ctrl)
 		meshctl = &cli_test.MockMeshctl{
@@ -72,16 +72,16 @@ var _ = Describe("TrafficPolicyCmd", func() {
 		meshServiceNames := []string{"ms1", "ms2"}
 		meshServiceDisplayNames := []string{"ms1.namespace1.cluster1", "ms2.namespace2.cluster2"}
 		meshServiceDisplayNamesWithDoneOption := append([]string{traffic_policy.DoneSelectingOption}, meshServiceDisplayNames...)
-		meshServiceList := &zephyr_discovery.MeshServiceList{
-			Items: []zephyr_discovery.MeshService{
+		meshServiceList := &smh_discovery.MeshServiceList{
+			Items: []smh_discovery.MeshService{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      meshServiceNames[0],
 						Namespace: "namespace1",
 					},
-					Spec: zephyr_discovery_types.MeshServiceSpec{
-						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-							Ref: &zephyr_core_types.ResourceRef{Cluster: "cluster1"},
+					Spec: smh_discovery_types.MeshServiceSpec{
+						KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &smh_core_types.ResourceRef{Cluster: "cluster1"},
 						},
 					},
 				},
@@ -90,9 +90,9 @@ var _ = Describe("TrafficPolicyCmd", func() {
 						Name:      meshServiceNames[1],
 						Namespace: "namespace2",
 					},
-					Spec: zephyr_discovery_types.MeshServiceSpec{
-						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-							Ref: &zephyr_core_types.ResourceRef{Cluster: "cluster2"},
+					Spec: smh_discovery_types.MeshServiceSpec{
+						KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &smh_core_types.ResourceRef{Cluster: "cluster2"},
 						},
 					},
 				},
@@ -113,16 +113,16 @@ var _ = Describe("TrafficPolicyCmd", func() {
 			EXPECT().
 			PromptValueWithValidator(gomock.Any(), "", gomock.Any()).
 			Return(strings.Join(expectedNamespaces, ","), nil)
-		expectedWorkloadSelector := &zephyr_core_types.WorkloadSelector{Labels: expectedLabels, Namespaces: expectedNamespaces}
+		expectedWorkloadSelector := &smh_core_types.WorkloadSelector{Labels: expectedLabels, Namespaces: expectedNamespaces}
 		// select targets
 		mockInteractivePrompt.
 			EXPECT().
 			SelectMultipleValues(gomock.Any(), meshServiceDisplayNames).
 			Return([]string{meshServiceDisplayNames[0]}, nil)
-		expectedTargetSelector := &zephyr_core_types.ServiceSelector{
-			ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
-				ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
-					Services: []*zephyr_core_types.ResourceRef{
+		expectedTargetSelector := &smh_core_types.ServiceSelector{
+			ServiceSelectorType: &smh_core_types.ServiceSelector_ServiceRefs_{
+				ServiceRefs: &smh_core_types.ServiceSelector_ServiceRefs{
+					Services: []*smh_core_types.ResourceRef{
 						{
 							Name:      meshServiceList.Items[0].GetName(),
 							Namespace: meshServiceList.Items[0].GetNamespace(),
@@ -156,10 +156,10 @@ var _ = Describe("TrafficPolicyCmd", func() {
 			EXPECT().
 			SelectValue(gomock.Any(), utils.RemoveString(meshServiceDisplayNamesWithDoneOption, meshServiceDisplayNames[1])).
 			Return(traffic_policy.DoneSelectingOption, nil)
-		expectedTrafficShift := &zephyr_networking_types.TrafficPolicySpec_MultiDestination{
-			Destinations: []*zephyr_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+		expectedTrafficShift := &smh_networking_types.TrafficPolicySpec_MultiDestination{
+			Destinations: []*smh_networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 				{
-					Destination: &zephyr_core_types.ResourceRef{
+					Destination: &smh_core_types.ResourceRef{
 						Name:      meshServiceList.Items[1].GetName(),
 						Namespace: meshServiceList.Items[1].GetNamespace(),
 					},
@@ -168,11 +168,11 @@ var _ = Describe("TrafficPolicyCmd", func() {
 				},
 			},
 		}
-		expectedTrafficPolicy := &zephyr_networking.TrafficPolicy{
+		expectedTrafficPolicy := &smh_networking.TrafficPolicy{
 			TypeMeta: k8s_meta_types.TypeMeta{
 				Kind: "TrafficPolicy",
 			},
-			Spec: zephyr_networking_types.TrafficPolicySpec{
+			Spec: smh_networking_types.TrafficPolicySpec{
 				SourceSelector:      expectedWorkloadSelector,
 				DestinationSelector: expectedTargetSelector,
 				TrafficShift:        expectedTrafficShift,

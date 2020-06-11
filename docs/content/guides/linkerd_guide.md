@@ -417,7 +417,7 @@ meshctl create trafficpolicy # run interactively
 {{< /tab >}}
 {{< tab name="kubectl" codelang="shell" >}}
 cat <<EOF | kubectl apply -f -
-apiVersion: networking.zephyr.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha1
 kind: TrafficPolicy
 metadata:
   name: reviews-v3-shift

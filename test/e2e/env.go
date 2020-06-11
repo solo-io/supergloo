@@ -13,10 +13,10 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_core "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/test/e2e/kubectl"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
@@ -46,12 +46,12 @@ type KubeContext struct {
 	Context             string
 	Config              clientcmd.ClientConfig
 	Clientset           *kubernetes.Clientset
-	TrafficPolicyClient zephyr_networking.TrafficPolicyClient
-	KubeClusterClient   zephyr_discovery.KubernetesClusterClient
-	MeshClient          zephyr_discovery.MeshClient
-	SettingsClient      zephyr_core.SettingsClient
+	TrafficPolicyClient smh_networking.TrafficPolicyClient
+	KubeClusterClient   smh_discovery.KubernetesClusterClient
+	MeshClient          smh_discovery.MeshClient
+	SettingsClient      smh_core.SettingsClient
 	SecretClient        kubernetes_core.SecretClient
-	VirtualMeshClient   zephyr_networking.VirtualMeshClient
+	VirtualMeshClient   smh_networking.VirtualMeshClient
 }
 
 // If kubecontext is empty string, use current context.
@@ -67,24 +67,24 @@ func NewKubeContext(kubecontext string) KubeContext {
 	kubeCoreClientset, err := kubernetes_core.ClientsetFromConfigProvider(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	networkingClientset, err := zephyr_networking.ClientsetFromConfigProvider(restcfg)
+	networkingClientset, err := smh_networking.ClientsetFromConfigProvider(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	discoveryClientset, err := zephyr_discovery.ClientsetFromConfigProvider(restcfg)
+	discoveryClientset, err := smh_discovery.ClientsetFromConfigProvider(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	coreClientset, err := zephyr_core.ClientsetFromConfigProvider(restcfg)
+	coreClientset, err := smh_core.ClientsetFromConfigProvider(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
 	return KubeContext{
 		Context:             kubecontext,
 		Config:              config,
 		Clientset:           clientset,
-		TrafficPolicyClient: zephyr_networking.TrafficPolicyClientFromClientsetProvider(networkingClientset),
-		VirtualMeshClient:   zephyr_networking.VirtualMeshClientFromClientsetProvider(networkingClientset),
-		MeshClient:          zephyr_discovery.MeshClientFromClientsetProvider(discoveryClientset),
-		KubeClusterClient:   zephyr_discovery.KubernetesClusterClientFromClientsetProvider(discoveryClientset),
-		SettingsClient:      zephyr_core.SettingsClientFromClientsetProvider(coreClientset),
+		TrafficPolicyClient: smh_networking.TrafficPolicyClientFromClientsetProvider(networkingClientset),
+		VirtualMeshClient:   smh_networking.VirtualMeshClientFromClientsetProvider(networkingClientset),
+		MeshClient:          smh_discovery.MeshClientFromClientsetProvider(discoveryClientset),
+		KubeClusterClient:   smh_discovery.KubernetesClusterClientFromClientsetProvider(discoveryClientset),
+		SettingsClient:      smh_core.SettingsClientFromClientsetProvider(coreClientset),
 		SecretClient:        kubernetes_core.SecretClientFromClientsetProvider(kubeCoreClientset),
 	}
 }

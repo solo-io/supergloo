@@ -8,17 +8,17 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	v1alpha12 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/kube"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	v1alpha12 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	traffic_policy_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/validation"
 	mock_traffic_policy_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/validation/mocks"
-	mock_zephyr_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	mock_zephyr_networking_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
+	mock_smh_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
+	mock_smh_networking_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.smh.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -27,15 +27,15 @@ var _ = Describe("Validation Reconciler", func() {
 	var (
 		ctx                 = context.TODO()
 		ctrl                *gomock.Controller
-		trafficPolicyClient *mock_zephyr_networking_clients.MockTrafficPolicyClient
-		meshServiceClient   *mock_zephyr_discovery_clients.MockMeshServiceClient
+		trafficPolicyClient *mock_smh_networking_clients.MockTrafficPolicyClient
+		meshServiceClient   *mock_smh_discovery_clients.MockMeshServiceClient
 		validator           *mock_traffic_policy_validation.MockValidator
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		trafficPolicyClient = mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
-		meshServiceClient = mock_zephyr_discovery_clients.NewMockMeshServiceClient(ctrl)
+		trafficPolicyClient = mock_smh_networking_clients.NewMockTrafficPolicyClient(ctrl)
+		meshServiceClient = mock_smh_discovery_clients.NewMockMeshServiceClient(ctrl)
 		validator = mock_traffic_policy_validation.NewMockValidator(ctrl)
 
 	})
@@ -46,8 +46,8 @@ var _ = Describe("Validation Reconciler", func() {
 
 	It("can set a new validation status", func() {
 		invalidTrafficPolicy := &v1alpha12.TrafficPolicy{}
-		failedValidationStatus := &zephyr_core_types.Status{
-			State: zephyr_core_types.Status_INVALID,
+		failedValidationStatus := &smh_core_types.Status{
+			State: smh_core_types.Status_INVALID,
 		}
 
 		trafficPolicyClient.EXPECT().
@@ -82,8 +82,8 @@ var _ = Describe("Validation Reconciler", func() {
 	})
 
 	It("does not issue an update if the status is up-to-date", func() {
-		failedValidationStatus := &zephyr_core_types.Status{
-			State: zephyr_core_types.Status_INVALID,
+		failedValidationStatus := &smh_core_types.Status{
+			State: smh_core_types.Status_INVALID,
 		}
 		alreadyInvalidTrafficPolicy := &v1alpha12.TrafficPolicy{
 			Status: types.TrafficPolicyStatus{
@@ -116,8 +116,8 @@ var _ = Describe("Validation Reconciler", func() {
 	})
 
 	It("does issue an update if the generation is not up-to-date", func() {
-		status := &zephyr_core_types.Status{
-			State: zephyr_core_types.Status_INVALID,
+		status := &smh_core_types.Status{
+			State: smh_core_types.Status_INVALID,
 		}
 		trafficPolicy := v1alpha12.TrafficPolicy{
 			ObjectMeta: v1.ObjectMeta{Generation: 2},
@@ -171,7 +171,7 @@ var _ = Describe("Validation Reconciler", func() {
 				tp.policies.Items = append(tp.policies.Items, v1alpha12.TrafficPolicy{
 					ObjectMeta: v1.ObjectMeta{Name: fmt.Sprintf("tp-%d", i)},
 					Spec: types.TrafficPolicySpec{
-						SourceSelector: &zephyr_core_types.WorkloadSelector{
+						SourceSelector: &smh_core_types.WorkloadSelector{
 							Labels: map[string]string{
 								"foo": "bar",
 							},
@@ -179,7 +179,7 @@ var _ = Describe("Validation Reconciler", func() {
 						TrafficShift: &types.TrafficPolicySpec_MultiDestination{
 							Destinations: []*types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 								{
-									Destination: &zephyr_core_types.ResourceRef{
+									Destination: &smh_core_types.ResourceRef{
 										Name:      fmt.Sprintf("reviews-%d", i),
 										Namespace: "reviews",
 										Cluster:   "test",
@@ -219,8 +219,8 @@ var _ = Describe("Validation Reconciler", func() {
 			runtime := b.Time("runtime", func() {
 				reconciler.Reconcile(ctx)
 			})
-			// ideally should be less than 1ms; but 100ms is good for now. in practice it's around 10ms.
-			Ω(runtime.Seconds()).Should(BeNumerically("<", 0.1), "validator.Reconcile() shouldn't take too long.")
+			// ideally should be less than 1ms; but 1s is good for now. in practice it's around 10ms.
+			Ω(runtime.Seconds()).Should(BeNumerically("<", 1), "validator.Reconcile() shouldn't take too long.")
 		}, 10)
 
 	})

@@ -3,7 +3,7 @@
 title: "virtual_mesh.proto"
 ---
 
-## Package : `networking.zephyr.solo.io`
+## Package : `networking.smh.solo.io`
 
 
 
@@ -16,24 +16,24 @@ title: "virtual_mesh.proto"
 
 
 ## Table of Contents
-  - [VirtualMeshSpec](#networking.zephyr.solo.io.VirtualMeshSpec)
-  - [VirtualMeshSpec.CertificateAuthority](#networking.zephyr.solo.io.VirtualMeshSpec.CertificateAuthority)
-  - [VirtualMeshSpec.CertificateAuthority.Builtin](#networking.zephyr.solo.io.VirtualMeshSpec.CertificateAuthority.Builtin)
-  - [VirtualMeshSpec.CertificateAuthority.Provided](#networking.zephyr.solo.io.VirtualMeshSpec.CertificateAuthority.Provided)
-  - [VirtualMeshSpec.Federation](#networking.zephyr.solo.io.VirtualMeshSpec.Federation)
-  - [VirtualMeshSpec.LimitedTrust](#networking.zephyr.solo.io.VirtualMeshSpec.LimitedTrust)
-  - [VirtualMeshSpec.SharedTrust](#networking.zephyr.solo.io.VirtualMeshSpec.SharedTrust)
-  - [VirtualMeshStatus](#networking.zephyr.solo.io.VirtualMeshStatus)
+  - [VirtualMeshSpec](#networking.smh.solo.io.VirtualMeshSpec)
+  - [VirtualMeshSpec.CertificateAuthority](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority)
+  - [VirtualMeshSpec.CertificateAuthority.Builtin](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Builtin)
+  - [VirtualMeshSpec.CertificateAuthority.Provided](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Provided)
+  - [VirtualMeshSpec.Federation](#networking.smh.solo.io.VirtualMeshSpec.Federation)
+  - [VirtualMeshSpec.LimitedTrust](#networking.smh.solo.io.VirtualMeshSpec.LimitedTrust)
+  - [VirtualMeshSpec.SharedTrust](#networking.smh.solo.io.VirtualMeshSpec.SharedTrust)
+  - [VirtualMeshStatus](#networking.smh.solo.io.VirtualMeshStatus)
 
-  - [VirtualMeshSpec.EnforcementPolicy](#networking.zephyr.solo.io.VirtualMeshSpec.EnforcementPolicy)
-  - [VirtualMeshSpec.Federation.Mode](#networking.zephyr.solo.io.VirtualMeshSpec.Federation.Mode)
-
-
+  - [VirtualMeshSpec.EnforcementPolicy](#networking.smh.solo.io.VirtualMeshSpec.EnforcementPolicy)
+  - [VirtualMeshSpec.Federation.Mode](#networking.smh.solo.io.VirtualMeshSpec.Federation.Mode)
 
 
 
 
-<a name="networking.zephyr.solo.io.VirtualMeshSpec"></a>
+
+
+<a name="networking.smh.solo.io.VirtualMeshSpec"></a>
 
 ### VirtualMeshSpec
 
@@ -42,19 +42,19 @@ title: "virtual_mesh.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | displayName | [string](#string) |  | User-provided display name for the virtual mesh. |
-| meshes | [][core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) | repeated | The meshes contained in this virtual mesh. |
-| certificateAuthority | [VirtualMeshSpec.CertificateAuthority](#networking.zephyr.solo.io.VirtualMeshSpec.CertificateAuthority) |  |  |
-| federation | [VirtualMeshSpec.Federation](#networking.zephyr.solo.io.VirtualMeshSpec.Federation) |  |  |
-| shared | [VirtualMeshSpec.SharedTrust](#networking.zephyr.solo.io.VirtualMeshSpec.SharedTrust) |  |  |
-| limited | [VirtualMeshSpec.LimitedTrust](#networking.zephyr.solo.io.VirtualMeshSpec.LimitedTrust) |  |  |
-| enforceAccessControl | [VirtualMeshSpec.EnforcementPolicy](#networking.zephyr.solo.io.VirtualMeshSpec.EnforcementPolicy) |  |  |
+| meshes | [][core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) | repeated | The meshes contained in this virtual mesh. |
+| certificateAuthority | [VirtualMeshSpec.CertificateAuthority](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority) |  |  |
+| federation | [VirtualMeshSpec.Federation](#networking.smh.solo.io.VirtualMeshSpec.Federation) |  |  |
+| shared | [VirtualMeshSpec.SharedTrust](#networking.smh.solo.io.VirtualMeshSpec.SharedTrust) |  |  |
+| limited | [VirtualMeshSpec.LimitedTrust](#networking.smh.solo.io.VirtualMeshSpec.LimitedTrust) |  |  |
+| enforceAccessControl | [VirtualMeshSpec.EnforcementPolicy](#networking.smh.solo.io.VirtualMeshSpec.EnforcementPolicy) |  |  |
 
 
 
 
 
 
-<a name="networking.zephyr.solo.io.VirtualMeshSpec.CertificateAuthority"></a>
+<a name="networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority"></a>
 
 ### VirtualMeshSpec.CertificateAuthority
 
@@ -62,15 +62,15 @@ title: "virtual_mesh.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| builtin | [VirtualMeshSpec.CertificateAuthority.Builtin](#networking.zephyr.solo.io.VirtualMeshSpec.CertificateAuthority.Builtin) |  | Use auto-generated root certificate. |
-| provided | [VirtualMeshSpec.CertificateAuthority.Provided](#networking.zephyr.solo.io.VirtualMeshSpec.CertificateAuthority.Provided) |  | Use user-provided root certificate. |
+| builtin | [VirtualMeshSpec.CertificateAuthority.Builtin](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Builtin) |  | Use auto-generated root certificate. |
+| provided | [VirtualMeshSpec.CertificateAuthority.Provided](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Provided) |  | Use user-provided root certificate. |
 
 
 
 
 
 
-<a name="networking.zephyr.solo.io.VirtualMeshSpec.CertificateAuthority.Builtin"></a>
+<a name="networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Builtin"></a>
 
 ### VirtualMeshSpec.CertificateAuthority.Builtin
 Configuration for auto-generated root certificate unique to the VirtualMesh Uses the X.509 format, RFC5280
@@ -87,7 +87,7 @@ Configuration for auto-generated root certificate unique to the VirtualMesh Uses
 
 
 
-<a name="networking.zephyr.solo.io.VirtualMeshSpec.CertificateAuthority.Provided"></a>
+<a name="networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Provided"></a>
 
 ### VirtualMeshSpec.CertificateAuthority.Provided
 Configuration for user-provided root certificate.
@@ -95,14 +95,14 @@ Configuration for user-provided root certificate.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| certificate | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | Reference to a Secret object containing the root certificate. |
+| certificate | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | Reference to a Secret object containing the root certificate. |
 
 
 
 
 
 
-<a name="networking.zephyr.solo.io.VirtualMeshSpec.Federation"></a>
+<a name="networking.smh.solo.io.VirtualMeshSpec.Federation"></a>
 
 ### VirtualMeshSpec.Federation
 
@@ -110,14 +110,14 @@ Configuration for user-provided root certificate.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| mode | [VirtualMeshSpec.Federation.Mode](#networking.zephyr.solo.io.VirtualMeshSpec.Federation.Mode) |  |  |
+| mode | [VirtualMeshSpec.Federation.Mode](#networking.smh.solo.io.VirtualMeshSpec.Federation.Mode) |  |  |
 
 
 
 
 
 
-<a name="networking.zephyr.solo.io.VirtualMeshSpec.LimitedTrust"></a>
+<a name="networking.smh.solo.io.VirtualMeshSpec.LimitedTrust"></a>
 
 ### VirtualMeshSpec.LimitedTrust
 Limited trust is a virtual mesh trust model which does not require all meshes sharing the same root certificate or identity model. But rather, the limited trust creates trust between meshes running on different clusters by connecting their ingress/egress gateways with a common cert/identity. In this model all requests between different have the following request path when communicating between clusters<br>cluster 1 MTLS               shared MTLS                  cluster 2 MTLS client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server<br>This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc addition of additional clusters into a virtual mesh.
@@ -127,7 +127,7 @@ Limited trust is a virtual mesh trust model which does not require all meshes sh
 
 
 
-<a name="networking.zephyr.solo.io.VirtualMeshSpec.SharedTrust"></a>
+<a name="networking.smh.solo.io.VirtualMeshSpec.SharedTrust"></a>
 
 ### VirtualMeshSpec.SharedTrust
 Shared trust is a virtual mesh trust model requiring a shared root certificate, as well as shared identity between all entities which wish to communicate within the virtual mesh.<br>The best current example of this would be the replicated control planes example from Istio: https://preliminary.istio.io/docs/setup/install/multicluster/gateways/
@@ -137,7 +137,7 @@ Shared trust is a virtual mesh trust model requiring a shared root certificate, 
 
 
 
-<a name="networking.zephyr.solo.io.VirtualMeshStatus"></a>
+<a name="networking.smh.solo.io.VirtualMeshStatus"></a>
 
 ### VirtualMeshStatus
 
@@ -145,10 +145,10 @@ Shared trust is a virtual mesh trust model requiring a shared root certificate, 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| federationStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  | Status of the process writing federation decision metadata onto MeshServices. |
-| certificateStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  | Status of the process signing CSRs. |
-| configStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  | Overall validation status of this VirtualMesh. |
-| accessControlEnforcementStatus | [core.zephyr.solo.io.Status](#core.zephyr.solo.io.Status) |  | Status of ensuring that access control is enforced within this VirtualMesh. |
+| federationStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Status of the process writing federation decision metadata onto MeshServices. |
+| certificateStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Status of the process signing CSRs. |
+| configStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Overall validation status of this VirtualMesh. |
+| accessControlEnforcementStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Status of ensuring that access control is enforced within this VirtualMesh. |
 
 
 
@@ -157,7 +157,7 @@ Shared trust is a virtual mesh trust model requiring a shared root certificate, 
  <!-- end messages -->
 
 
-<a name="networking.zephyr.solo.io.VirtualMeshSpec.EnforcementPolicy"></a>
+<a name="networking.smh.solo.io.VirtualMeshSpec.EnforcementPolicy"></a>
 
 ### VirtualMeshSpec.EnforcementPolicy
 If ENABLED, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies. If DISABLED, by default allow traffic to all Services in the VirtualMesh. If MESH_DEFAULT, the default value depends on the type service mesh: Istio: false Appmesh: true
@@ -170,7 +170,7 @@ If ENABLED, by default disallow traffic to all Services in the VirtualMesh unles
 
 
 
-<a name="networking.zephyr.solo.io.VirtualMeshSpec.Federation.Mode"></a>
+<a name="networking.smh.solo.io.VirtualMeshSpec.Federation.Mode"></a>
 
 ### VirtualMeshSpec.Federation.Mode
 

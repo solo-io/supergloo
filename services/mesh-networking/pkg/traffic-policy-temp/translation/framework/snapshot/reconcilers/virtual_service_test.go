@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/kube/selection"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	. "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot/reconcilers"
 	mock_istio_networking_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/istio/networking/v1beta1"
 	"istio.io/api/networking/v1alpha3"
