@@ -4,9 +4,11 @@ import (
 	"context"
 	"io/ioutil"
 
+	k8s_core_v1_clients_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+
 	"github.com/rotisserie/eris"
+	k8s_core_v1_clients "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	k8s_core_v1_clients "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	smh_security_scheme "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen/secrets"
@@ -53,9 +55,9 @@ func NewClusterDeregistrationClient(
 	kubeConfigLookup kubeconfig.KubeConfigLookup,
 	localKubeClusterClient smh_discovery.KubernetesClusterClient,
 	localSecretClient k8s_core_v1_clients.SecretClient,
-	secretClientFactory k8s_core_v1_clients.SecretClientFactory,
+	secretClientFactory k8s_core_v1_clients_providers.SecretClientFactory,
 	dynamicClientGetter multicluster.DynamicClientGetter,
-	serviceAccountClientFactory k8s_core_v1_clients.ServiceAccountClientFactory,
+	serviceAccountClientFactory k8s_core_v1_clients_providers.ServiceAccountClientFactory,
 ) ClusterDeregistrationClient {
 	return &clusterDeregistrationClient{
 		crdRemover:                  crdRemover,
@@ -76,8 +78,8 @@ type clusterDeregistrationClient struct {
 	kubeConfigLookup            kubeconfig.KubeConfigLookup
 	localKubeClusterClient      smh_discovery.KubernetesClusterClient
 	localSecretClient           k8s_core_v1_clients.SecretClient
-	secretClientFactory         k8s_core_v1_clients.SecretClientFactory
-	serviceAccountClientFactory k8s_core_v1_clients.ServiceAccountClientFactory
+	secretClientFactory         k8s_core_v1_clients_providers.SecretClientFactory
+	serviceAccountClientFactory k8s_core_v1_clients_providers.ServiceAccountClientFactory
 	dynamicClientGetter         multicluster.DynamicClientGetter
 }
 

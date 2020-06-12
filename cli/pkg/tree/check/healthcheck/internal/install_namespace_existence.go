@@ -6,7 +6,6 @@ import (
 
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func NewInstallNamespaceExistenceCheck() healthcheck_types.HealthCheck {
@@ -20,7 +19,7 @@ func (*installNamespaceExistence) GetDescription() string {
 }
 
 func (i *installNamespaceExistence) Run(ctx context.Context, installNamespace string, clients healthcheck_types.Clients) (runFailure *healthcheck_types.RunFailure, checkApplies bool) {
-	_, err := clients.NamespaceClient.GetNamespace(ctx, client.ObjectKey{Name: installNamespace})
+	_, err := clients.NamespaceClient.GetNamespace(ctx, installNamespace)
 	if errors.IsNotFound(err) {
 		return &healthcheck_types.RunFailure{
 			ErrorMessage: NamespaceDoesNotExist(installNamespace).Error(),

@@ -155,7 +155,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 	return nil
 }
 
-// Compute and upsert all Mesh-specific configuration needed to reflect TrafficPolicy
+// Compute and Upsert all Mesh-ific configuration needed to reflect TrafficPolicy
 func (t *trafficPolicyTranslatorLoop) upsertPolicyResourcesForTrafficPolicy(
 	ctx context.Context,
 	trafficPolicy *smh_networking.TrafficPolicy,
@@ -167,7 +167,7 @@ func (t *trafficPolicyTranslatorLoop) upsertPolicyResourcesForTrafficPolicy(
 	return t.translateMergedTrafficPolicies(ctx, mergedTrafficPoliciesByMeshService)
 }
 
-// Compute and upsert all Mesh-specific configuration needed to reflect TrafficPolicies for the given MeshService
+// Compute and Upsert all Mesh-ific configuration needed to reflect TrafficPolicies for the given MeshService
 func (t *trafficPolicyTranslatorLoop) upsertPolicyResourcesForMeshService(
 	ctx context.Context,
 	meshService *smh_discovery.MeshService,

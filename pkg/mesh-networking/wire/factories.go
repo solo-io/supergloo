@@ -2,14 +2,14 @@ package wire
 
 import (
 	"github.com/google/wire"
-	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	smh_security_providers "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/providers"
 	networking_multicluster "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/compute-target"
 	controller_factories "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/compute-target/controllers"
 )
 
 var (
 	ClientFactoryProviderSet = wire.NewSet(
-		smh_security.VirtualMeshCertificateSigningRequestClientFactoryProvider,
+		smh_security_providers.VirtualMeshCertificateSigningRequestClientFactoryProvider,
 		NewClientFactories,
 	)
 
@@ -20,7 +20,7 @@ var (
 )
 
 func NewClientFactories(
-	VirtualMeshCertificateSigningRequestClientFactory smh_security.VirtualMeshCertificateSigningRequestClientFactory,
+	VirtualMeshCertificateSigningRequestClientFactory smh_security_providers.VirtualMeshCertificateSigningRequestClientFactory,
 ) *networking_multicluster.ClientFactories {
 	return &networking_multicluster.ClientFactories{
 		VirtualMeshCSRClientFactory: VirtualMeshCertificateSigningRequestClientFactory,

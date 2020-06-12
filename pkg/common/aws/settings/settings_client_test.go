@@ -7,11 +7,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
+	mock_smh_settings_clients "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/mocks"
 	smh_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/settings"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
-	mock_smh_settings_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/settings.smh.solo.io/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

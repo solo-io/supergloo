@@ -16,7 +16,7 @@ require (
 	github.com/go-test/deep v1.0.3 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/protobuf v1.3.5
 	github.com/golang/sync v0.0.0-20180314180146-1d60e4601c6f
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/subcommands v1.2.0 // indirect
@@ -38,17 +38,18 @@ require (
 	github.com/onsi/gomega v1.8.1
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/pseudomuto/protoc-gen-doc v1.3.0
+	github.com/pseudomuto/protoc-gen-doc v1.3.2
 	github.com/pseudomuto/protokit v0.2.0
 	github.com/rotisserie/eris v0.2.0
 	github.com/sergi/go-diff v1.1.0
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
+	github.com/solo-io/external-apis v0.0.0-20200612200207-1dbc5c4610e8
 	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/protoc-gen-ext v0.0.9
 	github.com/solo-io/reporting-client v0.1.3
-	github.com/solo-io/skv2 v0.3.0
+	github.com/solo-io/skv2 v0.4.2
 	github.com/solo-io/solo-kit v0.13.3
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.5
@@ -57,14 +58,14 @@ require (
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
 	golang.org/x/tools v0.0.0-20200603170713-0310561d584d
-	google.golang.org/grpc v1.27.0
+	google.golang.org/grpc v1.28.1
 	helm.sh/helm/v3 v3.0.0
-	istio.io/api v0.0.0-20200218013118-7fd43ea7fc2b
-	istio.io/client-go v0.0.0-20200218195608-60c238c92aa0
+	istio.io/api v0.0.0-20200610220835-a1a958746907
+	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
 	k8s.io/api v0.17.4
 	k8s.io/apiextensions-apiserver v0.17.4
-	k8s.io/apimachinery v0.17.4
+	k8s.io/apimachinery v0.18.3
 	k8s.io/cli-runtime v0.17.2
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator v0.17.4

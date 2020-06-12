@@ -3,14 +3,16 @@ package crd_uninstall_test
 import (
 	"context"
 
+	kubernetes_apiext "github.com/solo-io/external-apis/pkg/api/k8s/apiextensions.k8s.io/v1beta1"
+	kubernetes_apiext_providers "github.com/solo-io/external-apis/pkg/api/k8s/apiextensions.k8s.io/v1beta1/providers"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	mock_k8s_extension_clients "github.com/solo-io/external-apis/pkg/api/k8s/apiextensions.k8s.io/v1beta1/mocks"
 	"github.com/solo-io/go-utils/testutils"
-	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
 	crd_uninstall "github.com/solo-io/service-mesh-hub/pkg/common/kube/crd"
-	mock_k8s_extension_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/apiextensions.k8s.io/v1beta1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +30,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			Host:        "example.com",
 			BearerToken: "service-account-token",
 		}
-		crdClientFactoryBuilder = func(crdClient kubernetes_apiext.CustomResourceDefinitionClient) kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactory {
+		crdClientFactoryBuilder = func(crdClient kubernetes_apiext.CustomResourceDefinitionClient) kubernetes_apiext_providers.CustomResourceDefinitionClientFromConfigFactory {
 			return func(cfg *rest.Config) (client kubernetes_apiext.CustomResourceDefinitionClient, err error) {
 				Expect(cfg).To(Equal(restConfig))
 				return crdClient, nil

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	kubernetes_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -3,8 +3,8 @@ package auth
 import (
 	"context"
 
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_rbac_types "k8s.io/api/rbac/v1"

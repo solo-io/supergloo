@@ -1,10 +1,10 @@
 package healthcheck
 
 import (
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	k8s_discovery "github.com/solo-io/service-mesh-hub/pkg/common/kube/discovery"
 )
 

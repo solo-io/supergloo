@@ -1,7 +1,7 @@
 package event_watcher_factories
 
 import (
-	core_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	core_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-multierror"
-	k8s_apps_v1_clients "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
+	k8s_apps_v1_clients "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/unstructured"
 	k8s_apps_v1 "k8s.io/api/apps/v1"

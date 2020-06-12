@@ -11,12 +11,12 @@ import (
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	smh_security_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/controller"
+	mock_security_config "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/mocks"
 	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	csr_generator "github.com/solo-io/service-mesh-hub/pkg/common/csr-generator"
 	mock_csr_generator "github.com/solo-io/service-mesh-hub/pkg/common/csr-generator/mocks"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
-	mock_security_config "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.smh.solo.io/v1alpha1"
 	"go.uber.org/zap/zapcore"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
