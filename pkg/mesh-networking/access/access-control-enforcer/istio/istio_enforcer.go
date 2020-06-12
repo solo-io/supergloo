@@ -2,12 +2,13 @@ package istio
 
 import (
 	"context"
+	istio_security "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1"
+	istio_security_providers "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/providers"
 
 	access_policy_enforcer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/access/access-control-enforcer"
 
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
@@ -29,14 +30,14 @@ const (
 
 type istioEnforcer struct {
 	dynamicClientGetter     multicluster.DynamicClientGetter
-	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory
+	authPolicyClientFactory istio_security_providers.AuthorizationPolicyClientFactory
 }
 
 type IstioEnforcer access_policy_enforcer.AccessPolicyMeshEnforcer
 
 func NewIstioEnforcer(
 	dynamicClientGetter multicluster.DynamicClientGetter,
-	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory,
+	authPolicyClientFactory istio_security_providers.AuthorizationPolicyClientFactory,
 ) IstioEnforcer {
 	return &istioEnforcer{
 		authPolicyClientFactory: authPolicyClientFactory,
@@ -128,7 +129,7 @@ func (i *istioEnforcer) ensureGlobalAuthPolicy(
 		},
 		Spec: istio_api_security.AuthorizationPolicy{},
 	}
-	return authPolicyClient.UpsertAuthorizationPolicySpec(ctx, globalAccessControlAuthPolicy)
+	return authPolicyClient.UpsertAuthorizationPolicy(ctx, globalAccessControlAuthPolicy)
 }
 
 func (i *istioEnforcer) ensureIngressGatewayPolicy(
@@ -155,7 +156,7 @@ func (i *istioEnforcer) ensureIngressGatewayPolicy(
 			},
 		},
 	}
-	return authPolicyClient.UpsertAuthorizationPolicySpec(ctx, ingressGatewayAllowAllPolicy)
+	return authPolicyClient.UpsertAuthorizationPolicy(ctx, ingressGatewayAllowAllPolicy)
 }
 
 func (i *istioEnforcer) stopEnforcingForMesh(

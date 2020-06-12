@@ -205,21 +205,21 @@ func (mr *MockAuthorizationPolicyClientMockRecorder) UpdateAuthorizationPolicySt
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAuthorizationPolicyStatus", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).UpdateAuthorizationPolicyStatus), varargs...)
 }
 
-// UpsertAuthorizationPolicySpec mocks base method.
-func (m *MockAuthorizationPolicyClient) UpsertAuthorizationPolicySpec(arg0 context.Context, arg1 *v1beta1.AuthorizationPolicy, arg2 ...client.UpdateOption) error {
+// UpsertAuthorizationPolicy mocks base method.
+func (m *MockAuthorizationPolicyClient) UpsertAuthorizationPolicy(arg0 context.Context, arg1 *v1beta1.AuthorizationPolicy, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertAuthorizationPolicySpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertAuthorizationPolicy", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertAuthorizationPolicySpec indicates an expected call of UpsertAuthorizationPolicySpec.
-func (mr *MockAuthorizationPolicyClientMockRecorder) UpsertAuthorizationPolicySpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertAuthorizationPolicySpec indicates an expected call of UpsertAuthorizationPolicy.
+func (mr *MockAuthorizationPolicyClientMockRecorder) UpsertAuthorizationPolicy(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertAuthorizationPolicySpec", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).UpsertAuthorizationPolicySpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertAuthorizationPolicySpec", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).UpsertAuthorizationPolicy), varargs...)
 }

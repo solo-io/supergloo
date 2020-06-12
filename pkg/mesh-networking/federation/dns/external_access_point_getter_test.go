@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
 	istio_federation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver/meshes/istio"

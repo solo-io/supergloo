@@ -10,7 +10,7 @@ import (
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration"
 	constants2 "github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
@@ -193,7 +193,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 	var expectWriteKubeClusterToMaster = func(secret *k8s_core_types.Secret) {
 		mockKubernetesClusterClient.
 			EXPECT().
-			UpsertKubernetesClusterSpec(ctx, &smh_discovery.KubernetesCluster{
+			UpsertKubernetesCluster(ctx, &smh_discovery.KubernetesCluster{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      remoteClusterName,
 					Namespace: container_runtime.GetWriteNamespace(),

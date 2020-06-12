@@ -5,7 +5,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

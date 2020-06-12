@@ -205,21 +205,21 @@ func (mr *MockServiceProfileClientMockRecorder) UpdateServiceProfileStatus(arg0,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceProfileStatus", reflect.TypeOf((*MockServiceProfileClient)(nil).UpdateServiceProfileStatus), varargs...)
 }
 
-// UpsertServiceProfileSpec mocks base method.
-func (m *MockServiceProfileClient) UpsertServiceProfileSpec(arg0 context.Context, arg1 *v1alpha2.ServiceProfile, arg2 ...client.UpdateOption) error {
+// UpsertServiceProfile mocks base method.
+func (m *MockServiceProfileClient) UpsertServiceProfile(arg0 context.Context, arg1 *v1alpha2.ServiceProfile, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertServiceProfileSpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertServiceProfile", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertServiceProfileSpec indicates an expected call of UpsertServiceProfileSpec.
-func (mr *MockServiceProfileClientMockRecorder) UpsertServiceProfileSpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertServiceProfileSpec indicates an expected call of UpsertServiceProfile.
+func (mr *MockServiceProfileClientMockRecorder) UpsertServiceProfile(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertServiceProfileSpec", reflect.TypeOf((*MockServiceProfileClient)(nil).UpsertServiceProfileSpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertServiceProfileSpec", reflect.TypeOf((*MockServiceProfileClient)(nil).UpsertServiceProfile), varargs...)
 }

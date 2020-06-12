@@ -6,11 +6,10 @@ package mock_smh_settings_clients
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
 	types "k8s.io/apimachinery/pkg/types"
+	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -205,21 +204,21 @@ func (mr *MockSettingsClientMockRecorder) UpdateSettingsStatus(arg0, arg1 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSettingsStatus", reflect.TypeOf((*MockSettingsClient)(nil).UpdateSettingsStatus), varargs...)
 }
 
-// UpsertSettingsSpec mocks base method.
-func (m *MockSettingsClient) UpsertSettingsSpec(arg0 context.Context, arg1 *v1alpha1.Settings, arg2 ...client.UpdateOption) error {
+// UpsertSettings mocks base method.
+func (m *MockSettingsClient) UpsertSettings(arg0 context.Context, arg1 *v1alpha1.Settings, arg2 ...v1alpha1.SettingsTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertSettingsSpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertSettings", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertSettingsSpec indicates an expected call of UpsertSettingsSpec.
-func (mr *MockSettingsClientMockRecorder) UpsertSettingsSpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertSettings indicates an expected call of UpsertSettings.
+func (mr *MockSettingsClientMockRecorder) UpsertSettings(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSettingsSpec", reflect.TypeOf((*MockSettingsClient)(nil).UpsertSettingsSpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSettings", reflect.TypeOf((*MockSettingsClient)(nil).UpsertSettings), varargs...)
 }

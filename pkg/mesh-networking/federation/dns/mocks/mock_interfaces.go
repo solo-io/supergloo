@@ -6,11 +6,10 @@ package mock_dns
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	dns "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
 	v1 "k8s.io/api/core/v1"
+	reflect "reflect"
 )
 
 // MockIpAssigner is a mock of IpAssigner interface.

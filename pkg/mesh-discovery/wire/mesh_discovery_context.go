@@ -1,9 +1,9 @@
 package wire
 
 import (
-	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	smh_discovery_providers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/providers"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	event_watcher_factories "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target/event-watcher-factories"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s"
@@ -23,14 +23,14 @@ type DiscoveryContext struct {
 }
 
 type ClientFactories struct {
-	ReplicaSetClientFactory   k8s_apps.ReplicaSetClientFactory
-	DeploymentClientFactory   k8s_apps.DeploymentClientFactory
+	ReplicaSetClientFactory   k8s_apps_providers.ReplicaSetClientFactory
+	DeploymentClientFactory   k8s_apps_providers.DeploymentClientFactory
 	OwnerFetcherClientFactory meshworkload_discovery.OwnerFetcherFactory
-	ServiceClientFactory      k8s_core.ServiceClientFactory
-	MeshServiceClientFactory  smh_discovery.MeshServiceClientFactory
-	MeshWorkloadClientFactory smh_discovery.MeshWorkloadClientFactory
-	MeshClientFactory         smh_discovery.MeshClientFactory
-	PodClientFactory          k8s_core.PodClientFactory
+	ServiceClientFactory      k8s_core_providers.ServiceClientFactory
+	MeshServiceClientFactory  smh_discovery_providers.MeshServiceClientFactory
+	MeshWorkloadClientFactory smh_discovery_providers.MeshWorkloadClientFactory
+	MeshClientFactory         smh_discovery_providers.MeshClientFactory
+	PodClientFactory          k8s_core_providers.PodClientFactory
 }
 
 type EventWatcherFactories struct {
@@ -57,18 +57,18 @@ func DiscoveryContextProvider(
 	istioMeshScanner mesh_istio.IstioMeshScanner,
 	consulConnectMeshScanner mesh_consul.ConsulConnectMeshScanner,
 	linkerdMeshScanner mesh_linkerd.LinkerdMeshScanner,
-	replicaSetClientFactory k8s_apps.ReplicaSetClientFactory,
-	deploymentClientFactory k8s_apps.DeploymentClientFactory,
+	replicaSetClientFactory k8s_apps_providers.ReplicaSetClientFactory,
+	deploymentClientFactory k8s_apps_providers.DeploymentClientFactory,
 	ownerFetcherClientFactory meshworkload_discovery.OwnerFetcherFactory,
-	serviceClientFactory k8s_core.ServiceClientFactory,
-	meshServiceClientFactory smh_discovery.MeshServiceClientFactory,
-	meshWorkloadClientFactory smh_discovery.MeshWorkloadClientFactory,
+	serviceClientFactory k8s_core_providers.ServiceClientFactory,
+	meshServiceClientFactory smh_discovery_providers.MeshServiceClientFactory,
+	meshWorkloadClientFactory smh_discovery_providers.MeshWorkloadClientFactory,
 	podEventWatcherFactory event_watcher_factories.PodEventWatcherFactory,
 	serviceEventWatcherFactory event_watcher_factories.ServiceEventWatcherFactory,
 	meshWorkloadControllerFactory event_watcher_factories.MeshWorkloadEventWatcherFactory,
 	deploymentEventWatcherFactory event_watcher_factories.DeploymentEventWatcherFactory,
-	meshClientFactory smh_discovery.MeshClientFactory,
-	podClientFactory k8s_core.PodClientFactory,
+	meshClientFactory smh_discovery_providers.MeshClientFactory,
+	podClientFactory k8s_core_providers.PodClientFactory,
 	meshControllerFactory event_watcher_factories.MeshEventWatcherFactory,
 	appMeshWorkloadScannerFactory meshworkload_discovery.MeshWorkloadScannerFactory,
 	appMeshClusterTenancyScannerFactory k8s_tenancy.ClusterTenancyScannerFactory,

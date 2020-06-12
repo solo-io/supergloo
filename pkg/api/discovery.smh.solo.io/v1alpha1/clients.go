@@ -5,11 +5,35 @@ package v1alpha1
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	"github.com/solo-io/skv2/pkg/controllerutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// MulticlusterClientset for the discovery.smh.solo.io/v1alpha1 APIs
+type MulticlusterClientset interface {
+	// Cluster returns a Clientset for the given cluster
+	Cluster(cluster string) (Clientset, error)
+}
+
+type multiclusterClientset struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterClientset(client multicluster.Client) MulticlusterClientset {
+	return &multiclusterClientset{client: client}
+}
+
+func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewClientset(client), nil
+}
 
 // clienset for the discovery.smh.solo.io/v1alpha1 APIs
 type Clientset interface {
@@ -27,7 +51,7 @@ type clientSet struct {
 	client client.Client
 }
 
-func NewClientsetFromConfig(cfg *rest.Config) (*clientSet, error) {
+func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
 	scheme := scheme.Scheme
 	if err := AddToScheme(scheme); err != nil {
 		return nil, err
@@ -41,7 +65,7 @@ func NewClientsetFromConfig(cfg *rest.Config) (*clientSet, error) {
 	return NewClientset(client), nil
 }
 
-func NewClientset(client client.Client) *clientSet {
+func NewClientset(client client.Client) Clientset {
 	return &clientSet{client: client}
 }
 
@@ -74,6 +98,10 @@ type KubernetesClusterReader interface {
 	ListKubernetesCluster(ctx context.Context, opts ...client.ListOption) (*KubernetesClusterList, error)
 }
 
+// KubernetesClusterTransitionFunction instructs the KubernetesClusterWriter how to transition between an existing
+// KubernetesCluster object and a desired on an Upsert
+type KubernetesClusterTransitionFunction func(existing, desired *KubernetesCluster) error
+
 // Writer knows how to create, delete, and update KubernetesClusters.
 type KubernetesClusterWriter interface {
 	// Create saves the KubernetesCluster object.
@@ -85,14 +113,14 @@ type KubernetesClusterWriter interface {
 	// Update updates the given KubernetesCluster object.
 	UpdateKubernetesCluster(ctx context.Context, obj *KubernetesCluster, opts ...client.UpdateOption) error
 
-	// If the KubernetesCluster object exists, update its spec. Otherwise, create the KubernetesCluster object.
-	UpsertKubernetesClusterSpec(ctx context.Context, obj *KubernetesCluster, opts ...client.UpdateOption) error
-
 	// Patch patches the given KubernetesCluster object.
 	PatchKubernetesCluster(ctx context.Context, obj *KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error
 
 	// DeleteAllOf deletes all KubernetesCluster objects matching the given options.
 	DeleteAllOfKubernetesCluster(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the KubernetesCluster object.
+	UpsertKubernetesCluster(ctx context.Context, obj *KubernetesCluster, transitionFuncs ...KubernetesClusterTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a KubernetesCluster object.
@@ -151,18 +179,6 @@ func (c *kubernetesClusterClient) UpdateKubernetesCluster(ctx context.Context, o
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *kubernetesClusterClient) UpsertKubernetesClusterSpec(ctx context.Context, obj *KubernetesCluster, opts ...client.UpdateOption) error {
-	existing, err := c.GetKubernetesCluster(ctx, client.ObjectKey{Name: obj.GetName(), Namespace: obj.GetNamespace()})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return c.CreateKubernetesCluster(ctx, obj)
-		}
-		return err
-	}
-	existing.Spec = obj.Spec
-	return c.client.Update(ctx, existing, opts...)
-}
-
 func (c *kubernetesClusterClient) PatchKubernetesCluster(ctx context.Context, obj *KubernetesCluster, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
@@ -170,6 +186,19 @@ func (c *kubernetesClusterClient) PatchKubernetesCluster(ctx context.Context, ob
 func (c *kubernetesClusterClient) DeleteAllOfKubernetesCluster(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &KubernetesCluster{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *kubernetesClusterClient) UpsertKubernetesCluster(ctx context.Context, obj *KubernetesCluster, transitionFuncs ...KubernetesClusterTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*KubernetesCluster), desired.(*KubernetesCluster)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *kubernetesClusterClient) UpdateKubernetesClusterStatus(ctx context.Context, obj *KubernetesCluster, opts ...client.UpdateOption) error {
@@ -189,6 +218,10 @@ type MeshServiceReader interface {
 	ListMeshService(ctx context.Context, opts ...client.ListOption) (*MeshServiceList, error)
 }
 
+// MeshServiceTransitionFunction instructs the MeshServiceWriter how to transition between an existing
+// MeshService object and a desired on an Upsert
+type MeshServiceTransitionFunction func(existing, desired *MeshService) error
+
 // Writer knows how to create, delete, and update MeshServices.
 type MeshServiceWriter interface {
 	// Create saves the MeshService object.
@@ -200,14 +233,14 @@ type MeshServiceWriter interface {
 	// Update updates the given MeshService object.
 	UpdateMeshService(ctx context.Context, obj *MeshService, opts ...client.UpdateOption) error
 
-	// If the MeshService object exists, update its spec. Otherwise, create the MeshService object.
-	UpsertMeshServiceSpec(ctx context.Context, obj *MeshService, opts ...client.UpdateOption) error
-
 	// Patch patches the given MeshService object.
 	PatchMeshService(ctx context.Context, obj *MeshService, patch client.Patch, opts ...client.PatchOption) error
 
 	// DeleteAllOf deletes all MeshService objects matching the given options.
 	DeleteAllOfMeshService(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the MeshService object.
+	UpsertMeshService(ctx context.Context, obj *MeshService, transitionFuncs ...MeshServiceTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a MeshService object.
@@ -266,18 +299,6 @@ func (c *meshServiceClient) UpdateMeshService(ctx context.Context, obj *MeshServ
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *meshServiceClient) UpsertMeshServiceSpec(ctx context.Context, obj *MeshService, opts ...client.UpdateOption) error {
-	existing, err := c.GetMeshService(ctx, client.ObjectKey{Name: obj.GetName(), Namespace: obj.GetNamespace()})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return c.CreateMeshService(ctx, obj)
-		}
-		return err
-	}
-	existing.Spec = obj.Spec
-	return c.client.Update(ctx, existing, opts...)
-}
-
 func (c *meshServiceClient) PatchMeshService(ctx context.Context, obj *MeshService, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
@@ -285,6 +306,19 @@ func (c *meshServiceClient) PatchMeshService(ctx context.Context, obj *MeshServi
 func (c *meshServiceClient) DeleteAllOfMeshService(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &MeshService{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *meshServiceClient) UpsertMeshService(ctx context.Context, obj *MeshService, transitionFuncs ...MeshServiceTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*MeshService), desired.(*MeshService)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *meshServiceClient) UpdateMeshServiceStatus(ctx context.Context, obj *MeshService, opts ...client.UpdateOption) error {
@@ -304,6 +338,10 @@ type MeshWorkloadReader interface {
 	ListMeshWorkload(ctx context.Context, opts ...client.ListOption) (*MeshWorkloadList, error)
 }
 
+// MeshWorkloadTransitionFunction instructs the MeshWorkloadWriter how to transition between an existing
+// MeshWorkload object and a desired on an Upsert
+type MeshWorkloadTransitionFunction func(existing, desired *MeshWorkload) error
+
 // Writer knows how to create, delete, and update MeshWorkloads.
 type MeshWorkloadWriter interface {
 	// Create saves the MeshWorkload object.
@@ -315,14 +353,14 @@ type MeshWorkloadWriter interface {
 	// Update updates the given MeshWorkload object.
 	UpdateMeshWorkload(ctx context.Context, obj *MeshWorkload, opts ...client.UpdateOption) error
 
-	// If the MeshWorkload object exists, update its spec. Otherwise, create the MeshWorkload object.
-	UpsertMeshWorkloadSpec(ctx context.Context, obj *MeshWorkload, opts ...client.UpdateOption) error
-
 	// Patch patches the given MeshWorkload object.
 	PatchMeshWorkload(ctx context.Context, obj *MeshWorkload, patch client.Patch, opts ...client.PatchOption) error
 
 	// DeleteAllOf deletes all MeshWorkload objects matching the given options.
 	DeleteAllOfMeshWorkload(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the MeshWorkload object.
+	UpsertMeshWorkload(ctx context.Context, obj *MeshWorkload, transitionFuncs ...MeshWorkloadTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a MeshWorkload object.
@@ -381,18 +419,6 @@ func (c *meshWorkloadClient) UpdateMeshWorkload(ctx context.Context, obj *MeshWo
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *meshWorkloadClient) UpsertMeshWorkloadSpec(ctx context.Context, obj *MeshWorkload, opts ...client.UpdateOption) error {
-	existing, err := c.GetMeshWorkload(ctx, client.ObjectKey{Name: obj.GetName(), Namespace: obj.GetNamespace()})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return c.CreateMeshWorkload(ctx, obj)
-		}
-		return err
-	}
-	existing.Spec = obj.Spec
-	return c.client.Update(ctx, existing, opts...)
-}
-
 func (c *meshWorkloadClient) PatchMeshWorkload(ctx context.Context, obj *MeshWorkload, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
@@ -400,6 +426,19 @@ func (c *meshWorkloadClient) PatchMeshWorkload(ctx context.Context, obj *MeshWor
 func (c *meshWorkloadClient) DeleteAllOfMeshWorkload(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &MeshWorkload{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *meshWorkloadClient) UpsertMeshWorkload(ctx context.Context, obj *MeshWorkload, transitionFuncs ...MeshWorkloadTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*MeshWorkload), desired.(*MeshWorkload)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *meshWorkloadClient) UpdateMeshWorkloadStatus(ctx context.Context, obj *MeshWorkload, opts ...client.UpdateOption) error {
@@ -419,6 +458,10 @@ type MeshReader interface {
 	ListMesh(ctx context.Context, opts ...client.ListOption) (*MeshList, error)
 }
 
+// MeshTransitionFunction instructs the MeshWriter how to transition between an existing
+// Mesh object and a desired on an Upsert
+type MeshTransitionFunction func(existing, desired *Mesh) error
+
 // Writer knows how to create, delete, and update Meshs.
 type MeshWriter interface {
 	// Create saves the Mesh object.
@@ -430,14 +473,14 @@ type MeshWriter interface {
 	// Update updates the given Mesh object.
 	UpdateMesh(ctx context.Context, obj *Mesh, opts ...client.UpdateOption) error
 
-	// If the Mesh object exists, update its spec. Otherwise, create the Mesh object.
-	UpsertMeshSpec(ctx context.Context, obj *Mesh, opts ...client.UpdateOption) error
-
 	// Patch patches the given Mesh object.
 	PatchMesh(ctx context.Context, obj *Mesh, patch client.Patch, opts ...client.PatchOption) error
 
 	// DeleteAllOf deletes all Mesh objects matching the given options.
 	DeleteAllOfMesh(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the Mesh object.
+	UpsertMesh(ctx context.Context, obj *Mesh, transitionFuncs ...MeshTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a Mesh object.
@@ -496,18 +539,6 @@ func (c *meshClient) UpdateMesh(ctx context.Context, obj *Mesh, opts ...client.U
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *meshClient) UpsertMeshSpec(ctx context.Context, obj *Mesh, opts ...client.UpdateOption) error {
-	existing, err := c.GetMesh(ctx, client.ObjectKey{Name: obj.GetName(), Namespace: obj.GetNamespace()})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return c.CreateMesh(ctx, obj)
-		}
-		return err
-	}
-	existing.Spec = obj.Spec
-	return c.client.Update(ctx, existing, opts...)
-}
-
 func (c *meshClient) PatchMesh(ctx context.Context, obj *Mesh, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
@@ -515,6 +546,19 @@ func (c *meshClient) PatchMesh(ctx context.Context, obj *Mesh, patch client.Patc
 func (c *meshClient) DeleteAllOfMesh(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &Mesh{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *meshClient) UpsertMesh(ctx context.Context, obj *Mesh, transitionFuncs ...MeshTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*Mesh), desired.(*Mesh)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *meshClient) UpdateMeshStatus(ctx context.Context, obj *Mesh, opts ...client.UpdateOption) error {

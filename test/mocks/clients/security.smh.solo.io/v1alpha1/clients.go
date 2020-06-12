@@ -6,11 +6,10 @@ package mock_smh_security_clients
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	types "k8s.io/apimachinery/pkg/types"
+	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -205,21 +204,21 @@ func (mr *MockVirtualMeshCertificateSigningRequestClientMockRecorder) UpdateVirt
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVirtualMeshCertificateSigningRequestStatus", reflect.TypeOf((*MockVirtualMeshCertificateSigningRequestClient)(nil).UpdateVirtualMeshCertificateSigningRequestStatus), varargs...)
 }
 
-// UpsertVirtualMeshCertificateSigningRequestSpec mocks base method.
-func (m *MockVirtualMeshCertificateSigningRequestClient) UpsertVirtualMeshCertificateSigningRequestSpec(arg0 context.Context, arg1 *v1alpha1.VirtualMeshCertificateSigningRequest, arg2 ...client.UpdateOption) error {
+// UpsertVirtualMeshCertificateSigningRequest mocks base method.
+func (m *MockVirtualMeshCertificateSigningRequestClient) UpsertVirtualMeshCertificateSigningRequest(arg0 context.Context, arg1 *v1alpha1.VirtualMeshCertificateSigningRequest, arg2 ...v1alpha1.VirtualMeshCertificateSigningRequestTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertVirtualMeshCertificateSigningRequestSpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertVirtualMeshCertificateSigningRequest", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertVirtualMeshCertificateSigningRequestSpec indicates an expected call of UpsertVirtualMeshCertificateSigningRequestSpec.
-func (mr *MockVirtualMeshCertificateSigningRequestClientMockRecorder) UpsertVirtualMeshCertificateSigningRequestSpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertVirtualMeshCertificateSigningRequest indicates an expected call of UpsertVirtualMeshCertificateSigningRequest.
+func (mr *MockVirtualMeshCertificateSigningRequestClientMockRecorder) UpsertVirtualMeshCertificateSigningRequest(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertVirtualMeshCertificateSigningRequestSpec", reflect.TypeOf((*MockVirtualMeshCertificateSigningRequestClient)(nil).UpsertVirtualMeshCertificateSigningRequestSpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertVirtualMeshCertificateSigningRequest", reflect.TypeOf((*MockVirtualMeshCertificateSigningRequestClient)(nil).UpsertVirtualMeshCertificateSigningRequest), varargs...)
 }

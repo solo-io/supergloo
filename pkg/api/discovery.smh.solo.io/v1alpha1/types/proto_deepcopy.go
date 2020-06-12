@@ -14,6 +14,12 @@ func (in *KubernetesClusterSpec) DeepCopyInto(out *KubernetesClusterSpec) {
 	*out = *p
 }
 
+// DeepCopyInto for the KubernetesCluster.Status
+func (in *KubernetesClusterStatus) DeepCopyInto(out *KubernetesClusterStatus) {
+	p := proto.Clone(in).(*KubernetesClusterStatus)
+	*out = *p
+}
+
 // DeepCopyInto for the MeshService.Spec
 func (in *MeshServiceSpec) DeepCopyInto(out *MeshServiceSpec) {
 	p := proto.Clone(in).(*MeshServiceSpec)

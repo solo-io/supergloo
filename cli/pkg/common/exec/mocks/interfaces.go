@@ -5,9 +5,8 @@
 package mock_exec
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockRunner is a mock of Runner interface.

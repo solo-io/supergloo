@@ -205,23 +205,23 @@ func (mr *MockKubernetesClusterClientMockRecorder) UpdateKubernetesClusterStatus
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateKubernetesClusterStatus", reflect.TypeOf((*MockKubernetesClusterClient)(nil).UpdateKubernetesClusterStatus), varargs...)
 }
 
-// UpsertKubernetesClusterSpec mocks base method.
-func (m *MockKubernetesClusterClient) UpsertKubernetesClusterSpec(arg0 context.Context, arg1 *v1alpha1.KubernetesCluster, arg2 ...client.UpdateOption) error {
+// UpsertKubernetesCluster mocks base method.
+func (m *MockKubernetesClusterClient) UpsertKubernetesCluster(arg0 context.Context, arg1 *v1alpha1.KubernetesCluster, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertKubernetesClusterSpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertKubernetesCluster", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertKubernetesClusterSpec indicates an expected call of UpsertKubernetesClusterSpec.
-func (mr *MockKubernetesClusterClientMockRecorder) UpsertKubernetesClusterSpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertKubernetesClusterSpec indicates an expected call of UpsertKubernetesCluster.
+func (mr *MockKubernetesClusterClientMockRecorder) UpsertKubernetesCluster(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertKubernetesClusterSpec", reflect.TypeOf((*MockKubernetesClusterClient)(nil).UpsertKubernetesClusterSpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertKubernetesClusterSpec", reflect.TypeOf((*MockKubernetesClusterClient)(nil).UpsertKubernetesCluster), varargs...)
 }
 
 // MockMeshClient is a mock of MeshClient interface.
@@ -415,23 +415,23 @@ func (mr *MockMeshClientMockRecorder) UpdateMeshStatus(arg0, arg1 interface{}, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshStatus", reflect.TypeOf((*MockMeshClient)(nil).UpdateMeshStatus), varargs...)
 }
 
-// UpsertMeshSpec mocks base method.
-func (m *MockMeshClient) UpsertMeshSpec(arg0 context.Context, arg1 *v1alpha1.Mesh, arg2 ...client.UpdateOption) error {
+// UpsertMesh mocks base method.
+func (m *MockMeshClient) UpsertMesh(arg0 context.Context, arg1 *v1alpha1.Mesh, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertMeshSpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertMesh", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertMeshSpec indicates an expected call of UpsertMeshSpec.
-func (mr *MockMeshClientMockRecorder) UpsertMeshSpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertMeshSpec indicates an expected call of UpsertMesh.
+func (mr *MockMeshClientMockRecorder) UpsertMesh(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertMeshSpec", reflect.TypeOf((*MockMeshClient)(nil).UpsertMeshSpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertMeshSpec", reflect.TypeOf((*MockMeshClient)(nil).UpsertMesh), varargs...)
 }
 
 // MockMeshServiceClient is a mock of MeshServiceClient interface.
@@ -625,23 +625,23 @@ func (mr *MockMeshServiceClientMockRecorder) UpdateMeshServiceStatus(arg0, arg1 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshServiceStatus", reflect.TypeOf((*MockMeshServiceClient)(nil).UpdateMeshServiceStatus), varargs...)
 }
 
-// UpsertMeshServiceSpec mocks base method.
-func (m *MockMeshServiceClient) UpsertMeshServiceSpec(arg0 context.Context, arg1 *v1alpha1.MeshService, arg2 ...client.UpdateOption) error {
+// UpsertMeshService mocks base method.
+func (m *MockMeshServiceClient) UpsertMeshService(arg0 context.Context, arg1 *v1alpha1.MeshService, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertMeshServiceSpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertMeshService", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertMeshServiceSpec indicates an expected call of UpsertMeshServiceSpec.
-func (mr *MockMeshServiceClientMockRecorder) UpsertMeshServiceSpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertMeshServiceSpec indicates an expected call of UpsertMeshService.
+func (mr *MockMeshServiceClientMockRecorder) UpsertMeshService(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertMeshServiceSpec", reflect.TypeOf((*MockMeshServiceClient)(nil).UpsertMeshServiceSpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertMeshServiceSpec", reflect.TypeOf((*MockMeshServiceClient)(nil).UpsertMeshService), varargs...)
 }
 
 // MockMeshWorkloadClient is a mock of MeshWorkloadClient interface.
@@ -835,21 +835,21 @@ func (mr *MockMeshWorkloadClientMockRecorder) UpdateMeshWorkloadStatus(arg0, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshWorkloadStatus", reflect.TypeOf((*MockMeshWorkloadClient)(nil).UpdateMeshWorkloadStatus), varargs...)
 }
 
-// UpsertMeshWorkloadSpec mocks base method.
-func (m *MockMeshWorkloadClient) UpsertMeshWorkloadSpec(arg0 context.Context, arg1 *v1alpha1.MeshWorkload, arg2 ...client.UpdateOption) error {
+// UpsertMeshWorkload mocks base method.
+func (m *MockMeshWorkloadClient) UpsertMeshWorkload(arg0 context.Context, arg1 *v1alpha1.MeshWorkload, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertMeshWorkloadSpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertMeshWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertMeshWorkloadSpec indicates an expected call of UpsertMeshWorkloadSpec.
-func (mr *MockMeshWorkloadClientMockRecorder) UpsertMeshWorkloadSpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertMeshWorkloadSpec indicates an expected call of UpsertMeshWorkload.
+func (mr *MockMeshWorkloadClientMockRecorder) UpsertMeshWorkload(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertMeshWorkloadSpec", reflect.TypeOf((*MockMeshWorkloadClient)(nil).UpsertMeshWorkloadSpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertMeshWorkloadSpec", reflect.TypeOf((*MockMeshWorkloadClient)(nil).UpsertMeshWorkload), varargs...)
 }

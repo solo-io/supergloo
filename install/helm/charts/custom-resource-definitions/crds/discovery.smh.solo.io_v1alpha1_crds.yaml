@@ -15,7 +15,8 @@ spec:
     plural: kubernetesclusters
     singular: kubernetescluster
   scope: Namespaced
-  subresources: {}
+  subresources:
+    status: {}
   versions:
   - name: v1alpha1
     served: true

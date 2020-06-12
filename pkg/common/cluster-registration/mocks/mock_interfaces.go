@@ -6,12 +6,11 @@ package mock_cluster_registration
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
+	reflect "reflect"
 )
 
 // MockClusterRegistrationClient is a mock of ClusterRegistrationClient interface.

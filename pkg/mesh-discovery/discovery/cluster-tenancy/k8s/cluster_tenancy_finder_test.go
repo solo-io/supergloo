@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
-	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	k8s_core_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	mock_controllers "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target/event-watcher-factories/mocks"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s"
 	mock_k8s_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s/mocks"

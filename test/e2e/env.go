@@ -15,7 +15,8 @@ import (
 	. "github.com/onsi/gomega"
 	smh_core "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	kubernetes_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/test/e2e/kubectl"
 	"golang.org/x/sync/errgroup"
@@ -64,16 +65,16 @@ func NewKubeContext(kubecontext string) KubeContext {
 	clientset, err := kubernetes.NewForConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	kubeCoreClientset, err := kubernetes_core.ClientsetFromConfigProvider(restcfg)
+	kubeCoreClientset, err := kubernetes_core.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	networkingClientset, err := smh_networking.ClientsetFromConfigProvider(restcfg)
+	networkingClientset, err := smh_networking.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	discoveryClientset, err := smh_discovery.ClientsetFromConfigProvider(restcfg)
+	discoveryClientset, err := smh_discovery.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	coreClientset, err := smh_core.ClientsetFromConfigProvider(restcfg)
+	coreClientset, err := smh_core.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
 	return KubeContext{

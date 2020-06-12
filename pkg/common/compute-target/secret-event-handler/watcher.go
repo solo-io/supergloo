@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	"github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	compute_target "github.com/solo-io/service-mesh-hub/pkg/common/compute-target"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	internal_watcher "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/secret-event-handler/internal"

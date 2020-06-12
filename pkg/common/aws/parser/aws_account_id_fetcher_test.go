@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser"
 	mock_aws "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser/mocks"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"

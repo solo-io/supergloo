@@ -1,7 +1,7 @@
 package auth
 
 import (
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )

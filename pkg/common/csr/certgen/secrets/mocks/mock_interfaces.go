@@ -5,10 +5,9 @@
 package mock_cert_secrets
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1 "k8s.io/api/core/v1"
+	reflect "reflect"
 )
 
 // MockCertSecretBuilder is a mock of CertSecretBuilder interface.

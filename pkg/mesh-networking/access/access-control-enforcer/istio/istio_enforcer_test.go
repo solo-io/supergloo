@@ -91,7 +91,7 @@ var _ = Describe("IstioEnforcer", func() {
 		}
 		authPolicyClient.
 			EXPECT().
-			UpsertAuthorizationPolicySpec(ctx, globalAuthPolicy).
+			UpsertAuthorizationPolicy(ctx, globalAuthPolicy).
 			Return(nil)
 		ingressAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -109,7 +109,7 @@ var _ = Describe("IstioEnforcer", func() {
 		}
 		authPolicyClient.
 			EXPECT().
-			UpsertAuthorizationPolicySpec(ctx, ingressAuthPolicy).
+			UpsertAuthorizationPolicy(ctx, ingressAuthPolicy).
 			Return(nil)
 		err := istioEnforcer.ReconcileAccessControl(ctx, mesh, vm)
 		Expect(err).ToNot(HaveOccurred())

@@ -6,11 +6,10 @@ package mock_smh_networking_clients
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	types "k8s.io/apimachinery/pkg/types"
+	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -205,23 +204,23 @@ func (mr *MockTrafficPolicyClientMockRecorder) UpdateTrafficPolicyStatus(arg0, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficPolicyStatus", reflect.TypeOf((*MockTrafficPolicyClient)(nil).UpdateTrafficPolicyStatus), varargs...)
 }
 
-// UpsertTrafficPolicySpec mocks base method.
-func (m *MockTrafficPolicyClient) UpsertTrafficPolicySpec(arg0 context.Context, arg1 *v1alpha1.TrafficPolicy, arg2 ...client.UpdateOption) error {
+// UpsertTrafficPolicy mocks base method.
+func (m *MockTrafficPolicyClient) UpsertTrafficPolicy(arg0 context.Context, arg1 *v1alpha1.TrafficPolicy, arg2 ...v1alpha1.TrafficPolicyTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertTrafficPolicySpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertTrafficPolicy", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertTrafficPolicySpec indicates an expected call of UpsertTrafficPolicySpec.
-func (mr *MockTrafficPolicyClientMockRecorder) UpsertTrafficPolicySpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertTrafficPolicy indicates an expected call of UpsertTrafficPolicy.
+func (mr *MockTrafficPolicyClientMockRecorder) UpsertTrafficPolicy(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertTrafficPolicySpec", reflect.TypeOf((*MockTrafficPolicyClient)(nil).UpsertTrafficPolicySpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertTrafficPolicy", reflect.TypeOf((*MockTrafficPolicyClient)(nil).UpsertTrafficPolicy), varargs...)
 }
 
 // MockAccessControlPolicyClient is a mock of AccessControlPolicyClient interface.
@@ -415,23 +414,23 @@ func (mr *MockAccessControlPolicyClientMockRecorder) UpdateAccessControlPolicySt
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccessControlPolicyStatus", reflect.TypeOf((*MockAccessControlPolicyClient)(nil).UpdateAccessControlPolicyStatus), varargs...)
 }
 
-// UpsertAccessControlPolicySpec mocks base method.
-func (m *MockAccessControlPolicyClient) UpsertAccessControlPolicySpec(arg0 context.Context, arg1 *v1alpha1.AccessControlPolicy, arg2 ...client.UpdateOption) error {
+// UpsertAccessControlPolicy mocks base method.
+func (m *MockAccessControlPolicyClient) UpsertAccessControlPolicy(arg0 context.Context, arg1 *v1alpha1.AccessControlPolicy, arg2 ...v1alpha1.AccessControlPolicyTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertAccessControlPolicySpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertAccessControlPolicy", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertAccessControlPolicySpec indicates an expected call of UpsertAccessControlPolicySpec.
-func (mr *MockAccessControlPolicyClientMockRecorder) UpsertAccessControlPolicySpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertAccessControlPolicy indicates an expected call of UpsertAccessControlPolicy.
+func (mr *MockAccessControlPolicyClientMockRecorder) UpsertAccessControlPolicy(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertAccessControlPolicySpec", reflect.TypeOf((*MockAccessControlPolicyClient)(nil).UpsertAccessControlPolicySpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertAccessControlPolicy", reflect.TypeOf((*MockAccessControlPolicyClient)(nil).UpsertAccessControlPolicy), varargs...)
 }
 
 // MockVirtualMeshClient is a mock of VirtualMeshClient interface.
@@ -625,21 +624,21 @@ func (mr *MockVirtualMeshClientMockRecorder) UpdateVirtualMeshStatus(arg0, arg1 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVirtualMeshStatus", reflect.TypeOf((*MockVirtualMeshClient)(nil).UpdateVirtualMeshStatus), varargs...)
 }
 
-// UpsertVirtualMeshSpec mocks base method.
-func (m *MockVirtualMeshClient) UpsertVirtualMeshSpec(arg0 context.Context, arg1 *v1alpha1.VirtualMesh, arg2 ...client.UpdateOption) error {
+// UpsertVirtualMesh mocks base method.
+func (m *MockVirtualMeshClient) UpsertVirtualMesh(arg0 context.Context, arg1 *v1alpha1.VirtualMesh, arg2 ...v1alpha1.VirtualMeshTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertVirtualMeshSpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertVirtualMesh", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertVirtualMeshSpec indicates an expected call of UpsertVirtualMeshSpec.
-func (mr *MockVirtualMeshClientMockRecorder) UpsertVirtualMeshSpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertVirtualMesh indicates an expected call of UpsertVirtualMesh.
+func (mr *MockVirtualMeshClientMockRecorder) UpsertVirtualMesh(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertVirtualMeshSpec", reflect.TypeOf((*MockVirtualMeshClient)(nil).UpsertVirtualMeshSpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertVirtualMesh", reflect.TypeOf((*MockVirtualMeshClient)(nil).UpsertVirtualMesh), varargs...)
 }

@@ -3,6 +3,7 @@ package cert_manager
 import (
 	"context"
 	"fmt"
+	smh_security_providers "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/providers"
 	"strings"
 
 	"github.com/avast/retry-go"
@@ -41,7 +42,7 @@ var (
 type virtualMeshCsrManager struct {
 	meshClient              smh_discovery.MeshClient
 	meshRefFinder           vm_validation.VirtualMeshFinder
-	csrClientFactory        smh_security.VirtualMeshCertificateSigningRequestClientFactory
+	csrClientFactory        smh_security_providers.VirtualMeshCertificateSigningRequestClientFactory
 	dynamicClientGetter     multicluster.DynamicClientGetter
 	istioCertConfigProducer IstioCertConfigProducer
 }
@@ -50,7 +51,7 @@ func NewVirtualMeshCsrProcessor(
 	dynamicClientGetter multicluster.DynamicClientGetter,
 	meshClient smh_discovery.MeshClient,
 	meshRefFinder vm_validation.VirtualMeshFinder,
-	csrClientFactory smh_security.VirtualMeshCertificateSigningRequestClientFactory,
+	csrClientFactory smh_security_providers.VirtualMeshCertificateSigningRequestClientFactory,
 	istioCertConfigProducer IstioCertConfigProducer,
 ) VirtualMeshCertificateManager {
 	return &virtualMeshCsrManager{

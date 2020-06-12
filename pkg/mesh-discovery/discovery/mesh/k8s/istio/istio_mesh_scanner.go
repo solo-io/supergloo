@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 	"strings"
 
 	"github.com/google/wire"
@@ -9,7 +10,6 @@ import (
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s"
@@ -46,7 +46,7 @@ type IstioMeshScanner k8s.MeshScanner
 
 func NewIstioMeshScanner(
 	imageNameParser docker.ImageNameParser,
-	configMapClientFactory k8s_core.ConfigMapClientFactory,
+	configMapClientFactory k8s_core_providers.ConfigMapClientFactory,
 ) IstioMeshScanner {
 	return &istioMeshScanner{
 		imageNameParser:        imageNameParser,
@@ -56,7 +56,7 @@ func NewIstioMeshScanner(
 
 type istioMeshScanner struct {
 	imageNameParser        docker.ImageNameParser
-	configMapClientFactory k8s_core.ConfigMapClientFactory
+	configMapClientFactory k8s_core_providers.ConfigMapClientFactory
 }
 
 func (i *istioMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *k8s_apps_types.Deployment, clusterScopedClient client.Client) (*smh_discovery.Mesh, error) {

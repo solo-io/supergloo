@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/go-multierror"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
+	k8s_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
+	"github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
@@ -178,7 +178,7 @@ func (m *meshFinder) discoverAndUpsertMesh(deployment *apps_v1.Deployment, logge
 
 	discoveredMesh.Labels[kube.COMPUTE_TARGET] = m.clusterName
 
-	err = m.localMeshClient.UpsertMeshSpec(m.ctx, discoveredMesh)
+	err = m.localMeshClient.UpsertMesh(m.ctx, discoveredMesh)
 	if err != nil {
 		logger.Errorw("could not create Mesh CR for deployment",
 			zap.Any("deployment", deployment),

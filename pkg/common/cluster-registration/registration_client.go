@@ -3,6 +3,8 @@ package cluster_registration
 import (
 	"context"
 	"fmt"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 	"io/ioutil"
 	"net"
 	"net/url"
@@ -12,7 +14,6 @@ import (
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	constants2 "github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/csr/installation"
@@ -57,7 +58,7 @@ var (
 type clusterRegistrationClient struct {
 	secretClient                       k8s_core.SecretClient
 	kubernetesClusterClient            smh_discovery.KubernetesClusterClient
-	namespaceClientFactory             k8s_core.NamespaceClientFromConfigFactory
+	namespaceClientFactory             k8s_core_providers.NamespaceClientFromConfigFactory
 	kubeConverter                      kubeconfig.Converter
 	csrAgentInstallerFactory           installation.CsrAgentInstallerFactory
 	clusterAuthClientFromConfigFactory auth.ClusterAuthClientFromConfigFactory
@@ -66,7 +67,7 @@ type clusterRegistrationClient struct {
 func NewClusterRegistrationClient(
 	secretClient k8s_core.SecretClient,
 	kubernetesClusterClient smh_discovery.KubernetesClusterClient,
-	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
+	namespaceClientFactory k8s_core_providers.NamespaceClientFromConfigFactory,
 	kubeConverter kubeconfig.Converter,
 	csrAgentInstallerFactory installation.CsrAgentInstallerFactory,
 	clusterAuthClientFromConfigFactory auth.ClusterAuthClientFromConfigFactory,
@@ -187,7 +188,7 @@ func (c *clusterRegistrationClient) ensureRemoteNamespace(
 	if err != nil {
 		return err
 	}
-	_, err = remoteNamespaceClient.GetNamespace(ctx, client.ObjectKey{Name: writeNamespace})
+	_, err = remoteNamespaceClient.GetNamespace(ctx, writeNamespace)
 	if k8s_errs.IsNotFound(err) {
 		return remoteNamespaceClient.CreateNamespace(ctx, &k8s_core_types.Namespace{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -336,7 +337,7 @@ func (c *clusterRegistrationClient) writeKubeClusterToMaster(
 			WriteNamespace: remoteWriteNamespace,
 		},
 	}
-	err := c.kubernetesClusterClient.UpsertKubernetesClusterSpec(ctx, cluster)
+	err := c.kubernetesClusterClient.UpsertKubernetesCluster(ctx, cluster)
 	if err != nil {
 		return FailedToWriteKubeCluster(err)
 	}

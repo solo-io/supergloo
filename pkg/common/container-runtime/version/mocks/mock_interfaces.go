@@ -6,9 +6,8 @@ package mock_version
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockDeployedVersionFinder is a mock of DeployedVersionFinder interface.

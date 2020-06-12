@@ -205,21 +205,21 @@ func (mr *MockTrafficSplitClientMockRecorder) UpdateTrafficSplitStatus(arg0, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficSplitStatus", reflect.TypeOf((*MockTrafficSplitClient)(nil).UpdateTrafficSplitStatus), varargs...)
 }
 
-// UpsertTrafficSplitSpec mocks base method.
-func (m *MockTrafficSplitClient) UpsertTrafficSplitSpec(arg0 context.Context, arg1 *v1alpha1.TrafficSplit, arg2 ...client.UpdateOption) error {
+// UpsertTrafficSplit mocks base method.
+func (m *MockTrafficSplitClient) UpsertTrafficSplit(arg0 context.Context, arg1 *v1alpha1.TrafficSplit, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertTrafficSplitSpec", varargs...)
+	ret := m.ctrl.Call(m, "UpsertTrafficSplit", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertTrafficSplitSpec indicates an expected call of UpsertTrafficSplitSpec.
-func (mr *MockTrafficSplitClientMockRecorder) UpsertTrafficSplitSpec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// UpsertTrafficSplitSpec indicates an expected call of UpsertTrafficSplit.
+func (mr *MockTrafficSplitClientMockRecorder) UpsertTrafficSplit(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertTrafficSplitSpec", reflect.TypeOf((*MockTrafficSplitClient)(nil).UpsertTrafficSplitSpec), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertTrafficSplitSpec", reflect.TypeOf((*MockTrafficSplitClient)(nil).UpsertTrafficSplit), varargs...)
 }

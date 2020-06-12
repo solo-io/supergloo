@@ -11,7 +11,7 @@ import (
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	k8s_core_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
@@ -246,7 +246,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			Times(4)
 		mocks.meshServiceClient.
 			EXPECT().
-			UpsertMeshServiceSpec(ctx, &smh_discovery.MeshService{
+			UpsertMeshService(ctx, &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      meshServiceName,
 					Namespace: container_runtime.GetWriteNamespace(),

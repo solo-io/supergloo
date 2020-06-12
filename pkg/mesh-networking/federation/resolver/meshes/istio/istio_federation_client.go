@@ -3,21 +3,21 @@ package istio_federation
 import (
 	"context"
 	"fmt"
+	istio_networking_providers "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/providers"
+	kubernetes_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver/meshes"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver/meshes/istio/proto_conversion"
-	alpha3 "istio.io/api/networking/v1alpha3"
+	istio_networking_types "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/istio/security/proto/envoy/config/filter/network/tcp_cluster_rewrite/v2alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -51,11 +51,11 @@ type IstioFederationClient meshes.MeshFederationClient
 func NewIstioFederationClient(
 	dynamicClientGetter multicluster.DynamicClientGetter,
 	meshClient smh_discovery.MeshClient,
-	gatewayClientFactory istio_networking.GatewayClientFactory,
-	envoyFilterClientFactory istio_networking.EnvoyFilterClientFactory,
-	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory,
-	serviceEntryClientFactory istio_networking.ServiceEntryClientFactory,
-	serviceClientFactory kubernetes_core.ServiceClientFactory,
+	gatewayClientFactory istio_networking_providers.GatewayClientFactory,
+	envoyFilterClientFactory istio_networking_providers.EnvoyFilterClientFactory,
+	destinationRuleClientFactory istio_networking_providers.DestinationRuleClientFactory,
+	serviceEntryClientFactory istio_networking_providers.ServiceEntryClientFactory,
+	serviceClientFactory kubernetes_core_providers.ServiceClientFactory,
 	ipAssigner dns.IpAssigner,
 	externalAccessPointGetter dns.ExternalAccessPointGetter,
 ) IstioFederationClient {
@@ -75,11 +75,11 @@ func NewIstioFederationClient(
 type istioFederationClient struct {
 	dynamicClientGetter          multicluster.DynamicClientGetter
 	meshClient                   smh_discovery.MeshClient
-	gatewayClientFactory         istio_networking.GatewayClientFactory
-	envoyFilterClientFactory     istio_networking.EnvoyFilterClientFactory
-	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory
-	serviceEntryClientFactory    istio_networking.ServiceEntryClientFactory
-	serviceClientFactory         kubernetes_core.ServiceClientFactory
+	gatewayClientFactory         istio_networking_providers.GatewayClientFactory
+	envoyFilterClientFactory     istio_networking_providers.EnvoyFilterClientFactory
+	destinationRuleClientFactory istio_networking_providers.DestinationRuleClientFactory
+	serviceEntryClientFactory    istio_networking_providers.ServiceEntryClientFactory
+	serviceClientFactory         kubernetes_core_providers.ServiceClientFactory
 	externalAccessPointGetter    dns.ExternalAccessPointGetter
 	ipAssigner                   dns.IpAssigner
 }
@@ -164,12 +164,12 @@ func (i *istioFederationClient) setUpDestinationRule(
 	if errors.IsNotFound(err) {
 		return destinationRuleClient.CreateDestinationRule(ctx, &v1alpha3.DestinationRule{
 			ObjectMeta: selection.ResourceRefToObjectMeta(destinationRuleRef),
-			Spec: alpha3.DestinationRule{
+			Spec: istio_networking_types.DestinationRule{
 				Host: serviceMulticlusterName,
-				TrafficPolicy: &alpha3.TrafficPolicy{
-					Tls: &alpha3.TLSSettings{
+				TrafficPolicy: &istio_networking_types.TrafficPolicy{
+					Tls: &istio_networking_types.ClientTLSSettings{
 						// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/242
-						Mode: alpha3.TLSSettings_ISTIO_MUTUAL,
+						Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
 					},
 				},
 			},
@@ -193,20 +193,20 @@ func (i *istioFederationClient) setUpServiceEntry(
 		Namespace: installNamespace,
 	}
 
-	endpoint := &alpha3.ServiceEntry_Endpoint{
+	endpoint := &istio_networking_types.WorkloadEntry{
 		Address: eap.Address,
 		Ports:   make(map[string]uint32),
 	}
-	var ports []*alpha3.Port
+	var ports []*istio_networking_types.Port
 	for _, port := range meshService.Spec.GetKubeService().GetPorts() {
-		ports = append(ports, &alpha3.Port{
+		ports = append(ports, &istio_networking_types.Port{
 			Number:   port.Port,
 			Protocol: port.Protocol,
 			Name:     port.Name,
 		})
 		endpoint.Ports[port.Name] = eap.Port
 	}
-	endpoints := []*alpha3.ServiceEntry_Endpoint{endpoint}
+	endpoints := []*istio_networking_types.WorkloadEntry{endpoint}
 
 	existing, err := serviceEntryClient.GetServiceEntry(ctx, selection.ResourceRefToObjectKey(computedRef))
 	if errors.IsNotFound(err) {
@@ -217,11 +217,11 @@ func (i *istioFederationClient) setUpServiceEntry(
 		}
 		serviceEntry := &v1alpha3.ServiceEntry{
 			ObjectMeta: selection.ResourceRefToObjectMeta(computedRef),
-			Spec: alpha3.ServiceEntry{
+			Spec: istio_networking_types.ServiceEntry{
 				Addresses:  []string{newIp},
 				Hosts:      []string{meshService.Spec.GetFederation().GetMulticlusterDnsName()},
-				Location:   alpha3.ServiceEntry_MESH_INTERNAL,
-				Resolution: alpha3.ServiceEntry_DNS,
+				Location:   istio_networking_types.ServiceEntry_MESH_INTERNAL,
+				Resolution: istio_networking_types.ServiceEntry_DNS,
 				Endpoints:  endpoints,
 				Ports:      ports,
 			},
@@ -289,30 +289,30 @@ func (i *istioFederationClient) ensureEnvoyFilterExists(
 	}
 
 	// see https://github.com/solo-io/service-mesh-hub/issues/195 for details on this envoy filter config
-	return envoyFilterClient.UpsertEnvoyFilterSpec(ctx, &v1alpha3.EnvoyFilter{
+	return envoyFilterClient.UpsertEnvoyFilter(ctx, &v1alpha3.EnvoyFilter{
 		ObjectMeta: selection.ResourceRefToObjectMeta(computedRef),
-		Spec: alpha3.EnvoyFilter{
-			ConfigPatches: []*alpha3.EnvoyFilter_EnvoyConfigObjectPatch{{
-				ApplyTo: alpha3.EnvoyFilter_NETWORK_FILTER,
-				Match: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch{
-					Context: alpha3.EnvoyFilter_GATEWAY,
-					ObjectTypes: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-						Listener: &alpha3.EnvoyFilter_ListenerMatch{
+		Spec: istio_networking_types.EnvoyFilter{
+			ConfigPatches: []*istio_networking_types.EnvoyFilter_EnvoyConfigObjectPatch{{
+				ApplyTo: istio_networking_types.EnvoyFilter_NETWORK_FILTER,
+				Match: &istio_networking_types.EnvoyFilter_EnvoyConfigObjectMatch{
+					Context: istio_networking_types.EnvoyFilter_GATEWAY,
+					ObjectTypes: &istio_networking_types.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+						Listener: &istio_networking_types.EnvoyFilter_ListenerMatch{
 							PortNumber: DefaultGatewayPort,
-							FilterChain: &alpha3.EnvoyFilter_ListenerMatch_FilterChainMatch{
-								Filter: &alpha3.EnvoyFilter_ListenerMatch_FilterMatch{
+							FilterChain: &istio_networking_types.EnvoyFilter_ListenerMatch_FilterChainMatch{
+								Filter: &istio_networking_types.EnvoyFilter_ListenerMatch_FilterMatch{
 									Name: EnvoySniClusterFilterName,
 								},
 							},
 						},
 					},
 				},
-				Patch: &alpha3.EnvoyFilter_Patch{
-					Operation: alpha3.EnvoyFilter_Patch_INSERT_AFTER,
+				Patch: &istio_networking_types.EnvoyFilter_Patch{
+					Operation: istio_networking_types.EnvoyFilter_Patch_INSERT_AFTER,
 					Value:     filterPatch,
 				},
 			}},
-			WorkloadSelector: &alpha3.WorkloadSelector{
+			WorkloadSelector: &istio_networking_types.WorkloadSelector{
 				Labels: BuildGatewayWorkloadSelector(),
 			},
 		},
@@ -340,9 +340,9 @@ func (i *istioFederationClient) ensureGatewayExists(
 		// if the gateway wasn't found, then create our initial state
 		return gatewayClient.CreateGateway(ctx, &v1alpha3.Gateway{
 			ObjectMeta: selection.ResourceRefToObjectMeta(computedGatewayRef),
-			Spec: alpha3.Gateway{
-				Servers: []*alpha3.Server{{
-					Port: &alpha3.Port{
+			Spec: istio_networking_types.Gateway{
+				Servers: []*istio_networking_types.Server{{
+					Port: &istio_networking_types.Port{
 						Number:   DefaultGatewayPort,
 						Protocol: DefaultGatewayProtocol,
 						Name:     DefaultGatewayPortName,
@@ -351,8 +351,8 @@ func (i *istioFederationClient) ensureGatewayExists(
 						// initially create the gateway with just the one service's host
 						serviceDnsName,
 					},
-					Tls: &alpha3.Server_TLSOptions{
-						Mode: alpha3.Server_TLSOptions_AUTO_PASSTHROUGH,
+					Tls: &istio_networking_types.ServerTLSSettings{
+						Mode: istio_networking_types.ServerTLSSettings_AUTO_PASSTHROUGH,
 					},
 				}},
 				Selector: BuildGatewayWorkloadSelector(),

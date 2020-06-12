@@ -9,8 +9,8 @@ import (
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	k8s_core_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
@@ -147,7 +147,7 @@ func (m *meshServiceFinder) reconcileMeshServices() error {
 	for _, discoveredMeshService := range discoveredMeshServices {
 		existingMeshService, ok := existingMeshServicesByName[discoveredMeshService.GetName()]
 		if !ok || !existingMeshService.Spec.Equal(discoveredMeshService.Spec) {
-			err = m.meshServiceClient.UpsertMeshServiceSpec(m.ctx, discoveredMeshService)
+			err = m.meshServiceClient.UpsertMeshService(m.ctx, discoveredMeshService)
 			if err != nil {
 				return err
 			}

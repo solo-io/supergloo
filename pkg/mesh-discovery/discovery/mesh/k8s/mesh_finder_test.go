@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	mp_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
+	"github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s"
@@ -81,7 +81,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				UpsertMeshSpec(ctx, mesh).
+				UpsertMesh(ctx, mesh).
 				Return(nil)
 
 			err := eventHandler.CreateDeployment(deployment)
@@ -113,7 +113,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				UpsertMeshSpec(ctx, mesh).
+				UpsertMesh(ctx, mesh).
 				Return(nil)
 
 			brokenMeshFinder.
@@ -203,7 +203,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				UpsertMeshSpec(ctx, mesh).
+				UpsertMesh(ctx, mesh).
 				Return(nil)
 
 			err := eventHandler.CreateDeployment(deployment)
@@ -235,7 +235,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				UpsertMeshSpec(ctx, mesh).
+				UpsertMesh(ctx, mesh).
 				Return(testErr)
 
 			err := eventHandler.CreateDeployment(deployment)
@@ -269,7 +269,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				UpsertMeshSpec(ctx, mesh).
+				UpsertMesh(ctx, mesh).
 				Return(nil)
 
 			err := eventHandler.UpdateDeployment(nil, newDeployment)
@@ -324,7 +324,7 @@ var _ = Describe("Mesh Finder", func() {
 				Return(newMesh, nil)
 			localMeshClient.
 				EXPECT().
-				UpsertMeshSpec(ctx, newMesh).
+				UpsertMesh(ctx, newMesh).
 				Return(nil)
 			err := eventHandler.UpdateDeployment(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())

@@ -5,11 +5,35 @@ package v1alpha1
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	"github.com/solo-io/skv2/pkg/controllerutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// MulticlusterClientset for the core.smh.solo.io/v1alpha1 APIs
+type MulticlusterClientset interface {
+	// Cluster returns a Clientset for the given cluster
+	Cluster(cluster string) (Clientset, error)
+}
+
+type multiclusterClientset struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterClientset(client multicluster.Client) MulticlusterClientset {
+	return &multiclusterClientset{client: client}
+}
+
+func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewClientset(client), nil
+}
 
 // clienset for the core.smh.solo.io/v1alpha1 APIs
 type Clientset interface {
@@ -21,7 +45,7 @@ type clientSet struct {
 	client client.Client
 }
 
-func NewClientsetFromConfig(cfg *rest.Config) (*clientSet, error) {
+func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
 	scheme := scheme.Scheme
 	if err := AddToScheme(scheme); err != nil {
 		return nil, err
@@ -35,7 +59,7 @@ func NewClientsetFromConfig(cfg *rest.Config) (*clientSet, error) {
 	return NewClientset(client), nil
 }
 
-func NewClientset(client client.Client) *clientSet {
+func NewClientset(client client.Client) Clientset {
 	return &clientSet{client: client}
 }
 
@@ -53,6 +77,10 @@ type SettingsReader interface {
 	ListSettings(ctx context.Context, opts ...client.ListOption) (*SettingsList, error)
 }
 
+// SettingsTransitionFunction instructs the SettingsWriter how to transition between an existing
+// Settings object and a desired on an Upsert
+type SettingsTransitionFunction func(existing, desired *Settings) error
+
 // Writer knows how to create, delete, and update Settingss.
 type SettingsWriter interface {
 	// Create saves the Settings object.
@@ -64,14 +92,14 @@ type SettingsWriter interface {
 	// Update updates the given Settings object.
 	UpdateSettings(ctx context.Context, obj *Settings, opts ...client.UpdateOption) error
 
-	// If the Settings object exists, update its spec. Otherwise, create the Settings object.
-	UpsertSettingsSpec(ctx context.Context, obj *Settings, opts ...client.UpdateOption) error
-
 	// Patch patches the given Settings object.
 	PatchSettings(ctx context.Context, obj *Settings, patch client.Patch, opts ...client.PatchOption) error
 
 	// DeleteAllOf deletes all Settings objects matching the given options.
 	DeleteAllOfSettings(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the Settings object.
+	UpsertSettings(ctx context.Context, obj *Settings, transitionFuncs ...SettingsTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a Settings object.
@@ -130,18 +158,6 @@ func (c *settingsClient) UpdateSettings(ctx context.Context, obj *Settings, opts
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *settingsClient) UpsertSettingsSpec(ctx context.Context, obj *Settings, opts ...client.UpdateOption) error {
-	existing, err := c.GetSettings(ctx, client.ObjectKey{Name: obj.GetName(), Namespace: obj.GetNamespace()})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return c.CreateSettings(ctx, obj)
-		}
-		return err
-	}
-	existing.Spec = obj.Spec
-	return c.client.Update(ctx, existing, opts...)
-}
-
 func (c *settingsClient) PatchSettings(ctx context.Context, obj *Settings, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
@@ -149,6 +165,19 @@ func (c *settingsClient) PatchSettings(ctx context.Context, obj *Settings, patch
 func (c *settingsClient) DeleteAllOfSettings(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	obj := &Settings{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *settingsClient) UpsertSettings(ctx context.Context, obj *Settings, transitionFuncs ...SettingsTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*Settings), desired.(*Settings)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *settingsClient) UpdateSettingsStatus(ctx context.Context, obj *Settings, opts ...client.UpdateOption) error {

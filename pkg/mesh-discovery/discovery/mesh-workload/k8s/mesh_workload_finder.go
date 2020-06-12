@@ -8,8 +8,8 @@ import (
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	smh_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	k8s_core_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
@@ -146,7 +146,7 @@ func (m *meshWorkloadFinder) reconcile() error {
 	for discoveredWorkloadKey, discoveredWorkload := range discoveredWorkloads.Map() {
 		existingWorkload, ok := existingWorkloadMap[discoveredWorkloadKey]
 		if !ok || !existingWorkload.Spec.Equal(discoveredWorkload.Spec) {
-			err = m.localMeshWorkloadClient.UpsertMeshWorkloadSpec(m.ctx, discoveredWorkload)
+			err = m.localMeshWorkloadClient.UpsertMeshWorkload(m.ctx, discoveredWorkload)
 			if err != nil {
 				return err
 			}

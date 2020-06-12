@@ -11,8 +11,8 @@ import (
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	istio_networking "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
+	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
@@ -208,7 +208,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				UpsertEnvoyFilterSpec(ctx, envoyFilter).
+				UpsertEnvoyFilter(ctx, envoyFilter).
 				Return(nil)
 
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
@@ -398,7 +398,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				UpsertEnvoyFilterSpec(ctx, envoyFilter).
+				UpsertEnvoyFilter(ctx, envoyFilter).
 				Return(nil)
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
 			service := k8s_core_types.Service{
@@ -596,7 +596,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				UpsertEnvoyFilterSpec(ctx, envoyFilter).
+				UpsertEnvoyFilter(ctx, envoyFilter).
 				Return(nil)
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
 			service := k8s_core_types.Service{
