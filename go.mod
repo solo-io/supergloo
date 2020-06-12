@@ -38,7 +38,7 @@ require (
 	github.com/onsi/gomega v1.8.1
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/pseudomuto/protoc-gen-doc v1.3.0
+	github.com/pseudomuto/protoc-gen-doc v1.3.2
 	github.com/pseudomuto/protokit v0.2.0
 	github.com/rotisserie/eris v0.2.0
 	github.com/sergi/go-diff v1.1.0
@@ -74,6 +74,7 @@ require (
 )
 
 replace (
+
 	// github.com/Azure/go-autorest/autorest has different versions for the Go
 	// modules than it does for releases on the repository. Note the correct
 	// version when updating.
@@ -82,6 +83,8 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 
 	github.com/solo-io/autopilot => github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
+	github.com/solo-io/external-apis => ../external-apis
+	github.com/solo-io/skv2 => ../skv2
 
 	k8s.io/api => k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.2

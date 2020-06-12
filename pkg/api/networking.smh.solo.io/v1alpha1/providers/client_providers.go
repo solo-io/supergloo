@@ -17,6 +17,11 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
+// Provider for TrafficPolicyClient from Clientset
+func TrafficPolicyClientFromClientsetProvider(clients networking_smh_solo_io_v1alpha1.Clientset) networking_smh_solo_io_v1alpha1.TrafficPolicyClient {
+	return clients.TrafficPolicies()
+}
+
 // Provider for TrafficPolicy Client from Client
 func TrafficPolicyClientProvider(client client.Client) networking_smh_solo_io_v1alpha1.TrafficPolicyClient {
 	return networking_smh_solo_io_v1alpha1.NewTrafficPolicyClient(client)
@@ -40,6 +45,11 @@ func TrafficPolicyClientFromConfigFactoryProvider() TrafficPolicyClientFromConfi
 	}
 }
 
+// Provider for AccessControlPolicyClient from Clientset
+func AccessControlPolicyClientFromClientsetProvider(clients networking_smh_solo_io_v1alpha1.Clientset) networking_smh_solo_io_v1alpha1.AccessControlPolicyClient {
+	return clients.AccessControlPolicies()
+}
+
 // Provider for AccessControlPolicy Client from Client
 func AccessControlPolicyClientProvider(client client.Client) networking_smh_solo_io_v1alpha1.AccessControlPolicyClient {
 	return networking_smh_solo_io_v1alpha1.NewAccessControlPolicyClient(client)
@@ -61,6 +71,11 @@ func AccessControlPolicyClientFromConfigFactoryProvider() AccessControlPolicyCli
 		}
 		return clients.AccessControlPolicies(), nil
 	}
+}
+
+// Provider for VirtualMeshClient from Clientset
+func VirtualMeshClientFromClientsetProvider(clients networking_smh_solo_io_v1alpha1.Clientset) networking_smh_solo_io_v1alpha1.VirtualMeshClient {
+	return clients.VirtualMeshes()
 }
 
 // Provider for VirtualMesh Client from Client

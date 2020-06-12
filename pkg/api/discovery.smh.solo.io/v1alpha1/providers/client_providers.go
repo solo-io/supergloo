@@ -17,6 +17,11 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
+// Provider for KubernetesClusterClient from Clientset
+func KubernetesClusterClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha1.Clientset) discovery_smh_solo_io_v1alpha1.KubernetesClusterClient {
+	return clients.KubernetesClusters()
+}
+
 // Provider for KubernetesCluster Client from Client
 func KubernetesClusterClientProvider(client client.Client) discovery_smh_solo_io_v1alpha1.KubernetesClusterClient {
 	return discovery_smh_solo_io_v1alpha1.NewKubernetesClusterClient(client)
@@ -38,6 +43,11 @@ func KubernetesClusterClientFromConfigFactoryProvider() KubernetesClusterClientF
 		}
 		return clients.KubernetesClusters(), nil
 	}
+}
+
+// Provider for MeshServiceClient from Clientset
+func MeshServiceClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha1.Clientset) discovery_smh_solo_io_v1alpha1.MeshServiceClient {
+	return clients.MeshServices()
 }
 
 // Provider for MeshService Client from Client
@@ -63,6 +73,11 @@ func MeshServiceClientFromConfigFactoryProvider() MeshServiceClientFromConfigFac
 	}
 }
 
+// Provider for MeshWorkloadClient from Clientset
+func MeshWorkloadClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha1.Clientset) discovery_smh_solo_io_v1alpha1.MeshWorkloadClient {
+	return clients.MeshWorkloads()
+}
+
 // Provider for MeshWorkload Client from Client
 func MeshWorkloadClientProvider(client client.Client) discovery_smh_solo_io_v1alpha1.MeshWorkloadClient {
 	return discovery_smh_solo_io_v1alpha1.NewMeshWorkloadClient(client)
@@ -84,6 +99,11 @@ func MeshWorkloadClientFromConfigFactoryProvider() MeshWorkloadClientFromConfigF
 		}
 		return clients.MeshWorkloads(), nil
 	}
+}
+
+// Provider for MeshClient from Clientset
+func MeshClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha1.Clientset) discovery_smh_solo_io_v1alpha1.MeshClient {
+	return clients.Meshes()
 }
 
 // Provider for Mesh Client from Client

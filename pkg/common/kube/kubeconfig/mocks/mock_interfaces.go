@@ -6,6 +6,8 @@ package mock_kubeconfig
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	kubeconfig "github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
 	v1 "k8s.io/api/core/v1"
@@ -13,7 +15,6 @@ import (
 	rest "k8s.io/client-go/rest"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
 	api "k8s.io/client-go/tools/clientcmd/api"
-	reflect "reflect"
 )
 
 // MockConverter is a mock of Converter interface.

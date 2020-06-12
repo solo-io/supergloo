@@ -6,9 +6,10 @@ package mock_smh_networking
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
-	reflect "reflect"
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 

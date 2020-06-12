@@ -5,11 +5,12 @@
 package mock_cli_runtime
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	meta "k8s.io/apimachinery/pkg/api/meta"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
-	reflect "reflect"
 )
 
 // MockRESTClientGetter is a mock of RESTClientGetter interface.

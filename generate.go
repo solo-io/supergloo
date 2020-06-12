@@ -44,18 +44,20 @@ func run() error {
 
 func makeSmhCommand() codegen.Command {
 	groups := []model.Group{
-		makeGroup("core", v1alpha1Version, "Settings"),
-		makeGroup("discovery", v1alpha1Version,
-			"KubernetesCluster", // TODO(ilackarms): remove this kubernetes cluster and use skv2 multicluster
-			"MeshService",
-			"MeshWorkload",
-			"Mesh",
-		),
-		makeGroup("networking", v1alpha1Version,
-			"TrafficPolicy",
-			"AccessControlPolicy",
-			"VirtualMesh",
-		),
+		makeGroup("core", v1alpha1Version, []resourceToGenerate{
+			{kind: "Settings", noStatus: true},
+		}),
+		makeGroup("discovery", v1alpha1Version, []resourceToGenerate{
+			{kind: "KubernetesCluster", noStatus: true}, // TODO(ilackarms): remove this kubernetes cluster and use skv2 multicluster
+			{kind: "MeshService"},
+			{kind: "MeshWorkload"},
+			{kind: "Mesh"},
+		}),
+		makeGroup("networking", v1alpha1Version, []resourceToGenerate{
+			{kind: "TrafficPolicy"},
+			{kind: "AccessControlPolicy"},
+			{kind: "VirtualMesh"},
+		}),
 	}
 
 	return codegen.Command{
@@ -68,7 +70,9 @@ func makeSmhCommand() codegen.Command {
 
 func makeCsrCommand() codegen.Command {
 	groups := []model.Group{
-		makeGroup("security", v1alpha1Version, "VirtualMeshCertificateSigningRequest"),
+		makeGroup("security", v1alpha1Version, []resourceToGenerate{
+			{kind: "VirtualMeshCertificateSigningRequest"},
+		}),
 	}
 
 	return codegen.Command{
@@ -79,20 +83,28 @@ func makeCsrCommand() codegen.Command {
 	}
 }
 
-func makeGroup(groupPrefix, version string, resourceKinds ...string) model.Group {
+type resourceToGenerate struct {
+	kind     string
+	noStatus bool // don't put a status on this resource
+}
+
+func makeGroup(groupPrefix, version string, resourcesToGenerate []resourceToGenerate) model.Group {
 	var resources []model.Resource
-	for _, resourceKind := range resourceKinds {
-		resources = append(resources, model.Resource{
-			Kind: resourceKind,
+	for _, resource := range resourcesToGenerate {
+		res := model.Resource{
+			Kind: resource.kind,
 			Spec: model.Field{
 				Type: model.Type{
-					Name: resourceKind + "Spec",
+					Name: resource.kind + "Spec",
 				},
 			},
-			Status: &model.Field{Type: model.Type{
-				Name: resourceKind + "Status",
-			}},
-		})
+		}
+		if !resource.noStatus {
+			res.Status = &model.Field{Type: model.Type{
+				Name: resource.kind + "Status",
+			}}
+		}
+		resources = append(resources, res)
 	}
 
 	return model.Group{

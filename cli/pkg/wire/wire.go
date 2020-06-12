@@ -4,10 +4,18 @@ package wire
 
 import (
 	"context"
-	kubernetes_apiext_providers "github.com/solo-io/external-apis/pkg/api/k8s/apiextensions.k8s.io/v1beta1/providers"
-	kubernetes_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
-	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 	"io"
+
+	kubernetes_apiext_providers "github.com/solo-io/external-apis/pkg/api/k8s/apiextensions.k8s.io/v1beta1/providers"
+	kubernetes_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
+	kubernetes_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	smh_discovery_providers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/providers"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_providers "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/providers"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	smh_security_providers "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/providers"
 
 	"github.com/google/wire"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
@@ -68,7 +76,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		kubernetes.NewForConfig,
 		wire.Bind(new(kubernetes.Interface), new(*kubernetes.Clientset)),
 		kubernetes_discovery.NewGeneratedServerVersionClient,
-		k8s_core_providers.ClientsetFromConfigProvider,
+		k8s_core.NewClientsetFromConfig,
 		k8s_core_providers.ServiceAccountClientFromClientsetProvider,
 		k8s_core_providers.SecretClientFromClientsetProvider,
 		k8s_core_providers.NamespaceClientFromClientsetProvider,
@@ -76,7 +84,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		k8s_core_providers.SecretClientFactoryProvider,
 		k8s_core_providers.ServiceAccountClientFactoryProvider,
 		k8s_core_providers.NamespaceClientFromConfigFactoryProvider,
-		kubernetes_apps_providers.ClientsetFromConfigProvider,
+		kubernetes_apps.NewClientsetFromConfig,
 		kubernetes_apps_providers.DeploymentClientFromClientsetProvider,
 		kubernetes_apps_providers.DeploymentClientFactoryProvider,
 		kubernetes_apiext_providers.CustomResourceDefinitionClientFromConfigFactoryProvider,
@@ -98,9 +106,9 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		common.KubeClientsProvider,
 		description.NewResourceDescriber,
 		selection.NewResourceSelector,
-		smh_discovery_providers.ClientsetFromConfigProvider,
-		smh_networking_providers.ClientsetFromConfigProvider,
-		smh_security_providers.ClientsetFromConfigProvider,
+		smh_discovery.NewClientsetFromConfig,
+		smh_networking.NewClientsetFromConfig,
+		smh_security.NewClientsetFromConfig,
 		smh_discovery_providers.KubernetesClusterClientFromClientsetProvider,
 		smh_discovery_providers.MeshServiceClientFromClientsetProvider,
 		MeshServiceReaderProvider,

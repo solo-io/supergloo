@@ -5,10 +5,11 @@
 package mock_operator
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	operator "github.com/solo-io/service-mesh-hub/pkg/common/mesh-installation/istio/operator"
 	v1 "k8s.io/api/apps/v1"
-	reflect "reflect"
 )
 
 // MockOperatorManager is a mock of OperatorManager interface.

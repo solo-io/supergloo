@@ -5,11 +5,13 @@ package wire
 import (
 	"context"
 
+	kubernetes_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+	kubernetes_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	smh_discovery_providers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/providers"
+	smh_networking_providers "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/providers"
+
 	"github.com/google/wire"
-	kubernetes_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
-	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/pkg/common/csr-generator"
 	"github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen"
@@ -24,27 +26,27 @@ import (
 )
 
 func MeshServiceReaderProvider(client client.Client) smh_discovery.MeshServiceReader {
-	return smh_discovery.MeshServiceClientProvider(client)
+	return smh_discovery_providers.MeshServiceClientProvider(client)
 }
 func MeshWorkloadReaderProvider(client client.Client) smh_discovery.MeshWorkloadReader {
-	return smh_discovery.MeshWorkloadClientProvider(client)
+	return smh_discovery_providers.MeshWorkloadClientProvider(client)
 }
 
 func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error) {
 	wire.Build(
-		kubernetes_core.SecretClientProvider,
-		kubernetes_core.ConfigMapClientProvider,
-		kubernetes_core.PodClientFactoryProvider,
-		kubernetes_core.NodeClientFactoryProvider,
-		kubernetes_apps.DeploymentClientFactoryProvider,
-		smh_discovery.MeshClientProvider,
+		kubernetes_core_providers.SecretClientProvider,
+		kubernetes_core_providers.ConfigMapClientProvider,
+		kubernetes_core_providers.PodClientFactoryProvider,
+		kubernetes_core_providers.NodeClientFactoryProvider,
+		kubernetes_apps_providers.DeploymentClientFactoryProvider,
+		smh_discovery_providers.MeshClientProvider,
 		MeshServiceReaderProvider,
-		smh_discovery.MeshServiceClientProvider,
-		smh_discovery.MeshWorkloadClientProvider,
+		smh_discovery_providers.MeshServiceClientProvider,
+		smh_discovery_providers.MeshWorkloadClientProvider,
 		MeshWorkloadReaderProvider,
-		smh_networking.VirtualMeshClientProvider,
-		smh_networking.TrafficPolicyClientProvider,
-		smh_networking.AccessControlPolicyClientProvider,
+		smh_networking_providers.VirtualMeshClientProvider,
+		smh_networking_providers.TrafficPolicyClientProvider,
+		smh_networking_providers.AccessControlPolicyClientProvider,
 		csr_generator.NewVirtualMeshCSRDataSourceFactory,
 		vm_validation.NewVirtualMeshFinder,
 		cert_signer.NewVirtualMeshCertClient,

@@ -11,15 +11,14 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
-// +kubebuilder:subresource:status
+// +genclient:noStatus
 
 // KubernetesCluster is the Schema for the kubernetesCluster API
 type KubernetesCluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   KubernetesClusterSpec   `json:"spec,omitempty"`
-	Status KubernetesClusterStatus `json:"status,omitempty"`
+	Spec KubernetesClusterSpec `json:"spec,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

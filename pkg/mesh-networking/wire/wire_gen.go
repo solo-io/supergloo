@@ -8,15 +8,16 @@ package wire
 import (
 	"context"
 
-	"github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
-	v1_2 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
-	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
-	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
-	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
+	v1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/providers"
+	v1beta1 "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/providers"
+	v1_2 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	v1alpha2 "github.com/solo-io/external-apis/pkg/api/linkerd/linkerd.io/v1alpha2/providers"
+	v1alpha1_4 "github.com/solo-io/external-apis/pkg/api/smi/split.smi-spec.io/v1alpha1/providers"
+	v1alpha1_5 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/providers"
+	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/providers"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/providers"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/aws_creds"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/credentials"
@@ -154,10 +155,10 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 
 // wire.go:
 
-func MeshServiceReaderProvider(client2 client.Client) v1alpha1_3.MeshServiceReader {
+func MeshServiceReaderProvider(client2 client.Client) v1alpha1_5.MeshServiceReader {
 	return v1alpha1_3.MeshServiceClientProvider(client2)
 }
 
-func MeshWorkloadReaderProvider(client2 client.Client) v1alpha1_3.MeshWorkloadReader {
+func MeshWorkloadReaderProvider(client2 client.Client) v1alpha1_5.MeshWorkloadReader {
 	return v1alpha1_3.MeshWorkloadClientProvider(client2)
 }

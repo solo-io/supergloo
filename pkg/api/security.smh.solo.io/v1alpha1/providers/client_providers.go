@@ -17,6 +17,11 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
+// Provider for VirtualMeshCertificateSigningRequestClient from Clientset
+func VirtualMeshCertificateSigningRequestClientFromClientsetProvider(clients security_smh_solo_io_v1alpha1.Clientset) security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequestClient {
+	return clients.VirtualMeshCertificateSigningRequests()
+}
+
 // Provider for VirtualMeshCertificateSigningRequest Client from Client
 func VirtualMeshCertificateSigningRequestClientProvider(client client.Client) security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequestClient {
 	return security_smh_solo_io_v1alpha1.NewVirtualMeshCertificateSigningRequestClient(client)

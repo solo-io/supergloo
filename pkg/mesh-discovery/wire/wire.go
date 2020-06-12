@@ -5,11 +5,12 @@ package wire
 import (
 	"context"
 
+	k8s_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	v1alpha1_providers "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/providers"
+	smh_discovery_providers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/providers"
+
 	"github.com/google/wire"
-	k8s_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
-	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
-	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/selection"
 	settings_clients "github.com/solo-io/service-mesh-hub/pkg/common/aws/settings"
@@ -30,19 +31,19 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		multicluster_wire.MulticlusterProviderSet,
 		docker.NewImageNameParser,
 		k8s.OwnerFetcherFactoryProvider,
-		k8s_apps.DeploymentClientFactoryProvider,
-		k8s_apps.ReplicaSetClientFactoryProvider,
-		k8s_core.ServiceClientFactoryProvider,
-		k8s_core.PodClientFactoryProvider,
-		smh_discovery.MeshServiceClientFactoryProvider,
-		smh_discovery.MeshWorkloadClientFactoryProvider,
+		k8s_apps_providers.DeploymentClientFactoryProvider,
+		k8s_apps_providers.ReplicaSetClientFactoryProvider,
+		k8s_core_providers.ServiceClientFactoryProvider,
+		k8s_core_providers.PodClientFactoryProvider,
+		smh_discovery_providers.MeshServiceClientFactoryProvider,
+		smh_discovery_providers.MeshWorkloadClientFactoryProvider,
 		event_watcher_factories.NewDeploymentEventWatcherFactory,
 		event_watcher_factories.NewPodEventWatcherFactory,
 		event_watcher_factories.NewServiceEventWatcherFactory,
 		event_watcher_factories.NewMeshWorkloadEventWatcherFactory,
 		event_watcher_factories.NewMeshEventWatcherFactory,
-		smh_discovery.MeshClientFactoryProvider,
-		k8s_core.ConfigMapClientFactoryProvider,
+		smh_discovery_providers.MeshClientFactoryProvider,
+		k8s_core_providers.ConfigMapClientFactoryProvider,
 		mesh_istio.WireProviderSet,
 		mesh_consul.WireProviderSet,
 		mesh_linkerd.WireProviderSet,
@@ -54,7 +55,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		ClusterRegistrationSet,
 		ComputeTargetCredentialsHandlersProvider,
 		ClusterRegistrationClientProvider,
-		v1alpha1.SettingsClientProvider,
+		v1alpha1_providers.SettingsClientProvider,
 		settings_clients.NewAwsSettingsHelperClient,
 		selection.NewAwsSelector,
 		clients.STSClientFactoryProvider,

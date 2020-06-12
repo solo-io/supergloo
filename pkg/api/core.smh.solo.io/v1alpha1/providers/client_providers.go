@@ -17,6 +17,11 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
+// Provider for SettingsClient from Clientset
+func SettingsClientFromClientsetProvider(clients core_smh_solo_io_v1alpha1.Clientset) core_smh_solo_io_v1alpha1.SettingsClient {
+	return clients.Settings()
+}
+
 // Provider for Settings Client from Client
 func SettingsClientProvider(client client.Client) core_smh_solo_io_v1alpha1.SettingsClient {
 	return core_smh_solo_io_v1alpha1.NewSettingsClient(client)

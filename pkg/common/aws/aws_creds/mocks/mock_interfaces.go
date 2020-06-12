@@ -5,10 +5,11 @@
 package mock_aws_creds
 
 import (
+	reflect "reflect"
+
 	credentials "github.com/aws/aws-sdk-go/aws/credentials"
 	gomock "github.com/golang/mock/gomock"
 	v1 "k8s.io/api/core/v1"
-	reflect "reflect"
 )
 
 // MockSecretAwsCredsConverter is a mock of SecretAwsCredsConverter interface.
