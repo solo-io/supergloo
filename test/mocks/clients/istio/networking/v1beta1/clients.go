@@ -6,11 +6,11 @@ package mock_istio_networking_clients
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
-	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	v1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
+	v1alpha30 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	types "k8s.io/apimachinery/pkg/types"
+	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -38,7 +38,7 @@ func (m *MockDestinationRuleClient) EXPECT() *MockDestinationRuleClientMockRecor
 }
 
 // CreateDestinationRule mocks base method.
-func (m *MockDestinationRuleClient) CreateDestinationRule(arg0 context.Context, arg1 *v1alpha3.DestinationRule, arg2 ...client.CreateOption) error {
+func (m *MockDestinationRuleClient) CreateDestinationRule(arg0 context.Context, arg1 *v1alpha30.DestinationRule, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -95,10 +95,10 @@ func (mr *MockDestinationRuleClientMockRecorder) DeleteDestinationRule(arg0, arg
 }
 
 // GetDestinationRule mocks base method.
-func (m *MockDestinationRuleClient) GetDestinationRule(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha3.DestinationRule, error) {
+func (m *MockDestinationRuleClient) GetDestinationRule(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha30.DestinationRule, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDestinationRule", arg0, arg1)
-	ret0, _ := ret[0].(*v1alpha3.DestinationRule)
+	ret0, _ := ret[0].(*v1alpha30.DestinationRule)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -110,14 +110,14 @@ func (mr *MockDestinationRuleClientMockRecorder) GetDestinationRule(arg0, arg1 i
 }
 
 // ListDestinationRule mocks base method.
-func (m *MockDestinationRuleClient) ListDestinationRule(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha3.DestinationRuleList, error) {
+func (m *MockDestinationRuleClient) ListDestinationRule(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha30.DestinationRuleList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ListDestinationRule", varargs...)
-	ret0, _ := ret[0].(*v1alpha3.DestinationRuleList)
+	ret0, _ := ret[0].(*v1alpha30.DestinationRuleList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -130,7 +130,7 @@ func (mr *MockDestinationRuleClientMockRecorder) ListDestinationRule(arg0 interf
 }
 
 // PatchDestinationRule mocks base method.
-func (m *MockDestinationRuleClient) PatchDestinationRule(arg0 context.Context, arg1 *v1alpha3.DestinationRule, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockDestinationRuleClient) PatchDestinationRule(arg0 context.Context, arg1 *v1alpha30.DestinationRule, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -149,7 +149,7 @@ func (mr *MockDestinationRuleClientMockRecorder) PatchDestinationRule(arg0, arg1
 }
 
 // PatchDestinationRuleStatus mocks base method.
-func (m *MockDestinationRuleClient) PatchDestinationRuleStatus(arg0 context.Context, arg1 *v1alpha3.DestinationRule, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockDestinationRuleClient) PatchDestinationRuleStatus(arg0 context.Context, arg1 *v1alpha30.DestinationRule, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -168,7 +168,7 @@ func (mr *MockDestinationRuleClientMockRecorder) PatchDestinationRuleStatus(arg0
 }
 
 // UpdateDestinationRule mocks base method.
-func (m *MockDestinationRuleClient) UpdateDestinationRule(arg0 context.Context, arg1 *v1alpha3.DestinationRule, arg2 ...client.UpdateOption) error {
+func (m *MockDestinationRuleClient) UpdateDestinationRule(arg0 context.Context, arg1 *v1alpha30.DestinationRule, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -187,7 +187,7 @@ func (mr *MockDestinationRuleClientMockRecorder) UpdateDestinationRule(arg0, arg
 }
 
 // UpdateDestinationRuleStatus mocks base method.
-func (m *MockDestinationRuleClient) UpdateDestinationRuleStatus(arg0 context.Context, arg1 *v1alpha3.DestinationRule, arg2 ...client.UpdateOption) error {
+func (m *MockDestinationRuleClient) UpdateDestinationRuleStatus(arg0 context.Context, arg1 *v1alpha30.DestinationRule, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -206,7 +206,7 @@ func (mr *MockDestinationRuleClientMockRecorder) UpdateDestinationRuleStatus(arg
 }
 
 // UpsertDestinationRule mocks base method.
-func (m *MockDestinationRuleClient) UpsertDestinationRule(arg0 context.Context, arg1 *v1alpha3.DestinationRule, arg2 ...client.UpdateOption) error {
+func (m *MockDestinationRuleClient) UpsertDestinationRule(arg0 context.Context, arg1 *v1alpha30.DestinationRule, arg2 ...v1alpha3.DestinationRuleTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -217,11 +217,11 @@ func (m *MockDestinationRuleClient) UpsertDestinationRule(arg0 context.Context, 
 	return ret0
 }
 
-// UpsertDestinationRuleSpec indicates an expected call of UpsertDestinationRule.
+// UpsertDestinationRule indicates an expected call of UpsertDestinationRule.
 func (mr *MockDestinationRuleClientMockRecorder) UpsertDestinationRule(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertDestinationRuleSpec", reflect.TypeOf((*MockDestinationRuleClient)(nil).UpsertDestinationRule), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertDestinationRule", reflect.TypeOf((*MockDestinationRuleClient)(nil).UpsertDestinationRule), varargs...)
 }
 
 // MockEnvoyFilterClient is a mock of EnvoyFilterClient interface.
@@ -248,7 +248,7 @@ func (m *MockEnvoyFilterClient) EXPECT() *MockEnvoyFilterClientMockRecorder {
 }
 
 // CreateEnvoyFilter mocks base method.
-func (m *MockEnvoyFilterClient) CreateEnvoyFilter(arg0 context.Context, arg1 *v1alpha3.EnvoyFilter, arg2 ...client.CreateOption) error {
+func (m *MockEnvoyFilterClient) CreateEnvoyFilter(arg0 context.Context, arg1 *v1alpha30.EnvoyFilter, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -305,10 +305,10 @@ func (mr *MockEnvoyFilterClientMockRecorder) DeleteEnvoyFilter(arg0, arg1 interf
 }
 
 // GetEnvoyFilter mocks base method.
-func (m *MockEnvoyFilterClient) GetEnvoyFilter(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha3.EnvoyFilter, error) {
+func (m *MockEnvoyFilterClient) GetEnvoyFilter(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha30.EnvoyFilter, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEnvoyFilter", arg0, arg1)
-	ret0, _ := ret[0].(*v1alpha3.EnvoyFilter)
+	ret0, _ := ret[0].(*v1alpha30.EnvoyFilter)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -320,14 +320,14 @@ func (mr *MockEnvoyFilterClientMockRecorder) GetEnvoyFilter(arg0, arg1 interface
 }
 
 // ListEnvoyFilter mocks base method.
-func (m *MockEnvoyFilterClient) ListEnvoyFilter(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha3.EnvoyFilterList, error) {
+func (m *MockEnvoyFilterClient) ListEnvoyFilter(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha30.EnvoyFilterList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ListEnvoyFilter", varargs...)
-	ret0, _ := ret[0].(*v1alpha3.EnvoyFilterList)
+	ret0, _ := ret[0].(*v1alpha30.EnvoyFilterList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -340,7 +340,7 @@ func (mr *MockEnvoyFilterClientMockRecorder) ListEnvoyFilter(arg0 interface{}, a
 }
 
 // PatchEnvoyFilter mocks base method.
-func (m *MockEnvoyFilterClient) PatchEnvoyFilter(arg0 context.Context, arg1 *v1alpha3.EnvoyFilter, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockEnvoyFilterClient) PatchEnvoyFilter(arg0 context.Context, arg1 *v1alpha30.EnvoyFilter, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -359,7 +359,7 @@ func (mr *MockEnvoyFilterClientMockRecorder) PatchEnvoyFilter(arg0, arg1, arg2 i
 }
 
 // PatchEnvoyFilterStatus mocks base method.
-func (m *MockEnvoyFilterClient) PatchEnvoyFilterStatus(arg0 context.Context, arg1 *v1alpha3.EnvoyFilter, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockEnvoyFilterClient) PatchEnvoyFilterStatus(arg0 context.Context, arg1 *v1alpha30.EnvoyFilter, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -378,7 +378,7 @@ func (mr *MockEnvoyFilterClientMockRecorder) PatchEnvoyFilterStatus(arg0, arg1, 
 }
 
 // UpdateEnvoyFilter mocks base method.
-func (m *MockEnvoyFilterClient) UpdateEnvoyFilter(arg0 context.Context, arg1 *v1alpha3.EnvoyFilter, arg2 ...client.UpdateOption) error {
+func (m *MockEnvoyFilterClient) UpdateEnvoyFilter(arg0 context.Context, arg1 *v1alpha30.EnvoyFilter, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -397,7 +397,7 @@ func (mr *MockEnvoyFilterClientMockRecorder) UpdateEnvoyFilter(arg0, arg1 interf
 }
 
 // UpdateEnvoyFilterStatus mocks base method.
-func (m *MockEnvoyFilterClient) UpdateEnvoyFilterStatus(arg0 context.Context, arg1 *v1alpha3.EnvoyFilter, arg2 ...client.UpdateOption) error {
+func (m *MockEnvoyFilterClient) UpdateEnvoyFilterStatus(arg0 context.Context, arg1 *v1alpha30.EnvoyFilter, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -416,7 +416,7 @@ func (mr *MockEnvoyFilterClientMockRecorder) UpdateEnvoyFilterStatus(arg0, arg1 
 }
 
 // UpsertEnvoyFilter mocks base method.
-func (m *MockEnvoyFilterClient) UpsertEnvoyFilter(arg0 context.Context, arg1 *v1alpha3.EnvoyFilter, arg2 ...client.UpdateOption) error {
+func (m *MockEnvoyFilterClient) UpsertEnvoyFilter(arg0 context.Context, arg1 *v1alpha30.EnvoyFilter, arg2 ...v1alpha3.EnvoyFilterTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -427,11 +427,11 @@ func (m *MockEnvoyFilterClient) UpsertEnvoyFilter(arg0 context.Context, arg1 *v1
 	return ret0
 }
 
-// UpsertEnvoyFilterSpec indicates an expected call of UpsertEnvoyFilter.
+// UpsertEnvoyFilter indicates an expected call of UpsertEnvoyFilter.
 func (mr *MockEnvoyFilterClientMockRecorder) UpsertEnvoyFilter(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertEnvoyFilterSpec", reflect.TypeOf((*MockEnvoyFilterClient)(nil).UpsertEnvoyFilter), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertEnvoyFilter", reflect.TypeOf((*MockEnvoyFilterClient)(nil).UpsertEnvoyFilter), varargs...)
 }
 
 // MockGatewayClient is a mock of GatewayClient interface.
@@ -458,7 +458,7 @@ func (m *MockGatewayClient) EXPECT() *MockGatewayClientMockRecorder {
 }
 
 // CreateGateway mocks base method.
-func (m *MockGatewayClient) CreateGateway(arg0 context.Context, arg1 *v1alpha3.Gateway, arg2 ...client.CreateOption) error {
+func (m *MockGatewayClient) CreateGateway(arg0 context.Context, arg1 *v1alpha30.Gateway, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -515,10 +515,10 @@ func (mr *MockGatewayClientMockRecorder) DeleteGateway(arg0, arg1 interface{}, a
 }
 
 // GetGateway mocks base method.
-func (m *MockGatewayClient) GetGateway(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha3.Gateway, error) {
+func (m *MockGatewayClient) GetGateway(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha30.Gateway, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetGateway", arg0, arg1)
-	ret0, _ := ret[0].(*v1alpha3.Gateway)
+	ret0, _ := ret[0].(*v1alpha30.Gateway)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -530,14 +530,14 @@ func (mr *MockGatewayClientMockRecorder) GetGateway(arg0, arg1 interface{}) *gom
 }
 
 // ListGateway mocks base method.
-func (m *MockGatewayClient) ListGateway(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha3.GatewayList, error) {
+func (m *MockGatewayClient) ListGateway(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha30.GatewayList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ListGateway", varargs...)
-	ret0, _ := ret[0].(*v1alpha3.GatewayList)
+	ret0, _ := ret[0].(*v1alpha30.GatewayList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -550,7 +550,7 @@ func (mr *MockGatewayClientMockRecorder) ListGateway(arg0 interface{}, arg1 ...i
 }
 
 // PatchGateway mocks base method.
-func (m *MockGatewayClient) PatchGateway(arg0 context.Context, arg1 *v1alpha3.Gateway, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockGatewayClient) PatchGateway(arg0 context.Context, arg1 *v1alpha30.Gateway, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -569,7 +569,7 @@ func (mr *MockGatewayClientMockRecorder) PatchGateway(arg0, arg1, arg2 interface
 }
 
 // PatchGatewayStatus mocks base method.
-func (m *MockGatewayClient) PatchGatewayStatus(arg0 context.Context, arg1 *v1alpha3.Gateway, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockGatewayClient) PatchGatewayStatus(arg0 context.Context, arg1 *v1alpha30.Gateway, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -588,7 +588,7 @@ func (mr *MockGatewayClientMockRecorder) PatchGatewayStatus(arg0, arg1, arg2 int
 }
 
 // UpdateGateway mocks base method.
-func (m *MockGatewayClient) UpdateGateway(arg0 context.Context, arg1 *v1alpha3.Gateway, arg2 ...client.UpdateOption) error {
+func (m *MockGatewayClient) UpdateGateway(arg0 context.Context, arg1 *v1alpha30.Gateway, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -607,7 +607,7 @@ func (mr *MockGatewayClientMockRecorder) UpdateGateway(arg0, arg1 interface{}, a
 }
 
 // UpdateGatewayStatus mocks base method.
-func (m *MockGatewayClient) UpdateGatewayStatus(arg0 context.Context, arg1 *v1alpha3.Gateway, arg2 ...client.UpdateOption) error {
+func (m *MockGatewayClient) UpdateGatewayStatus(arg0 context.Context, arg1 *v1alpha30.Gateway, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -626,7 +626,7 @@ func (mr *MockGatewayClientMockRecorder) UpdateGatewayStatus(arg0, arg1 interfac
 }
 
 // UpsertGateway mocks base method.
-func (m *MockGatewayClient) UpsertGateway(arg0 context.Context, arg1 *v1alpha3.Gateway, arg2 ...client.UpdateOption) error {
+func (m *MockGatewayClient) UpsertGateway(arg0 context.Context, arg1 *v1alpha30.Gateway, arg2 ...v1alpha3.GatewayTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -637,11 +637,11 @@ func (m *MockGatewayClient) UpsertGateway(arg0 context.Context, arg1 *v1alpha3.G
 	return ret0
 }
 
-// UpsertGatewaySpec indicates an expected call of UpsertGateway.
+// UpsertGateway indicates an expected call of UpsertGateway.
 func (mr *MockGatewayClientMockRecorder) UpsertGateway(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertGatewaySpec", reflect.TypeOf((*MockGatewayClient)(nil).UpsertGateway), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertGateway", reflect.TypeOf((*MockGatewayClient)(nil).UpsertGateway), varargs...)
 }
 
 // MockServiceEntryClient is a mock of ServiceEntryClient interface.
@@ -668,7 +668,7 @@ func (m *MockServiceEntryClient) EXPECT() *MockServiceEntryClientMockRecorder {
 }
 
 // CreateServiceEntry mocks base method.
-func (m *MockServiceEntryClient) CreateServiceEntry(arg0 context.Context, arg1 *v1alpha3.ServiceEntry, arg2 ...client.CreateOption) error {
+func (m *MockServiceEntryClient) CreateServiceEntry(arg0 context.Context, arg1 *v1alpha30.ServiceEntry, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -725,10 +725,10 @@ func (mr *MockServiceEntryClientMockRecorder) DeleteServiceEntry(arg0, arg1 inte
 }
 
 // GetServiceEntry mocks base method.
-func (m *MockServiceEntryClient) GetServiceEntry(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha3.ServiceEntry, error) {
+func (m *MockServiceEntryClient) GetServiceEntry(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha30.ServiceEntry, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceEntry", arg0, arg1)
-	ret0, _ := ret[0].(*v1alpha3.ServiceEntry)
+	ret0, _ := ret[0].(*v1alpha30.ServiceEntry)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -740,14 +740,14 @@ func (mr *MockServiceEntryClientMockRecorder) GetServiceEntry(arg0, arg1 interfa
 }
 
 // ListServiceEntry mocks base method.
-func (m *MockServiceEntryClient) ListServiceEntry(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha3.ServiceEntryList, error) {
+func (m *MockServiceEntryClient) ListServiceEntry(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha30.ServiceEntryList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ListServiceEntry", varargs...)
-	ret0, _ := ret[0].(*v1alpha3.ServiceEntryList)
+	ret0, _ := ret[0].(*v1alpha30.ServiceEntryList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -760,7 +760,7 @@ func (mr *MockServiceEntryClientMockRecorder) ListServiceEntry(arg0 interface{},
 }
 
 // PatchServiceEntry mocks base method.
-func (m *MockServiceEntryClient) PatchServiceEntry(arg0 context.Context, arg1 *v1alpha3.ServiceEntry, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockServiceEntryClient) PatchServiceEntry(arg0 context.Context, arg1 *v1alpha30.ServiceEntry, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -779,7 +779,7 @@ func (mr *MockServiceEntryClientMockRecorder) PatchServiceEntry(arg0, arg1, arg2
 }
 
 // PatchServiceEntryStatus mocks base method.
-func (m *MockServiceEntryClient) PatchServiceEntryStatus(arg0 context.Context, arg1 *v1alpha3.ServiceEntry, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockServiceEntryClient) PatchServiceEntryStatus(arg0 context.Context, arg1 *v1alpha30.ServiceEntry, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -798,7 +798,7 @@ func (mr *MockServiceEntryClientMockRecorder) PatchServiceEntryStatus(arg0, arg1
 }
 
 // UpdateServiceEntry mocks base method.
-func (m *MockServiceEntryClient) UpdateServiceEntry(arg0 context.Context, arg1 *v1alpha3.ServiceEntry, arg2 ...client.UpdateOption) error {
+func (m *MockServiceEntryClient) UpdateServiceEntry(arg0 context.Context, arg1 *v1alpha30.ServiceEntry, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -817,7 +817,7 @@ func (mr *MockServiceEntryClientMockRecorder) UpdateServiceEntry(arg0, arg1 inte
 }
 
 // UpdateServiceEntryStatus mocks base method.
-func (m *MockServiceEntryClient) UpdateServiceEntryStatus(arg0 context.Context, arg1 *v1alpha3.ServiceEntry, arg2 ...client.UpdateOption) error {
+func (m *MockServiceEntryClient) UpdateServiceEntryStatus(arg0 context.Context, arg1 *v1alpha30.ServiceEntry, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -836,7 +836,7 @@ func (mr *MockServiceEntryClientMockRecorder) UpdateServiceEntryStatus(arg0, arg
 }
 
 // UpsertServiceEntry mocks base method.
-func (m *MockServiceEntryClient) UpsertServiceEntry(arg0 context.Context, arg1 *v1alpha3.ServiceEntry, arg2 ...client.UpdateOption) error {
+func (m *MockServiceEntryClient) UpsertServiceEntry(arg0 context.Context, arg1 *v1alpha30.ServiceEntry, arg2 ...v1alpha3.ServiceEntryTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -847,11 +847,11 @@ func (m *MockServiceEntryClient) UpsertServiceEntry(arg0 context.Context, arg1 *
 	return ret0
 }
 
-// UpsertServiceEntrySpec indicates an expected call of UpsertServiceEntry.
+// UpsertServiceEntry indicates an expected call of UpsertServiceEntry.
 func (mr *MockServiceEntryClientMockRecorder) UpsertServiceEntry(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertServiceEntrySpec", reflect.TypeOf((*MockServiceEntryClient)(nil).UpsertServiceEntry), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertServiceEntry", reflect.TypeOf((*MockServiceEntryClient)(nil).UpsertServiceEntry), varargs...)
 }
 
 // MockVirtualServiceClient is a mock of VirtualServiceClient interface.
@@ -878,7 +878,7 @@ func (m *MockVirtualServiceClient) EXPECT() *MockVirtualServiceClientMockRecorde
 }
 
 // CreateVirtualService mocks base method.
-func (m *MockVirtualServiceClient) CreateVirtualService(arg0 context.Context, arg1 *v1alpha3.VirtualService, arg2 ...client.CreateOption) error {
+func (m *MockVirtualServiceClient) CreateVirtualService(arg0 context.Context, arg1 *v1alpha30.VirtualService, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -935,10 +935,10 @@ func (mr *MockVirtualServiceClientMockRecorder) DeleteVirtualService(arg0, arg1 
 }
 
 // GetVirtualService mocks base method.
-func (m *MockVirtualServiceClient) GetVirtualService(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha3.VirtualService, error) {
+func (m *MockVirtualServiceClient) GetVirtualService(arg0 context.Context, arg1 types.NamespacedName) (*v1alpha30.VirtualService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVirtualService", arg0, arg1)
-	ret0, _ := ret[0].(*v1alpha3.VirtualService)
+	ret0, _ := ret[0].(*v1alpha30.VirtualService)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -950,14 +950,14 @@ func (mr *MockVirtualServiceClientMockRecorder) GetVirtualService(arg0, arg1 int
 }
 
 // ListVirtualService mocks base method.
-func (m *MockVirtualServiceClient) ListVirtualService(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha3.VirtualServiceList, error) {
+func (m *MockVirtualServiceClient) ListVirtualService(arg0 context.Context, arg1 ...client.ListOption) (*v1alpha30.VirtualServiceList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ListVirtualService", varargs...)
-	ret0, _ := ret[0].(*v1alpha3.VirtualServiceList)
+	ret0, _ := ret[0].(*v1alpha30.VirtualServiceList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -970,7 +970,7 @@ func (mr *MockVirtualServiceClientMockRecorder) ListVirtualService(arg0 interfac
 }
 
 // PatchVirtualService mocks base method.
-func (m *MockVirtualServiceClient) PatchVirtualService(arg0 context.Context, arg1 *v1alpha3.VirtualService, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockVirtualServiceClient) PatchVirtualService(arg0 context.Context, arg1 *v1alpha30.VirtualService, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -989,7 +989,7 @@ func (mr *MockVirtualServiceClientMockRecorder) PatchVirtualService(arg0, arg1, 
 }
 
 // PatchVirtualServiceStatus mocks base method.
-func (m *MockVirtualServiceClient) PatchVirtualServiceStatus(arg0 context.Context, arg1 *v1alpha3.VirtualService, arg2 client.Patch, arg3 ...client.PatchOption) error {
+func (m *MockVirtualServiceClient) PatchVirtualServiceStatus(arg0 context.Context, arg1 *v1alpha30.VirtualService, arg2 client.Patch, arg3 ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -1008,7 +1008,7 @@ func (mr *MockVirtualServiceClientMockRecorder) PatchVirtualServiceStatus(arg0, 
 }
 
 // UpdateVirtualService mocks base method.
-func (m *MockVirtualServiceClient) UpdateVirtualService(arg0 context.Context, arg1 *v1alpha3.VirtualService, arg2 ...client.UpdateOption) error {
+func (m *MockVirtualServiceClient) UpdateVirtualService(arg0 context.Context, arg1 *v1alpha30.VirtualService, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -1027,7 +1027,7 @@ func (mr *MockVirtualServiceClientMockRecorder) UpdateVirtualService(arg0, arg1 
 }
 
 // UpdateVirtualServiceStatus mocks base method.
-func (m *MockVirtualServiceClient) UpdateVirtualServiceStatus(arg0 context.Context, arg1 *v1alpha3.VirtualService, arg2 ...client.UpdateOption) error {
+func (m *MockVirtualServiceClient) UpdateVirtualServiceStatus(arg0 context.Context, arg1 *v1alpha30.VirtualService, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -1046,7 +1046,7 @@ func (mr *MockVirtualServiceClientMockRecorder) UpdateVirtualServiceStatus(arg0,
 }
 
 // UpsertVirtualService mocks base method.
-func (m *MockVirtualServiceClient) UpsertVirtualService(arg0 context.Context, arg1 *v1alpha3.VirtualService, arg2 ...client.UpdateOption) error {
+func (m *MockVirtualServiceClient) UpsertVirtualService(arg0 context.Context, arg1 *v1alpha30.VirtualService, arg2 ...v1alpha3.VirtualServiceTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -1057,9 +1057,9 @@ func (m *MockVirtualServiceClient) UpsertVirtualService(arg0 context.Context, ar
 	return ret0
 }
 
-// UpsertVirtualServiceSpec indicates an expected call of UpsertVirtualService.
+// UpsertVirtualService indicates an expected call of UpsertVirtualService.
 func (mr *MockVirtualServiceClientMockRecorder) UpsertVirtualService(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertVirtualServiceSpec", reflect.TypeOf((*MockVirtualServiceClient)(nil).UpsertVirtualService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertVirtualService", reflect.TypeOf((*MockVirtualServiceClient)(nil).UpsertVirtualService), varargs...)
 }

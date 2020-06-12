@@ -45,7 +45,7 @@ require (
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
-	github.com/solo-io/external-apis v0.0.0-20200612143715-fd698bbad58b // indirect
+	github.com/solo-io/external-apis v0.0.0-20200612143715-fd698bbad58b
 	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/protoc-gen-ext v0.0.9
 	github.com/solo-io/reporting-client v0.1.3

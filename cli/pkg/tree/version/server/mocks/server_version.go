@@ -5,11 +5,10 @@
 package mock_server
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	server "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	v1 "k8s.io/api/apps/v1"
+	reflect "reflect"
 )
 
 // MockDeploymentClient is a mock of DeploymentClient interface.

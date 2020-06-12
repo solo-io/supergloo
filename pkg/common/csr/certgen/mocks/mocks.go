@@ -5,13 +5,12 @@
 package mock_certgen
 
 import (
-	reflect "reflect"
-	time "time"
-
 	gomock "github.com/golang/mock/gomock"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen/secrets"
 	util "istio.io/istio/security/pkg/pki/util"
+	reflect "reflect"
+	time "time"
 )
 
 // MockRootCertGenerator is a mock of RootCertGenerator interface.

@@ -5,9 +5,8 @@
 package mock_controller_runtime
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 	event "sigs.k8s.io/controller-runtime/pkg/event"
 )
 

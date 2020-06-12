@@ -6,10 +6,9 @@ package mock_installation
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	installation "github.com/solo-io/service-mesh-hub/pkg/common/csr/installation"
+	reflect "reflect"
 )
 
 // MockCsrAgentInstaller is a mock of CsrAgentInstaller interface.

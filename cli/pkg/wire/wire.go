@@ -4,11 +4,12 @@ package wire
 
 import (
 	"context"
+	kubernetes_apiext_providers "github.com/solo-io/external-apis/pkg/api/k8s/apiextensions.k8s.io/v1beta1/providers"
+	kubernetes_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 	"io"
 
 	"github.com/google/wire"
-	kubernetes_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
-	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
@@ -36,9 +37,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
-	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
 	version2 "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/version"
@@ -59,10 +57,10 @@ import (
 )
 
 func MeshServiceReaderProvider(clients smh_discovery.Clientset) smh_discovery.MeshServiceReader {
-	return smh_discovery.MeshServiceClientFromClientsetProvider(clients)
+	return smh_discovery_providers.MeshServiceClientFromClientsetProvider(clients)
 }
 func MeshWorkloadReaderProvider(clients smh_discovery.Clientset) smh_discovery.MeshWorkloadReader {
-	return smh_discovery.MeshWorkloadClientFromClientsetProvider(clients)
+	return smh_discovery_providers.MeshWorkloadClientFromClientsetProvider(clients)
 }
 
 func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string) (clients *common.KubeClients, err error) {
@@ -70,18 +68,18 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		kubernetes.NewForConfig,
 		wire.Bind(new(kubernetes.Interface), new(*kubernetes.Clientset)),
 		kubernetes_discovery.NewGeneratedServerVersionClient,
-		k8s_core.ClientsetFromConfigProvider,
-		k8s_core.ServiceAccountClientFromClientsetProvider,
-		k8s_core.SecretClientFromClientsetProvider,
-		k8s_core.NamespaceClientFromClientsetProvider,
-		k8s_core.PodClientFromClientsetProvider,
-		k8s_core.SecretClientFactoryProvider,
-		k8s_core.ServiceAccountClientFactoryProvider,
-		k8s_core.NamespaceClientFromConfigFactoryProvider,
-		kubernetes_apps.ClientsetFromConfigProvider,
-		kubernetes_apps.DeploymentClientFromClientsetProvider,
-		kubernetes_apps.DeploymentClientFactoryProvider,
-		kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactoryProvider,
+		k8s_core_providers.ClientsetFromConfigProvider,
+		k8s_core_providers.ServiceAccountClientFromClientsetProvider,
+		k8s_core_providers.SecretClientFromClientsetProvider,
+		k8s_core_providers.NamespaceClientFromClientsetProvider,
+		k8s_core_providers.PodClientFromClientsetProvider,
+		k8s_core_providers.SecretClientFactoryProvider,
+		k8s_core_providers.ServiceAccountClientFactoryProvider,
+		k8s_core_providers.NamespaceClientFromConfigFactoryProvider,
+		kubernetes_apps_providers.ClientsetFromConfigProvider,
+		kubernetes_apps_providers.DeploymentClientFromClientsetProvider,
+		kubernetes_apps_providers.DeploymentClientFactoryProvider,
+		kubernetes_apiext_providers.CustomResourceDefinitionClientFromConfigFactoryProvider,
 		files.NewDefaultFileReader,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
@@ -100,19 +98,19 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		common.KubeClientsProvider,
 		description.NewResourceDescriber,
 		selection.NewResourceSelector,
-		smh_discovery.ClientsetFromConfigProvider,
-		smh_networking.ClientsetFromConfigProvider,
-		smh_security.ClientsetFromConfigProvider,
-		smh_discovery.KubernetesClusterClientFromClientsetProvider,
-		smh_discovery.MeshServiceClientFromClientsetProvider,
+		smh_discovery_providers.ClientsetFromConfigProvider,
+		smh_networking_providers.ClientsetFromConfigProvider,
+		smh_security_providers.ClientsetFromConfigProvider,
+		smh_discovery_providers.KubernetesClusterClientFromClientsetProvider,
+		smh_discovery_providers.MeshServiceClientFromClientsetProvider,
 		MeshServiceReaderProvider,
-		smh_discovery.MeshWorkloadClientFromClientsetProvider,
+		smh_discovery_providers.MeshWorkloadClientFromClientsetProvider,
 		MeshWorkloadReaderProvider,
-		smh_discovery.MeshClientFromClientsetProvider,
-		smh_networking.TrafficPolicyClientFromClientsetProvider,
-		smh_networking.AccessControlPolicyClientFromClientsetProvider,
-		smh_networking.VirtualMeshClientFromClientsetProvider,
-		smh_security.VirtualMeshCertificateSigningRequestClientFromClientsetProvider,
+		smh_discovery_providers.MeshClientFromClientsetProvider,
+		smh_networking_providers.TrafficPolicyClientFromClientsetProvider,
+		smh_networking_providers.AccessControlPolicyClientFromClientsetProvider,
+		smh_networking_providers.VirtualMeshClientFromClientsetProvider,
+		smh_security_providers.VirtualMeshCertificateSigningRequestClientFromClientsetProvider,
 		installation.NewCsrAgentInstallerFactory,
 		helm.HelmClientForMemoryConfigFactoryProvider,
 		helm.HelmClientForFileConfigFactoryProvider,

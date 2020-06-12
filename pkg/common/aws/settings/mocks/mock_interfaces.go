@@ -6,10 +6,9 @@ package mock_settings
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	reflect "reflect"
 )
 
 // MockSettingsHelperClient is a mock of SettingsHelperClient interface.

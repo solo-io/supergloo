@@ -5,12 +5,11 @@
 package mock_traffic_policy_validation
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	reflect "reflect"
 )
 
 // MockValidator is a mock of Validator interface.

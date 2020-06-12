@@ -6,13 +6,12 @@ package mock_cert_signer
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	types0 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen/secrets"
+	reflect "reflect"
 )
 
 // MockVirtualMeshCertClient is a mock of VirtualMeshCertClient interface.

@@ -5,12 +5,11 @@
 package mock_k8s_cliendcmd
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	rest "k8s.io/client-go/rest"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
 	api "k8s.io/client-go/tools/clientcmd/api"
+	reflect "reflect"
 )
 
 // MockClientConfig is a mock of ClientConfig interface.

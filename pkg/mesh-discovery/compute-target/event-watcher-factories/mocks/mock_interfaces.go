@@ -5,13 +5,12 @@
 package mock_controllers
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
-	controller0 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
-	controller1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
-	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
+	controller "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
+	controller0 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
+	controller1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
+	reflect "reflect"
 )
 
 // MockDeploymentEventWatcherFactory is a mock of DeploymentEventWatcherFactory interface.
@@ -38,10 +37,10 @@ func (m *MockDeploymentEventWatcherFactory) EXPECT() *MockDeploymentEventWatcher
 }
 
 // Build mocks base method.
-func (m *MockDeploymentEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller0.DeploymentEventWatcher {
+func (m *MockDeploymentEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller.DeploymentEventWatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
-	ret0, _ := ret[0].(controller0.DeploymentEventWatcher)
+	ret0, _ := ret[0].(controller.DeploymentEventWatcher)
 	return ret0
 }
 
@@ -75,10 +74,10 @@ func (m *MockPodEventWatcherFactory) EXPECT() *MockPodEventWatcherFactoryMockRec
 }
 
 // Build mocks base method.
-func (m *MockPodEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller1.PodEventWatcher {
+func (m *MockPodEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller0.PodEventWatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
-	ret0, _ := ret[0].(controller1.PodEventWatcher)
+	ret0, _ := ret[0].(controller0.PodEventWatcher)
 	return ret0
 }
 
@@ -112,10 +111,10 @@ func (m *MockMeshEventWatcherFactory) EXPECT() *MockMeshEventWatcherFactoryMockR
 }
 
 // Build mocks base method.
-func (m *MockMeshEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller.MeshEventWatcher {
+func (m *MockMeshEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller1.MeshEventWatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
-	ret0, _ := ret[0].(controller.MeshEventWatcher)
+	ret0, _ := ret[0].(controller1.MeshEventWatcher)
 	return ret0
 }
 
@@ -149,10 +148,10 @@ func (m *MockMeshWorkloadEventWatcherFactory) EXPECT() *MockMeshWorkloadEventWat
 }
 
 // Build mocks base method.
-func (m *MockMeshWorkloadEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller.MeshWorkloadEventWatcher {
+func (m *MockMeshWorkloadEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller1.MeshWorkloadEventWatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
-	ret0, _ := ret[0].(controller.MeshWorkloadEventWatcher)
+	ret0, _ := ret[0].(controller1.MeshWorkloadEventWatcher)
 	return ret0
 }
 
@@ -186,10 +185,10 @@ func (m *MockServiceEventWatcherFactory) EXPECT() *MockServiceEventWatcherFactor
 }
 
 // Build mocks base method.
-func (m *MockServiceEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller1.ServiceEventWatcher {
+func (m *MockServiceEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller0.ServiceEventWatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
-	ret0, _ := ret[0].(controller1.ServiceEventWatcher)
+	ret0, _ := ret[0].(controller0.ServiceEventWatcher)
 	return ret0
 }
 

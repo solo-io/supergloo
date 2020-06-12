@@ -6,12 +6,11 @@ package mock_k8s_core_clients
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v10 "k8s.io/api/core/v1"
 	types "k8s.io/apimachinery/pkg/types"
+	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -497,7 +496,7 @@ func (mr *MockNamespaceClientMockRecorder) DeleteAllOfNamespace(arg0 interface{}
 }
 
 // DeleteNamespace mocks base method.
-func (m *MockNamespaceClient) DeleteNamespace(arg0 context.Context, arg1 types.NamespacedName, arg2 ...client.DeleteOption) error {
+func (m *MockNamespaceClient) DeleteNamespace(arg0 context.Context, arg1 string, arg2 ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -516,7 +515,7 @@ func (mr *MockNamespaceClientMockRecorder) DeleteNamespace(arg0, arg1 interface{
 }
 
 // GetNamespace mocks base method.
-func (m *MockNamespaceClient) GetNamespace(arg0 context.Context, arg1 types.NamespacedName) (*v10.Namespace, error) {
+func (m *MockNamespaceClient) GetNamespace(arg0 context.Context, arg1 string) (*v10.Namespace, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNamespace", arg0, arg1)
 	ret0, _ := ret[0].(*v10.Namespace)
@@ -707,7 +706,7 @@ func (mr *MockNodeClientMockRecorder) DeleteAllOfNode(arg0 interface{}, arg1 ...
 }
 
 // DeleteNode mocks base method.
-func (m *MockNodeClient) DeleteNode(arg0 context.Context, arg1 types.NamespacedName, arg2 ...client.DeleteOption) error {
+func (m *MockNodeClient) DeleteNode(arg0 context.Context, arg1 string, arg2 ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -726,7 +725,7 @@ func (mr *MockNodeClientMockRecorder) DeleteNode(arg0, arg1 interface{}, arg2 ..
 }
 
 // GetNode mocks base method.
-func (m *MockNodeClient) GetNode(arg0 context.Context, arg1 types.NamespacedName) (*v10.Node, error) {
+func (m *MockNodeClient) GetNode(arg0 context.Context, arg1 string) (*v10.Node, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNode", arg0, arg1)
 	ret0, _ := ret[0].(*v10.Node)
