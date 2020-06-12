@@ -11,7 +11,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
 	credentials2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud/credentials"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target/aws/clients/eks_temp"
+	"github.com/solo-io/skv2/pkg/multicluster/discovery/cloud"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -88,7 +88,7 @@ func (a *awsCloudStore) instantiateNewCloud(accountId, region string) (*AwsCloud
 	}
 	awsCloud := &AwsCloud{
 		Appmesh: a.appmeshClientFactory(appmesh.New(sess)),
-		Eks:     eks_temp.NewEksClient(sess),
+		Eks:     cloud.NewEksClientFromSession(sess),
 		Sts:     clients.NewSTSClient(sess),
 	}
 	a.awsCloudStore.Store(sessionKey{accountId: accountId, region: region}, awsCloud)

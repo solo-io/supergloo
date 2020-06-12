@@ -7,12 +7,11 @@ import (
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	. "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )
 
 // MulticlusterClientset for the apiextensions.k8s.io/v1beta1 APIs
@@ -49,7 +48,7 @@ type clientSet struct {
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
 	scheme := scheme.Scheme
-	if err := AddToScheme(scheme); err != nil {
+	if err := apiextensions_k8s_io_v1beta1.AddToScheme(scheme); err != nil {
 		return nil, err
 	}
 	client, err := client.New(cfg, client.Options{
@@ -73,45 +72,45 @@ func (c *clientSet) CustomResourceDefinitions() CustomResourceDefinitionClient {
 // Reader knows how to read and list CustomResourceDefinitions.
 type CustomResourceDefinitionReader interface {
 	// Get retrieves a CustomResourceDefinition for the given object key
-	GetCustomResourceDefinition(ctx context.Context, key client.ObjectKey) (*CustomResourceDefinition, error)
+	GetCustomResourceDefinition(ctx context.Context, key client.ObjectKey) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, error)
 
 	// List retrieves list of CustomResourceDefinitions for a given namespace and list options.
-	ListCustomResourceDefinition(ctx context.Context, opts ...client.ListOption) (*CustomResourceDefinitionList, error)
+	ListCustomResourceDefinition(ctx context.Context, opts ...client.ListOption) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinitionList, error)
 }
 
 // CustomResourceDefinitionTransitionFunction instructs the CustomResourceDefinitionWriter how to transition between an existing
 // CustomResourceDefinition object and a desired on an Upsert
-type CustomResourceDefinitionTransitionFunction func(existing, desired *CustomResourceDefinition) error
+type CustomResourceDefinitionTransitionFunction func(existing, desired *apiextensions_k8s_io_v1beta1.CustomResourceDefinition) error
 
 // Writer knows how to create, delete, and update CustomResourceDefinitions.
 type CustomResourceDefinitionWriter interface {
 	// Create saves the CustomResourceDefinition object.
-	CreateCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, opts ...client.CreateOption) error
+	CreateCustomResourceDefinition(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, opts ...client.CreateOption) error
 
 	// Delete deletes the CustomResourceDefinition object.
 	DeleteCustomResourceDefinition(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
 	// Update updates the given CustomResourceDefinition object.
-	UpdateCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, opts ...client.UpdateOption) error
+	UpdateCustomResourceDefinition(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, opts ...client.UpdateOption) error
 
 	// Patch patches the given CustomResourceDefinition object.
-	PatchCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, patch client.Patch, opts ...client.PatchOption) error
+	PatchCustomResourceDefinition(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, patch client.Patch, opts ...client.PatchOption) error
 
 	// DeleteAllOf deletes all CustomResourceDefinition objects matching the given options.
 	DeleteAllOfCustomResourceDefinition(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
 	// Create or Update the CustomResourceDefinition object.
-	UpsertCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, transitionFuncs ...CustomResourceDefinitionTransitionFunction) error
+	UpsertCustomResourceDefinition(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, transitionFuncs ...CustomResourceDefinitionTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a CustomResourceDefinition object.
 type CustomResourceDefinitionStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given CustomResourceDefinition object.
-	UpdateCustomResourceDefinitionStatus(ctx context.Context, obj *CustomResourceDefinition, opts ...client.UpdateOption) error
+	UpdateCustomResourceDefinitionStatus(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, opts ...client.UpdateOption) error
 
 	// Patch patches the given CustomResourceDefinition object's subresource.
-	PatchCustomResourceDefinitionStatus(ctx context.Context, obj *CustomResourceDefinition, patch client.Patch, opts ...client.PatchOption) error
+	PatchCustomResourceDefinitionStatus(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, patch client.Patch, opts ...client.PatchOption) error
 }
 
 // Client knows how to perform CRUD operations on CustomResourceDefinitions.
@@ -129,50 +128,50 @@ func NewCustomResourceDefinitionClient(client client.Client) *customResourceDefi
 	return &customResourceDefinitionClient{client: client}
 }
 
-func (c *customResourceDefinitionClient) GetCustomResourceDefinition(ctx context.Context, key client.ObjectKey) (*CustomResourceDefinition, error) {
-	obj := &CustomResourceDefinition{}
+func (c *customResourceDefinitionClient) GetCustomResourceDefinition(ctx context.Context, key client.ObjectKey) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinition, error) {
+	obj := &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (c *customResourceDefinitionClient) ListCustomResourceDefinition(ctx context.Context, opts ...client.ListOption) (*CustomResourceDefinitionList, error) {
-	list := &CustomResourceDefinitionList{}
+func (c *customResourceDefinitionClient) ListCustomResourceDefinition(ctx context.Context, opts ...client.ListOption) (*apiextensions_k8s_io_v1beta1.CustomResourceDefinitionList, error) {
+	list := &apiextensions_k8s_io_v1beta1.CustomResourceDefinitionList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
 	return list, nil
 }
 
-func (c *customResourceDefinitionClient) CreateCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, opts ...client.CreateOption) error {
+func (c *customResourceDefinitionClient) CreateCustomResourceDefinition(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, opts ...client.CreateOption) error {
 	return c.client.Create(ctx, obj, opts...)
 }
 
 func (c *customResourceDefinitionClient) DeleteCustomResourceDefinition(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &CustomResourceDefinition{}
+	obj := &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
-func (c *customResourceDefinitionClient) UpdateCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, opts ...client.UpdateOption) error {
+func (c *customResourceDefinitionClient) UpdateCustomResourceDefinition(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, opts ...client.UpdateOption) error {
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *customResourceDefinitionClient) PatchCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, patch client.Patch, opts ...client.PatchOption) error {
+func (c *customResourceDefinitionClient) PatchCustomResourceDefinition(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
 func (c *customResourceDefinitionClient) DeleteAllOfCustomResourceDefinition(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &CustomResourceDefinition{}
+	obj := &apiextensions_k8s_io_v1beta1.CustomResourceDefinition{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *customResourceDefinitionClient) UpsertCustomResourceDefinition(ctx context.Context, obj *CustomResourceDefinition, transitionFuncs ...CustomResourceDefinitionTransitionFunction) error {
+func (c *customResourceDefinitionClient) UpsertCustomResourceDefinition(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, transitionFuncs ...CustomResourceDefinitionTransitionFunction) error {
 	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*CustomResourceDefinition), desired.(*CustomResourceDefinition)); err != nil {
+			if err := txFunc(existing.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition), desired.(*apiextensions_k8s_io_v1beta1.CustomResourceDefinition)); err != nil {
 				return err
 			}
 		}
@@ -182,10 +181,10 @@ func (c *customResourceDefinitionClient) UpsertCustomResourceDefinition(ctx cont
 	return err
 }
 
-func (c *customResourceDefinitionClient) UpdateCustomResourceDefinitionStatus(ctx context.Context, obj *CustomResourceDefinition, opts ...client.UpdateOption) error {
+func (c *customResourceDefinitionClient) UpdateCustomResourceDefinitionStatus(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *customResourceDefinitionClient) PatchCustomResourceDefinitionStatus(ctx context.Context, obj *CustomResourceDefinition, patch client.Patch, opts ...client.PatchOption) error {
+func (c *customResourceDefinitionClient) PatchCustomResourceDefinitionStatus(ctx context.Context, obj *apiextensions_k8s_io_v1beta1.CustomResourceDefinition, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }

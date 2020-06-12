@@ -36,6 +36,36 @@ func (m *MockAppmeshClient) EXPECT() *MockAppmeshClientMockRecorder {
 	return m.recorder
 }
 
+// ListMeshes mocks base method.
+func (m *MockAppmeshClient) ListMeshes(input *appmesh.ListMeshesInput) (*appmesh.ListMeshesOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListMeshes", input)
+	ret0, _ := ret[0].(*appmesh.ListMeshesOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListMeshes indicates an expected call of ListMeshes.
+func (mr *MockAppmeshClientMockRecorder) ListMeshes(input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMeshes", reflect.TypeOf((*MockAppmeshClient)(nil).ListMeshes), input)
+}
+
+// ListTagsForResource mocks base method.
+func (m *MockAppmeshClient) ListTagsForResource(arg0 *appmesh.ListTagsForResourceInput) (*appmesh.ListTagsForResourceOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListTagsForResource", arg0)
+	ret0, _ := ret[0].(*appmesh.ListTagsForResourceOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListTagsForResource indicates an expected call of ListTagsForResource.
+func (mr *MockAppmeshClientMockRecorder) ListTagsForResource(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTagsForResource", reflect.TypeOf((*MockAppmeshClient)(nil).ListTagsForResource), arg0)
+}
+
 // EnsureVirtualService mocks base method.
 func (m *MockAppmeshClient) EnsureVirtualService(virtualServiceData *appmesh.VirtualServiceData) error {
 	m.ctrl.T.Helper()

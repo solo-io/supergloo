@@ -42,18 +42,16 @@ require (
 	github.com/rotisserie/eris v0.2.0
 	github.com/sergi/go-diff v1.1.0
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
-	github.com/softlayer/softlayer-go v0.0.0-20180806151055-260589d94c7d
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
 	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/protoc-gen-ext v0.0.9
 	github.com/solo-io/reporting-client v0.1.3
-	github.com/solo-io/skv2 v0.3.0
+	github.com/solo-io/skv2 v0.4.1
 	github.com/solo-io/solo-kit v0.13.3
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.6
 	go.uber.org/zap v1.13.0
-	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/tools v0.0.0-20200603170713-0310561d584d
 	google.golang.org/grpc v1.27.0

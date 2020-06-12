@@ -36,11 +36,9 @@ func (m *MockAwsCloudStore) EXPECT() *MockAwsCloudStoreMockRecorder {
 }
 
 // Add mocks base method.
-func (m *MockAwsCloudStore) Add(accountId, creds *credentials.Credentials) error {
+func (m *MockAwsCloudStore) Add(accountId string, creds *credentials.Credentials) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Add", accountId, creds)
-	ret0, _ := ret[0].(error)
-	return ret0
+	m.ctrl.Call(m, "Add", accountId, creds)
 }
 
 // Add indicates an expected call of Add.
@@ -62,4 +60,16 @@ func (m *MockAwsCloudStore) Get(accountId, region string) (*cloud.AwsCloud, erro
 func (mr *MockAwsCloudStoreMockRecorder) Get(accountId, region interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockAwsCloudStore)(nil).Get), accountId, region)
+}
+
+// Remove mocks base method.
+func (m *MockAwsCloudStore) Remove(accountId string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Remove", accountId)
+}
+
+// Remove indicates an expected call of Remove.
+func (mr *MockAwsCloudStoreMockRecorder) Remove(accountId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockAwsCloudStore)(nil).Remove), accountId)
 }

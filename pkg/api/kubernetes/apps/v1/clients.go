@@ -7,12 +7,11 @@ import (
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	apps_v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	. "k8s.io/api/apps/v1"
 )
 
 // MulticlusterClientset for the apps/v1 APIs
@@ -51,7 +50,7 @@ type clientSet struct {
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
 	scheme := scheme.Scheme
-	if err := AddToScheme(scheme); err != nil {
+	if err := apps_v1.AddToScheme(scheme); err != nil {
 		return nil, err
 	}
 	client, err := client.New(cfg, client.Options{
@@ -80,45 +79,45 @@ func (c *clientSet) ReplicaSets() ReplicaSetClient {
 // Reader knows how to read and list Deployments.
 type DeploymentReader interface {
 	// Get retrieves a Deployment for the given object key
-	GetDeployment(ctx context.Context, key client.ObjectKey) (*Deployment, error)
+	GetDeployment(ctx context.Context, key client.ObjectKey) (*apps_v1.Deployment, error)
 
 	// List retrieves list of Deployments for a given namespace and list options.
-	ListDeployment(ctx context.Context, opts ...client.ListOption) (*DeploymentList, error)
+	ListDeployment(ctx context.Context, opts ...client.ListOption) (*apps_v1.DeploymentList, error)
 }
 
 // DeploymentTransitionFunction instructs the DeploymentWriter how to transition between an existing
 // Deployment object and a desired on an Upsert
-type DeploymentTransitionFunction func(existing, desired *Deployment) error
+type DeploymentTransitionFunction func(existing, desired *apps_v1.Deployment) error
 
 // Writer knows how to create, delete, and update Deployments.
 type DeploymentWriter interface {
 	// Create saves the Deployment object.
-	CreateDeployment(ctx context.Context, obj *Deployment, opts ...client.CreateOption) error
+	CreateDeployment(ctx context.Context, obj *apps_v1.Deployment, opts ...client.CreateOption) error
 
 	// Delete deletes the Deployment object.
 	DeleteDeployment(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
 	// Update updates the given Deployment object.
-	UpdateDeployment(ctx context.Context, obj *Deployment, opts ...client.UpdateOption) error
+	UpdateDeployment(ctx context.Context, obj *apps_v1.Deployment, opts ...client.UpdateOption) error
 
 	// Patch patches the given Deployment object.
-	PatchDeployment(ctx context.Context, obj *Deployment, patch client.Patch, opts ...client.PatchOption) error
+	PatchDeployment(ctx context.Context, obj *apps_v1.Deployment, patch client.Patch, opts ...client.PatchOption) error
 
 	// DeleteAllOf deletes all Deployment objects matching the given options.
 	DeleteAllOfDeployment(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
 	// Create or Update the Deployment object.
-	UpsertDeployment(ctx context.Context, obj *Deployment, transitionFuncs ...DeploymentTransitionFunction) error
+	UpsertDeployment(ctx context.Context, obj *apps_v1.Deployment, transitionFuncs ...DeploymentTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a Deployment object.
 type DeploymentStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given Deployment object.
-	UpdateDeploymentStatus(ctx context.Context, obj *Deployment, opts ...client.UpdateOption) error
+	UpdateDeploymentStatus(ctx context.Context, obj *apps_v1.Deployment, opts ...client.UpdateOption) error
 
 	// Patch patches the given Deployment object's subresource.
-	PatchDeploymentStatus(ctx context.Context, obj *Deployment, patch client.Patch, opts ...client.PatchOption) error
+	PatchDeploymentStatus(ctx context.Context, obj *apps_v1.Deployment, patch client.Patch, opts ...client.PatchOption) error
 }
 
 // Client knows how to perform CRUD operations on Deployments.
@@ -136,50 +135,50 @@ func NewDeploymentClient(client client.Client) *deploymentClient {
 	return &deploymentClient{client: client}
 }
 
-func (c *deploymentClient) GetDeployment(ctx context.Context, key client.ObjectKey) (*Deployment, error) {
-	obj := &Deployment{}
+func (c *deploymentClient) GetDeployment(ctx context.Context, key client.ObjectKey) (*apps_v1.Deployment, error) {
+	obj := &apps_v1.Deployment{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (c *deploymentClient) ListDeployment(ctx context.Context, opts ...client.ListOption) (*DeploymentList, error) {
-	list := &DeploymentList{}
+func (c *deploymentClient) ListDeployment(ctx context.Context, opts ...client.ListOption) (*apps_v1.DeploymentList, error) {
+	list := &apps_v1.DeploymentList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
 	return list, nil
 }
 
-func (c *deploymentClient) CreateDeployment(ctx context.Context, obj *Deployment, opts ...client.CreateOption) error {
+func (c *deploymentClient) CreateDeployment(ctx context.Context, obj *apps_v1.Deployment, opts ...client.CreateOption) error {
 	return c.client.Create(ctx, obj, opts...)
 }
 
 func (c *deploymentClient) DeleteDeployment(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &Deployment{}
+	obj := &apps_v1.Deployment{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
-func (c *deploymentClient) UpdateDeployment(ctx context.Context, obj *Deployment, opts ...client.UpdateOption) error {
+func (c *deploymentClient) UpdateDeployment(ctx context.Context, obj *apps_v1.Deployment, opts ...client.UpdateOption) error {
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *deploymentClient) PatchDeployment(ctx context.Context, obj *Deployment, patch client.Patch, opts ...client.PatchOption) error {
+func (c *deploymentClient) PatchDeployment(ctx context.Context, obj *apps_v1.Deployment, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
 func (c *deploymentClient) DeleteAllOfDeployment(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &Deployment{}
+	obj := &apps_v1.Deployment{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *deploymentClient) UpsertDeployment(ctx context.Context, obj *Deployment, transitionFuncs ...DeploymentTransitionFunction) error {
+func (c *deploymentClient) UpsertDeployment(ctx context.Context, obj *apps_v1.Deployment, transitionFuncs ...DeploymentTransitionFunction) error {
 	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*Deployment), desired.(*Deployment)); err != nil {
+			if err := txFunc(existing.(*apps_v1.Deployment), desired.(*apps_v1.Deployment)); err != nil {
 				return err
 			}
 		}
@@ -189,56 +188,56 @@ func (c *deploymentClient) UpsertDeployment(ctx context.Context, obj *Deployment
 	return err
 }
 
-func (c *deploymentClient) UpdateDeploymentStatus(ctx context.Context, obj *Deployment, opts ...client.UpdateOption) error {
+func (c *deploymentClient) UpdateDeploymentStatus(ctx context.Context, obj *apps_v1.Deployment, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *deploymentClient) PatchDeploymentStatus(ctx context.Context, obj *Deployment, patch client.Patch, opts ...client.PatchOption) error {
+func (c *deploymentClient) PatchDeploymentStatus(ctx context.Context, obj *apps_v1.Deployment, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
 // Reader knows how to read and list ReplicaSets.
 type ReplicaSetReader interface {
 	// Get retrieves a ReplicaSet for the given object key
-	GetReplicaSet(ctx context.Context, key client.ObjectKey) (*ReplicaSet, error)
+	GetReplicaSet(ctx context.Context, key client.ObjectKey) (*apps_v1.ReplicaSet, error)
 
 	// List retrieves list of ReplicaSets for a given namespace and list options.
-	ListReplicaSet(ctx context.Context, opts ...client.ListOption) (*ReplicaSetList, error)
+	ListReplicaSet(ctx context.Context, opts ...client.ListOption) (*apps_v1.ReplicaSetList, error)
 }
 
 // ReplicaSetTransitionFunction instructs the ReplicaSetWriter how to transition between an existing
 // ReplicaSet object and a desired on an Upsert
-type ReplicaSetTransitionFunction func(existing, desired *ReplicaSet) error
+type ReplicaSetTransitionFunction func(existing, desired *apps_v1.ReplicaSet) error
 
 // Writer knows how to create, delete, and update ReplicaSets.
 type ReplicaSetWriter interface {
 	// Create saves the ReplicaSet object.
-	CreateReplicaSet(ctx context.Context, obj *ReplicaSet, opts ...client.CreateOption) error
+	CreateReplicaSet(ctx context.Context, obj *apps_v1.ReplicaSet, opts ...client.CreateOption) error
 
 	// Delete deletes the ReplicaSet object.
 	DeleteReplicaSet(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
 	// Update updates the given ReplicaSet object.
-	UpdateReplicaSet(ctx context.Context, obj *ReplicaSet, opts ...client.UpdateOption) error
+	UpdateReplicaSet(ctx context.Context, obj *apps_v1.ReplicaSet, opts ...client.UpdateOption) error
 
 	// Patch patches the given ReplicaSet object.
-	PatchReplicaSet(ctx context.Context, obj *ReplicaSet, patch client.Patch, opts ...client.PatchOption) error
+	PatchReplicaSet(ctx context.Context, obj *apps_v1.ReplicaSet, patch client.Patch, opts ...client.PatchOption) error
 
 	// DeleteAllOf deletes all ReplicaSet objects matching the given options.
 	DeleteAllOfReplicaSet(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
 	// Create or Update the ReplicaSet object.
-	UpsertReplicaSet(ctx context.Context, obj *ReplicaSet, transitionFuncs ...ReplicaSetTransitionFunction) error
+	UpsertReplicaSet(ctx context.Context, obj *apps_v1.ReplicaSet, transitionFuncs ...ReplicaSetTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a ReplicaSet object.
 type ReplicaSetStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
 	// given ReplicaSet object.
-	UpdateReplicaSetStatus(ctx context.Context, obj *ReplicaSet, opts ...client.UpdateOption) error
+	UpdateReplicaSetStatus(ctx context.Context, obj *apps_v1.ReplicaSet, opts ...client.UpdateOption) error
 
 	// Patch patches the given ReplicaSet object's subresource.
-	PatchReplicaSetStatus(ctx context.Context, obj *ReplicaSet, patch client.Patch, opts ...client.PatchOption) error
+	PatchReplicaSetStatus(ctx context.Context, obj *apps_v1.ReplicaSet, patch client.Patch, opts ...client.PatchOption) error
 }
 
 // Client knows how to perform CRUD operations on ReplicaSets.
@@ -256,50 +255,50 @@ func NewReplicaSetClient(client client.Client) *replicaSetClient {
 	return &replicaSetClient{client: client}
 }
 
-func (c *replicaSetClient) GetReplicaSet(ctx context.Context, key client.ObjectKey) (*ReplicaSet, error) {
-	obj := &ReplicaSet{}
+func (c *replicaSetClient) GetReplicaSet(ctx context.Context, key client.ObjectKey) (*apps_v1.ReplicaSet, error) {
+	obj := &apps_v1.ReplicaSet{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (c *replicaSetClient) ListReplicaSet(ctx context.Context, opts ...client.ListOption) (*ReplicaSetList, error) {
-	list := &ReplicaSetList{}
+func (c *replicaSetClient) ListReplicaSet(ctx context.Context, opts ...client.ListOption) (*apps_v1.ReplicaSetList, error) {
+	list := &apps_v1.ReplicaSetList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
 	return list, nil
 }
 
-func (c *replicaSetClient) CreateReplicaSet(ctx context.Context, obj *ReplicaSet, opts ...client.CreateOption) error {
+func (c *replicaSetClient) CreateReplicaSet(ctx context.Context, obj *apps_v1.ReplicaSet, opts ...client.CreateOption) error {
 	return c.client.Create(ctx, obj, opts...)
 }
 
 func (c *replicaSetClient) DeleteReplicaSet(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &ReplicaSet{}
+	obj := &apps_v1.ReplicaSet{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
-func (c *replicaSetClient) UpdateReplicaSet(ctx context.Context, obj *ReplicaSet, opts ...client.UpdateOption) error {
+func (c *replicaSetClient) UpdateReplicaSet(ctx context.Context, obj *apps_v1.ReplicaSet, opts ...client.UpdateOption) error {
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *replicaSetClient) PatchReplicaSet(ctx context.Context, obj *ReplicaSet, patch client.Patch, opts ...client.PatchOption) error {
+func (c *replicaSetClient) PatchReplicaSet(ctx context.Context, obj *apps_v1.ReplicaSet, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
 func (c *replicaSetClient) DeleteAllOfReplicaSet(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &ReplicaSet{}
+	obj := &apps_v1.ReplicaSet{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *replicaSetClient) UpsertReplicaSet(ctx context.Context, obj *ReplicaSet, transitionFuncs ...ReplicaSetTransitionFunction) error {
+func (c *replicaSetClient) UpsertReplicaSet(ctx context.Context, obj *apps_v1.ReplicaSet, transitionFuncs ...ReplicaSetTransitionFunction) error {
 	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*ReplicaSet), desired.(*ReplicaSet)); err != nil {
+			if err := txFunc(existing.(*apps_v1.ReplicaSet), desired.(*apps_v1.ReplicaSet)); err != nil {
 				return err
 			}
 		}
@@ -309,10 +308,10 @@ func (c *replicaSetClient) UpsertReplicaSet(ctx context.Context, obj *ReplicaSet
 	return err
 }
 
-func (c *replicaSetClient) UpdateReplicaSetStatus(ctx context.Context, obj *ReplicaSet, opts ...client.UpdateOption) error {
+func (c *replicaSetClient) UpdateReplicaSetStatus(ctx context.Context, obj *apps_v1.ReplicaSet, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *replicaSetClient) PatchReplicaSetStatus(ctx context.Context, obj *ReplicaSet, patch client.Patch, opts ...client.PatchOption) error {
+func (c *replicaSetClient) PatchReplicaSetStatus(ctx context.Context, obj *apps_v1.ReplicaSet, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
