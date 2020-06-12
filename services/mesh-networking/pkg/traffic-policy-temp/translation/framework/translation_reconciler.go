@@ -8,7 +8,6 @@ import (
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
-	"github.com/solo-io/service-mesh-hub/pkg/common/reconciliation"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -16,65 +15,20 @@ import (
 //go:generate mockgen -source ./translation_reconciler.go -destination ./mocks/mock_translation_reconciler.go
 
 type TranslationProcessor interface {
-	Process(ctx context.Context) (snapshot.ClusterNameToSnapshot, error)
+	Process(ctx context.Context, allMeshServices []*smh_discovery.MeshService) (snapshot.ClusterNameToSnapshot, error)
 }
 
-func NewTranslationReconciler(
-	meshServiceClient smh_discovery.MeshServiceClient,
-	meshClient smh_discovery.MeshClient,
-	translationSnapshotBuilderGetter snapshot.TranslationSnapshotAccumulatorGetter,
-	snapshotReconciler snapshot.TranslationSnapshotReconciler,
-) reconciliation.Reconciler {
-	return &translationReconciler{
-		meshServiceClient:                meshServiceClient,
-		meshClient:                       meshClient,
-		translationSnapshotBuilderGetter: translationSnapshotBuilderGetter,
-		snapshotReconciler:               snapshotReconciler,
-	}
-}
 func NewTranslationProcessor(
-	meshServiceReader smh_discovery.MeshServiceReader,
 	meshReader smh_discovery.MeshReader,
 	translationSnapshotBuilderGetter snapshot.TranslationSnapshotAccumulatorGetter,
 ) TranslationProcessor {
 	return &translationProcessor{
-		meshServiceReader:                meshServiceReader,
 		meshReader:                       meshReader,
 		translationSnapshotBuilderGetter: translationSnapshotBuilderGetter,
 	}
 }
 
-type translationReconciler struct {
-	meshServiceClient                smh_discovery.MeshServiceClient
-	meshClient                       smh_discovery.MeshClient
-	translationSnapshotBuilderGetter snapshot.TranslationSnapshotAccumulatorGetter
-	snapshotReconciler               snapshot.TranslationSnapshotReconciler
-}
-
-func (*translationReconciler) GetName() string {
-	return "traffic-policy-translation-reconciler"
-}
-
-func (t *translationReconciler) Reconcile(ctx context.Context) error {
-	processor := translationProcessor{
-		meshServiceReader:                t.meshServiceClient,
-		meshReader:                       t.meshClient,
-		translationSnapshotBuilderGetter: t.translationSnapshotBuilderGetter,
-	}
-	clusterNameToSnapshot, err := processor.Process(ctx)
-	if err != nil {
-		return err
-	}
-	if clusterNameToSnapshot == nil {
-		return nil
-	}
-	// reconcile everything at once
-	return t.snapshotReconciler.ReconcileAllSnapshots(ctx, clusterNameToSnapshot)
-
-}
-
 type translationProcessor struct {
-	meshServiceReader                smh_discovery.MeshServiceReader
 	meshReader                       smh_discovery.MeshReader
 	translationSnapshotBuilderGetter snapshot.TranslationSnapshotAccumulatorGetter
 }
@@ -96,7 +50,7 @@ func NewClusterNameToSnapshot(knownMeshes []*smh_discovery.Mesh) snapshot.Cluste
 	return m
 }
 
-func (t *translationProcessor) Process(ctx context.Context) (snapshot.ClusterNameToSnapshot, error) {
+func (t *translationProcessor) Process(ctx context.Context, allMeshServices []*smh_discovery.MeshService) (snapshot.ClusterNameToSnapshot, error) {
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Debug("Running iteration of traffic policy translator")
 
@@ -121,19 +75,7 @@ func (t *translationProcessor) Process(ctx context.Context) (snapshot.ClusterNam
 
 	clusterNameToSnapshot := NewClusterNameToSnapshot(knownMeshes)
 
-	meshServiceList, err := t.meshServiceReader.ListMeshService(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var allMeshServices []*smh_discovery.MeshService
-	for _, meshService := range meshServiceList.Items {
-		meshService := meshService
-		allMeshServices = append(allMeshServices, &meshService)
-	}
-
-	for _, meshServiceIter := range meshServiceList.Items {
-		meshService := meshServiceIter
+	for _, meshService := range allMeshServices {
 
 		meshId := selection.ToUniqueSingleClusterString(selection.ResourceRefToObjectMeta(meshService.Spec.GetMesh()))
 		mesh, ok := meshIdToMesh[meshId]
@@ -154,7 +96,7 @@ func (t *translationProcessor) Process(ctx context.Context) (snapshot.ClusterNam
 		// run one round of translation just for this service, accumulating the results into our map
 		err = snapshotAccumulator.AccumulateFromTranslation(
 			clusterNameToSnapshot[ClusterKeyFromMesh(mesh)],
-			&meshService,
+			meshService,
 			allMeshServices,
 			mesh,
 		)

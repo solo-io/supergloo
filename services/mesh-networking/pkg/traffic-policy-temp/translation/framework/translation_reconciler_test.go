@@ -2,9 +2,7 @@ package translation_framework_test
 
 import (
 	"context"
-	"reflect"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -23,11 +21,9 @@ import (
 
 var _ = Describe("TranslationReconciler", func() {
 	var (
-		ctx               context.Context
-		ctrl              *gomock.Controller
-		meshServiceClient *mock_smh_discovery_clients.MockMeshServiceClient
-		meshClient        *mock_smh_discovery_clients.MockMeshClient
-		//	snapshotReconciler        *mock_snapshot.MockTranslationSnapshotReconciler
+		ctx                       context.Context
+		ctrl                      *gomock.Controller
+		meshClient                *mock_smh_discovery_clients.MockMeshClient
 		snapshotAccumulator       *mock_snapshot.MockTranslationSnapshotAccumulator
 		snapshotAccumulatorGetter snapshot.TranslationSnapshotAccumulatorGetter = func(meshType smh_core_types.MeshType) (accumulator snapshot.TranslationSnapshotAccumulator, err error) {
 			return snapshotAccumulator, nil
@@ -38,11 +34,9 @@ var _ = Describe("TranslationReconciler", func() {
 	BeforeEach(func() {
 		ctx = context.TODO()
 		ctrl = gomock.NewController(GinkgoT())
-		meshServiceClient = mock_smh_discovery_clients.NewMockMeshServiceClient(ctrl)
 		meshClient = mock_smh_discovery_clients.NewMockMeshClient(ctrl)
-		//snapshotReconciler = mock_snapshot.NewMockTranslationSnapshotReconciler(ctrl)
 		snapshotAccumulator = mock_snapshot.NewMockTranslationSnapshotAccumulator(ctrl)
-		processor = translation_framework.NewTranslationProcessor(meshServiceClient, meshClient, snapshotAccumulatorGetter)
+		processor = translation_framework.NewTranslationProcessor(meshClient, snapshotAccumulatorGetter)
 
 	})
 
@@ -56,7 +50,7 @@ var _ = Describe("TranslationReconciler", func() {
 				ListMesh(ctx).
 				Return(&smh_discovery.MeshList{}, nil)
 
-			snapshot, err := processor.Process(ctx)
+			snapshot, err := processor.Process(ctx, nil)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(snapshot).To(BeEmpty())
 		})
@@ -65,10 +59,6 @@ var _ = Describe("TranslationReconciler", func() {
 	When("we have meshes", func() {
 		When("we have no traffic targets (services or workloads) on those meshes", func() {
 			It("still runs the output reconciliation", func() {
-				meshServiceClient := mock_smh_discovery_clients.NewMockMeshServiceClient(ctrl)
-				meshClient := mock_smh_discovery_clients.NewMockMeshClient(ctrl)
-				snapshotReconciler := mock_snapshot.NewMockTranslationSnapshotReconciler(ctrl)
-				reconciler := translation_framework.NewTranslationReconciler(meshServiceClient, meshClient, nil, snapshotReconciler)
 				knownMeshes := []*smh_discovery.Mesh{
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-1"},
@@ -109,28 +99,15 @@ var _ = Describe("TranslationReconciler", func() {
 					Return(&smh_discovery.MeshList{
 						Items: []smh_discovery.Mesh{*knownMeshes[0], *knownMeshes[1], *knownMeshes[2]},
 					}, nil)
-				meshServiceClient.EXPECT().
-					ListMeshService(ctx).
-					Return(&smh_discovery.MeshServiceList{}, nil)
-				snapshotReconciler.EXPECT().
-					ReconcileAllSnapshots(ctx, ClusterSnapshotMatcher(clusterNameToSnapshot)).
-					Return(nil)
 
-				err := reconciler.Reconcile(ctx)
+				outSnapshot, err := processor.Process(ctx, nil)
 				Expect(err).NotTo(HaveOccurred())
+				Expect(outSnapshot).To(Equal(clusterNameToSnapshot))
 			})
 		})
 
 		When("we have traffic targets (services or workloads) on those meshes", func() {
 			It("generates the correct resources to be reconciled", func() {
-				meshServiceClient := mock_smh_discovery_clients.NewMockMeshServiceClient(ctrl)
-				meshClient := mock_smh_discovery_clients.NewMockMeshClient(ctrl)
-				snapshotReconciler := mock_snapshot.NewMockTranslationSnapshotReconciler(ctrl)
-				snapshotAccumulator := mock_snapshot.NewMockTranslationSnapshotAccumulator(ctrl)
-				var snapshotAccumulatorGetter snapshot.TranslationSnapshotAccumulatorGetter = func(meshType smh_core_types.MeshType) (accumulator snapshot.TranslationSnapshotAccumulator, err error) {
-					return snapshotAccumulator, nil
-				}
-				reconciler := translation_framework.NewTranslationReconciler(meshServiceClient, meshClient, snapshotAccumulatorGetter, snapshotReconciler)
 				knownMeshes := []*smh_discovery.Mesh{
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-1"},
@@ -179,11 +156,6 @@ var _ = Describe("TranslationReconciler", func() {
 					ListMesh(ctx).
 					Return(&smh_discovery.MeshList{
 						Items: []smh_discovery.Mesh{*knownMeshes[0], *knownMeshes[1], *knownMeshes[2]},
-					}, nil)
-				meshServiceClient.EXPECT().
-					ListMeshService(ctx).
-					Return(&smh_discovery.MeshServiceList{
-						Items: []smh_discovery.MeshService{*meshServices[0], *meshServices[1], *meshServices[2]},
 					}, nil)
 				snapshotAccumulator.EXPECT().
 					AccumulateFromTranslation(gomock.Any(), meshServices[0], meshServices, knownMeshes[0]).
@@ -255,52 +227,11 @@ var _ = Describe("TranslationReconciler", func() {
 					}},
 				}
 
-				snapshotReconciler.EXPECT().
-					ReconcileAllSnapshots(ctx, ClusterSnapshotMatcher(expectedClusterNameToSnapshot)).
-					Return(nil)
-
-				err := reconciler.Reconcile(ctx)
+				outSnapshot, err := processor.Process(ctx, meshServices)
 				Expect(err).NotTo(HaveOccurred())
+				Expect(outSnapshot).To(Equal(expectedClusterNameToSnapshot))
+
 			})
 		})
 	})
 })
-
-func ClusterSnapshotMatcher(cnts snapshot.ClusterNameToSnapshot) gomock.Matcher {
-	return gomock.GotFormatterAdapter(
-		gomock.GotFormatterFunc(func(i interface{}) string {
-			return spew.Sdump(i)
-		}), &clusterSnapshotMatcher{
-			this: cnts,
-		},
-	)
-}
-
-type clusterSnapshotMatcher struct {
-	this snapshot.ClusterNameToSnapshot
-}
-
-// Matches returns whether x is a match.
-func (c *clusterSnapshotMatcher) Matches(x interface{}) bool {
-	if other, ok := x.(snapshot.ClusterNameToSnapshot); ok {
-		if len(other) != len(c.this) {
-			return false
-		}
-		for k, v := range other {
-			if v2, ok := c.this[k]; ok {
-				if !reflect.DeepEqual(v, v2) {
-					return false
-				}
-			} else {
-				return false
-			}
-		}
-		return true
-	}
-	return false
-}
-
-// String describes what the matcher matches.
-func (c *clusterSnapshotMatcher) String() string {
-	return spew.Sdump(c.this)
-}

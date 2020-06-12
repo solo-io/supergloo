@@ -224,5 +224,4 @@ var _ = Describe("Reconcile", func() {
 		err := reconciler.Reconcile(ctx)
 		Expect(err).To(MatchError(ContainSubstring("translation error")))
 	})
-
 })

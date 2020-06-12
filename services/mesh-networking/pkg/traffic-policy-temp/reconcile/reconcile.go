@@ -103,8 +103,7 @@ func (v *Reconciler) Reconcile(ctx context.Context) error {
 		}
 	}
 
-	// TODO: ideally, we need to provide this process with the cache
-	if clusterNameToSnapshot, err := v.translationProcessor.Process(ctx); err == nil {
+	if clusterNameToSnapshot, err := v.translationProcessor.Process(ctx, meshServices); err == nil {
 		v.snapshotReconciler.ReconcileAllSnapshots(ctx, clusterNameToSnapshot)
 	} else {
 		multierr = multierror.Append(multierr, err)

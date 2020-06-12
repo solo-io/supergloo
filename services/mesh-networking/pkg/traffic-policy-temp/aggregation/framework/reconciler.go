@@ -3,7 +3,6 @@ package aggregation_framework
 import (
 	"context"
 
-	"github.com/hashicorp/go-multierror"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
@@ -11,7 +10,6 @@ import (
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
-	"github.com/solo-io/service-mesh-hub/pkg/common/reconciliation"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 )
@@ -20,79 +18,6 @@ import (
 
 type AggregateProcessor interface {
 	Process(ctx context.Context, allTrafficPolicies []*smh_networking.TrafficPolicy) (*ProcessedObjects, error)
-}
-
-func NewAggregationReconciler(
-	trafficPolicyClient smh_networking.TrafficPolicyClient,
-	meshServiceClient smh_discovery.MeshServiceClient,
-	meshClient smh_discovery.MeshClient,
-	policyCollector traffic_policy_aggregation.PolicyCollector,
-	translationValidators func(meshType smh_core_types.MeshType) (mesh_translation.TranslationValidator, error),
-	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator,
-) reconciliation.Reconciler {
-	return &aggregationReconciler{
-		trafficPolicyClient:   trafficPolicyClient,
-		meshServiceClient:     meshServiceClient,
-		meshClient:            meshClient,
-		policyCollector:       policyCollector,
-		translationValidators: translationValidators,
-		inMemoryStatusMutator: inMemoryStatusMutator,
-	}
-}
-
-type aggregationReconciler struct {
-	trafficPolicyClient   smh_networking.TrafficPolicyClient
-	meshServiceClient     smh_discovery.MeshServiceClient
-	meshClient            smh_discovery.MeshClient
-	policyCollector       traffic_policy_aggregation.PolicyCollector
-	translationValidators func(meshType smh_core_types.MeshType) (mesh_translation.TranslationValidator, error)
-	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator
-}
-
-func (a *aggregationReconciler) GetName() string {
-	return "traffic-policy-aggregation"
-}
-
-func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
-	allTrafficPoliciesList, err := a.trafficPolicyClient.ListTrafficPolicy(ctx)
-	if err != nil {
-		return err
-	}
-
-	var allTrafficPolicies []*smh_networking.TrafficPolicy
-	for _, tp := range allTrafficPoliciesList.Items {
-		trafficPolicy := tp
-		allTrafficPolicies = append(allTrafficPolicies, &trafficPolicy)
-	}
-
-	processor := NewAggregationProcessor(a.meshServiceClient,
-		a.meshClient,
-		a.policyCollector,
-		a.translationValidators,
-		a.inMemoryStatusMutator,
-	)
-
-	objToUpdate, err := processor.Process(ctx, allTrafficPolicies)
-	if err != nil {
-		return err
-	}
-
-	var multierr error
-
-	for _, service := range objToUpdate.MeshServices {
-		err := a.meshServiceClient.UpdateMeshServiceStatus(ctx, service)
-		if err != nil {
-			multierr = multierror.Append(multierr, err)
-		}
-	}
-
-	for _, policy := range objToUpdate.TrafficPolicies {
-		err := a.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, policy)
-		if err != nil {
-			multierr = multierror.Append(multierr, err)
-		}
-	}
-	return multierr
 }
 
 type ProcessedObjects struct {
