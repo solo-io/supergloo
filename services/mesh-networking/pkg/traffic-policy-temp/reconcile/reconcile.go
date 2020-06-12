@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-multierror"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/reconciliation"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/common/reconciliation"
 	aggregation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/framework"
 	translation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
@@ -14,12 +14,12 @@ import (
 )
 
 func NewValidationReconciler() reconciliation.Reconciler {
-	return &validationLoop{}
+	return &reconciler{}
 }
 
-type validationLoop struct {
-	trafficPolicyClient zephyr_networking.TrafficPolicyClient
-	meshServiceClient   zephyr_discovery.MeshServiceClient
+type reconciler struct {
+	trafficPolicyClient smh_networking.TrafficPolicyClient
+	meshServiceClient   smh_discovery.MeshServiceClient
 
 	snapshotReconciler snapshot.TranslationSnapshotReconciler
 
@@ -28,11 +28,29 @@ type validationLoop struct {
 	translationProcessor translation_framework.TranslationProcessor
 }
 
-func (*validationLoop) GetName() string {
-	return "traffic-policy-validation"
+func NewReconciler(
+	trafficPolicyClient smh_networking.TrafficPolicyClient,
+	meshServiceClient smh_discovery.MeshServiceClient,
+	snapshotReconciler snapshot.TranslationSnapshotReconciler,
+	validationProcessor traffic_policy_validation.ValidationProcessor,
+	aggregationProcessor aggregation_framework.AggregateProcessor,
+	translationProcessor translation_framework.TranslationProcessor,
+) reconciliation.Reconciler {
+	return &reconciler{
+		trafficPolicyClient:  trafficPolicyClient,
+		meshServiceClient:    meshServiceClient,
+		snapshotReconciler:   snapshotReconciler,
+		validationProcessor:  validationProcessor,
+		aggregationProcessor: aggregationProcessor,
+		translationProcessor: translationProcessor,
+	}
 }
 
-func (v *validationLoop) Reconcile(ctx context.Context) error {
+func (*reconciler) GetName() string {
+	return "traffic-policy-reconciler"
+}
+
+func (v *reconciler) Reconcile(ctx context.Context) error {
 	var multierr error
 
 	trafficPolicies, err := v.trafficPolicyClient.ListTrafficPolicy(ctx)
@@ -40,7 +58,7 @@ func (v *validationLoop) Reconcile(ctx context.Context) error {
 		return err
 	}
 
-	var allTrafficPolicies []*zephyr_networking.TrafficPolicy
+	var allTrafficPolicies []*smh_networking.TrafficPolicy
 	for _, tp := range trafficPolicies.Items {
 		trafficPolicy := tp
 		allTrafficPolicies = append(allTrafficPolicies, &trafficPolicy)
@@ -51,7 +69,7 @@ func (v *validationLoop) Reconcile(ctx context.Context) error {
 		return err
 	}
 
-	var meshServices []*zephyr_discovery.MeshService
+	var meshServices []*smh_discovery.MeshService
 	for _, ms := range meshServiceList.Items {
 		meshService := ms
 		meshServices = append(meshServices, &meshService)

@@ -8,9 +8,6 @@ import (
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 )
 
-type ValidationProcessor interface {
-	Process(ctx context.Context, allTrafficPolicies []*smh_networking.TrafficPolicy, meshServices []*smh_discovery.MeshService) []*smh_networking.TrafficPolicy
-}
 type trafficPolicyReaderStatusUpdater interface {
 	smh_networking.TrafficPolicyReader
 	smh_networking.TrafficPolicyStatusWriter
@@ -21,24 +18,24 @@ func NewValidationProcessor(
 	meshServiceReader smh_discovery.MeshServiceReader,
 	validator Validator,
 ) ValidationProcessor {
-	return &validationLoop{
+	return &validationProcessor{
 		trafficPolicyClient: trafficPolicyClient,
 		validator:           validator,
 		meshServiceReader:   meshServiceReader,
 	}
 }
 
-type validationLoop struct {
+type validationProcessor struct {
 	trafficPolicyClient trafficPolicyReaderStatusUpdater
 	meshServiceReader   smh_discovery.MeshServiceReader
 	validator           Validator
 }
 
-func (*validationLoop) GetName() string {
+func (*validationProcessor) GetName() string {
 	return "traffic-policy-validation"
 }
 
-func (v *validationLoop) Process(ctx context.Context, allTrafficPolicies []*smh_networking.TrafficPolicy, meshServices []*smh_discovery.MeshService) []*smh_networking.TrafficPolicy {
+func (v *validationProcessor) Process(ctx context.Context, allTrafficPolicies []*smh_networking.TrafficPolicy, meshServices []*smh_discovery.MeshService) []*smh_networking.TrafficPolicy {
 	logger := contextutils.LoggerFrom(ctx)
 	var updatedPolicies []*smh_networking.TrafficPolicy
 

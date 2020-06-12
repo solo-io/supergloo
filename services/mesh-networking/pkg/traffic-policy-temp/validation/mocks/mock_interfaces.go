@@ -5,12 +5,12 @@
 package mock_traffic_policy_validation
 
 import (
-	reflect "reflect"
-
+	context "context"
 	gomock "github.com/golang/mock/gomock"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	reflect "reflect"
 )
 
 // MockValidator is a mock of Validator interface.
@@ -49,4 +49,41 @@ func (m *MockValidator) ValidateTrafficPolicy(trafficPolicy *v1alpha10.TrafficPo
 func (mr *MockValidatorMockRecorder) ValidateTrafficPolicy(trafficPolicy, allMeshServices interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateTrafficPolicy", reflect.TypeOf((*MockValidator)(nil).ValidateTrafficPolicy), trafficPolicy, allMeshServices)
+}
+
+// MockValidationProcessor is a mock of ValidationProcessor interface.
+type MockValidationProcessor struct {
+	ctrl     *gomock.Controller
+	recorder *MockValidationProcessorMockRecorder
+}
+
+// MockValidationProcessorMockRecorder is the mock recorder for MockValidationProcessor.
+type MockValidationProcessorMockRecorder struct {
+	mock *MockValidationProcessor
+}
+
+// NewMockValidationProcessor creates a new mock instance.
+func NewMockValidationProcessor(ctrl *gomock.Controller) *MockValidationProcessor {
+	mock := &MockValidationProcessor{ctrl: ctrl}
+	mock.recorder = &MockValidationProcessorMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockValidationProcessor) EXPECT() *MockValidationProcessorMockRecorder {
+	return m.recorder
+}
+
+// Process mocks base method.
+func (m *MockValidationProcessor) Process(ctx context.Context, allTrafficPolicies []*v1alpha10.TrafficPolicy, meshServices []*v1alpha1.MeshService) []*v1alpha10.TrafficPolicy {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Process", ctx, allTrafficPolicies, meshServices)
+	ret0, _ := ret[0].([]*v1alpha10.TrafficPolicy)
+	return ret0
+}
+
+// Process indicates an expected call of Process.
+func (mr *MockValidationProcessorMockRecorder) Process(ctx, allTrafficPolicies, meshServices interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Process", reflect.TypeOf((*MockValidationProcessor)(nil).Process), ctx, allTrafficPolicies, meshServices)
 }
