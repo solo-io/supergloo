@@ -91,7 +91,7 @@ func (a *awsCloudStore) instantiateNewCloud(accountId, region string) (*AwsCloud
 		Eks:     eks_temp.NewEksClient(sess),
 		Sts:     clients.NewSTSClient(sess),
 	}
-	a.awsCloudStore.Store(sessionKey{accountId: accountId, region: region}, &awsCloud)
+	a.awsCloudStore.Store(sessionKey{accountId: accountId, region: region}, awsCloud)
 	return awsCloud, nil
 }
 
