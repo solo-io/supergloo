@@ -10,4 +10,6 @@ type AwsCloudStore interface {
 	Add(accountId string, creds *credentials.Credentials)
 	// Retrieve the stored session by AwsCloud ID and region.
 	Get(accountId, region string) (*AwsCloud, error)
+	// Remove AWS credentials for a given accountID
+	Remove(accountId string)
 }

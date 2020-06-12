@@ -9,4 +9,5 @@ import (
 type AwsCloud struct {
 	Appmesh clients.AppmeshClient
 	Eks     eks_temp.EksClient
+	Sts     clients.STSClient
 }

@@ -15,6 +15,9 @@ import (
 	If it does exist, update it if its spec doesn't match the provided resource spec. Otherwise do nothing.
 */
 type AppmeshClient interface {
+	ListMeshes(input *appmesh2.ListMeshesInput) (*appmesh2.ListMeshesOutput, error)
+	ListTagsForResource(*appmesh2.ListTagsForResourceInput) (*appmesh2.ListTagsForResourceOutput, error)
+
 	EnsureVirtualService(virtualServiceData *appmesh2.VirtualServiceData) error
 	EnsureVirtualRouter(virtualRouter *appmesh2.VirtualRouterData) error
 	EnsureRoute(route *appmesh2.RouteData) error

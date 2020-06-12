@@ -14,6 +14,8 @@ import (
 	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/aws_creds"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/matcher"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/settings"
@@ -54,13 +56,14 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
 	arnParser := aws_utils.NewArnParser()
-	appmeshRawClientFactory := clients.AppmeshRawClientFactoryProvider()
 	settingsClient := v1alpha1_2.SettingsClientProvider(client)
 	settingsHelperClient := settings.NewAwsSettingsHelperClient(settingsClient)
 	awsSelector := selection.NewAwsSelector(arnParser)
-	appMeshDiscoveryReconciler := appmesh.NewAppMeshDiscoveryReconciler(client, meshClientFactory, arnParser, appmeshRawClientFactory, settingsHelperClient, awsSelector)
+	appmeshMatcher := matcher.NewAppmeshMatcher()
+	appmeshClientFactory := clients.AppmeshClientFactoryProvider(appmeshMatcher)
+	awsCloudStore := cloud.NewAwsCloudStore(appmeshClientFactory)
+	appMeshDiscoveryReconciler := appmesh.NewAppMeshDiscoveryReconciler(client, meshClientFactory, arnParser, settingsHelperClient, awsSelector, awsCloudStore)
 	kubernetesClusterClient := v1alpha1.KubernetesClusterClientProvider(client)
-	eksClientFactory := eks.EksClientFactoryProvider()
 	eksConfigBuilderFactory := eks.EksConfigBuilderFactoryProvider()
 	secretClientFromConfigFactory := v1.SecretClientFromConfigFactoryProvider()
 	kubernetesClusterClientFromConfigFactory := v1alpha1.KubernetesClusterClientFromConfigFactoryProvider()
@@ -78,10 +81,10 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	if err != nil {
 		return DiscoveryContext{}, err
 	}
-	eksDiscoveryReconciler := eks2.NewEksDiscoveryReconciler(kubernetesClusterClient, eksClientFactory, eksConfigBuilderFactory, clusterRegistrationClient, settingsHelperClient, awsSelector)
+	eksDiscoveryReconciler := eks2.NewEksDiscoveryReconciler(kubernetesClusterClient, eksConfigBuilderFactory, clusterRegistrationClient, settingsHelperClient, awsSelector, awsCloudStore)
 	v := AwsDiscoveryReconcilersProvider(appMeshDiscoveryReconciler, eksDiscoveryReconciler)
 	stsClientFactory := clients.STSClientFactoryProvider()
-	awsCredsHandler := aws.NewAwsAPIHandler(secretAwsCredsConverter, v, stsClientFactory)
+	awsCredsHandler := aws.NewAwsAPIHandler(secretAwsCredsConverter, v, stsClientFactory, awsCloudStore)
 	v2 := ComputeTargetCredentialsHandlersProvider(asyncManagerController, awsCredsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v2)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)

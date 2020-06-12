@@ -18,7 +18,7 @@ func STSClientFactoryProvider() STSClientFactory {
 		if err != nil {
 			return nil, err
 		}
-		return NewSTSClient(sts.New(sess)), nil
+		return NewSTSClient(sess), nil
 	}
 }
 
@@ -26,8 +26,8 @@ type stsClient struct {
 	client *sts.STS
 }
 
-func NewSTSClient(client *sts.STS) STSClient {
-	return &stsClient{client: client}
+func NewSTSClient(sess *session.Session) STSClient {
+	return &stsClient{client: sts.New(sess)}
 }
 
 func (s *stsClient) GetCallerIdentity() (*sts.GetCallerIdentityOutput, error) {

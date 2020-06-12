@@ -7,6 +7,8 @@ import (
 	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/aws_creds"
 	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/matcher"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration"
 	compute_target "github.com/solo-io/service-mesh-hub/pkg/common/compute-target"
@@ -33,12 +35,13 @@ var AwsSet = wire.NewSet(
 	aws_utils.NewAwsAccountIdFetcher,
 	meshworkload_appmesh.AppMeshWorkloadScannerFactoryProvider,
 	smh_discovery.KubernetesClusterClientProvider,
-	eks_client.EksClientFactoryProvider,
 	eks_client.EksConfigBuilderFactoryProvider,
-	appmesh2.AppmeshRawClientFactoryProvider,
+	appmesh2.AppmeshClientFactoryProvider,
 	AwsDiscoveryReconcilersProvider,
 	appmesh.NewAppMeshDiscoveryReconciler,
 	eks.NewEksDiscoveryReconciler,
+	matcher.NewAppmeshMatcher,
+	cloud.NewAwsCloudStore,
 )
 
 var ClusterRegistrationSet = wire.NewSet(

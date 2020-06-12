@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
@@ -72,11 +71,12 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, accountID st
 	discoveredSMHMeshNames := sets.NewString()
 	var errors *multierror.Error
 	for region, selectors := range selectorsByRegion {
-		appmeshClient, err := a.awsCloudStore.Get(accountID, region)
+		awsCloud, err := a.awsCloudStore.Get(accountID, region)
 		if err != nil {
 			errors = multierror.Append(errors, err)
 			continue
 		}
+		appmeshClient := awsCloud.Appmesh
 		var nextToken *string
 		input := &appmesh.ListMeshesInput{
 			Limit:     NumItemsPerRequest,

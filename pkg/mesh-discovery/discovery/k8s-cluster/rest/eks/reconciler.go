@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	smh_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	cloud2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/settings"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration"
@@ -44,28 +44,28 @@ var (
 
 type eksReconciler struct {
 	kubeClusterClient         v1alpha1.KubernetesClusterClient
-	eksClientFactory          eks_client.EksClientFactory
 	eksConfigBuilderFactory   eks_client.EksConfigBuilderFactory
 	clusterRegistrationClient cluster_registration.ClusterRegistrationClient
 	settingsClient            settings.SettingsHelperClient
 	awsSelector               settings_utils.AwsSelector
+	awsCloudStore             cloud2.AwsCloudStore
 }
 
 func NewEksDiscoveryReconciler(
 	kubeClusterClient v1alpha1.KubernetesClusterClient,
-	eksClientFactory eks_client.EksClientFactory,
 	eksConfigBuilderFactory eks_client.EksConfigBuilderFactory,
 	clusterRegistrationClient cluster_registration.ClusterRegistrationClient,
 	settingsClient settings.SettingsHelperClient,
 	awsSelector settings_utils.AwsSelector,
+	awsCloudStore cloud2.AwsCloudStore,
 ) compute_target_aws.EksDiscoveryReconciler {
 	return &eksReconciler{
 		kubeClusterClient:         kubeClusterClient,
-		eksClientFactory:          eksClientFactory,
 		eksConfigBuilderFactory:   eksConfigBuilderFactory,
 		clusterRegistrationClient: clusterRegistrationClient,
 		settingsClient:            settingsClient,
 		awsSelector:               awsSelector,
+		awsCloudStore:             awsCloudStore,
 	}
 }
 
@@ -73,7 +73,7 @@ func (e *eksReconciler) GetName() string {
 	return ReconcilerName
 }
 
-func (e *eksReconciler) Reconcile(ctx context.Context, sess *session.Session, accountID string) error {
+func (e *eksReconciler) Reconcile(ctx context.Context, accountID string) error {
 	selectorsByRegion, err := e.fetchSelectorsByRegion(ctx, accountID)
 	if err != nil {
 		return err
@@ -85,12 +85,12 @@ func (e *eksReconciler) Reconcile(ctx context.Context, sess *session.Session, ac
 	}
 	var errors *multierror.Error
 	for region, selectors := range selectorsByRegion {
-		eksClient, err := e.eksClientFactory(sess)
+		awsCloud, err := e.awsCloudStore.Get(accountID, region)
 		if err != nil {
 			errors = multierror.Append(errors, err)
 			continue
 		}
-		clusterNamesOnAWSForRegion, smhToAwsClusterNames, err := e.fetchEksClustersOnAWS(ctx, eksClient, region, selectors)
+		clusterNamesOnAWSForRegion, smhToAwsClusterNames, err := e.fetchEksClustersOnAWS(ctx, awsCloud.Eks, region, selectors)
 		if err != nil {
 			errors = multierror.Append(errors, err)
 			continue
@@ -99,7 +99,7 @@ func (e *eksReconciler) Reconcile(ctx context.Context, sess *session.Session, ac
 		clustersToRegister := clusterNamesOnAWSForRegion.Difference(clusterNamesOnSMH)
 		for _, clusterName := range clustersToRegister.List() {
 			awsClusterName := smhToAwsClusterNames[clusterName]
-			err := e.registerCluster(ctx, eksClient, awsClusterName, clusterName)
+			err := e.registerCluster(ctx, awsCloud.Eks, awsClusterName, clusterName)
 			if k8s_errs.IsUnauthorized(err) {
 				if err != nil {
 					return err

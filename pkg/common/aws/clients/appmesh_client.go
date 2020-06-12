@@ -35,6 +35,14 @@ func NewAppmeshClient(
 	}
 }
 
+func (a *appmeshClient) ListMeshes(input *appmesh.ListMeshesInput) (*appmesh.ListMeshesOutput, error) {
+	return a.client.ListMeshes(input)
+}
+
+func (a *appmeshClient) ListTagsForResource(input *appmesh.ListTagsForResourceInput) (*appmesh.ListTagsForResourceOutput, error) {
+	return a.client.ListTagsForResource(input)
+}
+
 func (a *appmeshClient) EnsureVirtualService(virtualService *appmesh.VirtualServiceData) error {
 	resp, err := a.client.DescribeVirtualService(&appmesh.DescribeVirtualServiceInput{
 		MeshName:           virtualService.MeshName,

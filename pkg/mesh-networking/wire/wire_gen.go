@@ -19,7 +19,7 @@ import (
 	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/aws_creds"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
-	"github.com/solo-io/service-mesh-hub/pkg/common/aws/credentials"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/matcher"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/translation"
 	mc_wire "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/wire"
@@ -65,10 +65,12 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	fileReader := files.NewDefaultFileReader()
 	converter := kubeconfig.NewConverter(fileReader)
 	asyncManagerController := mc_wire.KubeClusterCredentialsHandlerProvider(converter)
-	awsCredentialsGetter := credentials.NewCredentialsGetter()
 	stsClientFactory := clients.STSClientFactoryProvider()
 	secretAwsCredsConverter := aws_creds.DefaultSecretAwsCredsConverter()
-	computeTargetCredentialsHandler := aws.NewNetworkingAwsCredsHandler(awsCredentialsGetter, stsClientFactory, secretAwsCredsConverter)
+	appmeshMatcher := matcher.NewAppmeshMatcher()
+	appmeshClientFactory := clients.AppmeshClientFactoryProvider(appmeshMatcher)
+	awsCloudStore := cloud.NewAwsCloudStore(appmeshClientFactory)
+	computeTargetCredentialsHandler := aws.NewNetworkingAwsCredsHandler(stsClientFactory, secretAwsCredsConverter, awsCloudStore)
 	v := ComputeTargetCredentialsHandlersProvider(asyncManagerController, computeTargetCredentialsHandler)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(v)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
@@ -128,10 +130,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	istioEnforcer := istio.NewIstioEnforcer(dynamicClientGetter, authorizationPolicyClientFactory)
 	appmeshTranslator := translation.NewAppmeshTranslator()
 	meshWorkloadClient := v1alpha1_3.MeshWorkloadClientProvider(client)
-	appmeshMatcher := matcher.NewAppmeshMatcher()
-	appmeshRawClientFactory := clients.AppmeshRawClientFactoryProvider()
-	appmeshClientGetter := clients.AppmeshClientGetterProvider(appmeshMatcher, awsCredentialsGetter, appmeshRawClientFactory)
-	appmeshTranslationDao := translation.NewAppmeshAccessControlDao(meshServiceClient, meshWorkloadClient, resourceSelector, appmeshClientGetter, accessControlPolicyClient)
+	appmeshTranslationDao := translation.NewAppmeshAccessControlDao(meshServiceClient, meshWorkloadClient, resourceSelector, awsCloudStore, accessControlPolicyClient)
 	appmeshTranslationReconciler := translation.NewAppmeshTranslationReconciler(appmeshTranslator, appmeshTranslationDao)
 	appmeshEnforcer := appmesh.NewAppmeshEnforcer(appmeshTranslationReconciler)
 	v4 := GlobalAccessControlPolicyMeshEnforcersProvider(istioEnforcer, appmeshEnforcer)
