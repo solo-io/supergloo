@@ -6,18 +6,13 @@ import (
 	"github.com/hashicorp/go-multierror"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/reconciliation"
 	aggregation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/framework"
 	translation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 	traffic_policy_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/validation"
 )
 
-func NewValidationReconciler() reconciliation.Reconciler {
-	return &reconciler{}
-}
-
-type reconciler struct {
+type Reconciler struct {
 	trafficPolicyClient smh_networking.TrafficPolicyClient
 	meshServiceClient   smh_discovery.MeshServiceClient
 
@@ -35,8 +30,8 @@ func NewReconciler(
 	validationProcessor traffic_policy_validation.ValidationProcessor,
 	aggregationProcessor aggregation_framework.AggregateProcessor,
 	translationProcessor translation_framework.TranslationProcessor,
-) reconciliation.Reconciler {
-	return &reconciler{
+) *Reconciler {
+	return &Reconciler{
 		trafficPolicyClient:  trafficPolicyClient,
 		meshServiceClient:    meshServiceClient,
 		snapshotReconciler:   snapshotReconciler,
@@ -46,11 +41,11 @@ func NewReconciler(
 	}
 }
 
-func (*reconciler) GetName() string {
+func (*Reconciler) GetName() string {
 	return "traffic-policy-reconciler"
 }
 
-func (v *reconciler) Reconcile(ctx context.Context) error {
+func (v *Reconciler) Reconcile(ctx context.Context) error {
 	var multierr error
 
 	trafficPolicies, err := v.trafficPolicyClient.ListTrafficPolicy(ctx)
