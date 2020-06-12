@@ -61,12 +61,12 @@ func (t *translationReconciler) Reconcile(ctx context.Context) error {
 }
 
 type translationProcessor struct {
-	meshServiceReader                zephyr_discovery.MeshServiceReader
-	meshReader                       zephyr_discovery.MeshReader
+	meshServiceReader                smh_discovery.MeshServiceReader
+	meshReader                       smh_discovery.MeshReader
 	translationSnapshotBuilderGetter snapshot.TranslationSnapshotAccumulatorGetter
 }
 
-func ClusterKeyFromMesh(mesh *zephyr_discovery.Mesh) types.NamespacedName {
+func ClusterKeyFromMesh(mesh *smh_discovery.Mesh) types.NamespacedName {
 	return types.NamespacedName{
 		Name:      mesh.Spec.Cluster.Name,
 		Namespace: mesh.Spec.Cluster.Namespace,
@@ -75,7 +75,7 @@ func ClusterKeyFromMesh(mesh *zephyr_discovery.Mesh) types.NamespacedName {
 
 // return a map that's pre-populated for every cluster name referenced in the meshes
 // we still want to run reconciliation for clusters where there are no mesh services
-func NewClusterNameToSnapshot(knownMeshes []*zephyr_discovery.Mesh) snapshot.ClusterNameToSnapshot {
+func NewClusterNameToSnapshot(knownMeshes []*smh_discovery.Mesh) snapshot.ClusterNameToSnapshot {
 	m := snapshot.ClusterNameToSnapshot{}
 	for _, mesh := range knownMeshes {
 		m[ClusterKeyFromMesh(mesh)] = &snapshot.TranslatedSnapshot{}
