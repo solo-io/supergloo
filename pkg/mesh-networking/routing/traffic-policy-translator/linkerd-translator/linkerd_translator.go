@@ -3,11 +3,12 @@ package linkerd_translator
 import (
 	"context"
 	"fmt"
+	"sort"
+
 	linkerd_client "github.com/solo-io/external-apis/pkg/api/linkerd/linkerd.io/v1alpha2"
 	linkerd_client_providers "github.com/solo-io/external-apis/pkg/api/linkerd/linkerd.io/v1alpha2/providers"
 	smi_networking "github.com/solo-io/external-apis/pkg/api/smi/split.smi-spec.io/v1alpha1"
 	smi_networking_providers "github.com/solo-io/external-apis/pkg/api/smi/split.smi-spec.io/v1alpha1/providers"
-	"sort"
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"

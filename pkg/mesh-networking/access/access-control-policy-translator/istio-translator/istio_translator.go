@@ -3,9 +3,10 @@ package istio_translator
 import (
 	"context"
 	"fmt"
+	"strconv"
+
 	istio_security "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1"
 	istio_security_providers "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/providers"
-	"strconv"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/stringutils"

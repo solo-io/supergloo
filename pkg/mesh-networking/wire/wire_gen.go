@@ -8,11 +8,11 @@ package wire
 import (
 	"context"
 
-	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
-	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	v1_2 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"

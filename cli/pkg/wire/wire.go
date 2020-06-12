@@ -7,6 +7,8 @@ import (
 	"io"
 
 	"github.com/google/wire"
+	kubernetes_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
@@ -35,8 +37,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
-	kubernetes_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
-	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration"

@@ -2,8 +2,9 @@ package crd_uninstall
 
 import (
 	"context"
-	kubernetes_apiext_providers "github.com/solo-io/external-apis/pkg/api/k8s/apiextensions.k8s.io/v1beta1/providers"
 	"strings"
+
+	kubernetes_apiext_providers "github.com/solo-io/external-apis/pkg/api/k8s/apiextensions.k8s.io/v1beta1/providers"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/common/constants"

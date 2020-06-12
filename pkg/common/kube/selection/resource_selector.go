@@ -2,6 +2,7 @@ package selection
 
 import (
 	"context"
+
 	kubernetes_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
 
 	"github.com/rotisserie/eris"

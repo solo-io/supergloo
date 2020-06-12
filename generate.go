@@ -1,13 +1,14 @@
 package main
 
 import (
+	"log"
+
 	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/contrib"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"log"
 )
 
 var (
@@ -31,11 +32,11 @@ func main() {
 
 func run() error {
 	log.Printf("generating smh")
-	if err := makeSmhCommand().Execute(); err != nil{
+	if err := makeSmhCommand().Execute(); err != nil {
 		return err
 	}
 	log.Printf("generating csr-agent")
-	if err := makeCsrCommand().Execute(); err != nil{
+	if err := makeCsrCommand().Execute(); err != nil {
 		return err
 	}
 	return nil

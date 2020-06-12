@@ -2,8 +2,9 @@ package cluster_registration
 
 import (
 	"context"
-	k8s_core_v1_clients_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 	"io/ioutil"
+
+	k8s_core_v1_clients_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 
 	"github.com/rotisserie/eris"
 	k8s_core_v1_clients "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"

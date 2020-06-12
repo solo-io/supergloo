@@ -2,6 +2,7 @@ package appmesh
 
 import (
 	"context"
+
 	smh_discovery_providers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/providers"
 
 	"github.com/aws/aws-sdk-go/aws"

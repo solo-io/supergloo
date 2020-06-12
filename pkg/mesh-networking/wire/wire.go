@@ -6,9 +6,9 @@ import (
 	"context"
 
 	"github.com/google/wire"
-	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	kubernetes_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/pkg/common/csr-generator"

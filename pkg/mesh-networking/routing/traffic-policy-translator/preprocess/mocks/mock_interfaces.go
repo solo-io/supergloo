@@ -6,11 +6,12 @@ package mock_preprocess
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	selection "github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
-	reflect "reflect"
 )
 
 // MockTrafficPolicyPreprocessor is a mock of TrafficPolicyPreprocessor interface.

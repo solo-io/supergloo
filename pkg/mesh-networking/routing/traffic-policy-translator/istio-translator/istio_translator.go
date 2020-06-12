@@ -2,9 +2,10 @@ package istio_translator
 
 import (
 	"context"
-	istio_networking_providers "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/providers"
 	"sort"
 	"strings"
+
+	istio_networking_providers "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/providers"
 
 	"github.com/rotisserie/eris"
 	istio_networking "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"

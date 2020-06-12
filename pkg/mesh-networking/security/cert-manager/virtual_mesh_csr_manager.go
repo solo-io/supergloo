@@ -3,8 +3,9 @@ package cert_manager
 import (
 	"context"
 	"fmt"
-	smh_security_providers "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/providers"
 	"strings"
+
+	smh_security_providers "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/providers"
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"

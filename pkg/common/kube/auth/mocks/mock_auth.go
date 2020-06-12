@@ -6,12 +6,13 @@ package mock_auth
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	v1 "k8s.io/api/core/v1"
 	v10 "k8s.io/api/rbac/v1"
 	rest "k8s.io/client-go/rest"
-	reflect "reflect"
 )
 
 // MockRbacClient is a mock of RbacClient interface.

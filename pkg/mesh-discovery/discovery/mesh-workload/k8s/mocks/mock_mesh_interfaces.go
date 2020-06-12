@@ -6,13 +6,14 @@ package mock_mesh_workload
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
+	controller0 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
-	controller0 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	v1 "k8s.io/api/apps/v1"
 	v10 "k8s.io/api/core/v1"
-	reflect "reflect"
 )
 
 // MockMeshWorkloadFinder is a mock of MeshWorkloadFinder interface.

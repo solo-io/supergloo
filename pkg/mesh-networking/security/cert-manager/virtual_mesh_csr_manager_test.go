@@ -3,6 +3,8 @@ package cert_manager_test
 import (
 	"context"
 
+	smh_security_providers "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/providers"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -40,7 +42,7 @@ var _ = Describe("csr manager", func() {
 		csrClient           *mock_smh_security.MockVirtualMeshCertificateSigningRequestClient
 		certConfigProducer  *mock_cert_manager.MockCertConfigProducer
 
-		mockCsrClientFactory smh_security.VirtualMeshCertificateSigningRequestClientFactory = func(
+		mockCsrClientFactory smh_security_providers.VirtualMeshCertificateSigningRequestClientFactory = func(
 			client client.Client) smh_security.VirtualMeshCertificateSigningRequestClient {
 			return csrClient
 		}

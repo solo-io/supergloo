@@ -6,11 +6,12 @@ package mock_status
 
 import (
 	context "context"
+	io "io"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	status "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
-	io "io"
-	reflect "reflect"
 )
 
 // MockStatusClient is a mock of StatusClient interface.

@@ -6,9 +6,10 @@ package mock_multicluster
 
 import (
 	context "context"
+	reflect "reflect"
+
 	retry "github.com/avast/retry-go"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 

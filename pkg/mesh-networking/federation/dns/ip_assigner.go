@@ -8,8 +8,8 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	k8s_core_types "k8s.io/api/core/v1"

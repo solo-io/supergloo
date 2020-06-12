@@ -3,12 +3,13 @@ package cluster_registration
 import (
 	"context"
 	"fmt"
-	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 	"io/ioutil"
 	"net"
 	"net/url"
 	"strings"
+
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 
 	"github.com/rotisserie/eris"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
