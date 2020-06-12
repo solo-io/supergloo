@@ -23,13 +23,27 @@ import (
 
 var _ = Describe("TranslationReconciler", func() {
 	var (
-		ctx  context.Context
-		ctrl *gomock.Controller
+		ctx               context.Context
+		ctrl              *gomock.Controller
+		meshServiceClient *mock_smh_discovery_clients.MockMeshServiceClient
+		meshClient        *mock_smh_discovery_clients.MockMeshClient
+		//	snapshotReconciler        *mock_snapshot.MockTranslationSnapshotReconciler
+		snapshotAccumulator       *mock_snapshot.MockTranslationSnapshotAccumulator
+		snapshotAccumulatorGetter snapshot.TranslationSnapshotAccumulatorGetter = func(meshType smh_core_types.MeshType) (accumulator snapshot.TranslationSnapshotAccumulator, err error) {
+			return snapshotAccumulator, nil
+		}
+		processor translation_framework.TranslationProcessor
 	)
 
 	BeforeEach(func() {
 		ctx = context.TODO()
 		ctrl = gomock.NewController(GinkgoT())
+		meshServiceClient = mock_smh_discovery_clients.NewMockMeshServiceClient(ctrl)
+		meshClient = mock_smh_discovery_clients.NewMockMeshClient(ctrl)
+		//snapshotReconciler = mock_snapshot.NewMockTranslationSnapshotReconciler(ctrl)
+		snapshotAccumulator = mock_snapshot.NewMockTranslationSnapshotAccumulator(ctrl)
+		processor = translation_framework.NewTranslationProcessor(meshServiceClient, meshClient, snapshotAccumulatorGetter)
+
 	})
 
 	AfterEach(func() {
@@ -38,16 +52,13 @@ var _ = Describe("TranslationReconciler", func() {
 
 	When("no resources exist", func() {
 		It("does nothing", func() {
-			meshServiceClient := mock_smh_discovery_clients.NewMockMeshServiceClient(ctrl)
-			meshClient := mock_smh_discovery_clients.NewMockMeshClient(ctrl)
-			reconciler := translation_framework.NewTranslationReconciler(meshServiceClient, meshClient, nil, nil)
-
 			meshClient.EXPECT().
 				ListMesh(ctx).
 				Return(&smh_discovery.MeshList{}, nil)
 
-			err := reconciler.Reconcile(ctx)
+			snapshot, err := processor.Process(ctx)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(snapshot).To(BeEmpty())
 		})
 	})
 
@@ -63,25 +74,34 @@ var _ = Describe("TranslationReconciler", func() {
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-1"},
 						Spec: smh_discovery_types.MeshSpec{
 							MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
+							Cluster: &smh_core_types.ResourceRef{
+								Name: "cluster1",
+							},
 						},
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-2"},
 						Spec: smh_discovery_types.MeshSpec{
 							MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
+							Cluster: &smh_core_types.ResourceRef{
+								Name: "cluster2",
+							},
 						},
 					},
 					{
 						ObjectMeta: k8s_meta_types.ObjectMeta{Name: "mesh-3"},
 						Spec: smh_discovery_types.MeshSpec{
 							MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
+							Cluster: &smh_core_types.ResourceRef{
+								Name: "cluster2",
+							},
 						},
 					},
 				}
 				// contents don't matter
-				clusterNameToSnapshot := map[string]*snapshot.TranslatedSnapshot{
-					"cluster1": {},
-					"cluster2": {},
+				clusterNameToSnapshot := snapshot.ClusterNameToSnapshot{
+					translation_framework.ClusterKeyFromMesh(knownMeshes[0]): {},
+					translation_framework.ClusterKeyFromMesh(knownMeshes[1]): {},
 				}
 
 				meshClient.EXPECT().
@@ -93,7 +113,7 @@ var _ = Describe("TranslationReconciler", func() {
 					ListMeshService(ctx).
 					Return(&smh_discovery.MeshServiceList{}, nil)
 				snapshotReconciler.EXPECT().
-					ReconcileAllSnapshots(ctx, clusterNameToSnapshot).
+					ReconcileAllSnapshots(ctx, ClusterSnapshotMatcher(clusterNameToSnapshot)).
 					Return(nil)
 
 				err := reconciler.Reconcile(ctx)

@@ -32,6 +32,17 @@ func NewTranslationReconciler(
 		snapshotReconciler:               snapshotReconciler,
 	}
 }
+func NewTranslationProcessor(
+	meshServiceReader smh_discovery.MeshServiceReader,
+	meshReader smh_discovery.MeshReader,
+	translationSnapshotBuilderGetter snapshot.TranslationSnapshotAccumulatorGetter,
+) TranslationProcessor {
+	return &translationProcessor{
+		meshServiceReader:                meshServiceReader,
+		meshReader:                       meshReader,
+		translationSnapshotBuilderGetter: translationSnapshotBuilderGetter,
+	}
+}
 
 type translationReconciler struct {
 	meshServiceClient                smh_discovery.MeshServiceClient
@@ -70,8 +81,8 @@ type translationProcessor struct {
 
 func ClusterKeyFromMesh(mesh *smh_discovery.Mesh) types.NamespacedName {
 	return types.NamespacedName{
-		Name:      mesh.Spec.Cluster.Name,
-		Namespace: mesh.Spec.Cluster.Namespace,
+		Name:      mesh.Spec.GetCluster().GetName(),
+		Namespace: mesh.Spec.GetCluster().GetNamespace(),
 	}
 }
 
