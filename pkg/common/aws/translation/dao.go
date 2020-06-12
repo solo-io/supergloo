@@ -201,50 +201,6 @@ func (a *appmeshTranslationDao) listMeshWorkloadsForMesh(
 	return meshWorkloads, nil
 }
 
-func (a *appmeshTranslationDao) EnsureVirtualService(
-	mesh *smh_discovery.Mesh,
-	virtualServiceData *appmesh.VirtualServiceData,
-) error {
-	appmeshClient, err := a.getAppmeshClient(mesh)
-	if err != nil {
-		return err
-	}
-	return appmeshClient.EnsureVirtualService(virtualServiceData)
-}
-
-func (a *appmeshTranslationDao) EnsureVirtualRouter(
-	mesh *smh_discovery.Mesh,
-	virtualRouter *appmesh.VirtualRouterData,
-) error {
-	appmeshClient, err := a.getAppmeshClient(mesh)
-	if err != nil {
-		return err
-	}
-	return appmeshClient.EnsureVirtualRouter(virtualRouter)
-}
-
-func (a *appmeshTranslationDao) EnsureRoute(
-	mesh *smh_discovery.Mesh,
-	route *appmesh.RouteData,
-) error {
-	appmeshClient, err := a.getAppmeshClient(mesh)
-	if err != nil {
-		return err
-	}
-	return appmeshClient.EnsureRoute(route)
-}
-
-func (a *appmeshTranslationDao) EnsureVirtualNode(
-	mesh *smh_discovery.Mesh,
-	virtualNode *appmesh.VirtualNodeData,
-) error {
-	appmeshClient, err := a.getAppmeshClient(mesh)
-	if err != nil {
-		return err
-	}
-	return appmeshClient.EnsureVirtualNode(virtualNode)
-}
-
 func (a *appmeshTranslationDao) ReconcileVirtualRoutersAndRoutesAndVirtualServices(
 	ctx context.Context,
 	mesh *smh_discovery.Mesh,

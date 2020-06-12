@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	smh_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	cloud2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
+	mock_cloud2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud/mocks"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/selection"
 	mock_settings "github.com/solo-io/service-mesh-hub/pkg/common/aws/selection/mocks"
 	mock_settings2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/settings/mocks"
@@ -37,12 +38,14 @@ var _ = Describe("Reconciler", func() {
 		ctrl                          *gomock.Controller
 		ctx                           context.Context
 		accountID                     = "accountid"
+		region                        = "region"
 		mockKubeClusterClient         *mock_core.MockKubernetesClusterClient
-		mockEksClient                 *mock_cloud.MockEksClient
 		mockEksConfigBuilder          *mock_discovery.MockEksConfigBuilder
 		mockClusterRegistrationClient *mock_registration.MockClusterRegistrationClient
 		mockAwsSelector               *mock_settings.MockAwsSelector
 		mockSettingsHelperClient      *mock_settings2.MockSettingsHelperClient
+		mockEksClient                 *mock_cloud.MockEksClient
+		mockAwsCloudStore             *mock_cloud2.MockAwsCloudStore
 		eksReconciler                 compute_target_aws.EksDiscoveryReconciler
 	)
 
@@ -55,23 +58,29 @@ var _ = Describe("Reconciler", func() {
 		mockClusterRegistrationClient = mock_registration.NewMockClusterRegistrationClient(ctrl)
 		mockSettingsHelperClient = mock_settings2.NewMockSettingsHelperClient(ctrl)
 		mockAwsSelector = mock_settings.NewMockAwsSelector(ctrl)
+		mockAwsCloudStore = mock_cloud2.NewMockAwsCloudStore(ctrl)
 		eksReconciler = discovery_eks.NewEksDiscoveryReconciler(
 			mockKubeClusterClient,
-			func(creds *credentials.Credentials, region string) (cloud.EksClient, error) {
-				return mockEksClient, nil
-			},
 			func(eksClient cloud.EksClient) discovery.EksConfigBuilder {
 				return mockEksConfigBuilder
 			},
 			mockClusterRegistrationClient,
 			mockSettingsHelperClient,
 			mockAwsSelector,
+			mockAwsCloudStore,
 		)
 	})
 
 	AfterEach(func() {
 		ctrl.Finish()
 	})
+
+	var expectGetAwsCloud = func() {
+		awsCloud := &cloud2.AwsCloud{
+			Eks: mockEksClient,
+		}
+		mockAwsCloudStore.EXPECT().Get(accountID, region).Return(awsCloud, nil)
+	}
 
 	var expectFetchEksClustersOnAWS = func(
 		region string,
@@ -144,7 +153,7 @@ var _ = Describe("Reconciler", func() {
 	}
 
 	It("should reconcile for all regions with empty eks_discovery object", func() {
-		region := "region"
+		expectGetAwsCloud()
 		selectors := settings_utils.AwsSelectorsByRegion{
 			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
@@ -170,12 +179,12 @@ var _ = Describe("Reconciler", func() {
 		for _, clusterToRegister := range clustersToRegister.List() {
 			expectRegisterCluster(smhToAwsClusterNames[clusterToRegister], clusterToRegister)
 		}
-		err := eksReconciler.Reconcile(ctx, &credentials.Credentials{}, accountID)
+		err := eksReconciler.Reconcile(ctx, accountID)
 		Expect(err).To(BeNil())
 	})
 
 	It("should reconcile for all regions with eks_discovery populated with empty resource_selectors", func() {
-		region := "region"
+		expectGetAwsCloud()
 		selectors := settings_utils.AwsSelectorsByRegion{
 			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
@@ -203,12 +212,12 @@ var _ = Describe("Reconciler", func() {
 		for _, clusterToRegister := range clustersToRegister.List() {
 			expectRegisterCluster(smhToAwsClusterNames[clusterToRegister], clusterToRegister)
 		}
-		err := eksReconciler.Reconcile(ctx, &credentials.Credentials{}, accountID)
+		err := eksReconciler.Reconcile(ctx, accountID)
 		Expect(err).To(BeNil())
 	})
 
 	It("should reconcile all regions if eks_discovery is nil", func() {
-		region := "region"
+		expectGetAwsCloud()
 		selectors := settings_utils.AwsSelectorsByRegion{
 			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
@@ -231,7 +240,7 @@ var _ = Describe("Reconciler", func() {
 		for _, clusterToRegister := range clustersToRegister.List() {
 			expectRegisterCluster(smhToAwsClusterNames[clusterToRegister], clusterToRegister)
 		}
-		err := eksReconciler.Reconcile(ctx, &credentials.Credentials{}, accountID)
+		err := eksReconciler.Reconcile(ctx, accountID)
 		Expect(err).To(BeNil())
 	})
 
@@ -239,7 +248,7 @@ var _ = Describe("Reconciler", func() {
 		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(nil, nil)
 
 		expectFetchEksClustersOnSMH()
-		err := eksReconciler.Reconcile(ctx, &credentials.Credentials{}, accountID)
+		err := eksReconciler.Reconcile(ctx, accountID)
 		Expect(err).To(BeNil())
 	})
 })

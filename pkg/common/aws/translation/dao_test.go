@@ -3,6 +3,8 @@ package translation_test
 import (
 	"context"
 
+	aws2 "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -12,8 +14,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	types3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
-	mock_appmesh "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients/mocks"
+	mock_clients "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
+	mock_cloud "github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/common/kube/selection/mocks"
@@ -30,7 +33,7 @@ var _ = Describe("Dao", func() {
 		mockMeshWorkloadClient *mock_core.MockMeshWorkloadClient
 		mockAcpClient          *mock_smh_networking.MockAccessControlPolicyClient
 		mockResourceSelector   *mock_selector.MockResourceSelector
-		mockAppmeshClient      *mock_appmesh.MockAppmeshClient
+		mockAwsCloudStore      *mock_cloud.MockAwsCloudStore
 		dao                    translation.AppmeshTranslationDao
 		mesh                   = &smh_discovery.Mesh{
 			ObjectMeta: v1.ObjectMeta{
@@ -40,7 +43,9 @@ var _ = Describe("Dao", func() {
 			Spec: types.MeshSpec{
 				MeshType: &types.MeshSpec_AwsAppMesh_{
 					AwsAppMesh: &types.MeshSpec_AwsAppMesh{
-						Name: "appmesh-name",
+						Name:         "appmesh-name",
+						Region:       "region",
+						AwsAccountId: "accountID",
 					},
 				},
 			},
@@ -54,14 +59,12 @@ var _ = Describe("Dao", func() {
 		mockMeshWorkloadClient = mock_core.NewMockMeshWorkloadClient(ctrl)
 		mockAcpClient = mock_smh_networking.NewMockAccessControlPolicyClient(ctrl)
 		mockResourceSelector = mock_selector.NewMockResourceSelector(ctrl)
-		mockAppmeshClient = mock_appmesh.NewMockAppmeshClient(ctrl)
+		mockAwsCloudStore = mock_cloud.NewMockAwsCloudStore(ctrl)
 		dao = translation.NewAppmeshAccessControlDao(
 			mockMeshServiceClient,
 			mockMeshWorkloadClient,
 			mockResourceSelector,
-			func(mesh *smh_discovery.Mesh) (clients.AppmeshClient, error) {
-				return mockAppmeshClient, nil
-			},
+			mockAwsCloudStore,
 			mockAcpClient,
 		)
 	})
@@ -303,5 +306,43 @@ var _ = Describe("Dao", func() {
 		Expect(workloadsToUpstreamServices).To(
 			HaveKeyWithValue(selection.ToUniqueSingleClusterString(workloads[1].ObjectMeta),
 				Equal(smh_discovery_sets.NewMeshServiceSet(services[1], services[2]))))
+	})
+
+	It("should ReconcileVirtualRoutersAndRoutesAndVirtualServices", func() {
+		virtualRouters := []*appmesh.VirtualRouterData{}
+		routes := []*appmesh.RouteData{}
+		virtualServices := []*appmesh.VirtualServiceData{}
+		mockAppmeshClient := mock_clients.NewMockAppmeshClient(ctrl)
+		awsCloud := &cloud.AwsCloud{
+			Appmesh: mockAppmeshClient,
+		}
+		mockAwsCloudStore.
+			EXPECT().
+			Get(mesh.Spec.GetAwsAppMesh().GetAwsAccountId(), mesh.Spec.GetAwsAppMesh().GetRegion()).
+			Return(awsCloud, nil)
+		mockAppmeshClient.
+			EXPECT().
+			ReconcileVirtualRoutersAndRoutesAndVirtualServices(ctx, aws2.String(mesh.Spec.GetAwsAppMesh().GetName()), virtualRouters, routes, virtualServices).
+			Return(nil)
+		err := dao.ReconcileVirtualRoutersAndRoutesAndVirtualServices(ctx, mesh, virtualRouters, routes, virtualServices)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("should ReconcileVirtualNodes", func() {
+		virtualNodes := []*appmesh.VirtualNodeData{}
+		mockAppmeshClient := mock_clients.NewMockAppmeshClient(ctrl)
+		awsCloud := &cloud.AwsCloud{
+			Appmesh: mockAppmeshClient,
+		}
+		mockAwsCloudStore.
+			EXPECT().
+			Get(mesh.Spec.GetAwsAppMesh().GetAwsAccountId(), mesh.Spec.GetAwsAppMesh().GetRegion()).
+			Return(awsCloud, nil)
+		mockAppmeshClient.
+			EXPECT().
+			ReconcileVirtualNodes(ctx, aws2.String(mesh.Spec.GetAwsAppMesh().GetName()), virtualNodes).
+			Return(nil)
+		err := dao.ReconcileVirtualNodes(ctx, mesh, virtualNodes)
+		Expect(err).ToNot(HaveOccurred())
 	})
 })

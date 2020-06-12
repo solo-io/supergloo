@@ -5,15 +5,16 @@ import (
 	"fmt"
 
 	aws2 "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	smh_settings_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	mock_appmesh "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients/mocks"
+	cloud2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
+	mock_cloud2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud/mocks"
 	mock_aws "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser/mocks"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/selection"
 	mock_settings "github.com/solo-io/service-mesh-hub/pkg/common/aws/selection/mocks"
@@ -23,7 +24,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	aws4 "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target/aws"
 	smh_discovery_appmesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/rest/appmesh"
-	mock_appmesh_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/aws/appmesh"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,12 +36,15 @@ var _ = Describe("Reconciler", func() {
 		ctrl                       *gomock.Controller
 		ctx                        context.Context
 		mockMeshClient             *mock_core.MockMeshClient
-		mockAppMeshClient          *mock_appmesh_clients.MockAppMeshAPI
+		mockAppmeshClient          *mock_appmesh.MockAppmeshClient
 		mockArnParser              *mock_aws.MockArnParser
 		awsAccountID               string
 		appMeshDiscoveryReconciler aws4.RestAPIDiscoveryReconciler
 		mockAwsSelector            *mock_settings.MockAwsSelector
+		mockAwsCloudStore          *mock_cloud2.MockAwsCloudStore
 		mockSettingsHelperClient   *mock_settings2.MockSettingsHelperClient
+		region                     = "region"
+		accountId                  = "accountID"
 	)
 
 	BeforeEach(func() {
@@ -50,26 +53,32 @@ var _ = Describe("Reconciler", func() {
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockArnParser = mock_aws.NewMockArnParser(ctrl)
 		awsAccountID = "410461945555"
-		mockAppMeshClient = mock_appmesh_clients.NewMockAppMeshAPI(ctrl)
+		mockAppmeshClient = mock_appmesh.NewMockAppmeshClient(ctrl)
 		mockSettingsHelperClient = mock_settings2.NewMockSettingsHelperClient(ctrl)
 		mockAwsSelector = mock_settings.NewMockAwsSelector(ctrl)
+		mockAwsCloudStore = mock_cloud2.NewMockAwsCloudStore(ctrl)
 		appMeshDiscoveryReconciler = smh_discovery_appmesh.NewAppMeshDiscoveryReconciler(
 			nil,
 			func(client client.Client) smh_discovery.MeshClient {
 				return mockMeshClient
 			},
 			mockArnParser,
-			func(creds *credentials.Credentials, region string) (appmeshiface.AppMeshAPI, error) {
-				return mockAppMeshClient, nil
-			},
 			mockSettingsHelperClient,
 			mockAwsSelector,
+			mockAwsCloudStore,
 		)
 	})
 
 	AfterEach(func() {
 		ctrl.Finish()
 	})
+
+	var expectGetAwsCloud = func() {
+		awsCloud := &cloud2.AwsCloud{
+			Appmesh: mockAppmeshClient,
+		}
+		mockAwsCloudStore.EXPECT().Get(accountId, region).Return(awsCloud, nil)
+	}
 
 	var expectReconcileMeshesByRegion = func(region string, selectors []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector) {
 		page1Input := &appmesh.ListMeshesInput{
@@ -120,23 +129,23 @@ var _ = Describe("Reconciler", func() {
 			NextToken: nil,
 		}
 		mockArnParser.EXPECT().ParseAccountID(gomock.Any()).Times(len(meshRefs)).Return(awsAccountID, nil)
-		mockAppMeshClient.EXPECT().ListMeshes(page1Input).Return(page1, nil)
+		mockAppmeshClient.EXPECT().ListMeshes(page1Input).Return(page1, nil)
 		for _, appmeshRef := range page1.Meshes {
 			tagsOutput := &appmesh.ListTagsForResourceOutput{
 				Tags: []*appmesh.TagRef{{Key: aws2.String("k"), Value: aws2.String("v")}},
 			}
-			mockAppMeshClient.
+			mockAppmeshClient.
 				EXPECT().
 				ListTagsForResource(&appmesh.ListTagsForResourceInput{ResourceArn: appmeshRef.Arn}).
 				Return(tagsOutput, nil)
 			mockAwsSelector.EXPECT().AppMeshMatchedBySelectors(appmeshRef, tagsOutput.Tags, selectors).Return(true, nil)
 		}
-		mockAppMeshClient.EXPECT().ListMeshes(page2Input).Return(page2, nil)
+		mockAppmeshClient.EXPECT().ListMeshes(page2Input).Return(page2, nil)
 		for _, appmeshRef := range page2.Meshes {
 			tagsOutput := &appmesh.ListTagsForResourceOutput{
 				Tags: []*appmesh.TagRef{{Key: aws2.String("k"), Value: aws2.String("v")}},
 			}
-			mockAppMeshClient.
+			mockAppmeshClient.
 				EXPECT().
 				ListTagsForResource(&appmesh.ListTagsForResourceInput{ResourceArn: appmeshRef.Arn}).
 				Return(tagsOutput, nil)
@@ -194,8 +203,7 @@ var _ = Describe("Reconciler", func() {
 	}
 
 	It("should reconcile Meshes for all regions with empty appmesh_discovery", func() {
-		accountID := "accountID"
-		region := "region"
+		expectGetAwsCloud()
 		selectors := settings_utils.AwsSelectorsByRegion{
 			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
@@ -208,21 +216,20 @@ var _ = Describe("Reconciler", func() {
 			},
 		}
 		settings := &smh_settings_types.SettingsSpec_AwsAccount{
-			AccountId:     accountID,
+			AccountId:     accountId,
 			MeshDiscovery: &smh_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{},
 		}
 		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetMeshDiscovery()).Return(true)
-		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
+		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountId).Return(settings, nil)
 		mockAwsSelector.EXPECT().AwsSelectorsForAllRegions().Return(selectors)
 
 		expectReconcileMeshesByRegion(region, selectors[region])
-		err := appMeshDiscoveryReconciler.Reconcile(ctx, nil, accountID)
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, accountId)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should reconcile Meshes for all regions with nil appmesh_discovery", func() {
-		accountID := "accountID"
-		region := "region"
+		expectGetAwsCloud()
 		selectors := settings_utils.AwsSelectorsByRegion{
 			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
@@ -235,20 +242,19 @@ var _ = Describe("Reconciler", func() {
 			},
 		}
 		settings := &smh_settings_types.SettingsSpec_AwsAccount{
-			AccountId: accountID,
+			AccountId: accountId,
 		}
 		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetMeshDiscovery()).Return(true)
-		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
+		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountId).Return(settings, nil)
 		mockAwsSelector.EXPECT().AwsSelectorsForAllRegions().Return(selectors)
 
 		expectReconcileMeshesByRegion(region, selectors[region])
-		err := appMeshDiscoveryReconciler.Reconcile(ctx, nil, accountID)
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, accountId)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should reconcile Meshes for all regions with appmesh_discovery populated with empty resource_selectors", func() {
-		accountID := "accountID"
-		region := "region"
+		expectGetAwsCloud()
 		selectors := settings_utils.AwsSelectorsByRegion{
 			region: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{
 				{
@@ -261,17 +267,17 @@ var _ = Describe("Reconciler", func() {
 			},
 		}
 		settings := &smh_settings_types.SettingsSpec_AwsAccount{
-			AccountId: accountID,
+			AccountId: accountId,
 			MeshDiscovery: &smh_settings_types.SettingsSpec_AwsAccount_DiscoverySelector{
 				ResourceSelectors: []*smh_settings_types.SettingsSpec_AwsAccount_ResourceSelector{},
 			},
 		}
 		mockAwsSelector.EXPECT().IsDiscoverAll(settings.GetMeshDiscovery()).Return(true)
-		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(settings, nil)
+		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountId).Return(settings, nil)
 		mockAwsSelector.EXPECT().AwsSelectorsForAllRegions().Return(selectors)
 
 		expectReconcileMeshesByRegion(region, selectors[region])
-		err := appMeshDiscoveryReconciler.Reconcile(ctx, nil, accountID)
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, accountId)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -318,13 +324,12 @@ var _ = Describe("Reconciler", func() {
 			existingMesh := existingMesh
 			mockMeshClient.EXPECT().DeleteMesh(ctx, selection.ObjectMetaToObjectKey(existingMesh.ObjectMeta)).Return(nil)
 		}
-		err := appMeshDiscoveryReconciler.Reconcile(ctx, &credentials.Credentials{}, accountID)
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, accountID)
 		Expect(err).To(BeNil())
 	})
 
 	It("should not reconcile if account settings not found and clear all Appmeshes from SMH", func() {
-		accountID := "accountID"
-		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountID).Return(nil, nil)
+		mockSettingsHelperClient.EXPECT().GetAWSSettingsForAccount(ctx, accountId).Return(nil, nil)
 
 		existingMeshes := &smh_discovery.MeshList{
 			Items: []smh_discovery.Mesh{
@@ -359,7 +364,7 @@ var _ = Describe("Reconciler", func() {
 			existingMesh := existingMesh
 			mockMeshClient.EXPECT().DeleteMesh(ctx, selection.ObjectMetaToObjectKey(existingMesh.ObjectMeta)).Return(nil)
 		}
-		err := appMeshDiscoveryReconciler.Reconcile(ctx, &credentials.Credentials{}, accountID)
+		err := appMeshDiscoveryReconciler.Reconcile(ctx, accountId)
 		Expect(err).To(BeNil())
 	})
 })

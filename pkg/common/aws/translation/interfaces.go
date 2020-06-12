@@ -73,26 +73,6 @@ type AppmeshTranslationDao interface {
 		mesh *smh_discovery.Mesh,
 	) (smh_discovery_sets.MeshWorkloadSet, map[string]smh_discovery_sets.MeshServiceSet, error)
 
-	EnsureVirtualService(
-		mesh *smh_discovery.Mesh,
-		virtualServiceData *appmesh.VirtualServiceData,
-	) error
-
-	EnsureVirtualRouter(
-		mesh *smh_discovery.Mesh,
-		virtualRouter *appmesh.VirtualRouterData,
-	) error
-
-	EnsureRoute(
-		mesh *smh_discovery.Mesh,
-		route *appmesh.RouteData,
-	) error
-
-	EnsureVirtualNode(
-		mesh *smh_discovery.Mesh,
-		virtualNode *appmesh.VirtualNodeData,
-	) error
-
 	// These need to be reconciled as a unit because of the ordering constraints imposed by the AWS API.
 	ReconcileVirtualRoutersAndRoutesAndVirtualServices(
 		ctx context.Context,
