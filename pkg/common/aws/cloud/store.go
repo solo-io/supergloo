@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	AwsCloudNotFound = func(accountID, region string) error {
-		return eris.Errorf("AWS session not found for account ID %s and region %s", accountID, region)
+	AwsCredsNotFound = func(err error, accountId string) error {
+		return eris.Wrapf(err, "AWS credentials for account ID %s not found.", accountId)
 	}
 )
 
@@ -74,7 +74,7 @@ func (a *awsCloudStore) Remove(accountId string) {
 func (a *awsCloudStore) instantiateNewCloud(accountId, region string) (*AwsCloud, error) {
 	creds, err := a.credsStore.Get(accountId)
 	if err != nil {
-		return nil, eris.Wrapf(err, "AWS credentials for account ID %s not found.", accountId)
+		return nil, AwsCredsNotFound(err, accountId)
 	}
 	regions, ok := a.accountToRegion[accountId]
 	if !ok {
