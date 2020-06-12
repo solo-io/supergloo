@@ -14,29 +14,30 @@ var (
 )
 
 type awsCredentialsStore struct {
-	store sync.Map
+	//meshToCreds map[string]*credentials.Credentials
+	meshToCreds sync.Map
 }
 
-func NewCredentialsGetter() AwsCredentialsStore {
+func NewCredentialsStore() AwsCredentialsStore {
 	return &awsCredentialsStore{}
 }
 
 func (c *awsCredentialsStore) Get(accountID string) (*credentials.Credentials, error) {
-	val, ok := c.store.Load(accountID)
+	val, ok := c.meshToCreds.Load(accountID)
 	if !ok {
 		return nil, CredsNotFound(accountID)
 	}
 	creds, ok := val.(*credentials.Credentials)
 	if !ok {
-		return nil, eris.New("Could not cast AWS credentials value.")
+		return nil, eris.New("Could not cast AWS credentials value")
 	}
 	return creds, nil
 }
 
 func (c *awsCredentialsStore) Set(accountID string, creds *credentials.Credentials) {
-	c.store.Store(accountID, creds)
+	c.meshToCreds.Store(accountID, creds)
 }
 
 func (c *awsCredentialsStore) Remove(accountId string) {
-	c.store.Delete(accountId)
+	c.meshToCreds.Delete(accountId)
 }

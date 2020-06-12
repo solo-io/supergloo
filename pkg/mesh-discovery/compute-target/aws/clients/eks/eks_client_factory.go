@@ -1,14 +1,15 @@
 package eks
 
 import (
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target/aws/clients/eks_temp"
 	"github.com/solo-io/skv2/pkg/multicluster/discovery/cloud"
 )
 
-type EksClientFactory func(creds *credentials.Credentials, region string) (cloud.EksClient, error)
+type EksClientFactory func(sess *session.Session) cloud.EksClient
 
 func EksClientFactoryProvider() EksClientFactory {
-	return func(creds *credentials.Credentials, region string) (cloud.EksClient, error) {
-		return cloud.NewEksClient(region, creds)
+	return func(sess *session.Session) cloud.EksClient {
+		return eks_temp.NewEksClient(sess)
 	}
 }

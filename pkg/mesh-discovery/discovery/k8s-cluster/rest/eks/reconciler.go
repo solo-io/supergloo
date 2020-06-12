@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
@@ -35,10 +35,10 @@ var (
 	FailedRegisteringCluster = func(err error, name string) error {
 		return eris.Wrapf(err, "Failed to register EKS cluster %s", name)
 	}
-	UnauthorizedForEKSCluster = func(accessKeyID string, eksClusterName string) error {
-		return eris.Errorf("AWS credentials (access_key_id: %s) are not authorized for EKS cluster %s. "+
+	UnauthorizedForEKSCluster = func(accountID string, eksClusterName string) error {
+		return eris.Errorf("AWS credentials for accountID: %s are not authorized for EKS cluster %s. "+
 			"See https://aws.amazon.com/premiumsupport/knowledge-center/eks-api-server-unauthorized-error for details on how to enable "+
-			"access for the provided credentials.", accessKeyID, eksClusterName)
+			"access for the provided credentials.", accountID, eksClusterName)
 	}
 )
 
@@ -73,7 +73,7 @@ func (e *eksReconciler) GetName() string {
 	return ReconcilerName
 }
 
-func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Credentials, accountID string) error {
+func (e *eksReconciler) Reconcile(ctx context.Context, sess *session.Session, accountID string) error {
 	selectorsByRegion, err := e.fetchSelectorsByRegion(ctx, accountID)
 	if err != nil {
 		return err
@@ -85,7 +85,7 @@ func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Creden
 	}
 	var errors *multierror.Error
 	for region, selectors := range selectorsByRegion {
-		eksClient, err := e.eksClientFactory(creds, region)
+		eksClient, err := e.eksClientFactory(sess)
 		if err != nil {
 			errors = multierror.Append(errors, err)
 			continue
@@ -101,11 +101,10 @@ func (e *eksReconciler) Reconcile(ctx context.Context, creds *credentials.Creden
 			awsClusterName := smhToAwsClusterNames[clusterName]
 			err := e.registerCluster(ctx, eksClient, awsClusterName, clusterName)
 			if k8s_errs.IsUnauthorized(err) {
-				credsValue, err := creds.Get()
 				if err != nil {
 					return err
 				}
-				return UnauthorizedForEKSCluster(credsValue.AccessKeyID, awsClusterName)
+				return UnauthorizedForEKSCluster(accountID, awsClusterName)
 			} else if err != nil {
 				return FailedRegisteringCluster(err, awsClusterName)
 			}

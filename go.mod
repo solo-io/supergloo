@@ -42,6 +42,7 @@ require (
 	github.com/rotisserie/eris v0.2.0
 	github.com/sergi/go-diff v1.1.0
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
+	github.com/softlayer/softlayer-go v0.0.0-20180806151055-260589d94c7d
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
 	github.com/solo-io/go-utils v0.16.0
@@ -66,6 +67,7 @@ require (
 	k8s.io/cli-runtime v0.17.2
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator v0.17.4
+	sigs.k8s.io/aws-iam-authenticator v0.5.0
 	sigs.k8s.io/controller-runtime v0.5.1
 	sigs.k8s.io/yaml v1.2.0
 )
