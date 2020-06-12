@@ -119,6 +119,7 @@ func makeGroup(groupPrefix, version string, resourcesToGenerate []resourceToGene
 		RenderClients:    true,
 		RenderController: true,
 		RenderProtos:     true,
+		MockgenDirective: true,
 		CustomTemplates:  contrib.AllCustomTemplates,
 		ApiRoot:          apiRoot,
 	}

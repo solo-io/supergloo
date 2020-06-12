@@ -10,13 +10,13 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	mock_security_config "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/mocks"
 	smh_security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/types"
 	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen/mocks"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen/secrets"
 	cert_signer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/security/cert-signer"
 	mock_cert_signer "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/security/cert-signer/mocks"
 	. "github.com/solo-io/service-mesh-hub/test/logging"
-	mock_security_config "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.smh.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

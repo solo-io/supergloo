@@ -45,11 +45,11 @@ require (
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
-	github.com/solo-io/external-apis v0.0.0-20200612143715-fd698bbad58b
+	github.com/solo-io/external-apis v0.0.0-20200612200207-1dbc5c4610e8
 	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/protoc-gen-ext v0.0.9
 	github.com/solo-io/reporting-client v0.1.3
-	github.com/solo-io/skv2 v0.4.0
+	github.com/solo-io/skv2 v0.4.2
 	github.com/solo-io/solo-kit v0.13.3
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.5
@@ -74,7 +74,6 @@ require (
 )
 
 replace (
-
 	// github.com/Azure/go-autorest/autorest has different versions for the Go
 	// modules than it does for releases on the repository. Note the correct
 	// version when updating.
@@ -83,8 +82,6 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 
 	github.com/solo-io/autopilot => github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
-	github.com/solo-io/external-apis => ../external-apis
-	github.com/solo-io/skv2 => ../skv2
 
 	k8s.io/api => k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.2
