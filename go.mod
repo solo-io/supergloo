@@ -65,7 +65,6 @@ require (
 	k8s.io/cli-runtime v0.17.2
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator v0.17.4
-	sigs.k8s.io/aws-iam-authenticator v0.5.0
 	sigs.k8s.io/controller-runtime v0.5.1
 	sigs.k8s.io/yaml v1.2.0
 )
