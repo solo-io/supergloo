@@ -97,6 +97,7 @@ mockgen:
 .PHONY: generated-code
 generated-code:
 	rm -rf vendor_any
+	go run generate.go
 	CGO_ENABLED=0 go generate -v ./...
 	goimports -w .
 
