@@ -2,6 +2,7 @@ package reconcile_test
 
 import (
 	"context"
+	"errors"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -19,6 +20,7 @@ import (
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/framework/mocks"
 	. "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/reconcile"
 	mock_traffic_policy_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/mocks"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 	mock_traffic_policy_snapshot "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot/mocks"
 	mock_traffic_policy_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/validation/mocks"
 	mock_smh_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
@@ -85,8 +87,9 @@ var _ = Describe("Reconcile", func() {
 		validationProcessor.EXPECT().Process(ctx, gomock.Any(), gomock.Any()).
 			Return([]*smh_networking.TrafficPolicy{updatedTrafficPolicy})
 		aggregationProcessor.EXPECT().Process(ctx, gomock.Any())
-		translationProcessor.EXPECT().Process(ctx)
-		snapshotReconciler.EXPECT().ReconcileAllSnapshots(ctx, gomock.Any())
+		snap := snapshot.ClusterNameToSnapshot{}
+		translationProcessor.EXPECT().Process(ctx).Return(snap, nil)
+		snapshotReconciler.EXPECT().ReconcileAllSnapshots(ctx, snap)
 
 		trafficPolicyClient.EXPECT().
 			UpdateTrafficPolicyStatus(ctx, &smh_networking.TrafficPolicy{
@@ -146,8 +149,10 @@ var _ = Describe("Reconcile", func() {
 					MeshServices:    []*smh_discovery.MeshService{meshService},
 				}, nil
 			})
-		translationProcessor.EXPECT().Process(ctx)
-		snapshotReconciler.EXPECT().ReconcileAllSnapshots(ctx, gomock.Any())
+
+		snap := snapshot.ClusterNameToSnapshot{}
+		translationProcessor.EXPECT().Process(ctx).Return(snap, nil)
+		snapshotReconciler.EXPECT().ReconcileAllSnapshots(ctx, snap)
 
 		trafficPolicyClient.EXPECT().
 			UpdateTrafficPolicyStatus(ctx, updatedTrafficPolicy(invalidTrafficPolicy1))
@@ -164,6 +169,60 @@ var _ = Describe("Reconcile", func() {
 
 		err := reconciler.Reconcile(ctx)
 		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("errors when translation fails, but still updates other statues", func() {
+		invalidTrafficPolicy := &smh_networking.TrafficPolicy{}
+		failedValidationStatus := &smh_core_types.Status{
+			State: smh_core_types.Status_INVALID,
+		}
+		updatedTrafficPolicy := &smh_networking.TrafficPolicy{
+			Status: types.TrafficPolicyStatus{
+				ValidationStatus: failedValidationStatus,
+			},
+		}
+
+		meshService := &smh_discovery.MeshService{
+			Status: smh_discovery_types.MeshServiceStatus{
+				ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+					Ref: &smh_core_types.ResourceRef{Name: "validated-1"},
+				}},
+			},
+		}
+		trafficPolicyClient.EXPECT().
+			ListTrafficPolicy(ctx).
+			Return(&smh_networking.TrafficPolicyList{
+				Items: []smh_networking.TrafficPolicy{*invalidTrafficPolicy},
+			}, nil)
+
+		meshServiceClient.EXPECT().
+			ListMeshService(ctx).
+			Return(&v1alpha1.MeshServiceList{Items: []smh_discovery.MeshService{*meshService}}, nil)
+
+		validationProcessor.EXPECT().Process(ctx, gomock.Any(), gomock.Any()).
+			Return([]*smh_networking.TrafficPolicy{updatedTrafficPolicy})
+		aggregationProcessor.EXPECT().Process(ctx, gomock.Any()).Return(&traffic_policy_aggregation.ProcessedObjects{
+			MeshServices: []*smh_discovery.MeshService{meshService},
+		}, nil)
+
+		translationProcessor.EXPECT().Process(ctx).Return(nil, errors.New("translation error"))
+
+		trafficPolicyClient.EXPECT().
+			UpdateTrafficPolicyStatus(ctx, &smh_networking.TrafficPolicy{
+				Status: types.TrafficPolicyStatus{
+					ValidationStatus: failedValidationStatus,
+				},
+			})
+		meshServiceClient.EXPECT().
+			UpdateMeshServiceStatus(ctx, &smh_discovery.MeshService{
+				Status: smh_discovery_types.MeshServiceStatus{
+					ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+						Ref: &smh_core_types.ResourceRef{Name: "validated-1"},
+					}},
+				},
+			})
+		err := reconciler.Reconcile(ctx)
+		Expect(err).To(MatchError(ContainSubstring("translation error")))
 	})
 
 })
