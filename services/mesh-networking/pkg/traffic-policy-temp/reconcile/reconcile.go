@@ -75,35 +75,44 @@ func (v *reconciler) Reconcile(ctx context.Context) error {
 		meshServices = append(meshServices, &meshService)
 	}
 
+	trafficPoliciesToUpdateSet := map[*smh_networking.TrafficPolicy]bool{}
+
 	trafficPoliciesToUpdate := v.validationProcessor.Process(ctx, allTrafficPolicies, meshServices)
+	for _, tp := range trafficPoliciesToUpdate {
+		trafficPoliciesToUpdateSet[tp] = true
+	}
 
 	if objToUpdate, err := v.aggregationProcessor.Process(ctx, allTrafficPolicies); err == nil {
-		for _, service := range objToUpdate.MeshServices {
-			err := v.meshServiceClient.UpdateMeshServiceStatus(ctx, service)
-			if err != nil {
-				multierr = multierror.Append(multierr, err)
+		if objToUpdate != nil {
+			for _, service := range objToUpdate.MeshServices {
+				err := v.meshServiceClient.UpdateMeshServiceStatus(ctx, service)
+				if err != nil {
+					multierr = multierror.Append(multierr, err)
+				}
+			}
+
+			// merge traffic policies.
+			// all the points should be the same.
+			for _, tp := range objToUpdate.TrafficPolicies {
+				trafficPoliciesToUpdateSet[tp] = true
 			}
 		}
-
-		// merge traffic policies.
-		// add all policies from objToUpdate to trafficPolicies; make sure they are unique;
-		// these should be pointers to the same thing; so no need to merge anything.
-
 	} else {
 		multierr = multierror.Append(multierr, err)
 	}
 
-	if clusterNameToSnapshot, err := v.translationProcessor.Process(ctx); err == nil {
-		v.snapshotReconciler.ReconcileAllSnapshots(ctx, clusterNameToSnapshot)
-	} else {
-		multierr = multierror.Append(multierr, err)
-	}
-
-	for _, trafficPolicy := range trafficPoliciesToUpdate {
+	for trafficPolicy := range trafficPoliciesToUpdateSet {
 		err := v.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, trafficPolicy)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
 		}
+	}
+
+	// TODO: ideally, we need to provide this process with the cache
+	if clusterNameToSnapshot, err := v.translationProcessor.Process(ctx); err == nil {
+		v.snapshotReconciler.ReconcileAllSnapshots(ctx, clusterNameToSnapshot)
+	} else {
+		multierr = multierror.Append(multierr, err)
 	}
 	return multierr
 }

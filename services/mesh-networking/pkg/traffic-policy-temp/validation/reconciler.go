@@ -14,21 +14,15 @@ type trafficPolicyReaderStatusUpdater interface {
 }
 
 func NewValidationProcessor(
-	trafficPolicyClient trafficPolicyReaderStatusUpdater,
-	meshServiceReader smh_discovery.MeshServiceReader,
 	validator Validator,
 ) ValidationProcessor {
 	return &validationProcessor{
-		trafficPolicyClient: trafficPolicyClient,
-		validator:           validator,
-		meshServiceReader:   meshServiceReader,
+		validator: validator,
 	}
 }
 
 type validationProcessor struct {
-	trafficPolicyClient trafficPolicyReaderStatusUpdater
-	meshServiceReader   smh_discovery.MeshServiceReader
-	validator           Validator
+	validator Validator
 }
 
 func (*validationProcessor) GetName() string {

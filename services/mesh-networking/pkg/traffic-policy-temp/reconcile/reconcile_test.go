@@ -62,6 +62,11 @@ var _ = Describe("Reconcile", func() {
 		failedValidationStatus := &smh_core_types.Status{
 			State: smh_core_types.Status_INVALID,
 		}
+		updatedTrafficPolicy := &smh_networking.TrafficPolicy{
+			Status: types.TrafficPolicyStatus{
+				ValidationStatus: failedValidationStatus,
+			},
+		}
 
 		trafficPolicyClient.EXPECT().
 			ListTrafficPolicy(ctx).
@@ -73,7 +78,11 @@ var _ = Describe("Reconcile", func() {
 			ListMeshService(ctx).
 			Return(&v1alpha1.MeshServiceList{}, nil)
 
-		validationProcessor.EXPECT().Process(ctx, gomock.Any(), gomock.Any())
+		validationProcessor.EXPECT().Process(ctx, gomock.Any(), gomock.Any()).
+			Return([]*smh_networking.TrafficPolicy{updatedTrafficPolicy})
+		aggregationProcessor.EXPECT().Process(ctx, gomock.Any())
+		translationProcessor.EXPECT().Process(ctx)
+		snapshotReconciler.EXPECT().ReconcileAllSnapshots(ctx, gomock.Any())
 
 		trafficPolicyClient.EXPECT().
 			UpdateTrafficPolicyStatus(ctx, &smh_networking.TrafficPolicy{
