@@ -19,7 +19,6 @@ import (
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 	mock_mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators/mocks"
 	mock_smh_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
-	mock_smh_networking_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.smh.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,30 +27,13 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		ctx  context.Context
 		ctrl *gomock.Controller
 
-		trafficPolicyClient   *mock_smh_networking_clients.MockTrafficPolicyClient
 		meshServiceClient     *mock_smh_discovery_clients.MockMeshServiceClient
 		meshClient            *mock_smh_discovery_clients.MockMeshClient
 		policyCollector       *mock_traffic_policy_aggregation.MockPolicyCollector
 		validator             *mock_mesh_translation.MockTranslationValidator
 		inMemoryStatusMutator *mock_traffic_policy_aggregation.MockInMemoryStatusMutator
+		processor             aggregation_framework.AggregateProcessor
 	)
-
-	BeforeEach(func() {
-		ctx = context.TODO()
-		ctrl = gomock.NewController(GinkgoT())
-
-		trafficPolicyClient = mock_smh_networking_clients.NewMockTrafficPolicyClient(ctrl)
-		meshServiceClient = mock_smh_discovery_clients.NewMockMeshServiceClient(ctrl)
-		meshClient = mock_smh_discovery_clients.NewMockMeshClient(ctrl)
-		policyCollector = mock_traffic_policy_aggregation.NewMockPolicyCollector(ctrl)
-		validator = mock_mesh_translation.NewMockTranslationValidator(ctrl)
-		inMemoryStatusMutator = mock_traffic_policy_aggregation.NewMockInMemoryStatusMutator(ctrl)
-
-	})
-
-	AfterEach(func() {
-		ctrl.Finish()
-	})
 
 	meshMap := func(mt smh_core_types.MeshType) (mesh_translation.TranslationValidator, error) {
 		if mt == smh_core_types.MeshType_ISTIO1_5 {
@@ -60,40 +42,44 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		return nil, errors.New("no such mesh")
 	}
 
+	BeforeEach(func() {
+		ctx = context.TODO()
+		ctrl = gomock.NewController(GinkgoT())
+
+		meshServiceClient = mock_smh_discovery_clients.NewMockMeshServiceClient(ctrl)
+		meshClient = mock_smh_discovery_clients.NewMockMeshClient(ctrl)
+		policyCollector = mock_traffic_policy_aggregation.NewMockPolicyCollector(ctrl)
+		validator = mock_mesh_translation.NewMockTranslationValidator(ctrl)
+		inMemoryStatusMutator = mock_traffic_policy_aggregation.NewMockInMemoryStatusMutator(ctrl)
+
+		processor = aggregation_framework.NewAggregationProcessor(
+			meshServiceClient,
+			meshClient,
+			policyCollector,
+			meshMap,
+			inMemoryStatusMutator,
+		)
+
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
+	})
 	Context("when no resources exist in the cluster", func() {
 		It("does nothing", func() {
-			reconciler := aggregation_framework.NewAggregationReconciler(
-				trafficPolicyClient,
-				meshServiceClient,
-				meshClient,
-				policyCollector,
-				meshMap,
-				inMemoryStatusMutator,
-			)
-
-			trafficPolicyClient.EXPECT().
-				ListTrafficPolicy(ctx).
-				Return(&smh_networking.TrafficPolicyList{}, nil)
 			meshServiceClient.EXPECT().
 				ListMeshService(ctx).
 				Return(&smh_discovery.MeshServiceList{}, nil)
 
-			err := reconciler.Reconcile(ctx)
+			objects, err := processor.Process(ctx, []*smh_networking.TrafficPolicy{})
 			Expect(err).NotTo(HaveOccurred())
+			Expect(objects).NotTo(BeNil())
 		})
 	})
 
 	Context("when no policies have been written yet, but there are services", func() {
 		Context("and the services have no previously-written policies on their status", func() {
 			It("does nothing", func() {
-				reconciler := aggregation_framework.NewAggregationReconciler(
-					trafficPolicyClient,
-					meshServiceClient,
-					meshClient,
-					policyCollector,
-					meshMap,
-					inMemoryStatusMutator,
-				)
 				mesh1 := &smh_discovery.Mesh{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "mesh-1",
@@ -157,26 +143,15 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					MutateServicePolicies(meshServices[1], nil).
 					Return(false)
 
-				trafficPolicyClient.EXPECT().
-					ListTrafficPolicy(ctx).
-					Return(&smh_networking.TrafficPolicyList{}, nil)
-
-				err := reconciler.Reconcile(ctx)
+				objects, err := processor.Process(ctx, nil)
 				Expect(err).NotTo(HaveOccurred())
+				Expect(objects).NotTo(BeNil())
 			})
 		})
 	})
 
 	Context("when there are both policies and services to process", func() {
 		It("computes new statuses accordingly", func() {
-			reconciler := aggregation_framework.NewAggregationReconciler(
-				trafficPolicyClient,
-				meshServiceClient,
-				meshClient,
-				policyCollector,
-				meshMap,
-				inMemoryStatusMutator,
-			)
 			mesh1 := &smh_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name: "mesh-1",
@@ -273,14 +248,6 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			}
 			conflictErrors := []*types.TrafficPolicyStatus_ConflictError{{ErrorMessage: "whoops"}}
 
-			trafficPolicyClient.EXPECT().
-				ListTrafficPolicy(ctx).
-				Return(&smh_networking.TrafficPolicyList{Items: []smh_networking.TrafficPolicy{
-					*trafficPolicies[0],
-					*trafficPolicies[1],
-					*trafficPolicies[2],
-					*trafficPolicies[3],
-				}}, nil)
 			meshServiceClient.EXPECT().
 				ListMeshService(ctx).
 				Return(&smh_discovery.MeshServiceList{Items: []smh_discovery.MeshService{*meshServices[0], *meshServices[1]}}, nil)
@@ -352,18 +319,16 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					return true
 				}).
 				Times(4)
-			meshServiceClient.EXPECT().
-				UpdateMeshServiceStatus(ctx, &ms1Copy).
-				Return(nil)
-			meshServiceClient.EXPECT().
-				UpdateMeshServiceStatus(ctx, &ms2Copy).
-				Return(nil)
-			trafficPolicyClient.EXPECT().
-				UpdateTrafficPolicyStatus(ctx, &policy4Copy).
-				Return(nil)
 
-			err := reconciler.Reconcile(ctx)
+			objects, err := processor.Process(ctx, trafficPolicies)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(objects.MeshServices).To(HaveLen(2))
+			Expect(objects.MeshServices).To(ContainElement(&ms1Copy))
+			Expect(objects.MeshServices).To(ContainElement(&ms2Copy))
+
+			Expect(objects.TrafficPolicies).To(HaveLen(1))
+			// make sure same pointer is returned.
+			Expect(objects.TrafficPolicies[0]).To(BeIdenticalTo(trafficPolicies[3]))
 		})
 	})
 })

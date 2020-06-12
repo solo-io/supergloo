@@ -6,12 +6,16 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/reconciliation"
+	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/framework"
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/framework/mocks"
 	. "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/reconcile"
 	mock_traffic_policy_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/mocks"
@@ -88,6 +92,73 @@ var _ = Describe("Reconcile", func() {
 			UpdateTrafficPolicyStatus(ctx, &smh_networking.TrafficPolicy{
 				Status: types.TrafficPolicyStatus{
 					ValidationStatus: failedValidationStatus,
+				},
+			})
+
+		err := reconciler.Reconcile(ctx)
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("can set a new aggregated status", func() {
+		invalidTrafficPolicy1 := &smh_networking.TrafficPolicy{
+			ObjectMeta: v1.ObjectMeta{Name: "tp1"},
+		}
+		invalidTrafficPolicy2 := &smh_networking.TrafficPolicy{
+			ObjectMeta: v1.ObjectMeta{Name: "tp2"},
+		}
+		failedValidationStatus := &smh_core_types.Status{
+			State: smh_core_types.Status_INVALID,
+		}
+		updatedTrafficPolicy := func(t *smh_networking.TrafficPolicy) *smh_networking.TrafficPolicy {
+			t.Status = types.TrafficPolicyStatus{
+				ValidationStatus: failedValidationStatus,
+			}
+			return t
+		}
+		meshService := &smh_discovery.MeshService{
+			Status: smh_discovery_types.MeshServiceStatus{
+				ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+					Ref: &smh_core_types.ResourceRef{Name: "validated-1"},
+				}},
+			},
+		}
+		trafficPolicyClient.EXPECT().
+			ListTrafficPolicy(ctx).
+			Return(&smh_networking.TrafficPolicyList{
+				Items: []smh_networking.TrafficPolicy{*invalidTrafficPolicy1, *invalidTrafficPolicy2},
+			}, nil)
+
+		meshServiceClient.EXPECT().
+			ListMeshService(ctx).
+			Return(&v1alpha1.MeshServiceList{Items: []smh_discovery.MeshService{*meshService}}, nil)
+
+		validationProcessor.EXPECT().Process(ctx, gomock.Any(), gomock.Any()).DoAndReturn(
+			func(ctx context.Context, allTrafficPolicies []*smh_networking.TrafficPolicy, meshServices []*smh_discovery.MeshService) []*smh_networking.TrafficPolicy {
+				updatedTrafficPolicy(allTrafficPolicies[0])
+				return []*smh_networking.TrafficPolicy{updatedTrafficPolicy(allTrafficPolicies[0])}
+			})
+		aggregationProcessor.EXPECT().Process(ctx, gomock.Any()).DoAndReturn(
+			func(ctx context.Context, allTrafficPolicies []*smh_networking.TrafficPolicy) (*traffic_policy_aggregation.ProcessedObjects, error) {
+				updatedTrafficPolicy(allTrafficPolicies[0])
+				updatedTrafficPolicy(allTrafficPolicies[1])
+				return &traffic_policy_aggregation.ProcessedObjects{
+					TrafficPolicies: allTrafficPolicies,
+					MeshServices:    []*smh_discovery.MeshService{meshService},
+				}, nil
+			})
+		translationProcessor.EXPECT().Process(ctx)
+		snapshotReconciler.EXPECT().ReconcileAllSnapshots(ctx, gomock.Any())
+
+		trafficPolicyClient.EXPECT().
+			UpdateTrafficPolicyStatus(ctx, updatedTrafficPolicy(invalidTrafficPolicy1))
+		trafficPolicyClient.EXPECT().
+			UpdateTrafficPolicyStatus(ctx, updatedTrafficPolicy(invalidTrafficPolicy2))
+		meshServiceClient.EXPECT().
+			UpdateMeshServiceStatus(ctx, &smh_discovery.MeshService{
+				Status: smh_discovery_types.MeshServiceStatus{
+					ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{{
+						Ref: &smh_core_types.ResourceRef{Name: "validated-1"},
+					}},
 				},
 			})
 
