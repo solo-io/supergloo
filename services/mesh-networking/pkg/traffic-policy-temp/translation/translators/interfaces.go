@@ -4,6 +4,7 @@ import (
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 	istio_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
 
@@ -39,7 +40,7 @@ type IstioTranslator interface {
 	TranslationValidator
 	DiscoveryLabelsGetter
 	NamedTranslator
-
+	snapshot.TranslationSnapshotAccumulator
 	Translate(
 		meshService *smh_discovery.MeshService,
 		allMeshServices []*smh_discovery.MeshService,

@@ -88,7 +88,7 @@ var _ = Describe("Reconcile", func() {
 			Return([]*smh_networking.TrafficPolicy{updatedTrafficPolicy})
 		aggregationProcessor.EXPECT().Process(ctx, gomock.Any())
 		snap := snapshot.ClusterNameToSnapshot{}
-		translationProcessor.EXPECT().Process(ctx).Return(snap, nil)
+		translationProcessor.EXPECT().Process(ctx, gomock.Any()).Return(snap, nil)
 		snapshotReconciler.EXPECT().ReconcileAllSnapshots(ctx, snap)
 
 		trafficPolicyClient.EXPECT().
@@ -151,7 +151,7 @@ var _ = Describe("Reconcile", func() {
 			})
 
 		snap := snapshot.ClusterNameToSnapshot{}
-		translationProcessor.EXPECT().Process(ctx).Return(snap, nil)
+		translationProcessor.EXPECT().Process(ctx, gomock.Any()).Return(snap, nil)
 		snapshotReconciler.EXPECT().ReconcileAllSnapshots(ctx, snap)
 
 		trafficPolicyClient.EXPECT().
@@ -205,7 +205,7 @@ var _ = Describe("Reconcile", func() {
 			MeshServices: []*smh_discovery.MeshService{meshService},
 		}, nil)
 
-		translationProcessor.EXPECT().Process(ctx).Return(nil, errors.New("translation error"))
+		translationProcessor.EXPECT().Process(ctx, gomock.Any()).Return(nil, errors.New("translation error"))
 
 		trafficPolicyClient.EXPECT().
 			UpdateTrafficPolicyStatus(ctx, &smh_networking.TrafficPolicy{

@@ -6,9 +6,11 @@ package mock_translation_framework
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	snapshot "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	snapshot "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 )
 
 // MockTranslationProcessor is a mock of TranslationProcessor interface.
@@ -35,16 +37,16 @@ func (m *MockTranslationProcessor) EXPECT() *MockTranslationProcessorMockRecorde
 }
 
 // Process mocks base method.
-func (m *MockTranslationProcessor) Process(ctx context.Context) (snapshot.ClusterNameToSnapshot, error) {
+func (m *MockTranslationProcessor) Process(ctx context.Context, allMeshServices []*v1alpha1.MeshService) (snapshot.ClusterNameToSnapshot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Process", ctx)
+	ret := m.ctrl.Call(m, "Process", ctx, allMeshServices)
 	ret0, _ := ret[0].(snapshot.ClusterNameToSnapshot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Process indicates an expected call of Process.
-func (mr *MockTranslationProcessorMockRecorder) Process(ctx interface{}) *gomock.Call {
+func (mr *MockTranslationProcessorMockRecorder) Process(ctx, allMeshServices interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Process", reflect.TypeOf((*MockTranslationProcessor)(nil).Process), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Process", reflect.TypeOf((*MockTranslationProcessor)(nil).Process), ctx, allMeshServices)
 }
