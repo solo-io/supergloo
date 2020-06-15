@@ -54,7 +54,6 @@ require (
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.5
 	go.uber.org/zap v1.13.0
-	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
 	golang.org/x/tools v0.0.0-20200603170713-0310561d584d
