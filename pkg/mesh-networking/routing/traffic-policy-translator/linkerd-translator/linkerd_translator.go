@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"sort"
 
+	linkerd_client "github.com/solo-io/external-apis/pkg/api/linkerd/linkerd.io/v1alpha2"
+	linkerd_client_providers "github.com/solo-io/external-apis/pkg/api/linkerd/linkerd.io/v1alpha2/providers"
+	smi_networking "github.com/solo-io/external-apis/pkg/api/smi/split.smi-spec.io/v1alpha1"
+	smi_networking_providers "github.com/solo-io/external-apis/pkg/api/smi/split.smi-spec.io/v1alpha1/providers"
+
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
-	smi_networking "github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1"
 
 	"github.com/solo-io/go-utils/contextutils"
 
@@ -22,7 +26,6 @@ import (
 	"github.com/rotisserie/eris"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	linkerd_client "github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/routing/traffic-policy-translator"
@@ -49,8 +52,8 @@ type LinkerdTranslator traffic_policy_translator.TrafficPolicyMeshTranslator
 func NewLinkerdTrafficPolicyTranslator(
 	dynamicClientGetter multicluster.DynamicClientGetter,
 	meshClient smh_discovery.MeshClient,
-	serviceProfileClientFactory linkerd_client.ServiceProfileClientFactory,
-	trafficSplitClientFactory smi_networking.TrafficSplitClientFactory,
+	serviceProfileClientFactory linkerd_client_providers.ServiceProfileClientFactory,
+	trafficSplitClientFactory smi_networking_providers.TrafficSplitClientFactory,
 ) LinkerdTranslator {
 	return &linkerdTrafficPolicyTranslator{
 		dynamicClientGetter:         dynamicClientGetter,
@@ -63,8 +66,8 @@ func NewLinkerdTrafficPolicyTranslator(
 type linkerdTrafficPolicyTranslator struct {
 	dynamicClientGetter         multicluster.DynamicClientGetter
 	meshClient                  smh_discovery.MeshClient
-	serviceProfileClientFactory linkerd_client.ServiceProfileClientFactory
-	trafficSplitClientFactory   smi_networking.TrafficSplitClientFactory
+	serviceProfileClientFactory linkerd_client_providers.ServiceProfileClientFactory
+	trafficSplitClientFactory   smi_networking_providers.TrafficSplitClientFactory
 }
 
 func (i *linkerdTrafficPolicyTranslator) Name() string {
@@ -146,7 +149,7 @@ func (i *linkerdTrafficPolicyTranslator) ensureServiceProfile(
 	}
 
 	// Upsert computed ServiceProfile
-	err := serviceProfileClient.UpsertServiceProfileSpec(ctx, computedServiceProfile)
+	err := serviceProfileClient.UpsertServiceProfile(ctx, computedServiceProfile)
 	if err != nil {
 		return err
 	}
@@ -273,7 +276,7 @@ func (i *linkerdTrafficPolicyTranslator) ensureTrafficSplit(
 	}
 
 	// Upsert computed TrafficSplit
-	err = trafficSplitClient.UpsertTrafficSplitSpec(ctx, computedTrafficSplit)
+	err = trafficSplitClient.UpsertTrafficSplit(ctx, computedTrafficSplit)
 	if err != nil {
 		return err
 	}

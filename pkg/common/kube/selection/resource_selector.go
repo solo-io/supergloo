@@ -3,12 +3,13 @@ package selection
 import (
 	"context"
 
+	kubernetes_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/stringutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -57,7 +58,7 @@ func NewBaseResourceSelector() BaseResourceSelector {
 func NewResourceSelector(
 	meshServiceReader smh_discovery.MeshServiceReader,
 	meshWorkloadClient smh_discovery.MeshWorkloadReader,
-	deploymentClientFactory kubernetes_apps.DeploymentClientFactory,
+	deploymentClientFactory kubernetes_apps_providers.DeploymentClientFactory,
 	dynamicClientGetter multicluster.DynamicClientGetter,
 ) ResourceSelector {
 	return &resourceSelector{
@@ -75,7 +76,7 @@ type resourceSelector struct {
 	BaseResourceSelector
 	meshServiceReader       smh_discovery.MeshServiceReader
 	meshWorkloadClient      smh_discovery.MeshWorkloadReader
-	deploymentClientFactory kubernetes_apps.DeploymentClientFactory
+	deploymentClientFactory kubernetes_apps_providers.DeploymentClientFactory
 	dynamicClientGetter     multicluster.DynamicClientGetter
 }
 

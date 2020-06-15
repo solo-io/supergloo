@@ -5,10 +5,12 @@ import (
 	"sort"
 	"strings"
 
+	istio_networking_providers "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/providers"
+
 	"github.com/rotisserie/eris"
+	istio_networking "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
@@ -31,8 +33,8 @@ func NewIstioTrafficPolicyTranslator(
 	meshClient smh_discovery.MeshClient,
 	meshServiceClient smh_discovery.MeshServiceClient,
 	resourceSelector selection.ResourceSelector,
-	virtualServiceClientFactory istio_networking.VirtualServiceClientFactory,
-	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory,
+	virtualServiceClientFactory istio_networking_providers.VirtualServiceClientFactory,
+	destinationRuleClientFactory istio_networking_providers.DestinationRuleClientFactory,
 ) IstioTranslator {
 	return &istioTrafficPolicyTranslator{
 		dynamicClientGetter:          dynamicClientGetter,
@@ -48,8 +50,8 @@ type istioTrafficPolicyTranslator struct {
 	dynamicClientGetter          multicluster.DynamicClientGetter
 	meshClient                   smh_discovery.MeshClient
 	meshServiceClient            smh_discovery.MeshServiceClient
-	virtualServiceClientFactory  istio_networking.VirtualServiceClientFactory
-	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory
+	virtualServiceClientFactory  istio_networking_providers.VirtualServiceClientFactory
+	destinationRuleClientFactory istio_networking_providers.DestinationRuleClientFactory
 	resourceSelector             selection.ResourceSelector
 }
 
@@ -124,8 +126,8 @@ func (i *istioTrafficPolicyTranslator) ensureDestinationRule(
 		Spec: istio_networking_types.DestinationRule{
 			Host: buildServiceHostname(meshService),
 			TrafficPolicy: &istio_networking_types.TrafficPolicy{
-				Tls: &istio_networking_types.TLSSettings{
-					Mode: istio_networking_types.TLSSettings_ISTIO_MUTUAL,
+				Tls: &istio_networking_types.ClientTLSSettings{
+					Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
 				},
 			},
 		},
@@ -155,7 +157,7 @@ func (i *istioTrafficPolicyTranslator) ensureVirtualService(
 		return nil
 	}
 	// Upsert computed VirtualService
-	err = virtualServiceClient.UpsertVirtualServiceSpec(ctx, computedVirtualService)
+	err = virtualServiceClient.UpsertVirtualService(ctx, computedVirtualService)
 	if err != nil {
 		return i.errorToStatus(err)
 	}

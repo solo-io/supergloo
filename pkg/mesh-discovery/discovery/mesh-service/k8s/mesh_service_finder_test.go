@@ -7,17 +7,17 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	k8s_core_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
+	mock_kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
+	discovery_mocks "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/mocks"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-service/k8s"
-	discovery_mocks "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_corev1 "github.com/solo-io/service-mesh-hub/test/mocks/corev1"
 	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/smh/discovery"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -246,7 +246,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			Times(4)
 		mocks.meshServiceClient.
 			EXPECT().
-			UpsertMeshServiceSpec(ctx, &smh_discovery.MeshService{
+			UpsertMeshService(ctx, &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
 					Name:      meshServiceName,
 					Namespace: container_runtime.GetWriteNamespace(),

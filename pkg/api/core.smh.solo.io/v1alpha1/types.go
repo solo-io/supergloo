@@ -11,15 +11,14 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
-// +kubebuilder:subresource:status
+// +genclient:noStatus
 
 // Settings is the Schema for the settings API
 type Settings struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   SettingsSpec   `json:"spec,omitempty"`
-	Status SettingsStatus `json:"status,omitempty"`
+	Spec SettingsSpec `json:"spec,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

@@ -8,19 +8,19 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	mock_kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	mock_types "github.com/solo-io/go-utils/installutils/helminstall/types/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/mocks"
 	mock_cluster_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	mock_crd_uninstall "github.com/solo-io/service-mesh-hub/pkg/common/kube/crd/mocks"
 	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig/mocks"
-	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	k8s_core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -166,10 +166,10 @@ Service Mesh Hub has been uninstalled
 			},
 		}
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(ns, nil)
 		namespaceClient.EXPECT().
-			DeleteNamespace(ctx, client.ObjectKey{Name: ns.GetName()}).
+			DeleteNamespace(ctx, ns.GetName()).
 			Return(nil)
 		crdRemover.EXPECT().
 			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
@@ -228,7 +228,7 @@ Service Mesh Hub has been uninstalled
 			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 		crdRemover.EXPECT().
 			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
@@ -290,7 +290,7 @@ Service Mesh Hub has been uninstalled
 			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(nil, generateNewErr())
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, generateNewErr())
 		crdRemover.EXPECT().
 			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
@@ -372,7 +372,7 @@ Service Mesh Hub has been uninstalled with errors
 			Deregister(ctx, cluster1).
 			Return(generateNewErr())
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, generateNewErr())
 		crdRemover.EXPECT().
 			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
@@ -459,10 +459,10 @@ Service Mesh Hub has been uninstalled with errors
 			},
 		}
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: smhInstallNamespace}).
+			GetNamespace(ctx, smhInstallNamespace).
 			Return(ns, nil)
 		namespaceClient.EXPECT().
-			DeleteNamespace(ctx, client.ObjectKey{Name: ns.GetName()}).
+			DeleteNamespace(ctx, ns.GetName()).
 			Return(nil)
 		crdRemover.EXPECT().
 			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
