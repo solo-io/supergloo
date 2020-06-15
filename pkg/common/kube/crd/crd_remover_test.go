@@ -18,7 +18,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Crd Uninstaller", func() {
@@ -74,19 +73,19 @@ var _ = Describe("Crd Uninstaller", func() {
 			}, nil)
 
 		crdClient.EXPECT().
-			GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd1.GetName()}).
+			GetCustomResourceDefinition(ctx, crd1.GetName()).
 			Return(&crd1, nil)
 
 		crdClient.EXPECT().
-			DeleteCustomResourceDefinition(ctx, client.ObjectKey{Name: crd1.GetName()}).
+			DeleteCustomResourceDefinition(ctx, crd1.GetName()).
 			Return(nil)
 
 		crdClient.EXPECT().
-			GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd2.GetName()}).
+			GetCustomResourceDefinition(ctx, crd2.GetName()).
 			Return(&crd2, nil)
 
 		crdClient.EXPECT().
-			DeleteCustomResourceDefinition(ctx, client.ObjectKey{Name: crd2.GetName()}).
+			DeleteCustomResourceDefinition(ctx, crd2.GetName()).
 			Return(nil)
 
 		deletedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemovesmhCrds(ctx, "cluster-1", restConfig)
@@ -134,11 +133,11 @@ var _ = Describe("Crd Uninstaller", func() {
 			}, nil)
 
 		crdClient.EXPECT().
-			GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd.GetName()}).
+			GetCustomResourceDefinition(ctx, crd.GetName()).
 			Return(&crd, nil)
 
 		crdClient.EXPECT().
-			DeleteCustomResourceDefinition(ctx, client.ObjectKey{Name: crd.GetName()}).
+			DeleteCustomResourceDefinition(ctx, crd.GetName()).
 			Return(testErr)
 
 		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemovesmhCrds(ctx, "cluster-1", restConfig)
@@ -173,10 +172,10 @@ var _ = Describe("Crd Uninstaller", func() {
 			}, nil)
 
 		crdClient.EXPECT().
-			GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd1.GetName()}).
+			GetCustomResourceDefinition(ctx, crd1.GetName()).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, "test-name"))
 		crdClient.EXPECT().
-			GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd2.GetName()}).
+			GetCustomResourceDefinition(ctx, crd2.GetName()).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, "test-name"))
 
 		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemovesmhCrds(ctx, "cluster-1", restConfig)

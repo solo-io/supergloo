@@ -166,10 +166,10 @@ Service Mesh Hub has been uninstalled
 			},
 		}
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(ns, nil)
 		namespaceClient.EXPECT().
-			DeleteNamespace(ctx, client.ObjectKey{Name: ns.GetName()}).
+			DeleteNamespace(ctx, ns.GetName()).
 			Return(nil)
 		crdRemover.EXPECT().
 			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
@@ -228,7 +228,7 @@ Service Mesh Hub has been uninstalled
 			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 		crdRemover.EXPECT().
 			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
@@ -290,7 +290,7 @@ Service Mesh Hub has been uninstalled
 			ListKubernetesCluster(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(nil, generateNewErr())
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, generateNewErr())
 		crdRemover.EXPECT().
 			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
@@ -372,7 +372,7 @@ Service Mesh Hub has been uninstalled with errors
 			Deregister(ctx, cluster1).
 			Return(generateNewErr())
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, generateNewErr())
 		crdRemover.EXPECT().
 			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).
@@ -459,10 +459,10 @@ Service Mesh Hub has been uninstalled with errors
 			},
 		}
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: smhInstallNamespace}).
+			GetNamespace(ctx, smhInstallNamespace).
 			Return(ns, nil)
 		namespaceClient.EXPECT().
-			DeleteNamespace(ctx, client.ObjectKey{Name: ns.GetName()}).
+			DeleteNamespace(ctx, ns.GetName()).
 			Return(nil)
 		crdRemover.EXPECT().
 			RemovesmhCrds(ctx, "management plane cluster", masterRestCfg).

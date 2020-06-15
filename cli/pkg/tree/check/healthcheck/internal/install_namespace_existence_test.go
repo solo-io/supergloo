@@ -14,7 +14,6 @@ import (
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"k8s.io/apimachinery/pkg/api/errors"
 	controllerruntime "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Install namespace existence check", func() {
@@ -35,7 +34,7 @@ var _ = Describe("Install namespace existence check", func() {
 	It("reports an error if the namespace does not exist", func() {
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, errors.NewNotFound(controllerruntime.GroupResource{}, "test-resource"))
 
 		check := internal.NewInstallNamespaceExistenceCheck()
@@ -54,7 +53,7 @@ var _ = Describe("Install namespace existence check", func() {
 		testErr := eris.New("test-err")
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, testErr)
 
 		check := internal.NewInstallNamespaceExistenceCheck()
@@ -72,7 +71,7 @@ var _ = Describe("Install namespace existence check", func() {
 	It("reports success if the namespace exists", func() {
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, nil)
 
 		runFailure, checkApplies := internal.NewInstallNamespaceExistenceCheck().Run(ctx, container_runtime.GetWriteNamespace(), healthcheck_types.Clients{

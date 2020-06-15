@@ -200,7 +200,7 @@ var _ = Describe("external access point getter", func() {
 
 			node := &corev1.Node{}
 			nodeClient.EXPECT().
-				GetNode(ctx, client.ObjectKey{Name: nodeName}).
+				GetNode(ctx, nodeName).
 				Return(node, nil)
 
 			_, err := externalAccessPointGetter.GetExternalAccessPointForService(ctx, svc, istio_federation.DefaultGatewayPortName, clusterName)
@@ -253,7 +253,7 @@ var _ = Describe("external access point getter", func() {
 				},
 			}
 			nodeClient.EXPECT().
-				GetNode(ctx, client.ObjectKey{Name: nodeName}).
+				GetNode(ctx, nodeName).
 				Return(node, nil)
 
 			eap, err := externalAccessPointGetter.GetExternalAccessPointForService(ctx, svc, istio_federation.DefaultGatewayPortName, clusterName)

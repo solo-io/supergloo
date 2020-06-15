@@ -93,7 +93,7 @@ var _ = Describe("ClusterRegistrationClient", func() {
 	var expectCreateRemoteNamespace = func() {
 		mockNamespaceClient.
 			EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: remoteWriteNamespace}).
+			GetNamespace(ctx, remoteWriteNamespace).
 			Return(nil, errors.NewNotFound(controllerruntime.GroupResource{}, "test-resource"))
 		mockNamespaceClient.
 			EXPECT().
