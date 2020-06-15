@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/solo-io/skv2/pkg/reconcile"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
 type serviceReconciler struct{}

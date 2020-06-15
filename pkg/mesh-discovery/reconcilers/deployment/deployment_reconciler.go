@@ -2,7 +2,7 @@ package deployment
 
 import (
 	"github.com/solo-io/skv2/pkg/reconcile"
-	"k8s.io/api/apps/v1"
+	v1 "k8s.io/api/apps/v1"
 )
 
 type deploymentReconciler struct{}
