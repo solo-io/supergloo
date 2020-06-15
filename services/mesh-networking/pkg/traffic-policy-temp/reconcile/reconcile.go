@@ -77,18 +77,17 @@ func (v *Reconciler) Reconcile(ctx context.Context) error {
 		trafficPoliciesToUpdateSet[tp] = true
 	}
 
-	if objToUpdate, err := v.aggregationProcessor.Process(ctx, allTrafficPolicies); err == nil {
-		if objToUpdate != nil {
-			for _, service := range objToUpdate.MeshServices {
+	if objectsToUpdate, err := v.aggregationProcessor.Process(ctx, allTrafficPolicies); err == nil {
+		if objectsToUpdate != nil {
+			for _, service := range objectsToUpdate.MeshServices {
 				err := v.meshServiceClient.UpdateMeshServiceStatus(ctx, service)
 				if err != nil {
 					multierr = multierror.Append(multierr, err)
 				}
 			}
 
-			// merge traffic policies.
-			// all the points should be the same.
-			for _, tp := range objToUpdate.TrafficPolicies {
+			// accumulate traffic policies, so we have only one status update.
+			for _, tp := range objectsToUpdate.TrafficPolicies {
 				trafficPoliciesToUpdateSet[tp] = true
 			}
 		}
