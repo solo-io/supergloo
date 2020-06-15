@@ -13,31 +13,31 @@ import (
 	aggregation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation/framework"
 )
 
-// MockAggregateProcessor is a mock of AggregateProcessor interface.
-type MockAggregateProcessor struct {
+// MockAggregationProcessor is a mock of AggregationProcessor interface.
+type MockAggregationProcessor struct {
 	ctrl     *gomock.Controller
-	recorder *MockAggregateProcessorMockRecorder
+	recorder *MockAggregationProcessorMockRecorder
 }
 
-// MockAggregateProcessorMockRecorder is the mock recorder for MockAggregateProcessor.
-type MockAggregateProcessorMockRecorder struct {
-	mock *MockAggregateProcessor
+// MockAggregationProcessorMockRecorder is the mock recorder for MockAggregationProcessor.
+type MockAggregationProcessorMockRecorder struct {
+	mock *MockAggregationProcessor
 }
 
-// NewMockAggregateProcessor creates a new mock instance.
-func NewMockAggregateProcessor(ctrl *gomock.Controller) *MockAggregateProcessor {
-	mock := &MockAggregateProcessor{ctrl: ctrl}
-	mock.recorder = &MockAggregateProcessorMockRecorder{mock}
+// NewMockAggregationProcessor creates a new mock instance.
+func NewMockAggregationProcessor(ctrl *gomock.Controller) *MockAggregationProcessor {
+	mock := &MockAggregationProcessor{ctrl: ctrl}
+	mock.recorder = &MockAggregationProcessorMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockAggregateProcessor) EXPECT() *MockAggregateProcessorMockRecorder {
+func (m *MockAggregationProcessor) EXPECT() *MockAggregationProcessorMockRecorder {
 	return m.recorder
 }
 
 // Process mocks base method.
-func (m *MockAggregateProcessor) Process(ctx context.Context, allTrafficPolicies []*v1alpha1.TrafficPolicy) (*aggregation_framework.ProcessedObjects, error) {
+func (m *MockAggregationProcessor) Process(ctx context.Context, allTrafficPolicies []*v1alpha1.TrafficPolicy) (*aggregation_framework.ProcessedObjects, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Process", ctx, allTrafficPolicies)
 	ret0, _ := ret[0].(*aggregation_framework.ProcessedObjects)
@@ -46,7 +46,7 @@ func (m *MockAggregateProcessor) Process(ctx context.Context, allTrafficPolicies
 }
 
 // Process indicates an expected call of Process.
-func (mr *MockAggregateProcessorMockRecorder) Process(ctx, allTrafficPolicies interface{}) *gomock.Call {
+func (mr *MockAggregationProcessorMockRecorder) Process(ctx, allTrafficPolicies interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Process", reflect.TypeOf((*MockAggregateProcessor)(nil).Process), ctx, allTrafficPolicies)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Process", reflect.TypeOf((*MockAggregationProcessor)(nil).Process), ctx, allTrafficPolicies)
 }

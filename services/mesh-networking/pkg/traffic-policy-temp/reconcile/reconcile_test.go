@@ -35,7 +35,7 @@ var _ = Describe("Reconcile", func() {
 		meshServiceClient    *mock_smh_discovery_clients.MockMeshServiceClient
 		snapshotReconciler   *mock_traffic_policy_snapshot.MockTranslationSnapshotReconciler
 		validationProcessor  *mock_traffic_policy_validation.MockValidationProcessor
-		aggregationProcessor *mock_traffic_policy_aggregation.MockAggregateProcessor
+		aggregationProcessor *mock_traffic_policy_aggregation.MockAggregationProcessor
 		translationProcessor *mock_traffic_policy_translation.MockTranslationProcessor
 		reconciler           reconciliation.Reconciler
 	)
@@ -47,7 +47,7 @@ var _ = Describe("Reconcile", func() {
 
 		snapshotReconciler = mock_traffic_policy_snapshot.NewMockTranslationSnapshotReconciler(ctrl)
 		validationProcessor = mock_traffic_policy_validation.NewMockValidationProcessor(ctrl)
-		aggregationProcessor = mock_traffic_policy_aggregation.NewMockAggregateProcessor(ctrl)
+		aggregationProcessor = mock_traffic_policy_aggregation.NewMockAggregationProcessor(ctrl)
 		translationProcessor = mock_traffic_policy_translation.NewMockTranslationProcessor(ctrl)
 		reconciler = NewReconciler(
 			trafficPolicyClient,

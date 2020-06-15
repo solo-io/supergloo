@@ -32,7 +32,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 		policyCollector       *mock_traffic_policy_aggregation.MockPolicyCollector
 		validator             *mock_mesh_translation.MockTranslationValidator
 		inMemoryStatusMutator *mock_traffic_policy_aggregation.MockInMemoryStatusMutator
-		processor             aggregation_framework.AggregateProcessor
+		processor             aggregation_framework.AggregationProcessor
 	)
 
 	meshMap := func(mt smh_core_types.MeshType) (mesh_translation.TranslationValidator, error) {

@@ -19,7 +19,7 @@ type Reconciler struct {
 	snapshotReconciler snapshot.TranslationSnapshotReconciler
 
 	validationProcessor  traffic_policy_validation.ValidationProcessor
-	aggregationProcessor aggregation_framework.AggregateProcessor
+	aggregationProcessor aggregation_framework.AggregationProcessor
 	translationProcessor translation_framework.TranslationProcessor
 }
 
@@ -28,7 +28,7 @@ func NewReconciler(
 	meshServiceClient smh_discovery.MeshServiceClient,
 	snapshotReconciler snapshot.TranslationSnapshotReconciler,
 	validationProcessor traffic_policy_validation.ValidationProcessor,
-	aggregationProcessor aggregation_framework.AggregateProcessor,
+	aggregationProcessor aggregation_framework.AggregationProcessor,
 	translationProcessor translation_framework.TranslationProcessor,
 ) *Reconciler {
 	return &Reconciler{

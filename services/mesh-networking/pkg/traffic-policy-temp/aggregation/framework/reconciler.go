@@ -16,7 +16,7 @@ import (
 
 //go:generate mockgen -source ./reconciler.go -destination ./mocks/mock_reconciler.go
 
-type AggregateProcessor interface {
+type AggregationProcessor interface {
 	Process(ctx context.Context, allTrafficPolicies []*smh_networking.TrafficPolicy) (*ProcessedObjects, error)
 }
 
@@ -31,7 +31,7 @@ func NewAggregationProcessor(
 	policyCollector traffic_policy_aggregation.PolicyCollector,
 	translationValidators func(meshType smh_core_types.MeshType) (mesh_translation.TranslationValidator, error),
 	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator,
-) *aggregationProcessor {
+) AggregationProcessor {
 	return &aggregationProcessor{
 		meshServiceReader:     meshServiceReader,
 		meshReader:            meshReader,
