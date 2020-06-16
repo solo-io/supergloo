@@ -3,6 +3,7 @@ package translation_framework
 import (
 	"context"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
@@ -75,6 +76,7 @@ func (t *translationProcessor) Process(ctx context.Context, allMeshServices []*s
 
 	clusterNameToSnapshot := NewClusterNameToSnapshot(knownMeshes)
 
+	var multierr error
 	for _, meshService := range allMeshServices {
 
 		meshId := selection.ToUniqueSingleClusterString(selection.ResourceRefToObjectMeta(meshService.Spec.GetMesh()))
@@ -93,7 +95,8 @@ func (t *translationProcessor) Process(ctx context.Context, allMeshServices []*s
 			return nil, err
 		}
 
-		// run one round of translation just for this service, accumulating the results into our map
+		// we run translation even if the service has translation errors - as we might want to
+		// partially translate what we can.
 		err = snapshotAccumulator.AccumulateFromTranslation(
 			clusterNameToSnapshot[ClusterKeyFromMesh(mesh)],
 			meshService,
@@ -101,10 +104,10 @@ func (t *translationProcessor) Process(ctx context.Context, allMeshServices []*s
 			mesh,
 		)
 		if err != nil {
-			return nil, err
+			multierr = multierror.Append(multierr, err)
 		}
 
 	}
 
-	return clusterNameToSnapshot, nil
+	return clusterNameToSnapshot, multierr
 }

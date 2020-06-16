@@ -12,7 +12,6 @@ import (
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	mock_selection "github.com/solo-io/service-mesh-hub/pkg/common/kube/selection/mocks"
-	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 	istio_networking_types "istio.io/api/networking/v1alpha3"
 	istio_client_networking_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -182,14 +181,15 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						istioMesh,
 						policies,
 					)
-					Expect(errs).To(Equal([]*mesh_translation.TranslationError{{
-						Policy: policies[0],
-						TranslatorErrors: []*smh_networking_types.TrafficPolicyStatus_TranslatorError{{
-							TranslatorId: translator.Name(),
-							ErrorMessage: NoSpecifiedPortError(serviceBeingTranslated).Error(),
-						}},
-					}}))
-					Expect(result).To(BeNil())
+					Expect(errs).To(HaveLen(1))
+					Expect(errs[0].Policy).To(Equal(policies[0]))
+					Expect(errs[0].TranslatorErrors).To(HaveLen(1))
+					Expect(errs[0].TranslatorErrors[0].TranslatorId).To(Equal(translator.Name()))
+					Expect(errs[0].TranslatorErrors[0].ErrorMessage).To(ContainSubstring(NoSpecifiedPortError(serviceBeingTranslated).Error()))
+					// we want to have 1 result destination rule; to make sure we don't delete it on an error
+
+					Expect(result.VirtualServices).To(BeNil())
+					Expect(result.DestinationRules).NotTo(BeNil())
 				})
 			})
 
@@ -233,14 +233,15 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						istioMesh,
 						policies,
 					)
-					Expect(errs).To(Equal([]*mesh_translation.TranslationError{{
-						Policy: policies[0],
-						TranslatorErrors: []*smh_networking_types.TrafficPolicyStatus_TranslatorError{{
-							TranslatorId: translator.Name(),
-							ErrorMessage: NoSpecifiedPortError(serviceBeingTranslated).Error(),
-						}},
-					}}))
-					Expect(result).To(BeNil())
+
+					Expect(errs).To(HaveLen(1))
+					Expect(errs[0].Policy).To(Equal(policies[0]))
+					Expect(errs[0].TranslatorErrors).To(HaveLen(1))
+					Expect(errs[0].TranslatorErrors[0].TranslatorId).To(Equal(translator.Name()))
+					Expect(errs[0].TranslatorErrors[0].ErrorMessage).To(ContainSubstring(NoSpecifiedPortError(serviceBeingTranslated).Error()))
+
+					Expect(result.VirtualServices).To(BeNil())
+					Expect(result.DestinationRules).NotTo(BeNil())
 				})
 			})
 		})

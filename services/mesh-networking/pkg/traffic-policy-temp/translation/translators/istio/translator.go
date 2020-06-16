@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
@@ -58,14 +59,11 @@ func (i *istioTrafficPolicyTranslator) AccumulateFromTranslation(
 		snapshotInProgress.Istio = &snapshot.IstioSnapshot{}
 	}
 
-	out, errs := i.Translate(meshService, allMeshServices, mesh, meshService.Status.ValidatedTrafficPolicies)
+	// translation errors are reported earlier, so we don't care about these now.
+	out, _ := i.Translate(meshService, allMeshServices, mesh, meshService.Status.ValidatedTrafficPolicies)
 
 	snapshotInProgress.Istio.DestinationRules = append(snapshotInProgress.Istio.DestinationRules, out.DestinationRules...)
 	snapshotInProgress.Istio.VirtualServices = append(snapshotInProgress.Istio.VirtualServices, out.VirtualServices...)
-	// assuming all went well in the previous stages, there should be no errors
-	if len(errs) != 0 {
-		// ?? panic ??
-	}
 
 	return nil
 }
@@ -90,9 +88,6 @@ func (i *istioTrafficPolicyTranslator) Translate(
 	destinationRule := i.buildDestinationRule(meshService, allMeshServices)
 
 	virtualService, translationErrors := i.buildVirtualService(meshService, allMeshServices, trafficPolicies)
-	if len(translationErrors) > 0 {
-		return nil, translationErrors
-	}
 
 	var virtualServices []*istio_client_networking_types.VirtualService
 	if virtualService != nil {
@@ -102,7 +97,7 @@ func (i *istioTrafficPolicyTranslator) Translate(
 	return &mesh_translation.IstioTranslationOutput{
 		VirtualServices:  virtualServices,
 		DestinationRules: []*istio_client_networking_types.DestinationRule{destinationRule},
-	}, nil
+	}, translationErrors
 }
 
 func (i *istioTrafficPolicyTranslator) GetTranslationErrors(
@@ -176,6 +171,7 @@ func (i *istioTrafficPolicyTranslator) buildVirtualService(
 	allMeshServices []*smh_discovery.MeshService,
 	trafficPolicies []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) (*istio_client_networking_types.VirtualService, []*mesh_translation.TranslationError) {
+	// TODO: always return virtual service, and errors; so errors can be handled by reconciler.
 	computedVirtualService, translationErrors := i.translateIntoVirtualService(meshService, allMeshServices, trafficPolicies)
 	if len(translationErrors) > 0 {
 		return nil, translationErrors
@@ -219,13 +215,9 @@ func (i *istioTrafficPolicyTranslator) translateIntoVirtualService(
 		allHttpRoutes = append(allHttpRoutes, httpRoutes...)
 	}
 
-	if len(translationErrors) > 0 {
-		return nil, translationErrors
-	}
-
 	sort.Sort(SpecificitySortableRoutes(allHttpRoutes))
 	virtualService.Spec.Http = allHttpRoutes
-	return virtualService, nil
+	return virtualService, translationErrors
 }
 
 func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
@@ -233,20 +225,21 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 	allMeshServices []*smh_discovery.MeshService,
 	validatedPolicy *smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) ([]*istio_networking_types.HTTPRoute, error) {
+	var multierr error
 	var err error
 	var faultInjection *istio_networking_types.HTTPFaultInjection
 	if faultInjection, err = i.translateFaultInjection(validatedPolicy); err != nil {
-		return nil, err
+		multierr = multierror.Append(multierr, err)
 	}
 
 	var corsPolicy *istio_networking_types.CorsPolicy
 	if corsPolicy, err = i.translateCorsPolicy(validatedPolicy); err != nil {
-		return nil, err
+		multierr = multierror.Append(multierr, err)
 	}
 
 	var requestMatchers []*istio_networking_types.HTTPMatchRequest
 	if requestMatchers, err = i.translateRequestMatchers(validatedPolicy); err != nil {
-		return nil, err
+		multierr = multierror.Append(multierr, err)
 	}
 
 	var mirrorPercentage *istio_networking_types.Percent
@@ -256,12 +249,12 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 
 	var mirror *istio_networking_types.Destination
 	if mirror, err = i.translateMirror(meshService, allMeshServices, validatedPolicy); err != nil {
-		return nil, err
+		multierr = multierror.Append(multierr, err)
 	}
 
 	var trafficShift []*istio_networking_types.HTTPRouteDestination
 	if trafficShift, err = i.translateDestinationRoutes(meshService, allMeshServices, validatedPolicy); err != nil {
-		return nil, err
+		multierr = multierror.Append(multierr, err)
 	}
 	retries := i.translateRetries(validatedPolicy)
 	headerManipulation := i.translateHeaderManipulation(validatedPolicy)
@@ -297,7 +290,7 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 			})
 		}
 	}
-	return httpRoutes, nil
+	return httpRoutes, multierr
 }
 
 func (i *istioTrafficPolicyTranslator) translateRequestMatchers(
