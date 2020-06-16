@@ -6,7 +6,6 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/reconciliation"
 )
 
 type trafficPolicyReaderStatusUpdater interface {
@@ -14,65 +13,40 @@ type trafficPolicyReaderStatusUpdater interface {
 	smh_networking.TrafficPolicyStatusWriter
 }
 
-func NewValidationReconciler(
-	trafficPolicyClient trafficPolicyReaderStatusUpdater,
-	meshServiceReader smh_discovery.MeshServiceReader,
+func NewValidationProcessor(
 	validator Validator,
-) reconciliation.Reconciler {
-	return &validationLoop{
-		trafficPolicyClient: trafficPolicyClient,
-		validator:           validator,
-		meshServiceReader:   meshServiceReader,
+) ValidationProcessor {
+	return &validationProcessor{
+		validator: validator,
 	}
 }
 
-type validationLoop struct {
-	trafficPolicyClient trafficPolicyReaderStatusUpdater
-	meshServiceReader   smh_discovery.MeshServiceReader
-	validator           Validator
+type validationProcessor struct {
+	validator Validator
 }
 
-func (*validationLoop) GetName() string {
+func (*validationProcessor) GetName() string {
 	return "traffic-policy-validation"
 }
 
-func (v *validationLoop) Reconcile(ctx context.Context) error {
+func (v *validationProcessor) Process(ctx context.Context, allTrafficPolicies []*smh_networking.TrafficPolicy, meshServices []*smh_discovery.MeshService) []*smh_networking.TrafficPolicy {
 	logger := contextutils.LoggerFrom(ctx)
-	trafficPolicies, err := v.trafficPolicyClient.ListTrafficPolicy(ctx)
-	if err != nil {
-		return err
-	}
+	var updatedPolicies []*smh_networking.TrafficPolicy
 
-	meshServiceList, err := v.meshServiceReader.ListMeshService(ctx)
-	if err != nil {
-		return err
-	}
-
-	var meshServices []*smh_discovery.MeshService
-	for _, ms := range meshServiceList.Items {
-		meshService := ms
-		meshServices = append(meshServices, &meshService)
-	}
-
-	for _, trafficPolicy := range trafficPolicies.Items {
-		newValidationStatus, validationErr := v.validator.ValidateTrafficPolicy(&trafficPolicy, meshServices)
+	for _, trafficPolicy := range allTrafficPolicies {
+		newValidationStatus, validationErr := v.validator.ValidateTrafficPolicy(trafficPolicy, meshServices)
 		if validationErr == nil {
 			logger.Debugf("Traffic policy %s.%s passed validation", trafficPolicy.GetName(), trafficPolicy.GetNamespace())
 		} else {
 			logger.Infof("Traffic policy %s.%s failed validation for reason: %+v", trafficPolicy.GetName(), trafficPolicy.GetNamespace(), validationErr)
 		}
-
 		if !trafficPolicy.Status.GetValidationStatus().Equal(newValidationStatus) ||
 			trafficPolicy.Status.ObservedGeneration != trafficPolicy.Generation {
 			trafficPolicy.Status.ObservedGeneration = trafficPolicy.Generation
 			trafficPolicy.Status.ValidationStatus = newValidationStatus
-
-			err := v.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, &trafficPolicy)
-			if err != nil {
-				return err
-			}
+			updatedPolicies = append(updatedPolicies, trafficPolicy)
 		}
 	}
 
-	return nil
+	return updatedPolicies
 }

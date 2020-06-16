@@ -17,14 +17,14 @@ var (
 	}
 )
 
-func NewAggregator(resourceSelector selection.ResourceSelector) Aggregator {
+func NewAggregator(resourceSelector selection.BaseResourceSelector) Aggregator {
 	return &aggregator{
 		resourceSelector: resourceSelector,
 	}
 }
 
 type aggregator struct {
-	resourceSelector selection.ResourceSelector
+	resourceSelector selection.BaseResourceSelector
 }
 
 func (a *aggregator) FindMergeConflict(

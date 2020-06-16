@@ -10,57 +10,50 @@ import (
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
-	"github.com/solo-io/service-mesh-hub/pkg/common/reconciliation"
 	traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/aggregation"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 )
 
-func NewAggregationReconciler(
-	trafficPolicyClient smh_networking.TrafficPolicyClient,
-	meshServiceClient smh_discovery.MeshServiceClient,
-	meshClient smh_discovery.MeshClient,
+//go:generate mockgen -source ./reconciler.go -destination ./mocks/mock_reconciler.go
+
+type AggregationProcessor interface {
+	Process(ctx context.Context, allTrafficPolicies []*smh_networking.TrafficPolicy) (*ProcessedObjects, error)
+}
+
+type ProcessedObjects struct {
+	TrafficPolicies []*smh_networking.TrafficPolicy
+	MeshServices    []*smh_discovery.MeshService
+}
+
+func NewAggregationProcessor(
+	meshServiceReader smh_discovery.MeshServiceReader,
+	meshReader smh_discovery.MeshReader,
 	policyCollector traffic_policy_aggregation.PolicyCollector,
-	translationValidators map[smh_core_types.MeshType]mesh_translation.TranslationValidator,
+	translationValidators func(meshType smh_core_types.MeshType) (mesh_translation.TranslationValidator, error),
 	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator,
-) reconciliation.Reconciler {
-	return &aggregationReconciler{
-		trafficPolicyClient:   trafficPolicyClient,
-		meshServiceClient:     meshServiceClient,
-		meshClient:            meshClient,
+) AggregationProcessor {
+	return &aggregationProcessor{
+		meshServiceReader:     meshServiceReader,
+		meshReader:            meshReader,
 		policyCollector:       policyCollector,
 		translationValidators: translationValidators,
 		inMemoryStatusMutator: inMemoryStatusMutator,
 	}
 }
 
-type aggregationReconciler struct {
-	trafficPolicyClient   smh_networking.TrafficPolicyClient
-	meshServiceClient     smh_discovery.MeshServiceClient
-	meshClient            smh_discovery.MeshClient
+type aggregationProcessor struct {
+	meshServiceReader     smh_discovery.MeshServiceReader
+	meshReader            smh_discovery.MeshReader
 	policyCollector       traffic_policy_aggregation.PolicyCollector
-	translationValidators map[smh_core_types.MeshType]mesh_translation.TranslationValidator
+	translationValidators func(meshType smh_core_types.MeshType) (mesh_translation.TranslationValidator, error)
 	inMemoryStatusMutator traffic_policy_aggregation.InMemoryStatusMutator
 }
 
-func (a *aggregationReconciler) GetName() string {
-	return "traffic-policy-aggregation"
-}
-
-func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
-	allTrafficPoliciesList, err := a.trafficPolicyClient.ListTrafficPolicy(ctx)
-	if err != nil {
-		return err
-	}
-
-	var allTrafficPolicies []*smh_networking.TrafficPolicy
-	for _, tp := range allTrafficPoliciesList.Items {
-		trafficPolicy := tp
-		allTrafficPolicies = append(allTrafficPolicies, &trafficPolicy)
-	}
+func (a *aggregationProcessor) Process(ctx context.Context, allTrafficPolicies []*smh_networking.TrafficPolicy) (*ProcessedObjects, error) {
 
 	allMeshServices, serviceToMetadata, err := a.aggregateMeshServices(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	trafficPolicyToAllConflicts := map[*smh_networking.TrafficPolicy][]*smh_networking_types.TrafficPolicyStatus_ConflictError{}
@@ -68,17 +61,21 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 	serviceToUpdatedStatus := map[*smh_discovery.MeshService][]*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{}
 
 	for _, meshService := range allMeshServices {
+		validator, err := a.translationValidators(serviceToMetadata[meshService].MeshType)
+		if err != nil {
+			// intentionally not doing map existence checks here; if it panics, we forgot to implement the validator for this translator
+			// TODO: un-panic this
+			panic(err)
+		}
 		collectionResult, err := a.policyCollector.CollectForService(
 			meshService,
 			allMeshServices,
 			serviceToMetadata[meshService].Mesh,
-
-			// intentionally not doing map existence checks here; if it panics, we forgot to implement the validator for this translator
-			a.translationValidators[serviceToMetadata[meshService].MeshType],
+			validator,
 			allTrafficPolicies,
 		)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		serviceToUpdatedStatus[meshService] = collectionResult.PoliciesToRecordOnService
@@ -91,13 +88,11 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		}
 	}
 
+	var objectsToUpdate ProcessedObjects
 	for service, validatedPolicies := range serviceToUpdatedStatus {
 		needsUpdating := a.inMemoryStatusMutator.MutateServicePolicies(service, validatedPolicies)
 		if needsUpdating {
-			err := a.meshServiceClient.UpdateMeshServiceStatus(ctx, service)
-			if err != nil {
-				return err
-			}
+			objectsToUpdate.MeshServices = append(objectsToUpdate.MeshServices, service)
 		}
 	}
 
@@ -107,18 +102,15 @@ func (a *aggregationReconciler) Reconcile(ctx context.Context) error {
 		// invalid policies have their merge/translation errors zeroed out
 		needsUpdating := a.inMemoryStatusMutator.MutateConflictAndTranslatorErrors(policy, trafficPolicyToAllConflicts[policy], trafficPolicyToAllTranslationErrs[policy])
 		if needsUpdating {
-			err := a.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, policy)
-			if err != nil {
-				return err
-			}
+			objectsToUpdate.TrafficPolicies = append(objectsToUpdate.TrafficPolicies, policy)
 		}
 	}
 
-	return nil
+	return &objectsToUpdate, nil
 }
 
-func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*smh_discovery.MeshService, map[*smh_discovery.MeshService]*meshServiceInfo, error) {
-	meshServiceList, err := a.meshServiceClient.ListMeshService(ctx)
+func (a *aggregationProcessor) aggregateMeshServices(ctx context.Context) ([]*smh_discovery.MeshService, map[*smh_discovery.MeshService]*meshServiceInfo, error) {
+	meshServiceList, err := a.meshServiceReader.ListMeshService(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -128,7 +120,7 @@ func (a *aggregationReconciler) aggregateMeshServices(ctx context.Context) ([]*s
 	for _, ms := range meshServiceList.Items {
 		meshService := ms
 
-		meshForService, err := a.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+		meshForService, err := a.meshReader.GetMesh(ctx, selection.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 		if err != nil {
 			return nil, nil, err
 		}

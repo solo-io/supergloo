@@ -10,6 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	snapshot "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 )
 
@@ -187,6 +188,20 @@ func (m *MockIstioTranslator) Name() string {
 func (mr *MockIstioTranslatorMockRecorder) Name() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockIstioTranslator)(nil).Name))
+}
+
+// AccumulateFromTranslation mocks base method.
+func (m *MockIstioTranslator) AccumulateFromTranslation(snapshotInProgress *snapshot.TranslatedSnapshot, meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccumulateFromTranslation", snapshotInProgress, meshService, allMeshServices, mesh)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccumulateFromTranslation indicates an expected call of AccumulateFromTranslation.
+func (mr *MockIstioTranslatorMockRecorder) AccumulateFromTranslation(snapshotInProgress, meshService, allMeshServices, mesh interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccumulateFromTranslation", reflect.TypeOf((*MockIstioTranslator)(nil).AccumulateFromTranslation), snapshotInProgress, meshService, allMeshServices, mesh)
 }
 
 // Translate mocks base method.

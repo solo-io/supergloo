@@ -12,3 +12,6 @@ destination or source) do not conflict with each other
 relevant user-written Traffic Policies
 1. finally, pull Traffic Policies that are both a) validated, and b) merge-able off of Mesh Service statuses and translate them
 into the relevant mesh-specific configuration.
+
+After the translation is done, `reconcile` writes the status to the input objects, and writes the 
+output objects.

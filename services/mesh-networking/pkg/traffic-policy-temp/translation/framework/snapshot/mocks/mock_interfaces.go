@@ -73,22 +73,8 @@ func (m *MockTranslationSnapshotReconciler) EXPECT() *MockTranslationSnapshotRec
 	return m.recorder
 }
 
-// InitializeClusterNameToSnapshot mocks base method.
-func (m *MockTranslationSnapshotReconciler) InitializeClusterNameToSnapshot(knownMeshes []*v1alpha1.Mesh) map[string]*snapshot.TranslatedSnapshot {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InitializeClusterNameToSnapshot", knownMeshes)
-	ret0, _ := ret[0].(map[string]*snapshot.TranslatedSnapshot)
-	return ret0
-}
-
-// InitializeClusterNameToSnapshot indicates an expected call of InitializeClusterNameToSnapshot.
-func (mr *MockTranslationSnapshotReconcilerMockRecorder) InitializeClusterNameToSnapshot(knownMeshes interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitializeClusterNameToSnapshot", reflect.TypeOf((*MockTranslationSnapshotReconciler)(nil).InitializeClusterNameToSnapshot), knownMeshes)
-}
-
 // ReconcileAllSnapshots mocks base method.
-func (m *MockTranslationSnapshotReconciler) ReconcileAllSnapshots(ctx context.Context, clusterNameToSnapshot map[string]*snapshot.TranslatedSnapshot) error {
+func (m *MockTranslationSnapshotReconciler) ReconcileAllSnapshots(ctx context.Context, clusterNameToSnapshot snapshot.ClusterNameToSnapshot) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileAllSnapshots", ctx, clusterNameToSnapshot)
 	ret0, _ := ret[0].(error)

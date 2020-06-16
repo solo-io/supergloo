@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
@@ -11,6 +12,7 @@ import (
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 	mesh_translation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/translators"
 	istio_networking_types "istio.io/api/networking/v1alpha3"
 	istio_client_networking_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -21,7 +23,7 @@ const (
 )
 
 func NewIstioTrafficPolicyTranslator(
-	resourceSelector selection.ResourceSelector,
+	resourceSelector selection.BaseResourceSelector,
 ) mesh_translation.IstioTranslator {
 	return &istioTrafficPolicyTranslator{
 		resourceSelector: resourceSelector,
@@ -29,7 +31,7 @@ func NewIstioTrafficPolicyTranslator(
 }
 
 type istioTrafficPolicyTranslator struct {
-	resourceSelector selection.ResourceSelector
+	resourceSelector selection.BaseResourceSelector
 }
 
 var (
@@ -44,6 +46,28 @@ var (
 
 func (i *istioTrafficPolicyTranslator) Name() string {
 	return TranslatorId
+}
+
+// mutate the translated snapshot, adding the translation results in where appropriate
+func (i *istioTrafficPolicyTranslator) AccumulateFromTranslation(
+	snapshotInProgress *snapshot.TranslatedSnapshot,
+	meshService *smh_discovery.MeshService,
+	allMeshServices []*smh_discovery.MeshService,
+	mesh *smh_discovery.Mesh,
+) error {
+	if snapshotInProgress.Istio == nil {
+		snapshotInProgress.Istio = &snapshot.IstioSnapshot{}
+	}
+
+	// translation errors are reported earlier, so we don't care about these now.
+	out, _ := i.Translate(meshService, allMeshServices, mesh, meshService.Status.ValidatedTrafficPolicies)
+
+	if out != nil {
+		snapshotInProgress.Istio.DestinationRules = append(snapshotInProgress.Istio.DestinationRules, out.DestinationRules...)
+		snapshotInProgress.Istio.VirtualServices = append(snapshotInProgress.Istio.VirtualServices, out.VirtualServices...)
+	}
+
+	return nil
 }
 
 /*
@@ -66,9 +90,6 @@ func (i *istioTrafficPolicyTranslator) Translate(
 	destinationRule := i.buildDestinationRule(meshService, allMeshServices)
 
 	virtualService, translationErrors := i.buildVirtualService(meshService, allMeshServices, trafficPolicies)
-	if len(translationErrors) > 0 {
-		return nil, translationErrors
-	}
 
 	var virtualServices []*istio_client_networking_types.VirtualService
 	if virtualService != nil {
@@ -78,7 +99,7 @@ func (i *istioTrafficPolicyTranslator) Translate(
 	return &mesh_translation.IstioTranslationOutput{
 		VirtualServices:  virtualServices,
 		DestinationRules: []*istio_client_networking_types.DestinationRule{destinationRule},
-	}, nil
+	}, translationErrors
 }
 
 func (i *istioTrafficPolicyTranslator) GetTranslationErrors(
@@ -152,6 +173,7 @@ func (i *istioTrafficPolicyTranslator) buildVirtualService(
 	allMeshServices []*smh_discovery.MeshService,
 	trafficPolicies []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) (*istio_client_networking_types.VirtualService, []*mesh_translation.TranslationError) {
+	// TODO: always return virtual service, and errors; so errors can be handled by reconciler.
 	computedVirtualService, translationErrors := i.translateIntoVirtualService(meshService, allMeshServices, trafficPolicies)
 	if len(translationErrors) > 0 {
 		return nil, translationErrors
@@ -195,13 +217,9 @@ func (i *istioTrafficPolicyTranslator) translateIntoVirtualService(
 		allHttpRoutes = append(allHttpRoutes, httpRoutes...)
 	}
 
-	if len(translationErrors) > 0 {
-		return nil, translationErrors
-	}
-
 	sort.Sort(SpecificitySortableRoutes(allHttpRoutes))
 	virtualService.Spec.Http = allHttpRoutes
-	return virtualService, nil
+	return virtualService, translationErrors
 }
 
 func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
@@ -209,20 +227,21 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 	allMeshServices []*smh_discovery.MeshService,
 	validatedPolicy *smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) ([]*istio_networking_types.HTTPRoute, error) {
+	var multierr error
 	var err error
 	var faultInjection *istio_networking_types.HTTPFaultInjection
 	if faultInjection, err = i.translateFaultInjection(validatedPolicy); err != nil {
-		return nil, err
+		multierr = multierror.Append(multierr, err)
 	}
 
 	var corsPolicy *istio_networking_types.CorsPolicy
 	if corsPolicy, err = i.translateCorsPolicy(validatedPolicy); err != nil {
-		return nil, err
+		multierr = multierror.Append(multierr, err)
 	}
 
 	var requestMatchers []*istio_networking_types.HTTPMatchRequest
 	if requestMatchers, err = i.translateRequestMatchers(validatedPolicy); err != nil {
-		return nil, err
+		multierr = multierror.Append(multierr, err)
 	}
 
 	var mirrorPercentage *istio_networking_types.Percent
@@ -232,12 +251,12 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 
 	var mirror *istio_networking_types.Destination
 	if mirror, err = i.translateMirror(meshService, allMeshServices, validatedPolicy); err != nil {
-		return nil, err
+		multierr = multierror.Append(multierr, err)
 	}
 
 	var trafficShift []*istio_networking_types.HTTPRouteDestination
 	if trafficShift, err = i.translateDestinationRoutes(meshService, allMeshServices, validatedPolicy); err != nil {
-		return nil, err
+		multierr = multierror.Append(multierr, err)
 	}
 	retries := i.translateRetries(validatedPolicy)
 	headerManipulation := i.translateHeaderManipulation(validatedPolicy)
@@ -273,7 +292,7 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 			})
 		}
 	}
-	return httpRoutes, nil
+	return httpRoutes, multierr
 }
 
 func (i *istioTrafficPolicyTranslator) translateRequestMatchers(

@@ -10,10 +10,8 @@ import (
 	. "github.com/onsi/gomega"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	mock_smh_discovery_clients "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/mocks"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	v1alpha12 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	mock_smh_networking_clients "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
@@ -25,19 +23,16 @@ import (
 
 var _ = Describe("Validation Reconciler", func() {
 	var (
-		ctx                 = context.TODO()
-		ctrl                *gomock.Controller
-		trafficPolicyClient *mock_smh_networking_clients.MockTrafficPolicyClient
-		meshServiceClient   *mock_smh_discovery_clients.MockMeshServiceClient
-		validator           *mock_traffic_policy_validation.MockValidator
+		ctx       = context.TODO()
+		ctrl      *gomock.Controller
+		validator *mock_traffic_policy_validation.MockValidator
+		processor traffic_policy_validation.ValidationProcessor
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		trafficPolicyClient = mock_smh_networking_clients.NewMockTrafficPolicyClient(ctrl)
-		meshServiceClient = mock_smh_discovery_clients.NewMockMeshServiceClient(ctrl)
 		validator = mock_traffic_policy_validation.NewMockValidator(ctrl)
-
+		processor = traffic_policy_validation.NewValidationProcessor(validator)
 	})
 
 	AfterEach(func() {
@@ -50,35 +45,15 @@ var _ = Describe("Validation Reconciler", func() {
 			State: smh_core_types.Status_INVALID,
 		}
 
-		trafficPolicyClient.EXPECT().
-			ListTrafficPolicy(ctx).
-			Return(&v1alpha12.TrafficPolicyList{
-				Items: []v1alpha12.TrafficPolicy{*invalidTrafficPolicy},
-			}, nil)
-
-		meshServiceClient.EXPECT().
-			ListMeshService(ctx).
-			Return(&v1alpha1.MeshServiceList{}, nil)
-
 		validator.EXPECT().
 			ValidateTrafficPolicy(invalidTrafficPolicy, nil).
 			Return(failedValidationStatus, nil)
 
-		trafficPolicyClient.EXPECT().
-			UpdateTrafficPolicyStatus(ctx, &v1alpha12.TrafficPolicy{
-				Status: types.TrafficPolicyStatus{
-					ValidationStatus: failedValidationStatus,
-				},
-			})
+		updatedPolicies := processor.Process(ctx, []*v1alpha12.TrafficPolicy{invalidTrafficPolicy}, nil)
 
-		reconciler := traffic_policy_validation.NewValidationReconciler(
-			trafficPolicyClient,
-			meshServiceClient,
-			validator,
-		)
-
-		err := reconciler.Reconcile(ctx)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(updatedPolicies).To(HaveLen(1))
+		// make sure the same pointer is returned; i.e. don't use BeEquivalent
+		Expect(updatedPolicies[0]).To(BeIdenticalTo(invalidTrafficPolicy))
 	})
 
 	It("does not issue an update if the status is up-to-date", func() {
@@ -91,35 +66,20 @@ var _ = Describe("Validation Reconciler", func() {
 			},
 		}
 
-		trafficPolicyClient.EXPECT().
-			ListTrafficPolicy(ctx).
-			Return(&v1alpha12.TrafficPolicyList{
-				Items: []v1alpha12.TrafficPolicy{*alreadyInvalidTrafficPolicy},
-			}, nil)
-
-		meshServiceClient.EXPECT().
-			ListMeshService(ctx).
-			Return(&v1alpha1.MeshServiceList{}, nil)
-
 		validator.EXPECT().
 			ValidateTrafficPolicy(alreadyInvalidTrafficPolicy, nil).
 			Return(failedValidationStatus, nil)
 
-		reconciler := traffic_policy_validation.NewValidationReconciler(
-			trafficPolicyClient,
-			meshServiceClient,
-			validator,
-		)
+		updatedPolicies := processor.Process(ctx, []*v1alpha12.TrafficPolicy{alreadyInvalidTrafficPolicy}, nil)
 
-		err := reconciler.Reconcile(ctx)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(updatedPolicies).To(BeEmpty())
 	})
 
 	It("does issue an update if the generation is not up-to-date", func() {
 		status := &smh_core_types.Status{
 			State: smh_core_types.Status_INVALID,
 		}
-		trafficPolicy := v1alpha12.TrafficPolicy{
+		trafficPolicy := &v1alpha12.TrafficPolicy{
 			ObjectMeta: v1.ObjectMeta{Generation: 2},
 			Status: types.TrafficPolicyStatus{
 				ValidationStatus:   status,
@@ -127,48 +87,30 @@ var _ = Describe("Validation Reconciler", func() {
 			},
 		}
 
-		trafficPolicyClient.EXPECT().
-			ListTrafficPolicy(ctx).
-			Return(&v1alpha12.TrafficPolicyList{
-				Items: []v1alpha12.TrafficPolicy{trafficPolicy},
-			}, nil)
-
-		meshServiceClient.EXPECT().
-			ListMeshService(ctx).
-			Return(&v1alpha1.MeshServiceList{}, nil)
-
 		validator.EXPECT().
-			ValidateTrafficPolicy(&trafficPolicy, nil).
+			ValidateTrafficPolicy(trafficPolicy, nil).
 			Return(status, nil)
 
-		updatedTrafficPolicy := trafficPolicy
-		updatedTrafficPolicy.Status.ObservedGeneration = trafficPolicy.Generation
+		updatedPolicies := processor.Process(ctx, []*v1alpha12.TrafficPolicy{trafficPolicy}, nil)
 
-		trafficPolicyClient.EXPECT().
-			UpdateTrafficPolicyStatus(ctx, &updatedTrafficPolicy)
-
-		reconciler := traffic_policy_validation.NewValidationReconciler(
-			trafficPolicyClient,
-			meshServiceClient,
-			validator,
-		)
-
-		err := reconciler.Reconcile(ctx)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(updatedPolicies).To(HaveLen(1))
+		// make sure the same pointer is returned; i.e. don't use BeEquivalent
+		Expect(updatedPolicies[0]).To(BeIdenticalTo(trafficPolicy))
+		Expect(trafficPolicy.Generation).To(Equal(trafficPolicy.Status.ObservedGeneration))
 	})
 
 	Context("benchmarks", func() {
 
 		Measure("it reconciles traffic policies", func(b Benchmarker) {
 			// not using mock client, as we don't want to measure their (lack of) overhead
-			var tp trafficPolicyBenchmarkClient
-			var ms meshServiceBenchmarkClient
+			var tp []*v1alpha12.TrafficPolicy
+			var ms []*v1alpha1.MeshService
 
 			const trafficPolicies = 1000
 			const meshServices = 1000
 
 			for i := 0; i < trafficPolicies; i++ {
-				tp.policies.Items = append(tp.policies.Items, v1alpha12.TrafficPolicy{
+				tp = append(tp, &v1alpha12.TrafficPolicy{
 					ObjectMeta: v1.ObjectMeta{Name: fmt.Sprintf("tp-%d", i)},
 					Spec: types.TrafficPolicySpec{
 						SourceSelector: &smh_core_types.WorkloadSelector{
@@ -192,7 +134,7 @@ var _ = Describe("Validation Reconciler", func() {
 				})
 			}
 			for i := 0; i < meshServices; i++ {
-				ms.services.Items = append(ms.services.Items, v1alpha1.MeshService{
+				ms = append(ms, &v1alpha1.MeshService{
 					ObjectMeta: v1.ObjectMeta{
 						Name: fmt.Sprintf("sm-%d", i),
 						Labels: map[string]string{
@@ -206,18 +148,18 @@ var _ = Describe("Validation Reconciler", func() {
 				})
 			}
 			// suffle things for more realistic test
-			rand.Shuffle(len(ms.services.Items), func(i, j int) {
-				item := ms.services.Items[j]
-				ms.services.Items[j] = ms.services.Items[i]
-				ms.services.Items[i] = item
+			rand.Shuffle(len(ms), func(i, j int) {
+				item := ms[j]
+				ms[j] = ms[i]
+				ms[i] = item
 			})
 
 			validator := traffic_policy_validation.NewValidator(selection.NewBaseResourceSelector())
 
-			reconciler := traffic_policy_validation.NewValidationReconciler(&tp, &ms, validator)
+			processor := traffic_policy_validation.NewValidationProcessor(validator)
 			ctx := context.Background()
 			runtime := b.Time("runtime", func() {
-				reconciler.Reconcile(ctx)
+				processor.Process(ctx, tp, ms)
 			})
 			// ideally should be less than 1ms; but 1s is good for now. in practice it's around 10ms.
 			Ω(runtime.Seconds()).Should(BeNumerically("<", 1), "validator.Reconcile() shouldn't take too long.")
