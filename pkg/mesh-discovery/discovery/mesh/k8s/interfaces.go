@@ -11,9 +11,9 @@ import (
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_mesh_interfaces.go -package mock_mesh
 
 // once StartDiscovery is invoked, MeshFinder's DeploymentEventHandler callbacks will start receiving DeploymentEvents
-type MeshFinder interface {
+type MeshDiscovery interface {
 	// an event is only received by our callbacks if all the given predicates return true
-	Process(ctx context.Context, clusterName string) error
+	DiscoverMesh(ctx context.Context, clusterName string) error
 }
 
 // check a deployment to see if it represents a mesh installation

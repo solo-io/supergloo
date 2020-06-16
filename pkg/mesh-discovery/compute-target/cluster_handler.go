@@ -93,14 +93,6 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 	if err != nil {
 		return err
 	}
-	meshFinder := k8s.NewMeshFinder(
-		ctx,
-		clusterName,
-		m.meshScanners,
-		m.localMeshClient,
-		mgr.Manager().GetClient(),
-		initializedDeps.deploymentClient,
-	)
 
 	meshWorkloadFinder := meshworkload_discovery.NewMeshWorkloadFinder(
 		ctx,
@@ -127,10 +119,6 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		initializedDeps.podClient,
 		m.localMeshClient,
 	)
-
-	if err = meshFinder.StartDiscovery(initializedDeps.deploymentEventWatcher); err != nil {
-		return err
-	}
 
 	if err = clusterTenancyFinder.StartRegistration(ctx, initializedDeps.podEventWatcher, m.localMeshEventWatcher); err != nil {
 		return err

@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-multierror"
-	k8s_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	apps_v1 "k8s.io/api/apps/v1"
@@ -18,46 +18,45 @@ import (
 // a `MeshFinder` receives deployment events from a controller that it gets attached to
 // this is the abstraction that should be directly managing the Mesh CR instances, based on what
 // its `meshScanners` determine
-func NewMeshFinder(
-	ctx context.Context,
-	clusterName string,
+func NewMeshDiscovery(
 	meshScanners []MeshScanner,
-	localMeshClient smh_discovery.MeshClient,
-	clusterClient client.Client,
-	clusterScopedDeploymentClient k8s_apps.DeploymentClient,
-) MeshFinder {
-	return &meshFinder{
-		clusterName:                   clusterName,
-		meshScanners:                  meshScanners,
-		localMeshClient:               localMeshClient,
-		ctx:                           ctx,
-		clusterClient:                 clusterClient,
-		clusterScopedDeploymentClient: clusterScopedDeploymentClient,
+	meshClient smh_discovery.MeshClient,
+	deploymentClientFactory v1.DeploymentClientFactory,
+	dynamicClientGetter multicluster.DynamicClientGetter,
+) MeshDiscovery {
+	return &meshDiscovery{
+		meshScanners:            meshScanners,
+		meshClient:              meshClient,
+		dynamicClientGetter:     dynamicClientGetter,
+		deploymentClientFactory: deploymentClientFactory,
 	}
 }
 
-type meshFinder struct {
-	clusterName                   string
-	meshScanners                  []MeshScanner
-	localMeshClient               smh_discovery.MeshClient
-	ctx                           context.Context
-	clusterClient                 client.Client
-	clusterScopedDeploymentClient k8s_apps.DeploymentClient
+type meshDiscovery struct {
+	meshScanners            []MeshScanner
+	meshClient              smh_discovery.MeshClient
+	deploymentClientFactory v1.DeploymentClientFactory
+	dynamicClientGetter     multicluster.DynamicClientGetter
 }
 
-func (m *meshFinder) Process(ctx context.Context, clusterName string) error {
-	meshList, err := m.localMeshClient.ListMesh(m.ctx, client.MatchingLabels{kube.COMPUTE_TARGET: m.clusterName})
+func (m *meshDiscovery) DiscoverMesh(ctx context.Context, clusterName string) error {
+	clusterClient, err := m.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
 	if err != nil {
 		return err
 	}
-	deploymentList, err := m.clusterScopedDeploymentClient.ListDeployment(m.ctx)
+	deploymentClient := m.deploymentClientFactory(clusterClient)
+	meshList, err := m.meshClient.ListMesh(ctx, client.MatchingLabels{kube.COMPUTE_TARGET: clusterName})
+	if err != nil {
+		return err
+	}
+	deploymentList, err := deploymentClient.ListDeployment(ctx)
 	if err != nil {
 		return err
 	}
 	discoveredMeshes := smh_discovery_sets.NewMeshSet()
 	for _, deployment := range deploymentList.Items {
 		deployment := deployment
-		discoveredMesh, err := m.discoverMesh(&deployment)
+		discoveredMesh, err := m.discoverMesh(ctx, clusterName, clusterClient, &deployment)
 		if err != nil {
 			return err
 		}
@@ -75,7 +74,7 @@ func (m *meshFinder) Process(ctx context.Context, clusterName string) error {
 	for _, discoveredMesh := range discoveredMeshes.List() {
 		existingMesh, ok := existingMeshMap[sets.Key(discoveredMesh)]
 		if !ok || !existingMesh.Spec.Equal(discoveredMesh.Spec) {
-			err := m.localMeshClient.UpsertMesh(ctx, discoveredMesh)
+			err := m.meshClient.UpsertMesh(ctx, discoveredMesh)
 			if err != nil {
 				return err
 			}
@@ -83,7 +82,7 @@ func (m *meshFinder) Process(ctx context.Context, clusterName string) error {
 	}
 	// Delete existing Meshes that no longer exist
 	for _, existingMesh := range existingMeshes.Difference(discoveredMeshes).List() {
-		err := m.localMeshClient.DeleteMesh(ctx, selection.ObjectMetaToObjectKey(existingMesh.ObjectMeta))
+		err := m.meshClient.DeleteMesh(ctx, selection.ObjectMetaToObjectKey(existingMesh.ObjectMeta))
 		if err != nil {
 			return err
 		}
@@ -92,20 +91,25 @@ func (m *meshFinder) Process(ctx context.Context, clusterName string) error {
 }
 
 // If both `discoveredMesh` and `err` are non-nil, then `err` should be considered a non-fatal error
-func (m *meshFinder) discoverMesh(deployment *apps_v1.Deployment) (discoveredMesh *discoveryv1alpha1.Mesh, err error) {
+func (m *meshDiscovery) discoverMesh(
+	ctx context.Context,
+	clusterName string,
+	clusterClient client.Client,
+	deployment *apps_v1.Deployment,
+) (discoveredMesh *smh_discovery.Mesh, err error) {
 	var multiErr *multierror.Error
 	for _, meshFinder := range m.meshScanners {
-		discoveredMesh, err = meshFinder.ScanDeployment(m.ctx, m.clusterName, deployment, m.clusterClient)
+		discoveredMesh, err = meshFinder.ScanDeployment(ctx, clusterName, deployment, clusterClient)
 		if err != nil {
 			multiErr = multierror.Append(multiErr, err)
 		}
 		if discoveredMesh != nil {
+			if discoveredMesh.Labels == nil {
+				discoveredMesh.Labels = map[string]string{}
+			}
+			discoveredMesh.Labels[kube.COMPUTE_TARGET] = clusterName
 			break
 		}
 	}
-	if discoveredMesh.Labels == nil {
-		discoveredMesh.Labels = map[string]string{}
-	}
-	discoveredMesh.Labels[kube.COMPUTE_TARGET] = m.clusterName
 	return discoveredMesh, multiErr.ErrorOrNil()
 }

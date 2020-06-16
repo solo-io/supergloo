@@ -13,41 +13,41 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockMeshFinder is a mock of MeshFinder interface.
-type MockMeshFinder struct {
+// MockMeshDiscovery is a mock of MeshDiscovery interface.
+type MockMeshDiscovery struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshFinderMockRecorder
+	recorder *MockMeshDiscoveryMockRecorder
 }
 
-// MockMeshFinderMockRecorder is the mock recorder for MockMeshFinder.
-type MockMeshFinderMockRecorder struct {
-	mock *MockMeshFinder
+// MockMeshDiscoveryMockRecorder is the mock recorder for MockMeshDiscovery.
+type MockMeshDiscoveryMockRecorder struct {
+	mock *MockMeshDiscovery
 }
 
-// NewMockMeshFinder creates a new mock instance.
-func NewMockMeshFinder(ctrl *gomock.Controller) *MockMeshFinder {
-	mock := &MockMeshFinder{ctrl: ctrl}
-	mock.recorder = &MockMeshFinderMockRecorder{mock}
+// NewMockMeshDiscovery creates a new mock instance.
+func NewMockMeshDiscovery(ctrl *gomock.Controller) *MockMeshDiscovery {
+	mock := &MockMeshDiscovery{ctrl: ctrl}
+	mock.recorder = &MockMeshDiscoveryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMeshFinder) EXPECT() *MockMeshFinderMockRecorder {
+func (m *MockMeshDiscovery) EXPECT() *MockMeshDiscoveryMockRecorder {
 	return m.recorder
 }
 
-// Process mocks base method.
-func (m *MockMeshFinder) Process(ctx context.Context, clusterName string) error {
+// DiscoverMesh mocks base method.
+func (m *MockMeshDiscovery) DiscoverMesh(ctx context.Context, clusterName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Process", ctx, clusterName)
+	ret := m.ctrl.Call(m, "DiscoverMesh", ctx, clusterName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Process indicates an expected call of Process.
-func (mr *MockMeshFinderMockRecorder) Process(ctx, clusterName interface{}) *gomock.Call {
+// DiscoverMesh indicates an expected call of DiscoverMesh.
+func (mr *MockMeshDiscoveryMockRecorder) DiscoverMesh(ctx, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Process", reflect.TypeOf((*MockMeshFinder)(nil).Process), ctx, clusterName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoverMesh", reflect.TypeOf((*MockMeshDiscovery)(nil).DiscoverMesh), ctx, clusterName)
 }
 
 // MockMeshScanner is a mock of MeshScanner interface.
