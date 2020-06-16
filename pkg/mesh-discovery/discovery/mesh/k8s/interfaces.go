@@ -3,7 +3,6 @@ package k8s
 import (
 	"context"
 
-	k8s_controller "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	k8s_apps_v1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -14,9 +13,7 @@ import (
 // once StartDiscovery is invoked, MeshFinder's DeploymentEventHandler callbacks will start receiving DeploymentEvents
 type MeshFinder interface {
 	// an event is only received by our callbacks if all the given predicates return true
-	StartDiscovery(deploymentEventWatcher k8s_controller.DeploymentEventWatcher) error
-
-	k8s_controller.DeploymentEventHandler
+	Process(ctx context.Context, clusterName string) error
 }
 
 // check a deployment to see if it represents a mesh installation
