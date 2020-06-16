@@ -102,15 +102,6 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		initializedDeps.deploymentClient,
 	)
 
-	meshWorkloadFinder := meshworkload_discovery.NewMeshWorkloadFinder(
-		ctx,
-		clusterName,
-		m.localMeshClient,
-		m.localMeshWorkloadClient,
-		initializedDeps.meshWorkloadScanners,
-		initializedDeps.podClient,
-	)
-
 	meshServiceFinder := meshservice_discovery.NewMeshServiceFinder(
 		ctx,
 		clusterName,
@@ -133,10 +124,6 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 	}
 
 	if err = clusterTenancyFinder.StartRegistration(ctx, initializedDeps.podEventWatcher, m.localMeshEventWatcher); err != nil {
-		return err
-	}
-
-	if err = meshWorkloadFinder.StartDiscovery(initializedDeps.podEventWatcher, m.localMeshEventWatcher); err != nil {
 		return err
 	}
 
