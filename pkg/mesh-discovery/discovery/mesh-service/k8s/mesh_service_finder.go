@@ -41,7 +41,7 @@ var (
 
 func NewMeshServiceFinder(
 	ctx context.Context,
-	clusterName, writeNamespace string,
+	clusterName string,
 	serviceClient k8s_core.ServiceClient,
 	meshServiceClient smh_discovery.MeshServiceClient,
 	meshWorkloadClient smh_discovery.MeshWorkloadClient,
@@ -49,7 +49,6 @@ func NewMeshServiceFinder(
 ) MeshServiceFinder {
 	return &meshServiceFinder{
 		ctx:                ctx,
-		writeNamespace:     writeNamespace,
 		clusterName:        clusterName,
 		serviceClient:      serviceClient,
 		meshServiceClient:  meshServiceClient,
@@ -62,7 +61,7 @@ func (m *meshServiceFinder) StartDiscovery(
 	serviceEventWatcher k8s_core_controller.ServiceEventWatcher,
 	meshWorkloadEventWatcher smh_discovery_controller.MeshWorkloadEventWatcher,
 ) error {
-	err := m.reconcileMeshServices()
+	err := m.Reconcile(m.clusterName)
 	if err != nil {
 		return err
 	}
@@ -70,7 +69,7 @@ func (m *meshServiceFinder) StartDiscovery(
 	err = serviceEventWatcher.AddEventHandler(m.ctx, &k8s_core_controller.ServiceEventHandlerFuncs{
 		OnCreate: func(obj *k8s_core_types.Service) error {
 			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.CreateEvent, obj)
-			err := m.reconcileMeshServices()
+			err := m.Reconcile(m.clusterName)
 			if err != nil {
 				logger.Errorf("%+v", err)
 			}
@@ -78,7 +77,7 @@ func (m *meshServiceFinder) StartDiscovery(
 		},
 		OnUpdate: func(_, new *k8s_core_types.Service) error {
 			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.UpdateEvent, new)
-			err := m.reconcileMeshServices()
+			err := m.Reconcile(m.clusterName)
 			if err != nil {
 				logger.Errorf("%+v", err)
 			}
@@ -86,7 +85,7 @@ func (m *meshServiceFinder) StartDiscovery(
 		},
 		OnDelete: func(obj *k8s_core_types.Service) error {
 			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.DeleteEvent, obj)
-			err := m.reconcileMeshServices()
+			err := m.Reconcile(m.clusterName)
 			if err != nil {
 				logger.Errorf("%+v", err)
 			}
@@ -99,7 +98,7 @@ func (m *meshServiceFinder) StartDiscovery(
 	return meshWorkloadEventWatcher.AddEventHandler(m.ctx, &smh_discovery_controller.MeshWorkloadEventHandlerFuncs{
 		OnCreate: func(obj *smh_discovery.MeshWorkload) error {
 			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.CreateEvent, obj)
-			err := m.reconcileMeshServices()
+			err := m.Reconcile(m.clusterName)
 			if err != nil {
 				logger.Errorf("%+v", err)
 			}
@@ -107,7 +106,7 @@ func (m *meshServiceFinder) StartDiscovery(
 		},
 		OnUpdate: func(_, new *smh_discovery.MeshWorkload) error {
 			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.UpdateEvent, new)
-			err := m.reconcileMeshServices()
+			err := m.Reconcile(m.clusterName)
 			if err != nil {
 				logger.Errorf("%+v", err)
 			}
@@ -115,7 +114,7 @@ func (m *meshServiceFinder) StartDiscovery(
 		},
 		OnDelete: func(obj *smh_discovery.MeshWorkload) error {
 			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.DeleteEvent, obj)
-			err := m.reconcileMeshServices()
+			err := m.Reconcile(m.clusterName)
 			if err != nil {
 				logger.Errorf("%+v", err)
 			}
@@ -127,19 +126,19 @@ func (m *meshServiceFinder) StartDiscovery(
 type meshServiceFinder struct {
 	ctx                context.Context
 	writeNamespace     string
-	clusterName        string
+	clusterName        string // TODO: remove this once we fully port over to Reconciler
 	serviceClient      k8s_core.ServiceClient
 	meshServiceClient  smh_discovery.MeshServiceClient
 	meshWorkloadClient smh_discovery.MeshWorkloadClient
 	meshClient         smh_discovery.MeshClient
 }
 
-func (m *meshServiceFinder) reconcileMeshServices() error {
-	existingMeshServicesByName, existingMeshServiceNames, err := m.getExistingMeshServices()
+func (m *meshServiceFinder) Reconcile(cluster string) error {
+	existingMeshServicesByName, existingMeshServiceNames, err := m.getExistingMeshServices(cluster)
 	if err != nil {
 		return err
 	}
-	discoveredMeshServices, discoveredMeshServiceNames, err := m.discoverMeshServices()
+	discoveredMeshServices, discoveredMeshServiceNames, err := m.discoverMeshServices(cluster)
 	if err != nil {
 		return err
 	}
@@ -167,10 +166,10 @@ func (m *meshServiceFinder) reconcileMeshServices() error {
 	return nil
 }
 
-func (m *meshServiceFinder) getExistingMeshServices() (map[string]*smh_discovery.MeshService, sets.String, error) {
+func (m *meshServiceFinder) getExistingMeshServices(cluster string) (map[string]*smh_discovery.MeshService, sets.String, error) {
 	meshServiceNames := sets.NewString()
 	existingMeshServices, err := m.meshServiceClient.ListMeshService(m.ctx, client.MatchingLabels{
-		kube.COMPUTE_TARGET: m.clusterName,
+		kube.COMPUTE_TARGET: cluster,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -184,7 +183,7 @@ func (m *meshServiceFinder) getExistingMeshServices() (map[string]*smh_discovery
 	return meshServicesByName, meshServiceNames, nil
 }
 
-func (m *meshServiceFinder) discoverMeshServices() ([]*smh_discovery.MeshService, sets.String, error) {
+func (m *meshServiceFinder) discoverMeshServices(cluster string) ([]*smh_discovery.MeshService, sets.String, error) {
 	discoveredMeshServiceNames := sets.NewString()
 	services, err := m.serviceClient.ListService(m.ctx)
 	if err != nil {
@@ -193,14 +192,14 @@ func (m *meshServiceFinder) discoverMeshServices() ([]*smh_discovery.MeshService
 	var discoveredMeshServices []*smh_discovery.MeshService
 	for _, kubeService := range services.Items {
 		kubeService := kubeService
-		mesh, backingWorkloads, err := m.findMeshAndWorkloadsForService(&kubeService)
+		mesh, backingWorkloads, err := m.findMeshAndWorkloadsForService(cluster, &kubeService)
 		if err != nil {
 			return nil, nil, err
 		}
 		if len(backingWorkloads) == 0 {
 			continue
 		}
-		discoveredMeshService, err := m.buildMeshService(&kubeService, mesh, m.findSubsets(backingWorkloads), m.clusterName)
+		discoveredMeshService, err := m.buildMeshService(&kubeService, mesh, m.findSubsets(backingWorkloads), cluster)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -211,6 +210,7 @@ func (m *meshServiceFinder) discoverMeshServices() ([]*smh_discovery.MeshService
 }
 
 func (m *meshServiceFinder) findMeshAndWorkloadsForService(
+	cluster string,
 	service *k8s_core_types.Service,
 ) (*smh_discovery.Mesh, []*smh_discovery.MeshWorkload, error) {
 	// early optimization- bail out early if we know that this service can't select anything
@@ -219,7 +219,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(
 		return nil, nil, nil
 	}
 	meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
-		kube.COMPUTE_TARGET: m.clusterName,
+		kube.COMPUTE_TARGET: cluster,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -232,7 +232,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(
 		if err != nil {
 			return nil, nil, err
 		}
-		if m.isServiceBackedByWorkload(service, &meshWorkload) {
+		if m.isServiceBackedByWorkload(cluster, service, &meshWorkload) {
 			mesh = meshForWorkload
 			backingWorkloads = append(backingWorkloads, &meshWorkload)
 		}
@@ -276,6 +276,7 @@ func (m *meshServiceFinder) findSubsets(backingWorkloads []*smh_discovery.MeshWo
 }
 
 func (m *meshServiceFinder) isServiceBackedByWorkload(
+	cluster string,
 	service *k8s_core_types.Service,
 	meshWorkload *smh_discovery.MeshWorkload,
 ) bool {
@@ -284,7 +285,7 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(
 	// If the meshworkload is not on the same cluster as the service, it can be skipped safely
 	// The event handler accepts events from MeshWorkloads which may "match" the incoming service
 	// but be on a different cluster, so it is important to check that here.
-	if workloadCluster != m.clusterName {
+	if workloadCluster != cluster {
 		return false
 	}
 
@@ -317,7 +318,7 @@ func (m *meshServiceFinder) buildMeshService(
 	return &smh_discovery.MeshService{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
 			Name:      m.buildMeshServiceName(service, clusterName),
-			Namespace: m.writeNamespace,
+			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(meshType, clusterName, service.GetName(), service.GetNamespace()),
 		},
 		Spec: smh_discovery_types.MeshServiceSpec{

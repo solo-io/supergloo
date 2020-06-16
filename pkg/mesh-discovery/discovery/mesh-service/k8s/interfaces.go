@@ -9,4 +9,5 @@ import (
 
 type MeshServiceFinder interface {
 	StartDiscovery(serviceEventWatcher k8s_core_controller.ServiceEventWatcher, meshWorkloadEventWatcher smh_discovery_controller.MeshWorkloadEventWatcher) error
+	Reconcile(cluster string) error
 }
