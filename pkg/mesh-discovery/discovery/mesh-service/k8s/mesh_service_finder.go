@@ -23,7 +23,7 @@ import (
 //go:generate mockgen -source ./mesh_service_finder.go -destination ./mocks/mock_interfaces.go -package service_discovery_mocks
 
 type MeshServiceFinder interface {
-	Process(clusterName string) error
+	Process(ctx context.Context, clusterName string) error
 }
 
 var (
@@ -44,14 +44,12 @@ var (
 )
 
 func NewMeshServiceFinder(
-	ctx context.Context,
 	serviceClient k8s_core.ServiceClient,
 	meshServiceClient smh_discovery.MeshServiceClient,
 	meshWorkloadClient smh_discovery.MeshWorkloadClient,
 	meshClient smh_discovery.MeshClient,
 ) MeshServiceFinder {
 	return &meshServiceFinder{
-		ctx:                ctx,
 		serviceClient:      serviceClient,
 		meshServiceClient:  meshServiceClient,
 		meshWorkloadClient: meshWorkloadClient,
@@ -60,7 +58,6 @@ func NewMeshServiceFinder(
 }
 
 type meshServiceFinder struct {
-	ctx                context.Context
 	writeNamespace     string
 	serviceClient      k8s_core.ServiceClient
 	meshServiceClient  smh_discovery.MeshServiceClient
@@ -68,12 +65,12 @@ type meshServiceFinder struct {
 	meshClient         smh_discovery.MeshClient
 }
 
-func (m *meshServiceFinder) Process(clusterName string) error {
-	existingMeshServicesByName, existingMeshServiceNames, err := m.getExistingMeshServices(clusterName)
+func (m *meshServiceFinder) Process(ctx context.Context, clusterName string) error {
+	existingMeshServicesByName, existingMeshServiceNames, err := m.getExistingMeshServices(ctx, clusterName)
 	if err != nil {
 		return err
 	}
-	discoveredMeshServices, discoveredMeshServiceNames, err := m.discoverMeshServices(clusterName)
+	discoveredMeshServices, discoveredMeshServiceNames, err := m.discoverMeshServices(ctx, clusterName)
 	if err != nil {
 		return err
 	}
@@ -81,7 +78,7 @@ func (m *meshServiceFinder) Process(clusterName string) error {
 	for _, discoveredMeshService := range discoveredMeshServices {
 		existingMeshService, ok := existingMeshServicesByName[discoveredMeshService.GetName()]
 		if !ok || !existingMeshService.Spec.Equal(discoveredMeshService.Spec) {
-			err = m.meshServiceClient.UpsertMeshService(m.ctx, discoveredMeshService)
+			err = m.meshServiceClient.UpsertMeshService(ctx, discoveredMeshService)
 			if err != nil {
 				return err
 			}
@@ -93,7 +90,7 @@ func (m *meshServiceFinder) Process(clusterName string) error {
 		if !ok {
 			continue
 		}
-		err = m.meshServiceClient.DeleteMeshService(m.ctx, selection.ObjectMetaToObjectKey(existingMeshService.ObjectMeta))
+		err = m.meshServiceClient.DeleteMeshService(ctx, selection.ObjectMetaToObjectKey(existingMeshService.ObjectMeta))
 		if err != nil {
 			return err
 		}
@@ -101,9 +98,12 @@ func (m *meshServiceFinder) Process(clusterName string) error {
 	return nil
 }
 
-func (m *meshServiceFinder) getExistingMeshServices(clusterName string) (map[string]*smh_discovery.MeshService, sets.String, error) {
+func (m *meshServiceFinder) getExistingMeshServices(
+	ctx context.Context,
+	clusterName string,
+) (map[string]*smh_discovery.MeshService, sets.String, error) {
 	meshServiceNames := sets.NewString()
-	existingMeshServices, err := m.meshServiceClient.ListMeshService(m.ctx, client.MatchingLabels{
+	existingMeshServices, err := m.meshServiceClient.ListMeshService(ctx, client.MatchingLabels{
 		kube.COMPUTE_TARGET: clusterName,
 	})
 	if err != nil {
@@ -118,16 +118,19 @@ func (m *meshServiceFinder) getExistingMeshServices(clusterName string) (map[str
 	return meshServicesByName, meshServiceNames, nil
 }
 
-func (m *meshServiceFinder) discoverMeshServices(clusterName string) ([]*smh_discovery.MeshService, sets.String, error) {
+func (m *meshServiceFinder) discoverMeshServices(
+	ctx context.Context,
+	clusterName string,
+) ([]*smh_discovery.MeshService, sets.String, error) {
 	discoveredMeshServiceNames := sets.NewString()
-	services, err := m.serviceClient.ListService(m.ctx)
+	services, err := m.serviceClient.ListService(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
 	var discoveredMeshServices []*smh_discovery.MeshService
 	for _, kubeService := range services.Items {
 		kubeService := kubeService
-		mesh, backingWorkloads, err := m.findMeshAndWorkloadsForService(clusterName, &kubeService)
+		mesh, backingWorkloads, err := m.findMeshAndWorkloadsForService(ctx, clusterName, &kubeService)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -145,6 +148,7 @@ func (m *meshServiceFinder) discoverMeshServices(clusterName string) ([]*smh_dis
 }
 
 func (m *meshServiceFinder) findMeshAndWorkloadsForService(
+	ctx context.Context,
 	clusterName string,
 	service *k8s_core_types.Service,
 ) (*smh_discovery.Mesh, []*smh_discovery.MeshWorkload, error) {
@@ -153,7 +157,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(
 	if len(service.Spec.Selector) == 0 {
 		return nil, nil, nil
 	}
-	meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
+	meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(ctx, client.MatchingLabels{
 		kube.COMPUTE_TARGET: clusterName,
 	})
 	if err != nil {
@@ -163,7 +167,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(
 	var mesh *smh_discovery.Mesh
 	for _, meshWorkloadIter := range meshWorkloads.Items {
 		meshWorkload := meshWorkloadIter
-		meshForWorkload, err := m.meshClient.GetMesh(m.ctx, selection.ResourceRefToObjectKey(meshWorkload.Spec.GetMesh()))
+		meshForWorkload, err := m.meshClient.GetMesh(ctx, selection.ResourceRefToObjectKey(meshWorkload.Spec.GetMesh()))
 		if err != nil {
 			return nil, nil, err
 		}

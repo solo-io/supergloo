@@ -1,6 +1,8 @@
 package reconcilers
 
 import (
+	"context"
+
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	meshservice_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-service/k8s"
 	"github.com/solo-io/skv2/pkg/reconcile"
@@ -9,12 +11,13 @@ import (
 )
 
 type discoveryReconcilers struct {
+	ctx               context.Context
 	meshServiceFinder meshservice_discovery.MeshServiceFinder
 }
 
 func (d *discoveryReconcilers) ReconcileMeshWorkload(obj *smh_discovery.MeshWorkload) (reconcile.Result, error) {
 	clusterName := obj.Spec.GetKubeController().GetKubeControllerRef().GetCluster()
-	return reconcile.Result{}, d.meshServiceFinder.Process(clusterName)
+	return reconcile.Result{}, d.meshServiceFinder.Process(d.ctx, clusterName)
 }
 
 func (d *discoveryReconcilers) ReconcileMesh(obj *smh_discovery.Mesh) (reconcile.Result, error) {
@@ -30,5 +33,5 @@ func (d *discoveryReconcilers) ReconcilePod(clusterName string, obj *v1.Pod) (re
 }
 
 func (d *discoveryReconcilers) ReconcileService(clusterName string, obj *v1.Service) (reconcile.Result, error) {
-	return reconcile.Result{}, d.meshServiceFinder.Process(clusterName)
+	return reconcile.Result{}, d.meshServiceFinder.Process(d.ctx, clusterName)
 }
