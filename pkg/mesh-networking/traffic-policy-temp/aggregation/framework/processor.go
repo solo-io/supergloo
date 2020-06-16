@@ -14,7 +14,7 @@ import (
 	mesh_translation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/translators"
 )
 
-//go:generate mockgen -source ./reconciler.go -destination ./mocks/mock_reconciler.go
+//go:generate mockgen -source ./processor.go -destination ./mocks/mock_processor.go
 
 type AggregationProcessor interface {
 	Process(ctx context.Context, allTrafficPolicies []*smh_networking.TrafficPolicy) (*ProcessedObjects, error)

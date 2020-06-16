@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-//go:generate mockgen -source ./translation_reconciler.go -destination ./mocks/mock_translation_reconciler.go
+//go:generate mockgen -source ./translation_processor.go -destination ./mocks/mock_translation_processor.go
 
 type TranslationProcessor interface {
 	Process(ctx context.Context, allMeshServices []*smh_discovery.MeshService) (snapshot.ClusterNameToSnapshot, error)
