@@ -22,50 +22,43 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type mocks struct {
-	serviceClient        *mock_kubernetes_core.MockServiceClient
-	meshServiceClient    *discovery_mocks.MockMeshServiceClient
-	meshWorkloadClient   *discovery_mocks.MockMeshWorkloadClient
-	meshClient           *discovery_mocks.MockMeshClient
-	meshServiceDiscovery k8s.MeshServiceDiscovery
-}
-
 var _ = Describe("Mesh Service Discovery", func() {
 	var (
-		ctrl        *gomock.Controller
-		ctx         = context.TODO()
-		clusterName = "test-cluster-name"
+		ctrl                      *gomock.Controller
+		ctx                       = context.TODO()
+		clusterName               = "test-cluster-name"
+		mockMeshServiceClient     *discovery_mocks.MockMeshServiceClient
+		mockMeshWorkloadClient    *discovery_mocks.MockMeshWorkloadClient
+		mockMeshClient            *discovery_mocks.MockMeshClient
+		mockMulticlusterClientset *mock_kubernetes_core.MockMulticlusterClientset
+		mockClientset             *mock_kubernetes_core.MockClientset
+		mockServiceClient         *mock_kubernetes_core.MockServiceClient
+		meshServiceDiscovery      k8s.MeshServiceDiscovery
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
+		mockMeshServiceClient = discovery_mocks.NewMockMeshServiceClient(ctrl)
+		mockMeshWorkloadClient = discovery_mocks.NewMockMeshWorkloadClient(ctrl)
+		mockMeshClient = discovery_mocks.NewMockMeshClient(ctrl)
+		mockClientset = mock_kubernetes_core.NewMockClientset(ctrl)
+		mockServiceClient = mock_kubernetes_core.NewMockServiceClient(ctrl)
+		mockMulticlusterClientset = mock_kubernetes_core.NewMockMulticlusterClientset(ctrl)
+		meshServiceDiscovery = k8s.NewMeshServiceDiscovery(
+			mockMeshServiceClient,
+			mockMeshWorkloadClient,
+			mockMeshClient,
+			mockMulticlusterClientset,
+		)
 	})
 
 	AfterEach(func() {
 		ctrl.Finish()
 	})
 
-	var setupMocks = func() mocks {
-		serviceClient := mock_kubernetes_core.NewMockServiceClient(ctrl)
-		meshServiceClient := discovery_mocks.NewMockMeshServiceClient(ctrl)
-		meshWorkloadClient := discovery_mocks.NewMockMeshWorkloadClient(ctrl)
-		meshClient := discovery_mocks.NewMockMeshClient(ctrl)
-		meshServiceFinder := k8s.NewMeshServiceDiscovery(
-			serviceClient,
-			meshServiceClient,
-			meshWorkloadClient,
-			meshClient,
-		)
-		return mocks{
-			serviceClient:        serviceClient,
-			meshServiceClient:    meshServiceClient,
-			meshWorkloadClient:   meshWorkloadClient,
-			meshClient:           meshClient,
-			meshServiceDiscovery: meshServiceFinder,
-		}
-	}
-
-	var expectReconcile = func(mocks mocks) {
+	var expectReconcile = func() {
+		mockMulticlusterClientset.EXPECT().Cluster(clusterName).Return(mockClientset, nil)
+		mockClientset.EXPECT().Services().Return(mockServiceClient)
 		workloadNamespace := "workload-namespace"
 		mesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -177,31 +170,31 @@ var _ = Describe("Mesh Service Discovery", func() {
 		}
 		meshServiceName := fmt.Sprintf("right-service-%s-test-cluster-name", workloadNamespace)
 		// this list call is the real one we care about
-		mocks.meshWorkloadClient.EXPECT().
+		mockMeshWorkloadClient.EXPECT().
 			ListMeshWorkload(ctx, client.MatchingLabels{
 				kube.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&smh_discovery.MeshWorkloadList{Items: []smh_discovery.MeshWorkload{*meshWorkloadEvent, *meshWorkloadEventV2}}, nil).
 			Times(2)
-		mocks.meshServiceClient.EXPECT().
+		mockMeshServiceClient.EXPECT().
 			ListMeshService(ctx, client.MatchingLabels{
 				kube.COMPUTE_TARGET: clusterName,
 			}).
 			Return(&smh_discovery.MeshServiceList{
 				Items: []smh_discovery.MeshService{*meshServiceToBeDeleted},
 			}, nil)
-		mocks.serviceClient.
+		mockServiceClient.
 			EXPECT().
 			ListService(ctx).
 			Return(&k8s_core_types.ServiceList{
 				Items: []k8s_core_types.Service{wrongService, rightService},
 			}, nil)
-		mocks.meshClient.
+		mockMeshClient.
 			EXPECT().
 			GetMesh(ctx, selection.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 			Return(mesh, nil).
 			Times(4)
-		mocks.meshServiceClient.
+		mockMeshServiceClient.
 			EXPECT().
 			UpsertMeshService(ctx, &smh_discovery.MeshService{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -233,7 +226,7 @@ var _ = Describe("Mesh Service Discovery", func() {
 				},
 			}).
 			Return(nil)
-		mocks.meshServiceClient.
+		mockMeshServiceClient.
 			EXPECT().
 			DeleteMeshService(ctx, client.ObjectKey{
 				Name:      meshServiceToBeDeleted.GetName(),
@@ -244,9 +237,8 @@ var _ = Describe("Mesh Service Discovery", func() {
 
 	Context("MeshService discovery", func() {
 		It("reconciles MeshServices", func() {
-			mocks := setupMocks()
-			expectReconcile(mocks)
-			err := mocks.meshServiceDiscovery.DiscoverMeshServices(ctx, clusterName)
+			expectReconcile()
+			err := meshServiceDiscovery.DiscoverMeshServices(ctx, clusterName)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})

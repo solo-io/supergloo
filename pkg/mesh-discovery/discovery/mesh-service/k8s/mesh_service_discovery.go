@@ -2,17 +2,19 @@ package k8s
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
-	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
+	kube_metadata "github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
+	"github.com/solo-io/service-mesh-hub/pkg/common/metadata"
+	skv2_sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -47,39 +49,39 @@ var (
 )
 
 func NewMeshServiceDiscovery(
-	serviceClient k8s_core.ServiceClient,
 	meshServiceClient smh_discovery.MeshServiceClient,
 	meshWorkloadClient smh_discovery.MeshWorkloadClient,
 	meshClient smh_discovery.MeshClient,
+	multiclusterClientset k8s_core.MulticlusterClientset,
 ) MeshServiceDiscovery {
 	return &meshServiceDiscovery{
-		serviceClient:      serviceClient,
-		meshServiceClient:  meshServiceClient,
-		meshWorkloadClient: meshWorkloadClient,
-		meshClient:         meshClient,
+		meshServiceClient:     meshServiceClient,
+		meshWorkloadClient:    meshWorkloadClient,
+		meshClient:            meshClient,
+		multiclusterClientset: multiclusterClientset,
 	}
 }
 
 type meshServiceDiscovery struct {
-	writeNamespace     string
-	serviceClient      k8s_core.ServiceClient
-	meshServiceClient  smh_discovery.MeshServiceClient
-	meshWorkloadClient smh_discovery.MeshWorkloadClient
-	meshClient         smh_discovery.MeshClient
+	meshServiceClient     smh_discovery.MeshServiceClient
+	meshWorkloadClient    smh_discovery.MeshWorkloadClient
+	meshClient            smh_discovery.MeshClient
+	multiclusterClientset k8s_core.MulticlusterClientset
 }
 
 func (m *meshServiceDiscovery) DiscoverMeshServices(ctx context.Context, clusterName string) error {
-	existingMeshServicesByName, existingMeshServiceNames, err := m.getExistingMeshServices(ctx, clusterName)
+	existingMeshServices, err := m.getExistingMeshServices(ctx, clusterName)
 	if err != nil {
 		return err
 	}
-	discoveredMeshServices, discoveredMeshServiceNames, err := m.discoverMeshServices(ctx, clusterName)
+	discoveredMeshServices, err := m.discoverMeshServices(ctx, clusterName)
 	if err != nil {
 		return err
 	}
+	existingMeshServiceMap := existingMeshServices.Map()
 	// For each service that is discovered, create if it doesn't exist or update it if the spec has changed.
-	for _, discoveredMeshService := range discoveredMeshServices {
-		existingMeshService, ok := existingMeshServicesByName[discoveredMeshService.GetName()]
+	for _, discoveredMeshService := range discoveredMeshServices.List() {
+		existingMeshService, ok := existingMeshServiceMap[skv2_sets.Key(discoveredMeshService)]
 		if !ok || !existingMeshService.Spec.Equal(discoveredMeshService.Spec) {
 			err = m.meshServiceClient.UpsertMeshService(ctx, discoveredMeshService)
 			if err != nil {
@@ -88,11 +90,7 @@ func (m *meshServiceDiscovery) DiscoverMeshServices(ctx context.Context, cluster
 		}
 	}
 	// Delete MeshServices that no longer exist.
-	for _, existingMeshServiceName := range existingMeshServiceNames.Difference(discoveredMeshServiceNames).List() {
-		existingMeshService, ok := existingMeshServicesByName[existingMeshServiceName]
-		if !ok {
-			continue
-		}
+	for _, existingMeshService := range existingMeshServices.Difference(discoveredMeshServices).List() {
 		err = m.meshServiceClient.DeleteMeshService(ctx, selection.ObjectMetaToObjectKey(existingMeshService.ObjectMeta))
 		if err != nil {
 			return err
@@ -104,50 +102,51 @@ func (m *meshServiceDiscovery) DiscoverMeshServices(ctx context.Context, cluster
 func (m *meshServiceDiscovery) getExistingMeshServices(
 	ctx context.Context,
 	clusterName string,
-) (map[string]*smh_discovery.MeshService, sets.String, error) {
-	meshServiceNames := sets.NewString()
-	existingMeshServices, err := m.meshServiceClient.ListMeshService(ctx, client.MatchingLabels{
+) (smh_discovery_sets.MeshServiceSet, error) {
+	existingMeshServices := smh_discovery_sets.NewMeshServiceSet()
+	meshServiceList, err := m.meshServiceClient.ListMeshService(ctx, client.MatchingLabels{
 		kube.COMPUTE_TARGET: clusterName,
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	meshServicesByName := make(map[string]*smh_discovery.MeshService)
-	for _, existingMeshService := range existingMeshServices.Items {
-		existingMeshService := existingMeshService
-		meshServicesByName[existingMeshService.GetName()] = &existingMeshService
-		meshServiceNames.Insert(existingMeshService.GetName())
+	for _, meshService := range meshServiceList.Items {
+		meshService := meshService
+		existingMeshServices.Insert(&meshService)
 	}
-	return meshServicesByName, meshServiceNames, nil
+	return existingMeshServices, nil
 }
 
 func (m *meshServiceDiscovery) discoverMeshServices(
 	ctx context.Context,
 	clusterName string,
-) ([]*smh_discovery.MeshService, sets.String, error) {
-	discoveredMeshServiceNames := sets.NewString()
-	services, err := m.serviceClient.ListService(ctx)
+) (smh_discovery_sets.MeshServiceSet, error) {
+	discoveredMeshServices := smh_discovery_sets.NewMeshServiceSet()
+	clientset, err := m.multiclusterClientset.Cluster(clusterName)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	var discoveredMeshServices []*smh_discovery.MeshService
-	for _, kubeService := range services.Items {
-		kubeService := kubeService
-		mesh, backingWorkloads, err := m.findMeshAndWorkloadsForService(ctx, clusterName, &kubeService)
+	serviceList, err := clientset.Services().ListService(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, service := range serviceList.Items {
+		service := service
+		mesh, backingWorkloads, err := m.findMeshAndWorkloadsForService(ctx, clusterName, &service)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
+		// Only discover services that are backed by workloads
 		if len(backingWorkloads) == 0 {
 			continue
 		}
-		discoveredMeshService, err := m.buildMeshService(&kubeService, mesh, m.findSubsets(backingWorkloads), clusterName)
+		discoveredMeshService, err := m.buildMeshService(&service, mesh, m.findSubsets(backingWorkloads), clusterName)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
-		discoveredMeshServices = append(discoveredMeshServices, discoveredMeshService)
-		discoveredMeshServiceNames.Insert(discoveredMeshService.GetName())
+		discoveredMeshServices.Insert(discoveredMeshService)
 	}
-	return discoveredMeshServices, discoveredMeshServiceNames, nil
+	return discoveredMeshServices, nil
 }
 
 func (m *meshServiceDiscovery) findMeshAndWorkloadsForService(
@@ -252,14 +251,14 @@ func (m *meshServiceDiscovery) buildMeshService(
 	subsets map[string]*smh_discovery_types.MeshServiceSpec_Subset,
 	clusterName string,
 ) (*smh_discovery.MeshService, error) {
-	meshType, err := metadata.MeshToMeshType(mesh)
+	meshType, err := kube_metadata.MeshToMeshType(mesh)
 	if err != nil {
 		return nil, err
 	}
 
 	return &smh_discovery.MeshService{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
-			Name:      m.buildMeshServiceName(service, clusterName),
+			Name:      metadata.BuildMeshServiceName(service, clusterName),
 			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(meshType, clusterName, service.GetName(), service.GetNamespace()),
 		},
@@ -289,8 +288,4 @@ func (m *meshServiceDiscovery) convertPorts(service *k8s_core_types.Service) (po
 		})
 	}
 	return ports
-}
-
-func (m *meshServiceDiscovery) buildMeshServiceName(service *k8s_core_types.Service, clusterName string) string {
-	return fmt.Sprintf("%s-%s-%s", service.GetName(), service.GetNamespace(), clusterName)
 }

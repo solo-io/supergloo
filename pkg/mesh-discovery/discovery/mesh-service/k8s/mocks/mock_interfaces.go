@@ -6,9 +6,8 @@ package service_discovery_mocks
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockMeshServiceDiscovery is a mock of MeshServiceDiscovery interface.
