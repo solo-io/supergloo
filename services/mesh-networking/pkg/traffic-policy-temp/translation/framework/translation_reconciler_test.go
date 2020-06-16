@@ -14,7 +14,6 @@ import (
 	translation_framework "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot"
 	mock_snapshot "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/traffic-policy-temp/translation/framework/snapshot/mocks"
-	mock_smh_discovery_clients "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
 	"istio.io/api/networking/v1alpha3"
 	istio_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
