@@ -20,6 +20,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+//go:generate mockgen -source ./mesh_service_finder.go -destination ./mocks/mock_interfaces.go -package service_discovery_mocks
+
+type MeshServiceFinder interface {
+	Process(clusterName string) error
+}
+
 var (
 	DiscoveryLabels = func(meshType smh_core_types.MeshType, cluster, kubeServiceName, kubeServiceNamespace string) map[string]string {
 		return map[string]string{
