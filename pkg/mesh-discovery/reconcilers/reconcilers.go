@@ -12,12 +12,12 @@ import (
 
 type discoveryReconcilers struct {
 	ctx               context.Context
-	meshServiceFinder meshservice_discovery.MeshServiceFinder
+	meshServiceFinder meshservice_discovery.MeshServiceDiscovery
 }
 
 func (d *discoveryReconcilers) ReconcileMeshWorkload(obj *smh_discovery.MeshWorkload) (reconcile.Result, error) {
 	clusterName := obj.Spec.GetKubeController().GetKubeControllerRef().GetCluster()
-	return reconcile.Result{}, d.meshServiceFinder.Process(d.ctx, clusterName)
+	return reconcile.Result{}, d.meshServiceFinder.DiscoverMeshServices(d.ctx, clusterName)
 }
 
 func (d *discoveryReconcilers) ReconcileMesh(obj *smh_discovery.Mesh) (reconcile.Result, error) {
@@ -33,5 +33,5 @@ func (d *discoveryReconcilers) ReconcilePod(clusterName string, obj *v1.Pod) (re
 }
 
 func (d *discoveryReconcilers) ReconcileService(clusterName string, obj *v1.Service) (reconcile.Result, error) {
-	return reconcile.Result{}, d.meshServiceFinder.Process(d.ctx, clusterName)
+	return reconcile.Result{}, d.meshServiceFinder.DiscoverMeshServices(d.ctx, clusterName)
 }

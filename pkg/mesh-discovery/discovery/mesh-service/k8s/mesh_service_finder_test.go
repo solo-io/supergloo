@@ -34,7 +34,7 @@ type mocks struct {
 	serviceEventWatcher      *mock_corev1.MockServiceEventWatcher
 	meshWorkloadEventWatcher *mock_smh_discovery.MockMeshWorkloadEventWatcher
 
-	meshServiceFinder k8s.MeshServiceFinder
+	meshServiceFinder k8s.MeshServiceDiscovery
 
 	serviceCreateCallback      *func(service *k8s_core_types.Service) error
 	serviceDeleteCallback      *func(service *k8s_core_types.Service) error

@@ -32,16 +32,16 @@ func (m *MockMeshServiceFinder) EXPECT() *MockMeshServiceFinderMockRecorder {
 	return m.recorder
 }
 
-// Process mocks base method.
+// DiscoverMeshServices mocks base method.
 func (m *MockMeshServiceFinder) Process(clusterName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Process", clusterName)
+	ret := m.ctrl.Call(m, "DiscoverMeshServices", clusterName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Process indicates an expected call of Process.
+// DiscoverMeshServices indicates an expected call of DiscoverMeshServices.
 func (mr *MockMeshServiceFinderMockRecorder) Process(clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Process", reflect.TypeOf((*MockMeshServiceFinder)(nil).Process), clusterName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoverMeshServices", reflect.TypeOf((*MockMeshServiceFinder)(nil).Process), clusterName)
 }

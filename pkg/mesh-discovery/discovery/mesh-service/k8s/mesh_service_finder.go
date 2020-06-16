@@ -22,8 +22,11 @@ import (
 
 //go:generate mockgen -source ./mesh_service_finder.go -destination ./mocks/mock_interfaces.go -package service_discovery_mocks
 
-type MeshServiceFinder interface {
-	Process(ctx context.Context, clusterName string) error
+type MeshServiceDiscovery interface {
+	// Ensure that the existing MeshService CR's match the set of discovered MeshServices,
+	// creating, updating, or deleting MeshServices as necessary.
+	// TODO: replace client writes with an output snapshot
+	DiscoverMeshServices(ctx context.Context, clusterName string) error
 }
 
 var (
@@ -48,7 +51,7 @@ func NewMeshServiceFinder(
 	meshServiceClient smh_discovery.MeshServiceClient,
 	meshWorkloadClient smh_discovery.MeshWorkloadClient,
 	meshClient smh_discovery.MeshClient,
-) MeshServiceFinder {
+) MeshServiceDiscovery {
 	return &meshServiceFinder{
 		serviceClient:      serviceClient,
 		meshServiceClient:  meshServiceClient,
@@ -65,7 +68,7 @@ type meshServiceFinder struct {
 	meshClient         smh_discovery.MeshClient
 }
 
-func (m *meshServiceFinder) Process(ctx context.Context, clusterName string) error {
+func (m *meshServiceFinder) DiscoverMeshServices(ctx context.Context, clusterName string) error {
 	existingMeshServicesByName, existingMeshServiceNames, err := m.getExistingMeshServices(ctx, clusterName)
 	if err != nil {
 		return err
