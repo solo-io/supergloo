@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Finish the refactor the structure of Service Mesh Hub's Go packages, by moving the new traffic policy code.
