@@ -20,7 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-//go:generate mockgen -source ./mesh_service_finder.go -destination ./mocks/mock_interfaces.go -package service_discovery_mocks
+//go:generate mockgen -source ./mesh_service_discovery.go -destination ./mocks/mock_interfaces.go -package service_discovery_mocks
 
 type MeshServiceDiscovery interface {
 	// Ensure that the existing MeshService CR's match the set of discovered MeshServices,
@@ -46,13 +46,13 @@ var (
 	)
 )
 
-func NewMeshServiceFinder(
+func NewMeshServiceDiscovery(
 	serviceClient k8s_core.ServiceClient,
 	meshServiceClient smh_discovery.MeshServiceClient,
 	meshWorkloadClient smh_discovery.MeshWorkloadClient,
 	meshClient smh_discovery.MeshClient,
 ) MeshServiceDiscovery {
-	return &meshServiceFinder{
+	return &meshServiceDiscovery{
 		serviceClient:      serviceClient,
 		meshServiceClient:  meshServiceClient,
 		meshWorkloadClient: meshWorkloadClient,
@@ -60,7 +60,7 @@ func NewMeshServiceFinder(
 	}
 }
 
-type meshServiceFinder struct {
+type meshServiceDiscovery struct {
 	writeNamespace     string
 	serviceClient      k8s_core.ServiceClient
 	meshServiceClient  smh_discovery.MeshServiceClient
@@ -68,7 +68,7 @@ type meshServiceFinder struct {
 	meshClient         smh_discovery.MeshClient
 }
 
-func (m *meshServiceFinder) DiscoverMeshServices(ctx context.Context, clusterName string) error {
+func (m *meshServiceDiscovery) DiscoverMeshServices(ctx context.Context, clusterName string) error {
 	existingMeshServicesByName, existingMeshServiceNames, err := m.getExistingMeshServices(ctx, clusterName)
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func (m *meshServiceFinder) DiscoverMeshServices(ctx context.Context, clusterNam
 	return nil
 }
 
-func (m *meshServiceFinder) getExistingMeshServices(
+func (m *meshServiceDiscovery) getExistingMeshServices(
 	ctx context.Context,
 	clusterName string,
 ) (map[string]*smh_discovery.MeshService, sets.String, error) {
@@ -121,7 +121,7 @@ func (m *meshServiceFinder) getExistingMeshServices(
 	return meshServicesByName, meshServiceNames, nil
 }
 
-func (m *meshServiceFinder) discoverMeshServices(
+func (m *meshServiceDiscovery) discoverMeshServices(
 	ctx context.Context,
 	clusterName string,
 ) ([]*smh_discovery.MeshService, sets.String, error) {
@@ -150,7 +150,7 @@ func (m *meshServiceFinder) discoverMeshServices(
 	return discoveredMeshServices, discoveredMeshServiceNames, nil
 }
 
-func (m *meshServiceFinder) findMeshAndWorkloadsForService(
+func (m *meshServiceDiscovery) findMeshAndWorkloadsForService(
 	ctx context.Context,
 	clusterName string,
 	service *k8s_core_types.Service,
@@ -183,7 +183,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for
-func (m *meshServiceFinder) findSubsets(backingWorkloads []*smh_discovery.MeshWorkload) map[string]*smh_discovery_types.MeshServiceSpec_Subset {
+func (m *meshServiceDiscovery) findSubsets(backingWorkloads []*smh_discovery.MeshWorkload) map[string]*smh_discovery_types.MeshServiceSpec_Subset {
 
 	uniqueLabels := make(map[string]sets.String)
 	for _, backingWorkload := range backingWorkloads {
@@ -217,7 +217,7 @@ func (m *meshServiceFinder) findSubsets(backingWorkloads []*smh_discovery.MeshWo
 	return subsets
 }
 
-func (m *meshServiceFinder) isServiceBackedByWorkload(
+func (m *meshServiceDiscovery) isServiceBackedByWorkload(
 	clusterName string,
 	service *k8s_core_types.Service,
 	meshWorkload *smh_discovery.MeshWorkload,
@@ -246,7 +246,7 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(
 	return labels.AreLabelsInWhiteList(service.Spec.Selector, meshWorkload.Spec.GetKubeController().GetLabels())
 }
 
-func (m *meshServiceFinder) buildMeshService(
+func (m *meshServiceDiscovery) buildMeshService(
 	service *k8s_core_types.Service,
 	mesh *smh_discovery.Mesh,
 	subsets map[string]*smh_discovery_types.MeshServiceSpec_Subset,
@@ -280,7 +280,7 @@ func (m *meshServiceFinder) buildMeshService(
 	}, nil
 }
 
-func (m *meshServiceFinder) convertPorts(service *k8s_core_types.Service) (ports []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort) {
+func (m *meshServiceDiscovery) convertPorts(service *k8s_core_types.Service) (ports []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort) {
 	for _, kubePort := range service.Spec.Ports {
 		ports = append(ports, &smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 			Port:     uint32(kubePort.Port),
@@ -291,6 +291,6 @@ func (m *meshServiceFinder) convertPorts(service *k8s_core_types.Service) (ports
 	return ports
 }
 
-func (m *meshServiceFinder) buildMeshServiceName(service *k8s_core_types.Service, clusterName string) string {
+func (m *meshServiceDiscovery) buildMeshServiceName(service *k8s_core_types.Service, clusterName string) string {
 	return fmt.Sprintf("%s-%s-%s", service.GetName(), service.GetNamespace(), clusterName)
 }

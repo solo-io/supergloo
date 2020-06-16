@@ -7,19 +7,15 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	k8s_core_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	mock_kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	discovery_mocks "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/mocks"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-service/k8s"
-	mock_corev1 "github.com/solo-io/service-mesh-hub/test/mocks/corev1"
-	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/smh/discovery"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -27,22 +23,14 @@ import (
 )
 
 type mocks struct {
-	serviceClient            *mock_kubernetes_core.MockServiceClient
-	meshServiceClient        *discovery_mocks.MockMeshServiceClient
-	meshWorkloadClient       *discovery_mocks.MockMeshWorkloadClient
-	meshClient               *discovery_mocks.MockMeshClient
-	serviceEventWatcher      *mock_corev1.MockServiceEventWatcher
-	meshWorkloadEventWatcher *mock_smh_discovery.MockMeshWorkloadEventWatcher
-
-	meshServiceFinder k8s.MeshServiceDiscovery
-
-	serviceCreateCallback      *func(service *k8s_core_types.Service) error
-	serviceDeleteCallback      *func(service *k8s_core_types.Service) error
-	meshWorkloadCreateCallback *func(meshWorkload *smh_discovery.MeshWorkload) error
-	meshWorkloadDeleteCallback *func(meshWorkload *smh_discovery.MeshWorkload) error
+	serviceClient        *mock_kubernetes_core.MockServiceClient
+	meshServiceClient    *discovery_mocks.MockMeshServiceClient
+	meshWorkloadClient   *discovery_mocks.MockMeshWorkloadClient
+	meshClient           *discovery_mocks.MockMeshClient
+	meshServiceDiscovery k8s.MeshServiceDiscovery
 }
 
-var _ = Describe("Mesh Service Finder", func() {
+var _ = Describe("Mesh Service Discovery", func() {
 	var (
 		ctrl        *gomock.Controller
 		ctx         = context.TODO()
@@ -62,49 +50,18 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshServiceClient := discovery_mocks.NewMockMeshServiceClient(ctrl)
 		meshWorkloadClient := discovery_mocks.NewMockMeshWorkloadClient(ctrl)
 		meshClient := discovery_mocks.NewMockMeshClient(ctrl)
-		serviceEventWatcher := mock_corev1.NewMockServiceEventWatcher(ctrl)
-		meshWorkloadEventWatcher := mock_smh_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
-		serviceCreateCallback := new(func(service *k8s_core_types.Service) error)
-		meshWorkloadCreateCallback := new(func(meshWorkload *smh_discovery.MeshWorkload) error)
-		serviceDeleteCallback := new(func(service *k8s_core_types.Service) error)
-		meshWorkloadDeleteCallback := new(func(meshWorkload *smh_discovery.MeshWorkload) error)
-		serviceEventWatcher.
-			EXPECT().
-			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, serviceEventHandler *k8s_core_controller.ServiceEventHandlerFuncs) error {
-				*serviceCreateCallback = serviceEventHandler.OnCreate
-				*serviceDeleteCallback = serviceEventHandler.OnDelete
-				return nil
-			})
-		meshWorkloadEventWatcher.
-			EXPECT().
-			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, mwEventHandler *controller.MeshWorkloadEventHandlerFuncs) error {
-				*meshWorkloadCreateCallback = mwEventHandler.OnCreate
-				*meshWorkloadDeleteCallback = mwEventHandler.OnDelete
-				return nil
-			})
-		meshServiceFinder := k8s.NewMeshServiceFinder(
-			ctx,
-			clusterName,
-			container_runtime.GetWriteNamespace(),
+		meshServiceFinder := k8s.NewMeshServiceDiscovery(
 			serviceClient,
 			meshServiceClient,
 			meshWorkloadClient,
 			meshClient,
 		)
 		return mocks{
-			serviceClient:              serviceClient,
-			meshServiceClient:          meshServiceClient,
-			serviceEventWatcher:        serviceEventWatcher,
-			meshWorkloadEventWatcher:   meshWorkloadEventWatcher,
-			meshWorkloadClient:         meshWorkloadClient,
-			meshClient:                 meshClient,
-			meshServiceFinder:          meshServiceFinder,
-			serviceCreateCallback:      serviceCreateCallback,
-			serviceDeleteCallback:      serviceDeleteCallback,
-			meshWorkloadCreateCallback: meshWorkloadCreateCallback,
-			meshWorkloadDeleteCallback: meshWorkloadDeleteCallback,
+			serviceClient:        serviceClient,
+			meshServiceClient:    meshServiceClient,
+			meshWorkloadClient:   meshWorkloadClient,
+			meshClient:           meshClient,
+			meshServiceDiscovery: meshServiceFinder,
 		}
 	}
 
@@ -113,7 +70,7 @@ var _ = Describe("Mesh Service Finder", func() {
 		mesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
 				Name:      "istio-test-mesh",
-				Namespace: "isito-system",
+				Namespace: "istio-system",
 			},
 			Spec: smh_discovery_types.MeshSpec{
 				Cluster: &smh_core_types.ResourceRef{
@@ -285,53 +242,11 @@ var _ = Describe("Mesh Service Finder", func() {
 			Return(nil)
 	}
 
-	Context("mesh workload event", func() {
-		It("reconciles MeshServices upon MeshWorkload creation", func() {
+	Context("MeshService discovery", func() {
+		It("reconciles MeshServices", func() {
 			mocks := setupMocks()
 			expectReconcile(mocks)
-			err := mocks.meshServiceFinder.StartDiscovery(
-				mocks.serviceEventWatcher,
-				mocks.meshWorkloadEventWatcher,
-			)
-			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
-			expectReconcile(mocks)
-			err = (*mocks.meshWorkloadCreateCallback)(&smh_discovery.MeshWorkload{})
-			Expect(err).NotTo(HaveOccurred())
-		})
-		It("reconciles MeshServices upon MeshWorkload deletion", func() {
-			mocks := setupMocks()
-			expectReconcile(mocks)
-			err := mocks.meshServiceFinder.StartDiscovery(
-				mocks.serviceEventWatcher,
-				mocks.meshWorkloadEventWatcher,
-			)
-			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
-			expectReconcile(mocks)
-			err = (*mocks.meshWorkloadDeleteCallback)(&smh_discovery.MeshWorkload{})
-			Expect(err).NotTo(HaveOccurred())
-		})
-		It("reconciles MeshServices upon k8s Service creation", func() {
-			mocks := setupMocks()
-			expectReconcile(mocks)
-			err := mocks.meshServiceFinder.StartDiscovery(
-				mocks.serviceEventWatcher,
-				mocks.meshWorkloadEventWatcher,
-			)
-			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
-			expectReconcile(mocks)
-			err = (*mocks.serviceCreateCallback)(&k8s_core_types.Service{})
-			Expect(err).NotTo(HaveOccurred())
-		})
-		It("reconciles MeshServices upon k8s Service deletion", func() {
-			mocks := setupMocks()
-			expectReconcile(mocks)
-			err := mocks.meshServiceFinder.StartDiscovery(
-				mocks.serviceEventWatcher,
-				mocks.meshWorkloadEventWatcher,
-			)
-			Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
-			expectReconcile(mocks)
-			err = (*mocks.serviceDeleteCallback)(&k8s_core_types.Service{})
+			err := mocks.meshServiceDiscovery.DiscoverMeshServices(ctx, clusterName)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
