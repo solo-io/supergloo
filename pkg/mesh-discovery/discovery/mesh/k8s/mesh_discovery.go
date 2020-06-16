@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-multierror"
-	v1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+	k8s_apps_clients "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
+	k8s_core_clients "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
-	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	apps_v1 "k8s.io/api/apps/v1"
@@ -21,30 +21,35 @@ import (
 func NewMeshDiscovery(
 	meshScanners []MeshScanner,
 	meshClient smh_discovery.MeshClient,
-	deploymentClientFactory v1.DeploymentClientFactory,
-	dynamicClientGetter multicluster.DynamicClientGetter,
+	appsMulticlusterClientset k8s_apps_clients.MulticlusterClientset,
+	coreMulticlusterClientset k8s_core_clients.MulticlusterClientset,
 ) MeshDiscovery {
 	return &meshDiscovery{
-		meshScanners:            meshScanners,
-		meshClient:              meshClient,
-		dynamicClientGetter:     dynamicClientGetter,
-		deploymentClientFactory: deploymentClientFactory,
+		meshScanners:              meshScanners,
+		meshClient:                meshClient,
+		appsMulticlusterClientset: appsMulticlusterClientset,
+		coreMulticlusterClientset: coreMulticlusterClientset,
 	}
 }
 
 type meshDiscovery struct {
-	meshScanners            []MeshScanner
-	meshClient              smh_discovery.MeshClient
-	deploymentClientFactory v1.DeploymentClientFactory
-	dynamicClientGetter     multicluster.DynamicClientGetter
+	meshScanners              []MeshScanner
+	meshClient                smh_discovery.MeshClient
+	appsMulticlusterClientset k8s_apps_clients.MulticlusterClientset
+	coreMulticlusterClientset k8s_core_clients.MulticlusterClientset
 }
 
 func (m *meshDiscovery) DiscoverMesh(ctx context.Context, clusterName string) error {
-	clusterClient, err := m.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
+	appsClientset, err := m.appsMulticlusterClientset.Cluster(clusterName)
 	if err != nil {
 		return err
 	}
-	deploymentClient := m.deploymentClientFactory(clusterClient)
+	coreClientset, err := m.coreMulticlusterClientset.Cluster(clusterName)
+	if err != nil {
+		return err
+	}
+	deploymentClient := appsClientset.Deployments()
+	configMapClient := coreClientset.ConfigMaps()
 	meshList, err := m.meshClient.ListMesh(ctx, client.MatchingLabels{kube.COMPUTE_TARGET: clusterName})
 	if err != nil {
 		return err
@@ -56,7 +61,7 @@ func (m *meshDiscovery) DiscoverMesh(ctx context.Context, clusterName string) er
 	discoveredMeshes := smh_discovery_sets.NewMeshSet()
 	for _, deployment := range deploymentList.Items {
 		deployment := deployment
-		discoveredMesh, err := m.discoverMesh(ctx, clusterName, clusterClient, &deployment)
+		discoveredMesh, err := m.discoverMesh(ctx, clusterName, configMapClient, &deployment)
 		if err != nil {
 			return err
 		}
@@ -94,12 +99,12 @@ func (m *meshDiscovery) DiscoverMesh(ctx context.Context, clusterName string) er
 func (m *meshDiscovery) discoverMesh(
 	ctx context.Context,
 	clusterName string,
-	clusterClient client.Client,
+	configMapClient k8s_core_clients.ConfigMapClient,
 	deployment *apps_v1.Deployment,
 ) (discoveredMesh *smh_discovery.Mesh, err error) {
 	var multiErr *multierror.Error
 	for _, meshFinder := range m.meshScanners {
-		discoveredMesh, err = meshFinder.ScanDeployment(ctx, clusterName, deployment, clusterClient)
+		discoveredMesh, err = meshFinder.ScanDeployment(ctx, clusterName, deployment, configMapClient)
 		if err != nil {
 			multiErr = multierror.Append(multiErr, err)
 		}

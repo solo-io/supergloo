@@ -6,11 +6,12 @@ package mock_mesh
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	v1 "k8s.io/api/apps/v1"
 	reflect "reflect"
-	client "sigs.k8s.io/controller-runtime/pkg/client"
+
+	gomock "github.com/golang/mock/gomock"
+	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v10 "k8s.io/api/apps/v1"
 )
 
 // MockMeshDiscovery is a mock of MeshDiscovery interface.
@@ -74,16 +75,16 @@ func (m *MockMeshScanner) EXPECT() *MockMeshScannerMockRecorder {
 }
 
 // ScanDeployment mocks base method.
-func (m *MockMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *v1.Deployment, clusterScopedClient client.Client) (*v1alpha1.Mesh, error) {
+func (m *MockMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *v10.Deployment, configMapClient v1.ConfigMapClient) (*v1alpha1.Mesh, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ScanDeployment", ctx, clusterName, deployment, clusterScopedClient)
+	ret := m.ctrl.Call(m, "ScanDeployment", ctx, clusterName, deployment, configMapClient)
 	ret0, _ := ret[0].(*v1alpha1.Mesh)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ScanDeployment indicates an expected call of ScanDeployment.
-func (mr *MockMeshScannerMockRecorder) ScanDeployment(ctx, clusterName, deployment, clusterScopedClient interface{}) *gomock.Call {
+func (mr *MockMeshScannerMockRecorder) ScanDeployment(ctx, clusterName, deployment, configMapClient interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDeployment", reflect.TypeOf((*MockMeshScanner)(nil).ScanDeployment), ctx, clusterName, deployment, clusterScopedClient)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDeployment", reflect.TypeOf((*MockMeshScanner)(nil).ScanDeployment), ctx, clusterName, deployment, configMapClient)
 }

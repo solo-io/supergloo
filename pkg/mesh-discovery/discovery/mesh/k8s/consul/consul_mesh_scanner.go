@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
@@ -17,7 +18,6 @@ import (
 	k8s_apps_v1 "k8s.io/api/apps/v1"
 	k8s_core_v1 "k8s.io/api/core/v1"
 	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -58,7 +58,7 @@ type consulMeshScanner struct {
 	imageNameParser                  docker.ImageNameParser
 }
 
-func (c *consulMeshScanner) ScanDeployment(_ context.Context, clusterName string, deployment *k8s_apps_v1.Deployment, _ client.Client) (*smh_discovery.Mesh, error) {
+func (c *consulMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *k8s_apps_v1.Deployment, configMapClient k8s_core.ConfigMapClient) (*smh_discovery.Mesh, error) {
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		isConsulInstallation, err := c.consulConnectInstallationScanner.IsConsulConnect(container)
 		if err != nil {

@@ -4,7 +4,9 @@ import (
 	"context"
 	"strings"
 
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	"github.com/solo-io/service-mesh-hub/pkg/common/metadata"
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
@@ -60,19 +62,19 @@ type istioMeshScanner struct {
 	configMapClientFactory k8s_core_providers.ConfigMapClientFactory
 }
 
-func (i *istioMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *k8s_apps_types.Deployment, clusterScopedClient client.Client) (*smh_discovery.Mesh, error) {
+func (i *istioMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *k8s_apps_types.Deployment, configMapClient k8s_core.ConfigMapClient) (*smh_discovery.Mesh, error) {
 	istioDeployment, err := i.detectIstioDeployment(clusterName, deployment)
 	if err != nil {
 		return nil, err
 	} else if istioDeployment == nil {
 		return nil, nil
 	}
-	trustDomain, err := i.getTrustDomain(ctx, clusterScopedClient, deployment.GetNamespace())
+	trustDomain, err := i.getTrustDomain(ctx, configMapClient, deployment.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	meshSpec, err := i.buildMeshSpec(
+	meshSpec, meshType, err := i.buildMeshSpec(
 		istioDeployment,
 		clusterName,
 		trustDomain,
@@ -85,7 +87,7 @@ func (i *istioMeshScanner) ScanDeployment(ctx context.Context, clusterName strin
 
 	return &smh_discovery.Mesh{
 		ObjectMeta: k8s_meta_types.ObjectMeta{
-			Name:      istioDeployment.Name(),
+			Name:      metadata.BuildMeshName(meshType, istioDeployment.Namespace, istioDeployment.Cluster),
 			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels,
 		},
@@ -99,7 +101,7 @@ func (*istioMeshScanner) buildMeshSpec(
 	trustDomain string,
 	citadelNamespace string,
 	citadelServiceAccountName string,
-) (*smh_discovery_types.MeshSpec, error) {
+) (*smh_discovery_types.MeshSpec, smh_core_types.MeshType, error) {
 	cluster := &smh_core_types.ResourceRef{
 		Name:      clusterName,
 		Namespace: container_runtime.GetWriteNamespace(),
@@ -125,7 +127,7 @@ func (*istioMeshScanner) buildMeshSpec(
 					Metadata: istioMetadata,
 				},
 			},
-		}, nil
+		}, smh_core_types.MeshType_ISTIO1_5, nil
 	} else if strings.HasPrefix(deployment.Version, "1.6") {
 		return &smh_discovery_types.MeshSpec{
 			Cluster: cluster,
@@ -134,9 +136,9 @@ func (*istioMeshScanner) buildMeshSpec(
 					Metadata: istioMetadata,
 				},
 			},
-		}, nil
+		}, smh_core_types.MeshType_ISTIO1_6, nil
 	} else {
-		return nil, eris.Errorf("Unrecognized Istio version: %s", deployment.Version)
+		return nil, smh_core_types.MeshType_ISTIO1_5, eris.Errorf("Unrecognized Istio version: %s", deployment.Version)
 	}
 }
 
@@ -167,10 +169,9 @@ func (i *istioMeshScanner) detectIstioDeployment(clusterName string, deployment 
 
 func (i *istioMeshScanner) getTrustDomain(
 	ctx context.Context,
-	clusterScopedClient client.Client,
+	configMapClient k8s_core.ConfigMapClient,
 	namespace string,
 ) (string, error) {
-	configMapClient := i.configMapClientFactory(clusterScopedClient)
 	configMap, err := configMapClient.GetConfigMap(ctx, client.ObjectKey{Name: IstioConfigMapName, Namespace: namespace})
 	if err != nil {
 		return "", err
@@ -196,10 +197,4 @@ func isIstiod(deployment *k8s_apps_types.Deployment, container *k8s_core_types.C
 
 type istioDeployment struct {
 	Version, Namespace, Cluster string
-}
-
-// TODO merge with linkerd controller type
-func (i istioDeployment) Name() string {
-	// TODO: https://github.com/solo-io/service-mesh-hub/issues/141
-	return "istio-" + i.Namespace + "-" + i.Cluster
 }

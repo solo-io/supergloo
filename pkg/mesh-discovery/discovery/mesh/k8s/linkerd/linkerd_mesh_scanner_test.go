@@ -3,15 +3,13 @@ package linkerd_test
 import (
 	"context"
 
+	"github.com/golang/mock/gomock"
 	linkerdconfig "github.com/linkerd/linkerd2/controller/gen/config"
 	"github.com/linkerd/linkerd2/pkg/config"
-	"github.com/solo-io/service-mesh-hub/test/fakes"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	mock_kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	"github.com/solo-io/go-utils/testutils"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
@@ -19,6 +17,7 @@ import (
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
 	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/linkerd"
 	k8s_apps_types "k8s.io/api/apps/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -27,18 +26,17 @@ import (
 
 var _ = Describe("Linkerd Mesh Scanner", func() {
 	var (
-		ctrl        *gomock.Controller
-		ctx         context.Context
-		linkerdNs   = "linkerd"
-		client      client.Client
-		clusterName = "test-cluster-name"
+		ctrl                *gomock.Controller
+		ctx                 context.Context
+		linkerdNs           = "linkerd"
+		mockConfigMapClient *mock_kubernetes_core.MockConfigMapClient
+		clusterName         = "test-cluster-name"
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-
-		client = fakes.InMemoryClient()
+		mockConfigMapClient = mock_kubernetes_core.NewMockConfigMapClient(ctrl)
 	})
 
 	AfterEach(func() {
@@ -65,7 +63,7 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 			},
 		}
 
-		mesh, err := scanner.ScanDeployment(ctx, clusterName, deployment, client)
+		mesh, err := scanner.ScanDeployment(ctx, clusterName, deployment, mockConfigMapClient)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(BeNil())
 	})
@@ -92,8 +90,10 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 			}
 		}()
 
-		err := client.Create(ctx, linkerdConfigMap)
-		Expect(err).NotTo(HaveOccurred())
+		mockConfigMapClient.
+			EXPECT().
+			GetConfigMap(ctx, selection.ObjectMetaToObjectKey(linkerdConfigMap.ObjectMeta)).
+			Return(linkerdConfigMap, nil)
 
 		imageParser := mock_docker.NewMockImageNameParser(ctrl)
 
@@ -146,7 +146,7 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 			},
 		}
 
-		mesh, err := scanner.ScanDeployment(ctx, clusterName, deployment, client)
+		mesh, err := scanner.ScanDeployment(ctx, clusterName, deployment, mockConfigMapClient)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(Equal(expectedMesh))
 	})
@@ -178,7 +178,7 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 			Parse("linkerd-io/controller:0.6.9").
 			Return(nil, testErr)
 
-		mesh, err := scanner.ScanDeployment(ctx, clusterName, deployment, client)
+		mesh, err := scanner.ScanDeployment(ctx, clusterName, deployment, mockConfigMapClient)
 		Expect(mesh).To(BeNil())
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 	})

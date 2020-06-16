@@ -9,11 +9,13 @@ import (
 	"github.com/linkerd/linkerd2/pkg/config"
 	linkerdk8s "github.com/linkerd/linkerd2/pkg/k8s"
 	"github.com/rotisserie/eris"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/common/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s"
 	k8s_apps_v1 "k8s.io/api/apps/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -48,10 +50,16 @@ type linkerdMeshScanner struct {
 	imageNameParser docker.ImageNameParser
 }
 
-func getLinkerdConfig(ctx context.Context, name, namespace string, kube client.Client) (*linkerdconfig.All, error) {
-	cm := &k8s_core_types.ConfigMap{}
+func getLinkerdConfig(
+	ctx context.Context,
+	name,
+	namespace string,
+	configMapClient k8s_core.ConfigMapClient,
+) (*linkerdconfig.All, error) {
+	var cm *k8s_core_types.ConfigMap
+	var err error
 	key := client.ObjectKey{Name: name, Namespace: namespace}
-	if err := kube.Get(ctx, key, cm); err != nil {
+	if cm, err = configMapClient.GetConfigMap(ctx, key); err != nil {
 		return nil, err
 	}
 	cfg, err := config.FromConfigMap(cm.Data)
@@ -61,7 +69,12 @@ func getLinkerdConfig(ctx context.Context, name, namespace string, kube client.C
 	return cfg, nil
 }
 
-func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, clusterName string, deployment *k8s_apps_v1.Deployment, clusterScopedClient client.Client) (*smh_discovery.Mesh, error) {
+func (l *linkerdMeshScanner) ScanDeployment(
+	ctx context.Context,
+	clusterName string,
+	deployment *k8s_apps_v1.Deployment,
+	configMapClient k8s_core.ConfigMapClient,
+) (*smh_discovery.Mesh, error) {
 
 	linkerdController, err := l.detectLinkerdController(clusterName, deployment)
 
@@ -73,7 +86,7 @@ func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, clusterName str
 		return nil, nil
 	}
 
-	linkerdConfig, err := getLinkerdConfig(ctx, LinkerdConfigMapName, linkerdController.namespace, clusterScopedClient)
+	linkerdConfig, err := getLinkerdConfig(ctx, LinkerdConfigMapName, linkerdController.namespace, configMapClient)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +98,7 @@ func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, clusterName str
 
 	return &smh_discovery.Mesh{
 		ObjectMeta: k8s_meta_v1.ObjectMeta{
-			Name:      linkerdController.name(),
+			Name:      metadata.BuildMeshName(smh_core_types.MeshType_LINKERD, linkerdController.namespace, linkerdController.cluster),
 			Namespace: container_runtime.GetWriteNamespace(),
 			Labels:    DiscoveryLabels,
 		},
@@ -131,12 +144,4 @@ func (l *linkerdMeshScanner) detectLinkerdController(clusterName string, deploym
 
 type linkerdControllerDeployment struct {
 	version, namespace, cluster string
-}
-
-func (c linkerdControllerDeployment) name() string {
-	if c.cluster == "" {
-		return "linkerd-" + c.namespace
-	}
-	// TODO cluster is not restricted to kube name scheme, kebab it
-	return "linkerd-" + c.namespace + "-" + c.cluster
 }

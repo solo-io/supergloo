@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	mock_v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	"github.com/solo-io/go-utils/testutils"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
@@ -17,7 +18,6 @@ import (
 	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/consul"
 	mock_consul "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/consul/mocks"
-	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	k8s_apps "k8s.io/api/apps/v1"
 	k8s_core "k8s.io/api/core/v1"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,10 +31,10 @@ const (
 
 var _ = Describe("Consul Mesh Finder", func() {
 	var (
-		ctrl          *gomock.Controller
-		ctx           context.Context
-		clusterClient = mock_controller_runtime.NewMockClient(ctrl)
-		clusterName   = "test-cluster-name"
+		ctrl                *gomock.Controller
+		ctx                 context.Context
+		mockConfigMapClient = mock_v1.NewMockConfigMapClient(ctrl)
+		clusterName         = "test-cluster-name"
 	)
 
 	BeforeEach(func() {
@@ -70,7 +70,7 @@ var _ = Describe("Consul Mesh Finder", func() {
 			IsConsulConnect(nonConsulDeployment.Spec.Template.Spec.Containers[0]).
 			Return(false, nil)
 
-		mesh, err := consulMeshFinder.ScanDeployment(ctx, clusterName, nonConsulDeployment, clusterClient)
+		mesh, err := consulMeshFinder.ScanDeployment(ctx, clusterName, nonConsulDeployment, mockConfigMapClient)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(BeNil())
 	})
@@ -138,7 +138,7 @@ var _ = Describe("Consul Mesh Finder", func() {
 				},
 			},
 		}
-		mesh, err := consulMeshFinder.ScanDeployment(ctx, clusterName, deployment, clusterClient)
+		mesh, err := consulMeshFinder.ScanDeployment(ctx, clusterName, deployment, mockConfigMapClient)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(Equal(expectedMesh))
@@ -179,7 +179,7 @@ var _ = Describe("Consul Mesh Finder", func() {
 			IsConsulConnect(consulContainer).
 			Return(false, testErr)
 
-		mesh, err := consulMeshFinder.ScanDeployment(ctx, clusterName, deployment, clusterClient)
+		mesh, err := consulMeshFinder.ScanDeployment(ctx, clusterName, deployment, mockConfigMapClient)
 
 		Expect(mesh).To(BeNil())
 		Expect(err).To(testutils.HaveInErrorChain(consul.ErrorDetectingDeployment(testErr)))

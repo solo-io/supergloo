@@ -17,6 +17,7 @@ import (
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
 	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/common/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/istio"
 	k8s_apps_types "k8s.io/api/apps/v1"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -30,7 +31,6 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		ctx                 = context.TODO()
 		istioNs             = "istio-system"
 		clusterName         = "test-cluster-name"
-		clusterScopedClient client.Client
 		mockImageNameParser *mock_docker.MockImageNameParser
 		mockConfigMapClient *mock_kubernetes_core.MockConfigMapClient
 		istioMeshScanner    istio.IstioMeshScanner
@@ -66,7 +66,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				},
 			},
 		}
-		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, clusterScopedClient)
+		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, mockConfigMapClient)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(BeNil())
 	})
@@ -91,7 +91,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			EXPECT().
 			Parse("istio-pilot:latest").
 			Return(nil, testErr)
-		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, clusterScopedClient)
+		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, mockConfigMapClient)
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 		Expect(mesh).To(BeNil())
 	})
@@ -117,7 +117,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		}
 		expectedMesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
-				Name:      "istio-istio-system-" + clusterName,
+				Name:      metadata.BuildMeshName(smh_core_types.MeshType_ISTIO1_5, istioNs, clusterName),
 				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
@@ -160,7 +160,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			EXPECT().
 			GetConfigMap(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
 			Return(configMap, nil)
-		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, clusterScopedClient)
+		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, mockConfigMapClient)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(Equal(expectedMesh))
 	})
@@ -186,7 +186,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		}
 		expectedMesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
-				Name:      "istio-istio-system-" + clusterName,
+				Name:      metadata.BuildMeshName(smh_core_types.MeshType_ISTIO1_6, istioNs, clusterName),
 				Namespace: container_runtime.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
@@ -229,7 +229,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			EXPECT().
 			GetConfigMap(ctx, client.ObjectKey{Name: istio.IstioConfigMapName, Namespace: istioNs}).
 			Return(configMap, nil)
-		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, clusterScopedClient)
+		mesh, err := istioMeshScanner.ScanDeployment(ctx, clusterName, deployment, mockConfigMapClient)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(Equal(expectedMesh))
 	})
