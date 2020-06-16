@@ -3,8 +3,9 @@ package dns
 import (
 	"context"
 
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+
 	"github.com/rotisserie/eris"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -44,8 +45,8 @@ var (
 
 func NewExternalAccessPointGetter(
 	dynamicClientGetter multicluster.DynamicClientGetter,
-	podClientFactory k8s_core.PodClientFactory,
-	nodeClientFactory k8s_core.NodeClientFactory,
+	podClientFactory k8s_core_providers.PodClientFactory,
+	nodeClientFactory k8s_core_providers.NodeClientFactory,
 ) ExternalAccessPointGetter {
 	return &externalAccessPointGetter{
 		dynamicClientGetter: dynamicClientGetter,
@@ -56,8 +57,8 @@ func NewExternalAccessPointGetter(
 
 type externalAccessPointGetter struct {
 	dynamicClientGetter multicluster.DynamicClientGetter
-	podClientFactory    k8s_core.PodClientFactory
-	nodeClientFactory   k8s_core.NodeClientFactory
+	podClientFactory    k8s_core_providers.PodClientFactory
+	nodeClientFactory   k8s_core_providers.NodeClientFactory
 }
 
 func (f *externalAccessPointGetter) GetExternalAccessPointForService(
@@ -138,7 +139,7 @@ func (f *externalAccessPointGetter) getNodeIp(ctx context.Context, svc *k8s_core
 	}
 
 	nodeClient := f.nodeClientFactory(dynamicClient)
-	node, err := nodeClient.GetNode(ctx, client.ObjectKey{Name: nodeName})
+	node, err := nodeClient.GetNode(ctx, nodeName)
 	if err != nil {
 		return "", err
 	}

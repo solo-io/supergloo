@@ -3,9 +3,9 @@ package k8s_tenancy
 import (
 	"context"
 
+	k8s_core_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
-	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	k8s_core "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

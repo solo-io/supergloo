@@ -188,7 +188,7 @@ func deregisterClusters(ctx context.Context, out io.Writer, kubeClusters *smh_di
 func removeManagementPlaneNamespace(ctx context.Context, out io.Writer, masterKubeClients *common.KubeClients, opts *options.Options) error {
 	if opts.SmhUninstall.RemoveNamespace {
 
-		ns, err := masterKubeClients.NamespaceClient.GetNamespace(ctx, client.ObjectKey{Name: opts.Root.WriteNamespace})
+		ns, err := masterKubeClients.NamespaceClient.GetNamespace(ctx, opts.Root.WriteNamespace)
 
 		// if the namespace is already gone then we shouldn't report an error
 		if errors.IsNotFound(err) {
@@ -197,7 +197,7 @@ func removeManagementPlaneNamespace(ctx context.Context, out io.Writer, masterKu
 			return FailedToRemoveNamespace(err, opts.Root.WriteNamespace)
 		}
 
-		if err = masterKubeClients.NamespaceClient.DeleteNamespace(ctx, client.ObjectKey{Name: ns.GetName()}); err != nil {
+		if err = masterKubeClients.NamespaceClient.DeleteNamespace(ctx, ns.GetName()); err != nil {
 			return FailedToRemoveNamespace(err, opts.Root.WriteNamespace)
 		}
 

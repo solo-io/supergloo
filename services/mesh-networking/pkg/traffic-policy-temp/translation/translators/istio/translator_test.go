@@ -104,8 +104,8 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				Spec: istio_networking_types.DestinationRule{
 					Host: serviceBeingTranslated.Spec.KubeService.Ref.Name,
 					TrafficPolicy: &istio_networking_types.TrafficPolicy{
-						Tls: &istio_networking_types.TLSSettings{
-							Mode: istio_networking_types.TLSSettings_ISTIO_MUTUAL,
+						Tls: &istio_networking_types.ClientTLSSettings{
+							Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
 						},
 					},
 				},
@@ -155,8 +155,8 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				Spec: istio_networking_types.DestinationRule{
 					Host: serviceBeingTranslated.Spec.KubeService.Ref.Name,
 					TrafficPolicy: &istio_networking_types.TrafficPolicy{
-						Tls: &istio_networking_types.TLSSettings{
-							Mode: istio_networking_types.TLSSettings_ISTIO_MUTUAL,
+						Tls: &istio_networking_types.ClientTLSSettings{
+							Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
 						},
 					},
 				},

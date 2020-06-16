@@ -8,11 +8,14 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	istio_networking "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
+	mock_istio_networking "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/mocks"
+	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	mock_kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/mocks"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
@@ -21,9 +24,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
 	mock_dns "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns/mocks"
 	istio_federation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver/meshes/istio"
-	mock_smh_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
-	mock_istio_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/istio/networking/v1beta1"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	istio_networking_types "istio.io/api/networking/v1alpha3"
 	istio_client_networking_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -167,8 +167,8 @@ var _ = Describe("Istio Federation Decider", func() {
 								// initially create the gateway with just the one service's host
 								istio_federation.BuildMatchingMultiClusterHostName(istioMeshService.Spec.GetFederation()),
 							},
-							Tls: &istio_networking_types.Server_TLSOptions{
-								Mode: istio_networking_types.Server_TLSOptions_AUTO_PASSTHROUGH,
+							Tls: &istio_networking_types.ServerTLSSettings{
+								Mode: istio_networking_types.ServerTLSSettings_AUTO_PASSTHROUGH,
 							},
 						}},
 						Selector: istio_federation.BuildGatewayWorkloadSelector(),
@@ -208,7 +208,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				UpsertEnvoyFilterSpec(ctx, envoyFilter).
+				UpsertEnvoyFilter(ctx, envoyFilter).
 				Return(nil)
 
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
@@ -349,8 +349,8 @@ var _ = Describe("Istio Federation Decider", func() {
 							// initially create the gateway with just the one service's host
 							istioMeshService.Spec.GetFederation().GetMulticlusterDnsName(),
 						},
-						Tls: &istio_networking_types.Server_TLSOptions{
-							Mode: istio_networking_types.Server_TLSOptions_AUTO_PASSTHROUGH,
+						Tls: &istio_networking_types.ServerTLSSettings{
+							Mode: istio_networking_types.ServerTLSSettings_AUTO_PASSTHROUGH,
 						},
 					}},
 					Selector: istio_federation.BuildGatewayWorkloadSelector(),
@@ -398,7 +398,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				UpsertEnvoyFilterSpec(ctx, envoyFilter).
+				UpsertEnvoyFilter(ctx, envoyFilter).
 				Return(nil)
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
 			service := k8s_core_types.Service{
@@ -535,8 +535,8 @@ var _ = Describe("Istio Federation Decider", func() {
 							Name:     istio_federation.DefaultGatewayPortName,
 						},
 						Hosts: []string{},
-						Tls: &istio_networking_types.Server_TLSOptions{
-							Mode: istio_networking_types.Server_TLSOptions_AUTO_PASSTHROUGH,
+						Tls: &istio_networking_types.ServerTLSSettings{
+							Mode: istio_networking_types.ServerTLSSettings_AUTO_PASSTHROUGH,
 						},
 					}},
 					Selector: istio_federation.BuildGatewayWorkloadSelector(),
@@ -556,8 +556,8 @@ var _ = Describe("Istio Federation Decider", func() {
 					Name:     istio_federation.DefaultGatewayPortName,
 				},
 				Hosts: []string{istio_federation.BuildMatchingMultiClusterHostName(istioMeshService.Spec.GetFederation())},
-				Tls: &istio_networking_types.Server_TLSOptions{
-					Mode: istio_networking_types.Server_TLSOptions_AUTO_PASSTHROUGH,
+				Tls: &istio_networking_types.ServerTLSSettings{
+					Mode: istio_networking_types.ServerTLSSettings_AUTO_PASSTHROUGH,
 				},
 			}}
 			gatewayClient.EXPECT().
@@ -596,7 +596,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				UpsertEnvoyFilterSpec(ctx, envoyFilter).
+				UpsertEnvoyFilter(ctx, envoyFilter).
 				Return(nil)
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
 			service := k8s_core_types.Service{
@@ -764,7 +764,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				ObjectMeta: selection.ResourceRefToObjectMeta(serviceEntryRef),
 				Spec: istio_networking_types.ServiceEntry{
 					Addresses: []string{"255.255.255.255"},
-					Endpoints: []*istio_networking_types.ServiceEntry_Endpoint{{
+					Endpoints: []*istio_networking_types.WorkloadEntry{{
 						Address: externalAddress,
 						Ports: map[string]uint32{
 							svcPort.Name: port,
@@ -795,9 +795,9 @@ var _ = Describe("Istio Federation Decider", func() {
 				Spec: istio_networking_types.DestinationRule{
 					Host: serviceMulticlusterDnsName,
 					TrafficPolicy: &istio_networking_types.TrafficPolicy{
-						Tls: &istio_networking_types.TLSSettings{
+						Tls: &istio_networking_types.ClientTLSSettings{
 							// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/242
-							Mode: istio_networking_types.TLSSettings_ISTIO_MUTUAL,
+							Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
 						},
 					},
 				},

@@ -7,12 +7,12 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	mock_kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	. "github.com/solo-io/go-utils/testutils"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	mock_multicluster "github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
 	istio_federation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver/meshes/istio"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -200,7 +200,7 @@ var _ = Describe("external access point getter", func() {
 
 			node := &corev1.Node{}
 			nodeClient.EXPECT().
-				GetNode(ctx, client.ObjectKey{Name: nodeName}).
+				GetNode(ctx, nodeName).
 				Return(node, nil)
 
 			_, err := externalAccessPointGetter.GetExternalAccessPointForService(ctx, svc, istio_federation.DefaultGatewayPortName, clusterName)
@@ -253,7 +253,7 @@ var _ = Describe("external access point getter", func() {
 				},
 			}
 			nodeClient.EXPECT().
-				GetNode(ctx, client.ObjectKey{Name: nodeName}).
+				GetNode(ctx, nodeName).
 				Return(node, nil)
 
 			eap, err := externalAccessPointGetter.GetExternalAccessPointForService(ctx, svc, istio_federation.DefaultGatewayPortName, clusterName)

@@ -4,13 +4,13 @@ import (
 	"context"
 	"strings"
 
+	kubernetes_apiext_providers "github.com/solo-io/external-apis/pkg/api/k8s/apiextensions.k8s.io/v1beta1/providers"
+
 	"github.com/rotisserie/eris"
-	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -26,7 +26,7 @@ var (
 )
 
 func NewCrdRemover(
-	crdClientFactory kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactory,
+	crdClientFactory kubernetes_apiext_providers.CustomResourceDefinitionClientFromConfigFactory,
 ) CrdRemover {
 	return &crdRemover{
 		crdClientFactory: crdClientFactory,
@@ -34,7 +34,7 @@ func NewCrdRemover(
 }
 
 type crdRemover struct {
-	crdClientFactory kubernetes_apiext.CustomResourceDefinitionClientFromConfigFactory
+	crdClientFactory kubernetes_apiext_providers.CustomResourceDefinitionClientFromConfigFactory
 }
 
 func (c *crdRemover) RemovesmhCrds(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config) (crdsDeleted bool, err error) {
@@ -60,7 +60,7 @@ func (c *crdRemover) removeCrdsWithNameSuffix(ctx context.Context, clusterName s
 	for _, crd := range crds.Items {
 		if strings.HasSuffix(crd.GetName(), crdNameSuffix) {
 			crdsDeleted = true
-			existing, err := crdClient.GetCustomResourceDefinition(ctx, client.ObjectKey{Name: crd.GetName()})
+			existing, err := crdClient.GetCustomResourceDefinition(ctx, crd.GetName())
 			if err != nil {
 				if errors.IsNotFound(err) {
 					// may be a race condition elsewhere; the CRD was removed between when we listed it and when we came here to actually delete it
@@ -68,7 +68,7 @@ func (c *crdRemover) removeCrdsWithNameSuffix(ctx context.Context, clusterName s
 				}
 				return false, FailedToDeleteCrd(err, clusterName, crd.GetName())
 			}
-			err = crdClient.DeleteCustomResourceDefinition(ctx, client.ObjectKey{Name: existing.GetName()})
+			err = crdClient.DeleteCustomResourceDefinition(ctx, existing.GetName())
 			if err != nil {
 				return false, FailedToDeleteCrd(err, clusterName, crd.GetName())
 			}

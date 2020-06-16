@@ -9,6 +9,11 @@ import (
 	"context"
 	"io"
 
+	v1beta1 "github.com/solo-io/external-apis/pkg/api/k8s/apiextensions.k8s.io/v1beta1/providers"
+	v1_3 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
+	v1_4 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	v1_2 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 	"github.com/solo-io/reporting-client/pkg/client"
 	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
@@ -53,11 +58,11 @@ import (
 	version2 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
-	v1_2 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	v1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/providers"
+	v1alpha1_5 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	v1alpha1_6 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/providers"
+	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	v1alpha1_4 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/providers"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/version"
@@ -80,12 +85,12 @@ import (
 // Injectors from wire.go:
 
 func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string) (*common.KubeClients, error) {
-	clientset, err := v1.ClientsetFromConfigProvider(masterConfig)
+	clientset, err := v1.NewClientsetFromConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	secretClient := v1.SecretClientFromClientsetProvider(clientset)
-	serviceAccountClient := v1.ServiceAccountClientFromClientsetProvider(clientset)
+	secretClient := v1_2.SecretClientFromClientsetProvider(clientset)
+	serviceAccountClient := v1_2.ServiceAccountClientFromClientsetProvider(clientset)
 	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, serviceAccountClient)
 	kubernetesClientset, err := kubernetes.NewForConfig(masterConfig)
 	if err != nil {
@@ -96,21 +101,21 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
 	helmInstallerFactory := install.HelmInstallerProvider(kubernetesClientset)
 	helmClientForFileConfigFactory := helm.HelmClientForFileConfigFactoryProvider()
-	v1alpha1Clientset, err := v1alpha1.ClientsetFromConfigProvider(masterConfig)
+	v1alpha1Clientset, err := v1alpha1.NewClientsetFromConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	kubernetesClusterClient := v1alpha1.KubernetesClusterClientFromClientsetProvider(v1alpha1Clientset)
-	namespaceClient := v1.NamespaceClientFromClientsetProvider(clientset)
+	kubernetesClusterClient := v1alpha1_2.KubernetesClusterClientFromClientsetProvider(v1alpha1Clientset)
+	namespaceClient := v1_2.NamespaceClientFromClientsetProvider(clientset)
 	serverVersionClient := kubernetes_discovery.NewGeneratedServerVersionClient(kubernetesClientset)
-	podClient := v1.PodClientFromClientsetProvider(clientset)
-	meshServiceClient := v1alpha1.MeshServiceClientFromClientsetProvider(v1alpha1Clientset)
+	podClient := v1_2.PodClientFromClientsetProvider(clientset)
+	meshServiceClient := v1alpha1_2.MeshServiceClientFromClientsetProvider(v1alpha1Clientset)
 	clients := healthcheck.ClientsProvider(namespaceClient, serverVersionClient, podClient, meshServiceClient)
-	v1Clientset, err := v1_2.ClientsetFromConfigProvider(masterConfig)
+	v1Clientset, err := v1_3.NewClientsetFromConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	deploymentClient := v1_2.DeploymentClientFromClientsetProvider(v1Clientset)
+	deploymentClient := v1_4.DeploymentClientFromClientsetProvider(v1Clientset)
 	imageNameParser := docker.NewImageNameParser()
 	deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
 	customResourceDefinitionClientFromConfigFactory := v1beta1.CustomResourceDefinitionClientFromConfigFactoryProvider()
@@ -121,30 +126,30 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	helmClientForMemoryConfigFactory := helm.HelmClientForMemoryConfigFactoryProvider()
 	csrAgentInstallerFactory := installation.NewCsrAgentInstallerFactory(helmClientForFileConfigFactory, helmClientForMemoryConfigFactory, deployedVersionFinder)
 	kubeConfigLookup := kubeconfig.NewKubeConfigLookup(kubernetesClusterClient, secretClient, converter)
-	secretClientFactory := v1.SecretClientFactoryProvider()
+	secretClientFactory := v1_2.SecretClientFactoryProvider()
 	dynamicClientGetter := config_lookup.NewDynamicClientGetter(kubeConfigLookup)
-	serviceAccountClientFactory := v1.ServiceAccountClientFactoryProvider()
+	serviceAccountClientFactory := v1_2.ServiceAccountClientFactoryProvider()
 	clusterDeregistrationClient := cluster_registration.NewClusterDeregistrationClient(crdRemover, csrAgentInstallerFactory, kubeConfigLookup, kubernetesClusterClient, secretClient, secretClientFactory, dynamicClientGetter, serviceAccountClientFactory)
-	clientset2, err := v1alpha1_2.ClientsetFromConfigProvider(masterConfig)
+	clientset2, err := v1alpha1_3.NewClientsetFromConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	virtualMeshCertificateSigningRequestClient := v1alpha1_2.VirtualMeshCertificateSigningRequestClientFromClientsetProvider(clientset2)
-	meshClient := v1alpha1.MeshClientFromClientsetProvider(v1alpha1Clientset)
-	clientset3, err := v1alpha1_3.ClientsetFromConfigProvider(masterConfig)
+	virtualMeshCertificateSigningRequestClient := v1alpha1_4.VirtualMeshCertificateSigningRequestClientFromClientsetProvider(clientset2)
+	meshClient := v1alpha1_2.MeshClientFromClientsetProvider(v1alpha1Clientset)
+	clientset3, err := v1alpha1_5.NewClientsetFromConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	virtualMeshClient := v1alpha1_3.VirtualMeshClientFromClientsetProvider(clientset3)
-	trafficPolicyClient := v1alpha1_3.TrafficPolicyClientFromClientsetProvider(clientset3)
-	accessControlPolicyClient := v1alpha1_3.AccessControlPolicyClientFromClientsetProvider(clientset3)
+	virtualMeshClient := v1alpha1_6.VirtualMeshClientFromClientsetProvider(clientset3)
+	trafficPolicyClient := v1alpha1_6.TrafficPolicyClientFromClientsetProvider(clientset3)
+	accessControlPolicyClient := v1alpha1_6.AccessControlPolicyClientFromClientsetProvider(clientset3)
 	meshServiceReader := MeshServiceReaderProvider(v1alpha1Clientset)
 	meshWorkloadReader := MeshWorkloadReaderProvider(v1alpha1Clientset)
-	deploymentClientFactory := v1_2.DeploymentClientFactoryProvider()
+	deploymentClientFactory := v1_4.DeploymentClientFactoryProvider()
 	resourceSelector := selection.NewResourceSelector(meshServiceReader, meshWorkloadReader, deploymentClientFactory, dynamicClientGetter)
 	resourceDescriber := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
-	meshWorkloadClient := v1alpha1.MeshWorkloadClientFromClientsetProvider(v1alpha1Clientset)
-	namespaceClientFromConfigFactory := v1.NamespaceClientFromConfigFactoryProvider()
+	meshWorkloadClient := v1alpha1_2.MeshWorkloadClientFromClientsetProvider(v1alpha1Clientset)
+	namespaceClientFromConfigFactory := v1_2.NamespaceClientFromConfigFactoryProvider()
 	clusterAuthClientFromConfigFactory := auth.ClusterAuthClientFromConfigFactoryProvider()
 	clusterRegistrationClient := cluster_registration.NewClusterRegistrationClient(secretClient, kubernetesClusterClient, namespaceClientFromConfigFactory, converter, csrAgentInstallerFactory, clusterAuthClientFromConfigFactory)
 	kubeClients := common.KubeClientsProvider(clusterAuthorization, helmInstallerFactory, helmClientForFileConfigFactory, kubernetesClusterClient, clients, deployedVersionFinder, customResourceDefinitionClientFromConfigFactory, secretClient, namespaceClient, uninstallClients, clusterDeregistrationClient, kubeConfigLookup, virtualMeshCertificateSigningRequestClient, meshServiceClient, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient, clusterRegistrationClient, deploymentClient)
@@ -273,9 +278,9 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 // wire.go:
 
 func MeshServiceReaderProvider(clients v1alpha1.Clientset) v1alpha1.MeshServiceReader {
-	return v1alpha1.MeshServiceClientFromClientsetProvider(clients)
+	return v1alpha1_2.MeshServiceClientFromClientsetProvider(clients)
 }
 
 func MeshWorkloadReaderProvider(clients v1alpha1.Clientset) v1alpha1.MeshWorkloadReader {
-	return v1alpha1.MeshWorkloadClientFromClientsetProvider(clients)
+	return v1alpha1_2.MeshWorkloadClientFromClientsetProvider(clients)
 }

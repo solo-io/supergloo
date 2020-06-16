@@ -127,8 +127,8 @@ func (i *istioTrafficPolicyTranslator) buildDestinationRule(
 		Spec: istio_networking_types.DestinationRule{
 			Host: i.buildServiceHostname(meshService),
 			TrafficPolicy: &istio_networking_types.TrafficPolicy{
-				Tls: &istio_networking_types.TLSSettings{
-					Mode: istio_networking_types.TLSSettings_ISTIO_MUTUAL,
+				Tls: &istio_networking_types.ClientTLSSettings{
+					Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
 				},
 			},
 			Subsets: i.findReferencedSubsetsForService(meshService, allMeshServices),
