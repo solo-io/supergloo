@@ -6,10 +6,8 @@ import (
 	"strings"
 
 	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	k8s_core_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
@@ -57,72 +55,6 @@ func NewMeshServiceFinder(
 	}
 }
 
-func (m *meshServiceFinder) StartDiscovery(
-	serviceEventWatcher k8s_core_controller.ServiceEventWatcher,
-	meshWorkloadEventWatcher smh_discovery_controller.MeshWorkloadEventWatcher,
-) error {
-	err := m.Reconcile(m.clusterName)
-	if err != nil {
-		return err
-	}
-
-	err = serviceEventWatcher.AddEventHandler(m.ctx, &k8s_core_controller.ServiceEventHandlerFuncs{
-		OnCreate: func(obj *k8s_core_types.Service) error {
-			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.CreateEvent, obj)
-			err := m.Reconcile(m.clusterName)
-			if err != nil {
-				logger.Errorf("%+v", err)
-			}
-			return nil
-		},
-		OnUpdate: func(_, new *k8s_core_types.Service) error {
-			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.UpdateEvent, new)
-			err := m.Reconcile(m.clusterName)
-			if err != nil {
-				logger.Errorf("%+v", err)
-			}
-			return nil
-		},
-		OnDelete: func(obj *k8s_core_types.Service) error {
-			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.DeleteEvent, obj)
-			err := m.Reconcile(m.clusterName)
-			if err != nil {
-				logger.Errorf("%+v", err)
-			}
-			return nil
-		},
-	})
-	if err != nil {
-		return err
-	}
-	return meshWorkloadEventWatcher.AddEventHandler(m.ctx, &smh_discovery_controller.MeshWorkloadEventHandlerFuncs{
-		OnCreate: func(obj *smh_discovery.MeshWorkload) error {
-			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.CreateEvent, obj)
-			err := m.Reconcile(m.clusterName)
-			if err != nil {
-				logger.Errorf("%+v", err)
-			}
-			return nil
-		},
-		OnUpdate: func(_, new *smh_discovery.MeshWorkload) error {
-			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.UpdateEvent, new)
-			err := m.Reconcile(m.clusterName)
-			if err != nil {
-				logger.Errorf("%+v", err)
-			}
-			return nil
-		},
-		OnDelete: func(obj *smh_discovery.MeshWorkload) error {
-			logger := container_runtime.BuildEventLogger(m.ctx, container_runtime.DeleteEvent, obj)
-			err := m.Reconcile(m.clusterName)
-			if err != nil {
-				logger.Errorf("%+v", err)
-			}
-			return nil
-		},
-	})
-}
-
 type meshServiceFinder struct {
 	ctx                context.Context
 	writeNamespace     string
@@ -133,7 +65,7 @@ type meshServiceFinder struct {
 	meshClient         smh_discovery.MeshClient
 }
 
-func (m *meshServiceFinder) Reconcile(clusterName string) error {
+func (m *meshServiceFinder) Process(clusterName string) error {
 	existingMeshServicesByName, existingMeshServiceNames, err := m.getExistingMeshServices(clusterName)
 	if err != nil {
 		return err

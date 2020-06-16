@@ -8,8 +8,6 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
-	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 )
 
 // MockMeshServiceFinder is a mock of MeshServiceFinder interface.
@@ -35,16 +33,16 @@ func (m *MockMeshServiceFinder) EXPECT() *MockMeshServiceFinderMockRecorder {
 	return m.recorder
 }
 
-// StartDiscovery mocks base method.
-func (m *MockMeshServiceFinder) StartDiscovery(serviceEventWatcher controller.ServiceEventWatcher, meshWorkloadEventWatcher controller0.MeshWorkloadEventWatcher) error {
+// Process mocks base method.
+func (m *MockMeshServiceFinder) Process(clusterName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartDiscovery", serviceEventWatcher, meshWorkloadEventWatcher)
+	ret := m.ctrl.Call(m, "Process", clusterName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// StartDiscovery indicates an expected call of StartDiscovery.
-func (mr *MockMeshServiceFinderMockRecorder) StartDiscovery(serviceEventWatcher, meshWorkloadEventWatcher interface{}) *gomock.Call {
+// Process indicates an expected call of Process.
+func (mr *MockMeshServiceFinderMockRecorder) Process(clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshServiceFinder)(nil).StartDiscovery), serviceEventWatcher, meshWorkloadEventWatcher)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Process", reflect.TypeOf((*MockMeshServiceFinder)(nil).Process), clusterName)
 }
