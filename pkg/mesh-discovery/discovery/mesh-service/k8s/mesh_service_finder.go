@@ -39,7 +39,6 @@ var (
 
 func NewMeshServiceFinder(
 	ctx context.Context,
-	clusterName string,
 	serviceClient k8s_core.ServiceClient,
 	meshServiceClient smh_discovery.MeshServiceClient,
 	meshWorkloadClient smh_discovery.MeshWorkloadClient,
@@ -47,7 +46,6 @@ func NewMeshServiceFinder(
 ) MeshServiceFinder {
 	return &meshServiceFinder{
 		ctx:                ctx,
-		clusterName:        clusterName,
 		serviceClient:      serviceClient,
 		meshServiceClient:  meshServiceClient,
 		meshWorkloadClient: meshWorkloadClient,
@@ -58,7 +56,6 @@ func NewMeshServiceFinder(
 type meshServiceFinder struct {
 	ctx                context.Context
 	writeNamespace     string
-	clusterName        string // TODO: remove this once we fully port over to Reconciler
 	serviceClient      k8s_core.ServiceClient
 	meshServiceClient  smh_discovery.MeshServiceClient
 	meshWorkloadClient smh_discovery.MeshWorkloadClient
