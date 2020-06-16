@@ -133,12 +133,12 @@ type meshServiceFinder struct {
 	meshClient         smh_discovery.MeshClient
 }
 
-func (m *meshServiceFinder) Reconcile(cluster string) error {
-	existingMeshServicesByName, existingMeshServiceNames, err := m.getExistingMeshServices(cluster)
+func (m *meshServiceFinder) Reconcile(clusterName string) error {
+	existingMeshServicesByName, existingMeshServiceNames, err := m.getExistingMeshServices(clusterName)
 	if err != nil {
 		return err
 	}
-	discoveredMeshServices, discoveredMeshServiceNames, err := m.discoverMeshServices(cluster)
+	discoveredMeshServices, discoveredMeshServiceNames, err := m.discoverMeshServices(clusterName)
 	if err != nil {
 		return err
 	}
@@ -166,10 +166,10 @@ func (m *meshServiceFinder) Reconcile(cluster string) error {
 	return nil
 }
 
-func (m *meshServiceFinder) getExistingMeshServices(cluster string) (map[string]*smh_discovery.MeshService, sets.String, error) {
+func (m *meshServiceFinder) getExistingMeshServices(clusterName string) (map[string]*smh_discovery.MeshService, sets.String, error) {
 	meshServiceNames := sets.NewString()
 	existingMeshServices, err := m.meshServiceClient.ListMeshService(m.ctx, client.MatchingLabels{
-		kube.COMPUTE_TARGET: cluster,
+		kube.COMPUTE_TARGET: clusterName,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -183,7 +183,7 @@ func (m *meshServiceFinder) getExistingMeshServices(cluster string) (map[string]
 	return meshServicesByName, meshServiceNames, nil
 }
 
-func (m *meshServiceFinder) discoverMeshServices(cluster string) ([]*smh_discovery.MeshService, sets.String, error) {
+func (m *meshServiceFinder) discoverMeshServices(clusterName string) ([]*smh_discovery.MeshService, sets.String, error) {
 	discoveredMeshServiceNames := sets.NewString()
 	services, err := m.serviceClient.ListService(m.ctx)
 	if err != nil {
@@ -192,14 +192,14 @@ func (m *meshServiceFinder) discoverMeshServices(cluster string) ([]*smh_discove
 	var discoveredMeshServices []*smh_discovery.MeshService
 	for _, kubeService := range services.Items {
 		kubeService := kubeService
-		mesh, backingWorkloads, err := m.findMeshAndWorkloadsForService(cluster, &kubeService)
+		mesh, backingWorkloads, err := m.findMeshAndWorkloadsForService(clusterName, &kubeService)
 		if err != nil {
 			return nil, nil, err
 		}
 		if len(backingWorkloads) == 0 {
 			continue
 		}
-		discoveredMeshService, err := m.buildMeshService(&kubeService, mesh, m.findSubsets(backingWorkloads), cluster)
+		discoveredMeshService, err := m.buildMeshService(&kubeService, mesh, m.findSubsets(backingWorkloads), clusterName)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -210,7 +210,7 @@ func (m *meshServiceFinder) discoverMeshServices(cluster string) ([]*smh_discove
 }
 
 func (m *meshServiceFinder) findMeshAndWorkloadsForService(
-	cluster string,
+	clusterName string,
 	service *k8s_core_types.Service,
 ) (*smh_discovery.Mesh, []*smh_discovery.MeshWorkload, error) {
 	// early optimization- bail out early if we know that this service can't select anything
@@ -219,7 +219,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(
 		return nil, nil, nil
 	}
 	meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx, client.MatchingLabels{
-		kube.COMPUTE_TARGET: cluster,
+		kube.COMPUTE_TARGET: clusterName,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -232,7 +232,7 @@ func (m *meshServiceFinder) findMeshAndWorkloadsForService(
 		if err != nil {
 			return nil, nil, err
 		}
-		if m.isServiceBackedByWorkload(cluster, service, &meshWorkload) {
+		if m.isServiceBackedByWorkload(clusterName, service, &meshWorkload) {
 			mesh = meshForWorkload
 			backingWorkloads = append(backingWorkloads, &meshWorkload)
 		}
@@ -276,7 +276,7 @@ func (m *meshServiceFinder) findSubsets(backingWorkloads []*smh_discovery.MeshWo
 }
 
 func (m *meshServiceFinder) isServiceBackedByWorkload(
-	cluster string,
+	clusterName string,
 	service *k8s_core_types.Service,
 	meshWorkload *smh_discovery.MeshWorkload,
 ) bool {
@@ -285,7 +285,7 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(
 	// If the meshworkload is not on the same cluster as the service, it can be skipped safely
 	// The event handler accepts events from MeshWorkloads which may "match" the incoming service
 	// but be on a different cluster, so it is important to check that here.
-	if workloadCluster != cluster {
+	if workloadCluster != clusterName {
 		return false
 	}
 
