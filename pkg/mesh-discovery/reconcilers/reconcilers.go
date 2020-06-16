@@ -3,7 +3,11 @@ package reconcilers
 import (
 	"context"
 
+	apps_v1_controller "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
+	core_v1_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
+
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	meshworkload_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	apps_v1 "k8s.io/api/apps/v1"
@@ -13,6 +17,25 @@ import (
 type discoveryReconcilers struct {
 	ctx                   context.Context
 	meshWorkloadDiscovery meshworkload_discovery.MeshWorkloadDiscovery
+}
+
+func NewDiscoveryReconcilers(
+	ctx context.Context,
+	meshWorkloadDiscovery meshworkload_discovery.MeshWorkloadDiscovery,
+) DiscoveryReconcilers {
+	return &discoveryReconcilers{
+		ctx:                   ctx,
+		meshWorkloadDiscovery: meshWorkloadDiscovery,
+	}
+}
+
+type DiscoveryReconcilers interface {
+	smh_discovery_controller.MeshWorkloadReconciler
+	smh_discovery_controller.MeshReconciler
+
+	apps_v1_controller.MulticlusterDeploymentReconciler
+	core_v1_controller.MulticlusterPodReconciler
+	core_v1_controller.MulticlusterServiceReconciler
 }
 
 func (d *discoveryReconcilers) ReconcileMeshWorkload(obj *smh_discovery.MeshWorkload) (reconcile.Result, error) {
