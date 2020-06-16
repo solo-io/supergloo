@@ -16,3 +16,4 @@ doc/site
 # for local testing
 cloudbuild-test.yaml
 
+**/*.coverprofile

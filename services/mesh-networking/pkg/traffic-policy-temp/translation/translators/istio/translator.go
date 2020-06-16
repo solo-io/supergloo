@@ -62,8 +62,10 @@ func (i *istioTrafficPolicyTranslator) AccumulateFromTranslation(
 	// translation errors are reported earlier, so we don't care about these now.
 	out, _ := i.Translate(meshService, allMeshServices, mesh, meshService.Status.ValidatedTrafficPolicies)
 
-	snapshotInProgress.Istio.DestinationRules = append(snapshotInProgress.Istio.DestinationRules, out.DestinationRules...)
-	snapshotInProgress.Istio.VirtualServices = append(snapshotInProgress.Istio.VirtualServices, out.VirtualServices...)
+	if out != nil {
+		snapshotInProgress.Istio.DestinationRules = append(snapshotInProgress.Istio.DestinationRules, out.DestinationRules...)
+		snapshotInProgress.Istio.VirtualServices = append(snapshotInProgress.Istio.VirtualServices, out.VirtualServices...)
+	}
 
 	return nil
 }
