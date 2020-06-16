@@ -70,6 +70,9 @@ func (v *Reconciler) Reconcile(ctx context.Context) error {
 		meshServices = append(meshServices, &meshService)
 	}
 
+	// TODO: this works because traffic policies are not copied with the various processors;
+	// if we want to relax that constrant, we can consider generating and using the Set object
+	// for traffic policies.
 	trafficPoliciesToUpdateSet := map[*smh_networking.TrafficPolicy]bool{}
 
 	trafficPoliciesToUpdate := v.validationProcessor.Process(ctx, allTrafficPolicies, meshServices)
