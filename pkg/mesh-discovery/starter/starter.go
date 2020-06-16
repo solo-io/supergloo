@@ -6,6 +6,7 @@ import (
 	apps_v1_controller "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
 	core_v1_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
+	meshworkload_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s"
 
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster/client"
@@ -46,8 +47,7 @@ type Starter interface {
 }
 
 type starter struct {
-	// constructor for creating reconcilers
-	makeReconcilers func(mcClient multicluster.Client) (reconcilers.DiscoveryReconcilers, error)
+	meshworkload_discovery.MeshWorkloadDiscoveryFactory
 }
 
 func (s starter) Start(ctx context.Context, opts Options) error {
@@ -58,10 +58,7 @@ func (s starter) Start(ctx context.Context, opts Options) error {
 
 	mcWatcher, mcClient := makeMulticlusterComponents(ctx, mgr.GetScheme())
 
-	reconcilers, err := s.makeReconcilers(mcClient)
-	if err != nil {
-		return err
-	}
+	reconcilers := s.makeReconcilers(ctx, mcClient)
 
 	if err := addMasterClusterReconcilers(ctx, mgr, reconcilers); err != nil {
 		return err
@@ -70,6 +67,12 @@ func (s starter) Start(ctx context.Context, opts Options) error {
 	addMultiClusterReconcilers(ctx, mcWatcher, reconcilers)
 
 	return mgr.Start(ctx.Done())
+}
+
+// constructor for creating reconcilers
+func (s starter) makeReconcilers(ctx context.Context, mcClient multicluster.Client) reconcilers.DiscoveryReconcilers {
+	meshWorkloadDiscovery := s.MeshWorkloadDiscoveryFactory(mcClient)
+	return reconcilers.NewDiscoveryReconcilers(ctx, meshWorkloadDiscovery)
 }
 
 // adds the reconcilers for resources watched in the master cluster
