@@ -12,6 +12,7 @@ import (
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-service/k8s"
 	meshworkload_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s/istio"
@@ -91,6 +92,7 @@ func (s starter) initializeReconcilers(
 ) reconcilers.DiscoveryReconcilers {
 	meshClient := smh_discovery.NewMeshClient(masterClient)
 	meshWorkloadClient := smh_discovery.NewMeshWorkloadClient(masterClient)
+	meshServiceClient := smh_discovery.NewMeshServiceClient(masterClient)
 	meshWorkloadScanners := initializeMeshWorkloadScanners(mcClient, meshClient)
 	meshWorkloadDiscovery := meshworkload_discovery.NewMeshWorkloadDiscovery(
 		meshClient,
@@ -98,7 +100,14 @@ func (s starter) initializeReconcilers(
 		meshWorkloadScanners,
 		k8s_core_clients.NewMulticlusterClientset(mcClient),
 	)
-	return reconcilers.NewDiscoveryReconcilers(ctx, meshWorkloadDiscovery)
+	meshServiceDiscovery := k8s.NewMeshServiceDiscovery(
+		meshServiceClient,
+		meshWorkloadClient,
+		meshClient,
+		k8s_core_providers.ServiceClientFactoryProvider(),
+		mcClient,
+	)
+	return reconcilers.NewDiscoveryReconcilers(ctx, meshWorkloadDiscovery, meshServiceDiscovery)
 }
 
 func initializeMeshWorkloadScanners(

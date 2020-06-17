@@ -10,9 +10,7 @@ import (
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
-	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s"
-	meshservice_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-service/k8s"
 	meshworkload_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/wire"
@@ -96,16 +94,6 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		initializedDeps.deploymentClient,
 	)
 
-	meshServiceFinder := meshservice_discovery.NewMeshServiceFinder(
-		ctx,
-		clusterName,
-		container_runtime.GetWriteNamespace(),
-		initializedDeps.serviceClient,
-		m.localMeshServiceClient,
-		m.localMeshWorkloadClient,
-		m.localMeshClient,
-	)
-
 	clusterTenancyFinder := k8s_tenancy.NewClusterTenancyFinder(
 		clusterName,
 		initializedDeps.clusterTenancyScanners,
@@ -121,7 +109,7 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		return err
 	}
 
-	return meshServiceFinder.StartDiscovery(initializedDeps.serviceEventWatcher, m.localMeshWorkloadEventWatcher)
+	return nil
 }
 
 func (m *discoveryClusterHandler) ClusterRemoved(cluster string) error {

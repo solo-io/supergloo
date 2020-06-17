@@ -52,7 +52,12 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		ctx = context.TODO()
 		mockOwnerFetcher = mock_mesh_workload.NewMockOwnerFetcher(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
-		meshWorkloadScanner = linkerd.NewLinkerdMeshWorkloadScanner(mockOwnerFetcher, mockMeshClient, nil)
+		meshWorkloadScanner = linkerd.NewLinkerdMeshWorkloadScanner(
+			func(clusterName string) (k8s.OwnerFetcher, error) {
+				return mockOwnerFetcher, nil
+			},
+			mockMeshClient,
+		)
 	})
 
 	AfterEach(func() {
