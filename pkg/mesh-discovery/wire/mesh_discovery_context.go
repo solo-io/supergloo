@@ -42,10 +42,9 @@ type EventWatcherFactories struct {
 }
 
 type MeshDiscovery struct {
-	IstioMeshScanner              mesh_istio.IstioMeshScanner
-	ConsulConnectMeshScanner      mesh_consul.ConsulConnectMeshScanner
-	LinkerdMeshScanner            mesh_linkerd.LinkerdMeshScanner
-	AppMeshWorkloadScannerFactory meshworkload_discovery.MeshWorkloadScannerFactory
+	IstioMeshScanner         mesh_istio.IstioMeshScanner
+	ConsulConnectMeshScanner mesh_consul.ConsulConnectMeshScanner
+	LinkerdMeshScanner       mesh_linkerd.LinkerdMeshScanner
 }
 
 type ClusterTenancy struct {
@@ -59,7 +58,6 @@ func DiscoveryContextProvider(
 	linkerdMeshScanner mesh_linkerd.LinkerdMeshScanner,
 	replicaSetClientFactory k8s_apps_providers.ReplicaSetClientFactory,
 	deploymentClientFactory k8s_apps_providers.DeploymentClientFactory,
-	ownerFetcherClientFactory meshworkload_discovery.OwnerFetcherFactory,
 	serviceClientFactory k8s_core_providers.ServiceClientFactory,
 	meshServiceClientFactory smh_discovery_providers.MeshServiceClientFactory,
 	meshWorkloadClientFactory smh_discovery_providers.MeshWorkloadClientFactory,
@@ -70,7 +68,6 @@ func DiscoveryContextProvider(
 	meshClientFactory smh_discovery_providers.MeshClientFactory,
 	podClientFactory k8s_core_providers.PodClientFactory,
 	meshControllerFactory event_watcher_factories.MeshEventWatcherFactory,
-	appMeshWorkloadScannerFactory meshworkload_discovery.MeshWorkloadScannerFactory,
 	appMeshClusterTenancyScannerFactory k8s_tenancy.ClusterTenancyScannerFactory,
 ) DiscoveryContext {
 
@@ -79,7 +76,6 @@ func DiscoveryContextProvider(
 		ClientFactories: ClientFactories{
 			ReplicaSetClientFactory:   replicaSetClientFactory,
 			DeploymentClientFactory:   deploymentClientFactory,
-			OwnerFetcherClientFactory: ownerFetcherClientFactory,
 			ServiceClientFactory:      serviceClientFactory,
 			MeshServiceClientFactory:  meshServiceClientFactory,
 			MeshWorkloadClientFactory: meshWorkloadClientFactory,
@@ -94,10 +90,9 @@ func DiscoveryContextProvider(
 			MeshControllerFactory:           meshControllerFactory,
 		},
 		MeshDiscovery: MeshDiscovery{
-			IstioMeshScanner:              istioMeshScanner,
-			ConsulConnectMeshScanner:      consulConnectMeshScanner,
-			LinkerdMeshScanner:            linkerdMeshScanner,
-			AppMeshWorkloadScannerFactory: appMeshWorkloadScannerFactory,
+			IstioMeshScanner:         istioMeshScanner,
+			ConsulConnectMeshScanner: consulConnectMeshScanner,
+			LinkerdMeshScanner:       linkerdMeshScanner,
 		},
 		ClusterTenancy: ClusterTenancy{
 			AppMeshClusterTenancyScannerFactory: appMeshClusterTenancyScannerFactory,

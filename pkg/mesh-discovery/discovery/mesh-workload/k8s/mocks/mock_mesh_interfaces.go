@@ -9,48 +9,46 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	v1 "k8s.io/api/apps/v1"
 	v10 "k8s.io/api/core/v1"
 )
 
-// MockMeshWorkloadFinder is a mock of MeshWorkloadFinder interface.
-type MockMeshWorkloadFinder struct {
+// MockMeshWorkloadDiscovery is a mock of MeshWorkloadDiscovery interface.
+type MockMeshWorkloadDiscovery struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshWorkloadFinderMockRecorder
+	recorder *MockMeshWorkloadDiscoveryMockRecorder
 }
 
-// MockMeshWorkloadFinderMockRecorder is the mock recorder for MockMeshWorkloadFinder.
-type MockMeshWorkloadFinderMockRecorder struct {
-	mock *MockMeshWorkloadFinder
+// MockMeshWorkloadDiscoveryMockRecorder is the mock recorder for MockMeshWorkloadDiscovery.
+type MockMeshWorkloadDiscoveryMockRecorder struct {
+	mock *MockMeshWorkloadDiscovery
 }
 
-// NewMockMeshWorkloadFinder creates a new mock instance.
-func NewMockMeshWorkloadFinder(ctrl *gomock.Controller) *MockMeshWorkloadFinder {
-	mock := &MockMeshWorkloadFinder{ctrl: ctrl}
-	mock.recorder = &MockMeshWorkloadFinderMockRecorder{mock}
+// NewMockMeshWorkloadDiscovery creates a new mock instance.
+func NewMockMeshWorkloadDiscovery(ctrl *gomock.Controller) *MockMeshWorkloadDiscovery {
+	mock := &MockMeshWorkloadDiscovery{ctrl: ctrl}
+	mock.recorder = &MockMeshWorkloadDiscoveryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMeshWorkloadFinder) EXPECT() *MockMeshWorkloadFinderMockRecorder {
+func (m *MockMeshWorkloadDiscovery) EXPECT() *MockMeshWorkloadDiscoveryMockRecorder {
 	return m.recorder
 }
 
-// StartDiscovery mocks base method.
-func (m *MockMeshWorkloadFinder) StartDiscovery(podEventWatcher controller.PodEventWatcher, meshEventWatcher controller0.MeshEventWatcher) error {
+// DiscoverMeshWorkloads mocks base method.
+func (m *MockMeshWorkloadDiscovery) DiscoverMeshWorkloads(ctx context.Context, clusterName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartDiscovery", podEventWatcher, meshEventWatcher)
+	ret := m.ctrl.Call(m, "DiscoverMeshWorkloads", ctx, clusterName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// StartDiscovery indicates an expected call of StartDiscovery.
-func (mr *MockMeshWorkloadFinderMockRecorder) StartDiscovery(podEventWatcher, meshEventWatcher interface{}) *gomock.Call {
+// DiscoverMeshWorkloads indicates an expected call of DiscoverMeshWorkloads.
+func (mr *MockMeshWorkloadDiscoveryMockRecorder) DiscoverMeshWorkloads(ctx, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).StartDiscovery), podEventWatcher, meshEventWatcher)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoverMeshWorkloads", reflect.TypeOf((*MockMeshWorkloadDiscovery)(nil).DiscoverMeshWorkloads), ctx, clusterName)
 }
 
 // MockOwnerFetcher is a mock of OwnerFetcher interface.

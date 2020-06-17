@@ -20,7 +20,6 @@ import (
 	compute_target_aws "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target/aws"
 	eks_client "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target/aws/clients/eks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/k8s-cluster/rest/eks"
-	meshworkload_appmesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/rest/appmesh"
 	"k8s.io/client-go/rest"
 )
@@ -30,8 +29,6 @@ var AwsSet = wire.NewSet(
 	aws_creds.DefaultSecretAwsCredsConverter,
 	aws_utils.NewArnParser,
 	aws_utils.NewAppMeshScanner,
-	aws_utils.NewAwsAccountIdFetcher,
-	meshworkload_appmesh.AppMeshWorkloadScannerFactoryProvider,
 	smh_discovery_providers.KubernetesClusterClientProvider,
 	eks_client.EksClientFactoryProvider,
 	eks_client.EksConfigBuilderFactoryProvider,
