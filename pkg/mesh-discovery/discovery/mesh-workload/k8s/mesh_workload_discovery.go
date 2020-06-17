@@ -12,48 +12,30 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s"
-	"github.com/solo-io/skv2/pkg/multicluster"
 	k8s_core_types "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type MeshWorkloadDiscoveryFactory func(mcClient multicluster.Client) MeshWorkloadDiscovery
-
-func MeshWorkloadDiscoveryFactoryProvider(
-	meshClient smh_discovery.MeshClient,
-	meshWorkloadClient smh_discovery.MeshWorkloadClient,
-	meshWorkloadScannerImplementations MeshWorkloadScannerImplementations,
-) MeshWorkloadDiscoveryFactory {
-	return func(mcClient multicluster.Client) MeshWorkloadDiscovery {
-		return NewMeshWorkloadDiscovery(
-			meshClient,
-			meshWorkloadClient,
-			meshWorkloadScannerImplementations,
-			k8s_core_clients.NewMulticlusterClientset(mcClient),
-		)
-	}
-}
-
 func NewMeshWorkloadDiscovery(
 	meshClient smh_discovery.MeshClient,
 	meshWorkloadClient smh_discovery.MeshWorkloadClient,
-	meshWorkloadScannerImplementations MeshWorkloadScannerImplementations,
-	multiclusterClientset k8s_core_clients.MulticlusterClientset,
+	meshWorkloadScanners MeshWorkloadScanners,
+	mcClientset k8s_core_clients.MulticlusterClientset,
 ) MeshWorkloadDiscovery {
 	return &meshWorkloadDiscovery{
-		meshWorkloadScannerImplementations: meshWorkloadScannerImplementations,
-		meshClient:                         meshClient,
-		meshWorkloadClient:                 meshWorkloadClient,
-		multiclusterClientset:              multiclusterClientset,
+		meshWorkloadScanners: meshWorkloadScanners,
+		meshClient:           meshClient,
+		meshWorkloadClient:   meshWorkloadClient,
+		mcClientset:          mcClientset,
 	}
 }
 
 type meshWorkloadDiscovery struct {
-	meshWorkloadScannerImplementations MeshWorkloadScannerImplementations
-	meshClient                         smh_discovery.MeshClient
-	meshWorkloadClient                 smh_discovery.MeshWorkloadClient
-	multiclusterClientset              k8s_core_clients.MulticlusterClientset
+	meshWorkloadScanners MeshWorkloadScanners
+	meshClient           smh_discovery.MeshClient
+	meshWorkloadClient   smh_discovery.MeshWorkloadClient
+	mcClientset          k8s_core_clients.MulticlusterClientset
 }
 
 func (m *meshWorkloadDiscovery) DiscoverMeshWorkloads(
@@ -117,7 +99,10 @@ func (m *meshWorkloadDiscovery) discoverAllWorkloads(
 	clusterName string,
 	discoveredMeshTypes sets.Int32,
 ) (smh_discovery_sets.MeshWorkloadSet, error) {
-	clientset, err := m.multiclusterClientset.Cluster(clusterName)
+	clientset, err := m.mcClientset.Cluster(clusterName)
+	if err != nil {
+		return nil, err
+	}
 	podClient := clientset.Pods()
 	podList, err := podClient.ListPod(ctx)
 	if err != nil {
@@ -167,6 +152,7 @@ func (m *meshWorkloadDiscovery) getDiscoveredMeshTypes(
 	return discoveredMeshTypes, nil
 }
 
+// Returns nil, nil if MeshWorkload was not discovered
 func (m *meshWorkloadDiscovery) discoverMeshWorkload(
 	ctx context.Context,
 	clusterName string,
@@ -175,15 +161,13 @@ func (m *meshWorkloadDiscovery) discoverMeshWorkload(
 ) (*smh_discovery.MeshWorkload, error) {
 	logger := contextutils.LoggerFrom(ctx)
 	var discoveredMeshWorkload *smh_discovery.MeshWorkload
-	var err error
-
 	for _, discoveredMeshType := range discoveredMeshTypes.List() {
-		meshWorkloadScanner, ok := m.meshWorkloadScannerImplementations[smh_core_types.MeshType(discoveredMeshType)]
+		meshWorkloadScanner, ok := m.meshWorkloadScanners[smh_core_types.MeshType(discoveredMeshType)]
 		if !ok {
 			logger.Warnf("No MeshWorkloadScanner found for mesh type: %s", smh_core_types.MeshType(discoveredMeshType).String())
 			continue
 		}
-		discoveredMeshWorkload, err = meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
+		discoveredMeshWorkload, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
 		if err != nil {
 			return nil, err
 		}

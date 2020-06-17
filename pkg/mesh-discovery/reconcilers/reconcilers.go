@@ -39,7 +39,7 @@ type DiscoveryReconcilers interface {
 }
 
 func (d *discoveryReconcilers) ReconcileMeshWorkload(obj *smh_discovery.MeshWorkload) (reconcile.Result, error) {
-	panic("implement me")
+	return reconcile.Result{}, nil
 }
 
 func (d *discoveryReconcilers) ReconcileMesh(obj *smh_discovery.Mesh) (reconcile.Result, error) {
@@ -48,7 +48,7 @@ func (d *discoveryReconcilers) ReconcileMesh(obj *smh_discovery.Mesh) (reconcile
 }
 
 func (d *discoveryReconcilers) ReconcileDeployment(clusterName string, obj *apps_v1.Deployment) (reconcile.Result, error) {
-	panic("implement me")
+	return reconcile.Result{}, nil
 }
 
 func (d *discoveryReconcilers) ReconcilePod(clusterName string, obj *v1.Pod) (reconcile.Result, error) {
@@ -56,5 +56,5 @@ func (d *discoveryReconcilers) ReconcilePod(clusterName string, obj *v1.Pod) (re
 }
 
 func (d *discoveryReconcilers) ReconcileService(clusterName string, obj *v1.Service) (reconcile.Result, error) {
-	panic("implement me")
+	return reconcile.Result{}, nil
 }

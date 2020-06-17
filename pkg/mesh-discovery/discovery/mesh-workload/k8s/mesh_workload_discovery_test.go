@@ -47,7 +47,7 @@ var _ = Describe("MeshWorkloadDiscovery", func() {
 		meshWorkloadDiscovery = k8s.NewMeshWorkloadDiscovery(
 			mockLocalMeshClient,
 			mockLocalMeshWorkloadClient,
-			k8s.MeshWorkloadScannerImplementations{
+			k8s.MeshWorkloadScanners{
 				smh_core_types.MeshType_ISTIO1_5: mockMeshWorkloadScanner,
 			},
 			mockMulticlusterClientset,

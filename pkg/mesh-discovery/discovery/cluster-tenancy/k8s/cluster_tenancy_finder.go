@@ -140,7 +140,7 @@ func (c *clusterTenancyFinder) meshFromPod(
 	pod *k8s_core_types.Pod,
 ) (ClusterTenancyRegistrar, *client.ObjectKey, error) {
 	for _, registrar := range c.tenancyRegistrars {
-		mesh, err := registrar.MeshFromSidecar(ctx, pod)
+		mesh, err := registrar.MeshFromSidecar(ctx, pod, c.clusterName)
 		if err != nil {
 			return nil, nil, err
 		}

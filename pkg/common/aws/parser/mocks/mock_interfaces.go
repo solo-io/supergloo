@@ -11,7 +11,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser"
 	v1 "k8s.io/api/core/v1"
-	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockAppMeshScanner is a mock of AppMeshScanner interface.
@@ -129,16 +128,16 @@ func (m *MockAwsAccountIdFetcher) EXPECT() *MockAwsAccountIdFetcherMockRecorder 
 }
 
 // GetEksAccountId mocks base method.
-func (m *MockAwsAccountIdFetcher) GetEksAccountId(ctx context.Context, clusterScopedClient client.Client) (aws_utils.AwsAccountId, error) {
+func (m *MockAwsAccountIdFetcher) GetEksAccountId(ctx context.Context, clusterName string) (aws_utils.AwsAccountId, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEksAccountId", ctx, clusterScopedClient)
+	ret := m.ctrl.Call(m, "GetEksAccountId", ctx, clusterName)
 	ret0, _ := ret[0].(aws_utils.AwsAccountId)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEksAccountId indicates an expected call of GetEksAccountId.
-func (mr *MockAwsAccountIdFetcherMockRecorder) GetEksAccountId(ctx, clusterScopedClient interface{}) *gomock.Call {
+func (mr *MockAwsAccountIdFetcherMockRecorder) GetEksAccountId(ctx, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEksAccountId", reflect.TypeOf((*MockAwsAccountIdFetcher)(nil).GetEksAccountId), ctx, clusterScopedClient)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEksAccountId", reflect.TypeOf((*MockAwsAccountIdFetcher)(nil).GetEksAccountId), ctx, clusterName)
 }

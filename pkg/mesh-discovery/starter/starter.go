@@ -3,10 +3,19 @@ package starter
 import (
 	"context"
 
-	apps_v1_controller "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
-	core_v1_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
+	k8s_apps_controller "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
+	k8s_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+	k8s_core_clients "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	k8s_core_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	"github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
+	aws_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser"
 	meshworkload_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s/appmesh"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s/linkerd"
 
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster/client"
@@ -16,6 +25,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/reconcilers"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
 	"k8s.io/apimachinery/pkg/runtime"
+	controller_runtime "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -46,8 +56,10 @@ type Starter interface {
 	Start(ctx context.Context, opts Options) error
 }
 
-type starter struct {
-	meshworkload_discovery.MeshWorkloadDiscoveryFactory
+type starter struct{}
+
+func NewStarter() Starter {
+	return &starter{}
 }
 
 func (s starter) Start(ctx context.Context, opts Options) error {
@@ -58,7 +70,7 @@ func (s starter) Start(ctx context.Context, opts Options) error {
 
 	mcWatcher, mcClient := makeMulticlusterComponents(ctx, mgr.GetScheme())
 
-	reconcilers := s.makeReconcilers(ctx, mcClient)
+	reconcilers := s.initializeReconcilers(ctx, mgr.GetClient(), mcClient)
 
 	if err := addMasterClusterReconcilers(ctx, mgr, reconcilers); err != nil {
 		return err
@@ -70,9 +82,51 @@ func (s starter) Start(ctx context.Context, opts Options) error {
 }
 
 // constructor for creating reconcilers
-func (s starter) makeReconcilers(ctx context.Context, mcClient multicluster.Client) reconcilers.DiscoveryReconcilers {
-	meshWorkloadDiscovery := s.MeshWorkloadDiscoveryFactory(mcClient)
+func (s starter) initializeReconcilers(
+	ctx context.Context,
+	masterClient controller_runtime.Client,
+	mcClient multicluster.Client,
+) reconcilers.DiscoveryReconcilers {
+	meshClient := smh_discovery.NewMeshClient(masterClient)
+	meshWorkloadClient := smh_discovery.NewMeshWorkloadClient(masterClient)
+	meshWorkloadScanners := initializeMeshWorkloadScanners(mcClient, meshClient)
+	meshWorkloadDiscovery := meshworkload_discovery.NewMeshWorkloadDiscovery(
+		meshClient,
+		meshWorkloadClient,
+		meshWorkloadScanners,
+		k8s_core_clients.NewMulticlusterClientset(mcClient),
+	)
 	return reconcilers.NewDiscoveryReconcilers(ctx, meshWorkloadDiscovery)
+}
+
+func initializeMeshWorkloadScanners(
+	mcClient multicluster.Client,
+	meshClient smh_discovery.MeshClient,
+) meshworkload_discovery.MeshWorkloadScanners {
+	ownerFetcherFactory := meshworkload_discovery.NewOwnerFetcherFactory(
+		k8s_apps_providers.DeploymentClientFactoryProvider(),
+		k8s_apps_providers.ReplicaSetClientFactoryProvider(),
+		mcClient,
+	)
+	arnParser := aws_utils.NewArnParser()
+	appmeshScanner := aws_utils.NewAppMeshScanner(arnParser)
+	configMapClientFactory := k8s_core_providers.ConfigMapClientFactoryProvider()
+	awsAccountIdFetcher := aws_utils.NewAwsAccountIdFetcher(arnParser, configMapClientFactory, mcClient)
+	appmeshWorkloadScanner := appmesh.NewAppMeshWorkloadScanner(
+		ownerFetcherFactory,
+		appmeshScanner,
+		meshClient,
+		awsAccountIdFetcher,
+	)
+	istioMeshWorkloadScanner := istio.NewIstioMeshWorkloadScanner(ownerFetcherFactory, meshClient)
+	linkerdMeshWorkloadScanner := linkerd.NewLinkerdMeshWorkloadScanner(ownerFetcherFactory, meshClient)
+	scannerFactories := meshworkload_discovery.MeshWorkloadScanners{
+		types.MeshType_ISTIO1_5: istioMeshWorkloadScanner,
+		types.MeshType_ISTIO1_6: istioMeshWorkloadScanner,
+		types.MeshType_LINKERD:  linkerdMeshWorkloadScanner,
+		types.MeshType_APPMESH:  appmeshWorkloadScanner,
+	}
+	return scannerFactories
 }
 
 // adds the reconcilers for resources watched in the master cluster
@@ -131,15 +185,15 @@ func makeMulticlusterComponents(ctx context.Context, scheme *runtime.Scheme) (mu
 // mesh-discovery needs to watch cross-cluster
 func addMultiClusterReconcilers(ctx context.Context, clusterWatcher multicluster.ClusterWatcher, discoveryReconcilers reconcilers.DiscoveryReconcilers) {
 
-	core_v1_controller.
+	k8s_core_controller.
 		NewMulticlusterServiceReconcileLoop("services", clusterWatcher).
 		AddMulticlusterServiceReconciler(ctx, discoveryReconcilers)
 
-	core_v1_controller.
+	k8s_core_controller.
 		NewMulticlusterPodReconcileLoop("pods", clusterWatcher).
 		AddMulticlusterPodReconciler(ctx, discoveryReconcilers)
 
-	apps_v1_controller.
+	k8s_apps_controller.
 		NewMulticlusterDeploymentReconcileLoop("pods", clusterWatcher).
 		AddMulticlusterDeploymentReconciler(ctx, discoveryReconcilers)
 

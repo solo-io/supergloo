@@ -76,18 +76,18 @@ func (m *MockClusterTenancyRegistrar) EXPECT() *MockClusterTenancyRegistrarMockR
 }
 
 // MeshFromSidecar mocks base method.
-func (m *MockClusterTenancyRegistrar) MeshFromSidecar(ctx context.Context, pod *v1.Pod) (*v1alpha1.Mesh, error) {
+func (m *MockClusterTenancyRegistrar) MeshFromSidecar(ctx context.Context, pod *v1.Pod, clusterName string) (*v1alpha1.Mesh, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MeshFromSidecar", ctx, pod)
+	ret := m.ctrl.Call(m, "MeshFromSidecar", ctx, pod, clusterName)
 	ret0, _ := ret[0].(*v1alpha1.Mesh)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MeshFromSidecar indicates an expected call of MeshFromSidecar.
-func (mr *MockClusterTenancyRegistrarMockRecorder) MeshFromSidecar(ctx, pod interface{}) *gomock.Call {
+func (mr *MockClusterTenancyRegistrarMockRecorder) MeshFromSidecar(ctx, pod, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshFromSidecar", reflect.TypeOf((*MockClusterTenancyRegistrar)(nil).MeshFromSidecar), ctx, pod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshFromSidecar", reflect.TypeOf((*MockClusterTenancyRegistrar)(nil).MeshFromSidecar), ctx, pod, clusterName)
 }
 
 // ClusterHostsMesh mocks base method.

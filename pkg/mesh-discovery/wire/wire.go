@@ -20,7 +20,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
 	event_watcher_factories "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target/event-watcher-factories"
 	appmesh_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s/appmesh"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s"
 	mesh_consul "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/consul"
 	mesh_istio "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/istio"
 	mesh_linkerd "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh/k8s/linkerd"
@@ -30,7 +29,6 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	wire.Build(
 		multicluster_wire.MulticlusterProviderSet,
 		docker.NewImageNameParser,
-		k8s.OwnerFetcherFactoryProvider,
 		k8s_apps_providers.DeploymentClientFactoryProvider,
 		k8s_apps_providers.ReplicaSetClientFactoryProvider,
 		k8s_core_providers.ServiceClientFactoryProvider,
