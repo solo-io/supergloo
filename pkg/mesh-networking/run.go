@@ -2,6 +2,7 @@ package mesh_networking
 
 import (
 	"context"
+	"time"
 
 	"github.com/solo-io/go-utils/contextutils"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
@@ -62,6 +63,8 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 			logger.Fatalw("error initializing TrafficPolicyTranslator", zap.Error(err))
 		}
 
+		go startTrafficPolicyReconciler(ctx, meshNetworkingContext)
+
 		err = meshNetworkingContext.AccessControlPolicyTranslator.Start(
 			contextutils.WithLogger(ctx, "access_control_policy_translator"),
 		)
@@ -83,5 +86,16 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 			logger.Fatalw("error initializing FederationResolver", zap.Error(err))
 		}
 		return nil
+	}
+}
+
+func startTrafficPolicyReconciler(ctx context.Context, meshNetworkingContext wire.MeshNetworkingContext) error {
+	for {
+		meshNetworkingContext.TrafficPolicyReconciler.Reconcile(ctx)
+		select {
+		case <-time.After(time.Second):
+		case <-ctx.Done():
+			return
+		}
 	}
 }

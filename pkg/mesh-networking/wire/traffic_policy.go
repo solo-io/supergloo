@@ -13,7 +13,6 @@ import (
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/routing/traffic-policy-translator"
-	istio_translator "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/routing/traffic-policy-translator/istio-translator"
 	linkerd_translator "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/routing/traffic-policy-translator/linkerd-translator"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/routing/traffic-policy-translator/preprocess"
 )
@@ -27,7 +26,6 @@ var (
 		istio_networking_providers.DestinationRuleClientFactoryProvider,
 		linkerd_networking_providers.ServiceProfileClientFactoryProvider,
 		smi_networking_providers.TrafficSplitClientFactoryProvider,
-		istio_translator.NewIstioTrafficPolicyTranslator,
 		linkerd_translator.NewLinkerdTrafficPolicyTranslator,
 		TrafficPolicyMeshTranslatorsProvider,
 		LocalTrafficPolicyEventWatcherProvider,
@@ -53,11 +51,9 @@ func LocalMeshWorkloadEventWatcherProvider(mgr mc_manager.AsyncManager) smh_disc
 }
 
 func TrafficPolicyMeshTranslatorsProvider(
-	istioTranslator istio_translator.IstioTranslator,
 	linkerdTranslator linkerd_translator.LinkerdTranslator,
 ) []traffic_policy_translator.TrafficPolicyMeshTranslator {
 	return []traffic_policy_translator.TrafficPolicyMeshTranslator{
-		istioTranslator,
 		linkerdTranslator,
 	}
 }
