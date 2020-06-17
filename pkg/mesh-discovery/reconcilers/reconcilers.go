@@ -17,16 +17,18 @@ import (
 
 type discoveryReconcilers struct {
 	ctx                   context.Context
-	meshServiceFinder     meshservice_discovery.MeshServiceDiscovery
+	meshServiceDiscovery  meshservice_discovery.MeshServiceDiscovery
 	meshWorkloadDiscovery meshworkload_discovery.MeshWorkloadDiscovery
 }
 
 func NewDiscoveryReconcilers(
 	ctx context.Context,
 	meshWorkloadDiscovery meshworkload_discovery.MeshWorkloadDiscovery,
+	meshServiceDiscovery meshservice_discovery.MeshServiceDiscovery,
 ) DiscoveryReconcilers {
 	return &discoveryReconcilers{
 		ctx:                   ctx,
+		meshServiceDiscovery:  meshServiceDiscovery,
 		meshWorkloadDiscovery: meshWorkloadDiscovery,
 	}
 }
@@ -42,7 +44,7 @@ type DiscoveryReconcilers interface {
 
 func (d *discoveryReconcilers) ReconcileMeshWorkload(obj *smh_discovery.MeshWorkload) (reconcile.Result, error) {
 	clusterName := obj.Spec.GetKubeController().GetKubeControllerRef().GetCluster()
-	return reconcile.Result{}, d.meshServiceFinder.DiscoverMeshServices(d.ctx, clusterName)
+	return reconcile.Result{}, d.meshServiceDiscovery.DiscoverMeshServices(d.ctx, clusterName)
 }
 
 func (d *discoveryReconcilers) ReconcileMesh(obj *smh_discovery.Mesh) (reconcile.Result, error) {
@@ -59,5 +61,5 @@ func (d *discoveryReconcilers) ReconcilePod(clusterName string, obj *v1.Pod) (re
 }
 
 func (d *discoveryReconcilers) ReconcileService(clusterName string, obj *v1.Service) (reconcile.Result, error) {
-	return reconcile.Result{}, d.meshServiceFinder.DiscoverMeshServices(d.ctx, clusterName)
+	return reconcile.Result{}, d.meshServiceDiscovery.DiscoverMeshServices(d.ctx, clusterName)
 }

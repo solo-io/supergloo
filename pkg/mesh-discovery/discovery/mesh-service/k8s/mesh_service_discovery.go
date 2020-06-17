@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
@@ -15,6 +15,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/common/metadata"
 	skv2_sets "github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/multicluster"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -52,21 +53,24 @@ func NewMeshServiceDiscovery(
 	meshServiceClient smh_discovery.MeshServiceClient,
 	meshWorkloadClient smh_discovery.MeshWorkloadClient,
 	meshClient smh_discovery.MeshClient,
-	multiclusterClientset k8s_core.MulticlusterClientset,
+	serviceClientFactory k8s_core_providers.ServiceClientFactory,
+	mcClient multicluster.Client,
 ) MeshServiceDiscovery {
 	return &meshServiceDiscovery{
-		meshServiceClient:     meshServiceClient,
-		meshWorkloadClient:    meshWorkloadClient,
-		meshClient:            meshClient,
-		multiclusterClientset: multiclusterClientset,
+		meshServiceClient:    meshServiceClient,
+		meshWorkloadClient:   meshWorkloadClient,
+		meshClient:           meshClient,
+		serviceClientFactory: serviceClientFactory,
+		mcClient:             mcClient,
 	}
 }
 
 type meshServiceDiscovery struct {
-	meshServiceClient     smh_discovery.MeshServiceClient
-	meshWorkloadClient    smh_discovery.MeshWorkloadClient
-	meshClient            smh_discovery.MeshClient
-	multiclusterClientset k8s_core.MulticlusterClientset
+	meshServiceClient    smh_discovery.MeshServiceClient
+	meshWorkloadClient   smh_discovery.MeshWorkloadClient
+	meshClient           smh_discovery.MeshClient
+	serviceClientFactory k8s_core_providers.ServiceClientFactory
+	mcClient             multicluster.Client
 }
 
 func (m *meshServiceDiscovery) DiscoverMeshServices(ctx context.Context, clusterName string) error {
@@ -122,11 +126,11 @@ func (m *meshServiceDiscovery) discoverMeshServices(
 	clusterName string,
 ) (smh_discovery_sets.MeshServiceSet, error) {
 	discoveredMeshServices := smh_discovery_sets.NewMeshServiceSet()
-	clientset, err := m.multiclusterClientset.Cluster(clusterName)
+	clusterClient, err := m.mcClient.Cluster(clusterName)
 	if err != nil {
 		return nil, err
 	}
-	serviceList, err := clientset.Services().ListService(ctx)
+	serviceList, err := m.serviceClientFactory(clusterClient).ListService(ctx)
 	if err != nil {
 		return nil, err
 	}

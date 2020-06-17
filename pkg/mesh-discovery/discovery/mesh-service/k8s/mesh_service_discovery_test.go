@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	mock_kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
@@ -16,6 +17,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-service/k8s"
+	mock_multicluster "github.com/solo-io/service-mesh-hub/test/mocks/smh/clients"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -24,16 +26,15 @@ import (
 
 var _ = Describe("Mesh Service Discovery", func() {
 	var (
-		ctrl                      *gomock.Controller
-		ctx                       = context.TODO()
-		clusterName               = "test-cluster-name"
-		mockMeshServiceClient     *discovery_mocks.MockMeshServiceClient
-		mockMeshWorkloadClient    *discovery_mocks.MockMeshWorkloadClient
-		mockMeshClient            *discovery_mocks.MockMeshClient
-		mockMulticlusterClientset *mock_kubernetes_core.MockMulticlusterClientset
-		mockClientset             *mock_kubernetes_core.MockClientset
-		mockServiceClient         *mock_kubernetes_core.MockServiceClient
-		meshServiceDiscovery      k8s.MeshServiceDiscovery
+		ctrl                   *gomock.Controller
+		ctx                    = context.TODO()
+		clusterName            = "test-cluster-name"
+		mockMeshServiceClient  *discovery_mocks.MockMeshServiceClient
+		mockMeshWorkloadClient *discovery_mocks.MockMeshWorkloadClient
+		mockMeshClient         *discovery_mocks.MockMeshClient
+		mockMcClient           *mock_multicluster.MockClient
+		mockServiceClient      *mock_kubernetes_core.MockServiceClient
+		meshServiceDiscovery   k8s.MeshServiceDiscovery
 	)
 
 	BeforeEach(func() {
@@ -41,14 +42,16 @@ var _ = Describe("Mesh Service Discovery", func() {
 		mockMeshServiceClient = discovery_mocks.NewMockMeshServiceClient(ctrl)
 		mockMeshWorkloadClient = discovery_mocks.NewMockMeshWorkloadClient(ctrl)
 		mockMeshClient = discovery_mocks.NewMockMeshClient(ctrl)
-		mockClientset = mock_kubernetes_core.NewMockClientset(ctrl)
 		mockServiceClient = mock_kubernetes_core.NewMockServiceClient(ctrl)
-		mockMulticlusterClientset = mock_kubernetes_core.NewMockMulticlusterClientset(ctrl)
+		mockMcClient = mock_multicluster.NewMockClient(ctrl)
 		meshServiceDiscovery = k8s.NewMeshServiceDiscovery(
 			mockMeshServiceClient,
 			mockMeshWorkloadClient,
 			mockMeshClient,
-			mockMulticlusterClientset,
+			func(client client.Client) k8s_core.ServiceClient {
+				return mockServiceClient
+			},
+			mockMcClient,
 		)
 	})
 
@@ -57,8 +60,8 @@ var _ = Describe("Mesh Service Discovery", func() {
 	})
 
 	var expectReconcile = func() {
-		mockMulticlusterClientset.EXPECT().Cluster(clusterName).Return(mockClientset, nil)
-		mockClientset.EXPECT().Services().Return(mockServiceClient)
+		// Doesn't matter what's returned because the mockServiceClientFactory will always return mockServiceClient
+		mockMcClient.EXPECT().Cluster(clusterName).Return(nil, nil)
 		workloadNamespace := "workload-namespace"
 		mesh := &smh_discovery.Mesh{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
