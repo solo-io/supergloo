@@ -78,6 +78,8 @@ func (s starter) Start(ctx context.Context, opts Options) error {
 
 	addMultiClusterReconcilers(ctx, mcWatcher, reconcilers)
 
+	mcWatcher.Run(mgr)
+
 	return mgr.Start(ctx.Done())
 }
 

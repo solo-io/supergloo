@@ -161,23 +161,21 @@ func (m *meshWorkloadDiscovery) discoverMeshWorkload(
 ) (*smh_discovery.MeshWorkload, error) {
 	logger := contextutils.LoggerFrom(ctx)
 	var discoveredMeshWorkload *smh_discovery.MeshWorkload
+	var err error
 	for _, discoveredMeshType := range discoveredMeshTypes.List() {
 		meshWorkloadScanner, ok := m.meshWorkloadScanners[smh_core_types.MeshType(discoveredMeshType)]
 		if !ok {
 			logger.Warnf("No MeshWorkloadScanner found for mesh type: %s", smh_core_types.MeshType(discoveredMeshType).String())
 			continue
 		}
-		discoveredMeshWorkload, err := meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
+		discoveredMeshWorkload, err = meshWorkloadScanner.ScanPod(ctx, pod, clusterName)
 		if err != nil {
 			return nil, err
 		}
 		if discoveredMeshWorkload != nil {
+			m.attachGeneralDiscoveryLabels(clusterName, discoveredMeshWorkload)
 			break
 		}
-	}
-	// the mesh workload needs to have our standard discovery labels attached to it, like cluster name, etc
-	if discoveredMeshWorkload != nil {
-		m.attachGeneralDiscoveryLabels(clusterName, discoveredMeshWorkload)
 	}
 	return discoveredMeshWorkload, nil
 }
