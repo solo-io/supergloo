@@ -89,11 +89,12 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 	}
 }
 
-func startTrafficPolicyReconciler(ctx context.Context, meshNetworkingContext wire.MeshNetworkingContext) error {
+func startTrafficPolicyReconciler(ctx context.Context, meshNetworkingContext wire.MeshNetworkingContext) {
 	for {
 		meshNetworkingContext.TrafficPolicyReconciler.Reconcile(ctx)
 		select {
 		case <-time.After(time.Second):
+			continue
 		case <-ctx.Done():
 			return
 		}
