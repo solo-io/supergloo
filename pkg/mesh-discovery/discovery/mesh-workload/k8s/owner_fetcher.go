@@ -6,6 +6,8 @@ import (
 
 	"github.com/rotisserie/eris"
 	kubernetes_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
+	kubernetes_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+	"github.com/solo-io/skv2/pkg/multicluster"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,10 +20,23 @@ var (
 	}
 )
 
-type OwnerFetcherFactory func(deploymentClient kubernetes_apps.DeploymentClient, replicaSetClient kubernetes_apps.ReplicaSetClient) OwnerFetcher
+type OwnerFetcherFactory func(clusterName string) (OwnerFetcher, error)
 
-func OwnerFetcherFactoryProvider() OwnerFetcherFactory {
-	return NewOwnerFetcher
+func NewOwnerFetcherFactory(
+	deploymentClientFactory kubernetes_apps_providers.DeploymentClientFactory,
+	replicasetClientFactory kubernetes_apps_providers.ReplicaSetClientFactory,
+	mcClient multicluster.Client,
+) OwnerFetcherFactory {
+	return func(clusterName string) (OwnerFetcher, error) {
+		clusterClient, err := mcClient.Cluster(clusterName)
+		if err != nil {
+			return nil, err
+		}
+		return NewOwnerFetcher(
+			deploymentClientFactory(clusterClient),
+			replicasetClientFactory(clusterClient),
+		), nil
+	}
 }
 
 func NewOwnerFetcher(deploymentClient kubernetes_apps.DeploymentClient, replicaSetClient kubernetes_apps.ReplicaSetClient) OwnerFetcher {

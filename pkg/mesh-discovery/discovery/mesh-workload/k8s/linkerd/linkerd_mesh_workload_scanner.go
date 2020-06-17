@@ -13,7 +13,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/mesh-workload/k8s"
 	k8s_core_types "k8s.io/api/core/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -26,26 +25,29 @@ var (
 
 // visible for testing
 func NewLinkerdMeshWorkloadScanner(
-	ownerFetcher k8s.OwnerFetcher,
+	ownerFetcherFactory k8s.OwnerFetcherFactory,
 	meshClient smh_discovery.MeshClient,
-	_ client.Client,
 ) k8s.MeshWorkloadScanner {
 	return &linkerdMeshWorkloadScanner{
-		ownerFetcher: ownerFetcher,
-		meshClient:   meshClient,
+		ownerFetcherFactory: ownerFetcherFactory,
+		meshClient:          meshClient,
 	}
 }
 
 type linkerdMeshWorkloadScanner struct {
-	ownerFetcher k8s.OwnerFetcher
-	meshClient   smh_discovery.MeshClient
+	ownerFetcherFactory k8s.OwnerFetcherFactory
+	meshClient          smh_discovery.MeshClient
 }
 
 func (l *linkerdMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*smh_discovery.MeshWorkload, error) {
+	ownerFetcher, err := l.ownerFetcherFactory(clusterName)
+	if err != nil {
+		return nil, err
+	}
 	if !l.isLinkerdPod(pod) {
 		return nil, nil
 	}
-	deployment, err := l.ownerFetcher.GetDeployment(ctx, pod)
+	deployment, err := ownerFetcher.GetDeployment(ctx, pod)
 	if err != nil {
 		return nil, err
 	}

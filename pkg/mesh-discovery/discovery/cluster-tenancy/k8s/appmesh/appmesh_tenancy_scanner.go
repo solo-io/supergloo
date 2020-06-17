@@ -19,22 +19,17 @@ type appmeshTenancyScanner struct {
 	appmeshScanner      aws_utils.AppMeshScanner
 	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher
 	meshClient          smh_discovery.MeshClient
-	remoteClient        client.Client
 }
 
 func AppMeshTenancyScannerFactoryProvider(
 	appmeshParser aws_utils.AppMeshScanner,
-	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher,
 ) k8s_tenancy.ClusterTenancyScannerFactory {
 	return func(
 		meshClient smh_discovery.MeshClient,
-		remoteClient client.Client,
 	) k8s_tenancy.ClusterTenancyRegistrar {
 		return NewAppmeshTenancyScanner(
 			appmeshParser,
 			meshClient,
-			remoteClient,
-			awsAccountIdFetcher,
 		)
 	}
 }
@@ -42,22 +37,21 @@ func AppMeshTenancyScannerFactoryProvider(
 func NewAppmeshTenancyScanner(
 	appmeshScanner aws_utils.AppMeshScanner,
 	meshClient smh_discovery.MeshClient,
-	remoteClient client.Client,
-	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher,
+	//awsAccountIdFetcher aws_utils.AwsAccountIdFetcher, TODO(harveyxia) fix this wiring when we get to Mesh discovery migration
 ) k8s_tenancy.ClusterTenancyRegistrar {
 	return &appmeshTenancyScanner{
 		appmeshScanner:      appmeshScanner,
 		meshClient:          meshClient,
-		remoteClient:        remoteClient,
-		awsAccountIdFetcher: awsAccountIdFetcher,
+		awsAccountIdFetcher: nil,
 	}
 }
 
 func (a *appmeshTenancyScanner) MeshFromSidecar(
 	ctx context.Context,
 	pod *k8s_core_types.Pod,
+	clusterName string,
 ) (*smh_discovery.Mesh, error) {
-	awsAccountId, err := a.awsAccountIdFetcher.GetEksAccountId(ctx, a.remoteClient)
+	awsAccountId, err := a.awsAccountIdFetcher.GetEksAccountId(ctx, clusterName)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Warnf("Error fetching AWS Account ID from ConfigMap: %+v", err)
 	}

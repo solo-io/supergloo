@@ -28,52 +28,34 @@ var (
 	}
 )
 
-func AppMeshWorkloadScannerFactoryProvider(
-	appMeshParser aws_utils.AppMeshScanner,
-	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher,
-) meshworkload_discovery.MeshWorkloadScannerFactory {
-	return func(
-		ownerFetcher meshworkload_discovery.OwnerFetcher,
-		meshClient smh_discovery.MeshClient,
-		remoteClient client.Client,
-	) meshworkload_discovery.MeshWorkloadScanner {
-		return NewAppMeshWorkloadScanner(
-			ownerFetcher,
-			appMeshParser,
-			meshClient,
-			awsAccountIdFetcher,
-			remoteClient,
-		)
-	}
-}
-
 // visible for testing
 func NewAppMeshWorkloadScanner(
-	ownerFetcher meshworkload_discovery.OwnerFetcher,
+	ownerFetcherFactory meshworkload_discovery.OwnerFetcherFactory,
 	appMeshParser aws_utils.AppMeshScanner,
 	meshClient smh_discovery.MeshClient,
 	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher,
-	remoteClient client.Client,
 ) meshworkload_discovery.MeshWorkloadScanner {
 	return &appMeshWorkloadScanner{
-		ownerFetcher:        ownerFetcher,
+		ownerFetcherFactory: ownerFetcherFactory,
 		meshClient:          meshClient,
 		appmeshScanner:      appMeshParser,
-		remoteClient:        remoteClient,
 		awsAccountIdFetcher: awsAccountIdFetcher,
 	}
 }
 
 type appMeshWorkloadScanner struct {
-	ownerFetcher        meshworkload_discovery.OwnerFetcher
+	ownerFetcherFactory meshworkload_discovery.OwnerFetcherFactory
 	appmeshScanner      aws_utils.AppMeshScanner
 	meshClient          smh_discovery.MeshClient
-	remoteClient        client.Client
 	awsAccountIdFetcher aws_utils.AwsAccountIdFetcher
 }
 
 func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_types.Pod, clusterName string) (*smh_discovery.MeshWorkload, error) {
-	awsAccountId, err := a.awsAccountIdFetcher.GetEksAccountId(ctx, a.remoteClient)
+	ownerFetcher, err := a.ownerFetcherFactory(clusterName)
+	if err != nil {
+		return nil, err
+	}
+	awsAccountId, err := a.awsAccountIdFetcher.GetEksAccountId(ctx, clusterName)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Warnf("Error fetching AWS Account ID from ConfigMap: %+v", err)
 	}
@@ -84,7 +66,7 @@ func (a *appMeshWorkloadScanner) ScanPod(ctx context.Context, pod *k8s_core_type
 	if appMeshPod == nil {
 		return nil, nil
 	}
-	deployment, err := a.ownerFetcher.GetDeployment(ctx, pod)
+	deployment, err := ownerFetcher.GetDeployment(ctx, pod)
 	if err != nil {
 		return nil, err
 	}
