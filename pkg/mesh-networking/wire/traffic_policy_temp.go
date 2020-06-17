@@ -52,7 +52,7 @@ func NewReconciler(
 		translationMap.MeshTypeToTranslationValidator,
 		inMemoryStatusMutator,
 	)
-	var translationProcessor translation_framework.TranslationProcessor
+	translationProcessor := translation_framework.NewTranslationProcessor(meshClient, translationMap.MeshTypeToAccumulator)
 
 	return reconcile.NewReconciler(trafficPolicyClient, meshServiceClient, snapshotReconciler, validationProcessor, aggregationProcessor, translationProcessor)
 }
