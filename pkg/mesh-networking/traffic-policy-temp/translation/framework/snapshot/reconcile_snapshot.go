@@ -17,6 +17,18 @@ type snapshotReconciler struct {
 	destinationRuleReconciler reconcilers.DestinationRuleReconcilerBuilder
 }
 
+func NewSnapshotReconciler(
+	dynamicClientGetter multicluster.DynamicClientGetter,
+	virtualServiceReconciler reconcilers.VirtualServiceReconcilerBuilder,
+	destinationRuleReconciler reconcilers.DestinationRuleReconcilerBuilder,
+) TranslationSnapshotReconciler {
+	return &snapshotReconciler{
+		dynamicClientGetter:       dynamicClientGetter,
+		virtualServiceReconciler:  virtualServiceReconciler,
+		destinationRuleReconciler: destinationRuleReconciler,
+	}
+}
+
 func (r *snapshotReconciler) ReconcileAllSnapshots(ctx context.Context, clusterNameToSnapshot ClusterNameToSnapshot) error {
 	var multierr error
 	for cluster, snapshot := range clusterNameToSnapshot {

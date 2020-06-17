@@ -14,6 +14,7 @@ import (
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/routing/traffic-policy-translator"
 	cert_manager "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/security/cert-manager"
 	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/snapshot"
+	new_traffic_policy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/reconcile"
 )
 
 // just used to package everything up for wire
@@ -21,6 +22,7 @@ type MeshNetworkingContext struct {
 	MultiClusterDeps              mc_manager.MultiClusterDependencies
 	MeshNetworkingClusterHandler  mc_manager.AsyncManagerHandler
 	TrafficPolicyTranslator       traffic_policy_translator.TrafficPolicyTranslatorLoop
+	TrafficPolicyReconciler       new_traffic_policy.Reconciler
 	MeshNetworkingSnapshotContext *MeshNetworkingSnapshotContext
 	AccessControlPolicyTranslator access_control_policy.AcpTranslatorLoop
 	GlobalAccessPolicyEnforcer    access_control_enforcer.AccessPolicyEnforcerLoop
@@ -31,6 +33,7 @@ func MeshNetworkingContextProvider(
 	multiClusterDeps mc_manager.MultiClusterDependencies,
 	meshNetworkingClusterHandler mc_manager.AsyncManagerHandler,
 	trafficPolicyTranslator traffic_policy_translator.TrafficPolicyTranslatorLoop,
+	trafficPolicyReconciler new_traffic_policy.Reconciler,
 	meshNetworkingSnapshotContext *MeshNetworkingSnapshotContext,
 	accessControlPolicyTranslator access_control_policy.AcpTranslatorLoop,
 	GlobalAccessPolicyEnforcer access_control_enforcer.AccessPolicyEnforcerLoop,
@@ -40,6 +43,7 @@ func MeshNetworkingContextProvider(
 		MultiClusterDeps:              multiClusterDeps,
 		MeshNetworkingClusterHandler:  meshNetworkingClusterHandler,
 		TrafficPolicyTranslator:       trafficPolicyTranslator,
+		TrafficPolicyReconciler:       trafficPolicyReconciler,
 		MeshNetworkingSnapshotContext: meshNetworkingSnapshotContext,
 		AccessControlPolicyTranslator: accessControlPolicyTranslator,
 		GlobalAccessPolicyEnforcer:    GlobalAccessPolicyEnforcer,

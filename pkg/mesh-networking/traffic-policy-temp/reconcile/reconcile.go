@@ -12,7 +12,10 @@ import (
 	traffic_policy_validation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/validation"
 )
 
-type Reconciler struct {
+type Reconciler interface {
+	Reconcile(ctx context.Context) error
+}
+type reconciler struct {
 	trafficPolicyClient smh_networking.TrafficPolicyClient
 	meshServiceClient   smh_discovery.MeshServiceClient
 
@@ -30,8 +33,8 @@ func NewReconciler(
 	validationProcessor traffic_policy_validation.ValidationProcessor,
 	aggregationProcessor aggregation_framework.AggregationProcessor,
 	translationProcessor translation_framework.TranslationProcessor,
-) *Reconciler {
-	return &Reconciler{
+) Reconciler {
+	return &reconciler{
 		trafficPolicyClient:  trafficPolicyClient,
 		meshServiceClient:    meshServiceClient,
 		snapshotReconciler:   snapshotReconciler,
@@ -41,11 +44,11 @@ func NewReconciler(
 	}
 }
 
-func (*Reconciler) GetName() string {
+func (*reconciler) GetName() string {
 	return "traffic-policy-reconciler"
 }
 
-func (v *Reconciler) Reconcile(ctx context.Context) error {
+func (v *reconciler) Reconcile(ctx context.Context) error {
 	var multierr error
 
 	trafficPolicies, err := v.trafficPolicyClient.ListTrafficPolicy(ctx)

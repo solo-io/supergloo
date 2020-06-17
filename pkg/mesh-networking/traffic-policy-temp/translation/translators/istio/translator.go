@@ -60,6 +60,9 @@ func (i *istioTrafficPolicyTranslator) AccumulateFromTranslation(
 	}
 
 	// translation errors are reported earlier, so we don't care about these now.
+	// TODO: we need to make sure we add the virtual service currently in the cache in the case
+	// there are errors here. The goal is to not modify whatever is present in the cluster.
+	// i.e. not delete it (no need to upsert it).
 	out, _ := i.Translate(meshService, allMeshServices, mesh, meshService.Status.ValidatedTrafficPolicies)
 
 	if out != nil {
