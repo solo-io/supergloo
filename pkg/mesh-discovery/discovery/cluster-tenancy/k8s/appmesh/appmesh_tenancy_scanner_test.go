@@ -15,7 +15,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s"
 	appmesh_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s/appmesh"
-	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	"github.com/solo-io/skv2/pkg/utils"
 	k8s_core "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -28,7 +27,6 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 		clusterName             = "test-cluster-name"
 		mockAppMeshParser       *mock_aws.MockAppMeshScanner
 		mockMeshClient          *mock_core.MockMeshClient
-		mockRemoteClient        *mock_controller_runtime.MockClient
 		mockAwsAccountIdFetcher *mock_aws.MockAwsAccountIdFetcher
 		appMeshTenancyRegistrar k8s_tenancy.ClusterTenancyRegistrar
 	)
@@ -37,13 +35,11 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockAppMeshParser = mock_aws.NewMockAppMeshScanner(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
-		mockRemoteClient = mock_controller_runtime.NewMockClient(ctrl)
 		mockAwsAccountIdFetcher = mock_aws.NewMockAwsAccountIdFetcher(ctrl)
 		appMeshTenancyRegistrar = appmesh_tenancy.NewAppmeshTenancyScanner(
 			mockAppMeshParser,
 			mockMeshClient,
-			mockRemoteClient,
-			mockAwsAccountIdFetcher,
+			//mockAwsAccountIdFetcher,
 		)
 	})
 
@@ -68,13 +64,13 @@ var _ = Describe("AppmeshTenancyFinder", func() {
 			AppMeshName:     "appmeshname",
 			VirtualNodeName: "virtualnodename",
 		}
-		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, mockRemoteClient).Return(aws_utils.AwsAccountId(appMeshPod.AwsAccountID), nil)
+		mockAwsAccountIdFetcher.EXPECT().GetEksAccountId(ctx, clusterName).Return(aws_utils.AwsAccountId(appMeshPod.AwsAccountID), nil)
 		mockAppMeshParser.EXPECT().ScanPodForAppMesh(pod, aws_utils.AwsAccountId(appMeshPod.AwsAccountID)).Return(appMeshPod, nil)
 		mockMeshClient.EXPECT().GetMesh(ctx, client.ObjectKey{
 			Name:      metadata.BuildAppMeshName(appMeshPod.AppMeshName, appMeshPod.Region, appMeshPod.AwsAccountID),
 			Namespace: container_runtime.GetWriteNamespace(),
 		}).Return(expectedMesh, nil)
-		mesh, err := appMeshTenancyRegistrar.MeshFromSidecar(ctx, pod)
+		mesh, err := appMeshTenancyRegistrar.MeshFromSidecar(ctx, pod, clusterName)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(mesh).To(Equal(expectedMesh))
 	})
