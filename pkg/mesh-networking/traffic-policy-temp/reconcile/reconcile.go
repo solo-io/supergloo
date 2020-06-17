@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/common/reconciliation"
 	aggregation_framework "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/aggregation/framework"
 	translation_framework "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/framework"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/framework/snapshot"
@@ -13,7 +14,7 @@ import (
 )
 
 type Reconciler interface {
-	Reconcile(ctx context.Context) error
+	reconciliation.Reconciler
 }
 type reconciler struct {
 	trafficPolicyClient smh_networking.TrafficPolicyClient
