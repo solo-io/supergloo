@@ -1,23 +1,31 @@
 package main
 
 import (
+	"github.com/solo-io/service-mesh-hub/codegen/groups"
 	"log"
 
+	externalcodegen "github.com/solo-io/external-apis/codegen"
+	"github.com/solo-io/service-mesh-hub/codegen/templates"
 	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
-	"github.com/solo-io/skv2/contrib"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var (
-	appName            = "service-mesh-hub"
-	smhModule          = "github.com/solo-io/service-mesh-hub"
-	v1alpha1Version    = "v1alpha1"
-	apiRoot            = "pkg/api"
-	smhCrdManifestRoot = "install/helm/charts/custom-resource-definitions"
-	csrCrdManifestRoot = "install/helm/charts/csr-agent/"
+	appName                         = "service-mesh-hub"
+	v1alpha1Version                 = "v1alpha1"
+	discoveryOutputSnapshotCodePath = "pkg/mesh-discovery/snapshots/output"
+	smhCrdManifestRoot              = "install/helm/charts/custom-resource-definitions"
+	csrCrdManifestRoot              = "install/helm/charts/csr-agent/"
+
+	outputDiscoverySnapshot = map[schema.GroupVersion][]string{
+		schema.GroupVersion{
+			Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
+			Version: "v1alpha1",
+		}: {"Mesh", "MeshWorkload", "MeshService"},
+	}
 
 	protoImports = sk_anyvendor.CreateDefaultMatchOptions([]string{
 		"api/**/*.proto",
@@ -43,84 +51,37 @@ func run() error {
 }
 
 func makeSmhCommand() codegen.Command {
-	groups := []model.Group{
-		makeGroup("core", v1alpha1Version, []resourceToGenerate{
-			{kind: "Settings", noStatus: true},
-		}),
-		makeGroup("discovery", v1alpha1Version, []resourceToGenerate{
-			{kind: "KubernetesCluster", noStatus: true}, // TODO(ilackarms): remove this kubernetes cluster and use skv2 multicluster
-			{kind: "MeshService"},
-			{kind: "MeshWorkload"},
-			{kind: "Mesh"},
-		}),
-		makeGroup("networking", v1alpha1Version, []resourceToGenerate{
-			{kind: "TrafficPolicy"},
-			{kind: "AccessControlPolicy"},
-			{kind: "VirtualMesh"},
-		}),
+
+	topLevelTemplates := []model.CustomTemplates{
+		makeDiscoverySnapshotTemplate(groups.SMHGroups),
 	}
 
 	return codegen.Command{
-		AppName:         appName,
-		AnyVendorConfig: protoImports,
-		ManifestRoot:    smhCrdManifestRoot,
-		Groups:          groups,
+		AppName:           appName,
+		AnyVendorConfig:   protoImports,
+		ManifestRoot:      smhCrdManifestRoot,
+		TopLevelTemplates: topLevelTemplates,
+		Groups:            groups.SMHGroups,
 	}
 }
 
 func makeCsrCommand() codegen.Command {
-	groups := []model.Group{
-		makeGroup("security", v1alpha1Version, []resourceToGenerate{
-			{kind: "VirtualMeshCertificateSigningRequest"},
-		}),
-	}
 
 	return codegen.Command{
 		AppName:         appName,
 		AnyVendorConfig: protoImports,
 		ManifestRoot:    csrCrdManifestRoot,
-		Groups:          groups,
+		Groups:          groups.CSRGroups,
 	}
 }
 
-type resourceToGenerate struct {
-	kind     string
-	noStatus bool // don't put a status on this resource
-}
+func makeDiscoverySnapshotTemplate(groups []model.Group) model.CustomTemplates {
+	groups = templates.SelectResources(externalcodegen.K8sGroups(), outputDiscoverySnapshot)
 
-func makeGroup(groupPrefix, version string, resourcesToGenerate []resourceToGenerate) model.Group {
-	var resources []model.Resource
-	for _, resource := range resourcesToGenerate {
-		res := model.Resource{
-			Kind: resource.kind,
-			Spec: model.Field{
-				Type: model.Type{
-					Name: resource.kind + "Spec",
-				},
-			},
-		}
-		if !resource.noStatus {
-			res.Status = &model.Field{Type: model.Type{
-				Name: resource.kind + "Status",
-			}}
-		}
-		resources = append(resources, res)
-	}
-
-	return model.Group{
-		GroupVersion: schema.GroupVersion{
-			Group:   groupPrefix + "." + constants.ServiceMeshHubApiGroupSuffix,
-			Version: version,
+	return model.CustomTemplates{
+		Templates: map[string]string{
+			discoveryOutputSnapshotCodePath: templates.OutputSnapshotTemplateContents,
 		},
-		Module:           smhModule,
-		Resources:        resources,
-		RenderManifests:  true,
-		RenderTypes:      true,
-		RenderClients:    true,
-		RenderController: true,
-		RenderProtos:     true,
-		MockgenDirective: true,
-		CustomTemplates:  contrib.AllCustomTemplates,
-		ApiRoot:          apiRoot,
+		Funcs: templates.MakeSnapshotFuncs(groups),
 	}
 }

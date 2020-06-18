@@ -1,0 +1,139 @@
+// Definitions for Output Snapshots
+package snapshot
+
+{{ $groups := snapshot_groups }}
+
+import (
+    "github.com/rotisserie/eris"
+
+{{- range $group := $groups }}
+{{ group_import_name $group }}sets
+    {{ $set_import_prefix := printf "%vsets" (group_import_name $group) }}
+    {{ $set_import_prefix }} "{{ group_import_path $group }}/sets"
+{{- end }}
+
+)
+
+// the snapshot of output resources produced by
+// the discovery translation
+type Snapshot interface {
+
+{{/* generate a getter for each resource */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+    // return the set of {{ $kindPlural }} with a given set of labels
+    {{ $kindPlural }}() []Labeled{{ $resource.Kind }}Set
+{{- end }}
+{{- end }}
+
+}
+
+type snapshot struct {
+
+{{/* generate fields of the real snapshot impl here */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }} []Labeled{{ $resource.Kind }}Set
+{{- end }}
+{{- end }}
+
+}
+
+{{/* clean up !*/}}
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%vsets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+{{- end }}
+{{- end }}
+
+func NewSnapshot(
+{{/* generate constructor params here */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }} []Labeled{{ $resource.Kind }}Set,
+{{- end }}
+{{- end }}
+
+) Snapshot {
+    return &snapshot{
+{{/* add constructor params here */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    {{ $kindLowerCamelPlural }}:  {{ $kindLowerCamelPlural }},
+{{- end }}
+{{- end }}
+    }
+}
+
+{{/* generate getters here */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+
+func (s snapshot) {{ $kindPlural }}() [][]Labeled{{ $resource.Kind }}Set {
+    return s.{{ $kindLowerCamelPlural }}
+}
+{{- end }}
+{{- end }}
+
+
+{{/* generate getters here */}}
+{{- range $group := $groups }}
+{{ $set_import_prefix := printf "%vsets" (group_import_name $group) }}
+{{- range $resource := $group.Resources }}
+{{- $kindPlural := pluralize $resource.Kind }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+
+// Labeled{{ $resource.Kind }}Set represents a set of {{ $kindLowerCamelPlural }}
+// which share a common set of labels.
+// These labels are used to find diffs between {{ $resource.Kind }}Sets.
+type Labeled{{ $resource.Kind }}Set interface {
+    // returns the set of Labels shared by this {{ $resource.Kind }}Set
+    Labels() map[string]string
+
+    // returns the set of {{ $resource.Kind }}es with the given labels
+    Set() {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+}
+
+type labeled{{ $resource.Kind }}Set struct {
+    set    {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+    labels map[string]string
+}
+
+func NewLabeled{{ $resource.Kind }}Set(set {{ $set_import_prefix }}.{{ $resource.Kind }}Set, labels map[string]string) (Labeled{{ $resource.Kind }}Set, error) {
+    // validate that each {{ $resource.Kind }} contains the labels, else this is not a valid Labeled{{ $resource.Kind }}Set
+    for _, item := range set.List() {
+        for k, v := range labels {
+            // k=v must be present in the item
+            if item.Labels[k] != v {
+                return nil, eris.Errorf("internal error: %v=%v missing on {{ $resource.Kind }} %v", k, v, item.Name)
+            }
+        }
+    }
+
+    return &labeled{{ $resource.Kind }}Set{set: set, labels: labels}, nil
+}
+
+func (l *labeled{{ $resource.Kind }}Set) Labels() map[string]string {
+    return l.labels
+}
+
+func (l *labeled{{ $resource.Kind }}Set) Set() {{ $set_import_prefix }}.{{ $resource.Kind }}Set {
+    return l.set
+}
+
+{{- end }}
+{{- end }}
