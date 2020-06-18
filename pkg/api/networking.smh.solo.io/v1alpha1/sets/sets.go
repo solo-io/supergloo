@@ -8,7 +8,7 @@ import (
 	networking_smh_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -23,10 +23,11 @@ type TrafficPolicySet interface {
 	Union(set TrafficPolicySet) TrafficPolicySet
 	Difference(set TrafficPolicySet) TrafficPolicySet
 	Intersection(set TrafficPolicySet) TrafficPolicySet
+	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.TrafficPolicy, error)
 }
 
 func makeGenericTrafficPolicySet(trafficPolicyList []*networking_smh_solo_io_v1alpha1.TrafficPolicy) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range trafficPolicyList {
 		genericResources = append(genericResources, obj)
 	}
@@ -101,6 +102,15 @@ func (s trafficPolicySet) Intersection(set TrafficPolicySet) TrafficPolicySet {
 	return NewTrafficPolicySet(trafficPolicyList...)
 }
 
+func (s trafficPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.TrafficPolicy, error) {
+	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha1.TrafficPolicy{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*networking_smh_solo_io_v1alpha1.TrafficPolicy), nil
+}
+
 type AccessControlPolicySet interface {
 	Keys() sets.String
 	List() []*networking_smh_solo_io_v1alpha1.AccessControlPolicy
@@ -112,10 +122,11 @@ type AccessControlPolicySet interface {
 	Union(set AccessControlPolicySet) AccessControlPolicySet
 	Difference(set AccessControlPolicySet) AccessControlPolicySet
 	Intersection(set AccessControlPolicySet) AccessControlPolicySet
+	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.AccessControlPolicy, error)
 }
 
 func makeGenericAccessControlPolicySet(accessControlPolicyList []*networking_smh_solo_io_v1alpha1.AccessControlPolicy) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range accessControlPolicyList {
 		genericResources = append(genericResources, obj)
 	}
@@ -190,6 +201,15 @@ func (s accessControlPolicySet) Intersection(set AccessControlPolicySet) AccessC
 	return NewAccessControlPolicySet(accessControlPolicyList...)
 }
 
+func (s accessControlPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.AccessControlPolicy, error) {
+	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha1.AccessControlPolicy{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy), nil
+}
+
 type VirtualMeshSet interface {
 	Keys() sets.String
 	List() []*networking_smh_solo_io_v1alpha1.VirtualMesh
@@ -201,10 +221,11 @@ type VirtualMeshSet interface {
 	Union(set VirtualMeshSet) VirtualMeshSet
 	Difference(set VirtualMeshSet) VirtualMeshSet
 	Intersection(set VirtualMeshSet) VirtualMeshSet
+	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.VirtualMesh, error)
 }
 
 func makeGenericVirtualMeshSet(virtualMeshList []*networking_smh_solo_io_v1alpha1.VirtualMesh) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range virtualMeshList {
 		genericResources = append(genericResources, obj)
 	}
@@ -277,4 +298,13 @@ func (s virtualMeshSet) Intersection(set VirtualMeshSet) VirtualMeshSet {
 		virtualMeshList = append(virtualMeshList, obj.(*networking_smh_solo_io_v1alpha1.VirtualMesh))
 	}
 	return NewVirtualMeshSet(virtualMeshList...)
+}
+
+func (s virtualMeshSet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.VirtualMesh, error) {
+	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha1.VirtualMesh{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*networking_smh_solo_io_v1alpha1.VirtualMesh), nil
 }

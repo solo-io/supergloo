@@ -8,7 +8,7 @@ import (
 	discovery_smh_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -23,10 +23,11 @@ type KubernetesClusterSet interface {
 	Union(set KubernetesClusterSet) KubernetesClusterSet
 	Difference(set KubernetesClusterSet) KubernetesClusterSet
 	Intersection(set KubernetesClusterSet) KubernetesClusterSet
+	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.KubernetesCluster, error)
 }
 
 func makeGenericKubernetesClusterSet(kubernetesClusterList []*discovery_smh_solo_io_v1alpha1.KubernetesCluster) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range kubernetesClusterList {
 		genericResources = append(genericResources, obj)
 	}
@@ -101,6 +102,15 @@ func (s kubernetesClusterSet) Intersection(set KubernetesClusterSet) KubernetesC
 	return NewKubernetesClusterSet(kubernetesClusterList...)
 }
 
+func (s kubernetesClusterSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.KubernetesCluster, error) {
+	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha1.KubernetesCluster{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*discovery_smh_solo_io_v1alpha1.KubernetesCluster), nil
+}
+
 type MeshServiceSet interface {
 	Keys() sets.String
 	List() []*discovery_smh_solo_io_v1alpha1.MeshService
@@ -112,10 +122,11 @@ type MeshServiceSet interface {
 	Union(set MeshServiceSet) MeshServiceSet
 	Difference(set MeshServiceSet) MeshServiceSet
 	Intersection(set MeshServiceSet) MeshServiceSet
+	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshService, error)
 }
 
 func makeGenericMeshServiceSet(meshServiceList []*discovery_smh_solo_io_v1alpha1.MeshService) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range meshServiceList {
 		genericResources = append(genericResources, obj)
 	}
@@ -190,6 +201,15 @@ func (s meshServiceSet) Intersection(set MeshServiceSet) MeshServiceSet {
 	return NewMeshServiceSet(meshServiceList...)
 }
 
+func (s meshServiceSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshService, error) {
+	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha1.MeshService{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*discovery_smh_solo_io_v1alpha1.MeshService), nil
+}
+
 type MeshWorkloadSet interface {
 	Keys() sets.String
 	List() []*discovery_smh_solo_io_v1alpha1.MeshWorkload
@@ -201,10 +221,11 @@ type MeshWorkloadSet interface {
 	Union(set MeshWorkloadSet) MeshWorkloadSet
 	Difference(set MeshWorkloadSet) MeshWorkloadSet
 	Intersection(set MeshWorkloadSet) MeshWorkloadSet
+	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshWorkload, error)
 }
 
 func makeGenericMeshWorkloadSet(meshWorkloadList []*discovery_smh_solo_io_v1alpha1.MeshWorkload) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range meshWorkloadList {
 		genericResources = append(genericResources, obj)
 	}
@@ -279,6 +300,15 @@ func (s meshWorkloadSet) Intersection(set MeshWorkloadSet) MeshWorkloadSet {
 	return NewMeshWorkloadSet(meshWorkloadList...)
 }
 
+func (s meshWorkloadSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshWorkload, error) {
+	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha1.MeshWorkload{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*discovery_smh_solo_io_v1alpha1.MeshWorkload), nil
+}
+
 type MeshSet interface {
 	Keys() sets.String
 	List() []*discovery_smh_solo_io_v1alpha1.Mesh
@@ -290,10 +320,11 @@ type MeshSet interface {
 	Union(set MeshSet) MeshSet
 	Difference(set MeshSet) MeshSet
 	Intersection(set MeshSet) MeshSet
+	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.Mesh, error)
 }
 
 func makeGenericMeshSet(meshList []*discovery_smh_solo_io_v1alpha1.Mesh) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range meshList {
 		genericResources = append(genericResources, obj)
 	}
@@ -366,4 +397,13 @@ func (s meshSet) Intersection(set MeshSet) MeshSet {
 		meshList = append(meshList, obj.(*discovery_smh_solo_io_v1alpha1.Mesh))
 	}
 	return NewMeshSet(meshList...)
+}
+
+func (s meshSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.Mesh, error) {
+	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha1.Mesh{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*discovery_smh_solo_io_v1alpha1.Mesh), nil
 }

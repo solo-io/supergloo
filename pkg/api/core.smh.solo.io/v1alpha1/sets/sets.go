@@ -8,7 +8,7 @@ import (
 	core_smh_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -23,10 +23,11 @@ type SettingsSet interface {
 	Union(set SettingsSet) SettingsSet
 	Difference(set SettingsSet) SettingsSet
 	Intersection(set SettingsSet) SettingsSet
+	Find(id ezkube.ResourceId) (*core_smh_solo_io_v1alpha1.Settings, error)
 }
 
 func makeGenericSettingsSet(settingsList []*core_smh_solo_io_v1alpha1.Settings) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range settingsList {
 		genericResources = append(genericResources, obj)
 	}
@@ -99,4 +100,13 @@ func (s settingsSet) Intersection(set SettingsSet) SettingsSet {
 		settingsList = append(settingsList, obj.(*core_smh_solo_io_v1alpha1.Settings))
 	}
 	return NewSettingsSet(settingsList...)
+}
+
+func (s settingsSet) Find(id ezkube.ResourceId) (*core_smh_solo_io_v1alpha1.Settings, error) {
+	obj, err := s.set.Find(&core_smh_solo_io_v1alpha1.Settings{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*core_smh_solo_io_v1alpha1.Settings), nil
 }

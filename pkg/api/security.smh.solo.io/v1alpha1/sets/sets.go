@@ -8,7 +8,7 @@ import (
 	security_smh_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -23,10 +23,11 @@ type VirtualMeshCertificateSigningRequestSet interface {
 	Union(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet
 	Difference(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet
 	Intersection(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet
+	Find(id ezkube.ResourceId) (*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest, error)
 }
 
 func makeGenericVirtualMeshCertificateSigningRequestSet(virtualMeshCertificateSigningRequestList []*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range virtualMeshCertificateSigningRequestList {
 		genericResources = append(genericResources, obj)
 	}
@@ -99,4 +100,13 @@ func (s virtualMeshCertificateSigningRequestSet) Intersection(set VirtualMeshCer
 		virtualMeshCertificateSigningRequestList = append(virtualMeshCertificateSigningRequestList, obj.(*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest))
 	}
 	return NewVirtualMeshCertificateSigningRequestSet(virtualMeshCertificateSigningRequestList...)
+}
+
+func (s virtualMeshCertificateSigningRequestSet) Find(id ezkube.ResourceId) (*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest, error) {
+	obj, err := s.set.Find(&security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest), nil
 }

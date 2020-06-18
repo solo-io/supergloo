@@ -1,6 +1,6 @@
 syntax = "proto3";
 package discovery.smh.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types";
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1";
 
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "google/protobuf/wrappers.proto";
@@ -12,19 +12,23 @@ option (gogoproto.equal_all) = true;
     Meshes represent a currently registered service mesh.
 */
 message MeshSpec {
-    message MeshInstallation {
-        // Namespace in which the control plane has been installed.
-        string installation_namespace = 1;
 
-        /*
-            version of the mesh which has been installed
-            Note that the version may be "latest"
-        */
-        string version = 2;
+    oneof mesh_type {
+        Istio istio = 1;
+        AwsAppMesh aws_app_mesh = 2;
+        LinkerdMesh linkerd = 3;
+        ConsulConnectMesh consul_connect = 4;
     }
 
     // Mesh object representing an installed Istio control plane
-    message IstioMesh {
+    message Istio {
+
+        // where istio control plane components are installed.
+        MeshInstallation installation = 1;
+
+        // configuration for Istio Citadel, Istio's security component.
+        CitadelInfo citadel_info = 2;
+
         message CitadelInfo {
             /*
                 Istio trust domain used for https/spiffe identity.
@@ -36,28 +40,11 @@ message MeshSpec {
             string trust_domain = 1;
 
             /*
-                istio-citadel namespace, used to determine identity for the Istio CA cert.
-                If empty will default to MeshInstallation.installation_namespace
-            */
-            string citadel_namespace = 2;
-
-            /*
                 istio-citadel service account, used to determine identity for the Istio CA cert.
                 If empty will default to "istio-citadel"
             */
-            string citadel_service_account = 3;
+            string citadel_service_account = 2;
         }
-
-        MeshInstallation installation = 1;
-        CitadelInfo citadel_info = 2;
-    }
-
-    message Istio1_5 {
-        IstioMesh metadata = 1;
-    }
-
-    message Istio1_6 {
-        IstioMesh metadata = 1;
     }
 
     // Mesh object representing AWS AppMesh
@@ -85,22 +72,31 @@ message MeshSpec {
         MeshInstallation installation = 1;
     }
 
-    oneof mesh_type {
-        Istio1_5 istio1_5 = 1;
-        Istio1_6 istio1_6 = 2;
-        AwsAppMesh aws_app_mesh = 3;
-        LinkerdMesh linkerd = 4;
-        ConsulConnectMesh consul_connect = 5;
-    }
-
     /*
         The cluster on which the control plane for this mesh is deployed.
-        This field may not apply to all Mesh types, such as AppMesh, whose control planes
-        are located externally to any user accessible compute platform.
+        Not all MeshTypes have a MeshInstallation. Only self-hosted
+        control planes such as Istio and Linkerd will have installation metadata.
     */
-    core.smh.solo.io.ResourceRef cluster = 6;
+    message MeshInstallation {
+        // Namespace in which the control plane has been installed.
+        string namespace = 1;
+
+        // Cluster in which the control plane has been installed.
+        string cluster = 2;
+
+        // Version of the Mesh that has been installed.
+        // Determined using the image tag on the
+        // Mesh's primary control plane image (e.g. the istio-pilot image tag).
+        string version = 3;
+    }
+
 }
 
 message MeshStatus {
+
+    // The observed generation of the Mesh.
+    // When this matches the Mesh's metadata.generation, it indicates that mesh-networking
+    // has reconciled the latest version of the Mesh.
+    int64 observed_generation = 1;
 
 }
