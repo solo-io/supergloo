@@ -24,10 +24,6 @@ const (
 	istioConfigMapMeshDataKey = "mesh"
 )
 
-var UnexpectedPilotImageName = func(err error, imageName string) error {
-	return eris.Wrapf(err, "failed to parse istiod image tag: %s", imageName)
-}
-
 // detects Istio if a deployment contains the istiod container.
 type meshDetector struct {
 	configMaps corev1sets.ConfigMapSet
@@ -81,7 +77,7 @@ func (d *meshDetector) getIstiodVersion(deployment *appsv1.Deployment) (string, 
 		if isIstiod(deployment, &container) {
 			parsedImage, err := docker.ParseImageName(container.Image)
 			if err != nil {
-				return "", UnexpectedPilotImageName(err, container.Image)
+				return "", eris.Wrapf(err, "failed to parse istiod image tag: %s", container.Image)
 			}
 			version := parsedImage.Tag
 			if parsedImage.Digest != "" {
