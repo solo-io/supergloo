@@ -160,15 +160,27 @@ func (i *istioTrafficPolicyTranslator) findReferencedSubsetsForService(
 				}
 
 				// our service being shifted to is referenced in this traffic shift; record all the subsets
-				subsets = append(subsets, &istio_networking_types.Subset{
-					Name:   i.buildUniqueSubsetName(destination.Subset),
-					Labels: destination.Subset,
-				})
+				subsetName := i.buildUniqueSubsetName(destination.Subset)
+				if !subsetContains(subsetName, subsets) {
+					subsets = append(subsets, &istio_networking_types.Subset{
+						Name:   subsetName,
+						Labels: destination.Subset,
+					})
+				}
 			}
 		}
 	}
 
 	return subsets
+}
+
+func subsetContains(subsetName string, subsets []*istio_networking_types.Subset) bool {
+	for _, subset := range subsets {
+		if subset.Name == subsetName {
+			return true
+		}
+	}
+	return false
 }
 
 func (i *istioTrafficPolicyTranslator) buildVirtualService(
