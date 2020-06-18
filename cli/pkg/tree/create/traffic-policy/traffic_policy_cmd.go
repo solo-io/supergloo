@@ -6,7 +6,6 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/solo-io/autopilot/pkg/utils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
@@ -19,6 +18,7 @@ import (
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
+	"github.com/solo-io/skv2/pkg/utils"
 	"github.com/spf13/cobra"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
