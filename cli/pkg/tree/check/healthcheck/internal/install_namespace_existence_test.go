@@ -8,13 +8,12 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	mock_kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	controllerruntime "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Install namespace existence check", func() {
@@ -35,7 +34,7 @@ var _ = Describe("Install namespace existence check", func() {
 	It("reports an error if the namespace does not exist", func() {
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, errors.NewNotFound(controllerruntime.GroupResource{}, "test-resource"))
 
 		check := internal.NewInstallNamespaceExistenceCheck()
@@ -54,7 +53,7 @@ var _ = Describe("Install namespace existence check", func() {
 		testErr := eris.New("test-err")
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, testErr)
 
 		check := internal.NewInstallNamespaceExistenceCheck()
@@ -72,7 +71,7 @@ var _ = Describe("Install namespace existence check", func() {
 	It("reports success if the namespace exists", func() {
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			GetNamespace(ctx, client.ObjectKey{Name: container_runtime.GetWriteNamespace()}).
+			GetNamespace(ctx, container_runtime.GetWriteNamespace()).
 			Return(nil, nil)
 
 		runFailure, checkApplies := internal.NewInstallNamespaceExistenceCheck().Run(ctx, container_runtime.GetWriteNamespace(), healthcheck_types.Clients{

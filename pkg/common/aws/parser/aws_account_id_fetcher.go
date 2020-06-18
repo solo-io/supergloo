@@ -3,8 +3,9 @@ package aws_utils
 import (
 	"context"
 
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+
 	"github.com/keikoproj/aws-auth/pkg/mapper"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
@@ -16,12 +17,12 @@ var (
 
 type awsAccountIdFetcher struct {
 	arnParser              ArnParser
-	configMapClientFactory k8s_core.ConfigMapClientFactory
+	configMapClientFactory k8s_core_providers.ConfigMapClientFactory
 }
 
 func NewAwsAccountIdFetcher(
 	arnParser ArnParser,
-	configMapClientFactory k8s_core.ConfigMapClientFactory,
+	configMapClientFactory k8s_core_providers.ConfigMapClientFactory,
 ) AwsAccountIdFetcher {
 	return &awsAccountIdFetcher{
 		arnParser:              arnParser,

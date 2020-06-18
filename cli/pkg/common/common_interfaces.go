@@ -1,6 +1,9 @@
 package common
 
 import (
+	k8s_apiextensions_providers "github.com/solo-io/external-apis/pkg/api/k8s/apiextensions.k8s.io/v1beta1/providers"
+	k8s_apps_v1_clients "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
@@ -11,9 +14,6 @@ import (
 	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	k8s_apiextensions "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apiextensions.k8s.io/v1beta1"
-	k8s_apps_v1_clients "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	cluster_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration"
@@ -40,7 +40,7 @@ type KubeClients struct {
 	VirtualMeshClient           smh_networking.VirtualMeshClient
 	VirtualMeshCSRClient        smh_security.VirtualMeshCertificateSigningRequestClient
 	DeployedVersionFinder       version.DeployedVersionFinder
-	CrdClientFactory            k8s_apiextensions.CustomResourceDefinitionClientFromConfigFactory
+	CrdClientFactory            k8s_apiextensions_providers.CustomResourceDefinitionClientFromConfigFactory
 	HealthCheckClients          healthcheck_types.Clients
 	SecretClient                k8s_core.SecretClient
 	NamespaceClient             k8s_core.NamespaceClient
@@ -136,7 +136,7 @@ func KubeClientsProvider(
 	kubeClusterClient smh_discovery.KubernetesClusterClient,
 	healthCheckClients healthcheck_types.Clients,
 	deployedVersionFinder version.DeployedVersionFinder,
-	crdClientFactory k8s_apiextensions.CustomResourceDefinitionClientFromConfigFactory,
+	crdClientFactory k8s_apiextensions_providers.CustomResourceDefinitionClientFromConfigFactory,
 	secretClient k8s_core.SecretClient,
 	namespaceClient k8s_core.NamespaceClient,
 	uninstallClients UninstallClients,

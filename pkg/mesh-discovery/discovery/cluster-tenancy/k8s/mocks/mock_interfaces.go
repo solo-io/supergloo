@@ -9,9 +9,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
-	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
+	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -39,7 +39,7 @@ func (m *MockClusterTenancyRegistrarLoop) EXPECT() *MockClusterTenancyRegistrarL
 }
 
 // StartRegistration mocks base method.
-func (m *MockClusterTenancyRegistrarLoop) StartRegistration(ctx context.Context, podEventWatcher controller0.PodEventWatcher, meshEventWatcher controller.MeshEventWatcher) error {
+func (m *MockClusterTenancyRegistrarLoop) StartRegistration(ctx context.Context, podEventWatcher controller.PodEventWatcher, meshEventWatcher controller0.MeshEventWatcher) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StartRegistration", ctx, podEventWatcher, meshEventWatcher)
 	ret0, _ := ret[0].(error)

@@ -10,9 +10,11 @@ import (
 	. "github.com/onsi/gomega"
 	types2 "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	mock_core "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/mocks"
 	smh_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	mock_smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/mocks"
 	types3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	mock_clients "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
@@ -20,8 +22,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/common/kube/selection/mocks"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
-	mock_smh_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.smh.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

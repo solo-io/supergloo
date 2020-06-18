@@ -10,16 +10,16 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	mock_discovery_core "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/mocks"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	mock_smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/mocks"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/decider"
 	strategies2 "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/strategies"
 	networking_snapshot "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/snapshot"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
-	mock_discovery_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.smh.solo.io/v1alpha1"
-	mock_smh_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.smh.solo.io/v1alpha1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -359,7 +359,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshServiceClient.EXPECT().
-			UpsertMeshServiceSpec(ctx, &meshService1Copy).
+			UpsertMeshService(ctx, &meshService1Copy).
 			Return(nil)
 
 		// EXPECTs for meshService2
@@ -378,7 +378,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshServiceClient.EXPECT().
-			UpsertMeshServiceSpec(ctx, &meshService2Copy).
+			UpsertMeshService(ctx, &meshService2Copy).
 			Return(nil)
 
 		// EXPECTs for meshService3
@@ -397,7 +397,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshServiceClient.EXPECT().
-			UpsertMeshServiceSpec(ctx, &meshService3Copy).
+			UpsertMeshService(ctx, &meshService3Copy).
 			Return(nil)
 
 		// EXPECTs for meshService4
@@ -406,7 +406,7 @@ var _ = Describe("Federation Decider", func() {
 			MulticlusterDnsName: "application-svc4.application-ns4.cluster-4",
 		}
 		meshServiceClient.EXPECT().
-			UpsertMeshServiceSpec(ctx, &meshService4Copy).
+			UpsertMeshService(ctx, &meshService4Copy).
 			Return(nil)
 
 		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, strategies2.GetFederationStrategyFromMode)

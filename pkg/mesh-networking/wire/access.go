@@ -2,7 +2,7 @@ package wire
 
 import (
 	"github.com/google/wire"
-	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
+	v1beta1 "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/providers"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"

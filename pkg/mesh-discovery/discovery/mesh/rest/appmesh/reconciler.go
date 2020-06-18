@@ -3,6 +3,8 @@ package appmesh
 import (
 	"context"
 
+	smh_discovery_providers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/providers"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/hashicorp/go-multierror"
@@ -40,7 +42,7 @@ type appMeshDiscoveryReconciler struct {
 
 func NewAppMeshDiscoveryReconciler(
 	masterClient client.Client,
-	meshClientFactory smh_discovery.MeshClientFactory,
+	meshClientFactory smh_discovery_providers.MeshClientFactory,
 	arnParser aws_utils.ArnParser,
 	settingsClient settings.SettingsHelperClient,
 	awsSelector settings_utils.AwsSelector,

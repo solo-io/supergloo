@@ -3,13 +3,13 @@ package compute_target
 import (
 	"context"
 
+	k8s_apps "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
+	k8s_apps_controller "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	k8s_core_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
-	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	k8s_apps_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	k8s_core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	k8s_tenancy "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/discovery/cluster-tenancy/k8s"

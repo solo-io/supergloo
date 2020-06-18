@@ -2,9 +2,9 @@ package wire
 
 import (
 	"github.com/google/wire"
-	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	k8s_apps "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
+	k8s_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
+	k8s_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	smh_discovery_providers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/providers"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/aws_creds"
 	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
@@ -34,7 +34,7 @@ var AwsSet = wire.NewSet(
 	aws_utils.NewAppMeshScanner,
 	aws_utils.NewAwsAccountIdFetcher,
 	meshworkload_appmesh.AppMeshWorkloadScannerFactoryProvider,
-	smh_discovery.KubernetesClusterClientProvider,
+	smh_discovery_providers.KubernetesClusterClientProvider,
 	eks_client.EksConfigBuilderFactoryProvider,
 	appmesh2.AppmeshClientFactoryProvider,
 	AwsDiscoveryReconcilersProvider,
@@ -47,11 +47,11 @@ var AwsSet = wire.NewSet(
 var ClusterRegistrationSet = wire.NewSet(
 	helm.HelmClientForMemoryConfigFactoryProvider,
 	helm.HelmClientForFileConfigFactoryProvider,
-	k8s_core.SecretClientFromConfigFactoryProvider,
-	k8s_core.NamespaceClientFromConfigFactoryProvider,
-	smh_discovery.KubernetesClusterClientFromConfigFactoryProvider,
-	k8s_apps.DeploymentClientFromConfigFactoryProvider,
-	k8s_core.ServiceAccountClientFromConfigFactoryProvider,
+	k8s_core_providers.SecretClientFromConfigFactoryProvider,
+	k8s_core_providers.NamespaceClientFromConfigFactoryProvider,
+	smh_discovery_providers.KubernetesClusterClientFromConfigFactoryProvider,
+	k8s_apps_providers.DeploymentClientFromConfigFactoryProvider,
+	k8s_core_providers.ServiceAccountClientFromConfigFactoryProvider,
 	auth.RbacClientFactoryProvider,
 	auth.ClusterAuthorizationFactoryProvider,
 	installation.NewCsrAgentInstallerFactory,
@@ -77,7 +77,7 @@ func ComputeTargetCredentialsHandlersProvider(
 
 func DeployedVersionFinderProvider(
 	masterCfg *rest.Config,
-	deploymentClientFromConfigFactory k8s_apps.DeploymentClientFromConfigFactory,
+	deploymentClientFromConfigFactory k8s_apps_providers.DeploymentClientFromConfigFactory,
 	imageNameParser docker.ImageNameParser,
 ) (version.DeployedVersionFinder, error) {
 	deploymentClient, err := deploymentClientFromConfigFactory(masterCfg)
@@ -89,9 +89,9 @@ func DeployedVersionFinderProvider(
 
 func ClusterRegistrationClientProvider(
 	masterCfg *rest.Config,
-	secretClientFactory k8s_core.SecretClientFromConfigFactory,
-	kubeClusterClient smh_discovery.KubernetesClusterClientFromConfigFactory,
-	namespaceClientFactory k8s_core.NamespaceClientFromConfigFactory,
+	secretClientFactory k8s_core_providers.SecretClientFromConfigFactory,
+	kubeClusterClient smh_discovery_providers.KubernetesClusterClientFromConfigFactory,
+	namespaceClientFactory k8s_core_providers.NamespaceClientFromConfigFactory,
 	kubeConverter kubeconfig.Converter,
 	csrAgentInstallerFactory installation.CsrAgentInstallerFactory,
 ) (cluster_registration.ClusterRegistrationClient, error) {
