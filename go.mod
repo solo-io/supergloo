@@ -44,6 +44,8 @@ replace (
 )
 
 require (
+	github.com/hashicorp/consul v1.6.2
+	github.com/hashicorp/hcl v1.0.0
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
 	github.com/rotisserie/eris v0.4.0

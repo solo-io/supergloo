@@ -1,21 +1,17 @@
 package istio
 
 import (
-	"fmt"
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	"github.com/solo-io/smh/pkg/common/defaults"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/deployment"
-	"github.com/solo-io/smh/pkg/mesh-discovery/utils/labelutils"
+	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/deployment/utils"
 	istiov1alpha1 "istio.io/api/mesh/v1alpha1"
 	"istio.io/istio/pkg/util/gogoprotomarshal"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 )
 
@@ -41,11 +37,6 @@ func NewMeshDetector(configMaps corev1sets.ConfigMapSet) deployment.MeshDetector
 	return &meshDetector{configMaps: configMaps}
 }
 
-// how to name an Istio Mesh
-func IstioMeshName(deployment *appsv1.Deployment) string {
-	return kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v-%v", deployment.Name, deployment.Namespace, deployment.ClusterName))
-}
-
 // returns nil, nil of the deployment does not contain the istiod image
 func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha1.Mesh, error) {
 	version, err := d.getIstiodVersion(deployment)
@@ -63,11 +54,7 @@ func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha1.Mesh
 	}
 
 	mesh := &v1alpha1.Mesh{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: defaults.GetPodNamespace(),
-			Name:      IstioMeshName(deployment),
-			Labels:    labelutils.ClusterLabels(deployment.ClusterName),
-		},
+		ObjectMeta: utils.MeshObjectMeta(deployment),
 		Spec: v1alpha1.MeshSpec{
 			MeshType: &v1alpha1.MeshSpec_Istio_{
 				Istio: &v1alpha1.MeshSpec_Istio{
