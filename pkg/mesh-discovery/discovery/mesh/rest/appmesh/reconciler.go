@@ -6,13 +6,12 @@ import (
 	smh_discovery_providers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/providers"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
-	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
 	aws_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/parser"
 	settings_utils "github.com/solo-io/service-mesh-hub/pkg/common/aws/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/settings"
@@ -34,27 +33,27 @@ var (
 )
 
 type appMeshDiscoveryReconciler struct {
-	arnParser            aws_utils.ArnParser
-	meshClient           smh_discovery.MeshClient
-	appmeshClientFactory appmesh2.AppmeshRawClientFactory
-	settingsClient       settings.SettingsHelperClient
-	awsSelector          settings_utils.AwsSelector
+	arnParser      aws_utils.ArnParser
+	meshClient     smh_discovery.MeshClient
+	settingsClient settings.SettingsHelperClient
+	awsSelector    settings_utils.AwsSelector
+	awsCloudStore  cloud.AwsCloudStore
 }
 
 func NewAppMeshDiscoveryReconciler(
 	masterClient client.Client,
 	meshClientFactory smh_discovery_providers.MeshClientFactory,
 	arnParser aws_utils.ArnParser,
-	appmeshClientFactory appmesh2.AppmeshRawClientFactory,
 	settingsClient settings.SettingsHelperClient,
 	awsSelector settings_utils.AwsSelector,
+	awsCloudStore cloud.AwsCloudStore,
 ) compute_target_aws.AppMeshDiscoveryReconciler {
 	return &appMeshDiscoveryReconciler{
-		arnParser:            arnParser,
-		meshClient:           meshClientFactory(masterClient),
-		appmeshClientFactory: appmeshClientFactory,
-		settingsClient:       settingsClient,
-		awsSelector:          awsSelector,
+		arnParser:      arnParser,
+		meshClient:     meshClientFactory(masterClient),
+		settingsClient: settingsClient,
+		awsSelector:    awsSelector,
+		awsCloudStore:  awsCloudStore,
 	}
 }
 
@@ -64,7 +63,7 @@ func (a *appMeshDiscoveryReconciler) GetName() string {
 
 // Currently Meshes are the only SMH CRD that are discovered through the AWS REST API
 // For EKS, workloads and services are discovered directly from the cluster.
-func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *credentials.Credentials, accountID string) error {
+func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, accountID string) error {
 	logger := contextutils.LoggerFrom(ctx)
 	selectorsByRegion, err := a.fetchSelectorsByRegion(ctx, accountID)
 	if err != nil {
@@ -74,11 +73,12 @@ func (a *appMeshDiscoveryReconciler) Reconcile(ctx context.Context, creds *crede
 	discoveredSMHMeshNames := sets.NewString()
 	var errors *multierror.Error
 	for region, selectors := range selectorsByRegion {
-		appmeshClient, err := a.appmeshClientFactory(creds, region)
+		awsCloud, err := a.awsCloudStore.Get(accountID, region)
 		if err != nil {
 			errors = multierror.Append(errors, err)
 			continue
 		}
+		appmeshClient := awsCloud.Appmesh
 		var nextToken *string
 		input := &appmesh.ListMeshesInput{
 			Limit:     NumItemsPerRequest,

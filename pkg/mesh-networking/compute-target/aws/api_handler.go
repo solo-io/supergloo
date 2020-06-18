@@ -3,6 +3,7 @@ package aws
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
 	compute_target "github.com/solo-io/service-mesh-hub/pkg/common/compute-target"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,25 +11,24 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/aws_creds"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
-	credentials2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/credentials"
 	v1 "k8s.io/api/core/v1"
 )
 
 type networkingAwsCredsHandler struct {
 	stsClientFactory     clients.STSClientFactory
-	credentialsMap       credentials2.AwsCredentialsGetter
 	secretCredsConverter aws_creds.SecretAwsCredsConverter
+	awsCloudStore        cloud.AwsCloudStore
 }
 
 func NewNetworkingAwsCredsHandler(
-	credentialsGetter credentials2.AwsCredentialsGetter,
 	stsClientFactory clients.STSClientFactory,
 	secretCredsConverter aws_creds.SecretAwsCredsConverter,
+	awsCloudStore cloud.AwsCloudStore,
 ) compute_target.ComputeTargetCredentialsHandler {
 	return &networkingAwsCredsHandler{
-		credentialsMap:       credentialsGetter,
 		stsClientFactory:     stsClientFactory,
 		secretCredsConverter: secretCredsConverter,
+		awsCloudStore:        awsCloudStore,
 	}
 }
 
@@ -47,7 +47,7 @@ func (n *networkingAwsCredsHandler) ComputeTargetAdded(ctx context.Context, secr
 	if err != nil {
 		return err
 	}
-	n.credentialsMap.Set(accountID, creds)
+	n.awsCloudStore.Add(accountID, creds)
 	return nil
 }
 
@@ -66,7 +66,7 @@ func (n *networkingAwsCredsHandler) ComputeTargetRemoved(ctx context.Context, se
 	if err != nil {
 		return err
 	}
-	n.credentialsMap.Remove(accountID)
+	n.awsCloudStore.Remove(accountID)
 	return nil
 }
 

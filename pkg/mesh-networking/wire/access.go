@@ -5,7 +5,8 @@ import (
 	v1beta1 "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/providers"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
-	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/matcher"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/translation"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
@@ -29,9 +30,9 @@ var (
 		appmesh.NewAppmeshEnforcer,
 		translation.NewAppmeshTranslator,
 		translation.NewAppmeshAccessControlDao,
-		appmesh2.AppmeshClientGetterProvider,
-		appmesh2.AppmeshRawClientFactoryProvider,
 		matcher.NewAppmeshMatcher,
+		clients.AppmeshClientFactoryProvider,
+		cloud.NewAwsCloudStore,
 		access_control_enforcer.NewEnforcerLoop,
 		GlobalAccessControlPolicyMeshEnforcersProvider,
 		translation.NewAppmeshTranslationReconciler,

@@ -6,11 +6,10 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.0.7
 	github.com/aokoli/goutils v1.1.0
 	github.com/avast/retry-go v2.4.3+incompatible
+	github.com/aws/aws-app-mesh-controller-for-k8s v0.5.0
 	github.com/aws/aws-sdk-go v1.30.15
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
-	github.com/docker/cli v0.0.0-20191017083524-a8ff7f821017 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
-	github.com/docker/docker-credential-helpers v0.6.3 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/go-logr/zapr v0.1.1
 	github.com/go-test/deep v1.0.3 // indirect
@@ -32,7 +31,7 @@ require (
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
 	github.com/lyft/protoc-gen-star v0.4.15 // indirect
 	github.com/mattn/go-runewidth v0.0.7 // indirect
-	github.com/mattn/go-shellwords v1.0.7
+	github.com/mattn/go-shellwords v1.0.9
 	github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
@@ -52,13 +51,12 @@ require (
 	github.com/solo-io/skv2 v0.4.2
 	github.com/solo-io/solo-kit v0.13.3
 	github.com/spf13/afero v1.2.2
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v0.0.6
 	go.uber.org/zap v1.13.0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
 	golang.org/x/tools v0.0.0-20200603170713-0310561d584d
 	google.golang.org/grpc v1.28.1
-	helm.sh/helm/v3 v3.0.0
+	helm.sh/helm/v3 v3.1.2
 	istio.io/api v0.0.0-20200610220835-a1a958746907
 	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
@@ -102,7 +100,7 @@ replace (
 	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.17.2
 	k8s.io/kubectl => k8s.io/kubectl v0.17.2
 	k8s.io/kubelet => k8s.io/kubelet v0.17.2
-	k8s.io/kubernetes => k8s.io/kubernetes v0.17.2
+	k8s.io/kubernetes => k8s.io/kubernetes v0.17.1
 	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.17.2
 	k8s.io/metrics => k8s.io/metrics v0.17.2
 	k8s.io/node-api => k8s.io/node-api v0.17.2

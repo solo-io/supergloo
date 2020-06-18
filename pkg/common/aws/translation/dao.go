@@ -5,35 +5,37 @@ import (
 
 	aws2 "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/appmesh"
+	"github.com/rotisserie/eris"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
+	"github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
 type appmeshTranslationDao struct {
-	meshServiceClient    smh_discovery.MeshServiceClient
-	meshWorkloadClient   smh_discovery.MeshWorkloadClient
-	acpClient            smh_networking.AccessControlPolicyClient
-	resourceSelector     selection.ResourceSelector
-	appmeshClientFactory appmesh2.AppmeshClientGetter
+	meshServiceClient  smh_discovery.MeshServiceClient
+	meshWorkloadClient smh_discovery.MeshWorkloadClient
+	acpClient          smh_networking.AccessControlPolicyClient
+	resourceSelector   selection.ResourceSelector
+	awsCloudStore      cloud.AwsCloudStore
 }
 
 func NewAppmeshAccessControlDao(
 	meshServiceClient smh_discovery.MeshServiceClient,
 	meshWorkloadClient smh_discovery.MeshWorkloadClient,
 	resourceSelector selection.ResourceSelector,
-	appmeshClientFactory appmesh2.AppmeshClientGetter,
+	awsCloudStore cloud.AwsCloudStore,
 	acpClient smh_networking.AccessControlPolicyClient,
 ) AppmeshTranslationDao {
 	return &appmeshTranslationDao{
-		meshServiceClient:    meshServiceClient,
-		meshWorkloadClient:   meshWorkloadClient,
-		resourceSelector:     resourceSelector,
-		appmeshClientFactory: appmeshClientFactory,
-		acpClient:            acpClient,
+		meshServiceClient:  meshServiceClient,
+		meshWorkloadClient: meshWorkloadClient,
+		resourceSelector:   resourceSelector,
+		awsCloudStore:      awsCloudStore,
+		acpClient:          acpClient,
 	}
 }
 
@@ -199,50 +201,6 @@ func (a *appmeshTranslationDao) listMeshWorkloadsForMesh(
 	return meshWorkloads, nil
 }
 
-func (a *appmeshTranslationDao) EnsureVirtualService(
-	mesh *smh_discovery.Mesh,
-	virtualServiceData *appmesh.VirtualServiceData,
-) error {
-	appmeshClient, err := a.appmeshClientFactory(mesh)
-	if err != nil {
-		return err
-	}
-	return appmeshClient.EnsureVirtualService(virtualServiceData)
-}
-
-func (a *appmeshTranslationDao) EnsureVirtualRouter(
-	mesh *smh_discovery.Mesh,
-	virtualRouter *appmesh.VirtualRouterData,
-) error {
-	appmeshClient, err := a.appmeshClientFactory(mesh)
-	if err != nil {
-		return err
-	}
-	return appmeshClient.EnsureVirtualRouter(virtualRouter)
-}
-
-func (a *appmeshTranslationDao) EnsureRoute(
-	mesh *smh_discovery.Mesh,
-	route *appmesh.RouteData,
-) error {
-	appmeshClient, err := a.appmeshClientFactory(mesh)
-	if err != nil {
-		return err
-	}
-	return appmeshClient.EnsureRoute(route)
-}
-
-func (a *appmeshTranslationDao) EnsureVirtualNode(
-	mesh *smh_discovery.Mesh,
-	virtualNode *appmesh.VirtualNodeData,
-) error {
-	appmeshClient, err := a.appmeshClientFactory(mesh)
-	if err != nil {
-		return err
-	}
-	return appmeshClient.EnsureVirtualNode(virtualNode)
-}
-
 func (a *appmeshTranslationDao) ReconcileVirtualRoutersAndRoutesAndVirtualServices(
 	ctx context.Context,
 	mesh *smh_discovery.Mesh,
@@ -250,7 +208,7 @@ func (a *appmeshTranslationDao) ReconcileVirtualRoutersAndRoutesAndVirtualServic
 	routes []*appmesh.RouteData,
 	virtualServices []*appmesh.VirtualServiceData,
 ) error {
-	appmeshClient, err := a.appmeshClientFactory(mesh)
+	appmeshClient, err := a.getAppmeshClient(mesh)
 	if err != nil {
 		return err
 	}
@@ -263,12 +221,28 @@ func (a *appmeshTranslationDao) ReconcileVirtualNodes(
 	mesh *smh_discovery.Mesh,
 	virtualNodes []*appmesh.VirtualNodeData,
 ) error {
-	appmeshClient, err := a.appmeshClientFactory(mesh)
+	appmeshClient, err := a.getAppmeshClient(mesh)
 	if err != nil {
 		return err
 	}
 	meshName := aws2.String(mesh.Spec.GetAwsAppMesh().GetName())
 	return appmeshClient.ReconcileVirtualNodes(ctx, meshName, virtualNodes)
+}
+
+func (a *appmeshTranslationDao) getAppmeshClient(mesh *smh_discovery.Mesh) (clients.AppmeshClient, error) {
+	if mesh.Spec.GetAwsAppMesh().GetAwsAccountId() == "" {
+		return nil, eris.Errorf("AWS account ID missing for mesh %s.%s", mesh.GetName(), mesh.GetNamespace())
+	} else if mesh.Spec.GetAwsAppMesh().GetRegion() == "" {
+		return nil, eris.Errorf("AWS region missing for mesh %s.%s", mesh.GetName(), mesh.GetNamespace())
+	}
+	awsCloud, err := a.awsCloudStore.Get(
+		mesh.Spec.GetAwsAppMesh().GetAwsAccountId(),
+		mesh.Spec.GetAwsAppMesh().GetRegion(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return awsCloud.Appmesh, nil
 }
 
 func isServiceBackedByWorkload(

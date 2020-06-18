@@ -8,29 +8,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/aws/aws-sdk-go/service/appmesh/appmeshiface"
 	"github.com/solo-io/go-utils/contextutils"
-	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/aws/credentials"
 	matcher2 "github.com/solo-io/service-mesh-hub/pkg/common/aws/matcher"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type AppmeshClientGetter func(mesh *smh_discovery.Mesh) (AppmeshClient, error)
+type AppmeshClientFactory func(client appmeshiface.AppMeshAPI) AppmeshClient
 
-func AppmeshClientGetterProvider(
-	matcher matcher2.AppmeshMatcher,
-	awsCredentialsGetter credentials.AwsCredentialsGetter,
-	appmeshRawClientFactory AppmeshRawClientFactory,
-) AppmeshClientGetter {
-	return func(mesh *smh_discovery.Mesh) (AppmeshClient, error) {
-		creds, err := awsCredentialsGetter.Get(mesh.Spec.GetAwsAppMesh().GetAwsAccountId())
-		if err != nil {
-			return nil, err
-		}
-		rawAppmeshClient, err := appmeshRawClientFactory(creds, mesh.Spec.GetAwsAppMesh().GetRegion())
-		if err != nil {
-			return nil, err
-		}
-		return NewAppmeshClient(rawAppmeshClient, matcher), nil
+func AppmeshClientFactoryProvider(matcher matcher2.AppmeshMatcher) AppmeshClientFactory {
+	return func(client appmeshiface.AppMeshAPI) AppmeshClient {
+		return NewAppmeshClient(client, matcher)
 	}
 }
 
@@ -47,6 +33,14 @@ func NewAppmeshClient(
 		client:  client,
 		matcher: matcher,
 	}
+}
+
+func (a *appmeshClient) ListMeshes(input *appmesh.ListMeshesInput) (*appmesh.ListMeshesOutput, error) {
+	return a.client.ListMeshes(input)
+}
+
+func (a *appmeshClient) ListTagsForResource(input *appmesh.ListTagsForResourceInput) (*appmesh.ListTagsForResourceOutput, error) {
+	return a.client.ListTagsForResource(input)
 }
 
 func (a *appmeshClient) EnsureVirtualService(virtualService *appmesh.VirtualServiceData) error {

@@ -13,6 +13,7 @@ import (
 	mock_aws_creds "github.com/solo-io/service-mesh-hub/pkg/common/aws/aws_creds/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/common/aws/clients"
 	mock_appmesh "github.com/solo-io/service-mesh-hub/pkg/common/aws/clients/mocks"
+	mock_cloud "github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud/mocks"
 	aws2 "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target/aws"
 	mock_rest_api "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/compute-target/aws/mocks"
 	k8s_core_types "k8s.io/api/core/v1"
@@ -26,6 +27,7 @@ var _ = Describe("CredsHandler", func() {
 		mockSecretConverter *mock_aws_creds.MockSecretAwsCredsConverter
 		mockReconciler      *mock_rest_api.MockRestAPIDiscoveryReconciler
 		mockSTSClient       *mock_appmesh.MockSTSClient
+		mockAwsCloudStore   *mock_cloud.MockAwsCloudStore
 		awsCredsHandler     aws2.AwsCredsHandler
 		secret              *k8s_core_types.Secret
 		cancelFunc          func()
@@ -38,12 +40,14 @@ var _ = Describe("CredsHandler", func() {
 		mockSecretConverter = mock_aws_creds.NewMockSecretAwsCredsConverter(ctrl)
 		mockReconciler = mock_rest_api.NewMockRestAPIDiscoveryReconciler(ctrl)
 		mockSTSClient = mock_appmesh.NewMockSTSClient(ctrl)
+		mockAwsCloudStore = mock_cloud.NewMockAwsCloudStore(ctrl)
 		awsCredsHandler = aws2.NewAwsAPIHandler(
 			mockSecretConverter,
 			[]aws2.RestAPIDiscoveryReconciler{mockReconciler},
 			func(creds *credentials.Credentials, region string) (clients.STSClient, error) {
 				return mockSTSClient, nil
 			},
+			mockAwsCloudStore,
 		)
 		secret = &k8s_core_types.Secret{
 			ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -74,21 +78,27 @@ var _ = Describe("CredsHandler", func() {
 		creds := &credentials.Credentials{}
 		mockSecretConverter.EXPECT().SecretToCreds(secret).Return(creds, nil)
 		mockSTSClient.EXPECT().GetCallerIdentity().Return(&sts2.GetCallerIdentityOutput{Account: aws.String(accountID)}, nil)
-		mockReconciler.EXPECT().Reconcile(gomock.Any(), creds, accountID).Return(nil)
+		mockAwsCloudStore.EXPECT().Add(accountID, creds)
+		mockReconciler.EXPECT().Reconcile(gomock.Any(), accountID).Return(nil)
 		err := awsCredsHandler.ComputeTargetAdded(cancellableCtx, secret)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should handle new API deregistration", func() {
-		// first register the API for cancelFunc map entry
+		// first register the API to initialize cancelFunc map entry
 		accountID := "accountid"
 		creds := &credentials.Credentials{}
 		mockSecretConverter.EXPECT().SecretToCreds(secret).Return(creds, nil)
 		mockSTSClient.EXPECT().GetCallerIdentity().Return(&sts2.GetCallerIdentityOutput{Account: aws.String(accountID)}, nil)
-		mockReconciler.EXPECT().Reconcile(gomock.Any(), creds, accountID).Return(nil)
+		mockAwsCloudStore.EXPECT().Add(accountID, creds)
+		mockReconciler.EXPECT().Reconcile(gomock.Any(), accountID).Return(nil)
 		err := awsCredsHandler.ComputeTargetAdded(cancellableCtx, secret)
 		Expect(err).ToNot(HaveOccurred())
 
+		// then deregister
+		mockSecretConverter.EXPECT().SecretToCreds(secret).Return(creds, nil)
+		mockSTSClient.EXPECT().GetCallerIdentity().Return(&sts2.GetCallerIdentityOutput{Account: aws.String(accountID)}, nil)
+		mockAwsCloudStore.EXPECT().Remove(accountID)
 		err = awsCredsHandler.ComputeTargetRemoved(cancellableCtx, secret)
 		Expect(err).ToNot(HaveOccurred())
 	})

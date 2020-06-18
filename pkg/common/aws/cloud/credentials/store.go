@@ -13,16 +13,16 @@ var (
 	}
 )
 
-type awsCredentialsGetter struct {
+type awsCredentialsStore struct {
 	//meshToCreds map[string]*credentials.Credentials
 	meshToCreds sync.Map
 }
 
-func NewCredentialsGetter() AwsCredentialsGetter {
-	return &awsCredentialsGetter{}
+func NewCredentialsStore() AwsCredentialsStore {
+	return &awsCredentialsStore{}
 }
 
-func (c *awsCredentialsGetter) Get(accountID string) (*credentials.Credentials, error) {
+func (c *awsCredentialsStore) Get(accountID string) (*credentials.Credentials, error) {
 	val, ok := c.meshToCreds.Load(accountID)
 	if !ok {
 		return nil, CredsNotFound(accountID)
@@ -34,10 +34,10 @@ func (c *awsCredentialsGetter) Get(accountID string) (*credentials.Credentials, 
 	return creds, nil
 }
 
-func (c *awsCredentialsGetter) Set(accountID string, creds *credentials.Credentials) {
+func (c *awsCredentialsStore) Set(accountID string, creds *credentials.Credentials) {
 	c.meshToCreds.Store(accountID, creds)
 }
 
-func (c *awsCredentialsGetter) Remove(accountId string) {
+func (c *awsCredentialsStore) Remove(accountId string) {
 	c.meshToCreds.Delete(accountId)
 }
