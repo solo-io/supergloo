@@ -1,7 +1,9 @@
 package istio_translator_test
 
 import (
+	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	proto_types "github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
@@ -13,6 +15,7 @@ import (
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
+	"github.com/solo-io/service-mesh-hub/test/matchers"
 	istio_networking_types "istio.io/api/networking/v1alpha3"
 	istio_client_networking_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -1422,43 +1425,67 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 	Context("test data", func() {
 
 		It("should create subsets", func() {
-			serviceBeingTranslated := getMeshService("testdata/mesh-subsets.yaml")
-			result, errs := translator.Translate(
-				serviceBeingTranslated,
-				[]*smh_discovery.MeshService{serviceBeingTranslated},
-				istioMesh,
-				nil,
-			)
-			Expect(errs).To(HaveLen(0))
-			Expect(result.DestinationRules).To(Equal([]*istio_client_networking_types.DestinationRule{{
-				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
-				Spec: istio_networking_types.DestinationRule{
-					Host: serviceBeingTranslated.Spec.KubeService.Ref.Name,
-					Subsets: []*istio_networking_types.Subset{
-						{
-							Name:   "version-v2",
-							Labels: map[string]string{"version": "v2"},
-						},
-					},
-					TrafficPolicy: &istio_networking_types.TrafficPolicy{
-						Tls: &istio_networking_types.ClientTLSSettings{
-							Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
-						},
-					},
-				},
-			}}))
-			Expect(result.VirtualServices).To(HaveLen(0))
+			for _, data := range getData() {
+				By("testing " + data)
+				serviceBeingTranslated, drs, vs := getMeshService(data)
+				result, errs := translator.Translate(
+					serviceBeingTranslated[0],
+					serviceBeingTranslated,
+					istioMesh,
+					nil,
+				)
+				Expect(errs).To(HaveLen(0))
+				Expect(result.DestinationRules).To(matchers.BeEquivalentToDiff(drs))
+				Expect(result.VirtualServices).To(Equal(vs))
+
+			}
 		})
 	})
 })
 
-func getMeshService(f string) *smh_discovery.MeshService {
-	var svc smh_discovery.MeshService
-	reader, err := os.Open(f)
+func getData() []string {
+	var ret []string
+	entries, err := ioutil.ReadDir("testdata")
+	Expect(err).NotTo(HaveOccurred())
+	for _, f := range entries {
+		ret = append(ret, filepath.Base(f.Name()))
+	}
+	return ret
+}
+
+func getMeshService(f string) ([]*smh_discovery.MeshService, []*istio_client_networking_types.DestinationRule, []*istio_client_networking_types.VirtualService) {
+	var svc []*smh_discovery.MeshService
+	reader, err := os.Open("testdata/" + f + "/input.yaml")
 	Expect(err).NotTo(HaveOccurred())
 	defer reader.Close()
 	decoder := yaml.NewYAMLOrJSONDecoder(reader, 1024)
 	err = decoder.Decode(&svc)
 	Expect(err).NotTo(HaveOccurred())
-	return &svc
+
+	var drs []*istio_client_networking_types.DestinationRule
+	readerdr, err := os.Open("testdata/" + f + "/output-dr.yaml")
+	if err == nil {
+		defer readerdr.Close()
+		decoder := yaml.NewYAMLOrJSONDecoder(readerdr, 1024)
+		err = decoder.Decode(&drs)
+		Expect(err).NotTo(HaveOccurred())
+	}
+	var vss []*istio_client_networking_types.VirtualService
+	readervs, err := os.Open("testdata/" + f + "/output-vs.yaml")
+	if err == nil {
+		defer readervs.Close()
+		decoder := yaml.NewYAMLOrJSONDecoder(readervs, 1024)
+		err = decoder.Decode(&vss)
+		Expect(err).NotTo(HaveOccurred())
+	}
+
+	// clean up type meta, as it doesn't show up in translation since its embedded in the type
+	for _, dr := range drs {
+		dr.TypeMeta = k8s_meta_types.TypeMeta{}
+	}
+	for _, vs := range vss {
+		vs.TypeMeta = k8s_meta_types.TypeMeta{}
+	}
+
+	return svc, drs, vss
 }
