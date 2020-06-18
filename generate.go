@@ -4,7 +4,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/codegen/groups"
 	"log"
 
-	externalcodegen "github.com/solo-io/external-apis/codegen"
 	"github.com/solo-io/service-mesh-hub/codegen/templates"
 	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	"github.com/solo-io/skv2/codegen"
@@ -15,8 +14,7 @@ import (
 
 var (
 	appName                         = "service-mesh-hub"
-	v1alpha1Version                 = "v1alpha1"
-	discoveryOutputSnapshotCodePath = "pkg/mesh-discovery/snapshots/output"
+	discoveryOutputSnapshotCodePath = "pkg/mesh-discovery/snapshots/output/output_snapshot.go"
 	smhCrdManifestRoot              = "install/helm/charts/custom-resource-definitions"
 	csrCrdManifestRoot              = "install/helm/charts/csr-agent/"
 
@@ -76,7 +74,7 @@ func makeCsrCommand() codegen.Command {
 }
 
 func makeDiscoverySnapshotTemplate(groups []model.Group) model.CustomTemplates {
-	groups = templates.SelectResources(externalcodegen.K8sGroups(), outputDiscoverySnapshot)
+	groups = templates.SelectResources(groups, outputDiscoverySnapshot)
 
 	return model.CustomTemplates{
 		Templates: map[string]string{

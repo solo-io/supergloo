@@ -1,5 +1,5 @@
 // Definitions for Output Snapshots
-package snapshot
+package output
 
 {{ $groups := snapshot_groups }}
 
@@ -7,8 +7,7 @@ import (
     "github.com/rotisserie/eris"
 
 {{- range $group := $groups }}
-{{ group_import_name $group }}sets
-    {{ $set_import_prefix := printf "%vsets" (group_import_name $group) }}
+{{ $set_import_prefix := (printf "%v_sets" (group_import_name $group)) }}
     {{ $set_import_prefix }} "{{ group_import_path $group }}/sets"
 {{- end }}
 
@@ -41,16 +40,6 @@ type snapshot struct {
 {{- end }}
 
 }
-
-{{/* clean up !*/}}
-{{- range $group := $groups }}
-{{ $set_import_prefix := printf "%vsets" (group_import_name $group) }}
-{{- range $resource := $group.Resources }}
-{{- $kindPlural := pluralize $resource.Kind }}
-{{- $kindLowerCamel := lower_camel $resource.Kind }}
-{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
-{{- end }}
-{{- end }}
 
 func NewSnapshot(
 {{/* generate constructor params here */}}
@@ -91,7 +80,7 @@ func (s snapshot) {{ $kindPlural }}() [][]Labeled{{ $resource.Kind }}Set {
 
 {{/* generate getters here */}}
 {{- range $group := $groups }}
-{{ $set_import_prefix := printf "%vsets" (group_import_name $group) }}
+{{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
