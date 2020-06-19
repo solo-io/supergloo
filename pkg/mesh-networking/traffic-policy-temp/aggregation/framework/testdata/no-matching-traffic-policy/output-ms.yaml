@@ -1,0 +1,70 @@
+- apiVersion: discovery.smh.solo.io/v1alpha1
+  kind: MeshService
+  metadata:
+    creationTimestamp: "2020-06-18T19:11:30Z"
+    generation: 6
+    labels:
+      compute-target: management-plane-cluster
+      discovered-by: mesh-workload-discovery
+      kube-service-name: ratings
+      kube-service-namespace: default
+      mesh-type: istio1_5
+    name: ratings-default-management-plane-cluster
+    namespace: service-mesh-hub
+    resourceVersion: "3683"
+    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/ratings-default-management-plane-cluster
+    uid: c023fc98-5637-4ba9-bcb8-953fc059e4a4
+  spec:
+    federation:
+      federatedToWorkloads:
+      - name: istio-istio-ingressgateway-istio-system-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v3-default-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-ratings-v1-default-target-cluster
+        namespace: service-mesh-hub
+      multiclusterDnsName: ratings.default.management-plane-cluster
+    kubeService:
+      labels:
+        app: ratings
+        service: ratings
+      ports:
+      - name: http
+        port: 9080
+        protocol: TCP
+      ref:
+        cluster: management-plane-cluster
+        name: ratings
+        namespace: default
+      workloadSelectorLabels:
+        app: ratings
+    mesh:
+      name: istio-istio-system-management-plane-cluster
+      namespace: service-mesh-hub
+    subsets: {}
+  status:
+    federationStatus:
+      state: ACCEPTED
+    validatedTrafficPolicies:
+    - ref:
+        name: simple
+        namespace: service-mesh-hub
+      trafficPolicySpec:
+        sourceSelector:
+          labels:
+            app: productpage
+        destinationSelector:
+          serviceRefs:
+            services:
+            - name: ratings
+              namespace: default
+              cluster: management-plane-cluster
+        trafficShift:
+          destinations:
+          - destination:
+              cluster: management-plane-cluster
+              name: reviews
+              namespace: default
+            subset:
+              version: v2
+            weight: 100

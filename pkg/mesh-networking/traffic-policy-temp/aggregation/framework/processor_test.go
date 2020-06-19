@@ -19,7 +19,12 @@ import (
 	mock_traffic_policy_aggregation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/aggregation/mocks"
 	mesh_translation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/translators"
 	mock_mesh_translation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/translators/mocks"
+	"github.com/solo-io/service-mesh-hub/test/matchers"
+	test_utils "github.com/solo-io/service-mesh-hub/test/utils"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	mesh_translation_aggregate "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/translators/aggregate"
+	istio_mesh_translation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/translators/istio"
 )
 
 var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
@@ -329,6 +334,65 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			Expect(objects.TrafficPolicies).To(HaveLen(1))
 			// make sure same pointer is returned.
 			Expect(objects.TrafficPolicies[0]).To(BeIdenticalTo(trafficPolicies[3]))
+		})
+	})
+
+	Context("test data", func() {
+
+		BeforeEach(func() {
+			meshServiceClient = mock_smh_discovery_clients.NewMockMeshServiceClient(ctrl)
+			meshClient = mock_smh_discovery_clients.NewMockMeshClient(ctrl)
+			selector := selection.NewBaseResourceSelector()
+			meshMap := mesh_translation_aggregate.NewMeshTranslatorFactory(istio_mesh_translation.NewIstioTrafficPolicyTranslator(selector))
+			// don't use mocks for internal parts, as we get more real results
+			processor = aggregation_framework.NewAggregationProcessor(
+				meshServiceClient,
+				meshClient,
+				traffic_policy_aggregation.NewPolicyCollector(traffic_policy_aggregation.NewAggregator(selector)),
+				meshMap.MeshTypeToTranslationValidator,
+				traffic_policy_aggregation.NewInMemoryStatusMutator(),
+			)
+
+		})
+
+		FIt("should process test data correctly", func() {
+
+			mesh := &smh_discovery.Mesh{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Name:      "istio-istio-system-management-plane-cluster",
+					Namespace: "service-mesh-hub",
+				},
+				Spec: smh_discovery_types.MeshSpec{
+					Cluster: &smh_core_types.ResourceRef{
+						Name:      "management-plane-cluster",
+						Namespace: "service-mesh-hub",
+					},
+					MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
+				},
+			}
+			var items smh_discovery.MeshServiceList
+			meshServiceClient.EXPECT().
+				ListMeshService(ctx).
+				Return(&items, nil).AnyTimes()
+
+			meshClient.EXPECT().
+				GetMesh(ctx, gomock.Any()).
+				Return(mesh, nil).AnyTimes()
+			for _, data := range test_utils.GetData() {
+				By("testing " + data)
+				meshServices := test_utils.GetInputMeshServices(data)
+				trafficPolicies := test_utils.GetInputTrafficPolicies(data)
+				meshServicesOut := test_utils.GetOutputMeshServices(data)
+				trafficPoliciesOut := test_utils.GetOutputTrafficPolicies(data)
+				items.Items = nil
+				for _, msi := range meshServices {
+					items.Items = append(items.Items, *msi)
+				}
+				out, err := processor.Process(ctx, trafficPolicies)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(out.TrafficPolicies).To(matchers.BeEquivalentToDiff(trafficPoliciesOut))
+				Expect(out.MeshServices).To(matchers.BeEquivalentToDiff(meshServicesOut))
+			}
 		})
 	})
 })

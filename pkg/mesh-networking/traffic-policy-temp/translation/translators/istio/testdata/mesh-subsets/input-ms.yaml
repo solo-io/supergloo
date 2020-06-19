@@ -1,0 +1,127 @@
+- apiVersion: discovery.smh.solo.io/v1alpha1
+  kind: MeshService
+  metadata:
+    labels:
+      compute-target: management-plane-cluster
+      discovered-by: mesh-workload-discovery
+      kube-service-name: reviews
+      kube-service-namespace: default
+      mesh-type: istio1_5
+    name: reviews-default-management-plane-cluster
+    namespace: service-mesh-hub
+  spec:
+    federation:
+      federatedToWorkloads:
+      - name: istio-istio-ingressgateway-istio-system-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v3-default-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-ratings-v1-default-target-cluster
+        namespace: service-mesh-hub
+      multiclusterDnsName: reviews.default.management-plane-cluster
+    kubeService:
+      labels:
+        app: reviews
+        service: reviews
+      ports:
+      - name: http
+        port: 9080
+        protocol: TCP
+      ref:
+        cluster: management-plane-cluster
+        name: reviews
+        namespace: default
+      workloadSelectorLabels:
+        app: reviews
+    mesh:
+      name: istio-istio-system-management-plane-cluster
+      namespace: service-mesh-hub
+    subsets:
+      version:
+        values:
+        - v1
+        - v2
+  status:
+    federationStatus:
+      state: ACCEPTED
+    validatedTrafficPolicies:
+    - ref:
+        name: simple
+        namespace: service-mesh-hub
+      trafficPolicySpec:
+        sourceSelector:
+          labels:
+            app: productpage
+        trafficShift:
+          destinations:
+          - destination:
+              cluster: management-plane-cluster
+              name: reviews
+              namespace: default
+            subset:
+              version: v2
+            weight: 100
+- apiVersion: discovery.smh.solo.io/v1alpha1
+  kind: MeshService
+  metadata:
+    creationTimestamp: "2020-06-18T16:06:30Z"
+    generation: 6
+    labels:
+      compute-target: management-plane-cluster
+      discovered-by: mesh-workload-discovery
+      kube-service-name: details
+      kube-service-namespace: default
+      mesh-type: istio1_5
+    name: details-default-management-plane-cluster
+    namespace: service-mesh-hub
+    resourceVersion: "2887"
+    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/details-default-management-plane-cluster
+    uid: 1b1c60fb-1fc0-439c-991c-f593438ec05e
+  spec:
+    federation:
+      federatedToWorkloads:
+      - name: istio-istio-ingressgateway-istio-system-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v3-default-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-ratings-v1-default-target-cluster
+        namespace: service-mesh-hub
+      multiclusterDnsName: details.default.management-plane-cluster
+    kubeService:
+      labels:
+        app: details
+        service: details
+      ports:
+      - name: http
+        port: 9080
+        protocol: TCP
+      ref:
+        cluster: management-plane-cluster
+        name: details
+        namespace: default
+      workloadSelectorLabels:
+        app: details
+    mesh:
+      name: istio-istio-system-management-plane-cluster
+      namespace: service-mesh-hub
+    subsets: {}
+  status:
+    federationStatus:
+      state: ACCEPTED
+    validatedTrafficPolicies:
+    - ref:
+        name: simple
+        namespace: service-mesh-hub
+      trafficPolicySpec:
+        sourceSelector:
+          labels:
+            app: productpage
+        trafficShift:
+          destinations:
+          - destination:
+              cluster: management-plane-cluster
+              name: reviews
+              namespace: default
+            subset:
+              version: v2
+            weight: 100

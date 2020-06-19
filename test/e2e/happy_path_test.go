@@ -65,6 +65,12 @@ spec:
   sourceSelector:
     labels:
       app: productpage
+  destinationSelector:
+    matcher:
+      serviceRefs:
+        services:
+          name: ratings-default-management-plane-cluster
+          namespace: default
   trafficShift:
     destinations:
     - destination:

@@ -1,0 +1,37 @@
+- apiVersion: networking.smh.solo.io/v1alpha1
+  kind: TrafficPolicy
+  metadata:
+    creationTimestamp: "2020-06-18T16:10:14Z"
+    generation: 1
+    labels:
+      test: "true"
+    name: simple
+    namespace: service-mesh-hub
+    resourceVersion: "46935"
+    selfLink: /apis/networking.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/trafficpolicies/simple
+    uid: 6d3f234a-0a5f-4767-baf0-5d38f860ac1b
+  spec:
+    sourceSelector:
+      labels:
+        app: productpage
+    destinationSelector:
+      serviceRefs:
+        services:
+        - name: ratings
+          namespace: default
+          cluster: management-plane-cluster
+    trafficShift:
+      destinations:
+      - destination:
+          cluster: management-plane-cluster
+          name: reviews
+          namespace: default
+        subset:
+          version: v2
+        weight: 100
+  status:
+    observedGeneration: "1"
+    translationStatus:
+      state: ACCEPTED
+    validationStatus:
+      state: ACCEPTED
