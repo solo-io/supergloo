@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	istio_networking_clients "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
@@ -106,49 +107,41 @@ func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobal
 		return err
 	}
 
-	nameNamespaceToExistingState := map[string]*istio_networking.DestinationRule{}
 	nameNamespaceToDesiredState := map[string]*istio_networking.DestinationRule{}
-
-	for _, existingObjIter := range existingObjList.Items {
-		existingObj := existingObjIter
-		nameNamespaceToExistingState[selection.ToUniqueSingleClusterString(existingObj.ObjectMeta)] = &existingObj
-	}
 
 	for _, desiredObjIter := range desiredGlobalState {
 		desiredObj := desiredObjIter
 		nameNamespaceToDesiredState[selection.ToUniqueSingleClusterString(desiredObj.ObjectMeta)] = desiredObj
 	}
+	var multierr error
 
 	// update and delete existing objects
 	for _, existingObj := range existingObjList.Items {
-		desiredState, shouldBeAlive := nameNamespaceToDesiredState[selection.ToUniqueSingleClusterString(existingObj.ObjectMeta)]
-
+		key := selection.ToUniqueSingleClusterString(existingObj.ObjectMeta)
+		desiredState, shouldBeAlive := nameNamespaceToDesiredState[key]
+		delete(nameNamespaceToDesiredState, key)
 		if !shouldBeAlive {
 			err = v.client.DeleteDestinationRule(ctx, selection.ObjectMetaToObjectKey(existingObj.ObjectMeta))
 			if err != nil {
-				return err
+				multierr = multierror.Append(multierr, err)
 			}
 		} else if !proto.Equal(&existingObj.Spec, &desiredState.Spec) {
 			// make sure we use the same resource version for updates
 			desiredState.ObjectMeta.ResourceVersion = existingObj.ObjectMeta.ResourceVersion
 			err = v.client.UpdateDestinationRule(ctx, desiredState)
 			if err != nil {
-				return err
+				multierr = multierror.Append(multierr, err)
 			}
 		}
 	}
 
-	// create new objects
-	for _, desiredObj := range desiredGlobalState {
-		_, isAlreadyExisting := nameNamespaceToExistingState[selection.ToUniqueSingleClusterString(desiredObj.ObjectMeta)]
-
-		if !isAlreadyExisting {
-			err := v.client.CreateDestinationRule(ctx, desiredObj)
-			if err != nil {
-				return err
-			}
+	// create new objects of what's left in the map
+	for _, desiredObj := range nameNamespaceToDesiredState {
+		err := v.client.CreateDestinationRule(ctx, desiredObj)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
 		}
 	}
 
-	return nil
+	return multierr
 }

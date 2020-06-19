@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	istio_networking_clients "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
@@ -105,49 +106,41 @@ func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalS
 		return err
 	}
 
-	nameNamespaceToExistingState := map[string]*istio_networking.VirtualService{}
 	nameNamespaceToDesiredState := map[string]*istio_networking.VirtualService{}
-
-	for _, existingVsIter := range virtualServiceList.Items {
-		existingVs := existingVsIter
-		nameNamespaceToExistingState[selection.ToUniqueSingleClusterString(existingVs.ObjectMeta)] = &existingVs
-	}
 
 	for _, desiredVsIter := range desiredGlobalState {
 		desiredVs := desiredVsIter
 		nameNamespaceToDesiredState[selection.ToUniqueSingleClusterString(desiredVs.ObjectMeta)] = desiredVs
 	}
 
+	var multierr error
 	// update and delete existing VS's
 	for _, existingVirtualService := range virtualServiceList.Items {
-		desiredState, shouldBeAlive := nameNamespaceToDesiredState[selection.ToUniqueSingleClusterString(existingVirtualService.ObjectMeta)]
+		key := selection.ToUniqueSingleClusterString(existingVirtualService.ObjectMeta)
+		desiredState, shouldBeAlive := nameNamespaceToDesiredState[key]
+		delete(nameNamespaceToDesiredState, key)
 
 		if !shouldBeAlive {
 			err = v.virtualServiceClient.DeleteVirtualService(ctx, selection.ObjectMetaToObjectKey(existingVirtualService.ObjectMeta))
 			if err != nil {
-				return err
 			}
 		} else if !proto.Equal(&existingVirtualService.Spec, &desiredState.Spec) {
 			// make sure we use the same resource version for updates
 			desiredState.ObjectMeta.ResourceVersion = existingVirtualService.ObjectMeta.ResourceVersion
 			err = v.virtualServiceClient.UpdateVirtualService(ctx, desiredState)
 			if err != nil {
-				return err
+				multierr = multierror.Append(multierr, err)
 			}
 		}
 	}
 
-	// create new VS's
-	for _, desiredVirtualService := range desiredGlobalState {
-		_, isAlreadyExisting := nameNamespaceToExistingState[selection.ToUniqueSingleClusterString(desiredVirtualService.ObjectMeta)]
-
-		if !isAlreadyExisting {
-			err := v.virtualServiceClient.CreateVirtualService(ctx, desiredVirtualService)
-			if err != nil {
-				return err
-			}
+	// create new VS's of what's left in the map
+	for _, desiredVirtualService := range nameNamespaceToDesiredState {
+		err := v.virtualServiceClient.CreateVirtualService(ctx, desiredVirtualService)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
 		}
 	}
 
-	return nil
+	return multierr
 }
