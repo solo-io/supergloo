@@ -149,8 +149,8 @@ metadata:
   namespace: default
 type: Opaque
 data:
-  key.pem: <private key file>
-  root-cert.pem: <root CA certificate file>
+  key.pem: {private key file}
+  root-cert.pem: {root CA certificate file}
 ```
 
 Given a root certificate file `root-cert.pem` and its associated private key file `key.pem`,
