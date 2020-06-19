@@ -355,7 +355,7 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 
 		})
 
-		FIt("should process test data correctly", func() {
+		It("should process test data correctly", func() {
 
 			mesh := &smh_discovery.Mesh{
 				ObjectMeta: k8s_meta_types.ObjectMeta{
