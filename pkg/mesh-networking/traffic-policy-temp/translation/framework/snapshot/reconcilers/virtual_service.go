@@ -128,6 +128,8 @@ func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalS
 				return err
 			}
 		} else if !proto.Equal(&existingVirtualService.Spec, &desiredState.Spec) {
+			// make sure we use the same resource version for updates
+			desiredState.ObjectMeta = existingVirtualService.ObjectMeta
 			err = v.virtualServiceClient.UpdateVirtualService(ctx, desiredState)
 			if err != nil {
 				return err

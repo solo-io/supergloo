@@ -97,8 +97,10 @@ func (t *translationProcessor) Process(ctx context.Context, allMeshServices []*s
 
 		// we run translation even if the service has translation errors - as we might want to
 		// partially translate what we can.
+		meshKey := ClusterKeyFromMesh(mesh)
+		snapshot := clusterNameToSnapshot[meshKey]
 		err = snapshotAccumulator.AccumulateFromTranslation(
-			clusterNameToSnapshot[ClusterKeyFromMesh(mesh)],
+			snapshot,
 			meshService,
 			allMeshServices,
 			mesh,

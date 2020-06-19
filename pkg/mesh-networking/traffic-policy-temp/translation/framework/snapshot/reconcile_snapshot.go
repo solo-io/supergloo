@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/framework/snapshot/reconcilers"
 	"k8s.io/apimachinery/pkg/types"
@@ -30,10 +31,13 @@ func NewSnapshotReconciler(
 }
 
 func (r *snapshotReconciler) ReconcileAllSnapshots(ctx context.Context, clusterNameToSnapshot ClusterNameToSnapshot) error {
+	logger := contextutils.LoggerFrom(ctx)
+
 	var multierr error
 	for cluster, snapshot := range clusterNameToSnapshot {
 		err := r.reconcileCluster(ctx, cluster, snapshot)
 		if err != nil {
+			logger.Warnw("error reconciling snapshot", "error", err)
 			multierr = multierror.Append(multierr, err)
 			continue
 		}

@@ -129,6 +129,8 @@ func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobal
 				return err
 			}
 		} else if !proto.Equal(&existingObj.Spec, &desiredState.Spec) {
+			// make sure we use the same resource version for updates
+			desiredState.ObjectMeta = existingObj.ObjectMeta
 			err = v.client.UpdateDestinationRule(ctx, desiredState)
 			if err != nil {
 				return err
