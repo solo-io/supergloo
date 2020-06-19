@@ -31,6 +31,7 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.MultiDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination.SubsetEntry](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.SubsetEntry)
+  - [TrafficPolicySpec.OutlierDetection](#networking.smh.solo.io.TrafficPolicySpec.OutlierDetection)
   - [TrafficPolicySpec.QueryParameterMatcher](#networking.smh.solo.io.TrafficPolicySpec.QueryParameterMatcher)
   - [TrafficPolicySpec.RetryPolicy](#networking.smh.solo.io.TrafficPolicySpec.RetryPolicy)
   - [TrafficPolicySpec.StringMatch](#networking.smh.solo.io.TrafficPolicySpec.StringMatch)
@@ -62,6 +63,7 @@ A routing rule applies some L7 routing features to an existing mesh. Routing rul
 | corsPolicy | [TrafficPolicySpec.CorsPolicy](#networking.smh.solo.io.TrafficPolicySpec.CorsPolicy) |  | Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS for further details about cross origin resource sharing. |
 | mirror | [TrafficPolicySpec.Mirror](#networking.smh.solo.io.TrafficPolicySpec.Mirror) |  | Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal. |
 | headerManipulation | [TrafficPolicySpec.HeaderManipulation](#networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation) |  | Manipulate request and response headers. |
+| outlierDetection | [TrafficPolicySpec.OutlierDetection](#networking.smh.solo.io.TrafficPolicySpec.OutlierDetection) |  | Configure outlier detection on the targeted services. Setting this field requires an empty source_selector because it must apply to all traffic. |
 
 
 
@@ -299,6 +301,23 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 | ----- | ---- | ----- | ----------- |
 | key | [string](#string) |  |  |
 | value | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.TrafficPolicySpec.OutlierDetection"></a>
+
+### TrafficPolicySpec.OutlierDetection
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| consecutiveErrors | [int32](#int32) |  | Number of errors before a host is ejected from the connection pool. Defaults to 5. |
+| interval | [google.protobuf.Duration](#google.protobuf.Duration) |  | Time interval between ejection sweep analysis. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 10s. |
+| baseEjectionTime | [google.protobuf.Duration](#google.protobuf.Duration) |  | Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s. |
 
 
 

@@ -1,0 +1,17 @@
+syntax = "proto3";
+package networking.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types";
+
+import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+
+/*
+    A service composed of the referenced workloads with failover capabilities.
+    The failover order is determined by the order of the declared workloads,
+    i.e. an unhealthy workloads[0] will cause failover to workloads[1], etc.
+*/
+message FailoverService {
+    // TODO add user supplied hostname
+
+    // A list of workloads ordered by decreasing priority for failover.
+    repeated core.smh.solo.io.ResourceRef workloads = 1;
+}
