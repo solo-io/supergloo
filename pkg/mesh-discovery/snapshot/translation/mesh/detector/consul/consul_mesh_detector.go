@@ -2,7 +2,7 @@ package consul
 
 import (
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/utils"
+	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/utils"
 	"regexp"
 	"strings"
 
@@ -81,7 +81,7 @@ func (c *meshDetector) buildConsulMeshObject(
 	}
 
 	return &v1alpha1.Mesh{
-		ObjectMeta: utils.MeshObjectMeta(deployment),
+		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
 		Spec: v1alpha1.MeshSpec{
 			MeshType: &v1alpha1.MeshSpec_ConsulConnect{
 				ConsulConnect: &v1alpha1.MeshSpec_ConsulConnectMesh{

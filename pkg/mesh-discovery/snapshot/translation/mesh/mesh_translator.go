@@ -2,17 +2,16 @@ package mesh
 
 import (
 	"context"
-	"github.com/hashicorp/go-multierror"
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
+	"github.com/solo-io/go-utils/contextutils"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector"
 )
 
-// the mesh translator translates Mesh CRs from
-// a list of deployments.
-// the deployments must have their ClusterName set
+// the mesh translator converts deployments with control plane images into Mesh CRs
 type Translator interface {
-	TranslateMeshes(deployments appsv1sets.DeploymentSet) (v1alpha1sets.MeshSet, error)
+	TranslateMeshes(deployments appsv1sets.DeploymentSet) v1alpha1sets.MeshSet
 }
 
 type translator struct {
@@ -23,21 +22,21 @@ type translator struct {
 func NewTranslator(
 	ctx context.Context,
 ) Translator {
+	ctx = contextutils.WithLogger(ctx, "mesh-translator")
 	return &translator{ctx: ctx}
 }
 
-func (t *translator) TranslateMeshes(deployments appsv1sets.DeploymentSet) (v1alpha1sets.MeshSet, error) {
+func (t *translator) TranslateMeshes(deployments appsv1sets.DeploymentSet) v1alpha1sets.MeshSet {
 	meshSet := v1alpha1sets.NewMeshSet()
-	var errs error
 	for _, deployment := range deployments.List() {
 		mesh, err := t.meshDetector.DetectMesh(deployment)
 		if err != nil {
-			errs = multierror.Append(errs, err)
+			contextutils.LoggerFrom(t.ctx).Warnw("failed to discover mesh for deployment ", "deployment", sets.Key(deployment))
 		}
 		if mesh == nil {
 			continue
 		}
 		meshSet.Insert(mesh)
 	}
-	return meshSet, nil
+	return meshSet
 }

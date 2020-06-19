@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/utils"
+	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	"strings"
 )
@@ -48,7 +48,7 @@ func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha1.Mesh
 	clusterDomain := linkerdConfig.GetGlobal().GetClusterDomain()
 
 	mesh := &v1alpha1.Mesh{
-		ObjectMeta: utils.MeshObjectMeta(deployment),
+		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
 		Spec: v1alpha1.MeshSpec{
 			MeshType: &v1alpha1.MeshSpec_Linkerd{
 				Linkerd: &v1alpha1.MeshSpec_LinkerdMesh{

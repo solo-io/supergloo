@@ -12,6 +12,7 @@ type Snapshot interface {
 	Services() corev1sets.ServiceSet
 	ConfigMaps() corev1sets.ConfigMapSet
 	Deployments() appsv1sets.DeploymentSet
+	ReplicaSets() appsv1sets.ReplicaSetSet
 }
 
 type snapshot struct {
@@ -19,6 +20,7 @@ type snapshot struct {
 	services    corev1sets.ServiceSet
 	configMaps  corev1sets.ConfigMapSet
 	deployments appsv1sets.DeploymentSet
+	replicaSets appsv1sets.ReplicaSetSet
 }
 
 func NewSnapshot(
@@ -26,12 +28,14 @@ func NewSnapshot(
 	services corev1sets.ServiceSet,
 	configMaps corev1sets.ConfigMapSet,
 	deployments appsv1sets.DeploymentSet,
+	replicaSets appsv1sets.ReplicaSetSet,
 ) Snapshot {
 	return &snapshot{
 		pods:        pods,
 		services:    services,
 		configMaps:  configMaps,
 		deployments: deployments,
+		replicaSets: replicaSets,
 	}
 }
 
@@ -49,4 +53,8 @@ func (s snapshot) ConfigMaps() corev1sets.ConfigMapSet {
 
 func (s snapshot) Deployments() appsv1sets.DeploymentSet {
 	return s.deployments
+}
+
+func (s snapshot) ReplicaSets() appsv1sets.ReplicaSetSet {
+	return s.replicaSets
 }

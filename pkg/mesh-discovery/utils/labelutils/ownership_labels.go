@@ -3,15 +3,27 @@ package labelutils
 import (
 	"fmt"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/smh/pkg/common/defaults"
 )
 
 // Create a label that identifies the cluster used to discover a resource.
 func ClusterLabels(cluster string) map[string]string {
-	k, v := ClusterLabel(cluster)
-	return map[string]string{k: v}
+	clusterK, clusterV := ClusterLabel(cluster)
+	ownerK, ownerV := OwnershipLabel()
+	return map[string]string{
+		clusterK: clusterV,
+		ownerK:   ownerV,
+	}
 }
 
 func ClusterLabel(cluster string) (string, string) {
 	return fmt.Sprintf("cluster.%s", v1alpha1.SchemeGroupVersion.Group),
 		fmt.Sprintf("%s", cluster)
+}
+
+// identifies the instance of service-mesh-hub discovery that produced the resource.
+// uses pod namespace to identify the instance
+func OwnershipLabel() (string, string) {
+	return fmt.Sprintf("owner.%s", v1alpha1.SchemeGroupVersion.Group),
+		defaults.GetPodNamespace()
 }
