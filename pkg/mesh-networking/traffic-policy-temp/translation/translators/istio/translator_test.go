@@ -1428,11 +1428,11 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					serviceBeingTranslated[0],
 					serviceBeingTranslated,
 					istioMesh,
-					nil,
+					serviceBeingTranslated[0].Status.ValidatedTrafficPolicies,
 				)
 				Expect(errs).To(HaveLen(0))
 				Expect(result.DestinationRules).To(matchers.BeEquivalentToDiff(drs))
-				Expect(result.VirtualServices).To(Equal(vs))
+				Expect(result.VirtualServices).To(matchers.BeEquivalentToDiff(vs))
 
 			}
 		})

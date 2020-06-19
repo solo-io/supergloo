@@ -52,7 +52,7 @@ var _ = Describe("HappyPath", func() {
 		return out
 	}
 
-	FIt("should work with traffic policy to local (v2) reviews", func() {
+	It("should work with traffic policy to local (v2) reviews", func() {
 		const tpYaml = `
 apiVersion: networking.smh.solo.io/v1alpha1
 kind: TrafficPolicy
@@ -68,8 +68,9 @@ spec:
   destinationSelector:
     serviceRefs:
       services:
-        name: ratings-default-management-plane-cluster
+      - name: reviews
         namespace: default
+        cluster: management-plane-cluster
   trafficShift:
     destinations:
     - destination:
@@ -107,7 +108,7 @@ spec:
   destinationSelector:
     serviceRefs:
       services:
-        name: ratings
+      - name: reviews
         namespace: default
         cluster: management-plane-cluster
   trafficShift:

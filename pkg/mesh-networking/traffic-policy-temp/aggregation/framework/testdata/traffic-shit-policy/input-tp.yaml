@@ -17,7 +17,7 @@
     destinationSelector:
       serviceRefs:
         services:
-        - name: ratings
+        - name: reviews
           namespace: default
           cluster: management-plane-cluster
     trafficShift:

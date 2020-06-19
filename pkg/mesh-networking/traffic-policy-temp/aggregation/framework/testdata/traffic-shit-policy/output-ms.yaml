@@ -1,19 +1,19 @@
 - apiVersion: discovery.smh.solo.io/v1alpha1
   kind: MeshService
   metadata:
-    creationTimestamp: "2020-06-18T19:11:30Z"
-    generation: 6
+    creationTimestamp: "2020-06-18T19:11:32Z"
+    generation: 4
     labels:
       compute-target: management-plane-cluster
       discovered-by: mesh-workload-discovery
-      kube-service-name: ratings
+      kube-service-name: reviews
       kube-service-namespace: default
       mesh-type: istio1_5
-    name: ratings-default-management-plane-cluster
+    name: reviews-default-management-plane-cluster
     namespace: service-mesh-hub
-    resourceVersion: "3683"
-    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/ratings-default-management-plane-cluster
-    uid: c023fc98-5637-4ba9-bcb8-953fc059e4a4
+    resourceVersion: "3685"
+    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/reviews-default-management-plane-cluster
+    uid: 370c8511-102b-42c6-a1c2-fc5c07cc3b7e
   spec:
     federation:
       federatedToWorkloads:
@@ -23,25 +23,29 @@
         namespace: service-mesh-hub
       - name: istio-ratings-v1-default-target-cluster
         namespace: service-mesh-hub
-      multiclusterDnsName: ratings.default.management-plane-cluster
+      multiclusterDnsName: reviews.default.management-plane-cluster
     kubeService:
       labels:
-        app: ratings
-        service: ratings
+        app: reviews
+        service: reviews
       ports:
       - name: http
         port: 9080
         protocol: TCP
       ref:
         cluster: management-plane-cluster
-        name: ratings
+        name: reviews
         namespace: default
       workloadSelectorLabels:
-        app: ratings
+        app: reviews
     mesh:
       name: istio-istio-system-management-plane-cluster
       namespace: service-mesh-hub
-    subsets: {}
+    subsets:
+      version:
+        values:
+        - v1
+        - v2
   status:
     federationStatus:
       state: ACCEPTED
@@ -56,7 +60,7 @@
         destinationSelector:
           serviceRefs:
             services:
-            - name: ratings
+            - name: reviews
               namespace: default
               cluster: management-plane-cluster
         trafficShift:
