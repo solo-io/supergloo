@@ -1,0 +1,16 @@
+- apiVersion: networking.istio.io/v1beta1
+  kind: VirtualService
+  metadata:
+    name: reviews
+    namespace: default
+  spec:
+    hosts:
+    - reviews
+    http:
+    - match:
+      - sourceLabels:
+          app: productpage
+      route:
+      - destination:
+          host: reviews.default.target-cluster
+        weight: 100
