@@ -52,7 +52,7 @@ var _ = Describe("HappyPath", func() {
 		return out
 	}
 
-	It("should work with traffic policy to local (v2) reviews", func() {
+	FIt("should work with traffic policy to local (v2) reviews", func() {
 		const tpYaml = `
 apiVersion: networking.smh.solo.io/v1alpha1
 kind: TrafficPolicy
@@ -66,17 +66,17 @@ spec:
     labels:
       app: productpage
   destinationSelector:
-    matcher:
-      serviceRefs:
-        services:
-          name: ratings-default-management-plane-cluster
-          namespace: default
+    serviceRefs:
+      services:
+        name: ratings-default-management-plane-cluster
+        namespace: default
   trafficShift:
     destinations:
     - destination:
         cluster: management-plane-cluster
         name: reviews
         namespace: default
+        cluster: management-plane-cluster
       weight: 100
       subset:
         version: v2
@@ -91,7 +91,7 @@ spec:
 	})
 
 	// This test assumes that ci script only deploy v3 to remote cluster
-	It("should work with traffic policy to remove (v3) reviews", func() {
+	It("should work with traffic policy to remote (v3) reviews", func() {
 		const tpYaml = `
 apiVersion: networking.smh.solo.io/v1alpha1
 kind: TrafficPolicy
@@ -104,6 +104,12 @@ spec:
   sourceSelector:
     labels:
       app: productpage
+  destinationSelector:
+    serviceRefs:
+      services:
+        name: ratings
+        namespace: default
+        cluster: management-plane-cluster
   trafficShift:
     destinations:
     - destination:
