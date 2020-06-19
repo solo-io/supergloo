@@ -131,7 +131,7 @@ We could have also configured an existing Root CA by providing an existing secre
         namespace: root-ca-namespace
 ```
 
-See the section on "User Provided Certificates" below for details on how to format the certificate as a k8s Secret.
+See the section on [User Provided Certificates]({{% versioned_link_path fromRoot="/guides/federate_identity/#user-provided-certificates" %}}) below for details on how to format the certificate as a k8s Secret.
 
 We also specify the federation mode to be `PERMISSIVE`. This means we'll make services available between meshes. You can control this later by specifying different global service properties. 
 
