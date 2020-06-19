@@ -5,11 +5,10 @@
 package service_discovery_mocks
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
+	reflect "reflect"
 )
 
 // MockMeshServiceFinder is a mock of MeshServiceFinder interface.

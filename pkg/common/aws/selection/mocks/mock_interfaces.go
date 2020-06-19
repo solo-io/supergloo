@@ -5,13 +5,12 @@
 package mock_selection
 
 import (
-	reflect "reflect"
-
 	appmesh "github.com/aws/aws-sdk-go/service/appmesh"
 	eks "github.com/aws/aws-sdk-go/service/eks"
 	gomock "github.com/golang/mock/gomock"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	selection "github.com/solo-io/service-mesh-hub/pkg/common/aws/selection"
+	reflect "reflect"
 )
 
 // MockAwsSelector is a mock of AwsSelector interface.

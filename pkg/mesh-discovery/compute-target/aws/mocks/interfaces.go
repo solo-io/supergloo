@@ -6,9 +6,8 @@ package mock_aws
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockRestAPIDiscoveryReconciler is a mock of RestAPIDiscoveryReconciler interface.

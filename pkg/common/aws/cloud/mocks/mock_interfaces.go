@@ -5,11 +5,10 @@
 package mock_cloud
 
 import (
-	reflect "reflect"
-
 	credentials "github.com/aws/aws-sdk-go/aws/credentials"
 	gomock "github.com/golang/mock/gomock"
 	cloud "github.com/solo-io/service-mesh-hub/pkg/common/aws/cloud"
+	reflect "reflect"
 )
 
 // MockAwsCloudStore is a mock of AwsCloudStore interface.

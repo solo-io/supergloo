@@ -10,8 +10,12 @@ import "service-mesh-hub/api/core/v1alpha1/ref.proto";
     i.e. an unhealthy workloads[0] will cause failover to workloads[1], etc.
 */
 message FailoverService {
-    // TODO add user supplied hostname
+    // The DNS name of the failover service.
+    string hostname = 1;
 
-    // A list of workloads ordered by decreasing priority for failover.
-    repeated core.smh.solo.io.ResourceRef workloads = 1;
+    // The cluster that the failover service resides (the cluster name registered with Service Mesh Hub).
+    string cluster = 2;
+
+    // A list of workloads ordered by decreasing priority for failover. All workloads must be part of the same VirtualMesh.
+    repeated core.smh.solo.io.ResourceRef workloads = 3;
 }

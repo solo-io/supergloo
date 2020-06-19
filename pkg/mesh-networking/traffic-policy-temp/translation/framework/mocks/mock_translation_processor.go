@@ -6,11 +6,10 @@ package mock_translation_framework
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	snapshot "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/framework/snapshot"
+	reflect "reflect"
 )
 
 // MockTranslationProcessor is a mock of TranslationProcessor interface.

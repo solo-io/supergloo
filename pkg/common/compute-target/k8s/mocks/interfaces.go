@@ -6,11 +6,10 @@ package mock_mc_manager
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	rest "k8s.io/client-go/rest"
+	reflect "reflect"
 	manager "sigs.k8s.io/controller-runtime/pkg/manager"
 )
 

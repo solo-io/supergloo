@@ -5,12 +5,11 @@
 package mock_resource_printing
 
 import (
-	io "io"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	resource_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
+	io "io"
 	runtime "k8s.io/apimachinery/pkg/runtime"
+	reflect "reflect"
 )
 
 // MockResourcePrinter is a mock of ResourcePrinter interface.

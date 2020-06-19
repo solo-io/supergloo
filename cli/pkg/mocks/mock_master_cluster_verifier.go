@@ -5,9 +5,8 @@
 package cli_mocks
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockMasterKubeConfigVerifier is a mock of MasterKubeConfigVerifier interface.
