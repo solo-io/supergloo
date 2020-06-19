@@ -89,6 +89,8 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 	}
 }
 
+// This runs reconcile ever second. since it only writes things that have changed, and reads from cache
+// it should generate load on the cluster. we plane to change this in the future for better responsiveness
 func startTrafficPolicyReconciler(ctx context.Context, meshNetworkingContext wire.MeshNetworkingContext) {
 	for {
 		meshNetworkingContext.TrafficPolicyReconciler.Reconcile(ctx)
