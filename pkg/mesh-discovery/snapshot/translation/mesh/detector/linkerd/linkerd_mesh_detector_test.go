@@ -13,7 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/deployment/linkerd"
+	. "github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/linkerd"
 )
 
 var _ = Describe("LinkerdMeshDetector", func() {

@@ -9,8 +9,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/deployment"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/deployment/utils"
+	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector"
+	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	"strings"
 )
@@ -25,7 +25,7 @@ type meshDetector struct {
 	configMaps corev1sets.ConfigMapSet
 }
 
-func NewMeshDetector(configMaps corev1sets.ConfigMapSet) deployment.MeshDetector {
+func NewMeshDetector(configMaps corev1sets.ConfigMapSet) detector.MeshDetector {
 	return &meshDetector{configMaps: configMaps}
 }
 

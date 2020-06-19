@@ -12,7 +12,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/deployment/istio"
+	. "github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/istio"
 )
 
 var _ = Describe("IstioMeshDetector", func() {

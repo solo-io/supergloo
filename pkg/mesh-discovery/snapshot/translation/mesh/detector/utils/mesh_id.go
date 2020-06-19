@@ -22,4 +22,3 @@ func MeshObjectMeta(controlPlaneDeployment *appsv1.Deployment) metav1.ObjectMeta
 func MeshName(deployment *appsv1.Deployment) string {
 	return kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v-%v", deployment.Name, deployment.Namespace, deployment.ClusterName))
 }
-

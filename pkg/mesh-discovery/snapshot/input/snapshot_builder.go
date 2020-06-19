@@ -2,12 +2,12 @@ package input
 
 import (
 	"context"
+	"github.com/hashicorp/go-multierror"
 	appsv1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/skv2/pkg/multicluster"
-	"go.uber.org/multierr"
 )
 
 // builds the input snapshot from API Clients
@@ -34,19 +34,19 @@ func (b *builder) BuildSnapshot(ctx context.Context) (Snapshot, error) {
 	for _, cluster := range b.Clusters.ListClusters() {
 
 		if err := b.insertPodsFromCluster(ctx, cluster, pods); err != nil {
-			errs = multierr.Append(errs, err)
+			errs = multierror.Append(errs, err)
 		}
 
 		if err := b.insertServicesFromCluster(ctx, cluster, services); err != nil {
-			errs = multierr.Append(errs, err)
+			errs = multierror.Append(errs, err)
 		}
 
 		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps); err != nil {
-			errs = multierr.Append(errs, err)
+			errs = multierror.Append(errs, err)
 		}
 
 		if err := b.insertDeploymentsFromCluster(ctx, cluster, deployments); err != nil {
-			errs = multierr.Append(errs, err)
+			errs = multierror.Append(errs, err)
 		}
 
 	}

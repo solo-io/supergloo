@@ -2,8 +2,8 @@ package translation
 
 import (
 	"context"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/snapshots/output"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/input"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/output"
 )
 
 // the translator "reconciles the entire state of the world"

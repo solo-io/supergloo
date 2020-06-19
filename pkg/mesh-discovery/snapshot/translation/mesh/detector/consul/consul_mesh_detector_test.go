@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/common/defaults"
-	consul "github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/deployment/consul"
+	consul "github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/consul"
 	"github.com/solo-io/smh/pkg/mesh-discovery/utils/labelutils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

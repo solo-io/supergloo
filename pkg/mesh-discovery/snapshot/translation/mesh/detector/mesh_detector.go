@@ -1,4 +1,4 @@
-package deployment
+package detector
 
 import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"

@@ -1,8 +1,8 @@
 package consul
 
 import (
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/deployment"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/deployment/utils"
+	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector"
+	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector/utils"
 	"regexp"
 	"strings"
 
@@ -43,7 +43,7 @@ const (
 // detects Consul Connect if a deployment contains the istiod container.
 type meshDetector struct{}
 
-func NewMeshDetector() deployment.MeshDetector {
+func NewMeshDetector() detector.MeshDetector {
 	return &meshDetector{}
 }
 
