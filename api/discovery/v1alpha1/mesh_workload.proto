@@ -59,4 +59,9 @@ message MeshWorkloadSpec {
 
 message MeshWorkloadStatus {
 
+    // The observed generation of the MeshWorkload.
+    // When this matches the MeshWorkload's metadata.generation, it indicates that mesh-networking
+    // has reconciled the latest version of the MeshWorkload.
+    int64 observed_generation = 1;
+
 }
