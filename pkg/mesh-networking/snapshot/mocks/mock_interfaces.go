@@ -6,12 +6,13 @@ package mock_snapshot
 
 import (
 	context "context"
+	reflect "reflect"
+	time "time"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	snapshot "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/snapshot"
-	reflect "reflect"
-	time "time"
 )
 
 // MockMeshNetworkingSnapshotValidator is a mock of MeshNetworkingSnapshotValidator interface.

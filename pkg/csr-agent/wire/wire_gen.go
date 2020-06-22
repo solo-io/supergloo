@@ -7,10 +7,11 @@ package wire
 
 import (
 	"context"
-	"github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
-	"github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/providers"
-	"github.com/solo-io/service-mesh-hub/pkg/common/compute-target/wire"
-	"github.com/solo-io/service-mesh-hub/pkg/common/csr-generator"
+
+	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/providers"
+	mc_wire "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/wire"
+	csr_generator "github.com/solo-io/service-mesh-hub/pkg/common/csr-generator"
 	"github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen"
 )
 

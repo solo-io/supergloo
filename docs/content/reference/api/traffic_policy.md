@@ -315,7 +315,7 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| consecutiveErrors | [int32](#int32) |  | Number of errors before a host is ejected from the connection pool. Defaults to 5. |
+| consecutiveErrors | [uint32](#uint32) |  | Number of errors before a host is ejected from the connection pool. Defaults to 5. |
 | interval | [google.protobuf.Duration](#google.protobuf.Duration) |  | Time interval between ejection sweep analysis. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 10s. |
 | baseEjectionTime | [google.protobuf.Duration](#google.protobuf.Duration) |  | Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s. |
 

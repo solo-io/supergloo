@@ -5,11 +5,12 @@
 package mock_v1alpha1sets
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/sets"
 	sets "k8s.io/apimachinery/pkg/util/sets"
-	reflect "reflect"
 )
 
 // MockSettingsSet is a mock of SettingsSet interface.

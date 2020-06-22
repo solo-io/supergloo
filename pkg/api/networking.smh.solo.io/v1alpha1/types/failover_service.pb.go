@@ -5,9 +5,10 @@ package types
 
 import (
 	fmt "fmt"
+	math "math"
+
 	proto "github.com/gogo/protobuf/proto"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

@@ -6,10 +6,11 @@ package mock_crd_uninstall
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	rest "k8s.io/client-go/rest"
-	reflect "reflect"
 )
 
 // MockCrdRemover is a mock of CrdRemover interface.
