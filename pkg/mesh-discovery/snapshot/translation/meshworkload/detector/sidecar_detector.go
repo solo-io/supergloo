@@ -6,6 +6,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+//go:generate mockgen -source ./sidecar_detector.go -destination mocks/sidecar_detector.go
+
 // a sidecar detector detects injected Mesh sidecars in a Pod
 type SidecarDetector interface {
 	// returns a ref to a mesh if the provided Pod contains a sidecar

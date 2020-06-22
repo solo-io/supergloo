@@ -1,14 +1,15 @@
-package mesh
+package meshworkload
 
 import (
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/meshworkload/detector"
+	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/meshworkload/types"
 )
 
 // the mesh-workload translator converts deployments with injected sidecars into MeshWorkload CRs
 type Translator interface {
-	TranslateMeshWorkloades(deployments appsv1sets.DeploymentSet) v1alpha1sets.MeshWorkloadSet
+	TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet) v1alpha1sets.MeshWorkloadSet
 }
 
 type translator struct {
@@ -19,10 +20,22 @@ func NewTranslator() Translator {
 	return &translator{}
 }
 
-func (t *translator) TranslateMeshWorkloades(deployments appsv1sets.DeploymentSet) v1alpha1sets.MeshWorkloadSet {
-	meshWorkloadSet := v1alpha1sets.NewMeshWorkloadSet()
+func (t *translator) TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet) v1alpha1sets.MeshWorkloadSet {
+	var workloads []types.Workload
 	for _, deployment := range deployments.List() {
-		meshWorkload := t.meshWorkloadDetector.DetectMeshWorkload(deployment)
+		workloads = append(workloads, types.ToWorkload(deployment))
+	}
+	for _, daemonSet := range daemonSets.List() {
+		workloads = append(workloads, types.ToWorkload(daemonSet))
+	}
+	for _, statefulSet := range statefulSets.List() {
+		workloads = append(workloads, types.ToWorkload(statefulSet))
+	}
+
+	meshWorkloadSet := v1alpha1sets.NewMeshWorkloadSet()
+
+	for _, workload := range workloads {
+		meshWorkload := t.meshWorkloadDetector.DetectMeshWorkload(workload)
 		if meshWorkload == nil {
 			continue
 		}

@@ -13,12 +13,12 @@ import (
 func DiscoveredObjectMeta(sourceResource ezkube.ResourceId) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Namespace: defaults.GetPodNamespace(),
-		Name:      MeshName(sourceResource),
+		Name:      DiscoveredResourceName(sourceResource),
 		Labels:    labelutils.ClusterLabels(sourceResource.GetClusterName()),
 	}
 }
 
-// util for conventionally naming discovered Meshes
-func MeshName(sourceResource ezkube.ResourceId) string {
+// util for conventionally naming discovered resources
+func DiscoveredResourceName(sourceResource ezkube.ResourceId) string {
 	return kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v-%v", sourceResource.GetName(), sourceResource.GetNamespace(), sourceResource.GetClusterName()))
 }

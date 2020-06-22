@@ -13,14 +13,18 @@ type Snapshot interface {
 	ConfigMaps() corev1sets.ConfigMapSet
 	Deployments() appsv1sets.DeploymentSet
 	ReplicaSets() appsv1sets.ReplicaSetSet
+	DaemonSets() appsv1sets.DaemonSetSet
+	StatefulSets() appsv1sets.StatefulSetSet
 }
 
 type snapshot struct {
-	pods        corev1sets.PodSet
-	services    corev1sets.ServiceSet
-	configMaps  corev1sets.ConfigMapSet
-	deployments appsv1sets.DeploymentSet
-	replicaSets appsv1sets.ReplicaSetSet
+	pods         corev1sets.PodSet
+	services     corev1sets.ServiceSet
+	configMaps   corev1sets.ConfigMapSet
+	deployments  appsv1sets.DeploymentSet
+	replicaSets  appsv1sets.ReplicaSetSet
+	daemonSets   appsv1sets.DaemonSetSet
+	statefulSets appsv1sets.StatefulSetSet
 }
 
 func NewSnapshot(
@@ -29,13 +33,17 @@ func NewSnapshot(
 	configMaps corev1sets.ConfigMapSet,
 	deployments appsv1sets.DeploymentSet,
 	replicaSets appsv1sets.ReplicaSetSet,
+	daemonSets appsv1sets.DaemonSetSet,
+	statefulSets appsv1sets.StatefulSetSet,
 ) Snapshot {
 	return &snapshot{
-		pods:        pods,
-		services:    services,
-		configMaps:  configMaps,
-		deployments: deployments,
-		replicaSets: replicaSets,
+		pods:         pods,
+		services:     services,
+		configMaps:   configMaps,
+		deployments:  deployments,
+		replicaSets:  replicaSets,
+		daemonSets:   daemonSets,
+		statefulSets: statefulSets,
 	}
 }
 
@@ -57,4 +65,12 @@ func (s snapshot) Deployments() appsv1sets.DeploymentSet {
 
 func (s snapshot) ReplicaSets() appsv1sets.ReplicaSetSet {
 	return s.replicaSets
+}
+
+func (s snapshot) DaemonSets() appsv1sets.DaemonSetSet {
+	return s.daemonSets
+}
+
+func (s snapshot) StatefulSets() appsv1sets.StatefulSetSet {
+	return s.statefulSets
 }

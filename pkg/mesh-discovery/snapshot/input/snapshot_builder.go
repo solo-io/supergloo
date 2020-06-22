@@ -16,11 +16,14 @@ type Builder interface {
 }
 
 type builder struct {
-	Clusters    multicluster.ClusterSet
-	Pods        corev1.MulticlusterPodClient
-	Services    corev1.MulticlusterServiceClient
-	ConfigMaps  corev1.MulticlusterConfigMapClient
-	Deployments appsv1.MulticlusterDeploymentClient
+	Clusters     multicluster.ClusterSet
+	Pods         corev1.MulticlusterPodClient
+	Services     corev1.MulticlusterServiceClient
+	ConfigMaps   corev1.MulticlusterConfigMapClient
+	Deployments  appsv1.MulticlusterDeploymentClient
+	ReplicaSets  appsv1.MulticlusterReplicaSetClient
+	DaemonSets   appsv1.MulticlusterDaemonSetClient
+	StatefulSets appsv1.MulticlusterStatefulSetClient
 }
 
 func (b *builder) BuildSnapshot(ctx context.Context) (Snapshot, error) {
@@ -28,6 +31,9 @@ func (b *builder) BuildSnapshot(ctx context.Context) (Snapshot, error) {
 	services := corev1sets.NewServiceSet()
 	configMaps := corev1sets.NewConfigMapSet()
 	deployments := appsv1sets.NewDeploymentSet()
+	replicaSets := appsv1sets.NewReplicaSetSet()
+	daemonSets := appsv1sets.NewDaemonSetSet()
+	statefulSets := appsv1sets.NewStatefulSetSet()
 
 	var errs error
 
@@ -49,9 +55,29 @@ func (b *builder) BuildSnapshot(ctx context.Context) (Snapshot, error) {
 			errs = multierror.Append(errs, err)
 		}
 
+		if err := b.insertReplicaSetsFromCluster(ctx, cluster, replicaSets); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+
+		if err := b.insertDaemonSetsFromCluster(ctx, cluster, daemonSets); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+
+		if err := b.insertStatefulSetsFromCluster(ctx, cluster, statefulSets); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+
 	}
 
-	outputSnap := NewSnapshot(pods, services, configMaps, deployments)
+	outputSnap := NewSnapshot(
+		pods,
+		services,
+		configMaps,
+		deployments,
+		replicaSets,
+		daemonSets,
+		statefulSets,
+	)
 
 	return outputSnap, errs
 }
@@ -131,6 +157,66 @@ func (b *builder) insertDeploymentsFromCluster(ctx context.Context, cluster stri
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
 		deployments.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *builder) insertReplicaSetsFromCluster(ctx context.Context, cluster string, replicaSets appsv1sets.ReplicaSetSet) error {
+	replicaSetClient, err := b.ReplicaSets.Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	replicaSetList, err := replicaSetClient.ListReplicaSet(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range replicaSetList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		replicaSets.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *builder) insertDaemonSetsFromCluster(ctx context.Context, cluster string, daemonSets appsv1sets.DaemonSetSet) error {
+	daemonSetClient, err := b.DaemonSets.Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	daemonSetList, err := daemonSetClient.ListDaemonSet(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range daemonSetList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		daemonSets.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *builder) insertStatefulSetsFromCluster(ctx context.Context, cluster string, statefulSets appsv1sets.StatefulSetSet) error {
+	statefulSetClient, err := b.StatefulSets.Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	statefulSetList, err := statefulSetClient.ListStatefulSet(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range statefulSetList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		statefulSets.Insert(&item)
 	}
 
 	return nil

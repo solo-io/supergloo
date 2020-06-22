@@ -9,18 +9,18 @@ import (
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/meshworkload/types"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/utils"
-	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
-// the MeshWorkloadDetector detects MeshWorkloads from deployments whose pods are
-// injected with a Mesh sidecar.
-// in a k8s Deployment.
-// If detection fails, an error is returned
-// If no meshWorkload is detected, nil is returned
+// the MeshWorkloadDetector detects MeshWorkloads from workloads
+// whose backing pods are injected with a Mesh sidecar.
+// If no mesh is detected for the workload, nil is returned
 type MeshWorkloadDetector interface {
-	DetectMeshWorkload(deployment *appsv1.Deployment) *v1alpha1.MeshWorkload
+	DetectMeshWorkload(workload types.Workload) *v1alpha1.MeshWorkload
 }
 
 const (
@@ -54,29 +54,35 @@ func NewMeshWorkloadDetector(
 	}
 }
 
-func (d meshWorkloadDetector) DetectMeshWorkload(deployment *appsv1.Deployment) *v1alpha1.MeshWorkload {
-	podsForDeployment := d.getPodsForDeployment(deployment)
+func (d meshWorkloadDetector) DetectMeshWorkload(workload types.Workload) *v1alpha1.MeshWorkload {
+	podsForWorkload := d.getPodsForWorkload(workload)
 
-	mesh := d.getMeshForPods(podsForDeployment)
+	mesh := d.getMeshForPods(podsForWorkload)
 
 	if mesh == nil {
 		return nil
 	}
 
 	meshRef := utils.MakeResourceRef(mesh)
-	workloadRef := utils.MakeResourceRef(deployment)
-	labels := deployment.Spec.Template.Labels
-	serviceAccount := deployment.Spec.Template.Spec.ServiceAccountName
+	controllerRef := utils.MakeResourceRef(workload)
+	labels := workload.GetPodTemplate().Labels
+	serviceAccount := workload.GetPodTemplate().Spec.ServiceAccountName
+
+	outputMeta := utils.DiscoveredObjectMeta(workload)
+	// append workload kind for uniqueness
+	outputMeta.Name += "-" + strings.ToLower(workload.Kind())
 
 	return &v1alpha1.MeshWorkload{
-		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
-		Spec:v1alpha1.MeshWorkloadSpec{
-			KubeController:       &v1alpha1.MeshWorkloadSpec_KubeController{
-				KubeControllerRef:    workloadRef,
-				Labels:               labels,
-				ServiceAccountName:   serviceAccount,
+		ObjectMeta: outputMeta,
+		Spec: v1alpha1.MeshWorkloadSpec{
+			WorkloadType: &v1alpha1.MeshWorkloadSpec_Kubernetes{
+				Kubernetes: &v1alpha1.MeshWorkloadSpec_KubernertesWorkload{
+					Controller:         controllerRef,
+					PodLabels:          labels,
+					ServiceAccountName: serviceAccount,
+				},
 			},
-			Mesh:                 meshRef,
+			Mesh: meshRef,
 		},
 	}
 }
@@ -91,20 +97,33 @@ func (d meshWorkloadDetector) getMeshForPods(pods corev1sets.PodSet) *v1alpha1.M
 	return nil
 }
 
-func (d meshWorkloadDetector) getPodsForDeployment(deployment *appsv1.Deployment) corev1sets.PodSet {
-	podsForDeployment := corev1sets.NewPodSet()
+func (d meshWorkloadDetector) getPodsForWorkload(workload types.Workload) corev1sets.PodSet {
+	podsForWorkload := corev1sets.NewPodSet()
 
 	for _, pod := range d.pods.List() {
-		if pod.Namespace != deployment.Namespace || pod.ClusterName != deployment.ClusterName {
-			continue
+		if d.podIsOwnedOwnedByWorkload(pod, workload) {
+			// this pod is owned by the workload in question
+			podsForWorkload.Insert(pod)
 		}
+	}
 
+	return podsForWorkload
+}
+
+func (d meshWorkloadDetector) podIsOwnedOwnedByWorkload(pod *corev1.Pod, workload types.Workload) bool {
+	if pod.Namespace != workload.GetNamespace() || pod.ClusterName != workload.GetClusterName() {
+		return false
+	}
+
+	// track the controlled object;
+	// in the case of deployments
+	var workloadReplica metav1.Object
+	switch workload.Kind() {
+	case deploymentKind:
+		// pods created by deployments are owned by replicasets
 		rsName := getControllerName(pod, replicaSetKind)
 		if rsName == "" {
-			// TODO(ilackarms): evaluate this assumption: currently, we
-			// only consider pods owned by replicasets to be part of a workload
-			contextutils.LoggerFrom(d.ctx).Debugw("pod has no owner, ignoring for purposes of discovery", "pod", sets.Key(pod))
-			continue
+			return false
 		}
 
 		rsRef := &v1.ClusterObjectRef{
@@ -115,25 +134,25 @@ func (d meshWorkloadDetector) getPodsForDeployment(deployment *appsv1.Deployment
 
 		rs, err := d.replicaSets.Find(rsRef)
 		if err != nil {
-			contextutils.LoggerFrom(d.ctx).Warnw("cannot find replica set for pod", "pod", sets.Key(pod), "replicaset", sets.Key(rsRef))
-			continue
+			contextutils.LoggerFrom(d.ctx).Warnw("replicaset not found for pod", "replicaset", sets.Key(rsRef), "pod", sets.Key(pod))
+			return false
 		}
-
-		deploymentName := getControllerName(rs, deploymentKind)
-		if deploymentName == "" {
-			// TODO(ilackarms): evaluate this assumption: currently, we
-			// only consider pods owned by deployments to be part of a workload
-			contextutils.LoggerFrom(d.ctx).Debugw("replicaset has no owner, ignoring for purposes of discovery", "rs", sets.Key(rs))
-			continue
-		}
-
-		if deploymentName == deployment.Name {
-			// this pod is owned by the deployment in question
-			podsForDeployment.Insert(pod)
-		}
+		workloadReplica = rs
+	default:
+		// DaemonSets and StatefulSets directly
+		// create pods
+		workloadReplica = pod
 	}
 
-	return podsForDeployment
+	workloadName := getControllerName(workloadReplica, workload.Kind())
+	if workloadName == "" {
+		// TODO(ilackarms): evaluate this assumption: currently, we
+		// only consider pods owned by workloads to be part of a workload
+		contextutils.LoggerFrom(d.ctx).Debugw("pod has no owner, ignoring for purposes of discovery", "pod", sets.Key(workloadReplica))
+		return false
+	}
+
+	return workloadName == workload.GetName()
 }
 
 func getControllerName(obj metav1.Object, controllerKind string) string {
