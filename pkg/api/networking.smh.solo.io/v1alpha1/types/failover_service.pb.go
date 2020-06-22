@@ -26,65 +26,237 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 //A service composed of the referenced workloads with failover capabilities.
 //The failover order is determined by the order of the declared workloads,
 //i.e. an unhealthy workloads[0] will cause failover to workloads[1], etc.
-type FailoverService struct {
+type FailoverServiceSpec struct {
 	// The DNS name of the failover service.
 	Hostname string `protobuf:"bytes,1,opt,name=hostname,proto3" json:"hostname,omitempty"`
+	// The namespace for the failover service.
+	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	// The port from which to expose this service.
+	Port *FailoverServiceSpec_Port `protobuf:"bytes,3,opt,name=port,proto3" json:"port,omitempty"`
 	// The cluster that the failover service resides (the cluster name registered with Service Mesh Hub).
-	Cluster string `protobuf:"bytes,2,opt,name=cluster,proto3" json:"cluster,omitempty"`
-	// A list of workloads ordered by decreasing priority for failover. All workloads must be part of the same VirtualMesh.
-	Workloads            []*types.ResourceRef `protobuf:"bytes,3,rep,name=workloads,proto3" json:"workloads,omitempty"`
+	Cluster string `protobuf:"bytes,4,opt,name=cluster,proto3" json:"cluster,omitempty"`
+	//
+	//A list of services ordered by decreasing priority for failover.
+	//All services must be controlled by service meshes that are grouped under a common VirtualMesh.
+	Services             []*types.ResourceRef `protobuf:"bytes,5,rep,name=services,proto3" json:"services,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
 	XXX_unrecognized     []byte               `json:"-"`
 	XXX_sizecache        int32                `json:"-"`
 }
 
-func (m *FailoverService) Reset()         { *m = FailoverService{} }
-func (m *FailoverService) String() string { return proto.CompactTextString(m) }
-func (*FailoverService) ProtoMessage()    {}
-func (*FailoverService) Descriptor() ([]byte, []int) {
+func (m *FailoverServiceSpec) Reset()         { *m = FailoverServiceSpec{} }
+func (m *FailoverServiceSpec) String() string { return proto.CompactTextString(m) }
+func (*FailoverServiceSpec) ProtoMessage()    {}
+func (*FailoverServiceSpec) Descriptor() ([]byte, []int) {
 	return fileDescriptor_05f0dd5940b7bfb1, []int{0}
 }
-func (m *FailoverService) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FailoverService.Unmarshal(m, b)
+func (m *FailoverServiceSpec) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FailoverServiceSpec.Unmarshal(m, b)
 }
-func (m *FailoverService) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FailoverService.Marshal(b, m, deterministic)
+func (m *FailoverServiceSpec) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FailoverServiceSpec.Marshal(b, m, deterministic)
 }
-func (m *FailoverService) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FailoverService.Merge(m, src)
+func (m *FailoverServiceSpec) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FailoverServiceSpec.Merge(m, src)
 }
-func (m *FailoverService) XXX_Size() int {
-	return xxx_messageInfo_FailoverService.Size(m)
+func (m *FailoverServiceSpec) XXX_Size() int {
+	return xxx_messageInfo_FailoverServiceSpec.Size(m)
 }
-func (m *FailoverService) XXX_DiscardUnknown() {
-	xxx_messageInfo_FailoverService.DiscardUnknown(m)
+func (m *FailoverServiceSpec) XXX_DiscardUnknown() {
+	xxx_messageInfo_FailoverServiceSpec.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_FailoverService proto.InternalMessageInfo
+var xxx_messageInfo_FailoverServiceSpec proto.InternalMessageInfo
 
-func (m *FailoverService) GetHostname() string {
+func (m *FailoverServiceSpec) GetHostname() string {
 	if m != nil {
 		return m.Hostname
 	}
 	return ""
 }
 
-func (m *FailoverService) GetCluster() string {
+func (m *FailoverServiceSpec) GetNamespace() string {
+	if m != nil {
+		return m.Namespace
+	}
+	return ""
+}
+
+func (m *FailoverServiceSpec) GetPort() *FailoverServiceSpec_Port {
+	if m != nil {
+		return m.Port
+	}
+	return nil
+}
+
+func (m *FailoverServiceSpec) GetCluster() string {
 	if m != nil {
 		return m.Cluster
 	}
 	return ""
 }
 
-func (m *FailoverService) GetWorkloads() []*types.ResourceRef {
+func (m *FailoverServiceSpec) GetServices() []*types.ResourceRef {
 	if m != nil {
-		return m.Workloads
+		return m.Services
 	}
 	return nil
 }
 
+type FailoverServiceSpec_Port struct {
+	Port                 uint32   `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Protocol             string   `protobuf:"bytes,3,opt,name=protocol,proto3" json:"protocol,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *FailoverServiceSpec_Port) Reset()         { *m = FailoverServiceSpec_Port{} }
+func (m *FailoverServiceSpec_Port) String() string { return proto.CompactTextString(m) }
+func (*FailoverServiceSpec_Port) ProtoMessage()    {}
+func (*FailoverServiceSpec_Port) Descriptor() ([]byte, []int) {
+	return fileDescriptor_05f0dd5940b7bfb1, []int{0, 0}
+}
+func (m *FailoverServiceSpec_Port) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FailoverServiceSpec_Port.Unmarshal(m, b)
+}
+func (m *FailoverServiceSpec_Port) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FailoverServiceSpec_Port.Marshal(b, m, deterministic)
+}
+func (m *FailoverServiceSpec_Port) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FailoverServiceSpec_Port.Merge(m, src)
+}
+func (m *FailoverServiceSpec_Port) XXX_Size() int {
+	return xxx_messageInfo_FailoverServiceSpec_Port.Size(m)
+}
+func (m *FailoverServiceSpec_Port) XXX_DiscardUnknown() {
+	xxx_messageInfo_FailoverServiceSpec_Port.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FailoverServiceSpec_Port proto.InternalMessageInfo
+
+func (m *FailoverServiceSpec_Port) GetPort() uint32 {
+	if m != nil {
+		return m.Port
+	}
+	return 0
+}
+
+func (m *FailoverServiceSpec_Port) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *FailoverServiceSpec_Port) GetProtocol() string {
+	if m != nil {
+		return m.Protocol
+	}
+	return ""
+}
+
+type FailoverServiceStatus struct {
+	// Whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration.
+	TranslationStatus *types.Status `protobuf:"bytes,1,opt,name=translation_status,json=translationStatus,proto3" json:"translation_status,omitempty"`
+	// Provides details on any translation errors that occurred. If any errors exist, this FailoverService has not been translated into mesh-specific config.
+	TranslatorErrors     []*FailoverServiceStatus_TranslatorError `protobuf:"bytes,2,rep,name=translator_errors,json=translatorErrors,proto3" json:"translator_errors,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                                 `json:"-"`
+	XXX_unrecognized     []byte                                   `json:"-"`
+	XXX_sizecache        int32                                    `json:"-"`
+}
+
+func (m *FailoverServiceStatus) Reset()         { *m = FailoverServiceStatus{} }
+func (m *FailoverServiceStatus) String() string { return proto.CompactTextString(m) }
+func (*FailoverServiceStatus) ProtoMessage()    {}
+func (*FailoverServiceStatus) Descriptor() ([]byte, []int) {
+	return fileDescriptor_05f0dd5940b7bfb1, []int{1}
+}
+func (m *FailoverServiceStatus) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FailoverServiceStatus.Unmarshal(m, b)
+}
+func (m *FailoverServiceStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FailoverServiceStatus.Marshal(b, m, deterministic)
+}
+func (m *FailoverServiceStatus) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FailoverServiceStatus.Merge(m, src)
+}
+func (m *FailoverServiceStatus) XXX_Size() int {
+	return xxx_messageInfo_FailoverServiceStatus.Size(m)
+}
+func (m *FailoverServiceStatus) XXX_DiscardUnknown() {
+	xxx_messageInfo_FailoverServiceStatus.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FailoverServiceStatus proto.InternalMessageInfo
+
+func (m *FailoverServiceStatus) GetTranslationStatus() *types.Status {
+	if m != nil {
+		return m.TranslationStatus
+	}
+	return nil
+}
+
+func (m *FailoverServiceStatus) GetTranslatorErrors() []*FailoverServiceStatus_TranslatorError {
+	if m != nil {
+		return m.TranslatorErrors
+	}
+	return nil
+}
+
+type FailoverServiceStatus_TranslatorError struct {
+	// ID representing a translator that translates FailoverService to Mesh-specific config.
+	TranslatorId         string   `protobuf:"bytes,1,opt,name=translator_id,json=translatorId,proto3" json:"translator_id,omitempty"`
+	ErrorMessage         string   `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *FailoverServiceStatus_TranslatorError) Reset()         { *m = FailoverServiceStatus_TranslatorError{} }
+func (m *FailoverServiceStatus_TranslatorError) String() string { return proto.CompactTextString(m) }
+func (*FailoverServiceStatus_TranslatorError) ProtoMessage()    {}
+func (*FailoverServiceStatus_TranslatorError) Descriptor() ([]byte, []int) {
+	return fileDescriptor_05f0dd5940b7bfb1, []int{1, 0}
+}
+func (m *FailoverServiceStatus_TranslatorError) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FailoverServiceStatus_TranslatorError.Unmarshal(m, b)
+}
+func (m *FailoverServiceStatus_TranslatorError) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FailoverServiceStatus_TranslatorError.Marshal(b, m, deterministic)
+}
+func (m *FailoverServiceStatus_TranslatorError) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FailoverServiceStatus_TranslatorError.Merge(m, src)
+}
+func (m *FailoverServiceStatus_TranslatorError) XXX_Size() int {
+	return xxx_messageInfo_FailoverServiceStatus_TranslatorError.Size(m)
+}
+func (m *FailoverServiceStatus_TranslatorError) XXX_DiscardUnknown() {
+	xxx_messageInfo_FailoverServiceStatus_TranslatorError.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FailoverServiceStatus_TranslatorError proto.InternalMessageInfo
+
+func (m *FailoverServiceStatus_TranslatorError) GetTranslatorId() string {
+	if m != nil {
+		return m.TranslatorId
+	}
+	return ""
+}
+
+func (m *FailoverServiceStatus_TranslatorError) GetErrorMessage() string {
+	if m != nil {
+		return m.ErrorMessage
+	}
+	return ""
+}
+
 func init() {
-	proto.RegisterType((*FailoverService)(nil), "networking.smh.solo.io.FailoverService")
+	proto.RegisterType((*FailoverServiceSpec)(nil), "networking.smh.solo.io.FailoverServiceSpec")
+	proto.RegisterType((*FailoverServiceSpec_Port)(nil), "networking.smh.solo.io.FailoverServiceSpec.Port")
+	proto.RegisterType((*FailoverServiceStatus)(nil), "networking.smh.solo.io.FailoverServiceStatus")
+	proto.RegisterType((*FailoverServiceStatus_TranslatorError)(nil), "networking.smh.solo.io.FailoverServiceStatus.TranslatorError")
 }
 
 func init() {
@@ -92,21 +264,33 @@ func init() {
 }
 
 var fileDescriptor_05f0dd5940b7bfb1 = []byte{
-	// 241 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x90, 0x3d, 0x4f, 0xc3, 0x30,
-	0x10, 0x86, 0x15, 0x2a, 0x01, 0x35, 0x03, 0x52, 0x06, 0x14, 0x55, 0x42, 0xaa, 0x98, 0x3a, 0x10,
-	0x5b, 0x85, 0x91, 0x8d, 0x81, 0x1d, 0x77, 0x63, 0x41, 0x8e, 0xb9, 0xc4, 0x56, 0x9d, 0x9c, 0x75,
-	0xe7, 0x04, 0xb1, 0xf3, 0xc3, 0x51, 0xda, 0x42, 0x2a, 0xc4, 0xc0, 0x78, 0xba, 0xbb, 0xe7, 0xfd,
-	0x10, 0xba, 0xf1, 0xc9, 0xf5, 0x95, 0xb4, 0xd8, 0x2a, 0xc6, 0x80, 0xa5, 0x47, 0xc5, 0x40, 0x83,
-	0xb7, 0x50, 0xb6, 0xc0, 0xae, 0x74, 0x7d, 0xa5, 0x4c, 0xf4, 0xaa, 0x83, 0xf4, 0x8e, 0xb4, 0xf5,
-	0x5d, 0xa3, 0x86, 0xb5, 0x09, 0xd1, 0x99, 0xb5, 0xaa, 0x8d, 0x0f, 0x38, 0x00, 0xbd, 0x1e, 0x3e,
-	0x64, 0x24, 0x4c, 0x98, 0x5f, 0x4d, 0xb7, 0x92, 0x5b, 0x27, 0x47, 0xae, 0xf4, 0xb8, 0xb8, 0xfd,
-	0x13, 0x6c, 0x91, 0x60, 0x42, 0x12, 0xd4, 0x7b, 0xca, 0xcd, 0x67, 0x26, 0x2e, 0x9f, 0x0e, 0x02,
-	0x9b, 0xfd, 0x63, 0xbe, 0x10, 0xe7, 0x0e, 0x39, 0x75, 0xa6, 0x85, 0x22, 0x5b, 0x66, 0xab, 0xb9,
-	0xfe, 0x99, 0xf3, 0x42, 0x9c, 0xd9, 0xd0, 0x73, 0x02, 0x2a, 0x4e, 0x76, 0xab, 0xef, 0x31, 0x7f,
-	0x10, 0xf3, 0xd1, 0x4e, 0x40, 0xf3, 0xc6, 0xc5, 0x6c, 0x39, 0x5b, 0x5d, 0xdc, 0x5d, 0xcb, 0x51,
-	0xf6, 0xd8, 0x9d, 0xd4, 0xc0, 0xd8, 0x93, 0x05, 0x0d, 0xb5, 0x9e, 0xee, 0x1f, 0x37, 0x2f, 0xcf,
-	0xff, 0xa9, 0x28, 0x6e, 0x9b, 0x5f, 0x35, 0x1d, 0xc3, 0xa7, 0x7c, 0xe9, 0x23, 0x02, 0x57, 0xa7,
-	0xbb, 0x88, 0xf7, 0x5f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x6e, 0xb4, 0x58, 0x81, 0x7e, 0x01, 0x00,
-	0x00,
+	// 437 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x53, 0x4d, 0x8f, 0xd3, 0x30,
+	0x10, 0x55, 0xbb, 0x05, 0xb6, 0xee, 0xae, 0x00, 0x23, 0x50, 0x14, 0x81, 0x54, 0x2d, 0x97, 0x1e,
+	0xa8, 0xc3, 0x96, 0x13, 0x07, 0x2e, 0x88, 0x0f, 0x81, 0x84, 0x04, 0x2e, 0x27, 0x38, 0x54, 0x6e,
+	0x76, 0xda, 0x98, 0x4d, 0x32, 0x91, 0xc7, 0x29, 0xe2, 0x27, 0xf1, 0x07, 0xf8, 0x7d, 0xc8, 0x76,
+	0x36, 0x69, 0xbb, 0x3d, 0xf4, 0xd4, 0xce, 0x64, 0xde, 0x7b, 0xf3, 0x9e, 0x6d, 0x26, 0xd7, 0xda,
+	0x66, 0xf5, 0x52, 0xa4, 0x58, 0x24, 0x84, 0x39, 0x4e, 0x35, 0x26, 0x04, 0x66, 0xa3, 0x53, 0x98,
+	0x16, 0x40, 0xd9, 0x34, 0xab, 0x97, 0x89, 0xaa, 0x74, 0x52, 0x82, 0xfd, 0x8d, 0xe6, 0x5a, 0x97,
+	0xeb, 0x64, 0x73, 0xa9, 0xf2, 0x2a, 0x53, 0x97, 0xc9, 0x4a, 0xe9, 0x1c, 0x37, 0x60, 0x16, 0x0d,
+	0x42, 0x54, 0x06, 0x2d, 0xf2, 0x27, 0xdd, 0xac, 0xa0, 0x22, 0x13, 0x8e, 0x57, 0x68, 0x8c, 0x5f,
+	0x1c, 0x24, 0x4e, 0xd1, 0x40, 0x47, 0x69, 0x60, 0x15, 0x58, 0xe2, 0xe4, 0x88, 0x69, 0xb2, 0xca,
+	0xd6, 0x14, 0x00, 0x17, 0xff, 0xfa, 0xec, 0xd1, 0x87, 0x66, 0xa3, 0x79, 0xc0, 0xce, 0x2b, 0x48,
+	0x79, 0xcc, 0x4e, 0x33, 0x24, 0x5b, 0xaa, 0x02, 0xa2, 0xde, 0xb8, 0x37, 0x19, 0xca, 0xb6, 0xe6,
+	0x4f, 0xd9, 0xd0, 0xfd, 0x52, 0xa5, 0x52, 0x88, 0xfa, 0xfe, 0x63, 0xd7, 0xe0, 0xef, 0xd8, 0xa0,
+	0x42, 0x63, 0xa3, 0x93, 0x71, 0x6f, 0x32, 0x9a, 0xbd, 0x14, 0x87, 0x7d, 0x89, 0x03, 0xa2, 0xe2,
+	0x2b, 0x1a, 0x2b, 0x3d, 0x9a, 0x47, 0xec, 0x5e, 0x9a, 0xd7, 0x64, 0xc1, 0x44, 0x03, 0xaf, 0x70,
+	0x53, 0xf2, 0xd7, 0xec, 0xb4, 0x31, 0x49, 0xd1, 0x9d, 0xf1, 0xc9, 0x64, 0x34, 0x7b, 0x26, 0x9c,
+	0xc1, 0x1d, 0x76, 0x09, 0x84, 0xb5, 0x49, 0x41, 0xc2, 0x4a, 0xb6, 0xe3, 0xf1, 0x67, 0x36, 0x70,
+	0x12, 0x9c, 0x37, 0x2b, 0x3a, 0x63, 0xe7, 0x8d, 0x20, 0x67, 0x03, 0x6f, 0x36, 0xf8, 0xf1, 0xff,
+	0x5d, 0x08, 0x3e, 0xa5, 0x14, 0x73, 0x6f, 0x67, 0x28, 0xdb, 0xfa, 0xe2, 0x6f, 0x9f, 0x3d, 0xde,
+	0xf7, 0xe0, 0x83, 0xe5, 0x1f, 0x19, 0xb7, 0x46, 0x95, 0x94, 0x2b, 0xab, 0xb1, 0x5c, 0x84, 0xb8,
+	0xbd, 0xd6, 0x68, 0x16, 0xdd, 0x5e, 0x35, 0xa0, 0xe4, 0xc3, 0x2d, 0x4c, 0x43, 0xf4, 0x8b, 0xb5,
+	0x4d, 0x34, 0x0b, 0x30, 0x06, 0x0d, 0x45, 0x7d, 0x6f, 0xf9, 0xcd, 0xb1, 0xb1, 0x86, 0xb3, 0xfe,
+	0xde, 0xd2, 0xbc, 0x77, 0x2c, 0xf2, 0x81, 0xdd, 0x6d, 0x50, 0xfc, 0x93, 0xdd, 0xdf, 0x1b, 0xe2,
+	0xcf, 0xd9, 0xf9, 0x96, 0xbc, 0xbe, 0x6a, 0xee, 0xc1, 0x59, 0xd7, 0xfc, 0x74, 0xe5, 0x86, 0xfc,
+	0x62, 0x8b, 0x02, 0x88, 0xd4, 0xfa, 0x26, 0xbf, 0x33, 0xdf, 0xfc, 0x12, 0x7a, 0x6f, 0xe7, 0x3f,
+	0xbe, 0x1d, 0xf3, 0x62, 0xaa, 0xeb, 0xf5, 0xde, 0xab, 0xd9, 0xb6, 0xd6, 0x5d, 0x60, 0xfb, 0xa7,
+	0x02, 0x5a, 0xde, 0xf5, 0x47, 0xf1, 0xea, 0x7f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x8a, 0xdc, 0xf1,
+	0x67, 0x8d, 0x03, 0x00, 0x00,
 }

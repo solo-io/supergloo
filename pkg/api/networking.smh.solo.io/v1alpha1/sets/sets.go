@@ -278,3 +278,92 @@ func (s virtualMeshSet) Intersection(set VirtualMeshSet) VirtualMeshSet {
 	}
 	return NewVirtualMeshSet(virtualMeshList...)
 }
+
+type FailoverServiceSet interface {
+	Keys() sets.String
+	List() []*networking_smh_solo_io_v1alpha1.FailoverService
+	Map() map[string]*networking_smh_solo_io_v1alpha1.FailoverService
+	Insert(failoverService ...*networking_smh_solo_io_v1alpha1.FailoverService)
+	Equal(failoverServiceSet FailoverServiceSet) bool
+	Has(failoverService *networking_smh_solo_io_v1alpha1.FailoverService) bool
+	Delete(failoverService *networking_smh_solo_io_v1alpha1.FailoverService)
+	Union(set FailoverServiceSet) FailoverServiceSet
+	Difference(set FailoverServiceSet) FailoverServiceSet
+	Intersection(set FailoverServiceSet) FailoverServiceSet
+}
+
+func makeGenericFailoverServiceSet(failoverServiceList []*networking_smh_solo_io_v1alpha1.FailoverService) sksets.ResourceSet {
+	var genericResources []metav1.Object
+	for _, obj := range failoverServiceList {
+		genericResources = append(genericResources, obj)
+	}
+	return sksets.NewResourceSet(genericResources...)
+}
+
+type failoverServiceSet struct {
+	set sksets.ResourceSet
+}
+
+func NewFailoverServiceSet(failoverServiceList ...*networking_smh_solo_io_v1alpha1.FailoverService) FailoverServiceSet {
+	return &failoverServiceSet{set: makeGenericFailoverServiceSet(failoverServiceList)}
+}
+
+func (s failoverServiceSet) Keys() sets.String {
+	return s.set.Keys()
+}
+
+func (s failoverServiceSet) List() []*networking_smh_solo_io_v1alpha1.FailoverService {
+	var failoverServiceList []*networking_smh_solo_io_v1alpha1.FailoverService
+	for _, obj := range s.set.List() {
+		failoverServiceList = append(failoverServiceList, obj.(*networking_smh_solo_io_v1alpha1.FailoverService))
+	}
+	return failoverServiceList
+}
+
+func (s failoverServiceSet) Map() map[string]*networking_smh_solo_io_v1alpha1.FailoverService {
+	newMap := map[string]*networking_smh_solo_io_v1alpha1.FailoverService{}
+	for k, v := range s.set.Map() {
+		newMap[k] = v.(*networking_smh_solo_io_v1alpha1.FailoverService)
+	}
+	return newMap
+}
+
+func (s failoverServiceSet) Insert(
+	failoverServiceList ...*networking_smh_solo_io_v1alpha1.FailoverService,
+) {
+	for _, obj := range failoverServiceList {
+		s.set.Insert(obj)
+	}
+}
+
+func (s failoverServiceSet) Has(failoverService *networking_smh_solo_io_v1alpha1.FailoverService) bool {
+	return s.set.Has(failoverService)
+}
+
+func (s failoverServiceSet) Equal(
+	failoverServiceSet FailoverServiceSet,
+) bool {
+	return s.set.Equal(makeGenericFailoverServiceSet(failoverServiceSet.List()))
+}
+
+func (s failoverServiceSet) Delete(FailoverService *networking_smh_solo_io_v1alpha1.FailoverService) {
+	s.set.Delete(FailoverService)
+}
+
+func (s failoverServiceSet) Union(set FailoverServiceSet) FailoverServiceSet {
+	return NewFailoverServiceSet(append(s.List(), set.List()...)...)
+}
+
+func (s failoverServiceSet) Difference(set FailoverServiceSet) FailoverServiceSet {
+	newSet := s.set.Difference(makeGenericFailoverServiceSet(set.List()))
+	return failoverServiceSet{set: newSet}
+}
+
+func (s failoverServiceSet) Intersection(set FailoverServiceSet) FailoverServiceSet {
+	newSet := s.set.Intersection(makeGenericFailoverServiceSet(set.List()))
+	var failoverServiceList []*networking_smh_solo_io_v1alpha1.FailoverService
+	for _, obj := range newSet.List() {
+		failoverServiceList = append(failoverServiceList, obj.(*networking_smh_solo_io_v1alpha1.FailoverService))
+	}
+	return NewFailoverServiceSet(failoverServiceList...)
+}

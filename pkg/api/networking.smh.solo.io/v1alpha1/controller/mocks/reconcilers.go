@@ -557,3 +557,184 @@ func (mr *MockVirtualMeshReconcileLoopMockRecorder) RunVirtualMeshReconciler(ctx
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunVirtualMeshReconciler", reflect.TypeOf((*MockVirtualMeshReconcileLoop)(nil).RunVirtualMeshReconciler), varargs...)
 }
+
+// MockFailoverServiceReconciler is a mock of FailoverServiceReconciler interface.
+type MockFailoverServiceReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockFailoverServiceReconcilerMockRecorder
+}
+
+// MockFailoverServiceReconcilerMockRecorder is the mock recorder for MockFailoverServiceReconciler.
+type MockFailoverServiceReconcilerMockRecorder struct {
+	mock *MockFailoverServiceReconciler
+}
+
+// NewMockFailoverServiceReconciler creates a new mock instance.
+func NewMockFailoverServiceReconciler(ctrl *gomock.Controller) *MockFailoverServiceReconciler {
+	mock := &MockFailoverServiceReconciler{ctrl: ctrl}
+	mock.recorder = &MockFailoverServiceReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFailoverServiceReconciler) EXPECT() *MockFailoverServiceReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileFailoverService mocks base method.
+func (m *MockFailoverServiceReconciler) ReconcileFailoverService(obj *v1alpha1.FailoverService) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileFailoverService", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileFailoverService indicates an expected call of ReconcileFailoverService.
+func (mr *MockFailoverServiceReconcilerMockRecorder) ReconcileFailoverService(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverService", reflect.TypeOf((*MockFailoverServiceReconciler)(nil).ReconcileFailoverService), obj)
+}
+
+// MockFailoverServiceDeletionReconciler is a mock of FailoverServiceDeletionReconciler interface.
+type MockFailoverServiceDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockFailoverServiceDeletionReconcilerMockRecorder
+}
+
+// MockFailoverServiceDeletionReconcilerMockRecorder is the mock recorder for MockFailoverServiceDeletionReconciler.
+type MockFailoverServiceDeletionReconcilerMockRecorder struct {
+	mock *MockFailoverServiceDeletionReconciler
+}
+
+// NewMockFailoverServiceDeletionReconciler creates a new mock instance.
+func NewMockFailoverServiceDeletionReconciler(ctrl *gomock.Controller) *MockFailoverServiceDeletionReconciler {
+	mock := &MockFailoverServiceDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockFailoverServiceDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFailoverServiceDeletionReconciler) EXPECT() *MockFailoverServiceDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileFailoverServiceDeletion mocks base method.
+func (m *MockFailoverServiceDeletionReconciler) ReconcileFailoverServiceDeletion(req reconcile.Request) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ReconcileFailoverServiceDeletion", req)
+}
+
+// ReconcileFailoverServiceDeletion indicates an expected call of ReconcileFailoverServiceDeletion.
+func (mr *MockFailoverServiceDeletionReconcilerMockRecorder) ReconcileFailoverServiceDeletion(req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverServiceDeletion", reflect.TypeOf((*MockFailoverServiceDeletionReconciler)(nil).ReconcileFailoverServiceDeletion), req)
+}
+
+// MockFailoverServiceFinalizer is a mock of FailoverServiceFinalizer interface.
+type MockFailoverServiceFinalizer struct {
+	ctrl     *gomock.Controller
+	recorder *MockFailoverServiceFinalizerMockRecorder
+}
+
+// MockFailoverServiceFinalizerMockRecorder is the mock recorder for MockFailoverServiceFinalizer.
+type MockFailoverServiceFinalizerMockRecorder struct {
+	mock *MockFailoverServiceFinalizer
+}
+
+// NewMockFailoverServiceFinalizer creates a new mock instance.
+func NewMockFailoverServiceFinalizer(ctrl *gomock.Controller) *MockFailoverServiceFinalizer {
+	mock := &MockFailoverServiceFinalizer{ctrl: ctrl}
+	mock.recorder = &MockFailoverServiceFinalizerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFailoverServiceFinalizer) EXPECT() *MockFailoverServiceFinalizerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileFailoverService mocks base method.
+func (m *MockFailoverServiceFinalizer) ReconcileFailoverService(obj *v1alpha1.FailoverService) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileFailoverService", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileFailoverService indicates an expected call of ReconcileFailoverService.
+func (mr *MockFailoverServiceFinalizerMockRecorder) ReconcileFailoverService(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverService", reflect.TypeOf((*MockFailoverServiceFinalizer)(nil).ReconcileFailoverService), obj)
+}
+
+// FailoverServiceFinalizerName mocks base method.
+func (m *MockFailoverServiceFinalizer) FailoverServiceFinalizerName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FailoverServiceFinalizerName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// FailoverServiceFinalizerName indicates an expected call of FailoverServiceFinalizerName.
+func (mr *MockFailoverServiceFinalizerMockRecorder) FailoverServiceFinalizerName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailoverServiceFinalizerName", reflect.TypeOf((*MockFailoverServiceFinalizer)(nil).FailoverServiceFinalizerName))
+}
+
+// FinalizeFailoverService mocks base method.
+func (m *MockFailoverServiceFinalizer) FinalizeFailoverService(obj *v1alpha1.FailoverService) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizeFailoverService", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizeFailoverService indicates an expected call of FinalizeFailoverService.
+func (mr *MockFailoverServiceFinalizerMockRecorder) FinalizeFailoverService(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeFailoverService", reflect.TypeOf((*MockFailoverServiceFinalizer)(nil).FinalizeFailoverService), obj)
+}
+
+// MockFailoverServiceReconcileLoop is a mock of FailoverServiceReconcileLoop interface.
+type MockFailoverServiceReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockFailoverServiceReconcileLoopMockRecorder
+}
+
+// MockFailoverServiceReconcileLoopMockRecorder is the mock recorder for MockFailoverServiceReconcileLoop.
+type MockFailoverServiceReconcileLoopMockRecorder struct {
+	mock *MockFailoverServiceReconcileLoop
+}
+
+// NewMockFailoverServiceReconcileLoop creates a new mock instance.
+func NewMockFailoverServiceReconcileLoop(ctrl *gomock.Controller) *MockFailoverServiceReconcileLoop {
+	mock := &MockFailoverServiceReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockFailoverServiceReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFailoverServiceReconcileLoop) EXPECT() *MockFailoverServiceReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// RunFailoverServiceReconciler mocks base method.
+func (m *MockFailoverServiceReconcileLoop) RunFailoverServiceReconciler(ctx context.Context, rec controller.FailoverServiceReconciler, predicates ...predicate.Predicate) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RunFailoverServiceReconciler", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RunFailoverServiceReconciler indicates an expected call of RunFailoverServiceReconciler.
+func (mr *MockFailoverServiceReconcileLoopMockRecorder) RunFailoverServiceReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunFailoverServiceReconciler", reflect.TypeOf((*MockFailoverServiceReconcileLoop)(nil).RunFailoverServiceReconciler), varargs...)
+}

@@ -501,3 +501,166 @@ func (mr *MockVirtualMeshSetMockRecorder) Intersection(set interface{}) *gomock.
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockVirtualMeshSet)(nil).Intersection), set)
 }
+
+// MockFailoverServiceSet is a mock of FailoverServiceSet interface.
+type MockFailoverServiceSet struct {
+	ctrl     *gomock.Controller
+	recorder *MockFailoverServiceSetMockRecorder
+}
+
+// MockFailoverServiceSetMockRecorder is the mock recorder for MockFailoverServiceSet.
+type MockFailoverServiceSetMockRecorder struct {
+	mock *MockFailoverServiceSet
+}
+
+// NewMockFailoverServiceSet creates a new mock instance.
+func NewMockFailoverServiceSet(ctrl *gomock.Controller) *MockFailoverServiceSet {
+	mock := &MockFailoverServiceSet{ctrl: ctrl}
+	mock.recorder = &MockFailoverServiceSetMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFailoverServiceSet) EXPECT() *MockFailoverServiceSetMockRecorder {
+	return m.recorder
+}
+
+// Keys mocks base method.
+func (m *MockFailoverServiceSet) Keys() sets.String {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Keys")
+	ret0, _ := ret[0].(sets.String)
+	return ret0
+}
+
+// Keys indicates an expected call of Keys.
+func (mr *MockFailoverServiceSetMockRecorder) Keys() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockFailoverServiceSet)(nil).Keys))
+}
+
+// List mocks base method.
+func (m *MockFailoverServiceSet) List() []*v1alpha1.FailoverService {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List")
+	ret0, _ := ret[0].([]*v1alpha1.FailoverService)
+	return ret0
+}
+
+// List indicates an expected call of List.
+func (mr *MockFailoverServiceSetMockRecorder) List() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockFailoverServiceSet)(nil).List))
+}
+
+// Map mocks base method.
+func (m *MockFailoverServiceSet) Map() map[string]*v1alpha1.FailoverService {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Map")
+	ret0, _ := ret[0].(map[string]*v1alpha1.FailoverService)
+	return ret0
+}
+
+// Map indicates an expected call of Map.
+func (mr *MockFailoverServiceSetMockRecorder) Map() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockFailoverServiceSet)(nil).Map))
+}
+
+// Insert mocks base method.
+func (m *MockFailoverServiceSet) Insert(failoverService ...*v1alpha1.FailoverService) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range failoverService {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
+}
+
+// Insert indicates an expected call of Insert.
+func (mr *MockFailoverServiceSetMockRecorder) Insert(failoverService ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockFailoverServiceSet)(nil).Insert), failoverService...)
+}
+
+// Equal mocks base method.
+func (m *MockFailoverServiceSet) Equal(failoverServiceSet v1alpha1sets.FailoverServiceSet) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Equal", failoverServiceSet)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Equal indicates an expected call of Equal.
+func (mr *MockFailoverServiceSetMockRecorder) Equal(failoverServiceSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockFailoverServiceSet)(nil).Equal), failoverServiceSet)
+}
+
+// Has mocks base method.
+func (m *MockFailoverServiceSet) Has(failoverService *v1alpha1.FailoverService) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Has", failoverService)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has.
+func (mr *MockFailoverServiceSetMockRecorder) Has(failoverService interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockFailoverServiceSet)(nil).Has), failoverService)
+}
+
+// Delete mocks base method.
+func (m *MockFailoverServiceSet) Delete(failoverService *v1alpha1.FailoverService) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", failoverService)
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockFailoverServiceSetMockRecorder) Delete(failoverService interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFailoverServiceSet)(nil).Delete), failoverService)
+}
+
+// Union mocks base method.
+func (m *MockFailoverServiceSet) Union(set v1alpha1sets.FailoverServiceSet) v1alpha1sets.FailoverServiceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Union", set)
+	ret0, _ := ret[0].(v1alpha1sets.FailoverServiceSet)
+	return ret0
+}
+
+// Union indicates an expected call of Union.
+func (mr *MockFailoverServiceSetMockRecorder) Union(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockFailoverServiceSet)(nil).Union), set)
+}
+
+// Difference mocks base method.
+func (m *MockFailoverServiceSet) Difference(set v1alpha1sets.FailoverServiceSet) v1alpha1sets.FailoverServiceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", set)
+	ret0, _ := ret[0].(v1alpha1sets.FailoverServiceSet)
+	return ret0
+}
+
+// Difference indicates an expected call of Difference.
+func (mr *MockFailoverServiceSetMockRecorder) Difference(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockFailoverServiceSet)(nil).Difference), set)
+}
+
+// Intersection mocks base method.
+func (m *MockFailoverServiceSet) Intersection(set v1alpha1sets.FailoverServiceSet) v1alpha1sets.FailoverServiceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Intersection", set)
+	ret0, _ := ret[0].(v1alpha1sets.FailoverServiceSet)
+	return ret0
+}
+
+// Intersection indicates an expected call of Intersection.
+func (mr *MockFailoverServiceSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockFailoverServiceSet)(nil).Intersection), set)
+}
