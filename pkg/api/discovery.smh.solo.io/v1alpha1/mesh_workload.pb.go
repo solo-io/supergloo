@@ -24,15 +24,19 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //*
-//The MeshWorkload is an abstraction for a workload/client which we have discovered to be part of a
-//given mesh. The Mesh object has references to the MeshWorkloads which belong to it.
+//The MeshWorkload is an abstraction for a workload/client which mesh-discovery has discovered to be part of a
+//given mesh (i.e. its traffic is managed by an in-mesh sidecar).
+//The Mesh object has references to the MeshWorkloads which belong to it.
 type MeshWorkloadSpec struct {
-	// The controller (e.g. deployment) that owns this workload
-	KubeController *MeshWorkloadSpec_KubeController `protobuf:"bytes,1,opt,name=kube_controller,json=kubeController,proto3" json:"kube_controller,omitempty"`
+	// workload_type specifies configuration to the specific type of workload
+	//
+	// Types that are valid to be assigned to WorkloadType:
+	//	*MeshWorkloadSpec_Kubernetes
+	WorkloadType isMeshWorkloadSpec_WorkloadType `protobuf_oneof:"workload_type"`
 	// The mesh with which this workload is associated
-	Mesh *types.ResourceRef `protobuf:"bytes,2,opt,name=mesh,proto3" json:"mesh,omitempty"`
+	Mesh *types.ResourceRef `protobuf:"bytes,4,opt,name=mesh,proto3" json:"mesh,omitempty"`
 	// Appmesh specific metadata
-	Appmesh              *MeshWorkloadSpec_Appmesh `protobuf:"bytes,3,opt,name=appmesh,proto3" json:"appmesh,omitempty"`
+	AppMesh              *MeshWorkloadSpec_AppMesh `protobuf:"bytes,5,opt,name=app_mesh,json=appMesh,proto3" json:"app_mesh,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
 	XXX_unrecognized     []byte                    `json:"-"`
 	XXX_sizecache        int32                     `json:"-"`
@@ -62,9 +66,27 @@ func (m *MeshWorkloadSpec) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MeshWorkloadSpec proto.InternalMessageInfo
 
-func (m *MeshWorkloadSpec) GetKubeController() *MeshWorkloadSpec_KubeController {
+type isMeshWorkloadSpec_WorkloadType interface {
+	isMeshWorkloadSpec_WorkloadType()
+	Equal(interface{}) bool
+}
+
+type MeshWorkloadSpec_Kubernetes struct {
+	Kubernetes *MeshWorkloadSpec_KubernertesWorkload `protobuf:"bytes,1,opt,name=kubernetes,proto3,oneof" json:"kubernetes,omitempty"`
+}
+
+func (*MeshWorkloadSpec_Kubernetes) isMeshWorkloadSpec_WorkloadType() {}
+
+func (m *MeshWorkloadSpec) GetWorkloadType() isMeshWorkloadSpec_WorkloadType {
 	if m != nil {
-		return m.KubeController
+		return m.WorkloadType
+	}
+	return nil
+}
+
+func (m *MeshWorkloadSpec) GetKubernetes() *MeshWorkloadSpec_KubernertesWorkload {
+	if x, ok := m.GetWorkloadType().(*MeshWorkloadSpec_Kubernetes); ok {
+		return x.Kubernetes
 	}
 	return nil
 }
@@ -76,122 +98,33 @@ func (m *MeshWorkloadSpec) GetMesh() *types.ResourceRef {
 	return nil
 }
 
-func (m *MeshWorkloadSpec) GetAppmesh() *MeshWorkloadSpec_Appmesh {
+func (m *MeshWorkloadSpec) GetAppMesh() *MeshWorkloadSpec_AppMesh {
 	if m != nil {
-		return m.Appmesh
+		return m.AppMesh
 	}
 	return nil
 }
 
-type MeshWorkloadSpec_Appmesh struct {
-	// The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container
-	VirtualNodeName string `protobuf:"bytes,1,opt,name=virtual_node_name,json=virtualNodeName,proto3" json:"virtual_node_name,omitempty"`
-	// Needed for declaring Appmesh VirtualNode listeners
-	Ports                []*MeshWorkloadSpec_Appmesh_ContainerPort `protobuf:"bytes,2,rep,name=ports,proto3" json:"ports,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                                  `json:"-"`
-	XXX_unrecognized     []byte                                    `json:"-"`
-	XXX_sizecache        int32                                     `json:"-"`
-}
-
-func (m *MeshWorkloadSpec_Appmesh) Reset()         { *m = MeshWorkloadSpec_Appmesh{} }
-func (m *MeshWorkloadSpec_Appmesh) String() string { return proto.CompactTextString(m) }
-func (*MeshWorkloadSpec_Appmesh) ProtoMessage()    {}
-func (*MeshWorkloadSpec_Appmesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_20997816445c0b02, []int{0, 0}
-}
-func (m *MeshWorkloadSpec_Appmesh) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_MeshWorkloadSpec_Appmesh.Unmarshal(m, b)
-}
-func (m *MeshWorkloadSpec_Appmesh) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_MeshWorkloadSpec_Appmesh.Marshal(b, m, deterministic)
-}
-func (m *MeshWorkloadSpec_Appmesh) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MeshWorkloadSpec_Appmesh.Merge(m, src)
-}
-func (m *MeshWorkloadSpec_Appmesh) XXX_Size() int {
-	return xxx_messageInfo_MeshWorkloadSpec_Appmesh.Size(m)
-}
-func (m *MeshWorkloadSpec_Appmesh) XXX_DiscardUnknown() {
-	xxx_messageInfo_MeshWorkloadSpec_Appmesh.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MeshWorkloadSpec_Appmesh proto.InternalMessageInfo
-
-func (m *MeshWorkloadSpec_Appmesh) GetVirtualNodeName() string {
-	if m != nil {
-		return m.VirtualNodeName
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*MeshWorkloadSpec) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*MeshWorkloadSpec_Kubernetes)(nil),
 	}
-	return ""
 }
 
-func (m *MeshWorkloadSpec_Appmesh) GetPorts() []*MeshWorkloadSpec_Appmesh_ContainerPort {
-	if m != nil {
-		return m.Ports
-	}
-	return nil
-}
-
-// k8s application container ports
-type MeshWorkloadSpec_Appmesh_ContainerPort struct {
-	Port                 uint32   `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
-	Protocol             string   `protobuf:"bytes,2,opt,name=protocol,proto3" json:"protocol,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *MeshWorkloadSpec_Appmesh_ContainerPort) Reset() {
-	*m = MeshWorkloadSpec_Appmesh_ContainerPort{}
-}
-func (m *MeshWorkloadSpec_Appmesh_ContainerPort) String() string { return proto.CompactTextString(m) }
-func (*MeshWorkloadSpec_Appmesh_ContainerPort) ProtoMessage()    {}
-func (*MeshWorkloadSpec_Appmesh_ContainerPort) Descriptor() ([]byte, []int) {
-	return fileDescriptor_20997816445c0b02, []int{0, 0, 0}
-}
-func (m *MeshWorkloadSpec_Appmesh_ContainerPort) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_MeshWorkloadSpec_Appmesh_ContainerPort.Unmarshal(m, b)
-}
-func (m *MeshWorkloadSpec_Appmesh_ContainerPort) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_MeshWorkloadSpec_Appmesh_ContainerPort.Marshal(b, m, deterministic)
-}
-func (m *MeshWorkloadSpec_Appmesh_ContainerPort) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MeshWorkloadSpec_Appmesh_ContainerPort.Merge(m, src)
-}
-func (m *MeshWorkloadSpec_Appmesh_ContainerPort) XXX_Size() int {
-	return xxx_messageInfo_MeshWorkloadSpec_Appmesh_ContainerPort.Size(m)
-}
-func (m *MeshWorkloadSpec_Appmesh_ContainerPort) XXX_DiscardUnknown() {
-	xxx_messageInfo_MeshWorkloadSpec_Appmesh_ContainerPort.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MeshWorkloadSpec_Appmesh_ContainerPort proto.InternalMessageInfo
-
-func (m *MeshWorkloadSpec_Appmesh_ContainerPort) GetPort() uint32 {
-	if m != nil {
-		return m.Port
-	}
-	return 0
-}
-
-func (m *MeshWorkloadSpec_Appmesh_ContainerPort) GetProtocol() string {
-	if m != nil {
-		return m.Protocol
-	}
-	return ""
-}
-
-type MeshWorkloadSpec_KubeController struct {
+// information describing a Kubernetes-based workload (e.g. a Deployment or DaemonSet)
+type MeshWorkloadSpec_KubernertesWorkload struct {
 	//*
 	//Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads.
-	//It has the generic name kube_controller as it can represent either a deployment or a daemonset. Or potentially
-	//any other kubernetes object which creates injected pods.
-	KubeControllerRef *types.ResourceRef `protobuf:"bytes,1,opt,name=kube_controller_ref,json=kubeControllerRef,proto3" json:"kube_controller_ref,omitempty"`
+	//It has the generic name controller as it can represent a deployment, daemonset, or statefulset.
+	Controller *types.ResourceRef `protobuf:"bytes,1,opt,name=controller,proto3" json:"controller,omitempty"`
 	//*
 	//these are the labels directly from the pods that this controller owns
-	//NB: these are NEITHER the matchLabels nor the labels on the controller itself.
-	//we need these to determine which services are backed by this workload, and
+	//NB: these labels are read directly from the pod template metadata.labels
+	//defined in the workload spec.
+	//We need these to determine which services are backed by this workload, and
 	//the service backing is determined by the pod labels.
-	Labels map[string]string `protobuf:"bytes,2,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	PodLabels map[string]string `protobuf:"bytes,2,rep,name=pod_labels,json=podLabels,proto3" json:"pod_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// Service account attached to the pods owned by this controller
 	ServiceAccountName   string   `protobuf:"bytes,3,opt,name=service_account_name,json=serviceAccountName,proto3" json:"service_account_name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -199,47 +132,145 @@ type MeshWorkloadSpec_KubeController struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *MeshWorkloadSpec_KubeController) Reset()         { *m = MeshWorkloadSpec_KubeController{} }
-func (m *MeshWorkloadSpec_KubeController) String() string { return proto.CompactTextString(m) }
-func (*MeshWorkloadSpec_KubeController) ProtoMessage()    {}
-func (*MeshWorkloadSpec_KubeController) Descriptor() ([]byte, []int) {
-	return fileDescriptor_20997816445c0b02, []int{0, 1}
+func (m *MeshWorkloadSpec_KubernertesWorkload) Reset()         { *m = MeshWorkloadSpec_KubernertesWorkload{} }
+func (m *MeshWorkloadSpec_KubernertesWorkload) String() string { return proto.CompactTextString(m) }
+func (*MeshWorkloadSpec_KubernertesWorkload) ProtoMessage()    {}
+func (*MeshWorkloadSpec_KubernertesWorkload) Descriptor() ([]byte, []int) {
+	return fileDescriptor_20997816445c0b02, []int{0, 0}
 }
-func (m *MeshWorkloadSpec_KubeController) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_MeshWorkloadSpec_KubeController.Unmarshal(m, b)
+func (m *MeshWorkloadSpec_KubernertesWorkload) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MeshWorkloadSpec_KubernertesWorkload.Unmarshal(m, b)
 }
-func (m *MeshWorkloadSpec_KubeController) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_MeshWorkloadSpec_KubeController.Marshal(b, m, deterministic)
+func (m *MeshWorkloadSpec_KubernertesWorkload) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MeshWorkloadSpec_KubernertesWorkload.Marshal(b, m, deterministic)
 }
-func (m *MeshWorkloadSpec_KubeController) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MeshWorkloadSpec_KubeController.Merge(m, src)
+func (m *MeshWorkloadSpec_KubernertesWorkload) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MeshWorkloadSpec_KubernertesWorkload.Merge(m, src)
 }
-func (m *MeshWorkloadSpec_KubeController) XXX_Size() int {
-	return xxx_messageInfo_MeshWorkloadSpec_KubeController.Size(m)
+func (m *MeshWorkloadSpec_KubernertesWorkload) XXX_Size() int {
+	return xxx_messageInfo_MeshWorkloadSpec_KubernertesWorkload.Size(m)
 }
-func (m *MeshWorkloadSpec_KubeController) XXX_DiscardUnknown() {
-	xxx_messageInfo_MeshWorkloadSpec_KubeController.DiscardUnknown(m)
+func (m *MeshWorkloadSpec_KubernertesWorkload) XXX_DiscardUnknown() {
+	xxx_messageInfo_MeshWorkloadSpec_KubernertesWorkload.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MeshWorkloadSpec_KubeController proto.InternalMessageInfo
+var xxx_messageInfo_MeshWorkloadSpec_KubernertesWorkload proto.InternalMessageInfo
 
-func (m *MeshWorkloadSpec_KubeController) GetKubeControllerRef() *types.ResourceRef {
+func (m *MeshWorkloadSpec_KubernertesWorkload) GetController() *types.ResourceRef {
 	if m != nil {
-		return m.KubeControllerRef
+		return m.Controller
 	}
 	return nil
 }
 
-func (m *MeshWorkloadSpec_KubeController) GetLabels() map[string]string {
+func (m *MeshWorkloadSpec_KubernertesWorkload) GetPodLabels() map[string]string {
 	if m != nil {
-		return m.Labels
+		return m.PodLabels
 	}
 	return nil
 }
 
-func (m *MeshWorkloadSpec_KubeController) GetServiceAccountName() string {
+func (m *MeshWorkloadSpec_KubernertesWorkload) GetServiceAccountName() string {
 	if m != nil {
 		return m.ServiceAccountName
+	}
+	return ""
+}
+
+// information relevant to AppMesh-injected workloads
+type MeshWorkloadSpec_AppMesh struct {
+	// The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container
+	VirtualNodeName string `protobuf:"bytes,1,opt,name=virtual_node_name,json=virtualNodeName,proto3" json:"virtual_node_name,omitempty"`
+	// Needed for declaring Appmesh VirtualNode listeners
+	Ports                []*MeshWorkloadSpec_AppMesh_ContainerPort `protobuf:"bytes,2,rep,name=ports,proto3" json:"ports,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                                  `json:"-"`
+	XXX_unrecognized     []byte                                    `json:"-"`
+	XXX_sizecache        int32                                     `json:"-"`
+}
+
+func (m *MeshWorkloadSpec_AppMesh) Reset()         { *m = MeshWorkloadSpec_AppMesh{} }
+func (m *MeshWorkloadSpec_AppMesh) String() string { return proto.CompactTextString(m) }
+func (*MeshWorkloadSpec_AppMesh) ProtoMessage()    {}
+func (*MeshWorkloadSpec_AppMesh) Descriptor() ([]byte, []int) {
+	return fileDescriptor_20997816445c0b02, []int{0, 1}
+}
+func (m *MeshWorkloadSpec_AppMesh) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MeshWorkloadSpec_AppMesh.Unmarshal(m, b)
+}
+func (m *MeshWorkloadSpec_AppMesh) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MeshWorkloadSpec_AppMesh.Marshal(b, m, deterministic)
+}
+func (m *MeshWorkloadSpec_AppMesh) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MeshWorkloadSpec_AppMesh.Merge(m, src)
+}
+func (m *MeshWorkloadSpec_AppMesh) XXX_Size() int {
+	return xxx_messageInfo_MeshWorkloadSpec_AppMesh.Size(m)
+}
+func (m *MeshWorkloadSpec_AppMesh) XXX_DiscardUnknown() {
+	xxx_messageInfo_MeshWorkloadSpec_AppMesh.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MeshWorkloadSpec_AppMesh proto.InternalMessageInfo
+
+func (m *MeshWorkloadSpec_AppMesh) GetVirtualNodeName() string {
+	if m != nil {
+		return m.VirtualNodeName
+	}
+	return ""
+}
+
+func (m *MeshWorkloadSpec_AppMesh) GetPorts() []*MeshWorkloadSpec_AppMesh_ContainerPort {
+	if m != nil {
+		return m.Ports
+	}
+	return nil
+}
+
+// k8s application container ports
+type MeshWorkloadSpec_AppMesh_ContainerPort struct {
+	Port                 uint32   `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
+	Protocol             string   `protobuf:"bytes,2,opt,name=protocol,proto3" json:"protocol,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MeshWorkloadSpec_AppMesh_ContainerPort) Reset() {
+	*m = MeshWorkloadSpec_AppMesh_ContainerPort{}
+}
+func (m *MeshWorkloadSpec_AppMesh_ContainerPort) String() string { return proto.CompactTextString(m) }
+func (*MeshWorkloadSpec_AppMesh_ContainerPort) ProtoMessage()    {}
+func (*MeshWorkloadSpec_AppMesh_ContainerPort) Descriptor() ([]byte, []int) {
+	return fileDescriptor_20997816445c0b02, []int{0, 1, 0}
+}
+func (m *MeshWorkloadSpec_AppMesh_ContainerPort) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MeshWorkloadSpec_AppMesh_ContainerPort.Unmarshal(m, b)
+}
+func (m *MeshWorkloadSpec_AppMesh_ContainerPort) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MeshWorkloadSpec_AppMesh_ContainerPort.Marshal(b, m, deterministic)
+}
+func (m *MeshWorkloadSpec_AppMesh_ContainerPort) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MeshWorkloadSpec_AppMesh_ContainerPort.Merge(m, src)
+}
+func (m *MeshWorkloadSpec_AppMesh_ContainerPort) XXX_Size() int {
+	return xxx_messageInfo_MeshWorkloadSpec_AppMesh_ContainerPort.Size(m)
+}
+func (m *MeshWorkloadSpec_AppMesh_ContainerPort) XXX_DiscardUnknown() {
+	xxx_messageInfo_MeshWorkloadSpec_AppMesh_ContainerPort.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MeshWorkloadSpec_AppMesh_ContainerPort proto.InternalMessageInfo
+
+func (m *MeshWorkloadSpec_AppMesh_ContainerPort) GetPort() uint32 {
+	if m != nil {
+		return m.Port
+	}
+	return 0
+}
+
+func (m *MeshWorkloadSpec_AppMesh_ContainerPort) GetProtocol() string {
+	if m != nil {
+		return m.Protocol
 	}
 	return ""
 }
@@ -287,10 +318,10 @@ func (m *MeshWorkloadStatus) GetObservedGeneration() int64 {
 
 func init() {
 	proto.RegisterType((*MeshWorkloadSpec)(nil), "discovery.smh.solo.io.MeshWorkloadSpec")
-	proto.RegisterType((*MeshWorkloadSpec_Appmesh)(nil), "discovery.smh.solo.io.MeshWorkloadSpec.Appmesh")
-	proto.RegisterType((*MeshWorkloadSpec_Appmesh_ContainerPort)(nil), "discovery.smh.solo.io.MeshWorkloadSpec.Appmesh.ContainerPort")
-	proto.RegisterType((*MeshWorkloadSpec_KubeController)(nil), "discovery.smh.solo.io.MeshWorkloadSpec.KubeController")
-	proto.RegisterMapType((map[string]string)(nil), "discovery.smh.solo.io.MeshWorkloadSpec.KubeController.LabelsEntry")
+	proto.RegisterType((*MeshWorkloadSpec_KubernertesWorkload)(nil), "discovery.smh.solo.io.MeshWorkloadSpec.KubernertesWorkload")
+	proto.RegisterMapType((map[string]string)(nil), "discovery.smh.solo.io.MeshWorkloadSpec.KubernertesWorkload.PodLabelsEntry")
+	proto.RegisterType((*MeshWorkloadSpec_AppMesh)(nil), "discovery.smh.solo.io.MeshWorkloadSpec.AppMesh")
+	proto.RegisterType((*MeshWorkloadSpec_AppMesh_ContainerPort)(nil), "discovery.smh.solo.io.MeshWorkloadSpec.AppMesh.ContainerPort")
 	proto.RegisterType((*MeshWorkloadStatus)(nil), "discovery.smh.solo.io.MeshWorkloadStatus")
 }
 
@@ -299,40 +330,41 @@ func init() {
 }
 
 var fileDescriptor_20997816445c0b02 = []byte{
-	// 524 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x54, 0x5d, 0x6b, 0xdb, 0x30,
-	0x14, 0x25, 0x49, 0xd3, 0xae, 0x37, 0xf4, 0x4b, 0xcd, 0x20, 0x18, 0x36, 0x4a, 0x9f, 0xca, 0x58,
-	0xe4, 0xa5, 0x83, 0xb1, 0x0d, 0xc6, 0x68, 0x47, 0x19, 0xfb, 0x68, 0x28, 0xea, 0xc3, 0xa0, 0x2f,
-	0x46, 0x76, 0x6e, 0x62, 0x13, 0xc7, 0xd7, 0xc8, 0x72, 0x46, 0xfe, 0x51, 0xff, 0xcb, 0xfe, 0xc5,
-	0x1e, 0xf7, 0x2b, 0x86, 0x64, 0x25, 0xab, 0x4b, 0x61, 0xd9, 0xde, 0xae, 0x74, 0x74, 0x8f, 0xcf,
-	0x3d, 0xc7, 0x12, 0x0c, 0x27, 0x89, 0x8e, 0xcb, 0x90, 0x47, 0x34, 0xf3, 0x0b, 0x4a, 0xa9, 0x9f,
-	0x90, 0x5f, 0xa0, 0x9a, 0x27, 0x11, 0xf6, 0x67, 0x58, 0xc4, 0xfd, 0xb8, 0x0c, 0x7d, 0x99, 0x27,
-	0xfe, 0x28, 0x29, 0x22, 0x9a, 0xa3, 0x5a, 0xf8, 0xf3, 0x81, 0x4c, 0xf3, 0x58, 0x0e, 0x7c, 0x83,
-	0x07, 0xdf, 0x49, 0x4d, 0x53, 0x92, 0x23, 0x9e, 0x2b, 0xd2, 0xc4, 0x1e, 0xaf, 0xce, 0xf1, 0x62,
-	0x16, 0x73, 0x43, 0xc9, 0x13, 0xf2, 0x9e, 0x3f, 0xc8, 0x19, 0x91, 0xc2, 0x3f, 0x74, 0x0a, 0xc7,
-	0x15, 0x89, 0xe7, 0xaf, 0x71, 0xba, 0xd0, 0x52, 0x97, 0x85, 0x6b, 0xe8, 0x4e, 0x68, 0x42, 0xb6,
-	0xf4, 0x4d, 0x55, 0xed, 0x1e, 0xff, 0x6a, 0xc3, 0xfe, 0x25, 0x16, 0xf1, 0x37, 0x27, 0xf1, 0x3a,
-	0xc7, 0x88, 0x05, 0xb0, 0x37, 0x2d, 0x43, 0x0c, 0x22, 0xca, 0xb4, 0xa2, 0x34, 0x45, 0xd5, 0x6b,
-	0x1c, 0x35, 0x4e, 0x3a, 0xa7, 0xaf, 0xf8, 0x83, 0xd2, 0xf9, 0x7d, 0x06, 0xfe, 0xa5, 0x0c, 0xf1,
-	0xc3, 0xaa, 0x5b, 0xec, 0x4e, 0x6b, 0x6b, 0x36, 0x80, 0x0d, 0x23, 0xbb, 0xd7, 0xb4, 0xac, 0x4f,
-	0xb8, 0x91, 0x5d, 0x23, 0x14, 0x58, 0x50, 0xa9, 0x22, 0x14, 0x38, 0x16, 0xf6, 0x28, 0xfb, 0x04,
-	0x5b, 0x32, 0xcf, 0x6d, 0x57, 0xcb, 0x76, 0xf9, 0xeb, 0x6a, 0x39, 0xab, 0xda, 0xc4, 0xb2, 0xdf,
-	0xfb, 0xd1, 0x80, 0x2d, 0xb7, 0xc9, 0x9e, 0xc1, 0xc1, 0x3c, 0x51, 0xba, 0x94, 0x69, 0x90, 0xd1,
-	0x08, 0x83, 0x4c, 0xce, 0xd0, 0x0e, 0xbb, 0x2d, 0xf6, 0x1c, 0x30, 0xa4, 0x11, 0x0e, 0xe5, 0x0c,
-	0xd9, 0x35, 0xb4, 0x73, 0x52, 0xba, 0xe8, 0x35, 0x8f, 0x5a, 0x27, 0x9d, 0xd3, 0x77, 0xff, 0x28,
-	0x80, 0x1b, 0x03, 0x64, 0x92, 0xa1, 0xba, 0x22, 0xa5, 0x45, 0xc5, 0xe5, 0xbd, 0x87, 0x9d, 0xda,
-	0x3e, 0x63, 0xb0, 0x61, 0x10, 0x2b, 0x62, 0x47, 0xd8, 0x9a, 0x79, 0xf0, 0xc8, 0xc6, 0x15, 0x51,
-	0x6a, 0x3d, 0xdb, 0x16, 0xab, 0xb5, 0x77, 0xdb, 0x84, 0xdd, 0xba, 0xdd, 0xec, 0x12, 0x0e, 0xef,
-	0xe5, 0x17, 0x28, 0x1c, 0xbb, 0x0c, 0xff, 0xe2, 0xf6, 0x41, 0x3d, 0x2a, 0x81, 0x63, 0x76, 0x03,
-	0x9b, 0xa9, 0x0c, 0x31, 0x5d, 0x0e, 0x7e, 0xfe, 0x7f, 0x7f, 0x01, 0xff, 0x6a, 0x49, 0x2e, 0x32,
-	0xad, 0x16, 0xc2, 0x31, 0xb2, 0x17, 0xd0, 0x75, 0x3f, 0x72, 0x20, 0xa3, 0x88, 0xca, 0x4c, 0x57,
-	0x11, 0xb4, 0xec, 0x94, 0xcc, 0x61, 0x67, 0x15, 0x64, 0x52, 0xf0, 0xde, 0x40, 0xe7, 0x0e, 0x11,
-	0xdb, 0x87, 0xd6, 0x14, 0x17, 0x2e, 0x32, 0x53, 0xb2, 0x2e, 0xb4, 0xe7, 0x32, 0x2d, 0xd1, 0x39,
-	0x55, 0x2d, 0xde, 0x36, 0x5f, 0x37, 0x8e, 0x2f, 0x80, 0xd5, 0x34, 0xda, 0xeb, 0xc1, 0x7c, 0x38,
-	0xa4, 0xd0, 0x7c, 0x08, 0x47, 0xc1, 0x04, 0x33, 0x54, 0x52, 0x27, 0x94, 0x59, 0xc6, 0x96, 0x60,
-	0x4b, 0xe8, 0xe3, 0x0a, 0x39, 0xbf, 0xba, 0xfd, 0xf9, 0xb4, 0x71, 0xf3, 0x79, 0x9d, 0x57, 0x21,
-	0x9f, 0x4e, 0xea, 0x2f, 0xc3, 0x5d, 0xc3, 0x56, 0x17, 0x35, 0xdc, 0xb4, 0x69, 0xbe, 0xfc, 0x1d,
-	0x00, 0x00, 0xff, 0xff, 0x87, 0x2f, 0x35, 0x1b, 0x6a, 0x04, 0x00, 0x00,
+	// 543 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0x51, 0x8b, 0xd3, 0x40,
+	0x10, 0x36, 0xed, 0xf5, 0xee, 0x3a, 0x47, 0xbd, 0x73, 0xaf, 0x42, 0x09, 0x28, 0xe5, 0x9e, 0x8a,
+	0xd8, 0xc4, 0x9e, 0x2f, 0xa2, 0x1e, 0x72, 0x27, 0x87, 0x52, 0xb5, 0x94, 0xdc, 0x83, 0x20, 0x48,
+	0xd8, 0x24, 0x73, 0x4d, 0x68, 0x9a, 0x59, 0x76, 0x37, 0x95, 0x3e, 0xfa, 0x6f, 0x7c, 0xf3, 0x87,
+	0xf8, 0x2f, 0xfc, 0x25, 0x92, 0x4d, 0x5a, 0x5b, 0x29, 0x58, 0xf1, 0x6d, 0x76, 0xbe, 0xfd, 0xbe,
+	0xf9, 0x66, 0x92, 0x59, 0x18, 0x4d, 0x12, 0x1d, 0xe7, 0x81, 0x13, 0xd2, 0xcc, 0x55, 0x94, 0x52,
+	0x3f, 0x21, 0x57, 0xa1, 0x9c, 0x27, 0x21, 0xf6, 0x67, 0xa8, 0xe2, 0x7e, 0x9c, 0x07, 0x2e, 0x17,
+	0x89, 0x1b, 0x25, 0x2a, 0xa4, 0x39, 0xca, 0x85, 0x3b, 0x1f, 0xf0, 0x54, 0xc4, 0x7c, 0xe0, 0x16,
+	0xb8, 0xff, 0x85, 0xe4, 0x34, 0x25, 0x1e, 0x39, 0x42, 0x92, 0x26, 0x76, 0x7f, 0x75, 0xcf, 0x51,
+	0xb3, 0xd8, 0x29, 0x24, 0x9d, 0x84, 0xec, 0xc7, 0x5b, 0x35, 0x43, 0x92, 0xf8, 0x5b, 0x4e, 0xe2,
+	0x6d, 0x29, 0x62, 0xbb, 0x3b, 0xdc, 0x56, 0x9a, 0xeb, 0x5c, 0x55, 0x84, 0xf6, 0x84, 0x26, 0x64,
+	0x42, 0xb7, 0x88, 0xca, 0xec, 0xd9, 0xd7, 0x7d, 0x38, 0xf9, 0x80, 0x2a, 0xfe, 0x58, 0x59, 0xbc,
+	0x11, 0x18, 0xb2, 0xcf, 0x00, 0xd3, 0x3c, 0x40, 0x99, 0xa1, 0x46, 0xd5, 0xb1, 0xba, 0x56, 0xef,
+	0xe8, 0xfc, 0x85, 0xb3, 0xd5, 0xb5, 0xf3, 0x27, 0xd9, 0x79, 0x57, 0x32, 0xa5, 0x46, 0xb5, 0xcc,
+	0xbf, 0xbd, 0xe3, 0xad, 0x09, 0xb2, 0x01, 0xec, 0x15, 0xa6, 0x3b, 0x7b, 0x46, 0xf8, 0x81, 0x53,
+	0x98, 0xde, 0xd0, 0xf4, 0x50, 0x51, 0x2e, 0x43, 0xf4, 0xf0, 0xd6, 0x33, 0x57, 0xd9, 0x10, 0x0e,
+	0xb9, 0x10, 0xbe, 0xa1, 0x35, 0x0c, 0xcd, 0xdd, 0xd5, 0xcf, 0xa5, 0x10, 0x45, 0xce, 0x3b, 0xe0,
+	0x65, 0x60, 0x7f, 0xaf, 0xc1, 0xe9, 0x16, 0x93, 0xec, 0x02, 0x20, 0xa4, 0x4c, 0x4b, 0x4a, 0x53,
+	0x94, 0x55, 0xd7, 0x7f, 0x31, 0xb7, 0x46, 0x60, 0x09, 0x80, 0xa0, 0xc8, 0x4f, 0x79, 0x80, 0xa9,
+	0xea, 0xd4, 0xba, 0xf5, 0xde, 0xd1, 0xf9, 0xf0, 0x3f, 0x86, 0xe6, 0x8c, 0x29, 0x7a, 0x6f, 0xc4,
+	0xae, 0x33, 0x2d, 0x17, 0x5e, 0x53, 0x2c, 0xcf, 0xec, 0x09, 0xb4, 0xab, 0xaf, 0xef, 0xf3, 0x30,
+	0xa4, 0x3c, 0xd3, 0x7e, 0xc6, 0x67, 0xd8, 0xa9, 0x77, 0xad, 0x5e, 0xd3, 0x63, 0x15, 0x76, 0x59,
+	0x42, 0x23, 0x3e, 0x43, 0xfb, 0x25, 0xdc, 0xdd, 0x94, 0x63, 0x27, 0x50, 0x9f, 0xe2, 0xc2, 0xb4,
+	0xd9, 0xf4, 0x8a, 0x90, 0xb5, 0xa1, 0x31, 0xe7, 0x69, 0x8e, 0x9d, 0x9a, 0xc9, 0x95, 0x87, 0xe7,
+	0xb5, 0x67, 0x96, 0xfd, 0xc3, 0x82, 0x83, 0x6a, 0x8c, 0xec, 0x11, 0xdc, 0x9b, 0x27, 0x52, 0xe7,
+	0x3c, 0xf5, 0x33, 0x8a, 0xb0, 0x2c, 0x5c, 0xaa, 0x1c, 0x57, 0xc0, 0x88, 0x22, 0x2c, 0xaa, 0xb2,
+	0x1b, 0x68, 0x08, 0x92, 0x7a, 0x39, 0x8d, 0x8b, 0x7f, 0xfc, 0x64, 0xce, 0x6b, 0xca, 0x34, 0x4f,
+	0x32, 0x94, 0x63, 0x92, 0xda, 0x2b, 0xb5, 0xec, 0x57, 0xd0, 0xda, 0xc8, 0x33, 0x06, 0x7b, 0x05,
+	0x62, 0x4c, 0xb4, 0x3c, 0x13, 0x33, 0x1b, 0x0e, 0xcd, 0xff, 0x1d, 0x52, 0x5a, 0xb5, 0xb3, 0x3a,
+	0x5f, 0x1d, 0x43, 0x6b, 0xb9, 0x90, 0xbe, 0x5e, 0x08, 0x3c, 0xbb, 0x06, 0xb6, 0x61, 0xc1, 0x6c,
+	0x0d, 0x73, 0xe1, 0x94, 0x82, 0x62, 0x94, 0x18, 0xf9, 0x13, 0xcc, 0x50, 0x72, 0x9d, 0x50, 0x66,
+	0xaa, 0xd4, 0x3d, 0xb6, 0x84, 0xde, 0xac, 0x90, 0xab, 0xf1, 0xb7, 0x9f, 0x0f, 0xad, 0x4f, 0xc3,
+	0x5d, 0x1e, 0x0b, 0x31, 0x9d, 0x6c, 0x3e, 0x18, 0xeb, 0xf3, 0x58, 0xed, 0x6f, 0xb0, 0x6f, 0x3c,
+	0x3f, 0xfd, 0x15, 0x00, 0x00, 0xff, 0xff, 0xed, 0xbf, 0x5f, 0x2c, 0x81, 0x04, 0x00, 0x00,
 }
 
 func (this *MeshWorkloadSpec) Equal(that interface{}) bool {
@@ -354,13 +386,19 @@ func (this *MeshWorkloadSpec) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.KubeController.Equal(that1.KubeController) {
+	if that1.WorkloadType == nil {
+		if this.WorkloadType != nil {
+			return false
+		}
+	} else if this.WorkloadType == nil {
+		return false
+	} else if !this.WorkloadType.Equal(that1.WorkloadType) {
 		return false
 	}
 	if !this.Mesh.Equal(that1.Mesh) {
 		return false
 	}
-	if !this.Appmesh.Equal(that1.Appmesh) {
+	if !this.AppMesh.Equal(that1.AppMesh) {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -368,14 +406,76 @@ func (this *MeshWorkloadSpec) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *MeshWorkloadSpec_Appmesh) Equal(that interface{}) bool {
+func (this *MeshWorkloadSpec_Kubernetes) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*MeshWorkloadSpec_Appmesh)
+	that1, ok := that.(*MeshWorkloadSpec_Kubernetes)
 	if !ok {
-		that2, ok := that.(MeshWorkloadSpec_Appmesh)
+		that2, ok := that.(MeshWorkloadSpec_Kubernetes)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Kubernetes.Equal(that1.Kubernetes) {
+		return false
+	}
+	return true
+}
+func (this *MeshWorkloadSpec_KubernertesWorkload) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MeshWorkloadSpec_KubernertesWorkload)
+	if !ok {
+		that2, ok := that.(MeshWorkloadSpec_KubernertesWorkload)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Controller.Equal(that1.Controller) {
+		return false
+	}
+	if len(this.PodLabels) != len(that1.PodLabels) {
+		return false
+	}
+	for i := range this.PodLabels {
+		if this.PodLabels[i] != that1.PodLabels[i] {
+			return false
+		}
+	}
+	if this.ServiceAccountName != that1.ServiceAccountName {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *MeshWorkloadSpec_AppMesh) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MeshWorkloadSpec_AppMesh)
+	if !ok {
+		that2, ok := that.(MeshWorkloadSpec_AppMesh)
 		if ok {
 			that1 = &that2
 		} else {
@@ -403,14 +503,14 @@ func (this *MeshWorkloadSpec_Appmesh) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *MeshWorkloadSpec_Appmesh_ContainerPort) Equal(that interface{}) bool {
+func (this *MeshWorkloadSpec_AppMesh_ContainerPort) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*MeshWorkloadSpec_Appmesh_ContainerPort)
+	that1, ok := that.(*MeshWorkloadSpec_AppMesh_ContainerPort)
 	if !ok {
-		that2, ok := that.(MeshWorkloadSpec_Appmesh_ContainerPort)
+		that2, ok := that.(MeshWorkloadSpec_AppMesh_ContainerPort)
 		if ok {
 			that1 = &that2
 		} else {
@@ -426,44 +526,6 @@ func (this *MeshWorkloadSpec_Appmesh_ContainerPort) Equal(that interface{}) bool
 		return false
 	}
 	if this.Protocol != that1.Protocol {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *MeshWorkloadSpec_KubeController) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*MeshWorkloadSpec_KubeController)
-	if !ok {
-		that2, ok := that.(MeshWorkloadSpec_KubeController)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.KubeControllerRef.Equal(that1.KubeControllerRef) {
-		return false
-	}
-	if len(this.Labels) != len(that1.Labels) {
-		return false
-	}
-	for i := range this.Labels {
-		if this.Labels[i] != that1.Labels[i] {
-			return false
-		}
-	}
-	if this.ServiceAccountName != that1.ServiceAccountName {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {

@@ -9,52 +9,62 @@ import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 /**
-    The MeshWorkload is an abstraction for a workload/client which we have discovered to be part of a
-    given mesh. The Mesh object has references to the MeshWorkloads which belong to it.
+    The MeshWorkload is an abstraction for a workload/client which mesh-discovery has discovered to be part of a
+    given mesh (i.e. its traffic is managed by an in-mesh sidecar).
+    The Mesh object has references to the MeshWorkloads which belong to it.
 */
 message MeshWorkloadSpec {
-    message Appmesh {
+
+    // workload_type specifies configuration to the specific type of workload
+    oneof workload_type {
+        // information describing workloads backed by Kubernetes Pods.
+        KubernertesWorkload kubernetes = 1;
+    }
+
+    // The mesh with which this workload is associated
+    core.smh.solo.io.ResourceRef mesh = 4;
+
+    // Appmesh specific metadata
+    AppMesh app_mesh = 5;
+
+    // information describing a Kubernetes-based workload (e.g. a Deployment or DaemonSet)
+    message KubernertesWorkload {
+        /**
+           Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads.
+           It has the generic name controller as it can represent a deployment, daemonset, or statefulset.
+        */
+        core.smh.solo.io.ResourceRef controller = 1;
+
+        /**
+            these are the labels directly from the pods that this controller owns
+            NB: these labels are read directly from the pod template metadata.labels
+            defined in the workload spec.
+            We need these to determine which services are backed by this workload, and
+            the service backing is determined by the pod labels.
+        */
+        map<string, string> pod_labels = 2;
+
+        // Service account attached to the pods owned by this controller
+        string service_account_name = 3;
+    }
+
+
+    // information relevant to AppMesh-injected workloads
+    message AppMesh {
+        // The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container
+        string virtual_node_name = 1;
+
+        // Needed for declaring Appmesh VirtualNode listeners
+        repeated ContainerPort ports = 2;
+
         // k8s application container ports
         message ContainerPort {
             uint32 port = 1;
             string protocol = 2;
         }
 
-        // The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container
-        string virtual_node_name = 1;
-
-        // Needed for declaring Appmesh VirtualNode listeners
-        repeated ContainerPort ports = 2;
     }
 
-    message KubeController {
-        /**
-           Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads.
-           It has the generic name kube_controller as it can represent either a deployment or a daemonset. Or potentially
-           any other kubernetes object which creates injected pods.
-        */
-        core.smh.solo.io.ResourceRef kube_controller_ref = 1;
-
-        /**
-            these are the labels directly from the pods that this controller owns
-            NB: these are NEITHER the matchLabels nor the labels on the controller itself.
-            we need these to determine which services are backed by this workload, and
-            the service backing is determined by the pod labels.
-        */
-        map<string, string> labels = 2;
-
-        // Service account attached to the pods owned by this controller
-        string service_account_name = 3;
-    }
-
-    // The controller (e.g. deployment) that owns this workload
-    KubeController kube_controller = 1;
-
-    // The mesh with which this workload is associated
-    core.smh.solo.io.ResourceRef mesh = 2;
-
-    // Appmesh specific metadata
-    Appmesh appmesh = 3;
 }
 
 message MeshWorkloadStatus {

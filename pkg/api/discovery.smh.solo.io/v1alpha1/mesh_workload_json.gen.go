@@ -29,36 +29,36 @@ func (this *MeshWorkloadSpec) UnmarshalJSON(b []byte) error {
 	return MeshWorkloadUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for MeshWorkloadSpec_Appmesh
-func (this *MeshWorkloadSpec_Appmesh) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for MeshWorkloadSpec_KubernertesWorkload
+func (this *MeshWorkloadSpec_KubernertesWorkload) MarshalJSON() ([]byte, error) {
 	str, err := MeshWorkloadMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for MeshWorkloadSpec_Appmesh
-func (this *MeshWorkloadSpec_Appmesh) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for MeshWorkloadSpec_KubernertesWorkload
+func (this *MeshWorkloadSpec_KubernertesWorkload) UnmarshalJSON(b []byte) error {
 	return MeshWorkloadUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for MeshWorkloadSpec_Appmesh_ContainerPort
-func (this *MeshWorkloadSpec_Appmesh_ContainerPort) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for MeshWorkloadSpec_AppMesh
+func (this *MeshWorkloadSpec_AppMesh) MarshalJSON() ([]byte, error) {
 	str, err := MeshWorkloadMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for MeshWorkloadSpec_Appmesh_ContainerPort
-func (this *MeshWorkloadSpec_Appmesh_ContainerPort) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for MeshWorkloadSpec_AppMesh
+func (this *MeshWorkloadSpec_AppMesh) UnmarshalJSON(b []byte) error {
 	return MeshWorkloadUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for MeshWorkloadSpec_KubeController
-func (this *MeshWorkloadSpec_KubeController) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for MeshWorkloadSpec_AppMesh_ContainerPort
+func (this *MeshWorkloadSpec_AppMesh_ContainerPort) MarshalJSON() ([]byte, error) {
 	str, err := MeshWorkloadMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for MeshWorkloadSpec_KubeController
-func (this *MeshWorkloadSpec_KubeController) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for MeshWorkloadSpec_AppMesh_ContainerPort
+func (this *MeshWorkloadSpec_AppMesh_ContainerPort) UnmarshalJSON(b []byte) error {
 	return MeshWorkloadUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
