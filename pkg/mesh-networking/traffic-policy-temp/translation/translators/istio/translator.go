@@ -127,26 +127,26 @@ func (i *istioTrafficPolicyTranslator) buildDestinationRule(
 	var istioOutlierDetection *istio_networking_types.OutlierDetection
 	// Previous validation ensures that all OutlierDetection settings are equivalent across TrafficPolicies for this MeshService
 	for _, tp := range trafficPolicies {
-		if tp.GetTrafficPolicySpec().GetOutlierDetection() == nil {
+		outlierDetection := tp.GetTrafficPolicySpec().GetOutlierDetection()
+		if outlierDetection == nil {
 			continue
 		}
-		outlierDetection := tp.GetTrafficPolicySpec().GetOutlierDetection()
 		istioOutlierDetection = &istio_networking_types.OutlierDetection{}
-		// Set defaults
-		if outlierDetection.GetConsecutiveErrors() == 0 {
+		// Set defaults if needed
+		if consecutiveErrs := outlierDetection.GetConsecutiveErrors(); consecutiveErrs != 0 {
+			istioOutlierDetection.Consecutive_5XxErrors = &types.UInt32Value{Value: consecutiveErrs}
+		} else {
 			istioOutlierDetection.Consecutive_5XxErrors = &types.UInt32Value{Value: 5}
-		} else {
-			istioOutlierDetection.Consecutive_5XxErrors = &types.UInt32Value{Value: outlierDetection.GetConsecutiveErrors()}
 		}
-		if outlierDetection.GetInterval() == nil {
+		if interval := outlierDetection.GetInterval(); interval != nil {
+			istioOutlierDetection.Interval = interval
+		} else {
 			istioOutlierDetection.Interval = &types.Duration{Seconds: 10}
-		} else {
-			istioOutlierDetection.Interval = outlierDetection.GetInterval()
 		}
-		if outlierDetection.GetBaseEjectionTime() == nil {
-			istioOutlierDetection.BaseEjectionTime = &types.Duration{Seconds: 30}
+		if ejectionTime := outlierDetection.GetBaseEjectionTime(); ejectionTime != nil {
+			istioOutlierDetection.BaseEjectionTime = ejectionTime
 		} else {
-			istioOutlierDetection.BaseEjectionTime = outlierDetection.GetBaseEjectionTime()
+			istioOutlierDetection.BaseEjectionTime = &types.Duration{Seconds: 30}
 		}
 	}
 	return &istio_client_networking_types.DestinationRule{
