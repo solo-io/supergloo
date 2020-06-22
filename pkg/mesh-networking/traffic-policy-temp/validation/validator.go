@@ -31,8 +31,9 @@ var (
 		return eris.Errorf("Subset selector with key: %s, value: %s not found on k8s service of name: %s, namespace: %s",
 			subsetKey, subsetValue, meshService.GetName(), meshService.GetNamespace())
 	}
-	NilDestinationRef = eris.New("Destination reference must be non-nil")
-	MinDurationError  = eris.New("Duration must be >= 1 millisecond")
+	NilDestinationRef               = eris.New("Destination reference must be non-nil")
+	MinDurationError                = eris.New("Duration must be >= 1 millisecond")
+	InvalidOutlierDetectionInterval = eris.Errorf("OutlierDetection.Interval must be >= 1ms")
 )
 
 func NewValidator(
@@ -205,6 +206,7 @@ func (v *validator) validatePercentage(percentage float64) error {
 	return nil
 }
 
+// Return error if duration < 1ms
 func (v *validator) validateDuration(duration *types.Duration) error {
 	if duration.GetSeconds() < 0 || (duration.GetSeconds() == 0 && duration.GetNanos() < 1000000) {
 		return MinDurationError
@@ -237,6 +239,19 @@ func (v *validator) validateSubsetSelectors(
 		if !keyExists || !found {
 			return SubsetSelectorNotFound(meshService, subsetKey, subsetValue)
 		}
+	}
+	return nil
+}
+
+func (v *validator) validateOutlierDetection(
+	outlierDetection smh_networking_types.TrafficPolicySpec_OutlierDetection,
+) error {
+	var err error
+	if err = v.validateDuration(outlierDetection.GetInterval()); err != nil {
+		return err
+	}
+	if err = v.validateDuration(outlierDetection.GetBaseEjectionTime()); err != nil {
+		return err
 	}
 	return nil
 }
