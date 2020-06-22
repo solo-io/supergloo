@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
@@ -87,7 +88,7 @@ func (i *istioTrafficPolicyTranslator) Translate(
 		return nil, nil
 	}
 
-	destinationRule := i.buildDestinationRule(meshService, allMeshServices)
+	destinationRule := i.buildDestinationRule(meshService, allMeshServices, trafficPolicies)
 
 	virtualService, translationErrors := i.buildVirtualService(meshService, allMeshServices, trafficPolicies)
 
@@ -121,7 +122,33 @@ func (*istioTrafficPolicyTranslator) GetTranslationLabels() map[string]string {
 func (i *istioTrafficPolicyTranslator) buildDestinationRule(
 	meshService *smh_discovery.MeshService,
 	allMeshServices []*smh_discovery.MeshService,
+	trafficPolicies []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) *istio_client_networking_types.DestinationRule {
+	var istioOutlierDetection *istio_networking_types.OutlierDetection
+	// Previous validation ensures that all OutlierDetection settings are equivalent across TrafficPolicies for this MeshService
+	for _, tp := range trafficPolicies {
+		if tp.GetTrafficPolicySpec().GetOutlierDetection() == nil {
+			continue
+		}
+		outlierDetection := tp.GetTrafficPolicySpec().GetOutlierDetection()
+		istioOutlierDetection = &istio_networking_types.OutlierDetection{}
+		// Set defaults
+		if outlierDetection.GetConsecutiveErrors() == 0 {
+			istioOutlierDetection.Consecutive_5XxErrors = &types.UInt32Value{Value: 5}
+		} else {
+			istioOutlierDetection.Consecutive_5XxErrors = &types.UInt32Value{Value: outlierDetection.GetConsecutiveErrors()}
+		}
+		if outlierDetection.GetInterval() == nil {
+			istioOutlierDetection.Interval = &types.Duration{Seconds: 10}
+		} else {
+			istioOutlierDetection.Interval = outlierDetection.GetInterval()
+		}
+		if outlierDetection.GetBaseEjectionTime() == nil {
+			istioOutlierDetection.BaseEjectionTime = &types.Duration{Seconds: 30}
+		} else {
+			istioOutlierDetection.BaseEjectionTime = outlierDetection.GetBaseEjectionTime()
+		}
+	}
 	return &istio_client_networking_types.DestinationRule{
 		ObjectMeta: selection.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
 		Spec: istio_networking_types.DestinationRule{
@@ -130,6 +157,7 @@ func (i *istioTrafficPolicyTranslator) buildDestinationRule(
 				Tls: &istio_networking_types.ClientTLSSettings{
 					Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
 				},
+				OutlierDetection: istioOutlierDetection,
 			},
 			Subsets: i.findReferencedSubsetsForService(meshService, allMeshServices),
 		},

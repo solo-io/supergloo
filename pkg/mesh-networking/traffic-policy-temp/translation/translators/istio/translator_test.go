@@ -1250,6 +1250,62 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			})
 		})
 
+		It("should translate outlier detection", func() {
+			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+				{
+					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						OutlierDetection: &smh_networking_types.TrafficPolicySpec_OutlierDetection{
+							ConsecutiveErrors: 2,
+						},
+					},
+				},
+			}
+			serviceBeingTranslated := &smh_discovery.MeshService{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Name:      "mesh-service",
+					Namespace: container_runtime.GetWriteNamespace(),
+				},
+				Spec: smh_discovery_types.MeshServiceSpec{
+					Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
+					KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+						Ref: &smh_core_types.ResourceRef{
+							Name:      "kube-svc",
+							Namespace: "application-namespace",
+						},
+						Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
+							Port:     8000,
+							Name:     "test-port",
+							Protocol: "tcp",
+						}},
+					},
+				},
+			}
+			result, errs := translator.Translate(
+				serviceBeingTranslated,
+				[]*smh_discovery.MeshService{serviceBeingTranslated},
+				istioMesh,
+				policies,
+			)
+			Expect(errs).To(HaveLen(0))
+			Expect(result.DestinationRules).To(Equal([]*istio_client_networking_types.DestinationRule{{
+				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
+				Spec: istio_networking_types.DestinationRule{
+					Host: serviceBeingTranslated.Spec.KubeService.Ref.Name,
+					TrafficPolicy: &istio_networking_types.TrafficPolicy{
+						Tls: &istio_networking_types.ClientTLSSettings{
+							Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
+						},
+						OutlierDetection: &istio_networking_types.OutlierDetection{
+							Consecutive_5XxErrors: &proto_types.UInt32Value{Value: 2},
+							Interval:              &proto_types.Duration{Seconds: 10},
+							BaseEjectionTime:      &proto_types.Duration{Seconds: 30},
+						},
+					},
+				},
+			}}))
+		})
+
 		It("should deterministically order HTTPRoutes according to decreasing specificity", func() {
 			sourceNamespace := "source-namespace"
 			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
