@@ -161,7 +161,7 @@ func (i *istioTrafficPolicyTranslator) findReferencedSubsetsForService(
 
 				// our service being shifted to is referenced in this traffic shift; record all the subsets
 				subsetName := i.buildUniqueSubsetName(destination.Subset)
-				if !subsetContains(subsetName, subsets) {
+				if subsetName != "" && !subsetContains(subsetName, subsets) {
 					subsets = append(subsets, &istio_networking_types.Subset{
 						Name:   subsetName,
 						Labels: destination.Subset,

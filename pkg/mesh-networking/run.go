@@ -18,7 +18,7 @@ func Run(ctx context.Context) {
 
 	// build all the objects needed for multicluster operations
 	meshNetworkingContext, err := wire.InitializeMeshNetworking(
-		contextutils.WithLogger(ctx, "access_control_enforcer"),
+		ctx,
 	)
 	if err != nil {
 		logger.Fatalw("error initializing mesh networking clients", zap.Error(err))

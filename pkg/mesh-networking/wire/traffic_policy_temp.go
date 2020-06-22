@@ -22,6 +22,7 @@ var (
 	NewTrafficPolicyProviderSet = wire.NewSet(
 		NewReconciler,
 	)
+	labels = map[string]string{"created-by": "smh-traffic-policy"}
 )
 
 func NewReconciler(
@@ -31,8 +32,8 @@ func NewReconciler(
 	dynamicClientGetter multicluster.DynamicClientGetter,
 ) reconcile.Reconciler {
 
-	virtualServiceReconciler := reconcilers.NewVirtualServiceReconcilerBuilder()
-	destinationRuleReconciler := reconcilers.NewDestinationRuleReconcilerBuilder()
+	virtualServiceReconciler := reconcilers.NewVirtualServiceReconcilerBuilder().ScopedToLabels(labels)
+	destinationRuleReconciler := reconcilers.NewDestinationRuleReconcilerBuilder().ScopedToLabels(labels)
 	snapshotReconciler := snapshot.NewSnapshotReconciler(dynamicClientGetter, virtualServiceReconciler, destinationRuleReconciler)
 
 	baseSelector := selection.NewBaseResourceSelector()

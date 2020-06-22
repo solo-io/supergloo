@@ -6,6 +6,7 @@ import (
 
 	istio_networking_providers "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/providers"
 	kubernetes_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	"github.com/solo-io/go-utils/contextutils"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
@@ -161,9 +162,11 @@ func (i *istioFederationClient) setUpDestinationRule(
 
 	destinationRuleClient := i.destinationRuleClientFactory(clientForWorkloadMesh)
 	_, err := destinationRuleClient.GetDestinationRule(ctx, selection.ResourceRefToObjectKey(destinationRuleRef))
-
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Debugw("setting up destination rule", "dr", destinationRuleRef, "serviceMulticlusterName", serviceMulticlusterName)
 	if errors.IsNotFound(err) {
-		return destinationRuleClient.CreateDestinationRule(ctx, &v1alpha3.DestinationRule{
+		logger.Debugw("creating destination rule", "dr", destinationRuleRef, "serviceMulticlusterName", serviceMulticlusterName)
+		err := destinationRuleClient.CreateDestinationRule(ctx, &v1alpha3.DestinationRule{
 			ObjectMeta: selection.ResourceRefToObjectMeta(destinationRuleRef),
 			Spec: istio_networking_types.DestinationRule{
 				Host: serviceMulticlusterName,
@@ -175,6 +178,14 @@ func (i *istioFederationClient) setUpDestinationRule(
 				},
 			},
 		})
+
+		if err != nil {
+			logger.Debugw("error creating destination rule", "dr", destinationRuleRef, "serviceMulticlusterName", serviceMulticlusterName, "err", err)
+		}
+		return err
+	} else if err != nil {
+		logger.Debugw("error fetching destination rule", "dr", destinationRuleRef, "serviceMulticlusterName", serviceMulticlusterName, "err", err)
+
 	}
 	return err
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	istio_networking_clients "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	istio_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -96,6 +97,8 @@ type destinationRuleReconciler struct {
 }
 
 func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobalState []*istio_networking.DestinationRule) error {
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Debug("reconciling destination rules")
 	existingObjList, err := v.client.ListDestinationRule(
 		ctx,
 
@@ -121,15 +124,19 @@ func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobal
 		desiredState, shouldBeAlive := nameNamespaceToDesiredState[key]
 		delete(nameNamespaceToDesiredState, key)
 		if !shouldBeAlive {
+			logger.Debugw("deleting destination rule", "ref", existingObj.ObjectMeta)
 			err = v.client.DeleteDestinationRule(ctx, selection.ObjectMetaToObjectKey(existingObj.ObjectMeta))
 			if err != nil {
+				logger.Warnw("error deleting destination rule", "error", err, "ref", existingObj.ObjectMeta)
 				multierr = multierror.Append(multierr, err)
 			}
 		} else if !proto.Equal(&existingObj.Spec, &desiredState.Spec) {
 			// make sure we use the same resource version for updates
 			desiredState.ObjectMeta.ResourceVersion = existingObj.ObjectMeta.ResourceVersion
+			logger.Debugw("updating destination rule", "ref", existingObj.ObjectMeta)
 			err = v.client.UpdateDestinationRule(ctx, desiredState)
 			if err != nil {
+				logger.Warnw("error updating destination rule", "error", err, "ref", existingObj.ObjectMeta)
 				multierr = multierror.Append(multierr, err)
 			}
 		}
@@ -137,8 +144,19 @@ func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobal
 
 	// create new objects of what's left in the map
 	for _, desiredObj := range nameNamespaceToDesiredState {
+		logger.Debugw("creating destination rule", "ref", desiredObj.ObjectMeta)
+
+		// add our labels:
+		if desiredObj.Labels == nil && len(v.labels) != 0 {
+			desiredObj.Labels = make(map[string]string)
+		}
+		for k, v := range v.labels {
+			desiredObj.Labels[k] = v
+		}
+
 		err := v.client.CreateDestinationRule(ctx, desiredObj)
 		if err != nil {
+			logger.Warnw("error creating destination rule", "error", err, "ref", desiredObj.ObjectMeta)
 			multierr = multierror.Append(multierr, err)
 		}
 	}
