@@ -6,10 +6,11 @@ package mock_description
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	description "github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 	io "io"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	description "github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 )
 
 // MockResourceDescriber is a mock of ResourceDescriber interface.

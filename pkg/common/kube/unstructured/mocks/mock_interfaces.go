@@ -5,9 +5,10 @@
 package mock_unstructured
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	resource "k8s.io/cli-runtime/pkg/resource"
-	reflect "reflect"
 )
 
 // MockUnstructuredKubeClient is a mock of UnstructuredKubeClient interface.

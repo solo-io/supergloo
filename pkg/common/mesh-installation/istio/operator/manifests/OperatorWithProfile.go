@@ -11,4 +11,3 @@ metadata:
 spec:
   profile: {{ .Profile }}
 `
-

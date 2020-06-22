@@ -6,10 +6,11 @@ package mock_aggregation_framework
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	aggregation_framework "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/aggregation/framework"
-	reflect "reflect"
 )
 
 // MockAggregationProcessor is a mock of AggregationProcessor interface.

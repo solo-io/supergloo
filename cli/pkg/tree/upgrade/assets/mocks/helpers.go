@@ -6,9 +6,10 @@ package mock_upgrade_assets
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	github "github.com/google/go-github/github"
-	reflect "reflect"
 )
 
 // MockGithubAssetClient is a mock of GithubAssetClient interface.

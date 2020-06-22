@@ -232,4 +232,3 @@ spec:
               value: "istio-operator"
 ...
 `
-

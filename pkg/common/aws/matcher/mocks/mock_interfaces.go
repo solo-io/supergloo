@@ -5,9 +5,10 @@
 package mock_matcher
 
 import (
+	reflect "reflect"
+
 	appmesh "github.com/aws/aws-sdk-go/service/appmesh"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
 // MockAppmeshMatcher is a mock of AppmeshMatcher interface.
