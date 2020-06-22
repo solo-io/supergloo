@@ -44,6 +44,7 @@ replace (
 )
 
 require (
+	github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/hcl v1.0.0
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
@@ -59,5 +60,6 @@ require (
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
 	k8s.io/api v0.18.2
 	k8s.io/apimachinery v0.18.3
+	k8s.io/client-go v11.0.0+incompatible
 	sigs.k8s.io/controller-runtime v0.5.1
 )
