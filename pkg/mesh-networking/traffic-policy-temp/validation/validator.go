@@ -71,6 +71,9 @@ func (v *validator) ValidateTrafficPolicy(trafficPolicy *smh_networking.TrafficP
 	if err := v.validateMirror(allMeshServices, trafficPolicy.Spec.GetMirror()); err != nil {
 		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in Mirror"))
 	}
+	if err := v.validateOutlierDetection(trafficPolicy.Spec.GetOutlierDetection()); err != nil {
+		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in OutlierDetection"))
+	}
 	validationErr := multiErr.ErrorOrNil()
 	if validationErr == nil {
 		return &smh_core_types.Status{
@@ -244,14 +247,18 @@ func (v *validator) validateSubsetSelectors(
 }
 
 func (v *validator) validateOutlierDetection(
-	outlierDetection smh_networking_types.TrafficPolicySpec_OutlierDetection,
+	outlierDetection *smh_networking_types.TrafficPolicySpec_OutlierDetection,
 ) error {
 	var err error
-	if err = v.validateDuration(outlierDetection.GetInterval()); err != nil {
-		return err
+	if outlierDetection.GetInterval() != nil {
+		if err = v.validateDuration(outlierDetection.GetInterval()); err != nil {
+			return err
+		}
 	}
-	if err = v.validateDuration(outlierDetection.GetBaseEjectionTime()); err != nil {
-		return err
+	if outlierDetection.GetBaseEjectionTime() != nil {
+		if err = v.validateDuration(outlierDetection.GetBaseEjectionTime()); err != nil {
+			return err
+		}
 	}
 	return nil
 }
