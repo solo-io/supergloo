@@ -6,6 +6,7 @@ import (
 
 	istio_networking_providers "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/providers"
 	kubernetes_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	istio_translator "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/translators/istio"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
@@ -145,6 +146,7 @@ func (i *istioFederationClient) FederateClientSide(
 		clientForWorkloadMesh,
 		serviceMulticlusterName,
 		installationNamespace,
+		meshService.Status.GetValidatedTrafficPolicies(),
 	)
 }
 
@@ -152,31 +154,39 @@ func (i *istioFederationClient) setUpDestinationRule(
 	ctx context.Context,
 	clientForWorkloadMesh client.Client,
 	serviceMulticlusterName string,
-	installNamespace string,
+	istioInstallationNamespace string,
+	trafficPolicies []*discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) error {
-	destinationRuleRef := &smh_core_types.ResourceRef{
-		Name:      serviceMulticlusterName,
-		Namespace: installNamespace,
-	}
-
+	destRule := i.computeDestinationRule(serviceMulticlusterName, istioInstallationNamespace, trafficPolicies)
 	destinationRuleClient := i.destinationRuleClientFactory(clientForWorkloadMesh)
-	_, err := destinationRuleClient.GetDestinationRule(ctx, selection.ResourceRefToObjectKey(destinationRuleRef))
+	return destinationRuleClient.UpsertDestinationRule(ctx, destRule)
+}
 
-	if errors.IsNotFound(err) {
-		return destinationRuleClient.CreateDestinationRule(ctx, &v1alpha3.DestinationRule{
-			ObjectMeta: selection.ResourceRefToObjectMeta(destinationRuleRef),
-			Spec: istio_networking_types.DestinationRule{
-				Host: serviceMulticlusterName,
-				TrafficPolicy: &istio_networking_types.TrafficPolicy{
-					Tls: &istio_networking_types.ClientTLSSettings{
-						// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/242
-						Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
-					},
-				},
-			},
-		})
+func (i *istioFederationClient) computeDestinationRule(
+	serviceMulticlusterName string,
+	istioInstallationNamespace string,
+	trafficPolicies []*discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
+) *v1alpha3.DestinationRule {
+	destRuleRef := &smh_core_types.ResourceRef{
+		Name:      serviceMulticlusterName,
+		Namespace: istioInstallationNamespace,
 	}
-	return err
+	// Previous validation ensures that all OutlierDetection settings are equivalent across TrafficPolicies for this MeshService
+	outlierDetection := istio_translator.TranslateOutlierDetection(trafficPolicies)
+	destRule := &v1alpha3.DestinationRule{
+		ObjectMeta: selection.ResourceRefToObjectMeta(destRuleRef),
+		Spec: istio_networking_types.DestinationRule{
+			Host: serviceMulticlusterName,
+			TrafficPolicy: &istio_networking_types.TrafficPolicy{
+				Tls: &istio_networking_types.ClientTLSSettings{
+					// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/527
+					Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
+				},
+				OutlierDetection: outlierDetection,
+			},
+		},
+	}
+	return destRule
 }
 
 func (i *istioFederationClient) setUpServiceEntry(
