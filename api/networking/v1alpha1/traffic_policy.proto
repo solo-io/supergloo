@@ -303,7 +303,7 @@ message TrafficPolicySpec {
 
     message OutlierDetection {
         // Number of errors before a host is ejected from the connection pool. Defaults to 5.
-        int32 consecutive_errors = 1;
+        uint32 consecutive_errors = 1;
 
         // Time interval between ejection sweep analysis. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 10s.
         google.protobuf.Duration interval = 2;

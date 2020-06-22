@@ -320,6 +320,32 @@ var _ = Describe("Validator", func() {
 		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(traffic_policy_validation.DestinationNotFound(serviceRef))))
 		Expect(status.State).To(Equal(smh_core_types.Status_INVALID))
 	})
+
+	It("should return error if OutlierDetection has durations < 1ms", func() {
+		duration := &types1.Duration{Seconds: 0, Nanos: 999999}
+		tp1 := &smh_networking.TrafficPolicy{
+			Spec: smh_networking_types.TrafficPolicySpec{
+				OutlierDetection: &smh_networking_types.TrafficPolicySpec_OutlierDetection{
+					Interval: duration,
+				},
+			},
+		}
+		_, err := validator.ValidateTrafficPolicy(tp1, nil)
+		multierr, ok := err.(*multierror.Error)
+		Expect(ok).To(BeTrue())
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(traffic_policy_validation.MinDurationError)))
+		tp2 := &smh_networking.TrafficPolicy{
+			Spec: smh_networking_types.TrafficPolicySpec{
+				OutlierDetection: &smh_networking_types.TrafficPolicySpec_OutlierDetection{
+					BaseEjectionTime: duration,
+				},
+			},
+		}
+		_, err = validator.ValidateTrafficPolicy(tp2, nil)
+		multierr, ok = err.(*multierror.Error)
+		Expect(ok).To(BeTrue())
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(traffic_policy_validation.MinDurationError)))
+	})
 })
 
 func expectSingleErrorOf(err error, expected error) {
