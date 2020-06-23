@@ -15,33 +15,62 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type NotFoundError struct {
+	inner error
+}
+
+func (e *NotFoundError) Error() string {
+	return e.inner.Error()
+}
+func (e *NotFoundError) Unwrap() error {
+	return e.inner
+}
+func (e *NotFoundError) Is(err error) bool {
+	if _, ok := err.(*NotFoundError); ok {
+		return true
+	}
+	return false
+}
+func (e *NotFoundError) As(target interface{}) bool {
+	if t, ok := target.(**NotFoundError); ok {
+		*t = e
+		return true
+	}
+	return false
+}
+func NewNotFoundError(inner error) *NotFoundError {
+	return &NotFoundError{
+		inner: inner,
+	}
+}
+
 var (
 	KubeServiceNotFound = func(name, namespace, cluster string) error {
-		return eris.Errorf("Kubernetes Service with name: %s, namespace: %s, cluster: %s not found", name, namespace, cluster)
+		return NewNotFoundError(eris.Errorf("Kubernetes Service with name: %s, namespace: %s, cluster: %s not found", name, namespace, cluster))
 	}
 	MultipleMeshServicesFound = func(name, namespace, clusterName string) error {
-		return eris.Errorf("Multiple MeshServices found with labels %s=%s, %s=%s, %s=%s",
+		return NewNotFoundError(eris.Errorf("Multiple MeshServices found with labels %s=%s, %s=%s, %s=%s",
 			kube.KUBE_SERVICE_NAME, name,
 			kube.KUBE_SERVICE_NAMESPACE, namespace,
-			kube.COMPUTE_TARGET, clusterName)
+			kube.COMPUTE_TARGET, clusterName))
 	}
 	MultipleMeshWorkloadsFound = func(name, namespace, clusterName string) error {
-		return eris.Errorf("Multiple MeshWorkloads found with labels %s=%s, %s=%s, %s=%s",
+		return NewNotFoundError(eris.Errorf("Multiple MeshWorkloads found with labels %s=%s, %s=%s, %s=%s",
 			kube.KUBE_CONTROLLER_NAME, name,
 			kube.KUBE_CONTROLLER_NAMESPACE, namespace,
-			kube.COMPUTE_TARGET, clusterName)
+			kube.COMPUTE_TARGET, clusterName))
 	}
 	MeshServiceNotFound = func(name, namespace, clusterName string) error {
-		return eris.Errorf("No MeshService found with labels %s=%s, %s=%s, %s=%s",
+		return NewNotFoundError(eris.Errorf("No MeshService found with labels %s=%s, %s=%s, %s=%s",
 			kube.KUBE_SERVICE_NAME, name,
 			kube.KUBE_SERVICE_NAMESPACE, namespace,
-			kube.COMPUTE_TARGET, clusterName)
+			kube.COMPUTE_TARGET, clusterName))
 	}
 	MeshWorkloadNotFound = func(name, namespace, clusterName string) error {
-		return eris.Errorf("No MeshWorkloads found with labels %s=%s, %s=%s, %s=%s",
+		return NewNotFoundError(eris.Errorf("No MeshWorkloads found with labels %s=%s, %s=%s, %s=%s",
 			kube.KUBE_CONTROLLER_NAME, name,
 			kube.KUBE_CONTROLLER_NAMESPACE, namespace,
-			kube.COMPUTE_TARGET, clusterName)
+			kube.COMPUTE_TARGET, clusterName))
 	}
 	MustProvideClusterName = func(ref *core_types.ResourceRef) error {
 		return eris.Errorf("Must provide cluster name in ref %+v", ref)

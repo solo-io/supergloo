@@ -2,6 +2,7 @@ package mesh_networking
 
 import (
 	"context"
+	"time"
 
 	"github.com/solo-io/go-utils/contextutils"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
@@ -17,7 +18,7 @@ func Run(ctx context.Context) {
 
 	// build all the objects needed for multicluster operations
 	meshNetworkingContext, err := wire.InitializeMeshNetworking(
-		contextutils.WithLogger(ctx, "access_control_enforcer"),
+		ctx,
 	)
 	if err != nil {
 		logger.Fatalw("error initializing mesh networking clients", zap.Error(err))
@@ -62,6 +63,8 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 			logger.Fatalw("error initializing TrafficPolicyTranslator", zap.Error(err))
 		}
 
+		go startTrafficPolicyReconciler(ctx, meshNetworkingContext)
+
 		err = meshNetworkingContext.AccessControlPolicyTranslator.Start(
 			contextutils.WithLogger(ctx, "access_control_policy_translator"),
 		)
@@ -83,5 +86,19 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 			logger.Fatalw("error initializing FederationResolver", zap.Error(err))
 		}
 		return nil
+	}
+}
+
+// This runs reconcile ever second. since it only writes things that have changed, and reads from cache
+// it should generate load on the cluster. we plane to change this in the future for better responsiveness
+func startTrafficPolicyReconciler(ctx context.Context, meshNetworkingContext wire.MeshNetworkingContext) {
+	for {
+		meshNetworkingContext.TrafficPolicyReconciler.Reconcile(ctx)
+		select {
+		case <-time.After(time.Second):
+			continue
+		case <-ctx.Done():
+			return
+		}
 	}
 }

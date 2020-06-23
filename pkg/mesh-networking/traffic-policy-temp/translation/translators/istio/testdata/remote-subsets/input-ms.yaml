@@ -1,0 +1,437 @@
+- apiVersion: discovery.smh.solo.io/v1alpha1
+  kind: MeshService
+  metadata:
+    creationTimestamp: "2020-06-19T22:40:20Z"
+    generation: 6
+    labels:
+      compute-target: management-plane-cluster
+      discovered-by: mesh-workload-discovery
+      kube-service-name: reviews
+      kube-service-namespace: default
+      mesh-type: istio1_5
+    name: reviews-default-management-plane-cluster
+    namespace: service-mesh-hub
+    resourceVersion: "5876"
+    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/reviews-default-management-plane-cluster
+    uid: 06fa63e7-f421-4e2d-8e53-dbd5d217c579
+  spec:
+    federation:
+      federatedToWorkloads:
+      - name: istio-istio-ingressgateway-istio-system-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v3-default-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-ratings-v1-default-target-cluster
+        namespace: service-mesh-hub
+      multiclusterDnsName: reviews.default.management-plane-cluster
+    kubeService:
+      labels:
+        app: reviews
+        service: reviews
+      ports:
+      - name: http
+        port: 9080
+        protocol: TCP
+      ref:
+        cluster: management-plane-cluster
+        name: reviews
+        namespace: default
+      workloadSelectorLabels:
+        app: reviews
+    mesh:
+      name: istio-istio-system-management-plane-cluster
+      namespace: service-mesh-hub
+    subsets: {}
+  status:
+    federationStatus:
+      state: ACCEPTED
+    validatedTrafficPolicies:
+    - ref:
+        name: simplev3
+        namespace: service-mesh-hub
+      trafficPolicySpec:
+        destinationSelector:
+          serviceRefs:
+            services:
+            - cluster: management-plane-cluster
+              name: reviews
+              namespace: default
+        sourceSelector:
+          labels:
+            app: productpage
+        trafficShift:
+          destinations:
+          - destination:
+              cluster: target-cluster
+              name: reviews
+              namespace: default
+            weight: 100
+- apiVersion: discovery.smh.solo.io/v1alpha1
+  kind: MeshService
+  metadata:
+    creationTimestamp: "2020-06-19T22:40:17Z"
+    generation: 6
+    labels:
+      compute-target: management-plane-cluster
+      discovered-by: mesh-workload-discovery
+      kube-service-name: details
+      kube-service-namespace: default
+      mesh-type: istio1_5
+    name: details-default-management-plane-cluster
+    namespace: service-mesh-hub
+    resourceVersion: "2451"
+    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/details-default-management-plane-cluster
+    uid: 6586d5a8-3b63-4a0d-80a1-56d986ae7831
+  spec:
+    federation:
+      federatedToWorkloads:
+      - name: istio-istio-ingressgateway-istio-system-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v3-default-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-ratings-v1-default-target-cluster
+        namespace: service-mesh-hub
+      multiclusterDnsName: details.default.management-plane-cluster
+    kubeService:
+      labels:
+        app: details
+        service: details
+      ports:
+      - name: http
+        port: 9080
+        protocol: TCP
+      ref:
+        cluster: management-plane-cluster
+        name: details
+        namespace: default
+      workloadSelectorLabels:
+        app: details
+    mesh:
+      name: istio-istio-system-management-plane-cluster
+      namespace: service-mesh-hub
+    subsets: {}
+  status:
+    federationStatus:
+      state: ACCEPTED
+- apiVersion: discovery.smh.solo.io/v1alpha1
+  kind: MeshService
+  metadata:
+    creationTimestamp: "2020-06-19T22:38:34Z"
+    generation: 16
+    labels:
+      compute-target: management-plane-cluster
+      discovered-by: mesh-workload-discovery
+      kube-service-name: istio-ingressgateway
+      kube-service-namespace: istio-system
+      mesh-type: istio1_5
+    name: istio-ingressgateway-istio-system-management-plane-cluster
+    namespace: service-mesh-hub
+    resourceVersion: "2281"
+    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/istio-ingressgateway-istio-system-management-plane-cluster
+    uid: e49c1da8-0650-46db-8bf5-97b78068b70c
+  spec:
+    federation:
+      federatedToWorkloads:
+      - name: istio-istio-ingressgateway-istio-system-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v3-default-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-ratings-v1-default-target-cluster
+        namespace: service-mesh-hub
+      multiclusterDnsName: istio-ingressgateway.istio-system.management-plane-cluster
+    kubeService:
+      labels:
+        app: istio-ingressgateway
+        install.operator.istio.io/owner-group: install.istio.io
+        install.operator.istio.io/owner-kind: IstioOperator
+        install.operator.istio.io/owner-name: example-istiooperator
+        istio: ingressgateway
+        release: istio
+      ports:
+      - name: http2
+        port: 80
+        protocol: TCP
+      - name: https
+        port: 443
+        protocol: TCP
+      - name: tls
+        port: 15443
+        protocol: TCP
+      ref:
+        cluster: management-plane-cluster
+        name: istio-ingressgateway
+        namespace: istio-system
+      workloadSelectorLabels:
+        app: istio-ingressgateway
+        istio: ingressgateway
+    mesh:
+      name: istio-istio-system-management-plane-cluster
+      namespace: service-mesh-hub
+    subsets: {}
+  status:
+    federationStatus:
+      state: ACCEPTED
+- apiVersion: discovery.smh.solo.io/v1alpha1
+  kind: MeshService
+  metadata:
+    creationTimestamp: "2020-06-19T22:37:58Z"
+    generation: 10
+    labels:
+      compute-target: target-cluster
+      discovered-by: mesh-workload-discovery
+      kube-service-name: istio-ingressgateway
+      kube-service-namespace: istio-system
+      mesh-type: istio1_5
+    name: istio-ingressgateway-istio-system-target-cluster
+    namespace: service-mesh-hub
+    resourceVersion: "2266"
+    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/istio-ingressgateway-istio-system-target-cluster
+    uid: fe6a7dbc-9b2e-46b6-804e-516b03e8866a
+  spec:
+    federation:
+      federatedToWorkloads:
+      - name: istio-istio-ingressgateway-istio-system-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-details-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-ratings-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v2-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-productpage-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      multiclusterDnsName: istio-ingressgateway.istio-system.target-cluster
+    kubeService:
+      labels:
+        app: istio-ingressgateway
+        install.operator.istio.io/owner-group: install.istio.io
+        install.operator.istio.io/owner-kind: IstioOperator
+        install.operator.istio.io/owner-name: example-istiooperator
+        istio: ingressgateway
+        release: istio
+      ports:
+      - name: http2
+        port: 80
+        protocol: TCP
+      - name: https
+        port: 443
+        protocol: TCP
+      - name: tls
+        port: 15443
+        protocol: TCP
+      ref:
+        cluster: target-cluster
+        name: istio-ingressgateway
+        namespace: istio-system
+      workloadSelectorLabels:
+        app: istio-ingressgateway
+        istio: ingressgateway
+    mesh:
+      name: istio-istio-system-target-cluster
+      namespace: service-mesh-hub
+    subsets: {}
+  status:
+    federationStatus:
+      state: ACCEPTED
+- apiVersion: discovery.smh.solo.io/v1alpha1
+  kind: MeshService
+  metadata:
+    creationTimestamp: "2020-06-19T22:40:21Z"
+    generation: 4
+    labels:
+      compute-target: management-plane-cluster
+      discovered-by: mesh-workload-discovery
+      kube-service-name: productpage
+      kube-service-namespace: default
+      mesh-type: istio1_5
+    name: productpage-default-management-plane-cluster
+    namespace: service-mesh-hub
+    resourceVersion: "2416"
+    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/productpage-default-management-plane-cluster
+    uid: 3974d389-d3de-4e1a-8167-427e7a29efc9
+  spec:
+    federation:
+      federatedToWorkloads:
+      - name: istio-istio-ingressgateway-istio-system-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v3-default-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-ratings-v1-default-target-cluster
+        namespace: service-mesh-hub
+      multiclusterDnsName: productpage.default.management-plane-cluster
+    kubeService:
+      labels:
+        app: productpage
+        service: productpage
+      ports:
+      - name: http
+        port: 9080
+        protocol: TCP
+      ref:
+        cluster: management-plane-cluster
+        name: productpage
+        namespace: default
+      workloadSelectorLabels:
+        app: productpage
+    mesh:
+      name: istio-istio-system-management-plane-cluster
+      namespace: service-mesh-hub
+    subsets: {}
+  status:
+    federationStatus:
+      state: ACCEPTED
+- apiVersion: discovery.smh.solo.io/v1alpha1
+  kind: MeshService
+  metadata:
+    creationTimestamp: "2020-06-19T22:40:19Z"
+    generation: 6
+    labels:
+      compute-target: management-plane-cluster
+      discovered-by: mesh-workload-discovery
+      kube-service-name: ratings
+      kube-service-namespace: default
+      mesh-type: istio1_5
+    name: ratings-default-management-plane-cluster
+    namespace: service-mesh-hub
+    resourceVersion: "2413"
+    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/ratings-default-management-plane-cluster
+    uid: 018a6aa1-fe56-4ef5-bbd1-01f1dfa1e388
+  spec:
+    federation:
+      federatedToWorkloads:
+      - name: istio-istio-ingressgateway-istio-system-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v3-default-target-cluster
+        namespace: service-mesh-hub
+      - name: istio-ratings-v1-default-target-cluster
+        namespace: service-mesh-hub
+      multiclusterDnsName: ratings.default.management-plane-cluster
+    kubeService:
+      labels:
+        app: ratings
+        service: ratings
+      ports:
+      - name: http
+        port: 9080
+        protocol: TCP
+      ref:
+        cluster: management-plane-cluster
+        name: ratings
+        namespace: default
+      workloadSelectorLabels:
+        app: ratings
+    mesh:
+      name: istio-istio-system-management-plane-cluster
+      namespace: service-mesh-hub
+    subsets: {}
+  status:
+    federationStatus:
+      state: ACCEPTED
+- apiVersion: discovery.smh.solo.io/v1alpha1
+  kind: MeshService
+  metadata:
+    creationTimestamp: "2020-06-19T22:40:26Z"
+    generation: 2
+    labels:
+      compute-target: target-cluster
+      discovered-by: mesh-workload-discovery
+      kube-service-name: ratings
+      kube-service-namespace: default
+      mesh-type: istio1_5
+    name: ratings-default-target-cluster
+    namespace: service-mesh-hub
+    resourceVersion: "2406"
+    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/ratings-default-target-cluster
+    uid: 5f69ad8a-d176-40c6-840b-dfb8f28efcd8
+  spec:
+    federation:
+      federatedToWorkloads:
+      - name: istio-istio-ingressgateway-istio-system-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-details-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-ratings-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v2-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-productpage-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      multiclusterDnsName: ratings.default.target-cluster
+    kubeService:
+      labels:
+        app: ratings
+        service: ratings
+      ports:
+      - name: http
+        port: 9080
+        protocol: TCP
+      ref:
+        cluster: target-cluster
+        name: ratings
+        namespace: default
+      workloadSelectorLabels:
+        app: ratings
+    mesh:
+      name: istio-istio-system-target-cluster
+      namespace: service-mesh-hub
+    subsets: {}
+  status:
+    federationStatus:
+      state: ACCEPTED
+- apiVersion: discovery.smh.solo.io/v1alpha1
+  kind: MeshService
+  metadata:
+    creationTimestamp: "2020-06-19T22:40:27Z"
+    generation: 2
+    labels:
+      compute-target: target-cluster
+      discovered-by: mesh-workload-discovery
+      kube-service-name: reviews
+      kube-service-namespace: default
+      mesh-type: istio1_5
+    name: reviews-default-target-cluster
+    namespace: service-mesh-hub
+    resourceVersion: "2443"
+    selfLink: /apis/discovery.smh.solo.io/v1alpha1/namespaces/service-mesh-hub/meshservices/reviews-default-target-cluster
+    uid: 68fdcdb2-85cd-4524-aa23-a8a535fc3d00
+  spec:
+    federation:
+      federatedToWorkloads:
+      - name: istio-istio-ingressgateway-istio-system-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-details-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-ratings-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v2-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-productpage-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      - name: istio-reviews-v1-default-management-plane-cluster
+        namespace: service-mesh-hub
+      multiclusterDnsName: reviews.default.target-cluster
+    kubeService:
+      labels:
+        app: reviews
+        service: reviews
+      ports:
+      - name: http
+        port: 9080
+        protocol: TCP
+      ref:
+        cluster: target-cluster
+        name: reviews
+        namespace: default
+      workloadSelectorLabels:
+        app: reviews
+    mesh:
+      name: istio-istio-system-target-cluster
+      namespace: service-mesh-hub
+    subsets: {}
+  status:
+    federationStatus:
+      state: ACCEPTED

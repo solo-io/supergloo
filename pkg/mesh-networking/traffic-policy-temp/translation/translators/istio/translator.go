@@ -60,6 +60,9 @@ func (i *istioTrafficPolicyTranslator) AccumulateFromTranslation(
 	}
 
 	// translation errors are reported earlier, so we don't care about these now.
+	// TODO: we need to make sure we add the virtual service currently in the cache in the case
+	// there are errors here. The goal is to not modify whatever is present in the cluster.
+	// i.e. not delete it (no need to upsert it).
 	out, _ := i.Translate(meshService, allMeshServices, mesh, meshService.Status.ValidatedTrafficPolicies)
 
 	if out != nil {
@@ -157,15 +160,27 @@ func (i *istioTrafficPolicyTranslator) findReferencedSubsetsForService(
 				}
 
 				// our service being shifted to is referenced in this traffic shift; record all the subsets
-				subsets = append(subsets, &istio_networking_types.Subset{
-					Name:   i.buildUniqueSubsetName(destination.Subset),
-					Labels: destination.Subset,
-				})
+				subsetName := i.buildUniqueSubsetName(destination.Subset)
+				if subsetName != "" && !subsetContains(subsetName, subsets) {
+					subsets = append(subsets, &istio_networking_types.Subset{
+						Name:   subsetName,
+						Labels: destination.Subset,
+					})
+				}
 			}
 		}
 	}
 
 	return subsets
+}
+
+func subsetContains(subsetName string, subsets []*istio_networking_types.Subset) bool {
+	for _, subset := range subsets {
+		if subset.Name == subsetName {
+			return true
+		}
+	}
+	return false
 }
 
 func (i *istioTrafficPolicyTranslator) buildVirtualService(

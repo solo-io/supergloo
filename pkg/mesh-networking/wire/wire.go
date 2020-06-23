@@ -71,6 +71,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		ComputeTargetCredentialsHandlersProvider,
 		kubeconfig.NewConverter,
 		files.NewDefaultFileReader,
+		NewTrafficPolicyProviderSet,
 	)
 
 	return MeshNetworkingContext{}, nil

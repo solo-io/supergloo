@@ -1,4 +1,4 @@
-package mesh_translation_test
+package mesh_translation_aggregate_test
 
 import (
 	"testing"
