@@ -48,4 +48,7 @@ message FailoverServiceStatus {
 
     // Provides details on any translation errors that occurred. If any errors exist, this FailoverService has not been translated into mesh-specific config.
     repeated TranslatorError translator_errors = 2;
+
+    // Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific failover configuration.
+    core.smh.solo.io.Status validation_status = 3;
 }
