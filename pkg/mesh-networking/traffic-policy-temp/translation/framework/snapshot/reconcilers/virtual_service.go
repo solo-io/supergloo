@@ -68,8 +68,8 @@ func (v *virtualServiceReconcilerBuilder) Build() (VirtualServiceReconciler, err
 		return nil, eris.New("Must either configure this reconciler to be cluster-scoped or explicitly scope it to a namespace/label")
 	}
 
-	if v.clusterScoped && (v.namespace != "" || len(v.labels) > 0) {
-		return nil, eris.New("Cannot be cluster-scoped and scoped to a namespace/label")
+	if v.clusterScoped && v.namespace != "" {
+		return nil, eris.New("Cannot be cluster-scoped and scoped to a namespace")
 	}
 
 	return &virtualServiceReconciler{
