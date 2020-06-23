@@ -9,6 +9,8 @@ import "service-mesh-hub/api/core/v1alpha1/status.proto";
     A service composed of the referenced workloads with failover capabilities.
     The failover order is determined by the order of the declared workloads,
     i.e. an unhealthy workloads[0] will cause failover to workloads[1], etc.
+
+    Currently this feature only supports Services backed by Istio.
 */
 message FailoverServiceSpec {
     message Port {
@@ -20,7 +22,7 @@ message FailoverServiceSpec {
     // The DNS name of the failover service.
     string hostname = 1;
 
-    // The namespace for the failover service.
+    // The namespace to locate the translated service.
     string namespace = 2;
 
     // The port from which to expose this service.
@@ -43,12 +45,16 @@ message FailoverServiceStatus {
         string error_message = 2;
     }
 
+    // The generation the validation_status was observed on.
+    int64 observed_generation = 1;
+
     // Whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration.
-    core.smh.solo.io.Status translation_status = 1;
+    core.smh.solo.io.Status translation_status = 2;
 
     // Provides details on any translation errors that occurred. If any errors exist, this FailoverService has not been translated into mesh-specific config.
-    repeated TranslatorError translator_errors = 2;
+    repeated TranslatorError translator_errors = 3;
 
     // Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific failover configuration.
-    core.smh.solo.io.Status validation_status = 3;
+    core.smh.solo.io.Status validation_status = 4;
 }
+

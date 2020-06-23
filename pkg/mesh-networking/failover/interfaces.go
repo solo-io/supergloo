@@ -12,12 +12,13 @@ import (
 
 /*
 	Given a FailoverService and a list of MeshServices corresponding to FailoverService.Spec.services,
-	translate to mesh-specific configuration.
+	translate to mesh-specific configuration. Each mesh-specific translator will populate
+	the relevant resources in the OutputSnapshot.
 */
 type FailoverServiceTranslator interface {
 	Translate(
 		ctx context.Context,
 		failoverService *smh_networking.FailoverService,
 		prioritizedMeshServices []*v1alpha1.MeshService,
-	) *smh_networking_types.FailoverServiceStatus_TranslatorError
+	) (MeshOutputs, *smh_networking_types.FailoverServiceStatus_TranslatorError)
 }

@@ -12,6 +12,7 @@ import (
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	failover "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
 )
 
 // MockFailoverServiceTranslator is a mock of FailoverServiceTranslator interface.
@@ -38,11 +39,12 @@ func (m *MockFailoverServiceTranslator) EXPECT() *MockFailoverServiceTranslatorM
 }
 
 // Translate mocks base method.
-func (m *MockFailoverServiceTranslator) Translate(ctx context.Context, failoverService *v1alpha10.FailoverService, prioritizedMeshServices []*v1alpha1.MeshService) *types.FailoverServiceStatus_TranslatorError {
+func (m *MockFailoverServiceTranslator) Translate(ctx context.Context, failoverService *v1alpha10.FailoverService, prioritizedMeshServices []*v1alpha1.MeshService) (failover.MeshOutputs, *types.FailoverServiceStatus_TranslatorError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", ctx, failoverService, prioritizedMeshServices)
-	ret0, _ := ret[0].(*types.FailoverServiceStatus_TranslatorError)
-	return ret0
+	ret0, _ := ret[0].(failover.MeshOutputs)
+	ret1, _ := ret[1].(*types.FailoverServiceStatus_TranslatorError)
+	return ret0, ret1
 }
 
 // Translate indicates an expected call of Translate.

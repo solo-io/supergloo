@@ -12,6 +12,7 @@ import (
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/metadata"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
 	istio_networking "istio.io/api/networking/v1alpha3"
 	istio_client_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -33,27 +34,22 @@ type istioFailoverServiceTranslator struct {
 	ipAssigner dns.IpAssigner
 }
 
-type istioOutputSnapshot struct {
-	serviceEntries []*istio_client_networking.ServiceEntry
-	envoyFilters   []*istio_client_networking.EnvoyFilter
-}
-
 func (i *istioFailoverServiceTranslator) Translate(
 	ctx context.Context,
 	failoverService *smh_networking.FailoverService,
 	prioritizedMeshServices []*smh_discovery.MeshService,
-) *types.FailoverServiceStatus_TranslatorError {
-	output := istioOutputSnapshot{}
+) (failover.MeshOutputs, *types.FailoverServiceStatus_TranslatorError) {
+	output := failover.MeshOutputs{}
 	var translatorErr *types.FailoverServiceStatus_TranslatorError
 	serviceEntry, envoyFilter, err := i.translate(ctx, failoverService, prioritizedMeshServices)
 	if err != nil {
 		translatorErr = i.translatorErr(err)
 	} else {
-		output.serviceEntries = append(output.serviceEntries, serviceEntry)
-		output.envoyFilters = append(output.envoyFilters, envoyFilter)
+		output.ServiceEntries = append(output.ServiceEntries, serviceEntry)
+		output.EnvoyFilters = append(output.EnvoyFilters, envoyFilter)
 	}
 	// Write output snapshot
-	return translatorErr
+	return output, translatorErr
 }
 
 func (i *istioFailoverServiceTranslator) translate(
@@ -88,8 +84,9 @@ func (i *istioFailoverServiceTranslator) translateServiceEntry(
 	}
 	return &istio_client_networking.ServiceEntry{
 		ObjectMeta: k8s_meta.ObjectMeta{
-			Name:      failoverService.GetName(),
-			Namespace: failoverService.Spec.GetNamespace(),
+			Name:        failoverService.GetName(),
+			Namespace:   failoverService.GetNamespace(),
+			ClusterName: failoverService.Spec.GetCluster(),
 		},
 		Spec: istio_networking.ServiceEntry{
 			Hosts: []string{failoverService.Spec.GetHostname()},
@@ -122,8 +119,9 @@ func (i *istioFailoverServiceTranslator) translateEnvoyFilter(
 	)
 	return &istio_client_networking.EnvoyFilter{
 		ObjectMeta: k8s_meta.ObjectMeta{
-			Name:      failoverService.GetName(),
-			Namespace: failoverService.Spec.GetNamespace(),
+			Name:        failoverService.GetName(),
+			Namespace:   failoverService.GetNamespace(),
+			ClusterName: failoverService.Spec.GetCluster(),
 		},
 		Spec: istio_networking.EnvoyFilter{
 			ConfigPatches: []*istio_networking.EnvoyFilter_EnvoyConfigObjectPatch{

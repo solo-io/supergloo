@@ -3,20 +3,10 @@ package failover
 import (
 	"context"
 
-	"github.com/rotisserie/eris"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
-)
-
-var (
-	ServiceNotFound = func(serviceRef *smh_core_types.ResourceRef) error {
-		return eris.Errorf("Declared service %s.%s.%s not found in SMH discovery resources.",
-			serviceRef.GetName(),
-			serviceRef.GetNamespace(),
-			serviceRef.GetCluster())
-	}
 )
 
 type FailoverServiceProcessor interface {
@@ -24,22 +14,39 @@ type FailoverServiceProcessor interface {
 }
 
 type failoverServiceProcessor struct {
+	validator   FailoverServiceValidator
 	translators []FailoverServiceTranslator
 }
 
+/*
+	Processing consists of the following sequence of steps:
+	1. Validate the FailoverServices
+	2. For the valid FailoverServices, translate them to mesh-specific configuration
+*/
 func (f *failoverServiceProcessor) Process(ctx context.Context, inputSnapshot InputSnapshot) OutputSnapshot {
 	outputSnapshot := OutputSnapshot{}
+	// Validate will set the validation status and observed generation on the FailoverService status.
+	f.validator.Validate(inputSnapshot)
 	for _, failoverService := range inputSnapshot.FailoverServices {
+		if !f.readyToProcess(failoverService) {
+			continue
+		}
 		prioritizedMeshServices, err := f.collectMeshServicesForFailoverService(failoverService, inputSnapshot.MeshServices)
 		if err != nil {
 			failoverService.Status = f.computeProcessingErrorStatus(err)
 			continue
 		}
-		translatorErrs := f.processFailoverService(ctx, failoverService, prioritizedMeshServices)
-		failoverService.Status = f.computeTranslatorErrorStatus(translatorErrs)
-		outputSnapshot.FailoverServices = append(outputSnapshot.FailoverServices, failoverService)
+		outputSnapshotForFailoverService := f.processFailoverService(ctx, failoverService, prioritizedMeshServices)
+		// Accumulate outputs for each FailoverService
+		outputSnapshot.append(outputSnapshotForFailoverService)
 	}
 	return outputSnapshot
+}
+
+// Return true if validation status is accepted and observed generation matches generation.
+func (f *failoverServiceProcessor) readyToProcess(failoverService *smh_networking.FailoverService) bool {
+	return failoverService.Status.GetValidationStatus().GetState() == smh_core_types.Status_ACCEPTED &&
+		failoverService.Status.GetObservedGeneration() == failoverService.GetGeneration()
 }
 
 // Collect, in priority order as declared in the FailoverService, the relevant MeshServices.
@@ -72,15 +79,21 @@ func (f *failoverServiceProcessor) processFailoverService(
 	ctx context.Context,
 	failoverService *smh_networking.FailoverService,
 	prioritizedMeshServices []*smh_discovery.MeshService,
-) []*types.FailoverServiceStatus_TranslatorError {
+) OutputSnapshot {
 	var translatorErrs []*types.FailoverServiceStatus_TranslatorError
+	var outputSnapshot OutputSnapshot
 	for _, translator := range f.translators {
-		translatorErr := translator.Translate(ctx, failoverService, prioritizedMeshServices)
+		output, translatorErr := translator.Translate(ctx, failoverService, prioritizedMeshServices)
+		// Collect mesh specific output resources
+		outputSnapshot.MeshOutputs.append(output)
 		if translatorErr != nil {
 			translatorErrs = append(translatorErrs, translatorErr)
 		}
 	}
-	return translatorErrs
+	// Set status on FailoverService and add to OutputSnapshot
+	failoverService.Status = f.computeTranslatorErrorStatus(translatorErrs)
+	outputSnapshot.FailoverServices = []*smh_networking.FailoverService{failoverService}
+	return outputSnapshot
 }
 
 // TODO this shouldn't be possible, how to handle?
