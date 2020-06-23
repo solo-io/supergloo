@@ -16,10 +16,13 @@ import (
 // the discovery reconciler reconciles events for watched resources
 // by performing a global discovery sync
 type DiscoveryReconcilers interface {
-	apps_v1_controller.MulticlusterDeploymentReconciler
 	core_v1_controller.MulticlusterPodReconciler
 	core_v1_controller.MulticlusterServiceReconciler
 	core_v1_controller.MulticlusterConfigMapReconciler
+	apps_v1_controller.MulticlusterDeploymentReconciler
+	apps_v1_controller.MulticlusterReplicaSetReconciler
+	apps_v1_controller.MulticlusterDaemonSetReconciler
+	apps_v1_controller.MulticlusterStatefulSetReconciler
 }
 
 type discoveryReconciler struct {
@@ -29,15 +32,6 @@ type discoveryReconciler struct {
 	applier    output.Applier
 }
 
-func (d *discoveryReconciler) ReconcileDeployment(clusterName string, obj *appsv1.Deployment) (reconcile.Result, error) {
-	contextutils.LoggerFrom(d.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return reconcile.Result{}, d.reconcile()
-}
-
-func (d *discoveryReconciler) ReconcilePod(clusterName string, obj *corev1.Pod) (reconcile.Result, error) {
-	contextutils.LoggerFrom(d.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return reconcile.Result{}, d.reconcile()
-}
 
 func (d *discoveryReconciler) ReconcileService(clusterName string, obj *corev1.Service) (reconcile.Result, error) {
 	contextutils.LoggerFrom(d.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
@@ -49,19 +43,34 @@ func (d *discoveryReconciler) ReconcileConfigMap(clusterName string, obj *corev1
 	return reconcile.Result{}, d.reconcile()
 }
 
-func (d *discoveryReconciler) ReconcileAppMesh() (reconcile.Result, error) {
+func (d *discoveryReconciler) ReconcileDeployment(clusterName string, obj *appsv1.Deployment) (reconcile.Result, error) {
+	contextutils.LoggerFrom(d.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
+	return reconcile.Result{}, d.reconcile()
+}
+
+func (d *discoveryReconciler) ReconcileReplicaSet(clusterName string, obj *appsv1.ReplicaSet) (reconcile.Result, error) {
+	contextutils.LoggerFrom(d.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
+	return reconcile.Result{}, d.reconcile()
+}
+
+func (d *discoveryReconciler) ReconcileDaemonSet(clusterName string, obj *appsv1.DaemonSet) (reconcile.Result, error) {
+	contextutils.LoggerFrom(d.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
+	return reconcile.Result{}, d.reconcile()
+}
+
+func (d *discoveryReconciler) ReconcileStatefulSet(clusterName string, obj *appsv1.StatefulSet) (reconcile.Result, error) {
 	contextutils.LoggerFrom(d.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return reconcile.Result{}, d.reconcile()
 }
 
 // reconcile global state
-func (d *discoveryReconciler) reconcile(cluster string) error {
+func (d *discoveryReconciler) reconcile() error {
 	inputSnap, err := d.builder.BuildSnapshot(d.ctx)
 	if err != nil {
 		return err
 	}
 
-	outputSnap := d.translator.Translate(d.ctx, inputSnap)
+	outputSnap := d.translator.Translate(inputSnap)
 
 	return d.applier.Apply(outputSnap)
 }

@@ -6,6 +6,10 @@ import (
 	"github.com/solo-io/smh/pkg/common/defaults"
 )
 
+// the key used to differentiate discovery resources by
+// the cluster in which they were discovered
+var ClusterLabelKey = fmt.Sprintf("cluster.%s", v1alpha1.SchemeGroupVersion.Group)
+
 // Create a label that identifies the cluster used to discover a resource.
 func ClusterLabels(cluster string) map[string]string {
 	clusterK, clusterV := ClusterLabel(cluster)
@@ -17,7 +21,7 @@ func ClusterLabels(cluster string) map[string]string {
 }
 
 func ClusterLabel(cluster string) (string, string) {
-	return fmt.Sprintf("cluster.%s", v1alpha1.SchemeGroupVersion.Group),
+	return ClusterLabelKey,
 		fmt.Sprintf("%s", cluster)
 }
 

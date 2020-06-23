@@ -8,7 +8,7 @@ import (
 
 // the mesh-service translator converts deployments with injected sidecars into MeshService CRs
 type Translator interface {
-	TranslateMeshServices(services corev1sets.ServiceSet) v1alpha1sets.MeshServiceSet
+	TranslateMeshServices(services corev1sets.ServiceSet, meshWorkloads v1alpha1sets.MeshWorkloadSet) v1alpha1sets.MeshServiceSet
 }
 
 type translator struct {
@@ -19,12 +19,12 @@ func NewTranslator() Translator {
 	return &translator{}
 }
 
-func (t *translator) TranslateMeshServices(services corev1sets.ServiceSet) v1alpha1sets.MeshServiceSet {
+func (t *translator) TranslateMeshServices(services corev1sets.ServiceSet, meshWorkloads v1alpha1sets.MeshWorkloadSet) v1alpha1sets.MeshServiceSet {
 
 	meshServiceSet := v1alpha1sets.NewMeshServiceSet()
 
 	for _, service := range services.List() {
-		meshService := t.meshServiceDetector.DetectMeshService(service)
+		meshService := t.meshServiceDetector.DetectMeshService(service, meshWorkloads)
 		if meshService == nil {
 			continue
 		}

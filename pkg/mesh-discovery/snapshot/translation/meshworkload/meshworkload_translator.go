@@ -9,18 +9,18 @@ import (
 
 // the mesh-workload translator converts deployments with injected sidecars into MeshWorkload CRs
 type Translator interface {
-	TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet) v1alpha1sets.MeshWorkloadSet
+	TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha1sets.MeshSet) v1alpha1sets.MeshWorkloadSet
 }
 
 type translator struct {
 	meshWorkloadDetector detector.MeshWorkloadDetector
 }
 
-func NewTranslator() Translator {
-	return &translator{}
+func NewTranslator(meshWorkloadDetector detector.MeshWorkloadDetector) Translator {
+	return &translator{meshWorkloadDetector: meshWorkloadDetector}
 }
 
-func (t *translator) TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet) v1alpha1sets.MeshWorkloadSet {
+func (t *translator) TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha1sets.MeshSet) v1alpha1sets.MeshWorkloadSet {
 	var workloads []types.Workload
 	for _, deployment := range deployments.List() {
 		workloads = append(workloads, types.ToWorkload(deployment))
@@ -35,7 +35,7 @@ func (t *translator) TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet
 	meshWorkloadSet := v1alpha1sets.NewMeshWorkloadSet()
 
 	for _, workload := range workloads {
-		meshWorkload := t.meshWorkloadDetector.DetectMeshWorkload(workload)
+		meshWorkload := t.meshWorkloadDetector.DetectMeshWorkload(workload, meshes)
 		if meshWorkload == nil {
 			continue
 		}

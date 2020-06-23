@@ -20,19 +20,17 @@ var (
 // whose backing pods are injected with a Mesh sidecar.
 // If no Mesh is detected, nil is returned
 type MeshServiceDetector interface {
-	DetectMeshService(service *corev1.Service) *v1alpha1.MeshService
+	DetectMeshService(service *corev1.Service, meshWorkloads v1alpha1sets.MeshWorkloadSet) *v1alpha1.MeshService
 }
 
-type meshServiceDetector struct {
-	meshWorkloads v1alpha1sets.MeshWorkloadSet
+type meshServiceDetector struct {}
+
+func NewMeshServiceDetector() MeshServiceDetector {
+	return &meshServiceDetector{}
 }
 
-func NewMeshServiceDetector(meshWorkloads v1alpha1sets.MeshWorkloadSet) MeshServiceDetector {
-	return &meshServiceDetector{meshWorkloads: meshWorkloads}
-}
-
-func (d meshServiceDetector) DetectMeshService(service *corev1.Service) *v1alpha1.MeshService {
-	backingWorkloads := d.findBackingMeshWorkloads(service)
+func (d meshServiceDetector) DetectMeshService(service *corev1.Service, meshWorkloads v1alpha1sets.MeshWorkloadSet) *v1alpha1.MeshService {
+	backingWorkloads := d.findBackingMeshWorkloads(service, meshWorkloads)
 	if len(backingWorkloads) == 0 {
 		// TODO(ilackarms): we currently only create mesh services for services with backing workloads; this may be problematic when working with external services (not contained inside the mesh)
 		return nil
@@ -59,10 +57,10 @@ func (d meshServiceDetector) DetectMeshService(service *corev1.Service) *v1alpha
 	}
 }
 
-func (d meshServiceDetector) findBackingMeshWorkloads(service *corev1.Service) v1alpha1.MeshWorkloadSlice {
+func (d meshServiceDetector) findBackingMeshWorkloads(service *corev1.Service, meshWorkloads v1alpha1sets.MeshWorkloadSet) v1alpha1.MeshWorkloadSlice {
 	var backingMeshWorkloads v1alpha1.MeshWorkloadSlice
 
-	for _, workload := range d.meshWorkloads.List() {
+	for _, workload := range meshWorkloads.List() {
 		// TODO(ilackarms): refactor this to support more than just k8s workloads
 		// should probably go with a platform-based meshservice detector (e.g. one for k8s, one for vm, etc.)
 		if isBackingKubeWorkload(service, workload.Spec.GetKubernetes()) {

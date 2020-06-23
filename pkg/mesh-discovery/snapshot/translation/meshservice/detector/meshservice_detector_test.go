@@ -96,9 +96,9 @@ var _ = Describe("MeshserviceDetector", func() {
 		)
 		svc := makeService()
 
-		detector := NewMeshServiceDetector(workloads)
+		detector := NewMeshServiceDetector()
 
-		meshService := detector.DetectMeshService(svc)
+		meshService := detector.DetectMeshService(svc, workloads)
 
 		Expect(meshService).To(Equal(&v1alpha1.MeshService{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),

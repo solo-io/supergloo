@@ -107,18 +107,18 @@ var _ = Describe("MeshworkloadDetector", func() {
 
 		pods := corev1sets.NewPodSet(pod)
 		replicaSets := appsv1sets.NewReplicaSetSet(rs)
-		meshes := v1alpha1sets.NewMeshSet()
 		detector := NewMeshWorkloadDetector(
 			context.TODO(),
 			pods,
 			replicaSets,
-			meshes,
 			mockSidecarDetector,
 		)
 
+		meshes := v1alpha1sets.NewMeshSet()
+
 		mockSidecarDetector.EXPECT().DetectMeshSidecar(pod, meshes).Return(mesh)
 
-		meshWorkload := detector.DetectMeshWorkload(types.ToWorkload(deployment))
+		meshWorkload := detector.DetectMeshWorkload(types.ToWorkload(deployment), meshes)
 
 		outputMeta := utils.DiscoveredObjectMeta(deployment)
 		// expect appended workload kind

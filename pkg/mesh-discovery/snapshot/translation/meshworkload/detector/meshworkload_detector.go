@@ -20,7 +20,7 @@ import (
 // whose backing pods are injected with a Mesh sidecar.
 // If no mesh is detected for the workload, nil is returned
 type MeshWorkloadDetector interface {
-	DetectMeshWorkload(workload types.Workload) *v1alpha1.MeshWorkload
+	DetectMeshWorkload(workload types.Workload, meshes v1alpha1sets.MeshSet) *v1alpha1.MeshWorkload
 }
 
 const (
@@ -33,7 +33,6 @@ type meshWorkloadDetector struct {
 	ctx         context.Context
 	pods        corev1sets.PodSet
 	replicaSets appsv1sets.ReplicaSetSet
-	meshes      v1alpha1sets.MeshSet
 	detector    SidecarDetector
 }
 
@@ -41,7 +40,6 @@ func NewMeshWorkloadDetector(
 	ctx context.Context,
 	pods corev1sets.PodSet,
 	replicaSets appsv1sets.ReplicaSetSet,
-	meshes v1alpha1sets.MeshSet,
 	detector SidecarDetector,
 ) MeshWorkloadDetector {
 	ctx = contextutils.WithLogger(ctx, "mesh-workload-detector")
@@ -49,15 +47,14 @@ func NewMeshWorkloadDetector(
 		ctx:         ctx,
 		pods:        pods,
 		replicaSets: replicaSets,
-		meshes:      meshes,
 		detector:    detector,
 	}
 }
 
-func (d meshWorkloadDetector) DetectMeshWorkload(workload types.Workload) *v1alpha1.MeshWorkload {
+func (d meshWorkloadDetector) DetectMeshWorkload(workload types.Workload, meshes v1alpha1sets.MeshSet) *v1alpha1.MeshWorkload {
 	podsForWorkload := d.getPodsForWorkload(workload)
 
-	mesh := d.getMeshForPods(podsForWorkload)
+	mesh := d.getMeshForPods(podsForWorkload, meshes)
 
 	if mesh == nil {
 		return nil
@@ -87,10 +84,10 @@ func (d meshWorkloadDetector) DetectMeshWorkload(workload types.Workload) *v1alp
 	}
 }
 
-func (d meshWorkloadDetector) getMeshForPods(pods corev1sets.PodSet) *v1alpha1.Mesh {
+func (d meshWorkloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1alpha1sets.MeshSet) *v1alpha1.Mesh {
 	// as long as one pod is detected for a mesh, consider the set owned by that mesh.
 	for _, pod := range pods.List() {
-		if mesh := d.detector.DetectMeshSidecar(pod, d.meshes); mesh != nil {
+		if mesh := d.detector.DetectMeshSidecar(pod, meshes); mesh != nil {
 			return mesh
 		}
 	}
