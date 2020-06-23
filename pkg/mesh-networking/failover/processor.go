@@ -20,8 +20,9 @@ type failoverServiceProcessor struct {
 
 /*
 	Processing consists of the following sequence of steps:
-	1. Validate the FailoverServices
-	2. For the valid FailoverServices, translate them to mesh-specific configuration
+	1. Validate the FailoverServices and update the validation status.
+	2. For the valid FailoverServices, translate them to mesh-specific configuration, update translation status.
+	Return an OutputSnapshot containing FailoverServices with updated statuses and translated resources.
 */
 func (f *failoverServiceProcessor) Process(ctx context.Context, inputSnapshot InputSnapshot) OutputSnapshot {
 	outputSnapshot := OutputSnapshot{}
@@ -36,7 +37,7 @@ func (f *failoverServiceProcessor) Process(ctx context.Context, inputSnapshot In
 			failoverService.Status = f.computeProcessingErrorStatus(err)
 			continue
 		}
-		outputSnapshotForFailoverService := f.processFailoverService(ctx, failoverService, prioritizedMeshServices)
+		outputSnapshotForFailoverService := f.processSingle(ctx, failoverService, prioritizedMeshServices)
 		// Accumulate outputs for each FailoverService
 		outputSnapshot.append(outputSnapshotForFailoverService)
 	}
@@ -75,7 +76,9 @@ func (f *failoverServiceProcessor) collectMeshServicesForFailoverService(
 	return prioritizedMeshServices, nil
 }
 
-func (f *failoverServiceProcessor) processFailoverService(
+// Process a single FailoverService and return OutputSnapshot containing computed translated resources and
+// the FailoverService with updated status.
+func (f *failoverServiceProcessor) processSingle(
 	ctx context.Context,
 	failoverService *smh_networking.FailoverService,
 	prioritizedMeshServices []*smh_discovery.MeshService,
@@ -84,7 +87,7 @@ func (f *failoverServiceProcessor) processFailoverService(
 	var outputSnapshot OutputSnapshot
 	for _, translator := range f.translators {
 		output, translatorErr := translator.Translate(ctx, failoverService, prioritizedMeshServices)
-		// Collect mesh specific output resources
+		// Accumulate mesh specific output resources.
 		outputSnapshot.MeshOutputs.append(output)
 		if translatorErr != nil {
 			translatorErrs = append(translatorErrs, translatorErr)

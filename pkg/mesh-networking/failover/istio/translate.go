@@ -48,10 +48,10 @@ func (i *istioFailoverServiceTranslator) Translate(
 		output.ServiceEntries = append(output.ServiceEntries, serviceEntry)
 		output.EnvoyFilters = append(output.EnvoyFilters, envoyFilter)
 	}
-	// Write output snapshot
 	return output, translatorErr
 }
 
+// Translate FailoverService into ServiceEntry and EnvoyFilter.
 func (i *istioFailoverServiceTranslator) translate(
 	ctx context.Context,
 	failoverService *smh_networking.FailoverService,
@@ -62,7 +62,6 @@ func (i *istioFailoverServiceTranslator) translate(
 	if err != nil {
 		multiErr = multierror.Append(multiErr, err)
 	}
-	// Fetch corresponding MeshService list
 	envoyFilter, err := i.translateEnvoyFilter(failoverService, prioritizedMeshServices)
 	if err != nil {
 		multiErr = multierror.Append(multiErr, err)

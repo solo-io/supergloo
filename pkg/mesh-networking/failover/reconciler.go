@@ -73,8 +73,7 @@ func (f *failoverServiceReconciler) ReconcileFailoverService(_ *smh_networking.F
 		return reconcile.Result{}, err
 	}
 	outputSnapshot := f.failoverServiceProcessor.Process(f.ctx, inputSnapshot)
-	// Update status on all FailoverServices, and ensure FailoverService mesh-specific translated resources.
-	// TODO should we retry here if status update fails?
+	// Update status on all FailoverServices, and ensure FailoverService mesh-specific translated resources on remote clusters.
 	return reconcile.Result{}, f.ensureOutputSnapshot(outputSnapshot)
 }
 
@@ -129,7 +128,7 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (InputSnapshot, error) 
 	return inputSnapshot, nil
 }
 
-// Ensure that the actual state matches the desired state in the OutputSnapshot.
+// Ensure that the actual state matches the desired state in the OutputSnapshot on each remote cluster.
 func (f *failoverServiceReconciler) ensureOutputSnapshot(
 	snapshot OutputSnapshot,
 ) error {
