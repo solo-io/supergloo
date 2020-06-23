@@ -127,6 +127,7 @@ func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalS
 		} else if !proto.Equal(&existingVirtualService.Spec, &desiredState.Spec) {
 			// make sure we use the same resource version for updates
 			desiredState.ObjectMeta.ResourceVersion = existingVirtualService.ObjectMeta.ResourceVersion
+			v.addLabels(desiredState)
 			err = v.virtualServiceClient.UpdateVirtualService(ctx, desiredState)
 			if err != nil {
 				multierr = multierror.Append(multierr, err)
@@ -136,13 +137,7 @@ func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalS
 
 	// create new VS's of what's left in the map
 	for _, desiredVirtualService := range nameNamespaceToDesiredState { // add our labels:
-		if desiredVirtualService.Labels == nil && len(v.labels) != 0 {
-			desiredVirtualService.Labels = make(map[string]string)
-		}
-		for k, v := range v.labels {
-			desiredVirtualService.Labels[k] = v
-		}
-
+		v.addLabels(desiredVirtualService)
 		err := v.virtualServiceClient.CreateVirtualService(ctx, desiredVirtualService)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
@@ -150,4 +145,13 @@ func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalS
 	}
 
 	return multierr
+}
+
+func (v *virtualServiceReconciler) addLabels(desiredVirtualService *istio_networking.VirtualService) {
+	if desiredVirtualService.Labels == nil && len(v.labels) != 0 {
+		desiredVirtualService.Labels = make(map[string]string)
+	}
+	for k, v := range v.labels {
+		desiredVirtualService.Labels[k] = v
+	}
 }

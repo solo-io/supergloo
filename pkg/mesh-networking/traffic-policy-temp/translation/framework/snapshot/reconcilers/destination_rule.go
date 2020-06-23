@@ -133,6 +133,8 @@ func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobal
 		} else if !proto.Equal(&existingObj.Spec, &desiredState.Spec) {
 			// make sure we use the same resource version for updates
 			desiredState.ObjectMeta.ResourceVersion = existingObj.ObjectMeta.ResourceVersion
+			v.addLabels(desiredState)
+
 			logger.Debugw("updating destination rule", "ref", existingObj.ObjectMeta)
 			err = v.client.UpdateDestinationRule(ctx, desiredState)
 			if err != nil {
@@ -147,12 +149,7 @@ func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobal
 		logger.Debugw("creating destination rule", "ref", desiredObj.ObjectMeta)
 
 		// add our labels:
-		if desiredObj.Labels == nil && len(v.labels) != 0 {
-			desiredObj.Labels = make(map[string]string)
-		}
-		for k, v := range v.labels {
-			desiredObj.Labels[k] = v
-		}
+		v.addLabels(desiredObj)
 
 		err := v.client.CreateDestinationRule(ctx, desiredObj)
 		if err != nil {
@@ -162,4 +159,13 @@ func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobal
 	}
 
 	return multierr
+}
+
+func (v *destinationRuleReconciler) addLabels(desiredDestRule *istio_networking.DestinationRule) {
+	if desiredDestRule.Labels == nil && len(v.labels) != 0 {
+		desiredDestRule.Labels = make(map[string]string)
+	}
+	for k, v := range v.labels {
+		desiredDestRule.Labels[k] = v
+	}
 }
