@@ -70,7 +70,7 @@ func (v *destinationRuleReconcilerBuilder) Build() (DestinationRuleReconciler, e
 	}
 
 	if v.clusterScoped && v.namespace != "" {
-		return nil, eris.New("Cannot be cluster-scoped and scoped to a namespace/label")
+		return nil, eris.New("Cannot be cluster-scoped and scoped to a namespace")
 	}
 
 	return &destinationRuleReconciler{
