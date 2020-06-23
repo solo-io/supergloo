@@ -135,15 +135,15 @@ func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalS
 	}
 
 	// create new VS's of what's left in the map
-	for _, desiredVirtualService := range nameNamespaceToDesiredState {
-		err := v.virtualServiceClient.CreateVirtualService(ctx, desiredVirtualService)
-		// add our labels:
+	for _, desiredVirtualService := range nameNamespaceToDesiredState { // add our labels:
 		if desiredVirtualService.Labels == nil && len(v.labels) != 0 {
 			desiredVirtualService.Labels = make(map[string]string)
 		}
 		for k, v := range v.labels {
 			desiredVirtualService.Labels[k] = v
 		}
+
+		err := v.virtualServiceClient.CreateVirtualService(ctx, desiredVirtualService)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
 		}
