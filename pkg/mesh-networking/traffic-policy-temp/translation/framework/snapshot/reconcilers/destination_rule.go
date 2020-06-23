@@ -17,7 +17,7 @@ type DestinationRuleReconciler interface {
 	Reconcile(ctx context.Context, desiredGlobalState []*istio_networking.DestinationRule) error
 }
 
-// a reconciler can either be whole-cluster scoped or scoped to a namespace and/or labels
+// a reconciler can either be whole-cluster scoped or scoped to a namespace. In addition labels can be used.
 // either ScopedToWholeCluster() must be set or one of the following two methods must be called with non-zero values
 // that's just to force it to be obvious when we're going to be reconciling EVERYTHING across a whole cluster
 type DestinationRuleReconcilerBuilder interface {
