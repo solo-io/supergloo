@@ -99,7 +99,7 @@ var _ = Describe("MeshworkloadDetector", func() {
 		},
 	}
 
-	It("do", func() {
+	It("translates a deployment with a detected sidecar to a meshworkload", func() {
 
 		deployment := makeDeployment()
 		rs := makeReplicaSet(deployment)
