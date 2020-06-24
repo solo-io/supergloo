@@ -1,7 +1,8 @@
 package istio_translator_test
 
 import (
-	"github.com/deislabs/oras/pkg/context"
+	"context"
+
 	proto_types "github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
