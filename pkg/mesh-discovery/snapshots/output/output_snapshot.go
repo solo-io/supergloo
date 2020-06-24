@@ -4,10 +4,20 @@
 package output
 
 import (
+	"sort"
+
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
 
 	discovery_smh_solo_io_v1alpha1_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 )
+
+// this error can occur if constructing a Partitioned Snapshot from a resource
+// that is missing the partition label
+var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.ResourceId) error {
+	return eris.Errorf("expected label %v not on labels of %v %v", labelKey, resourceKind, sets.Key(obj))
+}
 
 // the snapshot of output resources produced by
 // the discovery translation
@@ -40,6 +50,170 @@ func NewSnapshot(
 		meshWorkloads: meshWorkloads,
 		meshes:        meshes,
 	}
+}
+
+// automatically partitions the input resources
+// by the presence of the provided label.
+func NewLabelPartitionedSnapshot(
+	labelKey string, // the key by which to partition the resources
+
+	meshServices discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet,
+	meshWorkloads discovery_smh_solo_io_v1alpha1_sets.MeshWorkloadSet,
+	meshes discovery_smh_solo_io_v1alpha1_sets.MeshSet,
+
+) (Snapshot, error) {
+
+	partitionedMeshServices, err := partitionMeshServicesByLabel(labelKey, meshServices)
+	if err != nil {
+		return nil, err
+	}
+	partitionedMeshWorkloads, err := partitionMeshWorkloadsByLabel(labelKey, meshWorkloads)
+	if err != nil {
+		return nil, err
+	}
+	partitionedMeshes, err := partitionMeshesByLabel(labelKey, meshes)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewSnapshot(
+
+		partitionedMeshServices,
+		partitionedMeshWorkloads,
+		partitionedMeshes,
+	), nil
+}
+
+func partitionMeshServicesByLabel(labelKey string, set discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet) ([]LabeledMeshServiceSet, error) {
+	setsByLabel := map[string]discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet{}
+
+	for _, obj := range set.List() {
+		if obj.Labels == nil {
+			return nil, MissingRequiredLabelError(labelKey, "MeshService", obj)
+		}
+		labelValue := obj.Labels[labelKey]
+		if labelValue == "" {
+			return nil, MissingRequiredLabelError(labelKey, "MeshService", obj)
+		}
+
+		setForValue, ok := setsByLabel[labelValue]
+		if !ok {
+			setForValue = discovery_smh_solo_io_v1alpha1_sets.NewMeshServiceSet()
+			setsByLabel[labelValue] = setForValue
+		}
+		setForValue.Insert(obj)
+	}
+
+	// partition by label key
+	var partitionedMeshServices []LabeledMeshServiceSet
+
+	for labelValue, setForValue := range setsByLabel {
+		labels := map[string]string{labelKey: labelValue}
+
+		partitionedSet, err := NewLabeledMeshServiceSet(setForValue, labels)
+		if err != nil {
+			return nil, err
+		}
+
+		partitionedMeshServices = append(partitionedMeshServices, partitionedSet)
+	}
+
+	// sort for idempotency
+	sort.SliceStable(partitionedMeshServices, func(i, j int) bool {
+		leftLabelValue := partitionedMeshServices[i].Labels()[labelKey]
+		rightLabelValue := partitionedMeshServices[j].Labels()[labelKey]
+		return leftLabelValue < rightLabelValue
+	})
+
+	return partitionedMeshServices, nil
+}
+
+func partitionMeshWorkloadsByLabel(labelKey string, set discovery_smh_solo_io_v1alpha1_sets.MeshWorkloadSet) ([]LabeledMeshWorkloadSet, error) {
+	setsByLabel := map[string]discovery_smh_solo_io_v1alpha1_sets.MeshWorkloadSet{}
+
+	for _, obj := range set.List() {
+		if obj.Labels == nil {
+			return nil, MissingRequiredLabelError(labelKey, "MeshWorkload", obj)
+		}
+		labelValue := obj.Labels[labelKey]
+		if labelValue == "" {
+			return nil, MissingRequiredLabelError(labelKey, "MeshWorkload", obj)
+		}
+
+		setForValue, ok := setsByLabel[labelValue]
+		if !ok {
+			setForValue = discovery_smh_solo_io_v1alpha1_sets.NewMeshWorkloadSet()
+			setsByLabel[labelValue] = setForValue
+		}
+		setForValue.Insert(obj)
+	}
+
+	// partition by label key
+	var partitionedMeshWorkloads []LabeledMeshWorkloadSet
+
+	for labelValue, setForValue := range setsByLabel {
+		labels := map[string]string{labelKey: labelValue}
+
+		partitionedSet, err := NewLabeledMeshWorkloadSet(setForValue, labels)
+		if err != nil {
+			return nil, err
+		}
+
+		partitionedMeshWorkloads = append(partitionedMeshWorkloads, partitionedSet)
+	}
+
+	// sort for idempotency
+	sort.SliceStable(partitionedMeshWorkloads, func(i, j int) bool {
+		leftLabelValue := partitionedMeshWorkloads[i].Labels()[labelKey]
+		rightLabelValue := partitionedMeshWorkloads[j].Labels()[labelKey]
+		return leftLabelValue < rightLabelValue
+	})
+
+	return partitionedMeshWorkloads, nil
+}
+
+func partitionMeshesByLabel(labelKey string, set discovery_smh_solo_io_v1alpha1_sets.MeshSet) ([]LabeledMeshSet, error) {
+	setsByLabel := map[string]discovery_smh_solo_io_v1alpha1_sets.MeshSet{}
+
+	for _, obj := range set.List() {
+		if obj.Labels == nil {
+			return nil, MissingRequiredLabelError(labelKey, "Mesh", obj)
+		}
+		labelValue := obj.Labels[labelKey]
+		if labelValue == "" {
+			return nil, MissingRequiredLabelError(labelKey, "Mesh", obj)
+		}
+
+		setForValue, ok := setsByLabel[labelValue]
+		if !ok {
+			setForValue = discovery_smh_solo_io_v1alpha1_sets.NewMeshSet()
+			setsByLabel[labelValue] = setForValue
+		}
+		setForValue.Insert(obj)
+	}
+
+	// partition by label key
+	var partitionedMeshes []LabeledMeshSet
+
+	for labelValue, setForValue := range setsByLabel {
+		labels := map[string]string{labelKey: labelValue}
+
+		partitionedSet, err := NewLabeledMeshSet(setForValue, labels)
+		if err != nil {
+			return nil, err
+		}
+
+		partitionedMeshes = append(partitionedMeshes, partitionedSet)
+	}
+
+	// sort for idempotency
+	sort.SliceStable(partitionedMeshes, func(i, j int) bool {
+		leftLabelValue := partitionedMeshes[i].Labels()[labelKey]
+		rightLabelValue := partitionedMeshes[j].Labels()[labelKey]
+		return leftLabelValue < rightLabelValue
+	})
+
+	return partitionedMeshes, nil
 }
 
 func (s snapshot) MeshServices() [][]LabeledMeshServiceSet {
