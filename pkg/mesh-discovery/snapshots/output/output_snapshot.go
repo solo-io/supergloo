@@ -4,12 +4,16 @@
 package output
 
 import (
+	"context"
 	"sort"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/service-mesh-hub/codegen/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	discovery_smh_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	discovery_smh_solo_io_v1alpha1_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 )
 
@@ -29,15 +33,21 @@ type Snapshot interface {
 	MeshWorkloads() []LabeledMeshWorkloadSet
 	// return the set of Meshes with a given set of labels
 	Meshes() []LabeledMeshSet
+
+	// apply the snapshot to the cluster, garbage collecting stale resources
+	Apply(ctx context.Context, clusterClient client.Client) error
 }
 
 type snapshot struct {
+	name string
+
 	meshServices  []LabeledMeshServiceSet
 	meshWorkloads []LabeledMeshWorkloadSet
 	meshes        []LabeledMeshSet
 }
 
 func NewSnapshot(
+	name string,
 
 	meshServices []LabeledMeshServiceSet,
 	meshWorkloads []LabeledMeshWorkloadSet,
@@ -45,6 +55,7 @@ func NewSnapshot(
 
 ) Snapshot {
 	return &snapshot{
+		name: name,
 
 		meshServices:  meshServices,
 		meshWorkloads: meshWorkloads,
@@ -55,6 +66,7 @@ func NewSnapshot(
 // automatically partitions the input resources
 // by the presence of the provided label.
 func NewLabelPartitionedSnapshot(
+	name,
 	labelKey string, // the key by which to partition the resources
 
 	meshServices discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet,
@@ -77,11 +89,32 @@ func NewLabelPartitionedSnapshot(
 	}
 
 	return NewSnapshot(
+		name,
 
 		partitionedMeshServices,
 		partitionedMeshWorkloads,
 		partitionedMeshes,
 	), nil
+}
+
+// apply the desired resources to the cluster state; remove stale resources where necessary
+func (s *snapshot) Apply(ctx context.Context, cli client.Client) error {
+	var genericLists []output.ResourceList
+
+	for _, outputSet := range s.meshServices {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.meshWorkloads {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.meshes {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+
+	return output.Snapshot{
+		Name:        s.name,
+		ListsToSync: genericLists,
+	}.Sync(ctx, cli)
 }
 
 func partitionMeshServicesByLabel(labelKey string, set discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet) ([]LabeledMeshServiceSet, error) {
@@ -216,15 +249,15 @@ func partitionMeshesByLabel(labelKey string, set discovery_smh_solo_io_v1alpha1_
 	return partitionedMeshes, nil
 }
 
-func (s snapshot) MeshServices() [][]LabeledMeshServiceSet {
+func (s snapshot) MeshServices() []LabeledMeshServiceSet {
 	return s.meshServices
 }
 
-func (s snapshot) MeshWorkloads() [][]LabeledMeshWorkloadSet {
+func (s snapshot) MeshWorkloads() []LabeledMeshWorkloadSet {
 	return s.meshWorkloads
 }
 
-func (s snapshot) Meshes() [][]LabeledMeshSet {
+func (s snapshot) Meshes() []LabeledMeshSet {
 	return s.meshes
 }
 
@@ -237,6 +270,9 @@ type LabeledMeshServiceSet interface {
 
 	// returns the set of MeshServicees with the given labels
 	Set() discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet
+
+	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
+	Generic() output.ResourceList
 }
 
 type labeledMeshServiceSet struct {
@@ -266,6 +302,32 @@ func (l *labeledMeshServiceSet) Set() discovery_smh_solo_io_v1alpha1_sets.MeshSe
 	return l.set
 }
 
+func (l labeledMeshServiceSet) Generic() output.ResourceList {
+	var desiredResources []ezkube.Object
+	for _, desired := range l.set.List() {
+		desiredResources = append(desiredResources, desired)
+	}
+
+	// enable list func for garbage collection
+	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+		var list discovery_smh_solo_io_v1alpha1.MeshServiceList
+		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+			return nil, err
+		}
+		var items []ezkube.Object
+		for _, item := range list.Items {
+			item := item // pike
+			items = append(items, &item)
+		}
+		return items, nil
+	}
+
+	return output.ResourceList{
+		Resources: desiredResources,
+		ListFunc:  listFunc,
+	}
+}
+
 // LabeledMeshWorkloadSet represents a set of meshWorkloads
 // which share a common set of labels.
 // These labels are used to find diffs between MeshWorkloadSets.
@@ -275,6 +337,9 @@ type LabeledMeshWorkloadSet interface {
 
 	// returns the set of MeshWorkloades with the given labels
 	Set() discovery_smh_solo_io_v1alpha1_sets.MeshWorkloadSet
+
+	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
+	Generic() output.ResourceList
 }
 
 type labeledMeshWorkloadSet struct {
@@ -304,6 +369,32 @@ func (l *labeledMeshWorkloadSet) Set() discovery_smh_solo_io_v1alpha1_sets.MeshW
 	return l.set
 }
 
+func (l labeledMeshWorkloadSet) Generic() output.ResourceList {
+	var desiredResources []ezkube.Object
+	for _, desired := range l.set.List() {
+		desiredResources = append(desiredResources, desired)
+	}
+
+	// enable list func for garbage collection
+	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+		var list discovery_smh_solo_io_v1alpha1.MeshWorkloadList
+		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+			return nil, err
+		}
+		var items []ezkube.Object
+		for _, item := range list.Items {
+			item := item // pike
+			items = append(items, &item)
+		}
+		return items, nil
+	}
+
+	return output.ResourceList{
+		Resources: desiredResources,
+		ListFunc:  listFunc,
+	}
+}
+
 // LabeledMeshSet represents a set of meshes
 // which share a common set of labels.
 // These labels are used to find diffs between MeshSets.
@@ -313,6 +404,9 @@ type LabeledMeshSet interface {
 
 	// returns the set of Meshes with the given labels
 	Set() discovery_smh_solo_io_v1alpha1_sets.MeshSet
+
+	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
+	Generic() output.ResourceList
 }
 
 type labeledMeshSet struct {
@@ -340,4 +434,30 @@ func (l *labeledMeshSet) Labels() map[string]string {
 
 func (l *labeledMeshSet) Set() discovery_smh_solo_io_v1alpha1_sets.MeshSet {
 	return l.set
+}
+
+func (l labeledMeshSet) Generic() output.ResourceList {
+	var desiredResources []ezkube.Object
+	for _, desired := range l.set.List() {
+		desiredResources = append(desiredResources, desired)
+	}
+
+	// enable list func for garbage collection
+	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+		var list discovery_smh_solo_io_v1alpha1.MeshList
+		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+			return nil, err
+		}
+		var items []ezkube.Object
+		for _, item := range list.Items {
+			item := item // pike
+			items = append(items, &item)
+		}
+		return items, nil
+	}
+
+	return output.ResourceList{
+		Resources: desiredResources,
+		ListFunc:  listFunc,
+	}
 }

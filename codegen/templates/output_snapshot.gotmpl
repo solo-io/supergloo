@@ -4,11 +4,19 @@ package output
 {{ $groups := snapshot_groups }}
 
 import (
+	"context"
+
     "github.com/rotisserie/eris"
     "github.com/solo-io/skv2/contrib/pkg/sets"
+    "github.com/solo-io/skv2/pkg/ezkube"
+    "github.com/solo-io/service-mesh-hub/codegen/pkg/output"
+    "sigs.k8s.io/controller-runtime/pkg/client"
+
 
 {{- range $group := $groups }}
+{{ $type_import_prefix := group_import_name $group }}
 {{ $set_import_prefix := (printf "%v_sets" (group_import_name $group)) }}
+    {{ $type_import_prefix }} "{{ group_import_path $group }}"
     {{ $set_import_prefix }} "{{ group_import_path $group }}/sets"
 {{- end }}
 
@@ -33,10 +41,12 @@ type Snapshot interface {
 {{- end }}
 {{- end }}
 
+    // apply the snapshot to the cluster, garbage collecting stale resources
+    Apply(ctx context.Context, clusterClient client.Client) error
 }
 
 type snapshot struct {
-
+    name string
 {{/* generate fields of the real snapshot impl here */}}
 {{- range $group := $groups }}
 {{- range $resource := $group.Resources }}
@@ -49,6 +59,7 @@ type snapshot struct {
 }
 
 func NewSnapshot(
+	name string,
 {{/* generate constructor params here */}}
 {{- range $group := $groups }}
 {{- range $resource := $group.Resources }}
@@ -60,6 +71,7 @@ func NewSnapshot(
 
 ) Snapshot {
     return &snapshot{
+    	name: name,
 {{/* add constructor params here */}}
 {{- range $group := $groups }}
 {{- range $resource := $group.Resources }}
@@ -74,6 +86,7 @@ func NewSnapshot(
 // automatically partitions the input resources
 // by the presence of the provided label.
 func NewLabelPartitionedSnapshot(
+	name,
 	labelKey string, // the key by which to partition the resources
 {{/* generate partitioned constructor params here */}}
 {{- range $group := $groups }}
@@ -101,6 +114,7 @@ func NewLabelPartitionedSnapshot(
 {{- end }}
 
     return NewSnapshot(
+    	name,
 {{/* args for NewSnapshot */}}
 {{- range $group := $groups }}
 {{- range $resource := $group.Resources }}
@@ -111,6 +125,28 @@ func NewLabelPartitionedSnapshot(
 {{- end }}
 {{- end }}
     ), nil
+}
+
+
+// apply the desired resources to the cluster state; remove stale resources where necessary
+func (s *snapshot) Apply(ctx context.Context, cli client.Client) error {
+    var genericLists []output.ResourceList
+
+{{/* generate each list conversion */}}
+{{- range $group := $groups }}
+{{- range $resource := $group.Resources }}
+{{- $kindLowerCamel := lower_camel $resource.Kind }}
+{{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
+    for _, outputSet := range s.{{ $kindLowerCamelPlural }} {
+        genericLists = append(genericLists,  outputSet.Generic())
+    }
+{{- end }}
+{{- end }}
+
+    return output.Snapshot{
+        Name:        s.name,
+        ListsToSync: genericLists,
+    }.Sync(ctx, cli)
 }
 
 {{/* generate conversion funcs which partition each individual set */}}
@@ -168,7 +204,6 @@ func partition{{ $kindPlural }}ByLabel(labelKey string, set {{ $set_import_prefi
 {{- end }}
 {{- end }}
 
-
 {{/* generate getters here */}}
 {{- range $group := $groups }}
 {{- range $resource := $group.Resources }}
@@ -176,7 +211,7 @@ func partition{{ $kindPlural }}ByLabel(labelKey string, set {{ $set_import_prefi
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
 {{- $kindLowerCamelPlural := pluralize $kindLowerCamel }}
 
-func (s snapshot) {{ $kindPlural }}() [][]Labeled{{ $resource.Kind }}Set {
+func (s snapshot) {{ $kindPlural }}() []Labeled{{ $resource.Kind }}Set {
     return s.{{ $kindLowerCamelPlural }}
 }
 {{- end }}
@@ -186,6 +221,7 @@ func (s snapshot) {{ $kindPlural }}() [][]Labeled{{ $resource.Kind }}Set {
 {{/* generate getters here */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
+{{ $type_import_prefix := group_import_name $group }}
 {{- range $resource := $group.Resources }}
 {{- $kindPlural := pluralize $resource.Kind }}
 {{- $kindLowerCamel := lower_camel $resource.Kind }}
@@ -200,6 +236,9 @@ type Labeled{{ $resource.Kind }}Set interface {
 
     // returns the set of {{ $resource.Kind }}es with the given labels
     Set() {{ $set_import_prefix }}.{{ $resource.Kind }}Set
+
+    // converts the set to a generic format which can be applied by the Snapshot.Apply functions
+    Generic() output.ResourceList
 }
 
 type labeled{{ $resource.Kind }}Set struct {
@@ -227,6 +266,32 @@ func (l *labeled{{ $resource.Kind }}Set) Labels() map[string]string {
 
 func (l *labeled{{ $resource.Kind }}Set) Set() {{ $set_import_prefix }}.{{ $resource.Kind }}Set {
     return l.set
+}
+
+func (l labeled{{ $resource.Kind }}Set) Generic() output.ResourceList {
+    var desiredResources []ezkube.Object
+    for _, desired := range l.set.List() {
+        desiredResources = append(desiredResources, desired)
+    }
+
+    // enable list func for garbage collection
+    listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+        var list {{ $type_import_prefix }}.{{ $resource.Kind }}List
+        if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+            return nil, err
+        }
+        var items []ezkube.Object
+        for _, item := range list.Items {
+            item := item // pike
+            items = append(items, &item)
+        }
+        return items, nil
+    }
+
+    return output.ResourceList{
+        Resources: desiredResources,
+        ListFunc: listFunc,
+    }
 }
 
 {{- end }}
