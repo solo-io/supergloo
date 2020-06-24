@@ -172,6 +172,10 @@ fi
 
 ./_output/meshctl --context kind-$managementPlane install --file ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
 
+if [ -n "$DEBUG_MODE" ]; then
+  kubectl --context kind-$managementPlane set env -n service-mesh-hub deploy/mesh-networking DEBUG_MODE=1
+fi
+
 case $(uname) in
   "Darwin")
   {
