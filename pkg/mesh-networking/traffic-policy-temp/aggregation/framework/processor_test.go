@@ -136,10 +136,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					GetMesh(ctx, selection.ResourceRefToObjectKey(meshServices[1].Spec.Mesh)).
 					Return(mesh2, nil)
 				policyCollector.EXPECT().
-					CollectForService(meshServices[0], meshServices, mesh1, validator, nil).
+					CollectForService(gomock.Any(), meshServices[0], meshServices, mesh1, validator, nil).
 					Return(&traffic_policy_aggregation.CollectionResult{}, nil)
 				policyCollector.EXPECT().
-					CollectForService(meshServices[1], meshServices, mesh2, validator, nil).
+					CollectForService(gomock.Any(), meshServices[1], meshServices, mesh2, validator, nil).
 					Return(&traffic_policy_aggregation.CollectionResult{}, nil)
 				inMemoryStatusMutator.EXPECT().
 					MutateServicePolicies(meshServices[0], nil).
@@ -263,10 +263,10 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 				GetMesh(ctx, selection.ResourceRefToObjectKey(meshServices[1].Spec.Mesh)).
 				Return(mesh2, nil)
 			policyCollector.EXPECT().
-				CollectForService(meshServices[0], meshServices, mesh1, validator, trafficPolicies).
+				CollectForService(gomock.Any(), meshServices[0], meshServices, mesh1, validator, trafficPolicies).
 				Return(&traffic_policy_aggregation.CollectionResult{PoliciesToRecordOnService: newlyValidatedTrafficPolicies[0:2]}, nil)
 			policyCollector.EXPECT().
-				CollectForService(meshServices[1], meshServices, mesh2, validator, trafficPolicies).
+				CollectForService(gomock.Any(), meshServices[1], meshServices, mesh2, validator, trafficPolicies).
 				Return(&traffic_policy_aggregation.CollectionResult{
 					PoliciesToRecordOnService: newlyValidatedTrafficPolicies[2:4],
 					PolicyToConflictErrors: map[*smh_networking.TrafficPolicy][]*types.TrafficPolicyStatus_ConflictError{

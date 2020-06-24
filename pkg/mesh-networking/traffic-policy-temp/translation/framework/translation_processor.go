@@ -101,6 +101,7 @@ func (t *translationProcessor) Process(ctx context.Context, allMeshServices []*s
 		snapshot := clusterNameToSnapshot[meshKey]
 		logger.Debugw("accumulate from translation", "meshService", meshService, "mesh", mesh, "snapshot", snapshot, "meshKey", meshKey)
 		err = snapshotAccumulator.AccumulateFromTranslation(
+			ctx,
 			snapshot,
 			meshService,
 			allMeshServices,

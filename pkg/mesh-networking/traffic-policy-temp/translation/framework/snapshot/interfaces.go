@@ -15,6 +15,7 @@ import (
 type TranslationSnapshotAccumulator interface {
 	// mutate the translated snapshot, adding the translation results in where appropriate
 	AccumulateFromTranslation(
+		ctx context.Context,
 		snapshotInProgress *TranslatedSnapshot,
 		meshService *smh_discovery.MeshService,
 		allMeshServices []*smh_discovery.MeshService,

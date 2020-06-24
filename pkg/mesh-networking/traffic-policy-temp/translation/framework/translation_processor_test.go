@@ -158,8 +158,9 @@ var _ = Describe("TranslationReconciler", func() {
 						Items: []smh_discovery.Mesh{*knownMeshes[0], *knownMeshes[1], *knownMeshes[2]},
 					}, nil)
 				snapshotAccumulator.EXPECT().
-					AccumulateFromTranslation(gomock.Any(), meshServices[0], meshServices, knownMeshes[0]).
+					AccumulateFromTranslation(gomock.Any(), gomock.Any(), meshServices[0], meshServices, knownMeshes[0]).
 					DoAndReturn(func(
+						ctx context.Context,
 						snapshotInProgress *snapshot.TranslatedSnapshot,
 						meshService *smh_discovery.MeshService,
 						allMeshServices []*smh_discovery.MeshService,
@@ -175,8 +176,9 @@ var _ = Describe("TranslationReconciler", func() {
 						return nil
 					})
 				snapshotAccumulator.EXPECT().
-					AccumulateFromTranslation(gomock.Any(), meshServices[1], meshServices, knownMeshes[0]).
+					AccumulateFromTranslation(gomock.Any(), gomock.Any(), meshServices[1], meshServices, knownMeshes[0]).
 					DoAndReturn(func(
+						ctx context.Context,
 						snapshotInProgress *snapshot.TranslatedSnapshot,
 						meshService *smh_discovery.MeshService,
 						allMeshServices []*smh_discovery.MeshService,
@@ -190,8 +192,9 @@ var _ = Describe("TranslationReconciler", func() {
 						return nil
 					})
 				snapshotAccumulator.EXPECT().
-					AccumulateFromTranslation(gomock.Any(), meshServices[2], meshServices, knownMeshes[2]).
+					AccumulateFromTranslation(gomock.Any(), gomock.Any(), meshServices[2], meshServices, knownMeshes[2]).
 					DoAndReturn(func(
+						ctx context.Context,
 						snapshotInProgress *snapshot.TranslatedSnapshot,
 						meshService *smh_discovery.MeshService,
 						allMeshServices []*smh_discovery.MeshService,
