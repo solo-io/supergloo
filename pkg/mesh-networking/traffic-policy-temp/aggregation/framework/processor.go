@@ -67,7 +67,7 @@ func (a *aggregationProcessor) Process(ctx context.Context, allTrafficPolicies [
 			// TODO: once we complete thie transition to this model, we need to panic here.
 			//panic(err)
 		}
-		collectionResult, err := a.policyCollector.CollectForService(
+		collectionResult, err := a.policyCollector.CollectForService(ctx,
 			meshService,
 			allMeshServices,
 			serviceToMetadata[meshService].Mesh,

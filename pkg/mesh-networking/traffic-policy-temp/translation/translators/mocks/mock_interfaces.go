@@ -5,6 +5,7 @@
 package mock_mesh_translation
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -38,17 +39,17 @@ func (m *MockTranslationValidator) EXPECT() *MockTranslationValidatorMockRecorde
 }
 
 // GetTranslationErrors mocks base method.
-func (m *MockTranslationValidator) GetTranslationErrors(meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh, trafficPolicies []*types.MeshServiceStatus_ValidatedTrafficPolicy) []*mesh_translation.TranslationError {
+func (m *MockTranslationValidator) GetTranslationErrors(ctx context.Context, meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh, trafficPolicies []*types.MeshServiceStatus_ValidatedTrafficPolicy) []*mesh_translation.TranslationError {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTranslationErrors", meshService, allMeshServices, mesh, trafficPolicies)
+	ret := m.ctrl.Call(m, "GetTranslationErrors", ctx, meshService, allMeshServices, mesh, trafficPolicies)
 	ret0, _ := ret[0].([]*mesh_translation.TranslationError)
 	return ret0
 }
 
 // GetTranslationErrors indicates an expected call of GetTranslationErrors.
-func (mr *MockTranslationValidatorMockRecorder) GetTranslationErrors(meshService, allMeshServices, mesh, trafficPolicies interface{}) *gomock.Call {
+func (mr *MockTranslationValidatorMockRecorder) GetTranslationErrors(ctx, meshService, allMeshServices, mesh, trafficPolicies interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTranslationErrors", reflect.TypeOf((*MockTranslationValidator)(nil).GetTranslationErrors), meshService, allMeshServices, mesh, trafficPolicies)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTranslationErrors", reflect.TypeOf((*MockTranslationValidator)(nil).GetTranslationErrors), ctx, meshService, allMeshServices, mesh, trafficPolicies)
 }
 
 // MockDiscoveryLabelsGetter is a mock of DiscoveryLabelsGetter interface.
@@ -149,17 +150,17 @@ func (m *MockIstioTranslator) EXPECT() *MockIstioTranslatorMockRecorder {
 }
 
 // GetTranslationErrors mocks base method.
-func (m *MockIstioTranslator) GetTranslationErrors(meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh, trafficPolicies []*types.MeshServiceStatus_ValidatedTrafficPolicy) []*mesh_translation.TranslationError {
+func (m *MockIstioTranslator) GetTranslationErrors(ctx context.Context, meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh, trafficPolicies []*types.MeshServiceStatus_ValidatedTrafficPolicy) []*mesh_translation.TranslationError {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTranslationErrors", meshService, allMeshServices, mesh, trafficPolicies)
+	ret := m.ctrl.Call(m, "GetTranslationErrors", ctx, meshService, allMeshServices, mesh, trafficPolicies)
 	ret0, _ := ret[0].([]*mesh_translation.TranslationError)
 	return ret0
 }
 
 // GetTranslationErrors indicates an expected call of GetTranslationErrors.
-func (mr *MockIstioTranslatorMockRecorder) GetTranslationErrors(meshService, allMeshServices, mesh, trafficPolicies interface{}) *gomock.Call {
+func (mr *MockIstioTranslatorMockRecorder) GetTranslationErrors(ctx, meshService, allMeshServices, mesh, trafficPolicies interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTranslationErrors", reflect.TypeOf((*MockIstioTranslator)(nil).GetTranslationErrors), meshService, allMeshServices, mesh, trafficPolicies)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTranslationErrors", reflect.TypeOf((*MockIstioTranslator)(nil).GetTranslationErrors), ctx, meshService, allMeshServices, mesh, trafficPolicies)
 }
 
 // GetTranslationLabels mocks base method.
@@ -191,30 +192,30 @@ func (mr *MockIstioTranslatorMockRecorder) Name() *gomock.Call {
 }
 
 // AccumulateFromTranslation mocks base method.
-func (m *MockIstioTranslator) AccumulateFromTranslation(snapshotInProgress *snapshot.TranslatedSnapshot, meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh) error {
+func (m *MockIstioTranslator) AccumulateFromTranslation(ctx context.Context, snapshotInProgress *snapshot.TranslatedSnapshot, meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccumulateFromTranslation", snapshotInProgress, meshService, allMeshServices, mesh)
+	ret := m.ctrl.Call(m, "AccumulateFromTranslation", ctx, snapshotInProgress, meshService, allMeshServices, mesh)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AccumulateFromTranslation indicates an expected call of AccumulateFromTranslation.
-func (mr *MockIstioTranslatorMockRecorder) AccumulateFromTranslation(snapshotInProgress, meshService, allMeshServices, mesh interface{}) *gomock.Call {
+func (mr *MockIstioTranslatorMockRecorder) AccumulateFromTranslation(ctx, snapshotInProgress, meshService, allMeshServices, mesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccumulateFromTranslation", reflect.TypeOf((*MockIstioTranslator)(nil).AccumulateFromTranslation), snapshotInProgress, meshService, allMeshServices, mesh)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccumulateFromTranslation", reflect.TypeOf((*MockIstioTranslator)(nil).AccumulateFromTranslation), ctx, snapshotInProgress, meshService, allMeshServices, mesh)
 }
 
 // Translate mocks base method.
-func (m *MockIstioTranslator) Translate(meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh, trafficPolicies []*types.MeshServiceStatus_ValidatedTrafficPolicy) (*mesh_translation.IstioTranslationOutput, []*mesh_translation.TranslationError) {
+func (m *MockIstioTranslator) Translate(ctx context.Context, meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh, trafficPolicies []*types.MeshServiceStatus_ValidatedTrafficPolicy) (*mesh_translation.IstioTranslationOutput, []*mesh_translation.TranslationError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Translate", meshService, allMeshServices, mesh, trafficPolicies)
+	ret := m.ctrl.Call(m, "Translate", ctx, meshService, allMeshServices, mesh, trafficPolicies)
 	ret0, _ := ret[0].(*mesh_translation.IstioTranslationOutput)
 	ret1, _ := ret[1].([]*mesh_translation.TranslationError)
 	return ret0, ret1
 }
 
 // Translate indicates an expected call of Translate.
-func (mr *MockIstioTranslatorMockRecorder) Translate(meshService, allMeshServices, mesh, trafficPolicies interface{}) *gomock.Call {
+func (mr *MockIstioTranslatorMockRecorder) Translate(ctx, meshService, allMeshServices, mesh, trafficPolicies interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockIstioTranslator)(nil).Translate), meshService, allMeshServices, mesh, trafficPolicies)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockIstioTranslator)(nil).Translate), ctx, meshService, allMeshServices, mesh, trafficPolicies)
 }

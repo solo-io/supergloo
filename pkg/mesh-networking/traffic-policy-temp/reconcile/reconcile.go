@@ -110,7 +110,10 @@ func (v *reconciler) Reconcile(ctx context.Context) error {
 	}
 
 	if clusterNameToSnapshot, err := v.translationProcessor.Process(ctx, meshServices); err == nil {
-		v.snapshotReconciler.ReconcileAllSnapshots(ctx, clusterNameToSnapshot)
+		err = v.snapshotReconciler.ReconcileAllSnapshots(ctx, clusterNameToSnapshot)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+		}
 	} else {
 		multierr = multierror.Append(multierr, err)
 	}

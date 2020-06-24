@@ -1,6 +1,8 @@
 package istio_translator_test
 
 import (
+	"context"
+
 	proto_types "github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -61,7 +63,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 			var snapshotInProgress snapshot.TranslatedSnapshot
-			err := translator.AccumulateFromTranslation(&snapshotInProgress, serviceBeingTranslated, nil, notIstioMesh)
+			err := translator.AccumulateFromTranslation(context.Background(), &snapshotInProgress, serviceBeingTranslated, nil, notIstioMesh)
 
 			Expect(err).NotTo(HaveOccurred())
 		})
@@ -86,7 +88,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -137,7 +139,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -198,7 +200,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						},
 					}
 
-					result, errs := translator.Translate(
+					result, errs := translator.Translate(context.Background(),
 						serviceBeingTranslated,
 						[]*smh_discovery.MeshService{serviceBeingTranslated},
 						istioMesh,
@@ -248,7 +250,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						},
 					}
 
-					result, errs := translator.Translate(
+					result, errs := translator.Translate(context.Background(),
 						serviceBeingTranslated,
 						[]*smh_discovery.MeshService{serviceBeingTranslated},
 						istioMesh,
@@ -300,7 +302,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -370,7 +372,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -442,7 +444,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -549,7 +551,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					}
 					allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
 
-					result, errs := translator.Translate(
+					result, errs := translator.Translate(context.Background(),
 						serviceBeingTranslated,
 						allServices,
 						istioMesh,
@@ -656,7 +658,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					}
 					allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
 
-					result, errs := translator.Translate(
+					result, errs := translator.Translate(context.Background(),
 						serviceBeingTranslated,
 						allServices,
 						istioMesh,
@@ -729,7 +731,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -793,7 +795,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -874,7 +876,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -969,7 +971,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -1089,7 +1091,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					},
 				}
 				allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
-				result, errs := translator.Translate(
+				result, errs := translator.Translate(context.Background(),
 					serviceBeingTranslated,
 					allServices,
 					istioMesh,
@@ -1199,7 +1201,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				}
 				allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
 
-				result, errs := translator.Translate(
+				result, errs := translator.Translate(context.Background(),
 					serviceBeingTranslated,
 					allServices,
 					istioMesh,
@@ -1328,7 +1330,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -1424,7 +1426,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			for _, data := range test_utils.GetData() {
 				By("testing " + data)
 				serviceBeingTranslated, drs, vs := getMeshService(data)
-				result, errs := translator.Translate(
+				result, errs := translator.Translate(context.Background(),
 					serviceBeingTranslated[0],
 					serviceBeingTranslated,
 					istioMesh,

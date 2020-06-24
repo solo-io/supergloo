@@ -1,6 +1,8 @@
 package mesh_translation
 
 import (
+	"context"
+
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
@@ -18,6 +20,7 @@ type TranslationValidator interface {
 	// Ignore the mesh-specific output from the translation step, in an effort to unify them behind some kind of common interface.
 	// Generics ;(
 	GetTranslationErrors(
+		ctx context.Context,
 		meshService *smh_discovery.MeshService,
 		allMeshServices []*smh_discovery.MeshService,
 		mesh *smh_discovery.Mesh,
@@ -42,6 +45,7 @@ type IstioTranslator interface {
 	NamedTranslator
 	snapshot.TranslationSnapshotAccumulator
 	Translate(
+		ctx context.Context,
 		meshService *smh_discovery.MeshService,
 		allMeshServices []*smh_discovery.MeshService,
 		mesh *smh_discovery.Mesh,

@@ -98,7 +98,7 @@ type destinationRuleReconciler struct {
 
 func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobalState []*istio_networking.DestinationRule) error {
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Debug("reconciling destination rules")
+	logger.Debugw("reconciling destination rules", "len", len(desiredGlobalState))
 	existingObjList, err := v.client.ListDestinationRule(
 		ctx,
 
@@ -134,7 +134,6 @@ func (v *destinationRuleReconciler) Reconcile(ctx context.Context, desiredGlobal
 			// make sure we use the same resource version for updates
 			desiredState.ObjectMeta.ResourceVersion = existingObj.ObjectMeta.ResourceVersion
 			v.addLabels(desiredState)
-
 			logger.Debugw("updating destination rule", "ref", existingObj.ObjectMeta)
 			err = v.client.UpdateDestinationRule(ctx, desiredState)
 			if err != nil {

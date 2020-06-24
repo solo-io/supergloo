@@ -35,6 +35,7 @@ func (r *snapshotReconciler) ReconcileAllSnapshots(ctx context.Context, clusterN
 
 	var multierr error
 	for cluster, snapshot := range clusterNameToSnapshot {
+		logger.Debugw("reconciling snapshot", "cluster", cluster, "snapshot", snapshot)
 		err := r.reconcileCluster(ctx, cluster, snapshot)
 		if err != nil {
 			logger.Warnw("error reconciling snapshot", "error", err)
