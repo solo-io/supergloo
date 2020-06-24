@@ -5,13 +5,12 @@ package wire
 import (
 	"context"
 
+	"github.com/google/wire"
 	kubernetes_apps_providers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/providers"
 	kubernetes_core_providers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/providers"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_providers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/providers"
 	smh_networking_providers "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/providers"
-
-	"github.com/google/wire"
-	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/pkg/common/csr-generator"
 	"github.com/solo-io/service-mesh-hub/pkg/common/csr/certgen"
@@ -71,6 +70,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		ComputeTargetCredentialsHandlersProvider,
 		kubeconfig.NewConverter,
 		files.NewDefaultFileReader,
+		FailoverServiceProviderSet,
 	)
 
 	return MeshNetworkingContext{}, nil

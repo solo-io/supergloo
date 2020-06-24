@@ -8,9 +8,10 @@ import (
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
+	multicluster2 "github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
-	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	istio_client_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,9 +33,36 @@ type failoverServiceReconciler struct {
 	kubeClusterClient        smh_discovery.KubernetesClusterClient
 	virtualMeshClient        smh_networking.VirtualMeshClient
 
-	mcClient                  multicluster.Client
+	// TODO(harveyxia) replace with multicluster.Client after refactor
+	dynamicClientGetter       multicluster2.DynamicClientGetter
 	serviceEntryClientFactory v1alpha3.ServiceEntryClientFactory
 	envoyFilterClientFactory  v1alpha3.EnvoyFilterClientFactory
+}
+
+func NewFailoverServiceReconciler(
+	ctx context.Context,
+	failoverServiceProcessor FailoverServiceProcessor,
+	failoverServiceClient smh_networking.FailoverServiceClient,
+	meshServiceClient smh_discovery.MeshServiceClient,
+	meshClient smh_discovery.MeshClient,
+	kubeClusterClient smh_discovery.KubernetesClusterClient,
+	virtualMeshClient smh_networking.VirtualMeshClient,
+	dynamicClientGetter multicluster2.DynamicClientGetter,
+	serviceEntryClientFactory v1alpha3.ServiceEntryClientFactory,
+	envoyFilterClientFactory v1alpha3.EnvoyFilterClientFactory,
+) controller.FailoverServiceReconciler {
+	return &failoverServiceReconciler{
+		ctx:                       ctx,
+		failoverServiceProcessor:  failoverServiceProcessor,
+		failoverServiceClient:     failoverServiceClient,
+		meshServiceClient:         meshServiceClient,
+		meshClient:                meshClient,
+		kubeClusterClient:         kubeClusterClient,
+		virtualMeshClient:         virtualMeshClient,
+		dynamicClientGetter:       dynamicClientGetter,
+		serviceEntryClientFactory: serviceEntryClientFactory,
+		envoyFilterClientFactory:  envoyFilterClientFactory,
+	}
 }
 
 func (f *failoverServiceReconciler) ReconcileFailoverService(_ *smh_networking.FailoverService) (reconcile.Result, error) {
@@ -135,7 +163,7 @@ func (f *failoverServiceReconciler) ensureServiceEntries(
 	var multierr *multierror.Error
 	// Reconcile per cluster
 	for clusterName, serviceEntries := range serviceEntriesByCluster {
-		clusterClient, err := f.mcClient.Cluster(clusterName)
+		clusterClient, err := f.dynamicClientGetter.GetClientForCluster(context.TODO(), clusterName)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
 			continue
@@ -187,7 +215,7 @@ func (f *failoverServiceReconciler) ensureEnvoyFilters(
 	var multierr *multierror.Error
 	// Reconcile per cluster
 	for clusterName, envoyFilters := range envoyFiltersByCluster {
-		clusterClient, err := f.mcClient.Cluster(clusterName)
+		clusterClient, err := f.dynamicClientGetter.GetClientForCluster(context.TODO(), clusterName)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
 			continue

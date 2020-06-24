@@ -35,7 +35,9 @@ type istioFailoverServiceTranslator struct {
 	ipAssigner dns.IpAssigner
 }
 
-func NewIstioFailoverServiceTranslator(ipAssigner dns.IpAssigner) translation.FailoverServiceTranslator {
+type IstioFailoverServiceTranslator translation.FailoverServiceTranslator
+
+func NewIstioFailoverServiceTranslator(ipAssigner dns.IpAssigner) IstioFailoverServiceTranslator {
 	return &istioFailoverServiceTranslator{ipAssigner: ipAssigner}
 }
 

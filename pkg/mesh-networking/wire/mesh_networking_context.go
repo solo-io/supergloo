@@ -25,6 +25,7 @@ type MeshNetworkingContext struct {
 	AccessControlPolicyTranslator access_control_policy.AcpTranslatorLoop
 	GlobalAccessPolicyEnforcer    access_control_enforcer.AccessPolicyEnforcerLoop
 	FederationResolver            resolver.FederationResolver
+	FailoverServiceReconciler     smh_networking_controller.FailoverServiceReconciler
 }
 
 func MeshNetworkingContextProvider(
@@ -35,6 +36,7 @@ func MeshNetworkingContextProvider(
 	accessControlPolicyTranslator access_control_policy.AcpTranslatorLoop,
 	GlobalAccessPolicyEnforcer access_control_enforcer.AccessPolicyEnforcerLoop,
 	federationResolver resolver.FederationResolver,
+	FailoverServiceReconciler smh_networking_controller.FailoverServiceReconciler,
 ) MeshNetworkingContext {
 	return MeshNetworkingContext{
 		MultiClusterDeps:              multiClusterDeps,
@@ -44,6 +46,7 @@ func MeshNetworkingContextProvider(
 		AccessControlPolicyTranslator: accessControlPolicyTranslator,
 		GlobalAccessPolicyEnforcer:    GlobalAccessPolicyEnforcer,
 		FederationResolver:            federationResolver,
+		FailoverServiceReconciler:     FailoverServiceReconciler,
 	}
 }
 

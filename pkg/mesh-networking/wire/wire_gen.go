@@ -37,6 +37,9 @@ import (
 	networking_multicluster "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/compute-target"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/compute-target/aws"
 	controller_factories "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/compute-target/controllers"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/reconcile"
+	istio2 "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/translation/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/validation"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/decider"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/resolver"
@@ -148,7 +151,14 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	istioFederationClient := istio_federation.NewIstioFederationClient(dynamicClientGetter, meshClient, gatewayClientFactory, envoyFilterClientFactory, destinationRuleClientFactory, serviceEntryClientFactory, serviceClientFactory, ipAssigner, externalAccessPointGetter)
 	perMeshFederationClients := resolver.NewPerMeshFederationClients(istioFederationClient)
 	federationResolver := resolver.NewFederationResolver(meshClient, meshWorkloadClient, meshServiceClient, virtualMeshClient, perMeshFederationClients, meshServiceEventWatcher)
-	meshNetworkingContext := MeshNetworkingContextProvider(multiClusterDependencies, asyncManagerHandler, trafficPolicyTranslatorLoop, meshNetworkingSnapshotContext, acpTranslatorLoop, accessPolicyEnforcerLoop, federationResolver)
+	failoverServiceValidator := validation.NewFailoverServiceValidator()
+	istioFailoverServiceTranslator := istio2.NewIstioFailoverServiceTranslator(ipAssigner)
+	v5 := FailoverServiceTranslatorProvider(istioFailoverServiceTranslator)
+	failoverServiceProcessor := reconcile.NewFailoverServiceProcessor(failoverServiceValidator, v5)
+	failoverServiceClient := v1alpha1_2.FailoverServiceClientProvider(client)
+	kubernetesClusterClient := v1alpha1_3.KubernetesClusterClientProvider(client)
+	failoverServiceReconciler := reconcile.NewFailoverServiceReconciler(ctx, failoverServiceProcessor, failoverServiceClient, meshServiceClient, meshClient, kubernetesClusterClient, virtualMeshClient, dynamicClientGetter, serviceEntryClientFactory, envoyFilterClientFactory)
+	meshNetworkingContext := MeshNetworkingContextProvider(multiClusterDependencies, asyncManagerHandler, trafficPolicyTranslatorLoop, meshNetworkingSnapshotContext, acpTranslatorLoop, accessPolicyEnforcerLoop, federationResolver, failoverServiceReconciler)
 	return meshNetworkingContext, nil
 }
 
