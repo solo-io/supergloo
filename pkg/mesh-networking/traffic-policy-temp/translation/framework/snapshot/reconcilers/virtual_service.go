@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	istio_networking_clients "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	istio_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -95,6 +96,9 @@ type virtualServiceReconciler struct {
 }
 
 func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalState []*istio_networking.VirtualService) error {
+
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Debugw("reconciling virtual services", "len", len(desiredGlobalState))
 	virtualServiceList, err := v.virtualServiceClient.ListVirtualService(
 		ctx,
 
@@ -119,8 +123,8 @@ func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalS
 		key := selection.ToUniqueSingleClusterString(existingVirtualService.ObjectMeta)
 		desiredState, shouldBeAlive := nameNamespaceToDesiredState[key]
 		delete(nameNamespaceToDesiredState, key)
-
 		if !shouldBeAlive {
+			logger.Debugw("deleting virtual service", "ref", existingVirtualService.ObjectMeta)
 			err = v.virtualServiceClient.DeleteVirtualService(ctx, selection.ObjectMetaToObjectKey(existingVirtualService.ObjectMeta))
 			if err != nil {
 			}
@@ -128,8 +132,10 @@ func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalS
 			// make sure we use the same resource version for updates
 			desiredState.ObjectMeta.ResourceVersion = existingVirtualService.ObjectMeta.ResourceVersion
 			v.addLabels(desiredState)
+			logger.Debugw("updating virtual service", "ref", existingVirtualService.ObjectMeta)
 			err = v.virtualServiceClient.UpdateVirtualService(ctx, desiredState)
 			if err != nil {
+				logger.Warnw("error updating virtual service", "error", err, "ref", existingVirtualService.ObjectMeta)
 				multierr = multierror.Append(multierr, err)
 			}
 		}
@@ -137,6 +143,7 @@ func (v *virtualServiceReconciler) Reconcile(ctx context.Context, desiredGlobalS
 
 	// create new VS's of what's left in the map
 	for _, desiredVirtualService := range nameNamespaceToDesiredState { // add our labels:
+		logger.Debugw("creating virtual service", "ref", desiredVirtualService.ObjectMeta)
 		v.addLabels(desiredVirtualService)
 		err := v.virtualServiceClient.CreateVirtualService(ctx, desiredVirtualService)
 		if err != nil {
