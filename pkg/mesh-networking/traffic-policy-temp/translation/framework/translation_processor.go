@@ -99,7 +99,7 @@ func (t *translationProcessor) Process(ctx context.Context, allMeshServices []*s
 		// partially translate what we can.
 		meshKey := ClusterKeyFromMesh(mesh)
 		snapshot := clusterNameToSnapshot[meshKey]
-		logger.Debugw("accumulate from translation", "meshService", meshService, "mesh", mesh)
+		logger.Debugw("accumulate from translation", "meshService", meshService, "mesh", mesh, "snapshot", snapshot, "meshKey", meshKey)
 		err = snapshotAccumulator.AccumulateFromTranslation(
 			snapshot,
 			meshService,
@@ -112,5 +112,6 @@ func (t *translationProcessor) Process(ctx context.Context, allMeshServices []*s
 
 	}
 
+	logger.Debugw("translation processor", "snapshot", clusterNameToSnapshot)
 	return clusterNameToSnapshot, multierr
 }
