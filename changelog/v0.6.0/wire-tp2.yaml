@@ -1,0 +1,4 @@
+
+changelog:
+  - type: NON_USER_FACING
+    description: "Fix a bug from #783, where e2e were failing if app mesh was enabled"
