@@ -1,4 +1,4 @@
-package failover
+package validation
 
 import (
 	"fmt"
@@ -11,9 +11,12 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
 	"istio.io/istio/pkg/config/protocol"
 	k8s_validation "k8s.io/apimachinery/pkg/util/validation"
 )
+
+//go:generate mockgen -source ./validation.go -destination ./mocks/mock_validation.go -package mock_failover_service_validation
 
 /*
 A valid FailoverService must satisfy the following constraints:
@@ -30,7 +33,7 @@ A valid FailoverService must satisfy the following constraints:
 */
 type FailoverServiceValidator interface {
 	// Set the validation status for FailoverServices in the InputSnapshot
-	Validate(snapshot InputSnapshot)
+	Validate(snapshot failover.InputSnapshot)
 }
 
 var (
@@ -86,7 +89,11 @@ type serviceMeshPair struct {
 
 type failoverServiceValidator struct{}
 
-func (f *failoverServiceValidator) Validate(inputSnapshot InputSnapshot) {
+func NewFailoverServiceValidator() FailoverServiceValidator {
+	return &failoverServiceValidator{}
+}
+
+func (f *failoverServiceValidator) Validate(inputSnapshot failover.InputSnapshot) {
 	for _, failoverService := range inputSnapshot.FailoverServices {
 		failoverService.Status.ValidationStatus = f.validateSingle(failoverService, inputSnapshot)
 		failoverService.Status.ObservedGeneration = failoverService.GetGeneration()
@@ -95,7 +102,7 @@ func (f *failoverServiceValidator) Validate(inputSnapshot InputSnapshot) {
 
 func (f *failoverServiceValidator) validateSingle(
 	failoverService *smh_networking.FailoverService,
-	inputSnapshot InputSnapshot,
+	inputSnapshot failover.InputSnapshot,
 ) *smh_core_types.Status {
 	var multierr *multierror.Error
 	if err := f.validateHostname(failoverService); err != nil {
@@ -110,7 +117,7 @@ func (f *failoverServiceValidator) validateSingle(
 	if err := f.validateNamespace(failoverService); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
-	if err := f.validateServices(failoverService, inputSnapshot); err != nil {
+	if err := f.validateServices(failoverService, inputSnapshot.MeshServices, inputSnapshot.Meshes, inputSnapshot.VirtualMeshes); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 	if err := multierr.ErrorOrNil(); err != nil {
@@ -127,32 +134,40 @@ func (f *failoverServiceValidator) validateSingle(
 
 func (f *failoverServiceValidator) validateServices(
 	failoverService *smh_networking.FailoverService,
-	inputSnapshot InputSnapshot,
+	meshServices []*smh_discovery.MeshService,
+	meshes []*smh_discovery.Mesh,
+	virtualMeshes []*smh_networking.VirtualMesh,
 ) error {
 	services := failoverService.Spec.GetServices()
 	if len(services) == 0 {
 		return MissingServices
 	}
 	var multierr *multierror.Error
+	var serviceParentMeshPairs []serviceMeshPair
 	for _, serviceRef := range failoverService.Spec.GetServices() {
-		var serviceParentMeshPairs []serviceMeshPair
-		meshService, err := f.getMeshService(serviceRef, inputSnapshot.MeshServices)
+		meshService, err := f.findMeshService(serviceRef, meshServices)
 		if err != nil {
+			// Corresponding MeshService not found.
 			multierr = multierror.Append(multierr, err)
+			continue
 		}
 		if err := f.validateServiceOutlierDetection(meshService); err != nil {
 			multierr = multierror.Append(multierr, err)
 		}
-		serviceParentMeshPair, err := f.validateParentMesh(meshService, inputSnapshot.Meshes)
+		serviceParentMeshPair, err := f.validateParentMesh(meshService, meshes)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
+		} else {
+			serviceParentMeshPairs = append(serviceParentMeshPairs, serviceParentMeshPair)
 		}
-		serviceParentMeshPairs = append(serviceParentMeshPairs, serviceParentMeshPair)
+	}
+	if err := f.validateCommonVirtualMesh(serviceParentMeshPairs, virtualMeshes); err != nil {
+		multierr = multierror.Append(multierr, err)
 	}
 	return multierr.ErrorOrNil()
 }
 
-func (f *failoverServiceValidator) getMeshService(
+func (f *failoverServiceValidator) findMeshService(
 	serviceRef *smh_core_types.ResourceRef,
 	allMeshServices []*smh_discovery.MeshService,
 ) (*smh_discovery.MeshService, error) {
@@ -212,14 +227,15 @@ func (f *failoverServiceValidator) validateCommonVirtualMesh(
 	serviceParentMeshPairs []serviceMeshPair,
 	virtualMeshes []*smh_networking.VirtualMesh,
 ) error {
-	var parentVMs v1alpha1sets.VirtualMeshSet
+	var multierr *multierror.Error
+	parentVMs := v1alpha1sets.NewVirtualMeshSet()
 	// Fetch all parent VirtualMeshes
 	for _, serviceParentMeshPair := range serviceParentMeshPairs {
 		parentMesh := serviceParentMeshPair.mesh
 		var parentVM *smh_networking.VirtualMesh
 		for _, vm := range virtualMeshes {
 			for _, meshRef := range vm.Spec.GetMeshes() {
-				if parentMesh.GetName() == meshRef.GetName() {
+				if parentMesh.GetName() == meshRef.GetName() && parentMesh.GetNamespace() == meshRef.GetNamespace() {
 					parentVM = vm
 					break
 				}
@@ -229,15 +245,16 @@ func (f *failoverServiceValidator) validateCommonVirtualMesh(
 			}
 		}
 		if parentVM == nil {
-			return ServiceWithoutParentVM(serviceParentMeshPair.serviceRef, serviceParentMeshPair.mesh)
+			multierr = multierror.Append(multierr, ServiceWithoutParentVM(serviceParentMeshPair.serviceRef, serviceParentMeshPair.mesh))
+		} else {
+			parentVMs.Insert(parentVM)
 		}
-		parentVMs.Insert(parentVM)
 	}
 	// Validate that there's only a single common parent VirtualMesh
 	if len(parentVMs.List()) > 1 {
-		return MultipleParentVirtualMeshes(parentVMs.List())
+		multierr = multierror.Append(multierr, MultipleParentVirtualMeshes(parentVMs.List()))
 	}
-	return nil
+	return multierr.ErrorOrNil()
 }
 
 func (f *failoverServiceValidator) validateCluster(

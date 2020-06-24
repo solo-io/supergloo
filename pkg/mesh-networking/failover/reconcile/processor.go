@@ -1,4 +1,4 @@
-package failover
+package reconcile
 
 import (
 	"context"
@@ -7,15 +7,30 @@ import (
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/translation"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/validation"
 )
 
+//go:generate mockgen -source ./processor.go -destination ./mocks/mock_processor.go
+
 type FailoverServiceProcessor interface {
-	Process(ctx context.Context, inputSnapshot InputSnapshot) OutputSnapshot
+	Process(ctx context.Context, inputSnapshot failover.InputSnapshot) failover.OutputSnapshot
 }
 
 type failoverServiceProcessor struct {
-	validator   FailoverServiceValidator
-	translators []FailoverServiceTranslator
+	validator   validation.FailoverServiceValidator
+	translators []translation.FailoverServiceTranslator
+}
+
+func NewFailoverServiceProcessor(
+	validator validation.FailoverServiceValidator,
+	translators []translation.FailoverServiceTranslator,
+) FailoverServiceProcessor {
+	return &failoverServiceProcessor{
+		validator:   validator,
+		translators: translators,
+	}
 }
 
 /*
@@ -24,8 +39,8 @@ type failoverServiceProcessor struct {
 	2. For the valid FailoverServices, translate them to mesh-specific configuration, update translation status.
 	Return an OutputSnapshot containing FailoverServices with updated statuses and translated resources.
 */
-func (f *failoverServiceProcessor) Process(ctx context.Context, inputSnapshot InputSnapshot) OutputSnapshot {
-	outputSnapshot := OutputSnapshot{}
+func (f *failoverServiceProcessor) Process(ctx context.Context, inputSnapshot failover.InputSnapshot) failover.OutputSnapshot {
+	outputSnapshot := failover.OutputSnapshot{}
 	// Validate will set the validation status and observed generation on the FailoverService status.
 	f.validator.Validate(inputSnapshot)
 	for _, failoverService := range inputSnapshot.FailoverServices {
@@ -39,7 +54,7 @@ func (f *failoverServiceProcessor) Process(ctx context.Context, inputSnapshot In
 		}
 		outputSnapshotForFailoverService := f.processSingle(ctx, failoverService, prioritizedMeshServices)
 		// Accumulate outputs for each FailoverService
-		outputSnapshot.append(outputSnapshotForFailoverService)
+		outputSnapshot = outputSnapshot.Append(outputSnapshotForFailoverService)
 	}
 	return outputSnapshot
 }
@@ -69,7 +84,7 @@ func (f *failoverServiceProcessor) collectMeshServicesForFailoverService(
 			matchingMeshService = meshService
 		}
 		if matchingMeshService == nil {
-			return nil, ServiceNotFound(serviceRef)
+			return nil, validation.ServiceNotFound(serviceRef)
 		}
 		prioritizedMeshServices = append(prioritizedMeshServices, matchingMeshService)
 	}
@@ -82,24 +97,25 @@ func (f *failoverServiceProcessor) processSingle(
 	ctx context.Context,
 	failoverService *smh_networking.FailoverService,
 	prioritizedMeshServices []*smh_discovery.MeshService,
-) OutputSnapshot {
+) failover.OutputSnapshot {
 	var translatorErrs []*types.FailoverServiceStatus_TranslatorError
-	var outputSnapshot OutputSnapshot
+	var outputSnapshot failover.OutputSnapshot
 	for _, translator := range f.translators {
 		output, translatorErr := translator.Translate(ctx, failoverService, prioritizedMeshServices)
-		// Accumulate mesh specific output resources.
-		outputSnapshot.MeshOutputs.append(output)
 		if translatorErr != nil {
 			translatorErrs = append(translatorErrs, translatorErr)
+			continue
 		}
+		// Accumulate mesh specific output resources.
+		outputSnapshot.MeshOutputs = outputSnapshot.MeshOutputs.Append(output)
 	}
 	// Set status on FailoverService and add to OutputSnapshot
-	failoverService.Status = f.computeTranslatorErrorStatus(translatorErrs)
+	failoverService.Status.TranslationStatus = f.computeTranslationStatus(translatorErrs)
+	failoverService.Status.TranslatorErrors = translatorErrs
 	outputSnapshot.FailoverServices = []*smh_networking.FailoverService{failoverService}
 	return outputSnapshot
 }
 
-// TODO this shouldn't be possible, how to handle?
 func (f *failoverServiceProcessor) computeProcessingErrorStatus(err error) types.FailoverServiceStatus {
 	return types.FailoverServiceStatus{
 		ValidationStatus: &smh_core_types.Status{
@@ -109,24 +125,18 @@ func (f *failoverServiceProcessor) computeProcessingErrorStatus(err error) types
 	}
 }
 
-func (f *failoverServiceProcessor) computeTranslatorErrorStatus(
+func (f *failoverServiceProcessor) computeTranslationStatus(
 	translatorErrs []*types.FailoverServiceStatus_TranslatorError,
-) types.FailoverServiceStatus {
-	var status types.FailoverServiceStatus
+) *smh_core_types.Status {
+	var status *smh_core_types.Status
 	if len(translatorErrs) == 0 {
-		return types.FailoverServiceStatus{
-			TranslationStatus: &smh_core_types.Status{
-				State: smh_core_types.Status_ACCEPTED,
-			},
+		status = &smh_core_types.Status{
+			State: smh_core_types.Status_ACCEPTED,
 		}
-	}
-	status = types.FailoverServiceStatus{
-		TranslationStatus: &smh_core_types.Status{
+	} else {
+		status = &smh_core_types.Status{
 			State: smh_core_types.Status_PROCESSING_ERROR,
-		},
-	}
-	for _, translatorErr := range translatorErrs {
-		status.TranslatorErrors = append(status.TranslatorErrors, translatorErr)
+		}
 	}
 	return status
 }

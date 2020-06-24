@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
 	istio_networking "istio.io/api/networking/v1alpha3"
 	istio_client_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -34,6 +35,10 @@ type istioFailoverServiceTranslator struct {
 	ipAssigner dns.IpAssigner
 }
 
+func NewIstioFailoverServiceTranslator(ipAssigner dns.IpAssigner) translation.FailoverServiceTranslator {
+	return &istioFailoverServiceTranslator{ipAssigner: ipAssigner}
+}
+
 func (i *istioFailoverServiceTranslator) Translate(
 	ctx context.Context,
 	failoverService *smh_networking.FailoverService,
@@ -45,8 +50,8 @@ func (i *istioFailoverServiceTranslator) Translate(
 	if err != nil {
 		translatorErr = i.translatorErr(err)
 	} else {
-		output.ServiceEntries = append(output.ServiceEntries, serviceEntry)
-		output.EnvoyFilters = append(output.EnvoyFilters, envoyFilter)
+		output.ServiceEntries = []*istio_client_networking.ServiceEntry{serviceEntry}
+		output.EnvoyFilters = []*istio_client_networking.EnvoyFilter{envoyFilter}
 	}
 	return output, translatorErr
 }
@@ -89,7 +94,6 @@ func (i *istioFailoverServiceTranslator) translateServiceEntry(
 		},
 		Spec: istio_networking.ServiceEntry{
 			Hosts: []string{failoverService.Spec.GetHostname()},
-			// Treat remote cluster services as part of the service mesh as all clusters in the service mesh share the same root of trust.
 			Ports: []*istio_networking.Port{
 				{
 					Number:   failoverService.Spec.GetPort().GetPort(),
@@ -97,7 +101,8 @@ func (i *istioFailoverServiceTranslator) translateServiceEntry(
 					Name:     failoverService.Spec.GetPort().GetName(),
 				},
 			},
-			Addresses:  []string{ip},
+			Addresses: []string{ip},
+			// Treat remote cluster services as part of the service mesh as all clusters in the service mesh share the same root of trust.
 			Location:   istio_networking.ServiceEntry_MESH_INTERNAL,
 			Resolution: istio_networking.ServiceEntry_DNS,
 		},
@@ -216,10 +221,11 @@ func (i *istioFailoverServiceTranslator) convertServicesToEnvoyClusterList(
 	for _, meshService := range meshServices {
 		meshService := meshService
 		// TODO how to handle multiple Service ports?
-		if len(meshService.Spec.GetKubeService().GetPorts()) < 1 {
+		ports := meshService.Spec.GetKubeService().GetPorts()
+		if len(ports) < 1 {
 			return nil, ServiceWithNoPortError(meshService.Spec.GetKubeService())
 		}
-		port := meshService.Spec.GetKubeService().GetPorts()[0].GetPort()
+		port := ports[0].GetPort()
 		var hostname string
 		if meshService.Spec.GetKubeService().GetRef().GetCluster() == failoverServiceClusterName {
 			// Local k8s DNS

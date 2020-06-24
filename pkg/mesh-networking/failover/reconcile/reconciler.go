@@ -1,4 +1,4 @@
-package failover
+package reconcile
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	istio_client_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -36,37 +37,6 @@ type failoverServiceReconciler struct {
 	envoyFilterClientFactory  v1alpha3.EnvoyFilterClientFactory
 }
 
-type InputSnapshot struct {
-	FailoverServices []*smh_networking.FailoverService
-	MeshServices     []*smh_discovery.MeshService
-	// For validation
-	KubeClusters  []*smh_discovery.KubernetesCluster
-	Meshes        []*smh_discovery.Mesh
-	VirtualMeshes []*smh_networking.VirtualMesh
-}
-
-type OutputSnapshot struct {
-	FailoverServices []*smh_networking.FailoverService
-	MeshOutputs      MeshOutputs
-}
-
-type MeshOutputs struct {
-	// Istio
-	ServiceEntries []*istio_client_networking.ServiceEntry
-	EnvoyFilters   []*istio_client_networking.EnvoyFilter
-}
-
-// Append entries from the given OutputSnapshot to this OutputSnapshot
-func (this OutputSnapshot) append(that OutputSnapshot) {
-	this.FailoverServices = append(this.FailoverServices, that.FailoverServices...)
-	this.MeshOutputs.append(that.MeshOutputs)
-}
-
-func (this MeshOutputs) append(that MeshOutputs) {
-	this.ServiceEntries = append(this.ServiceEntries, that.ServiceEntries...)
-	this.EnvoyFilters = append(this.EnvoyFilters, that.EnvoyFilters...)
-}
-
 func (f *failoverServiceReconciler) ReconcileFailoverService(_ *smh_networking.FailoverService) (reconcile.Result, error) {
 	inputSnapshot, err := f.buildInputSnapshot()
 	if err != nil {
@@ -78,12 +48,12 @@ func (f *failoverServiceReconciler) ReconcileFailoverService(_ *smh_networking.F
 }
 
 // TODO replace this with a generated builder
-func (f *failoverServiceReconciler) buildInputSnapshot() (InputSnapshot, error) {
-	inputSnapshot := InputSnapshot{}
+func (f *failoverServiceReconciler) buildInputSnapshot() (failover.InputSnapshot, error) {
+	inputSnapshot := failover.InputSnapshot{}
 	// FailoverService
 	failoverServiceList, err := f.failoverServiceClient.ListFailoverService(f.ctx)
 	if err != nil {
-		return InputSnapshot{}, err
+		return failover.InputSnapshot{}, err
 	}
 	for _, failoverService := range failoverServiceList.Items {
 		failoverService := failoverService
@@ -92,7 +62,7 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (InputSnapshot, error) 
 	// MeshService
 	meshServiceList, err := f.meshServiceClient.ListMeshService(f.ctx)
 	if err != nil {
-		return InputSnapshot{}, err
+		return failover.InputSnapshot{}, err
 	}
 	for _, meshService := range meshServiceList.Items {
 		meshService := meshService
@@ -101,7 +71,7 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (InputSnapshot, error) 
 	// Mesh
 	meshList, err := f.meshClient.ListMesh(f.ctx)
 	if err != nil {
-		return InputSnapshot{}, err
+		return failover.InputSnapshot{}, err
 	}
 	for _, mesh := range meshList.Items {
 		mesh := mesh
@@ -110,7 +80,7 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (InputSnapshot, error) 
 	// KubernetesCluster
 	kubeClusterList, err := f.kubeClusterClient.ListKubernetesCluster(f.ctx)
 	if err != nil {
-		return InputSnapshot{}, err
+		return failover.InputSnapshot{}, err
 	}
 	for _, kubeCluster := range kubeClusterList.Items {
 		kubeCluster := kubeCluster
@@ -119,7 +89,7 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (InputSnapshot, error) 
 	// VirtualMesh
 	virtualMeshList, err := f.virtualMeshClient.ListVirtualMesh(f.ctx)
 	if err != nil {
-		return InputSnapshot{}, err
+		return failover.InputSnapshot{}, err
 	}
 	for _, virtualMesh := range virtualMeshList.Items {
 		virtualMesh := virtualMesh
@@ -130,7 +100,7 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (InputSnapshot, error) 
 
 // Ensure that the actual state matches the desired state in the OutputSnapshot on each remote cluster.
 func (f *failoverServiceReconciler) ensureOutputSnapshot(
-	snapshot OutputSnapshot,
+	snapshot failover.OutputSnapshot,
 ) error {
 	var multierr *multierror.Error
 	// Update FailoverService statuses
