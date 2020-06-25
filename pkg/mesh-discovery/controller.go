@@ -1,11 +1,11 @@
-package controller
+package mesh_discovery
 
 import (
 	"context"
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
-	"github.com/solo-io/smh/pkg/mesh-discovery/controller/reconciler"
+	"github.com/solo-io/smh/pkg/mesh-discovery/reconciler"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/input"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation"
 	"sigs.k8s.io/controller-runtime/pkg/client"
