@@ -1316,6 +1316,7 @@ istio.io/api v0.0.0-20190515205759-982e5c3888c6/go.mod h1:hhLFQmpHia8zgaM37vb2ml
 istio.io/api v0.0.0-20200213230120-00efe7317328/go.mod h1:bcY3prusO/6vA6zGHz4PNG2v79clPyTw06Xx3fprJSQ=
 istio.io/api v0.0.0-20200610220835-a1a958746907 h1:8zvSmV6s7kEyR/KI/5lBOeCh0oXzVfYph8sfak2Cx0k=
 istio.io/api v0.0.0-20200610220835-a1a958746907/go.mod h1:uXD10AwGZkxIrVKTntYm2uyFWQQfNzhAGkIxLfRNocs=
+istio.io/client-go v0.0.0-20200610222318-1cfead1f1938 h1:YDUe60UTScZqwgbxbQU5Ta49YSucJ93cHptb0BtUS3Q=
 istio.io/client-go v0.0.0-20200610222318-1cfead1f1938/go.mod h1:WdL2eDruJRYIVMggI/UJIYfDpOwOCFiFchIsQvf+XGU=
 istio.io/gogo-genproto v0.0.0-20190124151557-6d926a6e6feb/go.mod h1:eIDJ6jNk/IeJz6ODSksHl5Aiczy5JUq6vFhJWI5OtiI=
 istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a/go.mod h1:OzpAts7jljZceG4Vqi5/zXy/pOg1b209T3jb7Nv5wIs=
