@@ -1,0 +1,14 @@
+- apiVersion: networking.istio.io/v1beta1
+  kind: DestinationRule
+  metadata:
+    name: reviews
+    namespace: default
+  spec:
+    host: reviews
+    subsets:
+    - name: version-v2
+      labels:
+        version: v2
+    trafficPolicy:
+      tls:
+        mode: ISTIO_MUTUAL

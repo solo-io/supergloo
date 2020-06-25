@@ -6,13 +6,17 @@ import (
 	"github.com/hashicorp/go-multierror"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/common/reconciliation"
 	aggregation_framework "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/aggregation/framework"
 	translation_framework "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/framework"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/translation/framework/snapshot"
 	traffic_policy_validation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/validation"
 )
 
-type Reconciler struct {
+type Reconciler interface {
+	reconciliation.Reconciler
+}
+type reconciler struct {
 	trafficPolicyClient smh_networking.TrafficPolicyClient
 	meshServiceClient   smh_discovery.MeshServiceClient
 
@@ -30,8 +34,8 @@ func NewReconciler(
 	validationProcessor traffic_policy_validation.ValidationProcessor,
 	aggregationProcessor aggregation_framework.AggregationProcessor,
 	translationProcessor translation_framework.TranslationProcessor,
-) *Reconciler {
-	return &Reconciler{
+) Reconciler {
+	return &reconciler{
 		trafficPolicyClient:  trafficPolicyClient,
 		meshServiceClient:    meshServiceClient,
 		snapshotReconciler:   snapshotReconciler,
@@ -41,11 +45,11 @@ func NewReconciler(
 	}
 }
 
-func (*Reconciler) GetName() string {
+func (*reconciler) GetName() string {
 	return "traffic-policy-reconciler"
 }
 
-func (v *Reconciler) Reconcile(ctx context.Context) error {
+func (v *reconciler) Reconcile(ctx context.Context) error {
 	var multierr error
 
 	trafficPolicies, err := v.trafficPolicyClient.ListTrafficPolicy(ctx)
@@ -106,7 +110,10 @@ func (v *Reconciler) Reconcile(ctx context.Context) error {
 	}
 
 	if clusterNameToSnapshot, err := v.translationProcessor.Process(ctx, meshServices); err == nil {
-		v.snapshotReconciler.ReconcileAllSnapshots(ctx, clusterNameToSnapshot)
+		err = v.snapshotReconciler.ReconcileAllSnapshots(ctx, clusterNameToSnapshot)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+		}
 	} else {
 		multierr = multierror.Append(multierr, err)
 	}

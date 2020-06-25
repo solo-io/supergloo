@@ -1,4 +1,4 @@
-package mesh_translation
+package mesh_translation_aggregate
 
 import (
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"

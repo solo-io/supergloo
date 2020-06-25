@@ -1,6 +1,8 @@
 package traffic_policy_aggregation
 
 import (
+	"context"
+
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
@@ -21,6 +23,7 @@ type PolicyCollector interface {
 	// same (by reference equality) as the references that came in through the service.
 	// Errors can occur due to invalid selectors on policies.
 	CollectForService(
+		ctx context.Context,
 		meshService *smh_discovery.MeshService,
 		allMeshServices []*smh_discovery.MeshService,
 		mesh *smh_discovery.Mesh,

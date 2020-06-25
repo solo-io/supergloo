@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -13,6 +14,7 @@ import (
 
 func TestE2E(t *testing.T) {
 	if os.Getenv("RUN_E2E") == "" {
+		fmt.Println("skipping E2E tests")
 		return
 	}
 	helpers.RegisterCommonFailHandlers()
@@ -23,17 +25,26 @@ func TestE2E(t *testing.T) {
 
 var eksNamespace string
 
+func RunEKS() bool {
+	// allow disabling EKS tests explicitly to allow running istio tests locally
+	return os.Getenv("RUN_EKS") != "0"
+}
+
 var _ = BeforeSuite(func() {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
 	/* env := */ StartEnvOnce(ctx)
 	// TODO: deploy test helper?
-	eksNamespace = setupAppmeshEksEnvironment()
+	if RunEKS() {
+		eksNamespace = setupAppmeshEksEnvironment()
+	}
 })
 
 var _ = AfterSuite(func() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	cleanupAppmeshEksEnvironment(eksNamespace)
+	if RunEKS() {
+		cleanupAppmeshEksEnvironment(eksNamespace)
+	}
 	ClearEnv(ctx)
 })

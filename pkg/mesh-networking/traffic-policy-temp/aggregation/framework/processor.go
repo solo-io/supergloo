@@ -63,11 +63,11 @@ func (a *aggregationProcessor) Process(ctx context.Context, allTrafficPolicies [
 	for _, meshService := range allMeshServices {
 		validator, err := a.translationValidators(serviceToMetadata[meshService].MeshType)
 		if err != nil {
-			// intentionally not doing map existence checks here; if it panics, we forgot to implement the validator for this translator
-			// TODO: un-panic this
-			panic(err)
+			continue
+			// TODO: once we complete thie transition to this model, we need to panic here.
+			//panic(err)
 		}
-		collectionResult, err := a.policyCollector.CollectForService(
+		collectionResult, err := a.policyCollector.CollectForService(ctx,
 			meshService,
 			allMeshServices,
 			serviceToMetadata[meshService].Mesh,

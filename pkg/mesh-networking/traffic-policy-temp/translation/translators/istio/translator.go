@@ -1,12 +1,14 @@
 package istio_translator
 
 import (
+	"context"
 	"sort"
 	"strings"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
@@ -51,6 +53,7 @@ func (i *istioTrafficPolicyTranslator) Name() string {
 
 // mutate the translated snapshot, adding the translation results in where appropriate
 func (i *istioTrafficPolicyTranslator) AccumulateFromTranslation(
+	ctx context.Context,
 	snapshotInProgress *snapshot.TranslatedSnapshot,
 	meshService *smh_discovery.MeshService,
 	allMeshServices []*smh_discovery.MeshService,
@@ -61,9 +64,14 @@ func (i *istioTrafficPolicyTranslator) AccumulateFromTranslation(
 	}
 
 	// translation errors are reported earlier, so we don't care about these now.
-	out, _ := i.Translate(meshService, allMeshServices, mesh, meshService.Status.ValidatedTrafficPolicies)
+	// TODO: we need to make sure we add the virtual service currently in the cache in the case
+	// there are errors here. The goal is to not modify whatever is present in the cluster.
+	// i.e. not delete it (no need to upsert it).
+	out, _ := i.Translate(ctx, meshService, allMeshServices, mesh, meshService.Status.ValidatedTrafficPolicies)
+	logger := contextutils.LoggerFrom(ctx)
 
 	if out != nil {
+		logger.Debugw("resources to accumulate", "out", out)
 		snapshotInProgress.Istio.DestinationRules = append(snapshotInProgress.Istio.DestinationRules, out.DestinationRules...)
 		snapshotInProgress.Istio.VirtualServices = append(snapshotInProgress.Istio.VirtualServices, out.VirtualServices...)
 	}
@@ -79,6 +87,7 @@ func (i *istioTrafficPolicyTranslator) AccumulateFromTranslation(
 	2. DestinationRule - post-routing rules (e.g. subset declaration)
 */
 func (i *istioTrafficPolicyTranslator) Translate(
+	ctx context.Context,
 	meshService *smh_discovery.MeshService,
 	allMeshServices []*smh_discovery.MeshService,
 	mesh *smh_discovery.Mesh,
@@ -104,12 +113,13 @@ func (i *istioTrafficPolicyTranslator) Translate(
 }
 
 func (i *istioTrafficPolicyTranslator) GetTranslationErrors(
+	ctx context.Context,
 	meshService *smh_discovery.MeshService,
 	allMeshServices []*smh_discovery.MeshService,
 	mesh *smh_discovery.Mesh,
 	trafficPolicies []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) []*mesh_translation.TranslationError {
-	_, errors := i.Translate(meshService, allMeshServices, mesh, trafficPolicies)
+	_, errors := i.Translate(ctx, meshService, allMeshServices, mesh, trafficPolicies)
 	return errors
 }
 
@@ -185,15 +195,27 @@ func (i *istioTrafficPolicyTranslator) findReferencedSubsetsForService(
 				}
 
 				// our service being shifted to is referenced in this traffic shift; record all the subsets
-				subsets = append(subsets, &istio_networking_types.Subset{
-					Name:   i.buildUniqueSubsetName(destination.Subset),
-					Labels: destination.Subset,
-				})
+				subsetName := i.buildUniqueSubsetName(destination.Subset)
+				if subsetName != "" && !subsetContains(subsetName, subsets) {
+					subsets = append(subsets, &istio_networking_types.Subset{
+						Name:   subsetName,
+						Labels: destination.Subset,
+					})
+				}
 			}
 		}
 	}
 
 	return subsets
+}
+
+func subsetContains(subsetName string, subsets []*istio_networking_types.Subset) bool {
+	for _, subset := range subsets {
+		if subset.Name == subsetName {
+			return true
+		}
+	}
+	return false
 }
 
 func (i *istioTrafficPolicyTranslator) buildVirtualService(

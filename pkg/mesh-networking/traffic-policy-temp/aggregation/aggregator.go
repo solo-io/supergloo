@@ -1,6 +1,7 @@
 package traffic_policy_aggregation
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/rotisserie/eris"
@@ -89,6 +90,9 @@ func (a *aggregator) PoliciesForService(
 			[]*smh_discovery.MeshService{meshService},
 			policy.Spec.GetDestinationSelector(),
 		)
+		if errors.Is(err, new(selection.NotFoundError)) {
+			return nil, nil
+		}
 		if err != nil {
 			return nil, err
 		}

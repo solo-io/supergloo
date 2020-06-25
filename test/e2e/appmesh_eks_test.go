@@ -167,6 +167,10 @@ func cleanupAppmeshEksEnvironment(ns string) {
 	// Only clean up management-cluster resources if we're running multiple iterations of this test against the same management-cluster.
 	// Otherwise the cluster will be torn down anyways, so no need to clean anything up.
 	if useExisting := os.Getenv("USE_EXISTING"); useExisting != "" {
+		if env.Management.SettingsClient == nil {
+			// this can happen in early failure
+			return
+		}
 		// Cleans up discovery resources on management cluster
 		// Reset back to default settings. This must be done before removing the AWS secret.
 		settings, err := env.Management.SettingsClient.GetSettings(context.Background(), settingsObjKey)
@@ -204,6 +208,11 @@ func cleanupAppmeshEksEnvironment(ns string) {
 }
 
 var _ = Describe("Appmesh EKS ", func() {
+	BeforeEach(func() {
+		if !RunEKS() {
+			Skip("skipping EKS tests")
+		}
+	})
 	// Fetch base64 encoded AWS credentials from environment
 	var registerAwsSecret = func() {
 		awsAccessKeyId := os.Getenv("AWS_ACCESS_KEY_ID")

@@ -78,36 +78,48 @@ func (t *translationProcessor) Process(ctx context.Context, allMeshServices []*s
 
 	var multierr error
 	for _, meshService := range allMeshServices {
-
-		meshId := selection.ToUniqueSingleClusterString(selection.ResourceRefToObjectMeta(meshService.Spec.GetMesh()))
-		mesh, ok := meshIdToMesh[meshId]
-		if !ok {
-			return nil, eris.Errorf("Got a mesh service %s.%s belonging to a mesh %s.%s that does not exist", meshService.GetName(), meshService.GetNamespace(), mesh.GetName(), mesh.GetNamespace())
-		}
-
-		meshType, err := metadata.MeshToMeshType(mesh)
-		if err != nil {
-			return nil, err
-		}
-
-		snapshotAccumulator, err := t.translationSnapshotBuilderGetter(meshType)
-		if err != nil {
-			return nil, err
-		}
-
-		// we run translation even if the service has translation errors - as we might want to
-		// partially translate what we can.
-		err = snapshotAccumulator.AccumulateFromTranslation(
-			clusterNameToSnapshot[ClusterKeyFromMesh(mesh)],
-			meshService,
-			allMeshServices,
-			mesh,
-		)
+		err := t.processService(ctx, meshService, allMeshServices, meshIdToMesh, clusterNameToSnapshot)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
 		}
-
 	}
 
+	logger.Debugw("translation processor", "snapshot", clusterNameToSnapshot)
 	return clusterNameToSnapshot, multierr
+}
+
+func (t *translationProcessor) processService(ctx context.Context, meshService *smh_discovery.MeshService, allMeshServices []*smh_discovery.MeshService, meshIdToMesh map[string]*smh_discovery.Mesh, clusterNameToSnapshot snapshot.ClusterNameToSnapshot) error {
+	logger := contextutils.LoggerFrom(ctx)
+
+	meshId := selection.ToUniqueSingleClusterString(selection.ResourceRefToObjectMeta(meshService.Spec.GetMesh()))
+	mesh, ok := meshIdToMesh[meshId]
+	if !ok {
+		return eris.Errorf("Got a mesh service %s.%s belonging to a mesh %s.%s that does not exist", meshService.GetName(), meshService.GetNamespace(), mesh.GetName(), mesh.GetNamespace())
+	}
+
+	meshType, err := metadata.MeshToMeshType(mesh)
+	if err != nil {
+		// TODO: once all the code is in the new model, add error:
+		// return err
+		return nil
+	}
+
+	snapshotAccumulator, err := t.translationSnapshotBuilderGetter(meshType)
+	if err != nil {
+		return err
+	}
+
+	// we run translation even if the service has translation errors - as we might want to
+	// partially translate what we can.
+	meshKey := ClusterKeyFromMesh(mesh)
+	snapshot := clusterNameToSnapshot[meshKey]
+	logger.Debugw("accumulate from translation", "meshService", meshService, "mesh", mesh, "snapshot", snapshot, "meshKey", meshKey)
+	err = snapshotAccumulator.AccumulateFromTranslation(
+		ctx,
+		snapshot,
+		meshService,
+		allMeshServices,
+		mesh,
+	)
+	return err
 }

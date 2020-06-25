@@ -37,17 +37,17 @@ func (m *MockTranslationSnapshotAccumulator) EXPECT() *MockTranslationSnapshotAc
 }
 
 // AccumulateFromTranslation mocks base method.
-func (m *MockTranslationSnapshotAccumulator) AccumulateFromTranslation(snapshotInProgress *snapshot.TranslatedSnapshot, meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh) error {
+func (m *MockTranslationSnapshotAccumulator) AccumulateFromTranslation(ctx context.Context, snapshotInProgress *snapshot.TranslatedSnapshot, meshService *v1alpha1.MeshService, allMeshServices []*v1alpha1.MeshService, mesh *v1alpha1.Mesh) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccumulateFromTranslation", snapshotInProgress, meshService, allMeshServices, mesh)
+	ret := m.ctrl.Call(m, "AccumulateFromTranslation", ctx, snapshotInProgress, meshService, allMeshServices, mesh)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AccumulateFromTranslation indicates an expected call of AccumulateFromTranslation.
-func (mr *MockTranslationSnapshotAccumulatorMockRecorder) AccumulateFromTranslation(snapshotInProgress, meshService, allMeshServices, mesh interface{}) *gomock.Call {
+func (mr *MockTranslationSnapshotAccumulatorMockRecorder) AccumulateFromTranslation(ctx, snapshotInProgress, meshService, allMeshServices, mesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccumulateFromTranslation", reflect.TypeOf((*MockTranslationSnapshotAccumulator)(nil).AccumulateFromTranslation), snapshotInProgress, meshService, allMeshServices, mesh)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccumulateFromTranslation", reflect.TypeOf((*MockTranslationSnapshotAccumulator)(nil).AccumulateFromTranslation), ctx, snapshotInProgress, meshService, allMeshServices, mesh)
 }
 
 // MockTranslationSnapshotReconciler is a mock of TranslationSnapshotReconciler interface.

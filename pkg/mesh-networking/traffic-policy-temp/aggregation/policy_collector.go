@@ -1,6 +1,7 @@
 package traffic_policy_aggregation
 
 import (
+	"context"
 	"sort"
 
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
@@ -24,6 +25,7 @@ type policyCollector struct {
 }
 
 func (p *policyCollector) CollectForService(
+	ctx context.Context,
 	meshService *smh_discovery.MeshService,
 	allMeshServices []*smh_discovery.MeshService,
 	mesh *smh_discovery.Mesh,
@@ -54,6 +56,7 @@ func (p *policyCollector) CollectForService(
 	}
 
 	policiesToRecordOnService, policyToConflictErrors, policyToTranslatorErrors := p.determineFinalValidState(
+		ctx,
 		meshService,
 		allMeshServices,
 		mesh,
@@ -69,6 +72,7 @@ func (p *policyCollector) CollectForService(
 }
 
 func (p *policyCollector) determineFinalValidState(
+	ctx context.Context,
 	meshService *smh_discovery.MeshService,
 	allMeshServices []*smh_discovery.MeshService,
 	mesh *smh_discovery.Mesh,
@@ -148,7 +152,7 @@ func (p *policyCollector) determineFinalValidState(
 			mergeableTPs := append([]*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy(nil), policiesToRecordOnService...)
 			mergeableTPs = append(mergeableTPs, toValidate)
 
-			translationErrors := translationValidator.GetTranslationErrors(
+			translationErrors := translationValidator.GetTranslationErrors(ctx,
 				meshService,
 				allMeshServices,
 				mesh,

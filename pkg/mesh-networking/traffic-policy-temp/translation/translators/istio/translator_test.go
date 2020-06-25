@@ -1,8 +1,9 @@
 package istio_translator_test
 
 import (
+	"context"
+
 	proto_types "github.com/gogo/protobuf/types"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
@@ -10,8 +11,10 @@ import (
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
-	mock_selection "github.com/solo-io/service-mesh-hub/pkg/common/kube/selection/mocks"
+	"github.com/solo-io/service-mesh-hub/test/matchers"
+	test_utils "github.com/solo-io/service-mesh-hub/test/utils"
 	istio_networking_types "istio.io/api/networking/v1alpha3"
 	istio_client_networking_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,9 +26,7 @@ import (
 
 var _ = Describe("Istio Traffic Policy Translator", func() {
 	var (
-		ctrl             *gomock.Controller
-		resourceSelector *mock_selection.MockResourceSelector
-		translator       mesh_translation.IstioTranslator
+		translator mesh_translation.IstioTranslator
 
 		istioMesh = &smh_discovery.Mesh{
 			Spec: smh_discovery_types.MeshSpec{
@@ -37,14 +38,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 	)
 
 	BeforeEach(func() {
-		ctrl = gomock.NewController(GinkgoT())
-		resourceSelector = mock_selection.NewMockResourceSelector(ctrl)
-		translator = NewIstioTrafficPolicyTranslator(resourceSelector)
+		translator = NewIstioTrafficPolicyTranslator(selection.NewBaseResourceSelector())
 	})
 
-	AfterEach(func() {
-		ctrl.Finish()
-	})
 	Context("AccumulateFromTranslation", func() {
 
 		It("should not error on empty snapshot", func() {
@@ -67,7 +63,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 			var snapshotInProgress snapshot.TranslatedSnapshot
-			err := translator.AccumulateFromTranslation(&snapshotInProgress, serviceBeingTranslated, nil, notIstioMesh)
+			err := translator.AccumulateFromTranslation(context.Background(), &snapshotInProgress, serviceBeingTranslated, nil, notIstioMesh)
 
 			Expect(err).NotTo(HaveOccurred())
 		})
@@ -92,7 +88,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -143,7 +139,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -204,7 +200,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						},
 					}
 
-					result, errs := translator.Translate(
+					result, errs := translator.Translate(context.Background(),
 						serviceBeingTranslated,
 						[]*smh_discovery.MeshService{serviceBeingTranslated},
 						istioMesh,
@@ -254,7 +250,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						},
 					}
 
-					result, errs := translator.Translate(
+					result, errs := translator.Translate(context.Background(),
 						serviceBeingTranslated,
 						[]*smh_discovery.MeshService{serviceBeingTranslated},
 						istioMesh,
@@ -306,7 +302,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -376,7 +372,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -448,7 +444,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -531,6 +527,11 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service-being-mirrored-to",
 							Namespace: container_runtime.GetWriteNamespace(),
+							Labels: map[string]string{
+								kube.KUBE_SERVICE_NAME:      destName,
+								kube.KUBE_SERVICE_NAMESPACE: destNamespace,
+								kube.COMPUTE_TARGET:         destCluster,
+							},
 						},
 						Spec: smh_discovery_types.MeshServiceSpec{
 							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
@@ -548,18 +549,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							},
 						},
 					}
-					allServices := []*smh_discovery.MeshService{serviceBeingTranslated, serviceBeingTranslated}
+					allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
 
-					resourceSelector.EXPECT().
-						FindMeshServiceByRefSelector(
-							allServices,
-							policies[0].TrafficPolicySpec.Mirror.Destination.Name,
-							policies[0].TrafficPolicySpec.Mirror.Destination.Namespace,
-							policies[0].TrafficPolicySpec.Mirror.Destination.Cluster,
-						).
-						Return(otherService)
-
-					result, errs := translator.Translate(
+					result, errs := translator.Translate(context.Background(),
 						serviceBeingTranslated,
 						allServices,
 						istioMesh,
@@ -639,6 +631,11 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						ObjectMeta: k8s_meta_types.ObjectMeta{
 							Name:      "mesh-service-being-mirrored-to",
 							Namespace: container_runtime.GetWriteNamespace(),
+							Labels: map[string]string{
+								kube.KUBE_SERVICE_NAME:      destName,
+								kube.KUBE_SERVICE_NAMESPACE: destNamespace,
+								kube.COMPUTE_TARGET:         destCluster + "-remote-version",
+							},
 						},
 						Spec: smh_discovery_types.MeshServiceSpec{
 							Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
@@ -646,7 +643,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 								Ref: &smh_core_types.ResourceRef{
 									Name:      destName,
 									Namespace: destNamespace,
-									Cluster:   destCluster,
+									Cluster:   destCluster + "-remote-version",
 								},
 								Ports: []*smh_discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 									Port:     8000,
@@ -659,18 +656,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							},
 						},
 					}
-					allServices := []*smh_discovery.MeshService{serviceBeingTranslated, serviceBeingTranslated}
+					allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
 
-					resourceSelector.EXPECT().
-						FindMeshServiceByRefSelector(
-							allServices,
-							policies[0].TrafficPolicySpec.Mirror.Destination.Name,
-							policies[0].TrafficPolicySpec.Mirror.Destination.Namespace,
-							policies[0].TrafficPolicySpec.Mirror.Destination.Cluster,
-						).
-						Return(otherService)
-
-					result, errs := translator.Translate(
+					result, errs := translator.Translate(context.Background(),
 						serviceBeingTranslated,
 						allServices,
 						istioMesh,
@@ -743,7 +731,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -807,7 +795,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -888,7 +876,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -983,7 +971,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -1077,6 +1065,11 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-service-being-shifted-to",
 						Namespace: container_runtime.GetWriteNamespace(),
+						Labels: map[string]string{
+							kube.KUBE_SERVICE_NAME:      destName,
+							kube.KUBE_SERVICE_NAMESPACE: destNamespace,
+							kube.COMPUTE_TARGET:         destCluster,
+						},
 					},
 					Spec: smh_discovery_types.MeshServiceSpec{
 						Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
@@ -1098,17 +1091,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					},
 				}
 				allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
-
-				resourceSelector.EXPECT().
-					FindMeshServiceByRefSelector(
-						allServices,
-						policies[0].TrafficPolicySpec.TrafficShift.Destinations[0].Destination.Name,
-						policies[0].TrafficPolicySpec.TrafficShift.Destinations[0].Destination.Namespace,
-						policies[0].TrafficPolicySpec.TrafficShift.Destinations[0].Destination.Cluster,
-					).
-					Return(otherService)
-
-				result, errs := translator.Translate(
+				result, errs := translator.Translate(context.Background(),
 					serviceBeingTranslated,
 					allServices,
 					istioMesh,
@@ -1191,6 +1174,11 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      "mesh-service-being-shifted-to",
 						Namespace: container_runtime.GetWriteNamespace(),
+						Labels: map[string]string{
+							kube.KUBE_SERVICE_NAME:      destName,
+							kube.KUBE_SERVICE_NAMESPACE: destNamespace,
+							kube.COMPUTE_TARGET:         clusterName,
+						},
 					},
 					Spec: smh_discovery_types.MeshServiceSpec{
 						Mesh: selection.ObjectMetaToResourceRef(istioMesh.ObjectMeta),
@@ -1213,16 +1201,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				}
 				allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
 
-				resourceSelector.EXPECT().
-					FindMeshServiceByRefSelector(
-						allServices,
-						policies[0].TrafficPolicySpec.TrafficShift.Destinations[0].Destination.Name,
-						policies[0].TrafficPolicySpec.TrafficShift.Destinations[0].Destination.Namespace,
-						policies[0].TrafficPolicySpec.TrafficShift.Destinations[0].Destination.Cluster,
-					).
-					Return(otherService)
-
-				result, errs := translator.Translate(
+				result, errs := translator.Translate(context.Background(),
 					serviceBeingTranslated,
 					allServices,
 					istioMesh,
@@ -1407,7 +1386,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(
+			result, errs := translator.Translate(context.Background(),
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -1496,4 +1475,28 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			}}))
 		})
 	})
+
+	Context("test data", func() {
+
+		It("should create subsets", func() {
+			for _, data := range test_utils.GetData() {
+				By("testing " + data)
+				serviceBeingTranslated, drs, vs := getMeshService(data)
+				result, errs := translator.Translate(context.Background(),
+					serviceBeingTranslated[0],
+					serviceBeingTranslated,
+					istioMesh,
+					serviceBeingTranslated[0].Status.ValidatedTrafficPolicies,
+				)
+				Expect(errs).To(HaveLen(0))
+				Expect(result.DestinationRules).To(matchers.BeEquivalentToDiff(drs))
+				Expect(result.VirtualServices).To(matchers.BeEquivalentToDiff(vs))
+
+			}
+		})
+	})
 })
+
+func getMeshService(f string) ([]*smh_discovery.MeshService, []*istio_client_networking_types.DestinationRule, []*istio_client_networking_types.VirtualService) {
+	return test_utils.GetInputMeshServices(f), test_utils.GetOutputDestinationRules(f), test_utils.GetOutputVirtualServices(f)
+}
