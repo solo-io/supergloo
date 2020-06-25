@@ -35,7 +35,15 @@ ordering needs to be changed.
 7. WithoutHeaders, number of items decreasing
 */
 func (s SpecificitySortableRoutes) isHttpRouteMatcherMoreSpecific(httpRouteA, httpRouteB *istio_networking.HTTPRoute) bool {
-	// each HttpRoute is guaranteed to only have a single HttpMatchRequest
+	// each HttpRoute is guaranteed to have at most a single HttpMatchRequest
+	if httpRouteA.GetMatch() == nil {
+		if httpRouteB.GetMatch() == nil {
+			return true
+		}
+		return false
+	} else if httpRouteB.GetMatch() == nil {
+		return true
+	}
 	a := httpRouteA.GetMatch()[0]
 	b := httpRouteB.GetMatch()[0]
 	if len(a.GetHeaders()) > len(b.GetHeaders()) {

@@ -1290,6 +1290,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			sourceNamespace := "source-namespace"
 			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
+					// Test nil matchers case.
+					Ref: &smh_core_types.ResourceRef{Name: "policy-0"},
+				},
+				{
 					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
 					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
 						HttpRequestMatchers: []*smh_networking_types.TrafficPolicySpec_HttpMatcher{
@@ -1469,6 +1473,10 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 									Uri: &istio_networking_types.StringMatch{MatchType: &istio_networking_types.StringMatch_Prefix{Prefix: "/"}},
 								},
 							},
+							Route: defaultRoute,
+						},
+						{
+							Match: nil,
 							Route: defaultRoute,
 						},
 					},
