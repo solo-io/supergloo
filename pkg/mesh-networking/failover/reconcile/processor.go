@@ -44,17 +44,18 @@ func (f *failoverServiceProcessor) Process(ctx context.Context, inputSnapshot fa
 	// Validate will set the validation status and observed generation on the FailoverService status.
 	f.validator.Validate(inputSnapshot)
 	for _, failoverService := range inputSnapshot.FailoverServices {
-		if !f.readyToProcess(failoverService) {
-			continue
+		if f.readyToProcess(failoverService) {
+			prioritizedMeshServices, err := f.collectMeshServicesForFailoverService(failoverService, inputSnapshot.MeshServices)
+			if err != nil {
+				failoverService.Status = f.computeProcessingErrorStatus(err)
+				continue
+			}
+			failoverServiceWithUpdatedStatus, meshOutputs := f.processSingle(ctx, failoverService, prioritizedMeshServices)
+			// Accumulate outputs for each FailoverService
+			outputSnapshot.MeshOutputs = outputSnapshot.MeshOutputs.Append(meshOutputs)
+			failoverService = failoverServiceWithUpdatedStatus
 		}
-		prioritizedMeshServices, err := f.collectMeshServicesForFailoverService(failoverService, inputSnapshot.MeshServices)
-		if err != nil {
-			failoverService.Status = f.computeProcessingErrorStatus(err)
-			continue
-		}
-		outputSnapshotForFailoverService := f.processSingle(ctx, failoverService, prioritizedMeshServices)
-		// Accumulate outputs for each FailoverService
-		outputSnapshot = outputSnapshot.Append(outputSnapshotForFailoverService)
+		outputSnapshot.FailoverServices = append(outputSnapshot.FailoverServices, failoverService)
 	}
 	return outputSnapshot
 }
@@ -91,15 +92,15 @@ func (f *failoverServiceProcessor) collectMeshServicesForFailoverService(
 	return prioritizedMeshServices, nil
 }
 
-// Process a single FailoverService and return OutputSnapshot containing computed translated resources and
+// Process a single FailoverService and return MeshOutput containing computed translated resources and
 // the FailoverService with updated status.
 func (f *failoverServiceProcessor) processSingle(
 	ctx context.Context,
 	failoverService *smh_networking.FailoverService,
 	prioritizedMeshServices []*smh_discovery.MeshService,
-) failover.OutputSnapshot {
+) (*smh_networking.FailoverService, failover.MeshOutputs) {
 	var translatorErrs []*types.FailoverServiceStatus_TranslatorError
-	var outputSnapshot failover.OutputSnapshot
+	var outputs failover.MeshOutputs
 	for _, translator := range f.translators {
 		output, translatorErr := translator.Translate(ctx, failoverService, prioritizedMeshServices)
 		if translatorErr != nil {
@@ -107,13 +108,12 @@ func (f *failoverServiceProcessor) processSingle(
 			continue
 		}
 		// Accumulate mesh specific output resources.
-		outputSnapshot.MeshOutputs = outputSnapshot.MeshOutputs.Append(output)
+		outputs = outputs.Append(output)
 	}
 	// Set status on FailoverService and add to OutputSnapshot
 	failoverService.Status.TranslationStatus = f.computeTranslationStatus(translatorErrs)
 	failoverService.Status.TranslatorErrors = translatorErrs
-	outputSnapshot.FailoverServices = []*smh_networking.FailoverService{failoverService}
-	return outputSnapshot
+	return failoverService, outputs
 }
 
 func (f *failoverServiceProcessor) computeProcessingErrorStatus(err error) types.FailoverServiceStatus {
