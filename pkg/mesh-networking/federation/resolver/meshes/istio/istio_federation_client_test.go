@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gogo/protobuf/types"
 	types3 "github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -739,6 +740,19 @@ var _ = Describe("Istio Federation Decider", func() {
 						},
 					},
 				},
+				Status: smh_discovery_types.MeshServiceStatus{
+					ValidatedTrafficPolicies: []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
+						{
+							TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+								OutlierDetection: &smh_networking_types.TrafficPolicySpec_OutlierDetection{
+									ConsecutiveErrors: 2,
+									Interval:          &types.Duration{Seconds: 5},
+									BaseEjectionTime:  &types.Duration{Seconds: 5},
+								},
+							},
+						},
+					},
+				},
 			}
 			meshClient.EXPECT().
 				GetMesh(ctx, selection.ResourceRefToObjectKey(istioMeshRefWorkload)).
@@ -783,25 +797,29 @@ var _ = Describe("Istio Federation Decider", func() {
 			serviceEntryClient.EXPECT().
 				CreateServiceEntry(ctx, serviceEntry).
 				Return(nil)
-			destinationRuleRef := &smh_core_types.ResourceRef{
-				Name:      serviceMulticlusterDnsName,
-				Namespace: "istio-system",
-			}
-			destinationRuleClient.EXPECT().
-				GetDestinationRule(ctx, selection.ResourceRefToObjectKey(destinationRuleRef)).
-				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
-			destinationRuleClient.EXPECT().CreateDestinationRule(ctx, &istio_client_networking_types.DestinationRule{
-				ObjectMeta: selection.ResourceRefToObjectMeta(destinationRuleRef),
+			destRule := &istio_client_networking_types.DestinationRule{
+				ObjectMeta: k8s_meta_types.ObjectMeta{
+					Name:      serviceMulticlusterDnsName,
+					Namespace: "istio-system",
+				},
 				Spec: istio_networking_types.DestinationRule{
 					Host: serviceMulticlusterDnsName,
 					TrafficPolicy: &istio_networking_types.TrafficPolicy{
 						Tls: &istio_networking_types.ClientTLSSettings{
-							// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/242
 							Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
+						},
+						OutlierDetection: &istio_networking_types.OutlierDetection{
+							Consecutive_5XxErrors: &types3.UInt32Value{Value: 2},
+							Interval:              &types.Duration{Seconds: 5},
+							BaseEjectionTime:      &types.Duration{Seconds: 5},
 						},
 					},
 				},
-			}).Return(nil)
+			}
+			destinationRuleClient.
+				EXPECT().
+				UpsertDestinationRule(ctx, destRule).
+				Return(nil)
 
 			eap := dns.ExternalAccessPoint{
 				Address: externalAddress,

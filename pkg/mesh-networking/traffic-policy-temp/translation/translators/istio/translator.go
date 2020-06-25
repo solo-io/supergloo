@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gogo/protobuf/types"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
@@ -134,31 +133,7 @@ func (i *istioTrafficPolicyTranslator) buildDestinationRule(
 	allMeshServices []*smh_discovery.MeshService,
 	trafficPolicies []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) *istio_client_networking_types.DestinationRule {
-	var istioOutlierDetection *istio_networking_types.OutlierDetection
-	// Previous validation ensures that all OutlierDetection settings are equivalent across TrafficPolicies for this MeshService
-	for _, tp := range trafficPolicies {
-		outlierDetection := tp.GetTrafficPolicySpec().GetOutlierDetection()
-		if outlierDetection == nil {
-			continue
-		}
-		istioOutlierDetection = &istio_networking_types.OutlierDetection{}
-		// Set defaults if needed
-		if consecutiveErrs := outlierDetection.GetConsecutiveErrors(); consecutiveErrs != 0 {
-			istioOutlierDetection.Consecutive_5XxErrors = &types.UInt32Value{Value: consecutiveErrs}
-		} else {
-			istioOutlierDetection.Consecutive_5XxErrors = &types.UInt32Value{Value: 5}
-		}
-		if interval := outlierDetection.GetInterval(); interval != nil {
-			istioOutlierDetection.Interval = interval
-		} else {
-			istioOutlierDetection.Interval = &types.Duration{Seconds: 10}
-		}
-		if ejectionTime := outlierDetection.GetBaseEjectionTime(); ejectionTime != nil {
-			istioOutlierDetection.BaseEjectionTime = ejectionTime
-		} else {
-			istioOutlierDetection.BaseEjectionTime = &types.Duration{Seconds: 30}
-		}
-	}
+	istioOutlierDetection := TranslateOutlierDetection(trafficPolicies)
 	return &istio_client_networking_types.DestinationRule{
 		ObjectMeta: selection.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
 		Spec: istio_networking_types.DestinationRule{
