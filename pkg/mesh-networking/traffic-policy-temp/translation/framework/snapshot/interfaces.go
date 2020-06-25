@@ -2,6 +2,7 @@ package snapshot
 
 import (
 	"context"
+	"encoding/json"
 
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
@@ -41,3 +42,17 @@ type IstioSnapshot struct {
 }
 
 type ClusterNameToSnapshot map[types.NamespacedName]*TranslatedSnapshot
+
+// this is used just in logs
+// hence no need to unmarshall
+func (a ClusterNameToSnapshot) MarshalJSON() ([]byte, error) {
+	jsonmap := map[string]*TranslatedSnapshot{}
+
+	tokey := func(k types.NamespacedName) string {
+		return k.Namespace + "/" + k.Name
+	}
+	for k, v := range a {
+		jsonmap[tokey(k)] = v
+	}
+	return json.Marshal(jsonmap)
+}
