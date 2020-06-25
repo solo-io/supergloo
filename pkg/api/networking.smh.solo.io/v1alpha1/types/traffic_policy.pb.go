@@ -1234,6 +1234,8 @@ func (m *TrafficPolicySpec_HttpMethod) GetMethod() types.HttpMethodValue {
 	return types.HttpMethodValue_GET
 }
 
+// Configure outlier detection settings on targeted services. If set, source selectors must be empty
+// because outlier detection settings apply to all incoming traffic.
 type TrafficPolicySpec_OutlierDetection struct {
 	// Number of errors before a host is ejected from the connection pool. Defaults to 5.
 	ConsecutiveErrors uint32 `protobuf:"varint,1,opt,name=consecutive_errors,json=consecutiveErrors,proto3" json:"consecutive_errors,omitempty"`

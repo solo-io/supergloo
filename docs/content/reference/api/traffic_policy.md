@@ -310,7 +310,7 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 <a name="networking.smh.solo.io.TrafficPolicySpec.OutlierDetection"></a>
 
 ### TrafficPolicySpec.OutlierDetection
-
+Configure outlier detection settings on targeted services. If set, source selectors must be empty because outlier detection settings apply to all incoming traffic.
 
 
 | Field | Type | Label | Description |

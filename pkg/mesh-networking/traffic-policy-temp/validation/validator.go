@@ -31,9 +31,9 @@ var (
 		return eris.Errorf("Subset selector with key: %s, value: %s not found on k8s service of name: %s, namespace: %s",
 			subsetKey, subsetValue, meshService.GetName(), meshService.GetNamespace())
 	}
-	NilDestinationRef               = eris.New("Destination reference must be non-nil")
-	MinDurationError                = eris.New("Duration must be >= 1 millisecond")
-	InvalidOutlierDetectionInterval = eris.Errorf("OutlierDetection.Interval must be >= 1ms")
+	NilDestinationRef                          = eris.New("Destination reference must be non-nil")
+	MinDurationError                           = eris.New("Duration must be >= 1 millisecond")
+	OutlierDetectionWithNonEmptySourceSelector = eris.New("OutlierDetection settings require an empty source selector.")
 )
 
 func NewValidator(
@@ -71,7 +71,7 @@ func (v *validator) ValidateTrafficPolicy(trafficPolicy *smh_networking.TrafficP
 	if err := v.validateMirror(allMeshServices, trafficPolicy.Spec.GetMirror()); err != nil {
 		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in Mirror"))
 	}
-	if err := v.validateOutlierDetection(trafficPolicy.Spec.GetOutlierDetection()); err != nil {
+	if err := v.validateOutlierDetection(trafficPolicy.Spec.GetSourceSelector(), trafficPolicy.Spec.GetOutlierDetection()); err != nil {
 		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in OutlierDetection"))
 	}
 	validationErr := multiErr.ErrorOrNil()
@@ -246,18 +246,33 @@ func (v *validator) validateSubsetSelectors(
 	return nil
 }
 
+// If OutlierDetection is set, source selector must be nil because outlier detection applies
+// to all incoming traffic.
 func (v *validator) validateOutlierDetection(
+	sourceSelector *smh_core_types.WorkloadSelector,
 	outlierDetection *smh_networking_types.TrafficPolicySpec_OutlierDetection,
 ) error {
 	var err error
+	if outlierDetection == nil {
+		return nil
+	}
+	if sourceSelector != nil {
+		return OutlierDetectionWithNonEmptySourceSelector
+	}
+	if outlierDetection.GetConsecutiveErrors() < 1 {
+		return eris.Errorf(
+			"Invalid OutlierDetection consecutive errors: %d, must be > 0",
+			outlierDetection.GetConsecutiveErrors(),
+		)
+	}
 	if outlierDetection.GetInterval() != nil {
 		if err = v.validateDuration(outlierDetection.GetInterval()); err != nil {
-			return err
+			return eris.Wrap(err, "Invalid OutlierDetection interval")
 		}
 	}
 	if outlierDetection.GetBaseEjectionTime() != nil {
 		if err = v.validateDuration(outlierDetection.GetBaseEjectionTime()); err != nil {
-			return err
+			return eris.Wrap(err, "Invalid OutlierDetection base ejection time")
 		}
 	}
 	return nil

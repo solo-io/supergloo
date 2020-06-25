@@ -301,6 +301,8 @@ message TrafficPolicySpec {
         core.smh.solo.io.HttpMethodValue method = 1;
     }
 
+    // Configure outlier detection settings on targeted services. If set, source selectors must be empty
+    // because outlier detection settings apply to all incoming traffic.
     message OutlierDetection {
         // Number of errors before a host is ejected from the connection pool. Defaults to 5.
         uint32 consecutive_errors = 1;
