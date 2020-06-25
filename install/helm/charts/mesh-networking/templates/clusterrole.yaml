@@ -16,7 +16,13 @@ rules:
       - "failoverservices/status"
     verbs: ["*"]
   - apiGroups: ["discovery.smh.solo.io"]
-    resources: ["meshes", "meshworkloads","meshworkloads/status", "meshservices","meshservices/status"]
+    resources:
+      - "meshes"
+      - "meshworkloads"
+      - "meshworkloads/status"
+      - "meshservices"
+      - "meshservices/status"
+      - "kubernetesclusters"
     verbs: ["*"]
   - apiGroups: ["security.smh.solo.io"]
     resources: ["virtualmeshcertificatesigningrequests", "virtualmeshcertificatesigningrequests/status"]
