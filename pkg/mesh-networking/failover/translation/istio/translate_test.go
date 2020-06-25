@@ -164,7 +164,7 @@ var _ = Describe("Translate", func() {
 							Operation: istio_networking.EnvoyFilter_Patch_ADD,
 							Value: &proto_types.Struct{
 								Fields: map[string]*proto_types.Value{
-									"name":            protoStringValue(failoverService.Spec.GetHostname()),
+									"name":            protoStringValue(failoverServiceClusterString),
 									"connect_timeout": protoStringValue("1s"),
 									"lb_policy":       protoStringValue("CLUSTER_PROVIDED"),
 									"cluster_type": {

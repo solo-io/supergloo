@@ -115,14 +115,13 @@ func (i *istioFailoverServiceTranslator) translateEnvoyFilter(
 	failoverService *smh_networking.FailoverService,
 	meshServices []*smh_discovery.MeshService,
 ) (*istio_client_networking.EnvoyFilter, error) {
-	envoyFailoverPatch, err := i.buildEnvoyFailoverPatch(failoverService, meshServices)
+	failoverServiceClusterString := buildIstioEnvoyClusterName(
+		failoverService.Spec.GetPort().GetPort(),
+		failoverService.Spec.GetHostname())
+	envoyFailoverPatch, err := i.buildEnvoyFailoverPatch(failoverServiceClusterString, failoverService.Spec.GetCluster(), meshServices)
 	if err != nil {
 		return nil, err
 	}
-	failoverServiceClusterString := fmt.Sprintf("outbound|%d||%s",
-		failoverService.Spec.GetPort().GetPort(),
-		failoverService.Spec.GetHostname(),
-	)
 	return &istio_client_networking.EnvoyFilter{
 		ObjectMeta: k8s_meta.ObjectMeta{
 			Name:        failoverService.GetName(),
@@ -164,10 +163,11 @@ func (i *istioFailoverServiceTranslator) translateEnvoyFilter(
 }
 
 func (i *istioFailoverServiceTranslator) buildEnvoyFailoverPatch(
-	failoverService *smh_networking.FailoverService,
+	failoverServiceEnvoyClusterName string,
+	failoverServiceClusterName string,
 	meshServices []*smh_discovery.MeshService,
 ) (*istio_networking.EnvoyFilter_Patch, error) {
-	orderedFailoverList, err := i.convertServicesToEnvoyClusterList(meshServices, failoverService.Spec.GetCluster())
+	orderedFailoverList, err := i.convertServicesToEnvoyClusterList(meshServices, failoverServiceClusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func (i *istioFailoverServiceTranslator) buildEnvoyFailoverPatch(
 		Operation: istio_networking.EnvoyFilter_Patch_ADD,
 		Value: &proto_types.Struct{
 			Fields: map[string]*proto_types.Value{
-				"name":            protoStringValue(failoverService.Spec.GetHostname()),
+				"name":            protoStringValue(failoverServiceEnvoyClusterName),
 				"connect_timeout": protoStringValue("1s"),
 				"lb_policy":       protoStringValue("CLUSTER_PROVIDED"),
 				"cluster_type": {
@@ -236,7 +236,7 @@ func (i *istioFailoverServiceTranslator) convertServicesToEnvoyClusterList(
 			// Multicluster remote DNS
 			hostname = meshService.Spec.GetFederation().GetMulticlusterDnsName()
 		}
-		failoverCluster := protoStringValue(fmt.Sprintf("outbound|%d||%s", port, hostname))
+		failoverCluster := protoStringValue(buildIstioEnvoyClusterName(port, hostname))
 		orderedFailoverList.ListValue.Values = append(orderedFailoverList.ListValue.Values, failoverCluster)
 	}
 	return orderedFailoverList, nil
@@ -255,4 +255,8 @@ func protoStringValue(s string) *proto_types.Value {
 			StringValue: s,
 		},
 	}
+}
+
+func buildIstioEnvoyClusterName(port uint32, hostname string) string {
+	return fmt.Sprintf("outbound|%d||%s", port, hostname)
 }
