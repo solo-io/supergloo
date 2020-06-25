@@ -12,8 +12,8 @@ rules:
       - "trafficpolicies/status"
       - "accesscontrolpolicies"
       - "accesscontrolpolicies/status"
-      - "failoverservice"
-      - "failoverservice/status"
+      - "failoverservices"
+      - "failoverservices/status"
     verbs: ["*"]
   - apiGroups: ["discovery.smh.solo.io"]
     resources: ["meshes", "meshworkloads","meshworkloads/status", "meshservices","meshservices/status"]
