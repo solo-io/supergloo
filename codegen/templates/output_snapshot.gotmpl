@@ -1,7 +1,7 @@
 // Definitions for Output Snapshots
 package output
 
-{{ $groups := snapshot_groups }}
+{{ $groups := imported_groups }}
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 {{ $type_import_prefix := group_import_name $group }}
 {{ $set_import_prefix := (printf "%v_sets" (group_import_name $group)) }}
     {{ $type_import_prefix }} "{{ group_import_path $group }}"
-    {{ $set_import_prefix }} "{{ group_import_path $group }}/sets"
+    {{ $set_import_prefix }} "{{ set_import_path $group }}"
 {{- end }}
 
 )
@@ -28,10 +28,8 @@ var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.R
     return eris.Errorf("expected label %v not on labels of %v %v", labelKey, resourceKind, sets.Key(obj))
 }
 
-// the snapshot of output resources produced by
-// the discovery translation
+// the snapshot of output resources produced by a translation
 type Snapshot interface {
-
 {{/* generate a getter for each resource */}}
 {{- range $group := $groups }}
 {{- range $resource := $group.Resources }}
@@ -218,7 +216,7 @@ func (s snapshot) {{ $kindPlural }}() []Labeled{{ $resource.Kind }}Set {
 {{- end }}
 
 
-{{/* generate getters here */}}
+{{/* generate labeled sets here */}}
 {{- range $group := $groups }}
 {{ $set_import_prefix := printf "%v_sets" (group_import_name $group) }}
 {{ $type_import_prefix := group_import_name $group }}

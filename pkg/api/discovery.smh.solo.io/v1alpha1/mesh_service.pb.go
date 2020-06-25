@@ -9,7 +9,7 @@ import (
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
-	types1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	math "math"
 )
 
@@ -355,11 +355,11 @@ func (m *MeshServiceStatus) GetValidatedTrafficPolicies() []*MeshServiceStatus_V
 }
 
 type MeshServiceStatus_ValidatedTrafficPolicy struct {
-	Ref                  *types.ResourceRef        `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
-	TrafficPolicySpec    *types1.TrafficPolicySpec `protobuf:"bytes,2,opt,name=traffic_policy_spec,json=trafficPolicySpec,proto3" json:"traffic_policy_spec,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
-	XXX_unrecognized     []byte                    `json:"-"`
-	XXX_sizecache        int32                     `json:"-"`
+	Ref                  *types.ResourceRef          `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
+	TrafficPolicySpec    *v1alpha1.TrafficPolicySpec `protobuf:"bytes,2,opt,name=traffic_policy_spec,json=trafficPolicySpec,proto3" json:"traffic_policy_spec,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                    `json:"-"`
+	XXX_unrecognized     []byte                      `json:"-"`
+	XXX_sizecache        int32                       `json:"-"`
 }
 
 func (m *MeshServiceStatus_ValidatedTrafficPolicy) Reset() {
@@ -395,7 +395,7 @@ func (m *MeshServiceStatus_ValidatedTrafficPolicy) GetRef() *types.ResourceRef {
 	return nil
 }
 
-func (m *MeshServiceStatus_ValidatedTrafficPolicy) GetTrafficPolicySpec() *types1.TrafficPolicySpec {
+func (m *MeshServiceStatus_ValidatedTrafficPolicy) GetTrafficPolicySpec() *v1alpha1.TrafficPolicySpec {
 	if m != nil {
 		return m.TrafficPolicySpec
 	}

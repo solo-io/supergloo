@@ -3,6 +3,7 @@ package templates
 import (
 	"io/ioutil"
 	"log"
+	"strings"
 	"text/template"
 
 	"github.com/solo-io/skv2/codegen/model"
@@ -19,15 +20,77 @@ var OutputSnapshotTemplateContents = func() string {
 	return string(b)
 }()
 
+const inputSnapshotTemplatePath = "codegen/templates/input_snapshot.gotmpl"
+
+var InputSnapshotTemplateContents = func() string {
+	b, err := ioutil.ReadFile(inputSnapshotTemplatePath)
+	if err != nil {
+		log.Fatalf("failed to read file %v", err)
+	}
+	return string(b)
+}()
+
+type ImportedGroup struct {
+	model.Group
+	GoModule string // the module where the group is defined, if it differs from the group module itself. e.g. for external type imports such as k8s.io/api
+}
+
 // make the custom template funcs
-func MakeSnapshotFuncs(groups []model.Group) template.FuncMap {
+func MakeSnapshotFuncs(importedGroups []ImportedGroup) template.FuncMap {
+	var groups []model.Group
+	groupImports := map[schema.GroupVersion]ImportedGroup{}
+
+	for _, grp := range importedGroups {
+		groups = append(groups, grp.Group)
+		groupImports[grp.GroupVersion] = grp
+	}
+
 	return template.FuncMap{
-		"snapshot_groups": func() []model.Group { return groups },
+		"imported_groups": func() []model.Group { return groups },
+		"client_import_path": func(group model.Group) string {
+			grp, ok := groupImports[group.GroupVersion]
+			if !ok {
+				panic("group not found " + grp.String())
+			}
+			return clientImportPath(grp)
+		},
+		"set_import_path": func(group model.Group) string {
+			grp, ok := groupImports[group.GroupVersion]
+			if !ok {
+				panic("group not found " + grp.String())
+			}
+			return clientImportPath(grp) + "/sets"
+		},
 	}
 }
 
-func SelectResources(groups []model.Group, resourcesToSelect map[schema.GroupVersion][]string) []model.Group {
-	var selectedResources []model.Group
+// gets the go package for an imported group's clients
+func clientImportPath(grp ImportedGroup) string {
+
+	grp.ApiRoot = strings.Trim(grp.ApiRoot, "/")
+
+	module := grp.GoModule
+	if module == "" {
+		// import should be our local module, which comes from the imported group
+		module = grp.Group.Module
+	}
+
+	s := strings.ReplaceAll(
+		strings.Join([]string{
+			module,
+			grp.ApiRoot,
+			grp.Group.Group,
+			grp.Version,
+		}, "/"),
+		"//", "/",
+	)
+
+	return s
+}
+
+// pass empty string if clients + sets live in the same go module as the type definitions
+func SelectResources(module string, groups []model.Group, resourcesToSelect map[schema.GroupVersion][]string) []ImportedGroup {
+	var selectedResources []ImportedGroup
 	for _, group := range groups {
 		resources := resourcesToSelect[group.GroupVersion]
 		if len(resources) == 0 {
@@ -52,7 +115,10 @@ func SelectResources(groups []model.Group, resourcesToSelect map[schema.GroupVer
 			filteredGroup.Resources = append(filteredGroup.Resources, resource)
 		}
 
-		selectedResources = append(selectedResources, filteredGroup)
+		selectedResources = append(selectedResources, ImportedGroup{
+			Group:    filteredGroup,
+			GoModule: module,
+		})
 	}
 
 	return selectedResources

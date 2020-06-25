@@ -24,6 +24,7 @@ type KubernetesClusterSet interface {
 	Difference(set KubernetesClusterSet) KubernetesClusterSet
 	Intersection(set KubernetesClusterSet) KubernetesClusterSet
 	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.KubernetesCluster, error)
+	Length() int
 }
 
 func makeGenericKubernetesClusterSet(kubernetesClusterList []*discovery_smh_solo_io_v1alpha1.KubernetesCluster) sksets.ResourceSet {
@@ -42,11 +43,19 @@ func NewKubernetesClusterSet(kubernetesClusterList ...*discovery_smh_solo_io_v1a
 	return &kubernetesClusterSet{set: makeGenericKubernetesClusterSet(kubernetesClusterList)}
 }
 
-func (s kubernetesClusterSet) Keys() sets.String {
+func NewKubernetesClusterSetFromList(kubernetesClusterList *discovery_smh_solo_io_v1alpha1.KubernetesClusterList) KubernetesClusterSet {
+	list := make([]*discovery_smh_solo_io_v1alpha1.KubernetesCluster, 0, len(kubernetesClusterList.Items))
+	for idx := range kubernetesClusterList.Items {
+		list = append(list, &kubernetesClusterList.Items[idx])
+	}
+	return &kubernetesClusterSet{set: makeGenericKubernetesClusterSet(list)}
+}
+
+func (s *kubernetesClusterSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s kubernetesClusterSet) List() []*discovery_smh_solo_io_v1alpha1.KubernetesCluster {
+func (s *kubernetesClusterSet) List() []*discovery_smh_solo_io_v1alpha1.KubernetesCluster {
 	var kubernetesClusterList []*discovery_smh_solo_io_v1alpha1.KubernetesCluster
 	for _, obj := range s.set.List() {
 		kubernetesClusterList = append(kubernetesClusterList, obj.(*discovery_smh_solo_io_v1alpha1.KubernetesCluster))
@@ -54,7 +63,7 @@ func (s kubernetesClusterSet) List() []*discovery_smh_solo_io_v1alpha1.Kubernete
 	return kubernetesClusterList
 }
 
-func (s kubernetesClusterSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.KubernetesCluster {
+func (s *kubernetesClusterSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.KubernetesCluster {
 	newMap := map[string]*discovery_smh_solo_io_v1alpha1.KubernetesCluster{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*discovery_smh_solo_io_v1alpha1.KubernetesCluster)
@@ -62,7 +71,7 @@ func (s kubernetesClusterSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.K
 	return newMap
 }
 
-func (s kubernetesClusterSet) Insert(
+func (s *kubernetesClusterSet) Insert(
 	kubernetesClusterList ...*discovery_smh_solo_io_v1alpha1.KubernetesCluster,
 ) {
 	for _, obj := range kubernetesClusterList {
@@ -70,30 +79,30 @@ func (s kubernetesClusterSet) Insert(
 	}
 }
 
-func (s kubernetesClusterSet) Has(kubernetesCluster *discovery_smh_solo_io_v1alpha1.KubernetesCluster) bool {
+func (s *kubernetesClusterSet) Has(kubernetesCluster *discovery_smh_solo_io_v1alpha1.KubernetesCluster) bool {
 	return s.set.Has(kubernetesCluster)
 }
 
-func (s kubernetesClusterSet) Equal(
+func (s *kubernetesClusterSet) Equal(
 	kubernetesClusterSet KubernetesClusterSet,
 ) bool {
 	return s.set.Equal(makeGenericKubernetesClusterSet(kubernetesClusterSet.List()))
 }
 
-func (s kubernetesClusterSet) Delete(KubernetesCluster *discovery_smh_solo_io_v1alpha1.KubernetesCluster) {
+func (s *kubernetesClusterSet) Delete(KubernetesCluster *discovery_smh_solo_io_v1alpha1.KubernetesCluster) {
 	s.set.Delete(KubernetesCluster)
 }
 
-func (s kubernetesClusterSet) Union(set KubernetesClusterSet) KubernetesClusterSet {
+func (s *kubernetesClusterSet) Union(set KubernetesClusterSet) KubernetesClusterSet {
 	return NewKubernetesClusterSet(append(s.List(), set.List()...)...)
 }
 
-func (s kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesClusterSet {
+func (s *kubernetesClusterSet) Difference(set KubernetesClusterSet) KubernetesClusterSet {
 	newSet := s.set.Difference(makeGenericKubernetesClusterSet(set.List()))
-	return kubernetesClusterSet{set: newSet}
+	return &kubernetesClusterSet{set: newSet}
 }
 
-func (s kubernetesClusterSet) Intersection(set KubernetesClusterSet) KubernetesClusterSet {
+func (s *kubernetesClusterSet) Intersection(set KubernetesClusterSet) KubernetesClusterSet {
 	newSet := s.set.Intersection(makeGenericKubernetesClusterSet(set.List()))
 	var kubernetesClusterList []*discovery_smh_solo_io_v1alpha1.KubernetesCluster
 	for _, obj := range newSet.List() {
@@ -102,13 +111,17 @@ func (s kubernetesClusterSet) Intersection(set KubernetesClusterSet) KubernetesC
 	return NewKubernetesClusterSet(kubernetesClusterList...)
 }
 
-func (s kubernetesClusterSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.KubernetesCluster, error) {
+func (s *kubernetesClusterSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.KubernetesCluster, error) {
 	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha1.KubernetesCluster{}, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj.(*discovery_smh_solo_io_v1alpha1.KubernetesCluster), nil
+}
+
+func (s *kubernetesClusterSet) Length() int {
+	return s.set.Length()
 }
 
 type MeshServiceSet interface {
@@ -123,6 +136,7 @@ type MeshServiceSet interface {
 	Difference(set MeshServiceSet) MeshServiceSet
 	Intersection(set MeshServiceSet) MeshServiceSet
 	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshService, error)
+	Length() int
 }
 
 func makeGenericMeshServiceSet(meshServiceList []*discovery_smh_solo_io_v1alpha1.MeshService) sksets.ResourceSet {
@@ -141,11 +155,19 @@ func NewMeshServiceSet(meshServiceList ...*discovery_smh_solo_io_v1alpha1.MeshSe
 	return &meshServiceSet{set: makeGenericMeshServiceSet(meshServiceList)}
 }
 
-func (s meshServiceSet) Keys() sets.String {
+func NewMeshServiceSetFromList(meshServiceList *discovery_smh_solo_io_v1alpha1.MeshServiceList) MeshServiceSet {
+	list := make([]*discovery_smh_solo_io_v1alpha1.MeshService, 0, len(meshServiceList.Items))
+	for idx := range meshServiceList.Items {
+		list = append(list, &meshServiceList.Items[idx])
+	}
+	return &meshServiceSet{set: makeGenericMeshServiceSet(list)}
+}
+
+func (s *meshServiceSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s meshServiceSet) List() []*discovery_smh_solo_io_v1alpha1.MeshService {
+func (s *meshServiceSet) List() []*discovery_smh_solo_io_v1alpha1.MeshService {
 	var meshServiceList []*discovery_smh_solo_io_v1alpha1.MeshService
 	for _, obj := range s.set.List() {
 		meshServiceList = append(meshServiceList, obj.(*discovery_smh_solo_io_v1alpha1.MeshService))
@@ -153,7 +175,7 @@ func (s meshServiceSet) List() []*discovery_smh_solo_io_v1alpha1.MeshService {
 	return meshServiceList
 }
 
-func (s meshServiceSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.MeshService {
+func (s *meshServiceSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.MeshService {
 	newMap := map[string]*discovery_smh_solo_io_v1alpha1.MeshService{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*discovery_smh_solo_io_v1alpha1.MeshService)
@@ -161,7 +183,7 @@ func (s meshServiceSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.MeshSer
 	return newMap
 }
 
-func (s meshServiceSet) Insert(
+func (s *meshServiceSet) Insert(
 	meshServiceList ...*discovery_smh_solo_io_v1alpha1.MeshService,
 ) {
 	for _, obj := range meshServiceList {
@@ -169,30 +191,30 @@ func (s meshServiceSet) Insert(
 	}
 }
 
-func (s meshServiceSet) Has(meshService *discovery_smh_solo_io_v1alpha1.MeshService) bool {
+func (s *meshServiceSet) Has(meshService *discovery_smh_solo_io_v1alpha1.MeshService) bool {
 	return s.set.Has(meshService)
 }
 
-func (s meshServiceSet) Equal(
+func (s *meshServiceSet) Equal(
 	meshServiceSet MeshServiceSet,
 ) bool {
 	return s.set.Equal(makeGenericMeshServiceSet(meshServiceSet.List()))
 }
 
-func (s meshServiceSet) Delete(MeshService *discovery_smh_solo_io_v1alpha1.MeshService) {
+func (s *meshServiceSet) Delete(MeshService *discovery_smh_solo_io_v1alpha1.MeshService) {
 	s.set.Delete(MeshService)
 }
 
-func (s meshServiceSet) Union(set MeshServiceSet) MeshServiceSet {
+func (s *meshServiceSet) Union(set MeshServiceSet) MeshServiceSet {
 	return NewMeshServiceSet(append(s.List(), set.List()...)...)
 }
 
-func (s meshServiceSet) Difference(set MeshServiceSet) MeshServiceSet {
+func (s *meshServiceSet) Difference(set MeshServiceSet) MeshServiceSet {
 	newSet := s.set.Difference(makeGenericMeshServiceSet(set.List()))
-	return meshServiceSet{set: newSet}
+	return &meshServiceSet{set: newSet}
 }
 
-func (s meshServiceSet) Intersection(set MeshServiceSet) MeshServiceSet {
+func (s *meshServiceSet) Intersection(set MeshServiceSet) MeshServiceSet {
 	newSet := s.set.Intersection(makeGenericMeshServiceSet(set.List()))
 	var meshServiceList []*discovery_smh_solo_io_v1alpha1.MeshService
 	for _, obj := range newSet.List() {
@@ -201,13 +223,17 @@ func (s meshServiceSet) Intersection(set MeshServiceSet) MeshServiceSet {
 	return NewMeshServiceSet(meshServiceList...)
 }
 
-func (s meshServiceSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshService, error) {
+func (s *meshServiceSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshService, error) {
 	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha1.MeshService{}, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj.(*discovery_smh_solo_io_v1alpha1.MeshService), nil
+}
+
+func (s *meshServiceSet) Length() int {
+	return s.set.Length()
 }
 
 type MeshWorkloadSet interface {
@@ -222,6 +248,7 @@ type MeshWorkloadSet interface {
 	Difference(set MeshWorkloadSet) MeshWorkloadSet
 	Intersection(set MeshWorkloadSet) MeshWorkloadSet
 	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshWorkload, error)
+	Length() int
 }
 
 func makeGenericMeshWorkloadSet(meshWorkloadList []*discovery_smh_solo_io_v1alpha1.MeshWorkload) sksets.ResourceSet {
@@ -240,11 +267,19 @@ func NewMeshWorkloadSet(meshWorkloadList ...*discovery_smh_solo_io_v1alpha1.Mesh
 	return &meshWorkloadSet{set: makeGenericMeshWorkloadSet(meshWorkloadList)}
 }
 
-func (s meshWorkloadSet) Keys() sets.String {
+func NewMeshWorkloadSetFromList(meshWorkloadList *discovery_smh_solo_io_v1alpha1.MeshWorkloadList) MeshWorkloadSet {
+	list := make([]*discovery_smh_solo_io_v1alpha1.MeshWorkload, 0, len(meshWorkloadList.Items))
+	for idx := range meshWorkloadList.Items {
+		list = append(list, &meshWorkloadList.Items[idx])
+	}
+	return &meshWorkloadSet{set: makeGenericMeshWorkloadSet(list)}
+}
+
+func (s *meshWorkloadSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s meshWorkloadSet) List() []*discovery_smh_solo_io_v1alpha1.MeshWorkload {
+func (s *meshWorkloadSet) List() []*discovery_smh_solo_io_v1alpha1.MeshWorkload {
 	var meshWorkloadList []*discovery_smh_solo_io_v1alpha1.MeshWorkload
 	for _, obj := range s.set.List() {
 		meshWorkloadList = append(meshWorkloadList, obj.(*discovery_smh_solo_io_v1alpha1.MeshWorkload))
@@ -252,7 +287,7 @@ func (s meshWorkloadSet) List() []*discovery_smh_solo_io_v1alpha1.MeshWorkload {
 	return meshWorkloadList
 }
 
-func (s meshWorkloadSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.MeshWorkload {
+func (s *meshWorkloadSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.MeshWorkload {
 	newMap := map[string]*discovery_smh_solo_io_v1alpha1.MeshWorkload{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*discovery_smh_solo_io_v1alpha1.MeshWorkload)
@@ -260,7 +295,7 @@ func (s meshWorkloadSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.MeshWo
 	return newMap
 }
 
-func (s meshWorkloadSet) Insert(
+func (s *meshWorkloadSet) Insert(
 	meshWorkloadList ...*discovery_smh_solo_io_v1alpha1.MeshWorkload,
 ) {
 	for _, obj := range meshWorkloadList {
@@ -268,30 +303,30 @@ func (s meshWorkloadSet) Insert(
 	}
 }
 
-func (s meshWorkloadSet) Has(meshWorkload *discovery_smh_solo_io_v1alpha1.MeshWorkload) bool {
+func (s *meshWorkloadSet) Has(meshWorkload *discovery_smh_solo_io_v1alpha1.MeshWorkload) bool {
 	return s.set.Has(meshWorkload)
 }
 
-func (s meshWorkloadSet) Equal(
+func (s *meshWorkloadSet) Equal(
 	meshWorkloadSet MeshWorkloadSet,
 ) bool {
 	return s.set.Equal(makeGenericMeshWorkloadSet(meshWorkloadSet.List()))
 }
 
-func (s meshWorkloadSet) Delete(MeshWorkload *discovery_smh_solo_io_v1alpha1.MeshWorkload) {
+func (s *meshWorkloadSet) Delete(MeshWorkload *discovery_smh_solo_io_v1alpha1.MeshWorkload) {
 	s.set.Delete(MeshWorkload)
 }
 
-func (s meshWorkloadSet) Union(set MeshWorkloadSet) MeshWorkloadSet {
+func (s *meshWorkloadSet) Union(set MeshWorkloadSet) MeshWorkloadSet {
 	return NewMeshWorkloadSet(append(s.List(), set.List()...)...)
 }
 
-func (s meshWorkloadSet) Difference(set MeshWorkloadSet) MeshWorkloadSet {
+func (s *meshWorkloadSet) Difference(set MeshWorkloadSet) MeshWorkloadSet {
 	newSet := s.set.Difference(makeGenericMeshWorkloadSet(set.List()))
-	return meshWorkloadSet{set: newSet}
+	return &meshWorkloadSet{set: newSet}
 }
 
-func (s meshWorkloadSet) Intersection(set MeshWorkloadSet) MeshWorkloadSet {
+func (s *meshWorkloadSet) Intersection(set MeshWorkloadSet) MeshWorkloadSet {
 	newSet := s.set.Intersection(makeGenericMeshWorkloadSet(set.List()))
 	var meshWorkloadList []*discovery_smh_solo_io_v1alpha1.MeshWorkload
 	for _, obj := range newSet.List() {
@@ -300,13 +335,17 @@ func (s meshWorkloadSet) Intersection(set MeshWorkloadSet) MeshWorkloadSet {
 	return NewMeshWorkloadSet(meshWorkloadList...)
 }
 
-func (s meshWorkloadSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshWorkload, error) {
+func (s *meshWorkloadSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshWorkload, error) {
 	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha1.MeshWorkload{}, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj.(*discovery_smh_solo_io_v1alpha1.MeshWorkload), nil
+}
+
+func (s *meshWorkloadSet) Length() int {
+	return s.set.Length()
 }
 
 type MeshSet interface {
@@ -321,6 +360,7 @@ type MeshSet interface {
 	Difference(set MeshSet) MeshSet
 	Intersection(set MeshSet) MeshSet
 	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.Mesh, error)
+	Length() int
 }
 
 func makeGenericMeshSet(meshList []*discovery_smh_solo_io_v1alpha1.Mesh) sksets.ResourceSet {
@@ -339,11 +379,19 @@ func NewMeshSet(meshList ...*discovery_smh_solo_io_v1alpha1.Mesh) MeshSet {
 	return &meshSet{set: makeGenericMeshSet(meshList)}
 }
 
-func (s meshSet) Keys() sets.String {
+func NewMeshSetFromList(meshList *discovery_smh_solo_io_v1alpha1.MeshList) MeshSet {
+	list := make([]*discovery_smh_solo_io_v1alpha1.Mesh, 0, len(meshList.Items))
+	for idx := range meshList.Items {
+		list = append(list, &meshList.Items[idx])
+	}
+	return &meshSet{set: makeGenericMeshSet(list)}
+}
+
+func (s *meshSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s meshSet) List() []*discovery_smh_solo_io_v1alpha1.Mesh {
+func (s *meshSet) List() []*discovery_smh_solo_io_v1alpha1.Mesh {
 	var meshList []*discovery_smh_solo_io_v1alpha1.Mesh
 	for _, obj := range s.set.List() {
 		meshList = append(meshList, obj.(*discovery_smh_solo_io_v1alpha1.Mesh))
@@ -351,7 +399,7 @@ func (s meshSet) List() []*discovery_smh_solo_io_v1alpha1.Mesh {
 	return meshList
 }
 
-func (s meshSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.Mesh {
+func (s *meshSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.Mesh {
 	newMap := map[string]*discovery_smh_solo_io_v1alpha1.Mesh{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*discovery_smh_solo_io_v1alpha1.Mesh)
@@ -359,7 +407,7 @@ func (s meshSet) Map() map[string]*discovery_smh_solo_io_v1alpha1.Mesh {
 	return newMap
 }
 
-func (s meshSet) Insert(
+func (s *meshSet) Insert(
 	meshList ...*discovery_smh_solo_io_v1alpha1.Mesh,
 ) {
 	for _, obj := range meshList {
@@ -367,30 +415,30 @@ func (s meshSet) Insert(
 	}
 }
 
-func (s meshSet) Has(mesh *discovery_smh_solo_io_v1alpha1.Mesh) bool {
+func (s *meshSet) Has(mesh *discovery_smh_solo_io_v1alpha1.Mesh) bool {
 	return s.set.Has(mesh)
 }
 
-func (s meshSet) Equal(
+func (s *meshSet) Equal(
 	meshSet MeshSet,
 ) bool {
 	return s.set.Equal(makeGenericMeshSet(meshSet.List()))
 }
 
-func (s meshSet) Delete(Mesh *discovery_smh_solo_io_v1alpha1.Mesh) {
+func (s *meshSet) Delete(Mesh *discovery_smh_solo_io_v1alpha1.Mesh) {
 	s.set.Delete(Mesh)
 }
 
-func (s meshSet) Union(set MeshSet) MeshSet {
+func (s *meshSet) Union(set MeshSet) MeshSet {
 	return NewMeshSet(append(s.List(), set.List()...)...)
 }
 
-func (s meshSet) Difference(set MeshSet) MeshSet {
+func (s *meshSet) Difference(set MeshSet) MeshSet {
 	newSet := s.set.Difference(makeGenericMeshSet(set.List()))
-	return meshSet{set: newSet}
+	return &meshSet{set: newSet}
 }
 
-func (s meshSet) Intersection(set MeshSet) MeshSet {
+func (s *meshSet) Intersection(set MeshSet) MeshSet {
 	newSet := s.set.Intersection(makeGenericMeshSet(set.List()))
 	var meshList []*discovery_smh_solo_io_v1alpha1.Mesh
 	for _, obj := range newSet.List() {
@@ -399,11 +447,15 @@ func (s meshSet) Intersection(set MeshSet) MeshSet {
 	return NewMeshSet(meshList...)
 }
 
-func (s meshSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.Mesh, error) {
+func (s *meshSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.Mesh, error) {
 	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha1.Mesh{}, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj.(*discovery_smh_solo_io_v1alpha1.Mesh), nil
+}
+
+func (s *meshSet) Length() int {
+	return s.set.Length()
 }

@@ -3,6 +3,7 @@ package output
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/solo-io/go-utils/contextutils"

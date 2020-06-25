@@ -24,6 +24,7 @@ type VirtualMeshCertificateSigningRequestSet interface {
 	Difference(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet
 	Intersection(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet
 	Find(id ezkube.ResourceId) (*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest, error)
+	Length() int
 }
 
 func makeGenericVirtualMeshCertificateSigningRequestSet(virtualMeshCertificateSigningRequestList []*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) sksets.ResourceSet {
@@ -42,11 +43,19 @@ func NewVirtualMeshCertificateSigningRequestSet(virtualMeshCertificateSigningReq
 	return &virtualMeshCertificateSigningRequestSet{set: makeGenericVirtualMeshCertificateSigningRequestSet(virtualMeshCertificateSigningRequestList)}
 }
 
-func (s virtualMeshCertificateSigningRequestSet) Keys() sets.String {
+func NewVirtualMeshCertificateSigningRequestSetFromList(virtualMeshCertificateSigningRequestList *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequestList) VirtualMeshCertificateSigningRequestSet {
+	list := make([]*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest, 0, len(virtualMeshCertificateSigningRequestList.Items))
+	for idx := range virtualMeshCertificateSigningRequestList.Items {
+		list = append(list, &virtualMeshCertificateSigningRequestList.Items[idx])
+	}
+	return &virtualMeshCertificateSigningRequestSet{set: makeGenericVirtualMeshCertificateSigningRequestSet(list)}
+}
+
+func (s *virtualMeshCertificateSigningRequestSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s virtualMeshCertificateSigningRequestSet) List() []*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest {
+func (s *virtualMeshCertificateSigningRequestSet) List() []*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest {
 	var virtualMeshCertificateSigningRequestList []*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest
 	for _, obj := range s.set.List() {
 		virtualMeshCertificateSigningRequestList = append(virtualMeshCertificateSigningRequestList, obj.(*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest))
@@ -54,7 +63,7 @@ func (s virtualMeshCertificateSigningRequestSet) List() []*security_smh_solo_io_
 	return virtualMeshCertificateSigningRequestList
 }
 
-func (s virtualMeshCertificateSigningRequestSet) Map() map[string]*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest {
+func (s *virtualMeshCertificateSigningRequestSet) Map() map[string]*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest {
 	newMap := map[string]*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest)
@@ -62,7 +71,7 @@ func (s virtualMeshCertificateSigningRequestSet) Map() map[string]*security_smh_
 	return newMap
 }
 
-func (s virtualMeshCertificateSigningRequestSet) Insert(
+func (s *virtualMeshCertificateSigningRequestSet) Insert(
 	virtualMeshCertificateSigningRequestList ...*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest,
 ) {
 	for _, obj := range virtualMeshCertificateSigningRequestList {
@@ -70,30 +79,30 @@ func (s virtualMeshCertificateSigningRequestSet) Insert(
 	}
 }
 
-func (s virtualMeshCertificateSigningRequestSet) Has(virtualMeshCertificateSigningRequest *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) bool {
+func (s *virtualMeshCertificateSigningRequestSet) Has(virtualMeshCertificateSigningRequest *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) bool {
 	return s.set.Has(virtualMeshCertificateSigningRequest)
 }
 
-func (s virtualMeshCertificateSigningRequestSet) Equal(
+func (s *virtualMeshCertificateSigningRequestSet) Equal(
 	virtualMeshCertificateSigningRequestSet VirtualMeshCertificateSigningRequestSet,
 ) bool {
 	return s.set.Equal(makeGenericVirtualMeshCertificateSigningRequestSet(virtualMeshCertificateSigningRequestSet.List()))
 }
 
-func (s virtualMeshCertificateSigningRequestSet) Delete(VirtualMeshCertificateSigningRequest *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) {
+func (s *virtualMeshCertificateSigningRequestSet) Delete(VirtualMeshCertificateSigningRequest *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) {
 	s.set.Delete(VirtualMeshCertificateSigningRequest)
 }
 
-func (s virtualMeshCertificateSigningRequestSet) Union(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet {
+func (s *virtualMeshCertificateSigningRequestSet) Union(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet {
 	return NewVirtualMeshCertificateSigningRequestSet(append(s.List(), set.List()...)...)
 }
 
-func (s virtualMeshCertificateSigningRequestSet) Difference(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet {
+func (s *virtualMeshCertificateSigningRequestSet) Difference(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet {
 	newSet := s.set.Difference(makeGenericVirtualMeshCertificateSigningRequestSet(set.List()))
-	return virtualMeshCertificateSigningRequestSet{set: newSet}
+	return &virtualMeshCertificateSigningRequestSet{set: newSet}
 }
 
-func (s virtualMeshCertificateSigningRequestSet) Intersection(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet {
+func (s *virtualMeshCertificateSigningRequestSet) Intersection(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet {
 	newSet := s.set.Intersection(makeGenericVirtualMeshCertificateSigningRequestSet(set.List()))
 	var virtualMeshCertificateSigningRequestList []*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest
 	for _, obj := range newSet.List() {
@@ -102,11 +111,15 @@ func (s virtualMeshCertificateSigningRequestSet) Intersection(set VirtualMeshCer
 	return NewVirtualMeshCertificateSigningRequestSet(virtualMeshCertificateSigningRequestList...)
 }
 
-func (s virtualMeshCertificateSigningRequestSet) Find(id ezkube.ResourceId) (*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest, error) {
+func (s *virtualMeshCertificateSigningRequestSet) Find(id ezkube.ResourceId) (*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest, error) {
 	obj, err := s.set.Find(&security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest{}, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj.(*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest), nil
+}
+
+func (s *virtualMeshCertificateSigningRequestSet) Length() int {
+	return s.set.Length()
 }

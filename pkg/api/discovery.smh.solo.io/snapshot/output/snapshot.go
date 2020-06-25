@@ -23,8 +23,7 @@ var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.R
 	return eris.Errorf("expected label %v not on labels of %v %v", labelKey, resourceKind, sets.Key(obj))
 }
 
-// the snapshot of output resources produced by
-// the discovery translation
+// the snapshot of output resources produced by a translation
 type Snapshot interface {
 
 	// return the set of MeshServices with a given set of labels
