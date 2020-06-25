@@ -21,9 +21,10 @@ type translator struct {
 
 func NewTranslator(
 	ctx context.Context,
+	meshDetector detector.MeshDetector,
 ) Translator {
 	ctx = contextutils.WithLogger(ctx, "mesh-translator")
-	return &translator{ctx: ctx}
+	return &translator{ctx: ctx, meshDetector: meshDetector}
 }
 
 func (t *translator) TranslateMeshes(deployments appsv1sets.DeploymentSet) v1alpha1sets.MeshSet {

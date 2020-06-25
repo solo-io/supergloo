@@ -5,17 +5,18 @@ import (
 	apps_v1_controller "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
 	core_v1_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/input"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/output"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // the discovery reconciler reconciles events for watched resources
 // by performing a global discovery sync
-type DiscoveryReconcilers interface {
+type DiscoveryReconciler interface {
 	core_v1_controller.MulticlusterPodReconciler
 	core_v1_controller.MulticlusterServiceReconciler
 	core_v1_controller.MulticlusterConfigMapReconciler
@@ -25,13 +26,43 @@ type DiscoveryReconcilers interface {
 	apps_v1_controller.MulticlusterStatefulSetReconciler
 }
 
+var _ DiscoveryReconciler = &discoveryReconciler{}
+
 type discoveryReconciler struct {
-	ctx        context.Context
-	builder    input.Builder
-	translator translation.Translator
-	applier    output.Applier
+	ctx          context.Context
+	builder      input.Builder
+	translator   translation.Translator
+	masterClient client.Client
 }
 
+func Start(
+	ctx context.Context,
+	builder input.Builder,
+	translator translation.Translator,
+	masterClient client.Client,
+	clusters multicluster.ClusterWatcher,
+) {
+	d := &discoveryReconciler{
+		ctx:          ctx,
+		builder:      builder,
+		translator:   translator,
+		masterClient: masterClient,
+	}
+
+	core_v1_controller.NewMulticlusterPodReconcileLoop("Pod", clusters).AddMulticlusterPodReconciler(ctx, d)
+	core_v1_controller.NewMulticlusterServiceReconcileLoop("Service", clusters).AddMulticlusterServiceReconciler(ctx, d)
+	core_v1_controller.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters).AddMulticlusterConfigMapReconciler(ctx, d)
+	apps_v1_controller.NewMulticlusterDeploymentReconcileLoop("Deployment", clusters).AddMulticlusterDeploymentReconciler(ctx, d)
+	apps_v1_controller.NewMulticlusterReplicaSetReconcileLoop("ReplicaSet", clusters).AddMulticlusterReplicaSetReconciler(ctx, d)
+	apps_v1_controller.NewMulticlusterDaemonSetReconcileLoop("DaemonSet", clusters).AddMulticlusterDaemonSetReconciler(ctx, d)
+	apps_v1_controller.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters).AddMulticlusterStatefulSetReconciler(ctx, d)
+
+}
+
+func (d *discoveryReconciler) ReconcilePod(clusterName string, obj *corev1.Pod) (reconcile.Result, error) {
+	contextutils.LoggerFrom(d.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
+	return reconcile.Result{}, d.reconcile()
+}
 
 func (d *discoveryReconciler) ReconcileService(clusterName string, obj *corev1.Service) (reconcile.Result, error) {
 	contextutils.LoggerFrom(d.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
@@ -67,10 +98,15 @@ func (d *discoveryReconciler) ReconcileStatefulSet(clusterName string, obj *apps
 func (d *discoveryReconciler) reconcile() error {
 	inputSnap, err := d.builder.BuildSnapshot(d.ctx)
 	if err != nil {
+		// failed to read from cache; should never happen
 		return err
 	}
 
-	outputSnap := d.translator.Translate(inputSnap)
+	outputSnap, err := d.translator.Translate(d.ctx, inputSnap)
+	if err != nil {
+		// internal translator errors should never happen
+		return err
+	}
 
-	return d.applier.Apply(outputSnap)
+	return outputSnap.Apply(d.ctx, d.masterClient)
 }

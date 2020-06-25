@@ -26,6 +26,22 @@ type builder struct {
 	StatefulSets appsv1.MulticlusterStatefulSetClient
 }
 
+func NewBuilder(
+	clusters multicluster.ClusterSet,
+	client multicluster.Client,
+) *builder {
+	return &builder{
+		Clusters:     clusters,
+		Pods:         corev1.NewMulticlusterPodClient(client),
+		Services:     corev1.NewMulticlusterServiceClient(client),
+		ConfigMaps:   corev1.NewMulticlusterConfigMapClient(client),
+		Deployments:  appsv1.NewMulticlusterDeploymentClient(client),
+		ReplicaSets:  appsv1.NewMulticlusterReplicaSetClient(client),
+		DaemonSets:   appsv1.NewMulticlusterDaemonSetClient(client),
+		StatefulSets: appsv1.NewMulticlusterStatefulSetClient(client),
+	}
+}
+
 func (b *builder) BuildSnapshot(ctx context.Context) (Snapshot, error) {
 	pods := corev1sets.NewPodSet()
 	services := corev1sets.NewServiceSet()
