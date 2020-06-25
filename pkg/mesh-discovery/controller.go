@@ -2,11 +2,11 @@ package mesh_discovery
 
 import (
 	"context"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
 	"github.com/solo-io/smh/pkg/mesh-discovery/reconciler"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/input"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -80,7 +80,7 @@ func startReconciler(
 	clusters multicluster.ClusterSet,
 	mcWatcher multicluster.ClusterWatcher,
 ) {
-	snapshotBuilder := input.NewBuilder(clusters, mcClient)
+	snapshotBuilder := input.NewMultiClusterBuilder(clusters, mcClient)
 	translator := translation.NewTranslator()
 	reconciler.Start(ctx, snapshotBuilder, translator, masterClient, mcWatcher)
 }

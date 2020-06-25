@@ -5,9 +5,9 @@ import (
 	apps_v1_controller "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
 	core_v1_controller "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/input"
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -96,7 +96,7 @@ func (d *discoveryReconciler) ReconcileStatefulSet(clusterName string, obj *apps
 
 // reconcile global state
 func (d *discoveryReconciler) reconcile() error {
-	inputSnap, err := d.builder.BuildSnapshot(d.ctx)
+	inputSnap, err := d.builder.BuildSnapshot(d.ctx, "mesh-discovery")
 	if err != nil {
 		// failed to read from cache; should never happen
 		return err

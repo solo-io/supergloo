@@ -2,8 +2,8 @@ package translation
 
 import (
 	"context"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/output"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/input"
 	"github.com/solo-io/smh/pkg/mesh-discovery/utils/labelutils"
 )
 

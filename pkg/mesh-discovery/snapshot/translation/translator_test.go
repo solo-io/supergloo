@@ -7,10 +7,10 @@ import (
 	. "github.com/onsi/gomega"
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/output"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/input"
 	mock_mesh "github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/mocks"
 	mock_meshservice "github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/meshservice/mocks"
 	mock_meshworkload "github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/meshworkload/mocks"
@@ -48,18 +48,19 @@ var _ = Describe("Translator", func() {
 		t := NewTranslator().(*translator)
 		t.dependencies = mockDependencyFactory
 
-		pods := corev1sets.NewPodSet(&corev1.Pod{})
-		services := corev1sets.NewServiceSet(&corev1.Service{})
 		configMaps := corev1sets.NewConfigMapSet(&corev1.ConfigMap{})
+		services := corev1sets.NewServiceSet(&corev1.Service{})
+		pods := corev1sets.NewPodSet(&corev1.Pod{})
 		deployments := appsv1sets.NewDeploymentSet(&appsv1.Deployment{})
 		replicaSets := appsv1sets.NewReplicaSetSet(&appsv1.ReplicaSet{})
 		daemonSets := appsv1sets.NewDaemonSetSet(&appsv1.DaemonSet{})
 		statefulSets := appsv1sets.NewStatefulSetSet(&appsv1.StatefulSet{})
 
 		in := input.NewSnapshot(
-			pods,
-			services,
+			"mesh-discovery",
 			configMaps,
+			services,
+			pods,
 			deployments,
 			replicaSets,
 			daemonSets,
