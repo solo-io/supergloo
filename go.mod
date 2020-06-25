@@ -46,6 +46,7 @@ replace (
 require (
 	github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1
 	github.com/hashicorp/consul v1.6.2
+	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
 	github.com/onsi/ginkgo v1.12.0

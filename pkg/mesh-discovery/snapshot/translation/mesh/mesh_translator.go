@@ -9,6 +9,8 @@ import (
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/mesh/detector"
 )
 
+//go:generate mockgen -source ./mesh_translator.go -destination mocks/mesh_translator.go
+
 // the mesh translator converts deployments with control plane images into Mesh CRs
 type Translator interface {
 	TranslateMeshes(deployments appsv1sets.DeploymentSet) v1alpha1sets.MeshSet

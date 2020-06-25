@@ -16,6 +16,9 @@ import (
 	linkerdsidecar "github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/meshworkload/detector/linkerd"
 )
 
+// we must generate in the same package because the interface is private
+//go:generate mockgen -source ./dependencies.go -destination mock_dependencies.go -package translation
+
 // the dependencyFactory creates dependencies for the translator from a given snapshot
 // NOTE(ilackarms): private interface used here as it's not expected we'll need to
 // define our dependencyFactory anywhere else

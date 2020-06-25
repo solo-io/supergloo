@@ -7,6 +7,8 @@ import (
 	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation/meshworkload/types"
 )
 
+//go:generate mockgen -source ./meshworkload_translator.go -destination mocks/meshworkload_translator.go
+
 // the mesh-workload translator converts deployments with injected sidecars into MeshWorkload CRs
 type Translator interface {
 	TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha1sets.MeshSet) v1alpha1sets.MeshWorkloadSet
