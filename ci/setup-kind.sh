@@ -278,6 +278,9 @@ metadata:
   namespace: istio-system
 spec:
   profile: minimal
+  addonComponents:
+    istiocoredns:
+      enabled: true
   components:
     pilot:
       k8s:
