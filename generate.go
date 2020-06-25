@@ -57,6 +57,7 @@ func makeSmhCommand() codegen.Command {
 			{kind: "TrafficPolicy"},
 			{kind: "AccessControlPolicy"},
 			{kind: "VirtualMesh"},
+			{kind: "FailoverService"},
 		}),
 	}
 

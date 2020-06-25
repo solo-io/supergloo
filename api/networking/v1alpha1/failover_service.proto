@@ -3,19 +3,58 @@ package networking.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types";
 
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+import "service-mesh-hub/api/core/v1alpha1/status.proto";
 
 /*
     A service composed of the referenced workloads with failover capabilities.
     The failover order is determined by the order of the declared workloads,
     i.e. an unhealthy workloads[0] will cause failover to workloads[1], etc.
+
+    Currently this feature only supports Services backed by Istio.
 */
-message FailoverService {
+message FailoverServiceSpec {
+    message Port {
+        uint32 port = 1;
+        string name = 2;
+        string protocol = 3;
+    }
+
     // The DNS name of the failover service.
     string hostname = 1;
 
-    // The cluster that the failover service resides (the cluster name registered with Service Mesh Hub).
-    string cluster = 2;
+    // The namespace to locate the translated service.
+    string namespace = 2;
 
-    // A list of workloads ordered by decreasing priority for failover. All workloads must be part of the same VirtualMesh.
-    repeated core.smh.solo.io.ResourceRef workloads = 3;
+    // The port from which to expose this service.
+    Port port = 3;
+
+    // The cluster that the failover service resides (the cluster name registered with Service Mesh Hub).
+    string cluster = 4;
+
+    /*
+        A list of services ordered by decreasing priority for failover.
+        All services must be controlled by service meshes that are grouped under a common VirtualMesh.
+    */
+    repeated core.smh.solo.io.ResourceRef services = 5;
 }
+
+message FailoverServiceStatus {
+    message TranslatorError {
+        // ID representing a translator that translates FailoverService to Mesh-specific config.
+        string translator_id = 1;
+        string error_message = 2;
+    }
+
+    // The generation the validation_status was observed on.
+    int64 observed_generation = 1;
+
+    // Whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration.
+    core.smh.solo.io.Status translation_status = 2;
+
+    // Provides details on any translation errors that occurred. If any errors exist, this FailoverService has not been translated into mesh-specific config.
+    repeated TranslatorError translator_errors = 3;
+
+    // Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific failover configuration.
+    core.smh.solo.io.Status validation_status = 4;
+}
+

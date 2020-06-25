@@ -361,3 +361,118 @@ func (r genericVirtualMeshFinalizer) Finalize(object ezkube.Object) error {
 	}
 	return r.finalizingReconciler.FinalizeVirtualMesh(obj)
 }
+
+// Reconcile Upsert events for the FailoverService Resource.
+// implemented by the user
+type FailoverServiceReconciler interface {
+	ReconcileFailoverService(obj *networking_smh_solo_io_v1alpha1.FailoverService) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the FailoverService Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type FailoverServiceDeletionReconciler interface {
+	ReconcileFailoverServiceDeletion(req reconcile.Request)
+}
+
+type FailoverServiceReconcilerFuncs struct {
+	OnReconcileFailoverService         func(obj *networking_smh_solo_io_v1alpha1.FailoverService) (reconcile.Result, error)
+	OnReconcileFailoverServiceDeletion func(req reconcile.Request)
+}
+
+func (f *FailoverServiceReconcilerFuncs) ReconcileFailoverService(obj *networking_smh_solo_io_v1alpha1.FailoverService) (reconcile.Result, error) {
+	if f.OnReconcileFailoverService == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileFailoverService(obj)
+}
+
+func (f *FailoverServiceReconcilerFuncs) ReconcileFailoverServiceDeletion(req reconcile.Request) {
+	if f.OnReconcileFailoverServiceDeletion == nil {
+		return
+	}
+	f.OnReconcileFailoverServiceDeletion(req)
+}
+
+// Reconcile and finalize the FailoverService Resource
+// implemented by the user
+type FailoverServiceFinalizer interface {
+	FailoverServiceReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	FailoverServiceFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeFailoverService(obj *networking_smh_solo_io_v1alpha1.FailoverService) error
+}
+
+type FailoverServiceReconcileLoop interface {
+	RunFailoverServiceReconciler(ctx context.Context, rec FailoverServiceReconciler, predicates ...predicate.Predicate) error
+}
+
+type failoverServiceReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewFailoverServiceReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) FailoverServiceReconcileLoop {
+	return &failoverServiceReconcileLoop{
+		loop: reconcile.NewLoop(name, mgr, &networking_smh_solo_io_v1alpha1.FailoverService{}, options),
+	}
+}
+
+func (c *failoverServiceReconcileLoop) RunFailoverServiceReconciler(ctx context.Context, reconciler FailoverServiceReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericFailoverServiceReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(FailoverServiceFinalizer); ok {
+		reconcilerWrapper = genericFailoverServiceFinalizer{
+			genericFailoverServiceReconciler: genericReconciler,
+			finalizingReconciler:             finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericFailoverServiceHandler implements a generic reconcile.Reconciler
+type genericFailoverServiceReconciler struct {
+	reconciler FailoverServiceReconciler
+}
+
+func (r genericFailoverServiceReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha1.FailoverService)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: FailoverService handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileFailoverService(obj)
+}
+
+func (r genericFailoverServiceReconciler) ReconcileDeletion(request reconcile.Request) {
+	if deletionReconciler, ok := r.reconciler.(FailoverServiceDeletionReconciler); ok {
+		deletionReconciler.ReconcileFailoverServiceDeletion(request)
+	}
+}
+
+// genericFailoverServiceFinalizer implements a generic reconcile.FinalizingReconciler
+type genericFailoverServiceFinalizer struct {
+	genericFailoverServiceReconciler
+	finalizingReconciler FailoverServiceFinalizer
+}
+
+func (r genericFailoverServiceFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.FailoverServiceFinalizerName()
+}
+
+func (r genericFailoverServiceFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha1.FailoverService)
+	if !ok {
+		return errors.Errorf("internal error: FailoverService handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeFailoverService(obj)
+}

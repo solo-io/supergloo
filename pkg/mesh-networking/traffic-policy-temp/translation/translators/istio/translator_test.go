@@ -27,8 +27,8 @@ import (
 var _ = Describe("Istio Traffic Policy Translator", func() {
 	var (
 		translator mesh_translation.IstioTranslator
-
-		istioMesh = &smh_discovery.Mesh{
+		ctx        = context.TODO()
+		istioMesh  = &smh_discovery.Mesh{
 			Spec: smh_discovery_types.MeshSpec{
 				MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
 					Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{},
@@ -63,7 +63,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 			var snapshotInProgress snapshot.TranslatedSnapshot
-			err := translator.AccumulateFromTranslation(context.Background(), &snapshotInProgress, serviceBeingTranslated, nil, notIstioMesh)
+			err := translator.AccumulateFromTranslation(ctx, &snapshotInProgress, serviceBeingTranslated, nil, notIstioMesh)
 
 			Expect(err).NotTo(HaveOccurred())
 		})
@@ -88,7 +88,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(context.Background(),
+			result, errs := translator.Translate(ctx,
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -139,7 +139,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(context.Background(),
+			result, errs := translator.Translate(ctx,
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -200,7 +200,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						},
 					}
 
-					result, errs := translator.Translate(context.Background(),
+					result, errs := translator.Translate(ctx,
 						serviceBeingTranslated,
 						[]*smh_discovery.MeshService{serviceBeingTranslated},
 						istioMesh,
@@ -250,7 +250,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 						},
 					}
 
-					result, errs := translator.Translate(context.Background(),
+					result, errs := translator.Translate(ctx,
 						serviceBeingTranslated,
 						[]*smh_discovery.MeshService{serviceBeingTranslated},
 						istioMesh,
@@ -302,7 +302,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(context.Background(),
+			result, errs := translator.Translate(ctx,
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -372,7 +372,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(context.Background(),
+			result, errs := translator.Translate(ctx,
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -444,7 +444,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(context.Background(),
+			result, errs := translator.Translate(ctx,
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -551,7 +551,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					}
 					allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
 
-					result, errs := translator.Translate(context.Background(),
+					result, errs := translator.Translate(ctx,
 						serviceBeingTranslated,
 						allServices,
 						istioMesh,
@@ -658,7 +658,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					}
 					allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
 
-					result, errs := translator.Translate(context.Background(),
+					result, errs := translator.Translate(ctx,
 						serviceBeingTranslated,
 						allServices,
 						istioMesh,
@@ -731,7 +731,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(context.Background(),
+			result, errs := translator.Translate(ctx,
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -795,7 +795,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(context.Background(),
+			result, errs := translator.Translate(ctx,
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -876,7 +876,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(context.Background(),
+			result, errs := translator.Translate(ctx,
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -971,7 +971,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(context.Background(),
+			result, errs := translator.Translate(ctx,
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -1091,7 +1091,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					},
 				}
 				allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
-				result, errs := translator.Translate(context.Background(),
+				result, errs := translator.Translate(ctx,
 					serviceBeingTranslated,
 					allServices,
 					istioMesh,
@@ -1201,7 +1201,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				}
 				allServices := []*smh_discovery.MeshService{serviceBeingTranslated, otherService}
 
-				result, errs := translator.Translate(context.Background(),
+				result, errs := translator.Translate(ctx,
 					serviceBeingTranslated,
 					allServices,
 					istioMesh,
@@ -1261,6 +1261,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 			result, errs := translator.Translate(
+				ctx,
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -1386,7 +1387,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				},
 			}
 
-			result, errs := translator.Translate(context.Background(),
+			result, errs := translator.Translate(ctx,
 				serviceBeingTranslated,
 				[]*smh_discovery.MeshService{serviceBeingTranslated},
 				istioMesh,
@@ -1482,7 +1483,7 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 			for _, data := range test_utils.GetData() {
 				By("testing " + data)
 				serviceBeingTranslated, drs, vs := getMeshService(data)
-				result, errs := translator.Translate(context.Background(),
+				result, errs := translator.Translate(ctx,
 					serviceBeingTranslated[0],
 					serviceBeingTranslated,
 					istioMesh,

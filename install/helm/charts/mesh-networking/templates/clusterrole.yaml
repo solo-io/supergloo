@@ -5,7 +5,15 @@ metadata:
   name: mesh-networking-clusterrole
 rules:
   - apiGroups: ["networking.smh.solo.io"]
-    resources: ["virtualmeshes", "virtualmeshes/status", "trafficpolicies", "trafficpolicies/status", "accesscontrolpolicies", "accesscontrolpolicies/status"]
+    resources:
+      - "virtualmeshes"
+      - "virtualmeshes/status"
+      - "trafficpolicies"
+      - "trafficpolicies/status"
+      - "accesscontrolpolicies"
+      - "accesscontrolpolicies/status"
+      - "failoverservice"
+      - "failoverservice/status"
     verbs: ["*"]
   - apiGroups: ["discovery.smh.solo.io"]
     resources: ["meshes", "meshworkloads","meshworkloads/status", "meshservices","meshservices/status"]

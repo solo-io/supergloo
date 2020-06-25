@@ -45,6 +45,8 @@ type Clientset interface {
 	AccessControlPolicies() AccessControlPolicyClient
 	// clienset for the networking.smh.solo.io/v1alpha1/v1alpha1 APIs
 	VirtualMeshes() VirtualMeshClient
+	// clienset for the networking.smh.solo.io/v1alpha1/v1alpha1 APIs
+	FailoverServices() FailoverServiceClient
 }
 
 type clientSet struct {
@@ -82,6 +84,11 @@ func (c *clientSet) AccessControlPolicies() AccessControlPolicyClient {
 // clienset for the networking.smh.solo.io/v1alpha1/v1alpha1 APIs
 func (c *clientSet) VirtualMeshes() VirtualMeshClient {
 	return NewVirtualMeshClient(c.client)
+}
+
+// clienset for the networking.smh.solo.io/v1alpha1/v1alpha1 APIs
+func (c *clientSet) FailoverServices() FailoverServiceClient {
+	return NewFailoverServiceClient(c.client)
 }
 
 // Reader knows how to read and list TrafficPolicys.
@@ -441,5 +448,125 @@ func (c *virtualMeshClient) UpdateVirtualMeshStatus(ctx context.Context, obj *Vi
 }
 
 func (c *virtualMeshClient) PatchVirtualMeshStatus(ctx context.Context, obj *VirtualMesh, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Reader knows how to read and list FailoverServices.
+type FailoverServiceReader interface {
+	// Get retrieves a FailoverService for the given object key
+	GetFailoverService(ctx context.Context, key client.ObjectKey) (*FailoverService, error)
+
+	// List retrieves list of FailoverServices for a given namespace and list options.
+	ListFailoverService(ctx context.Context, opts ...client.ListOption) (*FailoverServiceList, error)
+}
+
+// FailoverServiceTransitionFunction instructs the FailoverServiceWriter how to transition between an existing
+// FailoverService object and a desired on an Upsert
+type FailoverServiceTransitionFunction func(existing, desired *FailoverService) error
+
+// Writer knows how to create, delete, and update FailoverServices.
+type FailoverServiceWriter interface {
+	// Create saves the FailoverService object.
+	CreateFailoverService(ctx context.Context, obj *FailoverService, opts ...client.CreateOption) error
+
+	// Delete deletes the FailoverService object.
+	DeleteFailoverService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given FailoverService object.
+	UpdateFailoverService(ctx context.Context, obj *FailoverService, opts ...client.UpdateOption) error
+
+	// Patch patches the given FailoverService object.
+	PatchFailoverService(ctx context.Context, obj *FailoverService, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all FailoverService objects matching the given options.
+	DeleteAllOfFailoverService(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the FailoverService object.
+	UpsertFailoverService(ctx context.Context, obj *FailoverService, transitionFuncs ...FailoverServiceTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a FailoverService object.
+type FailoverServiceStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given FailoverService object.
+	UpdateFailoverServiceStatus(ctx context.Context, obj *FailoverService, opts ...client.UpdateOption) error
+
+	// Patch patches the given FailoverService object's subresource.
+	PatchFailoverServiceStatus(ctx context.Context, obj *FailoverService, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on FailoverServices.
+type FailoverServiceClient interface {
+	FailoverServiceReader
+	FailoverServiceWriter
+	FailoverServiceStatusWriter
+}
+
+type failoverServiceClient struct {
+	client client.Client
+}
+
+func NewFailoverServiceClient(client client.Client) *failoverServiceClient {
+	return &failoverServiceClient{client: client}
+}
+
+func (c *failoverServiceClient) GetFailoverService(ctx context.Context, key client.ObjectKey) (*FailoverService, error) {
+	obj := &FailoverService{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *failoverServiceClient) ListFailoverService(ctx context.Context, opts ...client.ListOption) (*FailoverServiceList, error) {
+	list := &FailoverServiceList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *failoverServiceClient) CreateFailoverService(ctx context.Context, obj *FailoverService, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *failoverServiceClient) DeleteFailoverService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &FailoverService{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *failoverServiceClient) UpdateFailoverService(ctx context.Context, obj *FailoverService, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *failoverServiceClient) PatchFailoverService(ctx context.Context, obj *FailoverService, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *failoverServiceClient) DeleteAllOfFailoverService(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &FailoverService{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *failoverServiceClient) UpsertFailoverService(ctx context.Context, obj *FailoverService, transitionFuncs ...FailoverServiceTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*FailoverService), desired.(*FailoverService)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *failoverServiceClient) UpdateFailoverServiceStatus(ctx context.Context, obj *FailoverService, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *failoverServiceClient) PatchFailoverServiceStatus(ctx context.Context, obj *FailoverService, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }

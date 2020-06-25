@@ -18,14 +18,47 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// MarshalJSON is a custom marshaler for FailoverService
-func (this *FailoverService) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for FailoverServiceSpec
+func (this *FailoverServiceSpec) MarshalJSON() ([]byte, error) {
 	str, err := FailoverServiceMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for FailoverService
-func (this *FailoverService) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for FailoverServiceSpec
+func (this *FailoverServiceSpec) UnmarshalJSON(b []byte) error {
+	return FailoverServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for FailoverServiceSpec_Port
+func (this *FailoverServiceSpec_Port) MarshalJSON() ([]byte, error) {
+	str, err := FailoverServiceMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for FailoverServiceSpec_Port
+func (this *FailoverServiceSpec_Port) UnmarshalJSON(b []byte) error {
+	return FailoverServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for FailoverServiceStatus
+func (this *FailoverServiceStatus) MarshalJSON() ([]byte, error) {
+	str, err := FailoverServiceMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for FailoverServiceStatus
+func (this *FailoverServiceStatus) UnmarshalJSON(b []byte) error {
+	return FailoverServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for FailoverServiceStatus_TranslatorError
+func (this *FailoverServiceStatus_TranslatorError) MarshalJSON() ([]byte, error) {
+	str, err := FailoverServiceMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for FailoverServiceStatus_TranslatorError
+func (this *FailoverServiceStatus_TranslatorError) UnmarshalJSON(b []byte) error {
 	return FailoverServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
