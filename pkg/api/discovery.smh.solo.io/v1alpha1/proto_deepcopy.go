@@ -8,12 +8,6 @@ import (
 	proto "github.com/gogo/protobuf/proto"
 )
 
-// DeepCopyInto for the KubernetesCluster.Spec
-func (in *KubernetesClusterSpec) DeepCopyInto(out *KubernetesClusterSpec) {
-	p := proto.Clone(in).(*KubernetesClusterSpec)
-	*out = *p
-}
-
 // DeepCopyInto for the MeshService.Spec
 func (in *MeshServiceSpec) DeepCopyInto(out *MeshServiceSpec) {
 	p := proto.Clone(in).(*MeshServiceSpec)

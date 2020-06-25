@@ -8,62 +8,6 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-// Generated Deepcopy methods for KubernetesCluster
-
-func (in *KubernetesCluster) DeepCopyInto(out *KubernetesCluster) {
-	*out = *in
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	in.Spec.DeepCopyInto(&out.Spec)
-	return
-}
-
-func (in *KubernetesCluster) DeepCopy() *KubernetesCluster {
-	if in == nil {
-		return nil
-	}
-	out := new(KubernetesCluster)
-	in.DeepCopyInto(out)
-	return out
-}
-
-func (in *KubernetesCluster) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopy(); c != nil {
-		return c
-	}
-	return nil
-}
-
-func (in *KubernetesClusterList) DeepCopyInto(out *KubernetesClusterList) {
-	*out = *in
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	if in.Items != nil {
-		in, out := &in.Items, &out.Items
-		*out = make([]KubernetesCluster, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
-	}
-	return
-}
-
-func (in *KubernetesClusterList) DeepCopy() *KubernetesClusterList {
-	if in == nil {
-		return nil
-	}
-	out := new(KubernetesClusterList)
-	in.DeepCopyInto(out)
-	return out
-}
-
-func (in *KubernetesClusterList) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopy(); c != nil {
-		return c
-	}
-	return nil
-}
-
 // Generated Deepcopy methods for MeshService
 
 func (in *MeshService) DeepCopyInto(out *MeshService) {

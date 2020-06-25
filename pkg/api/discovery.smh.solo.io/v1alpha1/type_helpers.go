@@ -3,9 +3,6 @@
 // Definitions for the Kubernetes types
 package v1alpha1
 
-// KubernetesClusterSlice represents a slice of *KubernetesCluster
-type KubernetesClusterSlice []*KubernetesCluster
-
 // MeshServiceSlice represents a slice of *MeshService
 type MeshServiceSlice []*MeshService
 

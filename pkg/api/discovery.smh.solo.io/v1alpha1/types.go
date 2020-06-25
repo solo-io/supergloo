@@ -10,28 +10,6 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
-// +genclient:noStatus
-
-// KubernetesCluster is the Schema for the kubernetesCluster API
-type KubernetesCluster struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec KubernetesClusterSpec `json:"spec,omitempty"`
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// KubernetesClusterList contains a list of KubernetesCluster
-type KubernetesClusterList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []KubernetesCluster `json:"items"`
-}
-
-// +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
 // MeshService is the Schema for the meshService API
@@ -99,7 +77,6 @@ type MeshList struct {
 }
 
 func init() {
-	SchemeBuilder.Register(&KubernetesCluster{}, &KubernetesClusterList{})
 	SchemeBuilder.Register(&MeshService{}, &MeshServiceList{})
 	SchemeBuilder.Register(&MeshWorkload{}, &MeshWorkloadList{})
 	SchemeBuilder.Register(&Mesh{}, &MeshList{})

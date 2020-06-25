@@ -17,34 +17,6 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
-// Provider for KubernetesClusterClient from Clientset
-func KubernetesClusterClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha1.Clientset) discovery_smh_solo_io_v1alpha1.KubernetesClusterClient {
-	return clients.KubernetesClusters()
-}
-
-// Provider for KubernetesCluster Client from Client
-func KubernetesClusterClientProvider(client client.Client) discovery_smh_solo_io_v1alpha1.KubernetesClusterClient {
-	return discovery_smh_solo_io_v1alpha1.NewKubernetesClusterClient(client)
-}
-
-type KubernetesClusterClientFactory func(client client.Client) discovery_smh_solo_io_v1alpha1.KubernetesClusterClient
-
-func KubernetesClusterClientFactoryProvider() KubernetesClusterClientFactory {
-	return KubernetesClusterClientProvider
-}
-
-type KubernetesClusterClientFromConfigFactory func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha1.KubernetesClusterClient, error)
-
-func KubernetesClusterClientFromConfigFactoryProvider() KubernetesClusterClientFromConfigFactory {
-	return func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha1.KubernetesClusterClient, error) {
-		clients, err := discovery_smh_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.KubernetesClusters(), nil
-	}
-}
-
 // Provider for MeshServiceClient from Clientset
 func MeshServiceClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha1.Clientset) discovery_smh_solo_io_v1alpha1.MeshServiceClient {
 	return clients.MeshServices()
