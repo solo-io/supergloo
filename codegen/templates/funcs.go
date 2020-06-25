@@ -1,8 +1,6 @@
 package templates
 
 import (
-	"io/ioutil"
-	"log"
 	"strings"
 	"text/template"
 
@@ -10,35 +8,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-const outputSnapshotTemplatePath = "codegen/templates/output_snapshot.gotmpl"
-
-var OutputSnapshotTemplateContents = func() string {
-	b, err := ioutil.ReadFile(outputSnapshotTemplatePath)
-	if err != nil {
-		log.Fatalf("failed to read file %v", err)
-	}
-	return string(b)
-}()
-
-const inputSnapshotTemplatePath = "codegen/templates/input_snapshot.gotmpl"
-
-var InputSnapshotTemplateContents = func() string {
-	b, err := ioutil.ReadFile(inputSnapshotTemplatePath)
-	if err != nil {
-		log.Fatalf("failed to read file %v", err)
-	}
-	return string(b)
-}()
-
-type ImportedGroup struct {
+type importedGroup struct {
 	model.Group
 	GoModule string // the module where the group is defined, if it differs from the group module itself. e.g. for external type imports such as k8s.io/api
 }
 
 // make the custom template funcs
-func MakeSnapshotFuncs(importedGroups []ImportedGroup) template.FuncMap {
+func MakeSnapshotFuncs(importedGroups []importedGroup) template.FuncMap {
 	var groups []model.Group
-	groupImports := map[schema.GroupVersion]ImportedGroup{}
+	groupImports := map[schema.GroupVersion]importedGroup{}
 
 	for _, grp := range importedGroups {
 		groups = append(groups, grp.Group)
@@ -61,11 +39,18 @@ func MakeSnapshotFuncs(importedGroups []ImportedGroup) template.FuncMap {
 			}
 			return clientImportPath(grp) + "/sets"
 		},
+		"controller_import_path": func(group model.Group) string {
+			grp, ok := groupImports[group.GroupVersion]
+			if !ok {
+				panic("group not found " + grp.String())
+			}
+			return clientImportPath(grp) + "/controller"
+		},
 	}
 }
 
 // gets the go package for an imported group's clients
-func clientImportPath(grp ImportedGroup) string {
+func clientImportPath(grp importedGroup) string {
 
 	grp.ApiRoot = strings.Trim(grp.ApiRoot, "/")
 
@@ -88,9 +73,9 @@ func clientImportPath(grp ImportedGroup) string {
 	return s
 }
 
-// pass empty string if clients + sets live in the same go module as the type definitions
-func SelectResources(module string, groups []model.Group, resourcesToSelect map[schema.GroupVersion][]string) []ImportedGroup {
-	var selectedResources []ImportedGroup
+// pass empty string if clients live in the same go module as the type definitions
+func SelectResources(clientModule string, groups []model.Group, resourcesToSelect map[schema.GroupVersion][]string) []importedGroup {
+	var selectedResources []importedGroup
 	for _, group := range groups {
 		resources := resourcesToSelect[group.GroupVersion]
 		if len(resources) == 0 {
@@ -115,9 +100,9 @@ func SelectResources(module string, groups []model.Group, resourcesToSelect map[
 			filteredGroup.Resources = append(filteredGroup.Resources, resource)
 		}
 
-		selectedResources = append(selectedResources, ImportedGroup{
+		selectedResources = append(selectedResources, importedGroup{
 			Group:    filteredGroup,
-			GoModule: module,
+			GoModule: clientModule,
 		})
 	}
 

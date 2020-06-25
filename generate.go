@@ -17,16 +17,18 @@ import (
 )
 
 var (
-	appName                         = "service-mesh-hub"
-	
-	discoveryInputSnapshotCodePath = "pkg/api/discovery.smh.solo.io/snapshot/input/snapshot.go"
-	discoveryOutputSnapshotCodePath = "pkg/api/discovery.smh.solo.io/snapshot/output/snapshot.go"
-	
-	networkingInputSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/input/snapshot.go"
-	networkingOutputSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/output/snapshot.go"
-	
-	smhCrdManifestRoot              = "install/helm/charts/custom-resource-definitions"
-	csrCrdManifestRoot              = "install/helm/charts/csr-agent/"
+	appName = "service-mesh-hub"
+
+	discoveryInputSnapshotCodePath      = "pkg/api/discovery.smh.solo.io/snapshot/input/snapshot.go"
+	discoveryReconcilerSnapshotCodePath = "pkg/api/discovery.smh.solo.io/snapshot/input/reconciler.go"
+	discoveryOutputSnapshotCodePath     = "pkg/api/discovery.smh.solo.io/snapshot/output/snapshot.go"
+
+	networkingInputSnapshotCodePath      = "pkg/api/networking.smh.solo.io/snapshot/input/snapshot.go"
+	networkingReconcilerSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/input/reconciler.go"
+	networkingOutputSnapshotCodePath     = "pkg/api/networking.smh.solo.io/snapshot/output/snapshot.go"
+
+	smhCrdManifestRoot = "install/helm/charts/custom-resource-definitions"
+	csrCrdManifestRoot = "install/helm/charts/csr-agent/"
 
 	inputDiscoverySnapshot = map[schema.GroupVersion][]string{
 		corev1.SchemeGroupVersion: {
@@ -136,7 +138,8 @@ func makeDiscoveryInputSnapshotTemplate() model.CustomTemplates {
 
 	return model.CustomTemplates{
 		Templates: map[string]string{
-			discoveryInputSnapshotCodePath: templates.InputSnapshotTemplateContents,
+			discoveryInputSnapshotCodePath:      templates.InputSnapshotTemplateContents,
+			discoveryReconcilerSnapshotCodePath: templates.ReconcilerTemplateContents,
 		},
 		Funcs: templates.MakeSnapshotFuncs(inputGroups),
 	}
@@ -158,7 +161,8 @@ func makeNetworkingInputSnapshotTemplate() model.CustomTemplates {
 
 	return model.CustomTemplates{
 		Templates: map[string]string{
-			networkingInputSnapshotCodePath: templates.InputSnapshotTemplateContents,
+			networkingInputSnapshotCodePath:      templates.InputSnapshotTemplateContents,
+			networkingReconcilerSnapshotCodePath: templates.ReconcilerTemplateContents,
 		},
 		Funcs: templates.MakeSnapshotFuncs(inputGroups),
 	}
