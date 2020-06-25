@@ -14,7 +14,7 @@ import (
 
 var (
 	appName                         = "service-mesh-hub"
-	discoveryOutputSnapshotCodePath = "pkg/mesh-discovery/snapshots/output/output_snapshot.go"
+	discoveryOutputSnapshotCodePath = "pkg/api/discovery.smh.solo.io/snapshot/output/output_snapshot.go"
 	smhCrdManifestRoot              = "install/helm/charts/custom-resource-definitions"
 	csrCrdManifestRoot              = "install/helm/charts/csr-agent/"
 

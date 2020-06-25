@@ -38,6 +38,7 @@ require (
 	github.com/onsi/gomega v1.8.1
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.2.1
 	github.com/pseudomuto/protoc-gen-doc v1.3.2
 	github.com/pseudomuto/protokit v0.2.0
 	github.com/rotisserie/eris v0.2.0
@@ -72,7 +73,6 @@ require (
 )
 
 replace (
-
 	// github.com/Azure/go-autorest/autorest has different versions for the Go
 	// modules than it does for releases on the repository. Note the correct
 	// version when updating.

@@ -62,7 +62,7 @@ func (m *MeshWorkloadSpec) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MeshWorkloadSpec proto.InternalMessageInfo
 
-func (m *MeshWorkloadSpec) GetKubeController() *MeshWorkloadSpec_KubeController {
+func (m *MeshWorkloadSpec) GetKubernetes() *MeshWorkloadSpec_KubeController {
 	if m != nil {
 		return m.KubeController
 	}
@@ -223,7 +223,7 @@ func (m *MeshWorkloadSpec_KubeController) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MeshWorkloadSpec_KubeController proto.InternalMessageInfo
 
-func (m *MeshWorkloadSpec_KubeController) GetKubeControllerRef() *types.ResourceRef {
+func (m *MeshWorkloadSpec_KubeController) GetController() *types.ResourceRef {
 	if m != nil {
 		return m.KubeControllerRef
 	}
