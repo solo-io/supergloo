@@ -278,9 +278,6 @@ metadata:
   namespace: istio-system
 spec:
   profile: minimal
-  addonComponents:
-    istiocoredns:
-      enabled: true
   components:
     pilot:
       k8s:
@@ -437,11 +434,11 @@ kubectl --context kind-$remoteCluster apply -f ./ci/bookinfo.yaml -l 'app=rating
 kubectl --context kind-$remoteCluster apply -f ./ci/bookinfo.yaml -l 'account=ratings'
 
 # wait for deployments to finish
-kubectl --context kind-$managementPlane rollout status deployment/productpage-v1
-kubectl --context kind-$managementPlane rollout status deployment/reviews-v1
-kubectl --context kind-$managementPlane rollout status deployment/reviews-v2
+kubectl --context kind-$managementPlane rollout status deployment/productpage-v1 --timeout=15m
+kubectl --context kind-$managementPlane rollout status deployment/reviews-v1 --timeout=15m
+kubectl --context kind-$managementPlane rollout status deployment/reviews-v2 --timeout=15m
 
-kubectl --context kind-$remoteCluster rollout status deployment/reviews-v3
+kubectl --context kind-$remoteCluster rollout status deployment/reviews-v3 --timeout=15m
 
 echo '>>> Waiting for MeshWorkloads to be created'
 retries=50
