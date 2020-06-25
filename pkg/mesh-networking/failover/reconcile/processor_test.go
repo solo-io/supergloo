@@ -136,7 +136,11 @@ var _ = Describe("Processor", func() {
 		outputSnapshot := processor.Process(ctx, inputSnapshot)
 		Expect(outputSnapshot.MeshOutputs.ServiceEntries).To(Equal(expectedServiceEntries))
 		Expect(outputSnapshot.MeshOutputs.EnvoyFilters).To(Equal(expectedEnvoyFilters))
-		Expect(outputSnapshot.FailoverServices).To(Equal([]*v1alpha1.FailoverService{&expectedOutputFailoverService}))
+		Expect(outputSnapshot.FailoverServices).To(Equal([]*v1alpha1.FailoverService{
+			inputSnapshot.FailoverServices[0],
+			inputSnapshot.FailoverServices[1],
+			&expectedOutputFailoverService,
+		}))
 	})
 
 	It("should process input snapshot with errors", func() {
@@ -158,6 +162,10 @@ var _ = Describe("Processor", func() {
 		outputSnapshot := processor.Process(ctx, inputSnapshot)
 		Expect(outputSnapshot.MeshOutputs.ServiceEntries).To(BeEmpty())
 		Expect(outputSnapshot.MeshOutputs.EnvoyFilters).To(BeEmpty())
-		Expect(outputSnapshot.FailoverServices).To(Equal([]*v1alpha1.FailoverService{&expectedOutputFailoverService}))
+		Expect(outputSnapshot.FailoverServices).To(Equal([]*v1alpha1.FailoverService{
+			inputSnapshot.FailoverServices[0],
+			inputSnapshot.FailoverServices[1],
+			&expectedOutputFailoverService,
+		}))
 	})
 })

@@ -24,8 +24,8 @@ var (
 	InvalidPercentageError = func(pct float64) error {
 		return eris.Errorf("Percentage must be between 0.0 and 100.0 inclusive, got %f", pct)
 	}
-	DestinationNotFound = func(ref *smh_core_types.ResourceRef) error {
-		return eris.Errorf("No destinations found with ref %s.%s.%s", ref.Name, ref.Namespace, ref.Cluster)
+	ServiceNotFound = func(ref *smh_core_types.ResourceRef) error {
+		return eris.Errorf("No services found with ref %s.%s.%s", ref.Name, ref.Namespace, ref.Cluster)
 	}
 	SubsetSelectorNotFound = func(meshService *smh_discovery.MeshService, subsetKey string, subsetValue string) error {
 		return eris.Errorf("Subset selector with key: %s, value: %s not found on k8s service of name: %s, namespace: %s",
@@ -50,8 +50,8 @@ type validator struct {
 
 func (v *validator) ValidateTrafficPolicy(trafficPolicy *smh_networking.TrafficPolicy, allMeshServices []*smh_discovery.MeshService) (*smh_core_types.Status, error) {
 	var multiErr *multierror.Error
-	if err := v.validateDestination(allMeshServices, trafficPolicy.Spec.GetDestinationSelector()); err != nil {
-		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in Destination"))
+	if multierr := v.validateDestination(allMeshServices, trafficPolicy.Spec.GetDestinationSelector()); multierr.ErrorOrNil() != nil {
+		multiErr = multierror.Append(multiErr, multierr.Errors...)
 	}
 	if err := v.validateTrafficShift(allMeshServices, trafficPolicy.Spec.GetTrafficShift()); err != nil {
 		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in TrafficShift"))
@@ -87,15 +87,20 @@ func (v *validator) ValidateTrafficPolicy(trafficPolicy *smh_networking.TrafficP
 	}
 }
 
-func (v *validator) validateDestination(allServices []*smh_discovery.MeshService, selector *smh_core_types.ServiceSelector) error {
-	if selector == nil {
+// Can only validate destinations declared by reference.
+func (v *validator) validateDestination(allServices []*smh_discovery.MeshService, selector *smh_core_types.ServiceSelector) *multierror.Error {
+	if selector == nil || selector.GetServiceRefs() == nil {
 		return nil
 	}
-	_, err := v.resourceSelector.FilterMeshServicesByServiceSelector(allServices, selector)
-	if err != nil {
-		return err
+	var multierr *multierror.Error
+	for _, serviceRef := range selector.GetServiceRefs().GetServices() {
+		if svc := v.resourceSelector.FindMeshServiceByRefSelector(
+			allServices,
+			serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()); svc == nil {
+			multierr = multierror.Append(multierr, ServiceNotFound(serviceRef))
+		}
 	}
-	return nil
+	return multierr
 }
 
 // Validate that the TrafficShift destination k8s Service exist
@@ -227,7 +232,7 @@ func (v *validator) validateKubeService(
 	meshService := v.resourceSelector.FindMeshServiceByRefSelector(services, ref.GetName(), ref.GetNamespace(), ref.GetCluster())
 
 	if meshService == nil {
-		return nil, DestinationNotFound(ref)
+		return nil, ServiceNotFound(ref)
 	}
 	return meshService, nil
 }

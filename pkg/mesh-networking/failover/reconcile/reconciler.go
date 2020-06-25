@@ -254,6 +254,9 @@ func (f *failoverServiceReconciler) ensureEnvoyFilters(
 
 func (f *failoverServiceReconciler) addScopeLabels(obj v1.Object) {
 	labels := obj.GetLabels()
+	if labels == nil {
+		labels = map[string]string{}
+	}
 	for k, v := range FailoverServiceLabels {
 		labels[k] = v
 	}
