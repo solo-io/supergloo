@@ -8,6 +8,7 @@ import (
 	"github.com/rotisserie/eris"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v1alpha1sets2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/sets"
@@ -161,7 +162,7 @@ func (f *failoverServiceValidator) validateServices(
 			serviceParentMeshPairs = append(serviceParentMeshPairs, serviceParentMeshPair)
 		}
 	}
-	if err := f.validateCommonVirtualMesh(serviceParentMeshPairs, virtualMeshes); err != nil {
+	if err := f.validateFederation(serviceParentMeshPairs, virtualMeshes); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 	return multierr.ErrorOrNil()
@@ -200,8 +201,7 @@ func (f *failoverServiceValidator) validateParentMesh(
 	// Validate that mesh exists
 	for _, mesh := range allMeshes {
 		if meshRef.GetName() == mesh.GetName() &&
-			meshRef.GetNamespace() == mesh.GetNamespace() &&
-			meshRef.GetCluster() == mesh.Spec.GetCluster().GetName() {
+			meshRef.GetNamespace() == mesh.GetNamespace() {
 			parentMesh = mesh
 			break
 		}
@@ -223,15 +223,19 @@ func (f *failoverServiceValidator) validateParentMesh(
 }
 
 // TODO(harveyxia) Federation should update Mesh status with VirtualMesh ref
-func (f *failoverServiceValidator) validateCommonVirtualMesh(
+// Return error if services are in separate and non-federated meshes
+func (f *failoverServiceValidator) validateFederation(
 	serviceParentMeshPairs []serviceMeshPair,
 	virtualMeshes []*smh_networking.VirtualMesh,
 ) error {
+	var missingParentVMErrors []error
 	var multierr *multierror.Error
+	parentMeshes := v1alpha1sets2.NewMeshSet()
 	parentVMs := v1alpha1sets.NewVirtualMeshSet()
 	// Fetch all parent VirtualMeshes
 	for _, serviceParentMeshPair := range serviceParentMeshPairs {
 		parentMesh := serviceParentMeshPair.mesh
+		parentMeshes.Insert(parentMesh)
 		var parentVM *smh_networking.VirtualMesh
 		for _, vm := range virtualMeshes {
 			for _, meshRef := range vm.Spec.GetMeshes() {
@@ -245,14 +249,20 @@ func (f *failoverServiceValidator) validateCommonVirtualMesh(
 			}
 		}
 		if parentVM == nil {
-			multierr = multierror.Append(multierr, ServiceWithoutParentVM(serviceParentMeshPair.serviceRef, serviceParentMeshPair.mesh))
+			missingParentVMErrors = append(missingParentVMErrors, ServiceWithoutParentVM(serviceParentMeshPair.serviceRef, serviceParentMeshPair.mesh))
 		} else {
 			parentVMs.Insert(parentVM)
 		}
 	}
-	// Validate that there's only a single common parent VirtualMesh
-	if len(parentVMs.List()) > 1 {
-		multierr = multierror.Append(multierr, MultipleParentVirtualMeshes(parentVMs.List()))
+	// Validate that there's only one common parent mesh, else that there's only a single common parent VirtualMesh
+	if len(parentMeshes.List()) > 1 {
+		// Surface meshes with parent meshes as errors
+		for _, err := range missingParentVMErrors {
+			multierr = multierror.Append(multierr, err)
+		}
+		if len(parentVMs.List()) > 1 {
+			multierr = multierror.Append(multierr, MultipleParentVirtualMeshes(parentVMs.List()))
+		}
 	}
 	return multierr.ErrorOrNil()
 }

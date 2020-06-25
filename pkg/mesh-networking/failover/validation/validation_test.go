@@ -152,6 +152,91 @@ var _ = Describe("Validation", func() {
 		}
 	}
 
+	// Snapshot with valid FailoverService.
+	var validInputSnapshotSingleMesh = func() failover.InputSnapshot {
+		return failover.InputSnapshot{
+			FailoverServices: []*smh_networking.FailoverService{
+				{
+					ObjectMeta: k8s_meta_types.ObjectMeta{Generation: 1},
+					Spec: smh_networking_types.FailoverServiceSpec{
+						Hostname:  "valid.dns.hostname",
+						Namespace: "namespace",
+						Port: &smh_networking_types.FailoverServiceSpec_Port{
+							Port:     9080,
+							Name:     "valid-name",
+							Protocol: "TCP",
+						},
+						Cluster: "cluster1",
+						Services: []*smh_core_types.ResourceRef{
+							{
+								Name:      "service1",
+								Namespace: "namespace1",
+								Cluster:   "cluster1",
+							},
+							{
+								Name:      "service1",
+								Namespace: "namespace1",
+								Cluster:   "cluster2",
+							},
+						},
+					},
+				},
+			},
+			MeshServices: []*smh_discovery.MeshService{
+				{
+					Spec: smh_discovery_types.MeshServiceSpec{
+						KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &smh_core_types.ResourceRef{
+								Name:      "service1",
+								Namespace: "namespace1",
+								Cluster:   "cluster1",
+							},
+						},
+						Mesh: &smh_core_types.ResourceRef{
+							Name:      "mesh1",
+							Namespace: "namespace1",
+							Cluster:   "cluster1",
+						},
+					},
+					Status: meshServiceStatusWithOutlierDetection(),
+				},
+				{
+					Spec: smh_discovery_types.MeshServiceSpec{
+						KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &smh_core_types.ResourceRef{
+								Name:      "service1",
+								Namespace: "namespace1",
+								Cluster:   "cluster2",
+							},
+						},
+						Mesh: &smh_core_types.ResourceRef{
+							Name:      "mesh1",
+							Namespace: "namespace1",
+							Cluster:   "cluster1",
+						},
+					},
+					Status: meshServiceStatusWithOutlierDetection(),
+				},
+			},
+			KubeClusters: []*smh_discovery.KubernetesCluster{
+				{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "cluster1"}},
+				{ObjectMeta: k8s_meta_types.ObjectMeta{Name: "cluster2"}},
+			},
+			Meshes: []*smh_discovery.Mesh{
+				{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name:      "mesh1",
+						Namespace: "namespace1",
+					},
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
+						Cluster:  &smh_core_types.ResourceRef{Name: "cluster1"},
+					},
+				},
+			},
+		}
+	}
+
 	// Snapshot with invalid FailoverService.
 	var invalidInputSnapshot = func() failover.InputSnapshot {
 		return failover.InputSnapshot{
@@ -316,6 +401,18 @@ var _ = Describe("Validation", func() {
 
 	It("should set validation status on valid FailoverService", func() {
 		inputSnapshot := validInputSnapshot()
+		validator.Validate(inputSnapshot)
+		expectedFailoverServiceStatus := smh_networking_types.FailoverServiceStatus{
+			ObservedGeneration: inputSnapshot.FailoverServices[0].GetGeneration(),
+			ValidationStatus: &smh_core_types.Status{
+				State: smh_core_types.Status_ACCEPTED,
+			},
+		}
+		Expect(inputSnapshot.FailoverServices[0].Status).To(Equal(expectedFailoverServiceStatus))
+	})
+
+	It("should accept FailoverService composed of services belonging to a single common mesh, with no VirtualMesh", func() {
+		inputSnapshot := validInputSnapshotSingleMesh()
 		validator.Validate(inputSnapshot)
 		expectedFailoverServiceStatus := smh_networking_types.FailoverServiceStatus{
 			ObservedGeneration: inputSnapshot.FailoverServices[0].GetGeneration(),
