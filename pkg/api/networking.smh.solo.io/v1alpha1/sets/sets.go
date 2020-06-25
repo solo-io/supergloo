@@ -24,6 +24,7 @@ type TrafficPolicySet interface {
 	Difference(set TrafficPolicySet) TrafficPolicySet
 	Intersection(set TrafficPolicySet) TrafficPolicySet
 	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.TrafficPolicy, error)
+	Length() int
 }
 
 func makeGenericTrafficPolicySet(trafficPolicyList []*networking_smh_solo_io_v1alpha1.TrafficPolicy) sksets.ResourceSet {
@@ -42,11 +43,19 @@ func NewTrafficPolicySet(trafficPolicyList ...*networking_smh_solo_io_v1alpha1.T
 	return &trafficPolicySet{set: makeGenericTrafficPolicySet(trafficPolicyList)}
 }
 
-func (s trafficPolicySet) Keys() sets.String {
+func NewTrafficPolicySetFromList(trafficPolicyList *networking_smh_solo_io_v1alpha1.TrafficPolicyList) TrafficPolicySet {
+	list := make([]*networking_smh_solo_io_v1alpha1.TrafficPolicy, 0, len(trafficPolicyList.Items))
+	for idx := range trafficPolicyList.Items {
+		list = append(list, &trafficPolicyList.Items[idx])
+	}
+	return &trafficPolicySet{set: makeGenericTrafficPolicySet(list)}
+}
+
+func (s *trafficPolicySet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s trafficPolicySet) List() []*networking_smh_solo_io_v1alpha1.TrafficPolicy {
+func (s *trafficPolicySet) List() []*networking_smh_solo_io_v1alpha1.TrafficPolicy {
 	var trafficPolicyList []*networking_smh_solo_io_v1alpha1.TrafficPolicy
 	for _, obj := range s.set.List() {
 		trafficPolicyList = append(trafficPolicyList, obj.(*networking_smh_solo_io_v1alpha1.TrafficPolicy))
@@ -54,7 +63,7 @@ func (s trafficPolicySet) List() []*networking_smh_solo_io_v1alpha1.TrafficPolic
 	return trafficPolicyList
 }
 
-func (s trafficPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha1.TrafficPolicy {
+func (s *trafficPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha1.TrafficPolicy {
 	newMap := map[string]*networking_smh_solo_io_v1alpha1.TrafficPolicy{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*networking_smh_solo_io_v1alpha1.TrafficPolicy)
@@ -62,7 +71,7 @@ func (s trafficPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha1.Traf
 	return newMap
 }
 
-func (s trafficPolicySet) Insert(
+func (s *trafficPolicySet) Insert(
 	trafficPolicyList ...*networking_smh_solo_io_v1alpha1.TrafficPolicy,
 ) {
 	for _, obj := range trafficPolicyList {
@@ -70,30 +79,30 @@ func (s trafficPolicySet) Insert(
 	}
 }
 
-func (s trafficPolicySet) Has(trafficPolicy *networking_smh_solo_io_v1alpha1.TrafficPolicy) bool {
+func (s *trafficPolicySet) Has(trafficPolicy *networking_smh_solo_io_v1alpha1.TrafficPolicy) bool {
 	return s.set.Has(trafficPolicy)
 }
 
-func (s trafficPolicySet) Equal(
+func (s *trafficPolicySet) Equal(
 	trafficPolicySet TrafficPolicySet,
 ) bool {
 	return s.set.Equal(makeGenericTrafficPolicySet(trafficPolicySet.List()))
 }
 
-func (s trafficPolicySet) Delete(TrafficPolicy *networking_smh_solo_io_v1alpha1.TrafficPolicy) {
+func (s *trafficPolicySet) Delete(TrafficPolicy *networking_smh_solo_io_v1alpha1.TrafficPolicy) {
 	s.set.Delete(TrafficPolicy)
 }
 
-func (s trafficPolicySet) Union(set TrafficPolicySet) TrafficPolicySet {
+func (s *trafficPolicySet) Union(set TrafficPolicySet) TrafficPolicySet {
 	return NewTrafficPolicySet(append(s.List(), set.List()...)...)
 }
 
-func (s trafficPolicySet) Difference(set TrafficPolicySet) TrafficPolicySet {
+func (s *trafficPolicySet) Difference(set TrafficPolicySet) TrafficPolicySet {
 	newSet := s.set.Difference(makeGenericTrafficPolicySet(set.List()))
-	return trafficPolicySet{set: newSet}
+	return &trafficPolicySet{set: newSet}
 }
 
-func (s trafficPolicySet) Intersection(set TrafficPolicySet) TrafficPolicySet {
+func (s *trafficPolicySet) Intersection(set TrafficPolicySet) TrafficPolicySet {
 	newSet := s.set.Intersection(makeGenericTrafficPolicySet(set.List()))
 	var trafficPolicyList []*networking_smh_solo_io_v1alpha1.TrafficPolicy
 	for _, obj := range newSet.List() {
@@ -102,13 +111,17 @@ func (s trafficPolicySet) Intersection(set TrafficPolicySet) TrafficPolicySet {
 	return NewTrafficPolicySet(trafficPolicyList...)
 }
 
-func (s trafficPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.TrafficPolicy, error) {
+func (s *trafficPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.TrafficPolicy, error) {
 	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha1.TrafficPolicy{}, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj.(*networking_smh_solo_io_v1alpha1.TrafficPolicy), nil
+}
+
+func (s *trafficPolicySet) Length() int {
+	return s.set.Length()
 }
 
 type AccessControlPolicySet interface {
@@ -123,6 +136,7 @@ type AccessControlPolicySet interface {
 	Difference(set AccessControlPolicySet) AccessControlPolicySet
 	Intersection(set AccessControlPolicySet) AccessControlPolicySet
 	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.AccessControlPolicy, error)
+	Length() int
 }
 
 func makeGenericAccessControlPolicySet(accessControlPolicyList []*networking_smh_solo_io_v1alpha1.AccessControlPolicy) sksets.ResourceSet {
@@ -141,11 +155,19 @@ func NewAccessControlPolicySet(accessControlPolicyList ...*networking_smh_solo_i
 	return &accessControlPolicySet{set: makeGenericAccessControlPolicySet(accessControlPolicyList)}
 }
 
-func (s accessControlPolicySet) Keys() sets.String {
+func NewAccessControlPolicySetFromList(accessControlPolicyList *networking_smh_solo_io_v1alpha1.AccessControlPolicyList) AccessControlPolicySet {
+	list := make([]*networking_smh_solo_io_v1alpha1.AccessControlPolicy, 0, len(accessControlPolicyList.Items))
+	for idx := range accessControlPolicyList.Items {
+		list = append(list, &accessControlPolicyList.Items[idx])
+	}
+	return &accessControlPolicySet{set: makeGenericAccessControlPolicySet(list)}
+}
+
+func (s *accessControlPolicySet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s accessControlPolicySet) List() []*networking_smh_solo_io_v1alpha1.AccessControlPolicy {
+func (s *accessControlPolicySet) List() []*networking_smh_solo_io_v1alpha1.AccessControlPolicy {
 	var accessControlPolicyList []*networking_smh_solo_io_v1alpha1.AccessControlPolicy
 	for _, obj := range s.set.List() {
 		accessControlPolicyList = append(accessControlPolicyList, obj.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy))
@@ -153,7 +175,7 @@ func (s accessControlPolicySet) List() []*networking_smh_solo_io_v1alpha1.Access
 	return accessControlPolicyList
 }
 
-func (s accessControlPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha1.AccessControlPolicy {
+func (s *accessControlPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha1.AccessControlPolicy {
 	newMap := map[string]*networking_smh_solo_io_v1alpha1.AccessControlPolicy{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy)
@@ -161,7 +183,7 @@ func (s accessControlPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha
 	return newMap
 }
 
-func (s accessControlPolicySet) Insert(
+func (s *accessControlPolicySet) Insert(
 	accessControlPolicyList ...*networking_smh_solo_io_v1alpha1.AccessControlPolicy,
 ) {
 	for _, obj := range accessControlPolicyList {
@@ -169,30 +191,30 @@ func (s accessControlPolicySet) Insert(
 	}
 }
 
-func (s accessControlPolicySet) Has(accessControlPolicy *networking_smh_solo_io_v1alpha1.AccessControlPolicy) bool {
+func (s *accessControlPolicySet) Has(accessControlPolicy *networking_smh_solo_io_v1alpha1.AccessControlPolicy) bool {
 	return s.set.Has(accessControlPolicy)
 }
 
-func (s accessControlPolicySet) Equal(
+func (s *accessControlPolicySet) Equal(
 	accessControlPolicySet AccessControlPolicySet,
 ) bool {
 	return s.set.Equal(makeGenericAccessControlPolicySet(accessControlPolicySet.List()))
 }
 
-func (s accessControlPolicySet) Delete(AccessControlPolicy *networking_smh_solo_io_v1alpha1.AccessControlPolicy) {
+func (s *accessControlPolicySet) Delete(AccessControlPolicy *networking_smh_solo_io_v1alpha1.AccessControlPolicy) {
 	s.set.Delete(AccessControlPolicy)
 }
 
-func (s accessControlPolicySet) Union(set AccessControlPolicySet) AccessControlPolicySet {
+func (s *accessControlPolicySet) Union(set AccessControlPolicySet) AccessControlPolicySet {
 	return NewAccessControlPolicySet(append(s.List(), set.List()...)...)
 }
 
-func (s accessControlPolicySet) Difference(set AccessControlPolicySet) AccessControlPolicySet {
+func (s *accessControlPolicySet) Difference(set AccessControlPolicySet) AccessControlPolicySet {
 	newSet := s.set.Difference(makeGenericAccessControlPolicySet(set.List()))
-	return accessControlPolicySet{set: newSet}
+	return &accessControlPolicySet{set: newSet}
 }
 
-func (s accessControlPolicySet) Intersection(set AccessControlPolicySet) AccessControlPolicySet {
+func (s *accessControlPolicySet) Intersection(set AccessControlPolicySet) AccessControlPolicySet {
 	newSet := s.set.Intersection(makeGenericAccessControlPolicySet(set.List()))
 	var accessControlPolicyList []*networking_smh_solo_io_v1alpha1.AccessControlPolicy
 	for _, obj := range newSet.List() {
@@ -201,13 +223,17 @@ func (s accessControlPolicySet) Intersection(set AccessControlPolicySet) AccessC
 	return NewAccessControlPolicySet(accessControlPolicyList...)
 }
 
-func (s accessControlPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.AccessControlPolicy, error) {
+func (s *accessControlPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.AccessControlPolicy, error) {
 	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha1.AccessControlPolicy{}, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy), nil
+}
+
+func (s *accessControlPolicySet) Length() int {
+	return s.set.Length()
 }
 
 type VirtualMeshSet interface {
@@ -222,6 +248,7 @@ type VirtualMeshSet interface {
 	Difference(set VirtualMeshSet) VirtualMeshSet
 	Intersection(set VirtualMeshSet) VirtualMeshSet
 	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.VirtualMesh, error)
+	Length() int
 }
 
 func makeGenericVirtualMeshSet(virtualMeshList []*networking_smh_solo_io_v1alpha1.VirtualMesh) sksets.ResourceSet {
@@ -240,11 +267,19 @@ func NewVirtualMeshSet(virtualMeshList ...*networking_smh_solo_io_v1alpha1.Virtu
 	return &virtualMeshSet{set: makeGenericVirtualMeshSet(virtualMeshList)}
 }
 
-func (s virtualMeshSet) Keys() sets.String {
+func NewVirtualMeshSetFromList(virtualMeshList *networking_smh_solo_io_v1alpha1.VirtualMeshList) VirtualMeshSet {
+	list := make([]*networking_smh_solo_io_v1alpha1.VirtualMesh, 0, len(virtualMeshList.Items))
+	for idx := range virtualMeshList.Items {
+		list = append(list, &virtualMeshList.Items[idx])
+	}
+	return &virtualMeshSet{set: makeGenericVirtualMeshSet(list)}
+}
+
+func (s *virtualMeshSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s virtualMeshSet) List() []*networking_smh_solo_io_v1alpha1.VirtualMesh {
+func (s *virtualMeshSet) List() []*networking_smh_solo_io_v1alpha1.VirtualMesh {
 	var virtualMeshList []*networking_smh_solo_io_v1alpha1.VirtualMesh
 	for _, obj := range s.set.List() {
 		virtualMeshList = append(virtualMeshList, obj.(*networking_smh_solo_io_v1alpha1.VirtualMesh))
@@ -252,7 +287,7 @@ func (s virtualMeshSet) List() []*networking_smh_solo_io_v1alpha1.VirtualMesh {
 	return virtualMeshList
 }
 
-func (s virtualMeshSet) Map() map[string]*networking_smh_solo_io_v1alpha1.VirtualMesh {
+func (s *virtualMeshSet) Map() map[string]*networking_smh_solo_io_v1alpha1.VirtualMesh {
 	newMap := map[string]*networking_smh_solo_io_v1alpha1.VirtualMesh{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*networking_smh_solo_io_v1alpha1.VirtualMesh)
@@ -260,7 +295,7 @@ func (s virtualMeshSet) Map() map[string]*networking_smh_solo_io_v1alpha1.Virtua
 	return newMap
 }
 
-func (s virtualMeshSet) Insert(
+func (s *virtualMeshSet) Insert(
 	virtualMeshList ...*networking_smh_solo_io_v1alpha1.VirtualMesh,
 ) {
 	for _, obj := range virtualMeshList {
@@ -268,30 +303,30 @@ func (s virtualMeshSet) Insert(
 	}
 }
 
-func (s virtualMeshSet) Has(virtualMesh *networking_smh_solo_io_v1alpha1.VirtualMesh) bool {
+func (s *virtualMeshSet) Has(virtualMesh *networking_smh_solo_io_v1alpha1.VirtualMesh) bool {
 	return s.set.Has(virtualMesh)
 }
 
-func (s virtualMeshSet) Equal(
+func (s *virtualMeshSet) Equal(
 	virtualMeshSet VirtualMeshSet,
 ) bool {
 	return s.set.Equal(makeGenericVirtualMeshSet(virtualMeshSet.List()))
 }
 
-func (s virtualMeshSet) Delete(VirtualMesh *networking_smh_solo_io_v1alpha1.VirtualMesh) {
+func (s *virtualMeshSet) Delete(VirtualMesh *networking_smh_solo_io_v1alpha1.VirtualMesh) {
 	s.set.Delete(VirtualMesh)
 }
 
-func (s virtualMeshSet) Union(set VirtualMeshSet) VirtualMeshSet {
+func (s *virtualMeshSet) Union(set VirtualMeshSet) VirtualMeshSet {
 	return NewVirtualMeshSet(append(s.List(), set.List()...)...)
 }
 
-func (s virtualMeshSet) Difference(set VirtualMeshSet) VirtualMeshSet {
+func (s *virtualMeshSet) Difference(set VirtualMeshSet) VirtualMeshSet {
 	newSet := s.set.Difference(makeGenericVirtualMeshSet(set.List()))
-	return virtualMeshSet{set: newSet}
+	return &virtualMeshSet{set: newSet}
 }
 
-func (s virtualMeshSet) Intersection(set VirtualMeshSet) VirtualMeshSet {
+func (s *virtualMeshSet) Intersection(set VirtualMeshSet) VirtualMeshSet {
 	newSet := s.set.Intersection(makeGenericVirtualMeshSet(set.List()))
 	var virtualMeshList []*networking_smh_solo_io_v1alpha1.VirtualMesh
 	for _, obj := range newSet.List() {
@@ -300,11 +335,15 @@ func (s virtualMeshSet) Intersection(set VirtualMeshSet) VirtualMeshSet {
 	return NewVirtualMeshSet(virtualMeshList...)
 }
 
-func (s virtualMeshSet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.VirtualMesh, error) {
+func (s *virtualMeshSet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.VirtualMesh, error) {
 	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha1.VirtualMesh{}, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj.(*networking_smh_solo_io_v1alpha1.VirtualMesh), nil
+}
+
+func (s *virtualMeshSet) Length() int {
+	return s.set.Length()
 }
