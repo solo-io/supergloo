@@ -2,6 +2,7 @@ package main
 
 import (
 	externalapis "github.com/solo-io/external-apis/codegen"
+	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"log"
@@ -17,8 +18,13 @@ import (
 
 var (
 	appName                         = "service-mesh-hub"
+	
 	discoveryInputSnapshotCodePath = "pkg/api/discovery.smh.solo.io/snapshot/input/snapshot.go"
 	discoveryOutputSnapshotCodePath = "pkg/api/discovery.smh.solo.io/snapshot/output/snapshot.go"
+	
+	networkingInputSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/input/snapshot.go"
+	networkingOutputSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/output/snapshot.go"
+	
 	smhCrdManifestRoot              = "install/helm/charts/custom-resource-definitions"
 	csrCrdManifestRoot              = "install/helm/charts/csr-agent/"
 
@@ -44,6 +50,33 @@ var (
 			"Mesh",
 			"MeshWorkload",
 			"MeshService",
+		},
+	}
+
+	inputNetworkingSnapshot = map[schema.GroupVersion][]string{
+		schema.GroupVersion{
+			Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
+			Version: "v1alpha1",
+		}: {
+			"Mesh",
+			"MeshWorkload",
+			"MeshService",
+		},
+		schema.GroupVersion{
+			Group:   "networking." + constants.ServiceMeshHubApiGroupSuffix,
+			Version: "v1alpha1",
+		}: {
+			"TrafficPolicy",
+			"AccessControlPolicy",
+			"VirtualMesh",
+		},
+	}
+
+	outputNetworkingIstioSnapshot = map[schema.GroupVersion][]string{
+		istionetworkingv1alpha3.SchemeGroupVersion: {
+			"DestinationRule",
+			"VirtualService",
+			"EnvoyFilter",
 		},
 	}
 
@@ -75,6 +108,8 @@ func makeSmhCommand() codegen.Command {
 	topLevelTemplates := []model.CustomTemplates{
 		makeDiscoveryInputSnapshotTemplate(),
 		makeDiscoveryOutputSnapshotTemplate(),
+		makeNetworkingInputSnapshotTemplate(),
+		makeNetworkingOutputSnapshotTemplate(),
 	}
 
 	return codegen.Command{
@@ -113,6 +148,28 @@ func makeDiscoveryOutputSnapshotTemplate() model.CustomTemplates {
 	return model.CustomTemplates{
 		Templates: map[string]string{
 			discoveryOutputSnapshotCodePath: templates.OutputSnapshotTemplateContents,
+		},
+		Funcs: templates.MakeSnapshotFuncs(outputGroups),
+	}
+}
+
+func makeNetworkingInputSnapshotTemplate() model.CustomTemplates {
+	inputGroups := templates.SelectResources("", groups.SMHGroups, inputNetworkingSnapshot)
+
+	return model.CustomTemplates{
+		Templates: map[string]string{
+			networkingInputSnapshotCodePath: templates.InputSnapshotTemplateContents,
+		},
+		Funcs: templates.MakeSnapshotFuncs(inputGroups),
+	}
+}
+
+func makeNetworkingOutputSnapshotTemplate() model.CustomTemplates {
+	outputGroups := templates.SelectResources("github.com/solo-io/external-apis", externalapis.Groups, outputNetworkingIstioSnapshot)
+
+	return model.CustomTemplates{
+		Templates: map[string]string{
+			networkingOutputSnapshotCodePath: templates.OutputSnapshotTemplateContents,
 		},
 		Funcs: templates.MakeSnapshotFuncs(outputGroups),
 	}

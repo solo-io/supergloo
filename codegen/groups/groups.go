@@ -18,7 +18,6 @@ var SMHGroups = []model.Group{
 		{kind: "Settings", noStatus: true},
 	}),
 	makeGroup("discovery", v1alpha1Version, []resourceToGenerate{
-		{kind: "KubernetesCluster", noStatus: true}, // TODO(ilackarms): remove this kubernetes cluster and use skv2 multicluster
 		{kind: "MeshService"},
 		{kind: "MeshWorkload"},
 		{kind: "Mesh"},
