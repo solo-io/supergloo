@@ -4,11 +4,15 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-multierror"
+	v1alpha32 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	v1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/providers"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	"github.com/solo-io/go-utils/contextutils"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v1alpha1sets2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
+	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/sets"
 	multicluster2 "github.com/solo-io/service-mesh-hub/pkg/common/kube/multicluster"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
@@ -70,14 +74,42 @@ func (f *failoverServiceReconciler) ReconcileFailoverService(_ *smh_networking.F
 	if err != nil {
 		return reconcile.Result{}, err
 	}
+	var clusterNames []string
+	for _, kubeCluster := range inputSnapshot.KubeClusters.List() {
+		clusterNames = append(clusterNames, kubeCluster.GetName())
+	}
 	outputSnapshot := f.failoverServiceProcessor.Process(f.ctx, inputSnapshot)
 	// Update status on all FailoverServices, and ensure FailoverService mesh-specific translated resources on remote clusters.
-	return reconcile.Result{}, f.ensureOutputSnapshot(outputSnapshot)
+	return reconcile.Result{}, f.ensureOutputSnapshot(f.ctx, clusterNames, outputSnapshot)
+}
+
+func (f *failoverServiceReconciler) ReconcileFailoverServiceDeletion(req reconcile.Request) {
+	logger := contextutils.LoggerFrom(f.ctx)
+	inputSnapshot, err := f.buildInputSnapshot()
+	if err != nil {
+		logger.Error("Error while reconciling FailoverService deletion: %+v.", err)
+		return
+	}
+	var clusterNames []string
+	for _, kubeCluster := range inputSnapshot.KubeClusters.List() {
+		clusterNames = append(clusterNames, kubeCluster.GetName())
+	}
+	outputSnapshot := f.failoverServiceProcessor.Process(f.ctx, inputSnapshot)
+	err = f.ensureOutputSnapshot(f.ctx, clusterNames, outputSnapshot)
+	if err != nil {
+		logger.Error("Error while reconciling FailoverService deletion: %+v.", err)
+	}
 }
 
 // TODO replace this with a generated builder
 func (f *failoverServiceReconciler) buildInputSnapshot() (failover.InputSnapshot, error) {
-	inputSnapshot := failover.InputSnapshot{}
+	inputSnapshot := failover.InputSnapshot{
+		FailoverServices: v1alpha1sets.NewFailoverServiceSet(),
+		MeshServices:     v1alpha1sets2.NewMeshServiceSet(),
+		KubeClusters:     v1alpha1sets2.NewKubernetesClusterSet(),
+		Meshes:           v1alpha1sets2.NewMeshSet(),
+		VirtualMeshes:    v1alpha1sets.NewVirtualMeshSet(),
+	}
 	// FailoverService
 	failoverServiceList, err := f.failoverServiceClient.ListFailoverService(f.ctx)
 	if err != nil {
@@ -85,7 +117,8 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (failover.InputSnapshot
 	}
 	for _, failoverService := range failoverServiceList.Items {
 		failoverService := failoverService
-		inputSnapshot.FailoverServices = append(inputSnapshot.FailoverServices, &failoverService)
+		//failoverService.ClusterName = failoverService.Spec.GetTargetService().GetCluster()
+		inputSnapshot.FailoverServices.Insert(&failoverService)
 	}
 	// MeshService
 	meshServiceList, err := f.meshServiceClient.ListMeshService(f.ctx)
@@ -94,7 +127,7 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (failover.InputSnapshot
 	}
 	for _, meshService := range meshServiceList.Items {
 		meshService := meshService
-		inputSnapshot.MeshServices = append(inputSnapshot.MeshServices, &meshService)
+		inputSnapshot.MeshServices.Insert(&meshService)
 	}
 	// Mesh
 	meshList, err := f.meshClient.ListMesh(f.ctx)
@@ -103,7 +136,7 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (failover.InputSnapshot
 	}
 	for _, mesh := range meshList.Items {
 		mesh := mesh
-		inputSnapshot.Meshes = append(inputSnapshot.Meshes, &mesh)
+		inputSnapshot.Meshes.Insert(&mesh)
 	}
 	// KubernetesCluster
 	kubeClusterList, err := f.kubeClusterClient.ListKubernetesCluster(f.ctx)
@@ -112,7 +145,7 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (failover.InputSnapshot
 	}
 	for _, kubeCluster := range kubeClusterList.Items {
 		kubeCluster := kubeCluster
-		inputSnapshot.KubeClusters = append(inputSnapshot.KubeClusters, &kubeCluster)
+		inputSnapshot.KubeClusters.Insert(&kubeCluster)
 	}
 	// VirtualMesh
 	virtualMeshList, err := f.virtualMeshClient.ListVirtualMesh(f.ctx)
@@ -121,65 +154,59 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (failover.InputSnapshot
 	}
 	for _, virtualMesh := range virtualMeshList.Items {
 		virtualMesh := virtualMesh
-		inputSnapshot.VirtualMeshes = append(inputSnapshot.VirtualMeshes, &virtualMesh)
+		inputSnapshot.VirtualMeshes.Insert(&virtualMesh)
 	}
 	return inputSnapshot, nil
 }
 
 // Ensure that the actual state matches the desired state in the OutputSnapshot on each remote cluster.
 func (f *failoverServiceReconciler) ensureOutputSnapshot(
+	ctx context.Context,
+	clusterNames []string,
 	snapshot failover.OutputSnapshot,
 ) error {
 	var multierr *multierror.Error
 	// Update FailoverService statuses
-	for _, failoverService := range snapshot.FailoverServices {
+	for _, failoverService := range snapshot.FailoverServices.List() {
 		err := f.failoverServiceClient.UpdateFailoverServiceStatus(f.ctx, failoverService)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
 		}
 	}
 	// Upsert Istio resources
-	if err := f.ensureServiceEntries(snapshot.MeshOutputs.ServiceEntries); err != nil {
+	if err := f.ensureServiceEntries(ctx, clusterNames, snapshot.MeshOutputs.ServiceEntries); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
-	if err := f.ensureEnvoyFilters(snapshot.MeshOutputs.EnvoyFilters); err != nil {
+	if err := f.ensureEnvoyFilters(ctx, clusterNames, snapshot.MeshOutputs.EnvoyFilters); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 	return multierr.ErrorOrNil()
 }
 
 func (f *failoverServiceReconciler) ensureServiceEntries(
-	serviceEntries []*istio_client_networking.ServiceEntry,
+	ctx context.Context,
+	clusterNames []string,
+	serviceEntries v1alpha3sets.ServiceEntrySet,
 ) error {
-	serviceEntriesByCluster := map[string][]*istio_client_networking.ServiceEntry{}
-	for _, serviceEntry := range serviceEntries {
+	desiredServiceEntriesByCluster := map[string][]*istio_client_networking.ServiceEntry{}
+	for _, serviceEntry := range serviceEntries.List() {
 		f.addScopeLabels(serviceEntry)
-		_, ok := serviceEntriesByCluster[serviceEntry.GetClusterName()]
+		_, ok := desiredServiceEntriesByCluster[serviceEntry.GetClusterName()]
 		if !ok {
-			serviceEntriesByCluster[serviceEntry.GetClusterName()] = []*istio_client_networking.ServiceEntry{}
+			desiredServiceEntriesByCluster[serviceEntry.GetClusterName()] = []*istio_client_networking.ServiceEntry{}
 		}
-		serviceEntriesByCluster[serviceEntry.GetClusterName()] = append(serviceEntriesByCluster[serviceEntry.GetClusterName()], serviceEntry)
+		desiredServiceEntriesByCluster[serviceEntry.GetClusterName()] = append(desiredServiceEntriesByCluster[serviceEntry.GetClusterName()], serviceEntry)
 	}
 	var multierr *multierror.Error
 	// Reconcile per cluster
-	for clusterName, serviceEntries := range serviceEntriesByCluster {
-		clusterClient, err := f.dynamicClientGetter.GetClientForCluster(context.TODO(), clusterName)
+	for clusterName, desiredServiceEntries := range desiredServiceEntriesByCluster {
+		clusterClient, err := f.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
 			continue
 		}
 		serviceEntryClient := f.serviceEntryClientFactory(clusterClient)
-		desiredServiceEntries := v1alpha3sets.NewServiceEntrySet(serviceEntries...)
-		existingServiceEntries := v1alpha3sets.NewServiceEntrySet()
-		existingServiceEntriesList, err := serviceEntryClient.ListServiceEntry(f.ctx, client.MatchingLabels(FailoverServiceLabels))
-		if err != nil {
-			multierr = multierror.Append(multierr, err)
-			continue
-		}
-		for _, serviceEntry := range existingServiceEntriesList.Items {
-			serviceEntry := serviceEntry
-			existingServiceEntries.Insert(&serviceEntry)
-		}
+		desiredServiceEntries := v1alpha3sets.NewServiceEntrySet(desiredServiceEntries...)
 		// Upsert
 		for _, desiredServiceEntry := range desiredServiceEntries.List() {
 			err := serviceEntryClient.UpsertServiceEntry(f.ctx, desiredServiceEntry)
@@ -188,7 +215,27 @@ func (f *failoverServiceReconciler) ensureServiceEntries(
 				continue
 			}
 		}
-		// Delete
+	}
+	// Delete
+	for _, clusterName := range clusterNames {
+		clusterClient, err := f.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+			continue
+		}
+		serviceEntryClient := f.serviceEntryClientFactory(clusterClient)
+		existingServiceEntries, err := f.fetchExistingServiceEntriesByCluster(clusterName, serviceEntryClient)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+			continue
+		}
+		var desiredServiceEntries v1alpha3sets.ServiceEntrySet
+		desiredServiceEntriesList, ok := desiredServiceEntriesByCluster[clusterName]
+		if !ok {
+			desiredServiceEntries = v1alpha3sets.NewServiceEntrySet()
+		} else {
+			desiredServiceEntries = v1alpha3sets.NewServiceEntrySet(desiredServiceEntriesList...)
+		}
 		for _, existingServiceEntry := range existingServiceEntries.Difference(desiredServiceEntries).List() {
 			err := serviceEntryClient.DeleteServiceEntry(f.ctx, selection.ObjectMetaToObjectKey(existingServiceEntry.ObjectMeta))
 			if err != nil {
@@ -201,37 +248,29 @@ func (f *failoverServiceReconciler) ensureServiceEntries(
 }
 
 func (f *failoverServiceReconciler) ensureEnvoyFilters(
-	envoyFilters []*istio_client_networking.EnvoyFilter,
+	ctx context.Context,
+	clusterNames []string,
+	envoyFilters v1alpha3sets.EnvoyFilterSet,
 ) error {
-	envoyFiltersByCluster := map[string][]*istio_client_networking.EnvoyFilter{}
-	for _, envoyFilter := range envoyFilters {
+	desiredEnvoyFiltersByCluster := map[string][]*istio_client_networking.EnvoyFilter{}
+	for _, envoyFilter := range envoyFilters.List() {
 		f.addScopeLabels(envoyFilter)
-		_, ok := envoyFiltersByCluster[envoyFilter.GetClusterName()]
+		_, ok := desiredEnvoyFiltersByCluster[envoyFilter.GetClusterName()]
 		if !ok {
-			envoyFiltersByCluster[envoyFilter.GetClusterName()] = []*istio_client_networking.EnvoyFilter{}
+			desiredEnvoyFiltersByCluster[envoyFilter.GetClusterName()] = []*istio_client_networking.EnvoyFilter{}
 		}
-		envoyFiltersByCluster[envoyFilter.GetClusterName()] = append(envoyFiltersByCluster[envoyFilter.GetClusterName()], envoyFilter)
+		desiredEnvoyFiltersByCluster[envoyFilter.GetClusterName()] = append(desiredEnvoyFiltersByCluster[envoyFilter.GetClusterName()], envoyFilter)
 	}
 	var multierr *multierror.Error
 	// Reconcile per cluster
-	for clusterName, envoyFilters := range envoyFiltersByCluster {
-		clusterClient, err := f.dynamicClientGetter.GetClientForCluster(context.TODO(), clusterName)
+	for clusterName, desiredEnvoyFilters := range desiredEnvoyFiltersByCluster {
+		clusterClient, err := f.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
 			continue
 		}
 		envoyFilterClient := f.envoyFilterClientFactory(clusterClient)
-		desiredEnvoyFilters := v1alpha3sets.NewEnvoyFilterSet(envoyFilters...)
-		existingEnvoyFilters := v1alpha3sets.NewEnvoyFilterSet()
-		existingEnvoyFiltersList, err := envoyFilterClient.ListEnvoyFilter(f.ctx, client.MatchingLabels(FailoverServiceLabels))
-		if err != nil {
-			multierr = multierror.Append(multierr, err)
-			continue
-		}
-		for _, envoyFilter := range existingEnvoyFiltersList.Items {
-			envoyFilter := envoyFilter
-			existingEnvoyFilters.Insert(&envoyFilter)
-		}
+		desiredEnvoyFilters := v1alpha3sets.NewEnvoyFilterSet(desiredEnvoyFilters...)
 		// Upsert
 		for _, desiredEnvoyFilter := range desiredEnvoyFilters.List() {
 			err := envoyFilterClient.UpsertEnvoyFilter(f.ctx, desiredEnvoyFilter)
@@ -240,7 +279,27 @@ func (f *failoverServiceReconciler) ensureEnvoyFilters(
 				continue
 			}
 		}
-		// Delete
+	}
+	// Delete
+	for _, clusterName := range clusterNames {
+		clusterClient, err := f.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+			continue
+		}
+		envoyFilterClient := f.envoyFilterClientFactory(clusterClient)
+		existingEnvoyFilters, err := f.fetchExistingEnvoyFiltersByCluster(clusterName, envoyFilterClient)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+			continue
+		}
+		var desiredEnvoyFilters v1alpha3sets.EnvoyFilterSet
+		desiredEnvoyFiltersList, ok := desiredEnvoyFiltersByCluster[clusterName]
+		if !ok {
+			desiredEnvoyFilters = v1alpha3sets.NewEnvoyFilterSet()
+		} else {
+			desiredEnvoyFilters = v1alpha3sets.NewEnvoyFilterSet(desiredEnvoyFiltersList...)
+		}
 		for _, existingEnvoyFilter := range existingEnvoyFilters.Difference(desiredEnvoyFilters).List() {
 			err := envoyFilterClient.DeleteEnvoyFilter(f.ctx, selection.ObjectMetaToObjectKey(existingEnvoyFilter.ObjectMeta))
 			if err != nil {
@@ -250,6 +309,40 @@ func (f *failoverServiceReconciler) ensureEnvoyFilters(
 		}
 	}
 	return multierr.ErrorOrNil()
+}
+
+func (f *failoverServiceReconciler) fetchExistingEnvoyFiltersByCluster(
+	clusterName string,
+	envoyFilterClient v1alpha32.EnvoyFilterClient,
+) (v1alpha3sets.EnvoyFilterSet, error) {
+	existingEnvoyFilters := v1alpha3sets.NewEnvoyFilterSet()
+	existingEnvoyFiltersList, err := envoyFilterClient.ListEnvoyFilter(f.ctx, client.MatchingLabels(FailoverServiceLabels))
+	if err != nil {
+		return nil, err
+	}
+	for _, envoyFilter := range existingEnvoyFiltersList.Items {
+		envoyFilter := envoyFilter
+		envoyFilter.ClusterName = clusterName
+		existingEnvoyFilters.Insert(&envoyFilter)
+	}
+	return existingEnvoyFilters, nil
+}
+
+func (f *failoverServiceReconciler) fetchExistingServiceEntriesByCluster(
+	clusterName string,
+	serviceEntryClient v1alpha32.ServiceEntryClient,
+) (v1alpha3sets.ServiceEntrySet, error) {
+	existingServiceEntries := v1alpha3sets.NewServiceEntrySet()
+	existingEnvoyFiltersList, err := serviceEntryClient.ListServiceEntry(f.ctx, client.MatchingLabels(FailoverServiceLabels))
+	if err != nil {
+		return nil, err
+	}
+	for _, serviceEntry := range existingEnvoyFiltersList.Items {
+		serviceEntry := serviceEntry
+		serviceEntry.ClusterName = clusterName
+		existingServiceEntries.Insert(&serviceEntry)
+	}
+	return existingServiceEntries, nil
 }
 
 func (f *failoverServiceReconciler) addScopeLabels(obj v1.Object) {

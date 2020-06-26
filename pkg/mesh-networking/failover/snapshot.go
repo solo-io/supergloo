@@ -1,40 +1,79 @@
 package failover
 
 import (
-	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	istio_client_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	v1alpha1sets2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/sets"
 )
 
 type InputSnapshot struct {
-	FailoverServices []*smh_networking.FailoverService
-	MeshServices     []*smh_discovery.MeshService
+	FailoverServices v1alpha1sets.FailoverServiceSet
+	MeshServices     v1alpha1sets2.MeshServiceSet
 	// For validation
-	KubeClusters  []*smh_discovery.KubernetesCluster
-	Meshes        []*smh_discovery.Mesh
-	VirtualMeshes []*smh_networking.VirtualMesh
+	KubeClusters  v1alpha1sets2.KubernetesClusterSet
+	Meshes        v1alpha1sets2.MeshSet
+	VirtualMeshes v1alpha1sets.VirtualMeshSet
 }
 
 type OutputSnapshot struct {
-	FailoverServices []*smh_networking.FailoverService
+	FailoverServices v1alpha1sets.FailoverServiceSet
 	MeshOutputs      MeshOutputs
 }
 
 type MeshOutputs struct {
 	// Istio
-	ServiceEntries []*istio_client_networking.ServiceEntry
-	EnvoyFilters   []*istio_client_networking.EnvoyFilter
+	ServiceEntries v1alpha3sets.ServiceEntrySet
+	EnvoyFilters   v1alpha3sets.EnvoyFilterSet
+}
+
+func NewOutputSnapshot() OutputSnapshot {
+	return OutputSnapshot{
+		FailoverServices: v1alpha1sets.NewFailoverServiceSet(),
+		MeshOutputs:      NewMeshOutputs(),
+	}
+}
+
+func NewMeshOutputs() MeshOutputs {
+	return MeshOutputs{
+		ServiceEntries: v1alpha3sets.NewServiceEntrySet(),
+		EnvoyFilters:   v1alpha3sets.NewEnvoyFilterSet(),
+	}
 }
 
 // Append entries from the given OutputSnapshot to this OutputSnapshot
-func (this OutputSnapshot) Append(that OutputSnapshot) OutputSnapshot {
-	this.FailoverServices = append(this.FailoverServices, that.FailoverServices...)
-	this.MeshOutputs = this.MeshOutputs.Append(that.MeshOutputs)
+func (this OutputSnapshot) Union(that OutputSnapshot) OutputSnapshot {
+	if that.FailoverServices != nil {
+		this.FailoverServices = this.FailoverServices.Union(that.FailoverServices)
+	}
+	this.MeshOutputs = this.MeshOutputs.Union(that.MeshOutputs)
 	return this
 }
 
-func (this MeshOutputs) Append(that MeshOutputs) MeshOutputs {
-	this.ServiceEntries = append(this.ServiceEntries, that.ServiceEntries...)
-	this.EnvoyFilters = append(this.EnvoyFilters, that.EnvoyFilters...)
+func (this MeshOutputs) Union(that MeshOutputs) MeshOutputs {
+	if that.ServiceEntries != nil {
+		this.ServiceEntries = this.ServiceEntries.Union(that.ServiceEntries)
+	}
+	if that.EnvoyFilters != nil {
+		this.EnvoyFilters = this.EnvoyFilters.Union(that.EnvoyFilters)
+	}
 	return this
+}
+
+// Make ResourceRef compatible with sets.Find()
+type ResourceId struct {
+	ResourceRef *smh_core_types.ResourceRef
+}
+
+func (r ResourceId) GetName() string {
+	return r.ResourceRef.GetName()
+}
+
+func (r ResourceId) GetNamespace() string {
+	return r.ResourceRef.GetNamespace()
+}
+
+// TODO rename ResourceRef.cluster to clusterName
+func (r ResourceId) GetClusterName() string {
+	return r.ResourceRef.GetCluster()
 }

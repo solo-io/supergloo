@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	proto_types "github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -16,8 +15,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/translation/istio"
 	mock_dns "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns/mocks"
-	istio_networking "istio.io/api/networking/v1alpha3"
-	istio_client_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"istio.io/istio/pkg/util/protomarshal"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,15 +26,16 @@ var _ = Describe("Translate", func() {
 		mockIpAssigner  *mock_dns.MockIpAssigner
 		istioTranslator translation.FailoverServiceTranslator
 		failoverService = &v1alpha1.FailoverService{
+			ObjectMeta: k8s_meta.ObjectMeta{
+				Name:      "failover-service-name",
+				Namespace: "failover-service-namespace",
+			},
 			Spec: types.FailoverServiceSpec{
-				Hostname:  "failoverservice.hostname",
-				Namespace: "failoverservice-namespace",
-				Port: &types.FailoverServiceSpec_Port{
-					Port:     9080,
-					Name:     "portname",
-					Protocol: "tcp",
+				TargetService: &smh_core_types.ResourceRef{
+					Name:      "service1-name",
+					Namespace: "service1-namespace",
+					Cluster:   "cluster1",
 				},
-				Cluster: "clustername",
 			},
 		}
 		prioritizedMeshServices = []*v1alpha12.MeshService{
@@ -44,12 +43,19 @@ var _ = Describe("Translate", func() {
 				Spec: types2.MeshServiceSpec{
 					KubeService: &types2.MeshServiceSpec_KubeService{
 						Ref: &smh_core_types.ResourceRef{
-							Cluster: "cluster1",
+							Name:      "service1-name",
+							Namespace: "service1-namespace",
+							Cluster:   "cluster1",
 						},
 						Ports: []*types2.MeshServiceSpec_KubeService_KubeServicePort{
 							{
 								Port:     9080,
 								Name:     "service1.port1",
+								Protocol: "tcp",
+							},
+							{
+								Port:     8080,
+								Name:     "service1.port2",
 								Protocol: "tcp",
 							},
 						},
@@ -63,7 +69,9 @@ var _ = Describe("Translate", func() {
 				Spec: types2.MeshServiceSpec{
 					KubeService: &types2.MeshServiceSpec_KubeService{
 						Ref: &smh_core_types.ResourceRef{
-							Cluster: "cluster2",
+							Name:      "service2-name",
+							Namespace: "service2-namespace",
+							Cluster:   "cluster2",
 						},
 						Ports: []*types2.MeshServiceSpec_KubeService_KubeServicePort{
 							{
@@ -92,137 +100,128 @@ var _ = Describe("Translate", func() {
 		ctrl.Finish()
 	})
 
-	var protoStringValue = func(s string) *proto_types.Value {
-		return &proto_types.Value{
-			Kind: &proto_types.Value_StringValue{StringValue: s},
-		}
-	}
-
-	var expectedServiceEntry = func(ip string) *istio_client_networking.ServiceEntry {
-		return &istio_client_networking.ServiceEntry{
-			ObjectMeta: k8s_meta.ObjectMeta{
-				Name:        failoverService.GetName(),
-				Namespace:   failoverService.GetNamespace(),
-				ClusterName: failoverService.Spec.GetCluster(),
-			},
-			Spec: istio_networking.ServiceEntry{
-				Hosts: []string{failoverService.Spec.GetHostname()},
-				Ports: []*istio_networking.Port{
-					{
-						Number:   failoverService.Spec.GetPort().GetPort(),
-						Protocol: failoverService.Spec.GetPort().GetProtocol(),
-						Name:     failoverService.Spec.GetPort().GetName(),
-					},
-				},
-				Addresses: []string{ip},
-				// Treat remote cluster services as part of the service mesh as all clusters in the service mesh share the same root of trust.
-				Location:   istio_networking.ServiceEntry_MESH_INTERNAL,
-				Resolution: istio_networking.ServiceEntry_DNS,
-			},
-		}
-	}
-
-	var expectedEnvoyFilter = func() *istio_client_networking.EnvoyFilter {
-		failoverServiceClusterString := fmt.Sprintf("outbound|%d||%s",
-			failoverService.Spec.GetPort().GetPort(),
-			failoverService.Spec.GetHostname(),
-		)
-		return &istio_client_networking.EnvoyFilter{
-			ObjectMeta: k8s_meta.ObjectMeta{
-				Name:        failoverService.GetName(),
-				Namespace:   failoverService.GetNamespace(),
-				ClusterName: failoverService.Spec.GetCluster(),
-			},
-			Spec: istio_networking.EnvoyFilter{
-				ConfigPatches: []*istio_networking.EnvoyFilter_EnvoyConfigObjectPatch{
-					// Replace the default Envoy configuration for Istio ServiceEntry with custom Envoy failover config
-					{
-						ApplyTo: istio_networking.EnvoyFilter_CLUSTER,
-						Match: &istio_networking.EnvoyFilter_EnvoyConfigObjectMatch{
-							Context: istio_networking.EnvoyFilter_ANY,
-							ObjectTypes: &istio_networking.EnvoyFilter_EnvoyConfigObjectMatch_Cluster{
-								Cluster: &istio_networking.EnvoyFilter_ClusterMatch{
-									Name: failoverServiceClusterString,
-								},
-							},
-						},
-						Patch: &istio_networking.EnvoyFilter_Patch{
-							Operation: istio_networking.EnvoyFilter_Patch_REMOVE,
-						},
-					},
-					{
-						ApplyTo: istio_networking.EnvoyFilter_CLUSTER,
-						Match: &istio_networking.EnvoyFilter_EnvoyConfigObjectMatch{
-							Context: istio_networking.EnvoyFilter_ANY,
-							ObjectTypes: &istio_networking.EnvoyFilter_EnvoyConfigObjectMatch_Cluster{
-								Cluster: &istio_networking.EnvoyFilter_ClusterMatch{
-									Name: failoverServiceClusterString,
-								},
-							},
-						},
-						Patch: &istio_networking.EnvoyFilter_Patch{
-							Operation: istio_networking.EnvoyFilter_Patch_ADD,
-							Value: &proto_types.Struct{
-								Fields: map[string]*proto_types.Value{
-									"name":            protoStringValue(failoverServiceClusterString),
-									"connect_timeout": protoStringValue("1s"),
-									"lb_policy":       protoStringValue("CLUSTER_PROVIDED"),
-									"cluster_type": {
-										Kind: &proto_types.Value_StructValue{
-											StructValue: &proto_types.Struct{
-												Fields: map[string]*proto_types.Value{
-													"name": protoStringValue("envoy.clusters.aggregate"),
-													"typed_config": {
-														Kind: &proto_types.Value_StructValue{
-															StructValue: &proto_types.Struct{
-																Fields: map[string]*proto_types.Value{
-																	"@type":    protoStringValue("type.googleapis.com/udpa.type.v1.TypedStruct"),
-																	"type_url": protoStringValue("type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig"),
-																	"value": {
-																		Kind: &proto_types.Value_StructValue{
-																			StructValue: &proto_types.Struct{
-																				Fields: map[string]*proto_types.Value{
-																					"clusters": {
-																						Kind: &proto_types.Value_ListValue{ListValue: &proto_types.ListValue{
-																							Values: []*proto_types.Value{
-																								protoStringValue(fmt.Sprintf("outbound|%d||%s", prioritizedMeshServices[0].Spec.GetKubeService().GetPorts()[0].Port, prioritizedMeshServices[0].Spec.GetFederation().GetMulticlusterDnsName())),
-																								protoStringValue(fmt.Sprintf("outbound|%d||%s", prioritizedMeshServices[1].Spec.GetKubeService().GetPorts()[0].Port, prioritizedMeshServices[1].Spec.GetFederation().GetMulticlusterDnsName())),
-																							},
-																						}},
-																					},
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}
-	}
-
 	It("should translate FailoverService to ServiceEntry and EnvoyFilter", func() {
 		ip := "ip.string"
+		expectedServiceEntryString := fmt.Sprintf(`addresses:
+- %s
+hosts:
+- service1-name.service1-namespace.failover
+location: MESH_INTERNAL
+ports:
+- name: service1.port1
+  number: 9080
+  protocol: tcp
+- name: service1.port2
+  number: 8080
+  protocol: tcp
+resolution: DNS
+`, ip)
+
+		expectedEnvoyFilterYamlString := `configPatches:
+- applyTo: CLUSTER
+  match:
+    cluster:
+      name: outbound|9080||service1-name.service1-namespace.failover
+  patch:
+    operation: REMOVE
+- applyTo: CLUSTER
+  match:
+    cluster:
+      name: outbound|9080||service1-name.service1-namespace.failover
+  patch:
+    operation: ADD
+    value:
+      cluster_type:
+        name: envoy.clusters.aggregate
+        typed_config:
+          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig
+          value:
+            clusters:
+            - outbound|9080||service1-name.service1-namespace.svc.cluster.local
+            - outbound|8080||service1-name.service1-namespace.svc.cluster.local
+            - outbound|9080||service2.multiclusterdnsname
+      connect_timeout: 1s
+      lb_policy: CLUSTER_PROVIDED
+      name: outbound|9080||service1-name.service1-namespace.failover
+- applyTo: HTTP_ROUTE
+  match:
+    routeConfiguration:
+      vhost:
+        name: service1-name.service1-namespace.svc.cluster.local:9080
+  patch:
+    operation: MERGE
+    value:
+      route:
+        cluster: outbound|9080||service1-name.service1-namespace.failover
+- applyTo: HTTP_ROUTE
+  match:
+    routeConfiguration:
+      vhost:
+        name: service1-name.service1-namespace.svc.cluster.local:8080
+  patch:
+    operation: MERGE
+    value:
+      route:
+        cluster: outbound|9080||service1-name.service1-namespace.failover
+- applyTo: CLUSTER
+  match:
+    cluster:
+      name: outbound|8080||service1-name.service1-namespace.failover
+  patch:
+    operation: REMOVE
+- applyTo: CLUSTER
+  match:
+    cluster:
+      name: outbound|8080||service1-name.service1-namespace.failover
+  patch:
+    operation: ADD
+    value:
+      cluster_type:
+        name: envoy.clusters.aggregate
+        typed_config:
+          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig
+          value:
+            clusters:
+            - outbound|9080||service1-name.service1-namespace.svc.cluster.local
+            - outbound|8080||service1-name.service1-namespace.svc.cluster.local
+            - outbound|9080||service2.multiclusterdnsname
+      connect_timeout: 1s
+      lb_policy: CLUSTER_PROVIDED
+      name: outbound|8080||service1-name.service1-namespace.failover
+- applyTo: HTTP_ROUTE
+  match:
+    routeConfiguration:
+      vhost:
+        name: service1-name.service1-namespace.svc.cluster.local:9080
+  patch:
+    operation: MERGE
+    value:
+      route:
+        cluster: outbound|8080||service1-name.service1-namespace.failover
+- applyTo: HTTP_ROUTE
+  match:
+    routeConfiguration:
+      vhost:
+        name: service1-name.service1-namespace.svc.cluster.local:8080
+  patch:
+    operation: MERGE
+    value:
+      route:
+        cluster: outbound|8080||service1-name.service1-namespace.failover
+`
 		mockIpAssigner.
 			EXPECT().
-			AssignIPOnCluster(ctx, failoverService.Spec.GetCluster()).
+			AssignIPOnCluster(ctx, prioritizedMeshServices[0].Spec.GetKubeService().GetRef().GetCluster()).
 			Return(ip, nil)
-
 		outputSnapshot, translatorError := istioTranslator.Translate(ctx, failoverService, prioritizedMeshServices)
 		Expect(translatorError).To(BeNil())
-		Expect(outputSnapshot.ServiceEntries).To(HaveLen(1))
-		Expect(outputSnapshot.ServiceEntries[0]).To(Equal(expectedServiceEntry(ip)))
-		Expect(outputSnapshot.EnvoyFilters).To(HaveLen(1))
-		Expect(outputSnapshot.EnvoyFilters[0]).To(Equal(expectedEnvoyFilter()))
+		envoyFilterYaml, err := protomarshal.ToYAML(&outputSnapshot.EnvoyFilters.List()[0].Spec)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(envoyFilterYaml).To(Equal(expectedEnvoyFilterYamlString))
+		serviceEntryYaml, err := protomarshal.ToYAML(&outputSnapshot.ServiceEntries.List()[0].Spec)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(serviceEntryYaml).To(Equal(expectedServiceEntryString))
 	})
 })

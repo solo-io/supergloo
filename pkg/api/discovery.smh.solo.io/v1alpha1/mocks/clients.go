@@ -596,6 +596,44 @@ func (mr *MockKubernetesClusterClientMockRecorder) PatchKubernetesClusterStatus(
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchKubernetesClusterStatus", reflect.TypeOf((*MockKubernetesClusterClient)(nil).PatchKubernetesClusterStatus), varargs...)
 }
 
+// MockMulticlusterKubernetesClusterClient is a mock of MulticlusterKubernetesClusterClient interface.
+type MockMulticlusterKubernetesClusterClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterKubernetesClusterClientMockRecorder
+}
+
+// MockMulticlusterKubernetesClusterClientMockRecorder is the mock recorder for MockMulticlusterKubernetesClusterClient.
+type MockMulticlusterKubernetesClusterClientMockRecorder struct {
+	mock *MockMulticlusterKubernetesClusterClient
+}
+
+// NewMockMulticlusterKubernetesClusterClient creates a new mock instance.
+func NewMockMulticlusterKubernetesClusterClient(ctrl *gomock.Controller) *MockMulticlusterKubernetesClusterClient {
+	mock := &MockMulticlusterKubernetesClusterClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterKubernetesClusterClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterKubernetesClusterClient) EXPECT() *MockMulticlusterKubernetesClusterClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterKubernetesClusterClient) Cluster(cluster string) (v1alpha1.KubernetesClusterClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha1.KubernetesClusterClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterKubernetesClusterClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterKubernetesClusterClient)(nil).Cluster), cluster)
+}
+
 // MockMeshServiceReader is a mock of MeshServiceReader interface.
 type MockMeshServiceReader struct {
 	ctrl     *gomock.Controller
@@ -1060,6 +1098,44 @@ func (mr *MockMeshServiceClientMockRecorder) PatchMeshServiceStatus(ctx, obj, pa
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshServiceStatus", reflect.TypeOf((*MockMeshServiceClient)(nil).PatchMeshServiceStatus), varargs...)
+}
+
+// MockMulticlusterMeshServiceClient is a mock of MulticlusterMeshServiceClient interface.
+type MockMulticlusterMeshServiceClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterMeshServiceClientMockRecorder
+}
+
+// MockMulticlusterMeshServiceClientMockRecorder is the mock recorder for MockMulticlusterMeshServiceClient.
+type MockMulticlusterMeshServiceClientMockRecorder struct {
+	mock *MockMulticlusterMeshServiceClient
+}
+
+// NewMockMulticlusterMeshServiceClient creates a new mock instance.
+func NewMockMulticlusterMeshServiceClient(ctrl *gomock.Controller) *MockMulticlusterMeshServiceClient {
+	mock := &MockMulticlusterMeshServiceClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterMeshServiceClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterMeshServiceClient) EXPECT() *MockMulticlusterMeshServiceClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterMeshServiceClient) Cluster(cluster string) (v1alpha1.MeshServiceClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha1.MeshServiceClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterMeshServiceClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterMeshServiceClient)(nil).Cluster), cluster)
 }
 
 // MockMeshWorkloadReader is a mock of MeshWorkloadReader interface.
@@ -1528,6 +1604,44 @@ func (mr *MockMeshWorkloadClientMockRecorder) PatchMeshWorkloadStatus(ctx, obj, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshWorkloadStatus", reflect.TypeOf((*MockMeshWorkloadClient)(nil).PatchMeshWorkloadStatus), varargs...)
 }
 
+// MockMulticlusterMeshWorkloadClient is a mock of MulticlusterMeshWorkloadClient interface.
+type MockMulticlusterMeshWorkloadClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterMeshWorkloadClientMockRecorder
+}
+
+// MockMulticlusterMeshWorkloadClientMockRecorder is the mock recorder for MockMulticlusterMeshWorkloadClient.
+type MockMulticlusterMeshWorkloadClientMockRecorder struct {
+	mock *MockMulticlusterMeshWorkloadClient
+}
+
+// NewMockMulticlusterMeshWorkloadClient creates a new mock instance.
+func NewMockMulticlusterMeshWorkloadClient(ctrl *gomock.Controller) *MockMulticlusterMeshWorkloadClient {
+	mock := &MockMulticlusterMeshWorkloadClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterMeshWorkloadClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterMeshWorkloadClient) EXPECT() *MockMulticlusterMeshWorkloadClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterMeshWorkloadClient) Cluster(cluster string) (v1alpha1.MeshWorkloadClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha1.MeshWorkloadClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterMeshWorkloadClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterMeshWorkloadClient)(nil).Cluster), cluster)
+}
+
 // MockMeshReader is a mock of MeshReader interface.
 type MockMeshReader struct {
 	ctrl     *gomock.Controller
@@ -1992,4 +2106,42 @@ func (mr *MockMeshClientMockRecorder) PatchMeshStatus(ctx, obj, patch interface{
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshStatus", reflect.TypeOf((*MockMeshClient)(nil).PatchMeshStatus), varargs...)
+}
+
+// MockMulticlusterMeshClient is a mock of MulticlusterMeshClient interface.
+type MockMulticlusterMeshClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterMeshClientMockRecorder
+}
+
+// MockMulticlusterMeshClientMockRecorder is the mock recorder for MockMulticlusterMeshClient.
+type MockMulticlusterMeshClientMockRecorder struct {
+	mock *MockMulticlusterMeshClient
+}
+
+// NewMockMulticlusterMeshClient creates a new mock instance.
+func NewMockMulticlusterMeshClient(ctrl *gomock.Controller) *MockMulticlusterMeshClient {
+	mock := &MockMulticlusterMeshClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterMeshClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterMeshClient) EXPECT() *MockMulticlusterMeshClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterMeshClient) Cluster(cluster string) (v1alpha1.MeshClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha1.MeshClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterMeshClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterMeshClient)(nil).Cluster), cluster)
 }

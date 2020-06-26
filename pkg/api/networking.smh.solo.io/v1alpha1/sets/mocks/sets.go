@@ -10,6 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/sets"
+	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	sets "k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -176,6 +177,35 @@ func (mr *MockTrafficPolicySetMockRecorder) Intersection(set interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockTrafficPolicySet)(nil).Intersection), set)
 }
 
+// Find mocks base method.
+func (m *MockTrafficPolicySet) Find(id ezkube.ResourceId) (*v1alpha1.TrafficPolicy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1alpha1.TrafficPolicy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockTrafficPolicySetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockTrafficPolicySet)(nil).Find), id)
+}
+
+// Length mocks base method.
+func (m *MockTrafficPolicySet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockTrafficPolicySetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockTrafficPolicySet)(nil).Length))
+}
+
 // MockAccessControlPolicySet is a mock of AccessControlPolicySet interface.
 type MockAccessControlPolicySet struct {
 	ctrl     *gomock.Controller
@@ -337,6 +367,35 @@ func (m *MockAccessControlPolicySet) Intersection(set v1alpha1sets.AccessControl
 func (mr *MockAccessControlPolicySetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockAccessControlPolicySet)(nil).Intersection), set)
+}
+
+// Find mocks base method.
+func (m *MockAccessControlPolicySet) Find(id ezkube.ResourceId) (*v1alpha1.AccessControlPolicy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1alpha1.AccessControlPolicy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockAccessControlPolicySetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockAccessControlPolicySet)(nil).Find), id)
+}
+
+// Length mocks base method.
+func (m *MockAccessControlPolicySet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockAccessControlPolicySetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockAccessControlPolicySet)(nil).Length))
 }
 
 // MockVirtualMeshSet is a mock of VirtualMeshSet interface.
@@ -502,6 +561,35 @@ func (mr *MockVirtualMeshSetMockRecorder) Intersection(set interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockVirtualMeshSet)(nil).Intersection), set)
 }
 
+// Find mocks base method.
+func (m *MockVirtualMeshSet) Find(id ezkube.ResourceId) (*v1alpha1.VirtualMesh, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1alpha1.VirtualMesh)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockVirtualMeshSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockVirtualMeshSet)(nil).Find), id)
+}
+
+// Length mocks base method.
+func (m *MockVirtualMeshSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockVirtualMeshSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockVirtualMeshSet)(nil).Length))
+}
+
 // MockFailoverServiceSet is a mock of FailoverServiceSet interface.
 type MockFailoverServiceSet struct {
 	ctrl     *gomock.Controller
@@ -663,4 +751,33 @@ func (m *MockFailoverServiceSet) Intersection(set v1alpha1sets.FailoverServiceSe
 func (mr *MockFailoverServiceSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockFailoverServiceSet)(nil).Intersection), set)
+}
+
+// Find mocks base method.
+func (m *MockFailoverServiceSet) Find(id ezkube.ResourceId) (*v1alpha1.FailoverService, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1alpha1.FailoverService)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockFailoverServiceSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockFailoverServiceSet)(nil).Find), id)
+}
+
+// Length mocks base method.
+func (m *MockFailoverServiceSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockFailoverServiceSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockFailoverServiceSet)(nil).Length))
 }

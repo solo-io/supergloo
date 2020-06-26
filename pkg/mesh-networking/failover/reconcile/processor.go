@@ -46,22 +46,25 @@ func NewFailoverServiceProcessor(
 	4. Mesh
 */
 func (f *failoverServiceProcessor) Process(ctx context.Context, inputSnapshot failover.InputSnapshot) failover.OutputSnapshot {
-	outputSnapshot := failover.OutputSnapshot{}
+	outputSnapshot := failover.NewOutputSnapshot()
 	// Validate will set the validation status and observed generation on the FailoverService status.
 	f.validator.Validate(inputSnapshot)
-	for _, failoverService := range inputSnapshot.FailoverServices {
+	for _, failoverService := range inputSnapshot.FailoverServices.List() {
 		if f.readyToProcess(failoverService) {
-			prioritizedMeshServices, err := f.collectMeshServicesForFailoverService(failoverService, inputSnapshot.MeshServices)
+			prioritizedMeshServices, err := f.collectMeshServicesForFailoverService(
+				failoverService,
+				inputSnapshot.MeshServices.List(),
+			)
 			if err != nil {
 				failoverService.Status = f.computeProcessingErrorStatus(err)
 				continue
 			}
 			failoverServiceWithUpdatedStatus, meshOutputs := f.processSingle(ctx, failoverService, prioritizedMeshServices)
 			// Accumulate outputs for each FailoverService
-			outputSnapshot.MeshOutputs = outputSnapshot.MeshOutputs.Append(meshOutputs)
+			outputSnapshot.MeshOutputs = outputSnapshot.MeshOutputs.Union(meshOutputs)
 			failoverService = failoverServiceWithUpdatedStatus
 		}
-		outputSnapshot.FailoverServices = append(outputSnapshot.FailoverServices, failoverService)
+		outputSnapshot.FailoverServices.Insert(failoverService)
 	}
 	return outputSnapshot
 }
@@ -72,14 +75,31 @@ func (f *failoverServiceProcessor) readyToProcess(failoverService *smh_networkin
 		failoverService.Status.GetObservedGeneration() == failoverService.GetGeneration()
 }
 
-// Collect, in priority order as declared in the FailoverService, the relevant MeshServices.
-// If a MeshService cannot be found, return an error
+/*
+	Collect, in priority order as declared in the FailoverService, the relevant MeshServices.
+	The first MeshService is guaranteed to be the FailoverService's target service.
+	If a MeshService cannot be found, return an error
+*/
 func (f *failoverServiceProcessor) collectMeshServicesForFailoverService(
 	failoverService *smh_networking.FailoverService,
 	allMeshServices []*smh_discovery.MeshService,
 ) ([]*smh_discovery.MeshService, error) {
 	var prioritizedMeshServices []*smh_discovery.MeshService
-	for _, serviceRef := range failoverService.Spec.GetServices() {
+	targetService := failoverService.Spec.GetTargetService()
+	for _, meshService := range allMeshServices {
+		kubeServiceRef := meshService.Spec.GetKubeService().GetRef()
+		if targetService.GetName() == kubeServiceRef.GetName() &&
+			targetService.GetNamespace() == kubeServiceRef.GetNamespace() &&
+			targetService.GetCluster() == kubeServiceRef.GetCluster() {
+			prioritizedMeshServices = []*smh_discovery.MeshService{meshService}
+			break
+		}
+	}
+	if len(prioritizedMeshServices) == 0 {
+		return nil, validation.TargetServiceNotFound(targetService)
+	}
+
+	for _, serviceRef := range failoverService.Spec.GetFailoverServices() {
 		var matchingMeshService *smh_discovery.MeshService
 		for _, meshService := range allMeshServices {
 			kubeServiceRef := meshService.Spec.GetKubeService().GetRef()
@@ -91,7 +111,7 @@ func (f *failoverServiceProcessor) collectMeshServicesForFailoverService(
 			matchingMeshService = meshService
 		}
 		if matchingMeshService == nil {
-			return nil, validation.ServiceNotFound(serviceRef)
+			return nil, validation.FailoverServiceNotFound(serviceRef)
 		}
 		prioritizedMeshServices = append(prioritizedMeshServices, matchingMeshService)
 	}
@@ -106,7 +126,7 @@ func (f *failoverServiceProcessor) processSingle(
 	prioritizedMeshServices []*smh_discovery.MeshService,
 ) (*smh_networking.FailoverService, failover.MeshOutputs) {
 	var translatorErrs []*types.FailoverServiceStatus_TranslatorError
-	var outputs failover.MeshOutputs
+	outputs := failover.NewMeshOutputs()
 	for _, translator := range f.translators {
 		output, translatorErr := translator.Translate(ctx, failoverService, prioritizedMeshServices)
 		if translatorErr != nil {
@@ -114,7 +134,7 @@ func (f *failoverServiceProcessor) processSingle(
 			continue
 		}
 		// Accumulate mesh specific output resources.
-		outputs = outputs.Append(output)
+		outputs = outputs.Union(output)
 	}
 	// Set status on FailoverService and add to OutputSnapshot
 	failoverService.Status.TranslationStatus = f.computeTranslationStatus(translatorErrs)

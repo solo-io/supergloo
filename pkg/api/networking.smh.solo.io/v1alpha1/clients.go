@@ -211,6 +211,28 @@ func (c *trafficPolicyClient) PatchTrafficPolicyStatus(ctx context.Context, obj 
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
+// Provides TrafficPolicyClients for multiple clusters.
+type MulticlusterTrafficPolicyClient interface {
+	// Cluster returns a TrafficPolicyClient for the given cluster
+	Cluster(cluster string) (TrafficPolicyClient, error)
+}
+
+type multiclusterTrafficPolicyClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterTrafficPolicyClient(client multicluster.Client) MulticlusterTrafficPolicyClient {
+	return &multiclusterTrafficPolicyClient{client: client}
+}
+
+func (m *multiclusterTrafficPolicyClient) Cluster(cluster string) (TrafficPolicyClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewTrafficPolicyClient(client), nil
+}
+
 // Reader knows how to read and list AccessControlPolicys.
 type AccessControlPolicyReader interface {
 	// Get retrieves a AccessControlPolicy for the given object key
@@ -329,6 +351,28 @@ func (c *accessControlPolicyClient) UpdateAccessControlPolicyStatus(ctx context.
 
 func (c *accessControlPolicyClient) PatchAccessControlPolicyStatus(ctx context.Context, obj *AccessControlPolicy, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides AccessControlPolicyClients for multiple clusters.
+type MulticlusterAccessControlPolicyClient interface {
+	// Cluster returns a AccessControlPolicyClient for the given cluster
+	Cluster(cluster string) (AccessControlPolicyClient, error)
+}
+
+type multiclusterAccessControlPolicyClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterAccessControlPolicyClient(client multicluster.Client) MulticlusterAccessControlPolicyClient {
+	return &multiclusterAccessControlPolicyClient{client: client}
+}
+
+func (m *multiclusterAccessControlPolicyClient) Cluster(cluster string) (AccessControlPolicyClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewAccessControlPolicyClient(client), nil
 }
 
 // Reader knows how to read and list VirtualMeshs.
@@ -451,6 +495,28 @@ func (c *virtualMeshClient) PatchVirtualMeshStatus(ctx context.Context, obj *Vir
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
+// Provides VirtualMeshClients for multiple clusters.
+type MulticlusterVirtualMeshClient interface {
+	// Cluster returns a VirtualMeshClient for the given cluster
+	Cluster(cluster string) (VirtualMeshClient, error)
+}
+
+type multiclusterVirtualMeshClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterVirtualMeshClient(client multicluster.Client) MulticlusterVirtualMeshClient {
+	return &multiclusterVirtualMeshClient{client: client}
+}
+
+func (m *multiclusterVirtualMeshClient) Cluster(cluster string) (VirtualMeshClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewVirtualMeshClient(client), nil
+}
+
 // Reader knows how to read and list FailoverServices.
 type FailoverServiceReader interface {
 	// Get retrieves a FailoverService for the given object key
@@ -569,4 +635,26 @@ func (c *failoverServiceClient) UpdateFailoverServiceStatus(ctx context.Context,
 
 func (c *failoverServiceClient) PatchFailoverServiceStatus(ctx context.Context, obj *FailoverService, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides FailoverServiceClients for multiple clusters.
+type MulticlusterFailoverServiceClient interface {
+	// Cluster returns a FailoverServiceClient for the given cluster
+	Cluster(cluster string) (FailoverServiceClient, error)
+}
+
+type multiclusterFailoverServiceClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterFailoverServiceClient(client multicluster.Client) MulticlusterFailoverServiceClient {
+	return &multiclusterFailoverServiceClient{client: client}
+}
+
+func (m *multiclusterFailoverServiceClient) Cluster(cluster string) (FailoverServiceClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewFailoverServiceClient(client), nil
 }

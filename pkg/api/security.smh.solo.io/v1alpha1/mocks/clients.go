@@ -553,3 +553,41 @@ func (mr *MockVirtualMeshCertificateSigningRequestClientMockRecorder) PatchVirtu
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVirtualMeshCertificateSigningRequestStatus", reflect.TypeOf((*MockVirtualMeshCertificateSigningRequestClient)(nil).PatchVirtualMeshCertificateSigningRequestStatus), varargs...)
 }
+
+// MockMulticlusterVirtualMeshCertificateSigningRequestClient is a mock of MulticlusterVirtualMeshCertificateSigningRequestClient interface.
+type MockMulticlusterVirtualMeshCertificateSigningRequestClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterVirtualMeshCertificateSigningRequestClientMockRecorder
+}
+
+// MockMulticlusterVirtualMeshCertificateSigningRequestClientMockRecorder is the mock recorder for MockMulticlusterVirtualMeshCertificateSigningRequestClient.
+type MockMulticlusterVirtualMeshCertificateSigningRequestClientMockRecorder struct {
+	mock *MockMulticlusterVirtualMeshCertificateSigningRequestClient
+}
+
+// NewMockMulticlusterVirtualMeshCertificateSigningRequestClient creates a new mock instance.
+func NewMockMulticlusterVirtualMeshCertificateSigningRequestClient(ctrl *gomock.Controller) *MockMulticlusterVirtualMeshCertificateSigningRequestClient {
+	mock := &MockMulticlusterVirtualMeshCertificateSigningRequestClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterVirtualMeshCertificateSigningRequestClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterVirtualMeshCertificateSigningRequestClient) EXPECT() *MockMulticlusterVirtualMeshCertificateSigningRequestClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterVirtualMeshCertificateSigningRequestClient) Cluster(cluster string) (v1alpha1.VirtualMeshCertificateSigningRequestClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha1.VirtualMeshCertificateSigningRequestClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterVirtualMeshCertificateSigningRequestClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterVirtualMeshCertificateSigningRequestClient)(nil).Cluster), cluster)
+}

@@ -8,7 +8,6 @@ import (
 	smh_discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/controller"
 
 	"github.com/solo-io/skv2/pkg/multicluster"
-	"github.com/solo-io/skv2/pkg/multicluster/client"
 	"github.com/solo-io/skv2/pkg/reconcile"
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
@@ -119,7 +118,7 @@ func makeMulticlusterComponents(ctx context.Context, scheme *runtime.Scheme) (mu
 		Namespace: "", // TODO (ilackarms): support configuring specific watch namespaces on remote clusters
 		Scheme:    scheme,
 	})
-	multiclusterClient := client.NewClient(clusterWatcher)
+	multiclusterClient := multicluster.NewClient(clusterWatcher)
 
 	return clusterWatcher, multiclusterClient
 }

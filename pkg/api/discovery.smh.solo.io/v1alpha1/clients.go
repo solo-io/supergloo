@@ -211,6 +211,28 @@ func (c *kubernetesClusterClient) PatchKubernetesClusterStatus(ctx context.Conte
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
+// Provides KubernetesClusterClients for multiple clusters.
+type MulticlusterKubernetesClusterClient interface {
+	// Cluster returns a KubernetesClusterClient for the given cluster
+	Cluster(cluster string) (KubernetesClusterClient, error)
+}
+
+type multiclusterKubernetesClusterClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterKubernetesClusterClient(client multicluster.Client) MulticlusterKubernetesClusterClient {
+	return &multiclusterKubernetesClusterClient{client: client}
+}
+
+func (m *multiclusterKubernetesClusterClient) Cluster(cluster string) (KubernetesClusterClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewKubernetesClusterClient(client), nil
+}
+
 // Reader knows how to read and list MeshServices.
 type MeshServiceReader interface {
 	// Get retrieves a MeshService for the given object key
@@ -329,6 +351,28 @@ func (c *meshServiceClient) UpdateMeshServiceStatus(ctx context.Context, obj *Me
 
 func (c *meshServiceClient) PatchMeshServiceStatus(ctx context.Context, obj *MeshService, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides MeshServiceClients for multiple clusters.
+type MulticlusterMeshServiceClient interface {
+	// Cluster returns a MeshServiceClient for the given cluster
+	Cluster(cluster string) (MeshServiceClient, error)
+}
+
+type multiclusterMeshServiceClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterMeshServiceClient(client multicluster.Client) MulticlusterMeshServiceClient {
+	return &multiclusterMeshServiceClient{client: client}
+}
+
+func (m *multiclusterMeshServiceClient) Cluster(cluster string) (MeshServiceClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewMeshServiceClient(client), nil
 }
 
 // Reader knows how to read and list MeshWorkloads.
@@ -451,6 +495,28 @@ func (c *meshWorkloadClient) PatchMeshWorkloadStatus(ctx context.Context, obj *M
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
+// Provides MeshWorkloadClients for multiple clusters.
+type MulticlusterMeshWorkloadClient interface {
+	// Cluster returns a MeshWorkloadClient for the given cluster
+	Cluster(cluster string) (MeshWorkloadClient, error)
+}
+
+type multiclusterMeshWorkloadClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterMeshWorkloadClient(client multicluster.Client) MulticlusterMeshWorkloadClient {
+	return &multiclusterMeshWorkloadClient{client: client}
+}
+
+func (m *multiclusterMeshWorkloadClient) Cluster(cluster string) (MeshWorkloadClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewMeshWorkloadClient(client), nil
+}
+
 // Reader knows how to read and list Meshs.
 type MeshReader interface {
 	// Get retrieves a Mesh for the given object key
@@ -569,4 +635,26 @@ func (c *meshClient) UpdateMeshStatus(ctx context.Context, obj *Mesh, opts ...cl
 
 func (c *meshClient) PatchMeshStatus(ctx context.Context, obj *Mesh, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides MeshClients for multiple clusters.
+type MulticlusterMeshClient interface {
+	// Cluster returns a MeshClient for the given cluster
+	Cluster(cluster string) (MeshClient, error)
+}
+
+type multiclusterMeshClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterMeshClient(client multicluster.Client) MulticlusterMeshClient {
+	return &multiclusterMeshClient{client: client}
+}
+
+func (m *multiclusterMeshClient) Cluster(cluster string) (MeshClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewMeshClient(client), nil
 }

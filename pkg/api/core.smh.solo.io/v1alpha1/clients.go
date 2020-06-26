@@ -189,3 +189,25 @@ func (c *settingsClient) UpdateSettingsStatus(ctx context.Context, obj *Settings
 func (c *settingsClient) PatchSettingsStatus(ctx context.Context, obj *Settings, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
+
+// Provides SettingsClients for multiple clusters.
+type MulticlusterSettingsClient interface {
+	// Cluster returns a SettingsClient for the given cluster
+	Cluster(cluster string) (SettingsClient, error)
+}
+
+type multiclusterSettingsClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterSettingsClient(client multicluster.Client) MulticlusterSettingsClient {
+	return &multiclusterSettingsClient{client: client}
+}
+
+func (m *multiclusterSettingsClient) Cluster(cluster string) (SettingsClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewSettingsClient(client), nil
+}
