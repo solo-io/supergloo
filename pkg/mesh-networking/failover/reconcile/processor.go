@@ -38,6 +38,12 @@ func NewFailoverServiceProcessor(
 	1. Validate the FailoverServices and update the validation status.
 	2. For the valid FailoverServices, translate them to mesh-specific configuration, update translation status.
 	Return an OutputSnapshot containing FailoverServices with updated statuses and translated resources.
+
+	TODO(harveyxia) The FailoverService processor must also be invoked for the following CRD events:
+	1. TrafficPolicy
+	2. MeshService
+	3. VirtualMesh
+	4. Mesh
 */
 func (f *failoverServiceProcessor) Process(ctx context.Context, inputSnapshot failover.InputSnapshot) failover.OutputSnapshot {
 	outputSnapshot := failover.OutputSnapshot{}
