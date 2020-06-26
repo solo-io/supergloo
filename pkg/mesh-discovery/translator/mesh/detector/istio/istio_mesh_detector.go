@@ -1,18 +1,19 @@
 package istio
 
 import (
+	"strings"
+
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/smh/pkg/mesh-discovery/translator/mesh/detector"
 	"github.com/solo-io/smh/pkg/mesh-discovery/translator/utils"
 	istiov1alpha1 "istio.io/api/mesh/v1alpha1"
 	"istio.io/istio/pkg/util/gogoprotomarshal"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"strings"
 )
 
 const (
@@ -101,7 +102,7 @@ func getTrustDomain(
 	cluster,
 	namespace string,
 ) (string, error) {
-	istioConfigMap, err := configMaps.Find(&v1.ClusterObjectRef{
+	istioConfigMap, err := configMaps.Find(&skv1.ClusterObjectRef{
 		Name:        istioConfigMapName,
 		Namespace:   namespace,
 		ClusterName: cluster,

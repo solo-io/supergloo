@@ -6,13 +6,14 @@ package translator
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	v1sets0 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	mesh "github.com/solo-io/smh/pkg/mesh-discovery/translator/mesh"
 	meshservice "github.com/solo-io/smh/pkg/mesh-discovery/translator/meshservice"
 	meshworkload "github.com/solo-io/smh/pkg/mesh-discovery/translator/meshworkload"
-	reflect "reflect"
 )
 
 // MockdependencyFactory is a mock of dependencyFactory interface.

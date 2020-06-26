@@ -1,14 +1,21 @@
 package utils
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
-func MakeResourceRef(id ezkube.ResourceId) *types.ResourceRef {
-	return &types.ResourceRef{
+func MakeResourceRef(id ezkube.ResourceId) *skv1.ObjectRef {
+	return &skv1.ObjectRef{
 		Name:      id.GetName(),
 		Namespace: id.GetNamespace(),
-		Cluster:   id.GetClusterName(),
+	}
+}
+
+func MakeClusterResourceRef(id ezkube.ResourceId) *skv1.ClusterObjectRef {
+	return &skv1.ClusterObjectRef{
+		Name:        id.GetName(),
+		Namespace:   id.GetNamespace(),
+		ClusterName: id.GetClusterName(),
 	}
 }

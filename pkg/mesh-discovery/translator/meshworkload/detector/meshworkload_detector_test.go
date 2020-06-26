@@ -2,6 +2,7 @@ package detector_test
 
 import (
 	"context"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -129,7 +130,7 @@ var _ = Describe("MeshworkloadDetector", func() {
 			Spec: v1alpha1.MeshWorkloadSpec{
 				WorkloadType: &v1alpha1.MeshWorkloadSpec_Kubernetes{
 					Kubernetes: &v1alpha1.MeshWorkloadSpec_KubernertesWorkload{
-						Controller:         utils.MakeResourceRef(deployment),
+						Controller:         utils.MakeClusterResourceRef(deployment),
 						PodLabels:          podLabels,
 						ServiceAccountName: serviceAccountName,
 					},

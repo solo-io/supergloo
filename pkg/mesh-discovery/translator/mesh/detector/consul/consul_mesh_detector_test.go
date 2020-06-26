@@ -2,6 +2,7 @@ package consul_test
 
 import (
 	"fmt"
+
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/common/defaults"
 	consul "github.com/solo-io/smh/pkg/mesh-discovery/translator/mesh/detector/consul"

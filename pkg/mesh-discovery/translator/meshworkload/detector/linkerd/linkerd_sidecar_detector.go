@@ -2,12 +2,13 @@ package linkerd
 
 import (
 	"context"
+	"strings"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	corev1 "k8s.io/api/core/v1"
-	"strings"
 )
 
 // TODO(ilackarms): currently we produce a mesh ref that maps directly to the cluster

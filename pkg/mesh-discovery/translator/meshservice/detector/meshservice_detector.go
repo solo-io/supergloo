@@ -23,7 +23,7 @@ type MeshServiceDetector interface {
 	DetectMeshService(service *corev1.Service, meshWorkloads v1alpha1sets.MeshWorkloadSet) *v1alpha1.MeshService
 }
 
-type meshServiceDetector struct {}
+type meshServiceDetector struct{}
 
 func NewMeshServiceDetector() MeshServiceDetector {
 	return &meshServiceDetector{}
@@ -46,7 +46,7 @@ func (d meshServiceDetector) DetectMeshService(service *corev1.Service, meshWork
 		ObjectMeta: utils.DiscoveredObjectMeta(service),
 		Spec: v1alpha1.MeshServiceSpec{
 			KubeService: &v1alpha1.MeshServiceSpec_KubeService{
-				Ref:                    utils.MakeResourceRef(service),
+				Ref:                    utils.MakeClusterResourceRef(service),
 				WorkloadSelectorLabels: service.Spec.Selector,
 				Labels:                 service.Labels,
 				Ports:                  convertPorts(service),
@@ -77,10 +77,9 @@ func isBackingKubeWorkload(service *corev1.Service, kubeWorkload *v1alpha1.MeshW
 
 	workloadRef := kubeWorkload.Controller
 
-	if workloadRef.Cluster != service.ClusterName || workloadRef.Namespace != service.Namespace {
+	if workloadRef.ClusterName != service.ClusterName || workloadRef.Namespace != service.Namespace {
 		return false
 	}
-
 
 	podLabels := kubeWorkload.GetPodLabels()
 	selectorLabels := service.Spec.Selector

@@ -1,10 +1,11 @@
 package consul
 
 import (
-	"github.com/solo-io/smh/pkg/mesh-discovery/translator/mesh/detector"
-	"github.com/solo-io/smh/pkg/mesh-discovery/translator/utils"
 	"regexp"
 	"strings"
+
+	"github.com/solo-io/smh/pkg/mesh-discovery/translator/mesh/detector"
+	"github.com/solo-io/smh/pkg/mesh-discovery/translator/utils"
 
 	consulconfig "github.com/hashicorp/consul/agent/config"
 	"github.com/hashicorp/hcl"

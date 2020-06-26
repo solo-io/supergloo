@@ -2,6 +2,7 @@ package istio_test
 
 import (
 	"context"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
@@ -68,7 +69,7 @@ var _ = Describe("IstioSidecarDetector", func() {
 	It("does not detect workload when sidecar mesh is of different cluster", func() {
 		pod := pod()
 
-		meshes := istioMeshes("different-"+clusterName)
+		meshes := istioMeshes("different-" + clusterName)
 
 		meshWorkload := detector.DetectMeshSidecar(pod, meshes)
 		Expect(meshWorkload).To(BeNil())
