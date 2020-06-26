@@ -7,7 +7,6 @@ import (
 
 var (
 	OutputSnapshotTemplateContents = mustRead("codegen/templates/output_snapshot.gotmpl")
-	InputSnapshotTemplateContents  = mustRead("codegen/templates/input_snapshot.gotmpl")
 	ReconcilerTemplateContents     = mustRead("codegen/templates/reconciler.gotmpl")
 )
 

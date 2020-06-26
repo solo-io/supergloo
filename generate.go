@@ -2,6 +2,7 @@ package main
 
 import (
 	externalapis "github.com/solo-io/external-apis/codegen"
+	"github.com/solo-io/skv2/contrib"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -113,8 +114,10 @@ func makeSmhCommand() codegen.Command {
 
 	topLevelTemplates := []model.CustomTemplates{
 		makeDiscoveryInputSnapshotTemplate(),
+		makeDiscoveryReconcilerTemplate(),
 		makeDiscoveryOutputSnapshotTemplate(),
 		makeNetworkingInputSnapshotTemplate(),
+		makeNetworkingReconcilerTemplate(),
 		makeNetworkingOutputSnapshotTemplate(),
 	}
 
@@ -138,11 +141,23 @@ func makeCsrCommand() codegen.Command {
 }
 
 func makeDiscoveryInputSnapshotTemplate() model.CustomTemplates {
-	inputGroups := templates.SelectResources("github.com/solo-io/external-apis", externalapis.Groups, inputDiscoverySnapshot)
+	return contrib.InputSnapshot(
+		discoveryInputSnapshotCodePath,
+		"github.com/solo-io/external-apis",
+		externalapis.Groups,
+		inputDiscoverySnapshot,
+	)
+}
+
+func makeDiscoveryReconcilerTemplate() model.CustomTemplates {
+	inputGroups := templates.SelectResources(
+		"github.com/solo-io/external-apis",
+		externalapis.Groups,
+		inputDiscoverySnapshot,
+	)
 
 	return model.CustomTemplates{
 		Templates: map[string]string{
-			discoveryInputSnapshotCodePath:      templates.InputSnapshotTemplateContents,
 			discoveryReconcilerSnapshotCodePath: templates.ReconcilerTemplateContents,
 		},
 		Funcs: templates.MakeSnapshotFuncs(inputGroups),
@@ -150,7 +165,11 @@ func makeDiscoveryInputSnapshotTemplate() model.CustomTemplates {
 }
 
 func makeDiscoveryOutputSnapshotTemplate() model.CustomTemplates {
-	outputGroups := templates.SelectResources("", groups.SMHGroups, outputDiscoverySnapshot)
+	outputGroups := templates.SelectResources(
+		"",
+		groups.SMHGroups,
+		outputDiscoverySnapshot,
+	)
 
 	return model.CustomTemplates{
 		Templates: map[string]string{
@@ -161,11 +180,23 @@ func makeDiscoveryOutputSnapshotTemplate() model.CustomTemplates {
 }
 
 func makeNetworkingInputSnapshotTemplate() model.CustomTemplates {
-	inputGroups := templates.SelectResources("", groups.SMHGroups, inputNetworkingSnapshot)
+	return contrib.InputSnapshot(
+		networkingInputSnapshotCodePath,
+		"",
+		groups.SMHGroups,
+		inputNetworkingSnapshot,
+	)
+}
+
+func makeNetworkingReconcilerTemplate() model.CustomTemplates {
+	inputGroups := templates.SelectResources(
+		"",
+		groups.SMHGroups,
+		inputNetworkingSnapshot,
+	)
 
 	return model.CustomTemplates{
 		Templates: map[string]string{
-			networkingInputSnapshotCodePath:      templates.InputSnapshotTemplateContents,
 			networkingReconcilerSnapshotCodePath: templates.ReconcilerTemplateContents,
 		},
 		Funcs: templates.MakeSnapshotFuncs(inputGroups),
