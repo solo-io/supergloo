@@ -25,7 +25,6 @@ replace (
 	k8s.io/component-base => k8s.io/component-base v0.17.2
 	k8s.io/cri-api => k8s.io/cri-api v0.17.2
 	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.17.2
-	k8s.io/heapster => k8s.io/heapster v1.17.1
 	k8s.io/klog => github.com/stefanprodan/klog v0.0.0-20190418165334-9cbb78b20423
 	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.17.2
 	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.17.2
@@ -33,11 +32,9 @@ replace (
 	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.17.2
 	k8s.io/kubectl => k8s.io/kubectl v0.17.2
 	k8s.io/kubelet => k8s.io/kubelet v0.17.2
-	k8s.io/kubernetes => k8s.io/kubernetes v0.17.2
 	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.17.2
 	k8s.io/metrics => k8s.io/metrics v0.17.2
 	k8s.io/node-api => k8s.io/node-api v0.17.2
-	k8s.io/repo-infra => k8s.io/repo-infra v0.17.2
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.17.2
 	k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.17.2
 	k8s.io/sample-controller => k8s.io/sample-controller v0.17.2
@@ -56,11 +53,13 @@ require (
 	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/service-mesh-hub v0.0.0-00010101000000-000000000000
 	github.com/solo-io/skv2 v0.4.2
-	go.uber.org/multierr v1.5.0
+	go.uber.org/multierr v1.5.0 // indirect
 	istio.io/api v0.0.0-20200610220835-a1a958746907
+	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
 	k8s.io/api v0.18.2
 	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v11.0.0+incompatible
+	k8s.io/kubernetes v1.18.4
 	sigs.k8s.io/controller-runtime v0.5.1
 )
