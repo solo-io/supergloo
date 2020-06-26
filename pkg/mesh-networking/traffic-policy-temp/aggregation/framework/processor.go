@@ -100,10 +100,8 @@ func (a *aggregationProcessor) Process(ctx context.Context, allTrafficPolicies [
 		// Note that this is being called for all policies, regardless of validation status.
 		// We don't want knowledge of validation status to leak into this component, and we don't care if
 		// invalid policies have their merge/translation errors zeroed out
-		needsUpdating := a.inMemoryStatusMutator.MutateConflictAndTranslatorErrors(policy, trafficPolicyToAllConflicts[policy], trafficPolicyToAllTranslationErrs[policy])
-		if needsUpdating {
-			objectsToUpdate.TrafficPolicies = append(objectsToUpdate.TrafficPolicies, policy)
-		}
+		a.inMemoryStatusMutator.MutateTrafficPolicyTranslationStatus(policy, trafficPolicyToAllConflicts[policy], trafficPolicyToAllTranslationErrs[policy])
+		objectsToUpdate.TrafficPolicies = append(objectsToUpdate.TrafficPolicies, policy)
 	}
 
 	return &objectsToUpdate, nil

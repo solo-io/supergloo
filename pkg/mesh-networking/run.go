@@ -57,13 +57,6 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 		); err != nil {
 			logger.Fatalw("error initializing mesh networking snapshot listener", zap.Error(err))
 		}
-		// start the TrafficPolicyTranslator
-		err = meshNetworkingContext.TrafficPolicyTranslator.Start(
-			contextutils.WithLogger(ctx, "traffic_policy_translator"),
-		)
-		if err != nil {
-			logger.Fatalw("error initializing TrafficPolicyTranslator", zap.Error(err))
-		}
 
 		go startTrafficPolicyReconciler(ctx, meshNetworkingContext)
 

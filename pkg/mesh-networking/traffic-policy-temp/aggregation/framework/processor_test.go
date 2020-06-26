@@ -310,18 +310,16 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 					return true
 				})
 			inMemoryStatusMutator.EXPECT().
-				MutateConflictAndTranslatorErrors(gomock.Any(), gomock.Any(), nil).
+				MutateTrafficPolicyTranslationStatus(gomock.Any(), gomock.Any(), nil).
 				DoAndReturn(func(
 					policy *smh_networking.TrafficPolicy,
 					newConflictErrors []*types.TrafficPolicyStatus_ConflictError,
 					newTranslationErrors []*types.TrafficPolicyStatus_TranslatorError,
-				) (policyNeedsUpdating bool) {
+				) {
 					if policy.GetName() != trafficPolicies[3].GetName() {
-						return false
+						return
 					}
-
 					policy.Status = policy4Copy.Status
-					return true
 				}).
 				Times(4)
 
@@ -331,9 +329,9 @@ var _ = Describe("Traffic Policy Aggregation Reconciler", func() {
 			Expect(objects.MeshServices).To(ContainElement(&ms1Copy))
 			Expect(objects.MeshServices).To(ContainElement(&ms2Copy))
 
-			Expect(objects.TrafficPolicies).To(HaveLen(1))
+			Expect(objects.TrafficPolicies).To(HaveLen(4))
 			// make sure same pointer is returned.
-			Expect(objects.TrafficPolicies[0]).To(BeIdenticalTo(trafficPolicies[3]))
+			Expect(objects.TrafficPolicies[3]).To(BeIdenticalTo(trafficPolicies[3]))
 		})
 	})
 

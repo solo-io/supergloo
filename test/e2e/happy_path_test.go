@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -39,7 +40,6 @@ var _ = Describe("HappyPath", func() {
 		err := env.Management.TrafficPolicyClient.CreateTrafficPolicy(context.Background(), &tp)
 		Expect(err).NotTo(HaveOccurred())
 		// see that it was accepted
-
 		Eventually(StatusOf(tp, env.Management), "1m", "1s").Should(Equal(smh_core_types.Status_ACCEPTED))
 	}
 
@@ -86,9 +86,14 @@ spec:
 		// first check that we have a response to reduce flakiness
 		Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
 		// now check that it is consistent 10 times in a row
-		for i := 0; i < 10; i++ {
-			Expect(curlReviews()).Should(ContainSubstring(`"color": "black"`))
-		}
+		Eventually(func() bool {
+			for i := 0; i < 10; i++ {
+				if !strings.Contains(curlReviews(), `"color": "black"`) {
+					return false
+				}
+			}
+			return true
+		}, "3m", "5s").Should(BeTrue())
 	})
 
 	// This test assumes that ci script only deploy v3 to remote cluster
@@ -124,8 +129,13 @@ spec:
 		// first check that we have a response to reduce flakiness
 		Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
 		// now check that it is consistent 10 times in a row
-		for i := 0; i < 10; i++ {
-			Expect(curlReviews()).Should(ContainSubstring(`"color": "red"`))
-		}
+		Eventually(func() bool {
+			for i := 0; i < 10; i++ {
+				if !strings.Contains(curlReviews(), `"color": "red"`) {
+					return false
+				}
+			}
+			return true
+		}, "3m", "5s").Should(BeTrue())
 	})
 })

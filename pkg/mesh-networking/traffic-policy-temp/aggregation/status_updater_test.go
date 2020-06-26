@@ -109,7 +109,7 @@ var _ = Describe("StatusUpdater", func() {
 					ErrorMessage: "whoops",
 				}}
 
-				Expect(statusUpdater.MutateConflictAndTranslatorErrors(policy, conflictErrors, nil)).To(BeTrue())
+				statusUpdater.MutateTrafficPolicyTranslationStatus(policy, conflictErrors, nil)
 				Expect(policy.Status.ConflictErrors).To(Equal(conflictErrors))
 			})
 
@@ -122,7 +122,7 @@ var _ = Describe("StatusUpdater", func() {
 						ConflictErrors: conflictErrors,
 					},
 				}
-				Expect(statusUpdater.MutateConflictAndTranslatorErrors(policy, nil, nil)).To(BeTrue())
+				statusUpdater.MutateTrafficPolicyTranslationStatus(policy, nil, nil)
 				Expect(policy.Status.ConflictErrors).To(BeNil())
 			})
 
@@ -139,7 +139,7 @@ var _ = Describe("StatusUpdater", func() {
 				newConflictErrors := []*smh_networking_types.TrafficPolicyStatus_ConflictError{{
 					ErrorMessage: "new message",
 				}}
-				Expect(statusUpdater.MutateConflictAndTranslatorErrors(policy, newConflictErrors, nil)).To(BeTrue())
+				statusUpdater.MutateTrafficPolicyTranslationStatus(policy, newConflictErrors, nil)
 				Expect(policy.Status.ConflictErrors).To(Equal(newConflictErrors))
 			})
 		})
