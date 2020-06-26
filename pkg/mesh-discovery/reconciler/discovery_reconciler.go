@@ -5,21 +5,21 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
 	"github.com/solo-io/skv2/pkg/multicluster"
-	"github.com/solo-io/smh/pkg/mesh-discovery/snapshot/translation"
+	"github.com/solo-io/smh/pkg/mesh-discovery/translator"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type discoveryReconciler struct {
 	ctx          context.Context
 	builder      input.Builder
-	translator   translation.Translator
+	translator   translator.Translator
 	masterClient client.Client
 }
 
 func Start(
 	ctx context.Context,
 	builder input.Builder,
-	translator translation.Translator,
+	translator translator.Translator,
 	masterClient client.Client,
 	clusters multicluster.ClusterWatcher,
 ) {
