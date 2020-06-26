@@ -16,6 +16,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 var (
 	appName = "service-mesh-hub"
 
@@ -87,12 +93,6 @@ var (
 	})
 )
 
-func main() {
-	if err := run(); err != nil {
-		log.Fatal(err)
-	}
-}
-
 func run() error {
 	log.Printf("generating smh")
 	if err := makeSmhCommand().Execute(); err != nil {
@@ -106,6 +106,10 @@ func run() error {
 }
 
 func makeSmhCommand() codegen.Command {
+
+	protoImports.External["github.com/solo-io/skv2"] = []string{
+		"api/**/*.proto",
+	}
 
 	topLevelTemplates := []model.CustomTemplates{
 		makeDiscoveryInputSnapshotTemplate(),

@@ -2,7 +2,7 @@ syntax = "proto3";
 package discovery.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1";
 
-import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
 
 import "gogoproto/gogo.proto";
@@ -22,7 +22,7 @@ message MeshWorkloadSpec {
     }
 
     // The mesh with which this workload is associated
-    core.smh.solo.io.ResourceRef mesh = 4;
+    .core.skv2.solo.io.ObjectRef mesh = 4;
 
     // Appmesh specific metadata
     AppMesh app_mesh = 5;
@@ -33,7 +33,7 @@ message MeshWorkloadSpec {
            Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads.
            It has the generic name controller as it can represent a deployment, daemonset, or statefulset.
         */
-        core.smh.solo.io.ResourceRef controller = 1;
+        .core.skv2.solo.io.ClusterObjectRef controller = 1;
 
         /**
             these are the labels directly from the pods that this controller owns

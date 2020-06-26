@@ -2,7 +2,7 @@ syntax = "proto3";
 package discovery.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1";
 
-import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "google/protobuf/wrappers.proto";
 
 import "gogoproto/gogo.proto";

@@ -12,6 +12,7 @@ import (
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	_ "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
