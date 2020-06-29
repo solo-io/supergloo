@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var _ = FDescribe("HappyPath", func() {
+var _ = Describe("HappyPath", func() {
 	var (
 		ctx context.Context
 	)
