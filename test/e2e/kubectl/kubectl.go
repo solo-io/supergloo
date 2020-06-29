@@ -76,6 +76,40 @@ func SetDeploymentEnvVars(
 	fmt.Fprintln(GinkgoWriter, out)
 }
 
+func DisableAppContainer(
+	ctx context.Context,
+	kubeContext string,
+	ns string,
+	deploymentName string,
+	containerName string,
+) {
+	args := append([]string{
+		"-n", ns,
+		"patch", "deployment", deploymentName,
+		"--patch",
+		fmt.Sprintf("{\"spec\": {\"template\": {\"spec\": {\"containers\": [{\"name\": \"%s\",\"command\": [\"sleep\", \"20h\"]}]}}}}",
+			containerName),
+	})
+	out := execute(ctx, kubeContext, args...)
+	fmt.Fprintln(GinkgoWriter, out)
+}
+
+func EnableAppContainer(
+	ctx context.Context,
+	kubeContext string,
+	ns string,
+	deploymentName string,
+) {
+	args := append([]string{
+		"-n", ns,
+		"patch", "deployment", deploymentName,
+		"--type", "json",
+		"-p", "[{\"op\": \"remove\", \"path\": \"/spec/template/spec/containers/0/command\"}]",
+	})
+	out := execute(ctx, kubeContext, args...)
+	fmt.Fprintln(GinkgoWriter, out)
+}
+
 func execute(ctx context.Context, kubeContext string, args ...string) string {
 	args = append([]string{"--context", kubeContext}, args...)
 	fmt.Fprintf(GinkgoWriter, "Executing: kubectl %v \n", args)

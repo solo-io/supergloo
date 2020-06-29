@@ -43,15 +43,16 @@ func newEnv(mgmt, remote string) Env {
 }
 
 type KubeContext struct {
-	Context             string
-	Config              clientcmd.ClientConfig
-	Clientset           *kubernetes.Clientset
-	TrafficPolicyClient smh_networking.TrafficPolicyClient
-	KubeClusterClient   smh_discovery.KubernetesClusterClient
-	MeshClient          smh_discovery.MeshClient
-	SettingsClient      smh_core.SettingsClient
-	SecretClient        kubernetes_core.SecretClient
-	VirtualMeshClient   smh_networking.VirtualMeshClient
+	Context               string
+	Config                clientcmd.ClientConfig
+	Clientset             *kubernetes.Clientset
+	TrafficPolicyClient   smh_networking.TrafficPolicyClient
+	KubeClusterClient     smh_discovery.KubernetesClusterClient
+	MeshClient            smh_discovery.MeshClient
+	SettingsClient        smh_core.SettingsClient
+	SecretClient          kubernetes_core.SecretClient
+	VirtualMeshClient     smh_networking.VirtualMeshClient
+	FailoverServiceClient smh_networking.FailoverServiceClient
 }
 
 // If kubecontext is empty string, use current context.
@@ -77,15 +78,16 @@ func NewKubeContext(kubecontext string) KubeContext {
 	Expect(err).NotTo(HaveOccurred())
 
 	return KubeContext{
-		Context:             kubecontext,
-		Config:              config,
-		Clientset:           clientset,
-		TrafficPolicyClient: networkingClientset.TrafficPolicies(),
-		VirtualMeshClient:   networkingClientset.VirtualMeshes(),
-		MeshClient:          discoveryClientset.Meshes(),
-		KubeClusterClient:   discoveryClientset.KubernetesClusters(),
-		SettingsClient:      coreClientset.Settings(),
-		SecretClient:        kubeCoreClientset.Secrets(),
+		Context:               kubecontext,
+		Config:                config,
+		Clientset:             clientset,
+		TrafficPolicyClient:   networkingClientset.TrafficPolicies(),
+		VirtualMeshClient:     networkingClientset.VirtualMeshes(),
+		MeshClient:            discoveryClientset.Meshes(),
+		KubeClusterClient:     discoveryClientset.KubernetesClusters(),
+		SettingsClient:        coreClientset.Settings(),
+		SecretClient:          kubeCoreClientset.Secrets(),
+		FailoverServiceClient: networkingClientset.FailoverServices(),
 	}
 }
 
@@ -120,6 +122,25 @@ func (k *KubeContext) SetDeploymentEnvVars(
 	containerName string,
 	envVars map[string]string) {
 	kubectl.SetDeploymentEnvVars(ctx, k.Context, ns, deploymentName, containerName, envVars)
+}
+
+// Modify the deployment's container entrypoint command to "sleep 20h" to disable the application.
+func (k *KubeContext) DisableAppContainer(
+	ctx context.Context,
+	ns string,
+	deploymentName string,
+	containerName string,
+) {
+	kubectl.DisableAppContainer(ctx, k.Context, ns, deploymentName, containerName)
+}
+
+// Remove the sleep command to re-enable the application container.
+func (k *KubeContext) EnableAppContainer(
+	ctx context.Context,
+	ns string,
+	deploymentName string,
+) {
+	kubectl.EnableAppContainer(ctx, k.Context, ns, deploymentName)
 }
 
 type Pod struct {
