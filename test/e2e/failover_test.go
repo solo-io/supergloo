@@ -106,16 +106,17 @@ spec:
 
 		curlReviewsFunc := CurlReviews(env)
 		// first check that we have a response to reduce flakiness
-		Eventually(curlReviewsFunc, "3m", "2s").Should(ContainSubstring(`"color": "red"`))
+		Eventually(curlReviewsFunc, "10m", "2s").Should(ContainSubstring(`"color": "red"`))
 		// now check that it is consistent 10 times in a row
 		Eventually(func() bool {
-			for i := 0; i < 10; i++ {
+			for i := 0; i < 5; i++ {
 				if !strings.Contains(curlReviewsFunc(), `"color": "red"`) {
 					return false
 				}
+				time.Sleep(2 * time.Second)
 			}
 			return true
-		}, "3m", "2s").Should(BeTrue())
+		}, "10m", "2s").Should(BeTrue())
 	})
 
 	It("should re-enable management plane reviews deployments", func() {
