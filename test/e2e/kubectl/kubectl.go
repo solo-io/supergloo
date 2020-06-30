@@ -14,12 +14,12 @@ import (
 
 func CurlWithEphemeralPod(ctx context.Context, kubecontext, fromns, frompod string, args ...string) string {
 	// note, we use sudo so that the curl is not from the istio-proxy user. we dont really need root.
-	args = []string{"alpha", "debug", "--quiet",
+	createargs := []string{"alpha", "debug", "--quiet",
 		"--image=curlimages/curl@sha256:aa45e9d93122a3cfdf8d7de272e2798ea63733eeee6d06bd2ee4f2f8c4027d7c",
 		"--container=curl", frompod, "-n", fromns, "--", "sleep", "10h"}
 	// create the curl pod; we do this every time and it will only work the first time, so ignore
 	// failures
-	executeNoFail(ctx, kubecontext, args...)
+	executeNoFail(ctx, kubecontext, createargs...)
 	args = append([]string{"exec",
 		"--container=curl", frompod, "-n", fromns, "--", "curl", "--connect-timeout", "1", "--max-time", "5"}, args...)
 	return execute(ctx, kubecontext, args...)
