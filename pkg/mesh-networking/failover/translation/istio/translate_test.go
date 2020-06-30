@@ -31,40 +31,17 @@ var _ = Describe("Translate", func() {
 				Namespace: "failover-service-namespace",
 			},
 			Spec: types.FailoverServiceSpec{
-				TargetService: &smh_core_types.ResourceRef{
-					Name:      "service1-name",
-					Namespace: "service1-namespace",
-					Cluster:   "cluster1",
+				Hostname:  "service1-name.service1-namespace.cluster1",
+				Namespace: "service1-namespace",
+				Port: &types.FailoverServiceSpec_Port{
+					Port:     9080,
+					Name:     "http1",
+					Protocol: "http",
 				},
+				Cluster: "cluster1",
 			},
 		}
 		prioritizedMeshServices = []*v1alpha12.MeshService{
-			{
-				Spec: types2.MeshServiceSpec{
-					KubeService: &types2.MeshServiceSpec_KubeService{
-						Ref: &smh_core_types.ResourceRef{
-							Name:      "service1-name",
-							Namespace: "service1-namespace",
-							Cluster:   "cluster1",
-						},
-						Ports: []*types2.MeshServiceSpec_KubeService_KubeServicePort{
-							{
-								Port:     9080,
-								Name:     "service1.port1",
-								Protocol: "tcp",
-							},
-							{
-								Port:     8080,
-								Name:     "service1.port2",
-								Protocol: "tcp",
-							},
-						},
-					},
-					Federation: &types2.MeshServiceSpec_Federation{
-						MulticlusterDnsName: "service1.multiclusterdnsname",
-					},
-				},
-			},
 			{
 				Spec: types2.MeshServiceSpec{
 					KubeService: &types2.MeshServiceSpec_KubeService{
@@ -105,15 +82,12 @@ var _ = Describe("Translate", func() {
 		expectedServiceEntryString := fmt.Sprintf(`addresses:
 - %s
 hosts:
-- service1-name.service1-namespace.failover
+- service1-name.service1-namespace.cluster1
 location: MESH_INTERNAL
 ports:
-- name: service1.port1
+- name: http1
   number: 9080
-  protocol: tcp
-- name: service1.port2
-  number: 8080
-  protocol: tcp
+  protocol: http
 resolution: DNS
 `, ip)
 
@@ -121,13 +95,13 @@ resolution: DNS
 - applyTo: CLUSTER
   match:
     cluster:
-      name: outbound|9080||service1-name.service1-namespace.failover
+      name: outbound|9080||service1-name.service1-namespace.cluster1
   patch:
     operation: REMOVE
 - applyTo: CLUSTER
   match:
     cluster:
-      name: outbound|9080||service1-name.service1-namespace.failover
+      name: outbound|9080||service1-name.service1-namespace.cluster1
   patch:
     operation: ADD
     value:
@@ -138,88 +112,20 @@ resolution: DNS
           type_url: type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig
           value:
             clusters:
-            - outbound|9080||service1-name.service1-namespace.svc.cluster.local
-            - outbound|8080||service1-name.service1-namespace.svc.cluster.local
             - outbound|9080||service2.multiclusterdnsname
       connect_timeout: 1s
       lb_policy: CLUSTER_PROVIDED
-      name: outbound|9080||service1-name.service1-namespace.failover
-- applyTo: HTTP_ROUTE
-  match:
-    routeConfiguration:
-      vhost:
-        name: service1-name.service1-namespace.svc.cluster.local:9080
-  patch:
-    operation: MERGE
-    value:
-      route:
-        cluster: outbound|9080||service1-name.service1-namespace.failover
-- applyTo: HTTP_ROUTE
-  match:
-    routeConfiguration:
-      vhost:
-        name: service1-name.service1-namespace.svc.cluster.local:8080
-  patch:
-    operation: MERGE
-    value:
-      route:
-        cluster: outbound|9080||service1-name.service1-namespace.failover
-- applyTo: CLUSTER
-  match:
-    cluster:
-      name: outbound|8080||service1-name.service1-namespace.failover
-  patch:
-    operation: REMOVE
-- applyTo: CLUSTER
-  match:
-    cluster:
-      name: outbound|8080||service1-name.service1-namespace.failover
-  patch:
-    operation: ADD
-    value:
-      cluster_type:
-        name: envoy.clusters.aggregate
-        typed_config:
-          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
-          type_url: type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig
-          value:
-            clusters:
-            - outbound|9080||service1-name.service1-namespace.svc.cluster.local
-            - outbound|8080||service1-name.service1-namespace.svc.cluster.local
-            - outbound|9080||service2.multiclusterdnsname
-      connect_timeout: 1s
-      lb_policy: CLUSTER_PROVIDED
-      name: outbound|8080||service1-name.service1-namespace.failover
-- applyTo: HTTP_ROUTE
-  match:
-    routeConfiguration:
-      vhost:
-        name: service1-name.service1-namespace.svc.cluster.local:9080
-  patch:
-    operation: MERGE
-    value:
-      route:
-        cluster: outbound|8080||service1-name.service1-namespace.failover
-- applyTo: HTTP_ROUTE
-  match:
-    routeConfiguration:
-      vhost:
-        name: service1-name.service1-namespace.svc.cluster.local:8080
-  patch:
-    operation: MERGE
-    value:
-      route:
-        cluster: outbound|8080||service1-name.service1-namespace.failover
+      name: outbound|9080||service1-name.service1-namespace.cluster1
 `
 		mockIpAssigner.
 			EXPECT().
-			AssignIPOnCluster(ctx, prioritizedMeshServices[0].Spec.GetKubeService().GetRef().GetCluster()).
+			AssignIPOnCluster(ctx, failoverService.Spec.GetCluster()).
 			Return(ip, nil)
 		outputSnapshot, translatorError := istioTranslator.Translate(ctx, failoverService, prioritizedMeshServices)
 		Expect(translatorError).To(BeNil())
 		envoyFilter := outputSnapshot.EnvoyFilters.List()[0]
 		// EnvoyFilter must be in the same namespace as workloads backing the target service.
-		Expect(envoyFilter.GetNamespace()).To(Equal(prioritizedMeshServices[0].Spec.GetKubeService().GetRef().GetNamespace()))
+		Expect(envoyFilter.GetNamespace()).To(Equal(failoverService.Spec.GetNamespace()))
 		envoyFilterYaml, err := protomarshal.ToYAML(&envoyFilter.Spec)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(envoyFilterYaml).To(Equal(expectedEnvoyFilterYamlString))

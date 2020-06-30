@@ -50,11 +50,14 @@ var _ = Describe("Validation", func() {
 				&smh_networking.FailoverService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Generation: 1},
 					Spec: smh_networking_types.FailoverServiceSpec{
-						TargetService: &smh_core_types.ResourceRef{
-							Name:      "service1",
-							Namespace: "namespace1",
-							Cluster:   "cluster1",
+						Hostname:  "service1.namespace1.cluster1",
+						Namespace: "namespace1",
+						Port: &smh_networking_types.FailoverServiceSpec_Port{
+							Port:     9080,
+							Name:     "http1",
+							Protocol: "http",
 						},
+						Cluster: "cluster1",
 						FailoverServices: []*smh_core_types.ResourceRef{
 							{
 								Name:      "service1",
@@ -66,28 +69,6 @@ var _ = Describe("Validation", func() {
 				},
 			),
 			MeshServices: v1alpha1sets2.NewMeshServiceSet(
-				&smh_discovery.MeshService{
-					ObjectMeta: k8s_meta_types.ObjectMeta{
-						Name:        "meshservice1",
-						Namespace:   "namespace1",
-						ClusterName: "cluster1",
-					},
-					Spec: smh_discovery_types.MeshServiceSpec{
-						KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
-							Ref: &smh_core_types.ResourceRef{
-								Name:      "service1",
-								Namespace: "namespace1",
-								Cluster:   "cluster1",
-							},
-						},
-						Mesh: &smh_core_types.ResourceRef{
-							Name:      "mesh1",
-							Namespace: "namespace1",
-							Cluster:   "cluster1",
-						},
-					},
-					Status: meshServiceStatusWithOutlierDetection(),
-				},
 				&smh_discovery.MeshService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:        "meshservice1",
@@ -164,11 +145,14 @@ var _ = Describe("Validation", func() {
 				&smh_networking.FailoverService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Generation: 1},
 					Spec: smh_networking_types.FailoverServiceSpec{
-						TargetService: &smh_core_types.ResourceRef{
-							Name:      "service1",
-							Namespace: "namespace1",
-							Cluster:   "cluster1",
+						Hostname:  "service1.namespace1.cluster1",
+						Namespace: "namespace1",
+						Port: &smh_networking_types.FailoverServiceSpec_Port{
+							Port:     9080,
+							Name:     "http1",
+							Protocol: "http",
 						},
+						Cluster: "cluster1",
 						FailoverServices: []*smh_core_types.ResourceRef{
 							{
 								Name:      "service1",
@@ -252,11 +236,7 @@ var _ = Describe("Validation", func() {
 				&smh_networking.FailoverService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Generation: 1},
 					Spec: smh_networking_types.FailoverServiceSpec{
-						TargetService: &smh_core_types.ResourceRef{
-							Name:      "non-existent",
-							Namespace: "a",
-							Cluster:   "b",
-						},
+						Hostname: "invalidDNS@Q#$@%",
 						FailoverServices: []*smh_core_types.ResourceRef{
 							{
 								Name:      "service1",
@@ -366,7 +346,7 @@ var _ = Describe("Validation", func() {
 					},
 				},
 			),
-			KubeClusters: nil,
+			KubeClusters: v1alpha1sets2.NewKubernetesClusterSet(),
 			Meshes: v1alpha1sets2.NewMeshSet(
 				&smh_discovery.Mesh{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
@@ -464,8 +444,14 @@ var _ = Describe("Validation", func() {
 		actualStatus := failoverService.Status
 		Expect(actualStatus.ObservedGeneration).To(Equal(failoverService.GetGeneration()))
 		Expect(actualStatus.GetValidationStatus().GetState()).To(Equal(smh_core_types.Status_INVALID))
-		// TargetService not found
-		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.TargetServiceNotFound(failoverService.Spec.GetTargetService()).Error()))
+		// Missing port
+		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.MissingPort.Error()))
+		// Missing cluster
+		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.MissingCluster.Error()))
+		// Missing namespace
+		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.MissingNamespace.Error()))
+		// Invalid DNS hostname
+		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring("a DNS-1123 subdomain must consist of lower case alphanumeric characters"))
 		// Service without OutlierDetection
 		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.MissingOutlierDetection(inputSnapshot.MeshServices.List()[3]).Error()))
 		// Mesh without parent VirtualMesh

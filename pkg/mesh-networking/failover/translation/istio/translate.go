@@ -117,7 +117,7 @@ func (i *istioFailoverServiceTranslator) translateEnvoyFilter(
 		// EnvoyFilter must be located in the same namespace as the workload(s) backing the target service.
 		ObjectMeta: k8s_meta.ObjectMeta{
 			Name:        failoverService.GetName(),
-			Namespace:   failoverService.GetNamespace(),
+			Namespace:   failoverService.Spec.GetNamespace(),
 			ClusterName: failoverService.Spec.GetCluster(),
 		},
 		Spec: istio_networking.EnvoyFilter{

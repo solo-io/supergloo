@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var _ = FDescribe("Failover Test", func() {
+var _ = Describe("Failover Test", func() {
 	var (
 		ctx context.Context
 	)
@@ -32,7 +32,9 @@ var _ = FDescribe("Failover Test", func() {
 		Expect(err).ToNot(HaveOccurred())
 		err = env.Management.FailoverServiceClient.DeleteAllOfFailoverService(ctx, opts)
 		Expect(err).ToNot(HaveOccurred())
-		err = env.Management.VirtualServiceClient.DeleteAllOfVirtualService(ctx)
+		err = env.Management.VirtualServiceClient.DeleteAllOfVirtualService(ctx, &client.DeleteAllOfOptions{
+			ListOptions: client.ListOptions{Namespace: "default"}},
+		)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -93,7 +95,7 @@ kind: FailoverService
 metadata:
   name: reviews-failover
   namespace: service-mesh-hub
-labels:
+  labels:
     test: true
 spec:
   hostname: reviews.default.failover

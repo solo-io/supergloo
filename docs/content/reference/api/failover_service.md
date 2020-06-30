@@ -37,7 +37,7 @@ A service composed of the referenced workloads with failover capabilities. The f
 | ----- | ---- | ----- | ----------- |
 | hostname | [string](#string) |  | The DNS name of the failover service. |
 | namespace | [string](#string) |  | The namespace to locate the translated service. |
-| port | [][FailoverServiceSpec.Port](#networking.smh.solo.io.FailoverServiceSpec.Port) | repeated | The ports from which to expose this service. |
+| port | [FailoverServiceSpec.Port](#networking.smh.solo.io.FailoverServiceSpec.Port) |  | The ports from which to expose this service. |
 | cluster | [string](#string) |  | The cluster that the failover service resides (the cluster name registered with Service Mesh Hub). |
 | failoverServices | [][core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) | repeated | A list of services ordered by decreasing priority for failover. All services must be controlled by service meshes that are grouped under a common VirtualMesh. |
 

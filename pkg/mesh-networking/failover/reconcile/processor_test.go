@@ -77,11 +77,14 @@ var _ = Describe("Processor", func() {
 						Generation: 1,
 					},
 					Spec: types.FailoverServiceSpec{
-						TargetService: &smh_core_types.ResourceRef{
-							Name:      "service1",
-							Namespace: "namespace1",
-							Cluster:   "cluster1",
+						Hostname:  "service1.namespace1.cluster1",
+						Namespace: "namespace1",
+						Port: &types.FailoverServiceSpec_Port{
+							Port:     9080,
+							Name:     "http1",
+							Protocol: "http",
 						},
+						Cluster: "cluster1",
 						FailoverServices: []*smh_core_types.ResourceRef{
 							{
 								Name:      "service2",
@@ -99,22 +102,6 @@ var _ = Describe("Processor", func() {
 				},
 			),
 			MeshServices: v1alpha1sets2.NewMeshServiceSet(
-				&smh_discovery.MeshService{
-					ObjectMeta: v1.ObjectMeta{
-						Name:        "service1",
-						Namespace:   "namespace1",
-						ClusterName: "cluster1",
-					},
-					Spec: types2.MeshServiceSpec{
-						KubeService: &types2.MeshServiceSpec_KubeService{
-							Ref: &smh_core_types.ResourceRef{
-								Name:      "service1",
-								Namespace: "namespace1",
-								Cluster:   "cluster1",
-							},
-						},
-					},
-				},
 				&smh_discovery.MeshService{
 					ObjectMeta: v1.ObjectMeta{
 						Name:        "service2",

@@ -47,7 +47,7 @@ var _ = Describe("HappyPath", func() {
 		env := GetEnv()
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute/3)
 		defer cancel()
-		out := env.Management.GetPod("default", "productpage").Curl(ctx, "http://reviews:9080/reviews/1", "-v")
+		out := env.Management.GetPod("default", "productpage").Curl(ctx, "http://reviews:9080/reviews/1")
 		GinkgoWriter.Write([]byte(out))
 		return out
 	}

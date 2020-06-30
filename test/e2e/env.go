@@ -13,7 +13,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	istio_networking "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	smh_core "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
@@ -55,7 +54,7 @@ type KubeContext struct {
 	SecretClient          kubernetes_core.SecretClient
 	VirtualMeshClient     smh_networking.VirtualMeshClient
 	FailoverServiceClient smh_networking.FailoverServiceClient
-	VirtualServiceClient  v1alpha3.VirtualServiceClient
+	VirtualServiceClient  istio_networking.VirtualServiceClient
 }
 
 // If kubecontext is empty string, use current context.
