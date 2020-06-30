@@ -1,0 +1,5 @@
+package validator
+
+func validate() {
+
+}

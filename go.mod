@@ -9,9 +9,6 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
-	github.com/solo-io/external-apis => ../external-apis
-	github.com/solo-io/service-mesh-hub => ../service-mesh-hub
-	github.com/solo-io/skv2 => ../skv2
 
 	k8s.io/api => k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.2
@@ -49,10 +46,13 @@ require (
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
 	github.com/rotisserie/eris v0.4.0
-	github.com/solo-io/external-apis v0.0.0-20200612200207-1dbc5c4610e8
+	github.com/sirupsen/logrus v1.4.2
+	github.com/solo-io/external-apis v0.0.4
 	github.com/solo-io/go-utils v0.16.0
-	github.com/solo-io/service-mesh-hub v0.0.0-00010101000000-000000000000
-	github.com/solo-io/skv2 v0.4.2
+	github.com/solo-io/service-mesh-hub v0.5.1-0.20200630141134-62e606c0af98 // indirect
+	github.com/solo-io/skv2 v0.5.0
+	github.com/spf13/cobra v0.0.5
+	github.com/spf13/pflag v1.0.5
 	go.uber.org/multierr v1.5.0 // indirect
 	istio.io/api v0.0.0-20200610220835-a1a958746907
 	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938
@@ -61,5 +61,5 @@ require (
 	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/kubernetes v1.18.4
-	sigs.k8s.io/controller-runtime v0.5.1
+	sigs.k8s.io/controller-runtime v0.5.6
 )

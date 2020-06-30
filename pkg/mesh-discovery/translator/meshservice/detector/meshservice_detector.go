@@ -122,6 +122,10 @@ func findSubsets(backingWorkloads v1alpha1.MeshWorkloadSlice) map[string]*v1alph
 			subsets[k] = &v1alpha1.MeshServiceSpec_Subset{Values: v.List()}
 		}
 	}
+	if len(subsets) == 0 {
+		// important to return nil instead of empty map for asserting equality
+		return nil
+	}
 	return subsets
 }
 

@@ -49,6 +49,10 @@ func Start(ctx context.Context, opts Options) error {
 
 	startReconciler(ctx, mgr.GetClient(), mcClient, clusterWatcher, clusterWatcher)
 
+	if err := clusterWatcher.Run(mgr); err != nil {
+		return err
+	}
+
 	return mgr.Start(ctx.Done())
 }
 

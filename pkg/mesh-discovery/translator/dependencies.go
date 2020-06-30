@@ -11,8 +11,9 @@ import (
 	"github.com/solo-io/smh/pkg/mesh-discovery/translator/mesh/detector/istio"
 	"github.com/solo-io/smh/pkg/mesh-discovery/translator/mesh/detector/linkerd"
 	"github.com/solo-io/smh/pkg/mesh-discovery/translator/meshservice"
+	meshservicedetector "github.com/solo-io/smh/pkg/mesh-discovery/translator/meshservice/detector"
 	"github.com/solo-io/smh/pkg/mesh-discovery/translator/meshworkload"
-	"github.com/solo-io/smh/pkg/mesh-discovery/translator/meshworkload/detector"
+	meshworkloaddetector "github.com/solo-io/smh/pkg/mesh-discovery/translator/meshworkload/detector"
 	istiosidecar "github.com/solo-io/smh/pkg/mesh-discovery/translator/meshworkload/detector/istio"
 	linkerdsidecar "github.com/solo-io/smh/pkg/mesh-discovery/translator/meshworkload/detector/linkerd"
 )
@@ -56,12 +57,12 @@ func (d dependencyFactoryImpl) makeMeshWorkloadTranslator(
 	pods corev1sets.PodSet,
 	replicaSets appsv1sets.ReplicaSetSet,
 ) meshworkload.Translator {
-	sidecarDetectors := detector.SidecarDetectors{
+	sidecarDetectors := meshworkloaddetector.SidecarDetectors{
 		istiosidecar.NewSidecarDetector(ctx),
 		linkerdsidecar.NewSidecarDetector(ctx),
 	}
 
-	workloadDetector := detector.NewMeshWorkloadDetector(
+	workloadDetector := meshworkloaddetector.NewMeshWorkloadDetector(
 		ctx,
 		pods,
 		replicaSets,
@@ -71,6 +72,6 @@ func (d dependencyFactoryImpl) makeMeshWorkloadTranslator(
 }
 
 func (d dependencyFactoryImpl) makeMeshServiceTranslator() meshservice.Translator {
-	return meshservice.NewTranslator()
+	return meshservice.NewTranslator(meshservicedetector.NewMeshServiceDetector())
 
 }

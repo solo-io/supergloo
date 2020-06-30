@@ -17,8 +17,8 @@ type translator struct {
 	meshServiceDetector detector.MeshServiceDetector
 }
 
-func NewTranslator() Translator {
-	return &translator{}
+func NewTranslator(meshServiceDetector detector.MeshServiceDetector) Translator {
+	return &translator{meshServiceDetector:meshServiceDetector}
 }
 
 func (t *translator) TranslateMeshServices(services corev1sets.ServiceSet, meshWorkloads v1alpha1sets.MeshWorkloadSet) v1alpha1sets.MeshServiceSet {
