@@ -217,7 +217,10 @@ resolution: DNS
 			Return(ip, nil)
 		outputSnapshot, translatorError := istioTranslator.Translate(ctx, failoverService, prioritizedMeshServices)
 		Expect(translatorError).To(BeNil())
-		envoyFilterYaml, err := protomarshal.ToYAML(&outputSnapshot.EnvoyFilters.List()[0].Spec)
+		envoyFilter := outputSnapshot.EnvoyFilters.List()[0]
+		// EnvoyFilter must be in the same namespace as workloads backing the target service.
+		Expect(envoyFilter.GetNamespace()).To(Equal(prioritizedMeshServices[0].Spec.GetKubeService().GetRef().GetNamespace()))
+		envoyFilterYaml, err := protomarshal.ToYAML(&envoyFilter.Spec)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(envoyFilterYaml).To(Equal(expectedEnvoyFilterYamlString))
 		serviceEntryYaml, err := protomarshal.ToYAML(&outputSnapshot.ServiceEntries.List()[0].Spec)

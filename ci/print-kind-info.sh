@@ -14,9 +14,12 @@ kubectl --context kind-$managementPlane get meshservices -A -o yaml
 kubectl --context kind-$managementPlane get trafficpolicies -A -o yaml
 kubectl --context kind-$managementPlane get settings -A -o yaml
 kubectl --context kind-$managementPlane get virtualmesh -A -o yaml
+kubectl --context kind-$managementPlane get failoverservice -A -o yaml
 
 kubectl --context kind-$managementPlane get virtualservices.networking.istio.io -A  -o yaml
 kubectl --context kind-$managementPlane get destinationrules.networking.istio.io -A -o yaml
+kubectl --context kind-$managementPlane get destinationrules.networking.istio.io -A -o yaml
+kubectl --context kind-$managementPlane get envoyfilters.networking.istio.io -A -o yaml
 
 kubectl --context kind-$managementPlane -n service-mesh-hub logs deployment/mesh-discovery
 kubectl --context kind-$managementPlane -n service-mesh-hub logs deployment/mesh-networking

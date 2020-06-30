@@ -106,7 +106,7 @@ spec:
 
 		curlReviewsFunc := CurlReviews(env)
 		// first check that we have a response to reduce flakiness
-		Eventually(curlReviewsFunc, "10m", "2s").Should(ContainSubstring(`"color": "red"`))
+		Eventually(curlReviewsFunc, "5m", "2s").Should(ContainSubstring(`"color": "red"`))
 		// now check that it is consistent 10 times in a row
 		Eventually(func() bool {
 			for i := 0; i < 5; i++ {
@@ -116,7 +116,7 @@ spec:
 				time.Sleep(2 * time.Second)
 			}
 			return true
-		}, "10m", "2s").Should(BeTrue())
+		}, "5m", "2s").Should(BeTrue())
 	})
 
 	It("should re-enable management plane reviews deployments", func() {
