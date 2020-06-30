@@ -42,7 +42,7 @@ type Clientset interface {
 	// clienset for the networking.smh.solo.io/v1alpha1/v1alpha1 APIs
 	TrafficPolicies() TrafficPolicyClient
 	// clienset for the networking.smh.solo.io/v1alpha1/v1alpha1 APIs
-	AccessControlPolicies() AccessControlPolicyClient
+	AccessPolicies() AccessPolicyClient
 	// clienset for the networking.smh.solo.io/v1alpha1/v1alpha1 APIs
 	VirtualMeshes() VirtualMeshClient
 }
@@ -75,8 +75,8 @@ func (c *clientSet) TrafficPolicies() TrafficPolicyClient {
 }
 
 // clienset for the networking.smh.solo.io/v1alpha1/v1alpha1 APIs
-func (c *clientSet) AccessControlPolicies() AccessControlPolicyClient {
-	return NewAccessControlPolicyClient(c.client)
+func (c *clientSet) AccessPolicies() AccessPolicyClient {
+	return NewAccessPolicyClient(c.client)
 }
 
 // clienset for the networking.smh.solo.io/v1alpha1/v1alpha1 APIs
@@ -226,109 +226,109 @@ func (m *multiclusterTrafficPolicyClient) Cluster(cluster string) (TrafficPolicy
 	return NewTrafficPolicyClient(client), nil
 }
 
-// Reader knows how to read and list AccessControlPolicys.
-type AccessControlPolicyReader interface {
-	// Get retrieves a AccessControlPolicy for the given object key
-	GetAccessControlPolicy(ctx context.Context, key client.ObjectKey) (*AccessControlPolicy, error)
+// Reader knows how to read and list AccessPolicys.
+type AccessPolicyReader interface {
+	// Get retrieves a AccessPolicy for the given object key
+	GetAccessPolicy(ctx context.Context, key client.ObjectKey) (*AccessPolicy, error)
 
-	// List retrieves list of AccessControlPolicys for a given namespace and list options.
-	ListAccessControlPolicy(ctx context.Context, opts ...client.ListOption) (*AccessControlPolicyList, error)
+	// List retrieves list of AccessPolicys for a given namespace and list options.
+	ListAccessPolicy(ctx context.Context, opts ...client.ListOption) (*AccessPolicyList, error)
 }
 
-// AccessControlPolicyTransitionFunction instructs the AccessControlPolicyWriter how to transition between an existing
-// AccessControlPolicy object and a desired on an Upsert
-type AccessControlPolicyTransitionFunction func(existing, desired *AccessControlPolicy) error
+// AccessPolicyTransitionFunction instructs the AccessPolicyWriter how to transition between an existing
+// AccessPolicy object and a desired on an Upsert
+type AccessPolicyTransitionFunction func(existing, desired *AccessPolicy) error
 
-// Writer knows how to create, delete, and update AccessControlPolicys.
-type AccessControlPolicyWriter interface {
-	// Create saves the AccessControlPolicy object.
-	CreateAccessControlPolicy(ctx context.Context, obj *AccessControlPolicy, opts ...client.CreateOption) error
+// Writer knows how to create, delete, and update AccessPolicys.
+type AccessPolicyWriter interface {
+	// Create saves the AccessPolicy object.
+	CreateAccessPolicy(ctx context.Context, obj *AccessPolicy, opts ...client.CreateOption) error
 
-	// Delete deletes the AccessControlPolicy object.
-	DeleteAccessControlPolicy(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	// Delete deletes the AccessPolicy object.
+	DeleteAccessPolicy(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
-	// Update updates the given AccessControlPolicy object.
-	UpdateAccessControlPolicy(ctx context.Context, obj *AccessControlPolicy, opts ...client.UpdateOption) error
+	// Update updates the given AccessPolicy object.
+	UpdateAccessPolicy(ctx context.Context, obj *AccessPolicy, opts ...client.UpdateOption) error
 
-	// Patch patches the given AccessControlPolicy object.
-	PatchAccessControlPolicy(ctx context.Context, obj *AccessControlPolicy, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given AccessPolicy object.
+	PatchAccessPolicy(ctx context.Context, obj *AccessPolicy, patch client.Patch, opts ...client.PatchOption) error
 
-	// DeleteAllOf deletes all AccessControlPolicy objects matching the given options.
-	DeleteAllOfAccessControlPolicy(ctx context.Context, opts ...client.DeleteAllOfOption) error
+	// DeleteAllOf deletes all AccessPolicy objects matching the given options.
+	DeleteAllOfAccessPolicy(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
-	// Create or Update the AccessControlPolicy object.
-	UpsertAccessControlPolicy(ctx context.Context, obj *AccessControlPolicy, transitionFuncs ...AccessControlPolicyTransitionFunction) error
+	// Create or Update the AccessPolicy object.
+	UpsertAccessPolicy(ctx context.Context, obj *AccessPolicy, transitionFuncs ...AccessPolicyTransitionFunction) error
 }
 
-// StatusWriter knows how to update status subresource of a AccessControlPolicy object.
-type AccessControlPolicyStatusWriter interface {
+// StatusWriter knows how to update status subresource of a AccessPolicy object.
+type AccessPolicyStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
-	// given AccessControlPolicy object.
-	UpdateAccessControlPolicyStatus(ctx context.Context, obj *AccessControlPolicy, opts ...client.UpdateOption) error
+	// given AccessPolicy object.
+	UpdateAccessPolicyStatus(ctx context.Context, obj *AccessPolicy, opts ...client.UpdateOption) error
 
-	// Patch patches the given AccessControlPolicy object's subresource.
-	PatchAccessControlPolicyStatus(ctx context.Context, obj *AccessControlPolicy, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given AccessPolicy object's subresource.
+	PatchAccessPolicyStatus(ctx context.Context, obj *AccessPolicy, patch client.Patch, opts ...client.PatchOption) error
 }
 
-// Client knows how to perform CRUD operations on AccessControlPolicys.
-type AccessControlPolicyClient interface {
-	AccessControlPolicyReader
-	AccessControlPolicyWriter
-	AccessControlPolicyStatusWriter
+// Client knows how to perform CRUD operations on AccessPolicys.
+type AccessPolicyClient interface {
+	AccessPolicyReader
+	AccessPolicyWriter
+	AccessPolicyStatusWriter
 }
 
-type accessControlPolicyClient struct {
+type accessPolicyClient struct {
 	client client.Client
 }
 
-func NewAccessControlPolicyClient(client client.Client) *accessControlPolicyClient {
-	return &accessControlPolicyClient{client: client}
+func NewAccessPolicyClient(client client.Client) *accessPolicyClient {
+	return &accessPolicyClient{client: client}
 }
 
-func (c *accessControlPolicyClient) GetAccessControlPolicy(ctx context.Context, key client.ObjectKey) (*AccessControlPolicy, error) {
-	obj := &AccessControlPolicy{}
+func (c *accessPolicyClient) GetAccessPolicy(ctx context.Context, key client.ObjectKey) (*AccessPolicy, error) {
+	obj := &AccessPolicy{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (c *accessControlPolicyClient) ListAccessControlPolicy(ctx context.Context, opts ...client.ListOption) (*AccessControlPolicyList, error) {
-	list := &AccessControlPolicyList{}
+func (c *accessPolicyClient) ListAccessPolicy(ctx context.Context, opts ...client.ListOption) (*AccessPolicyList, error) {
+	list := &AccessPolicyList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
 	return list, nil
 }
 
-func (c *accessControlPolicyClient) CreateAccessControlPolicy(ctx context.Context, obj *AccessControlPolicy, opts ...client.CreateOption) error {
+func (c *accessPolicyClient) CreateAccessPolicy(ctx context.Context, obj *AccessPolicy, opts ...client.CreateOption) error {
 	return c.client.Create(ctx, obj, opts...)
 }
 
-func (c *accessControlPolicyClient) DeleteAccessControlPolicy(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &AccessControlPolicy{}
+func (c *accessPolicyClient) DeleteAccessPolicy(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &AccessPolicy{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
-func (c *accessControlPolicyClient) UpdateAccessControlPolicy(ctx context.Context, obj *AccessControlPolicy, opts ...client.UpdateOption) error {
+func (c *accessPolicyClient) UpdateAccessPolicy(ctx context.Context, obj *AccessPolicy, opts ...client.UpdateOption) error {
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *accessControlPolicyClient) PatchAccessControlPolicy(ctx context.Context, obj *AccessControlPolicy, patch client.Patch, opts ...client.PatchOption) error {
+func (c *accessPolicyClient) PatchAccessPolicy(ctx context.Context, obj *AccessPolicy, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
-func (c *accessControlPolicyClient) DeleteAllOfAccessControlPolicy(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &AccessControlPolicy{}
+func (c *accessPolicyClient) DeleteAllOfAccessPolicy(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &AccessPolicy{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *accessControlPolicyClient) UpsertAccessControlPolicy(ctx context.Context, obj *AccessControlPolicy, transitionFuncs ...AccessControlPolicyTransitionFunction) error {
+func (c *accessPolicyClient) UpsertAccessPolicy(ctx context.Context, obj *AccessPolicy, transitionFuncs ...AccessPolicyTransitionFunction) error {
 	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*AccessControlPolicy), desired.(*AccessControlPolicy)); err != nil {
+			if err := txFunc(existing.(*AccessPolicy), desired.(*AccessPolicy)); err != nil {
 				return err
 			}
 		}
@@ -338,34 +338,34 @@ func (c *accessControlPolicyClient) UpsertAccessControlPolicy(ctx context.Contex
 	return err
 }
 
-func (c *accessControlPolicyClient) UpdateAccessControlPolicyStatus(ctx context.Context, obj *AccessControlPolicy, opts ...client.UpdateOption) error {
+func (c *accessPolicyClient) UpdateAccessPolicyStatus(ctx context.Context, obj *AccessPolicy, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *accessControlPolicyClient) PatchAccessControlPolicyStatus(ctx context.Context, obj *AccessControlPolicy, patch client.Patch, opts ...client.PatchOption) error {
+func (c *accessPolicyClient) PatchAccessPolicyStatus(ctx context.Context, obj *AccessPolicy, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
-// Provides AccessControlPolicyClients for multiple clusters.
-type MulticlusterAccessControlPolicyClient interface {
-	// Cluster returns a AccessControlPolicyClient for the given cluster
-	Cluster(cluster string) (AccessControlPolicyClient, error)
+// Provides AccessPolicyClients for multiple clusters.
+type MulticlusterAccessPolicyClient interface {
+	// Cluster returns a AccessPolicyClient for the given cluster
+	Cluster(cluster string) (AccessPolicyClient, error)
 }
 
-type multiclusterAccessControlPolicyClient struct {
+type multiclusterAccessPolicyClient struct {
 	client multicluster.Client
 }
 
-func NewMulticlusterAccessControlPolicyClient(client multicluster.Client) MulticlusterAccessControlPolicyClient {
-	return &multiclusterAccessControlPolicyClient{client: client}
+func NewMulticlusterAccessPolicyClient(client multicluster.Client) MulticlusterAccessPolicyClient {
+	return &multiclusterAccessPolicyClient{client: client}
 }
 
-func (m *multiclusterAccessControlPolicyClient) Cluster(cluster string) (AccessControlPolicyClient, error) {
+func (m *multiclusterAccessPolicyClient) Cluster(cluster string) (AccessPolicyClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
 	}
-	return NewAccessControlPolicyClient(client), nil
+	return NewAccessPolicyClient(client), nil
 }
 
 // Reader knows how to read and list VirtualMeshs.

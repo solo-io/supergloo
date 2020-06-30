@@ -65,9 +65,9 @@ func (in *TrafficPolicyList) DeepCopyObject() runtime.Object {
 	return nil
 }
 
-// Generated Deepcopy methods for AccessControlPolicy
+// Generated Deepcopy methods for AccessPolicy
 
-func (in *AccessControlPolicy) DeepCopyInto(out *AccessControlPolicy) {
+func (in *AccessPolicy) DeepCopyInto(out *AccessPolicy) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
@@ -76,29 +76,29 @@ func (in *AccessControlPolicy) DeepCopyInto(out *AccessControlPolicy) {
 	return
 }
 
-func (in *AccessControlPolicy) DeepCopy() *AccessControlPolicy {
+func (in *AccessPolicy) DeepCopy() *AccessPolicy {
 	if in == nil {
 		return nil
 	}
-	out := new(AccessControlPolicy)
+	out := new(AccessPolicy)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *AccessControlPolicy) DeepCopyObject() runtime.Object {
+func (in *AccessPolicy) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
 }
 
-func (in *AccessControlPolicyList) DeepCopyInto(out *AccessControlPolicyList) {
+func (in *AccessPolicyList) DeepCopyInto(out *AccessPolicyList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
-		*out = make([]AccessControlPolicy, len(*in))
+		*out = make([]AccessPolicy, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -106,16 +106,16 @@ func (in *AccessControlPolicyList) DeepCopyInto(out *AccessControlPolicyList) {
 	return
 }
 
-func (in *AccessControlPolicyList) DeepCopy() *AccessControlPolicyList {
+func (in *AccessPolicyList) DeepCopy() *AccessPolicyList {
 	if in == nil {
 		return nil
 	}
-	out := new(AccessControlPolicyList)
+	out := new(AccessPolicyList)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *AccessControlPolicyList) DeepCopyObject() runtime.Object {
+func (in *AccessPolicyList) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}

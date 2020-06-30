@@ -49,8 +49,8 @@ require (
 	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/protoc-gen-ext v0.0.9
 	github.com/solo-io/reporting-client v0.1.3
-	github.com/solo-io/skv2 v0.4.2
-	github.com/solo-io/solo-kit v0.13.3
+	github.com/solo-io/skv2 v0.5.0
+	github.com/solo-io/solo-kit v0.13.8
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.5
 	go.uber.org/zap v1.13.0
@@ -62,13 +62,13 @@ require (
 	istio.io/api v0.0.0-20200610220835-a1a958746907
 	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
-	k8s.io/api v0.17.4
-	k8s.io/apiextensions-apiserver v0.17.4
+	k8s.io/api v0.18.1
+	k8s.io/apiextensions-apiserver v0.18.1
 	k8s.io/apimachinery v0.18.3
 	k8s.io/cli-runtime v0.17.2
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/code-generator v0.17.4
-	sigs.k8s.io/controller-runtime v0.5.1
+	k8s.io/code-generator v0.18.1
+	sigs.k8s.io/controller-runtime v0.5.6
 	sigs.k8s.io/yaml v1.2.0
 )
 

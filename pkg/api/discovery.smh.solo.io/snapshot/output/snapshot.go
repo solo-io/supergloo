@@ -8,7 +8,7 @@ import (
 	"sort"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/codegen/pkg/output"
+	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"sigs.k8s.io/controller-runtime/pkg/client"

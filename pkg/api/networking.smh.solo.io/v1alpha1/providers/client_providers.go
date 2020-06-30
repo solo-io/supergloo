@@ -45,31 +45,31 @@ func TrafficPolicyClientFromConfigFactoryProvider() TrafficPolicyClientFromConfi
 	}
 }
 
-// Provider for AccessControlPolicyClient from Clientset
-func AccessControlPolicyClientFromClientsetProvider(clients networking_smh_solo_io_v1alpha1.Clientset) networking_smh_solo_io_v1alpha1.AccessControlPolicyClient {
-	return clients.AccessControlPolicies()
+// Provider for AccessPolicyClient from Clientset
+func AccessPolicyClientFromClientsetProvider(clients networking_smh_solo_io_v1alpha1.Clientset) networking_smh_solo_io_v1alpha1.AccessPolicyClient {
+	return clients.AccessPolicies()
 }
 
-// Provider for AccessControlPolicy Client from Client
-func AccessControlPolicyClientProvider(client client.Client) networking_smh_solo_io_v1alpha1.AccessControlPolicyClient {
-	return networking_smh_solo_io_v1alpha1.NewAccessControlPolicyClient(client)
+// Provider for AccessPolicy Client from Client
+func AccessPolicyClientProvider(client client.Client) networking_smh_solo_io_v1alpha1.AccessPolicyClient {
+	return networking_smh_solo_io_v1alpha1.NewAccessPolicyClient(client)
 }
 
-type AccessControlPolicyClientFactory func(client client.Client) networking_smh_solo_io_v1alpha1.AccessControlPolicyClient
+type AccessPolicyClientFactory func(client client.Client) networking_smh_solo_io_v1alpha1.AccessPolicyClient
 
-func AccessControlPolicyClientFactoryProvider() AccessControlPolicyClientFactory {
-	return AccessControlPolicyClientProvider
+func AccessPolicyClientFactoryProvider() AccessPolicyClientFactory {
+	return AccessPolicyClientProvider
 }
 
-type AccessControlPolicyClientFromConfigFactory func(cfg *rest.Config) (networking_smh_solo_io_v1alpha1.AccessControlPolicyClient, error)
+type AccessPolicyClientFromConfigFactory func(cfg *rest.Config) (networking_smh_solo_io_v1alpha1.AccessPolicyClient, error)
 
-func AccessControlPolicyClientFromConfigFactoryProvider() AccessControlPolicyClientFromConfigFactory {
-	return func(cfg *rest.Config) (networking_smh_solo_io_v1alpha1.AccessControlPolicyClient, error) {
+func AccessPolicyClientFromConfigFactoryProvider() AccessPolicyClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_smh_solo_io_v1alpha1.AccessPolicyClient, error) {
 		clients, err := networking_smh_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
 		if err != nil {
 			return nil, err
 		}
-		return clients.AccessControlPolicies(), nil
+		return clients.AccessPolicies(), nil
 	}
 }
 

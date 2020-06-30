@@ -29,14 +29,14 @@ metadata:
   labels:
     app: service-mesh-hub
     app.kubernetes.io/name: service-mesh-hub
-  name: accesscontrolpolicies.networking.smh.solo.io
+  name: accesspolicies.networking.smh.solo.io
 spec:
   group: networking.smh.solo.io
   names:
-    kind: AccessControlPolicy
-    listKind: AccessControlPolicyList
-    plural: accesscontrolpolicies
-    singular: accesscontrolpolicy
+    kind: AccessPolicy
+    listKind: AccessPolicyList
+    plural: accesspolicies
+    singular: accesspolicy
   scope: Namespaced
   subresources:
     status: {}

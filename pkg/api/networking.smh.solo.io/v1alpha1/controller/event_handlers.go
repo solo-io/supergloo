@@ -124,111 +124,111 @@ func (h genericTrafficPolicyHandler) Generic(object runtime.Object) error {
 	return h.handler.GenericTrafficPolicy(obj)
 }
 
-// Handle events for the AccessControlPolicy Resource
+// Handle events for the AccessPolicy Resource
 // DEPRECATED: Prefer reconciler pattern.
-type AccessControlPolicyEventHandler interface {
-	CreateAccessControlPolicy(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error
-	UpdateAccessControlPolicy(old, new *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error
-	DeleteAccessControlPolicy(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error
-	GenericAccessControlPolicy(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error
+type AccessPolicyEventHandler interface {
+	CreateAccessPolicy(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) error
+	UpdateAccessPolicy(old, new *networking_smh_solo_io_v1alpha1.AccessPolicy) error
+	DeleteAccessPolicy(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) error
+	GenericAccessPolicy(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) error
 }
 
-type AccessControlPolicyEventHandlerFuncs struct {
-	OnCreate  func(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error
-	OnUpdate  func(old, new *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error
-	OnDelete  func(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error
-	OnGeneric func(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error
+type AccessPolicyEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) error
+	OnUpdate  func(old, new *networking_smh_solo_io_v1alpha1.AccessPolicy) error
+	OnDelete  func(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) error
+	OnGeneric func(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) error
 }
 
-func (f *AccessControlPolicyEventHandlerFuncs) CreateAccessControlPolicy(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error {
+func (f *AccessPolicyEventHandlerFuncs) CreateAccessPolicy(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *AccessControlPolicyEventHandlerFuncs) DeleteAccessControlPolicy(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error {
+func (f *AccessPolicyEventHandlerFuncs) DeleteAccessPolicy(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *AccessControlPolicyEventHandlerFuncs) UpdateAccessControlPolicy(objOld, objNew *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error {
+func (f *AccessPolicyEventHandlerFuncs) UpdateAccessPolicy(objOld, objNew *networking_smh_solo_io_v1alpha1.AccessPolicy) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *AccessControlPolicyEventHandlerFuncs) GenericAccessControlPolicy(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error {
+func (f *AccessPolicyEventHandlerFuncs) GenericAccessPolicy(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
 	return f.OnGeneric(obj)
 }
 
-type AccessControlPolicyEventWatcher interface {
-	AddEventHandler(ctx context.Context, h AccessControlPolicyEventHandler, predicates ...predicate.Predicate) error
+type AccessPolicyEventWatcher interface {
+	AddEventHandler(ctx context.Context, h AccessPolicyEventHandler, predicates ...predicate.Predicate) error
 }
 
-type accessControlPolicyEventWatcher struct {
+type accessPolicyEventWatcher struct {
 	watcher events.EventWatcher
 }
 
-func NewAccessControlPolicyEventWatcher(name string, mgr manager.Manager) AccessControlPolicyEventWatcher {
-	return &accessControlPolicyEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &networking_smh_solo_io_v1alpha1.AccessControlPolicy{}),
+func NewAccessPolicyEventWatcher(name string, mgr manager.Manager) AccessPolicyEventWatcher {
+	return &accessPolicyEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_smh_solo_io_v1alpha1.AccessPolicy{}),
 	}
 }
 
-func (c *accessControlPolicyEventWatcher) AddEventHandler(ctx context.Context, h AccessControlPolicyEventHandler, predicates ...predicate.Predicate) error {
-	handler := genericAccessControlPolicyHandler{handler: h}
+func (c *accessPolicyEventWatcher) AddEventHandler(ctx context.Context, h AccessPolicyEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericAccessPolicyHandler{handler: h}
 	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
 }
 
-// genericAccessControlPolicyHandler implements a generic events.EventHandler
-type genericAccessControlPolicyHandler struct {
-	handler AccessControlPolicyEventHandler
+// genericAccessPolicyHandler implements a generic events.EventHandler
+type genericAccessPolicyHandler struct {
+	handler AccessPolicyEventHandler
 }
 
-func (h genericAccessControlPolicyHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy)
+func (h genericAccessPolicyHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessPolicy)
 	if !ok {
-		return errors.Errorf("internal error: AccessControlPolicy handler received event for %T", object)
+		return errors.Errorf("internal error: AccessPolicy handler received event for %T", object)
 	}
-	return h.handler.CreateAccessControlPolicy(obj)
+	return h.handler.CreateAccessPolicy(obj)
 }
 
-func (h genericAccessControlPolicyHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy)
+func (h genericAccessPolicyHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessPolicy)
 	if !ok {
-		return errors.Errorf("internal error: AccessControlPolicy handler received event for %T", object)
+		return errors.Errorf("internal error: AccessPolicy handler received event for %T", object)
 	}
-	return h.handler.DeleteAccessControlPolicy(obj)
+	return h.handler.DeleteAccessPolicy(obj)
 }
 
-func (h genericAccessControlPolicyHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy)
+func (h genericAccessPolicyHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*networking_smh_solo_io_v1alpha1.AccessPolicy)
 	if !ok {
-		return errors.Errorf("internal error: AccessControlPolicy handler received event for %T", old)
+		return errors.Errorf("internal error: AccessPolicy handler received event for %T", old)
 	}
-	objNew, ok := new.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy)
+	objNew, ok := new.(*networking_smh_solo_io_v1alpha1.AccessPolicy)
 	if !ok {
-		return errors.Errorf("internal error: AccessControlPolicy handler received event for %T", new)
+		return errors.Errorf("internal error: AccessPolicy handler received event for %T", new)
 	}
-	return h.handler.UpdateAccessControlPolicy(objOld, objNew)
+	return h.handler.UpdateAccessPolicy(objOld, objNew)
 }
 
-func (h genericAccessControlPolicyHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy)
+func (h genericAccessPolicyHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessPolicy)
 	if !ok {
-		return errors.Errorf("internal error: AccessControlPolicy handler received event for %T", object)
+		return errors.Errorf("internal error: AccessPolicy handler received event for %T", object)
 	}
-	return h.handler.GenericAccessControlPolicy(obj)
+	return h.handler.GenericAccessPolicy(obj)
 }
 
 // Handle events for the VirtualMesh Resource

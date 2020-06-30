@@ -16,7 +16,7 @@ import "service-mesh-hub/api/core/v1alpha1/status.proto";
     - matching the indicated request criteria (allowed_paths, allowed_methods, allowed_ports)
     if no access control policies are present, all traffic in the mesh will be set to ALLOW
 */
-message AccessControlPolicySpec {
+message AccessPolicySpec {
     /*
         requests originating from these pods will have the rule applied
         leave empty to have all pods in the mesh apply these policies
@@ -63,7 +63,7 @@ message AccessControlPolicySpec {
     repeated uint32 allowed_ports = 6;
 }
 
-message AccessControlPolicyStatus {
+message AccessPolicyStatus {
     // TODO use a shared Status message with TrafficPolicy once autopilot allows for it
     message TranslatorError {
         // ID representing a translator that translates TrafficPolicy to Mesh-specific config

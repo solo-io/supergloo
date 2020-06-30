@@ -20,15 +20,15 @@ func (in *TrafficPolicyStatus) DeepCopyInto(out *TrafficPolicyStatus) {
 	*out = *p
 }
 
-// DeepCopyInto for the AccessControlPolicy.Spec
-func (in *AccessControlPolicySpec) DeepCopyInto(out *AccessControlPolicySpec) {
-	p := proto.Clone(in).(*AccessControlPolicySpec)
+// DeepCopyInto for the AccessPolicy.Spec
+func (in *AccessPolicySpec) DeepCopyInto(out *AccessPolicySpec) {
+	p := proto.Clone(in).(*AccessPolicySpec)
 	*out = *p
 }
 
-// DeepCopyInto for the AccessControlPolicy.Status
-func (in *AccessControlPolicyStatus) DeepCopyInto(out *AccessControlPolicyStatus) {
-	p := proto.Clone(in).(*AccessControlPolicyStatus)
+// DeepCopyInto for the AccessPolicy.Status
+func (in *AccessPolicyStatus) DeepCopyInto(out *AccessPolicyStatus) {
+	p := proto.Clone(in).(*AccessPolicyStatus)
 	*out = *p
 }
 

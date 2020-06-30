@@ -6,8 +6,8 @@ package v1alpha1
 // TrafficPolicySlice represents a slice of *TrafficPolicy
 type TrafficPolicySlice []*TrafficPolicy
 
-// AccessControlPolicySlice represents a slice of *AccessControlPolicy
-type AccessControlPolicySlice []*AccessControlPolicy
+// AccessPolicySlice represents a slice of *AccessPolicy
+type AccessPolicySlice []*AccessPolicy
 
 // VirtualMeshSlice represents a slice of *VirtualMesh
 type VirtualMeshSlice []*VirtualMesh

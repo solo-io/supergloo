@@ -10,6 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1/sets"
+	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	sets "k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -174,4 +175,33 @@ func (m *MockVirtualMeshCertificateSigningRequestSet) Intersection(set v1alpha1s
 func (mr *MockVirtualMeshCertificateSigningRequestSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockVirtualMeshCertificateSigningRequestSet)(nil).Intersection), set)
+}
+
+// Find mocks base method.
+func (m *MockVirtualMeshCertificateSigningRequestSet) Find(id ezkube.ResourceId) (*v1alpha1.VirtualMeshCertificateSigningRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1alpha1.VirtualMeshCertificateSigningRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockVirtualMeshCertificateSigningRequestSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockVirtualMeshCertificateSigningRequestSet)(nil).Find), id)
+}
+
+// Length mocks base method.
+func (m *MockVirtualMeshCertificateSigningRequestSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockVirtualMeshCertificateSigningRequestSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockVirtualMeshCertificateSigningRequestSet)(nil).Length))
 }

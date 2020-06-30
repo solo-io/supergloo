@@ -24,7 +24,7 @@ var SMHGroups = []model.Group{
 	}),
 	makeGroup("networking", v1alpha1Version, []resourceToGenerate{
 		{kind: "TrafficPolicy"},
-		{kind: "AccessControlPolicy"},
+		{kind: "AccessPolicy"},
 		{kind: "VirtualMesh"},
 	}),
 }
@@ -70,9 +70,8 @@ func makeGroup(groupPrefix, version string, resourcesToGenerate []resourceToGene
 		RenderTypes:      true,
 		RenderClients:    true,
 		RenderController: true,
-		RenderProtos:     true,
 		MockgenDirective: true,
-		CustomTemplates:  contrib.AllCustomTemplates,
+		CustomTemplates:  contrib.AllGroupCustomTemplates,
 		ApiRoot:          apiRoot,
 	}
 }

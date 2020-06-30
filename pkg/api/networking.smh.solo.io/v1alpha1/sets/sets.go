@@ -124,115 +124,115 @@ func (s *trafficPolicySet) Length() int {
 	return s.set.Length()
 }
 
-type AccessControlPolicySet interface {
+type AccessPolicySet interface {
 	Keys() sets.String
-	List() []*networking_smh_solo_io_v1alpha1.AccessControlPolicy
-	Map() map[string]*networking_smh_solo_io_v1alpha1.AccessControlPolicy
-	Insert(accessControlPolicy ...*networking_smh_solo_io_v1alpha1.AccessControlPolicy)
-	Equal(accessControlPolicySet AccessControlPolicySet) bool
-	Has(accessControlPolicy *networking_smh_solo_io_v1alpha1.AccessControlPolicy) bool
-	Delete(accessControlPolicy *networking_smh_solo_io_v1alpha1.AccessControlPolicy)
-	Union(set AccessControlPolicySet) AccessControlPolicySet
-	Difference(set AccessControlPolicySet) AccessControlPolicySet
-	Intersection(set AccessControlPolicySet) AccessControlPolicySet
-	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.AccessControlPolicy, error)
+	List() []*networking_smh_solo_io_v1alpha1.AccessPolicy
+	Map() map[string]*networking_smh_solo_io_v1alpha1.AccessPolicy
+	Insert(accessPolicy ...*networking_smh_solo_io_v1alpha1.AccessPolicy)
+	Equal(accessPolicySet AccessPolicySet) bool
+	Has(accessPolicy *networking_smh_solo_io_v1alpha1.AccessPolicy) bool
+	Delete(accessPolicy *networking_smh_solo_io_v1alpha1.AccessPolicy)
+	Union(set AccessPolicySet) AccessPolicySet
+	Difference(set AccessPolicySet) AccessPolicySet
+	Intersection(set AccessPolicySet) AccessPolicySet
+	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.AccessPolicy, error)
 	Length() int
 }
 
-func makeGenericAccessControlPolicySet(accessControlPolicyList []*networking_smh_solo_io_v1alpha1.AccessControlPolicy) sksets.ResourceSet {
+func makeGenericAccessPolicySet(accessPolicyList []*networking_smh_solo_io_v1alpha1.AccessPolicy) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
-	for _, obj := range accessControlPolicyList {
+	for _, obj := range accessPolicyList {
 		genericResources = append(genericResources, obj)
 	}
 	return sksets.NewResourceSet(genericResources...)
 }
 
-type accessControlPolicySet struct {
+type accessPolicySet struct {
 	set sksets.ResourceSet
 }
 
-func NewAccessControlPolicySet(accessControlPolicyList ...*networking_smh_solo_io_v1alpha1.AccessControlPolicy) AccessControlPolicySet {
-	return &accessControlPolicySet{set: makeGenericAccessControlPolicySet(accessControlPolicyList)}
+func NewAccessPolicySet(accessPolicyList ...*networking_smh_solo_io_v1alpha1.AccessPolicy) AccessPolicySet {
+	return &accessPolicySet{set: makeGenericAccessPolicySet(accessPolicyList)}
 }
 
-func NewAccessControlPolicySetFromList(accessControlPolicyList *networking_smh_solo_io_v1alpha1.AccessControlPolicyList) AccessControlPolicySet {
-	list := make([]*networking_smh_solo_io_v1alpha1.AccessControlPolicy, 0, len(accessControlPolicyList.Items))
-	for idx := range accessControlPolicyList.Items {
-		list = append(list, &accessControlPolicyList.Items[idx])
+func NewAccessPolicySetFromList(accessPolicyList *networking_smh_solo_io_v1alpha1.AccessPolicyList) AccessPolicySet {
+	list := make([]*networking_smh_solo_io_v1alpha1.AccessPolicy, 0, len(accessPolicyList.Items))
+	for idx := range accessPolicyList.Items {
+		list = append(list, &accessPolicyList.Items[idx])
 	}
-	return &accessControlPolicySet{set: makeGenericAccessControlPolicySet(list)}
+	return &accessPolicySet{set: makeGenericAccessPolicySet(list)}
 }
 
-func (s *accessControlPolicySet) Keys() sets.String {
+func (s *accessPolicySet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s *accessControlPolicySet) List() []*networking_smh_solo_io_v1alpha1.AccessControlPolicy {
-	var accessControlPolicyList []*networking_smh_solo_io_v1alpha1.AccessControlPolicy
+func (s *accessPolicySet) List() []*networking_smh_solo_io_v1alpha1.AccessPolicy {
+	var accessPolicyList []*networking_smh_solo_io_v1alpha1.AccessPolicy
 	for _, obj := range s.set.List() {
-		accessControlPolicyList = append(accessControlPolicyList, obj.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy))
+		accessPolicyList = append(accessPolicyList, obj.(*networking_smh_solo_io_v1alpha1.AccessPolicy))
 	}
-	return accessControlPolicyList
+	return accessPolicyList
 }
 
-func (s *accessControlPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha1.AccessControlPolicy {
-	newMap := map[string]*networking_smh_solo_io_v1alpha1.AccessControlPolicy{}
+func (s *accessPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha1.AccessPolicy {
+	newMap := map[string]*networking_smh_solo_io_v1alpha1.AccessPolicy{}
 	for k, v := range s.set.Map() {
-		newMap[k] = v.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy)
+		newMap[k] = v.(*networking_smh_solo_io_v1alpha1.AccessPolicy)
 	}
 	return newMap
 }
 
-func (s *accessControlPolicySet) Insert(
-	accessControlPolicyList ...*networking_smh_solo_io_v1alpha1.AccessControlPolicy,
+func (s *accessPolicySet) Insert(
+	accessPolicyList ...*networking_smh_solo_io_v1alpha1.AccessPolicy,
 ) {
-	for _, obj := range accessControlPolicyList {
+	for _, obj := range accessPolicyList {
 		s.set.Insert(obj)
 	}
 }
 
-func (s *accessControlPolicySet) Has(accessControlPolicy *networking_smh_solo_io_v1alpha1.AccessControlPolicy) bool {
-	return s.set.Has(accessControlPolicy)
+func (s *accessPolicySet) Has(accessPolicy *networking_smh_solo_io_v1alpha1.AccessPolicy) bool {
+	return s.set.Has(accessPolicy)
 }
 
-func (s *accessControlPolicySet) Equal(
-	accessControlPolicySet AccessControlPolicySet,
+func (s *accessPolicySet) Equal(
+	accessPolicySet AccessPolicySet,
 ) bool {
-	return s.set.Equal(makeGenericAccessControlPolicySet(accessControlPolicySet.List()))
+	return s.set.Equal(makeGenericAccessPolicySet(accessPolicySet.List()))
 }
 
-func (s *accessControlPolicySet) Delete(AccessControlPolicy *networking_smh_solo_io_v1alpha1.AccessControlPolicy) {
-	s.set.Delete(AccessControlPolicy)
+func (s *accessPolicySet) Delete(AccessPolicy *networking_smh_solo_io_v1alpha1.AccessPolicy) {
+	s.set.Delete(AccessPolicy)
 }
 
-func (s *accessControlPolicySet) Union(set AccessControlPolicySet) AccessControlPolicySet {
-	return NewAccessControlPolicySet(append(s.List(), set.List()...)...)
+func (s *accessPolicySet) Union(set AccessPolicySet) AccessPolicySet {
+	return NewAccessPolicySet(append(s.List(), set.List()...)...)
 }
 
-func (s *accessControlPolicySet) Difference(set AccessControlPolicySet) AccessControlPolicySet {
-	newSet := s.set.Difference(makeGenericAccessControlPolicySet(set.List()))
-	return &accessControlPolicySet{set: newSet}
+func (s *accessPolicySet) Difference(set AccessPolicySet) AccessPolicySet {
+	newSet := s.set.Difference(makeGenericAccessPolicySet(set.List()))
+	return &accessPolicySet{set: newSet}
 }
 
-func (s *accessControlPolicySet) Intersection(set AccessControlPolicySet) AccessControlPolicySet {
-	newSet := s.set.Intersection(makeGenericAccessControlPolicySet(set.List()))
-	var accessControlPolicyList []*networking_smh_solo_io_v1alpha1.AccessControlPolicy
+func (s *accessPolicySet) Intersection(set AccessPolicySet) AccessPolicySet {
+	newSet := s.set.Intersection(makeGenericAccessPolicySet(set.List()))
+	var accessPolicyList []*networking_smh_solo_io_v1alpha1.AccessPolicy
 	for _, obj := range newSet.List() {
-		accessControlPolicyList = append(accessControlPolicyList, obj.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy))
+		accessPolicyList = append(accessPolicyList, obj.(*networking_smh_solo_io_v1alpha1.AccessPolicy))
 	}
-	return NewAccessControlPolicySet(accessControlPolicyList...)
+	return NewAccessPolicySet(accessPolicyList...)
 }
 
-func (s *accessControlPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.AccessControlPolicy, error) {
-	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha1.AccessControlPolicy{}, id)
+func (s *accessPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.AccessPolicy, error) {
+	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha1.AccessPolicy{}, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return obj.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy), nil
+	return obj.(*networking_smh_solo_io_v1alpha1.AccessPolicy), nil
 }
 
-func (s *accessControlPolicySet) Length() int {
+func (s *accessPolicySet) Length() int {
 	return s.set.Length()
 }
 

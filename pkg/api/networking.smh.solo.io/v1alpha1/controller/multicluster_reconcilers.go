@@ -88,74 +88,74 @@ func (g genericTrafficPolicyMulticlusterReconciler) Reconcile(cluster string, ob
 	return g.reconciler.ReconcileTrafficPolicy(cluster, obj)
 }
 
-// Reconcile Upsert events for the AccessControlPolicy Resource across clusters.
+// Reconcile Upsert events for the AccessPolicy Resource across clusters.
 // implemented by the user
-type MulticlusterAccessControlPolicyReconciler interface {
-	ReconcileAccessControlPolicy(clusterName string, obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) (reconcile.Result, error)
+type MulticlusterAccessPolicyReconciler interface {
+	ReconcileAccessPolicy(clusterName string, obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error)
 }
 
-// Reconcile deletion events for the AccessControlPolicy Resource across clusters.
+// Reconcile deletion events for the AccessPolicy Resource across clusters.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
-type MulticlusterAccessControlPolicyDeletionReconciler interface {
-	ReconcileAccessControlPolicyDeletion(clusterName string, req reconcile.Request)
+type MulticlusterAccessPolicyDeletionReconciler interface {
+	ReconcileAccessPolicyDeletion(clusterName string, req reconcile.Request)
 }
 
-type MulticlusterAccessControlPolicyReconcilerFuncs struct {
-	OnReconcileAccessControlPolicy         func(clusterName string, obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) (reconcile.Result, error)
-	OnReconcileAccessControlPolicyDeletion func(clusterName string, req reconcile.Request)
+type MulticlusterAccessPolicyReconcilerFuncs struct {
+	OnReconcileAccessPolicy         func(clusterName string, obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error)
+	OnReconcileAccessPolicyDeletion func(clusterName string, req reconcile.Request)
 }
 
-func (f *MulticlusterAccessControlPolicyReconcilerFuncs) ReconcileAccessControlPolicy(clusterName string, obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) (reconcile.Result, error) {
-	if f.OnReconcileAccessControlPolicy == nil {
+func (f *MulticlusterAccessPolicyReconcilerFuncs) ReconcileAccessPolicy(clusterName string, obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error) {
+	if f.OnReconcileAccessPolicy == nil {
 		return reconcile.Result{}, nil
 	}
-	return f.OnReconcileAccessControlPolicy(clusterName, obj)
+	return f.OnReconcileAccessPolicy(clusterName, obj)
 }
 
-func (f *MulticlusterAccessControlPolicyReconcilerFuncs) ReconcileAccessControlPolicyDeletion(clusterName string, req reconcile.Request) {
-	if f.OnReconcileAccessControlPolicyDeletion == nil {
+func (f *MulticlusterAccessPolicyReconcilerFuncs) ReconcileAccessPolicyDeletion(clusterName string, req reconcile.Request) {
+	if f.OnReconcileAccessPolicyDeletion == nil {
 		return
 	}
-	f.OnReconcileAccessControlPolicyDeletion(clusterName, req)
+	f.OnReconcileAccessPolicyDeletion(clusterName, req)
 }
 
-type MulticlusterAccessControlPolicyReconcileLoop interface {
-	// AddMulticlusterAccessControlPolicyReconciler adds a MulticlusterAccessControlPolicyReconciler to the MulticlusterAccessControlPolicyReconcileLoop.
-	AddMulticlusterAccessControlPolicyReconciler(ctx context.Context, rec MulticlusterAccessControlPolicyReconciler, predicates ...predicate.Predicate)
+type MulticlusterAccessPolicyReconcileLoop interface {
+	// AddMulticlusterAccessPolicyReconciler adds a MulticlusterAccessPolicyReconciler to the MulticlusterAccessPolicyReconcileLoop.
+	AddMulticlusterAccessPolicyReconciler(ctx context.Context, rec MulticlusterAccessPolicyReconciler, predicates ...predicate.Predicate)
 }
 
-type multiclusterAccessControlPolicyReconcileLoop struct {
+type multiclusterAccessPolicyReconcileLoop struct {
 	loop multicluster.Loop
 }
 
-func (m *multiclusterAccessControlPolicyReconcileLoop) AddMulticlusterAccessControlPolicyReconciler(ctx context.Context, rec MulticlusterAccessControlPolicyReconciler, predicates ...predicate.Predicate) {
-	genericReconciler := genericAccessControlPolicyMulticlusterReconciler{reconciler: rec}
+func (m *multiclusterAccessPolicyReconcileLoop) AddMulticlusterAccessPolicyReconciler(ctx context.Context, rec MulticlusterAccessPolicyReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericAccessPolicyMulticlusterReconciler{reconciler: rec}
 
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterAccessControlPolicyReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterAccessControlPolicyReconcileLoop {
-	return &multiclusterAccessControlPolicyReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_smh_solo_io_v1alpha1.AccessControlPolicy{})}
+func NewMulticlusterAccessPolicyReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterAccessPolicyReconcileLoop {
+	return &multiclusterAccessPolicyReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_smh_solo_io_v1alpha1.AccessPolicy{})}
 }
 
-type genericAccessControlPolicyMulticlusterReconciler struct {
-	reconciler MulticlusterAccessControlPolicyReconciler
+type genericAccessPolicyMulticlusterReconciler struct {
+	reconciler MulticlusterAccessPolicyReconciler
 }
 
-func (g genericAccessControlPolicyMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
-	if deletionReconciler, ok := g.reconciler.(MulticlusterAccessControlPolicyDeletionReconciler); ok {
-		deletionReconciler.ReconcileAccessControlPolicyDeletion(cluster, req)
+func (g genericAccessPolicyMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterAccessPolicyDeletionReconciler); ok {
+		deletionReconciler.ReconcileAccessPolicyDeletion(cluster, req)
 	}
 }
 
-func (g genericAccessControlPolicyMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy)
+func (g genericAccessPolicyMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessPolicy)
 	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: AccessControlPolicy handler received event for %T", object)
+		return reconcile.Result{}, errors.Errorf("internal error: AccessPolicy handler received event for %T", object)
 	}
-	return g.reconciler.ReconcileAccessControlPolicy(cluster, obj)
+	return g.reconciler.ReconcileAccessPolicy(cluster, obj)
 }
 
 // Reconcile Upsert events for the VirtualMesh Resource across clusters.

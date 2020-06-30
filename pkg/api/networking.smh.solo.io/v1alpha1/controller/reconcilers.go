@@ -132,77 +132,77 @@ func (r genericTrafficPolicyFinalizer) Finalize(object ezkube.Object) error {
 	return r.finalizingReconciler.FinalizeTrafficPolicy(obj)
 }
 
-// Reconcile Upsert events for the AccessControlPolicy Resource.
+// Reconcile Upsert events for the AccessPolicy Resource.
 // implemented by the user
-type AccessControlPolicyReconciler interface {
-	ReconcileAccessControlPolicy(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) (reconcile.Result, error)
+type AccessPolicyReconciler interface {
+	ReconcileAccessPolicy(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error)
 }
 
-// Reconcile deletion events for the AccessControlPolicy Resource.
+// Reconcile deletion events for the AccessPolicy Resource.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
-type AccessControlPolicyDeletionReconciler interface {
-	ReconcileAccessControlPolicyDeletion(req reconcile.Request)
+type AccessPolicyDeletionReconciler interface {
+	ReconcileAccessPolicyDeletion(req reconcile.Request)
 }
 
-type AccessControlPolicyReconcilerFuncs struct {
-	OnReconcileAccessControlPolicy         func(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) (reconcile.Result, error)
-	OnReconcileAccessControlPolicyDeletion func(req reconcile.Request)
+type AccessPolicyReconcilerFuncs struct {
+	OnReconcileAccessPolicy         func(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error)
+	OnReconcileAccessPolicyDeletion func(req reconcile.Request)
 }
 
-func (f *AccessControlPolicyReconcilerFuncs) ReconcileAccessControlPolicy(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) (reconcile.Result, error) {
-	if f.OnReconcileAccessControlPolicy == nil {
+func (f *AccessPolicyReconcilerFuncs) ReconcileAccessPolicy(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error) {
+	if f.OnReconcileAccessPolicy == nil {
 		return reconcile.Result{}, nil
 	}
-	return f.OnReconcileAccessControlPolicy(obj)
+	return f.OnReconcileAccessPolicy(obj)
 }
 
-func (f *AccessControlPolicyReconcilerFuncs) ReconcileAccessControlPolicyDeletion(req reconcile.Request) {
-	if f.OnReconcileAccessControlPolicyDeletion == nil {
+func (f *AccessPolicyReconcilerFuncs) ReconcileAccessPolicyDeletion(req reconcile.Request) {
+	if f.OnReconcileAccessPolicyDeletion == nil {
 		return
 	}
-	f.OnReconcileAccessControlPolicyDeletion(req)
+	f.OnReconcileAccessPolicyDeletion(req)
 }
 
-// Reconcile and finalize the AccessControlPolicy Resource
+// Reconcile and finalize the AccessPolicy Resource
 // implemented by the user
-type AccessControlPolicyFinalizer interface {
-	AccessControlPolicyReconciler
+type AccessPolicyFinalizer interface {
+	AccessPolicyReconciler
 
 	// name of the finalizer used by this handler.
 	// finalizer names should be unique for a single task
-	AccessControlPolicyFinalizerName() string
+	AccessPolicyFinalizerName() string
 
 	// finalize the object before it is deleted.
 	// Watchers created with a finalizing handler will a
-	FinalizeAccessControlPolicy(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) error
+	FinalizeAccessPolicy(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) error
 }
 
-type AccessControlPolicyReconcileLoop interface {
-	RunAccessControlPolicyReconciler(ctx context.Context, rec AccessControlPolicyReconciler, predicates ...predicate.Predicate) error
+type AccessPolicyReconcileLoop interface {
+	RunAccessPolicyReconciler(ctx context.Context, rec AccessPolicyReconciler, predicates ...predicate.Predicate) error
 }
 
-type accessControlPolicyReconcileLoop struct {
+type accessPolicyReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewAccessControlPolicyReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) AccessControlPolicyReconcileLoop {
-	return &accessControlPolicyReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &networking_smh_solo_io_v1alpha1.AccessControlPolicy{}, options),
+func NewAccessPolicyReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) AccessPolicyReconcileLoop {
+	return &accessPolicyReconcileLoop{
+		loop: reconcile.NewLoop(name, mgr, &networking_smh_solo_io_v1alpha1.AccessPolicy{}, options),
 	}
 }
 
-func (c *accessControlPolicyReconcileLoop) RunAccessControlPolicyReconciler(ctx context.Context, reconciler AccessControlPolicyReconciler, predicates ...predicate.Predicate) error {
-	genericReconciler := genericAccessControlPolicyReconciler{
+func (c *accessPolicyReconcileLoop) RunAccessPolicyReconciler(ctx context.Context, reconciler AccessPolicyReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericAccessPolicyReconciler{
 		reconciler: reconciler,
 	}
 
 	var reconcilerWrapper reconcile.Reconciler
-	if finalizingReconciler, ok := reconciler.(AccessControlPolicyFinalizer); ok {
-		reconcilerWrapper = genericAccessControlPolicyFinalizer{
-			genericAccessControlPolicyReconciler: genericReconciler,
-			finalizingReconciler:                 finalizingReconciler,
+	if finalizingReconciler, ok := reconciler.(AccessPolicyFinalizer); ok {
+		reconcilerWrapper = genericAccessPolicyFinalizer{
+			genericAccessPolicyReconciler: genericReconciler,
+			finalizingReconciler:          finalizingReconciler,
 		}
 	} else {
 		reconcilerWrapper = genericReconciler
@@ -210,41 +210,41 @@ func (c *accessControlPolicyReconcileLoop) RunAccessControlPolicyReconciler(ctx 
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
-// genericAccessControlPolicyHandler implements a generic reconcile.Reconciler
-type genericAccessControlPolicyReconciler struct {
-	reconciler AccessControlPolicyReconciler
+// genericAccessPolicyHandler implements a generic reconcile.Reconciler
+type genericAccessPolicyReconciler struct {
+	reconciler AccessPolicyReconciler
 }
 
-func (r genericAccessControlPolicyReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy)
+func (r genericAccessPolicyReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessPolicy)
 	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: AccessControlPolicy handler received event for %T", object)
+		return reconcile.Result{}, errors.Errorf("internal error: AccessPolicy handler received event for %T", object)
 	}
-	return r.reconciler.ReconcileAccessControlPolicy(obj)
+	return r.reconciler.ReconcileAccessPolicy(obj)
 }
 
-func (r genericAccessControlPolicyReconciler) ReconcileDeletion(request reconcile.Request) {
-	if deletionReconciler, ok := r.reconciler.(AccessControlPolicyDeletionReconciler); ok {
-		deletionReconciler.ReconcileAccessControlPolicyDeletion(request)
+func (r genericAccessPolicyReconciler) ReconcileDeletion(request reconcile.Request) {
+	if deletionReconciler, ok := r.reconciler.(AccessPolicyDeletionReconciler); ok {
+		deletionReconciler.ReconcileAccessPolicyDeletion(request)
 	}
 }
 
-// genericAccessControlPolicyFinalizer implements a generic reconcile.FinalizingReconciler
-type genericAccessControlPolicyFinalizer struct {
-	genericAccessControlPolicyReconciler
-	finalizingReconciler AccessControlPolicyFinalizer
+// genericAccessPolicyFinalizer implements a generic reconcile.FinalizingReconciler
+type genericAccessPolicyFinalizer struct {
+	genericAccessPolicyReconciler
+	finalizingReconciler AccessPolicyFinalizer
 }
 
-func (r genericAccessControlPolicyFinalizer) FinalizerName() string {
-	return r.finalizingReconciler.AccessControlPolicyFinalizerName()
+func (r genericAccessPolicyFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.AccessPolicyFinalizerName()
 }
 
-func (r genericAccessControlPolicyFinalizer) Finalize(object ezkube.Object) error {
-	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessControlPolicy)
+func (r genericAccessPolicyFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha1.AccessPolicy)
 	if !ok {
-		return errors.Errorf("internal error: AccessControlPolicy handler received event for %T", object)
+		return errors.Errorf("internal error: AccessPolicy handler received event for %T", object)
 	}
-	return r.finalizingReconciler.FinalizeAccessControlPolicy(obj)
+	return r.finalizingReconciler.FinalizeAccessPolicy(obj)
 }
 
 // Reconcile Upsert events for the VirtualMesh Resource.
