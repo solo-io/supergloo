@@ -114,8 +114,12 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 		It("should yield a virtual service", func() {
 			policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 				{
-					Ref:               &smh_core_types.ResourceRef{Name: "policy-1"},
-					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{},
+					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						RequestTimeout: &proto_types.Duration{
+							Seconds: 1,
+						},
+					},
 				},
 			}
 			serviceBeingTranslated := &smh_discovery.MeshService{
@@ -170,6 +174,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 								},
 							},
 						}},
+						Timeout: &proto_types.Duration{
+							Seconds: 1,
+						},
 					}},
 				},
 			}}))
@@ -180,8 +187,12 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				It("should report an error", func() {
 					policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Ref:               &smh_core_types.ResourceRef{Name: "policy-1"},
-							TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{},
+							Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+							TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+								RequestTimeout: &proto_types.Duration{
+									Seconds: 1,
+								},
+							},
 						},
 					}
 					serviceBeingTranslated := &smh_discovery.MeshService{
@@ -222,8 +233,12 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				It("should report an error", func() {
 					policies := []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy{
 						{
-							Ref:               &smh_core_types.ResourceRef{Name: "policy-1"},
-							TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{},
+							Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
+							TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+								RequestTimeout: &proto_types.Duration{
+									Seconds: 1,
+								},
+							},
 						},
 					}
 					serviceBeingTranslated := &smh_discovery.MeshService{
@@ -829,6 +844,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				{
 					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
 					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						RequestTimeout: &proto_types.Duration{
+							Seconds: 1,
+						},
 						HttpRequestMatchers: []*smh_networking_types.TrafficPolicySpec_HttpMatcher{{
 							Method: &smh_networking_types.TrafficPolicySpec_HttpMethod{Method: smh_core_types.HttpMethodValue_GET},
 							Headers: []*smh_networking_types.TrafficPolicySpec_HeaderMatcher{
@@ -914,6 +932,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 								},
 							},
 						}},
+						Timeout: &proto_types.Duration{
+							Seconds: 1,
+						},
 						Route: []*istio_networking_types.HTTPRouteDestination{{
 							Destination: &istio_networking_types.Destination{
 								Host: serviceBeingTranslated.Spec.KubeService.Ref.Name,
@@ -932,6 +953,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				{
 					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
 					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						RequestTimeout: &proto_types.Duration{
+							Seconds: 1,
+						},
 						HttpRequestMatchers: []*smh_networking_types.TrafficPolicySpec_HttpMatcher{{
 							Method: &smh_networking_types.TrafficPolicySpec_HttpMethod{Method: smh_core_types.HttpMethodValue_GET},
 							QueryParameters: []*smh_networking_types.TrafficPolicySpec_QueryParameterMatcher{
@@ -982,31 +1006,35 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				ObjectMeta: selection.ResourceRefToObjectMeta(serviceBeingTranslated.Spec.KubeService.Ref),
 				Spec: istio_networking_types.VirtualService{
 					Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
-					Http: []*istio_networking_types.HTTPRoute{{
-						Match: []*istio_networking_types.HTTPMatchRequest{{
-							Method: &istio_networking_types.StringMatch{
-								MatchType: &istio_networking_types.StringMatch_Exact{
-									Exact: "GET",
-								},
+					Http: []*istio_networking_types.HTTPRoute{
+						{
+							Timeout: &proto_types.Duration{
+								Seconds: 1,
 							},
-							QueryParams: map[string]*istio_networking_types.StringMatch{
-								"qp1": {
-									MatchType: &istio_networking_types.StringMatch_Exact{Exact: "qpv1"},
+							Match: []*istio_networking_types.HTTPMatchRequest{{
+								Method: &istio_networking_types.StringMatch{
+									MatchType: &istio_networking_types.StringMatch_Exact{
+										Exact: "GET",
+									},
 								},
-								"qp2": {
-									MatchType: &istio_networking_types.StringMatch_Regex{Regex: "qpv2"},
+								QueryParams: map[string]*istio_networking_types.StringMatch{
+									"qp1": {
+										MatchType: &istio_networking_types.StringMatch_Exact{Exact: "qpv1"},
+									},
+									"qp2": {
+										MatchType: &istio_networking_types.StringMatch_Regex{Regex: "qpv2"},
+									},
 								},
-							},
+							}},
+							Route: []*istio_networking_types.HTTPRouteDestination{{
+								Destination: &istio_networking_types.Destination{
+									Host: serviceBeingTranslated.Spec.KubeService.Ref.Name,
+									Port: &istio_networking_types.PortSelector{
+										Number: 8000,
+									},
+								},
+							}},
 						}},
-						Route: []*istio_networking_types.HTTPRouteDestination{{
-							Destination: &istio_networking_types.Destination{
-								Host: serviceBeingTranslated.Spec.KubeService.Ref.Name,
-								Port: &istio_networking_types.PortSelector{
-									Number: 8000,
-								},
-							},
-						}},
-					}},
 				},
 			}}))
 		})
@@ -1296,6 +1324,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 				{
 					Ref: &smh_core_types.ResourceRef{Name: "policy-1"},
 					TrafficPolicySpec: &smh_networking_types.TrafficPolicySpec{
+						RequestTimeout: &proto_types.Duration{
+							Seconds: 1,
+						},
 						HttpRequestMatchers: []*smh_networking_types.TrafficPolicySpec_HttpMatcher{
 							{
 								PathSpecifier: &smh_networking_types.TrafficPolicySpec_HttpMatcher_Exact{
@@ -1404,6 +1435,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 					Hosts: []string{serviceBeingTranslated.Spec.KubeService.Ref.Name},
 					Http: []*istio_networking_types.HTTPRoute{
 						{
+							Timeout: &proto_types.Duration{
+								Seconds: 1,
+							},
 							Match: []*istio_networking_types.HTTPMatchRequest{
 								{
 
@@ -1416,6 +1450,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							Route: defaultRoute,
 						},
 						{
+							Timeout: &proto_types.Duration{
+								Seconds: 1,
+							},
 							Match: []*istio_networking_types.HTTPMatchRequest{
 								{
 
@@ -1426,6 +1463,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							Route: defaultRoute,
 						},
 						{
+							Timeout: &proto_types.Duration{
+								Seconds: 1,
+							},
 							Match: []*istio_networking_types.HTTPMatchRequest{
 								{
 
@@ -1436,6 +1476,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							Route: defaultRoute,
 						},
 						{
+							Timeout: &proto_types.Duration{
+								Seconds: 1,
+							},
 							Match: []*istio_networking_types.HTTPMatchRequest{
 								{
 
@@ -1445,6 +1488,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							Route: defaultRoute,
 						},
 						{
+							Timeout: &proto_types.Duration{
+								Seconds: 1,
+							},
 							Match: []*istio_networking_types.HTTPMatchRequest{
 								{
 
@@ -1454,6 +1500,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							Route: defaultRoute,
 						},
 						{
+							Timeout: &proto_types.Duration{
+								Seconds: 1,
+							},
 							Match: []*istio_networking_types.HTTPMatchRequest{
 								{
 
@@ -1464,6 +1513,9 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 							Route: defaultRoute,
 						},
 						{
+							Timeout: &proto_types.Duration{
+								Seconds: 1,
+							},
 							Match: []*istio_networking_types.HTTPMatchRequest{
 								{
 
@@ -1473,10 +1525,6 @@ var _ = Describe("Istio Traffic Policy Translator", func() {
 									Uri: &istio_networking_types.StringMatch{MatchType: &istio_networking_types.StringMatch_Prefix{Prefix: "/"}},
 								},
 							},
-							Route: defaultRoute,
-						},
-						{
-							Match: nil,
 							Route: defaultRoute,
 						},
 					},

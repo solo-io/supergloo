@@ -13,6 +13,8 @@ import (
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
+	"istio.io/istio/pkg/config/protocol"
+	"k8s.io/apimachinery/pkg/util/validation"
 )
 
 //go:generate mockgen -source ./validation.go -destination ./mocks/mock_validation.go -package mock_failover_service_validation
@@ -40,12 +42,6 @@ var (
 	MissingServices  = eris.New("There must be at least one service declared for the FailoverService.")
 	ClusterNotFound  = func(cluster string) error {
 		return eris.Errorf("Declared cluster %s not found.", cluster)
-	}
-	TargetServiceNotFound = func(serviceRef *smh_core_types.ResourceRef) error {
-		return eris.Errorf("Target service %s.%s.%s not found in SMH discovery resources.",
-			serviceRef.GetName(),
-			serviceRef.GetNamespace(),
-			serviceRef.GetCluster())
 	}
 	FailoverServiceNotFound = func(serviceRef *smh_core_types.ResourceRef) error {
 		return eris.Errorf("Failover service %s.%s.%s not found in SMH discovery resources.",
@@ -107,6 +103,18 @@ func (f *failoverServiceValidator) validateSingle(
 	inputSnapshot failover.InputSnapshot,
 ) *smh_core_types.Status {
 	var multierr *multierror.Error
+	if err := f.validateHostname(failoverService); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+	if err := f.validatePort(failoverService); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+	if err := f.validateCluster(failoverService, inputSnapshot.KubeClusters.List()); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+	if err := f.validateNamespace(failoverService); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
 	if err := f.validateServices(failoverService, inputSnapshot.MeshServices.List(), inputSnapshot.Meshes, inputSnapshot.VirtualMeshes); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
@@ -129,12 +137,6 @@ func (f *failoverServiceValidator) validateServices(
 	virtualMeshes v1alpha1sets.VirtualMeshSet,
 ) error {
 	var multierr *multierror.Error
-	// validate target service
-	_, err := f.findMeshService(failoverService.Spec.GetTargetService(), allMeshServices)
-	if err != nil {
-		// Corresponding MeshService not found.
-		multierr = multierror.Append(multierr, TargetServiceNotFound(failoverService.Spec.GetTargetService()))
-	}
 	// validate failover services
 	failoverServices := failoverService.Spec.GetFailoverServices()
 	if len(failoverServices) == 0 {
@@ -254,4 +256,57 @@ func (f *failoverServiceValidator) validateFederation(
 		}
 	}
 	return multierr.ErrorOrNil()
+}
+
+func (f *failoverServiceValidator) validateCluster(
+	failoverService *smh_networking.FailoverService,
+	kubeClusters []*smh_discovery.KubernetesCluster,
+) error {
+	cluster := failoverService.Spec.GetCluster()
+	if cluster == "" {
+		return MissingCluster
+	}
+	for _, kubeCluster := range kubeClusters {
+		if cluster == kubeCluster.GetName() {
+			return nil
+		}
+	}
+	return ClusterNotFound(cluster)
+}
+
+func (f *failoverServiceValidator) validateHostname(failoverService *smh_networking.FailoverService) error {
+	hostname := failoverService.Spec.GetHostname()
+	if hostname == "" {
+		return MissingHostname
+	}
+	errStrings := validation.IsDNS1123Subdomain(hostname)
+	if len(errStrings) > 0 {
+		return eris.New(strings.Join(errStrings, ", "))
+	}
+	return nil
+}
+
+func (f *failoverServiceValidator) validatePort(failoverService *smh_networking.FailoverService) error {
+	port := failoverService.Spec.GetPort()
+	if port == nil {
+		return MissingPort
+	}
+	var multierr *multierror.Error
+	if errStrings := validation.IsValidPortNum(int(port.GetPort())); errStrings != nil {
+		multierr = multierror.Append(multierr, eris.New(strings.Join(errStrings, ", ")))
+	}
+	if errStrings := validation.IsValidPortName(port.GetName()); errStrings != nil {
+		multierr = multierror.Append(multierr, eris.New(strings.Join(errStrings, ", ")))
+	}
+	if protocol.Parse(port.GetProtocol()) == protocol.Unsupported {
+		multierr = multierror.Append(multierr, eris.Errorf("Invalid protocol for port: %s", port.GetProtocol()))
+	}
+	return multierr.ErrorOrNil()
+}
+
+func (f *failoverServiceValidator) validateNamespace(failoverService *smh_networking.FailoverService) error {
+	if failoverService.Spec.GetNamespace() == "" {
+		return MissingNamespace
+	}
+	return nil
 }

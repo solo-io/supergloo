@@ -6,22 +6,35 @@ import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
 
 /*
-    This configures an existing service with failover functionality, where in the case of
-    an unhealthy service, requests will be shifted over to other services in priority
-    order defined in the list of failover services,
-    i.e. an unhealthy target_service will cause failover to workloads[0], etc.
-
+    A service composed of the referenced workloads with failover capabilities.
+    The failover order is determined by the order of the declared workloads,
+    i.e. an unhealthy workloads[0] will cause failover to workloads[1], etc.
     Currently this feature only supports Services backed by Istio.
 */
 message FailoverServiceSpec {
-    // The service for which to add failover functionality.
-    core.smh.solo.io.ResourceRef target_service = 1;
+    message Port {
+        uint32 port = 1;
+        string name = 2;
+        string protocol = 3;
+    }
+
+    // The DNS name of the failover service.
+    string hostname = 1;
+
+    // The namespace to locate the translated service.
+    string namespace = 2;
+
+    // The ports from which to expose this service.
+    Port port = 3;
+
+    // The cluster that the failover service resides (the cluster name registered with Service Mesh Hub).
+    string cluster = 4;
 
     /*
         A list of services ordered by decreasing priority for failover.
         All services must be controlled by service meshes that are grouped under a common VirtualMesh.
     */
-    repeated core.smh.solo.io.ResourceRef failover_services = 2;
+    repeated core.smh.solo.io.ResourceRef failover_services = 5;
 }
 
 message FailoverServiceStatus {

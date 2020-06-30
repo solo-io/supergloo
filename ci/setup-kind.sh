@@ -135,6 +135,10 @@ echo "Finished setting up cluster $remoteCluster"
 # set up kubectl to be pointing to the proper cluster
 kubectl config use-context kind-$managementPlane
 
+# Delete unneeded deployments
+kubectl --context kind-$managementPlane -n local-path-storage delete deployments/local-path-provisioner
+kubectl --context kind-$remoteCluster -n local-path-storage delete deployments/local-path-provisioner
+
 # ensure service-mesh-hub ns exists
 kubectl --context kind-$managementPlane create ns service-mesh-hub
 kubectl --context kind-$remoteCluster create ns service-mesh-hub
@@ -446,7 +450,7 @@ count=0
 ok=false
 until ${ok}; do
     numResources=$(kubectl --context kind-$managementPlane -n service-mesh-hub get meshworkloads | grep istio -c || true)
-    if [[ ${numResources} -eq 9 ]]; then
+    if [[ ${numResources} -eq 8 ]]; then
         ok=true
         continue
     fi
@@ -466,7 +470,7 @@ count=0
 ok=false
 until ${ok}; do
     numResources=$(kubectl --context kind-$managementPlane -n service-mesh-hub get meshservices | grep default -c || true)
-    if [[ ${numResources} -eq 6 ]]; then
+    if [[ ${numResources} -eq 5 ]]; then
         ok=true
         continue
     fi

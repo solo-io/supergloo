@@ -77,7 +77,6 @@ spec:
         cluster: management-plane-cluster
         name: reviews
         namespace: default
-        cluster: management-plane-cluster
       weight: 100
       subset:
         version: v2

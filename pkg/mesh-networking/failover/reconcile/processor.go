@@ -85,20 +85,6 @@ func (f *failoverServiceProcessor) collectMeshServicesForFailoverService(
 	allMeshServices []*smh_discovery.MeshService,
 ) ([]*smh_discovery.MeshService, error) {
 	var prioritizedMeshServices []*smh_discovery.MeshService
-	targetService := failoverService.Spec.GetTargetService()
-	for _, meshService := range allMeshServices {
-		kubeServiceRef := meshService.Spec.GetKubeService().GetRef()
-		if targetService.GetName() == kubeServiceRef.GetName() &&
-			targetService.GetNamespace() == kubeServiceRef.GetNamespace() &&
-			targetService.GetCluster() == kubeServiceRef.GetCluster() {
-			prioritizedMeshServices = []*smh_discovery.MeshService{meshService}
-			break
-		}
-	}
-	if len(prioritizedMeshServices) == 0 {
-		return nil, validation.TargetServiceNotFound(targetService)
-	}
-
 	for _, serviceRef := range failoverService.Spec.GetFailoverServices() {
 		var matchingMeshService *smh_discovery.MeshService
 		for _, meshService := range allMeshServices {

@@ -17,6 +17,7 @@ title: "failover_service.proto"
 
 ## Table of Contents
   - [FailoverServiceSpec](#networking.smh.solo.io.FailoverServiceSpec)
+  - [FailoverServiceSpec.Port](#networking.smh.solo.io.FailoverServiceSpec.Port)
   - [FailoverServiceStatus](#networking.smh.solo.io.FailoverServiceStatus)
   - [FailoverServiceStatus.TranslatorError](#networking.smh.solo.io.FailoverServiceStatus.TranslatorError)
 
@@ -29,13 +30,33 @@ title: "failover_service.proto"
 <a name="networking.smh.solo.io.FailoverServiceSpec"></a>
 
 ### FailoverServiceSpec
-This configures an existing service with failover functionality, where in the case of an unhealthy service, requests will be shifted over to other services in priority order defined in the list of failover services, i.e. an unhealthy target_service will cause failover to workloads[0], etc.<br>Currently this feature only supports Services backed by Istio.
+A service composed of the referenced workloads with failover capabilities. The failover order is determined by the order of the declared workloads, i.e. an unhealthy workloads[0] will cause failover to workloads[1], etc. Currently this feature only supports Services backed by Istio.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| targetService | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | The service for which to add failover functionality. |
+| hostname | [string](#string) |  | The DNS name of the failover service. |
+| namespace | [string](#string) |  | The namespace to locate the translated service. |
+| port | [][FailoverServiceSpec.Port](#networking.smh.solo.io.FailoverServiceSpec.Port) | repeated | The ports from which to expose this service. |
+| cluster | [string](#string) |  | The cluster that the failover service resides (the cluster name registered with Service Mesh Hub). |
 | failoverServices | [][core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) | repeated | A list of services ordered by decreasing priority for failover. All services must be controlled by service meshes that are grouped under a common VirtualMesh. |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.FailoverServiceSpec.Port"></a>
+
+### FailoverServiceSpec.Port
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| port | [uint32](#uint32) |  |  |
+| name | [string](#string) |  |  |
+| protocol | [string](#string) |  |  |
 
 
 
