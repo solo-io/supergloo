@@ -133,9 +133,10 @@ func (i *istioFailoverServiceTranslator) translateEnvoyFilter(
 		return nil, err
 	}
 	return &istio_client_networking.EnvoyFilter{
+		// EnvoyFilter must be located in the same namespace as the workload(s) backing the target service.
 		ObjectMeta: k8s_meta.ObjectMeta{
 			Name:        failoverService.GetName(),
-			Namespace:   failoverService.GetNamespace(),
+			Namespace:   targetService.Spec.GetKubeService().GetRef().GetNamespace(),
 			ClusterName: targetService.Spec.GetKubeService().GetRef().GetCluster(),
 		},
 		Spec: istio_networking.EnvoyFilter{

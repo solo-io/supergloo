@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var _ = Describe("HappyPath", func() {
+var _ = Describe("Failover Test", func() {
 	var (
 		ctx context.Context
 	)
@@ -48,7 +48,7 @@ var _ = Describe("HappyPath", func() {
 		Eventually(func() string {
 			ctx, cancel := context.WithTimeout(ctx, time.Minute/3)
 			defer cancel()
-			out := env.Management.GetPod("default", "productpage").Curl(ctx, "http://reviews:9080/reviews/1", "-v")
+			out := env.Management.GetPod("default", "productpage").Curl(ctx, "http://reviews:9080/reviews/1")
 			GinkgoWriter.Write([]byte(out))
 			return out
 		}, "1m", "1s").Should(ContainSubstring("The slapstick humour is refreshing!"))
@@ -82,7 +82,7 @@ apiVersion: networking.smh.solo.io/v1alpha1
 kind: FailoverService
 metadata:
   name: reviews-failover
-  namespace: default
+  namespace: service-mesh-hub
   labels:
     test: true
 spec:
