@@ -48,15 +48,20 @@ message TrafficPolicySpec {
 
     message MultiDestination {
         message WeightedDestination {
-            // Name/namespace/cluster of a kubernetes service.
-            .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
+
+            // different destination types can be selected for a traffic shift
+            oneof destination_type {
+                // Name/namespace/cluster of a kubernetes service.
+                .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
+            }
 
             // Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100.
             uint32 weight = 2;
+
             // Subset routing is currently only supported on Istio.
             map<string, string> subset = 3;
-            // Port on the destination service to receive traffic. If multiple are found, and none are specified,
-            // then the configuration will be considered invalid
+
+            // Port on the destination service to receive traffic. Required if the service exposes more than one port.
             uint32 port = 4;
         }
 
@@ -284,8 +289,11 @@ message TrafficPolicySpec {
     }
 
     message Mirror {
-        // Destination Kubernetes Service to which to mirror traffic.
-        .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
+        // different destination types can be selected mirroring traffic.
+        oneof destination_type {
+            // Name/namespace/cluster of a kubernetes service.
+            .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
+        }
 
         /*
             Percentage of traffic to mirror. If absent, 100% will be mirrored.
