@@ -1028,6 +1028,8 @@ github.com/solo-io/external-apis v0.0.0-20200612200207-1dbc5c4610e8 h1:ee8lMk0Kg
 github.com/solo-io/external-apis v0.0.0-20200612200207-1dbc5c4610e8/go.mod h1:RpOqnRUIT8eY0tVPaUDjA4EmEQNIbA2Mi6PTO0vNlE0=
 github.com/solo-io/external-apis v0.0.4 h1:R/Nc4LneCYnbIbvstmTC6pjtmLoyfRFj3/eJtNsOazw=
 github.com/solo-io/external-apis v0.0.4/go.mod h1:OD2Adcek+RqpqtnNwhMCeu9DtCO8ZJ8UtXnb897vfjw=
+github.com/solo-io/external-apis v0.0.5 h1:pbR0e17My745pQkZmmEvSpiVpIgFyvz5mhqmDVh2zYk=
+github.com/solo-io/external-apis v0.0.5/go.mod h1:zWTApZwdeW4b5MiLFhk7lxks77mpscqBTC8Lpo6dja8=
 github.com/solo-io/go-utils v0.11.7/go.mod h1:D5lbi4EyIMq+T5gzjJacu0Ou4Z1brL7g2YYYYgYBJso=
 github.com/solo-io/go-utils v0.13.0/go.mod h1:pA8kwWDNlJueffTcC1BYddTerO8zpUUGl5/7JGeC5iU=
 github.com/solo-io/go-utils v0.15.2/go.mod h1:pA8kwWDNlJueffTcC1BYddTerO8zpUUGl5/7JGeC5iU=
