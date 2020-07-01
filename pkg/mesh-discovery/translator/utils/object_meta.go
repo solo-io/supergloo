@@ -10,12 +10,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// construct an ObjectMeta for an Installed mesh from the control plane deployment
-func DiscoveredObjectMeta(sourceResource ezkube.ResourceId) metav1.ObjectMeta {
+// construct an ObjectMeta for a discovered resource from a source object (the object from which the resource was discovered)
+func DiscoveredObjectMeta(sourceResource metav1.Object) metav1.ObjectMeta {
+	labels := sourceResource.GetLabels()
+	if labels == nil {
+		labels = map[string]string{}
+	}
+	for k, v := range labelutils.ClusterLabels(sourceResource.GetClusterName()) {
+		labels[k] = v
+	}
 	return metav1.ObjectMeta{
-		Namespace: defaults.GetPodNamespace(),
-		Name:      DiscoveredResourceName(sourceResource),
-		Labels:    labelutils.ClusterLabels(sourceResource.GetClusterName()),
+		Namespace:   defaults.GetPodNamespace(),
+		Name:        DiscoveredResourceName(sourceResource),
+		Labels:      labels,
+		Annotations: sourceResource.GetAnnotations(),
 	}
 }
 
