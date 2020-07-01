@@ -5,8 +5,8 @@ option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.
 import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
 
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "service-mesh-hub/api/core/v1alpha1/http.proto";
-import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "service-mesh-hub/api/core/v1alpha1/service_selector.proto";
 import "service-mesh-hub/api/core/v1alpha1/workload_selector.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
@@ -49,7 +49,7 @@ message TrafficPolicySpec {
     message MultiDestination {
         message WeightedDestination {
             // Name/namespace/cluster of a kubernetes service.
-            core.smh.solo.io.ResourceRef destination = 1;
+            .core.skv2.solo.io.ClusterObjectRef destination = 1;
             // Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100.
             uint32 weight = 2;
             // Subset routing is currently only supported on Istio.
@@ -284,7 +284,7 @@ message TrafficPolicySpec {
 
     message Mirror {
         // Destination to mirror traffic to
-        core.smh.solo.io.ResourceRef destination = 1;
+        .core.skv2.solo.io.ClusterObjectRef destination = 1;
 
         /*
             Percentage of traffic to mirror. If absent, 100% will be mirrored.
@@ -369,7 +369,7 @@ message TrafficPolicyStatus {
 
     message ConflictError {
         // The service on which this Traffic Policy conflicts with other Traffic policies.
-        core.smh.solo.io.ResourceRef configuration_target = 1;
+        .core.skv2.solo.io.ClusterObjectRef configuration_target = 1;
 
         // Details about the nature of the conflict.
         string error_message = 2;

@@ -5,6 +5,7 @@ option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.s
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
 import "service-mesh-hub/api/networking/v1alpha1/traffic_policy.proto";
+import "service-mesh-hub/api/networking/v1alpha1/access_policy.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -65,12 +66,32 @@ message MeshServiceSpec {
 }
 
 message MeshServiceStatus {
-    message ValidatedTrafficPolicy {
-        .core.skv2.solo.io.ClusterObjectRef ref = 1;
-        networking.smh.solo.io.TrafficPolicySpec traffic_policy_spec = 2;
-    }
     // The status of federation artifacts being written to remote clusters as a result of the federation metadata on this object's Spec.
     core.smh.solo.io.Status federation_status = 1;
 
-    repeated ValidatedTrafficPolicy validated_traffic_policies = 2;
+    // The set of Traffic Policies that have been applied to this MeshService
+    repeated AppliedTrafficPolicy applied_traffic_policies = 2;
+
+    // The set of Access Policies that have been applied to this MeshService
+    repeated AppliedAccessPolicy applied_access_policies = 3;
+
+    // AppliedTrafficPolicy represents a traffic policy that has been applied to the MeshService.
+    // if an existing Traffic Policy becomes invalid, the last applied policy will be used
+    message AppliedTrafficPolicy {
+        // reference to the traffic policy
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // the last known valid spec of the traffic policy
+        networking.smh.solo.io.TrafficPolicySpec spec = 2;
+    }
+
+    // AppliedAccessPolicy represents a access policy that has been applied to the MeshService.
+    // if an existing Access Policy becomes invalid, the last applied policy will be used
+    message AppliedAccessPolicy {
+        // reference to the access policy
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // the last known valid spec of the access policy
+        networking.smh.solo.io.AccessPolicySpec spec = 2;
+    }
 }

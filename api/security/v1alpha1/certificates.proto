@@ -2,7 +2,7 @@ syntax = "proto3";
 package security.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1";
 
-import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
 import "service-mesh-hub/api/core/v1alpha1/mesh.proto";
 import "google/protobuf/timestamp.proto";
@@ -48,7 +48,7 @@ message VirtualMeshCertificateSigningRequestSpec {
         it can be retrieved when the cert is going to expire.
         TODO: Decide how exactly we want to store this data.
     */
-    core.smh.solo.io.ResourceRef virtual_mesh_ref = 3;
+    .core.skv2.solo.io.ClusterObjectRef virtual_mesh_ref = 3;
 
 }
 

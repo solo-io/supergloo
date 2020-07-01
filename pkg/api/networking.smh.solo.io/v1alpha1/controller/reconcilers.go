@@ -28,12 +28,12 @@ type TrafficPolicyReconciler interface {
 // before being deleted.
 // implemented by the user
 type TrafficPolicyDeletionReconciler interface {
-	ReconcileTrafficPolicyDeletion(req reconcile.Request)
+	ReconcileTrafficPolicyDeletion(req reconcile.Request) error
 }
 
 type TrafficPolicyReconcilerFuncs struct {
 	OnReconcileTrafficPolicy         func(obj *networking_smh_solo_io_v1alpha1.TrafficPolicy) (reconcile.Result, error)
-	OnReconcileTrafficPolicyDeletion func(req reconcile.Request)
+	OnReconcileTrafficPolicyDeletion func(req reconcile.Request) error
 }
 
 func (f *TrafficPolicyReconcilerFuncs) ReconcileTrafficPolicy(obj *networking_smh_solo_io_v1alpha1.TrafficPolicy) (reconcile.Result, error) {
@@ -43,11 +43,11 @@ func (f *TrafficPolicyReconcilerFuncs) ReconcileTrafficPolicy(obj *networking_sm
 	return f.OnReconcileTrafficPolicy(obj)
 }
 
-func (f *TrafficPolicyReconcilerFuncs) ReconcileTrafficPolicyDeletion(req reconcile.Request) {
+func (f *TrafficPolicyReconcilerFuncs) ReconcileTrafficPolicyDeletion(req reconcile.Request) error {
 	if f.OnReconcileTrafficPolicyDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileTrafficPolicyDeletion(req)
+	return f.OnReconcileTrafficPolicyDeletion(req)
 }
 
 // Reconcile and finalize the TrafficPolicy Resource
@@ -108,10 +108,11 @@ func (r genericTrafficPolicyReconciler) Reconcile(object ezkube.Object) (reconci
 	return r.reconciler.ReconcileTrafficPolicy(obj)
 }
 
-func (r genericTrafficPolicyReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericTrafficPolicyReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(TrafficPolicyDeletionReconciler); ok {
-		deletionReconciler.ReconcileTrafficPolicyDeletion(request)
+		return deletionReconciler.ReconcileTrafficPolicyDeletion(request)
 	}
+	return nil
 }
 
 // genericTrafficPolicyFinalizer implements a generic reconcile.FinalizingReconciler
@@ -143,12 +144,12 @@ type AccessPolicyReconciler interface {
 // before being deleted.
 // implemented by the user
 type AccessPolicyDeletionReconciler interface {
-	ReconcileAccessPolicyDeletion(req reconcile.Request)
+	ReconcileAccessPolicyDeletion(req reconcile.Request) error
 }
 
 type AccessPolicyReconcilerFuncs struct {
 	OnReconcileAccessPolicy         func(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error)
-	OnReconcileAccessPolicyDeletion func(req reconcile.Request)
+	OnReconcileAccessPolicyDeletion func(req reconcile.Request) error
 }
 
 func (f *AccessPolicyReconcilerFuncs) ReconcileAccessPolicy(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error) {
@@ -158,11 +159,11 @@ func (f *AccessPolicyReconcilerFuncs) ReconcileAccessPolicy(obj *networking_smh_
 	return f.OnReconcileAccessPolicy(obj)
 }
 
-func (f *AccessPolicyReconcilerFuncs) ReconcileAccessPolicyDeletion(req reconcile.Request) {
+func (f *AccessPolicyReconcilerFuncs) ReconcileAccessPolicyDeletion(req reconcile.Request) error {
 	if f.OnReconcileAccessPolicyDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileAccessPolicyDeletion(req)
+	return f.OnReconcileAccessPolicyDeletion(req)
 }
 
 // Reconcile and finalize the AccessPolicy Resource
@@ -223,10 +224,11 @@ func (r genericAccessPolicyReconciler) Reconcile(object ezkube.Object) (reconcil
 	return r.reconciler.ReconcileAccessPolicy(obj)
 }
 
-func (r genericAccessPolicyReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericAccessPolicyReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(AccessPolicyDeletionReconciler); ok {
-		deletionReconciler.ReconcileAccessPolicyDeletion(request)
+		return deletionReconciler.ReconcileAccessPolicyDeletion(request)
 	}
+	return nil
 }
 
 // genericAccessPolicyFinalizer implements a generic reconcile.FinalizingReconciler
@@ -258,12 +260,12 @@ type VirtualMeshReconciler interface {
 // before being deleted.
 // implemented by the user
 type VirtualMeshDeletionReconciler interface {
-	ReconcileVirtualMeshDeletion(req reconcile.Request)
+	ReconcileVirtualMeshDeletion(req reconcile.Request) error
 }
 
 type VirtualMeshReconcilerFuncs struct {
 	OnReconcileVirtualMesh         func(obj *networking_smh_solo_io_v1alpha1.VirtualMesh) (reconcile.Result, error)
-	OnReconcileVirtualMeshDeletion func(req reconcile.Request)
+	OnReconcileVirtualMeshDeletion func(req reconcile.Request) error
 }
 
 func (f *VirtualMeshReconcilerFuncs) ReconcileVirtualMesh(obj *networking_smh_solo_io_v1alpha1.VirtualMesh) (reconcile.Result, error) {
@@ -273,11 +275,11 @@ func (f *VirtualMeshReconcilerFuncs) ReconcileVirtualMesh(obj *networking_smh_so
 	return f.OnReconcileVirtualMesh(obj)
 }
 
-func (f *VirtualMeshReconcilerFuncs) ReconcileVirtualMeshDeletion(req reconcile.Request) {
+func (f *VirtualMeshReconcilerFuncs) ReconcileVirtualMeshDeletion(req reconcile.Request) error {
 	if f.OnReconcileVirtualMeshDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileVirtualMeshDeletion(req)
+	return f.OnReconcileVirtualMeshDeletion(req)
 }
 
 // Reconcile and finalize the VirtualMesh Resource
@@ -338,10 +340,11 @@ func (r genericVirtualMeshReconciler) Reconcile(object ezkube.Object) (reconcile
 	return r.reconciler.ReconcileVirtualMesh(obj)
 }
 
-func (r genericVirtualMeshReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericVirtualMeshReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(VirtualMeshDeletionReconciler); ok {
-		deletionReconciler.ReconcileVirtualMeshDeletion(request)
+		return deletionReconciler.ReconcileVirtualMeshDeletion(request)
 	}
+	return nil
 }
 
 // genericVirtualMeshFinalizer implements a generic reconcile.FinalizingReconciler

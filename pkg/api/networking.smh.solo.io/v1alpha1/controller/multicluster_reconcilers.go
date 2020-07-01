@@ -29,12 +29,12 @@ type MulticlusterTrafficPolicyReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterTrafficPolicyDeletionReconciler interface {
-	ReconcileTrafficPolicyDeletion(clusterName string, req reconcile.Request)
+	ReconcileTrafficPolicyDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterTrafficPolicyReconcilerFuncs struct {
 	OnReconcileTrafficPolicy         func(clusterName string, obj *networking_smh_solo_io_v1alpha1.TrafficPolicy) (reconcile.Result, error)
-	OnReconcileTrafficPolicyDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileTrafficPolicyDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterTrafficPolicyReconcilerFuncs) ReconcileTrafficPolicy(clusterName string, obj *networking_smh_solo_io_v1alpha1.TrafficPolicy) (reconcile.Result, error) {
@@ -44,11 +44,11 @@ func (f *MulticlusterTrafficPolicyReconcilerFuncs) ReconcileTrafficPolicy(cluste
 	return f.OnReconcileTrafficPolicy(clusterName, obj)
 }
 
-func (f *MulticlusterTrafficPolicyReconcilerFuncs) ReconcileTrafficPolicyDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterTrafficPolicyReconcilerFuncs) ReconcileTrafficPolicyDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileTrafficPolicyDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileTrafficPolicyDeletion(clusterName, req)
+	return f.OnReconcileTrafficPolicyDeletion(clusterName, req)
 }
 
 type MulticlusterTrafficPolicyReconcileLoop interface {
@@ -74,10 +74,11 @@ type genericTrafficPolicyMulticlusterReconciler struct {
 	reconciler MulticlusterTrafficPolicyReconciler
 }
 
-func (g genericTrafficPolicyMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericTrafficPolicyMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterTrafficPolicyDeletionReconciler); ok {
-		deletionReconciler.ReconcileTrafficPolicyDeletion(cluster, req)
+		return deletionReconciler.ReconcileTrafficPolicyDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericTrafficPolicyMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
@@ -99,12 +100,12 @@ type MulticlusterAccessPolicyReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterAccessPolicyDeletionReconciler interface {
-	ReconcileAccessPolicyDeletion(clusterName string, req reconcile.Request)
+	ReconcileAccessPolicyDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterAccessPolicyReconcilerFuncs struct {
 	OnReconcileAccessPolicy         func(clusterName string, obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error)
-	OnReconcileAccessPolicyDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileAccessPolicyDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterAccessPolicyReconcilerFuncs) ReconcileAccessPolicy(clusterName string, obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error) {
@@ -114,11 +115,11 @@ func (f *MulticlusterAccessPolicyReconcilerFuncs) ReconcileAccessPolicy(clusterN
 	return f.OnReconcileAccessPolicy(clusterName, obj)
 }
 
-func (f *MulticlusterAccessPolicyReconcilerFuncs) ReconcileAccessPolicyDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterAccessPolicyReconcilerFuncs) ReconcileAccessPolicyDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileAccessPolicyDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileAccessPolicyDeletion(clusterName, req)
+	return f.OnReconcileAccessPolicyDeletion(clusterName, req)
 }
 
 type MulticlusterAccessPolicyReconcileLoop interface {
@@ -144,10 +145,11 @@ type genericAccessPolicyMulticlusterReconciler struct {
 	reconciler MulticlusterAccessPolicyReconciler
 }
 
-func (g genericAccessPolicyMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericAccessPolicyMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterAccessPolicyDeletionReconciler); ok {
-		deletionReconciler.ReconcileAccessPolicyDeletion(cluster, req)
+		return deletionReconciler.ReconcileAccessPolicyDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericAccessPolicyMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
@@ -169,12 +171,12 @@ type MulticlusterVirtualMeshReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterVirtualMeshDeletionReconciler interface {
-	ReconcileVirtualMeshDeletion(clusterName string, req reconcile.Request)
+	ReconcileVirtualMeshDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterVirtualMeshReconcilerFuncs struct {
 	OnReconcileVirtualMesh         func(clusterName string, obj *networking_smh_solo_io_v1alpha1.VirtualMesh) (reconcile.Result, error)
-	OnReconcileVirtualMeshDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileVirtualMeshDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterVirtualMeshReconcilerFuncs) ReconcileVirtualMesh(clusterName string, obj *networking_smh_solo_io_v1alpha1.VirtualMesh) (reconcile.Result, error) {
@@ -184,11 +186,11 @@ func (f *MulticlusterVirtualMeshReconcilerFuncs) ReconcileVirtualMesh(clusterNam
 	return f.OnReconcileVirtualMesh(clusterName, obj)
 }
 
-func (f *MulticlusterVirtualMeshReconcilerFuncs) ReconcileVirtualMeshDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterVirtualMeshReconcilerFuncs) ReconcileVirtualMeshDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileVirtualMeshDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileVirtualMeshDeletion(clusterName, req)
+	return f.OnReconcileVirtualMeshDeletion(clusterName, req)
 }
 
 type MulticlusterVirtualMeshReconcileLoop interface {
@@ -214,10 +216,11 @@ type genericVirtualMeshMulticlusterReconciler struct {
 	reconciler MulticlusterVirtualMeshReconciler
 }
 
-func (g genericVirtualMeshMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericVirtualMeshMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterVirtualMeshDeletionReconciler); ok {
-		deletionReconciler.ReconcileVirtualMeshDeletion(cluster, req)
+		return deletionReconciler.ReconcileVirtualMeshDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericVirtualMeshMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {

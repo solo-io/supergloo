@@ -28,12 +28,12 @@ type SettingsReconciler interface {
 // before being deleted.
 // implemented by the user
 type SettingsDeletionReconciler interface {
-	ReconcileSettingsDeletion(req reconcile.Request)
+	ReconcileSettingsDeletion(req reconcile.Request) error
 }
 
 type SettingsReconcilerFuncs struct {
 	OnReconcileSettings         func(obj *core_smh_solo_io_v1alpha1.Settings) (reconcile.Result, error)
-	OnReconcileSettingsDeletion func(req reconcile.Request)
+	OnReconcileSettingsDeletion func(req reconcile.Request) error
 }
 
 func (f *SettingsReconcilerFuncs) ReconcileSettings(obj *core_smh_solo_io_v1alpha1.Settings) (reconcile.Result, error) {
@@ -43,11 +43,11 @@ func (f *SettingsReconcilerFuncs) ReconcileSettings(obj *core_smh_solo_io_v1alph
 	return f.OnReconcileSettings(obj)
 }
 
-func (f *SettingsReconcilerFuncs) ReconcileSettingsDeletion(req reconcile.Request) {
+func (f *SettingsReconcilerFuncs) ReconcileSettingsDeletion(req reconcile.Request) error {
 	if f.OnReconcileSettingsDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileSettingsDeletion(req)
+	return f.OnReconcileSettingsDeletion(req)
 }
 
 // Reconcile and finalize the Settings Resource
@@ -108,10 +108,11 @@ func (r genericSettingsReconciler) Reconcile(object ezkube.Object) (reconcile.Re
 	return r.reconciler.ReconcileSettings(obj)
 }
 
-func (r genericSettingsReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericSettingsReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(SettingsDeletionReconciler); ok {
-		deletionReconciler.ReconcileSettingsDeletion(request)
+		return deletionReconciler.ReconcileSettingsDeletion(request)
 	}
+	return nil
 }
 
 // genericSettingsFinalizer implements a generic reconcile.FinalizingReconciler

@@ -3,7 +3,7 @@ package core.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types";
 
 import "google/protobuf/wrappers.proto";
-import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -22,7 +22,7 @@ message IdentitySelector {
     }
     message ServiceAccountRefs {
         // List of ServiceAccounts to allow. If not set, any ServiceAccount is allowed.
-        repeated ResourceRef service_accounts = 1;
+        repeated .core.skv2.solo.io.ClusterObjectRef service_accounts = 1;
     }
     oneof identity_selector_type {
         Matcher matcher = 1;

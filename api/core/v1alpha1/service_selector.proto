@@ -3,7 +3,7 @@ package core.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types";
 
 import "google/protobuf/wrappers.proto";
-import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -93,7 +93,7 @@ message ServiceSelector {
 
     message ServiceRefs {
         // Match k8s Services by direct reference.
-        repeated ResourceRef services = 1;
+        repeated .core.skv2.solo.io.ClusterObjectRef services = 1;
     }
 
     // If specified, select services using either a Matcher or direct reference. If not set, select all Services.

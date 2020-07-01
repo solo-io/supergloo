@@ -2,7 +2,7 @@ syntax = "proto3";
 package networking.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1";
 
-import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -27,7 +27,7 @@ message VirtualMeshSpec {
         // Configuration for user-provided root certificate.
         message Provided {
             // Reference to a Secret object containing the root certificate.
-            core.smh.solo.io.ResourceRef certificate = 3;
+            .core.skv2.solo.io.ClusterObjectRef certificate = 3;
         }
 
         // If omitted, defaults to builtin.
@@ -89,7 +89,7 @@ message VirtualMeshSpec {
     string display_name = 1;
 
     // The meshes contained in this virtual mesh.
-    repeated core.smh.solo.io.ResourceRef meshes = 2;
+    repeated .core.skv2.solo.io.ClusterObjectRef meshes = 2;
 
     CertificateAuthority certificate_authority = 3;
 
