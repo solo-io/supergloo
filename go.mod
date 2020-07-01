@@ -50,7 +50,7 @@ require (
 	github.com/solo-io/external-apis v0.0.4
 	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/service-mesh-hub v0.5.1-0.20200630141134-62e606c0af98
-	github.com/solo-io/skv2 v0.5.0
+	github.com/solo-io/skv2 v0.6.1
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/multierr v1.5.0 // indirect

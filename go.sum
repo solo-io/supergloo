@@ -1042,6 +1042,8 @@ github.com/solo-io/service-mesh-hub v0.5.1-0.20200630141134-62e606c0af98/go.mod 
 github.com/solo-io/skv2 v0.4.2/go.mod h1:Dog3OvhkweJBYnSoJIDOZlKSZhnag4wvusxPoYOw/jw=
 github.com/solo-io/skv2 v0.5.0 h1:8pW5PPGs3RSSYexuP0VdiqZdrfXVj0M/3v8F6/eaPFw=
 github.com/solo-io/skv2 v0.5.0/go.mod h1:68YUGLJvRWsZ2UUCsr/tT7noYI3yX9CmRgW+j0OqAJE=
+github.com/solo-io/skv2 v0.6.1 h1:FwRqgRcC9/lL5RI4vHwDMrpbhkieI32kYnt0/jynvJM=
+github.com/solo-io/skv2 v0.6.1/go.mod h1:EbaG2+5bpOSUNIIEBqAK/yfALx5ZuSN/+37h17l+t4Q=
 github.com/solo-io/solo-kit v0.12.2/go.mod h1:oNDT3CNTgdjNh5tgkr4Wj8tj+h0VtJjfT/ZaZ8e1/js=
 github.com/solo-io/solo-kit v0.13.3/go.mod h1:Sukhlm32r1cSJIztPQ6RZxroK0VP4TGOkTecaBXTEoo=
 github.com/solo-io/solo-kit v0.13.8 h1:3FVs2g71vQp1zjrEh9kdjAQ650MijRxRW/X2E00eghI=
