@@ -9,7 +9,7 @@ set -ex
 
 # Update this array with all versions of SMH to include in the versioned docs website.
 declare -a versions=(
-"latest"
+"master"
 "0.5.0"
 )
 
@@ -27,7 +27,11 @@ firebaseJson=$(cat <<EOF
     "rewrites": [
       {
         "source": "/",
-        "destination": "/latest/index.html"
+        "destination": "/master/index.html"
+      },
+      {
+        "source": "/latest",
+        "destination": "/0.5.0/index.html"
       }
     ]
   }
@@ -62,7 +66,7 @@ for version in "${versions[@]}"
 do
   echo "Generating site for version $version"
   cd $repoDir
-  if [[ "$version" == "latest" ]]
+  if [[ "$version" == "master" ]]
   then
     git checkout master
   else
