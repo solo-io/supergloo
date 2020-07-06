@@ -4,6 +4,7 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/fieldutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 	"reflect"
 )
@@ -23,22 +24,31 @@ func (p *faultInjectionPlugin) PluginName() string {
 	return pluginName
 }
 
-func (p *faultInjectionPlugin) ProcessTrafficPolicy(trafficPolicySpec *v1alpha1.TrafficPolicySpec,  _ *discoveryv1alpha1.MeshService, output *istiov1alpha3spec.HTTPRoute) error {
-	faultInjection, err := translateFaultInjection(trafficPolicySpec)
+func (p *faultInjectionPlugin) ProcessTrafficPolicy(
+	trafficPolicy *v1alpha1.TrafficPolicy,
+	_ *discoveryv1alpha1.MeshService,
+	output *istiov1alpha3spec.HTTPRoute,
+	fieldRegistry fieldutils.FieldOwnershipRegistry,
+) error {
+	faultInjection, err := translateFaultInjection(trafficPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if faultInjection != nil {
-		if output.Fault != nil  && !reflect.DeepEqual(output.Fault, faultInjection)  {
-			return eris.Errorf("fault injection was already defined by a previous traffic policy")
+	if faultInjection != nil && !reflect.DeepEqual(output.Fault, faultInjection) {
+		if err := fieldRegistry.RegisterFieldOwner(
+			output.Fault,
+			trafficPolicy,
+			0,
+		); err != nil {
+			return err
 		}
 		output.Fault = faultInjection
 	}
 	return nil
 }
 
-func translateFaultInjection(validatedPolicy *v1alpha1.TrafficPolicySpec) (*istiov1alpha3spec.HTTPFaultInjection, error) {
-	faultInjection := validatedPolicy.GetFaultInjection()
+func translateFaultInjection(validatedPolicy v1alpha1.TrafficPolicySpec) (*istiov1alpha3spec.HTTPFaultInjection, error) {
+	faultInjection := validatedPolicy.FaultInjection
 	if faultInjection == nil {
 		return nil, nil
 	}

@@ -5,6 +5,7 @@ import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/hostutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 	"reflect"
@@ -34,14 +35,23 @@ func (p *corsPlugin) PluginName() string {
 	return pluginName
 }
 
-func (p *corsPlugin) ProcessTrafficPolicy(trafficPolicySpec *v1alpha1.TrafficPolicySpec, meshService *discoveryv1alpha1.MeshService, output *istiov1alpha3spec.HTTPRoute) error {
-	cors, err := p.translateCors(meshService, trafficPolicySpec)
+func (p *corsPlugin) ProcessTrafficPolicy(
+	trafficPolicy *v1alpha1.TrafficPolicy,
+	_ *discoveryv1alpha1.MeshService,
+	output *istiov1alpha3spec.HTTPRoute,
+	fieldRegistry fieldutils.FieldOwnershipRegistry,
+) error {
+	cors, err := p.translateCors(trafficPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if cors != nil {
-		if output.CorsPolicy != nil && !reflect.DeepEqual(output.CorsPolicy, cors) {
-			return eris.Errorf("cors was already defined by a previous traffic policy")
+	if cors != nil && !reflect.DeepEqual(output.CorsPolicy, cors)  {
+		if err := fieldRegistry.RegisterFieldOwner(
+			output.CorsPolicy,
+			trafficPolicy,
+			0,
+		); err != nil {
+			return err
 		}
 		output.CorsPolicy = cors
 	}
@@ -49,10 +59,9 @@ func (p *corsPlugin) ProcessTrafficPolicy(trafficPolicySpec *v1alpha1.TrafficPol
 }
 
 func (p *corsPlugin) translateCors(
-	meshService *discoveryv1alpha1.MeshService,
-	trafficPolicy *v1alpha1.TrafficPolicySpec,
+	trafficPolicy v1alpha1.TrafficPolicySpec,
 ) (*istiov1alpha3spec.CorsPolicy, error) {
-	corsPolicy := trafficPolicy.GetCorsPolicy()
+	corsPolicy := trafficPolicy.CorsPolicy
 	if corsPolicy == nil {
 		return nil, nil
 	}

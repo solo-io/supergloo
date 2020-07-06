@@ -6,6 +6,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/istio/virtualservice/plugin/faultinjection"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/istio/virtualservice/plugin/mirror"
+	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/hostutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -59,11 +60,17 @@ type SimplePlugin interface {
 // TrafficPolicyPlugins modify the VirtualService based on a TrafficPolicy which applies to the MeshService.
 type TrafficPolicyPlugin interface {
 	Plugin
-	ProcessTrafficPolicy(trafficPolicySpec *v1alpha1.TrafficPolicySpec, service *discoveryv1alpha1.MeshService, output *istiov1alpha3spec.HTTPRoute) error
+
+	ProcessTrafficPolicy(
+		trafficPolicy *v1alpha1.TrafficPolicy,
+		service *discoveryv1alpha1.MeshService,
+		output *istiov1alpha3spec.HTTPRoute,
+		fieldRegistry fieldutils.FieldOwnershipRegistry,
+	) error
 }
 
 // AccessPolicyPlugins modify the VirtualService based on an AccessPolicy which applies to the MeshService.
 type AccessPolicyPlugin interface {
 	Plugin
-	ProcessAccessPolicy(accessPolicySpec *v1alpha1.AccessPolicySpec, service *discoveryv1alpha1.MeshService, output *istiov1alpha3.VirtualService) error
+	ProcessAccessPolicy(accessPolicy *v1alpha1.AccessPolicy, service *discoveryv1alpha1.MeshService, output *istiov1alpha3.VirtualService, fieldRegistry fieldutils.FieldOwnershipRegistry) error
 }
