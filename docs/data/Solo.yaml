@@ -1,5 +1,6 @@
-DocsVersion: /latest
-CodeVersion: latest
+# Uncomment DocsVersion and CodeVersion for local testing.
+#DocsVersion: /latest
+#CodeVersion: latest
 DocsVersions:
   - "latest"
   - "0.5.0"

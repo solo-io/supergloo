@@ -34,31 +34,7 @@ jobs:
     - name: Update deps
       run: make update-deps
 
-    - name: Generate Docs
-      run: go run codegen/docs/docsgen.go
-
-    - name: Docker Login
-      run : docker login --username "soloiobot" --password ${{ secrets.CI_ADMIN_DOCKER_HUB_PASSWORD }}
-
-    - name: Push latest
-      # Found on github community:  https://github.community/t5/GitHub-Actions/Github-Actions-GITHUB-EVENT-PATH-does-not-contain-relevant-PR/td-p/20835
-      if: github.ref == 'refs/heads/master'
-      run: cd docs &&  make latest -B
-
-    - name: Push Tagged
-      # Found on github community: https://github.community/t5/GitHub-Actions/Github-Actions-GITHUB-EVENT-PATH-does-not-contain-relevant-PR/td-p/20835
-      run: cd docs &&  make tagged -B
-      if: github.ref != 'refs/heads/master'
+    - name: Update versioned docs site
+      run: ./ci/build-docs-site.sh
       env:
-        TAGGED_VERSION: v${{ github.ref }}
-
-    - name: Restart Docs Pod
-      # Found on github community: https://github.com/ameydev/gke-kubectl-action
-      uses: ameydev/gke-kubectl-action@v1.02
-      env:
-        PROJECT_ID: ${{ secrets.PROJECT_ID }}
-        APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-        CLUSTER_NAME: ${{ secrets.GKE_CLUSTER_NAME }}
-        ZONE_NAME: us-central1-a
-      with:
-        args: -n docs rollout restart deployment/service-mesh-hub-docs-latest
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
