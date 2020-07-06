@@ -3,8 +3,6 @@ package reconciler
 import (
 	"context"
 	"github.com/solo-io/go-utils/contextutils"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/smh/pkg/mesh-discovery/translator"
@@ -16,7 +14,7 @@ type discoveryReconciler struct {
 	builder      input.Builder
 	translator   translator.Translator
 	masterClient client.Client
-	events       chan struct{}
+	events       chan string
 }
 
 func Start(
@@ -32,7 +30,7 @@ func Start(
 		builder:      builder,
 		translator:   translator,
 		masterClient: masterClient,
-		events:       make(chan struct{}, 1),
+		events:       make(chan string, 1),
 	}
 
 	input.RegisterMultiClusterReconciler(ctx, clusters, d.pushEvent)
@@ -41,9 +39,9 @@ func Start(
 }
 
 // simply push a generic event on a reconcile
-func (d *discoveryReconciler) pushEvent(_ metav1.Object) error {
+func (d *discoveryReconciler) pushEvent(cluster string) error {
 	select {
-	case d.events <- struct{}{}:
+	case d.events <- cluster:
 	default:
 		// an event is already pending, dropping event is safe
 	}
@@ -57,11 +55,11 @@ func (d *discoveryReconciler) reconcileEventsForever() {
 		select {
 		case <-d.ctx.Done():
 			return
-		case <-d.events:
+		case cluster := <-d.events:
 			if err := d.reconcileEvent(); err != nil {
 				contextutils.LoggerFrom(d.ctx).Errorw("encountered error reconciling state; retrying", "error", err)
 
-				_ = d.pushEvent(nil)
+				_ = d.pushEvent(cluster)
 			}
 		}
 	}

@@ -2,6 +2,7 @@ package translator
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/output"
@@ -15,7 +16,8 @@ type Translator interface {
 }
 
 type translator struct {
-	dependencies dependencyFactory
+	totalTranslates int // TODO(ilackarms): metric
+	dependencies    dependencyFactory
 }
 
 func NewTranslator() Translator {
@@ -46,8 +48,10 @@ func (t translator) Translate(ctx context.Context, in input.Snapshot) (output.Sn
 
 	meshServices := meshServiceTranslator.TranslateMeshServices(in.Services(), meshWorkloads)
 
+	t.totalTranslates++
+
 	return output.NewLabelPartitionedSnapshot(
-		"mesh-discovery",
+		fmt.Sprintf("mesh-discovery-%v", t.totalTranslates),
 		labelutils.ClusterLabelKey,
 		meshServices,
 		meshWorkloads,
