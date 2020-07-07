@@ -8,10 +8,8 @@
 set -ex
 
 # Update this array with all versions of SMH to include in the versioned docs website.
-declare -a versions=(
-"master"
-"0.5.0"
-)
+declare -a versions=($(cat docs/version.json | jq -rc '."versions" | join(" ")'))
+latestVersion=$(cat docs/version.json | jq -r ."latest")
 
 # Firebase configuration
 firebaseJson=$(cat <<EOF
@@ -27,11 +25,7 @@ firebaseJson=$(cat <<EOF
     "rewrites": [
       {
         "source": "/",
-        "destination": "/master/index.html"
-      },
-      {
-        "source": "/latest",
-        "destination": "/0.5.0/index.html"
+        "destination": "/latest/index.html"
       }
     ]
   }
@@ -72,6 +66,11 @@ do
   else
     git checkout tags/v"$version"
   fi
+  # Replace version with "latest" if it's the latest version. This enables URLs with "/latest/..."
+  if [[ "$version" ==  "$latestVersion" ]]
+  then
+    version="latest"
+  fi
   go run codegen/docs/docsgen.go
   cd docs
   # Generate data/Solo.yaml file with version info populated.
@@ -87,3 +86,7 @@ done
 cd $docsSiteDir
 firebase use --add solo-corp
 firebase deploy --only hosting:service-mesh-hub
+
+# Clean up directories.
+rm -fr $docsSiteDir
+rm -fr $repoDir
