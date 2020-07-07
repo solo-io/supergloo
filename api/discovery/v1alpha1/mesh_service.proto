@@ -81,8 +81,11 @@ message MeshServiceStatus {
         // reference to the traffic policy
         .core.skv2.solo.io.ObjectRef ref = 1;
 
+        // the observed generation of the accepted traffic policy
+        int32 observedGeneration = 2;
+
         // the last known valid spec of the traffic policy
-        networking.smh.solo.io.TrafficPolicySpec spec = 2;
+        networking.smh.solo.io.TrafficPolicySpec spec = 3;
     }
 
     // AppliedAccessPolicy represents a access policy that has been applied to the MeshService.
@@ -91,7 +94,10 @@ message MeshServiceStatus {
         // reference to the access policy
         .core.skv2.solo.io.ObjectRef ref = 1;
 
+        // the observed generation of the accepted access policy
+        int32 observedGeneration = 2;
+
         // the last known valid spec of the access policy
-        networking.smh.solo.io.AccessPolicySpec spec = 2;
+        networking.smh.solo.io.AccessPolicySpec spec = 3;
     }
 }

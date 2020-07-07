@@ -32,7 +32,7 @@ var (
 
 	networkingInputSnapshotCodePath      = "pkg/api/networking.smh.solo.io/snapshot/input/snapshot.go"
 	networkingReconcilerSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/input/reconciler.go"
-	networkingOutputSnapshotCodePath     = "pkg/api/networking.smh.solo.io/snapshot/output/snapshot.go"
+	networkingOutputIstioSnapshotCodePath     = "pkg/api/networking.smh.solo.io/snapshot/output/istio/snapshot.go"
 
 	smhCrdManifestRoot = "install/helm/charts/custom-resource-definitions"
 	csrCrdManifestRoot = "install/helm/charts/csr-agent/"
@@ -81,7 +81,7 @@ var (
 		},
 	}
 
-	networkingOutputTypes = map[schema.GroupVersion][]string{
+	networkingOutputIstioTypes = map[schema.GroupVersion][]string{
 		istionetworkingv1alpha3.SchemeGroupVersion: {
 			"DestinationRule",
 			"VirtualService",
@@ -125,10 +125,10 @@ var (
 		networkingInputTypes,
 	)
 
-	networkingOutputSnapshot = makeTopLevelTemplate(
+	networkingOutputIstioSnapshot = makeTopLevelTemplate(
 		contrib.OutputSnapshot,
-		networkingOutputSnapshotCodePath,
-		networkingOutputTypes,
+		networkingOutputIstioSnapshotCodePath,
+		networkingOutputIstioTypes,
 	)
 
 	topLevelTemplates = []model.CustomTemplates{
@@ -137,7 +137,7 @@ var (
 		discoveryOutputSnapshot,
 		networkingInputSnapshot,
 		networkingReconciler,
-		networkingOutputSnapshot,
+		networkingOutputIstioSnapshot,
 	}
 
 	protoImports = sk_anyvendor.CreateDefaultMatchOptions([]string{

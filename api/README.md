@@ -7,7 +7,6 @@ configured directly by users, but rather discovered by service-mesh-hub. This cu
     * `Meshes`
     * `MeshServices`
     * `MeshWorkloads`
-    * `KubernetesCluster`
 
 2. **Networking**: Resources representing user configuration of the management plane. This currently includes:
     * `AccessControlPolicy`

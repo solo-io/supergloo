@@ -3,13 +3,13 @@ package networking.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1";
 
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "service-mesh-hub/api/core/v1alpha1/http.proto";
-import "service-mesh-hub/api/core/v1alpha1/service_selector.proto";
-import "service-mesh-hub/api/core/v1alpha1/workload_selector.proto";
-import "service-mesh-hub/api/core/v1alpha1/status.proto";
+import "service-mesh-hub/api/networking/v1alpha1/selectors.proto";
+import "service-mesh-hub/api/networking/v1alpha1/validation_state.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -311,8 +311,8 @@ message TrafficPolicySpec {
     }
 
     /*
-        Requests originating from these pods will have the rule applied.
-        Leave empty to have all pods in the mesh apply these rules.
+        Requests originating from these workloads will have the rule applied.
+        Leave empty to have all workloads in the mesh apply these rules.
 
         Note: Source Selectors are ignored when TrafficPolicies are
         applied to pods in a Linkerd mesh. TrafficPolicies will apply to
@@ -320,13 +320,13 @@ message TrafficPolicySpec {
 
         Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio.
     */
-    core.smh.solo.io.WorkloadSelector source_selector = 1;
+    repeated WorkloadSelector source_selector = 1;
 
     /*
         Requests destined for these k8s services will have the rule applied.
         Leave empty to apply to all destination k8s services in the mesh.
     */
-    core.smh.solo.io.ServiceSelector destination_selector = 2;
+    repeated ServiceSelector destination_selector = 2;
 
     /*
         If specified, this rule will only apply to http requests matching these conditions.
@@ -370,34 +370,12 @@ message TrafficPolicySpec {
 }
 
 message TrafficPolicyStatus {
-    message TranslatorError {
-        // ID representing a translator that translates TrafficPolicy to Mesh-specific config.
-        string translator_id = 1;
-        string error_message = 2;
-    }
 
-    message ConflictError {
-        // The service on which this Traffic Policy conflicts with other Traffic policies.
-        .core.skv2.solo.io.ClusterObjectRef configuration_target = 1;
+    // The most recent generation observed in the the TrafficPolicy metadata.
+    // if the observedGeneration does not match
+    int64 observed_generation = 1;
 
-        // Details about the nature of the conflict.
-        string error_message = 2;
-    }
-
-    // Whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration.
-    core.smh.solo.io.Status translation_status = 1;
-
-    // Provides details on any translation errors that occurred. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config.
-    repeated TranslatorError translator_errors = 2;
-
-    // Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific routing configuration.
-    core.smh.solo.io.Status validation_status = 3;
-
-    // Provides details on any configuration conflicts between this TrafficPolicy and other TrafficPolicies that apply to the same configuration target. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config.
-    repeated ConflictError conflict_errors = 4;
-
-    // The generation the validation_status was observed on. Note that translation_status, translation_errors
-    // conflict_errors can still appear even if validation_status is accepted, as these errors
-    // can happen due to other traffic policies and specific mesh implementation.
-    int64 observed_generation = 5;
+    // The status of the TrafficPolicy for each MeshService to which it has been applied.
+    // A TrafficPolicy may be Accepted for some MeshServices and rejected for others.
+    map<string, ValidationStatus> mesh_services = 2;
 }

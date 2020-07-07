@@ -38,6 +38,8 @@ sacrificing functionality. Inherently complex service mesh configuration concept
 (such as network routing, access control, security, etc.) are presented in a coherent 
 representation supported by detailed, exhaustive documentation.
 
+Service Mesh Hub is built on the protobuf-defined API in[`./api`](./api)
+
 ## Community
 
 Welcome to the Service Mesh Hub Community! This is a project for people and companies interested in Service Mesh Hub. The community is open to all so please feel free to share with colleagues and friends interested in learning more and getting involved.

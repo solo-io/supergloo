@@ -20,7 +20,6 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	discovery_smh_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
@@ -75,7 +74,7 @@ func (r *multiClusterReconcilerImpl) ReconcileMeshService(clusterName string, ob
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileMeshServiceDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileMeshServiceDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -85,7 +84,7 @@ func (r *multiClusterReconcilerImpl) ReconcileMeshWorkload(clusterName string, o
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileMeshWorkloadDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileMeshWorkloadDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -95,7 +94,7 @@ func (r *multiClusterReconcilerImpl) ReconcileMesh(clusterName string, obj *disc
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileMeshDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileMeshDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -105,7 +104,7 @@ func (r *multiClusterReconcilerImpl) ReconcileTrafficPolicy(clusterName string, 
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileTrafficPolicyDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileTrafficPolicyDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -115,7 +114,7 @@ func (r *multiClusterReconcilerImpl) ReconcileAccessPolicy(clusterName string, o
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileAccessPolicyDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileAccessPolicyDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -125,7 +124,7 @@ func (r *multiClusterReconcilerImpl) ReconcileVirtualMesh(clusterName string, ob
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileVirtualMeshDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileVirtualMeshDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -145,7 +144,7 @@ var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
 
 type singleClusterReconcilerImpl struct {
 	ctx           context.Context
-	reconcileFunc func(metav1.Object) error
+	reconcileFunc func() error
 }
 
 // register the reconcile func with the manager

@@ -1,0 +1,19 @@
+syntax = "proto3";
+package discovery.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+// State of a Discovered resource reflected in the status by Service Mesh Hub while processing the configurations applied to that resource.
+enum ConfigState {
+    // Resources are in a Pending state before they have been processed by Service Mesh Hub
+    PENDING = 0;
+
+    // Resources are in a Succeeded state when all corresponding configuration resources have been applied successfully.
+    ACCEPTED = 1;
+
+    // Resources are in a Failed state when one or more corresponding configuration resources have failed to apply successfully.
+    // This can happen e.g. when Service Mesh Hub fails to update managed resources due to network failures.
+    FAILED = 2;
+}

@@ -3,9 +3,11 @@ package networking.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1";
 
 import "service-mesh-hub/api/core/v1alpha1/http.proto";
-import "service-mesh-hub/api/core/v1alpha1/identity_selector.proto";
-import "service-mesh-hub/api/core/v1alpha1/service_selector.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
+import "service-mesh-hub/api/networking/v1alpha1/selectors.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
 
 /*
     access control policies apply ALLOW policies to communication in a mesh
@@ -29,13 +31,13 @@ message AccessPolicySpec {
         service accounts properly reflect the desired
         boundary for your access control policies
     */
-    core.smh.solo.io.IdentitySelector source_selector = 2;
+    repeated IdentitySelector source_selector = 2;
 
     /*
         requests destined for these pods will have the rule applied
         leave empty to apply to all destination pods in the mesh
     */
-    core.smh.solo.io.ServiceSelector destination_selector = 3;
+    repeated ServiceSelector destination_selector = 3;
 
     /*
         Optional. A list of HTTP paths or gRPC methods to allow.

@@ -21,7 +21,6 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
@@ -78,7 +77,7 @@ func (r *multiClusterReconcilerImpl) ReconcileConfigMap(clusterName string, obj 
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileConfigMapDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileConfigMapDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -88,7 +87,7 @@ func (r *multiClusterReconcilerImpl) ReconcileService(clusterName string, obj *v
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileServiceDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileServiceDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -98,7 +97,7 @@ func (r *multiClusterReconcilerImpl) ReconcilePod(clusterName string, obj *v1.Po
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcilePodDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcilePodDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -108,7 +107,7 @@ func (r *multiClusterReconcilerImpl) ReconcileDeployment(clusterName string, obj
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileDeploymentDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileDeploymentDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -118,7 +117,7 @@ func (r *multiClusterReconcilerImpl) ReconcileReplicaSet(clusterName string, obj
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileReplicaSetDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileReplicaSetDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -128,7 +127,7 @@ func (r *multiClusterReconcilerImpl) ReconcileDaemonSet(clusterName string, obj 
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileDaemonSetDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileDaemonSetDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -138,7 +137,7 @@ func (r *multiClusterReconcilerImpl) ReconcileStatefulSet(clusterName string, ob
 	return reconcile.Result{}, r.reconcileFunc(clusterName)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileStatefulSetDeletion(clusterName string, req reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileStatefulSetDeletion(clusterName string, obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
 	return r.reconcileFunc(clusterName)
 }
@@ -159,7 +158,7 @@ var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
 
 type singleClusterReconcilerImpl struct {
 	ctx           context.Context
-	reconcileFunc func(metav1.Object) error
+	reconcileFunc func() error
 }
 
 // register the reconcile func with the manager
