@@ -2,8 +2,7 @@ package plugin
 
 import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/virtualservice/plugin/faultinjection"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/virtualservice/plugin/mirror"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"

@@ -74,7 +74,7 @@ func refsContain(refs []*v1.ClusterObjectRef, targetRef *v1.ClusterObjectRef) bo
 	return false
 }
 
-func refsEqual(ref1, ref2 ezkube.ResourceId) bool {
+func refsEqual(ref1, ref2 ezkube.ClusterResourceId) bool {
 	return ref1.GetClusterName() == ref2.GetClusterName() &&
 		ref1.GetNamespace() == ref2.GetNamespace() &&
 		ref1.GetName() == ref2.GetName()

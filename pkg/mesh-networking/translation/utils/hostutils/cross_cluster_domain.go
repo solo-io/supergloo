@@ -6,6 +6,6 @@ import (
 )
 
 // GetCrossClusterServiceFQDN returns the fully qualified service hostname used to resolve traffic to a remote cluster
-func GetCrossClusterServiceFQDN(serviceRef ezkube.ResourceId) string {
+func GetCrossClusterServiceFQDN(serviceRef ezkube.ClusterResourceId) string {
 	return fmt.Sprintf("%s.%s.svc.%s", serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetClusterName())
 }
