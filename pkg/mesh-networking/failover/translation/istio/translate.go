@@ -7,6 +7,8 @@ import (
 
 	udpa_type_v1 "github.com/cncf/udpa/go/udpa/type/v1"
 	envoy_api_v2 "github.com/envoyproxy/go-control-plane/envoy/api/v2"
+	envoy_config_cluster_aggregate_v2alpha "github.com/envoyproxy/go-control-plane/envoy/config/cluster/aggregate/v2alpha"
+	"github.com/envoyproxy/go-control-plane/pkg/conversion"
 	gogo_jsonpb "github.com/gogo/protobuf/jsonpb"
 	gogo_proto_types "github.com/gogo/protobuf/types"
 	"github.com/golang/protobuf/jsonpb"
@@ -223,15 +225,14 @@ func (i *istioFailoverServiceTranslator) buildEnvoyFailoverPatch(
 	failoverServiceCluster string,
 	prioritizedServices []*smh_discovery.MeshService,
 ) (*istio_networking.EnvoyFilter_Patch, error) {
+	aggregateClusterConfig := i.buildEnvoyAggregateClusterConfig(prioritizedServices, failoverServiceCluster)
+	aggregateClusterConfigStruct, err := conversion.MessageToStruct(aggregateClusterConfig)
+	if err != nil {
+		return nil, err
+	}
 	aggregateCluster, err := ptypes.MarshalAny(&udpa_type_v1.TypedStruct{
 		TypeUrl: "type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig",
-		Value: &proto_struct.Struct{
-			Fields: map[string]*proto_struct.Value{
-				"clusters": {
-					Kind: i.convertServicesToEnvoyClusterList(prioritizedServices, failoverServiceCluster),
-				},
-			},
-		},
+		Value:   aggregateClusterConfigStruct,
 	})
 	if err != nil {
 		return nil, err
@@ -261,12 +262,12 @@ func (i *istioFailoverServiceTranslator) buildEnvoyFailoverPatch(
 }
 
 // Convert list of MeshServices corresponding to FailoverService.Spec.services to
-// a list of Envoy cluster strings
-func (i *istioFailoverServiceTranslator) convertServicesToEnvoyClusterList(
+// an envoy ClusterConfig consisting of the list of Envoy cluster strings.
+func (i *istioFailoverServiceTranslator) buildEnvoyAggregateClusterConfig(
 	meshServices []*smh_discovery.MeshService,
 	failoverServiceClusterName string,
-) *proto_struct.Value_ListValue {
-	orderedFailoverList := &proto_struct.Value_ListValue{ListValue: &proto_struct.ListValue{}}
+) *envoy_config_cluster_aggregate_v2alpha.ClusterConfig {
+	var orderedFailoverList []string
 	for _, meshService := range meshServices {
 		for _, port := range meshService.Spec.GetKubeService().GetPorts() {
 			var hostname string
@@ -277,11 +278,13 @@ func (i *istioFailoverServiceTranslator) convertServicesToEnvoyClusterList(
 				// Multicluster remote DNS
 				hostname = meshService.Spec.GetFederation().GetMulticlusterDnsName()
 			}
-			failoverCluster := protoStringValue(buildIstioEnvoyClusterName(port.GetPort(), hostname))
-			orderedFailoverList.ListValue.Values = append(orderedFailoverList.ListValue.Values, failoverCluster)
+			failoverCluster := buildIstioEnvoyClusterName(port.GetPort(), hostname)
+			orderedFailoverList = append(orderedFailoverList, failoverCluster)
 		}
 	}
-	return orderedFailoverList
+	return &envoy_config_cluster_aggregate_v2alpha.ClusterConfig{
+		Clusters: orderedFailoverList,
+	}
 }
 
 func (i *istioFailoverServiceTranslator) translatorErr(err error) *types.FailoverServiceStatus_TranslatorError {
