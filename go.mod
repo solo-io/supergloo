@@ -9,7 +9,9 @@ require (
 	github.com/aws/aws-app-mesh-controller-for-k8s v0.5.0
 	github.com/aws/aws-sdk-go v1.30.15
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
+	github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f
 	github.com/docker/distribution v2.7.1+incompatible
+	github.com/envoyproxy/go-control-plane v0.9.4
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/go-logr/zapr v0.1.1
 	github.com/go-test/deep v1.0.3 // indirect

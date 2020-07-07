@@ -1,10 +1,19 @@
 package istio
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 
-	proto_types "github.com/gogo/protobuf/types"
+	udpa_type_v1 "github.com/cncf/udpa/go/udpa/type/v1"
+	envoy_api_v2 "github.com/envoyproxy/go-control-plane/envoy/api/v2"
+	gogo_jsonpb "github.com/gogo/protobuf/jsonpb"
+	gogo_proto_types "github.com/gogo/protobuf/types"
+	"github.com/golang/protobuf/jsonpb"
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes"
+	"github.com/golang/protobuf/ptypes/duration"
+	proto_struct "github.com/golang/protobuf/ptypes/struct"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
@@ -214,49 +223,40 @@ func (i *istioFailoverServiceTranslator) buildEnvoyFailoverPatch(
 	failoverServiceCluster string,
 	prioritizedServices []*smh_discovery.MeshService,
 ) (*istio_networking.EnvoyFilter_Patch, error) {
-	orderedFailoverList, err := i.convertServicesToEnvoyClusterList(prioritizedServices, failoverServiceCluster)
+	aggregateCluster, err := ptypes.MarshalAny(&udpa_type_v1.TypedStruct{
+		TypeUrl: "type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig",
+		Value: &proto_struct.Struct{
+			Fields: map[string]*proto_struct.Value{
+				"clusters": {
+					Kind: i.convertServicesToEnvoyClusterList(prioritizedServices, failoverServiceCluster),
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	envoyCluster := &envoy_api_v2.Cluster{
+		Name: failoverServiceEnvoyClusterName,
+		ConnectTimeout: &duration.Duration{
+			Seconds: 1,
+		},
+		LbPolicy: envoy_api_v2.Cluster_CLUSTER_PROVIDED,
+		ClusterDiscoveryType: &envoy_api_v2.Cluster_ClusterType{
+			ClusterType: &envoy_api_v2.Cluster_CustomClusterType{
+				Name:        "envoy.clusters.aggregate",
+				TypedConfig: aggregateCluster,
+			},
+		},
+	}
+	// This is needed because Envoy API's use Golang protobufs whereas Istio API's use Gogo protobufs.
+	envoyClusterStruct, err := golangMessageToGogoStruct(envoyCluster)
 	if err != nil {
 		return nil, err
 	}
 	return &istio_networking.EnvoyFilter_Patch{
 		Operation: istio_networking.EnvoyFilter_Patch_ADD,
-		Value: &proto_types.Struct{
-			Fields: map[string]*proto_types.Value{
-				"name":            protoStringValue(failoverServiceEnvoyClusterName),
-				"connect_timeout": protoStringValue("1s"),
-				"lb_policy":       protoStringValue("CLUSTER_PROVIDED"),
-				"cluster_type": {
-					Kind: &proto_types.Value_StructValue{
-						StructValue: &proto_types.Struct{
-							Fields: map[string]*proto_types.Value{
-								"name": protoStringValue("envoy.clusters.aggregate"),
-								"typed_config": {
-									Kind: &proto_types.Value_StructValue{
-										StructValue: &proto_types.Struct{
-											Fields: map[string]*proto_types.Value{
-												"@type":    protoStringValue("type.googleapis.com/udpa.type.v1.TypedStruct"),
-												"type_url": protoStringValue("type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig"),
-												"value": {
-													Kind: &proto_types.Value_StructValue{
-														StructValue: &proto_types.Struct{
-															Fields: map[string]*proto_types.Value{
-																"clusters": {
-																	Kind: orderedFailoverList,
-																},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
+		Value:     envoyClusterStruct,
 	}, nil
 }
 
@@ -265,8 +265,8 @@ func (i *istioFailoverServiceTranslator) buildEnvoyFailoverPatch(
 func (i *istioFailoverServiceTranslator) convertServicesToEnvoyClusterList(
 	meshServices []*smh_discovery.MeshService,
 	failoverServiceClusterName string,
-) (*proto_types.Value_ListValue, error) {
-	orderedFailoverList := &proto_types.Value_ListValue{ListValue: &proto_types.ListValue{}}
+) *proto_struct.Value_ListValue {
+	orderedFailoverList := &proto_struct.Value_ListValue{ListValue: &proto_struct.ListValue{}}
 	for _, meshService := range meshServices {
 		for _, port := range meshService.Spec.GetKubeService().GetPorts() {
 			var hostname string
@@ -281,7 +281,7 @@ func (i *istioFailoverServiceTranslator) convertServicesToEnvoyClusterList(
 			orderedFailoverList.ListValue.Values = append(orderedFailoverList.ListValue.Values, failoverCluster)
 		}
 	}
-	return orderedFailoverList, nil
+	return orderedFailoverList
 }
 
 func (i *istioFailoverServiceTranslator) translatorErr(err error) *types.FailoverServiceStatus_TranslatorError {
@@ -291,9 +291,9 @@ func (i *istioFailoverServiceTranslator) translatorErr(err error) *types.Failove
 	}
 }
 
-func protoStringValue(s string) *proto_types.Value {
-	return &proto_types.Value{
-		Kind: &proto_types.Value_StringValue{
+func protoStringValue(s string) *proto_struct.Value {
+	return &proto_struct.Value{
+		Kind: &proto_struct.Value_StringValue{
 			StringValue: s,
 		},
 	}
@@ -309,4 +309,21 @@ func fetchIstioInstallationNamespace(mesh *smh_discovery.Mesh) string {
 	} else {
 		return mesh.Spec.GetIstio1_6().GetMetadata().GetInstallation().GetInstallationNamespace()
 	}
+}
+
+func golangMessageToGogoStruct(msg proto.Message) (*gogo_proto_types.Struct, error) {
+	if msg == nil {
+		return nil, eris.New("nil message")
+	}
+	// Marshal to bytes using golang protobuf
+	buf := &bytes.Buffer{}
+	if err := (&jsonpb.Marshaler{OrigName: true}).Marshal(buf, msg); err != nil {
+		return nil, err
+	}
+	// Unmarshal to gogo protobuf Struct using gogo unmarshaller
+	pbs := &gogo_proto_types.Struct{}
+	if err := gogo_jsonpb.Unmarshal(buf, pbs); err != nil {
+		return nil, err
+	}
+	return pbs, nil
 }
