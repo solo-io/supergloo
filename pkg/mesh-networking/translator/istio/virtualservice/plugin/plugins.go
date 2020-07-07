@@ -62,7 +62,7 @@ type TrafficPolicyPlugin interface {
 	Plugin
 
 	ProcessTrafficPolicy(
-		trafficPolicy *v1alpha1.TrafficPolicy,
+		appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 		service *discoveryv1alpha1.MeshService,
 		output *istiov1alpha3spec.HTTPRoute,
 		fieldRegistry fieldutils.FieldOwnershipRegistry,
@@ -72,5 +72,10 @@ type TrafficPolicyPlugin interface {
 // AccessPolicyPlugins modify the VirtualService based on an AccessPolicy which applies to the MeshService.
 type AccessPolicyPlugin interface {
 	Plugin
-	ProcessAccessPolicy(accessPolicy *v1alpha1.AccessPolicy, service *discoveryv1alpha1.MeshService, output *istiov1alpha3.VirtualService, fieldRegistry fieldutils.FieldOwnershipRegistry) error
+	ProcessAccessPolicy(
+		accessPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedAccessPolicy,
+		service *discoveryv1alpha1.MeshService,
+		output *istiov1alpha3.VirtualService,
+		fieldRegistry fieldutils.FieldOwnershipRegistry,
+	) error
 }

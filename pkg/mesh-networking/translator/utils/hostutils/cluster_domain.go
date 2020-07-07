@@ -20,18 +20,18 @@ type ClusterDomainRegistry interface {
 	// get the local FQDN of a service in a given cluster.
 	// this is the Kubernetes DNS name that clients within that cluster
 	// can use to communicate to this cluster.
-	GetLocalServiceFQDN(serviceRef ezkube.ResourceId) string
+	GetServiceLocalFQDN(serviceRef ezkube.ClusterResourceId) string
 
 	// get the remote FQDN of a service in a given cluster.
 	// this is the DNS name used by Service Mesh Hub
 	// to establish cross-cluster connectivity.
-	GetRemoteServiceFQDN(serviceRef ezkube.ResourceId) string
+	GetServiceGlobalFQDN(serviceRef ezkube.ClusterResourceId) string
 
 	// get the FQDN of a service which is being addressed as a
 	// destination, e.g. for a traffic split or mirror policy.
 	// this will either be the Local or Remote FQDN, depending on the
 	// originating cluster.
-	GetDestinationServiceFQDN(originatingCluster string, serviceRef ezkube.ResourceId) string
+	GetDestinationServiceFQDN(originatingCluster string, serviceRef ezkube.ClusterResourceId) string
 }
 
 type clusterDomainRegistry struct {
@@ -57,20 +57,20 @@ func (c *clusterDomainRegistry) GetClusterDomain(clusterName string) string {
 	return clusterDomain
 }
 
-func (c *clusterDomainRegistry) GetLocalServiceFQDN(serviceRef ezkube.ResourceId) string {
+func (c *clusterDomainRegistry) GetServiceLocalFQDN(serviceRef ezkube.ClusterResourceId) string {
 	return fmt.Sprintf("%s.%s.svc.%s", serviceRef.GetName(), serviceRef.GetNamespace(), c.GetClusterDomain(serviceRef.GetClusterName()))
 }
 
-func (c *clusterDomainRegistry) GetRemoteServiceFQDN(serviceRef ezkube.ResourceId) string {
+func (c *clusterDomainRegistry) GetServiceGlobalFQDN(serviceRef ezkube.ClusterResourceId) string {
 	return fmt.Sprintf("%s.%s.svc.%s", serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetClusterName())
 }
 
-func (c *clusterDomainRegistry) GetDestinationServiceFQDN(originatingCluster string, destination ezkube.ResourceId) string {
+func (c *clusterDomainRegistry) GetDestinationServiceFQDN(originatingCluster string, destination ezkube.ClusterResourceId) string {
 	if destination.GetClusterName() == originatingCluster {
 		// hostname will use the cluster local domain if the destination is in the same cluster as the target MeshService
-		return c.GetLocalServiceFQDN(destination)
+		return c.GetServiceLocalFQDN(destination)
 	} else {
 		// hostname will use the cross-cluster domain if the destination is in a different cluster than the target MeshService
-		return c.GetRemoteServiceFQDN(destination)
+		return c.GetServiceGlobalFQDN(destination)
 	}
 }

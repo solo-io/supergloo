@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/hostutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/protoutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 	"reflect"
 )
@@ -36,19 +37,19 @@ func (p *corsPlugin) PluginName() string {
 }
 
 func (p *corsPlugin) ProcessTrafficPolicy(
-	trafficPolicy *v1alpha1.TrafficPolicy,
+	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
 	fieldRegistry fieldutils.FieldOwnershipRegistry,
 ) error {
-	cors, err := p.translateCors(trafficPolicy.Spec)
+	cors, err := p.translateCors(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if cors != nil && !reflect.DeepEqual(output.CorsPolicy, cors)  {
+	if cors != nil && !protoutils.Equals(output.CorsPolicy, cors)  {
 		if err := fieldRegistry.RegisterFieldOwner(
 			output.CorsPolicy,
-			trafficPolicy,
+			appliedPolicy.Ref,
 			0,
 		); err != nil {
 			return err
@@ -59,7 +60,7 @@ func (p *corsPlugin) ProcessTrafficPolicy(
 }
 
 func (p *corsPlugin) translateCors(
-	trafficPolicy v1alpha1.TrafficPolicySpec,
+	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) (*istiov1alpha3spec.CorsPolicy, error) {
 	corsPolicy := trafficPolicy.CorsPolicy
 	if corsPolicy == nil {

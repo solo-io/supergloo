@@ -5,8 +5,8 @@ import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/fieldutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/protoutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
-	"reflect"
 )
 
 const (
@@ -25,19 +25,19 @@ func (p *faultInjectionPlugin) PluginName() string {
 }
 
 func (p *faultInjectionPlugin) ProcessTrafficPolicy(
-	trafficPolicy *v1alpha1.TrafficPolicy,
+	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
 	fieldRegistry fieldutils.FieldOwnershipRegistry,
 ) error {
-	faultInjection, err := translateFaultInjection(trafficPolicy.Spec)
+	faultInjection, err := translateFaultInjection(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if faultInjection != nil && !reflect.DeepEqual(output.Fault, faultInjection) {
+	if faultInjection != nil && !protoutils.Equals(output.Fault, faultInjection) {
 		if err := fieldRegistry.RegisterFieldOwner(
 			output.Fault,
-			trafficPolicy,
+			appliedPolicy.Ref,
 			0,
 		); err != nil {
 			return err
@@ -47,7 +47,7 @@ func (p *faultInjectionPlugin) ProcessTrafficPolicy(
 	return nil
 }
 
-func translateFaultInjection(validatedPolicy v1alpha1.TrafficPolicySpec) (*istiov1alpha3spec.HTTPFaultInjection, error) {
+func translateFaultInjection(validatedPolicy *v1alpha1.TrafficPolicySpec) (*istiov1alpha3spec.HTTPFaultInjection, error) {
 	faultInjection := validatedPolicy.FaultInjection
 	if faultInjection == nil {
 		return nil, nil

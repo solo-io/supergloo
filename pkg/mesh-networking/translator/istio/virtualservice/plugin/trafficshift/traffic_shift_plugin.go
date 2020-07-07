@@ -8,9 +8,10 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/istio/destinationrule"
+	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/hostutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/protoutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
-	"reflect"
 )
 
 const (
@@ -43,14 +44,23 @@ func (p *trafficShiftPlugin) PluginName() string {
 	return pluginName
 }
 
-func (p *trafficShiftPlugin) ProcessTrafficPolicy(trafficPolicySpec *v1alpha1.TrafficPolicySpec, meshService *discoveryv1alpha1.MeshService, output *istiov1alpha3spec.HTTPRoute) error {
-	trafficShiftDestinations, err := p.translateTrafficShift(meshService, trafficPolicySpec)
+func (p *trafficShiftPlugin) ProcessTrafficPolicy(
+	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
+	service *discoveryv1alpha1.MeshService,
+	output *istiov1alpha3spec.HTTPRoute,
+	fieldRegistry fieldutils.FieldOwnershipRegistry,
+) error {
+	trafficShiftDestinations, err := p.translateTrafficShift(service, appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if trafficShiftDestinations != nil {
-		if output.Route != nil && !reflect.DeepEqual(output.Route, trafficShiftDestinations) {
-			return eris.Errorf("destinations already defined by a previous traffic policy")
+	if trafficShiftDestinations != nil && !protoutils.Equals(output.Route, trafficShiftDestinations) {
+		if err := fieldRegistry.RegisterFieldOwner(
+			output.Route,
+			appliedPolicy.Ref,
+			0,
+		); err != nil {
+			return err
 		}
 		output.Route = trafficShiftDestinations
 	}
@@ -89,7 +99,7 @@ func (p *trafficShiftPlugin) translateTrafficShift(
 	return shiftedDestinations, nil
 }
 
-func  (p *trafficShiftPlugin)  buildKubeTrafficShiftDestination(
+func (p *trafficShiftPlugin) buildKubeTrafficShiftDestination(
 	kubeDestination *v1alpha1.TrafficPolicySpec_MultiDestination_WeightedDestination,
 	originalService *discoveryv1alpha1.MeshService,
 ) (*istiov1alpha3spec.HTTPRouteDestination, error) {

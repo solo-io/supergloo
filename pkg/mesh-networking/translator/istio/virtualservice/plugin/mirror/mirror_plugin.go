@@ -9,8 +9,8 @@ import (
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/meshserviceutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/protoutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
-	"reflect"
 )
 
 const (
@@ -38,19 +38,19 @@ func (p *mirrorPlugin) PluginName() string {
 }
 
 func (p *mirrorPlugin) ProcessTrafficPolicy(
-	trafficPolicy *v1alpha1.TrafficPolicy,
+	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
 	fieldRegistry fieldutils.FieldOwnershipRegistry,
 ) error {
-	mirror, percentage, err := p.translateMirror(service, trafficPolicy.Spec)
+	mirror, percentage, err := p.translateMirror(service, appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if mirror != nil && !reflect.DeepEqual(output.Mirror, mirror) {
+	if mirror != nil && !protoutils.Equals(output.Mirror, mirror) {
 		if err := fieldRegistry.RegisterFieldOwner(
 			output.Mirror,
-			trafficPolicy,
+			appliedPolicy.Ref,
 			0,
 		); err != nil {
 			return err
@@ -63,7 +63,7 @@ func (p *mirrorPlugin) ProcessTrafficPolicy(
 
 func (p *mirrorPlugin) translateMirror(
 	meshService *discoveryv1alpha1.MeshService,
-	trafficPolicy v1alpha1.TrafficPolicySpec,
+	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) (*istiov1alpha3spec.Destination, *istiov1alpha3spec.Percent, error) {
 	mirror := trafficPolicy.Mirror
 	if mirror == nil {

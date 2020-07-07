@@ -1,14 +1,13 @@
 package retries
 
 import (
-	"github.com/rotisserie/eris"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/hostutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/protoutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
-	"reflect"
 )
 
 const (
@@ -36,19 +35,19 @@ func (p *retriesPlugin) PluginName() string {
 }
 
 func (p *retriesPlugin) ProcessTrafficPolicy(
-	trafficPolicy *v1alpha1.TrafficPolicy,
+	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
 	fieldRegistry fieldutils.FieldOwnershipRegistry,
 ) error {
-	retries, err := p.translateRetries(trafficPolicy.Spec)
+	retries, err := p.translateRetries(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if retries != nil && !reflect.DeepEqual(output.Retries, retries) {
+	if retries != nil && !protoutils.Equals(output.Retries, retries) {
 		if err := fieldRegistry.RegisterFieldOwner(
 			output.Retries,
-			trafficPolicy,
+			appliedPolicy.Ref,
 			0,
 		); err != nil {
 			return err
@@ -59,7 +58,7 @@ func (p *retriesPlugin) ProcessTrafficPolicy(
 }
 
 func (p *retriesPlugin) translateRetries(
-	trafficPolicy v1alpha1.TrafficPolicySpec,
+	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) (*istiov1alpha3spec.HTTPRetry, error) {
 	retries := trafficPolicy.Retries
 	if retries == nil {

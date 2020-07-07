@@ -1,18 +1,17 @@
 package translator
 
-//
-//import (
-//	"context"
-//	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-//	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output"
-//	"github.com/solo-io/smh/pkg/mesh-discovery/utils/labelutils"
-//)
-//
-//// the translator "reconciles the entire state of the world"
-//type Translator interface {
-//	// translates the Input Snapshot to an Output Snapshot
-//	Translate(ctx context.Context, in input.Snapshot) (output.Snapshot, error)
-//}
+import (
+	"context"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output"
+	"github.com/solo-io/smh/pkg/mesh-networking/translator/reporter"
+)
+
+// the translator "reconciles the entire state of the world"
+type Translator interface {
+	// translates the Input Snapshot to an Output Snapshot
+	Translate(ctx context.Context, in Snapshot, reporter reporter.Reporter) (output.Snapshot, error)
+}
+
 //
 //type translator struct {
 //	dependencies dependencyFactory

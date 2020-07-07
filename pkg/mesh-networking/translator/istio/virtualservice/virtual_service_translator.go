@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/istio/virtualservice/plugin"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translator/utils/metautils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -50,6 +51,8 @@ func (t *translator) Translate(
 		in,
 	)
 	virtualService := t.initializeVirtualService(meshService)
+	// register the owners of the virtualservice fields
+	virtualServiceFields := fieldutils.NewOwnershipRegistry()
 
 	for _, plug := range plugins {
 		if simplePlugin, ok := plug.(plugin.SimplePlugin); ok {
@@ -61,7 +64,12 @@ func (t *translator) Translate(
 		baseRoute := initializeBaseRoute(policy.Spec)
 		for _, plug := range plugins {
 			if trafficPolicyPlugin, ok := plug.(plugin.TrafficPolicyPlugin); ok {
-				if err := trafficPolicyPlugin.ProcessTrafficPolicy(policy.Spec, meshService, baseRoute); err != nil {
+				if err := trafficPolicyPlugin.ProcessTrafficPolicy(
+					policy,
+					meshService,
+					baseRoute,
+					virtualServiceFields,
+				); err != nil {
 					reporter.ReportTrafficPolicy(policy.Ref, eris.Wrapf(err, "%v", plug.PluginName()))
 				}
 			}
@@ -88,7 +96,12 @@ func (t *translator) Translate(
 	for _, policy := range meshService.Status.AppliedAccessPolicies {
 		for _, plug := range plugins {
 			if accessPolicyPlugin, ok := plug.(plugin.AccessPolicyPlugin); ok {
-				if err := accessPolicyPlugin.ProcessAccessPolicy(policy.Spec, meshService, virtualService); err != nil {
+				if err := accessPolicyPlugin.ProcessAccessPolicy(
+					policy,
+					meshService,
+					virtualService,
+					virtualServiceFields,
+				); err != nil {
 					reporter.ReportAccessPolicy(policy.Ref, eris.Wrapf(err, "%v", plug.PluginName()))
 				}
 			}
@@ -110,7 +123,7 @@ func (t *translator) initializeVirtualService(meshService *discoveryv1alpha1.Mes
 		meshService.Annotations,
 	)
 
-	hosts := []string{t.clusterDomains.GetLocalServiceFQDN(meshService.Spec.KubeService.Ref)}
+	hosts := []string{t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.KubeService.Ref)}
 
 	return &istiov1alpha3.VirtualService{
 		ObjectMeta: meta,
@@ -134,7 +147,7 @@ func (t *translator) setDefaultDestination(baseRoute *istiov1alpha3spec.HTTPRout
 
 	baseRoute.Route = []*istiov1alpha3spec.HTTPRouteDestination{{
 		Destination: &istiov1alpha3spec.Destination{
-			Host: t.clusterDomains.GetLocalServiceFQDN(meshService.Spec.GetKubeService().GetRef()),
+			Host: t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.GetKubeService().GetRef()),
 		},
 	}}
 }
@@ -197,20 +210,22 @@ func translateRequestMatchers(
 	// Generate HttpMatchRequests for SourceSelector, one per namespace.
 	var sourceMatchers []*istiov1alpha3spec.HTTPMatchRequest
 	// Set SourceNamespace and SourceLabels.
-	if len(trafficPolicy.GetSourceSelector().GetLabels()) > 0 ||
-		len(trafficPolicy.GetSourceSelector().GetNamespaces()) > 0 {
-		if len(trafficPolicy.GetSourceSelector().GetNamespaces()) > 0 {
-			for _, namespace := range trafficPolicy.GetSourceSelector().GetNamespaces() {
-				matchRequest := &istiov1alpha3spec.HTTPMatchRequest{
-					SourceNamespace: namespace,
-					SourceLabels:    trafficPolicy.GetSourceSelector().GetLabels(),
+	for _, sourceSelector := range trafficPolicy.GetSourceSelector() {
+		if len(sourceSelector.GetLabels()) > 0 ||
+			len(sourceSelector.GetNamespaces()) > 0 {
+			if len(sourceSelector.GetNamespaces()) > 0 {
+				for _, namespace := range sourceSelector.GetNamespaces() {
+					matchRequest := &istiov1alpha3spec.HTTPMatchRequest{
+						SourceNamespace: namespace,
+						SourceLabels:    sourceSelector.GetLabels(),
+					}
+					sourceMatchers = append(sourceMatchers, matchRequest)
 				}
-				sourceMatchers = append(sourceMatchers, matchRequest)
+			} else {
+				sourceMatchers = append(sourceMatchers, &istiov1alpha3spec.HTTPMatchRequest{
+					SourceLabels: sourceSelector.GetLabels(),
+				})
 			}
-		} else {
-			sourceMatchers = append(sourceMatchers, &istiov1alpha3spec.HTTPMatchRequest{
-				SourceLabels: trafficPolicy.GetSourceSelector().GetLabels(),
-			})
 		}
 	}
 	if trafficPolicy.GetHttpRequestMatchers() == nil {
