@@ -13,6 +13,7 @@ import (
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/istio/pkg/config/protocol"
 	"k8s.io/apimachinery/pkg/util/validation"
 )
@@ -43,11 +44,11 @@ var (
 	ClusterNotFound  = func(cluster string) error {
 		return eris.Errorf("Declared cluster %s not found.", cluster)
 	}
-	FailoverServiceNotFound = func(serviceRef *smh_core_types.ResourceRef) error {
+	FailoverServiceNotFound = func(serviceRef *v1.ClusterObjectRef) error {
 		return eris.Errorf("Failover service %s.%s.%s not found in SMH discovery resources.",
 			serviceRef.GetName(),
 			serviceRef.GetNamespace(),
-			serviceRef.GetCluster())
+			serviceRef.GetClusterName())
 	}
 	MeshNotFound = func(meshRef *smh_core_types.ResourceRef, serviceRef *smh_core_types.ResourceRef) error {
 		return eris.Errorf("Mesh %s.%s.%s for service %s.%s.%s not found in SMH discovery resources.",
@@ -167,14 +168,14 @@ func (f *failoverServiceValidator) validateServices(
 }
 
 func (f *failoverServiceValidator) findMeshService(
-	serviceRef *smh_core_types.ResourceRef,
+	serviceRef *v1.ClusterObjectRef,
 	allMeshServices []*smh_discovery.MeshService,
 ) (*smh_discovery.MeshService, error) {
 	for _, meshService := range allMeshServices {
 		kubeService := meshService.Spec.GetKubeService().GetRef()
 		if serviceRef.GetName() == kubeService.GetName() &&
 			serviceRef.GetNamespace() == kubeService.GetNamespace() &&
-			serviceRef.GetCluster() == kubeService.GetCluster() {
+			serviceRef.GetClusterName() == kubeService.GetCluster() {
 			return meshService, nil
 		}
 	}

@@ -117,7 +117,6 @@ func (f *failoverServiceReconciler) buildInputSnapshot() (failover.InputSnapshot
 	}
 	for _, failoverService := range failoverServiceList.Items {
 		failoverService := failoverService
-		//failoverService.ClusterName = failoverService.Spec.GetTargetService().GetCluster()
 		inputSnapshot.FailoverServices.Insert(&failoverService)
 	}
 	// MeshService

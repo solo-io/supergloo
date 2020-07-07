@@ -91,7 +91,7 @@ func (f *failoverServiceProcessor) collectMeshServicesForFailoverService(
 			kubeServiceRef := meshService.Spec.GetKubeService().GetRef()
 			if serviceRef.GetName() != kubeServiceRef.GetName() ||
 				serviceRef.GetNamespace() != kubeServiceRef.GetNamespace() ||
-				serviceRef.GetCluster() != kubeServiceRef.GetCluster() {
+				serviceRef.GetClusterName() != kubeServiceRef.GetCluster() {
 				continue
 			}
 			matchingMeshService = meshService

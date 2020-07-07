@@ -13,6 +13,7 @@ import (
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/validation"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -58,11 +59,11 @@ var _ = Describe("Validation", func() {
 							Protocol: "http",
 						},
 						Cluster: "cluster1",
-						FailoverServices: []*smh_core_types.ResourceRef{
+						FailoverServices: []*v1.ClusterObjectRef{
 							{
-								Name:      "service1",
-								Namespace: "namespace1",
-								Cluster:   "cluster2",
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster2",
 							},
 						},
 					},
@@ -153,11 +154,11 @@ var _ = Describe("Validation", func() {
 							Protocol: "http",
 						},
 						Cluster: "cluster1",
-						FailoverServices: []*smh_core_types.ResourceRef{
+						FailoverServices: []*v1.ClusterObjectRef{
 							{
-								Name:      "service1",
-								Namespace: "namespace1",
-								Cluster:   "cluster2",
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster2",
 							},
 						},
 					},
@@ -237,26 +238,26 @@ var _ = Describe("Validation", func() {
 					ObjectMeta: k8s_meta_types.ObjectMeta{Generation: 1},
 					Spec: smh_networking_types.FailoverServiceSpec{
 						Hostname: "invalidDNS@Q#$@%",
-						FailoverServices: []*smh_core_types.ResourceRef{
+						FailoverServices: []*v1.ClusterObjectRef{
 							{
-								Name:      "service1",
-								Namespace: "namespace1",
-								Cluster:   "cluster1",
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster1",
 							},
 							{
-								Name:      "service1",
-								Namespace: "namespace1",
-								Cluster:   "cluster2",
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster2",
 							},
 							{
-								Name:      "service1",
-								Namespace: "namespace1",
-								Cluster:   "cluster3",
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster3",
 							},
 							{
-								Name:      "service1",
-								Namespace: "namespace1",
-								Cluster:   "cluster4",
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster4",
 							},
 						},
 					},

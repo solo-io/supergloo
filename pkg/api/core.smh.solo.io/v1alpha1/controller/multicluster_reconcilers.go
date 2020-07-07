@@ -29,12 +29,12 @@ type MulticlusterSettingsReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterSettingsDeletionReconciler interface {
-	ReconcileSettingsDeletion(clusterName string, req reconcile.Request)
+	ReconcileSettingsDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterSettingsReconcilerFuncs struct {
 	OnReconcileSettings         func(clusterName string, obj *core_smh_solo_io_v1alpha1.Settings) (reconcile.Result, error)
-	OnReconcileSettingsDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileSettingsDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterSettingsReconcilerFuncs) ReconcileSettings(clusterName string, obj *core_smh_solo_io_v1alpha1.Settings) (reconcile.Result, error) {
@@ -44,11 +44,11 @@ func (f *MulticlusterSettingsReconcilerFuncs) ReconcileSettings(clusterName stri
 	return f.OnReconcileSettings(clusterName, obj)
 }
 
-func (f *MulticlusterSettingsReconcilerFuncs) ReconcileSettingsDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterSettingsReconcilerFuncs) ReconcileSettingsDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileSettingsDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileSettingsDeletion(clusterName, req)
+	return f.OnReconcileSettingsDeletion(clusterName, req)
 }
 
 type MulticlusterSettingsReconcileLoop interface {
@@ -74,10 +74,11 @@ type genericSettingsMulticlusterReconciler struct {
 	reconciler MulticlusterSettingsReconciler
 }
 
-func (g genericSettingsMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericSettingsMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterSettingsDeletionReconciler); ok {
-		deletionReconciler.ReconcileSettingsDeletion(cluster, req)
+		return deletionReconciler.ReconcileSettingsDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericSettingsMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {

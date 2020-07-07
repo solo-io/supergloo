@@ -85,7 +85,7 @@ func (i *istioFailoverServiceTranslator) translateServiceEntry(
 	return &istio_client_networking.ServiceEntry{
 		ObjectMeta: k8s_meta.ObjectMeta{
 			Name:        failoverService.GetName(),
-			Namespace:   failoverService.GetNamespace(),
+			Namespace:   failoverService.Spec.GetNamespace(),
 			ClusterName: failoverService.Spec.GetCluster(),
 		},
 		Spec: istio_networking.ServiceEntry{

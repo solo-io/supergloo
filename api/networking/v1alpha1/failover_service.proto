@@ -2,8 +2,14 @@ syntax = "proto3";
 package networking.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types";
 
+import "extproto/ext.proto";
+option (extproto.hash_all) = true;
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
+import "skv2/api/core/v1/core.proto";
 
 /*
     A FailoverService creates a new hostname to which services can send requests.
@@ -46,7 +52,7 @@ message FailoverServiceSpec {
         All services must be backed by either the same service mesh instance or
         backed by service meshes that are grouped under a common VirtualMesh.
     */
-    repeated core.smh.solo.io.ResourceRef failover_services = 5;
+    repeated core.skv2.solo.io.ClusterObjectRef failover_services = 5;
 }
 
 message FailoverServiceStatus {

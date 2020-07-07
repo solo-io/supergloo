@@ -19,6 +19,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/translation"
 	mock_failover_service_translation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/translation/mocks"
 	mock_failover_service_validation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/validation/mocks"
+	v12 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -85,11 +86,11 @@ var _ = Describe("Processor", func() {
 							Protocol: "http",
 						},
 						Cluster: "cluster1",
-						FailoverServices: []*smh_core_types.ResourceRef{
+						FailoverServices: []*v12.ClusterObjectRef{
 							{
-								Name:      "service2",
-								Namespace: "namespace2",
-								Cluster:   "cluster2",
+								Name:        "service2",
+								Namespace:   "namespace2",
+								ClusterName: "cluster2",
 							},
 						},
 					},
