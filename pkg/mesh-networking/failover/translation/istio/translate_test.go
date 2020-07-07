@@ -9,12 +9,14 @@ import (
 	. "github.com/onsi/gomega"
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	v1alpha12 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	types2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/translation/istio"
 	mock_dns "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns/mocks"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/istio/pkg/util/protomarshal"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -38,7 +40,12 @@ var _ = Describe("Translate", func() {
 					Name:     "http1",
 					Protocol: "http",
 				},
-				Cluster: "cluster1",
+				Meshes: []*v1.ObjectRef{
+					{
+						Name:      "mesh1",
+						Namespace: "namespace1",
+					},
+				},
 			},
 		}
 		prioritizedMeshServices = []*v1alpha12.MeshService{
@@ -64,6 +71,24 @@ var _ = Describe("Translate", func() {
 				},
 			},
 		}
+		allMeshes = v1alpha1sets.NewMeshSet(
+			&v1alpha12.Mesh{
+				ObjectMeta: k8s_meta.ObjectMeta{
+					Name:      "mesh1",
+					Namespace: "namespace1",
+				},
+				Spec: types2.MeshSpec{
+					MeshType: &types2.MeshSpec_Istio1_5_{
+						Istio1_5: &types2.MeshSpec_Istio1_5{
+							Metadata: &types2.MeshSpec_IstioMesh{
+								Installation: &types2.MeshSpec_MeshInstallation{InstallationNamespace: "istio-system"},
+							},
+						},
+					},
+					Cluster: &smh_core_types.ResourceRef{Name: "cluster1"},
+				},
+			},
+		)
 	)
 
 	BeforeEach(func() {
@@ -119,13 +144,13 @@ resolution: DNS
 `
 		mockIpAssigner.
 			EXPECT().
-			AssignIPOnCluster(ctx, failoverService.Spec.GetCluster()).
+			AssignIPOnCluster(ctx, allMeshes.List()[0].Spec.GetCluster().GetName()).
 			Return(ip, nil)
-		outputSnapshot, translatorError := istioTranslator.Translate(ctx, failoverService, prioritizedMeshServices)
+		outputSnapshot, translatorError := istioTranslator.Translate(ctx, failoverService, prioritizedMeshServices, allMeshes)
 		Expect(translatorError).To(BeNil())
 		envoyFilter := outputSnapshot.EnvoyFilters.List()[0]
 		// EnvoyFilter must be in the same namespace as workloads backing the target service.
-		Expect(envoyFilter.GetNamespace()).To(Equal(failoverService.Spec.GetNamespace()))
+		Expect(envoyFilter.GetNamespace()).To(Equal(allMeshes.List()[0].Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace()))
 		envoyFilterYaml, err := protomarshal.ToYAML(&envoyFilter.Spec)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(envoyFilterYaml).To(Equal(expectedEnvoyFilterYamlString))

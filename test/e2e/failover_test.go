@@ -82,10 +82,10 @@ spec:
       services:
       - name: reviews
         namespace: default
-        clusterName: management-plane-cluster
+        cluster: management-plane-cluster
       - name: reviews
         namespace: default
-        clusterName: target-cluster
+        cluster: target-cluster
   outlierDetection:
     consecutiveErrors: 1
 `
@@ -94,9 +94,7 @@ apiVersion: networking.smh.solo.io/v1alpha1
 kind: FailoverService
 metadata:
   name: reviews-failover
-  namespace: service-mesh-hub
-  labels:
-    test: true
+  namespace: default
 spec:
   hostname: reviews.default.failover
   namespace: default
@@ -104,7 +102,9 @@ spec:
     port: 9080
     name: http1
     protocol: http
-  cluster: management-plane-cluster
+  meshes:
+    - name: istio-istio-system-management-plane-cluster
+      namespace: service-mesh-hub
   failoverServices:
     - name: reviews
       namespace: default
@@ -112,7 +112,6 @@ spec:
     - name: reviews
       namespace: default
       clusterName: target-cluster
-
 `
 		virtualServiceYaml := `
 apiVersion: networking.istio.io/v1beta1

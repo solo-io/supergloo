@@ -8,12 +8,14 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/common/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/federation/dns"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	istio_networking "istio.io/api/networking/v1alpha3"
 	istio_client_networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,15 +41,16 @@ func (i *istioFailoverServiceTranslator) Translate(
 	ctx context.Context,
 	failoverService *smh_networking.FailoverService,
 	prioritizedMeshServices []*smh_discovery.MeshService,
+	allMeshes v1alpha1sets.MeshSet,
 ) (failover.MeshOutputs, *types.FailoverServiceStatus_TranslatorError) {
 	output := failover.NewMeshOutputs()
 	var translatorErr *types.FailoverServiceStatus_TranslatorError
-	serviceEntry, envoyFilter, err := i.translate(ctx, failoverService, prioritizedMeshServices)
+	serviceEntries, envoyFilters, err := i.translate(ctx, failoverService, prioritizedMeshServices, allMeshes)
 	if err != nil {
 		translatorErr = i.translatorErr(err)
 	} else {
-		output.ServiceEntries.Insert(serviceEntry)
-		output.EnvoyFilters.Insert(envoyFilter)
+		output.ServiceEntries.Insert(serviceEntries...)
+		output.EnvoyFilters.Insert(envoyFilters...)
 	}
 	return output, translatorErr
 }
@@ -57,84 +60,116 @@ func (i *istioFailoverServiceTranslator) translate(
 	ctx context.Context,
 	failoverService *smh_networking.FailoverService,
 	prioritizedMeshServices []*smh_discovery.MeshService,
-) (*istio_client_networking.ServiceEntry, *istio_client_networking.EnvoyFilter, error) {
+	allMeshes v1alpha1sets.MeshSet,
+) ([]*istio_client_networking.ServiceEntry, []*istio_client_networking.EnvoyFilter, error) {
 	var multierr *multierror.Error
 	if len(prioritizedMeshServices) < 1 {
 		return nil, nil, eris.New("FailoverService has fewer than 1 MeshService.")
 	}
-
-	serviceEntry, err := i.translateServiceEntry(ctx, failoverService)
+	serviceEntries, err := i.translateServiceEntries(ctx, failoverService, allMeshes)
 	if err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
-	envoyFilter, err := i.translateEnvoyFilter(failoverService, prioritizedMeshServices)
+	envoyFilters, err := i.translateEnvoyFilters(failoverService, prioritizedMeshServices, allMeshes)
 	if err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
-	return serviceEntry, envoyFilter, multierr.ErrorOrNil()
+	return serviceEntries, envoyFilters, multierr.ErrorOrNil()
 }
 
-func (i *istioFailoverServiceTranslator) translateServiceEntry(
+func (i *istioFailoverServiceTranslator) translateServiceEntries(
 	ctx context.Context,
 	failoverService *smh_networking.FailoverService,
-) (*istio_client_networking.ServiceEntry, error) {
-	ip, err := i.ipAssigner.AssignIPOnCluster(ctx, failoverService.Spec.GetCluster())
-	if err != nil {
-		return nil, err
-	}
-	return &istio_client_networking.ServiceEntry{
-		ObjectMeta: k8s_meta.ObjectMeta{
-			Name:        failoverService.GetName(),
-			Namespace:   failoverService.Spec.GetNamespace(),
-			ClusterName: failoverService.Spec.GetCluster(),
-		},
-		Spec: istio_networking.ServiceEntry{
-			Hosts: []string{failoverService.Spec.GetHostname()},
-			Ports: []*istio_networking.Port{
-				{
-					Number:   failoverService.Spec.GetPort().GetPort(),
-					Protocol: failoverService.Spec.GetPort().GetProtocol(),
-					Name:     failoverService.Spec.GetPort().GetName(),
-				},
+	allMeshes v1alpha1sets.MeshSet,
+) ([]*istio_client_networking.ServiceEntry, error) {
+	var multierr *multierror.Error
+	var serviceEntries []*istio_client_networking.ServiceEntry
+	for _, meshRef := range failoverService.Spec.GetMeshes() {
+		mesh, err := allMeshes.Find(&v1.ClusterObjectRef{
+			Name:      meshRef.GetName(),
+			Namespace: meshRef.GetNamespace(),
+		})
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+			continue
+		}
+		ip, err := i.ipAssigner.AssignIPOnCluster(ctx, mesh.Spec.GetCluster().GetName())
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+			continue
+		}
+		serviceEntry := &istio_client_networking.ServiceEntry{
+			ObjectMeta: k8s_meta.ObjectMeta{
+				Name:        failoverService.GetName(),
+				Namespace:   failoverService.Spec.GetNamespace(),
+				ClusterName: mesh.Spec.GetCluster().GetName(),
 			},
-			Addresses: []string{ip},
-			// Treat remote cluster services as part of the service mesh as all clusters in the service mesh share the same root of trust.
-			Location:   istio_networking.ServiceEntry_MESH_INTERNAL,
-			Resolution: istio_networking.ServiceEntry_DNS,
-		},
-	}, nil
+			Spec: istio_networking.ServiceEntry{
+				Hosts: []string{failoverService.Spec.GetHostname()},
+				Ports: []*istio_networking.Port{
+					{
+						Number:   failoverService.Spec.GetPort().GetPort(),
+						Protocol: failoverService.Spec.GetPort().GetProtocol(),
+						Name:     failoverService.Spec.GetPort().GetName(),
+					},
+				},
+				Addresses: []string{ip},
+				// Treat remote cluster services as part of the service mesh as all clusters in the service mesh share the same root of trust.
+				Location:   istio_networking.ServiceEntry_MESH_INTERNAL,
+				Resolution: istio_networking.ServiceEntry_DNS,
+			},
+		}
+		serviceEntries = append(serviceEntries, serviceEntry)
+	}
+	return serviceEntries, multierr.ErrorOrNil()
 }
 
-func (i *istioFailoverServiceTranslator) translateEnvoyFilter(
+func (i *istioFailoverServiceTranslator) translateEnvoyFilters(
 	failoverService *smh_networking.FailoverService,
 	prioritizedMeshServices []*smh_discovery.MeshService,
-) (*istio_client_networking.EnvoyFilter, error) {
-	patches, err := i.buildFailoverEnvoyPatches(failoverService, prioritizedMeshServices)
-	if err != nil {
-		return nil, err
+	allMeshes v1alpha1sets.MeshSet,
+) ([]*istio_client_networking.EnvoyFilter, error) {
+	var multierr *multierror.Error
+	var envoyFilters []*istio_client_networking.EnvoyFilter
+	for _, meshRef := range failoverService.Spec.GetMeshes() {
+		mesh, err := allMeshes.Find(&v1.ClusterObjectRef{
+			Name:      meshRef.GetName(),
+			Namespace: meshRef.GetNamespace(),
+		})
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+			continue
+		}
+		patches, err := i.buildFailoverEnvoyPatches(failoverService, prioritizedMeshServices, mesh)
+		if err != nil {
+			return nil, err
+		}
+		envoyFilter := &istio_client_networking.EnvoyFilter{
+			// EnvoyFilter must be located in the root config namespace ('istio-system' by default) in order to apply to all workloads in the Mesh.
+			ObjectMeta: k8s_meta.ObjectMeta{
+				Name:        failoverService.GetName(),
+				Namespace:   fetchIstioInstallationNamespace(mesh),
+				ClusterName: mesh.Spec.GetCluster().GetName(),
+			},
+			Spec: istio_networking.EnvoyFilter{
+				ConfigPatches: patches,
+			},
+		}
+		envoyFilters = append(envoyFilters, envoyFilter)
 	}
-	return &istio_client_networking.EnvoyFilter{
-		// EnvoyFilter must be located in the same namespace as the workload(s) backing the target service.
-		ObjectMeta: k8s_meta.ObjectMeta{
-			Name:        failoverService.GetName(),
-			Namespace:   failoverService.Spec.GetNamespace(),
-			ClusterName: failoverService.Spec.GetCluster(),
-		},
-		Spec: istio_networking.EnvoyFilter{
-			ConfigPatches: patches,
-		},
-	}, nil
+	return envoyFilters, nil
 }
 
 func (i *istioFailoverServiceTranslator) buildFailoverEnvoyPatches(
 	failoverService *smh_networking.FailoverService,
 	prioritizedServices []*smh_discovery.MeshService,
+	mesh *smh_discovery.Mesh,
 ) ([]*istio_networking.EnvoyFilter_EnvoyConfigObjectPatch, error) {
 	var failoverAggregateClusterPatches []*istio_networking.EnvoyFilter_EnvoyConfigObjectPatch
 	failoverServiceClusterString := buildIstioEnvoyClusterName(failoverService.Spec.GetPort().GetPort(), failoverService.Spec.GetHostname())
 	envoyFailoverPatch, err := i.buildEnvoyFailoverPatch(
 		failoverServiceClusterString,
-		failoverService.Spec.GetCluster(),
+		mesh.Spec.GetCluster().GetName(),
 		prioritizedServices,
 	)
 	if err != nil {
@@ -266,4 +301,12 @@ func protoStringValue(s string) *proto_types.Value {
 
 func buildIstioEnvoyClusterName(port uint32, hostname string) string {
 	return fmt.Sprintf("outbound|%d||%s", port, hostname)
+}
+
+func fetchIstioInstallationNamespace(mesh *smh_discovery.Mesh) string {
+	if mesh.Spec.GetIstio1_5() != nil {
+		return mesh.Spec.GetIstio1_5().GetMetadata().GetInstallation().GetInstallationNamespace()
+	} else {
+		return mesh.Spec.GetIstio1_6().GetMetadata().GetInstallation().GetInstallationNamespace()
+	}
 }

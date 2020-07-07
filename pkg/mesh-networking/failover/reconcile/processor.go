@@ -5,6 +5,7 @@ import (
 
 	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
@@ -59,7 +60,7 @@ func (f *failoverServiceProcessor) Process(ctx context.Context, inputSnapshot fa
 				failoverService.Status = f.computeProcessingErrorStatus(err)
 				continue
 			}
-			failoverServiceWithUpdatedStatus, meshOutputs := f.processSingle(ctx, failoverService, prioritizedMeshServices)
+			failoverServiceWithUpdatedStatus, meshOutputs := f.processSingle(ctx, failoverService, prioritizedMeshServices, inputSnapshot.Meshes)
 			// Accumulate outputs for each FailoverService
 			outputSnapshot.MeshOutputs = outputSnapshot.MeshOutputs.Union(meshOutputs)
 			failoverService = failoverServiceWithUpdatedStatus
@@ -110,11 +111,12 @@ func (f *failoverServiceProcessor) processSingle(
 	ctx context.Context,
 	failoverService *smh_networking.FailoverService,
 	prioritizedMeshServices []*smh_discovery.MeshService,
+	allMeshes v1alpha1sets.MeshSet,
 ) (*smh_networking.FailoverService, failover.MeshOutputs) {
 	var translatorErrs []*types.FailoverServiceStatus_TranslatorError
 	outputs := failover.NewMeshOutputs()
 	for _, translator := range f.translators {
-		output, translatorErr := translator.Translate(ctx, failoverService, prioritizedMeshServices)
+		output, translatorErr := translator.Translate(ctx, failoverService, prioritizedMeshServices, allMeshes)
 		if translatorErr != nil {
 			translatorErrs = append(translatorErrs, translatorErr)
 			continue

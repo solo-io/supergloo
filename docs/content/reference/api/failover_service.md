@@ -38,8 +38,8 @@ A FailoverService creates a new hostname to which services can send requests. Re
 | hostname | [string](#string) |  | The DNS name of the failover service. Must be unique within the service mesh instance since it is used as the hostname with which clients communicate. |
 | namespace | [string](#string) |  | The namespace to locate the translated service. |
 | port | [FailoverServiceSpec.Port](#networking.smh.solo.io.FailoverServiceSpec.Port) |  | The ports from which to expose this service. |
-| cluster | [string](#string) |  | The cluster that the failover service resides (the cluster name registered with Service Mesh Hub). |
-| failoverServices | [][core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) | repeated | A list of services ordered by decreasing priority for failover. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
+| meshes | [][core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) | repeated | The meshes that this failover service will be visible to. |
+| failoverServices | [][core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) | repeated | A list of services ordered by decreasing priority for failover. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
 
 
 

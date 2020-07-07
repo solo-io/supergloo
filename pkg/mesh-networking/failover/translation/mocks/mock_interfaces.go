@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
 	failover "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
@@ -39,16 +40,16 @@ func (m *MockFailoverServiceTranslator) EXPECT() *MockFailoverServiceTranslatorM
 }
 
 // Translate mocks base method.
-func (m *MockFailoverServiceTranslator) Translate(ctx context.Context, failoverService *v1alpha10.FailoverService, prioritizedMeshServices []*v1alpha1.MeshService) (failover.MeshOutputs, *types.FailoverServiceStatus_TranslatorError) {
+func (m *MockFailoverServiceTranslator) Translate(ctx context.Context, failoverService *v1alpha10.FailoverService, prioritizedMeshServices []*v1alpha1.MeshService, allMeshes v1alpha1sets.MeshSet) (failover.MeshOutputs, *types.FailoverServiceStatus_TranslatorError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Translate", ctx, failoverService, prioritizedMeshServices)
+	ret := m.ctrl.Call(m, "Translate", ctx, failoverService, prioritizedMeshServices, allMeshes)
 	ret0, _ := ret[0].(failover.MeshOutputs)
 	ret1, _ := ret[1].(*types.FailoverServiceStatus_TranslatorError)
 	return ret0, ret1
 }
 
 // Translate indicates an expected call of Translate.
-func (mr *MockFailoverServiceTranslatorMockRecorder) Translate(ctx, failoverService, prioritizedMeshServices interface{}) *gomock.Call {
+func (mr *MockFailoverServiceTranslatorMockRecorder) Translate(ctx, failoverService, prioritizedMeshServices, allMeshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockFailoverServiceTranslator)(nil).Translate), ctx, failoverService, prioritizedMeshServices)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockFailoverServiceTranslator)(nil).Translate), ctx, failoverService, prioritizedMeshServices, allMeshes)
 }

@@ -77,9 +77,11 @@ func (m *MockTrafficPolicyDeletionReconciler) EXPECT() *MockTrafficPolicyDeletio
 }
 
 // ReconcileTrafficPolicyDeletion mocks base method.
-func (m *MockTrafficPolicyDeletionReconciler) ReconcileTrafficPolicyDeletion(req reconcile.Request) {
+func (m *MockTrafficPolicyDeletionReconciler) ReconcileTrafficPolicyDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileTrafficPolicyDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileTrafficPolicyDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileTrafficPolicyDeletion indicates an expected call of ReconcileTrafficPolicyDeletion.
@@ -258,9 +260,11 @@ func (m *MockAccessControlPolicyDeletionReconciler) EXPECT() *MockAccessControlP
 }
 
 // ReconcileAccessControlPolicyDeletion mocks base method.
-func (m *MockAccessControlPolicyDeletionReconciler) ReconcileAccessControlPolicyDeletion(req reconcile.Request) {
+func (m *MockAccessControlPolicyDeletionReconciler) ReconcileAccessControlPolicyDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileAccessControlPolicyDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileAccessControlPolicyDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileAccessControlPolicyDeletion indicates an expected call of ReconcileAccessControlPolicyDeletion.
@@ -439,9 +443,11 @@ func (m *MockVirtualMeshDeletionReconciler) EXPECT() *MockVirtualMeshDeletionRec
 }
 
 // ReconcileVirtualMeshDeletion mocks base method.
-func (m *MockVirtualMeshDeletionReconciler) ReconcileVirtualMeshDeletion(req reconcile.Request) {
+func (m *MockVirtualMeshDeletionReconciler) ReconcileVirtualMeshDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileVirtualMeshDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileVirtualMeshDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileVirtualMeshDeletion indicates an expected call of ReconcileVirtualMeshDeletion.
@@ -620,9 +626,11 @@ func (m *MockFailoverServiceDeletionReconciler) EXPECT() *MockFailoverServiceDel
 }
 
 // ReconcileFailoverServiceDeletion mocks base method.
-func (m *MockFailoverServiceDeletionReconciler) ReconcileFailoverServiceDeletion(req reconcile.Request) {
+func (m *MockFailoverServiceDeletionReconciler) ReconcileFailoverServiceDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileFailoverServiceDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileFailoverServiceDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileFailoverServiceDeletion indicates an expected call of ReconcileFailoverServiceDeletion.

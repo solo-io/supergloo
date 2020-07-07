@@ -36,14 +36,11 @@ type FailoverServiceValidator interface {
 }
 
 var (
-	MissingHostname  = eris.New("Missing required field \"hostname\".")
-	MissingPort      = eris.New("Missing required field \"port\".")
-	MissingCluster   = eris.New("Missing required field \"cluster\".")
-	MissingNamespace = eris.New("Missing required field \"namespace\".")
-	MissingServices  = eris.New("There must be at least one service declared for the FailoverService.")
-	ClusterNotFound  = func(cluster string) error {
-		return eris.Errorf("Declared cluster %s not found.", cluster)
-	}
+	MissingHostname         = eris.New("Missing required field \"hostname\".")
+	MissingPort             = eris.New("Missing required field \"port\".")
+	MissingMeshes           = eris.New("Missing required field \"meshes\".")
+	MissingNamespace        = eris.New("Missing required field \"namespace\".")
+	MissingServices         = eris.New("There must be at least one service declared for the FailoverService.")
 	FailoverServiceNotFound = func(serviceRef *v1.ClusterObjectRef) error {
 		return eris.Errorf("Failover service %s.%s.%s not found in SMH discovery resources.",
 			serviceRef.GetName(),
@@ -62,9 +59,8 @@ var (
 	UnsupportedMeshType = func(meshType interface{}) error {
 		return eris.Errorf("Unsupported Mesh type %T", meshType)
 	}
-	ServiceWithoutParentVM = func(serviceRef *smh_core_types.ResourceRef, parentMesh *smh_discovery.Mesh) error {
-		return eris.Errorf("Service %s.%s.%s with parent Mesh %s is not contained in a VirtualMesh.",
-			serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster(), parentMesh.GetName())
+	MeshWithoutParentVM = func(mesh *smh_discovery.Mesh) error {
+		return eris.Errorf("Mesh %s.%s is not grouped in a VirtualMesh.", mesh.GetName(), mesh.GetNamespace())
 	}
 	MultipleParentVirtualMeshes = func(virtualMeshes []*smh_networking.VirtualMesh) error {
 		var virtualMeshNames []string
@@ -80,11 +76,6 @@ var (
 			meshService.Spec.GetKubeService().GetRef().GetCluster())
 	}
 )
-
-type serviceMeshPair struct {
-	serviceRef *smh_core_types.ResourceRef
-	mesh       *smh_discovery.Mesh
-}
 
 type failoverServiceValidator struct{}
 
@@ -110,13 +101,13 @@ func (f *failoverServiceValidator) validateSingle(
 	if err := f.validatePort(failoverService); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
-	if err := f.validateCluster(failoverService, inputSnapshot.KubeClusters.List()); err != nil {
-		multierr = multierror.Append(multierr, err)
-	}
 	if err := f.validateNamespace(failoverService); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
-	if err := f.validateServices(failoverService, inputSnapshot.MeshServices.List(), inputSnapshot.Meshes, inputSnapshot.VirtualMeshes); err != nil {
+	if err := f.validateServices(failoverService, inputSnapshot.MeshServices.List(), inputSnapshot.Meshes); err != nil {
+		multierr = multierror.Append(multierr, err)
+	}
+	if err := f.validateFederation(failoverService, inputSnapshot.MeshServices.List(), inputSnapshot.Meshes, inputSnapshot.VirtualMeshes); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 	if err := multierr.ErrorOrNil(); err != nil {
@@ -135,7 +126,6 @@ func (f *failoverServiceValidator) validateServices(
 	failoverService *smh_networking.FailoverService,
 	allMeshServices []*smh_discovery.MeshService,
 	meshes v1alpha1sets2.MeshSet,
-	virtualMeshes v1alpha1sets.VirtualMeshSet,
 ) error {
 	var multierr *multierror.Error
 	// validate failover services
@@ -143,7 +133,6 @@ func (f *failoverServiceValidator) validateServices(
 	if len(failoverServices) == 0 {
 		return MissingServices
 	}
-	var serviceParentMeshPairs []serviceMeshPair
 	for _, serviceRef := range failoverServices {
 		meshService, err := f.findMeshService(serviceRef, allMeshServices)
 		if err != nil {
@@ -154,16 +143,23 @@ func (f *failoverServiceValidator) validateServices(
 		if err := f.validateServiceOutlierDetection(meshService); err != nil {
 			multierr = multierror.Append(multierr, err)
 		}
-		serviceParentMeshPair, err := f.validateParentMesh(meshService, meshes)
+
+		meshRef := meshService.Spec.GetMesh()
+		// Validate that mesh exists
+		parentMesh, err := meshes.Find(failover.ResourceId{meshService.Spec.GetMesh()})
 		if err != nil {
+			multierr = multierror.Append(multierr, MeshNotFound(meshRef, meshService.Spec.GetKubeService().GetRef()))
+			continue
+		}
+		if err := f.validateMesh(parentMesh); err != nil {
 			multierr = multierror.Append(multierr, err)
-		} else {
-			serviceParentMeshPairs = append(serviceParentMeshPairs, serviceParentMeshPair)
 		}
 	}
-	if err := f.validateFederation(serviceParentMeshPairs, virtualMeshes); err != nil {
-		multierr = multierror.Append(multierr, err)
-	}
+
+	// TODO validateFederation(meshes, virtualMeshes, failoverService)
+	//if err := f.validateFederation(serviceParentMeshPairs, virtualMeshes); err != nil {
+	//	multierr = multierror.Append(multierr, err)
+	//}
 	return multierr.ErrorOrNil()
 }
 
@@ -191,88 +187,87 @@ func (f *failoverServiceValidator) validateServiceOutlierDetection(meshService *
 	return MissingOutlierDetection(meshService)
 }
 
-func (f *failoverServiceValidator) validateParentMesh(
-	meshService *smh_discovery.MeshService,
-	allMeshes v1alpha1sets2.MeshSet,
-) (serviceMeshPair, error) {
-	meshRef := meshService.Spec.GetMesh()
-	// Validate that mesh exists
-	parentMesh, err := allMeshes.Find(failover.ResourceId{meshService.Spec.GetMesh()})
-	if err != nil {
-		return serviceMeshPair{}, MeshNotFound(meshRef, meshService.Spec.GetKubeService().GetRef())
-	}
+func (f *failoverServiceValidator) validateMesh(
+	mesh *smh_discovery.Mesh,
+) error {
 	// Validate that mesh type is supported
-	switch meshType := parentMesh.Spec.GetMeshType().(type) {
+	switch meshType := mesh.Spec.GetMeshType().(type) {
 	case *types.MeshSpec_Istio1_5_:
 	case *types.MeshSpec_Istio1_6_:
 	default:
-		return serviceMeshPair{}, UnsupportedMeshType(meshType)
+		return UnsupportedMeshType(meshType)
 	}
-	return serviceMeshPair{
-		serviceRef: meshService.Spec.GetKubeService().GetRef(),
-		mesh:       parentMesh,
-	}, nil
+	return nil
 }
 
 // TODO(harveyxia) Federation should update Mesh status with VirtualMesh ref
-// Return error if services are in separate and non-federated meshes
+// Valid only if FailoverService is composed of meshes and/or services belonging to
+// a common mesh, or to meshes grouped under a common VirtualMesh.
 func (f *failoverServiceValidator) validateFederation(
-	serviceParentMeshPairs []serviceMeshPair,
-	virtualMeshes v1alpha1sets.VirtualMeshSet,
+	failoverService *smh_networking.FailoverService,
+	allMeshServices []*smh_discovery.MeshService,
+	allMeshes v1alpha1sets2.MeshSet,
+	allVirtualMeshes v1alpha1sets.VirtualMeshSet,
 ) error {
+	// Surface these errors only if the FailoverService references multiple meshes.
 	var missingParentVMErrors []error
 	var multierr *multierror.Error
-	parentMeshes := v1alpha1sets2.NewMeshSet()
-	parentVMs := v1alpha1sets.NewVirtualMeshSet()
-	// Fetch all parent VirtualMeshes
-	for _, serviceParentMeshPair := range serviceParentMeshPairs {
-		parentMesh := serviceParentMeshPair.mesh
-		parentMeshes.Insert(parentMesh)
-		var parentVM *smh_networking.VirtualMesh
-		for _, vm := range virtualMeshes.List() {
-			for _, meshRef := range vm.Spec.GetMeshes() {
-				if parentMesh.GetName() == meshRef.GetName() && parentMesh.GetNamespace() == meshRef.GetNamespace() {
-					parentVM = vm
-					break
-				}
-			}
-			if parentVM != nil {
-				break
-			}
+	referencedMeshes := v1alpha1sets2.NewMeshSet()
+	referencedVMs := v1alpha1sets.NewVirtualMeshSet()
+	if failoverService.Spec.GetMeshes() == nil {
+		return MissingMeshes
+	}
+	// Process declared meshes
+	for _, meshRef := range failoverService.Spec.GetMeshes() {
+		mesh, err := allMeshes.Find(&v1.ClusterObjectRef{
+			Name:      meshRef.GetName(),
+			Namespace: meshRef.GetNamespace(),
+		})
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+			continue
 		}
-		if parentVM == nil {
-			missingParentVMErrors = append(missingParentVMErrors, ServiceWithoutParentVM(serviceParentMeshPair.serviceRef, serviceParentMeshPair.mesh))
+		referencedMeshes.Insert(mesh)
+	}
+	// Process declared services
+	for _, serviceRef := range failoverService.Spec.GetFailoverServices() {
+		meshService, err := f.findMeshService(serviceRef, allMeshServices)
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+			continue
+		}
+		// TODO change type of MeshService.Spec.Mesh to ClusterObjectRef
+		mesh, err := allMeshes.Find(&v1.ClusterObjectRef{
+			Name:        meshService.Spec.GetMesh().GetName(),
+			Namespace:   meshService.Spec.GetMesh().GetNamespace(),
+			ClusterName: meshService.Spec.GetMesh().GetCluster(),
+		})
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+			continue
+		}
+		referencedMeshes.Insert(mesh)
+	}
+	// Compute referenced VirtualMeshes
+	for _, mesh := range referencedMeshes.List() {
+		vm := f.findVirtualMeshForMesh(mesh, allVirtualMeshes)
+		if vm == nil {
+			missingParentVMErrors = append(missingParentVMErrors, MeshWithoutParentVM(mesh))
 		} else {
-			parentVMs.Insert(parentVM)
+			referencedVMs.Insert(vm)
 		}
 	}
 	// Validate that there's only one common parent mesh, else that there's only a single common parent VirtualMesh
-	if len(parentMeshes.List()) > 1 {
+	if len(referencedMeshes.List()) > 1 {
 		// Surface meshes with parent meshes as errors
 		for _, err := range missingParentVMErrors {
 			multierr = multierror.Append(multierr, err)
 		}
-		if len(parentVMs.List()) > 1 {
-			multierr = multierror.Append(multierr, MultipleParentVirtualMeshes(parentVMs.List()))
+		if len(referencedVMs.List()) > 1 {
+			multierr = multierror.Append(multierr, MultipleParentVirtualMeshes(referencedVMs.List()))
 		}
 	}
 	return multierr.ErrorOrNil()
-}
-
-func (f *failoverServiceValidator) validateCluster(
-	failoverService *smh_networking.FailoverService,
-	kubeClusters []*smh_discovery.KubernetesCluster,
-) error {
-	cluster := failoverService.Spec.GetCluster()
-	if cluster == "" {
-		return MissingCluster
-	}
-	for _, kubeCluster := range kubeClusters {
-		if cluster == kubeCluster.GetName() {
-			return nil
-		}
-	}
-	return ClusterNotFound(cluster)
 }
 
 func (f *failoverServiceValidator) validateHostname(failoverService *smh_networking.FailoverService) error {
@@ -308,6 +303,21 @@ func (f *failoverServiceValidator) validatePort(failoverService *smh_networking.
 func (f *failoverServiceValidator) validateNamespace(failoverService *smh_networking.FailoverService) error {
 	if failoverService.Spec.GetNamespace() == "" {
 		return MissingNamespace
+	}
+	return nil
+}
+
+func (f *failoverServiceValidator) findVirtualMeshForMesh(
+	mesh *smh_discovery.Mesh,
+	allVirtualMeshes v1alpha1sets.VirtualMeshSet,
+) *smh_networking.VirtualMesh {
+	virtualMeshes := allVirtualMeshes.List()
+	for _, vm := range virtualMeshes {
+		for _, meshRef := range vm.Spec.GetMeshes() {
+			if mesh.GetName() == meshRef.GetName() && mesh.GetNamespace() == meshRef.GetNamespace() {
+				return vm
+			}
+		}
 	}
 	return nil
 }

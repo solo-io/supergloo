@@ -58,7 +58,12 @@ var _ = Describe("Validation", func() {
 							Name:     "http1",
 							Protocol: "http",
 						},
-						Cluster: "cluster1",
+						Meshes: []*v1.ObjectRef{
+							{
+								Name:      "mesh1",
+								Namespace: "namespace1",
+							},
+						},
 						FailoverServices: []*v1.ClusterObjectRef{
 							{
 								Name:        "service1",
@@ -100,9 +105,8 @@ var _ = Describe("Validation", func() {
 			Meshes: v1alpha1sets2.NewMeshSet(
 				&smh_discovery.Mesh{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
-						Name:        "mesh1",
-						Namespace:   "namespace1",
-						ClusterName: "cluster1",
+						Name:      "mesh1",
+						Namespace: "namespace1",
 					},
 					Spec: smh_discovery_types.MeshSpec{
 						MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
@@ -153,7 +157,12 @@ var _ = Describe("Validation", func() {
 							Name:     "http1",
 							Protocol: "http",
 						},
-						Cluster: "cluster1",
+						Meshes: []*v1.ObjectRef{
+							{
+								Name:      "mesh1",
+								Namespace: "namespace1",
+							},
+						},
 						FailoverServices: []*v1.ClusterObjectRef{
 							{
 								Name:        "service1",
@@ -203,7 +212,6 @@ var _ = Describe("Validation", func() {
 						Mesh: &smh_core_types.ResourceRef{
 							Name:      "mesh1",
 							Namespace: "namespace1",
-							Cluster:   "cluster1",
 						},
 					},
 					Status: meshServiceStatusWithOutlierDetection(),
@@ -216,9 +224,8 @@ var _ = Describe("Validation", func() {
 			Meshes: v1alpha1sets2.NewMeshSet(
 				&smh_discovery.Mesh{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
-						Name:        "mesh1",
-						Namespace:   "namespace1",
-						ClusterName: "cluster1",
+						Name:      "mesh1",
+						Namespace: "namespace1",
 					},
 					Spec: smh_discovery_types.MeshSpec{
 						MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
@@ -238,6 +245,12 @@ var _ = Describe("Validation", func() {
 					ObjectMeta: k8s_meta_types.ObjectMeta{Generation: 1},
 					Spec: smh_networking_types.FailoverServiceSpec{
 						Hostname: "invalidDNS@Q#$@%",
+						Meshes: []*v1.ObjectRef{
+							{
+								Name:      "mesh1",
+								Namespace: "namespace1",
+							},
+						},
 						FailoverServices: []*v1.ClusterObjectRef{
 							{
 								Name:        "service1",
@@ -281,7 +294,6 @@ var _ = Describe("Validation", func() {
 						Mesh: &smh_core_types.ResourceRef{
 							Name:      "mesh1",
 							Namespace: "namespace1",
-							Cluster:   "cluster1",
 						},
 					},
 					Status: meshServiceStatusWithOutlierDetection(),
@@ -303,7 +315,6 @@ var _ = Describe("Validation", func() {
 						Mesh: &smh_core_types.ResourceRef{
 							Name:      "mesh2",
 							Namespace: "namespace1",
-							Cluster:   "cluster2",
 						},
 					},
 					Status: meshServiceStatusWithOutlierDetection(),
@@ -325,7 +336,6 @@ var _ = Describe("Validation", func() {
 						Mesh: &smh_core_types.ResourceRef{
 							Name:      "mesh3",
 							Namespace: "namespace1",
-							Cluster:   "cluster3",
 						},
 					},
 					Status: meshServiceStatusWithOutlierDetection(),
@@ -351,9 +361,8 @@ var _ = Describe("Validation", func() {
 			Meshes: v1alpha1sets2.NewMeshSet(
 				&smh_discovery.Mesh{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
-						Name:        "mesh1",
-						Namespace:   "namespace1",
-						ClusterName: "cluster1",
+						Name:      "mesh1",
+						Namespace: "namespace1",
 					},
 					Spec: smh_discovery_types.MeshSpec{
 						MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
@@ -362,9 +371,8 @@ var _ = Describe("Validation", func() {
 				},
 				&smh_discovery.Mesh{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
-						Name:        "mesh2",
-						Namespace:   "namespace1",
-						ClusterName: "cluster2",
+						Name:      "mesh2",
+						Namespace: "namespace1",
 					},
 					Spec: smh_discovery_types.MeshSpec{
 						MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
@@ -373,9 +381,8 @@ var _ = Describe("Validation", func() {
 				},
 				&smh_discovery.Mesh{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
-						Name:        "mesh3",
-						Namespace:   "namespace1",
-						ClusterName: "cluster3",
+						Name:      "mesh3",
+						Namespace: "namespace1",
 					},
 					Spec: smh_discovery_types.MeshSpec{
 						MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{},
@@ -447,8 +454,6 @@ var _ = Describe("Validation", func() {
 		Expect(actualStatus.GetValidationStatus().GetState()).To(Equal(smh_core_types.Status_INVALID))
 		// Missing port
 		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.MissingPort.Error()))
-		// Missing cluster
-		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.MissingCluster.Error()))
 		// Missing namespace
 		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.MissingNamespace.Error()))
 		// Invalid DNS hostname
@@ -457,10 +462,7 @@ var _ = Describe("Validation", func() {
 		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.MissingOutlierDetection(inputSnapshot.MeshServices.List()[3]).Error()))
 		// Mesh without parent VirtualMesh
 		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(
-			validation.ServiceWithoutParentVM(
-				inputSnapshot.MeshServices.List()[2].Spec.GetKubeService().GetRef(),
-				inputSnapshot.Meshes.List()[2],
-			).Error()))
+			validation.MeshWithoutParentVM(inputSnapshot.Meshes.List()[2]).Error()))
 		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.MultipleParentVirtualMeshes(inputSnapshot.VirtualMeshes.List()).Error()))
 	})
 })

@@ -85,7 +85,12 @@ var _ = Describe("Processor", func() {
 							Name:     "http1",
 							Protocol: "http",
 						},
-						Cluster: "cluster1",
+						Meshes: []*v12.ObjectRef{
+							{
+								Name:      "mesh1",
+								Namespace: "namespace1",
+							},
+						},
 						FailoverServices: []*v12.ClusterObjectRef{
 							{
 								Name:        "service2",
@@ -120,6 +125,17 @@ var _ = Describe("Processor", func() {
 					},
 				},
 			),
+			Meshes: v1alpha1sets2.NewMeshSet(
+				&smh_discovery.Mesh{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "mesh1",
+						Namespace: "namespace1",
+					},
+					Spec: types2.MeshSpec{
+						Cluster: &smh_core_types.ResourceRef{Name: "cluster1"},
+					},
+				},
+			),
 		}
 	}
 
@@ -130,7 +146,7 @@ var _ = Describe("Processor", func() {
 		expectedEnvoyFilters := v1alpha3sets.NewEnvoyFilterSet(&v1alpha3.EnvoyFilter{ObjectMeta: v1.ObjectMeta{Name: "dr1"}})
 		mockTranslator.
 			EXPECT().
-			Translate(ctx, inputSnapshot.FailoverServices.List()[2], inputSnapshot.MeshServices.List()).
+			Translate(ctx, inputSnapshot.FailoverServices.List()[2], inputSnapshot.MeshServices.List(), inputSnapshot.Meshes).
 			Return(failover.MeshOutputs{
 				ServiceEntries: expectedServiceEntries,
 				EnvoyFilters:   expectedEnvoyFilters,
@@ -158,7 +174,7 @@ var _ = Describe("Processor", func() {
 		mockValidator.EXPECT().Validate(inputSnapshot)
 		mockTranslator.
 			EXPECT().
-			Translate(ctx, inputSnapshot.FailoverServices.List()[2], inputSnapshot.MeshServices.List()).
+			Translate(ctx, inputSnapshot.FailoverServices.List()[2], inputSnapshot.MeshServices.List(), inputSnapshot.Meshes).
 			Return(failover.MeshOutputs{}, translatorError)
 		expectedOutputFailoverService := *inputSnapshot.FailoverServices.List()[2]
 		expectedOutputFailoverService.Status.TranslationStatus = &smh_core_types.Status{

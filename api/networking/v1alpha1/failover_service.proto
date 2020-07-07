@@ -44,8 +44,8 @@ message FailoverServiceSpec {
     // The ports from which to expose this service.
     Port port = 3;
 
-    // The cluster that the failover service resides (the cluster name registered with Service Mesh Hub).
-    string cluster = 4;
+    // The meshes that this failover service will be visible to.
+    repeated core.skv2.solo.io.ObjectRef meshes = 4;
 
     /*
         A list of services ordered by decreasing priority for failover.
