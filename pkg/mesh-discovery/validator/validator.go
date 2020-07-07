@@ -1,5 +1,0 @@
-package validator
-
-func validate() {
-
-}
