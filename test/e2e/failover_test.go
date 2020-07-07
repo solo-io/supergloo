@@ -82,10 +82,10 @@ spec:
       services:
       - name: reviews
         namespace: default
-        cluster: management-plane-cluster
+        clusterName: management-plane-cluster
       - name: reviews
         namespace: default
-        cluster: target-cluster
+        clusterName: target-cluster
   outlierDetection:
     consecutiveErrors: 1
 `
@@ -108,10 +108,10 @@ spec:
   failoverServices:
     - name: reviews
       namespace: default
-      cluster: management-plane-cluster
+      clusterName: management-plane-cluster
     - name: reviews
       namespace: default
-      cluster: target-cluster
+      clusterName: target-cluster
 
 `
 		virtualServiceYaml := `
