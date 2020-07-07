@@ -23,12 +23,18 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //
-//A service composed of the referenced workloads with failover capabilities.
-//The failover order is determined by the order of the declared workloads,
-//i.e. an unhealthy workloads[0] will cause failover to workloads[1], etc.
+//A FailoverService creates a new hostname to which services can send requests.
+//Requests will be routed based on a list of backing services ordered by
+//decreasing priority. When outlier detection detects that a service in the list is
+//in an unhealthy state, requests sent to the FailoverService will be routed
+//to the next healthy service in the list. For each service referenced in the
+//failover services list, outlier detection must be configured using a TrafficPolicy.
+//
 //Currently this feature only supports Services backed by Istio.
 type FailoverServiceSpec struct {
-	// The DNS name of the failover service.
+	//
+	//The DNS name of the failover service. Must be unique within the service mesh instance
+	//since it is used as the hostname with which clients communicate.
 	Hostname string `protobuf:"bytes,1,opt,name=hostname,proto3" json:"hostname,omitempty"`
 	// The namespace to locate the translated service.
 	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
@@ -38,7 +44,8 @@ type FailoverServiceSpec struct {
 	Cluster string `protobuf:"bytes,4,opt,name=cluster,proto3" json:"cluster,omitempty"`
 	//
 	//A list of services ordered by decreasing priority for failover.
-	//All services must be controlled by service meshes that are grouped under a common VirtualMesh.
+	//All services must be backed by either the same service mesh instance or
+	//backed by service meshes that are grouped under a common VirtualMesh.
 	FailoverServices     []*types.ResourceRef `protobuf:"bytes,5,rep,name=failover_services,json=failoverServices,proto3" json:"failover_services,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
 	XXX_unrecognized     []byte               `json:"-"`
@@ -104,9 +111,13 @@ func (m *FailoverServiceSpec) GetFailoverServices() []*types.ResourceRef {
 	return nil
 }
 
+// The port from which to expose the failover service.
 type FailoverServiceSpec_Port struct {
-	Port                 uint32   `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
-	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Port number.
+	Port uint32 `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
+	// Label for the port.
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Protocol.
 	Protocol             string   `protobuf:"bytes,3,opt,name=protocol,proto3" json:"protocol,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -224,9 +235,11 @@ func (m *FailoverServiceStatus) GetValidationStatus() *types.Status {
 	return nil
 }
 
+// An error pertaining to translation of the FailoverService to mesh-specific configuration.
 type FailoverServiceStatus_TranslatorError struct {
 	// ID representing a translator that translates FailoverService to Mesh-specific config.
-	TranslatorId         string   `protobuf:"bytes,1,opt,name=translator_id,json=translatorId,proto3" json:"translator_id,omitempty"`
+	TranslatorId string `protobuf:"bytes,1,opt,name=translator_id,json=translatorId,proto3" json:"translator_id,omitempty"`
+	// Message describing the error(s).
 	ErrorMessage         string   `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

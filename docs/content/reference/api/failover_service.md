@@ -30,16 +30,16 @@ title: "failover_service.proto"
 <a name="networking.smh.solo.io.FailoverServiceSpec"></a>
 
 ### FailoverServiceSpec
-A service composed of the referenced workloads with failover capabilities. The failover order is determined by the order of the declared workloads, i.e. an unhealthy workloads[0] will cause failover to workloads[1], etc. Currently this feature only supports Services backed by Istio.
+A FailoverService creates a new hostname to which services can send requests. Requests will be routed based on a list of backing services ordered by decreasing priority. When outlier detection detects that a service in the list is in an unhealthy state, requests sent to the FailoverService will be routed to the next healthy service in the list. For each service referenced in the failover services list, outlier detection must be configured using a TrafficPolicy.<br>Currently this feature only supports Services backed by Istio.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| hostname | [string](#string) |  | The DNS name of the failover service. |
+| hostname | [string](#string) |  | The DNS name of the failover service. Must be unique within the service mesh instance since it is used as the hostname with which clients communicate. |
 | namespace | [string](#string) |  | The namespace to locate the translated service. |
 | port | [FailoverServiceSpec.Port](#networking.smh.solo.io.FailoverServiceSpec.Port) |  | The ports from which to expose this service. |
 | cluster | [string](#string) |  | The cluster that the failover service resides (the cluster name registered with Service Mesh Hub). |
-| failoverServices | [][core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) | repeated | A list of services ordered by decreasing priority for failover. All services must be controlled by service meshes that are grouped under a common VirtualMesh. |
+| failoverServices | [][core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) | repeated | A list of services ordered by decreasing priority for failover. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
 
 
 
@@ -49,14 +49,14 @@ A service composed of the referenced workloads with failover capabilities. The f
 <a name="networking.smh.solo.io.FailoverServiceSpec.Port"></a>
 
 ### FailoverServiceSpec.Port
-
+The port from which to expose the failover service.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| port | [uint32](#uint32) |  |  |
-| name | [string](#string) |  |  |
-| protocol | [string](#string) |  |  |
+| port | [uint32](#uint32) |  | Port number. |
+| name | [string](#string) |  | Label for the port. |
+| protocol | [string](#string) |  | Protocol. |
 
 
 
@@ -84,13 +84,13 @@ A service composed of the referenced workloads with failover capabilities. The f
 <a name="networking.smh.solo.io.FailoverServiceStatus.TranslatorError"></a>
 
 ### FailoverServiceStatus.TranslatorError
-
+An error pertaining to translation of the FailoverService to mesh-specific configuration.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | translatorId | [string](#string) |  | ID representing a translator that translates FailoverService to Mesh-specific config. |
-| errorMessage | [string](#string) |  |  |
+| errorMessage | [string](#string) |  | Message describing the error(s). |
 
 
 

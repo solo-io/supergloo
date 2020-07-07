@@ -6,19 +6,30 @@ import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
 
 /*
-    A service composed of the referenced workloads with failover capabilities.
-    The failover order is determined by the order of the declared workloads,
-    i.e. an unhealthy workloads[0] will cause failover to workloads[1], etc.
+    A FailoverService creates a new hostname to which services can send requests.
+    Requests will be routed based on a list of backing services ordered by
+    decreasing priority. When outlier detection detects that a service in the list is
+    in an unhealthy state, requests sent to the FailoverService will be routed
+    to the next healthy service in the list. For each service referenced in the
+    failover services list, outlier detection must be configured using a TrafficPolicy.
+
     Currently this feature only supports Services backed by Istio.
 */
 message FailoverServiceSpec {
+    // The port from which to expose the failover service.
     message Port {
+        // Port number.
         uint32 port = 1;
+        // Label for the port.
         string name = 2;
+        // Protocol.
         string protocol = 3;
     }
 
-    // The DNS name of the failover service.
+    /*
+        The DNS name of the failover service. Must be unique within the service mesh instance
+        since it is used as the hostname with which clients communicate.
+    */
     string hostname = 1;
 
     // The namespace to locate the translated service.
@@ -32,15 +43,18 @@ message FailoverServiceSpec {
 
     /*
         A list of services ordered by decreasing priority for failover.
-        All services must be controlled by service meshes that are grouped under a common VirtualMesh.
+        All services must be backed by either the same service mesh instance or
+        backed by service meshes that are grouped under a common VirtualMesh.
     */
     repeated core.smh.solo.io.ResourceRef failover_services = 5;
 }
 
 message FailoverServiceStatus {
+    // An error pertaining to translation of the FailoverService to mesh-specific configuration.
     message TranslatorError {
         // ID representing a translator that translates FailoverService to Mesh-specific config.
         string translator_id = 1;
+        // Message describing the error(s).
         string error_message = 2;
     }
 
