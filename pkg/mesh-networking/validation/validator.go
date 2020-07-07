@@ -28,6 +28,14 @@ type validator struct {
 	istioTranslator istio.Translator
 }
 
+func NewValidator(
+	istioTranslator istio.Translator,
+) Validator {
+	return &validator{
+		istioTranslator: istioTranslator,
+	}
+}
+
 func (v *validator) Validate(ctx context.Context, input input.Snapshot) translation.Snapshot {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newValidationReporter()
@@ -42,7 +50,7 @@ func (v *validator) Validate(ctx context.Context, input input.Snapshot) translat
 		contextutils.LoggerFrom(ctx).Errorf("internal error: failed to run istio translator: %v", err)
 	}
 
-	// update initialize traffic policy status
+	// write traffic policy statuses
 	for _, trafficPolicy := range input.TrafficPolicies().List() {
 		trafficPolicy.Status = v1alpha1.TrafficPolicyStatus{
 			ObservedGeneration: trafficPolicy.Generation,
@@ -107,11 +115,11 @@ func validateAndReturnAcceptedTrafficPolicies(ctx context.Context, input input.S
 type validationReporter struct {
 	// NOTE(ilackarms): map access should be synchronous (called in a single context),
 	// so locking should not be necessary.
-	invalidTrafficPolicies map[*discoveryv1alpha1.MeshService]map[ezkube.ResourceId][]error
+	invalidTrafficPolicies map[*discoveryv1alpha1.MeshService]map[string][]error
 }
 
 func newValidationReporter() *validationReporter {
-	return &validationReporter{invalidTrafficPolicies: map[*discoveryv1alpha1.MeshService]map[ezkube.ResourceId][]error{}}
+	return &validationReporter{invalidTrafficPolicies: map[*discoveryv1alpha1.MeshService]map[string][]error{}}
 }
 
 // mark the policy with an error; will be used to filter the policy out of
@@ -119,11 +127,12 @@ func newValidationReporter() *validationReporter {
 func (v *validationReporter) ReportTrafficPolicy(meshService *discoveryv1alpha1.MeshService, trafficPolicy ezkube.ResourceId, err error) {
 	invalidTrafficPoliciesForMeshService := v.invalidTrafficPolicies[meshService]
 	if invalidTrafficPoliciesForMeshService == nil {
-		invalidTrafficPoliciesForMeshService = map[ezkube.ResourceId][]error{}
+		invalidTrafficPoliciesForMeshService = map[string][]error{}
 	}
-	errs := invalidTrafficPoliciesForMeshService[trafficPolicy]
+	key := sets.Key(trafficPolicy)
+	errs := invalidTrafficPoliciesForMeshService[key]
 	errs = append(errs, err)
-	invalidTrafficPoliciesForMeshService[trafficPolicy] = errs
+	invalidTrafficPoliciesForMeshService[key] = errs
 	v.invalidTrafficPolicies[meshService] = invalidTrafficPoliciesForMeshService
 }
 
@@ -137,7 +146,11 @@ func (v *validationReporter) getTrafficPolicyErrors(meshService *discoveryv1alph
 	if !ok {
 		return nil
 	}
-	return invalidTrafficPoliciesForMeshService[trafficPolicy]
+	tpErrors, ok := invalidTrafficPoliciesForMeshService[sets.Key(trafficPolicy)]
+	if !ok {
+		return nil
+	}
+	return tpErrors
 }
 
 func getAppliedTrafficPolicies(trafficPolicies v1alpha1.TrafficPolicySlice, meshService *discoveryv1alpha1.MeshService) []*discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy {
