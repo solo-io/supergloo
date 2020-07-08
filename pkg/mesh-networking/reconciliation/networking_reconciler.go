@@ -2,6 +2,7 @@ package reconciliation
 
 import (
 	"context"
+	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
 	"github.com/solo-io/smh/pkg/mesh-networking/validation"
@@ -13,26 +14,33 @@ import (
 )
 
 type networkingReconciler struct {
-	ctx          context.Context
-	builder      input.Builder
-	validator    validation.Validator
-	reporter     reporter.Reporter
-	translator   istio.Translator
-	masterClient client.Client
+	ctx                context.Context
+	builder            input.Builder
+	validator          validation.Validator
+	reporter           reporter.Reporter
+	translator         istio.Translator
+	masterClient       client.Client
+	multiClusterClient multicluster.Client
 }
 
 func Start(
 	ctx context.Context,
 	builder input.Builder,
+	validator validation.Validator,
+	reporter reporter.Reporter,
 	translator istio.Translator,
 	masterClient client.Client,
+	multiClusterClient multicluster.Client,
 	mgr manager.Manager,
 ) error {
 	d := &networkingReconciler{
-		ctx:          ctx,
-		builder:      builder,
-		translator:   translator,
-		masterClient: masterClient,
+		ctx:                ctx,
+		builder:            builder,
+		validator:          validator,
+		reporter:           reporter,
+		translator:         translator,
+		masterClient:       masterClient,
+		multiClusterClient: multiClusterClient,
 	}
 
 	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile)
@@ -54,9 +62,9 @@ func (d *networkingReconciler) reconcile() error {
 		return err
 	}
 
-	if err := istioSnap.Apply(d.ctx, d.masterClient); err != nil {
+	if err := istioSnap.ApplyMultiCluster(d.ctx, d.multiClusterClient); err != nil {
 		return err
 	}
 
-	return inputSnap.SyncStatuses(d.ctx)
+	return inputSnap.SyncStatuses(d.ctx, d.masterClient)
 }
