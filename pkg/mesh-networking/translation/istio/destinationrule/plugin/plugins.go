@@ -3,14 +3,14 @@ package plugin
 import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/destinationrule/plugin/mtls"
 	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
 
 // Note: Translator plugins should be added here.
 // To prevent regressions, the order of plugins defind here should not matter
-func makePlugins(in translation.Snapshot) []Plugin {
+func makePlugins(in input.Snapshot) []Plugin {
 	return []Plugin{
 		mtls.NewMtlsPlugin(),
 	}
@@ -19,12 +19,16 @@ func makePlugins(in translation.Snapshot) []Plugin {
 // the plugin Factory initializes Translator plugins on each reconcile
 type Factory interface {
 	// return a set of plugins built from the given snapshot.
-	MakePlugins(in translation.Snapshot) []Plugin
+	MakePlugins(in input.Snapshot) []Plugin
 }
 
 type factory struct{}
 
-func (f *factory) MakePlugins(in translation.Snapshot) []Plugin {
+func NewFactory() *factory {
+	return &factory{}
+}
+
+func (f *factory) MakePlugins(in input.Snapshot) []Plugin {
 	return makePlugins(in)
 }
 

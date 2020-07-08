@@ -3,10 +3,8 @@ package istio
 import (
 	"fmt"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output/istio"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/destinationrule"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/virtualservice"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/metautils"
 )
@@ -15,29 +13,39 @@ import (
 type Translator interface {
 	// errors reflect an internal translation error and should never happen
 	Translate(
-		in translation.Snapshot,
+		in input.Snapshot,
 		reporter reporter.Reporter,
 	) (istio.Snapshot, error)
 }
 
 type istioTranslator struct {
-	totalTranslates  int // TODO(ilackarms): metric
-	destinationRules destinationrule.Translator
-	virtualServices  virtualservice.Translator
+	totalTranslates int // TODO(ilackarms): metric
+	dependencies    dependencyFactory
+}
+
+func NewIstioTranslator() Translator {
+	return &istioTranslator{
+		dependencies: dependencyFactoryImpl{},
+	}
 }
 
 func (t *istioTranslator) Translate(
-	in translation.Snapshot,
+	in input.Snapshot,
 	reporter reporter.Reporter,
 ) (istio.Snapshot, error) {
+
+	destinationRuleTranslator := t.dependencies.makeDestinationRuleTranslator(in.KubernetesClusters())
+
+	virtualServiceTranslator := t.dependencies.makeVirtualServiceTranslator(in.KubernetesClusters())
+
 	destinationRules := v1alpha3sets.NewDestinationRuleSet()
 	virtualServices := v1alpha3sets.NewVirtualServiceSet()
 	for _, meshService := range in.MeshServices().List() {
-		destinationRule := t.destinationRules.Translate(in, meshService, reporter)
+		destinationRule := destinationRuleTranslator.Translate(in, meshService, reporter)
 		if destinationRule != nil {
 			destinationRules.Insert(destinationRule)
 		}
-		virtualService := t.virtualServices.Translate(in, meshService, reporter)
+		virtualService := virtualServiceTranslator.Translate(in, meshService, reporter)
 		if virtualService != nil {
 			virtualServices.Insert(virtualService)
 		}

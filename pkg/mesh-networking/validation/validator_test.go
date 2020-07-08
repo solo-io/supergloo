@@ -12,8 +12,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
+	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -62,6 +62,7 @@ var _ = Describe("Validator", func() {
 				}...),
 				v1alpha1sets.NewAccessPolicySet(),
 				v1alpha1sets.NewVirtualMeshSet(),
+				skv1alpha1sets.NewKubernetesClusterSet(),
 			)
 		)
 
@@ -120,6 +121,7 @@ var _ = Describe("Validator", func() {
 				}...),
 				v1alpha1sets.NewAccessPolicySet(),
 				v1alpha1sets.NewVirtualMeshSet(),
+				skv1alpha1sets.NewKubernetesClusterSet(),
 			)
 		)
 
@@ -153,7 +155,7 @@ type testIstioTranslator struct {
 }
 
 func (t testIstioTranslator) Translate(
-	in translation.Snapshot,
+	in input.Snapshot,
 	reporter reporter.Reporter,
 ) (istio.Snapshot, error) {
 	t.callReporter(reporter)

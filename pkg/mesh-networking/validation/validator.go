@@ -8,7 +8,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/selectorutils"
 	"sort"
@@ -20,7 +19,7 @@ import (
 // The Input Snapshot's SyncStatuses method should usually be called
 // after running the validator.
 type Validator interface {
-	Validate(ctx context.Context, input input.Snapshot) translation.Snapshot
+	Validate(ctx context.Context, input input.Snapshot)
 }
 
 type validator struct {
@@ -36,7 +35,7 @@ func NewValidator(
 	}
 }
 
-func (v *validator) Validate(ctx context.Context, input input.Snapshot) translation.Snapshot {
+func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newValidationReporter()
 	for _, meshService := range input.MeshServices().List() {
@@ -64,11 +63,6 @@ func (v *validator) Validate(ctx context.Context, input input.Snapshot) translat
 
 	// TODO(ilackarms): validate meshworkloads and meshes
 
-	return translation.NewSnapshot(
-		input.MeshServices(),
-		input.MeshWorkloads(),
-		input.Meshes(),
-	)
 }
 
 // this function both validates the status of TrafficPolcies (sets error or accepted state)

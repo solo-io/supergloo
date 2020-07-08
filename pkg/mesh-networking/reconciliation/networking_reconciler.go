@@ -2,6 +2,7 @@ package reconciliation
 
 import (
 	"context"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
@@ -9,7 +10,6 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -18,7 +18,7 @@ type networkingReconciler struct {
 	builder            input.Builder
 	validator          validation.Validator
 	reporter           reporter.Reporter
-	translator         istio.Translator
+	istioTranslator    istio.Translator
 	masterClient       client.Client
 	multiClusterClient multicluster.Client
 }
@@ -28,8 +28,7 @@ func Start(
 	builder input.Builder,
 	validator validation.Validator,
 	reporter reporter.Reporter,
-	translator istio.Translator,
-	masterClient client.Client,
+	istioTranslator istio.Translator,
 	multiClusterClient multicluster.Client,
 	mgr manager.Manager,
 ) error {
@@ -38,8 +37,8 @@ func Start(
 		builder:            builder,
 		validator:          validator,
 		reporter:           reporter,
-		translator:         translator,
-		masterClient:       masterClient,
+		istioTranslator:    istioTranslator,
+		masterClient:       mgr.GetClient(),
 		multiClusterClient: multiClusterClient,
 	}
 
@@ -54,9 +53,17 @@ func (d *networkingReconciler) reconcile() error {
 		return err
 	}
 
-	translatorSnapshot := d.validator.Validate(d.ctx, inputSnap)
+	d.validator.Validate(d.ctx, inputSnap)
 
-	istioSnap, err := d.translator.Translate(translatorSnapshot, d.reporter)
+	if err := d.syncIstio(inputSnap); err != nil{
+		return err
+	}
+
+	return inputSnap.SyncStatuses(d.ctx, d.masterClient)
+}
+
+func (d *networkingReconciler) syncIstio(translatorSnapshot input.Snapshot) error {
+	istioSnap, err := d.istioTranslator.Translate(translatorSnapshot, d.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err
@@ -66,5 +73,5 @@ func (d *networkingReconciler) reconcile() error {
 		return err
 	}
 
-	return inputSnap.SyncStatuses(d.ctx, d.masterClient)
+	return nil
 }

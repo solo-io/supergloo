@@ -4,7 +4,7 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/virtualservice/plugin"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
@@ -23,7 +23,7 @@ type Translator interface {
 	//
 	// Note that the input snapshot MeshServiceSet contains the given MeshService.
 	Translate(
-		in translation.Snapshot,
+		in input.Snapshot,
 		meshService *discoveryv1alpha1.MeshService,
 		reporter reporter.Reporter,
 	) *istiov1alpha3.VirtualService
@@ -42,7 +42,7 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory
 // returns nil if no VirtualService is required for the MeshService (i.e. if no VirtualService features are required, such as subsets).
 // The input snapshot MeshServiceSet contains n the
 func (t *translator) Translate(
-	in translation.Snapshot,
+	in input.Snapshot,
 	meshService *discoveryv1alpha1.MeshService,
 	reporter reporter.Reporter,
 ) *istiov1alpha3.VirtualService {
