@@ -7,6 +7,7 @@
 // * TrafficPolicies
 // * AccessPolicies
 // * VirtualMeshes
+// * KubernetesClusters
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -21,6 +22,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -29,6 +31,9 @@ import (
 
 	networking_smh_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	networking_smh_solo_io_v1alpha1_sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/sets"
+
+	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+	multicluster_solo_io_v1alpha1_sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 )
 
 // the snapshot of input resources consumed by translation
@@ -47,6 +52,12 @@ type Snapshot interface {
 	AccessPolicies() networking_smh_solo_io_v1alpha1_sets.AccessPolicySet
 	// return the set of input VirtualMeshes
 	VirtualMeshes() networking_smh_solo_io_v1alpha1_sets.VirtualMeshSet
+
+	// return the set of input KubernetesClusters
+	KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
+	// update the status of all input objects which support
+	// the Status subresource
+	SyncStatuses(ctx context.Context, c client.Client) error
 }
 
 type snapshot struct {
@@ -59,6 +70,8 @@ type snapshot struct {
 	trafficPolicies networking_smh_solo_io_v1alpha1_sets.TrafficPolicySet
 	accessPolicies  networking_smh_solo_io_v1alpha1_sets.AccessPolicySet
 	virtualMeshes   networking_smh_solo_io_v1alpha1_sets.VirtualMeshSet
+
+	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
 }
 
 func NewSnapshot(
@@ -72,16 +85,19 @@ func NewSnapshot(
 	accessPolicies networking_smh_solo_io_v1alpha1_sets.AccessPolicySet,
 	virtualMeshes networking_smh_solo_io_v1alpha1_sets.VirtualMeshSet,
 
+	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
+
 ) Snapshot {
 	return &snapshot{
 		name: name,
 
-		meshServices:    meshServices,
-		meshWorkloads:   meshWorkloads,
-		meshes:          meshes,
-		trafficPolicies: trafficPolicies,
-		accessPolicies:  accessPolicies,
-		virtualMeshes:   virtualMeshes,
+		meshServices:       meshServices,
+		meshWorkloads:      meshWorkloads,
+		meshes:             meshes,
+		trafficPolicies:    trafficPolicies,
+		accessPolicies:     accessPolicies,
+		virtualMeshes:      virtualMeshes,
+		kubernetesClusters: kubernetesClusters,
 	}
 }
 
@@ -109,6 +125,51 @@ func (s snapshot) VirtualMeshes() networking_smh_solo_io_v1alpha1_sets.VirtualMe
 	return s.virtualMeshes
 }
 
+func (s snapshot) KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet {
+	return s.kubernetesClusters
+}
+func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
+
+	for _, obj := range s.MeshServices().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
+		}
+	}
+	for _, obj := range s.MeshWorkloads().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
+		}
+	}
+	for _, obj := range s.Meshes().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
+		}
+	}
+
+	for _, obj := range s.TrafficPolicies().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
+		}
+	}
+	for _, obj := range s.AccessPolicies().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
+		}
+	}
+	for _, obj := range s.VirtualMeshes().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
+		}
+	}
+
+	for _, obj := range s.KubernetesClusters().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // builds the input snapshot from API Clients.
 // Two types of builders are available:
 // a builder for snapshots of resources across multiple clusters
@@ -128,6 +189,8 @@ type multiClusterBuilder struct {
 	trafficPolicies networking_smh_solo_io_v1alpha1.MulticlusterTrafficPolicyClient
 	accessPolicies  networking_smh_solo_io_v1alpha1.MulticlusterAccessPolicyClient
 	virtualMeshes   networking_smh_solo_io_v1alpha1.MulticlusterVirtualMeshClient
+
+	kubernetesClusters multicluster_solo_io_v1alpha1.MulticlusterKubernetesClusterClient
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -145,6 +208,8 @@ func NewMultiClusterBuilder(
 		trafficPolicies: networking_smh_solo_io_v1alpha1.NewMulticlusterTrafficPolicyClient(client),
 		accessPolicies:  networking_smh_solo_io_v1alpha1.NewMulticlusterAccessPolicyClient(client),
 		virtualMeshes:   networking_smh_solo_io_v1alpha1.NewMulticlusterVirtualMeshClient(client),
+
+		kubernetesClusters: multicluster_solo_io_v1alpha1.NewMulticlusterKubernetesClusterClient(client),
 	}
 }
 
@@ -157,6 +222,8 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string) (S
 	trafficPolicies := networking_smh_solo_io_v1alpha1_sets.NewTrafficPolicySet()
 	accessPolicies := networking_smh_solo_io_v1alpha1_sets.NewAccessPolicySet()
 	virtualMeshes := networking_smh_solo_io_v1alpha1_sets.NewVirtualMeshSet()
+
+	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
 
 	var errs error
 
@@ -180,6 +247,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string) (S
 		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertKubernetesClustersFromCluster(ctx, cluster, kubernetesClusters); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 
 	}
 
@@ -192,6 +262,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string) (S
 		trafficPolicies,
 		accessPolicies,
 		virtualMeshes,
+		kubernetesClusters,
 	)
 
 	return outputSnap, errs
@@ -313,6 +384,26 @@ func (b *multiClusterBuilder) insertVirtualMeshesFromCluster(ctx context.Context
 	return nil
 }
 
+func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Context, cluster string, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet) error {
+	kubernetesClusterClient, err := b.kubernetesClusters.Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	kubernetesClusterList, err := kubernetesClusterClient.ListKubernetesCluster(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range kubernetesClusterList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		kubernetesClusters.Insert(&item)
+	}
+
+	return nil
+}
+
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
 	meshServices  discovery_smh_solo_io_v1alpha1.MeshServiceClient
@@ -322,6 +413,8 @@ type singleClusterBuilder struct {
 	trafficPolicies networking_smh_solo_io_v1alpha1.TrafficPolicyClient
 	accessPolicies  networking_smh_solo_io_v1alpha1.AccessPolicyClient
 	virtualMeshes   networking_smh_solo_io_v1alpha1.VirtualMeshClient
+
+	kubernetesClusters multicluster_solo_io_v1alpha1.KubernetesClusterClient
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -337,6 +430,8 @@ func NewSingleClusterBuilder(
 		trafficPolicies: networking_smh_solo_io_v1alpha1.NewTrafficPolicyClient(client),
 		accessPolicies:  networking_smh_solo_io_v1alpha1.NewAccessPolicyClient(client),
 		virtualMeshes:   networking_smh_solo_io_v1alpha1.NewVirtualMeshClient(client),
+
+		kubernetesClusters: multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(client),
 	}
 }
 
@@ -349,6 +444,8 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string) (
 	trafficPolicies := networking_smh_solo_io_v1alpha1_sets.NewTrafficPolicySet()
 	accessPolicies := networking_smh_solo_io_v1alpha1_sets.NewAccessPolicySet()
 	virtualMeshes := networking_smh_solo_io_v1alpha1_sets.NewVirtualMeshSet()
+
+	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
 
 	var errs error
 
@@ -370,6 +467,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string) (
 	if err := b.insertVirtualMeshes(ctx, virtualMeshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertKubernetesClusters(ctx, kubernetesClusters); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 
 	outputSnap := NewSnapshot(
 		name,
@@ -380,6 +480,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string) (
 		trafficPolicies,
 		accessPolicies,
 		virtualMeshes,
+		kubernetesClusters,
 	)
 
 	return outputSnap, errs
@@ -460,6 +561,20 @@ func (b *singleClusterBuilder) insertVirtualMeshes(ctx context.Context, virtualM
 	for _, item := range virtualMeshList.Items {
 		item := item // pike
 		virtualMeshes.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterBuilder) insertKubernetesClusters(ctx context.Context, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet) error {
+	kubernetesClusterList, err := b.kubernetesClusters.ListKubernetesCluster(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range kubernetesClusterList.Items {
+		item := item // pike
+		kubernetesClusters.Insert(&item)
 	}
 
 	return nil

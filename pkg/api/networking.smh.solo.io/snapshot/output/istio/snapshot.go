@@ -11,6 +11,7 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
@@ -35,6 +36,9 @@ type Snapshot interface {
 
 	// apply the snapshot to the cluster, garbage collecting stale resources
 	Apply(ctx context.Context, clusterClient client.Client) error
+
+	// apply resources from the snapshot across multiple clusters, garbage collecting stale resources
+	ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client) error
 }
 
 type snapshot struct {
@@ -114,6 +118,26 @@ func (s *snapshot) Apply(ctx context.Context, cli client.Client) error {
 		Name:        s.name,
 		ListsToSync: genericLists,
 	}.Sync(ctx, cli)
+}
+
+// apply the desired resources to multiple cluster states; remove stale resources where necessary
+func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client) error {
+	var genericLists []output.ResourceList
+
+	for _, outputSet := range s.destinationRules {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.envoyFilters {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.virtualServices {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+
+	return output.Snapshot{
+		Name:        s.name,
+		ListsToSync: genericLists,
+	}.SyncMultiCluster(ctx, multiClusterClient)
 }
 
 func partitionDestinationRulesByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.DestinationRuleSet) ([]LabeledDestinationRuleSet, error) {

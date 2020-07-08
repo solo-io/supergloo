@@ -8,6 +8,7 @@
 // * TrafficPolicies
 // * AccessPolicies
 // * VirtualMeshes
+// * KubernetesClusters
 // for a given cluster or set of clusters.
 //
 // Input Reconcilers can be be constructed from either a single Manager (watch events in a single cluster)
@@ -27,6 +28,9 @@ import (
 
 	networking_smh_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	networking_smh_solo_io_v1alpha1_controllers "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
+
+	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+	multicluster_solo_io_v1alpha1_controllers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/controller"
 )
 
 // the multiClusterReconciler reconciles events for input resources across clusters
@@ -38,6 +42,8 @@ type multiClusterReconciler interface {
 	networking_smh_solo_io_v1alpha1_controllers.MulticlusterTrafficPolicyReconciler
 	networking_smh_solo_io_v1alpha1_controllers.MulticlusterAccessPolicyReconciler
 	networking_smh_solo_io_v1alpha1_controllers.MulticlusterVirtualMeshReconciler
+
+	multicluster_solo_io_v1alpha1_controllers.MulticlusterKubernetesClusterReconciler
 }
 
 var _ multiClusterReconciler = &multiClusterReconcilerImpl{}
@@ -67,6 +73,8 @@ func RegisterMultiClusterReconciler(
 	networking_smh_solo_io_v1alpha1_controllers.NewMulticlusterTrafficPolicyReconcileLoop("TrafficPolicy", clusters).AddMulticlusterTrafficPolicyReconciler(ctx, r)
 	networking_smh_solo_io_v1alpha1_controllers.NewMulticlusterAccessPolicyReconcileLoop("AccessPolicy", clusters).AddMulticlusterAccessPolicyReconciler(ctx, r)
 	networking_smh_solo_io_v1alpha1_controllers.NewMulticlusterVirtualMeshReconcileLoop("VirtualMesh", clusters).AddMulticlusterVirtualMeshReconciler(ctx, r)
+
+	multicluster_solo_io_v1alpha1_controllers.NewMulticlusterKubernetesClusterReconcileLoop("KubernetesCluster", clusters).AddMulticlusterKubernetesClusterReconciler(ctx, r)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMeshService(clusterName string, obj *discovery_smh_solo_io_v1alpha1.MeshService) (reconcile.Result, error) {
@@ -129,6 +137,16 @@ func (r *multiClusterReconcilerImpl) ReconcileVirtualMeshDeletion(clusterName st
 	return r.reconcileFunc(clusterName)
 }
 
+func (r *multiClusterReconcilerImpl) ReconcileKubernetesCluster(clusterName string, obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
+	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
+	return reconcile.Result{}, r.reconcileFunc(clusterName)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileKubernetesClusterDeletion(clusterName string, obj reconcile.Request) error {
+	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
+	return r.reconcileFunc(clusterName)
+}
+
 // the singleClusterReconciler reconciles events for input resources across clusters
 type singleClusterReconciler interface {
 	discovery_smh_solo_io_v1alpha1_controllers.MeshServiceReconciler
@@ -138,6 +156,8 @@ type singleClusterReconciler interface {
 	networking_smh_solo_io_v1alpha1_controllers.TrafficPolicyReconciler
 	networking_smh_solo_io_v1alpha1_controllers.AccessPolicyReconciler
 	networking_smh_solo_io_v1alpha1_controllers.VirtualMeshReconciler
+
+	multicluster_solo_io_v1alpha1_controllers.KubernetesClusterReconciler
 }
 
 var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
@@ -177,6 +197,10 @@ func RegisterSingleClusterReconciler(
 		return err
 	}
 	if err := networking_smh_solo_io_v1alpha1_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, reconcile.Options{}).RunVirtualMeshReconciler(ctx, r); err != nil {
+		return err
+	}
+
+	if err := multicluster_solo_io_v1alpha1_controllers.NewKubernetesClusterReconcileLoop("KubernetesCluster", mgr, reconcile.Options{}).RunKubernetesClusterReconciler(ctx, r); err != nil {
 		return err
 	}
 
@@ -239,6 +263,16 @@ func (r *singleClusterReconcilerImpl) ReconcileVirtualMesh(obj *networking_smh_s
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
+	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
+	return r.reconcileFunc()
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
+	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
+	return reconcile.Result{}, r.reconcileFunc()
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileKubernetesClusterDeletion(obj reconcile.Request) error {
 	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
 	return r.reconcileFunc()
 }

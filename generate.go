@@ -4,6 +4,7 @@ import (
 	"log"
 
 	externalapis "github.com/solo-io/external-apis/codegen"
+	skv1alpha1 "github.com/solo-io/skv2/api/multicluster/v1alpha1"
 	"github.com/solo-io/skv2/contrib"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
@@ -30,9 +31,9 @@ var (
 	discoveryReconcilerCodePath     = "pkg/api/discovery.smh.solo.io/snapshot/input/reconciler.go"
 	discoveryOutputSnapshotCodePath = "pkg/api/discovery.smh.solo.io/snapshot/output/snapshot.go"
 
-	networkingInputSnapshotCodePath      = "pkg/api/networking.smh.solo.io/snapshot/input/snapshot.go"
-	networkingReconcilerSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/input/reconciler.go"
-	networkingOutputIstioSnapshotCodePath     = "pkg/api/networking.smh.solo.io/snapshot/output/istio/snapshot.go"
+	networkingInputSnapshotCodePath       = "pkg/api/networking.smh.solo.io/snapshot/input/snapshot.go"
+	networkingReconcilerSnapshotCodePath  = "pkg/api/networking.smh.solo.io/snapshot/input/reconciler.go"
+	networkingOutputIstioSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/output/istio/snapshot.go"
 
 	smhCrdManifestRoot = "install/helm/charts/custom-resource-definitions"
 	csrCrdManifestRoot = "install/helm/charts/csr-agent/"
@@ -79,6 +80,9 @@ var (
 			"AccessPolicy",
 			"VirtualMesh",
 		},
+		skv1alpha1.Group.GroupVersion: {
+			"KubernetesCluster",
+		},
 	}
 
 	networkingOutputIstioTypes = map[schema.GroupVersion][]string{
@@ -92,6 +96,7 @@ var (
 	allApiGroups = map[string][]model.Group{
 		"":                                 groups.SMHGroups,
 		"github.com/solo-io/external-apis": externalapis.Groups,
+		"github.com/solo-io/skv2":          []model.Group{skv1alpha1.Group},
 	}
 
 	// define custom templates
