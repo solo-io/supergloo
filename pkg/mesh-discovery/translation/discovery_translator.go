@@ -21,7 +21,9 @@ type translator struct {
 }
 
 func NewTranslator() Translator {
-	return &translator{dependencies: dependencyFactoryImpl{}}
+	return &translator{
+		dependencies: dependencyFactoryImpl{},
+	}
 }
 
 func (t translator) Translate(ctx context.Context, in input.Snapshot) (output.Snapshot, error) {

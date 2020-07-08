@@ -1,18 +1,21 @@
-package mesh_discovery
+package bootstrap
 
 import (
 	"context"
-
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
-	"github.com/solo-io/smh/pkg/mesh-discovery/reconciliation"
-	"github.com/solo-io/smh/pkg/mesh-discovery/translation"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
+
+type StartReconciler func(
+	ctx context.Context,
+	masterManager manager.Manager,
+	mcClient multicluster.Client,
+	clusters multicluster.ClusterSet,
+	mcWatcher multicluster.ClusterWatcher,
+) error
 
 // bootstrap options for starting discovery
 // TODO: wire these up to Settings CR
@@ -34,7 +37,7 @@ type Options struct {
 // the mesh-discovery controller is the Kubernetes Controller/Operator
 // which processes k8s storage events to produce
 // discovered resources.
-func Start(ctx context.Context, opts Options) error {
+func Start(ctx context.Context, start StartReconciler, opts Options) error {
 	mgr, err := makeMasterManager(opts)
 	if err != nil {
 		return err
@@ -47,7 +50,9 @@ func Start(ctx context.Context, opts Options) error {
 
 	mcClient := multicluster.NewClient(clusterWatcher)
 
-	startReconciler(ctx, mgr.GetClient(), mcClient, clusterWatcher, clusterWatcher)
+	if err := start(ctx, mgr, mcClient, clusterWatcher, clusterWatcher); err != nil {
+		return err
+	}
 
 	if err := clusterWatcher.Run(mgr); err != nil {
 		return err
@@ -75,17 +80,4 @@ func makeMasterManager(opts Options) (manager.Manager, error) {
 		return nil, err
 	}
 	return mgr, nil
-}
-
-// constructor for creating reconcilers
-func startReconciler(
-	ctx context.Context,
-	masterClient client.Client,
-	mcClient multicluster.Client,
-	clusters multicluster.ClusterSet,
-	mcWatcher multicluster.ClusterWatcher,
-) {
-	snapshotBuilder := input.NewMultiClusterBuilder(clusters, mcClient)
-	translator := translation.NewTranslator()
-	reconciliation.Start(ctx, snapshotBuilder, translator, masterClient, mcWatcher)
 }
