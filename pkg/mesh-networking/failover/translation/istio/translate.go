@@ -22,6 +22,7 @@ import (
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/common/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/failover/translation"
@@ -109,10 +110,11 @@ func (i *istioFailoverServiceTranslator) translateServiceEntries(
 			multierr = multierror.Append(multierr, err)
 			continue
 		}
+		// Locate ServiceEntry in default SMH namespace—by default a ServiceEntry is exported to all namespaces.
 		serviceEntry := &istio_client_networking.ServiceEntry{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Name:        failoverService.GetName(),
-				Namespace:   failoverService.Spec.GetNamespace(),
+				Namespace:   container_runtime.GetWriteNamespace(),
 				ClusterName: mesh.Spec.GetCluster().GetName(),
 			},
 			Spec: istio_networking.ServiceEntry{
@@ -121,7 +123,7 @@ func (i *istioFailoverServiceTranslator) translateServiceEntries(
 					{
 						Number:   failoverService.Spec.GetPort().GetPort(),
 						Protocol: failoverService.Spec.GetPort().GetProtocol(),
-						Name:     failoverService.Spec.GetPort().GetName(),
+						Name:     failoverService.Spec.GetPort().GetProtocol(), // Name the port with the protocol
 					},
 				},
 				Addresses: []string{ip},

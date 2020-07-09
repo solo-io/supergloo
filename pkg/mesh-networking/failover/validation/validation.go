@@ -39,7 +39,6 @@ var (
 	MissingHostname         = eris.New("Missing required field \"hostname\".")
 	MissingPort             = eris.New("Missing required field \"port\".")
 	MissingMeshes           = eris.New("Missing required field \"meshes\".")
-	MissingNamespace        = eris.New("Missing required field \"namespace\".")
 	MissingServices         = eris.New("There must be at least one service declared for the FailoverService.")
 	FailoverServiceNotFound = func(serviceRef *v1.ClusterObjectRef) error {
 		return eris.Errorf("Failover service %s.%s.%s not found in SMH discovery resources.",
@@ -99,9 +98,6 @@ func (f *failoverServiceValidator) validateSingle(
 		multierr = multierror.Append(multierr, err)
 	}
 	if err := f.validatePort(failoverService); err != nil {
-		multierr = multierror.Append(multierr, err)
-	}
-	if err := f.validateNamespace(failoverService); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 	if err := f.validateServices(failoverService, inputSnapshot.MeshServices.List(), inputSnapshot.Meshes); err != nil {
@@ -291,20 +287,10 @@ func (f *failoverServiceValidator) validatePort(failoverService *smh_networking.
 	if errStrings := validation.IsValidPortNum(int(port.GetPort())); errStrings != nil {
 		multierr = multierror.Append(multierr, eris.New(strings.Join(errStrings, ", ")))
 	}
-	if errStrings := validation.IsValidPortName(port.GetName()); errStrings != nil {
-		multierr = multierror.Append(multierr, eris.New(strings.Join(errStrings, ", ")))
-	}
 	if protocol.Parse(port.GetProtocol()) == protocol.Unsupported {
 		multierr = multierror.Append(multierr, eris.Errorf("Invalid protocol for port: %s", port.GetProtocol()))
 	}
 	return multierr.ErrorOrNil()
-}
-
-func (f *failoverServiceValidator) validateNamespace(failoverService *smh_networking.FailoverService) error {
-	if failoverService.Spec.GetNamespace() == "" {
-		return MissingNamespace
-	}
-	return nil
 }
 
 func (f *failoverServiceValidator) findVirtualMeshForMesh(

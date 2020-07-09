@@ -51,11 +51,9 @@ var _ = Describe("Validation", func() {
 				&smh_networking.FailoverService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Generation: 1},
 					Spec: smh_networking_types.FailoverServiceSpec{
-						Hostname:  "service1.namespace1.cluster1",
-						Namespace: "namespace1",
+						Hostname: "service1.namespace1.cluster1",
 						Port: &smh_networking_types.FailoverServiceSpec_Port{
 							Port:     9080,
-							Name:     "http1",
 							Protocol: "http",
 						},
 						Meshes: []*v1.ObjectRef{
@@ -150,11 +148,9 @@ var _ = Describe("Validation", func() {
 				&smh_networking.FailoverService{
 					ObjectMeta: k8s_meta_types.ObjectMeta{Generation: 1},
 					Spec: smh_networking_types.FailoverServiceSpec{
-						Hostname:  "service1.namespace1.cluster1",
-						Namespace: "namespace1",
+						Hostname: "service1.namespace1.cluster1",
 						Port: &smh_networking_types.FailoverServiceSpec_Port{
 							Port:     9080,
-							Name:     "http1",
 							Protocol: "http",
 						},
 						Meshes: []*v1.ObjectRef{
@@ -454,8 +450,6 @@ var _ = Describe("Validation", func() {
 		Expect(actualStatus.GetValidationStatus().GetState()).To(Equal(smh_core_types.Status_INVALID))
 		// Missing port
 		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.MissingPort.Error()))
-		// Missing namespace
-		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring(validation.MissingNamespace.Error()))
 		// Invalid DNS hostname
 		Expect(actualStatus.GetValidationStatus().GetMessage()).To(ContainSubstring("a DNS-1123 subdomain must consist of lower case alphanumeric characters"))
 		// Service without OutlierDetection

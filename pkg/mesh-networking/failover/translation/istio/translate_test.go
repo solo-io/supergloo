@@ -33,11 +33,9 @@ var _ = Describe("Translate", func() {
 				Namespace: "failover-service-namespace",
 			},
 			Spec: types.FailoverServiceSpec{
-				Hostname:  "service1-name.service1-namespace.cluster1",
-				Namespace: "service1-namespace",
+				Hostname: "service1-name.service1-namespace.cluster1",
 				Port: &types.FailoverServiceSpec_Port{
 					Port:     9080,
-					Name:     "http1",
 					Protocol: "http",
 				},
 				Meshes: []*v1.ObjectRef{
@@ -110,7 +108,7 @@ hosts:
 - service1-name.service1-namespace.cluster1
 location: MESH_INTERNAL
 ports:
-- name: http1
+- name: http
   number: 9080
   protocol: http
 resolution: DNS

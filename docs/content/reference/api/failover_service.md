@@ -36,8 +36,7 @@ A FailoverService creates a new hostname to which services can send requests. Re
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | hostname | [string](#string) |  | The DNS name of the failover service. Must be unique within the service mesh instance since it is used as the hostname with which clients communicate. |
-| namespace | [string](#string) |  | The namespace to locate the translated service. |
-| port | [FailoverServiceSpec.Port](#networking.smh.solo.io.FailoverServiceSpec.Port) |  | The ports from which to expose this service. |
+| port | [FailoverServiceSpec.Port](#networking.smh.solo.io.FailoverServiceSpec.Port) |  | The port on which the failover service listens. |
 | meshes | [][core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) | repeated | The meshes that this failover service will be visible to. |
 | failoverServices | [][core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) | repeated | A list of services ordered by decreasing priority for failover. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
 
@@ -49,14 +48,13 @@ A FailoverService creates a new hostname to which services can send requests. Re
 <a name="networking.smh.solo.io.FailoverServiceSpec.Port"></a>
 
 ### FailoverServiceSpec.Port
-The port from which to expose the failover service.
+The port on which the failover service listens.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | port | [uint32](#uint32) |  | Port number. |
-| name | [string](#string) |  | Label for the port. |
-| protocol | [string](#string) |  | Protocol. |
+| protocol | [string](#string) |  | Protocol of the requests sent to the failover service, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS. |
 
 
 

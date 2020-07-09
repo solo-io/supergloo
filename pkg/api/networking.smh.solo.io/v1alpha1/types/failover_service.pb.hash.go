@@ -42,10 +42,6 @@ func (m *FailoverServiceSpec) Hash(hasher hash.Hash64) (uint64, error) {
 		return 0, err
 	}
 
-	if _, err = hasher.Write([]byte(m.GetNamespace())); err != nil {
-		return 0, err
-	}
-
 	if h, ok := interface{}(m.GetPort()).(safe_hasher.SafeHasher); ok {
 		if _, err = h.Hash(hasher); err != nil {
 			return 0, err
@@ -181,10 +177,6 @@ func (m *FailoverServiceSpec_Port) Hash(hasher hash.Hash64) (uint64, error) {
 
 	err = binary.Write(hasher, binary.LittleEndian, m.GetPort())
 	if err != nil {
-		return 0, err
-	}
-
-	if _, err = hasher.Write([]byte(m.GetName())); err != nil {
 		return 0, err
 	}
 

@@ -78,11 +78,9 @@ var _ = Describe("Processor", func() {
 						Generation: 1,
 					},
 					Spec: types.FailoverServiceSpec{
-						Hostname:  "service1.namespace1.cluster1",
-						Namespace: "namespace1",
+						Hostname: "service1.namespace1.cluster1",
 						Port: &types.FailoverServiceSpec_Port{
 							Port:     9080,
-							Name:     "http1",
 							Protocol: "http",
 						},
 						Meshes: []*v12.ObjectRef{

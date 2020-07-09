@@ -22,14 +22,12 @@ import "skv2/api/core/v1/core.proto";
     Currently this feature only supports Services backed by Istio.
 */
 message FailoverServiceSpec {
-    // The port from which to expose the failover service.
+    // The port on which the failover service listens.
     message Port {
         // Port number.
         uint32 port = 1;
-        // Label for the port.
-        string name = 2;
-        // Protocol.
-        string protocol = 3;
+        // Protocol of the requests sent to the failover service, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
+        string protocol = 2;
     }
 
     /*
@@ -38,21 +36,18 @@ message FailoverServiceSpec {
     */
     string hostname = 1;
 
-    // The namespace to locate the translated service.
-    string namespace = 2;
-
-    // The ports from which to expose this service.
-    Port port = 3;
+    // The port on which the failover service listens.
+    Port port = 2;
 
     // The meshes that this failover service will be visible to.
-    repeated core.skv2.solo.io.ObjectRef meshes = 4;
+    repeated core.skv2.solo.io.ObjectRef meshes = 3;
 
     /*
         A list of services ordered by decreasing priority for failover.
         All services must be backed by either the same service mesh instance or
         backed by service meshes that are grouped under a common VirtualMesh.
     */
-    repeated core.skv2.solo.io.ClusterObjectRef failover_services = 5;
+    repeated core.skv2.solo.io.ClusterObjectRef failover_services = 4;
 }
 
 message FailoverServiceStatus {
