@@ -97,10 +97,8 @@ metadata:
   namespace: default
 spec:
   hostname: reviews.default.failover
-  namespace: default
   port:
     port: 9080
-    name: http1
     protocol: http
   meshes:
     - name: istio-istio-system-management-plane-cluster
