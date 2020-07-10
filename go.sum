@@ -1499,6 +1499,7 @@ istio.io/pkg v0.0.0-20200131182711-9ba13e0e34bb/go.mod h1:pwGaxLUDLobzL/WvWV94z7
 istio.io/tools v0.0.0-20200626164105-5c31cb39f694/go.mod h1:GdjiSRU2gBVck/dkMy3IEDpmTjWCajlkgqkKRi5yvEg=
 istio.io/tools v0.0.0-20200630000315-3f689e670dcd/go.mod h1:xLaHwVBR9QiL39dqQ5AeqxHe56lLrZjdK99K82xgTn0=
 istio.io/tools v0.0.0-20200701230353-a5e08ca59a4e/go.mod h1:xLaHwVBR9QiL39dqQ5AeqxHe56lLrZjdK99K82xgTn0=
+istio.io/tools v0.0.0-20200707225233-6a181cc1aacb/go.mod h1:xLaHwVBR9QiL39dqQ5AeqxHe56lLrZjdK99K82xgTn0=
 k8s.io/api v0.17.2 h1:NF1UFXcKN7/OOv1uxdRz3qfra8AHsPav5M93hlV9+Dc=
 k8s.io/api v0.17.2/go.mod h1:BS9fjjLc4CMuqfSO8vgbHPKMt5+SF0ET6u/RVDihTo4=
 k8s.io/apiextensions-apiserver v0.17.2 h1:cP579D2hSZNuO/rZj9XFRzwJNYb41DbNANJb6Kolpss=
