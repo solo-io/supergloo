@@ -49,11 +49,11 @@ type InMemoryStatusMutator interface {
 		meshService *smh_discovery.MeshService,
 		newlyComputedMergeablePolicies []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 	) (policyNeedsUpdating bool)
-	MutateConflictAndTranslatorErrors(
+	MutateTrafficPolicyTranslationStatus(
 		policy *smh_networking.TrafficPolicy,
 		newConflictErrors []*smh_networking_types.TrafficPolicyStatus_ConflictError,
 		newTranslationErrors []*smh_networking_types.TrafficPolicyStatus_TranslatorError,
-	) (policyNeedsUpdating bool)
+	)
 }
 
 type Aggregator interface {

@@ -116,10 +116,10 @@ func (r *baseResourceSelector) FindMeshServiceByRefSelector(
 	kubeServiceCluster string,
 ) *smh_discovery.MeshService {
 	for _, meshService := range meshServices {
-		matchesCriteria := meshService.Labels[kube.KUBE_SERVICE_NAME] == kubeServiceName &&
-			meshService.Labels[kube.KUBE_SERVICE_NAMESPACE] == kubeServiceNamespace &&
-			meshService.Labels[kube.COMPUTE_TARGET] == kubeServiceCluster
-
+		kubeServiceRef := meshService.Spec.GetKubeService().GetRef()
+		matchesCriteria := kubeServiceRef.GetName() == kubeServiceName &&
+			kubeServiceRef.GetNamespace() == kubeServiceNamespace &&
+			kubeServiceRef.GetCluster() == kubeServiceCluster
 		if matchesCriteria {
 			return meshService
 		}
@@ -195,9 +195,6 @@ func (r *baseResourceSelector) FilterMeshServicesByServiceSelector(
 			selectedMeshService := getMeshServiceByServiceKey(ref, meshServices)
 			if selectedMeshService != nil {
 				selectedMeshServices = append(selectedMeshServices, selectedMeshService)
-			} else {
-				// MeshService for referenced k8s Service not found
-				return nil, KubeServiceNotFound(ref.GetName(), ref.GetNamespace(), ref.GetCluster())
 			}
 		}
 	default:

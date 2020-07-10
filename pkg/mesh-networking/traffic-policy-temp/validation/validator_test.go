@@ -12,7 +12,6 @@ import (
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/common/kube/selection/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/routing/traffic-policy-translator/preprocess"
 	traffic_policy_validation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/traffic-policy-temp/validation"
@@ -58,12 +57,13 @@ var _ = Describe("Validator", func() {
 			},
 		}
 		meshServices := []*smh_discovery.MeshService{}
+		serviceRef := tp.Spec.GetDestinationSelector().GetServiceRefs().GetServices()[0]
 		mockResourceSelector.
 			EXPECT().
-			FilterMeshServicesByServiceSelector(meshServices, tp.Spec.GetDestinationSelector()).
-			Return(nil, selection.MeshServiceNotFound(name, namespace, cluster))
+			FindMeshServiceByRefSelector(meshServices, serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()).
+			Return(nil)
 		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
-		expectSingleErrorOf(err, selection.MeshServiceNotFound(name, namespace, cluster))
+		expectSingleErrorOf(err, traffic_policy_validation.ServiceNotFound(serviceRef))
 		Expect(status.State).To(Equal(smh_core_types.Status_INVALID))
 	})
 
@@ -124,7 +124,7 @@ var _ = Describe("Validator", func() {
 		status, err := validator.ValidateTrafficPolicy(tp, meshServices)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(traffic_policy_validation.DestinationNotFound(&smh_core_types.ResourceRef{
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(traffic_policy_validation.ServiceNotFound(&smh_core_types.ResourceRef{
 			Name:      name,
 			Namespace: namespace,
 			Cluster:   cluster,
@@ -317,8 +317,36 @@ var _ = Describe("Validator", func() {
 		status, err := validator.ValidateTrafficPolicy(tp, nil)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(traffic_policy_validation.DestinationNotFound(serviceRef))))
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(traffic_policy_validation.ServiceNotFound(serviceRef))))
 		Expect(status.State).To(Equal(smh_core_types.Status_INVALID))
+	})
+
+	It("should return error if OutlierDetection has durations < 1ms", func() {
+		duration := &types1.Duration{Seconds: 0, Nanos: 999999}
+		tp1 := &smh_networking.TrafficPolicy{
+			Spec: smh_networking_types.TrafficPolicySpec{
+				OutlierDetection: &smh_networking_types.TrafficPolicySpec_OutlierDetection{
+					ConsecutiveErrors: 1,
+					Interval:          duration,
+				},
+			},
+		}
+		_, err := validator.ValidateTrafficPolicy(tp1, nil)
+		multierr, ok := err.(*multierror.Error)
+		Expect(ok).To(BeTrue())
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(traffic_policy_validation.MinDurationError)))
+		tp2 := &smh_networking.TrafficPolicy{
+			Spec: smh_networking_types.TrafficPolicySpec{
+				OutlierDetection: &smh_networking_types.TrafficPolicySpec_OutlierDetection{
+					ConsecutiveErrors: 1,
+					BaseEjectionTime:  duration,
+				},
+			},
+		}
+		_, err = validator.ValidateTrafficPolicy(tp2, nil)
+		multierr, ok = err.(*multierror.Error)
+		Expect(ok).To(BeTrue())
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(traffic_policy_validation.MinDurationError)))
 	})
 })
 

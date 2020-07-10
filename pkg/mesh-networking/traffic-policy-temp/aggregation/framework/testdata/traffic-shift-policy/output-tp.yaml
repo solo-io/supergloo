@@ -17,18 +17,18 @@
     destinationSelector:
       serviceRefs:
         services:
-        - name: reviews
-          namespace: default
-          cluster: management-plane-cluster
+          - name: reviews
+            namespace: default
+            cluster: management-plane-cluster
     trafficShift:
       destinations:
-      - destination:
-          cluster: management-plane-cluster
-          name: reviews
-          namespace: default
-        subset:
-          version: v2
-        weight: 100
+        - destination:
+            cluster: management-plane-cluster
+            name: reviews
+            namespace: default
+          subset:
+            version: v2
+          weight: 100
   status:
     observedGeneration: "1"
     translationStatus:

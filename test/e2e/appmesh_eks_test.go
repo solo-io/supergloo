@@ -213,6 +213,7 @@ var _ = Describe("Appmesh EKS ", func() {
 			Skip("skipping EKS tests")
 		}
 	})
+
 	// Fetch base64 encoded AWS credentials from environment
 	var registerAwsSecret = func() {
 		awsAccessKeyId := os.Getenv("AWS_ACCESS_KEY_ID")
@@ -283,6 +284,13 @@ var _ = Describe("Appmesh EKS ", func() {
 		}
 	}
 
+	var eksNamespace string
+
+	// Hacky workaround to simulate a BeforeAll
+	It("should set up test state", func() {
+		eksNamespace = setupAppmeshEksEnvironment()
+	})
+
 	It("should discover Appmesh mesh and EKS cluster", func() {
 		// Register AWS account credentials
 		registerAwsSecret()
@@ -300,5 +308,10 @@ var _ = Describe("Appmesh EKS ", func() {
 	It("should cleanup translated Appmesh resources and disable communication between workloads and services", func() {
 		deleteVirtualMesh()
 		curlReviewsWithExpectedOutput("The slapstick humour is refreshing", false)
+	})
+
+	// Hacky workaround to simulate an AfterAll
+	It("should clean up test state", func() {
+		cleanupAppmeshEksEnvironment(eksNamespace)
 	})
 })

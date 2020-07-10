@@ -28,12 +28,12 @@ type VirtualMeshCertificateSigningRequestReconciler interface {
 // before being deleted.
 // implemented by the user
 type VirtualMeshCertificateSigningRequestDeletionReconciler interface {
-	ReconcileVirtualMeshCertificateSigningRequestDeletion(req reconcile.Request)
+	ReconcileVirtualMeshCertificateSigningRequestDeletion(req reconcile.Request) error
 }
 
 type VirtualMeshCertificateSigningRequestReconcilerFuncs struct {
 	OnReconcileVirtualMeshCertificateSigningRequest         func(obj *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) (reconcile.Result, error)
-	OnReconcileVirtualMeshCertificateSigningRequestDeletion func(req reconcile.Request)
+	OnReconcileVirtualMeshCertificateSigningRequestDeletion func(req reconcile.Request) error
 }
 
 func (f *VirtualMeshCertificateSigningRequestReconcilerFuncs) ReconcileVirtualMeshCertificateSigningRequest(obj *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) (reconcile.Result, error) {
@@ -43,11 +43,11 @@ func (f *VirtualMeshCertificateSigningRequestReconcilerFuncs) ReconcileVirtualMe
 	return f.OnReconcileVirtualMeshCertificateSigningRequest(obj)
 }
 
-func (f *VirtualMeshCertificateSigningRequestReconcilerFuncs) ReconcileVirtualMeshCertificateSigningRequestDeletion(req reconcile.Request) {
+func (f *VirtualMeshCertificateSigningRequestReconcilerFuncs) ReconcileVirtualMeshCertificateSigningRequestDeletion(req reconcile.Request) error {
 	if f.OnReconcileVirtualMeshCertificateSigningRequestDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileVirtualMeshCertificateSigningRequestDeletion(req)
+	return f.OnReconcileVirtualMeshCertificateSigningRequestDeletion(req)
 }
 
 // Reconcile and finalize the VirtualMeshCertificateSigningRequest Resource
@@ -108,10 +108,11 @@ func (r genericVirtualMeshCertificateSigningRequestReconciler) Reconcile(object 
 	return r.reconciler.ReconcileVirtualMeshCertificateSigningRequest(obj)
 }
 
-func (r genericVirtualMeshCertificateSigningRequestReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericVirtualMeshCertificateSigningRequestReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(VirtualMeshCertificateSigningRequestDeletionReconciler); ok {
-		deletionReconciler.ReconcileVirtualMeshCertificateSigningRequestDeletion(request)
+		return deletionReconciler.ReconcileVirtualMeshCertificateSigningRequestDeletion(request)
 	}
+	return nil
 }
 
 // genericVirtualMeshCertificateSigningRequestFinalizer implements a generic reconcile.FinalizingReconciler

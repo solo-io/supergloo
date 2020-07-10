@@ -92,18 +92,16 @@ func (mr *MockInMemoryStatusMutatorMockRecorder) MutateServicePolicies(meshServi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MutateServicePolicies", reflect.TypeOf((*MockInMemoryStatusMutator)(nil).MutateServicePolicies), meshService, newlyComputedMergeablePolicies)
 }
 
-// MutateConflictAndTranslatorErrors mocks base method.
-func (m *MockInMemoryStatusMutator) MutateConflictAndTranslatorErrors(policy *v1alpha10.TrafficPolicy, newConflictErrors []*types0.TrafficPolicyStatus_ConflictError, newTranslationErrors []*types0.TrafficPolicyStatus_TranslatorError) bool {
+// MutateTrafficPolicyTranslationStatus mocks base method.
+func (m *MockInMemoryStatusMutator) MutateTrafficPolicyTranslationStatus(policy *v1alpha10.TrafficPolicy, newConflictErrors []*types0.TrafficPolicyStatus_ConflictError, newTranslationErrors []*types0.TrafficPolicyStatus_TranslatorError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MutateConflictAndTranslatorErrors", policy, newConflictErrors, newTranslationErrors)
-	ret0, _ := ret[0].(bool)
-	return ret0
+	m.ctrl.Call(m, "MutateTrafficPolicyTranslationStatus", policy, newConflictErrors, newTranslationErrors)
 }
 
-// MutateConflictAndTranslatorErrors indicates an expected call of MutateConflictAndTranslatorErrors.
-func (mr *MockInMemoryStatusMutatorMockRecorder) MutateConflictAndTranslatorErrors(policy, newConflictErrors, newTranslationErrors interface{}) *gomock.Call {
+// MutateTrafficPolicyTranslationStatus indicates an expected call of MutateTrafficPolicyTranslationStatus.
+func (mr *MockInMemoryStatusMutatorMockRecorder) MutateTrafficPolicyTranslationStatus(policy, newConflictErrors, newTranslationErrors interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MutateConflictAndTranslatorErrors", reflect.TypeOf((*MockInMemoryStatusMutator)(nil).MutateConflictAndTranslatorErrors), policy, newConflictErrors, newTranslationErrors)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MutateTrafficPolicyTranslationStatus", reflect.TypeOf((*MockInMemoryStatusMutator)(nil).MutateTrafficPolicyTranslationStatus), policy, newConflictErrors, newTranslationErrors)
 }
 
 // MockAggregator is a mock of Aggregator interface.

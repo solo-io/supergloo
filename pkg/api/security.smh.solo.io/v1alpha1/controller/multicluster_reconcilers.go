@@ -29,12 +29,12 @@ type MulticlusterVirtualMeshCertificateSigningRequestReconciler interface {
 // before being deleted.
 // implemented by the user
 type MulticlusterVirtualMeshCertificateSigningRequestDeletionReconciler interface {
-	ReconcileVirtualMeshCertificateSigningRequestDeletion(clusterName string, req reconcile.Request)
+	ReconcileVirtualMeshCertificateSigningRequestDeletion(clusterName string, req reconcile.Request) error
 }
 
 type MulticlusterVirtualMeshCertificateSigningRequestReconcilerFuncs struct {
 	OnReconcileVirtualMeshCertificateSigningRequest         func(clusterName string, obj *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) (reconcile.Result, error)
-	OnReconcileVirtualMeshCertificateSigningRequestDeletion func(clusterName string, req reconcile.Request)
+	OnReconcileVirtualMeshCertificateSigningRequestDeletion func(clusterName string, req reconcile.Request) error
 }
 
 func (f *MulticlusterVirtualMeshCertificateSigningRequestReconcilerFuncs) ReconcileVirtualMeshCertificateSigningRequest(clusterName string, obj *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) (reconcile.Result, error) {
@@ -44,11 +44,11 @@ func (f *MulticlusterVirtualMeshCertificateSigningRequestReconcilerFuncs) Reconc
 	return f.OnReconcileVirtualMeshCertificateSigningRequest(clusterName, obj)
 }
 
-func (f *MulticlusterVirtualMeshCertificateSigningRequestReconcilerFuncs) ReconcileVirtualMeshCertificateSigningRequestDeletion(clusterName string, req reconcile.Request) {
+func (f *MulticlusterVirtualMeshCertificateSigningRequestReconcilerFuncs) ReconcileVirtualMeshCertificateSigningRequestDeletion(clusterName string, req reconcile.Request) error {
 	if f.OnReconcileVirtualMeshCertificateSigningRequestDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileVirtualMeshCertificateSigningRequestDeletion(clusterName, req)
+	return f.OnReconcileVirtualMeshCertificateSigningRequestDeletion(clusterName, req)
 }
 
 type MulticlusterVirtualMeshCertificateSigningRequestReconcileLoop interface {
@@ -74,10 +74,11 @@ type genericVirtualMeshCertificateSigningRequestMulticlusterReconciler struct {
 	reconciler MulticlusterVirtualMeshCertificateSigningRequestReconciler
 }
 
-func (g genericVirtualMeshCertificateSigningRequestMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) {
+func (g genericVirtualMeshCertificateSigningRequestMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
 	if deletionReconciler, ok := g.reconciler.(MulticlusterVirtualMeshCertificateSigningRequestDeletionReconciler); ok {
-		deletionReconciler.ReconcileVirtualMeshCertificateSigningRequestDeletion(cluster, req)
+		return deletionReconciler.ReconcileVirtualMeshCertificateSigningRequestDeletion(cluster, req)
 	}
+	return nil
 }
 
 func (g genericVirtualMeshCertificateSigningRequestMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {

@@ -28,12 +28,12 @@ type TrafficPolicyReconciler interface {
 // before being deleted.
 // implemented by the user
 type TrafficPolicyDeletionReconciler interface {
-	ReconcileTrafficPolicyDeletion(req reconcile.Request)
+	ReconcileTrafficPolicyDeletion(req reconcile.Request) error
 }
 
 type TrafficPolicyReconcilerFuncs struct {
 	OnReconcileTrafficPolicy         func(obj *networking_smh_solo_io_v1alpha1.TrafficPolicy) (reconcile.Result, error)
-	OnReconcileTrafficPolicyDeletion func(req reconcile.Request)
+	OnReconcileTrafficPolicyDeletion func(req reconcile.Request) error
 }
 
 func (f *TrafficPolicyReconcilerFuncs) ReconcileTrafficPolicy(obj *networking_smh_solo_io_v1alpha1.TrafficPolicy) (reconcile.Result, error) {
@@ -43,11 +43,11 @@ func (f *TrafficPolicyReconcilerFuncs) ReconcileTrafficPolicy(obj *networking_sm
 	return f.OnReconcileTrafficPolicy(obj)
 }
 
-func (f *TrafficPolicyReconcilerFuncs) ReconcileTrafficPolicyDeletion(req reconcile.Request) {
+func (f *TrafficPolicyReconcilerFuncs) ReconcileTrafficPolicyDeletion(req reconcile.Request) error {
 	if f.OnReconcileTrafficPolicyDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileTrafficPolicyDeletion(req)
+	return f.OnReconcileTrafficPolicyDeletion(req)
 }
 
 // Reconcile and finalize the TrafficPolicy Resource
@@ -108,10 +108,11 @@ func (r genericTrafficPolicyReconciler) Reconcile(object ezkube.Object) (reconci
 	return r.reconciler.ReconcileTrafficPolicy(obj)
 }
 
-func (r genericTrafficPolicyReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericTrafficPolicyReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(TrafficPolicyDeletionReconciler); ok {
-		deletionReconciler.ReconcileTrafficPolicyDeletion(request)
+		return deletionReconciler.ReconcileTrafficPolicyDeletion(request)
 	}
+	return nil
 }
 
 // genericTrafficPolicyFinalizer implements a generic reconcile.FinalizingReconciler
@@ -143,12 +144,12 @@ type AccessControlPolicyReconciler interface {
 // before being deleted.
 // implemented by the user
 type AccessControlPolicyDeletionReconciler interface {
-	ReconcileAccessControlPolicyDeletion(req reconcile.Request)
+	ReconcileAccessControlPolicyDeletion(req reconcile.Request) error
 }
 
 type AccessControlPolicyReconcilerFuncs struct {
 	OnReconcileAccessControlPolicy         func(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) (reconcile.Result, error)
-	OnReconcileAccessControlPolicyDeletion func(req reconcile.Request)
+	OnReconcileAccessControlPolicyDeletion func(req reconcile.Request) error
 }
 
 func (f *AccessControlPolicyReconcilerFuncs) ReconcileAccessControlPolicy(obj *networking_smh_solo_io_v1alpha1.AccessControlPolicy) (reconcile.Result, error) {
@@ -158,11 +159,11 @@ func (f *AccessControlPolicyReconcilerFuncs) ReconcileAccessControlPolicy(obj *n
 	return f.OnReconcileAccessControlPolicy(obj)
 }
 
-func (f *AccessControlPolicyReconcilerFuncs) ReconcileAccessControlPolicyDeletion(req reconcile.Request) {
+func (f *AccessControlPolicyReconcilerFuncs) ReconcileAccessControlPolicyDeletion(req reconcile.Request) error {
 	if f.OnReconcileAccessControlPolicyDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileAccessControlPolicyDeletion(req)
+	return f.OnReconcileAccessControlPolicyDeletion(req)
 }
 
 // Reconcile and finalize the AccessControlPolicy Resource
@@ -223,10 +224,11 @@ func (r genericAccessControlPolicyReconciler) Reconcile(object ezkube.Object) (r
 	return r.reconciler.ReconcileAccessControlPolicy(obj)
 }
 
-func (r genericAccessControlPolicyReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericAccessControlPolicyReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(AccessControlPolicyDeletionReconciler); ok {
-		deletionReconciler.ReconcileAccessControlPolicyDeletion(request)
+		return deletionReconciler.ReconcileAccessControlPolicyDeletion(request)
 	}
+	return nil
 }
 
 // genericAccessControlPolicyFinalizer implements a generic reconcile.FinalizingReconciler
@@ -258,12 +260,12 @@ type VirtualMeshReconciler interface {
 // before being deleted.
 // implemented by the user
 type VirtualMeshDeletionReconciler interface {
-	ReconcileVirtualMeshDeletion(req reconcile.Request)
+	ReconcileVirtualMeshDeletion(req reconcile.Request) error
 }
 
 type VirtualMeshReconcilerFuncs struct {
 	OnReconcileVirtualMesh         func(obj *networking_smh_solo_io_v1alpha1.VirtualMesh) (reconcile.Result, error)
-	OnReconcileVirtualMeshDeletion func(req reconcile.Request)
+	OnReconcileVirtualMeshDeletion func(req reconcile.Request) error
 }
 
 func (f *VirtualMeshReconcilerFuncs) ReconcileVirtualMesh(obj *networking_smh_solo_io_v1alpha1.VirtualMesh) (reconcile.Result, error) {
@@ -273,11 +275,11 @@ func (f *VirtualMeshReconcilerFuncs) ReconcileVirtualMesh(obj *networking_smh_so
 	return f.OnReconcileVirtualMesh(obj)
 }
 
-func (f *VirtualMeshReconcilerFuncs) ReconcileVirtualMeshDeletion(req reconcile.Request) {
+func (f *VirtualMeshReconcilerFuncs) ReconcileVirtualMeshDeletion(req reconcile.Request) error {
 	if f.OnReconcileVirtualMeshDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileVirtualMeshDeletion(req)
+	return f.OnReconcileVirtualMeshDeletion(req)
 }
 
 // Reconcile and finalize the VirtualMesh Resource
@@ -338,10 +340,11 @@ func (r genericVirtualMeshReconciler) Reconcile(object ezkube.Object) (reconcile
 	return r.reconciler.ReconcileVirtualMesh(obj)
 }
 
-func (r genericVirtualMeshReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericVirtualMeshReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(VirtualMeshDeletionReconciler); ok {
-		deletionReconciler.ReconcileVirtualMeshDeletion(request)
+		return deletionReconciler.ReconcileVirtualMeshDeletion(request)
 	}
+	return nil
 }
 
 // genericVirtualMeshFinalizer implements a generic reconcile.FinalizingReconciler
@@ -360,4 +363,120 @@ func (r genericVirtualMeshFinalizer) Finalize(object ezkube.Object) error {
 		return errors.Errorf("internal error: VirtualMesh handler received event for %T", object)
 	}
 	return r.finalizingReconciler.FinalizeVirtualMesh(obj)
+}
+
+// Reconcile Upsert events for the FailoverService Resource.
+// implemented by the user
+type FailoverServiceReconciler interface {
+	ReconcileFailoverService(obj *networking_smh_solo_io_v1alpha1.FailoverService) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the FailoverService Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type FailoverServiceDeletionReconciler interface {
+	ReconcileFailoverServiceDeletion(req reconcile.Request) error
+}
+
+type FailoverServiceReconcilerFuncs struct {
+	OnReconcileFailoverService         func(obj *networking_smh_solo_io_v1alpha1.FailoverService) (reconcile.Result, error)
+	OnReconcileFailoverServiceDeletion func(req reconcile.Request) error
+}
+
+func (f *FailoverServiceReconcilerFuncs) ReconcileFailoverService(obj *networking_smh_solo_io_v1alpha1.FailoverService) (reconcile.Result, error) {
+	if f.OnReconcileFailoverService == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileFailoverService(obj)
+}
+
+func (f *FailoverServiceReconcilerFuncs) ReconcileFailoverServiceDeletion(req reconcile.Request) error {
+	if f.OnReconcileFailoverServiceDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileFailoverServiceDeletion(req)
+}
+
+// Reconcile and finalize the FailoverService Resource
+// implemented by the user
+type FailoverServiceFinalizer interface {
+	FailoverServiceReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	FailoverServiceFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeFailoverService(obj *networking_smh_solo_io_v1alpha1.FailoverService) error
+}
+
+type FailoverServiceReconcileLoop interface {
+	RunFailoverServiceReconciler(ctx context.Context, rec FailoverServiceReconciler, predicates ...predicate.Predicate) error
+}
+
+type failoverServiceReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewFailoverServiceReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) FailoverServiceReconcileLoop {
+	return &failoverServiceReconcileLoop{
+		loop: reconcile.NewLoop(name, mgr, &networking_smh_solo_io_v1alpha1.FailoverService{}, options),
+	}
+}
+
+func (c *failoverServiceReconcileLoop) RunFailoverServiceReconciler(ctx context.Context, reconciler FailoverServiceReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericFailoverServiceReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(FailoverServiceFinalizer); ok {
+		reconcilerWrapper = genericFailoverServiceFinalizer{
+			genericFailoverServiceReconciler: genericReconciler,
+			finalizingReconciler:             finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericFailoverServiceHandler implements a generic reconcile.Reconciler
+type genericFailoverServiceReconciler struct {
+	reconciler FailoverServiceReconciler
+}
+
+func (r genericFailoverServiceReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha1.FailoverService)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: FailoverService handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileFailoverService(obj)
+}
+
+func (r genericFailoverServiceReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(FailoverServiceDeletionReconciler); ok {
+		return deletionReconciler.ReconcileFailoverServiceDeletion(request)
+	}
+	return nil
+}
+
+// genericFailoverServiceFinalizer implements a generic reconcile.FinalizingReconciler
+type genericFailoverServiceFinalizer struct {
+	genericFailoverServiceReconciler
+	finalizingReconciler FailoverServiceFinalizer
+}
+
+func (r genericFailoverServiceFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.FailoverServiceFinalizerName()
+}
+
+func (r genericFailoverServiceFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha1.FailoverService)
+	if !ok {
+		return errors.Errorf("internal error: FailoverService handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeFailoverService(obj)
 }

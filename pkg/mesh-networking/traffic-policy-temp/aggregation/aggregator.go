@@ -218,6 +218,11 @@ func (a *aggregator) mergeTrafficPolicySpec(
 	} else if that.GetHeaderManipulation() != nil && !this.GetHeaderManipulation().Equal(that.GetHeaderManipulation()) {
 		conflicts = append(conflicts, "HeaderManipulation")
 	}
+	if this.GetOutlierDetection() == nil {
+		this.OutlierDetection = that.OutlierDetection
+	} else if that.GetOutlierDetection() != nil && !this.GetOutlierDetection().Equal(that.GetOutlierDetection()) {
+		conflicts = append(conflicts, "OutlierDetection")
+	}
 	if len(conflicts) != 0 {
 		return nil, TrafficPolicyConflictError(strings.Join(conflicts, ", "))
 	}
@@ -248,6 +253,9 @@ func (a *aggregator) areTrafficPolicyActionsEqual(
 		return false
 	}
 	if !this.GetHeaderManipulation().Equal(that.GetHeaderManipulation()) {
+		return false
+	}
+	if !this.GetOutlierDetection().Equal(that.GetOutlierDetection()) {
 		return false
 	}
 	return true

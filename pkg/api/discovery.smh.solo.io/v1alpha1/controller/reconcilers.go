@@ -28,12 +28,12 @@ type KubernetesClusterReconciler interface {
 // before being deleted.
 // implemented by the user
 type KubernetesClusterDeletionReconciler interface {
-	ReconcileKubernetesClusterDeletion(req reconcile.Request)
+	ReconcileKubernetesClusterDeletion(req reconcile.Request) error
 }
 
 type KubernetesClusterReconcilerFuncs struct {
 	OnReconcileKubernetesCluster         func(obj *discovery_smh_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error)
-	OnReconcileKubernetesClusterDeletion func(req reconcile.Request)
+	OnReconcileKubernetesClusterDeletion func(req reconcile.Request) error
 }
 
 func (f *KubernetesClusterReconcilerFuncs) ReconcileKubernetesCluster(obj *discovery_smh_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
@@ -43,11 +43,11 @@ func (f *KubernetesClusterReconcilerFuncs) ReconcileKubernetesCluster(obj *disco
 	return f.OnReconcileKubernetesCluster(obj)
 }
 
-func (f *KubernetesClusterReconcilerFuncs) ReconcileKubernetesClusterDeletion(req reconcile.Request) {
+func (f *KubernetesClusterReconcilerFuncs) ReconcileKubernetesClusterDeletion(req reconcile.Request) error {
 	if f.OnReconcileKubernetesClusterDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileKubernetesClusterDeletion(req)
+	return f.OnReconcileKubernetesClusterDeletion(req)
 }
 
 // Reconcile and finalize the KubernetesCluster Resource
@@ -108,10 +108,11 @@ func (r genericKubernetesClusterReconciler) Reconcile(object ezkube.Object) (rec
 	return r.reconciler.ReconcileKubernetesCluster(obj)
 }
 
-func (r genericKubernetesClusterReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericKubernetesClusterReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(KubernetesClusterDeletionReconciler); ok {
-		deletionReconciler.ReconcileKubernetesClusterDeletion(request)
+		return deletionReconciler.ReconcileKubernetesClusterDeletion(request)
 	}
+	return nil
 }
 
 // genericKubernetesClusterFinalizer implements a generic reconcile.FinalizingReconciler
@@ -143,12 +144,12 @@ type MeshServiceReconciler interface {
 // before being deleted.
 // implemented by the user
 type MeshServiceDeletionReconciler interface {
-	ReconcileMeshServiceDeletion(req reconcile.Request)
+	ReconcileMeshServiceDeletion(req reconcile.Request) error
 }
 
 type MeshServiceReconcilerFuncs struct {
 	OnReconcileMeshService         func(obj *discovery_smh_solo_io_v1alpha1.MeshService) (reconcile.Result, error)
-	OnReconcileMeshServiceDeletion func(req reconcile.Request)
+	OnReconcileMeshServiceDeletion func(req reconcile.Request) error
 }
 
 func (f *MeshServiceReconcilerFuncs) ReconcileMeshService(obj *discovery_smh_solo_io_v1alpha1.MeshService) (reconcile.Result, error) {
@@ -158,11 +159,11 @@ func (f *MeshServiceReconcilerFuncs) ReconcileMeshService(obj *discovery_smh_sol
 	return f.OnReconcileMeshService(obj)
 }
 
-func (f *MeshServiceReconcilerFuncs) ReconcileMeshServiceDeletion(req reconcile.Request) {
+func (f *MeshServiceReconcilerFuncs) ReconcileMeshServiceDeletion(req reconcile.Request) error {
 	if f.OnReconcileMeshServiceDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileMeshServiceDeletion(req)
+	return f.OnReconcileMeshServiceDeletion(req)
 }
 
 // Reconcile and finalize the MeshService Resource
@@ -223,10 +224,11 @@ func (r genericMeshServiceReconciler) Reconcile(object ezkube.Object) (reconcile
 	return r.reconciler.ReconcileMeshService(obj)
 }
 
-func (r genericMeshServiceReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericMeshServiceReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(MeshServiceDeletionReconciler); ok {
-		deletionReconciler.ReconcileMeshServiceDeletion(request)
+		return deletionReconciler.ReconcileMeshServiceDeletion(request)
 	}
+	return nil
 }
 
 // genericMeshServiceFinalizer implements a generic reconcile.FinalizingReconciler
@@ -258,12 +260,12 @@ type MeshWorkloadReconciler interface {
 // before being deleted.
 // implemented by the user
 type MeshWorkloadDeletionReconciler interface {
-	ReconcileMeshWorkloadDeletion(req reconcile.Request)
+	ReconcileMeshWorkloadDeletion(req reconcile.Request) error
 }
 
 type MeshWorkloadReconcilerFuncs struct {
 	OnReconcileMeshWorkload         func(obj *discovery_smh_solo_io_v1alpha1.MeshWorkload) (reconcile.Result, error)
-	OnReconcileMeshWorkloadDeletion func(req reconcile.Request)
+	OnReconcileMeshWorkloadDeletion func(req reconcile.Request) error
 }
 
 func (f *MeshWorkloadReconcilerFuncs) ReconcileMeshWorkload(obj *discovery_smh_solo_io_v1alpha1.MeshWorkload) (reconcile.Result, error) {
@@ -273,11 +275,11 @@ func (f *MeshWorkloadReconcilerFuncs) ReconcileMeshWorkload(obj *discovery_smh_s
 	return f.OnReconcileMeshWorkload(obj)
 }
 
-func (f *MeshWorkloadReconcilerFuncs) ReconcileMeshWorkloadDeletion(req reconcile.Request) {
+func (f *MeshWorkloadReconcilerFuncs) ReconcileMeshWorkloadDeletion(req reconcile.Request) error {
 	if f.OnReconcileMeshWorkloadDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileMeshWorkloadDeletion(req)
+	return f.OnReconcileMeshWorkloadDeletion(req)
 }
 
 // Reconcile and finalize the MeshWorkload Resource
@@ -338,10 +340,11 @@ func (r genericMeshWorkloadReconciler) Reconcile(object ezkube.Object) (reconcil
 	return r.reconciler.ReconcileMeshWorkload(obj)
 }
 
-func (r genericMeshWorkloadReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericMeshWorkloadReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(MeshWorkloadDeletionReconciler); ok {
-		deletionReconciler.ReconcileMeshWorkloadDeletion(request)
+		return deletionReconciler.ReconcileMeshWorkloadDeletion(request)
 	}
+	return nil
 }
 
 // genericMeshWorkloadFinalizer implements a generic reconcile.FinalizingReconciler
@@ -373,12 +376,12 @@ type MeshReconciler interface {
 // before being deleted.
 // implemented by the user
 type MeshDeletionReconciler interface {
-	ReconcileMeshDeletion(req reconcile.Request)
+	ReconcileMeshDeletion(req reconcile.Request) error
 }
 
 type MeshReconcilerFuncs struct {
 	OnReconcileMesh         func(obj *discovery_smh_solo_io_v1alpha1.Mesh) (reconcile.Result, error)
-	OnReconcileMeshDeletion func(req reconcile.Request)
+	OnReconcileMeshDeletion func(req reconcile.Request) error
 }
 
 func (f *MeshReconcilerFuncs) ReconcileMesh(obj *discovery_smh_solo_io_v1alpha1.Mesh) (reconcile.Result, error) {
@@ -388,11 +391,11 @@ func (f *MeshReconcilerFuncs) ReconcileMesh(obj *discovery_smh_solo_io_v1alpha1.
 	return f.OnReconcileMesh(obj)
 }
 
-func (f *MeshReconcilerFuncs) ReconcileMeshDeletion(req reconcile.Request) {
+func (f *MeshReconcilerFuncs) ReconcileMeshDeletion(req reconcile.Request) error {
 	if f.OnReconcileMeshDeletion == nil {
-		return
+		return nil
 	}
-	f.OnReconcileMeshDeletion(req)
+	return f.OnReconcileMeshDeletion(req)
 }
 
 // Reconcile and finalize the Mesh Resource
@@ -453,10 +456,11 @@ func (r genericMeshReconciler) Reconcile(object ezkube.Object) (reconcile.Result
 	return r.reconciler.ReconcileMesh(obj)
 }
 
-func (r genericMeshReconciler) ReconcileDeletion(request reconcile.Request) {
+func (r genericMeshReconciler) ReconcileDeletion(request reconcile.Request) error {
 	if deletionReconciler, ok := r.reconciler.(MeshDeletionReconciler); ok {
-		deletionReconciler.ReconcileMeshDeletion(request)
+		return deletionReconciler.ReconcileMeshDeletion(request)
 	}
+	return nil
 }
 
 // genericMeshFinalizer implements a generic reconcile.FinalizingReconciler

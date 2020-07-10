@@ -96,7 +96,7 @@ func (i *istioTrafficPolicyTranslator) Translate(
 		return nil, nil
 	}
 
-	destinationRule := i.buildDestinationRule(meshService, allMeshServices)
+	destinationRule := i.buildDestinationRule(meshService, allMeshServices, trafficPolicies)
 
 	virtualService, translationErrors := i.buildVirtualService(meshService, allMeshServices, trafficPolicies)
 
@@ -131,7 +131,9 @@ func (*istioTrafficPolicyTranslator) GetTranslationLabels() map[string]string {
 func (i *istioTrafficPolicyTranslator) buildDestinationRule(
 	meshService *smh_discovery.MeshService,
 	allMeshServices []*smh_discovery.MeshService,
+	trafficPolicies []*smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
 ) *istio_client_networking_types.DestinationRule {
+	istioOutlierDetection := TranslateOutlierDetection(trafficPolicies)
 	return &istio_client_networking_types.DestinationRule{
 		ObjectMeta: selection.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
 		Spec: istio_networking_types.DestinationRule{
@@ -140,6 +142,7 @@ func (i *istioTrafficPolicyTranslator) buildDestinationRule(
 				Tls: &istio_networking_types.ClientTLSSettings{
 					Mode: istio_networking_types.ClientTLSSettings_ISTIO_MUTUAL,
 				},
+				OutlierDetection: istioOutlierDetection,
 			},
 			Subsets: i.findReferencedSubsetsForService(meshService, allMeshServices),
 		},
@@ -226,6 +229,9 @@ func (i *istioTrafficPolicyTranslator) translateIntoVirtualService(
 	var translationErrors []*mesh_translation.TranslationError
 	for _, validatedPolicy := range validatedPolicies {
 		httpRoutes, err := i.translateIntoHTTPRoutes(meshService, allMeshServices, validatedPolicy)
+		if len(httpRoutes) == 0 {
+			continue
+		}
 		if err != nil {
 			translationErrors = append(translationErrors, &mesh_translation.TranslationError{
 				Policy: validatedPolicy,
@@ -277,13 +283,21 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 	}
 
 	var trafficShift []*istio_networking_types.HTTPRouteDestination
-	if trafficShift, err = i.translateDestinationRoutes(meshService, allMeshServices, validatedPolicy); err != nil {
+	var isTrafficShift bool
+	if trafficShift, isTrafficShift, err = i.translateDestinationRoutes(meshService, allMeshServices, validatedPolicy); err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 	retries := i.translateRetries(validatedPolicy)
 	headerManipulation := i.translateHeaderManipulation(validatedPolicy)
 	var httpRoutes []*istio_networking_types.HTTPRoute
 
+	// To avoid creating a VirtualService with no effects, don't output an HttpRoute unless there's actual specified config.
+	if !isTrafficShift &&
+		validatedPolicy.TrafficPolicySpec.GetRequestTimeout() == nil &&
+		faultInjection == nil && corsPolicy == nil && retries == nil &&
+		mirrorPercentage == nil && mirror == nil && headerManipulation == nil {
+		return httpRoutes, nil
+	}
 	if len(requestMatchers) == 0 {
 		// If no matchers are present return a single route with no matchers
 		httpRoutes = append(httpRoutes, &istio_networking_types.HTTPRoute{
@@ -448,10 +462,12 @@ func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 	meshService *smh_discovery.MeshService,
 	allMeshServices []*smh_discovery.MeshService,
 	validatedPolicy *smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy,
-) ([]*istio_networking_types.HTTPRouteDestination, error) {
+) ([]*istio_networking_types.HTTPRouteDestination, bool, error) {
+	var isTrafficShift bool
 	var translatedRouteDestinations []*istio_networking_types.HTTPRouteDestination
 	trafficShift := validatedPolicy.TrafficPolicySpec.GetTrafficShift()
 	if trafficShift != nil {
+		isTrafficShift = true
 		for _, destination := range trafficShift.GetDestinations() {
 			hostnameForKubeService, isMulticluster, err := i.getHostnameForKubeService(
 				meshService,
@@ -459,7 +475,7 @@ func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 				destination.GetDestination(),
 			)
 			if err != nil {
-				return nil, err
+				return nil, false, err
 			}
 			httpRouteDestination := &istio_networking_types.HTTPRouteDestination{
 				Destination: &istio_networking_types.Destination{
@@ -479,7 +495,7 @@ func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 			if destination.Subset != nil {
 				// multicluster subsets are currently unsupported, so return a status error to invalidate the TrafficPolicy
 				if isMulticluster {
-					return nil, MultiClusterSubsetsNotSupported(destination)
+					return nil, false, MultiClusterSubsetsNotSupported(destination)
 				}
 
 				// Build a deterministic, unique name for this subset.
@@ -492,7 +508,7 @@ func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 		}
 	} else {
 		if len(meshService.Spec.GetKubeService().GetPorts()) != 1 {
-			return nil, NoSpecifiedPortError(meshService)
+			return nil, false, NoSpecifiedPortError(meshService)
 		}
 		// Since only one port is available, use that as the target port for the destination
 		defaultServicePort := meshService.Spec.GetKubeService().GetPorts()[0]
@@ -507,7 +523,7 @@ func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 			},
 		}
 	}
-	return translatedRouteDestinations, nil
+	return translatedRouteDestinations, isTrafficShift, nil
 }
 
 func (i *istioTrafficPolicyTranslator) translateRetries(validatedPolicy *smh_discovery_types.MeshServiceStatus_ValidatedTrafficPolicy) *istio_networking_types.HTTPRetry {

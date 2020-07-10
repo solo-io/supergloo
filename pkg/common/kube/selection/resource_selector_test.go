@@ -180,23 +180,6 @@ var _ = Describe("ResourceSelector", func() {
 			Expect(meshServices).To(ConsistOf(expectedMeshServices))
 		})
 
-		It("should return error if Service not found", func() {
-			name := "non-existent-name"
-			namespace := "non-existent-namespace"
-			cluster := "non-existent-cluster"
-			selector := &smh_core_types.ServiceSelector{
-				ServiceSelectorType: &smh_core_types.ServiceSelector_ServiceRefs_{
-					ServiceRefs: &smh_core_types.ServiceSelector_ServiceRefs{
-						Services: []*smh_core_types.ResourceRef{
-							{Name: name, Namespace: namespace, Cluster: cluster},
-						},
-					},
-				},
-			}
-			_, err := resourceSelector.GetAllMeshServicesByServiceSelector(ctx, selector)
-			Expect(err).To(testutils.HaveInErrorChain(networking_selector.KubeServiceNotFound(name, namespace, cluster)))
-		})
-
 		It("should select across all namespaces and clusters", func() {
 			selector := &smh_core_types.ServiceSelector{
 				ServiceSelectorType: &smh_core_types.ServiceSelector_Matcher_{

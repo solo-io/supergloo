@@ -77,9 +77,11 @@ func (m *MockMulticlusterKubernetesClusterDeletionReconciler) EXPECT() *MockMult
 }
 
 // ReconcileKubernetesClusterDeletion mocks base method.
-func (m *MockMulticlusterKubernetesClusterDeletionReconciler) ReconcileKubernetesClusterDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterKubernetesClusterDeletionReconciler) ReconcileKubernetesClusterDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileKubernetesClusterDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileKubernetesClusterDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileKubernetesClusterDeletion indicates an expected call of ReconcileKubernetesClusterDeletion.
@@ -190,9 +192,11 @@ func (m *MockMulticlusterMeshServiceDeletionReconciler) EXPECT() *MockMulticlust
 }
 
 // ReconcileMeshServiceDeletion mocks base method.
-func (m *MockMulticlusterMeshServiceDeletionReconciler) ReconcileMeshServiceDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterMeshServiceDeletionReconciler) ReconcileMeshServiceDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileMeshServiceDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileMeshServiceDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileMeshServiceDeletion indicates an expected call of ReconcileMeshServiceDeletion.
@@ -303,9 +307,11 @@ func (m *MockMulticlusterMeshWorkloadDeletionReconciler) EXPECT() *MockMulticlus
 }
 
 // ReconcileMeshWorkloadDeletion mocks base method.
-func (m *MockMulticlusterMeshWorkloadDeletionReconciler) ReconcileMeshWorkloadDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterMeshWorkloadDeletionReconciler) ReconcileMeshWorkloadDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileMeshWorkloadDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileMeshWorkloadDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileMeshWorkloadDeletion indicates an expected call of ReconcileMeshWorkloadDeletion.
@@ -416,9 +422,11 @@ func (m *MockMulticlusterMeshDeletionReconciler) EXPECT() *MockMulticlusterMeshD
 }
 
 // ReconcileMeshDeletion mocks base method.
-func (m *MockMulticlusterMeshDeletionReconciler) ReconcileMeshDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterMeshDeletionReconciler) ReconcileMeshDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileMeshDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileMeshDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileMeshDeletion indicates an expected call of ReconcileMeshDeletion.

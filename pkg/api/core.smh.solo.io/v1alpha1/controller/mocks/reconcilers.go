@@ -77,9 +77,11 @@ func (m *MockSettingsDeletionReconciler) EXPECT() *MockSettingsDeletionReconcile
 }
 
 // ReconcileSettingsDeletion mocks base method.
-func (m *MockSettingsDeletionReconciler) ReconcileSettingsDeletion(req reconcile.Request) {
+func (m *MockSettingsDeletionReconciler) ReconcileSettingsDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileSettingsDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileSettingsDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileSettingsDeletion indicates an expected call of ReconcileSettingsDeletion.
