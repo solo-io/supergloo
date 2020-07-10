@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	err := mesh_networking.Start(context.Background(), bootstrap.Options{})
+	err := mesh_networking.Start(context.Background(), bootstrap.Options{DebugMode: true, MetricsBindAddress:"0"})
 	if err != nil {
 		log.Fatal(err)
 	}

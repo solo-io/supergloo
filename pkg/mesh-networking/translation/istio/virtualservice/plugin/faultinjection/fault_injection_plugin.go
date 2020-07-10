@@ -36,7 +36,7 @@ func (p *faultInjectionPlugin) ProcessTrafficPolicy(
 	}
 	if faultInjection != nil && !equalityutils.Equals(output.Fault, faultInjection) {
 		if err := fieldRegistry.RegisterFieldOwner(
-			output.Fault,
+			&output.Fault,
 			appliedPolicy.Ref,
 			0,
 		); err != nil {

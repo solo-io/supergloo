@@ -36,7 +36,7 @@ type dependencyFactory interface {
 		replicaSets appsv1sets.ReplicaSetSet,
 	) meshworkload.Translator
 
-	makeMeshServiceTranslator() meshservice.Translator
+	makeMeshServiceTranslator(ctx context.Context) meshservice.Translator
 }
 
 type dependencyFactoryImpl struct{}
@@ -68,10 +68,10 @@ func (d dependencyFactoryImpl) makeMeshWorkloadTranslator(
 		replicaSets,
 		sidecarDetectors,
 	)
-	return meshworkload.NewTranslator(workloadDetector)
+	return meshworkload.NewTranslator(ctx, workloadDetector)
 }
 
-func (d dependencyFactoryImpl) makeMeshServiceTranslator() meshservice.Translator {
-	return meshservice.NewTranslator(meshservicedetector.NewMeshServiceDetector())
+func (d dependencyFactoryImpl) makeMeshServiceTranslator(ctx context.Context) meshservice.Translator {
+	return meshservice.NewTranslator(ctx, meshservicedetector.NewMeshServiceDetector())
 
 }

@@ -114,7 +114,7 @@ func buildRequiredSubsets(meshService *discoveryv1alpha1.MeshService) []*istiov1
 
 	for _, policy := range meshService.Status.AppliedTrafficPolicies {
 		for _, destination := range policy.GetSpec().GetTrafficShift().GetDestinations() {
-			if subsetLabels := destination.GetSubset(); len(subsetLabels) > 0 {
+			if subsetLabels := destination.GetKubeService().GetSubset(); len(subsetLabels) > 0 {
 				appendUniqueSubset(subsetLabels)
 			}
 		}

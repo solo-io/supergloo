@@ -3,11 +3,9 @@ package cors
 import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -17,17 +15,10 @@ const (
 
 // handles setting Cors on a VirtualService
 type corsPlugin struct {
-	clusterDomains hostutils.ClusterDomainRegistry
-	meshServices   discoveryv1alpha1sets.MeshServiceSet
 }
 
-func NewCorsPlugin(
-	clusterDomains hostutils.ClusterDomainRegistry,
-	meshServices discoveryv1alpha1sets.MeshServiceSet,
-) *corsPlugin {
+func NewCorsPlugin() *corsPlugin {
 	return &corsPlugin{
-		clusterDomains: clusterDomains,
-		meshServices:   meshServices,
 	}
 }
 
@@ -47,7 +38,7 @@ func (p *corsPlugin) ProcessTrafficPolicy(
 	}
 	if cors != nil && !equalityutils.Equals(output.CorsPolicy, cors) {
 		if err := fieldRegistry.RegisterFieldOwner(
-			output.CorsPolicy,
+			&output.CorsPolicy,
 			appliedPolicy.Ref,
 			0,
 		); err != nil {

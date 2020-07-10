@@ -6,11 +6,13 @@ import (
 	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/destinationrule"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -56,7 +58,7 @@ func (p *trafficShiftPlugin) ProcessTrafficPolicy(
 	}
 	if trafficShiftDestinations != nil && !equalityutils.Equals(output.Route, trafficShiftDestinations) {
 		if err := fieldRegistry.RegisterFieldOwner(
-			output.Route,
+			&output.Route,
 			appliedPolicy.Ref,
 			0,
 		); err != nil {
@@ -82,10 +84,14 @@ func (p *trafficShiftPlugin) translateTrafficShift(
 			return nil, eris.Errorf("must set a destination type on traffic shift destination")
 		}
 		var trafficShiftDestination *istiov1alpha3spec.HTTPRouteDestination
-		switch destination.DestinationType.(type) {
+		switch destinationType := destination.DestinationType.(type) {
 		case *v1alpha1.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
 			var err error
-			trafficShiftDestination, err = p.buildKubeTrafficShiftDestination(destination, meshService)
+			trafficShiftDestination, err = p.buildKubeTrafficShiftDestination(
+				destinationType.KubeService,
+				meshService,
+				destination.Weight,
+			)
 			if err != nil {
 				return nil, err
 			}
@@ -100,19 +106,30 @@ func (p *trafficShiftPlugin) translateTrafficShift(
 }
 
 func (p *trafficShiftPlugin) buildKubeTrafficShiftDestination(
-	kubeDestination *v1alpha1.TrafficPolicySpec_MultiDestination_WeightedDestination,
+	kubeDest *v1alpha1.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination,
 	originalService *discoveryv1alpha1.MeshService,
+	weight uint32,
 ) (*istiov1alpha3spec.HTTPRouteDestination, error) {
-	destinationRef := kubeDestination.GetKubeService()
-	if destinationRef == nil {
-		return nil, eris.Errorf("must provide destination ref on traffic shift")
+	if kubeDest == nil {
+		return nil, eris.Errorf("nil kube destination on traffic shift")
+	}
+
+	svcRef := &v1.ClusterObjectRef{
+		Name:        kubeDest.Name,
+		Namespace:   kubeDest.Namespace,
+		ClusterName: kubeDest.Cluster,
+	}
+
+	// validate destination service is a known meshservice
+	if _, err := meshserviceutils.FindMeshServiceForKubeService(p.meshServices.List(), svcRef); err != nil {
+		return nil, eris.Wrapf(err, "invalid mirror destination")
 	}
 
 	sourceCluster := originalService.Spec.KubeService.Ref.ClusterName
-	destinationHost := p.clusterDomains.GetDestinationServiceFQDN(sourceCluster, destinationRef)
+	destinationHost := p.clusterDomains.GetDestinationServiceFQDN(sourceCluster, svcRef)
 
 	var destinationPort *istiov1alpha3spec.PortSelector
-	if port := kubeDestination.GetPort(); port != 0 {
+	if port := kubeDest.GetPort(); port != 0 {
 		destinationPort = &istiov1alpha3spec.PortSelector{
 			Number: port,
 		}
@@ -128,17 +145,17 @@ func (p *trafficShiftPlugin) buildKubeTrafficShiftDestination(
 			Host: destinationHost,
 			Port: destinationPort,
 		},
-		Weight: int32(kubeDestination.GetWeight()),
+		Weight: int32(weight),
 	}
 
-	if kubeDestination.Subset != nil {
+	if kubeDest.Subset != nil {
 		// cross-cluster subsets are currently unsupported, so return an error on the traffic policy
-		if destinationRef.ClusterName != sourceCluster {
-			return nil, MultiClusterSubsetsNotSupportedErr(destinationRef)
+		if kubeDest.Cluster != sourceCluster {
+			return nil, MultiClusterSubsetsNotSupportedErr(kubeDest)
 		}
 
 		// Use the canonical SMH unique name for this subset.
-		httpRouteDestination.Destination.Subset = destinationrule.SubsetName(kubeDestination.GetSubset())
+		httpRouteDestination.Destination.Subset = destinationrule.SubsetName(kubeDest.Subset)
 	}
 
 	return httpRouteDestination, nil

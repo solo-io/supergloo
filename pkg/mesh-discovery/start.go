@@ -15,7 +15,7 @@ import (
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts bootstrap.Options) error {
-	return bootstrap.Start(ctx, startReconciler, opts)
+	return bootstrap.Start(ctx, "discovery", startReconciler, opts)
 }
 
 // start the main reconcile loop

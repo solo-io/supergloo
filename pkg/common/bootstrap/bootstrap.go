@@ -2,9 +2,16 @@ package bootstrap
 
 import (
 	"context"
+
+	"github.com/go-logr/zapr"
+	"go.uber.org/zap/zapcore"
+	"sigs.k8s.io/controller-runtime/pkg/log"
+	zaputil "sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
+	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -32,12 +39,18 @@ type Options struct {
 	// cluster-scoped resource (e.g Node).  For namespaced resources the cache
 	// will only hold objects from the desired namespace.
 	MasterNamespace string
+
+	// enables debug mode
+	DebugMode bool
 }
 
 // the mesh-discovery controller is the Kubernetes Controller/Operator
 // which processes k8s storage events to produce
 // discovered resources.
-func Start(ctx context.Context, start StartReconciler, opts Options) error {
+func Start(ctx context.Context, rootLogger string, start StartReconciler, opts Options) error {
+	setupLogging(opts.DebugMode)
+
+	ctx = contextutils.WithLogger(ctx, rootLogger)
 	mgr, err := makeMasterManager(opts)
 	if err != nil {
 		return err
@@ -58,6 +71,7 @@ func Start(ctx context.Context, start StartReconciler, opts Options) error {
 		return err
 	}
 
+	contextutils.LoggerFrom(ctx).Infof("starting manager with options %+v", opts)
 	return mgr.Start(ctx.Done())
 }
 
@@ -80,4 +94,22 @@ func makeMasterManager(opts Options) (manager.Manager, error) {
 		return nil, err
 	}
 	return mgr, nil
+}
+
+
+func setupLogging(devMode bool) {
+	atomicLevel := zap.NewAtomicLevelAt(zapcore.InfoLevel)
+	baseLogger := zaputil.NewRaw(
+		zaputil.Level(&atomicLevel),
+		// Only set debug mode if specified. This will use a non-json (human readable) encoder which makes it impossible
+		// to use any json parsing tools for the log. Should only be enabled explicitly
+		zaputil.UseDevMode(devMode),
+	)
+
+	// klog
+	zap.ReplaceGlobals(baseLogger)
+	// controller-runtime
+	log.SetLogger(zapr.NewLogger(baseLogger))
+	// go-utils
+	contextutils.SetFallbackLogger(baseLogger.Sugar())
 }

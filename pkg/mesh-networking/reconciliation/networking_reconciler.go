@@ -2,6 +2,7 @@ package reconciliation
 
 import (
 	"context"
+	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
@@ -55,11 +56,17 @@ func (d *networkingReconciler) reconcile() error {
 
 	d.validator.Validate(d.ctx, inputSnap)
 
-	if err := d.syncIstio(inputSnap); err != nil{
-		return err
+	var errs error
+
+	if err := d.syncIstio(inputSnap); err != nil {
+		errs = multierror.Append(errs, err)
 	}
 
-	return inputSnap.SyncStatuses(d.ctx, d.masterClient)
+	if err := inputSnap.SyncStatuses(d.ctx, d.masterClient); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	return errs
 }
 
 func (d *networkingReconciler) syncIstio(translatorSnapshot input.Snapshot) error {
@@ -69,9 +76,5 @@ func (d *networkingReconciler) syncIstio(translatorSnapshot input.Snapshot) erro
 		return err
 	}
 
-	if err := istioSnap.ApplyMultiCluster(d.ctx, d.multiClusterClient); err != nil {
-		return err
-	}
-
-	return nil
+	return istioSnap.ApplyMultiCluster(d.ctx, d.multiClusterClient)
 }

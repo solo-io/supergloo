@@ -3,8 +3,11 @@ package plugin
 import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/virtualservice/plugin/cors"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/virtualservice/plugin/faultinjection"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/virtualservice/plugin/mirror"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/virtualservice/plugin/retries"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/virtualservice/plugin/trafficshift"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -18,8 +21,11 @@ func makePlugins(
 	in input.Snapshot,
 ) []Plugin {
 	return []Plugin{
+		cors.NewCorsPlugin(),
 		faultinjection.NewFaultInjectionPlugin(),
 		mirror.NewMirrorPlugin(clusterDomains, in.MeshServices()),
+		retries.NewRetriesPlugin(),
+		trafficshift.NewTrafficShiftPlugin(clusterDomains, in.MeshServices()),
 	}
 }
 

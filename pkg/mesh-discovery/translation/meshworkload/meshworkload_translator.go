@@ -1,8 +1,11 @@
 package meshworkload
 
 import (
+	"context"
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
+	"github.com/solo-io/go-utils/contextutils"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/smh/pkg/mesh-discovery/translation/meshworkload/detector"
 	"github.com/solo-io/smh/pkg/mesh-discovery/translation/meshworkload/types"
 )
@@ -15,11 +18,12 @@ type Translator interface {
 }
 
 type translator struct {
+	ctx context.Context
 	meshWorkloadDetector detector.MeshWorkloadDetector
 }
 
-func NewTranslator(meshWorkloadDetector detector.MeshWorkloadDetector) Translator {
-	return &translator{meshWorkloadDetector: meshWorkloadDetector}
+func NewTranslator(ctx context.Context, meshWorkloadDetector detector.MeshWorkloadDetector) Translator {
+	return &translator{ctx: ctx, meshWorkloadDetector: meshWorkloadDetector}
 }
 
 func (t *translator) TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha1sets.MeshSet) v1alpha1sets.MeshWorkloadSet {
@@ -41,6 +45,7 @@ func (t *translator) TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet
 		if meshWorkload == nil {
 			continue
 		}
+		contextutils.LoggerFrom(t.ctx).Debugw("detected mesh workload %v", sets.Key(meshWorkload))
 		meshWorkloadSet.Insert(meshWorkload)
 	}
 	return meshWorkloadSet

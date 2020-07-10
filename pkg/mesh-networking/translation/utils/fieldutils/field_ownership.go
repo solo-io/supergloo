@@ -26,6 +26,8 @@ type FieldOwnershipRegistry interface {
 	//
 	// If an owner with a higher or equal priority exists for the field,
 	// a ConflictError containing the previous owner and its priority are returned.
+	//
+	// field must be a pointer to the field.
 	RegisterFieldOwner(field interface{}, owner ezkube.ResourceId, priority int32) error
 }
 

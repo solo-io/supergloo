@@ -37,7 +37,7 @@ func (t translator) Translate(ctx context.Context, in input.Snapshot) (output.Sn
 		in.ReplicaSets(),
 	)
 
-	meshServiceTranslator := t.dependencies.makeMeshServiceTranslator()
+	meshServiceTranslator := t.dependencies.makeMeshServiceTranslator(ctx)
 
 	meshes := meshTranslator.TranslateMeshes(in.Deployments())
 

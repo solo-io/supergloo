@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	err := mesh_discovery.Start(context.Background(), bootstrap.Options{})
+	err := mesh_discovery.Start(context.Background(), bootstrap.Options{DebugMode: true})
 	if err != nil {
 		log.Fatal(err)
 	}

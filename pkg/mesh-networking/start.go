@@ -17,7 +17,7 @@ import (
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts bootstrap.Options) error {
-	return bootstrap.Start(ctx, startReconciler, opts)
+	return bootstrap.Start(ctx,"networking", startReconciler, opts)
 }
 
 // start the main reconcile loop
@@ -31,7 +31,7 @@ func startReconciler(
 
 	snapshotBuilder := input.NewSingleClusterBuilder(masterManager.GetClient())
 	reporter := reporter.NewPanickingReporter(ctx)
-	istioTranslator := istio.NewIstioTranslator()
+	istioTranslator := istio.NewIstioTranslator(ctx)
 	validator := validation.NewValidator(istioTranslator)
 
 	return reconciliation.Start(

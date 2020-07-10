@@ -25,6 +25,9 @@ func (m *mtlsPlugin) Process(_ *v1alpha1.MeshService, output *v1alpha3.Destinati
 	// TODO(ilackarms): currently we set all DRs to mTLS
 	// in the future we'll want to make this configurable
 	// https://github.com/solo-io/service-mesh-hub/issues/790
+	if output.Spec.TrafficPolicy == nil {
+		output.Spec.TrafficPolicy = &istiov1alpha3spec.TrafficPolicy{}
+	}
 	output.Spec.TrafficPolicy.Tls = &istiov1alpha3spec.ClientTLSSettings{
 		Mode: istiov1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 	}

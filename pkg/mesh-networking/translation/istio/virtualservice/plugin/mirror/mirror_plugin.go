@@ -49,7 +49,7 @@ func (p *mirrorPlugin) ProcessTrafficPolicy(
 	}
 	if mirror != nil && !equalityutils.Equals(output.Mirror, mirror) {
 		if err := fieldRegistry.RegisterFieldOwner(
-			output.Mirror,
+			&output.Mirror,
 			appliedPolicy.Ref,
 			0,
 		); err != nil {

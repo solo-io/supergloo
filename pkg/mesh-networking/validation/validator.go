@@ -58,6 +58,7 @@ func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
 	}
 
 	for _, meshService := range input.MeshServices().List() {
+		meshService.Status.ObservedGeneration = meshService.Generation
 		meshService.Status.AppliedTrafficPolicies = validateAndReturnAcceptedTrafficPolicies(ctx, input, reporter, meshService)
 	}
 
@@ -161,8 +162,9 @@ func getAppliedTrafficPolicies(trafficPolicies v1alpha1.TrafficPolicySlice, mesh
 	for _, policy := range matchingTrafficPolicies {
 		policy := policy // pike
 		appliedPolicies = append(appliedPolicies, &discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy{
-			Ref:  ezkube.MakeObjectRef(policy),
-			Spec: &policy.Spec,
+			Ref:                ezkube.MakeObjectRef(policy),
+			Spec:               &policy.Spec,
+			ObservedGeneration: policy.Generation,
 		})
 	}
 	return appliedPolicies
