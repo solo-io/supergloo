@@ -47,7 +47,8 @@ git clone https://github.com/solo-io/service-mesh-hub.git $repoDir
 function generateHugoVersionsYaml() {
   yamlFile=$repoDir/docs/data/Solo.yaml
   # Truncate file first.
-  echo "DocsVersion: /$1" > $yamlFile
+  echo "LatestVersion: $latestVersion" > $yamlFile
+  echo "DocsVersion: /$1" >> $yamlFile
   echo "CodeVersion: $1" >> $yamlFile
   echo "DocsVersions:" >> $yamlFile
   for hugoVersion in "${versions[@]}"
@@ -55,6 +56,7 @@ function generateHugoVersionsYaml() {
     echo "  - $hugoVersion" >> $yamlFile
   done
 }
+
 
 for version in "${versions[@]}"
 do
@@ -75,6 +77,8 @@ do
   cd docs
   # Generate data/Solo.yaml file with version info populated.
   generateHugoVersionsYaml $version
+  # Use nav bar as defined in master, not the checked out temp repo.
+  yes | cp -f $workingDir/docs/layouts/partials/versionnavigation.html layouts/partials/versionnavigation.html
   # Generate the versioned static site.
   make site-release
   # Copy over versioned static site to firebase content folder.
