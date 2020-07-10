@@ -189,3 +189,25 @@ func (c *virtualMeshCertificateSigningRequestClient) UpdateVirtualMeshCertificat
 func (c *virtualMeshCertificateSigningRequestClient) PatchVirtualMeshCertificateSigningRequestStatus(ctx context.Context, obj *VirtualMeshCertificateSigningRequest, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
+
+// Provides VirtualMeshCertificateSigningRequestClients for multiple clusters.
+type MulticlusterVirtualMeshCertificateSigningRequestClient interface {
+	// Cluster returns a VirtualMeshCertificateSigningRequestClient for the given cluster
+	Cluster(cluster string) (VirtualMeshCertificateSigningRequestClient, error)
+}
+
+type multiclusterVirtualMeshCertificateSigningRequestClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterVirtualMeshCertificateSigningRequestClient(client multicluster.Client) MulticlusterVirtualMeshCertificateSigningRequestClient {
+	return &multiclusterVirtualMeshCertificateSigningRequestClient{client: client}
+}
+
+func (m *multiclusterVirtualMeshCertificateSigningRequestClient) Cluster(cluster string) (VirtualMeshCertificateSigningRequestClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewVirtualMeshCertificateSigningRequestClient(client), nil
+}

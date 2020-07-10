@@ -13,10 +13,14 @@ import (
 )
 
 func CurlWithEphemeralPod(ctx context.Context, kubecontext, fromns, frompod string, args ...string) string {
-	// note, we use sudo so that the curl is not from the istio-proxy user. we dont really need root.
-	args = append([]string{"alpha", "debug", "--quiet",
+	createargs := []string{"alpha", "debug", "--quiet",
 		"--image=curlimages/curl@sha256:aa45e9d93122a3cfdf8d7de272e2798ea63733eeee6d06bd2ee4f2f8c4027d7c",
-		"-i", frompod, "-n", fromns, "--", "curl", "--connect-timeout", "1", "--max-time", "5"}, args...)
+		"--container=curl", frompod, "-n", fromns, "--", "sleep", "10h"}
+	// create the curl pod; we do this every time and it will only work the first time, so ignore
+	// failures
+	executeNoFail(ctx, kubecontext, createargs...)
+	args = append([]string{"exec",
+		"--container=curl", frompod, "-n", fromns, "--", "curl", "--connect-timeout", "1", "--max-time", "5"}, args...)
 	return execute(ctx, kubecontext, args...)
 }
 
@@ -76,18 +80,62 @@ func SetDeploymentEnvVars(
 	fmt.Fprintln(GinkgoWriter, out)
 }
 
+func DisableAppContainer(
+	ctx context.Context,
+	kubeContext string,
+	ns string,
+	deploymentName string,
+	containerName string,
+) {
+	args := append([]string{
+		"-n", ns,
+		"patch", "deployment", deploymentName,
+		"--patch",
+		fmt.Sprintf("{\"spec\": {\"template\": {\"spec\": {\"containers\": [{\"name\": \"%s\",\"command\": [\"sleep\", \"20h\"]}]}}}}",
+			containerName),
+	})
+	out := execute(ctx, kubeContext, args...)
+	fmt.Fprintln(GinkgoWriter, out)
+}
+
+func EnableAppContainer(
+	ctx context.Context,
+	kubeContext string,
+	ns string,
+	deploymentName string,
+) {
+	args := append([]string{
+		"-n", ns,
+		"patch", "deployment", deploymentName,
+		"--type", "json",
+		"-p", "[{\"op\": \"remove\", \"path\": \"/spec/template/spec/containers/0/command\"}]",
+	})
+	out := execute(ctx, kubeContext, args...)
+	fmt.Fprintln(GinkgoWriter, out)
+}
+
 func execute(ctx context.Context, kubeContext string, args ...string) string {
+	data, err := executeNoFail(ctx, kubeContext, args...)
+	Expect(err).NotTo(HaveOccurred())
+	return data
+}
+
+func executeNoFail(ctx context.Context, kubeContext string, args ...string) (string, error) {
 	args = append([]string{"--context", kubeContext}, args...)
 	fmt.Fprintf(GinkgoWriter, "Executing: kubectl %v \n", args)
 	readerChan, done, err := testutils.KubectlOutChan(&bytes.Buffer{}, args...)
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		return "", err
+	}
 	defer close(done)
 	select {
 	case <-ctx.Done():
-		return ""
+		return "", nil
 	case reader := <-readerChan:
 		data, err := ioutil.ReadAll(reader)
-		Expect(err).NotTo(HaveOccurred())
-		return string(data)
+		if err != nil {
+			return "", err
+		}
+		return string(data), nil
 	}
 }

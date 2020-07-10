@@ -1,6 +1,7 @@
 package traffic_policy_aggregation
 
 import (
+	"github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
@@ -32,31 +33,22 @@ func (*inMemoryStatusMutator) MutateServicePolicies(
 	return serviceNeedsUpdating
 }
 
-func (*inMemoryStatusMutator) MutateConflictAndTranslatorErrors(
+func (*inMemoryStatusMutator) MutateTrafficPolicyTranslationStatus(
 	policy *smh_networking.TrafficPolicy,
 	newConflictErrors []*smh_networking_types.TrafficPolicyStatus_ConflictError,
 	newTranslationErrors []*smh_networking_types.TrafficPolicyStatus_TranslatorError,
-) (policyNeedsUpdating bool) {
-	if len(newConflictErrors) != len(policy.Status.GetConflictErrors()) {
-		policyNeedsUpdating = true
+) {
+	var translationStatus *types.Status
+	if len(newConflictErrors) == 0 && len(newTranslationErrors) == 0 {
+		translationStatus = &types.Status{
+			State: types.Status_ACCEPTED,
+		}
 	} else {
-		for newErrorIndex, newError := range newConflictErrors {
-			policyNeedsUpdating = policyNeedsUpdating || !policy.Status.GetConflictErrors()[newErrorIndex].Equal(newError)
+		translationStatus = &types.Status{
+			State: types.Status_INVALID,
 		}
 	}
-
-	if len(newTranslationErrors) != len(policy.Status.TranslatorErrors) {
-		policyNeedsUpdating = true
-	} else {
-		for newErrorIndex, newError := range newTranslationErrors {
-			policyNeedsUpdating = policyNeedsUpdating || !policy.Status.GetTranslatorErrors()[newErrorIndex].Equal(newError)
-		}
-	}
-
-	if policyNeedsUpdating {
-		policy.Status.ConflictErrors = newConflictErrors
-		policy.Status.TranslatorErrors = newTranslationErrors
-	}
-
-	return policyNeedsUpdating
+	policy.Status.TranslationStatus = translationStatus
+	policy.Status.ConflictErrors = newConflictErrors
+	policy.Status.TranslatorErrors = newTranslationErrors
 }

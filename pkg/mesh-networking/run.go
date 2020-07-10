@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/pkg/common/compute-target/k8s"
 	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/wire"
+	"github.com/solo-io/skv2/pkg/reconcile"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -55,13 +57,6 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 		); err != nil {
 			logger.Fatalw("error initializing mesh networking snapshot listener", zap.Error(err))
 		}
-		// start the TrafficPolicyTranslator
-		err = meshNetworkingContext.TrafficPolicyTranslator.Start(
-			contextutils.WithLogger(ctx, "traffic_policy_translator"),
-		)
-		if err != nil {
-			logger.Fatalw("error initializing TrafficPolicyTranslator", zap.Error(err))
-		}
 
 		go startTrafficPolicyReconciler(ctx, meshNetworkingContext)
 
@@ -85,6 +80,13 @@ func startComponents(meshNetworkingContext wire.MeshNetworkingContext) func(cont
 		if err != nil {
 			logger.Fatalw("error initializing FederationResolver", zap.Error(err))
 		}
+
+		failoverServiceReconcileLoop := controller.NewFailoverServiceReconcileLoop("failover-service", m, reconcile.Options{})
+		err = failoverServiceReconcileLoop.RunFailoverServiceReconciler(ctx, meshNetworkingContext.FailoverServiceReconciler)
+		if err != nil {
+			logger.Fatalw("error initializing FailoverServiceReconcileLoop", zap.Error(err))
+		}
+
 		return nil
 	}
 }

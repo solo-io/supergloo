@@ -301,6 +301,19 @@ message TrafficPolicySpec {
         core.smh.solo.io.HttpMethodValue method = 1;
     }
 
+    // Configure outlier detection settings on targeted services. If set, source selectors must be empty
+    // because outlier detection settings apply to all incoming traffic.
+    message OutlierDetection {
+        // Number of errors before a host is ejected from the connection pool. Defaults to 5.
+        uint32 consecutive_errors = 1;
+
+        // Time interval between ejection sweep analysis. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 10s.
+        google.protobuf.Duration interval = 2;
+
+        // Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s.
+        google.protobuf.Duration base_ejection_time = 3;
+    }
+
     /*
         Requests originating from these pods will have the rule applied.
         Leave empty to have all pods in the mesh apply these rules.
@@ -358,6 +371,12 @@ message TrafficPolicySpec {
 
     // Manipulate request and response headers.
     HeaderManipulation header_manipulation = 10;
+
+    /*
+        Configure outlier detection on the targeted services.
+        Setting this field requires an empty source_selector because it must apply to all traffic.
+     */
+    OutlierDetection outlier_detection = 11;
 }
 
 message TrafficPolicyStatus {

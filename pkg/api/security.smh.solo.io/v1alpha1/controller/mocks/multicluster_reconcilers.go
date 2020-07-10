@@ -77,9 +77,11 @@ func (m *MockMulticlusterVirtualMeshCertificateSigningRequestDeletionReconciler)
 }
 
 // ReconcileVirtualMeshCertificateSigningRequestDeletion mocks base method.
-func (m *MockMulticlusterVirtualMeshCertificateSigningRequestDeletionReconciler) ReconcileVirtualMeshCertificateSigningRequestDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterVirtualMeshCertificateSigningRequestDeletionReconciler) ReconcileVirtualMeshCertificateSigningRequestDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileVirtualMeshCertificateSigningRequestDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileVirtualMeshCertificateSigningRequestDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileVirtualMeshCertificateSigningRequestDeletion indicates an expected call of ReconcileVirtualMeshCertificateSigningRequestDeletion.

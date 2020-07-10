@@ -58,7 +58,7 @@ jobs:
     - name: Testing
       working-directory: ./test/e2e
       env:
-        DEBUG_MODE: "1"
+#        DEBUG_MODE: "1"
         AWS_ACCESS_KEY_ID: ${{ secrets.SOLO_BOT_AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.SOLO_BOT_AWS_SECRET_ACCESS_KEY }}
         RUN_E2E: "1"

@@ -376,3 +376,124 @@ func (mr *MockVirtualMeshEventWatcherMockRecorder) AddEventHandler(ctx, h interf
 	varargs := append([]interface{}{ctx, h}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockVirtualMeshEventWatcher)(nil).AddEventHandler), varargs...)
 }
+
+// MockFailoverServiceEventHandler is a mock of FailoverServiceEventHandler interface.
+type MockFailoverServiceEventHandler struct {
+	ctrl     *gomock.Controller
+	recorder *MockFailoverServiceEventHandlerMockRecorder
+}
+
+// MockFailoverServiceEventHandlerMockRecorder is the mock recorder for MockFailoverServiceEventHandler.
+type MockFailoverServiceEventHandlerMockRecorder struct {
+	mock *MockFailoverServiceEventHandler
+}
+
+// NewMockFailoverServiceEventHandler creates a new mock instance.
+func NewMockFailoverServiceEventHandler(ctrl *gomock.Controller) *MockFailoverServiceEventHandler {
+	mock := &MockFailoverServiceEventHandler{ctrl: ctrl}
+	mock.recorder = &MockFailoverServiceEventHandlerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFailoverServiceEventHandler) EXPECT() *MockFailoverServiceEventHandlerMockRecorder {
+	return m.recorder
+}
+
+// CreateFailoverService mocks base method.
+func (m *MockFailoverServiceEventHandler) CreateFailoverService(obj *v1alpha1.FailoverService) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateFailoverService", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateFailoverService indicates an expected call of CreateFailoverService.
+func (mr *MockFailoverServiceEventHandlerMockRecorder) CreateFailoverService(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFailoverService", reflect.TypeOf((*MockFailoverServiceEventHandler)(nil).CreateFailoverService), obj)
+}
+
+// UpdateFailoverService mocks base method.
+func (m *MockFailoverServiceEventHandler) UpdateFailoverService(old, new *v1alpha1.FailoverService) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateFailoverService", old, new)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateFailoverService indicates an expected call of UpdateFailoverService.
+func (mr *MockFailoverServiceEventHandlerMockRecorder) UpdateFailoverService(old, new interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFailoverService", reflect.TypeOf((*MockFailoverServiceEventHandler)(nil).UpdateFailoverService), old, new)
+}
+
+// DeleteFailoverService mocks base method.
+func (m *MockFailoverServiceEventHandler) DeleteFailoverService(obj *v1alpha1.FailoverService) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteFailoverService", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteFailoverService indicates an expected call of DeleteFailoverService.
+func (mr *MockFailoverServiceEventHandlerMockRecorder) DeleteFailoverService(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFailoverService", reflect.TypeOf((*MockFailoverServiceEventHandler)(nil).DeleteFailoverService), obj)
+}
+
+// GenericFailoverService mocks base method.
+func (m *MockFailoverServiceEventHandler) GenericFailoverService(obj *v1alpha1.FailoverService) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenericFailoverService", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GenericFailoverService indicates an expected call of GenericFailoverService.
+func (mr *MockFailoverServiceEventHandlerMockRecorder) GenericFailoverService(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericFailoverService", reflect.TypeOf((*MockFailoverServiceEventHandler)(nil).GenericFailoverService), obj)
+}
+
+// MockFailoverServiceEventWatcher is a mock of FailoverServiceEventWatcher interface.
+type MockFailoverServiceEventWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockFailoverServiceEventWatcherMockRecorder
+}
+
+// MockFailoverServiceEventWatcherMockRecorder is the mock recorder for MockFailoverServiceEventWatcher.
+type MockFailoverServiceEventWatcherMockRecorder struct {
+	mock *MockFailoverServiceEventWatcher
+}
+
+// NewMockFailoverServiceEventWatcher creates a new mock instance.
+func NewMockFailoverServiceEventWatcher(ctrl *gomock.Controller) *MockFailoverServiceEventWatcher {
+	mock := &MockFailoverServiceEventWatcher{ctrl: ctrl}
+	mock.recorder = &MockFailoverServiceEventWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFailoverServiceEventWatcher) EXPECT() *MockFailoverServiceEventWatcherMockRecorder {
+	return m.recorder
+}
+
+// AddEventHandler mocks base method.
+func (m *MockFailoverServiceEventWatcher) AddEventHandler(ctx context.Context, h controller.FailoverServiceEventHandler, predicates ...predicate.Predicate) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, h}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "AddEventHandler", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddEventHandler indicates an expected call of AddEventHandler.
+func (mr *MockFailoverServiceEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, h}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockFailoverServiceEventWatcher)(nil).AddEventHandler), varargs...)
+}

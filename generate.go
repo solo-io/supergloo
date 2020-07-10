@@ -18,13 +18,16 @@ var (
 	apiRoot            = "pkg/api"
 	smhCrdManifestRoot = "install/helm/charts/custom-resource-definitions"
 	csrCrdManifestRoot = "install/helm/charts/csr-agent/"
-
-	protoImports = sk_anyvendor.CreateDefaultMatchOptions([]string{
-		"api/**/*.proto",
-	})
+	protoImports       *sk_anyvendor.Imports
 )
 
 func main() {
+	protoImports = sk_anyvendor.CreateDefaultMatchOptions([]string{
+		"api/**/*.proto",
+	})
+	protoImports.External["github.com/solo-io/skv2"] = []string{
+		"api/**/*.proto",
+	}
 	if err := run(); err != nil {
 		log.Fatal(err)
 	}
@@ -57,6 +60,7 @@ func makeSmhCommand() codegen.Command {
 			{kind: "TrafficPolicy"},
 			{kind: "AccessControlPolicy"},
 			{kind: "VirtualMesh"},
+			{kind: "FailoverService"},
 		}),
 	}
 
@@ -65,6 +69,7 @@ func makeSmhCommand() codegen.Command {
 		AnyVendorConfig: protoImports,
 		ManifestRoot:    smhCrdManifestRoot,
 		Groups:          groups,
+		RenderProtos:    true,
 	}
 }
 
@@ -80,6 +85,7 @@ func makeCsrCommand() codegen.Command {
 		AnyVendorConfig: protoImports,
 		ManifestRoot:    csrCrdManifestRoot,
 		Groups:          groups,
+		RenderProtos:    true,
 	}
 }
 
@@ -118,9 +124,8 @@ func makeGroup(groupPrefix, version string, resourcesToGenerate []resourceToGene
 		RenderTypes:      true,
 		RenderClients:    true,
 		RenderController: true,
-		RenderProtos:     true,
 		MockgenDirective: true,
-		CustomTemplates:  contrib.AllCustomTemplates,
+		CustomTemplates:  contrib.AllGroupCustomTemplates,
 		ApiRoot:          apiRoot,
 	}
 }

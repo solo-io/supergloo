@@ -116,6 +116,20 @@ func (mr *MockClientsetMockRecorder) VirtualMeshes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualMeshes", reflect.TypeOf((*MockClientset)(nil).VirtualMeshes))
 }
 
+// FailoverServices mocks base method.
+func (m *MockClientset) FailoverServices() v1alpha1.FailoverServiceClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FailoverServices")
+	ret0, _ := ret[0].(v1alpha1.FailoverServiceClient)
+	return ret0
+}
+
+// FailoverServices indicates an expected call of FailoverServices.
+func (mr *MockClientsetMockRecorder) FailoverServices() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailoverServices", reflect.TypeOf((*MockClientset)(nil).FailoverServices))
+}
+
 // MockTrafficPolicyReader is a mock of TrafficPolicyReader interface.
 type MockTrafficPolicyReader struct {
 	ctrl     *gomock.Controller
@@ -580,6 +594,44 @@ func (mr *MockTrafficPolicyClientMockRecorder) PatchTrafficPolicyStatus(ctx, obj
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficPolicyStatus", reflect.TypeOf((*MockTrafficPolicyClient)(nil).PatchTrafficPolicyStatus), varargs...)
+}
+
+// MockMulticlusterTrafficPolicyClient is a mock of MulticlusterTrafficPolicyClient interface.
+type MockMulticlusterTrafficPolicyClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterTrafficPolicyClientMockRecorder
+}
+
+// MockMulticlusterTrafficPolicyClientMockRecorder is the mock recorder for MockMulticlusterTrafficPolicyClient.
+type MockMulticlusterTrafficPolicyClientMockRecorder struct {
+	mock *MockMulticlusterTrafficPolicyClient
+}
+
+// NewMockMulticlusterTrafficPolicyClient creates a new mock instance.
+func NewMockMulticlusterTrafficPolicyClient(ctrl *gomock.Controller) *MockMulticlusterTrafficPolicyClient {
+	mock := &MockMulticlusterTrafficPolicyClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterTrafficPolicyClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterTrafficPolicyClient) EXPECT() *MockMulticlusterTrafficPolicyClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterTrafficPolicyClient) Cluster(cluster string) (v1alpha1.TrafficPolicyClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha1.TrafficPolicyClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterTrafficPolicyClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterTrafficPolicyClient)(nil).Cluster), cluster)
 }
 
 // MockAccessControlPolicyReader is a mock of AccessControlPolicyReader interface.
@@ -1048,6 +1100,44 @@ func (mr *MockAccessControlPolicyClientMockRecorder) PatchAccessControlPolicySta
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchAccessControlPolicyStatus", reflect.TypeOf((*MockAccessControlPolicyClient)(nil).PatchAccessControlPolicyStatus), varargs...)
 }
 
+// MockMulticlusterAccessControlPolicyClient is a mock of MulticlusterAccessControlPolicyClient interface.
+type MockMulticlusterAccessControlPolicyClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterAccessControlPolicyClientMockRecorder
+}
+
+// MockMulticlusterAccessControlPolicyClientMockRecorder is the mock recorder for MockMulticlusterAccessControlPolicyClient.
+type MockMulticlusterAccessControlPolicyClientMockRecorder struct {
+	mock *MockMulticlusterAccessControlPolicyClient
+}
+
+// NewMockMulticlusterAccessControlPolicyClient creates a new mock instance.
+func NewMockMulticlusterAccessControlPolicyClient(ctrl *gomock.Controller) *MockMulticlusterAccessControlPolicyClient {
+	mock := &MockMulticlusterAccessControlPolicyClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterAccessControlPolicyClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterAccessControlPolicyClient) EXPECT() *MockMulticlusterAccessControlPolicyClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterAccessControlPolicyClient) Cluster(cluster string) (v1alpha1.AccessControlPolicyClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha1.AccessControlPolicyClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterAccessControlPolicyClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterAccessControlPolicyClient)(nil).Cluster), cluster)
+}
+
 // MockVirtualMeshReader is a mock of VirtualMeshReader interface.
 type MockVirtualMeshReader struct {
 	ctrl     *gomock.Controller
@@ -1512,4 +1602,546 @@ func (mr *MockVirtualMeshClientMockRecorder) PatchVirtualMeshStatus(ctx, obj, pa
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVirtualMeshStatus", reflect.TypeOf((*MockVirtualMeshClient)(nil).PatchVirtualMeshStatus), varargs...)
+}
+
+// MockMulticlusterVirtualMeshClient is a mock of MulticlusterVirtualMeshClient interface.
+type MockMulticlusterVirtualMeshClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterVirtualMeshClientMockRecorder
+}
+
+// MockMulticlusterVirtualMeshClientMockRecorder is the mock recorder for MockMulticlusterVirtualMeshClient.
+type MockMulticlusterVirtualMeshClientMockRecorder struct {
+	mock *MockMulticlusterVirtualMeshClient
+}
+
+// NewMockMulticlusterVirtualMeshClient creates a new mock instance.
+func NewMockMulticlusterVirtualMeshClient(ctrl *gomock.Controller) *MockMulticlusterVirtualMeshClient {
+	mock := &MockMulticlusterVirtualMeshClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterVirtualMeshClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterVirtualMeshClient) EXPECT() *MockMulticlusterVirtualMeshClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterVirtualMeshClient) Cluster(cluster string) (v1alpha1.VirtualMeshClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha1.VirtualMeshClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterVirtualMeshClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterVirtualMeshClient)(nil).Cluster), cluster)
+}
+
+// MockFailoverServiceReader is a mock of FailoverServiceReader interface.
+type MockFailoverServiceReader struct {
+	ctrl     *gomock.Controller
+	recorder *MockFailoverServiceReaderMockRecorder
+}
+
+// MockFailoverServiceReaderMockRecorder is the mock recorder for MockFailoverServiceReader.
+type MockFailoverServiceReaderMockRecorder struct {
+	mock *MockFailoverServiceReader
+}
+
+// NewMockFailoverServiceReader creates a new mock instance.
+func NewMockFailoverServiceReader(ctrl *gomock.Controller) *MockFailoverServiceReader {
+	mock := &MockFailoverServiceReader{ctrl: ctrl}
+	mock.recorder = &MockFailoverServiceReaderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFailoverServiceReader) EXPECT() *MockFailoverServiceReaderMockRecorder {
+	return m.recorder
+}
+
+// GetFailoverService mocks base method.
+func (m *MockFailoverServiceReader) GetFailoverService(ctx context.Context, key client.ObjectKey) (*v1alpha1.FailoverService, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFailoverService", ctx, key)
+	ret0, _ := ret[0].(*v1alpha1.FailoverService)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFailoverService indicates an expected call of GetFailoverService.
+func (mr *MockFailoverServiceReaderMockRecorder) GetFailoverService(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFailoverService", reflect.TypeOf((*MockFailoverServiceReader)(nil).GetFailoverService), ctx, key)
+}
+
+// ListFailoverService mocks base method.
+func (m *MockFailoverServiceReader) ListFailoverService(ctx context.Context, opts ...client.ListOption) (*v1alpha1.FailoverServiceList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListFailoverService", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.FailoverServiceList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListFailoverService indicates an expected call of ListFailoverService.
+func (mr *MockFailoverServiceReaderMockRecorder) ListFailoverService(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFailoverService", reflect.TypeOf((*MockFailoverServiceReader)(nil).ListFailoverService), varargs...)
+}
+
+// MockFailoverServiceWriter is a mock of FailoverServiceWriter interface.
+type MockFailoverServiceWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockFailoverServiceWriterMockRecorder
+}
+
+// MockFailoverServiceWriterMockRecorder is the mock recorder for MockFailoverServiceWriter.
+type MockFailoverServiceWriterMockRecorder struct {
+	mock *MockFailoverServiceWriter
+}
+
+// NewMockFailoverServiceWriter creates a new mock instance.
+func NewMockFailoverServiceWriter(ctrl *gomock.Controller) *MockFailoverServiceWriter {
+	mock := &MockFailoverServiceWriter{ctrl: ctrl}
+	mock.recorder = &MockFailoverServiceWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFailoverServiceWriter) EXPECT() *MockFailoverServiceWriterMockRecorder {
+	return m.recorder
+}
+
+// CreateFailoverService mocks base method.
+func (m *MockFailoverServiceWriter) CreateFailoverService(ctx context.Context, obj *v1alpha1.FailoverService, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateFailoverService indicates an expected call of CreateFailoverService.
+func (mr *MockFailoverServiceWriterMockRecorder) CreateFailoverService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFailoverService", reflect.TypeOf((*MockFailoverServiceWriter)(nil).CreateFailoverService), varargs...)
+}
+
+// DeleteFailoverService mocks base method.
+func (m *MockFailoverServiceWriter) DeleteFailoverService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteFailoverService indicates an expected call of DeleteFailoverService.
+func (mr *MockFailoverServiceWriterMockRecorder) DeleteFailoverService(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFailoverService", reflect.TypeOf((*MockFailoverServiceWriter)(nil).DeleteFailoverService), varargs...)
+}
+
+// UpdateFailoverService mocks base method.
+func (m *MockFailoverServiceWriter) UpdateFailoverService(ctx context.Context, obj *v1alpha1.FailoverService, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateFailoverService indicates an expected call of UpdateFailoverService.
+func (mr *MockFailoverServiceWriterMockRecorder) UpdateFailoverService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFailoverService", reflect.TypeOf((*MockFailoverServiceWriter)(nil).UpdateFailoverService), varargs...)
+}
+
+// PatchFailoverService mocks base method.
+func (m *MockFailoverServiceWriter) PatchFailoverService(ctx context.Context, obj *v1alpha1.FailoverService, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchFailoverService indicates an expected call of PatchFailoverService.
+func (mr *MockFailoverServiceWriterMockRecorder) PatchFailoverService(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchFailoverService", reflect.TypeOf((*MockFailoverServiceWriter)(nil).PatchFailoverService), varargs...)
+}
+
+// DeleteAllOfFailoverService mocks base method.
+func (m *MockFailoverServiceWriter) DeleteAllOfFailoverService(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfFailoverService indicates an expected call of DeleteAllOfFailoverService.
+func (mr *MockFailoverServiceWriterMockRecorder) DeleteAllOfFailoverService(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfFailoverService", reflect.TypeOf((*MockFailoverServiceWriter)(nil).DeleteAllOfFailoverService), varargs...)
+}
+
+// UpsertFailoverService mocks base method.
+func (m *MockFailoverServiceWriter) UpsertFailoverService(ctx context.Context, obj *v1alpha1.FailoverService, transitionFuncs ...v1alpha1.FailoverServiceTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertFailoverService indicates an expected call of UpsertFailoverService.
+func (mr *MockFailoverServiceWriterMockRecorder) UpsertFailoverService(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertFailoverService", reflect.TypeOf((*MockFailoverServiceWriter)(nil).UpsertFailoverService), varargs...)
+}
+
+// MockFailoverServiceStatusWriter is a mock of FailoverServiceStatusWriter interface.
+type MockFailoverServiceStatusWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockFailoverServiceStatusWriterMockRecorder
+}
+
+// MockFailoverServiceStatusWriterMockRecorder is the mock recorder for MockFailoverServiceStatusWriter.
+type MockFailoverServiceStatusWriterMockRecorder struct {
+	mock *MockFailoverServiceStatusWriter
+}
+
+// NewMockFailoverServiceStatusWriter creates a new mock instance.
+func NewMockFailoverServiceStatusWriter(ctrl *gomock.Controller) *MockFailoverServiceStatusWriter {
+	mock := &MockFailoverServiceStatusWriter{ctrl: ctrl}
+	mock.recorder = &MockFailoverServiceStatusWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFailoverServiceStatusWriter) EXPECT() *MockFailoverServiceStatusWriterMockRecorder {
+	return m.recorder
+}
+
+// UpdateFailoverServiceStatus mocks base method.
+func (m *MockFailoverServiceStatusWriter) UpdateFailoverServiceStatus(ctx context.Context, obj *v1alpha1.FailoverService, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateFailoverServiceStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateFailoverServiceStatus indicates an expected call of UpdateFailoverServiceStatus.
+func (mr *MockFailoverServiceStatusWriterMockRecorder) UpdateFailoverServiceStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFailoverServiceStatus", reflect.TypeOf((*MockFailoverServiceStatusWriter)(nil).UpdateFailoverServiceStatus), varargs...)
+}
+
+// PatchFailoverServiceStatus mocks base method.
+func (m *MockFailoverServiceStatusWriter) PatchFailoverServiceStatus(ctx context.Context, obj *v1alpha1.FailoverService, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchFailoverServiceStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchFailoverServiceStatus indicates an expected call of PatchFailoverServiceStatus.
+func (mr *MockFailoverServiceStatusWriterMockRecorder) PatchFailoverServiceStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchFailoverServiceStatus", reflect.TypeOf((*MockFailoverServiceStatusWriter)(nil).PatchFailoverServiceStatus), varargs...)
+}
+
+// MockFailoverServiceClient is a mock of FailoverServiceClient interface.
+type MockFailoverServiceClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockFailoverServiceClientMockRecorder
+}
+
+// MockFailoverServiceClientMockRecorder is the mock recorder for MockFailoverServiceClient.
+type MockFailoverServiceClientMockRecorder struct {
+	mock *MockFailoverServiceClient
+}
+
+// NewMockFailoverServiceClient creates a new mock instance.
+func NewMockFailoverServiceClient(ctrl *gomock.Controller) *MockFailoverServiceClient {
+	mock := &MockFailoverServiceClient{ctrl: ctrl}
+	mock.recorder = &MockFailoverServiceClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFailoverServiceClient) EXPECT() *MockFailoverServiceClientMockRecorder {
+	return m.recorder
+}
+
+// GetFailoverService mocks base method.
+func (m *MockFailoverServiceClient) GetFailoverService(ctx context.Context, key client.ObjectKey) (*v1alpha1.FailoverService, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFailoverService", ctx, key)
+	ret0, _ := ret[0].(*v1alpha1.FailoverService)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFailoverService indicates an expected call of GetFailoverService.
+func (mr *MockFailoverServiceClientMockRecorder) GetFailoverService(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFailoverService", reflect.TypeOf((*MockFailoverServiceClient)(nil).GetFailoverService), ctx, key)
+}
+
+// ListFailoverService mocks base method.
+func (m *MockFailoverServiceClient) ListFailoverService(ctx context.Context, opts ...client.ListOption) (*v1alpha1.FailoverServiceList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListFailoverService", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.FailoverServiceList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListFailoverService indicates an expected call of ListFailoverService.
+func (mr *MockFailoverServiceClientMockRecorder) ListFailoverService(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFailoverService", reflect.TypeOf((*MockFailoverServiceClient)(nil).ListFailoverService), varargs...)
+}
+
+// CreateFailoverService mocks base method.
+func (m *MockFailoverServiceClient) CreateFailoverService(ctx context.Context, obj *v1alpha1.FailoverService, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateFailoverService indicates an expected call of CreateFailoverService.
+func (mr *MockFailoverServiceClientMockRecorder) CreateFailoverService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFailoverService", reflect.TypeOf((*MockFailoverServiceClient)(nil).CreateFailoverService), varargs...)
+}
+
+// DeleteFailoverService mocks base method.
+func (m *MockFailoverServiceClient) DeleteFailoverService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteFailoverService indicates an expected call of DeleteFailoverService.
+func (mr *MockFailoverServiceClientMockRecorder) DeleteFailoverService(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFailoverService", reflect.TypeOf((*MockFailoverServiceClient)(nil).DeleteFailoverService), varargs...)
+}
+
+// UpdateFailoverService mocks base method.
+func (m *MockFailoverServiceClient) UpdateFailoverService(ctx context.Context, obj *v1alpha1.FailoverService, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateFailoverService indicates an expected call of UpdateFailoverService.
+func (mr *MockFailoverServiceClientMockRecorder) UpdateFailoverService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFailoverService", reflect.TypeOf((*MockFailoverServiceClient)(nil).UpdateFailoverService), varargs...)
+}
+
+// PatchFailoverService mocks base method.
+func (m *MockFailoverServiceClient) PatchFailoverService(ctx context.Context, obj *v1alpha1.FailoverService, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchFailoverService indicates an expected call of PatchFailoverService.
+func (mr *MockFailoverServiceClientMockRecorder) PatchFailoverService(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchFailoverService", reflect.TypeOf((*MockFailoverServiceClient)(nil).PatchFailoverService), varargs...)
+}
+
+// DeleteAllOfFailoverService mocks base method.
+func (m *MockFailoverServiceClient) DeleteAllOfFailoverService(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfFailoverService indicates an expected call of DeleteAllOfFailoverService.
+func (mr *MockFailoverServiceClientMockRecorder) DeleteAllOfFailoverService(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfFailoverService", reflect.TypeOf((*MockFailoverServiceClient)(nil).DeleteAllOfFailoverService), varargs...)
+}
+
+// UpsertFailoverService mocks base method.
+func (m *MockFailoverServiceClient) UpsertFailoverService(ctx context.Context, obj *v1alpha1.FailoverService, transitionFuncs ...v1alpha1.FailoverServiceTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertFailoverService", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertFailoverService indicates an expected call of UpsertFailoverService.
+func (mr *MockFailoverServiceClientMockRecorder) UpsertFailoverService(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertFailoverService", reflect.TypeOf((*MockFailoverServiceClient)(nil).UpsertFailoverService), varargs...)
+}
+
+// UpdateFailoverServiceStatus mocks base method.
+func (m *MockFailoverServiceClient) UpdateFailoverServiceStatus(ctx context.Context, obj *v1alpha1.FailoverService, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateFailoverServiceStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateFailoverServiceStatus indicates an expected call of UpdateFailoverServiceStatus.
+func (mr *MockFailoverServiceClientMockRecorder) UpdateFailoverServiceStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFailoverServiceStatus", reflect.TypeOf((*MockFailoverServiceClient)(nil).UpdateFailoverServiceStatus), varargs...)
+}
+
+// PatchFailoverServiceStatus mocks base method.
+func (m *MockFailoverServiceClient) PatchFailoverServiceStatus(ctx context.Context, obj *v1alpha1.FailoverService, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchFailoverServiceStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchFailoverServiceStatus indicates an expected call of PatchFailoverServiceStatus.
+func (mr *MockFailoverServiceClientMockRecorder) PatchFailoverServiceStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchFailoverServiceStatus", reflect.TypeOf((*MockFailoverServiceClient)(nil).PatchFailoverServiceStatus), varargs...)
+}
+
+// MockMulticlusterFailoverServiceClient is a mock of MulticlusterFailoverServiceClient interface.
+type MockMulticlusterFailoverServiceClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterFailoverServiceClientMockRecorder
+}
+
+// MockMulticlusterFailoverServiceClientMockRecorder is the mock recorder for MockMulticlusterFailoverServiceClient.
+type MockMulticlusterFailoverServiceClientMockRecorder struct {
+	mock *MockMulticlusterFailoverServiceClient
+}
+
+// NewMockMulticlusterFailoverServiceClient creates a new mock instance.
+func NewMockMulticlusterFailoverServiceClient(ctrl *gomock.Controller) *MockMulticlusterFailoverServiceClient {
+	mock := &MockMulticlusterFailoverServiceClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterFailoverServiceClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterFailoverServiceClient) EXPECT() *MockMulticlusterFailoverServiceClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterFailoverServiceClient) Cluster(cluster string) (v1alpha1.FailoverServiceClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha1.FailoverServiceClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterFailoverServiceClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterFailoverServiceClient)(nil).Cluster), cluster)
 }

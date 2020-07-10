@@ -553,3 +553,41 @@ func (mr *MockSettingsClientMockRecorder) PatchSettingsStatus(ctx, obj, patch in
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchSettingsStatus", reflect.TypeOf((*MockSettingsClient)(nil).PatchSettingsStatus), varargs...)
 }
+
+// MockMulticlusterSettingsClient is a mock of MulticlusterSettingsClient interface.
+type MockMulticlusterSettingsClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterSettingsClientMockRecorder
+}
+
+// MockMulticlusterSettingsClientMockRecorder is the mock recorder for MockMulticlusterSettingsClient.
+type MockMulticlusterSettingsClientMockRecorder struct {
+	mock *MockMulticlusterSettingsClient
+}
+
+// NewMockMulticlusterSettingsClient creates a new mock instance.
+func NewMockMulticlusterSettingsClient(ctrl *gomock.Controller) *MockMulticlusterSettingsClient {
+	mock := &MockMulticlusterSettingsClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterSettingsClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterSettingsClient) EXPECT() *MockMulticlusterSettingsClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterSettingsClient) Cluster(cluster string) (v1alpha1.SettingsClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha1.SettingsClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterSettingsClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterSettingsClient)(nil).Cluster), cluster)
+}

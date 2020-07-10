@@ -8,7 +8,7 @@ import (
 	core_smh_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
 
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -23,10 +23,12 @@ type SettingsSet interface {
 	Union(set SettingsSet) SettingsSet
 	Difference(set SettingsSet) SettingsSet
 	Intersection(set SettingsSet) SettingsSet
+	Find(id ezkube.ResourceId) (*core_smh_solo_io_v1alpha1.Settings, error)
+	Length() int
 }
 
 func makeGenericSettingsSet(settingsList []*core_smh_solo_io_v1alpha1.Settings) sksets.ResourceSet {
-	var genericResources []metav1.Object
+	var genericResources []ezkube.ResourceId
 	for _, obj := range settingsList {
 		genericResources = append(genericResources, obj)
 	}
@@ -41,11 +43,19 @@ func NewSettingsSet(settingsList ...*core_smh_solo_io_v1alpha1.Settings) Setting
 	return &settingsSet{set: makeGenericSettingsSet(settingsList)}
 }
 
-func (s settingsSet) Keys() sets.String {
+func NewSettingsSetFromList(settingsList *core_smh_solo_io_v1alpha1.SettingsList) SettingsSet {
+	list := make([]*core_smh_solo_io_v1alpha1.Settings, 0, len(settingsList.Items))
+	for idx := range settingsList.Items {
+		list = append(list, &settingsList.Items[idx])
+	}
+	return &settingsSet{set: makeGenericSettingsSet(list)}
+}
+
+func (s *settingsSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s settingsSet) List() []*core_smh_solo_io_v1alpha1.Settings {
+func (s *settingsSet) List() []*core_smh_solo_io_v1alpha1.Settings {
 	var settingsList []*core_smh_solo_io_v1alpha1.Settings
 	for _, obj := range s.set.List() {
 		settingsList = append(settingsList, obj.(*core_smh_solo_io_v1alpha1.Settings))
@@ -53,7 +63,7 @@ func (s settingsSet) List() []*core_smh_solo_io_v1alpha1.Settings {
 	return settingsList
 }
 
-func (s settingsSet) Map() map[string]*core_smh_solo_io_v1alpha1.Settings {
+func (s *settingsSet) Map() map[string]*core_smh_solo_io_v1alpha1.Settings {
 	newMap := map[string]*core_smh_solo_io_v1alpha1.Settings{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*core_smh_solo_io_v1alpha1.Settings)
@@ -61,7 +71,7 @@ func (s settingsSet) Map() map[string]*core_smh_solo_io_v1alpha1.Settings {
 	return newMap
 }
 
-func (s settingsSet) Insert(
+func (s *settingsSet) Insert(
 	settingsList ...*core_smh_solo_io_v1alpha1.Settings,
 ) {
 	for _, obj := range settingsList {
@@ -69,34 +79,47 @@ func (s settingsSet) Insert(
 	}
 }
 
-func (s settingsSet) Has(settings *core_smh_solo_io_v1alpha1.Settings) bool {
+func (s *settingsSet) Has(settings *core_smh_solo_io_v1alpha1.Settings) bool {
 	return s.set.Has(settings)
 }
 
-func (s settingsSet) Equal(
+func (s *settingsSet) Equal(
 	settingsSet SettingsSet,
 ) bool {
 	return s.set.Equal(makeGenericSettingsSet(settingsSet.List()))
 }
 
-func (s settingsSet) Delete(Settings *core_smh_solo_io_v1alpha1.Settings) {
+func (s *settingsSet) Delete(Settings *core_smh_solo_io_v1alpha1.Settings) {
 	s.set.Delete(Settings)
 }
 
-func (s settingsSet) Union(set SettingsSet) SettingsSet {
+func (s *settingsSet) Union(set SettingsSet) SettingsSet {
 	return NewSettingsSet(append(s.List(), set.List()...)...)
 }
 
-func (s settingsSet) Difference(set SettingsSet) SettingsSet {
+func (s *settingsSet) Difference(set SettingsSet) SettingsSet {
 	newSet := s.set.Difference(makeGenericSettingsSet(set.List()))
-	return settingsSet{set: newSet}
+	return &settingsSet{set: newSet}
 }
 
-func (s settingsSet) Intersection(set SettingsSet) SettingsSet {
+func (s *settingsSet) Intersection(set SettingsSet) SettingsSet {
 	newSet := s.set.Intersection(makeGenericSettingsSet(set.List()))
 	var settingsList []*core_smh_solo_io_v1alpha1.Settings
 	for _, obj := range newSet.List() {
 		settingsList = append(settingsList, obj.(*core_smh_solo_io_v1alpha1.Settings))
 	}
 	return NewSettingsSet(settingsList...)
+}
+
+func (s *settingsSet) Find(id ezkube.ResourceId) (*core_smh_solo_io_v1alpha1.Settings, error) {
+	obj, err := s.set.Find(&core_smh_solo_io_v1alpha1.Settings{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*core_smh_solo_io_v1alpha1.Settings), nil
+}
+
+func (s *settingsSet) Length() int {
+	return s.set.Length()
 }

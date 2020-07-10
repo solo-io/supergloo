@@ -23,8 +23,6 @@ func TestE2E(t *testing.T) {
 	RunSpecs(t, "E2e Suite")
 }
 
-var eksNamespace string
-
 func RunEKS() bool {
 	// allow disabling EKS tests explicitly to allow running istio tests locally
 	return os.Getenv("RUN_EKS") != "0"
@@ -35,16 +33,10 @@ var _ = BeforeSuite(func() {
 	defer cancel()
 	/* env := */ StartEnvOnce(ctx)
 	// TODO: deploy test helper?
-	if RunEKS() {
-		eksNamespace = setupAppmeshEksEnvironment()
-	}
 })
 
 var _ = AfterSuite(func() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if RunEKS() {
-		cleanupAppmeshEksEnvironment(eksNamespace)
-	}
 	ClearEnv(ctx)
 })

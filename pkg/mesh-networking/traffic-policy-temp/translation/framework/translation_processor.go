@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
 	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/metadata"
 	"github.com/solo-io/service-mesh-hub/pkg/common/kube/selection"
@@ -46,6 +47,9 @@ func ClusterKeyFromMesh(mesh *smh_discovery.Mesh) types.NamespacedName {
 func NewClusterNameToSnapshot(knownMeshes []*smh_discovery.Mesh) snapshot.ClusterNameToSnapshot {
 	m := snapshot.ClusterNameToSnapshot{}
 	for _, mesh := range knownMeshes {
+		if !meshIsSupported(mesh) {
+			continue
+		}
 		m[ClusterKeyFromMesh(mesh)] = &snapshot.TranslatedSnapshot{}
 	}
 	return m
@@ -88,13 +92,25 @@ func (t *translationProcessor) Process(ctx context.Context, allMeshServices []*s
 	return clusterNameToSnapshot, multierr
 }
 
-func (t *translationProcessor) processService(ctx context.Context, meshService *smh_discovery.MeshService, allMeshServices []*smh_discovery.MeshService, meshIdToMesh map[string]*smh_discovery.Mesh, clusterNameToSnapshot snapshot.ClusterNameToSnapshot) error {
+func (t *translationProcessor) processService(
+	ctx context.Context,
+	meshService *smh_discovery.MeshService,
+	allMeshServices []*smh_discovery.MeshService,
+	meshIdToMesh map[string]*smh_discovery.Mesh,
+	clusterNameToSnapshot snapshot.ClusterNameToSnapshot,
+) error {
 	logger := contextutils.LoggerFrom(ctx)
 
 	meshId := selection.ToUniqueSingleClusterString(selection.ResourceRefToObjectMeta(meshService.Spec.GetMesh()))
 	mesh, ok := meshIdToMesh[meshId]
 	if !ok {
-		return eris.Errorf("Got a mesh service %s.%s belonging to a mesh %s.%s that does not exist", meshService.GetName(), meshService.GetNamespace(), mesh.GetName(), mesh.GetNamespace())
+		meshRef := meshService.Spec.GetMesh()
+		return eris.Errorf("Got a mesh service %s.%s belonging to a mesh %s.%s that does not exist",
+			meshService.GetName(),
+			meshService.GetNamespace(),
+			meshRef.GetName(),
+			meshRef.GetNamespace(),
+		)
 	}
 
 	meshType, err := metadata.MeshToMeshType(mesh)
@@ -106,7 +122,7 @@ func (t *translationProcessor) processService(ctx context.Context, meshService *
 
 	snapshotAccumulator, err := t.translationSnapshotBuilderGetter(meshType)
 	if err != nil {
-		return err
+		return nil
 	}
 
 	// we run translation even if the service has translation errors - as we might want to
@@ -122,4 +138,19 @@ func (t *translationProcessor) processService(ctx context.Context, meshService *
 		mesh,
 	)
 	return err
+}
+
+func meshIsSupported(mesh *smh_discovery.Mesh) bool {
+	meshType, err := metadata.MeshToMeshType(mesh)
+	if err != nil {
+		return false
+	}
+	switch meshType {
+	case smh_core_types.MeshType_ISTIO1_5:
+		fallthrough
+	case smh_core_types.MeshType_ISTIO1_6:
+		return true
+	default:
+		return false
+	}
 }

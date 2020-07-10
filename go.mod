@@ -9,7 +9,9 @@ require (
 	github.com/aws/aws-app-mesh-controller-for-k8s v0.5.0
 	github.com/aws/aws-sdk-go v1.30.15
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
+	github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f
 	github.com/docker/distribution v2.7.1+incompatible
+	github.com/envoyproxy/go-control-plane v0.9.4
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/go-logr/zapr v0.1.1
 	github.com/go-test/deep v1.0.3 // indirect
@@ -32,6 +34,7 @@ require (
 	github.com/lyft/protoc-gen-star v0.4.15 // indirect
 	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/mattn/go-shellwords v1.0.9
+	github.com/mitchellh/hashstructure v1.0.0
 	github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
@@ -44,12 +47,12 @@ require (
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
-	github.com/solo-io/external-apis v0.0.0-20200612200207-1dbc5c4610e8
+	github.com/solo-io/external-apis v0.0.2
 	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/protoc-gen-ext v0.0.9
 	github.com/solo-io/reporting-client v0.1.3
-	github.com/solo-io/skv2 v0.4.2
-	github.com/solo-io/solo-kit v0.13.3
+	github.com/solo-io/skv2 v0.6.1
+	github.com/solo-io/solo-kit v0.13.8
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.6
 	go.uber.org/zap v1.13.0
@@ -61,12 +64,12 @@ require (
 	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
 	k8s.io/api v0.17.4
-	k8s.io/apiextensions-apiserver v0.17.4
+	k8s.io/apiextensions-apiserver v0.18.1
 	k8s.io/apimachinery v0.18.3
 	k8s.io/cli-runtime v0.17.2
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator v0.17.4
-	sigs.k8s.io/controller-runtime v0.5.1
+	sigs.k8s.io/controller-runtime v0.5.6
 	sigs.k8s.io/yaml v1.2.0
 )
 

@@ -24,15 +24,16 @@ var (
 	InvalidPercentageError = func(pct float64) error {
 		return eris.Errorf("Percentage must be between 0.0 and 100.0 inclusive, got %f", pct)
 	}
-	DestinationNotFound = func(ref *smh_core_types.ResourceRef) error {
-		return eris.Errorf("No destinations found with ref %s.%s.%s", ref.Name, ref.Namespace, ref.Cluster)
+	ServiceNotFound = func(ref *smh_core_types.ResourceRef) error {
+		return eris.Errorf("No services found with ref %s.%s.%s", ref.Name, ref.Namespace, ref.Cluster)
 	}
 	SubsetSelectorNotFound = func(meshService *smh_discovery.MeshService, subsetKey string, subsetValue string) error {
 		return eris.Errorf("Subset selector with key: %s, value: %s not found on k8s service of name: %s, namespace: %s",
 			subsetKey, subsetValue, meshService.GetName(), meshService.GetNamespace())
 	}
-	NilDestinationRef = eris.New("Destination reference must be non-nil")
-	MinDurationError  = eris.New("Duration must be >= 1 millisecond")
+	NilDestinationRef                          = eris.New("Destination reference must be non-nil")
+	MinDurationError                           = eris.New("Duration must be >= 1 millisecond")
+	OutlierDetectionWithNonEmptySourceSelector = eris.New("OutlierDetection settings require an empty source selector.")
 )
 
 func NewValidator(
@@ -49,8 +50,8 @@ type validator struct {
 
 func (v *validator) ValidateTrafficPolicy(trafficPolicy *smh_networking.TrafficPolicy, allMeshServices []*smh_discovery.MeshService) (*smh_core_types.Status, error) {
 	var multiErr *multierror.Error
-	if err := v.validateDestination(allMeshServices, trafficPolicy.Spec.GetDestinationSelector()); err != nil {
-		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in Destination"))
+	if multierr := v.validateDestination(allMeshServices, trafficPolicy.Spec.GetDestinationSelector()); multierr.ErrorOrNil() != nil {
+		multiErr = multierror.Append(multiErr, multierr.Errors...)
 	}
 	if err := v.validateTrafficShift(allMeshServices, trafficPolicy.Spec.GetTrafficShift()); err != nil {
 		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in TrafficShift"))
@@ -70,6 +71,9 @@ func (v *validator) ValidateTrafficPolicy(trafficPolicy *smh_networking.TrafficP
 	if err := v.validateMirror(allMeshServices, trafficPolicy.Spec.GetMirror()); err != nil {
 		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in Mirror"))
 	}
+	if err := v.validateOutlierDetection(trafficPolicy.Spec.GetSourceSelector(), trafficPolicy.Spec.GetOutlierDetection()); err != nil {
+		multiErr = multierror.Append(multiErr, eris.Wrap(err, "Error found in OutlierDetection"))
+	}
 	validationErr := multiErr.ErrorOrNil()
 	if validationErr == nil {
 		return &smh_core_types.Status{
@@ -83,15 +87,20 @@ func (v *validator) ValidateTrafficPolicy(trafficPolicy *smh_networking.TrafficP
 	}
 }
 
-func (v *validator) validateDestination(allServices []*smh_discovery.MeshService, selector *smh_core_types.ServiceSelector) error {
-	if selector == nil {
+// Can only validate destinations declared by reference.
+func (v *validator) validateDestination(allServices []*smh_discovery.MeshService, selector *smh_core_types.ServiceSelector) *multierror.Error {
+	if selector == nil || selector.GetServiceRefs() == nil {
 		return nil
 	}
-	_, err := v.resourceSelector.FilterMeshServicesByServiceSelector(allServices, selector)
-	if err != nil {
-		return err
+	var multierr *multierror.Error
+	for _, serviceRef := range selector.GetServiceRefs().GetServices() {
+		if svc := v.resourceSelector.FindMeshServiceByRefSelector(
+			allServices,
+			serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()); svc == nil {
+			multierr = multierror.Append(multierr, ServiceNotFound(serviceRef))
+		}
 	}
-	return nil
+	return multierr
 }
 
 // Validate that the TrafficShift destination k8s Service exist
@@ -205,6 +214,7 @@ func (v *validator) validatePercentage(percentage float64) error {
 	return nil
 }
 
+// Return error if duration < 1ms
 func (v *validator) validateDuration(duration *types.Duration) error {
 	if duration.GetSeconds() < 0 || (duration.GetSeconds() == 0 && duration.GetNanos() < 1000000) {
 		return MinDurationError
@@ -222,7 +232,7 @@ func (v *validator) validateKubeService(
 	meshService := v.resourceSelector.FindMeshServiceByRefSelector(services, ref.GetName(), ref.GetNamespace(), ref.GetCluster())
 
 	if meshService == nil {
-		return nil, DestinationNotFound(ref)
+		return nil, ServiceNotFound(ref)
 	}
 	return meshService, nil
 }
@@ -236,6 +246,38 @@ func (v *validator) validateSubsetSelectors(
 		found := stringutils.ContainsString(subsetValue, values.GetValues())
 		if !keyExists || !found {
 			return SubsetSelectorNotFound(meshService, subsetKey, subsetValue)
+		}
+	}
+	return nil
+}
+
+// If OutlierDetection is set, source selector must be nil because outlier detection applies
+// to all incoming traffic.
+func (v *validator) validateOutlierDetection(
+	sourceSelector *smh_core_types.WorkloadSelector,
+	outlierDetection *smh_networking_types.TrafficPolicySpec_OutlierDetection,
+) error {
+	var err error
+	if outlierDetection == nil {
+		return nil
+	}
+	if sourceSelector != nil {
+		return OutlierDetectionWithNonEmptySourceSelector
+	}
+	if outlierDetection.GetConsecutiveErrors() < 1 {
+		return eris.Errorf(
+			"Invalid OutlierDetection consecutive errors: %d, must be > 0",
+			outlierDetection.GetConsecutiveErrors(),
+		)
+	}
+	if outlierDetection.GetInterval() != nil {
+		if err = v.validateDuration(outlierDetection.GetInterval()); err != nil {
+			return eris.Wrap(err, "Invalid OutlierDetection interval")
+		}
+	}
+	if outlierDetection.GetBaseEjectionTime() != nil {
+		if err = v.validateDuration(outlierDetection.GetBaseEjectionTime()); err != nil {
+			return eris.Wrap(err, "Invalid OutlierDetection base ejection time")
 		}
 	}
 	return nil

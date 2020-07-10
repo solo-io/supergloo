@@ -77,9 +77,11 @@ func (m *MockMulticlusterTrafficPolicyDeletionReconciler) EXPECT() *MockMulticlu
 }
 
 // ReconcileTrafficPolicyDeletion mocks base method.
-func (m *MockMulticlusterTrafficPolicyDeletionReconciler) ReconcileTrafficPolicyDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterTrafficPolicyDeletionReconciler) ReconcileTrafficPolicyDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileTrafficPolicyDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileTrafficPolicyDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileTrafficPolicyDeletion indicates an expected call of ReconcileTrafficPolicyDeletion.
@@ -190,9 +192,11 @@ func (m *MockMulticlusterAccessControlPolicyDeletionReconciler) EXPECT() *MockMu
 }
 
 // ReconcileAccessControlPolicyDeletion mocks base method.
-func (m *MockMulticlusterAccessControlPolicyDeletionReconciler) ReconcileAccessControlPolicyDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterAccessControlPolicyDeletionReconciler) ReconcileAccessControlPolicyDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileAccessControlPolicyDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileAccessControlPolicyDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileAccessControlPolicyDeletion indicates an expected call of ReconcileAccessControlPolicyDeletion.
@@ -303,9 +307,11 @@ func (m *MockMulticlusterVirtualMeshDeletionReconciler) EXPECT() *MockMulticlust
 }
 
 // ReconcileVirtualMeshDeletion mocks base method.
-func (m *MockMulticlusterVirtualMeshDeletionReconciler) ReconcileVirtualMeshDeletion(clusterName string, req reconcile.Request) {
+func (m *MockMulticlusterVirtualMeshDeletionReconciler) ReconcileVirtualMeshDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReconcileVirtualMeshDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileVirtualMeshDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReconcileVirtualMeshDeletion indicates an expected call of ReconcileVirtualMeshDeletion.
@@ -352,4 +358,119 @@ func (mr *MockMulticlusterVirtualMeshReconcileLoopMockRecorder) AddMulticlusterV
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterVirtualMeshReconciler", reflect.TypeOf((*MockMulticlusterVirtualMeshReconcileLoop)(nil).AddMulticlusterVirtualMeshReconciler), varargs...)
+}
+
+// MockMulticlusterFailoverServiceReconciler is a mock of MulticlusterFailoverServiceReconciler interface.
+type MockMulticlusterFailoverServiceReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterFailoverServiceReconcilerMockRecorder
+}
+
+// MockMulticlusterFailoverServiceReconcilerMockRecorder is the mock recorder for MockMulticlusterFailoverServiceReconciler.
+type MockMulticlusterFailoverServiceReconcilerMockRecorder struct {
+	mock *MockMulticlusterFailoverServiceReconciler
+}
+
+// NewMockMulticlusterFailoverServiceReconciler creates a new mock instance.
+func NewMockMulticlusterFailoverServiceReconciler(ctrl *gomock.Controller) *MockMulticlusterFailoverServiceReconciler {
+	mock := &MockMulticlusterFailoverServiceReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterFailoverServiceReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterFailoverServiceReconciler) EXPECT() *MockMulticlusterFailoverServiceReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileFailoverService mocks base method.
+func (m *MockMulticlusterFailoverServiceReconciler) ReconcileFailoverService(clusterName string, obj *v1alpha1.FailoverService) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileFailoverService", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileFailoverService indicates an expected call of ReconcileFailoverService.
+func (mr *MockMulticlusterFailoverServiceReconcilerMockRecorder) ReconcileFailoverService(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverService", reflect.TypeOf((*MockMulticlusterFailoverServiceReconciler)(nil).ReconcileFailoverService), clusterName, obj)
+}
+
+// MockMulticlusterFailoverServiceDeletionReconciler is a mock of MulticlusterFailoverServiceDeletionReconciler interface.
+type MockMulticlusterFailoverServiceDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder
+}
+
+// MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterFailoverServiceDeletionReconciler.
+type MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder struct {
+	mock *MockMulticlusterFailoverServiceDeletionReconciler
+}
+
+// NewMockMulticlusterFailoverServiceDeletionReconciler creates a new mock instance.
+func NewMockMulticlusterFailoverServiceDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterFailoverServiceDeletionReconciler {
+	mock := &MockMulticlusterFailoverServiceDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterFailoverServiceDeletionReconciler) EXPECT() *MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileFailoverServiceDeletion mocks base method.
+func (m *MockMulticlusterFailoverServiceDeletionReconciler) ReconcileFailoverServiceDeletion(clusterName string, req reconcile.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileFailoverServiceDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileFailoverServiceDeletion indicates an expected call of ReconcileFailoverServiceDeletion.
+func (mr *MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder) ReconcileFailoverServiceDeletion(clusterName, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverServiceDeletion", reflect.TypeOf((*MockMulticlusterFailoverServiceDeletionReconciler)(nil).ReconcileFailoverServiceDeletion), clusterName, req)
+}
+
+// MockMulticlusterFailoverServiceReconcileLoop is a mock of MulticlusterFailoverServiceReconcileLoop interface.
+type MockMulticlusterFailoverServiceReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterFailoverServiceReconcileLoopMockRecorder
+}
+
+// MockMulticlusterFailoverServiceReconcileLoopMockRecorder is the mock recorder for MockMulticlusterFailoverServiceReconcileLoop.
+type MockMulticlusterFailoverServiceReconcileLoopMockRecorder struct {
+	mock *MockMulticlusterFailoverServiceReconcileLoop
+}
+
+// NewMockMulticlusterFailoverServiceReconcileLoop creates a new mock instance.
+func NewMockMulticlusterFailoverServiceReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterFailoverServiceReconcileLoop {
+	mock := &MockMulticlusterFailoverServiceReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterFailoverServiceReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterFailoverServiceReconcileLoop) EXPECT() *MockMulticlusterFailoverServiceReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// AddMulticlusterFailoverServiceReconciler mocks base method.
+func (m *MockMulticlusterFailoverServiceReconcileLoop) AddMulticlusterFailoverServiceReconciler(ctx context.Context, rec controller.MulticlusterFailoverServiceReconciler, predicates ...predicate.Predicate) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddMulticlusterFailoverServiceReconciler", varargs...)
+}
+
+// AddMulticlusterFailoverServiceReconciler indicates an expected call of AddMulticlusterFailoverServiceReconciler.
+func (mr *MockMulticlusterFailoverServiceReconcileLoopMockRecorder) AddMulticlusterFailoverServiceReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterFailoverServiceReconciler", reflect.TypeOf((*MockMulticlusterFailoverServiceReconcileLoop)(nil).AddMulticlusterFailoverServiceReconciler), varargs...)
 }

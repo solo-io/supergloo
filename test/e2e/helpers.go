@@ -4,6 +4,7 @@ import (
 	"context"
 	"os/exec"
 	"strings"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -19,6 +20,10 @@ func StatusOf(something interface{}, kc KubeContext) func() smh_core_types.Statu
 		return func() smh_core_types.Status_State { return StatusOfTrafficPolicy(obj, kc) }
 	case *smh_networking.TrafficPolicy:
 		return func() smh_core_types.Status_State { return StatusOfTrafficPolicy(*obj, kc) }
+	case smh_networking.FailoverService:
+		return func() smh_core_types.Status_State { return StatusOfFailoverService(obj, kc) }
+	case *smh_networking.FailoverService:
+		return func() smh_core_types.Status_State { return StatusOfFailoverService(*obj, kc) }
 	default:
 		Fail("unknown object")
 	}
@@ -33,6 +38,16 @@ func StatusOfTrafficPolicy(tp smh_networking.TrafficPolicy, kc KubeContext) smh_
 	newtp, err := kc.TrafficPolicyClient.GetTrafficPolicy(context.Background(), key)
 	Expect(err).NotTo(HaveOccurred())
 	return newtp.Status.GetTranslationStatus().GetState()
+}
+
+func StatusOfFailoverService(failoverService smh_networking.FailoverService, kc KubeContext) smh_core_types.Status_State {
+	key := client.ObjectKey{
+		Name:      failoverService.Name,
+		Namespace: failoverService.Namespace,
+	}
+	fetchedFailoverService, err := kc.FailoverServiceClient.GetFailoverService(context.Background(), key)
+	Expect(err).NotTo(HaveOccurred())
+	return fetchedFailoverService.Status.GetTranslationStatus().GetState()
 }
 
 func KubeCluster(key client.ObjectKey, kc KubeContext) func() *smh_discovery.KubernetesCluster {
@@ -56,4 +71,23 @@ func MeshCtl(args string) error {
 func MeshCtlCommand(arg ...string) *exec.Cmd {
 	arg = append([]string{"--context", GetEnv().Management.Context}, arg...)
 	return exec.Command("../../_output/meshctl", arg...)
+}
+
+var ApplyTrafficPolicy = func(env Env, tpYaml string) {
+	var tp smh_networking.TrafficPolicy
+	ParseYaml(tpYaml, &tp)
+	err := env.Management.TrafficPolicyClient.CreateTrafficPolicy(context.Background(), &tp)
+	Expect(err).NotTo(HaveOccurred())
+	// see that it was accepted
+	Eventually(StatusOf(tp, env.Management), "1m", "1s").Should(Equal(smh_core_types.Status_ACCEPTED))
+}
+
+var CurlReviews = func(env Env) func() string {
+	return func() string {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute/3)
+		defer cancel()
+		out := env.Management.GetPod("default", "productpage").Curl(ctx, "http://reviews:9080/reviews/1")
+		GinkgoWriter.Write([]byte(out))
+		return out
+	}
 }
