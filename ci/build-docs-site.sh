@@ -48,7 +48,8 @@ function generateHugoVersionsYaml() {
   yamlFile=$repoDir/docs/data/Solo.yaml
   # Truncate file first.
   echo "LatestVersion: $latestVersion" > $yamlFile
-  echo "DocsVersion: /$1" >> $yamlFile
+  # /service-mesh-hub prefix is needed because the site is hosted under a domain name with suffix /service-mesh-hub
+  echo "DocsVersion: /service-mesh-hub/$1" >> $yamlFile
   echo "CodeVersion: $1" >> $yamlFile
   echo "DocsVersions:" >> $yamlFile
   for hugoVersion in "${versions[@]}"
