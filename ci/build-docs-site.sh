@@ -80,6 +80,10 @@ do
   # Copy over versioned static site to firebase content folder.
   mkdir -p $docsSiteDir/public/$version
   cp -a site-latest/. $docsSiteDir/public/$version/
+  # Discard git changes and vendor_any for subsequent checkouts
+  cd $repoDir
+  git reset --hard
+  rm -fr vendor_any
 done
 
 # Deploy the complete versioned site to Firebase. Firebase credentials are implicitly passed through the FIREBASE_TOKEN env var.
