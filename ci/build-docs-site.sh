@@ -41,7 +41,7 @@ repoDir=$workingDir/ci/service-mesh-hub-temp
 mkdir $docsSiteDir
 echo $firebaseJson > $docsSiteDir/firebase.json
 
-git clone git@github.com:solo-io/service-mesh-hub.git $repoDir
+git clone https://github.com/solo-io/service-mesh-hub.git $repoDir
 
 # Generates a data/Solo.yaml file with $1 being the specified version.
 function generateHugoVersionsYaml() {
@@ -80,13 +80,8 @@ do
   # Copy over versioned static site to firebase content folder.
   mkdir -p $docsSiteDir/public/$version
   cp -a site-latest/. $docsSiteDir/public/$version/
+  # Discard git changes and vendor_any for subsequent checkouts
+  cd $repoDir
+  git reset --hard
+  rm -fr vendor_any
 done
-
-# Deploy the complete versioned site to Firebase. Firebase credentials are implicitly passed through the FIREBASE_TOKEN env var.
-cd $docsSiteDir
-firebase use --add solo-corp
-firebase deploy --only hosting:service-mesh-hub
-
-# Clean up directories.
-rm -fr $docsSiteDir
-rm -fr $repoDir
