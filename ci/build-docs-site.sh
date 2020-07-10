@@ -85,12 +85,3 @@ do
   git reset --hard
   rm -fr vendor_any
 done
-
-# Deploy the complete versioned site to Firebase. Firebase credentials are implicitly passed through the FIREBASE_TOKEN env var.
-cd $docsSiteDir
-firebase use --add solo-corp
-firebase deploy --only hosting:service-mesh-hub
-
-# Clean up directories.
-rm -fr $docsSiteDir
-rm -fr $repoDir

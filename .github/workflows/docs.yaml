@@ -34,10 +34,16 @@ jobs:
 
     - name: Update deps
       run: |
-        curl -sL https://firebase.tools | bash
         make update-deps
 
-    - name: Update versioned docs site
+    - name: Generate versioned docs site
       run: ./ci/build-docs-site.sh
+
+    - name: Deploy to Firebase
+      uses: w9jds/firebase-action@master
+      with:
+        args: deploy --only hosting:service-mesh-hub
       env:
+        PROJECT_ID: solo-corp
+        PROJECT_PATH: ./ci/docs-site/
         FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
