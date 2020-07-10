@@ -1,15 +1,8 @@
-<!--<div title="v{{.Site.Data.Solo.CodeVersion}}"
-            style="overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;"
-        >
-          {{ .Site.Data.Solo.CodeVersion }}
-        </div>-->
-
-<!-- Need to run throuugh a RANGE of .Site.Data.Solo.DocsVersions .  This is tough to test locally as the version folders aren't generated -->
 <label for="version-selection" id="version-selection-label">Version:</label>
 <select id="version-selection" onchange="javascript:location.href = this.value;">
-  <option value="/service-mesh-hub/latest{{ .RelPermalink}}" {{if in .RelPermalink "latest/"}} selected{{end}}>
-    latest
+  {{- range $version := .Site.Data.Solo.DocsVersions}}
+  <option value="/{{ $version }}{{ $.RelPermalink}}" {{if eq (trim $.Site.Data.Solo.DocsVersion "/") $version }} selected{{end}}>
+      {{ $version }}
   </option>
+  {{ end }}
 </select>
