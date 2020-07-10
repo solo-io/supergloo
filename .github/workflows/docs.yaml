@@ -1,7 +1,6 @@
 name: Docs
 
 on:
-  pull_request: # temp for testing
   push:
     branches:
     - 'master'
