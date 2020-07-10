@@ -41,7 +41,7 @@ repoDir=$workingDir/ci/service-mesh-hub-temp
 mkdir $docsSiteDir
 echo $firebaseJson > $docsSiteDir/firebase.json
 
-git clone git@github.com:solo-io/service-mesh-hub.git $repoDir
+git clone https://github.com/solo-io/service-mesh-hub.git $repoDir
 
 # Generates a data/Solo.yaml file with $1 being the specified version.
 function generateHugoVersionsYaml() {
