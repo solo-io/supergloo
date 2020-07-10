@@ -16,16 +16,19 @@ import (
 func main() {
 	log.Printf("Started docs generation\n")
 
-	imports := sk_anyvendor.CreateDefaultMatchOptions([]string{
+	protoImports := sk_anyvendor.CreateDefaultMatchOptions([]string{
 		"api/**/*.proto",
 	})
+	protoImports.External["github.com/solo-io/skv2"] = []string{
+		"api/**/*.proto",
+	}
 	ctx := context.TODO()
 	mgr, err := manager.NewManager(ctx, "")
 	if err != nil {
 		log.Fatal("failed to initialize vendor_any manager")
 	}
 
-	if err = mgr.Ensure(ctx, imports.ToAnyvendorConfig()); err != nil {
+	if err = mgr.Ensure(ctx, protoImports.ToAnyvendorConfig()); err != nil {
 		log.Fatal("failed to import protos")
 	}
 	// generate docs
