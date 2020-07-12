@@ -34,7 +34,7 @@ func (t *translator) TranslateMeshServices(services corev1sets.ServiceSet, meshW
 		if meshService == nil {
 			continue
 		}
-		contextutils.LoggerFrom(t.ctx).Debugw("detected mesh service %v", sets.Key(meshService))
+		contextutils.LoggerFrom(t.ctx).Debugf("detected mesh service %v", sets.Key(meshService))
 		meshServiceSet.Insert(meshService)
 	}
 	return meshServiceSet

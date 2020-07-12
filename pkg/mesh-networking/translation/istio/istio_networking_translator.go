@@ -64,11 +64,38 @@ func (t *istioTranslator) Translate(
 
 	t.totalTranslates++
 
-	return istio.NewLabelPartitionedSnapshot(
-		fmt.Sprintf("istio-networking-%v", t.totalTranslates),
-		metautils.OwnershipLabelKey,
+	return t.makeOutputSnapshot(
 		destinationRules,
 		envoyFilters,
 		virtualServices,
 	)
+}
+
+func (t *istioTranslator) makeOutputSnapshot(
+	destinationRules v1alpha3sets.DestinationRuleSet,
+	envoyFilters v1alpha3sets.EnvoyFilterSet,
+	virtualServices v1alpha3sets.VirtualServiceSet,
+) (istio.Snapshot, error) {
+
+	snapshotLabels := metautils.TranslatedObjectLabels()
+
+	destinationRulesToUpsert, err := istio.NewLabeledDestinationRuleSet(destinationRules, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+	envoyFiltersToUpsert, err := istio.NewLabeledEnvoyFilterSet(envoyFilters, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+	virtualServicesToUpsert, err := istio.NewLabeledVirtualServiceSet(virtualServices, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+
+	return istio.NewSnapshot(
+		fmt.Sprintf("istio-networking-%v", t.totalTranslates),
+		[]istio.LabeledDestinationRuleSet{destinationRulesToUpsert},
+		[]istio.LabeledEnvoyFilterSet{envoyFiltersToUpsert},
+		[]istio.LabeledVirtualServiceSet{virtualServicesToUpsert},
+	), nil
 }

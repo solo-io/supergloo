@@ -40,7 +40,7 @@ func (t *translator) TranslateMeshes(deployments appsv1sets.DeploymentSet) v1alp
 		if mesh == nil {
 			continue
 		}
-		contextutils.LoggerFrom(t.ctx).Debugw("detected mesh service %v", sets.Key(mesh))
+		contextutils.LoggerFrom(t.ctx).Debugf("detected mesh service %v", sets.Key(mesh))
 		meshSet.Insert(mesh)
 	}
 	return meshSet

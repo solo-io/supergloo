@@ -48,7 +48,7 @@ func Start(
 }
 
 // reconcile global state
-func (d *networkingReconciler) reconcile(id ezkube.ResourceId) error {
+func (d *networkingReconciler) reconcile(_ ezkube.ResourceId) error {
 	inputSnap, err := d.builder.BuildSnapshot(d.ctx, "mesh-networking")
 	if err != nil {
 		// failed to read from cache; should never happen

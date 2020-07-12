@@ -14,13 +14,16 @@ var OwnershipLabelKey = fmt.Sprintf("owner.%s", v1alpha1.SchemeGroupVersion.Grou
 
 // construct an ObjectMeta for a discovered resource from a source object (the object from which the resource was discovered)
 func TranslatedObjectMeta(sourceObj ezkube.ClusterResourceId, annotations map[string]string) metav1.ObjectMeta {
-	// ownership label defaults to current namespace to allow multiple SMH tenancy within a cluster.
-	labels := map[string]string{OwnershipLabelKey: defaults.GetPodNamespace()}
 	return metav1.ObjectMeta{
 		Name:        sourceObj.GetName(),
 		Namespace:   sourceObj.GetNamespace(),
 		ClusterName: sourceObj.GetClusterName(),
-		Labels:      labels,
+		Labels:      TranslatedObjectLabels(),
 		Annotations: annotations,
 	}
+}
+
+// ownership label defaults to current namespace to allow multiple SMH tenancy within a cluster.
+func TranslatedObjectLabels() map[string]string {
+	return map[string]string{OwnershipLabelKey: defaults.GetPodNamespace()}
 }

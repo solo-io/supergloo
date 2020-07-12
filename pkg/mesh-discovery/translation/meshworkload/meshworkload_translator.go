@@ -45,7 +45,7 @@ func (t *translator) TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet
 		if meshWorkload == nil {
 			continue
 		}
-		contextutils.LoggerFrom(t.ctx).Debugw("detected mesh workload %v", sets.Key(meshWorkload))
+		contextutils.LoggerFrom(t.ctx).Debugf("detected mesh workload %v", sets.Key(meshWorkload))
 		meshWorkloadSet.Insert(meshWorkload)
 	}
 	return meshWorkloadSet
