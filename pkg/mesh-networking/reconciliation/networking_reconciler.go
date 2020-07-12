@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
@@ -47,7 +48,7 @@ func Start(
 }
 
 // reconcile global state
-func (d *networkingReconciler) reconcile() error {
+func (d *networkingReconciler) reconcile(id ezkube.ResourceId) error {
 	inputSnap, err := d.builder.BuildSnapshot(d.ctx, "mesh-networking")
 	if err != nil {
 		// failed to read from cache; should never happen
@@ -70,7 +71,7 @@ func (d *networkingReconciler) reconcile() error {
 }
 
 func (d *networkingReconciler) syncIstio(translatorSnapshot input.Snapshot) error {
-	istioSnap, err := d.istioTranslator.Translate(translatorSnapshot, d.reporter)
+	istioSnap, err := d.istioTranslator.Translate(d.ctx, translatorSnapshot, d.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err

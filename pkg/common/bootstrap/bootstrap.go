@@ -97,13 +97,17 @@ func makeMasterManager(opts Options) (manager.Manager, error) {
 }
 
 
-func setupLogging(devMode bool) {
-	atomicLevel := zap.NewAtomicLevelAt(zapcore.InfoLevel)
+func setupLogging(debugMode bool) {
+	level := zapcore.InfoLevel
+	if debugMode {
+		level = zapcore.DebugLevel
+	}
+	atomicLevel := zap.NewAtomicLevelAt(level)
 	baseLogger := zaputil.NewRaw(
 		zaputil.Level(&atomicLevel),
 		// Only set debug mode if specified. This will use a non-json (human readable) encoder which makes it impossible
 		// to use any json parsing tools for the log. Should only be enabled explicitly
-		zaputil.UseDevMode(devMode),
+		zaputil.UseDevMode(debugMode),
 	)
 
 	// klog

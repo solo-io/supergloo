@@ -2,10 +2,11 @@ package reconciliation
 
 import (
 	"context"
-	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/smh/pkg/mesh-discovery/translation"
+	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -14,7 +15,7 @@ type discoveryReconciler struct {
 	builder      input.Builder
 	translator   translation.Translator
 	masterClient client.Client
-	events       chan string
+	events       workqueue.RateLimitingInterface
 }
 
 func Start(
@@ -30,44 +31,15 @@ func Start(
 		builder:      builder,
 		translator:   translator,
 		masterClient: masterClient,
-		events:       make(chan string, 1),
+		events:       workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
 	}
 
-	input.RegisterMultiClusterReconciler(ctx, clusters, d.pushEvent)
-
-	go d.reconcileEventsForever()
-}
-
-// simply push a generic event on a reconcile
-func (d *discoveryReconciler) pushEvent(cluster string) error {
-	select {
-	case d.events <- cluster:
-	default:
-		// an event is already pending, dropping event is safe
-	}
-	return nil
-}
-
-// reconcile events forever
-// blocking (run from a goroutine)
-func (d *discoveryReconciler) reconcileEventsForever() {
-	for {
-		select {
-		case <-d.ctx.Done():
-			return
-		case cluster := <-d.events:
-			if err := d.reconcileEvent(); err != nil {
-				contextutils.LoggerFrom(d.ctx).Errorw("encountered error reconciling state; retrying", "error", err)
-
-				_ = d.pushEvent(cluster)
-			}
-		}
-	}
+	input.RegisterMultiClusterReconciler(ctx, clusters, d.reconcile)
 }
 
 // TODO(ilackarms): it would be nice to make inputSnap and outputSnap available on
 // a admin interface, i.e. in JSON format similar to Envoy config dump.
-func (d *discoveryReconciler) reconcileEvent() error {
+func (d *discoveryReconciler) reconcile(_ ezkube.ClusterResourceId) error {
 	inputSnap, err := d.builder.BuildSnapshot(d.ctx, "mesh-discovery")
 	if err != nil {
 		// failed to read from cache; should never happen

@@ -43,7 +43,7 @@ func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
 
 		meshService.Status.AppliedTrafficPolicies = appliedTrafficPolicies
 	}
-	_, err := v.istioTranslator.Translate(input, reporter)
+	_, err := v.istioTranslator.Translate(ctx, input, reporter)
 	if err != nil {
 		// should never happen
 		contextutils.LoggerFrom(ctx).Errorf("internal error: failed to run istio translator: %v", err)

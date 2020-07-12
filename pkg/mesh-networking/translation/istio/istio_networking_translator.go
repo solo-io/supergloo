@@ -16,28 +16,29 @@ import (
 type Translator interface {
 	// errors reflect an internal translation error and should never happen
 	Translate(
+		ctx context.Context,
 		in input.Snapshot,
 		reporter reporter.Reporter,
 	) (istio.Snapshot, error)
 }
 
 type istioTranslator struct {
-	ctx             context.Context
 	totalTranslates int // TODO(ilackarms): metric
 	dependencies    dependencyFactory
 }
 
-func NewIstioTranslator(ctx context.Context) Translator {
+func NewIstioTranslator() Translator {
 	return &istioTranslator{
-		ctx:          ctx,
 		dependencies: dependencyFactoryImpl{},
 	}
 }
 
 func (t *istioTranslator) Translate(
+	ctx context.Context,
 	in input.Snapshot,
 	reporter reporter.Reporter,
 ) (istio.Snapshot, error) {
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translator-%v", t.totalTranslates))
 
 	destinationRuleTranslator := t.dependencies.makeDestinationRuleTranslator(in.KubernetesClusters())
 
@@ -46,14 +47,15 @@ func (t *istioTranslator) Translate(
 	destinationRules := v1alpha3sets.NewDestinationRuleSet()
 	virtualServices := v1alpha3sets.NewVirtualServiceSet()
 	for _, meshService := range in.MeshServices().List() {
+		meshService := meshService // pike
 		destinationRule := destinationRuleTranslator.Translate(in, meshService, reporter)
 		if destinationRule != nil {
 			destinationRules.Insert(destinationRule)
-			contextutils.LoggerFrom(t.ctx).Debugw("translated destination rule %v", sets.Key(meshService))
+			contextutils.LoggerFrom(ctx).Debugf("translated destination rule %v", sets.Key(meshService))
 		}
 		virtualService := virtualServiceTranslator.Translate(in, meshService, reporter)
 		if virtualService != nil {
-			contextutils.LoggerFrom(t.ctx).Debugw("translated virtual service %v", sets.Key(meshService))
+			contextutils.LoggerFrom(ctx).Debugf("translated virtual service %v", sets.Key(meshService))
 			virtualServices.Insert(virtualService)
 		}
 	}
