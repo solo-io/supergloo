@@ -64,7 +64,8 @@ func (register *options) AddRegisterFlags(set *pflag.FlagSet) {
 	set.StringVar(&register.KubeContext, "context", "", "name of the kubeconfig context to use for registration")
 	set.StringVar(&register.Namespace, "federation-namespace", defaults.DefaultPodNamespace, "namespace of the Service-Mesh-Hub control plane in which the secret for the registered cluster will be created")
 	set.StringVar(&register.RemoteNamespace, "remote-namespace", defaults.DefaultPodNamespace, "namespace in the target cluster where a service account enabling remote access will be created. If the namespace does not exist it will be created.")
-	set.StringVar(&register.ClusterDomainOverride, "cluster-domain-override", "", "Swap out the domain of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Service Mesh Hub is different than that specified in the local kubeconfig.")
+	set.StringVar(&register.APIServerAddress, "api-server-address", "", "Swap out the address of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Service Mesh Hub is different than that specified in the local kubeconfig.")
+	set.StringVar(&register.ClusterDomain, "cluster-domain", "", "The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'. Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/")
 }
 
 func registerCluster(ctx context.Context, opts *options) error {
