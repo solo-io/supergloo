@@ -3,7 +3,7 @@ package e2e_test
 import (
 	"bytes"
 	"context"
-	"log"
+	"fmt"
 	"os"
 	"os/exec"
 	"testing"
@@ -38,10 +38,10 @@ func runShell(c string) {
 	cmd.Stderr = buf
 	err := cmd.Run()
 	if err != nil {
-		log.Printf("[%v] command FAILED: %v", c, err)
+		fmt.Fprintf(GinkgoWriter, "[%v] command FAILED: %v", c, err)
 		return
 	}
-	log.Printf("[%v] command result: \n%v", c, buf.String())
+	fmt.Fprintf(GinkgoWriter, "[%v] command result: \n%v", c, buf.String())
 }
 
 var _ = BeforeSuite(func() {

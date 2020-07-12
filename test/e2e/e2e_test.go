@@ -24,17 +24,15 @@ import (
 )
 
 var (
-	policyName      = "bookinfo-policy"
-	policyService   = "reviews"
-	policyNamespace = "bookinfo"
-	policyCluster   = "management-cluster-1"
-	policyManifest  = "test/e2e/bookinfo-policies.yaml"
-	username        = "petlover"
-	password        = "ilovepets"
+	policyName     = "bookinfo-policy"
+	policyService  = "reviews"
+	appNamespace   = "bookinfo"
+	policyCluster  = "management-cluster-1"
+	policyManifest = "test/e2e/bookinfo-policies.yaml"
 
-	trafficShiftReviewsV2 = data.TrafficShiftPolicy(policyName, policyNamespace, &v1.ClusterObjectRef{
+	trafficShiftReviewsV2 = data.TrafficShiftPolicy(policyName, appNamespace, &v1.ClusterObjectRef{
 		Name:        policyService,
-		Namespace:   policyNamespace,
+		Namespace:   appNamespace,
 		ClusterName: policyCluster,
 	}, map[string]string{"version": "v2"}, 9080)
 
@@ -44,7 +42,7 @@ var (
 		env := e2e.GetEnv()
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute/3)
 		defer cancel()
-		out := env.Management.GetPod("default", "productpage").Curl(ctx, "http://reviews:9080/reviews/1", "-v")
+		out := env.Management.GetPod(appNamespace, "productpage").Curl(ctx, "http://reviews:9080/reviews/1", "-v")
 		GinkgoWriter.Write([]byte(out))
 		return out
 	}
@@ -54,12 +52,7 @@ var (
 var _ = Describe("SMH E2e", func() {
 	BeforeEach(func() {
 
-		_ = util.Kubectl(nil, "create", "ns", policyNamespace)
-
 		err := writeTestManifest(policyManifest)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = util.Kubectl(nil, "apply", "-n="+policyNamespace, "-f="+policyManifest)
 		Expect(err).NotTo(HaveOccurred())
 
 		cfg, err := e2e.GetEnv().Management.Config.ClientConfig()
@@ -71,7 +64,7 @@ var _ = Describe("SMH E2e", func() {
 	})
 
 	AfterEach(func() {
-		err := util.Kubectl(nil, "delete", "ns", policyNamespace)
+		err := util.Kubectl(nil, "delete", "-f", policyManifest)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -81,12 +74,23 @@ var _ = Describe("SMH E2e", func() {
 
 	It("applies TrafficShift policies to local subsets", func() {
 
-		// first check that we have a response to reduce flakiness
+		// first check that we can hit both subsets
 		Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
+		Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
+
+		err := util.Kubectl(nil, "apply", "-n="+appNamespace, "-f="+policyManifest)
+		Expect(err).NotTo(HaveOccurred())
+
+		// check we consistently hit the v2 subset
+		Consistently(curlReviews, "10s", "0.1s").Should(ContainSubstring(`"color": "black"`))
 	})
 })
 
 func assertCrdStatuses() {
+
+	err := util.Kubectl(nil, "apply", "-n="+appNamespace, "-f="+policyManifest)
+	Expect(err).NotTo(HaveOccurred())
+
 	assertTrafficPolicyStatuses()
 }
 
@@ -94,12 +98,12 @@ func assertTrafficPolicyStatuses() {
 	ctx := context.Background()
 	trafficPolicy := v1alpha1.NewTrafficPolicyClient(dynamicClient)
 
-	EventuallyWithOffset(2, func() bool {
-		list, err := trafficPolicy.ListTrafficPolicy(ctx, client.InNamespace(policyNamespace))
-		ExpectWithOffset(2, err).NotTo(HaveOccurred())
-		ExpectWithOffset(2, list.Items).To(HaveLen(2))
-		for _, apiProduct := range list.Items {
-			if apiProduct.Status.ObservedGeneration == 0 {
+	EventuallyWithOffset(1, func() bool {
+		list, err := trafficPolicy.ListTrafficPolicy(ctx, client.InNamespace(appNamespace))
+		ExpectWithOffset(1, err).NotTo(HaveOccurred())
+		ExpectWithOffset(1, list.Items).To(HaveLen(1))
+		for _, policy := range list.Items {
+			if policy.Status.ObservedGeneration == 0 {
 				return false
 			}
 		}
