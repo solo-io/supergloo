@@ -66,14 +66,20 @@ message MeshServiceSpec {
 }
 
 message MeshServiceStatus {
+
+    // The most recent generation observed in the the TrafficPolicy metadata.
+    // if the observedGeneration does not match generation, the controller has not received the most
+    // recent version of this resource.
+    int64 observed_generation = 1;
+
     // The status of federation artifacts being written to remote clusters as a result of the federation metadata on this object's Spec.
-    core.smh.solo.io.Status federation_status = 1;
+    core.smh.solo.io.Status federation_status = 2;
 
     // The set of Traffic Policies that have been applied to this MeshService
-    repeated AppliedTrafficPolicy applied_traffic_policies = 2;
+    repeated AppliedTrafficPolicy applied_traffic_policies = 3;
 
     // The set of Access Policies that have been applied to this MeshService
-    repeated AppliedAccessPolicy applied_access_policies = 3;
+    repeated AppliedAccessPolicy applied_access_policies = 4;
 
     // AppliedTrafficPolicy represents a traffic policy that has been applied to the MeshService.
     // if an existing Traffic Policy becomes invalid, the last applied policy will be used
@@ -82,7 +88,7 @@ message MeshServiceStatus {
         .core.skv2.solo.io.ObjectRef ref = 1;
 
         // the observed generation of the accepted traffic policy
-        int32 observedGeneration = 2;
+        int64 observedGeneration = 2;
 
         // the last known valid spec of the traffic policy
         networking.smh.solo.io.TrafficPolicySpec spec = 3;

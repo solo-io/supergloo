@@ -49,20 +49,33 @@ message TrafficPolicySpec {
     message MultiDestination {
         message WeightedDestination {
 
+            // a traffic shift destination which lives in kubernetes
+            message KubeDestination {
+                // name of the destination service
+                string name = 1;
+
+                // namespace of the destination service
+                string namespace = 2;
+
+                // cluster of the destination service (as it is registered with Service Mesh Hub)
+                string cluster = 3;
+
+                // Subset routing is currently only supported on Istio.
+                map<string, string> subset = 4;
+
+                // Port on the destination service to receive traffic. Required if the service exposes more than one port.
+                uint32 port = 5;
+            }
+
             // different destination types can be selected for a traffic shift
             oneof destination_type {
-                // Name/namespace/cluster of a kubernetes service.
-                .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
+                // use kubeService to shift traffic a Kubernetes Service/subset.
+                KubeDestination kube_service = 1;
             }
 
             // Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100.
             uint32 weight = 2;
 
-            // Subset routing is currently only supported on Istio.
-            map<string, string> subset = 3;
-
-            // Port on the destination service to receive traffic. Required if the service exposes more than one port.
-            uint32 port = 4;
         }
 
         repeated WeightedDestination destinations = 1;
@@ -372,7 +385,8 @@ message TrafficPolicySpec {
 message TrafficPolicyStatus {
 
     // The most recent generation observed in the the TrafficPolicy metadata.
-    // if the observedGeneration does not match
+    // if the observedGeneration does not match generation, the controller has not received the most
+    // recent version of this resource.
     int64 observed_generation = 1;
 
     // The status of the TrafficPolicy for each MeshService to which it has been applied.
