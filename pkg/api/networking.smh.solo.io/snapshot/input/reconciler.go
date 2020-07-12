@@ -18,9 +18,11 @@ package input
 import (
 	"context"
 
-	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/contrib/pkg/input"
+	sk_core_v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
+
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	discovery_smh_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
@@ -49,19 +51,23 @@ type multiClusterReconciler interface {
 var _ multiClusterReconciler = &multiClusterReconcilerImpl{}
 
 type multiClusterReconcilerImpl struct {
-	ctx           context.Context
-	reconcileFunc func(cluster string) error
+	base input.MultiClusterReconciler
 }
 
 // register the reconcile func with the cluster watcher
 func RegisterMultiClusterReconciler(
 	ctx context.Context,
 	clusters multicluster.ClusterWatcher,
-	reconcileFunc func(cluster string) error,
+	reconcileFunc input.MultiClusterReconcileFunc,
 ) {
+
+	base := input.NewMultiClusterReconcilerImpl(
+		ctx,
+		reconcileFunc,
+	)
+
 	r := &multiClusterReconcilerImpl{
-		ctx:           ctx,
-		reconcileFunc: reconcileFunc,
+		base: base,
 	}
 
 	// initialize reconcile loops
@@ -75,76 +81,112 @@ func RegisterMultiClusterReconciler(
 	networking_smh_solo_io_v1alpha1_controllers.NewMulticlusterVirtualMeshReconcileLoop("VirtualMesh", clusters).AddMulticlusterVirtualMeshReconciler(ctx, r)
 
 	multicluster_solo_io_v1alpha1_controllers.NewMulticlusterKubernetesClusterReconcileLoop("KubernetesCluster", clusters).AddMulticlusterKubernetesClusterReconciler(ctx, r)
+
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMeshService(clusterName string, obj *discovery_smh_solo_io_v1alpha1.MeshService) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc(clusterName)
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMeshServiceDeletion(clusterName string, obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return r.reconcileFunc(clusterName)
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMeshWorkload(clusterName string, obj *discovery_smh_solo_io_v1alpha1.MeshWorkload) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc(clusterName)
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMeshWorkloadDeletion(clusterName string, obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return r.reconcileFunc(clusterName)
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMesh(clusterName string, obj *discovery_smh_solo_io_v1alpha1.Mesh) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc(clusterName)
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMeshDeletion(clusterName string, obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return r.reconcileFunc(clusterName)
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileTrafficPolicy(clusterName string, obj *networking_smh_solo_io_v1alpha1.TrafficPolicy) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc(clusterName)
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileTrafficPolicyDeletion(clusterName string, obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return r.reconcileFunc(clusterName)
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileAccessPolicy(clusterName string, obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc(clusterName)
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileAccessPolicyDeletion(clusterName string, obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return r.reconcileFunc(clusterName)
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileVirtualMesh(clusterName string, obj *networking_smh_solo_io_v1alpha1.VirtualMesh) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc(clusterName)
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileVirtualMeshDeletion(clusterName string, obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return r.reconcileFunc(clusterName)
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileKubernetesCluster(clusterName string, obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc(clusterName)
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileKubernetesClusterDeletion(clusterName string, obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "cluster", clusterName, "obj", obj)
-	return r.reconcileFunc(clusterName)
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
 }
 
 // the singleClusterReconciler reconciles events for input resources across clusters
@@ -163,19 +205,23 @@ type singleClusterReconciler interface {
 var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
 
 type singleClusterReconcilerImpl struct {
-	ctx           context.Context
-	reconcileFunc func() error
+	base input.SingleClusterReconciler
 }
 
 // register the reconcile func with the manager
 func RegisterSingleClusterReconciler(
 	ctx context.Context,
 	mgr manager.Manager,
-	reconcileFunc func() error,
+	reconcileFunc input.SingleClusterReconcileFunc,
 ) error {
+
+	base := input.NewSingleClusterReconciler(
+		ctx,
+		reconcileFunc,
+	)
+
 	r := &singleClusterReconcilerImpl{
-		ctx:           ctx,
-		reconcileFunc: reconcileFunc,
+		base: base,
 	}
 
 	// initialize reconcile loops
@@ -208,71 +254,92 @@ func RegisterSingleClusterReconciler(
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileMeshService(obj *discovery_smh_solo_io_v1alpha1.MeshService) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc()
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileMeshServiceDeletion(obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return r.reconcileFunc()
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileMeshWorkload(obj *discovery_smh_solo_io_v1alpha1.MeshWorkload) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc()
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileMeshWorkloadDeletion(obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return r.reconcileFunc()
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileMesh(obj *discovery_smh_solo_io_v1alpha1.Mesh) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc()
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileMeshDeletion(obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return r.reconcileFunc()
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileTrafficPolicy(obj *networking_smh_solo_io_v1alpha1.TrafficPolicy) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc()
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileTrafficPolicyDeletion(obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return r.reconcileFunc()
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileAccessPolicy(obj *networking_smh_solo_io_v1alpha1.AccessPolicy) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc()
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileAccessPolicyDeletion(obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return r.reconcileFunc()
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileVirtualMesh(obj *networking_smh_solo_io_v1alpha1.VirtualMesh) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc()
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return r.reconcileFunc()
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return reconcile.Result{}, r.reconcileFunc()
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileKubernetesClusterDeletion(obj reconcile.Request) error {
-	contextutils.LoggerFrom(r.ctx).Debugw("reconciling event", "obj", obj)
-	return r.reconcileFunc()
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
 }

@@ -60,8 +60,8 @@ require (
 	istio.io/api v0.0.0-20200610220835-a1a958746907
 	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
-	k8s.io/api v0.18.1
-	k8s.io/apiextensions-apiserver v0.18.1
+	k8s.io/api v0.18.2
+	k8s.io/apiextensions-apiserver v0.18.2
 	k8s.io/apimachinery v0.18.3
 	k8s.io/cli-runtime v0.17.2
 	k8s.io/client-go v11.0.0+incompatible
