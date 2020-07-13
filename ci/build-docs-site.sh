@@ -83,7 +83,7 @@ do
   # Generate data/Solo.yaml file with version info populated.
   generateHugoVersionsYaml $version
   # Use nav bar as defined in master, not the checked out temp repo.
-  yes | cp -f $workingDir/docs/layouts/partials/versionnavigation.html layouts/partials/versionnavigation.html
+  cp -f $workingDir/docs/layouts/partials/versionnavigation.html layouts/partials/versionnavigation.html
   # Generate the versioned static site.
   make site-release
   # Copy over versioned static site to firebase content folder.
