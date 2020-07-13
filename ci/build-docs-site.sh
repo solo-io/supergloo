@@ -25,7 +25,11 @@ firebaseJson=$(cat <<EOF
     "rewrites": [
       {
         "source": "/",
-        "destination": "/latest/index.html"
+        "destination": "/service-mesh-hub/latest/index.html"
+      },
+      {
+        "source": "/service-mesh-hub",
+        "destination": "/service-mesh-hub/latest/index.html"
       }
     ]
   }
@@ -83,8 +87,8 @@ do
   # Generate the versioned static site.
   make site-release
   # Copy over versioned static site to firebase content folder.
-  mkdir -p $docsSiteDir/public/$version
-  cp -a site-latest/. $docsSiteDir/public/$version/
+  mkdir -p $docsSiteDir/public/service-mesh-hub/$version
+  cp -a site-latest/. $docsSiteDir/public/service-mesh-hub/$version/
   # Discard git changes and vendor_any for subsequent checkouts
   cd $repoDir
   git reset --hard
