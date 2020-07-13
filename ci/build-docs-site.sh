@@ -25,7 +25,11 @@ firebaseJson=$(cat <<EOF
     "rewrites": [
       {
         "source": "/",
-        "destination": "/latest/index.html"
+        "destination": "/service-mesh-hub/latest/index.html"
+      },
+      {
+        "source": "/service-mesh-hub",
+        "destination": "/service-mesh-hub/latest/index.html"
       }
     ]
   }
@@ -47,7 +51,9 @@ git clone https://github.com/solo-io/service-mesh-hub.git $repoDir
 function generateHugoVersionsYaml() {
   yamlFile=$repoDir/docs/data/Solo.yaml
   # Truncate file first.
-  echo "DocsVersion: /$1" > $yamlFile
+  echo "LatestVersion: $latestVersion" > $yamlFile
+  # /service-mesh-hub prefix is needed because the site is hosted under a domain name with suffix /service-mesh-hub
+  echo "DocsVersion: /service-mesh-hub/$1" >> $yamlFile
   echo "CodeVersion: $1" >> $yamlFile
   echo "DocsVersions:" >> $yamlFile
   for hugoVersion in "${versions[@]}"
@@ -55,6 +61,7 @@ function generateHugoVersionsYaml() {
     echo "  - $hugoVersion" >> $yamlFile
   done
 }
+
 
 for version in "${versions[@]}"
 do
@@ -75,11 +82,13 @@ do
   cd docs
   # Generate data/Solo.yaml file with version info populated.
   generateHugoVersionsYaml $version
+  # Use nav bar as defined in master, not the checked out temp repo.
+  cp -f $workingDir/docs/layouts/partials/versionnavigation.html layouts/partials/versionnavigation.html
   # Generate the versioned static site.
   make site-release
   # Copy over versioned static site to firebase content folder.
-  mkdir -p $docsSiteDir/public/$version
-  cp -a site-latest/. $docsSiteDir/public/$version/
+  mkdir -p $docsSiteDir/public/service-mesh-hub/$version
+  cp -a site-latest/. $docsSiteDir/public/service-mesh-hub/$version/
   # Discard git changes and vendor_any for subsequent checkouts
   cd $repoDir
   git reset --hard

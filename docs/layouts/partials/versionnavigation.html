@@ -1,8 +1,15 @@
 <label for="version-selection" id="version-selection-label">Version:</label>
 <select id="version-selection" onchange="javascript:location.href = this.value;">
   {{- range $version := .Site.Data.Solo.DocsVersions}}
-  <option value="/{{ $version }}{{ $.RelPermalink}}" {{if eq (trim $.Site.Data.Solo.DocsVersion "/") $version }} selected{{end}}>
-      {{ $version }}
+  {{ $versionNum := $version }}
+  {{ if eq $versionNum $.Site.Data.Solo.LatestVersion }}
+      {{ $version = "latest" }}
+  {{ end }}
+  <option value="/service-mesh-hub/{{ $version }}{{ $.RelPermalink}}" {{if eq (trim $.Site.Data.Solo.DocsVersion "/service-mesh-hub/") $version }} selected{{end}}>
+      {{ $versionNum }}
+      {{ if eq $versionNum $.Site.Data.Solo.LatestVersion }}
+        (latest)
+      {{ end }}
   </option>
   {{ end }}
 </select>

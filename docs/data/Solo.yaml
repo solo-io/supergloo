@@ -5,5 +5,6 @@
 #DocsVersion: /latest
 #CodeVersion: latest
 DocsVersions:
-  - "latest"
   - "0.5.0"
+  - "0.4.0"
+LatestVersion: "0.5.0"
