@@ -43,14 +43,3 @@ message MeshWorkloadSpec {
 message MeshWorkloadStatus {
 
 }
-
-message FallbackServiceSpec {
-    // this will point the workload to the local service based off of locality.
-    // 
-    repeated ResourceRef mesh_workloads = 1;
-}
-
-message FallbackServiceStatus {
-
-}
-
