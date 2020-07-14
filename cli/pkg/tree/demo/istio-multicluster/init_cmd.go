@@ -20,9 +20,9 @@ func Init(
 	runner exec.Runner,
 ) InitCmd {
 	init := &cobra.Command{
-		Use:   cliconstants.AppmeshEksInitCommand.Use,
-		Short: cliconstants.AppmeshEksInitCommand.Short,
-		Long:  cliconstants.AppmeshEksInitCommand.Long,
+		Use:   cliconstants.IstioMulticlusterInitCommand.Use,
+		Short: cliconstants.IstioMulticlusterInitCommand.Short,
+		Long:  cliconstants.IstioMulticlusterInitCommand.Long,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return istioMulticlusterDemo(runner)
 		},

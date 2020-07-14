@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl demo istio-multicluster cleanup
 
-Cleanup bootstrapped resources AWS Appmesh and EKS resources
+Cleanup bootstrapped local resources.
 
 ### Synopsis
 
-Cleanup bootstrapped resources AWS Appmesh and EKS resources
+Cleanup bootstrapped local resources.
 
 ```
 meshctl demo istio-multicluster cleanup [flags]

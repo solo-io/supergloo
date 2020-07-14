@@ -14,9 +14,9 @@ func Cleanup(
 	opts *options.Options,
 ) CleanupCmd {
 	init := &cobra.Command{
-		Use:   cliconstants.AppmeshEksCleanupCommand.Use,
-		Short: cliconstants.AppmeshEksCleanupCommand.Short,
-		Long:  cliconstants.AppmeshEksCleanupCommand.Long,
+		Use:   cliconstants.IstioMulticlusterCleanupCommand.Use,
+		Short: cliconstants.IstioMulticlusterCleanupCommand.Short,
+		Long:  cliconstants.IstioMulticlusterCleanupCommand.Long,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return istioMulticlusterCleanup(runner)
 		},

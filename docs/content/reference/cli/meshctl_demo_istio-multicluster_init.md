@@ -4,19 +4,11 @@ weight: 5
 ---
 ## meshctl demo istio-multicluster init
 
-Bootstrap an AWS App mesh and EKS cluster demo with Service Mesh Hub
+Bootstrap a multicluster Istio demo with Service Mesh Hub.
 
 ### Synopsis
 
-
-Prerequisites:
-	1. meshctl
-	2. eksctl (https://github.com/weaveworks/eksctl)
-	3. Helm (https://helm.sh/docs/intro/install/)
-	4. AWS API credentials must be configured, either through the "~/.aws/credentials" file or environment variables. See these references for more information:
-         a. https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html
-         b. https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html
-
+Running the Service Mesh Hub demo setup locally requires 4 tools to be installed, and accessible via the PATH. meshctl, kubectl, docker, and kind. This command will bootstrap 2 clusters, one of which will run the Service Mesh Hub management-plane as well as Istio, and the other will just run Istio.
 
 ```
 meshctl demo istio-multicluster init [flags]
