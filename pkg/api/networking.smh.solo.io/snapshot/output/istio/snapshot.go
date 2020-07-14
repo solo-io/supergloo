@@ -31,6 +31,10 @@ type Snapshot interface {
 	DestinationRules() []LabeledDestinationRuleSet
 	// return the set of EnvoyFilters with a given set of labels
 	EnvoyFilters() []LabeledEnvoyFilterSet
+	// return the set of Gateways with a given set of labels
+	Gateways() []LabeledGatewaySet
+	// return the set of ServiceEntries with a given set of labels
+	ServiceEntries() []LabeledServiceEntrySet
 	// return the set of VirtualServices with a given set of labels
 	VirtualServices() []LabeledVirtualServiceSet
 
@@ -46,6 +50,8 @@ type snapshot struct {
 
 	destinationRules []LabeledDestinationRuleSet
 	envoyFilters     []LabeledEnvoyFilterSet
+	gateways         []LabeledGatewaySet
+	serviceEntries   []LabeledServiceEntrySet
 	virtualServices  []LabeledVirtualServiceSet
 }
 
@@ -54,6 +60,8 @@ func NewSnapshot(
 
 	destinationRules []LabeledDestinationRuleSet,
 	envoyFilters []LabeledEnvoyFilterSet,
+	gateways []LabeledGatewaySet,
+	serviceEntries []LabeledServiceEntrySet,
 	virtualServices []LabeledVirtualServiceSet,
 
 ) Snapshot {
@@ -62,6 +70,8 @@ func NewSnapshot(
 
 		destinationRules: destinationRules,
 		envoyFilters:     envoyFilters,
+		gateways:         gateways,
+		serviceEntries:   serviceEntries,
 		virtualServices:  virtualServices,
 	}
 }
@@ -74,6 +84,8 @@ func NewLabelPartitionedSnapshot(
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
 	envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
+	gateways networking_istio_io_v1alpha3_sets.GatewaySet,
+	serviceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
 
 ) (Snapshot, error) {
@@ -83,6 +95,14 @@ func NewLabelPartitionedSnapshot(
 		return nil, err
 	}
 	partitionedEnvoyFilters, err := partitionEnvoyFiltersByLabel(labelKey, envoyFilters)
+	if err != nil {
+		return nil, err
+	}
+	partitionedGateways, err := partitionGatewaysByLabel(labelKey, gateways)
+	if err != nil {
+		return nil, err
+	}
+	partitionedServiceEntries, err := partitionServiceEntriesByLabel(labelKey, serviceEntries)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +116,55 @@ func NewLabelPartitionedSnapshot(
 
 		partitionedDestinationRules,
 		partitionedEnvoyFilters,
+		partitionedGateways,
+		partitionedServiceEntries,
 		partitionedVirtualServices,
+	), nil
+}
+
+// simplified constructor for a snapshot
+// with a single label partition (i.e. all resources share a single set of labels).
+func NewSinglePartitionedSnapshot(
+	name string,
+	snapshotLabels map[string]string, // a single set of labels shared by all resources
+
+	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
+	envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
+	gateways networking_istio_io_v1alpha3_sets.GatewaySet,
+	serviceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
+	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+
+) (Snapshot, error) {
+
+	labeledDestinationRules, err := NewLabeledDestinationRuleSet(destinationRules, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+	labeledEnvoyFilters, err := NewLabeledEnvoyFilterSet(envoyFilters, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+	labeledGateways, err := NewLabeledGatewaySet(gateways, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+	labeledServiceEntries, err := NewLabeledServiceEntrySet(serviceEntries, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+	labeledVirtualServices, err := NewLabeledVirtualServiceSet(virtualServices, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewSnapshot(
+		name,
+
+		LabeledDestinationRuleSet{labeledDestinationRules},
+		LabeledEnvoyFilterSet{labeledEnvoyFilters},
+		LabeledGatewaySet{labeledGateways},
+		LabeledServiceEntrySet{labeledServiceEntries},
+		LabeledVirtualServiceSet{labeledVirtualServices},
 	), nil
 }
 
@@ -108,6 +176,12 @@ func (s *snapshot) Apply(ctx context.Context, cli client.Client) error {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.envoyFilters {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.gateways {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.serviceEntries {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.virtualServices {
@@ -128,6 +202,12 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.envoyFilters {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.gateways {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.serviceEntries {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.virtualServices {
@@ -228,6 +308,94 @@ func partitionEnvoyFiltersByLabel(labelKey string, set networking_istio_io_v1alp
 	return partitionedEnvoyFilters, nil
 }
 
+func partitionGatewaysByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.GatewaySet) ([]LabeledGatewaySet, error) {
+	setsByLabel := map[string]networking_istio_io_v1alpha3_sets.GatewaySet{}
+
+	for _, obj := range set.List() {
+		if obj.Labels == nil {
+			return nil, MissingRequiredLabelError(labelKey, "Gateway", obj)
+		}
+		labelValue := obj.Labels[labelKey]
+		if labelValue == "" {
+			return nil, MissingRequiredLabelError(labelKey, "Gateway", obj)
+		}
+
+		setForValue, ok := setsByLabel[labelValue]
+		if !ok {
+			setForValue = networking_istio_io_v1alpha3_sets.NewGatewaySet()
+			setsByLabel[labelValue] = setForValue
+		}
+		setForValue.Insert(obj)
+	}
+
+	// partition by label key
+	var partitionedGateways []LabeledGatewaySet
+
+	for labelValue, setForValue := range setsByLabel {
+		labels := map[string]string{labelKey: labelValue}
+
+		partitionedSet, err := NewLabeledGatewaySet(setForValue, labels)
+		if err != nil {
+			return nil, err
+		}
+
+		partitionedGateways = append(partitionedGateways, partitionedSet)
+	}
+
+	// sort for idempotency
+	sort.SliceStable(partitionedGateways, func(i, j int) bool {
+		leftLabelValue := partitionedGateways[i].Labels()[labelKey]
+		rightLabelValue := partitionedGateways[j].Labels()[labelKey]
+		return leftLabelValue < rightLabelValue
+	})
+
+	return partitionedGateways, nil
+}
+
+func partitionServiceEntriesByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.ServiceEntrySet) ([]LabeledServiceEntrySet, error) {
+	setsByLabel := map[string]networking_istio_io_v1alpha3_sets.ServiceEntrySet{}
+
+	for _, obj := range set.List() {
+		if obj.Labels == nil {
+			return nil, MissingRequiredLabelError(labelKey, "ServiceEntry", obj)
+		}
+		labelValue := obj.Labels[labelKey]
+		if labelValue == "" {
+			return nil, MissingRequiredLabelError(labelKey, "ServiceEntry", obj)
+		}
+
+		setForValue, ok := setsByLabel[labelValue]
+		if !ok {
+			setForValue = networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
+			setsByLabel[labelValue] = setForValue
+		}
+		setForValue.Insert(obj)
+	}
+
+	// partition by label key
+	var partitionedServiceEntries []LabeledServiceEntrySet
+
+	for labelValue, setForValue := range setsByLabel {
+		labels := map[string]string{labelKey: labelValue}
+
+		partitionedSet, err := NewLabeledServiceEntrySet(setForValue, labels)
+		if err != nil {
+			return nil, err
+		}
+
+		partitionedServiceEntries = append(partitionedServiceEntries, partitionedSet)
+	}
+
+	// sort for idempotency
+	sort.SliceStable(partitionedServiceEntries, func(i, j int) bool {
+		leftLabelValue := partitionedServiceEntries[i].Labels()[labelKey]
+		rightLabelValue := partitionedServiceEntries[j].Labels()[labelKey]
+		return leftLabelValue < rightLabelValue
+	})
+
+	return partitionedServiceEntries, nil
+}
+
 func partitionVirtualServicesByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.VirtualServiceSet) ([]LabeledVirtualServiceSet, error) {
 	setsByLabel := map[string]networking_istio_io_v1alpha3_sets.VirtualServiceSet{}
 
@@ -278,6 +446,14 @@ func (s snapshot) DestinationRules() []LabeledDestinationRuleSet {
 
 func (s snapshot) EnvoyFilters() []LabeledEnvoyFilterSet {
 	return s.envoyFilters
+}
+
+func (s snapshot) Gateways() []LabeledGatewaySet {
+	return s.gateways
+}
+
+func (s snapshot) ServiceEntries() []LabeledServiceEntrySet {
+	return s.serviceEntries
 }
 
 func (s snapshot) VirtualServices() []LabeledVirtualServiceSet {
@@ -401,6 +577,140 @@ func (l labeledEnvoyFilterSet) Generic() output.ResourceList {
 	// enable list func for garbage collection
 	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
 		var list networking_istio_io_v1alpha3.EnvoyFilterList
+		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+			return nil, err
+		}
+		var items []ezkube.Object
+		for _, item := range list.Items {
+			item := item // pike
+			items = append(items, &item)
+		}
+		return items, nil
+	}
+
+	return output.ResourceList{
+		Resources: desiredResources,
+		ListFunc:  listFunc,
+	}
+}
+
+// LabeledGatewaySet represents a set of gateways
+// which share a common set of labels.
+// These labels are used to find diffs between GatewaySets.
+type LabeledGatewaySet interface {
+	// returns the set of Labels shared by this GatewaySet
+	Labels() map[string]string
+
+	// returns the set of Gatewayes with the given labels
+	Set() networking_istio_io_v1alpha3_sets.GatewaySet
+
+	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
+	Generic() output.ResourceList
+}
+
+type labeledGatewaySet struct {
+	set    networking_istio_io_v1alpha3_sets.GatewaySet
+	labels map[string]string
+}
+
+func NewLabeledGatewaySet(set networking_istio_io_v1alpha3_sets.GatewaySet, labels map[string]string) (LabeledGatewaySet, error) {
+	// validate that each Gateway contains the labels, else this is not a valid LabeledGatewaySet
+	for _, item := range set.List() {
+		for k, v := range labels {
+			// k=v must be present in the item
+			if item.Labels[k] != v {
+				return nil, eris.Errorf("internal error: %v=%v missing on Gateway %v", k, v, item.Name)
+			}
+		}
+	}
+
+	return &labeledGatewaySet{set: set, labels: labels}, nil
+}
+
+func (l *labeledGatewaySet) Labels() map[string]string {
+	return l.labels
+}
+
+func (l *labeledGatewaySet) Set() networking_istio_io_v1alpha3_sets.GatewaySet {
+	return l.set
+}
+
+func (l labeledGatewaySet) Generic() output.ResourceList {
+	var desiredResources []ezkube.Object
+	for _, desired := range l.set.List() {
+		desiredResources = append(desiredResources, desired)
+	}
+
+	// enable list func for garbage collection
+	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+		var list networking_istio_io_v1alpha3.GatewayList
+		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+			return nil, err
+		}
+		var items []ezkube.Object
+		for _, item := range list.Items {
+			item := item // pike
+			items = append(items, &item)
+		}
+		return items, nil
+	}
+
+	return output.ResourceList{
+		Resources: desiredResources,
+		ListFunc:  listFunc,
+	}
+}
+
+// LabeledServiceEntrySet represents a set of serviceEntries
+// which share a common set of labels.
+// These labels are used to find diffs between ServiceEntrySets.
+type LabeledServiceEntrySet interface {
+	// returns the set of Labels shared by this ServiceEntrySet
+	Labels() map[string]string
+
+	// returns the set of ServiceEntryes with the given labels
+	Set() networking_istio_io_v1alpha3_sets.ServiceEntrySet
+
+	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
+	Generic() output.ResourceList
+}
+
+type labeledServiceEntrySet struct {
+	set    networking_istio_io_v1alpha3_sets.ServiceEntrySet
+	labels map[string]string
+}
+
+func NewLabeledServiceEntrySet(set networking_istio_io_v1alpha3_sets.ServiceEntrySet, labels map[string]string) (LabeledServiceEntrySet, error) {
+	// validate that each ServiceEntry contains the labels, else this is not a valid LabeledServiceEntrySet
+	for _, item := range set.List() {
+		for k, v := range labels {
+			// k=v must be present in the item
+			if item.Labels[k] != v {
+				return nil, eris.Errorf("internal error: %v=%v missing on ServiceEntry %v", k, v, item.Name)
+			}
+		}
+	}
+
+	return &labeledServiceEntrySet{set: set, labels: labels}, nil
+}
+
+func (l *labeledServiceEntrySet) Labels() map[string]string {
+	return l.labels
+}
+
+func (l *labeledServiceEntrySet) Set() networking_istio_io_v1alpha3_sets.ServiceEntrySet {
+	return l.set
+}
+
+func (l labeledServiceEntrySet) Generic() output.ResourceList {
+	var desiredResources []ezkube.Object
+	for _, desired := range l.set.List() {
+		desiredResources = append(desiredResources, desired)
+	}
+
+	// enable list func for garbage collection
+	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+		var list networking_istio_io_v1alpha3.ServiceEntryList
 		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
 			return nil, err
 		}

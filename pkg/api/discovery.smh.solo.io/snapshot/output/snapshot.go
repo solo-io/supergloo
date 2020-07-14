@@ -100,6 +100,40 @@ func NewLabelPartitionedSnapshot(
 	), nil
 }
 
+// simplified constructor for a snapshot
+// with a single label partition (i.e. all resources share a single set of labels).
+func NewSinglePartitionedSnapshot(
+	name string,
+	snapshotLabels map[string]string, // a single set of labels shared by all resources
+
+	meshServices discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet,
+	meshWorkloads discovery_smh_solo_io_v1alpha1_sets.MeshWorkloadSet,
+	meshes discovery_smh_solo_io_v1alpha1_sets.MeshSet,
+
+) (Snapshot, error) {
+
+	labeledMeshServices, err := NewLabeledMeshServiceSet(meshServices, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+	labeledMeshWorkloads, err := NewLabeledMeshWorkloadSet(meshWorkloads, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+	labeledMeshes, err := NewLabeledMeshSet(meshes, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewSnapshot(
+		name,
+
+		LabeledMeshServiceSet{labeledMeshServices},
+		LabeledMeshWorkloadSet{labeledMeshWorkloads},
+		LabeledMeshSet{labeledMeshes},
+	), nil
+}
+
 // apply the desired resources to the cluster state; remove stale resources where necessary
 func (s *snapshot) Apply(ctx context.Context, cli client.Client) error {
 	var genericLists []output.ResourceList

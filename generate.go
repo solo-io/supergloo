@@ -90,6 +90,8 @@ var (
 			"DestinationRule",
 			"VirtualService",
 			"EnvoyFilter",
+			"ServiceEntry",
+			"Gateway",
 		},
 	}
 
