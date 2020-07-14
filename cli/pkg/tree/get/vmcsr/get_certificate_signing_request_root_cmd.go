@@ -36,5 +36,7 @@ func GetVirtualMeshCSRRootCommand(
 			return GetVirtualMeshCertificateSigningRequests(ctx, out, printers, kubeClientFactory, kubeLoader, opts)
 		},
 	}
+	// Silence verbose error message for non-zero exit codes.
+	cmd.SilenceUsage = true
 	return cmd
 }

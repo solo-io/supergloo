@@ -42,8 +42,8 @@ func NewIstio1_5InstallCmd(
 			fileReader,
 		),
 	}
-
+	// Silence verbose error message for non-zero exit codes.
+	cmd.SilenceUsage = true
 	options.AddIstioInstallFlags(cmd, opts)
-
 	return cmd
 }

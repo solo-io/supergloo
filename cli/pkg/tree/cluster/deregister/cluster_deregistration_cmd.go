@@ -44,7 +44,7 @@ func ClusterDeregistrationCmd(
 	kubeLoader kubeconfig.KubeLoader,
 	out io.Writer,
 ) DeregistrationCmd {
-	register := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   cliconstants.ClusterDeregisterCommand.Use,
 		Short: cliconstants.ClusterDeregisterCommand.Short,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -57,8 +57,10 @@ func ClusterDeregistrationCmd(
 			return err
 		},
 	}
-	options.AddClusterDeregisterFlags(register, opts)
-	return register
+	// Silence verbose error message for non-zero exit codes.
+	cmd.SilenceUsage = true
+	options.AddClusterDeregisterFlags(cmd, opts)
+	return cmd
 }
 
 func deregisterCluster(
