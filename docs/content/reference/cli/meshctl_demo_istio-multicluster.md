@@ -33,6 +33,6 @@ meshctl demo istio-multicluster [flags]
 ### SEE ALSO
 
 * [meshctl demo](../meshctl_demo)	 - Command line utilities for running/interacting with Service Mesh Hub demos
-* [meshctl demo istio-multicluster cleanup](../meshctl_demo_istio-multicluster_cleanup)	 - Cleanup bootstrapped resources AWS Appmesh and EKS resources
-* [meshctl demo istio-multicluster init](../meshctl_demo_istio-multicluster_init)	 - Bootstrap an AWS App mesh and EKS cluster demo with Service Mesh Hub
+* [meshctl demo istio-multicluster cleanup](../meshctl_demo_istio-multicluster_cleanup)	 - Cleanup bootstrapped local resources.
+* [meshctl demo istio-multicluster init](../meshctl_demo_istio-multicluster_init)	 - Bootstrap a multicluster Istio demo with Service Mesh Hub.
 
