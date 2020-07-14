@@ -134,6 +134,8 @@ func InstallCmd(
 			return nil
 		},
 	}
+	// Silence verbose error message for non-zero exit codes.
+	cmd.SilenceUsage = true
 	options.AddInstallFlags(cmd, opts)
 	return cmd
 }

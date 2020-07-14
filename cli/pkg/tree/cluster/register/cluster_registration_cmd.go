@@ -29,7 +29,7 @@ func ClusterRegistrationCmd(
 	out io.Writer,
 	fs afero.Fs,
 ) RegistrationCmd {
-	register := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   cliconstants.ClusterRegisterCommand.Use,
 		Short: cliconstants.ClusterRegisterCommand.Short,
 		Long:  cliconstants.ClusterRegisterCommand.Long,
@@ -50,6 +50,8 @@ func ClusterRegistrationCmd(
 			return err
 		},
 	}
-	options.AddClusterRegisterFlags(register, opts)
-	return register
+	// Silence verbose error message for non-zero exit codes.
+	cmd.SilenceUsage = true
+	options.AddClusterRegisterFlags(cmd, opts)
+	return cmd
 }

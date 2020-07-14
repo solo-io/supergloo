@@ -24,5 +24,7 @@ func VersionCmd(out io.Writer, clientsFactory common.ClientsFactory, opts *optio
 			return ReportVersion(out, clientsFactory, opts)
 		},
 	}
+	// Silence verbose error message for non-zero exit codes.
+	cmd.SilenceUsage = true
 	return cmd
 }

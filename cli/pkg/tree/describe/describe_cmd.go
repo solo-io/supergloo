@@ -89,6 +89,8 @@ func DescribeCmd(
 			return nil
 		},
 	}
+	// Silence verbose error message for non-zero exit codes.
+	cmd.SilenceUsage = true
 	options.AddDescribeResourceFlags(cmd, opts, description.AllPolicies,
 		[]string{description.AllPolicies, description.AccessPolicies, description.TrafficPolicies})
 	return cmd

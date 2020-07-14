@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: In meshctl, silence verbose help message on non-zero exit codes.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/824

@@ -26,6 +26,8 @@ func UpgradeCmd(ctx context.Context, opts *options.Options, out io.Writer, clien
 
 		},
 	}
+	// Silence verbose error message for non-zero exit codes.
+	cmd.SilenceUsage = true
 	options.AddUpgradeFlags(cmd, &opts.Upgrade)
 	return cmd
 }
