@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix copy for istio multicluster demo cmd.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/823
