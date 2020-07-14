@@ -3,19 +3,14 @@ package main
 import (
 	"log"
 
-	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
-	"github.com/solo-io/skv2/codegen"
+	"github.com/solo-io/service-mesh-hub/pkg/codegen"
+	skv2_codegen "github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
-	"github.com/solo-io/skv2/contrib"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var (
 	appName            = "service-mesh-hub"
-	smhModule          = "github.com/solo-io/service-mesh-hub"
-	v1alpha1Version    = "v1alpha1"
-	apiRoot            = "pkg/api"
 	smhCrdManifestRoot = "install/helm/charts/custom-resource-definitions"
 	csrCrdManifestRoot = "install/helm/charts/csr-agent/"
 	protoImports       *sk_anyvendor.Imports
@@ -45,87 +40,30 @@ func run() error {
 	return nil
 }
 
-func makeSmhCommand() codegen.Command {
-	groups := []model.Group{
-		makeGroup("core", v1alpha1Version, []resourceToGenerate{
-			{kind: "Settings", noStatus: true},
-		}),
-		makeGroup("discovery", v1alpha1Version, []resourceToGenerate{
-			{kind: "KubernetesCluster", noStatus: true}, // TODO(ilackarms): remove this kubernetes cluster and use skv2 multicluster
-			{kind: "MeshService"},
-			{kind: "MeshWorkload"},
-			{kind: "Mesh"},
-		}),
-		makeGroup("networking", v1alpha1Version, []resourceToGenerate{
-			{kind: "TrafficPolicy"},
-			{kind: "AccessControlPolicy"},
-			{kind: "VirtualMesh"},
-			{kind: "FailoverService"},
-		}),
-	}
-
-	return codegen.Command{
+func makeSmhCommand() skv2_codegen.Command {
+	return skv2_codegen.Command{
 		AppName:         appName,
 		AnyVendorConfig: protoImports,
 		ManifestRoot:    smhCrdManifestRoot,
-		Groups:          groups,
+		Groups:          codegen.SmhGroups,
 		RenderProtos:    true,
 	}
 }
 
-func makeCsrCommand() codegen.Command {
+func makeCsrCommand() skv2_codegen.Command {
 	groups := []model.Group{
-		makeGroup("security", v1alpha1Version, []resourceToGenerate{
-			{kind: "VirtualMeshCertificateSigningRequest"},
+		codegen.MakeGroup("security", codegen.V1alpha1Version, []codegen.ResourceToGenerate{
+			{
+				Kind: "VirtualMeshCertificateSigningRequest",
+			},
 		}),
 	}
 
-	return codegen.Command{
+	return skv2_codegen.Command{
 		AppName:         appName,
 		AnyVendorConfig: protoImports,
 		ManifestRoot:    csrCrdManifestRoot,
 		Groups:          groups,
 		RenderProtos:    true,
-	}
-}
-
-type resourceToGenerate struct {
-	kind     string
-	noStatus bool // don't put a status on this resource
-}
-
-func makeGroup(groupPrefix, version string, resourcesToGenerate []resourceToGenerate) model.Group {
-	var resources []model.Resource
-	for _, resource := range resourcesToGenerate {
-		res := model.Resource{
-			Kind: resource.kind,
-			Spec: model.Field{
-				Type: model.Type{
-					Name: resource.kind + "Spec",
-				},
-			},
-		}
-		if !resource.noStatus {
-			res.Status = &model.Field{Type: model.Type{
-				Name: resource.kind + "Status",
-			}}
-		}
-		resources = append(resources, res)
-	}
-
-	return model.Group{
-		GroupVersion: schema.GroupVersion{
-			Group:   groupPrefix + "." + constants.ServiceMeshHubApiGroupSuffix,
-			Version: version,
-		},
-		Module:           smhModule,
-		Resources:        resources,
-		RenderManifests:  true,
-		RenderTypes:      true,
-		RenderClients:    true,
-		RenderController: true,
-		MockgenDirective: true,
-		CustomTemplates:  contrib.AllGroupCustomTemplates,
-		ApiRoot:          apiRoot,
 	}
 }
