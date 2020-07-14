@@ -9,9 +9,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/mocks"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig/mocks"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -22,7 +22,7 @@ var _ = Describe("Get Service Cmd", func() {
 		meshctl            *cli_test.MockMeshctl
 		mockKubeLoader     *mock_kubeconfig.MockKubeLoader
 		mockServicePrinter *mock_table_printing.MockMeshServicePrinter
-		mockServiceClient  *mock_zephyr_discovery.MockMeshServiceClient
+		mockServiceClient  *mock_smh_discovery.MockMeshServiceClient
 	)
 
 	BeforeEach(func() {
@@ -30,7 +30,7 @@ var _ = Describe("Get Service Cmd", func() {
 		ctx = context.TODO()
 		mockKubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
 		mockServicePrinter = mock_table_printing.NewMockMeshServicePrinter(ctrl)
-		mockServiceClient = mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
+		mockServiceClient = mock_smh_discovery.NewMockMeshServiceClient(ctrl)
 		meshctl = &cli_test.MockMeshctl{
 			MockController: ctrl,
 			Ctx:            ctx,
@@ -51,7 +51,7 @@ var _ = Describe("Get Service Cmd", func() {
 
 	It("will call the mesh service printer with the proper data", func() {
 
-		meshServices := []*zephyr_discovery.MeshService{
+		meshServices := []*smh_discovery.MeshService{
 			{
 				ObjectMeta: v1.ObjectMeta{
 					Name: "mesh-1",
@@ -68,8 +68,8 @@ var _ = Describe("Get Service Cmd", func() {
 			Return(nil, nil)
 		mockServiceClient.EXPECT().
 			ListMeshService(ctx).
-			Return(&zephyr_discovery.MeshServiceList{
-				Items: []zephyr_discovery.MeshService{*meshServices[0], *meshServices[1]},
+			Return(&smh_discovery.MeshServiceList{
+				Items: []smh_discovery.MeshService{*meshServices[0], *meshServices[1]},
 			}, nil)
 		mockServicePrinter.EXPECT().
 			Print(gomock.Any(), meshServices).

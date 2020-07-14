@@ -7,8 +7,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	smh_security "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
 )
 
 func GetVirtualMeshCertificateSigningRequests(
@@ -31,7 +31,7 @@ func GetVirtualMeshCertificateSigningRequests(
 	if err != nil {
 		return err
 	}
-	virtualMeshCSRList := make([]*zephyr_security.VirtualMeshCertificateSigningRequest, 0, len(virtualMeshCSRs.Items))
+	virtualMeshCSRList := make([]*smh_security.VirtualMeshCertificateSigningRequest, 0, len(virtualMeshCSRs.Items))
 	for _, v := range virtualMeshCSRs.Items {
 		v := v
 		virtualMeshCSRList = append(virtualMeshCSRList, &v)

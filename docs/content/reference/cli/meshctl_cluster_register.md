@@ -23,6 +23,7 @@ meshctl cluster register [flags]
       --remote-context string           Set the context you would like to use for the remote cluster
       --remote-kubeconfig string        Set the path to the kubeconfig you would like to use for the remote cluster. Leave empty to use the default
       --remote-write-namespace string   Namespace in the remote cluster in which to write resources (default "service-mesh-hub")
+      --values strings                  List of files with value overrides for the csr-agent Helm chart, (e.g. --values file1,file2 or --values file1 --values file2)
 ```
 
 ### Options inherited from parent commands

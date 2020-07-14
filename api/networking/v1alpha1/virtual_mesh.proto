@@ -1,9 +1,10 @@
 syntax = "proto3";
-package networking.zephyr.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types";
+package networking.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types";
 
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
+import "google/protobuf/wrappers.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -26,7 +27,7 @@ message VirtualMeshSpec {
         // Configuration for user-provided root certificate.
         message Provided {
             // Reference to a Secret object containing the root certificate.
-            core.zephyr.solo.io.ResourceRef certificate = 3;
+            core.smh.solo.io.ResourceRef certificate = 3;
         }
 
         // If omitted, defaults to builtin.
@@ -71,11 +72,24 @@ message VirtualMeshSpec {
     */
     message LimitedTrust {}
 
+    /*
+        If ENABLED, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies.
+        If DISABLED, by default allow traffic to all Services in the VirtualMesh.
+        If MESH_DEFAULT, the default value depends on the type service mesh:
+            Istio: false
+            Appmesh: true
+    */
+    enum EnforcementPolicy {
+        MESH_DEFAULT = 0;
+        ENABLED = 1;
+        DISABLED = 2;
+    }
+
     // User-provided display name for the virtual mesh.
     string display_name = 1;
 
     // The meshes contained in this virtual mesh.
-    repeated core.zephyr.solo.io.ResourceRef meshes = 2;
+    repeated core.smh.solo.io.ResourceRef meshes = 2;
 
     CertificateAuthority certificate_authority = 3;
 
@@ -86,24 +100,19 @@ message VirtualMeshSpec {
         LimitedTrust limited = 6;
     }
 
-    /*
-        If true, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies.
-        If false, by default allow traffic to all Services in the VirtualMesh.
-        Defaults to false when not set.
-    */
-    bool enforce_access_control = 7;
+    EnforcementPolicy enforce_access_control = 7;
 }
 
 message VirtualMeshStatus {
     // Status of the process writing federation decision metadata onto MeshServices.
-    core.zephyr.solo.io.Status federation_status = 1;
+    core.smh.solo.io.Status federation_status = 1;
 
     // Status of the process signing CSRs.
-    core.zephyr.solo.io.Status certificate_status = 2;
+    core.smh.solo.io.Status certificate_status = 2;
 
     // Overall validation status of this VirtualMesh.
-    core.zephyr.solo.io.Status config_status = 3;
+    core.smh.solo.io.Status config_status = 3;
 
     // Status of ensuring that access control is enforced within this VirtualMesh.
-    core.zephyr.solo.io.Status access_control_enforcement_status = 4;
+    core.smh.solo.io.Status access_control_enforcement_status = 4;
 }

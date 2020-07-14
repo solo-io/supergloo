@@ -2,8 +2,9 @@ deployment:
   image:
     tag: %version%
     repository: csr-agent
-    registry: quay.io/solo-io
+    registry: soloio
     pullPolicy: IfNotPresent
   stats:
     enabled: true
+  nodeSelector: {}
 global: {}

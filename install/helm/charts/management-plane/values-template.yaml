@@ -1,6 +1,12 @@
 global:
   image:
-    registry: quay.io/solo-io
+    registry: soloio
     pullPolicy: IfNotPresent
   stats:
     enabled: true
+mesh-discovery:
+  deployment:
+    nodeSelector: {}
+mesh-networking:
+  deployment:
+    nodeSelector: {}

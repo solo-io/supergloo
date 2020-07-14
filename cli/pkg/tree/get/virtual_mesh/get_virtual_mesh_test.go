@@ -9,9 +9,11 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
+	types3 "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	mock_smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/mocks"
+	types2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig/mocks"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -22,7 +24,7 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 		meshctl                *cli_test.MockMeshctl
 		mockKubeLoader         *mock_kubeconfig.MockKubeLoader
 		mockVirtualMeshPrinter *mock_table_printing.MockVirtualMeshPrinter
-		mockVirtualMeshClient  *mock_zephyr_networking.MockVirtualMeshClient
+		mockVirtualMeshClient  *mock_smh_networking.MockVirtualMeshClient
 	)
 
 	BeforeEach(func() {
@@ -30,7 +32,7 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 		ctx = context.TODO()
 		mockKubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
 		mockVirtualMeshPrinter = mock_table_printing.NewMockVirtualMeshPrinter(ctrl)
-		mockVirtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
+		mockVirtualMeshClient = mock_smh_networking.NewMockVirtualMeshClient(ctrl)
 		meshctl = &cli_test.MockMeshctl{
 			MockController: ctrl,
 			Ctx:            ctx,
@@ -51,15 +53,25 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 
 	It("will call the VirtualMesh Printer with the proper data", func() {
 
-		virtualMeshes := []*zephyr_networking.VirtualMesh{
+		virtualMeshes := []*smh_networking.VirtualMesh{
 			{
 				ObjectMeta: v1.ObjectMeta{
-					Name: "mesh-1",
+					Name: "virtualmesh-1",
+				},
+				Spec: types2.VirtualMeshSpec{
+					Meshes: []*types3.ResourceRef{
+						{Name: "mesh-1", Namespace: "mesh-namespace-1"},
+					},
 				},
 			},
 			{
 				ObjectMeta: v1.ObjectMeta{
-					Name: "mesh-2",
+					Name: "virtualmesh-2",
+				},
+				Spec: types2.VirtualMeshSpec{
+					Meshes: []*types3.ResourceRef{
+						{Name: "mesh-2", Namespace: "mesh-namespace-2"},
+					},
 				},
 			},
 		}
@@ -68,9 +80,10 @@ var _ = Describe("Get VirtualMesh Cmd", func() {
 			Return(nil, nil)
 		mockVirtualMeshClient.EXPECT().
 			ListVirtualMesh(ctx).
-			Return(&zephyr_networking.VirtualMeshList{
-				Items: []zephyr_networking.VirtualMesh{*virtualMeshes[0], *virtualMeshes[1]},
+			Return(&smh_networking.VirtualMeshList{
+				Items: []smh_networking.VirtualMesh{*virtualMeshes[0], *virtualMeshes[1]},
 			}, nil)
+
 		mockVirtualMeshPrinter.EXPECT().
 			Print(gomock.Any(), virtualMeshes).
 			Return(nil)

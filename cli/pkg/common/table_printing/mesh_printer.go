@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 )
 
 func NewMeshPrinter(tableBuilder TableBuilder) MeshPrinter {
@@ -27,22 +27,30 @@ type meshPrinter struct {
 	commonHeaderRows []string
 }
 
-func (m *meshPrinter) Print(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
+func (m *meshPrinter) Print(out io.Writer, meshes []*smh_discovery.Mesh) error {
 
-	meshesByType := GetMeshByType(meshes)
+	meshesByType := getMeshByType(meshes)
 
-	if err := m.printIstioMeshes(out, meshesByType.Istio); err != nil {
+	if err := m.printIstioMeshes(out, meshesByType.istio1_5); err != nil {
 		return err
 	}
 
-	if err := m.printLinkerdMeshes(out, meshesByType.Linkerd); err != nil {
+	if err := m.printIstioMeshes(out, meshesByType.istio1_6); err != nil {
+		return err
+	}
+
+	if err := m.printLinkerdMeshes(out, meshesByType.linkerd); err != nil {
+		return err
+	}
+
+	if err := m.printAwsAppMeshMeshes(out, meshesByType.awsAppMesh); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *meshPrinter) printIstioMeshes(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
+func (m *meshPrinter) printIstioMeshes(out io.Writer, meshes []*istioMesh) error {
 	// Do nothing if no meshes exist
 	if len(meshes) == 0 {
 		return nil
@@ -60,23 +68,18 @@ func (m *meshPrinter) printIstioMeshes(out io.Writer, meshes []*zephyr_discovery
 	var preFilteredRows [][]string
 	for _, mesh := range meshes {
 		// Append common metadata
-		newRow := []string{mesh.GetName(), mesh.Spec.GetCluster().GetName()}
+		newRow := []string{mesh.meshName, mesh.clusterName}
 
-		// istioMeshes should be prefiltered, if they are not, simply skip it
-		istioMesh := mesh.Spec.GetIstio()
-		if istioMesh == nil {
-			continue
-		}
 		// Append installation info
 		newRow = append(
 			newRow,
-			istioMesh.GetInstallation().GetInstallationNamespace(),
-			istioMesh.GetInstallation().GetVersion(),
+			mesh.istioMetadata.GetInstallation().GetInstallationNamespace(),
+			mesh.istioMetadata.GetInstallation().GetVersion(),
 		)
 
 		// Append Citadel Info
-		if istioMesh.GetCitadelInfo() != nil {
-			newRow = append(newRow, m.buildCitadelInfo(istioMesh.GetCitadelInfo()))
+		if mesh.istioMetadata.GetCitadelInfo() != nil {
+			newRow = append(newRow, m.buildCitadelInfo(mesh.istioMetadata.GetCitadelInfo()))
 		}
 
 		preFilteredRows = append(preFilteredRows, newRow)
@@ -99,7 +102,7 @@ func (m *meshPrinter) buildCitadelInfo(info *types.MeshSpec_IstioMesh_CitadelInf
 	return strings.Join(lines, "\n")
 }
 
-func (m *meshPrinter) printLinkerdMeshes(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
+func (m *meshPrinter) printLinkerdMeshes(out io.Writer, meshes []*smh_discovery.Mesh) error {
 	// Do nothing if no meshes exist
 	if len(meshes) == 0 {
 		return nil
@@ -140,7 +143,7 @@ func (m *meshPrinter) printLinkerdMeshes(out io.Writer, meshes []*zephyr_discove
 	return nil
 }
 
-func (m *meshPrinter) printConsulConnectMeshes(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
+func (m *meshPrinter) printConsulConnectMeshes(out io.Writer, meshes []*smh_discovery.Mesh) error {
 	// Do nothing if no meshes exist
 	if len(meshes) == 0 {
 		return nil
@@ -181,7 +184,7 @@ func (m *meshPrinter) printConsulConnectMeshes(out io.Writer, meshes []*zephyr_d
 	return nil
 }
 
-func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*zephyr_discovery.Mesh) error {
+func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*smh_discovery.Mesh) error {
 	// Do nothing if no meshes exist
 	if len(meshes) == 0 {
 		return nil
@@ -223,25 +226,42 @@ func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*zephyr_disc
 	return nil
 }
 
-type MeshByType struct {
-	Istio         []*zephyr_discovery.Mesh
-	Linkerd       []*zephyr_discovery.Mesh
-	ConsulConnect []*zephyr_discovery.Mesh
-	AwsAppMesh    []*zephyr_discovery.Mesh
+type istioMesh struct {
+	meshName      string
+	clusterName   string
+	istioMetadata *types.MeshSpec_IstioMesh
 }
 
-func GetMeshByType(meshes []*zephyr_discovery.Mesh) *MeshByType {
-	mbt := &MeshByType{}
+type meshByType struct {
+	istio1_5      []*istioMesh
+	istio1_6      []*istioMesh
+	linkerd       []*smh_discovery.Mesh
+	consulConnect []*smh_discovery.Mesh
+	awsAppMesh    []*smh_discovery.Mesh
+}
+
+func getMeshByType(meshes []*smh_discovery.Mesh) *meshByType {
+	mbt := &meshByType{}
 	for _, mesh := range meshes {
 		switch mesh.Spec.GetMeshType().(type) {
-		case *types.MeshSpec_Istio:
-			mbt.Istio = append(mbt.Istio, mesh)
+		case *types.MeshSpec_Istio1_5_:
+			mbt.istio1_5 = append(mbt.istio1_5, &istioMesh{
+				meshName:      mesh.GetName(),
+				clusterName:   mesh.Spec.GetCluster().GetName(),
+				istioMetadata: mesh.Spec.GetIstio1_5().GetMetadata(),
+			})
+		case *types.MeshSpec_Istio1_6_:
+			mbt.istio1_6 = append(mbt.istio1_6, &istioMesh{
+				meshName:      mesh.GetName(),
+				clusterName:   mesh.Spec.GetCluster().GetName(),
+				istioMetadata: mesh.Spec.GetIstio1_6().GetMetadata(),
+			})
 		case *types.MeshSpec_Linkerd:
-			mbt.Linkerd = append(mbt.Linkerd, mesh)
+			mbt.linkerd = append(mbt.linkerd, mesh)
 		case *types.MeshSpec_AwsAppMesh_:
-			mbt.AwsAppMesh = append(mbt.AwsAppMesh, mesh)
+			mbt.awsAppMesh = append(mbt.awsAppMesh, mesh)
 		case *types.MeshSpec_ConsulConnect:
-			mbt.ConsulConnect = append(mbt.ConsulConnect, mesh)
+			mbt.consulConnect = append(mbt.consulConnect, mesh)
 		}
 	}
 	return mbt

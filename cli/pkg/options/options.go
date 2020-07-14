@@ -37,13 +37,14 @@ type Cluster struct {
 }
 
 type Register struct {
-	RemoteClusterName          string
-	RemoteWriteNamespace       string
-	RemoteContext              string
-	RemoteKubeConfig           string
-	LocalClusterDomainOverride string
-	Overwrite                  bool
-	UseDevCsrAgentChart        bool
+	RemoteClusterName               string
+	RemoteWriteNamespace            string
+	RemoteContext                   string
+	RemoteKubeConfig                string
+	LocalClusterDomainOverride      string
+	Overwrite                       bool
+	UseDevCsrAgentChart             bool
+	CsrAgentHelmChartValueFileNames []string
 }
 
 type Deregister struct {
@@ -100,17 +101,13 @@ type Describe struct {
 }
 
 type Demo struct {
-	DemoLabel         string
-	UseKind           bool
-	ClusterName       string
-	IstioMulticluster IstioMulticluster
-	DevMode           bool
-	ContextName       string
+	AppmeshEks AppmeshEks
 }
 
-type IstioMulticluster struct {
-	RemoteClusterName string
-	RemoteContextName string
+type AppmeshEks struct {
+	AwsRegion      string
+	EksClusterName string
+	MeshName       string
 }
 
 type Create struct {

@@ -1,6 +1,6 @@
 syntax = "proto3";
-package core.zephyr.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types";
+package core.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types";
 
 import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 import "service-mesh-hub/api/core/v1alpha1/status.proto";
@@ -12,8 +12,9 @@ option (gogoproto.equal_all) = true;
 
 // The Mesh types known to Service Mesh Hub. Note that there is some duplication between this enum and the discovery.MeshSpec message
 enum MeshType {
-    ISTIO = 0;
-    APPMESH = 1;
-    CONSUL = 2;
-    LINKERD = 3;
+    ISTIO1_5 = 0;
+    ISTIO1_6 = 1;
+    APPMESH = 2;
+    CONSUL = 3;
+    LINKERD = 4;
 }

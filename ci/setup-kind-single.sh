@@ -7,14 +7,14 @@
 #####################################
 
 if [ "$1" == "cleanup" ]; then
-  kind get clusters | while read -r r; do kind delete cluster --name "$r"; done
+  kind delete cluster --name "management-plane"
   exit 0
 fi
 
 make clean
 
 # generate 16-character random suffix on these names
-managementPlane=management-plane-$(xxd -l16 -ps /dev/urandom)
+managementPlane=management-plane
 
 # set up each cluster
 # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/

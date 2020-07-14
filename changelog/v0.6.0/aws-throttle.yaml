@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Add throttling config to AWS clients, standardize access to AWS clients through AwsCloudStore interface.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/770

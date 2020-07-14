@@ -2,7 +2,8 @@ deployment:
   image:
     tag: %version%
     repository: mesh-networking
-    registry: quay.io/solo-io
+    registry: soloio
     pullPolicy: IfNotPresent
   stats:
     enabled: true
+  nodeSelector: {}

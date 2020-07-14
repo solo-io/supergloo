@@ -10,9 +10,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/test_goldens"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -22,7 +22,7 @@ var UPDATE_MESH_GOLDENS = false
 
 var _ = Describe("Mesh Table Printer", func() {
 	const meshGoldenDir = "mesh"
-	var runTest = func(fileName string, meshes []*zephyr_discovery.Mesh) {
+	var runTest = func(fileName string, meshes []*smh_discovery.Mesh) {
 		goldenFilename := test_goldens.GoldenFilePath(meshGoldenDir, fileName)
 		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
@@ -44,26 +44,28 @@ var _ = Describe("Mesh Table Printer", func() {
 		Entry(
 			"can print multiple meshes of different types",
 			"multi_mesh",
-			[]*zephyr_discovery.Mesh{
+			[]*smh_discovery.Mesh{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "istio-mesh-1",
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_Istio{
-							Istio: &zephyr_discovery_types.MeshSpec_IstioMesh{
-								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
-									InstallationNamespace: "istio-system",
-									Version:               "1.5.1",
-								},
-								CitadelInfo: &zephyr_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
-									TrustDomain:           "cluster.local",
-									CitadelNamespace:      "istio-system",
-									CitadelServiceAccount: "istiod",
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_Istio1_5_{
+							Istio1_5: &smh_discovery_types.MeshSpec_Istio1_5{
+								Metadata: &smh_discovery_types.MeshSpec_IstioMesh{
+									Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
+										InstallationNamespace: "istio-system",
+										Version:               "1.5.1",
+									},
+									CitadelInfo: &smh_discovery_types.MeshSpec_IstioMesh_CitadelInfo{
+										TrustDomain:           "cluster.local",
+										CitadelNamespace:      "istio-system",
+										CitadelServiceAccount: "istiod",
+									},
 								},
 							},
 						},
-						Cluster: &zephyr_core_types.ResourceRef{
+						Cluster: &smh_core_types.ResourceRef{
 							Name: "cluster-1",
 						},
 					},
@@ -72,16 +74,16 @@ var _ = Describe("Mesh Table Printer", func() {
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name: "linkerd-mesh-1",
 					},
-					Spec: zephyr_discovery_types.MeshSpec{
-						MeshType: &zephyr_discovery_types.MeshSpec_Linkerd{
-							Linkerd: &zephyr_discovery_types.MeshSpec_LinkerdMesh{
-								Installation: &zephyr_discovery_types.MeshSpec_MeshInstallation{
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_Linkerd{
+							Linkerd: &smh_discovery_types.MeshSpec_LinkerdMesh{
+								Installation: &smh_discovery_types.MeshSpec_MeshInstallation{
 									InstallationNamespace: "linkerd",
 									Version:               "2.7.1",
 								},
 							},
 						},
-						Cluster: &zephyr_core_types.ResourceRef{
+						Cluster: &smh_core_types.ResourceRef{
 							Name: "cluster-1",
 						},
 					},

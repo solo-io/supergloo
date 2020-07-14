@@ -9,14 +9,15 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/files"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/usage"
 	usage_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/common/usage/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/wire"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/common/filesystem/files"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
+	"github.com/spf13/afero"
 	"k8s.io/client-go/rest"
 )
 
@@ -42,6 +43,8 @@ type MockMeshctl struct {
 	Runner            exec.Runner
 	Printers          common.Printers
 	InteractivePrompt interactive.InteractivePrompt
+
+	Fs afero.Fs
 }
 
 // call with the same string you would pass to the meshctl binary, i.e. "cluster register --service-account-name test123"
@@ -80,6 +83,7 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 		m.Printers,
 		m.Runner,
 		m.InteractivePrompt,
+		m.Fs,
 	)
 
 	splitArgs, err := shellwords.Parse(argString)

@@ -10,9 +10,9 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
-	mock_kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	version2 "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/version"
+	mock_kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/common/kube/discovery/mocks"
 	"k8s.io/apimachinery/pkg/version"
 )
 
@@ -38,7 +38,7 @@ var _ = Describe("K8s version check", func() {
 			Get().
 			Return(nil, testErr)
 
-		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, container_runtime.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 
@@ -55,7 +55,7 @@ var _ = Describe("K8s version check", func() {
 				Minor: "abcd",
 			}, nil)
 
-		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, container_runtime.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 
@@ -72,7 +72,7 @@ var _ = Describe("K8s version check", func() {
 				Minor: fmt.Sprintf("%d+", version2.MinimumSupportedKubernetesMinorVersion), // for example: "15+"
 			}, nil)
 
-		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, container_runtime.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 
@@ -88,7 +88,7 @@ var _ = Describe("K8s version check", func() {
 				Minor: fmt.Sprintf("%d", version2.MinimumSupportedKubernetesMinorVersion+2), // for example: "15+"
 			}, nil)
 
-		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, container_runtime.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 

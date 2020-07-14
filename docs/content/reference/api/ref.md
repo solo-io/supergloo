@@ -3,7 +3,7 @@
 title: "ref.proto"
 ---
 
-## Package : `core.zephyr.solo.io`
+## Package : `core.smh.solo.io`
 
 
 
@@ -16,7 +16,7 @@ title: "ref.proto"
 
 
 ## Table of Contents
-  - [ResourceRef](#core.zephyr.solo.io.ResourceRef)
+  - [ResourceRef](#core.smh.solo.io.ResourceRef)
 
 
 
@@ -24,7 +24,7 @@ title: "ref.proto"
 
 
 
-<a name="core.zephyr.solo.io.ResourceRef"></a>
+<a name="core.smh.solo.io.ResourceRef"></a>
 
 ### ResourceRef
 reference object for kubernetes objects, support multi cluster

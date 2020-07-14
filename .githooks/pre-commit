@@ -13,6 +13,11 @@
 gofiles=$(git diff --cached --name-only --diff-filter=ACM | grep -v 'vendor/' | grep '\.go$')
 [ -z "$gofiles" ] && exit 0
 
+"$(dirname "$0")"/../ci/ensureGoodImportPaths.bash
+if [ $? != 0 ]; then
+  exit 1
+fi
+
 unformatted=$(gofmt -l $gofiles)
 badimports=$(goimports -l $gofiles)
 [ -z "$unformatted" ] && [ -z "$badimports" ] && exit 0

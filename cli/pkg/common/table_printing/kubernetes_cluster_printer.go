@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 )
 
 func NewKubernetesClusterPrinter(tableBuilder TableBuilder) KubernetesClusterPrinter {
@@ -18,7 +18,7 @@ type kubernetesClusterPrinter struct {
 	tableBuilder TableBuilder
 }
 
-func (m *kubernetesClusterPrinter) Print(out io.Writer, clusters []*zephyr_discovery.KubernetesCluster) error {
+func (m *kubernetesClusterPrinter) Print(out io.Writer, clusters []*smh_discovery.KubernetesCluster) error {
 	if len(clusters) == 0 {
 		return nil
 	}

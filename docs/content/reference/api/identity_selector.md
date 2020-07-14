@@ -3,7 +3,7 @@
 title: "identity_selector.proto"
 ---
 
-## Package : `core.zephyr.solo.io`
+## Package : `core.smh.solo.io`
 
 
 
@@ -16,9 +16,9 @@ title: "identity_selector.proto"
 
 
 ## Table of Contents
-  - [IdentitySelector](#core.zephyr.solo.io.IdentitySelector)
-  - [IdentitySelector.Matcher](#core.zephyr.solo.io.IdentitySelector.Matcher)
-  - [IdentitySelector.ServiceAccountRefs](#core.zephyr.solo.io.IdentitySelector.ServiceAccountRefs)
+  - [IdentitySelector](#core.smh.solo.io.IdentitySelector)
+  - [IdentitySelector.Matcher](#core.smh.solo.io.IdentitySelector.Matcher)
+  - [IdentitySelector.ServiceAccountRefs](#core.smh.solo.io.IdentitySelector.ServiceAccountRefs)
 
 
 
@@ -26,7 +26,7 @@ title: "identity_selector.proto"
 
 
 
-<a name="core.zephyr.solo.io.IdentitySelector"></a>
+<a name="core.smh.solo.io.IdentitySelector"></a>
 
 ### IdentitySelector
 Selector capable of selecting specific service identities. Useful for binding policy rules. Either (namespaces, cluster, service_account_names) or service_accounts can be specified. If all fields are omitted, any source identity is permitted.
@@ -34,15 +34,15 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| matcher | [IdentitySelector.Matcher](#core.zephyr.solo.io.IdentitySelector.Matcher) |  |  |
-| serviceAccountRefs | [IdentitySelector.ServiceAccountRefs](#core.zephyr.solo.io.IdentitySelector.ServiceAccountRefs) |  |  |
+| matcher | [IdentitySelector.Matcher](#core.smh.solo.io.IdentitySelector.Matcher) |  |  |
+| serviceAccountRefs | [IdentitySelector.ServiceAccountRefs](#core.smh.solo.io.IdentitySelector.ServiceAccountRefs) |  |  |
 
 
 
 
 
 
-<a name="core.zephyr.solo.io.IdentitySelector.Matcher"></a>
+<a name="core.smh.solo.io.IdentitySelector.Matcher"></a>
 
 ### IdentitySelector.Matcher
 
@@ -58,7 +58,7 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 
 
-<a name="core.zephyr.solo.io.IdentitySelector.ServiceAccountRefs"></a>
+<a name="core.smh.solo.io.IdentitySelector.ServiceAccountRefs"></a>
 
 ### IdentitySelector.ServiceAccountRefs
 
@@ -66,7 +66,7 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| serviceAccounts | [][ResourceRef](#core.zephyr.solo.io.ResourceRef) | repeated | List of ServiceAccounts to allow. If not set, any ServiceAccount is allowed. |
+| serviceAccounts | [][ResourceRef](#core.smh.solo.io.ResourceRef) | repeated | List of ServiceAccounts to allow. If not set, any ServiceAccount is allowed. |
 
 
 

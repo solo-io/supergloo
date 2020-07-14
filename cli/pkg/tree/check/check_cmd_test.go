@@ -13,8 +13,8 @@ import (
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
 	mock_status "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig/mocks"
 )
 
 var _ = Describe("Meshctl check command", func() {
@@ -43,7 +43,7 @@ var _ = Describe("Meshctl check command", func() {
 
 		statusClient := mock_status.NewMockStatusClient(ctrl)
 		statusClient.EXPECT().
-			Check(ctx, env.GetWriteNamespace(), healthCheckSuite).
+			Check(ctx, container_runtime.GetWriteNamespace(), healthCheckSuite).
 			Return(&status.StatusReport{
 				Success: true,
 			})
@@ -76,7 +76,7 @@ var _ = Describe("Meshctl check command", func() {
 
 		statusClient := mock_status.NewMockStatusClient(ctrl)
 		statusClient.EXPECT().
-			Check(ctx, env.GetWriteNamespace(), healthCheckSuite).
+			Check(ctx, container_runtime.GetWriteNamespace(), healthCheckSuite).
 			Return(&status.StatusReport{
 				Success: true,
 			}).

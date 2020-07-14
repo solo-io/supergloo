@@ -4,13 +4,27 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: mesh-networking-clusterrole
 rules:
-  - apiGroups: ["networking.zephyr.solo.io"]
-    resources: ["virtualmeshes", "virtualmeshes/status", "trafficpolicies", "trafficpolicies/status", "accesscontrolpolicies", "accesscontrolpolicies/status"]
+  - apiGroups: ["networking.smh.solo.io"]
+    resources:
+      - "virtualmeshes"
+      - "virtualmeshes/status"
+      - "trafficpolicies"
+      - "trafficpolicies/status"
+      - "accesscontrolpolicies"
+      - "accesscontrolpolicies/status"
+      - "failoverservices"
+      - "failoverservices/status"
     verbs: ["*"]
-  - apiGroups: ["discovery.zephyr.solo.io"]
-    resources: ["meshes", "meshworkloads","meshworkloads/status", "meshservices","meshservices/status"]
+  - apiGroups: ["discovery.smh.solo.io"]
+    resources:
+      - "meshes"
+      - "meshworkloads"
+      - "meshworkloads/status"
+      - "meshservices"
+      - "meshservices/status"
+      - "kubernetesclusters"
     verbs: ["*"]
-  - apiGroups: ["security.zephyr.solo.io"]
+  - apiGroups: ["security.smh.solo.io"]
     resources: ["virtualmeshcertificatesigningrequests", "virtualmeshcertificatesigningrequests/status"]
     verbs: ["*"]
   - apiGroups: ["networking.istio.io"]

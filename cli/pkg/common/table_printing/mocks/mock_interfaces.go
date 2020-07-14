@@ -10,9 +10,9 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
-	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	v1alpha11 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	v1alpha11 "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1"
 )
 
 // MockTrafficPolicyPrinter is a mock of TrafficPolicyPrinter interface.
@@ -113,17 +113,17 @@ func (m *MockVirtualMeshPrinter) EXPECT() *MockVirtualMeshPrinterMockRecorder {
 }
 
 // Print mocks base method.
-func (m *MockVirtualMeshPrinter) Print(out io.Writer, meshServices []*v1alpha10.VirtualMesh) error {
+func (m *MockVirtualMeshPrinter) Print(out io.Writer, virtualMeshes []*v1alpha10.VirtualMesh) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Print", out, meshServices)
+	ret := m.ctrl.Call(m, "Print", out, virtualMeshes)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Print indicates an expected call of Print.
-func (mr *MockVirtualMeshPrinterMockRecorder) Print(out, meshServices interface{}) *gomock.Call {
+func (mr *MockVirtualMeshPrinterMockRecorder) Print(out, virtualMeshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockVirtualMeshPrinter)(nil).Print), out, meshServices)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockVirtualMeshPrinter)(nil).Print), out, virtualMeshes)
 }
 
 // MockVirtualMeshCSRPrinter is a mock of VirtualMeshCSRPrinter interface.
@@ -150,17 +150,17 @@ func (m *MockVirtualMeshCSRPrinter) EXPECT() *MockVirtualMeshCSRPrinterMockRecor
 }
 
 // Print mocks base method.
-func (m *MockVirtualMeshCSRPrinter) Print(out io.Writer, meshServices []*v1alpha11.VirtualMeshCertificateSigningRequest) error {
+func (m *MockVirtualMeshCSRPrinter) Print(out io.Writer, vmcsrs []*v1alpha11.VirtualMeshCertificateSigningRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Print", out, meshServices)
+	ret := m.ctrl.Call(m, "Print", out, vmcsrs)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Print indicates an expected call of Print.
-func (mr *MockVirtualMeshCSRPrinterMockRecorder) Print(out, meshServices interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCSRPrinterMockRecorder) Print(out, vmcsrs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockVirtualMeshCSRPrinter)(nil).Print), out, meshServices)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockVirtualMeshCSRPrinter)(nil).Print), out, vmcsrs)
 }
 
 // MockMeshPrinter is a mock of MeshPrinter interface.

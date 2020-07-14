@@ -18,7 +18,7 @@ type runner struct {
 }
 
 func (r *runner) Run(cmd string, args ...string) error {
-	execCmd := exec.Command(cmd, args...)
+	execCmd := exec.Command(cmd, append([]string{"-eux", "-c"}, args...)...)
 	execCmd.Stdin = r.in
 	execCmd.Stdout = r.out
 	execCmd.Stderr = r.out

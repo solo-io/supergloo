@@ -5,20 +5,21 @@ import (
 	"os"
 	"strings"
 
-	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/common/mesh-installation/istio/operator"
 	"github.com/spf13/cobra"
 )
 
 func AddRootFlags(cmd *cobra.Command, options *Options) {
 	flags := cmd.PersistentFlags()
-	flags.StringVarP(&options.Root.WriteNamespace, "namespace", "n", env.GetWriteNamespace(),
+	flags.StringVarP(&options.Root.WriteNamespace, "namespace", "n", container_runtime.GetWriteNamespace(),
 		"Specify the namespace where Service Mesh Hub resources should be written")
 	flags.StringVar(&options.Root.KubeConfig, "kubeconfig", os.Getenv("KUBECONFIG"),
 		"Specify the kubeconfig for the current command")
 	flags.StringVar(&options.Root.KubeContext, "context", "",
 		"Specify which context from the kubeconfig should be used; uses current context if none is specified")
-	flags.DurationVar(&options.Root.KubeTimeout, "kube-timeout", cliconstants.DefaultKubeClientTimeout,
+	flags.DurationVar(&options.Root.KubeTimeout, "kube-timeout", constants.DefaultKubeClientTimeout,
 		"Specify the default timeout for requests to kubernetes API servers")
 	flags.BoolVarP(&options.Root.Verbose, "verbose", "v", false,
 		"Enable verbose mode, which outputs additional execution details that may be helpful for debugging")
@@ -26,7 +27,7 @@ func AddRootFlags(cmd *cobra.Command, options *Options) {
 
 func AddUpgradeFlags(cmd *cobra.Command, opts *Upgrade) {
 	flags := cmd.PersistentFlags()
-	flags.StringVar(&opts.ReleaseTag, "release", cliconstants.DefaultReleaseTag,
+	flags.StringVar(&opts.ReleaseTag, "release", constants.DefaultReleaseTag,
 		"Which meshctl release to download. Specify a tag corresponding to the desired version of meshctl or \"latest\". "+
 			"Service Mesh Hub releases can be found here: https://github.com/solo-io/service-mesh-hub/releases. "+
 			"Omitting this tag defaults to \"latest\"")
@@ -47,7 +48,7 @@ func AddInstallFlags(cmd *cobra.Command, opts *Options) {
 	flags.StringSliceVarP(&opts.SmhInstall.HelmChartValueFileNames, "values", "", []string{},
 		"List of files with value overrides for the Service Mesh Hub Helm chart, "+
 			"(e.g. --values file1,file2 or --values file1 --values file2)")
-	flags.StringVar(&opts.SmhInstall.HelmReleaseName, "release-name", cliconstants.ServiceMeshHubReleaseName,
+	flags.StringVar(&opts.SmhInstall.HelmReleaseName, "release-name", constants.ServiceMeshHubReleaseName,
 		"Helm release name")
 	flags.StringVar(&opts.SmhInstall.Version, "version", "",
 		"Version to install (e.g. v1.2.0, defaults to latest)")
@@ -77,7 +78,7 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 
 	flags.StringVar(&opts.Cluster.Register.RemoteClusterName, remoteClusterName, "",
 		"Name of the cluster to be operated upon")
-	flags.StringVar(&opts.Cluster.Register.RemoteWriteNamespace, remoteWriteNamespace, env.GetWriteNamespace(),
+	flags.StringVar(&opts.Cluster.Register.RemoteWriteNamespace, remoteWriteNamespace, container_runtime.GetWriteNamespace(),
 		"Namespace in the remote cluster in which to write resources")
 	flags.StringVar(&opts.Cluster.Register.RemoteContext, remoteContext, "",
 		"Set the context you would like to use for the remote cluster")
@@ -88,6 +89,9 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 	flags.BoolVar(&opts.Cluster.Register.Overwrite, ClusterRegisterOverwriteFlag, false,
 		"Overwrite any cluster registered with the cluster name provided")
 	flags.BoolVar(&opts.Cluster.Register.UseDevCsrAgentChart, devCsrAgentChartName, false, "Use a packaged CSR agent chart from ./_output rather than a release chart")
+	flags.StringSliceVarP(&opts.Cluster.Register.CsrAgentHelmChartValueFileNames, "values", "", nil,
+		"List of files with value overrides for the csr-agent Helm chart, "+
+			"(e.g. --values file1,file2 or --values file1 --values file2)")
 
 	// this flag is mainly for our own debugging purposes
 	// don't show it in usage messages
@@ -104,41 +108,40 @@ func AddClusterDeregisterFlags(cmd *cobra.Command, opts *Options) {
 	cobra.MarkFlagRequired(flags, remoteClusterName)
 }
 
-func AddMeshInstallFlags(cmd *cobra.Command, opts *Options) {
+func AddIstioInstallFlags(cmd *cobra.Command, opts *Options) {
 	operatorNsFlag := "operator-namespace"
 	flags := cmd.PersistentFlags()
-	flags.StringVar(&opts.Mesh.Install.InstallationConfig.InstallNamespace, operatorNsFlag, cliconstants.DefaultIstioOperatorNamespace, "Namespace in which to install the Mesh operator")
+	flags.StringVar(&opts.Mesh.Install.InstallationConfig.InstallNamespace, operatorNsFlag, operator.DefaultIstioOperatorNamespace, "Namespace in which to install the Mesh operator")
 	flags.BoolVar(&opts.Mesh.Install.InstallationConfig.CreateNamespace, "create-operator-namespace", true, "Create the namespace specified by --"+operatorNsFlag)
 	flags.BoolVar(&opts.Mesh.Install.DryRun, "dry-run", false, "Dump the manifest that would be used to install the operator to stdout rather than apply it")
 	flags.StringVar(&opts.Mesh.Install.ManifestPath, "operator-spec", "", "Optional path to a YAML file containing an installation spec ('-' for stdin)")
 	flags.StringVar(&opts.Mesh.Install.Profile, "profile", "", "optional profile")
 }
 
-func AddDemoFlags(cmd *cobra.Command, opts *Options) {
+func AddAppmeshEksInitFlags(cmd *cobra.Command, opts *Options) {
 	flags := cmd.PersistentFlags()
-	devCsrAgentChartName := "dev-csr-agent-chart"
-
-	flags.StringVar(&opts.Demo.DemoLabel, "demo-label", "", "Optionally label namespaces that are created during the demo with 'solo.io/hub-demo:$DEMO-LABEL' so they can be cleaned up later")
-	flags.BoolVar(&opts.Demo.UseKind, "use-kind", false, "If this is set, use KinD (Kubernetes in Docker) to stand up local clusters; can not set if --context")
-	flags.StringVar(&opts.Demo.ClusterName, "cluster-name", "", "Registers the cluster under this name")
-	flags.BoolVar(&opts.Demo.DevMode, devCsrAgentChartName, false, "Use a packaged CSR agent chart from ./_output rather than a release chart")
-
-	flags.StringVar(&opts.Demo.ContextName, "context", "", "The main kubeconfig context to use; this will be the context used for management plane installations")
-
-	flags.Lookup(devCsrAgentChartName).Hidden = true
+	region := "aws-region"
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, region, "us-east-2", "Specify the AWS region for demo entities, defaults to us-east-2.")
+	cobra.MarkFlagRequired(flags, region)
 }
 
-func AddMulticlusterDemoFlags(cmd *cobra.Command, opts *Options) {
+func AddAppmeshEksCleanupFlags(cmd *cobra.Command, opts *Options) {
 	flags := cmd.PersistentFlags()
-
-	flags.StringVar(&opts.Demo.IstioMulticluster.RemoteContextName, "remote-context", "", "In multicluster demos where --use-kind is not specified, use this flag to specify what context to use from your kubeconfig for the remote cluster")
-	flags.StringVar(&opts.Demo.IstioMulticluster.RemoteClusterName, "remote-cluster-name", "", "Name under which to register the second cluster")
+	region := "aws-region"
+	meshName := "mesh-name"
+	eksClusterName := "eks-cluster-name"
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, region, "us-east-2", "Specify the AWS region for demo entities, defaults to us-east-2.")
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, meshName, "", "Specify name of the App mesh to cleanup.")
+	flags.StringVar(&opts.Demo.AppmeshEks.AwsRegion, eksClusterName, "", "Specify the name of the EKS cluster to cleanup.")
+	cobra.MarkFlagRequired(flags, region)
+	cobra.MarkFlagRequired(flags, meshName)
+	cobra.MarkFlagRequired(flags, eksClusterName)
 }
 
 func AddUninstallFlags(cmd *cobra.Command, opts *Options) {
 	flags := cmd.PersistentFlags()
 
-	flags.StringVar(&opts.SmhUninstall.ReleaseName, "release-name", cliconstants.ServiceMeshHubReleaseName, "Helm release name")
+	flags.StringVar(&opts.SmhUninstall.ReleaseName, "release-name", constants.ServiceMeshHubReleaseName, "Helm release name")
 	flags.BoolVar(&opts.SmhUninstall.RemoveNamespace, "remove-namespace", false, "Remove the Service Mesh Hub namespace specified with -n")
 }
 

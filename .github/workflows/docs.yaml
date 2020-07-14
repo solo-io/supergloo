@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Generate versioned docs site
     runs-on: ubuntu-18.04
     steps:
     - name: Set up Go 1.14
@@ -32,23 +32,17 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Update deps
-      run: make update-deps
+      run: |
+        make update-deps
 
-    - name: Generate Docs
-      run: go run codegen/docs/docsgen.go
+    - name: Generate versioned docs site
+      run: ./ci/build-docs-site.sh
 
-    - name: Docker Login
-      run : docker login quay.io --username "solo-io+solobot" --password ${{ secrets.QUAY_IO_PASSWORD }}
-
-    - name: Push latest
-      # Found on github community:  https://github.community/t5/GitHub-Actions/Github-Actions-GITHUB-EVENT-PATH-does-not-contain-relevant-PR/td-p/20835
-      if: github.ref == 'refs/heads/master'
-      run: cd docs &&  make latest -B
-
-    - name: Push Tagged
-      # Found on github community: https://github.community/t5/GitHub-Actions/Github-Actions-GITHUB-EVENT-PATH-does-not-contain-relevant-PR/td-p/20835
-      run: cd docs &&  make tagged -B
-      if: github.ref != 'refs/heads/master'
+    - name: Deploy to Firebase
+      uses: w9jds/firebase-action@master
+      with:
+        args: deploy --only hosting:service-mesh-hub
       env:
-        TAGGED_VERSION: v${{ github.ref }}
-
+        PROJECT_ID: solo-corp
+        PROJECT_PATH: ./ci/docs-site/
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

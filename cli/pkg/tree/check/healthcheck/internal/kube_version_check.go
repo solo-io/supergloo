@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
-	"github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/version"
 )
 
 func NewK8sServerVersionCheck() healthcheck_types.HealthCheck {

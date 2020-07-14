@@ -2,8 +2,8 @@ package internal
 
 import (
 	"github.com/rotisserie/eris"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/version"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/version"
 )
 
 var (
@@ -19,7 +19,7 @@ var (
 	KubernetesServerVersionUnsupported = func(minorVersion string) error {
 		return eris.Errorf("Kubernetes version 1.%s unsupported; only Kubernetes version 1.%d and later is supported", minorVersion, version.MinimumSupportedKubernetesMinorVersion)
 	}
-	FederationRecordingHasFailed = func(meshServiceName, installNamespace string, nonAcceptedStatus zephyr_core_types.Status_State) error {
+	FederationRecordingHasFailed = func(meshServiceName, installNamespace string, nonAcceptedStatus smh_core_types.Status_State) error {
 		return eris.Errorf("failed to write federation metadata to mesh service '%s.%s'; status is '%s'", meshServiceName, installNamespace, nonAcceptedStatus.String())
 	}
 	NoServiceMeshHubComponentsExist = eris.New("no Service Mesh Hub components are installed yet")

@@ -8,10 +8,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	mock_kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,14 +36,14 @@ var _ = Describe("SMH components check", func() {
 		testErr := eris.New("test-err")
 		podClient := mock_kubernetes_core.NewMockPodClient(ctrl)
 		podClient.EXPECT().
-			ListPod(ctx, client.InNamespace(env.GetWriteNamespace())).
+			ListPod(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(nil, testErr)
 
 		check := internal.NewSmhComponentsHealthCheck()
 		clients := healthcheck_types.Clients{
 			PodClient: podClient,
 		}
-		runFailure, checkApplies := check.Run(ctx, env.GetWriteNamespace(), clients)
+		runFailure, checkApplies := check.Run(ctx, container_runtime.GetWriteNamespace(), clients)
 
 		Expect(checkApplies).To(BeTrue())
 		Expect(runFailure).NotTo(BeNil())
@@ -53,14 +53,14 @@ var _ = Describe("SMH components check", func() {
 	It("reports an error if SMH is not installed", func() {
 		podClient := mock_kubernetes_core.NewMockPodClient(ctrl)
 		podClient.EXPECT().
-			ListPod(ctx, client.InNamespace(env.GetWriteNamespace())).
+			ListPod(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(&v1.PodList{}, nil)
 
 		check := internal.NewSmhComponentsHealthCheck()
 		clients := healthcheck_types.Clients{
 			PodClient: podClient,
 		}
-		runFailure, checkApplies := check.Run(ctx, env.GetWriteNamespace(), clients)
+		runFailure, checkApplies := check.Run(ctx, container_runtime.GetWriteNamespace(), clients)
 
 		Expect(checkApplies).To(BeTrue())
 		Expect(runFailure).NotTo(BeNil())
@@ -71,12 +71,12 @@ var _ = Describe("SMH components check", func() {
 	It("reports an error if a pod is failing, and provides a helpful hint", func() {
 		podClient := mock_kubernetes_core.NewMockPodClient(ctrl)
 		podClient.EXPECT().
-			ListPod(ctx, client.InNamespace(env.GetWriteNamespace())).
+			ListPod(ctx, client.InNamespace(container_runtime.GetWriteNamespace())).
 			Return(&v1.PodList{
 				Items: []v1.Pod{{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "mesh-discovery-random-uuid",
-						Namespace: env.GetWriteNamespace(),
+						Namespace: container_runtime.GetWriteNamespace(),
 					},
 					Status: v1.PodStatus{
 						ContainerStatuses: []v1.ContainerStatus{{
@@ -97,11 +97,11 @@ var _ = Describe("SMH components check", func() {
 		clients := healthcheck_types.Clients{
 			PodClient: podClient,
 		}
-		runFailure, checkApplies := check.Run(ctx, env.GetWriteNamespace(), clients)
+		runFailure, checkApplies := check.Run(ctx, container_runtime.GetWriteNamespace(), clients)
 
 		Expect(checkApplies).To(BeTrue())
 		Expect(runFailure).NotTo(BeNil())
 		Expect(runFailure.ErrorMessage).To(Equal(eris.New(fmt.Sprintf("Container %s in pod %s is waiting: CrashLoopBackoff (back-off 1m20s)", "mesh-discovery", "mesh-discovery-random-uuid")).Error()))
-		Expect(runFailure.Hint).To(Equal(fmt.Sprintf("try running either `kubectl -n %s describe pod %s` or `kubectl -n %s logs %s`", env.GetWriteNamespace(), "mesh-discovery-random-uuid", env.GetWriteNamespace(), "mesh-discovery-random-uuid")))
+		Expect(runFailure.Hint).To(Equal(fmt.Sprintf("try running either `kubectl -n %s describe pod %s` or `kubectl -n %s logs %s`", container_runtime.GetWriteNamespace(), "mesh-discovery-random-uuid", container_runtime.GetWriteNamespace(), "mesh-discovery-random-uuid")))
 	})
 })

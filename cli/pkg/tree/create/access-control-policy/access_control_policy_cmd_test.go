@@ -3,6 +3,9 @@ package access_control_policy_test
 import (
 	"context"
 
+	mock_smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/mocks"
+	mock_smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/mocks"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -12,14 +15,12 @@ import (
 	mock_resource_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	access_control_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/access-control-policy"
-	zephyr_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
+	smh_core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1/types"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	smh_discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/types"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	smh_networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig/mocks"
 	k8s_meta_types "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 )
@@ -29,9 +30,9 @@ var _ = Describe("AccessControlPolicy", func() {
 		ctrl                   *gomock.Controller
 		ctx                    context.Context
 		mockKubeLoader         *mock_kubeconfig.MockKubeLoader
-		mockMeshServiceClient  *mock_zephyr_discovery.MockMeshServiceClient
-		mockMeshWorkloadClient *mock_zephyr_discovery.MockMeshWorkloadClient
-		mockACPClient          *mock_zephyr_networking.MockAccessControlPolicyClient
+		mockMeshServiceClient  *mock_smh_discovery.MockMeshServiceClient
+		mockMeshWorkloadClient *mock_smh_discovery.MockMeshWorkloadClient
+		mockACPClient          *mock_smh_networking.MockAccessControlPolicyClient
 		mockInteractivePrompt  *mock_interactive.MockInteractivePrompt
 		mockResourcePrinter    *mock_resource_printing.MockResourcePrinter
 		meshctl                *cli_test.MockMeshctl
@@ -41,9 +42,9 @@ var _ = Describe("AccessControlPolicy", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockKubeLoader = mock_kubeconfig.NewMockKubeLoader(ctrl)
-		mockMeshServiceClient = mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
-		mockMeshWorkloadClient = mock_zephyr_discovery.NewMockMeshWorkloadClient(ctrl)
-		mockACPClient = mock_zephyr_networking.NewMockAccessControlPolicyClient(ctrl)
+		mockMeshServiceClient = mock_smh_discovery.NewMockMeshServiceClient(ctrl)
+		mockMeshWorkloadClient = mock_smh_discovery.NewMockMeshWorkloadClient(ctrl)
+		mockACPClient = mock_smh_networking.NewMockAccessControlPolicyClient(ctrl)
 		mockInteractivePrompt = mock_interactive.NewMockInteractivePrompt(ctrl)
 		mockResourcePrinter = mock_resource_printing.NewMockResourcePrinter(ctrl)
 		meshctl = &cli_test.MockMeshctl{
@@ -78,29 +79,29 @@ var _ = Describe("AccessControlPolicy", func() {
 		// select service accounts
 		saNames := []string{"sa1", "sa2"}
 		saDisplayNames := []string{"sa1.namespace1.cluster1", "sa2.namespace2.cluster2"}
-		workloadList := &zephyr_discovery.MeshWorkloadList{
-			Items: []zephyr_discovery.MeshWorkload{
+		workloadList := &smh_discovery.MeshWorkloadList{
+			Items: []smh_discovery.MeshWorkload{
 				{
-					Spec: zephyr_discovery_types.MeshWorkloadSpec{
-						Mesh: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.MeshWorkloadSpec{
+						Mesh: &smh_core_types.ResourceRef{
 							Cluster: "cluster1",
 						},
-						KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
+						KubeController: &smh_discovery_types.MeshWorkloadSpec_KubeController{
 							ServiceAccountName: saNames[0],
-							KubeControllerRef: &zephyr_core_types.ResourceRef{
+							KubeControllerRef: &smh_core_types.ResourceRef{
 								Namespace: "namespace1",
 							},
 						},
 					},
 				},
 				{
-					Spec: zephyr_discovery_types.MeshWorkloadSpec{
-						Mesh: &zephyr_core_types.ResourceRef{
+					Spec: smh_discovery_types.MeshWorkloadSpec{
+						Mesh: &smh_core_types.ResourceRef{
 							Cluster: "cluster2",
 						},
-						KubeController: &zephyr_discovery_types.MeshWorkloadSpec_KubeController{
+						KubeController: &smh_discovery_types.MeshWorkloadSpec_KubeController{
 							ServiceAccountName: saNames[1],
-							KubeControllerRef: &zephyr_core_types.ResourceRef{
+							KubeControllerRef: &smh_core_types.ResourceRef{
 								Namespace: "namespace2",
 							},
 						},
@@ -116,10 +117,10 @@ var _ = Describe("AccessControlPolicy", func() {
 			EXPECT().
 			SelectMultipleValues(gomock.Any(), saDisplayNames).
 			Return([]string{saDisplayNames[1]}, nil)
-		expectedIdentitySelector := &zephyr_core_types.IdentitySelector{
-			IdentitySelectorType: &zephyr_core_types.IdentitySelector_ServiceAccountRefs_{
-				ServiceAccountRefs: &zephyr_core_types.IdentitySelector_ServiceAccountRefs{
-					ServiceAccounts: []*zephyr_core_types.ResourceRef{
+		expectedIdentitySelector := &smh_core_types.IdentitySelector{
+			IdentitySelectorType: &smh_core_types.IdentitySelector_ServiceAccountRefs_{
+				ServiceAccountRefs: &smh_core_types.IdentitySelector_ServiceAccountRefs{
+					ServiceAccounts: []*smh_core_types.ResourceRef{
 						{Name: saNames[1], Namespace: "namespace2", Cluster: "cluster2"},
 					},
 				},
@@ -128,16 +129,16 @@ var _ = Describe("AccessControlPolicy", func() {
 		// mesh services
 		meshServiceNames := []string{"ms1", "ms2"}
 		meshServiceDisplayNames := []string{"ms1.namespace1.cluster1", "ms2.namespace2.cluster2"}
-		meshServiceList := &zephyr_discovery.MeshServiceList{
-			Items: []zephyr_discovery.MeshService{
+		meshServiceList := &smh_discovery.MeshServiceList{
+			Items: []smh_discovery.MeshService{
 				{
 					ObjectMeta: k8s_meta_types.ObjectMeta{
 						Name:      meshServiceNames[0],
 						Namespace: "namespace1",
 					},
-					Spec: zephyr_discovery_types.MeshServiceSpec{
-						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-							Ref: &zephyr_core_types.ResourceRef{Cluster: "cluster1"},
+					Spec: smh_discovery_types.MeshServiceSpec{
+						KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &smh_core_types.ResourceRef{Cluster: "cluster1"},
 						},
 					},
 				},
@@ -146,9 +147,9 @@ var _ = Describe("AccessControlPolicy", func() {
 						Name:      meshServiceNames[1],
 						Namespace: "namespace2",
 					},
-					Spec: zephyr_discovery_types.MeshServiceSpec{
-						KubeService: &zephyr_discovery_types.MeshServiceSpec_KubeService{
-							Ref: &zephyr_core_types.ResourceRef{Cluster: "cluster2"},
+					Spec: smh_discovery_types.MeshServiceSpec{
+						KubeService: &smh_discovery_types.MeshServiceSpec_KubeService{
+							Ref: &smh_core_types.ResourceRef{Cluster: "cluster2"},
 						},
 					},
 				},
@@ -162,10 +163,10 @@ var _ = Describe("AccessControlPolicy", func() {
 			EXPECT().
 			SelectMultipleValues(gomock.Any(), meshServiceDisplayNames).
 			Return([]string{meshServiceDisplayNames[0], meshServiceDisplayNames[1]}, nil)
-		expectedTargetSelector := &zephyr_core_types.ServiceSelector{
-			ServiceSelectorType: &zephyr_core_types.ServiceSelector_ServiceRefs_{
-				ServiceRefs: &zephyr_core_types.ServiceSelector_ServiceRefs{
-					Services: []*zephyr_core_types.ResourceRef{
+		expectedTargetSelector := &smh_core_types.ServiceSelector{
+			ServiceSelectorType: &smh_core_types.ServiceSelector_ServiceRefs_{
+				ServiceRefs: &smh_core_types.ServiceSelector_ServiceRefs{
+					Services: []*smh_core_types.ResourceRef{
 						{Name: meshServiceNames[0], Namespace: "namespace1"},
 						{Name: meshServiceNames[1], Namespace: "namespace2"},
 					},
@@ -197,14 +198,14 @@ var _ = Describe("AccessControlPolicy", func() {
 			PromptValueWithValidator(gomock.Any(), "", gomock.Any()).
 			Return("", nil)
 
-		expectedACP := &zephyr_networking.AccessControlPolicy{
+		expectedACP := &smh_networking.AccessControlPolicy{
 			TypeMeta: k8s_meta_types.TypeMeta{
 				Kind: "AccessControlPolicy"},
-			Spec: zephyr_networking_types.AccessControlPolicySpec{
+			Spec: smh_networking_types.AccessControlPolicySpec{
 				SourceSelector:      expectedIdentitySelector,
 				DestinationSelector: expectedTargetSelector,
 				AllowedPaths:        []string{"/"},
-				AllowedMethods:      []zephyr_core_types.HttpMethodValue{zephyr_core_types.HttpMethodValue_GET},
+				AllowedMethods:      []smh_core_types.HttpMethodValue{smh_core_types.HttpMethodValue_GET},
 				AllowedPorts:        []uint32{8080},
 			},
 		}

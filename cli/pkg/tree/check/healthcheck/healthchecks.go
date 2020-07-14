@@ -1,11 +1,11 @@
 package healthcheck
 
 import (
+	k8s_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
 	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	k8s_core "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1"
-	k8s_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	k8s_discovery "github.com/solo-io/service-mesh-hub/pkg/common/kube/discovery"
 )
 
 var (
@@ -43,7 +43,7 @@ func ClientsProvider(
 	namespaceClient k8s_core.NamespaceClient,
 	serverVersionClient k8s_discovery.ServerVersionClient,
 	podClient k8s_core.PodClient,
-	meshServiceClient zephyr_discovery.MeshServiceClient,
+	meshServiceClient smh_discovery.MeshServiceClient,
 ) healthcheck_types.Clients {
 	return healthcheck_types.Clients{
 		NamespaceClient:     namespaceClient,

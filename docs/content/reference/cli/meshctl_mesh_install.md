@@ -11,18 +11,13 @@ Install meshes using meshctl
 Install meshes using meshctl
 
 ```
-meshctl mesh install (istio) [flags]
+meshctl mesh install [flags]
 ```
 
 ### Options
 
 ```
-      --create-operator-namespace   Create the namespace specified by --operator-namespace (default true)
-      --dry-run                     Dump the manifest that would be used to install the operator to stdout rather than apply it
-  -h, --help                        help for install
-      --operator-namespace string   Namespace in which to install the Mesh operator (default "istio-operator")
-      --operator-spec string        Optional path to a YAML file containing an installation spec ('-' for stdin)
-      --profile string              optional profile
+  -h, --help   help for install
 ```
 
 ### Options inherited from parent commands
@@ -38,4 +33,6 @@ meshctl mesh install (istio) [flags]
 ### SEE ALSO
 
 * [meshctl mesh](../meshctl_mesh)	 - Manage service meshes
+* [meshctl mesh install istio1.5](../meshctl_mesh_install_istio1.5)	 - Install Istio version 1.5
+* [meshctl mesh install istio1.6](../meshctl_mesh_install_istio1.6)	 - Install Istio version 1.6
 

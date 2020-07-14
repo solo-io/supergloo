@@ -3,7 +3,7 @@
 title: "mesh.proto"
 ---
 
-## Package : `discovery.zephyr.solo.io`
+## Package : `discovery.smh.solo.io`
 
 
 
@@ -16,14 +16,16 @@ title: "mesh.proto"
 
 
 ## Table of Contents
-  - [MeshSpec](#discovery.zephyr.solo.io.MeshSpec)
-  - [MeshSpec.AwsAppMesh](#discovery.zephyr.solo.io.MeshSpec.AwsAppMesh)
-  - [MeshSpec.ConsulConnectMesh](#discovery.zephyr.solo.io.MeshSpec.ConsulConnectMesh)
-  - [MeshSpec.IstioMesh](#discovery.zephyr.solo.io.MeshSpec.IstioMesh)
-  - [MeshSpec.IstioMesh.CitadelInfo](#discovery.zephyr.solo.io.MeshSpec.IstioMesh.CitadelInfo)
-  - [MeshSpec.LinkerdMesh](#discovery.zephyr.solo.io.MeshSpec.LinkerdMesh)
-  - [MeshSpec.MeshInstallation](#discovery.zephyr.solo.io.MeshSpec.MeshInstallation)
-  - [MeshStatus](#discovery.zephyr.solo.io.MeshStatus)
+  - [MeshSpec](#discovery.smh.solo.io.MeshSpec)
+  - [MeshSpec.AwsAppMesh](#discovery.smh.solo.io.MeshSpec.AwsAppMesh)
+  - [MeshSpec.ConsulConnectMesh](#discovery.smh.solo.io.MeshSpec.ConsulConnectMesh)
+  - [MeshSpec.Istio1_5](#discovery.smh.solo.io.MeshSpec.Istio1_5)
+  - [MeshSpec.Istio1_6](#discovery.smh.solo.io.MeshSpec.Istio1_6)
+  - [MeshSpec.IstioMesh](#discovery.smh.solo.io.MeshSpec.IstioMesh)
+  - [MeshSpec.IstioMesh.CitadelInfo](#discovery.smh.solo.io.MeshSpec.IstioMesh.CitadelInfo)
+  - [MeshSpec.LinkerdMesh](#discovery.smh.solo.io.MeshSpec.LinkerdMesh)
+  - [MeshSpec.MeshInstallation](#discovery.smh.solo.io.MeshSpec.MeshInstallation)
+  - [MeshStatus](#discovery.smh.solo.io.MeshStatus)
 
 
 
@@ -31,7 +33,7 @@ title: "mesh.proto"
 
 
 
-<a name="discovery.zephyr.solo.io.MeshSpec"></a>
+<a name="discovery.smh.solo.io.MeshSpec"></a>
 
 ### MeshSpec
 Meshes represent a currently registered service mesh.
@@ -39,18 +41,19 @@ Meshes represent a currently registered service mesh.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| istio | [MeshSpec.IstioMesh](#discovery.zephyr.solo.io.MeshSpec.IstioMesh) |  |  |
-| awsAppMesh | [MeshSpec.AwsAppMesh](#discovery.zephyr.solo.io.MeshSpec.AwsAppMesh) |  |  |
-| linkerd | [MeshSpec.LinkerdMesh](#discovery.zephyr.solo.io.MeshSpec.LinkerdMesh) |  |  |
-| consulConnect | [MeshSpec.ConsulConnectMesh](#discovery.zephyr.solo.io.MeshSpec.ConsulConnectMesh) |  |  |
-| cluster | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | The cluster on which the control plane for this mesh is deployed. This field may not apply to all Mesh types, such as AppMesh, whose control planes are located externally to any user accessible compute platform. |
+| istio15 | [MeshSpec.Istio1_5](#discovery.smh.solo.io.MeshSpec.Istio1_5) |  |  |
+| istio16 | [MeshSpec.Istio1_6](#discovery.smh.solo.io.MeshSpec.Istio1_6) |  |  |
+| awsAppMesh | [MeshSpec.AwsAppMesh](#discovery.smh.solo.io.MeshSpec.AwsAppMesh) |  |  |
+| linkerd | [MeshSpec.LinkerdMesh](#discovery.smh.solo.io.MeshSpec.LinkerdMesh) |  |  |
+| consulConnect | [MeshSpec.ConsulConnectMesh](#discovery.smh.solo.io.MeshSpec.ConsulConnectMesh) |  |  |
+| cluster | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | The cluster on which the control plane for this mesh is deployed. This field may not apply to all Mesh types, such as AppMesh, whose control planes are located externally to any user accessible compute platform. |
 
 
 
 
 
 
-<a name="discovery.zephyr.solo.io.MeshSpec.AwsAppMesh"></a>
+<a name="discovery.smh.solo.io.MeshSpec.AwsAppMesh"></a>
 
 ### MeshSpec.AwsAppMesh
 Mesh object representing AWS AppMesh
@@ -68,7 +71,7 @@ Mesh object representing AWS AppMesh
 
 
 
-<a name="discovery.zephyr.solo.io.MeshSpec.ConsulConnectMesh"></a>
+<a name="discovery.smh.solo.io.MeshSpec.ConsulConnectMesh"></a>
 
 ### MeshSpec.ConsulConnectMesh
 
@@ -76,14 +79,44 @@ Mesh object representing AWS AppMesh
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [MeshSpec.MeshInstallation](#discovery.zephyr.solo.io.MeshSpec.MeshInstallation) |  |  |
+| installation | [MeshSpec.MeshInstallation](#discovery.smh.solo.io.MeshSpec.MeshInstallation) |  |  |
 
 
 
 
 
 
-<a name="discovery.zephyr.solo.io.MeshSpec.IstioMesh"></a>
+<a name="discovery.smh.solo.io.MeshSpec.Istio1_5"></a>
+
+### MeshSpec.Istio1_5
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| metadata | [MeshSpec.IstioMesh](#discovery.smh.solo.io.MeshSpec.IstioMesh) |  |  |
+
+
+
+
+
+
+<a name="discovery.smh.solo.io.MeshSpec.Istio1_6"></a>
+
+### MeshSpec.Istio1_6
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| metadata | [MeshSpec.IstioMesh](#discovery.smh.solo.io.MeshSpec.IstioMesh) |  |  |
+
+
+
+
+
+
+<a name="discovery.smh.solo.io.MeshSpec.IstioMesh"></a>
 
 ### MeshSpec.IstioMesh
 Mesh object representing an installed Istio control plane
@@ -91,15 +124,15 @@ Mesh object representing an installed Istio control plane
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [MeshSpec.MeshInstallation](#discovery.zephyr.solo.io.MeshSpec.MeshInstallation) |  |  |
-| citadelInfo | [MeshSpec.IstioMesh.CitadelInfo](#discovery.zephyr.solo.io.MeshSpec.IstioMesh.CitadelInfo) |  |  |
+| installation | [MeshSpec.MeshInstallation](#discovery.smh.solo.io.MeshSpec.MeshInstallation) |  |  |
+| citadelInfo | [MeshSpec.IstioMesh.CitadelInfo](#discovery.smh.solo.io.MeshSpec.IstioMesh.CitadelInfo) |  |  |
 
 
 
 
 
 
-<a name="discovery.zephyr.solo.io.MeshSpec.IstioMesh.CitadelInfo"></a>
+<a name="discovery.smh.solo.io.MeshSpec.IstioMesh.CitadelInfo"></a>
 
 ### MeshSpec.IstioMesh.CitadelInfo
 
@@ -116,7 +149,7 @@ Mesh object representing an installed Istio control plane
 
 
 
-<a name="discovery.zephyr.solo.io.MeshSpec.LinkerdMesh"></a>
+<a name="discovery.smh.solo.io.MeshSpec.LinkerdMesh"></a>
 
 ### MeshSpec.LinkerdMesh
 Mesh object representing an installed Linkerd control plane
@@ -124,7 +157,7 @@ Mesh object representing an installed Linkerd control plane
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [MeshSpec.MeshInstallation](#discovery.zephyr.solo.io.MeshSpec.MeshInstallation) |  |  |
+| installation | [MeshSpec.MeshInstallation](#discovery.smh.solo.io.MeshSpec.MeshInstallation) |  |  |
 | clusterDomain | [string](#string) |  | The cluster domain suffix this Linkerd mesh is configured with. See https://linkerd.io/2/tasks/using-custom-domain/ for info |
 
 
@@ -132,7 +165,7 @@ Mesh object representing an installed Linkerd control plane
 
 
 
-<a name="discovery.zephyr.solo.io.MeshSpec.MeshInstallation"></a>
+<a name="discovery.smh.solo.io.MeshSpec.MeshInstallation"></a>
 
 ### MeshSpec.MeshInstallation
 
@@ -148,7 +181,7 @@ Mesh object representing an installed Linkerd control plane
 
 
 
-<a name="discovery.zephyr.solo.io.MeshStatus"></a>
+<a name="discovery.smh.solo.io.MeshStatus"></a>
 
 ### MeshStatus
 

@@ -3,7 +3,7 @@
 title: "mesh_workload.proto"
 ---
 
-## Package : `discovery.zephyr.solo.io`
+## Package : `discovery.smh.solo.io`
 
 
 
@@ -16,10 +16,12 @@ title: "mesh_workload.proto"
 
 
 ## Table of Contents
-  - [MeshWorkloadSpec](#discovery.zephyr.solo.io.MeshWorkloadSpec)
-  - [MeshWorkloadSpec.KubeController](#discovery.zephyr.solo.io.MeshWorkloadSpec.KubeController)
-  - [MeshWorkloadSpec.KubeController.LabelsEntry](#discovery.zephyr.solo.io.MeshWorkloadSpec.KubeController.LabelsEntry)
-  - [MeshWorkloadStatus](#discovery.zephyr.solo.io.MeshWorkloadStatus)
+  - [MeshWorkloadSpec](#discovery.smh.solo.io.MeshWorkloadSpec)
+  - [MeshWorkloadSpec.Appmesh](#discovery.smh.solo.io.MeshWorkloadSpec.Appmesh)
+  - [MeshWorkloadSpec.Appmesh.ContainerPort](#discovery.smh.solo.io.MeshWorkloadSpec.Appmesh.ContainerPort)
+  - [MeshWorkloadSpec.KubeController](#discovery.smh.solo.io.MeshWorkloadSpec.KubeController)
+  - [MeshWorkloadSpec.KubeController.LabelsEntry](#discovery.smh.solo.io.MeshWorkloadSpec.KubeController.LabelsEntry)
+  - [MeshWorkloadStatus](#discovery.smh.solo.io.MeshWorkloadStatus)
 
 
 
@@ -27,7 +29,7 @@ title: "mesh_workload.proto"
 
 
 
-<a name="discovery.zephyr.solo.io.MeshWorkloadSpec"></a>
+<a name="discovery.smh.solo.io.MeshWorkloadSpec"></a>
 
 ### MeshWorkloadSpec
 The MeshWorkload is an abstraction for a workload/client which we have discovered to be part of a given mesh. The Mesh object has references to the MeshWorkloads which belong to it.
@@ -35,15 +37,48 @@ The MeshWorkload is an abstraction for a workload/client which we have discovere
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeController | [MeshWorkloadSpec.KubeController](#discovery.zephyr.solo.io.MeshWorkloadSpec.KubeController) |  | The controller (e.g. deployment) that owns this workload |
-| mesh | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | The mesh with which this workload is associated |
+| kubeController | [MeshWorkloadSpec.KubeController](#discovery.smh.solo.io.MeshWorkloadSpec.KubeController) |  | The controller (e.g. deployment) that owns this workload |
+| mesh | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | The mesh with which this workload is associated |
+| appmesh | [MeshWorkloadSpec.Appmesh](#discovery.smh.solo.io.MeshWorkloadSpec.Appmesh) |  | Appmesh specific metadata |
 
 
 
 
 
 
-<a name="discovery.zephyr.solo.io.MeshWorkloadSpec.KubeController"></a>
+<a name="discovery.smh.solo.io.MeshWorkloadSpec.Appmesh"></a>
+
+### MeshWorkloadSpec.Appmesh
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| virtualNodeName | [string](#string) |  | The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container |
+| ports | [][MeshWorkloadSpec.Appmesh.ContainerPort](#discovery.smh.solo.io.MeshWorkloadSpec.Appmesh.ContainerPort) | repeated | Needed for declaring Appmesh VirtualNode listeners |
+
+
+
+
+
+
+<a name="discovery.smh.solo.io.MeshWorkloadSpec.Appmesh.ContainerPort"></a>
+
+### MeshWorkloadSpec.Appmesh.ContainerPort
+k8s application container ports
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| port | [uint32](#uint32) |  |  |
+| protocol | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="discovery.smh.solo.io.MeshWorkloadSpec.KubeController"></a>
 
 ### MeshWorkloadSpec.KubeController
 
@@ -51,8 +86,8 @@ The MeshWorkload is an abstraction for a workload/client which we have discovere
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeControllerRef | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads. It has the generic name kube_controller as it can represent either a deployment or a daemonset. Or potentially any other kubernetes object which creates injected pods. |
-| labels | [][MeshWorkloadSpec.KubeController.LabelsEntry](#discovery.zephyr.solo.io.MeshWorkloadSpec.KubeController.LabelsEntry) | repeated | these are the labels directly from the pods that this controller owns NB: these are NEITHER the matchLabels nor the labels on the controller itself. we need these to determine which services are backed by this workload, and the service backing is determined by the pod labels. |
+| kubeControllerRef | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads. It has the generic name kube_controller as it can represent either a deployment or a daemonset. Or potentially any other kubernetes object which creates injected pods. |
+| labels | [][MeshWorkloadSpec.KubeController.LabelsEntry](#discovery.smh.solo.io.MeshWorkloadSpec.KubeController.LabelsEntry) | repeated | these are the labels directly from the pods that this controller owns NB: these are NEITHER the matchLabels nor the labels on the controller itself. we need these to determine which services are backed by this workload, and the service backing is determined by the pod labels. |
 | serviceAccountName | [string](#string) |  | Service account attached to the pods owned by this controller |
 
 
@@ -60,7 +95,7 @@ The MeshWorkload is an abstraction for a workload/client which we have discovere
 
 
 
-<a name="discovery.zephyr.solo.io.MeshWorkloadSpec.KubeController.LabelsEntry"></a>
+<a name="discovery.smh.solo.io.MeshWorkloadSpec.KubeController.LabelsEntry"></a>
 
 ### MeshWorkloadSpec.KubeController.LabelsEntry
 
@@ -76,7 +111,7 @@ The MeshWorkload is an abstraction for a workload/client which we have discovere
 
 
 
-<a name="discovery.zephyr.solo.io.MeshWorkloadStatus"></a>
+<a name="discovery.smh.solo.io.MeshWorkloadStatus"></a>
 
 ### MeshWorkloadStatus
 

@@ -9,19 +9,19 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	mock_kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/deregister"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	mock_registration "github.com/solo-io/service-mesh-hub/pkg/clients/cluster-registration/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig/mocks"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
-	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/kubernetes/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	mock_core "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/mocks"
+	mock_registration "github.com/solo-io/service-mesh-hub/pkg/common/cluster-registration/mocks"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
+	mock_kubeconfig "github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig/mocks"
 	k8s_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -82,13 +82,13 @@ var _ = Describe("ClusterDeregistrationCmd", func() {
 		kubeCluster := &v1alpha1.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Labels: map[string]string{
-					constants.DISCOVERED_BY: register.MeshctlDiscoverySource,
+					kube.DISCOVERED_BY: register.MeshctlDiscoverySource,
 				},
 			},
 		}
 		mockKubeClusterClient.
 			EXPECT().
-			GetKubernetesCluster(ctx, client.ObjectKey{Name: remoteClusterName, Namespace: env.GetWriteNamespace()}).
+			GetKubernetesCluster(ctx, client.ObjectKey{Name: remoteClusterName, Namespace: container_runtime.GetWriteNamespace()}).
 			Return(kubeCluster, nil)
 		mockClusterDeregistrationClient.EXPECT().Deregister(ctx, kubeCluster).Return(nil)
 
@@ -106,7 +106,7 @@ var _ = Describe("ClusterDeregistrationCmd", func() {
 		testErr := eris.New("test error")
 		mockKubeClusterClient.
 			EXPECT().
-			GetKubernetesCluster(ctx, client.ObjectKey{Name: remoteClusterName, Namespace: env.GetWriteNamespace()}).
+			GetKubernetesCluster(ctx, client.ObjectKey{Name: remoteClusterName, Namespace: container_runtime.GetWriteNamespace()}).
 			Return(nil, testErr)
 
 		stdout, err := meshctl.Invoke(fmt.Sprintf("cluster deregister --remote-cluster-name %s", remoteClusterName))
@@ -124,13 +124,13 @@ var _ = Describe("ClusterDeregistrationCmd", func() {
 		kubeCluster := &v1alpha1.KubernetesCluster{
 			ObjectMeta: k8s_meta.ObjectMeta{
 				Labels: map[string]string{
-					constants.DISCOVERED_BY: "discovery",
+					kube.DISCOVERED_BY: "discovery",
 				},
 			},
 		}
 		mockKubeClusterClient.
 			EXPECT().
-			GetKubernetesCluster(ctx, client.ObjectKey{Name: remoteClusterName, Namespace: env.GetWriteNamespace()}).
+			GetKubernetesCluster(ctx, client.ObjectKey{Name: remoteClusterName, Namespace: container_runtime.GetWriteNamespace()}).
 			Return(kubeCluster, nil)
 		stdout, err := meshctl.Invoke(fmt.Sprintf("cluster deregister --remote-cluster-name %s", remoteClusterName))
 		Expect(err).To(testutils.HaveInErrorChain(deregister.DeregisterNotPermitted(remoteClusterName)))

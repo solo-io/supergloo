@@ -1,6 +1,6 @@
 syntax = "proto3";
-package networking.zephyr.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types";
+package networking.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/types";
 
 import "service-mesh-hub/api/core/v1alpha1/http.proto";
 import "service-mesh-hub/api/core/v1alpha1/identity_selector.proto";
@@ -29,13 +29,13 @@ message AccessControlPolicySpec {
         service accounts properly reflect the desired
         boundary for your access control policies
     */
-    core.zephyr.solo.io.IdentitySelector source_selector = 2;
+    core.smh.solo.io.IdentitySelector source_selector = 2;
 
     /*
         requests destined for these pods will have the rule applied
         leave empty to apply to all destination pods in the mesh
     */
-    core.zephyr.solo.io.ServiceSelector destination_selector = 3;
+    core.smh.solo.io.ServiceSelector destination_selector = 3;
 
     /*
         Optional. A list of HTTP paths or gRPC methods to allow.
@@ -54,7 +54,7 @@ message AccessControlPolicySpec {
         It is ignored in gRPC case because the value is always "POST".
         If not specified, allows any method.
     */
-    repeated core.zephyr.solo.io.HttpMethodValue allowed_methods = 5;
+    repeated core.smh.solo.io.HttpMethodValue allowed_methods = 5;
 
     /*
         Optional. A list of ports which to allow
@@ -72,7 +72,7 @@ message AccessControlPolicyStatus {
     }
 
     // The status reported by the process translating this resource into mesh-specific resource(s).
-    core.zephyr.solo.io.Status translation_status = 1;
+    core.smh.solo.io.Status translation_status = 1;
 
     // More detailed errors than the base status provided by `translation_status`.
     repeated TranslatorError translator_errors = 2;

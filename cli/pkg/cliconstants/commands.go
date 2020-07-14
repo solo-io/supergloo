@@ -45,11 +45,46 @@ var (
 			"the Service Mesh Hub management-plane as well as Istio, and the other will just run Istio.",
 	}
 
-	DemoCleanupCommand = cobra.Command{
+	IstioMulticlusterCommand = cobra.Command{
+		Use:   "istio-multicluster",
+		Short: "Demo Service Mesh Hub functionality with two Istio control planes deployed on separate clusters.",
+	}
+
+	IstioMulticlusterInitCommand = cobra.Command{
+		Use:   "init",
+		Short: "Bootstrap a multicluster Istio demo with Service Mesh Hub.",
+		Long: "Running the Service Mesh Hub demo setup locally requires 4 tools to be installed, and accessible via the " +
+			"PATH. meshctl, kubectl, docker, and kind. This command will bootstrap 2 clusters, one of which will run " +
+			"the Service Mesh Hub management-plane as well as Istio, and the other will just run Istio.",
+	}
+
+	IstioMulticlusterCleanupCommand = cobra.Command{
 		Use:   "cleanup",
-		Short: "Delete the local Service Mesh Hub demo setup",
-		Long: "This will delete all kind clusters running locally, so make sure to only run this script if the only " +
-			"kind clusters running are those created by meshctl demo init.",
+		Short: "Cleanup bootstrapped local resources.",
+	}
+
+	AppmeshEksCommand = cobra.Command{
+		Use:   "appmesh-eks",
+		Short: "Demo Service Mesh Hub functionality with Appmesh and EKS",
+	}
+
+	AppmeshEksInitCommand = cobra.Command{
+		Use:   "init",
+		Short: "Bootstrap an AWS App mesh and EKS cluster demo with Service Mesh Hub",
+		Long: `
+Prerequisites:
+	1. meshctl
+	2. eksctl (https://github.com/weaveworks/eksctl)
+	3. Helm (https://helm.sh/docs/intro/install/)
+	4. AWS API credentials must be configured, either through the "~/.aws/credentials" file or environment variables. See these references for more information:
+         a. https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html
+         b. https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html
+`,
+	}
+
+	AppmeshEksCleanupCommand = cobra.Command{
+		Use:   "cleanup",
+		Short: "Cleanup bootstrapped resources AWS Appmesh and EKS resources",
 	}
 
 	GetCommand = struct {
@@ -136,12 +171,20 @@ var (
 		Short: "Manage service meshes",
 	}
 
-	MeshInstallCommand = func(validMeshes []string) cobra.Command {
-		return cobra.Command{
-			Use:     fmt.Sprintf("install (%s)", strings.Join(validMeshes, "|")),
-			Aliases: []string{"i"},
-			Short:   "Install meshes using meshctl",
-		}
+	MeshInstallCommand = cobra.Command{
+		Use:     "install",
+		Aliases: []string{"i"},
+		Short:   "Install meshes using meshctl",
+	}
+
+	Istio1_5Command = cobra.Command{
+		Use:   "istio1.5",
+		Short: "Install Istio version 1.5",
+	}
+
+	Istio1_6Command = cobra.Command{
+		Use:   "istio1.6",
+		Short: "Install Istio version 1.6",
 	}
 
 	CreateCommand = cobra.Command{

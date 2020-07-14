@@ -10,6 +10,7 @@ See BUILD.md in this repo for instructions on getting a local deve environment u
 
 - [Style Guideline](#style-guideline)
     - [Package Layout](#package-layout)  
+        * [Clean Architecture](#clean-architecture)
         * [Naming](#naming)
         * [Interfaces and Mocks](#interfaces-and-mocks)
         * [Common Clients](#common-clients)
@@ -34,6 +35,25 @@ See BUILD.md in this repo for instructions on getting a local deve environment u
 
 ### Package Layout
 
+#### Clean Architecture
+
+All new business logic code (there is existing business logic that does not follow this pattern- it should not be imitated) is
+required to be agnostic of what environment it's running in; this means that business logic is not allowed to make assumptions
+about a filesystem being present, network conditions, persistence implementation, etc. To accomplish this, we enforce that:
+
+* all new business logic goes in a semantically-meaningfully-named sub-package of `service-mesh-hub/pkg`
+* code in `service-mesh-hub/pkg` is not allowed to import from `cli/` or `services/`
+* code in `cli/` and `services/` is only allowed to import Service Mesh Hub packages from `service-mesh-hub/pkg`
+(i.e., `cli/` cannot import from `services/`)
+* business logic code is not allowed to reference our kubernetes clients (clients from `pkg/api/`); business logic code
+must define a "data-access object" style interface in the *same package as the business logic*, and do all data interaction
+through that interface. This is to separate controller-runtime details from our business logic; as a result, that
+DAO interface must not expose details of the persistence implementation to the business logic. The DAO implementation is
+allowed to use our kube clients and whatever else it needs.
+
+The goal of these guidelines is that business logic depends on (literally imports) as few things as possible. Business logic should
+not be impacted by changes to persistence implementation, environment the code is running in, etc. 
+
 #### Naming
 `main` functions should be put in a `cmd` package, with a `Dockerfile` living there as well. A `pkg` directory should
 live alongside `cmd`, and should contain the main implementation of the larger component.
@@ -48,7 +68,7 @@ example, rather than a `common`.
 Importing libraries with Kubernetes native or custom clients, types, controllers, etc. should adopt the following alias naming
 convention, `<org_name>_<group>_<suffix>`, where `org_name` is the organization that owns the library, `group` is the Kubernetes 
 group of the related type, and `suffix` is an optional string to further qualify the semantics imported package (e.g. "type", "controller",
-"client"). For instance, all SMH networking related Kubernetes library imports are aliased as `zephyr_networking_<suffix>`.
+"client"). For instance, all SMH networking related Kubernetes library imports are aliased as `smh_networking_<suffix>`.
 
 #### Interfaces and Mocks
 A package should have a single file named `interfaces.go`, in which all the exported interfaces are placed along with the
@@ -66,10 +86,6 @@ In real usage, you would remove the space between // and go:generate
 Simple clients for doing CRUD operations on k8s kinds should live in `pkg/clients`. The constructor for that client
 should take a dynamic client (`client.Client`) from `controller-runtime`, and the methods should just forward on the operations to the
 underlying dynamic client. 
-
-Clients that are smarter than just CRUD operations should live alongside whatever component needs them. When they become
-sufficiently used to warrant moving them (subjective), they should be placed in a package that makes sense as a package
-that should be exporting a commonly-used client (but note the point above about avoiding `common` packages).
 
 ### Component Structure
 

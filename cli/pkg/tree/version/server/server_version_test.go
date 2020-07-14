@@ -9,9 +9,9 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
 	mock_server "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/docker/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker"
+	mock_docker "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime/docker/mocks"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -22,7 +22,7 @@ var _ = Describe("ServerVersion", func() {
 		kubeConfigClient    *mock_server.MockDeploymentClient
 		serverVersionClient server.ServerVersionClient
 		namespace           = "test-namespace"
-		labelSelector       = "app=" + env.GetWriteNamespace()
+		labelSelector       = "app=" + container_runtime.GetWriteNamespace()
 		imageNameParser     *mock_docker.MockImageNameParser
 	)
 

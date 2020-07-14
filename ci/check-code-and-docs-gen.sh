@@ -2,6 +2,8 @@
 
 set -ex
 
+bash ./ci/ensureGoodImportPaths.bash
+
 go mod tidy
 
 if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
@@ -22,7 +24,7 @@ make update-deps
 
 set +e
 
-REGENERATE_TYPES=1 make generated-code -B > /dev/null
+make generated-code -B > /dev/null
 if [[ $? -ne 0 ]]; then
   echo "Go code generation failed"
   exit 1;

@@ -12,9 +12,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	cluster_internal "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/internal"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
-	"github.com/solo-io/service-mesh-hub/pkg/env"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
-	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	container_runtime "github.com/solo-io/service-mesh-hub/pkg/common/container-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube"
+	"github.com/solo-io/service-mesh-hub/pkg/common/kube/kubeconfig"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -26,7 +26,7 @@ var (
 	ErrorGettingKubeCluster = func(remoteClusterName string, err error) error {
 		return eris.Errorf("Error retrieving KubernetesCluster object %s.%s, %s",
 			remoteClusterName,
-			env.GetWriteNamespace(),
+			container_runtime.GetWriteNamespace(),
 			err.Error())
 	}
 	DeregisterNotPermitted = func(remoteClusterName string) error {
@@ -81,14 +81,14 @@ func deregisterCluster(
 	}
 	kubeCluster, err := masterKubeClients.KubeClusterClient.GetKubernetesCluster(
 		ctx,
-		client.ObjectKey{Name: opts.Cluster.Deregister.RemoteClusterName, Namespace: env.GetWriteNamespace()})
+		client.ObjectKey{Name: opts.Cluster.Deregister.RemoteClusterName, Namespace: container_runtime.GetWriteNamespace()})
 	if err != nil {
 		return ErrorGettingKubeCluster(opts.Cluster.Deregister.RemoteClusterName, err)
 	}
 	if kubeCluster.GetLabels() == nil {
 		return DeregisterNotPermitted(opts.Cluster.Deregister.RemoteClusterName)
 	}
-	discoveredBy, ok := kubeCluster.GetLabels()[constants.DISCOVERED_BY]
+	discoveredBy, ok := kubeCluster.GetLabels()[kube.DISCOVERED_BY]
 	// Only allow manual deregistration of manually registered clusters, otherwise deregistration will compete with automated cluster discovery.
 	// Deregistration of discovered clusters must happen through discovery configuration.
 	if !(ok && discoveredBy == register.MeshctlDiscoverySource) {
