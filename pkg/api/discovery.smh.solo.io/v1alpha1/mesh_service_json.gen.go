@@ -31,17 +31,6 @@ func (this *MeshServiceSpec) UnmarshalJSON(b []byte) error {
 	return MeshServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for MeshServiceSpec_Federation
-func (this *MeshServiceSpec_Federation) MarshalJSON() ([]byte, error) {
-	str, err := MeshServiceMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for MeshServiceSpec_Federation
-func (this *MeshServiceSpec_Federation) UnmarshalJSON(b []byte) error {
-	return MeshServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
 // MarshalJSON is a custom marshaler for MeshServiceSpec_KubeService
 func (this *MeshServiceSpec_KubeService) MarshalJSON() ([]byte, error) {
 	str, err := MeshServiceMarshaler.MarshalToString(this)
@@ -64,14 +53,14 @@ func (this *MeshServiceSpec_KubeService_KubeServicePort) UnmarshalJSON(b []byte)
 	return MeshServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for MeshServiceSpec_Subset
-func (this *MeshServiceSpec_Subset) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for MeshServiceSpec_KubeService_Subset
+func (this *MeshServiceSpec_KubeService_Subset) MarshalJSON() ([]byte, error) {
 	str, err := MeshServiceMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for MeshServiceSpec_Subset
-func (this *MeshServiceSpec_Subset) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for MeshServiceSpec_KubeService_Subset
+func (this *MeshServiceSpec_KubeService_Subset) UnmarshalJSON(b []byte) error {
 	return MeshServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
@@ -105,6 +94,17 @@ func (this *MeshServiceStatus_AppliedAccessPolicy) MarshalJSON() ([]byte, error)
 
 // UnmarshalJSON is a custom unmarshaler for MeshServiceStatus_AppliedAccessPolicy
 func (this *MeshServiceStatus_AppliedAccessPolicy) UnmarshalJSON(b []byte) error {
+	return MeshServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for MeshServiceStatus_AppliedFederation
+func (this *MeshServiceStatus_AppliedFederation) MarshalJSON() ([]byte, error) {
+	str, err := MeshServiceMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for MeshServiceStatus_AppliedFederation
+func (this *MeshServiceStatus_AppliedFederation) UnmarshalJSON(b []byte) error {
 	return MeshServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

@@ -15,17 +15,14 @@ option (gogoproto.equal_all) = true;
     given mesh. The Mesh object has references to the MeshServices which belong to it.
 */
 message MeshServiceSpec {
-    message Federation {
-        /**
-            For any workload that this service has federated to (i.e., any MeshWorkload whose ref appears in `federated_to_workloads`),
-            a client in that workload will be able to reach this service at this DNS name. This includes workloads on clusters other than
-            the one hosting this service.
-        */
-        string multicluster_dns_name = 1;
-
-        // The list of MeshWorkloads which are able to resolve this service's `multicluster_dns_name`.
-        repeated .core.skv2.solo.io.ClusterObjectRef federated_to_workloads = 2;
+    // the type of service backing the MeshService
+    oneof type {
+        // Metadata about the kube-native service backing this MeshService.
+        KubeService kube_service = 1;
     }
+
+    // The mesh with which this service is associated.
+    .core.skv2.solo.io.ObjectRef mesh = 2;
 
     message KubeService {
         message KubeServicePort {
@@ -46,23 +43,16 @@ message MeshServiceSpec {
 
         // The ports exposed by the underlying service.
         repeated KubeServicePort ports = 4;
+
+        // Subsets for routing, based on labels.
+        map<string, Subset> subsets = 5;
+
+        message Subset {
+            repeated string values = 1;
+        }
+
     }
 
-    // Metadata about the kube-native service backing this MeshService.
-    KubeService kube_service = 1;
-
-    // The mesh with which this service is associated.
-    .core.skv2.solo.io.ObjectRef mesh = 2;
-
-    message Subset {
-        repeated string values = 1;
-    }
-
-    // Subsets for routing, based on labels.
-    map<string, Subset> subsets = 3;
-
-    // Metadata about the decisions that Service Mesh Hub has made about what workloads this service is federated to.
-    Federation federation = 4;
 }
 
 message MeshServiceStatus {
@@ -91,7 +81,7 @@ message MeshServiceStatus {
         int64 observedGeneration = 2;
 
         // the last known valid spec of the traffic policy
-        networking.smh.solo.io.TrafficPolicySpec spec = 3;
+        .networking.smh.solo.io.TrafficPolicySpec spec = 3;
     }
 
     // AppliedAccessPolicy represents a access policy that has been applied to the MeshService.
@@ -104,6 +94,21 @@ message MeshServiceStatus {
         int32 observedGeneration = 2;
 
         // the last known valid spec of the access policy
-        networking.smh.solo.io.AccessPolicySpec spec = 3;
+        .networking.smh.solo.io.AccessPolicySpec spec = 3;
     }
+
+    // Federation policy applied to this MeshService, allowing access
+    // to the service from other meshes/clusters.
+    message AppliedFederation {
+        /**
+            For any workload that this service has federated to (i.e., any MeshWorkload whose ref appears in `federated_to_workloads`),
+            a client in that workload will be able to reach this service at this DNS name. This includes workloads on clusters other than
+            the one hosting this service.
+        */
+        string multicluster_dns_name = 1;
+
+        // The list of Meshes which are able to resolve this service's `multicluster_dns_name`.
+        repeated .core.skv2.solo.io.ObjectRef federated_to_meshes = 2;
+    }
+
 }

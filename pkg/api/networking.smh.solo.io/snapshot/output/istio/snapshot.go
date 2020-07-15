@@ -39,10 +39,10 @@ type Snapshot interface {
 	VirtualServices() []LabeledVirtualServiceSet
 
 	// apply the snapshot to the cluster, garbage collecting stale resources
-	Apply(ctx context.Context, clusterClient client.Client) error
+	Apply(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
 
 	// apply resources from the snapshot across multiple clusters, garbage collecting stale resources
-	ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client) error
+	ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler)
 }
 
 type snapshot struct {
@@ -169,7 +169,7 @@ func NewSinglePartitionedSnapshot(
 }
 
 // apply the desired resources to the cluster state; remove stale resources where necessary
-func (s *snapshot) Apply(ctx context.Context, cli client.Client) error {
+func (s *snapshot) Apply(ctx context.Context, cli client.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
 	for _, outputSet := range s.destinationRules {
@@ -188,14 +188,14 @@ func (s *snapshot) Apply(ctx context.Context, cli client.Client) error {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
-	return output.Snapshot{
+	output.Snapshot{
 		Name:        s.name,
 		ListsToSync: genericLists,
-	}.Sync(ctx, cli)
+	}.Sync(ctx, cli, errHandler)
 }
 
 // apply the desired resources to multiple cluster states; remove stale resources where necessary
-func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client) error {
+func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
 	for _, outputSet := range s.destinationRules {
@@ -214,10 +214,10 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
-	return output.Snapshot{
+	output.Snapshot{
 		Name:        s.name,
 		ListsToSync: genericLists,
-	}.SyncMultiCluster(ctx, multiClusterClient)
+	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
 func partitionDestinationRulesByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.DestinationRuleSet) ([]LabeledDestinationRuleSet, error) {
@@ -522,8 +522,9 @@ func (l labeledDestinationRuleSet) Generic() output.ResourceList {
 	}
 
 	return output.ResourceList{
-		Resources: desiredResources,
-		ListFunc:  listFunc,
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "DestinationRule",
 	}
 }
 
@@ -589,8 +590,9 @@ func (l labeledEnvoyFilterSet) Generic() output.ResourceList {
 	}
 
 	return output.ResourceList{
-		Resources: desiredResources,
-		ListFunc:  listFunc,
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "EnvoyFilter",
 	}
 }
 
@@ -656,8 +658,9 @@ func (l labeledGatewaySet) Generic() output.ResourceList {
 	}
 
 	return output.ResourceList{
-		Resources: desiredResources,
-		ListFunc:  listFunc,
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "Gateway",
 	}
 }
 
@@ -723,8 +726,9 @@ func (l labeledServiceEntrySet) Generic() output.ResourceList {
 	}
 
 	return output.ResourceList{
-		Resources: desiredResources,
-		ListFunc:  listFunc,
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "ServiceEntry",
 	}
 }
 
@@ -790,7 +794,8 @@ func (l labeledVirtualServiceSet) Generic() output.ResourceList {
 	}
 
 	return output.ResourceList{
-		Resources: desiredResources,
-		ListFunc:  listFunc,
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "VirtualService",
 	}
 }

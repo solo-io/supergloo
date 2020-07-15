@@ -35,10 +35,10 @@ type Snapshot interface {
 	Meshes() []LabeledMeshSet
 
 	// apply the snapshot to the cluster, garbage collecting stale resources
-	Apply(ctx context.Context, clusterClient client.Client) error
+	Apply(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
 
 	// apply resources from the snapshot across multiple clusters, garbage collecting stale resources
-	ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client) error
+	ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler)
 }
 
 type snapshot struct {
@@ -135,7 +135,7 @@ func NewSinglePartitionedSnapshot(
 }
 
 // apply the desired resources to the cluster state; remove stale resources where necessary
-func (s *snapshot) Apply(ctx context.Context, cli client.Client) error {
+func (s *snapshot) Apply(ctx context.Context, cli client.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
 	for _, outputSet := range s.meshServices {
@@ -148,14 +148,14 @@ func (s *snapshot) Apply(ctx context.Context, cli client.Client) error {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
-	return output.Snapshot{
+	output.Snapshot{
 		Name:        s.name,
 		ListsToSync: genericLists,
-	}.Sync(ctx, cli)
+	}.Sync(ctx, cli, errHandler)
 }
 
 // apply the desired resources to multiple cluster states; remove stale resources where necessary
-func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client) error {
+func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
 	for _, outputSet := range s.meshServices {
@@ -168,10 +168,10 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
-	return output.Snapshot{
+	output.Snapshot{
 		Name:        s.name,
 		ListsToSync: genericLists,
-	}.SyncMultiCluster(ctx, multiClusterClient)
+	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
 func partitionMeshServicesByLabel(labelKey string, set discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet) ([]LabeledMeshServiceSet, error) {
@@ -380,8 +380,9 @@ func (l labeledMeshServiceSet) Generic() output.ResourceList {
 	}
 
 	return output.ResourceList{
-		Resources: desiredResources,
-		ListFunc:  listFunc,
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "MeshService",
 	}
 }
 
@@ -447,8 +448,9 @@ func (l labeledMeshWorkloadSet) Generic() output.ResourceList {
 	}
 
 	return output.ResourceList{
-		Resources: desiredResources,
-		ListFunc:  listFunc,
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "MeshWorkload",
 	}
 }
 
@@ -514,7 +516,8 @@ func (l labeledMeshSet) Generic() output.ResourceList {
 	}
 
 	return output.ResourceList{
-		Resources: desiredResources,
-		ListFunc:  listFunc,
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "Mesh",
 	}
 }

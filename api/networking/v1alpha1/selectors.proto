@@ -90,7 +90,6 @@ message ServiceSelector {
     // Match individual k8s Services by direct reference.
     KubeServiceRefs kube_service_refs = 2;
 
-
     message KubeServiceMatcher {
         // If specified, all labels must exist on k8s Service, else match on any labels.
         map<string, string> labels = 1;

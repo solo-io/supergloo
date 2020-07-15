@@ -39,7 +39,7 @@ const (
 	ValidationState_INVALID ValidationState = 2
 	// Resources are in a Failed state when they contain correct configuration parameters,
 	// but the server encountered an error trying to synchronize the system to
-	// the policy enforced by the resource.
+	// the desired state.
 	ValidationState_FAILED ValidationState = 3
 )
 

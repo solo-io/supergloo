@@ -3,6 +3,7 @@ package discovery.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "service-mesh-hub/api/networking/v1alpha1/virtual_mesh.proto";
 import "google/protobuf/wrappers.proto";
 
 import "gogoproto/gogo.proto";
@@ -18,6 +19,22 @@ message MeshSpec {
         AwsAppMesh aws_app_mesh = 2;
         LinkerdMesh linkerd = 3;
         ConsulConnectMesh consul_connect = 4;
+    }
+
+    // The VirtualMesh, if any, which contains this mesh.
+    AppliedVirtualMesh applied_virtual_mesh = 5;
+
+    // AppliedTrafficPolicy represents a traffic policy that has been applied to the MeshService.
+    // if an existing Traffic Policy becomes invalid, the last applied policy will be used
+    message AppliedVirtualMesh {
+        // reference to the traffic policy
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // the observed generation of the accepted traffic policy
+        int64 observedGeneration = 2;
+
+        // the last known valid spec of the traffic policy
+        .networking.smh.solo.io.VirtualMeshSpec spec = 3;
     }
 
     // Mesh object representing an installed Istio control plane
