@@ -4,8 +4,8 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -13,8 +13,18 @@ const (
 	pluginName = "fault-injection"
 )
 
+func init() {
+	plugins.Register(pluginConstructor)
+}
+
+func pluginConstructor(params plugins.Parameters) plugins.Plugin {
+	return NewFaultInjectionPlugin()
+}
+
 // handles setting FaultInjection on a VirtualService
 type faultInjectionPlugin struct{}
+
+var _ virtualservice.TrafficPolicyPlugin = &faultInjectionPlugin{}
 
 func NewFaultInjectionPlugin() *faultInjectionPlugin {
 	return &faultInjectionPlugin{}
@@ -28,18 +38,14 @@ func (p *faultInjectionPlugin) ProcessTrafficPolicy(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	fieldRegistry fieldutils.FieldOwnershipRegistry,
+	registerField virtualservice.RegisterField,
 ) error {
 	faultInjection, err := translateFaultInjection(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if faultInjection != nil && !equalityutils.Equals(output.Fault, faultInjection) {
-		if err := fieldRegistry.RegisterFieldOwner(
-			&output.Fault,
-			appliedPolicy.Ref,
-			0,
-		); err != nil {
+	if faultInjection != nil {
+		if err := registerField(&output.Fault, faultInjection); err != nil {
 			return err
 		}
 		output.Fault = faultInjection

@@ -7,13 +7,14 @@ import (
 )
 
 type FieldConflictError struct {
-	Field    interface{}
-	Owner    ezkube.ResourceId
-	Priority int32
+	Field     interface{}
+	Owner     ezkube.ResourceId
+	OwnerType ezkube.Object
+	Priority  int32
 }
 
 func (e FieldConflictError) Error() string {
-	return fmt.Sprintf("field %v is alredy owned by %T %s (priority %v)", e.Field, e.Owner, sets.Key(e.Owner), e.Priority)
+	return fmt.Sprintf("field %v is alredy owned by %T %s (priority %v)", e.Field, e.OwnerType, sets.Key(e.Owner), e.Priority)
 }
 
 // an FieldOwnershipRegistry tracks the ownership of individual object fields.
@@ -28,34 +29,66 @@ type FieldOwnershipRegistry interface {
 	// a ConflictError containing the previous owner and its priority are returned.
 	//
 	// field must be a pointer to the field.
-	RegisterFieldOwner(field interface{}, owner ezkube.ResourceId, priority int32) error
+	RegisterFieldOwner(obj ezkube.Object, field interface{}, owner ezkube.ResourceId, ownerType ezkube.Object, priority int32) error
+
+	// gets all the owners who share an object.
+	GetRegisteredOwners(obj ezkube.Object) []FieldOwner
 }
 
 type ownershipRegistry struct {
-	fieldOwners map[interface{}]fieldOwner
+	objOwners   map[string][]FieldOwner
+	fieldOwners map[interface{}]FieldOwner
 }
 
 func NewOwnershipRegistry() FieldOwnershipRegistry {
-	return &ownershipRegistry{fieldOwners: map[interface{}]fieldOwner{}}
+	return &ownershipRegistry{fieldOwners: map[interface{}]FieldOwner{}}
 }
 
-type fieldOwner struct {
-	owner    ezkube.ResourceId
-	priority int32
+type FieldOwner struct {
+	owner     ezkube.ResourceId
+	ownerType ezkube.Object
+	priority  int32
 }
 
-func (o ownershipRegistry) RegisterFieldOwner(field interface{}, owner ezkube.ResourceId, priority int32) error {
+func (o *ownershipRegistry) RegisterFieldOwner(obj ezkube.Object, field interface{}, owner ezkube.ResourceId, ownerType ezkube.Object, priority int32) error {
 	previousOwner, exists := o.fieldOwners[field]
 	if exists && previousOwner.priority >= priority {
 		return FieldConflictError{
-			Owner:    previousOwner.owner,
-			Priority: previousOwner.priority,
-			Field:    field,
+			Owner:     previousOwner.owner,
+			OwnerType: previousOwner.ownerType,
+			Priority:  previousOwner.priority,
+			Field:     field,
 		}
 	}
-	o.fieldOwners[field] = fieldOwner{
-		owner:    owner,
-		priority: priority,
+	newOwner := FieldOwner{
+		owner:     owner,
+		ownerType: ownerType,
+		priority:  priority,
 	}
+	o.fieldOwners[field] = newOwner
+	o.registerObjOwner(obj, newOwner)
 	return nil
+}
+
+func (o *ownershipRegistry) registerObjOwner(obj ezkube.Object, newOwner FieldOwner) {
+	key := typedObjectKey(obj)
+	for _, owner := range o.objOwners[key] {
+		if typedOwnerKey(owner) == typedOwnerKey(newOwner) {
+			// prevent duplicates
+			return
+		}
+	}
+	o.objOwners[key] = append(o.objOwners[key], newOwner)
+}
+
+func (o *ownershipRegistry) GetRegisteredOwners(obj ezkube.Object) []FieldOwner {
+	return o.objOwners[typedObjectKey(obj)]
+}
+
+func typedObjectKey(obj ezkube.Object) string {
+	return fmt.Sprintf("%v.%v.%v.%T", obj.GetName(), obj.GetNamespace(), obj.GetClusterName(), obj)
+}
+
+func typedOwnerKey(owner FieldOwner) string {
+	return fmt.Sprintf("%v.%v.%T", owner.owner.GetName(), owner.owner.GetNamespace(), owner.ownerType)
 }

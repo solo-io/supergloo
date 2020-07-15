@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/solo-io/smh/pkg/common/bootstrap"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
 	"github.com/solo-io/smh/pkg/mesh-networking/validation"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 

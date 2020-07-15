@@ -8,7 +8,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output/istio"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/metautils"
 )
 
@@ -40,62 +40,38 @@ func (t *istioTranslator) Translate(
 ) (istio.Snapshot, error) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translator-%v", t.totalTranslates))
 
-	destinationRuleTranslator := t.dependencies.makeDestinationRuleTranslator(in.KubernetesClusters())
-
-	virtualServiceTranslator := t.dependencies.makeVirtualServiceTranslator(in.KubernetesClusters())
+	meshServiceTranslator := t.dependencies.makeMeshServiceTranslator(in.KubernetesClusters())
 
 	destinationRules := v1alpha3sets.NewDestinationRuleSet()
 	virtualServices := v1alpha3sets.NewVirtualServiceSet()
+	envoyFilters := v1alpha3sets.NewEnvoyFilterSet()
+	gateways := v1alpha3sets.NewGatewaySet()
+	serviceEntries := v1alpha3sets.NewServiceEntrySet()
+
 	for _, meshService := range in.MeshServices().List() {
 		meshService := meshService // pike
-		destinationRule := destinationRuleTranslator.Translate(in, meshService, reporter)
+
+		virtualService, destinationRule := meshServiceTranslator.Translate(in, meshService, reporter)
+
 		if destinationRule != nil {
 			destinationRules.Insert(destinationRule)
 			contextutils.LoggerFrom(ctx).Debugf("translated destination rule %v", sets.Key(meshService))
 		}
-		virtualService := virtualServiceTranslator.Translate(in, meshService, reporter)
 		if virtualService != nil {
 			contextutils.LoggerFrom(ctx).Debugf("translated virtual service %v", sets.Key(meshService))
 			virtualServices.Insert(virtualService)
 		}
 	}
 
-	envoyFilters := v1alpha3sets.NewEnvoyFilterSet()
-
 	t.totalTranslates++
 
-	return t.makeOutputSnapshot(
+	return istio.NewSinglePartitionedSnapshot(
+		fmt.Sprintf("istio-networking-%v", t.totalTranslates),
+		metautils.TranslatedObjectLabels(),
 		destinationRules,
 		envoyFilters,
+		gateways,
+		serviceEntries,
 		virtualServices,
 	)
-}
-
-func (t *istioTranslator) makeOutputSnapshot(
-	destinationRules v1alpha3sets.DestinationRuleSet,
-	envoyFilters v1alpha3sets.EnvoyFilterSet,
-	virtualServices v1alpha3sets.VirtualServiceSet,
-) (istio.Snapshot, error) {
-
-	snapshotLabels := metautils.TranslatedObjectLabels()
-
-	destinationRulesToUpsert, err := istio.NewLabeledDestinationRuleSet(destinationRules, snapshotLabels)
-	if err != nil {
-		return nil, err
-	}
-	envoyFiltersToUpsert, err := istio.NewLabeledEnvoyFilterSet(envoyFilters, snapshotLabels)
-	if err != nil {
-		return nil, err
-	}
-	virtualServicesToUpsert, err := istio.NewLabeledVirtualServiceSet(virtualServices, snapshotLabels)
-	if err != nil {
-		return nil, err
-	}
-
-	return istio.NewSnapshot(
-		fmt.Sprintf("istio-networking-%v", t.totalTranslates),
-		[]istio.LabeledDestinationRuleSet{destinationRulesToUpsert},
-		[]istio.LabeledEnvoyFilterSet{envoyFiltersToUpsert},
-		[]istio.LabeledVirtualServiceSet{virtualServicesToUpsert},
-	), nil
 }

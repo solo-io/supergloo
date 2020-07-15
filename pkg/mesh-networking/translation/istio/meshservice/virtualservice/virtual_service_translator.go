@@ -3,15 +3,17 @@ package virtualservice
 import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/virtualservice/plugin"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/metautils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"reflect"
 )
 
 // the VirtualService translator translates a MeshService into a VirtualService.
@@ -31,10 +33,10 @@ type Translator interface {
 
 type translator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
-	pluginFactory  plugin.Factory
+	pluginFactory  plugins.Factory
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugin.Factory) Translator {
+func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugins.Factory) Translator {
 	return &translator{clusterDomains: clusterDomains, pluginFactory: pluginFactory}
 }
 
@@ -46,29 +48,51 @@ func (t *translator) Translate(
 	meshService *discoveryv1alpha1.MeshService,
 	reporter reporter.Reporter,
 ) *istiov1alpha3.VirtualService {
-	plugins := t.pluginFactory.MakePlugins(
-		t.clusterDomains,
-		in,
-	)
+	kubeService := meshService.Spec.GetKubeService()
+
+	if kubeService == nil {
+		// TODO(ilackarms): non kube services currently unsupported
+		return nil
+	}
+
 	virtualService := t.initializeVirtualService(meshService)
 	// register the owners of the virtualservice fields
 	virtualServiceFields := fieldutils.NewOwnershipRegistry()
 
-	for _, plug := range plugins {
-		if simplePlugin, ok := plug.(plugin.SimplePlugin); ok {
-			simplePlugin.Process(meshService, virtualService)
-		}
-	}
+	plugins := t.pluginFactory.MakePlugins(plugins.Parameters{
+		ClusterDomains: t.clusterDomains,
+		Snapshot:       in,
+	})
 
 	for _, policy := range meshService.Status.AppliedTrafficPolicies {
 		baseRoute := initializeBaseRoute(policy.Spec)
+
 		for _, plug := range plugins {
-			if trafficPolicyPlugin, ok := plug.(plugin.TrafficPolicyPlugin); ok {
+
+			registerField := func(fieldPtr, val interface{}) error {
+				fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
+
+				if equalityutils.Equals(fieldVal, val) {
+					return nil
+				}
+				if err := virtualServiceFields.RegisterFieldOwner(
+					virtualService,
+					fieldPtr,
+					policy.Ref,
+					&v1alpha1.TrafficPolicy{},
+					0,
+				); err != nil {
+					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", plug.PluginName()))
+					return err
+				}
+				return nil
+			}
+			if trafficPolicyPlugin, ok := plug.(TrafficPolicyPlugin); ok {
 				if err := trafficPolicyPlugin.ProcessTrafficPolicy(
 					policy,
 					meshService,
 					baseRoute,
-					virtualServiceFields,
+					registerField,
 				); err != nil {
 					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", plug.PluginName()))
 				}
@@ -81,7 +105,7 @@ func (t *translator) Translate(
 
 		// construct a copy of a route for each service port
 		// required because Istio needs the destination port for every route
-		routesPerPort := duplicateRouteForEachPort(baseRoute, meshService.Spec.KubeService.Ports)
+		routesPerPort := duplicateRouteForEachPort(baseRoute, kubeService.Ports)
 
 		// split routes with multiple HTTP matchers for easier route sorting later on
 		var routesWithSingleMatcher []*istiov1alpha3spec.HTTPRoute
@@ -91,21 +115,6 @@ func (t *translator) Translate(
 		}
 
 		virtualService.Spec.Http = append(virtualService.Spec.Http, routesWithSingleMatcher...)
-	}
-
-	for _, policy := range meshService.Status.AppliedAccessPolicies {
-		for _, plug := range plugins {
-			if accessPolicyPlugin, ok := plug.(plugin.AccessPolicyPlugin); ok {
-				if err := accessPolicyPlugin.ProcessAccessPolicy(
-					policy,
-					meshService,
-					virtualService,
-					virtualServiceFields,
-				); err != nil {
-					reporter.ReportAccessPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", plug.PluginName()))
-				}
-			}
-		}
 	}
 
 	if len(virtualService.Spec.Http) == 0 {
@@ -118,11 +127,11 @@ func (t *translator) Translate(
 
 func (t *translator) initializeVirtualService(meshService *discoveryv1alpha1.MeshService) *istiov1alpha3.VirtualService {
 	meta := metautils.TranslatedObjectMeta(
-		meshService.Spec.KubeService.Ref,
+		meshService.Spec.GetKubeService().Ref,
 		meshService.Annotations,
 	)
 
-	hosts := []string{t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.KubeService.Ref)}
+	hosts := []string{t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.GetKubeService().Ref)}
 
 	return &istiov1alpha3.VirtualService{
 		ObjectMeta: meta,

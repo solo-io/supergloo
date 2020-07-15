@@ -4,8 +4,8 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -13,9 +13,19 @@ const (
 	pluginName = "cors"
 )
 
+func init() {
+	plugins.Register(pluginConstructor)
+}
+
+func pluginConstructor(params plugins.Parameters) plugins.Plugin {
+	return NewCorsPlugin()
+}
+
 // handles setting Cors on a VirtualService
 type corsPlugin struct {
 }
+
+var _ virtualservice.TrafficPolicyPlugin = &corsPlugin{}
 
 func NewCorsPlugin() *corsPlugin {
 	return &corsPlugin{
@@ -30,18 +40,14 @@ func (p *corsPlugin) ProcessTrafficPolicy(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	fieldRegistry fieldutils.FieldOwnershipRegistry,
+	registerField virtualservice.RegisterField,
 ) error {
 	cors, err := p.translateCors(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if cors != nil && !equalityutils.Equals(output.CorsPolicy, cors) {
-		if err := fieldRegistry.RegisterFieldOwner(
-			&output.CorsPolicy,
-			appliedPolicy.Ref,
-			0,
-		); err != nil {
+	if cors != nil {
+		if err := registerField(&output.CorsPolicy, cors); err != nil {
 			return err
 		}
 		output.CorsPolicy = cors

@@ -136,6 +136,11 @@ func (v *validationReporter) ReportAccessPolicy(meshService *discoveryv1alpha1.M
 	panic("implement me")
 }
 
+func (v *validationReporter) ReportVirtualMesh(mesh *discoveryv1alpha1.Mesh, virtualMesh ezkube.ResourceId, err error) {
+	// TODO(ilackarms):
+	panic("implement me")
+}
+
 func (v *validationReporter) getTrafficPolicyErrors(meshService *discoveryv1alpha1.MeshService, trafficPolicy ezkube.ResourceId) []error {
 	invalidTrafficPoliciesForMeshService, ok := v.invalidTrafficPolicies[meshService]
 	if !ok {

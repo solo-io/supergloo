@@ -14,7 +14,7 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/solo-io/smh/pkg/mesh-networking/validation"

@@ -6,10 +6,10 @@ import (
 	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -17,11 +17,21 @@ const (
 	pluginName = "mirror"
 )
 
+func init() {
+	plugins.Register(pluginConstructor)
+}
+
+func pluginConstructor(params plugins.Parameters) plugins.Plugin {
+	return NewMirrorPlugin(params.ClusterDomains, params.Snapshot.MeshServices())
+}
+
 // handles setting Mirror on a VirtualService
 type mirrorPlugin struct {
 	clusterDomains hostutils.ClusterDomainRegistry
 	meshServices   discoveryv1alpha1sets.MeshServiceSet
 }
+
+var _ virtualservice.TrafficPolicyPlugin = &mirrorPlugin{}
 
 func NewMirrorPlugin(
 	clusterDomains hostutils.ClusterDomainRegistry,
@@ -41,18 +51,14 @@ func (p *mirrorPlugin) ProcessTrafficPolicy(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	fieldRegistry fieldutils.FieldOwnershipRegistry,
+	registerField virtualservice.RegisterField,
 ) error {
 	mirror, percentage, err := p.translateMirror(service, appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if mirror != nil && !equalityutils.Equals(output.Mirror, mirror) {
-		if err := fieldRegistry.RegisterFieldOwner(
-			&output.Mirror,
-			appliedPolicy.Ref,
-			0,
-		); err != nil {
+	if mirror != nil {
+		if err := registerField(&output.Mirror, mirror); err != nil {
 			return err
 		}
 		output.Mirror = mirror

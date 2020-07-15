@@ -1,12 +1,11 @@
 package destinationrule
 
 import (
-	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/kubeutils"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/destinationrule/plugin"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/metautils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -33,10 +32,10 @@ type Translator interface {
 
 type translator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
-	pluginFactory  plugin.Factory
+	pluginFactory  plugins.Factory
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugin.Factory) Translator {
+func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugins.Factory) Translator {
 	return &translator{clusterDomains: clusterDomains, pluginFactory: pluginFactory}
 }
 
@@ -48,31 +47,22 @@ func (t *translator) Translate(
 	meshService *discoveryv1alpha1.MeshService,
 	reporter reporter.Reporter,
 ) *istiov1alpha3.DestinationRule {
-	plugins := t.pluginFactory.MakePlugins(in)
+	kubeService := meshService.Spec.GetKubeService()
+
+	if kubeService == nil {
+		// TODO(ilackarms): non kube services currently unsupported
+		return nil
+	}
+
+	plugins := t.pluginFactory.MakePlugins(plugins.Parameters{
+		ClusterDomains: t.clusterDomains,
+		Snapshot:       in,
+	})
 	destinationRule := t.initializeDestinationRule(meshService)
 
 	for _, plug := range plugins {
-		if simplePlugin, ok := plug.(plugin.SimplePlugin); ok {
+		if simplePlugin, ok := plug.(Plugin); ok {
 			simplePlugin.Process(meshService, destinationRule)
-		}
-	}
-	for _, policy := range meshService.Status.AppliedTrafficPolicies {
-		for _, plug := range plugins {
-			if trafficPolicyPlugin, ok := plug.(plugin.TrafficPolicyPlugin); ok {
-				if err := trafficPolicyPlugin.ProcessTrafficPolicy(policy.Spec, meshService, destinationRule); err != nil {
-					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", plug.PluginName()))
-				}
-			}
-		}
-	}
-
-	for _, policy := range meshService.Status.AppliedAccessPolicies {
-		for _, plug := range plugins {
-			if accessPolicyPlugin, ok := plug.(plugin.AccessPolicyPlugin); ok {
-				if err := accessPolicyPlugin.ProcessAccessPolicy(policy.Spec, meshService, destinationRule); err != nil {
-					reporter.ReportAccessPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", plug.PluginName()))
-				}
-			}
 		}
 	}
 
@@ -86,10 +76,10 @@ func (t *translator) Translate(
 
 func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha1.MeshService) *istiov1alpha3.DestinationRule {
 	meta := metautils.TranslatedObjectMeta(
-		meshService.Spec.KubeService.Ref,
+		meshService.Spec.GetKubeService().Ref,
 		meshService.Annotations,
 	)
-	hostname := t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.KubeService.Ref)
+	hostname := t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.GetKubeService().Ref)
 	subsets := buildRequiredSubsets(meshService)
 
 	return &istiov1alpha3.DestinationRule{

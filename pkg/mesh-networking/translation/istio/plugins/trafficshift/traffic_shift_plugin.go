@@ -8,9 +8,9 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/destinationrule"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -19,6 +19,14 @@ import (
 const (
 	pluginName = "traffic-shift"
 )
+
+func init() {
+	plugins.Register(pluginConstructor)
+}
+
+func pluginConstructor(params plugins.Parameters) plugins.Plugin {
+	return NewTrafficShiftPlugin(params.ClusterDomains, params.Snapshot.MeshServices())
+}
 
 var (
 	MultiClusterSubsetsNotSupportedErr = func(dest ezkube.ResourceId) error {
@@ -31,6 +39,8 @@ type trafficShiftPlugin struct {
 	clusterDomains hostutils.ClusterDomainRegistry
 	meshServices   discoveryv1alpha1sets.MeshServiceSet
 }
+
+var _ virtualservice.TrafficPolicyPlugin = &trafficShiftPlugin{}
 
 func NewTrafficShiftPlugin(
 	clusterDomains hostutils.ClusterDomainRegistry,
@@ -50,18 +60,14 @@ func (p *trafficShiftPlugin) ProcessTrafficPolicy(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	fieldRegistry fieldutils.FieldOwnershipRegistry,
+	registerField virtualservice.RegisterField,
 ) error {
 	trafficShiftDestinations, err := p.translateTrafficShift(service, appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if trafficShiftDestinations != nil && !equalityutils.Equals(output.Route, trafficShiftDestinations) {
-		if err := fieldRegistry.RegisterFieldOwner(
-			&output.Route,
-			appliedPolicy.Ref,
-			0,
-		); err != nil {
+	if trafficShiftDestinations != nil {
+		if err := registerField(&output.Route, trafficShiftDestinations); err != nil {
 			return err
 		}
 		output.Route = trafficShiftDestinations
@@ -110,6 +116,11 @@ func (p *trafficShiftPlugin) buildKubeTrafficShiftDestination(
 	originalService *discoveryv1alpha1.MeshService,
 	weight uint32,
 ) (*istiov1alpha3spec.HTTPRouteDestination, error) {
+	originalKubeService := originalService.Spec.GetKubeService()
+
+	if originalKubeService == nil {
+		return nil, eris.Errorf("traffic shift only supported for kube mesh services")
+	}
 	if kubeDest == nil {
 		return nil, eris.Errorf("nil kube destination on traffic shift")
 	}
@@ -125,7 +136,7 @@ func (p *trafficShiftPlugin) buildKubeTrafficShiftDestination(
 		return nil, eris.Wrapf(err, "invalid mirror destination")
 	}
 
-	sourceCluster := originalService.Spec.KubeService.Ref.ClusterName
+	sourceCluster := originalKubeService.Ref.ClusterName
 	destinationHost := p.clusterDomains.GetDestinationServiceFQDN(sourceCluster, svcRef)
 
 	var destinationPort *istiov1alpha3spec.PortSelector
@@ -135,8 +146,8 @@ func (p *trafficShiftPlugin) buildKubeTrafficShiftDestination(
 		}
 	} else {
 		// validate that mesh service only has one port
-		if numPorts := len(originalService.Spec.KubeService.Ports); numPorts > 1 {
-			return nil, eris.Errorf("must provide port for traffic shift destination service %v with multiple ports (%v) defined", sets.Key(originalService.Spec.KubeService.Ref), numPorts)
+		if numPorts := len(originalKubeService.Ports); numPorts > 1 {
+			return nil, eris.Errorf("must provide port for traffic shift destination service %v with multiple ports (%v) defined", sets.Key(originalKubeService.Ref), numPorts)
 		}
 	}
 

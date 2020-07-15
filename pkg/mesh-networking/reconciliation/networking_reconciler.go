@@ -4,10 +4,11 @@ import (
 	"context"
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
 	"github.com/solo-io/smh/pkg/mesh-networking/validation"
 
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -70,12 +71,22 @@ func (d *networkingReconciler) reconcile(_ ezkube.ResourceId) error {
 	return errs
 }
 
-func (d *networkingReconciler) syncIstio(translatorSnapshot input.Snapshot) error {
-	istioSnap, err := d.istioTranslator.Translate(d.ctx, translatorSnapshot, d.reporter)
+func (d *networkingReconciler) syncIstio(in input.Snapshot) error {
+	istioSnap, err := d.istioTranslator.Translate(d.ctx, in, d.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err
 	}
 
-	return istioSnap.ApplyMultiCluster(d.ctx, d.multiClusterClient)
+	istioSnap.ApplyMultiCluster(d.ctx, d.multiClusterClient, output.ErrorHandlerFuncs{
+		HandleWriteErrorFunc: func(resource ezkube.Object, err error) {
+
+		},
+		HandleDeleteErrorFunc: nil,
+		HandleListErrorFunc:   nil,
+	})
+}
+
+type writeReporter struct {
+
 }

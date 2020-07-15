@@ -3,8 +3,8 @@ package retries
 import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -12,9 +12,19 @@ const (
 	pluginName = "retries"
 )
 
+func init() {
+	plugins.Register(pluginConstructor)
+}
+
+func pluginConstructor(params plugins.Parameters) plugins.Plugin {
+	return NewRetriesPlugin()
+}
+
 // handles setting Retries on a VirtualService
 type retriesPlugin struct {
 }
+
+var _ virtualservice.TrafficPolicyPlugin = &retriesPlugin{}
 
 func NewRetriesPlugin() *retriesPlugin {
 	return &retriesPlugin{
@@ -29,18 +39,14 @@ func (p *retriesPlugin) ProcessTrafficPolicy(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	fieldRegistry fieldutils.FieldOwnershipRegistry,
+	registerField virtualservice.RegisterField,
 ) error {
 	retries, err := p.translateRetries(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
-	if retries != nil && !equalityutils.Equals(output.Retries, retries) {
-		if err := fieldRegistry.RegisterFieldOwner(
-			output.Retries,
-			appliedPolicy.Ref,
-			0,
-		); err != nil {
+	if retries != nil {
+		if err := registerField(&output.Retries, retries); err != nil {
 			return err
 		}
 		output.Retries = retries
