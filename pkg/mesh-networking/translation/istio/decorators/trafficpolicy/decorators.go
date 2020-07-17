@@ -6,6 +6,11 @@ import (
 	"istio.io/api/networking/v1alpha3"
 )
 
+/*
+	Interface definitions for decorators which take TrafficPolicy as an input and
+	decorate a given output resource.
+ */
+
 // TrafficPolicyDecorators modify the DestinationRule based on a TrafficPolicy which applies to the MeshService.
 type DestinationRuleDecorator interface {
 	decorators.Decorator
