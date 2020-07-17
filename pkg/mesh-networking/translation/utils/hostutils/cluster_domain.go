@@ -2,13 +2,12 @@ package hostutils
 
 import (
 	"fmt"
+
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/common/defaults"
 )
-
-const defaultClusterDomain = "cluster.local"
 
 // ClusterDomainRegistry retrieves known cluster domain suffixes for
 // registered clusters. Returns the default 'cluster.local' when
@@ -48,11 +47,11 @@ func (c *clusterDomainRegistry) GetClusterDomain(clusterName string) string {
 		Namespace: defaults.GetPodNamespace(),
 	})
 	if err != nil {
-		return defaultClusterDomain
+		return defaults.DefaultClusterDomain
 	}
 	clusterDomain := cluster.Spec.ClusterDomain
 	if clusterDomain == "" {
-		clusterDomain = defaultClusterDomain
+		clusterDomain = defaults.DefaultClusterDomain
 	}
 	return clusterDomain
 }

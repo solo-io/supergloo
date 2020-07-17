@@ -2,13 +2,15 @@ package reconciliation
 
 import (
 	"context"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
+	"github.com/solo-io/smh/pkg/common/defaults"
 	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/smh/pkg/mesh-networking/validation"
 
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -49,11 +51,14 @@ func Start(
 }
 
 // reconcile global state
-func (d *networkingReconciler) reconcile(_ ezkube.ResourceId) error {
-	inputSnap, err := d.builder.BuildSnapshot(d.ctx, "mesh-networking")
+func (d *networkingReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
+	inputSnap, err := d.builder.BuildSnapshot(d.ctx, "mesh-networking", input.BuildOptions{
+		// only look at kube clusters in our own namespace
+		KubernetesClusters: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
+	})
 	if err != nil {
 		// failed to read from cache; should never happen
-		return err
+		return false, err
 	}
 
 	d.validator.Validate(d.ctx, inputSnap)
@@ -68,7 +73,7 @@ func (d *networkingReconciler) reconcile(_ ezkube.ResourceId) error {
 		errs = multierror.Append(errs, err)
 	}
 
-	return errs
+	return false, errs
 }
 
 func (d *networkingReconciler) syncIstio(in input.Snapshot) error {
@@ -88,5 +93,4 @@ func (d *networkingReconciler) syncIstio(in input.Snapshot) error {
 }
 
 type writeReporter struct {
-
 }

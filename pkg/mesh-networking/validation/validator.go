@@ -2,6 +2,8 @@ package validation
 
 import (
 	"context"
+	"sort"
+
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
@@ -10,7 +12,6 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/selectorutils"
-	"sort"
 )
 
 // the validator validates user-applied configuration
