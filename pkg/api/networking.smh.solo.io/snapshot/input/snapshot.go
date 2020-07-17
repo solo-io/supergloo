@@ -175,7 +175,28 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 // a builder for snapshots of resources across multiple clusters
 // a builder for snapshots of resources within a single cluster
 type Builder interface {
-	BuildSnapshot(ctx context.Context, name string) (Snapshot, error)
+	BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error)
+}
+
+// Options for building a snapshot
+type BuildOptions struct {
+
+	// List options for composing a snapshot from MeshServices
+	MeshServices []client.ListOption
+	// List options for composing a snapshot from MeshWorkloads
+	MeshWorkloads []client.ListOption
+	// List options for composing a snapshot from Meshes
+	Meshes []client.ListOption
+
+	// List options for composing a snapshot from TrafficPolicies
+	TrafficPolicies []client.ListOption
+	// List options for composing a snapshot from AccessPolicies
+	AccessPolicies []client.ListOption
+	// List options for composing a snapshot from VirtualMeshes
+	VirtualMeshes []client.ListOption
+
+	// List options for composing a snapshot from KubernetesClusters
+	KubernetesClusters []client.ListOption
 }
 
 // build a snapshot from resources across multiple clusters
@@ -213,7 +234,7 @@ func NewMultiClusterBuilder(
 	}
 }
 
-func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string) (Snapshot, error) {
+func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
 	meshServices := discovery_smh_solo_io_v1alpha1_sets.NewMeshServiceSet()
 	meshWorkloads := discovery_smh_solo_io_v1alpha1_sets.NewMeshWorkloadSet()
@@ -229,25 +250,25 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string) (S
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertMeshServicesFromCluster(ctx, cluster, meshServices); err != nil {
+		if err := b.insertMeshServicesFromCluster(ctx, cluster, meshServices, opts.MeshServices...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertMeshWorkloadsFromCluster(ctx, cluster, meshWorkloads); err != nil {
+		if err := b.insertMeshWorkloadsFromCluster(ctx, cluster, meshWorkloads, opts.MeshWorkloads...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertMeshesFromCluster(ctx, cluster, meshes); err != nil {
+		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertTrafficPoliciesFromCluster(ctx, cluster, trafficPolicies); err != nil {
+		if err := b.insertTrafficPoliciesFromCluster(ctx, cluster, trafficPolicies, opts.TrafficPolicies...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertAccessPoliciesFromCluster(ctx, cluster, accessPolicies); err != nil {
+		if err := b.insertAccessPoliciesFromCluster(ctx, cluster, accessPolicies, opts.AccessPolicies...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes); err != nil {
+		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes, opts.VirtualMeshes...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertKubernetesClustersFromCluster(ctx, cluster, kubernetesClusters); err != nil {
+		if err := b.insertKubernetesClustersFromCluster(ctx, cluster, kubernetesClusters, opts.KubernetesClusters...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -268,13 +289,13 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string) (S
 	return outputSnap, errs
 }
 
-func (b *multiClusterBuilder) insertMeshServicesFromCluster(ctx context.Context, cluster string, meshServices discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet) error {
+func (b *multiClusterBuilder) insertMeshServicesFromCluster(ctx context.Context, cluster string, meshServices discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet, opts ...client.ListOption) error {
 	meshServiceClient, err := b.meshServices.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	meshServiceList, err := meshServiceClient.ListMeshService(ctx)
+	meshServiceList, err := meshServiceClient.ListMeshService(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -287,13 +308,13 @@ func (b *multiClusterBuilder) insertMeshServicesFromCluster(ctx context.Context,
 
 	return nil
 }
-func (b *multiClusterBuilder) insertMeshWorkloadsFromCluster(ctx context.Context, cluster string, meshWorkloads discovery_smh_solo_io_v1alpha1_sets.MeshWorkloadSet) error {
+func (b *multiClusterBuilder) insertMeshWorkloadsFromCluster(ctx context.Context, cluster string, meshWorkloads discovery_smh_solo_io_v1alpha1_sets.MeshWorkloadSet, opts ...client.ListOption) error {
 	meshWorkloadClient, err := b.meshWorkloads.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	meshWorkloadList, err := meshWorkloadClient.ListMeshWorkload(ctx)
+	meshWorkloadList, err := meshWorkloadClient.ListMeshWorkload(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -306,13 +327,13 @@ func (b *multiClusterBuilder) insertMeshWorkloadsFromCluster(ctx context.Context
 
 	return nil
 }
-func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes discovery_smh_solo_io_v1alpha1_sets.MeshSet) error {
+func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes discovery_smh_solo_io_v1alpha1_sets.MeshSet, opts ...client.ListOption) error {
 	meshClient, err := b.meshes.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	meshList, err := meshClient.ListMesh(ctx)
+	meshList, err := meshClient.ListMesh(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -326,13 +347,13 @@ func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, clust
 	return nil
 }
 
-func (b *multiClusterBuilder) insertTrafficPoliciesFromCluster(ctx context.Context, cluster string, trafficPolicies networking_smh_solo_io_v1alpha1_sets.TrafficPolicySet) error {
+func (b *multiClusterBuilder) insertTrafficPoliciesFromCluster(ctx context.Context, cluster string, trafficPolicies networking_smh_solo_io_v1alpha1_sets.TrafficPolicySet, opts ...client.ListOption) error {
 	trafficPolicyClient, err := b.trafficPolicies.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	trafficPolicyList, err := trafficPolicyClient.ListTrafficPolicy(ctx)
+	trafficPolicyList, err := trafficPolicyClient.ListTrafficPolicy(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -345,13 +366,13 @@ func (b *multiClusterBuilder) insertTrafficPoliciesFromCluster(ctx context.Conte
 
 	return nil
 }
-func (b *multiClusterBuilder) insertAccessPoliciesFromCluster(ctx context.Context, cluster string, accessPolicies networking_smh_solo_io_v1alpha1_sets.AccessPolicySet) error {
+func (b *multiClusterBuilder) insertAccessPoliciesFromCluster(ctx context.Context, cluster string, accessPolicies networking_smh_solo_io_v1alpha1_sets.AccessPolicySet, opts ...client.ListOption) error {
 	accessPolicyClient, err := b.accessPolicies.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	accessPolicyList, err := accessPolicyClient.ListAccessPolicy(ctx)
+	accessPolicyList, err := accessPolicyClient.ListAccessPolicy(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -364,13 +385,13 @@ func (b *multiClusterBuilder) insertAccessPoliciesFromCluster(ctx context.Contex
 
 	return nil
 }
-func (b *multiClusterBuilder) insertVirtualMeshesFromCluster(ctx context.Context, cluster string, virtualMeshes networking_smh_solo_io_v1alpha1_sets.VirtualMeshSet) error {
+func (b *multiClusterBuilder) insertVirtualMeshesFromCluster(ctx context.Context, cluster string, virtualMeshes networking_smh_solo_io_v1alpha1_sets.VirtualMeshSet, opts ...client.ListOption) error {
 	virtualMeshClient, err := b.virtualMeshes.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	virtualMeshList, err := virtualMeshClient.ListVirtualMesh(ctx)
+	virtualMeshList, err := virtualMeshClient.ListVirtualMesh(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -384,13 +405,13 @@ func (b *multiClusterBuilder) insertVirtualMeshesFromCluster(ctx context.Context
 	return nil
 }
 
-func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Context, cluster string, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet) error {
+func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Context, cluster string, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ...client.ListOption) error {
 	kubernetesClusterClient, err := b.kubernetesClusters.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	kubernetesClusterList, err := kubernetesClusterClient.ListKubernetesCluster(ctx)
+	kubernetesClusterList, err := kubernetesClusterClient.ListKubernetesCluster(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -435,7 +456,7 @@ func NewSingleClusterBuilder(
 	}
 }
 
-func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string) (Snapshot, error) {
+func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
 	meshServices := discovery_smh_solo_io_v1alpha1_sets.NewMeshServiceSet()
 	meshWorkloads := discovery_smh_solo_io_v1alpha1_sets.NewMeshWorkloadSet()
@@ -449,25 +470,25 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string) (
 
 	var errs error
 
-	if err := b.insertMeshServices(ctx, meshServices); err != nil {
+	if err := b.insertMeshServices(ctx, meshServices, opts.MeshServices...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertMeshWorkloads(ctx, meshWorkloads); err != nil {
+	if err := b.insertMeshWorkloads(ctx, meshWorkloads, opts.MeshWorkloads...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertMeshes(ctx, meshes); err != nil {
+	if err := b.insertMeshes(ctx, meshes, opts.Meshes...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertTrafficPolicies(ctx, trafficPolicies); err != nil {
+	if err := b.insertTrafficPolicies(ctx, trafficPolicies, opts.TrafficPolicies...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertAccessPolicies(ctx, accessPolicies); err != nil {
+	if err := b.insertAccessPolicies(ctx, accessPolicies, opts.AccessPolicies...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertVirtualMeshes(ctx, virtualMeshes); err != nil {
+	if err := b.insertVirtualMeshes(ctx, virtualMeshes, opts.VirtualMeshes...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertKubernetesClusters(ctx, kubernetesClusters); err != nil {
+	if err := b.insertKubernetesClusters(ctx, kubernetesClusters, opts.KubernetesClusters...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -486,8 +507,8 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string) (
 	return outputSnap, errs
 }
 
-func (b *singleClusterBuilder) insertMeshServices(ctx context.Context, meshServices discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet) error {
-	meshServiceList, err := b.meshServices.ListMeshService(ctx)
+func (b *singleClusterBuilder) insertMeshServices(ctx context.Context, meshServices discovery_smh_solo_io_v1alpha1_sets.MeshServiceSet, opts ...client.ListOption) error {
+	meshServiceList, err := b.meshServices.ListMeshService(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -499,8 +520,8 @@ func (b *singleClusterBuilder) insertMeshServices(ctx context.Context, meshServi
 
 	return nil
 }
-func (b *singleClusterBuilder) insertMeshWorkloads(ctx context.Context, meshWorkloads discovery_smh_solo_io_v1alpha1_sets.MeshWorkloadSet) error {
-	meshWorkloadList, err := b.meshWorkloads.ListMeshWorkload(ctx)
+func (b *singleClusterBuilder) insertMeshWorkloads(ctx context.Context, meshWorkloads discovery_smh_solo_io_v1alpha1_sets.MeshWorkloadSet, opts ...client.ListOption) error {
+	meshWorkloadList, err := b.meshWorkloads.ListMeshWorkload(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -512,8 +533,8 @@ func (b *singleClusterBuilder) insertMeshWorkloads(ctx context.Context, meshWork
 
 	return nil
 }
-func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes discovery_smh_solo_io_v1alpha1_sets.MeshSet) error {
-	meshList, err := b.meshes.ListMesh(ctx)
+func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes discovery_smh_solo_io_v1alpha1_sets.MeshSet, opts ...client.ListOption) error {
+	meshList, err := b.meshes.ListMesh(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -526,8 +547,8 @@ func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes discover
 	return nil
 }
 
-func (b *singleClusterBuilder) insertTrafficPolicies(ctx context.Context, trafficPolicies networking_smh_solo_io_v1alpha1_sets.TrafficPolicySet) error {
-	trafficPolicyList, err := b.trafficPolicies.ListTrafficPolicy(ctx)
+func (b *singleClusterBuilder) insertTrafficPolicies(ctx context.Context, trafficPolicies networking_smh_solo_io_v1alpha1_sets.TrafficPolicySet, opts ...client.ListOption) error {
+	trafficPolicyList, err := b.trafficPolicies.ListTrafficPolicy(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -539,8 +560,8 @@ func (b *singleClusterBuilder) insertTrafficPolicies(ctx context.Context, traffi
 
 	return nil
 }
-func (b *singleClusterBuilder) insertAccessPolicies(ctx context.Context, accessPolicies networking_smh_solo_io_v1alpha1_sets.AccessPolicySet) error {
-	accessPolicyList, err := b.accessPolicies.ListAccessPolicy(ctx)
+func (b *singleClusterBuilder) insertAccessPolicies(ctx context.Context, accessPolicies networking_smh_solo_io_v1alpha1_sets.AccessPolicySet, opts ...client.ListOption) error {
+	accessPolicyList, err := b.accessPolicies.ListAccessPolicy(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -552,8 +573,8 @@ func (b *singleClusterBuilder) insertAccessPolicies(ctx context.Context, accessP
 
 	return nil
 }
-func (b *singleClusterBuilder) insertVirtualMeshes(ctx context.Context, virtualMeshes networking_smh_solo_io_v1alpha1_sets.VirtualMeshSet) error {
-	virtualMeshList, err := b.virtualMeshes.ListVirtualMesh(ctx)
+func (b *singleClusterBuilder) insertVirtualMeshes(ctx context.Context, virtualMeshes networking_smh_solo_io_v1alpha1_sets.VirtualMeshSet, opts ...client.ListOption) error {
+	virtualMeshList, err := b.virtualMeshes.ListVirtualMesh(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -566,8 +587,8 @@ func (b *singleClusterBuilder) insertVirtualMeshes(ctx context.Context, virtualM
 	return nil
 }
 
-func (b *singleClusterBuilder) insertKubernetesClusters(ctx context.Context, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet) error {
-	kubernetesClusterList, err := b.kubernetesClusters.ListKubernetesCluster(ctx)
+func (b *singleClusterBuilder) insertKubernetesClusters(ctx context.Context, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ...client.ListOption) error {
+	kubernetesClusterList, err := b.kubernetesClusters.ListKubernetesCluster(ctx, opts...)
 	if err != nil {
 		return err
 	}

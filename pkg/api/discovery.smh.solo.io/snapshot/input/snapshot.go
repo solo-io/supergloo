@@ -124,7 +124,27 @@ func (s snapshot) StatefulSets() apps_v1_sets.StatefulSetSet {
 // a builder for snapshots of resources across multiple clusters
 // a builder for snapshots of resources within a single cluster
 type Builder interface {
-	BuildSnapshot(ctx context.Context, name string) (Snapshot, error)
+	BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error)
+}
+
+// Options for building a snapshot
+type BuildOptions struct {
+
+	// List options for composing a snapshot from ConfigMaps
+	ConfigMaps []client.ListOption
+	// List options for composing a snapshot from Services
+	Services []client.ListOption
+	// List options for composing a snapshot from Pods
+	Pods []client.ListOption
+
+	// List options for composing a snapshot from Deployments
+	Deployments []client.ListOption
+	// List options for composing a snapshot from ReplicaSets
+	ReplicaSets []client.ListOption
+	// List options for composing a snapshot from DaemonSets
+	DaemonSets []client.ListOption
+	// List options for composing a snapshot from StatefulSets
+	StatefulSets []client.ListOption
 }
 
 // build a snapshot from resources across multiple clusters
@@ -160,7 +180,7 @@ func NewMultiClusterBuilder(
 	}
 }
 
-func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string) (Snapshot, error) {
+func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
@@ -175,25 +195,25 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string) (S
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps); err != nil {
+		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps, opts.ConfigMaps...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertServicesFromCluster(ctx, cluster, services); err != nil {
+		if err := b.insertServicesFromCluster(ctx, cluster, services, opts.Services...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertPodsFromCluster(ctx, cluster, pods); err != nil {
+		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertDeploymentsFromCluster(ctx, cluster, deployments); err != nil {
+		if err := b.insertDeploymentsFromCluster(ctx, cluster, deployments, opts.Deployments...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertReplicaSetsFromCluster(ctx, cluster, replicaSets); err != nil {
+		if err := b.insertReplicaSetsFromCluster(ctx, cluster, replicaSets, opts.ReplicaSets...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertDaemonSetsFromCluster(ctx, cluster, daemonSets); err != nil {
+		if err := b.insertDaemonSetsFromCluster(ctx, cluster, daemonSets, opts.DaemonSets...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertStatefulSetsFromCluster(ctx, cluster, statefulSets); err != nil {
+		if err := b.insertStatefulSetsFromCluster(ctx, cluster, statefulSets, opts.StatefulSets...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -214,13 +234,13 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string) (S
 	return outputSnap, errs
 }
 
-func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, cluster string, configMaps v1_sets.ConfigMapSet) error {
+func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, cluster string, configMaps v1_sets.ConfigMapSet, opts ...client.ListOption) error {
 	configMapClient, err := b.configMaps.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	configMapList, err := configMapClient.ListConfigMap(ctx)
+	configMapList, err := configMapClient.ListConfigMap(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -233,13 +253,13 @@ func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, c
 
 	return nil
 }
-func (b *multiClusterBuilder) insertServicesFromCluster(ctx context.Context, cluster string, services v1_sets.ServiceSet) error {
+func (b *multiClusterBuilder) insertServicesFromCluster(ctx context.Context, cluster string, services v1_sets.ServiceSet, opts ...client.ListOption) error {
 	serviceClient, err := b.services.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	serviceList, err := serviceClient.ListService(ctx)
+	serviceList, err := serviceClient.ListService(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -252,13 +272,13 @@ func (b *multiClusterBuilder) insertServicesFromCluster(ctx context.Context, clu
 
 	return nil
 }
-func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet) error {
+func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet, opts ...client.ListOption) error {
 	podClient, err := b.pods.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	podList, err := podClient.ListPod(ctx)
+	podList, err := podClient.ListPod(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -272,13 +292,13 @@ func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster
 	return nil
 }
 
-func (b *multiClusterBuilder) insertDeploymentsFromCluster(ctx context.Context, cluster string, deployments apps_v1_sets.DeploymentSet) error {
+func (b *multiClusterBuilder) insertDeploymentsFromCluster(ctx context.Context, cluster string, deployments apps_v1_sets.DeploymentSet, opts ...client.ListOption) error {
 	deploymentClient, err := b.deployments.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	deploymentList, err := deploymentClient.ListDeployment(ctx)
+	deploymentList, err := deploymentClient.ListDeployment(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -291,13 +311,13 @@ func (b *multiClusterBuilder) insertDeploymentsFromCluster(ctx context.Context, 
 
 	return nil
 }
-func (b *multiClusterBuilder) insertReplicaSetsFromCluster(ctx context.Context, cluster string, replicaSets apps_v1_sets.ReplicaSetSet) error {
+func (b *multiClusterBuilder) insertReplicaSetsFromCluster(ctx context.Context, cluster string, replicaSets apps_v1_sets.ReplicaSetSet, opts ...client.ListOption) error {
 	replicaSetClient, err := b.replicaSets.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	replicaSetList, err := replicaSetClient.ListReplicaSet(ctx)
+	replicaSetList, err := replicaSetClient.ListReplicaSet(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -310,13 +330,13 @@ func (b *multiClusterBuilder) insertReplicaSetsFromCluster(ctx context.Context, 
 
 	return nil
 }
-func (b *multiClusterBuilder) insertDaemonSetsFromCluster(ctx context.Context, cluster string, daemonSets apps_v1_sets.DaemonSetSet) error {
+func (b *multiClusterBuilder) insertDaemonSetsFromCluster(ctx context.Context, cluster string, daemonSets apps_v1_sets.DaemonSetSet, opts ...client.ListOption) error {
 	daemonSetClient, err := b.daemonSets.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	daemonSetList, err := daemonSetClient.ListDaemonSet(ctx)
+	daemonSetList, err := daemonSetClient.ListDaemonSet(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -329,13 +349,13 @@ func (b *multiClusterBuilder) insertDaemonSetsFromCluster(ctx context.Context, c
 
 	return nil
 }
-func (b *multiClusterBuilder) insertStatefulSetsFromCluster(ctx context.Context, cluster string, statefulSets apps_v1_sets.StatefulSetSet) error {
+func (b *multiClusterBuilder) insertStatefulSetsFromCluster(ctx context.Context, cluster string, statefulSets apps_v1_sets.StatefulSetSet, opts ...client.ListOption) error {
 	statefulSetClient, err := b.statefulSets.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	statefulSetList, err := statefulSetClient.ListStatefulSet(ctx)
+	statefulSetList, err := statefulSetClient.ListStatefulSet(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -378,7 +398,7 @@ func NewSingleClusterBuilder(
 	}
 }
 
-func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string) (Snapshot, error) {
+func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
@@ -391,25 +411,25 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string) (
 
 	var errs error
 
-	if err := b.insertConfigMaps(ctx, configMaps); err != nil {
+	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertServices(ctx, services); err != nil {
+	if err := b.insertServices(ctx, services, opts.Services...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertPods(ctx, pods); err != nil {
+	if err := b.insertPods(ctx, pods, opts.Pods...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertDeployments(ctx, deployments); err != nil {
+	if err := b.insertDeployments(ctx, deployments, opts.Deployments...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertReplicaSets(ctx, replicaSets); err != nil {
+	if err := b.insertReplicaSets(ctx, replicaSets, opts.ReplicaSets...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertDaemonSets(ctx, daemonSets); err != nil {
+	if err := b.insertDaemonSets(ctx, daemonSets, opts.DaemonSets...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertStatefulSets(ctx, statefulSets); err != nil {
+	if err := b.insertStatefulSets(ctx, statefulSets, opts.StatefulSets...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -428,8 +448,8 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string) (
 	return outputSnap, errs
 }
 
-func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet) error {
-	configMapList, err := b.configMaps.ListConfigMap(ctx)
+func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet, opts ...client.ListOption) error {
+	configMapList, err := b.configMaps.ListConfigMap(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -441,8 +461,8 @@ func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps 
 
 	return nil
 }
-func (b *singleClusterBuilder) insertServices(ctx context.Context, services v1_sets.ServiceSet) error {
-	serviceList, err := b.services.ListService(ctx)
+func (b *singleClusterBuilder) insertServices(ctx context.Context, services v1_sets.ServiceSet, opts ...client.ListOption) error {
+	serviceList, err := b.services.ListService(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -454,8 +474,8 @@ func (b *singleClusterBuilder) insertServices(ctx context.Context, services v1_s
 
 	return nil
 }
-func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet) error {
-	podList, err := b.pods.ListPod(ctx)
+func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet, opts ...client.ListOption) error {
+	podList, err := b.pods.ListPod(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -468,8 +488,8 @@ func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodS
 	return nil
 }
 
-func (b *singleClusterBuilder) insertDeployments(ctx context.Context, deployments apps_v1_sets.DeploymentSet) error {
-	deploymentList, err := b.deployments.ListDeployment(ctx)
+func (b *singleClusterBuilder) insertDeployments(ctx context.Context, deployments apps_v1_sets.DeploymentSet, opts ...client.ListOption) error {
+	deploymentList, err := b.deployments.ListDeployment(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -481,8 +501,8 @@ func (b *singleClusterBuilder) insertDeployments(ctx context.Context, deployment
 
 	return nil
 }
-func (b *singleClusterBuilder) insertReplicaSets(ctx context.Context, replicaSets apps_v1_sets.ReplicaSetSet) error {
-	replicaSetList, err := b.replicaSets.ListReplicaSet(ctx)
+func (b *singleClusterBuilder) insertReplicaSets(ctx context.Context, replicaSets apps_v1_sets.ReplicaSetSet, opts ...client.ListOption) error {
+	replicaSetList, err := b.replicaSets.ListReplicaSet(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -494,8 +514,8 @@ func (b *singleClusterBuilder) insertReplicaSets(ctx context.Context, replicaSet
 
 	return nil
 }
-func (b *singleClusterBuilder) insertDaemonSets(ctx context.Context, daemonSets apps_v1_sets.DaemonSetSet) error {
-	daemonSetList, err := b.daemonSets.ListDaemonSet(ctx)
+func (b *singleClusterBuilder) insertDaemonSets(ctx context.Context, daemonSets apps_v1_sets.DaemonSetSet, opts ...client.ListOption) error {
+	daemonSetList, err := b.daemonSets.ListDaemonSet(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -507,8 +527,8 @@ func (b *singleClusterBuilder) insertDaemonSets(ctx context.Context, daemonSets 
 
 	return nil
 }
-func (b *singleClusterBuilder) insertStatefulSets(ctx context.Context, statefulSets apps_v1_sets.StatefulSetSet) error {
-	statefulSetList, err := b.statefulSets.ListStatefulSet(ctx)
+func (b *singleClusterBuilder) insertStatefulSets(ctx context.Context, statefulSets apps_v1_sets.StatefulSetSet, opts ...client.ListOption) error {
+	statefulSetList, err := b.statefulSets.ListStatefulSet(ctx, opts...)
 	if err != nil {
 		return err
 	}
