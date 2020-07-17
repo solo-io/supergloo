@@ -6,10 +6,16 @@ import (
 	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
+
+// outputs of translating a single MeshService
+type Outputs struct {
+	VirtualService  *istiov1alpha3.VirtualService
+	DestinationRule *istiov1alpha3.DestinationRule
+}
 
 // the VirtualService translator translates a MeshService into a VirtualService.
 type Translator interface {
@@ -21,7 +27,7 @@ type Translator interface {
 		in input.Snapshot,
 		meshService *discoveryv1alpha1.MeshService,
 		reporter reporter.Reporter,
-	) (*istiov1alpha3.VirtualService, *istiov1alpha3.DestinationRule)
+	) Outputs
 }
 
 type translator struct {
@@ -31,7 +37,7 @@ type translator struct {
 
 func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugins.Factory) Translator {
 	return &translator{
-		destinationRules: destinationrule.NewTranslator(clusterDomains, pluginFactory),
+		destinationRules: destinationrule.NewTranslator(clusterDomains),
 		virtualServices:  virtualservice.NewTranslator(clusterDomains, pluginFactory),
 	}
 }
@@ -41,10 +47,13 @@ func (t *translator) Translate(
 	in input.Snapshot,
 	meshService *discoveryv1alpha1.MeshService,
 	reporter reporter.Reporter,
-) (*istiov1alpha3.VirtualService, *istiov1alpha3.DestinationRule) {
+) Outputs {
 
 	vs := t.virtualServices.Translate(in, meshService, reporter)
 	dr := t.destinationRules.Translate(in, meshService, reporter)
 
-	return vs, dr
+	return Outputs{
+		VirtualService:  vs,
+		DestinationRule: dr,
+	}
 }

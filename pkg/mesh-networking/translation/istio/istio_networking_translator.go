@@ -3,6 +3,7 @@ package istio
 import (
 	"context"
 	"fmt"
+
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
@@ -51,14 +52,17 @@ func (t *istioTranslator) Translate(
 	for _, meshService := range in.MeshServices().List() {
 		meshService := meshService // pike
 
-		virtualService, destinationRule := meshServiceTranslator.Translate(in, meshService, reporter)
+		serviceOutputs := meshServiceTranslator.Translate(in, meshService, reporter)
 
+		destinationRule := serviceOutputs.DestinationRule
 		if destinationRule != nil {
 			destinationRules.Insert(destinationRule)
-			contextutils.LoggerFrom(ctx).Debugf("translated destination rule %v", sets.Key(meshService))
+			contextutils.LoggerFrom(ctx).Debugf("translated destination rule %v", sets.Key(destinationRule))
 		}
+
+		virtualService := serviceOutputs.VirtualService
 		if virtualService != nil {
-			contextutils.LoggerFrom(ctx).Debugf("translated virtual service %v", sets.Key(meshService))
+			contextutils.LoggerFrom(ctx).Debugf("translated virtual service %v", sets.Key(virtualService))
 			virtualServices.Insert(virtualService)
 		}
 	}

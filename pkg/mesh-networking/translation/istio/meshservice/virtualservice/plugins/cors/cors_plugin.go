@@ -4,8 +4,7 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -25,11 +24,10 @@ func pluginConstructor(params plugins.Parameters) plugins.Plugin {
 type corsPlugin struct {
 }
 
-var _ virtualservice.TrafficPolicyPlugin = &corsPlugin{}
+var _ plugins.TrafficPolicyPlugin = &corsPlugin{}
 
 func NewCorsPlugin() *corsPlugin {
-	return &corsPlugin{
-	}
+	return &corsPlugin{}
 }
 
 func (p *corsPlugin) PluginName() string {
@@ -40,7 +38,7 @@ func (p *corsPlugin) ProcessTrafficPolicy(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	registerField virtualservice.RegisterField,
+	registerField plugins.RegisterField,
 ) error {
 	cors, err := p.translateCors(appliedPolicy.Spec)
 	if err != nil {

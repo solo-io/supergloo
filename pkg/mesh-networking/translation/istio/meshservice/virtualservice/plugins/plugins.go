@@ -1,8 +1,10 @@
 package plugins
 
 import (
+	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
+	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 /*
@@ -55,4 +57,18 @@ func (f *factory) MakePlugins(params Parameters) []Plugin {
 type Plugin interface {
 	// unique identifier for plugin
 	PluginName() string
+}
+
+type RegisterField func(fieldPtr, val interface{}) error
+
+// TrafficPolicyPlugins modify the VirtualService based on a TrafficPolicy which applies to the MeshService.
+type TrafficPolicyPlugin interface {
+	Plugin
+
+	ProcessTrafficPolicy(
+		appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
+		service *discoveryv1alpha1.MeshService,
+		output *istiov1alpha3spec.HTTPRoute,
+		registerField RegisterField,
+	) error
 }

@@ -9,8 +9,7 @@ import (
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -40,7 +39,7 @@ type trafficShiftPlugin struct {
 	meshServices   discoveryv1alpha1sets.MeshServiceSet
 }
 
-var _ virtualservice.TrafficPolicyPlugin = &trafficShiftPlugin{}
+var _ plugins.TrafficPolicyPlugin = &trafficShiftPlugin{}
 
 func NewTrafficShiftPlugin(
 	clusterDomains hostutils.ClusterDomainRegistry,
@@ -60,7 +59,7 @@ func (p *trafficShiftPlugin) ProcessTrafficPolicy(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	registerField virtualservice.RegisterField,
+	registerField plugins.RegisterField,
 ) error {
 	trafficShiftDestinations, err := p.translateTrafficShift(service, appliedPolicy.Spec)
 	if err != nil {

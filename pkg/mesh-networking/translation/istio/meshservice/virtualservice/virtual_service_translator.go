@@ -1,19 +1,21 @@
 package virtualservice
 
 import (
+	"github.com/solo-io/skv2/pkg/ezkube"
+	"reflect"
+
 	"github.com/rotisserie/eris"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/metautils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	"reflect"
 )
 
 // the VirtualService translator translates a MeshService into a VirtualService.
@@ -58,43 +60,24 @@ func (t *translator) Translate(
 	virtualService := t.initializeVirtualService(meshService)
 	// register the owners of the virtualservice fields
 	virtualServiceFields := fieldutils.NewOwnershipRegistry()
-
-	plugins := t.pluginFactory.MakePlugins(plugins.Parameters{
+	vsPlugins := t.pluginFactory.MakePlugins(plugins.Parameters{
 		ClusterDomains: t.clusterDomains,
 		Snapshot:       in,
 	})
 
 	for _, policy := range meshService.Status.AppliedTrafficPolicies {
 		baseRoute := initializeBaseRoute(policy.Spec)
+		registerField := registerFieldFunc(virtualServiceFields, virtualService, policy.Ref)
+		for _, plugin := range vsPlugins {
 
-		for _, plug := range plugins {
-
-			registerField := func(fieldPtr, val interface{}) error {
-				fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
-
-				if equalityutils.Equals(fieldVal, val) {
-					return nil
-				}
-				if err := virtualServiceFields.RegisterFieldOwner(
-					virtualService,
-					fieldPtr,
-					policy.Ref,
-					&v1alpha1.TrafficPolicy{},
-					0,
-				); err != nil {
-					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", plug.PluginName()))
-					return err
-				}
-				return nil
-			}
-			if trafficPolicyPlugin, ok := plug.(TrafficPolicyPlugin); ok {
+			if trafficPolicyPlugin, ok := plugin.(plugins.TrafficPolicyPlugin); ok {
 				if err := trafficPolicyPlugin.ProcessTrafficPolicy(
 					policy,
 					meshService,
 					baseRoute,
 					registerField,
 				); err != nil {
-					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", plug.PluginName()))
+					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", plugin.PluginName()))
 				}
 			}
 		}
@@ -123,6 +106,31 @@ func (t *translator) Translate(
 	}
 
 	return virtualService
+}
+
+// construct the callback for registering fields in the virtual service
+func registerFieldFunc(
+	virtualServiceFields fieldutils.FieldOwnershipRegistry,
+	virtualService *istiov1alpha3.VirtualService,
+	policyRef ezkube.ResourceId,
+) plugins.RegisterField {
+	return func(fieldPtr, val interface{}) error {
+		fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
+
+		if equalityutils.Equals(fieldVal, val) {
+			return nil
+		}
+		if err := virtualServiceFields.RegisterFieldOwner(
+			virtualService,
+			fieldPtr,
+			policyRef,
+			&v1alpha1.TrafficPolicy{},
+			0, //TODO(ilackarms): priority
+		); err != nil {
+			return err
+		}
+		return nil
+	}
 }
 
 func (t *translator) initializeVirtualService(meshService *discoveryv1alpha1.MeshService) *istiov1alpha3.VirtualService {

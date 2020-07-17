@@ -1,18 +1,18 @@
 package destinationrule
 
 import (
+	"reflect"
+	"sort"
+	"strings"
+
 	"github.com/solo-io/go-utils/kubeutils"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/metautils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	"reflect"
-	"sort"
-	"strings"
 )
 
 // the DestinationRule translator translates a MeshService into a DestinationRule.
@@ -32,11 +32,10 @@ type Translator interface {
 
 type translator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
-	pluginFactory  plugins.Factory
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugins.Factory) Translator {
-	return &translator{clusterDomains: clusterDomains, pluginFactory: pluginFactory}
+func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry) Translator {
+	return &translator{clusterDomains: clusterDomains}
 }
 
 // translate the appropriate DestinationRUle for the given MeshService.
@@ -54,17 +53,7 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	plugins := t.pluginFactory.MakePlugins(plugins.Parameters{
-		ClusterDomains: t.clusterDomains,
-		Snapshot:       in,
-	})
 	destinationRule := t.initializeDestinationRule(meshService)
-
-	for _, plug := range plugins {
-		if simplePlugin, ok := plug.(Plugin); ok {
-			simplePlugin.Process(meshService, destinationRule)
-		}
-	}
 
 	if len(destinationRule.Spec.Subsets) == 0 && destinationRule.Spec.TrafficPolicy == nil {
 		// no need to create this DestinationRule as it has no effect
@@ -87,6 +76,14 @@ func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha1.Me
 		Spec: istiov1alpha3spec.DestinationRule{
 			Host:    hostname,
 			Subsets: subsets,
+			TrafficPolicy: &istiov1alpha3spec.TrafficPolicy{
+				Tls: &istiov1alpha3spec.ClientTLSSettings{
+					// TODO(ilackarms): currently we set all DRs to mTLS
+					// in the future we'll want to make this configurable
+					// https://github.com/solo-io/service-mesh-hub/issues/790
+					Mode: istiov1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
+				},
+			},
 		},
 	}
 }
