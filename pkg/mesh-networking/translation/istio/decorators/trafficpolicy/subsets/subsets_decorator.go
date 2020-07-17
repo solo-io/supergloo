@@ -5,42 +5,42 @@ import (
 
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy/trafficshift"
+	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/trafficshift"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
-	pluginName = "subsets"
+	decoratorName = "subsets"
 )
 
 func init() {
-	plugins.Register(pluginConstructor)
+	decorators.Register(decoratorConstructor)
 }
 
-func pluginConstructor(_ plugins.Parameters) plugins.Plugin {
-	return NewSubsetsPlugin()
+func decoratorConstructor(_ decorators.Parameters) decorators.Decorator {
+	return NewSubsetsDecorator()
 }
 
 // Handles setting subsets on a DestinationRule.
-type subsetsPlugin struct{}
+type subsetsDecorator struct{}
 
-var _ trafficpolicy.DestinationRuleDecorator = &subsetsPlugin{}
+var _ trafficpolicy.DestinationRuleDecorator = &subsetsDecorator{}
 
-func NewSubsetsPlugin() *subsetsPlugin {
-	return &subsetsPlugin{}
+func NewSubsetsDecorator() *subsetsDecorator {
+	return &subsetsDecorator{}
 }
 
-func (s *subsetsPlugin) PluginName() string {
-	return pluginName
+func (s *subsetsDecorator) DecoratorName() string {
+	return decoratorName
 }
 
-func (s *subsetsPlugin) DecorateDestinationRule(
+func (s *subsetsDecorator) DecorateDestinationRule(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.DestinationRule,
-	registerField plugins.RegisterField,
+	registerField decorators.RegisterField,
 ) error {
 	subsets := s.translateSubset(appliedPolicy.GetSpec())
 	if subsets != nil {
@@ -52,7 +52,7 @@ func (s *subsetsPlugin) DecorateDestinationRule(
 	return nil
 }
 
-func (s *subsetsPlugin) translateSubset(
+func (s *subsetsDecorator) translateSubset(
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) []*istiov1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string

@@ -4,41 +4,41 @@ import (
 	"github.com/gogo/protobuf/types"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
+	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
-	pluginName = "outlier-detection"
+	decoratorName = "outlier-detection"
 )
 
 func init() {
-	plugins.Register(pluginConstructor)
+	decorators.Register(decoratorConstructor)
 }
 
-func pluginConstructor(_ plugins.Parameters) plugins.Plugin {
-	return NewOutlierDetectionPlugin()
+func decoratorConstructor(_ decorators.Parameters) decorators.Decorator {
+	return NewOutlierDetectionDecorator()
 }
 
 // Handles setting OutlierDetection on a DestinationRule.
-type outlierDetectionPlugin struct{}
+type outlierDetectionDecorator struct{}
 
-var _ trafficpolicy.DestinationRuleDecorator = &outlierDetectionPlugin{}
+var _ trafficpolicy.DestinationRuleDecorator = &outlierDetectionDecorator{}
 
-func NewOutlierDetectionPlugin() *outlierDetectionPlugin {
-	return &outlierDetectionPlugin{}
+func NewOutlierDetectionDecorator() *outlierDetectionDecorator {
+	return &outlierDetectionDecorator{}
 }
 
-func (o *outlierDetectionPlugin) PluginName() string {
-	return pluginName
+func (o *outlierDetectionDecorator) DecoratorName() string {
+	return decoratorName
 }
 
-func (o *outlierDetectionPlugin) DecorateDestinationRule(
+func (o *outlierDetectionDecorator) DecorateDestinationRule(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.DestinationRule,
-	registerField plugins.RegisterField,
+	registerField decorators.RegisterField,
 ) error {
 	outlierDetection := o.translateOutlierDetection(appliedPolicy.GetSpec())
 	if outlierDetection != nil {
@@ -50,7 +50,7 @@ func (o *outlierDetectionPlugin) DecorateDestinationRule(
 	return nil
 }
 
-func (o *outlierDetectionPlugin) translateOutlierDetection(
+func (o *outlierDetectionDecorator) translateOutlierDetection(
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) *istiov1alpha3spec.OutlierDetection {
 	outlierDetection := trafficPolicy.GetOutlierDetection()

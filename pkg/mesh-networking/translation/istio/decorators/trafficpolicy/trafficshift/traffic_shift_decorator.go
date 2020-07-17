@@ -12,23 +12,23 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
+	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
-	pluginName = "traffic-shift"
+	decoratorName = "traffic-shift"
 )
 
 func init() {
-	plugins.Register(pluginConstructor)
+	decorators.Register(decoratorConstructor)
 }
 
-func pluginConstructor(params plugins.Parameters) plugins.Plugin {
-	return NewTrafficShiftPlugin(params.ClusterDomains, params.Snapshot.MeshServices())
+func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
+	return NewTrafficShiftDecorator(params.ClusterDomains, params.Snapshot.MeshServices())
 }
 
 var (
@@ -38,32 +38,32 @@ var (
 )
 
 // handles setting Weighted Destinations on a VirtualService
-type trafficShiftPlugin struct {
+type trafficShiftDecorator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
 	meshServices   discoveryv1alpha1sets.MeshServiceSet
 }
 
-var _ trafficpolicy.VirtualServiceDecorator = &trafficShiftPlugin{}
+var _ trafficpolicy.VirtualServiceDecorator = &trafficShiftDecorator{}
 
-func NewTrafficShiftPlugin(
+func NewTrafficShiftDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
 	meshServices discoveryv1alpha1sets.MeshServiceSet,
-) *trafficShiftPlugin {
-	return &trafficShiftPlugin{
+) *trafficShiftDecorator {
+	return &trafficShiftDecorator{
 		clusterDomains: clusterDomains,
 		meshServices:   meshServices,
 	}
 }
 
-func (p *trafficShiftPlugin) PluginName() string {
-	return pluginName
+func (p *trafficShiftDecorator) DecoratorName() string {
+	return decoratorName
 }
 
-func (p *trafficShiftPlugin) DecorateVirtualService(
+func (p *trafficShiftDecorator) DecorateVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	registerField plugins.RegisterField,
+	registerField decorators.RegisterField,
 ) error {
 	trafficShiftDestinations, err := p.translateTrafficShift(service, appliedPolicy.GetSpec())
 	if err != nil {
@@ -78,7 +78,7 @@ func (p *trafficShiftPlugin) DecorateVirtualService(
 	return nil
 }
 
-func (p *trafficShiftPlugin) translateTrafficShift(
+func (p *trafficShiftDecorator) translateTrafficShift(
 	meshService *discoveryv1alpha1.MeshService,
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) ([]*istiov1alpha3spec.HTTPRouteDestination, error) {
@@ -114,7 +114,7 @@ func (p *trafficShiftPlugin) translateTrafficShift(
 	return shiftedDestinations, nil
 }
 
-func (p *trafficShiftPlugin) buildKubeTrafficShiftDestination(
+func (p *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	kubeDest *v1alpha1.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination,
 	originalService *discoveryv1alpha1.MeshService,
 	weight uint32,

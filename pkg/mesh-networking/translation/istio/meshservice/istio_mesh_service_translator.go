@@ -3,7 +3,7 @@ package meshservice
 import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
 	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
@@ -35,10 +35,10 @@ type translator struct {
 	virtualServices  virtualservice.Translator
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugins.Factory) Translator {
+func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
 	return &translator{
-		destinationRules: destinationrule.NewTranslator(clusterDomains, pluginFactory),
-		virtualServices:  virtualservice.NewTranslator(clusterDomains, pluginFactory),
+		destinationRules: destinationrule.NewTranslator(clusterDomains, decoratorFactory),
+		virtualServices:  virtualservice.NewTranslator(clusterDomains, decoratorFactory),
 	}
 }
 

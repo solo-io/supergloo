@@ -2,8 +2,8 @@ package virtualservice
 
 import (
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
+	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 
 	"reflect"
 
@@ -36,12 +36,12 @@ type Translator interface {
 }
 
 type translator struct {
-	clusterDomains hostutils.ClusterDomainRegistry
-	pluginFactory  plugins.Factory
+	clusterDomains   hostutils.ClusterDomainRegistry
+	decoratorFactory decorators.Factory
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugins.Factory) Translator {
-	return &translator{clusterDomains: clusterDomains, pluginFactory: pluginFactory}
+func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
+	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory}
 }
 
 // translate the appropriate VirtualService for the given MeshService.
@@ -62,7 +62,7 @@ func (t *translator) Translate(
 	virtualService := t.initializeVirtualService(meshService)
 	// register the owners of the virtualservice fields
 	virtualServiceFields := fieldutils.NewOwnershipRegistry()
-	vsPlugins := t.pluginFactory.MakePlugins(plugins.Parameters{
+	vsDecorators := t.decoratorFactory.MakeDecorators(decorators.Parameters{
 		ClusterDomains: t.clusterDomains,
 		Snapshot:       in,
 	})
@@ -70,22 +70,22 @@ func (t *translator) Translate(
 	for _, policy := range meshService.Status.AppliedTrafficPolicies {
 		baseRoute := initializeBaseRoute(policy.Spec)
 		registerField := registerFieldFunc(virtualServiceFields, virtualService, policy.Ref)
-		for _, plugin := range vsPlugins {
+		for _, decorator := range vsDecorators {
 
-			if trafficPolicyPlugin, ok := plugin.(trafficpolicy.VirtualServiceDecorator); ok {
-				if err := trafficPolicyPlugin.DecorateVirtualService(
+			if trafficPolicyDecorator, ok := decorator.(trafficpolicy.VirtualServiceDecorator); ok {
+				if err := trafficPolicyDecorator.DecorateVirtualService(
 					policy,
 					meshService,
 					baseRoute,
 					registerField,
 				); err != nil {
-					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", plugin.PluginName()))
+					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
 				}
 			}
 		}
 
 		// set a default destination for the route (to the target meshservice)
-		// if a plugin has not already set it
+		// if a decorator has not already set it
 		t.setDefaultDestination(baseRoute, meshService)
 
 		// construct a copy of a route for each service port
@@ -115,7 +115,7 @@ func registerFieldFunc(
 	virtualServiceFields fieldutils.FieldOwnershipRegistry,
 	virtualService *istiov1alpha3.VirtualService,
 	policyRef ezkube.ResourceId,
-) plugins.RegisterField {
+) decorators.RegisterField {
 	return func(fieldPtr, val interface{}) error {
 		fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
 

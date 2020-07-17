@@ -18,7 +18,7 @@ import (
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/common/defaults"
-	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
 	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/metautils"
@@ -78,7 +78,7 @@ type translator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
 }
 
-func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugins.Factory) Translator {
+func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
 	return &translator{ctx: ctx, clusterDomains: clusterDomains}
 }
 

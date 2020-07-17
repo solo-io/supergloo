@@ -8,9 +8,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
 	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
@@ -35,12 +35,12 @@ type Translator interface {
 }
 
 type translator struct {
-	clusterDomains hostutils.ClusterDomainRegistry
-	pluginFactory  plugins.Factory
+	clusterDomains   hostutils.ClusterDomainRegistry
+	decoratorFactory decorators.Factory
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugins.Factory) Translator {
-	return &translator{clusterDomains: clusterDomains, pluginFactory: pluginFactory}
+func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
+	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory}
 }
 
 // translate the appropriate DestinationRUle for the given MeshService.
@@ -61,23 +61,23 @@ func (t *translator) Translate(
 	destinationRule := t.initializeDestinationRule(meshService)
 	// register the owners of the destinationrule fields
 	destinationRuleFields := fieldutils.NewOwnershipRegistry()
-	drPlugins := t.pluginFactory.MakePlugins(plugins.Parameters{
+	drDecorators := t.decoratorFactory.MakeDecorators(decorators.Parameters{
 		ClusterDomains: t.clusterDomains,
 		Snapshot:       in,
 	})
 
 	for _, policy := range meshService.Status.AppliedTrafficPolicies {
 		registerField := registerFieldFunc(destinationRuleFields, destinationRule, policy.Ref)
-		for _, plugin := range drPlugins {
+		for _, decorator := range drDecorators {
 
-			if trafficPolicyPlugin, ok := plugin.(trafficpolicy.DestinationRuleDecorator); ok {
-				if err := trafficPolicyPlugin.DecorateDestinationRule(
+			if trafficPolicyDecorator, ok := decorator.(trafficpolicy.DestinationRuleDecorator); ok {
+				if err := trafficPolicyDecorator.DecorateDestinationRule(
 					policy,
 					meshService,
 					&destinationRule.Spec,
 					registerField,
 				); err != nil {
-					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", plugin.PluginName()))
+					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
 				}
 			}
 		}
@@ -96,7 +96,7 @@ func registerFieldFunc(
 	destinationRuleFields fieldutils.FieldOwnershipRegistry,
 	destinationRule *istiov1alpha3.DestinationRule,
 	policyRef ezkube.ResourceId,
-) plugins.RegisterField {
+) decorators.RegisterField {
 	return func(fieldPtr, val interface{}) error {
 		fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
 

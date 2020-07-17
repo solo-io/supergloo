@@ -6,52 +6,52 @@ import (
 	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
+	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
-	pluginName = "mirror"
+	decoratorName = "mirror"
 )
 
 func init() {
-	plugins.Register(pluginConstructor)
+	decorators.Register(decoratorConstructor)
 }
 
-func pluginConstructor(params plugins.Parameters) plugins.Plugin {
-	return NewMirrorPlugin(params.ClusterDomains, params.Snapshot.MeshServices())
+func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
+	return NewMirrorDecorator(params.ClusterDomains, params.Snapshot.MeshServices())
 }
 
 // handles setting Mirror on a VirtualService
-type mirrorPlugin struct {
+type mirrorDecorator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
 	meshServices   discoveryv1alpha1sets.MeshServiceSet
 }
 
-var _ trafficpolicy.VirtualServiceDecorator = &mirrorPlugin{}
+var _ trafficpolicy.VirtualServiceDecorator = &mirrorDecorator{}
 
-func NewMirrorPlugin(
+func NewMirrorDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
 	meshServices discoveryv1alpha1sets.MeshServiceSet,
-) *mirrorPlugin {
-	return &mirrorPlugin{
+) *mirrorDecorator {
+	return &mirrorDecorator{
 		clusterDomains: clusterDomains,
 		meshServices:   meshServices,
 	}
 }
 
-func (p *mirrorPlugin) PluginName() string {
-	return pluginName
+func (p *mirrorDecorator) DecoratorName() string {
+	return decoratorName
 }
 
-func (p *mirrorPlugin) DecorateVirtualService(
+func (p *mirrorDecorator) DecorateVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	registerField plugins.RegisterField,
+	registerField decorators.RegisterField,
 ) error {
 	mirror, percentage, err := p.translateMirror(service, appliedPolicy.GetSpec())
 	if err != nil {
@@ -67,7 +67,7 @@ func (p *mirrorPlugin) DecorateVirtualService(
 	return nil
 }
 
-func (p *mirrorPlugin) translateMirror(
+func (p *mirrorDecorator) translateMirror(
 	meshService *discoveryv1alpha1.MeshService,
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) (*istiov1alpha3spec.Destination, *istiov1alpha3spec.Percent, error) {
@@ -100,7 +100,7 @@ func (p *mirrorPlugin) translateMirror(
 	return translatedMirror, mirrorPercentage, nil
 }
 
-func (p *mirrorPlugin) makeKubeDestinationMirror(
+func (p *mirrorDecorator) makeKubeDestinationMirror(
 	destination *v1alpha1.TrafficPolicySpec_Mirror_KubeService,
 	port uint32,
 	originalService *discoveryv1alpha1.MeshService,

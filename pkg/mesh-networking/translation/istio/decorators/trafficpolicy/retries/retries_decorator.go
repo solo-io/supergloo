@@ -3,42 +3,42 @@ package retries
 import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
+	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
-	pluginName = "retries"
+	decoratorName = "retries"
 )
 
 func init() {
-	plugins.Register(pluginConstructor)
+	decorators.Register(decoratorConstructor)
 }
 
-func pluginConstructor(params plugins.Parameters) plugins.Plugin {
-	return NewRetriesPlugin()
+func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
+	return NewRetriesDecorator()
 }
 
 // handles setting Retries on a VirtualService
-type retriesPlugin struct {
+type retriesDecorator struct {
 }
 
-var _ trafficpolicy.VirtualServiceDecorator = &retriesPlugin{}
+var _ trafficpolicy.VirtualServiceDecorator = &retriesDecorator{}
 
-func NewRetriesPlugin() *retriesPlugin {
-	return &retriesPlugin{}
+func NewRetriesDecorator() *retriesDecorator {
+	return &retriesDecorator{}
 }
 
-func (p *retriesPlugin) PluginName() string {
-	return pluginName
+func (p *retriesDecorator) DecoratorName() string {
+	return decoratorName
 }
 
-func (p *retriesPlugin) DecorateVirtualService(
+func (p *retriesDecorator) DecorateVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	registerField plugins.RegisterField,
+	registerField decorators.RegisterField,
 ) error {
 	retries, err := p.translateRetries(appliedPolicy.GetSpec())
 	if err != nil {
@@ -53,7 +53,7 @@ func (p *retriesPlugin) DecorateVirtualService(
 	return nil
 }
 
-func (p *retriesPlugin) translateRetries(
+func (p *retriesDecorator) translateRetries(
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) (*istiov1alpha3spec.HTTPRetry, error) {
 	retries := trafficPolicy.Retries

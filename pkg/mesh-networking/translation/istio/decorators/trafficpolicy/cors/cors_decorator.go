@@ -4,41 +4,41 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
+	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
-	pluginName = "cors"
+	decoratorName = "cors"
 )
 
 func init() {
-	plugins.Register(pluginConstructor)
+	decorators.Register(decoratorConstructor)
 }
 
-func pluginConstructor(params plugins.Parameters) plugins.Plugin {
-	return NewCorsPlugin()
+func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
+	return NewCorsDecorator()
 }
 
 // handles setting Cors on a VirtualService
-type corsPlugin struct {}
+type corsDecorator struct{}
 
-var _ trafficpolicy.VirtualServiceDecorator = &corsPlugin{}
+var _ trafficpolicy.VirtualServiceDecorator = &corsDecorator{}
 
-func NewCorsPlugin() *corsPlugin {
-	return &corsPlugin{}
+func NewCorsDecorator() *corsDecorator {
+	return &corsDecorator{}
 }
 
-func (p *corsPlugin) PluginName() string {
-	return pluginName
+func (p *corsDecorator) DecoratorName() string {
+	return decoratorName
 }
 
-func (p *corsPlugin) DecorateVirtualService(
+func (p *corsDecorator) DecorateVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	registerField plugins.RegisterField,
+	registerField decorators.RegisterField,
 ) error {
 	cors, err := p.translateCors(appliedPolicy.GetSpec())
 	if err != nil {
@@ -53,7 +53,7 @@ func (p *corsPlugin) DecorateVirtualService(
 	return nil
 }
 
-func (p *corsPlugin) translateCors(
+func (p *corsDecorator) translateCors(
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) (*istiov1alpha3spec.CorsPolicy, error) {
 	corsPolicy := trafficPolicy.CorsPolicy
