@@ -16,6 +16,9 @@ type Reporter interface {
 
 	// report an error on an access policy that has been applied to a MeshService
 	ReportAccessPolicy(meshService *v1alpha1.MeshService, accessPolicy ezkube.ResourceId, err error)
+
+	// report an error on a virtual mesh that has been applied to a Mesh
+	ReportVirtualMesh(mesh *v1alpha1.Mesh, virtualMesh ezkube.ResourceId, err error)
 }
 
 // this reporter implementation is only used inside
@@ -37,3 +40,6 @@ func (p *panickingReporter) ReportAccessPolicy(meshService *v1alpha1.MeshService
 	contextutils.LoggerFrom(p.ctx).DPanicw("internal error: error reported on AccessPolicy which should have been caught by validation!", "policy", sets.Key(accessPolicy), "mesh-service", sets.Key(meshService), "error", err)
 }
 
+func (p *panickingReporter) ReportVirtualMesh(mesh *v1alpha1.Mesh, virtualMesh ezkube.ResourceId, err error) {
+	contextutils.LoggerFrom(p.ctx).DPanicw("internal error: error reported on VirtualMesh which should have been caught by validation!", "mesh", sets.Key(mesh), "vmesh", sets.Key(virtualMesh), "error", err)
+}
