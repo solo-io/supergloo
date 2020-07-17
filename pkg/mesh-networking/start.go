@@ -2,9 +2,10 @@ package mesh_networking
 
 import (
 	"context"
+
 	"github.com/solo-io/smh/pkg/common/bootstrap"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/smh/pkg/mesh-networking/validation"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -17,7 +18,7 @@ import (
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts bootstrap.Options) error {
-	return bootstrap.Start(ctx,"networking", startReconciler, opts)
+	return bootstrap.Start(ctx, "networking", startReconciler, opts)
 }
 
 // start the main reconcile loop

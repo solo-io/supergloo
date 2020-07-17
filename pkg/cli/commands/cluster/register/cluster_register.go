@@ -2,6 +2,7 @@ package register
 
 import (
 	"context"
+
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"github.com/solo-io/smh/pkg/common/defaults"
 	"github.com/spf13/cobra"
@@ -79,7 +80,6 @@ func registerCluster(ctx context.Context, opts *options) error {
 			Rules: smhRbacRequirements,
 		},
 	}
-
 
 	return register.RegistrationOptions(*opts).RegisterCluster(ctx)
 }

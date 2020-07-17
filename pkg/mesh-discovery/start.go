@@ -2,6 +2,7 @@ package mesh_discovery
 
 import (
 	"context"
+
 	"github.com/solo-io/smh/pkg/common/bootstrap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 

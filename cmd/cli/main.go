@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"github.com/solo-io/smh/pkg/cli/commands"
 	"log"
+
+	"github.com/solo-io/smh/pkg/cli/commands"
 )
 
 func main() {

@@ -4,15 +4,15 @@ import (
 	"context"
 
 	"github.com/go-logr/zapr"
-	"go.uber.org/zap/zapcore"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-	zaputil "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	"sigs.k8s.io/controller-runtime/pkg/log"
+	zaputil "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -95,7 +95,6 @@ func makeMasterManager(opts Options) (manager.Manager, error) {
 	}
 	return mgr, nil
 }
-
 
 func setupLogging(debugMode bool) {
 	level := zapcore.InfoLevel

@@ -2,8 +2,9 @@ package detector
 
 import (
 	"context"
-	"github.com/solo-io/skv2/pkg/ezkube"
 	"strings"
+
+	"github.com/solo-io/skv2/pkg/ezkube"
 
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"

@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"context"
+
 	"github.com/solo-io/smh/pkg/cli/commands/cluster/register"
 	"github.com/spf13/cobra"
 )

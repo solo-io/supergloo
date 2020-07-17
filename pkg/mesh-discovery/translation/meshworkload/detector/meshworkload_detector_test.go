@@ -2,6 +2,7 @@ package detector_test
 
 import (
 	"context"
+
 	"github.com/solo-io/skv2/pkg/ezkube"
 
 	"github.com/golang/mock/gomock"

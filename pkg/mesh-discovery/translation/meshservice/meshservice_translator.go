@@ -2,6 +2,7 @@ package meshservice
 
 import (
 	"context"
+
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
@@ -17,12 +18,12 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx context.Context
+	ctx                 context.Context
 	meshServiceDetector detector.MeshServiceDetector
 }
 
 func NewTranslator(ctx context.Context, meshServiceDetector detector.MeshServiceDetector) Translator {
-	return &translator{ctx: ctx, meshServiceDetector:meshServiceDetector}
+	return &translator{ctx: ctx, meshServiceDetector: meshServiceDetector}
 }
 
 func (t *translator) TranslateMeshServices(services corev1sets.ServiceSet, meshWorkloads v1alpha1sets.MeshWorkloadSet) v1alpha1sets.MeshServiceSet {

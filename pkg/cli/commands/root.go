@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/solo-io/smh/pkg/cli/commands/cluster"
