@@ -3,7 +3,7 @@ package headermanipulation
 import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )

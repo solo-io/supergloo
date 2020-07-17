@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/mesh-networking/decorators"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"

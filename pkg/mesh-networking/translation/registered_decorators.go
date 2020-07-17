@@ -1,4 +1,4 @@
-package decorators
+package translation
 
 /*
 This file contains the registered set of decorators for the translator.
