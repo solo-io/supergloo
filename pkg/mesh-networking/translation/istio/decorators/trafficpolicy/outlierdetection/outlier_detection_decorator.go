@@ -10,7 +10,10 @@ import (
 )
 
 const (
-	decoratorName = "outlier-detection"
+	decoratorName          = "outlier-detection"
+	defaultConsecutiveErrs = 5
+	defaultInterval        = 10
+	defaultEjectionTime    = 30
 )
 
 func init() {
@@ -57,22 +60,23 @@ func (o *outlierDetectionDecorator) translateOutlierDetection(
 	if outlierDetection == nil {
 		return nil
 	}
-	istioOutlierDetection := &istiov1alpha3spec.OutlierDetection{}
-	// Set defaults if needed
-	if consecutiveErrs := outlierDetection.GetConsecutiveErrors(); consecutiveErrs != 0 {
-		istioOutlierDetection.Consecutive_5XxErrors = &types.UInt32Value{Value: consecutiveErrs}
-	} else {
-		istioOutlierDetection.Consecutive_5XxErrors = &types.UInt32Value{Value: 5}
+
+	consecutiveErrs := &types.UInt32Value{Value: defaultConsecutiveErrs}
+	if userConsecutiveErrs := outlierDetection.GetConsecutiveErrors(); userConsecutiveErrs != 0 {
+		consecutiveErrs.Value = userConsecutiveErrs
 	}
-	if interval := outlierDetection.GetInterval(); interval != nil {
-		istioOutlierDetection.Interval = interval
-	} else {
-		istioOutlierDetection.Interval = &types.Duration{Seconds: 10}
+	interval := &types.Duration{Seconds: defaultInterval}
+	if userInterval := outlierDetection.GetInterval(); userInterval != nil {
+		interval = userInterval
 	}
-	if ejectionTime := outlierDetection.GetBaseEjectionTime(); ejectionTime != nil {
-		istioOutlierDetection.BaseEjectionTime = ejectionTime
-	} else {
-		istioOutlierDetection.BaseEjectionTime = &types.Duration{Seconds: 30}
+	ejectionTime := &types.Duration{Seconds: defaultEjectionTime}
+	if userEjectionTime := outlierDetection.GetBaseEjectionTime(); userEjectionTime != nil {
+		ejectionTime = userEjectionTime
 	}
-	return istioOutlierDetection
+
+	return &istiov1alpha3spec.OutlierDetection{
+		Consecutive_5XxErrors: consecutiveErrs,
+		Interval:              interval,
+		BaseEjectionTime:      ejectionTime,
+	}
 }
