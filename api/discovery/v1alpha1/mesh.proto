@@ -21,22 +21,6 @@ message MeshSpec {
         ConsulConnectMesh consul_connect = 4;
     }
 
-    // The VirtualMesh, if any, which contains this mesh.
-    AppliedVirtualMesh applied_virtual_mesh = 5;
-
-    // AppliedTrafficPolicy represents a traffic policy that has been applied to the MeshService.
-    // if an existing Traffic Policy becomes invalid, the last applied policy will be used
-    message AppliedVirtualMesh {
-        // reference to the traffic policy
-        .core.skv2.solo.io.ObjectRef ref = 1;
-
-        // the observed generation of the accepted traffic policy
-        int64 observedGeneration = 2;
-
-        // the last known valid spec of the traffic policy
-        .networking.smh.solo.io.VirtualMeshSpec spec = 3;
-    }
-
     // Mesh object representing an installed Istio control plane
     message Istio {
 
@@ -45,6 +29,9 @@ message MeshSpec {
 
         // configuration for Istio Citadel, Istio's security component.
         CitadelInfo citadel_info = 2;
+
+        // configuration for Istio IngressGateway, the Istio Ingress
+        repeated IngressGatewayInfo ingress_gateways = 3;
 
         message CitadelInfo {
             /*
@@ -61,6 +48,27 @@ message MeshSpec {
                 If empty will default to "istio-citadel"
             */
             string citadel_service_account = 2;
+        }
+
+        message IngressGatewayInfo {
+            // labels matching the workload which backs the gateway,
+            // defaults to {"istio": "ingressgateway"}
+            map<string, string> workload_labels = 1;
+
+            // the externally-reachable address
+            // this will be the addressed used for cross-cluster connectivity.
+            // defaults to the LoadBalancer Address or NodeIP of the Kubernetes Service (depending on its type)
+            string external_address = 2;
+
+            // service port on which the gateway is listening for TLS connections.
+            // List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio
+            // Defaults to 15443
+            uint32 tls_service_port = 3;
+
+            // container port on which the gateway is listening for TLS connections.
+            // Defaults to 15443
+            uint32 tls_container_port = 4;
+
         }
     }
 
@@ -115,5 +123,21 @@ message MeshStatus {
     // When this matches the Mesh's metadata.generation, it indicates that mesh-networking
     // has reconciled the latest version of the Mesh.
     int64 observed_generation = 1;
+
+    // The VirtualMesh, if any, which contains this mesh.
+    repeated AppliedVirtualMesh applied_virtual_meshes = 5;
+
+    // AppliedTrafficPolicy represents a traffic policy that has been applied to the MeshService.
+    // if an existing Traffic Policy becomes invalid, the last applied policy will be used
+    message AppliedVirtualMesh {
+        // reference to the traffic policy
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // the observed generation of the accepted traffic policy
+        int64 observedGeneration = 2;
+
+        // the last known valid spec of the traffic policy
+        .networking.smh.solo.io.VirtualMeshSpec spec = 3;
+    }
 
 }

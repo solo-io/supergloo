@@ -31,17 +31,6 @@ func (this *MeshSpec) UnmarshalJSON(b []byte) error {
 	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for MeshSpec_AppliedVirtualMesh
-func (this *MeshSpec_AppliedVirtualMesh) MarshalJSON() ([]byte, error) {
-	str, err := MeshMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for MeshSpec_AppliedVirtualMesh
-func (this *MeshSpec_AppliedVirtualMesh) UnmarshalJSON(b []byte) error {
-	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
 // MarshalJSON is a custom marshaler for MeshSpec_Istio
 func (this *MeshSpec_Istio) MarshalJSON() ([]byte, error) {
 	str, err := MeshMarshaler.MarshalToString(this)
@@ -61,6 +50,17 @@ func (this *MeshSpec_Istio_CitadelInfo) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for MeshSpec_Istio_CitadelInfo
 func (this *MeshSpec_Istio_CitadelInfo) UnmarshalJSON(b []byte) error {
+	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for MeshSpec_Istio_IngressGatewayInfo
+func (this *MeshSpec_Istio_IngressGatewayInfo) MarshalJSON() ([]byte, error) {
+	str, err := MeshMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for MeshSpec_Istio_IngressGatewayInfo
+func (this *MeshSpec_Istio_IngressGatewayInfo) UnmarshalJSON(b []byte) error {
 	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
@@ -116,6 +116,17 @@ func (this *MeshStatus) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for MeshStatus
 func (this *MeshStatus) UnmarshalJSON(b []byte) error {
+	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for MeshStatus_AppliedVirtualMesh
+func (this *MeshStatus_AppliedVirtualMesh) MarshalJSON() ([]byte, error) {
+	str, err := MeshMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for MeshStatus_AppliedVirtualMesh
+func (this *MeshStatus_AppliedVirtualMesh) UnmarshalJSON(b []byte) error {
 	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

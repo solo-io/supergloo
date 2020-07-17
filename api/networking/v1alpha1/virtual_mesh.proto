@@ -24,7 +24,7 @@ message VirtualMeshSpec {
     string display_name = 1;
 
     // The meshes contained in this virtual mesh.
-    repeated .core.skv2.solo.io.ClusterObjectRef meshes = 2;
+    repeated .core.skv2.solo.io.ObjectRef meshes = 2;
 
     // Sets a shared Certificate Authority across the defined meshes.
     CertificateAuthority certificate_authority = 3;
