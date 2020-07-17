@@ -4,6 +4,7 @@ import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -22,6 +23,8 @@ func pluginConstructor(_ plugins.Parameters) plugins.Plugin {
 // Handles setting Headers on a VirtualService.
 type headerManipulationPlugin struct{}
 
+var _ trafficpolicy.VirtualServiceDecorator = &headerManipulationPlugin{}
+
 func NewHeaderManipulationPlugin() *headerManipulationPlugin {
 	return &headerManipulationPlugin{}
 }
@@ -30,7 +33,7 @@ func (h *headerManipulationPlugin) PluginName() string {
 	return pluginName
 }
 
-func (h *headerManipulationPlugin) ProcessTrafficPolicy(
+func (h *headerManipulationPlugin) DecorateVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,

@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
-	destinationruleplugin "github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/destinationrule/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
@@ -70,8 +70,8 @@ func (t *translator) Translate(
 		registerField := registerFieldFunc(destinationRuleFields, destinationRule, policy.Ref)
 		for _, plugin := range drPlugins {
 
-			if trafficPolicyPlugin, ok := plugin.(destinationruleplugin.TrafficPolicyPlugin); ok {
-				if err := trafficPolicyPlugin.ProcessTrafficPolicy(
+			if trafficPolicyPlugin, ok := plugin.(trafficpolicy.DestinationRuleDecorator); ok {
+				if err := trafficPolicyPlugin.DecorateDestinationRule(
 					policy,
 					meshService,
 					&destinationRule.Spec,

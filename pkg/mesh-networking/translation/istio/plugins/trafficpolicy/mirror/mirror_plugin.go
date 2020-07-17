@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
-	virtualserviceplugins "github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -31,7 +31,7 @@ type mirrorPlugin struct {
 	meshServices   discoveryv1alpha1sets.MeshServiceSet
 }
 
-var _ virtualserviceplugins.TrafficPolicyPlugin = &mirrorPlugin{}
+var _ trafficpolicy.VirtualServiceDecorator = &mirrorPlugin{}
 
 func NewMirrorPlugin(
 	clusterDomains hostutils.ClusterDomainRegistry,
@@ -47,7 +47,7 @@ func (p *mirrorPlugin) PluginName() string {
 	return pluginName
 }
 
-func (p *mirrorPlugin) ProcessTrafficPolicy(
+func (p *mirrorPlugin) DecorateVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,

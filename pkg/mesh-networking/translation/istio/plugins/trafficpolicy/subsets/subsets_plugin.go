@@ -2,13 +2,12 @@ package subsets
 
 import (
 	"reflect"
-	"sort"
-	"strings"
 
-	"github.com/solo-io/go-utils/kubeutils"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy/trafficshift"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -27,6 +26,8 @@ func pluginConstructor(_ plugins.Parameters) plugins.Plugin {
 // Handles setting subsets on a DestinationRule.
 type subsetsPlugin struct{}
 
+var _ trafficpolicy.DestinationRuleDecorator = &subsetsPlugin{}
+
 func NewSubsetsPlugin() *subsetsPlugin {
 	return &subsetsPlugin{}
 }
@@ -35,7 +36,7 @@ func (s *subsetsPlugin) PluginName() string {
 	return pluginName
 }
 
-func (s *subsetsPlugin) ProcessTrafficPolicy(
+func (s *subsetsPlugin) DecorateDestinationRule(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.DestinationRule,
@@ -73,22 +74,9 @@ func (s *subsetsPlugin) translateSubset(
 	var subsets []*istiov1alpha3spec.Subset
 	for _, subsetLabels := range uniqueSubsets {
 		subsets = append(subsets, &istiov1alpha3spec.Subset{
-			Name:   SubsetName(subsetLabels),
+			Name:   trafficshift.SubsetName(subsetLabels),
 			Labels: subsetLabels,
 		})
 	}
 	return subsets
-}
-
-// used in VirtualService translator as well
-func SubsetName(labels map[string]string) string {
-	if len(labels) == 0 {
-		return ""
-	}
-	var keys []string
-	for key, val := range labels {
-		keys = append(keys, key+"-"+val)
-	}
-	sort.Strings(keys)
-	return kubeutils.SanitizeNameV2(strings.Join(keys, "_"))
 }

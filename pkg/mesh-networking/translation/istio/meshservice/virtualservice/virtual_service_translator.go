@@ -3,6 +3,7 @@ package virtualservice
 import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
 
 	"reflect"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
-	virtualserviceplugins "github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
@@ -72,8 +72,8 @@ func (t *translator) Translate(
 		registerField := registerFieldFunc(virtualServiceFields, virtualService, policy.Ref)
 		for _, plugin := range vsPlugins {
 
-			if trafficPolicyPlugin, ok := plugin.(virtualserviceplugins.TrafficPolicyPlugin); ok {
-				if err := trafficPolicyPlugin.ProcessTrafficPolicy(
+			if trafficPolicyPlugin, ok := plugin.(trafficpolicy.VirtualServiceDecorator); ok {
+				if err := trafficPolicyPlugin.DecorateVirtualService(
 					policy,
 					meshService,
 					baseRoute,

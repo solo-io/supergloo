@@ -5,7 +5,7 @@ import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
-	virtualserviceplugins "github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -25,7 +25,7 @@ func pluginConstructor(params plugins.Parameters) plugins.Plugin {
 type timeoutPlugin struct {
 }
 
-var _ virtualserviceplugins.TrafficPolicyPlugin = &timeoutPlugin{}
+var _ trafficpolicy.VirtualServiceDecorator = &timeoutPlugin{}
 
 func NewTimeoutPlugin() *timeoutPlugin {
 	return &timeoutPlugin{}
@@ -35,7 +35,7 @@ func (p *timeoutPlugin) PluginName() string {
 	return pluginName
 }
 
-func (p *timeoutPlugin) ProcessTrafficPolicy(
+func (p *timeoutPlugin) DecorateVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,

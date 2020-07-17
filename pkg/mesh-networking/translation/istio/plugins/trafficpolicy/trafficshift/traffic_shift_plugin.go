@@ -1,7 +1,11 @@
 package trafficshift
 
 import (
+	"sort"
+	"strings"
+
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/kubeutils"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
@@ -9,8 +13,7 @@ import (
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/destinationrule/plugins/subsets"
-	virtualserviceplugins "github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -40,7 +43,7 @@ type trafficShiftPlugin struct {
 	meshServices   discoveryv1alpha1sets.MeshServiceSet
 }
 
-var _ virtualserviceplugins.TrafficPolicyPlugin = &trafficShiftPlugin{}
+var _ trafficpolicy.VirtualServiceDecorator = &trafficShiftPlugin{}
 
 func NewTrafficShiftPlugin(
 	clusterDomains hostutils.ClusterDomainRegistry,
@@ -56,7 +59,7 @@ func (p *trafficShiftPlugin) PluginName() string {
 	return pluginName
 }
 
-func (p *trafficShiftPlugin) ProcessTrafficPolicy(
+func (p *trafficShiftPlugin) DecorateVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
@@ -166,8 +169,21 @@ func (p *trafficShiftPlugin) buildKubeTrafficShiftDestination(
 		}
 
 		// Use the canonical SMH unique name for this subset.
-		httpRouteDestination.Destination.Subset = subsets.SubsetName(kubeDest.Subset)
+		httpRouteDestination.Destination.Subset = SubsetName(kubeDest.Subset)
 	}
 
 	return httpRouteDestination, nil
+}
+
+// used in DestinationRule translator as well
+func SubsetName(labels map[string]string) string {
+	if len(labels) == 0 {
+		return ""
+	}
+	var keys []string
+	for key, val := range labels {
+		keys = append(keys, key+"-"+val)
+	}
+	sort.Strings(keys)
+	return kubeutils.SanitizeNameV2(strings.Join(keys, "_"))
 }

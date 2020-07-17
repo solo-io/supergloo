@@ -2,8 +2,8 @@ package istio
 
 import (
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
+	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 )
 

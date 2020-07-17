@@ -5,6 +5,7 @@ import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/plugins/trafficpolicy"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -23,6 +24,8 @@ func pluginConstructor(_ plugins.Parameters) plugins.Plugin {
 // Handles setting OutlierDetection on a DestinationRule.
 type outlierDetectionPlugin struct{}
 
+var _ trafficpolicy.DestinationRuleDecorator = &outlierDetectionPlugin{}
+
 func NewOutlierDetectionPlugin() *outlierDetectionPlugin {
 	return &outlierDetectionPlugin{}
 }
@@ -31,7 +34,7 @@ func (o *outlierDetectionPlugin) PluginName() string {
 	return pluginName
 }
 
-func (o *outlierDetectionPlugin) ProcessTrafficPolicy(
+func (o *outlierDetectionPlugin) DecorateDestinationRule(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.DestinationRule,
