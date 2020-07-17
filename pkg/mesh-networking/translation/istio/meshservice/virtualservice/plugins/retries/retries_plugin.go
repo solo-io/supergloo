@@ -3,7 +3,8 @@ package retries
 import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
+	virtualserviceplugins "github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -23,7 +24,7 @@ func pluginConstructor(params plugins.Parameters) plugins.Plugin {
 type retriesPlugin struct {
 }
 
-var _ plugins.TrafficPolicyPlugin = &retriesPlugin{}
+var _ virtualserviceplugins.TrafficPolicyPlugin = &retriesPlugin{}
 
 func NewRetriesPlugin() *retriesPlugin {
 	return &retriesPlugin{}

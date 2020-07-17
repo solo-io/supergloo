@@ -6,7 +6,8 @@ import (
 	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
+	virtualserviceplugins "github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -30,7 +31,7 @@ type mirrorPlugin struct {
 	meshServices   discoveryv1alpha1sets.MeshServiceSet
 }
 
-var _ plugins.TrafficPolicyPlugin = &mirrorPlugin{}
+var _ virtualserviceplugins.TrafficPolicyPlugin = &mirrorPlugin{}
 
 func NewMirrorPlugin(
 	clusterDomains hostutils.ClusterDomainRegistry,

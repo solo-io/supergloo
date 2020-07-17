@@ -12,14 +12,14 @@ The definitive list of plugins used by the translator is contained in ../registe
 Adding new plugins requires adding an import statement to that file.
 */
 
-// TrafficPolicyPlugins modify the VirtualService based on a TrafficPolicy which applies to the MeshService.
+// TrafficPolicyPlugins modify the DestinationRule based on a TrafficPolicy which applies to the MeshService.
 type TrafficPolicyPlugin interface {
 	plugins.Plugin
 
 	ProcessTrafficPolicy(
 		appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 		service *discoveryv1alpha1.MeshService,
-		output *istiov1alpha3spec.HTTPRoute,
+		output *istiov1alpha3spec.DestinationRule,
 		registerField plugins.RegisterField,
 	) error
 }

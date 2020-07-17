@@ -41,9 +41,12 @@ replace (
 
 require (
 	github.com/cosiner/argv v0.1.0 // indirect
+	github.com/envoyproxy/go-control-plane v0.9.4
 	github.com/go-delve/delve v1.4.1 // indirect
 	github.com/go-logr/zapr v0.1.1
+	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1
+	github.com/golang/protobuf v1.3.5
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0

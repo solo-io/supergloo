@@ -8,8 +8,9 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
+	virtualserviceplugins "github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -39,7 +40,7 @@ type trafficShiftPlugin struct {
 	meshServices   discoveryv1alpha1sets.MeshServiceSet
 }
 
-var _ plugins.TrafficPolicyPlugin = &trafficShiftPlugin{}
+var _ virtualserviceplugins.TrafficPolicyPlugin = &trafficShiftPlugin{}
 
 func NewTrafficShiftPlugin(
 	clusterDomains hostutils.ClusterDomainRegistry,
