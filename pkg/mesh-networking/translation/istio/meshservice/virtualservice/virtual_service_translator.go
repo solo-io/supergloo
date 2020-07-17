@@ -8,7 +8,7 @@ import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
@@ -29,7 +29,7 @@ type Translator interface {
 	Translate(
 		in input.Snapshot,
 		meshService *discoveryv1alpha1.MeshService,
-		reporter reporter.Reporter,
+		reporter reporting.Reporter,
 	) *istiov1alpha3.VirtualService
 }
 
@@ -48,7 +48,7 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory
 func (t *translator) Translate(
 	in input.Snapshot,
 	meshService *discoveryv1alpha1.MeshService,
-	reporter reporter.Reporter,
+	reporter reporting.Reporter,
 ) *istiov1alpha3.VirtualService {
 	kubeService := meshService.Spec.GetKubeService()
 

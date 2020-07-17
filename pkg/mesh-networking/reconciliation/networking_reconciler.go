@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/smh/pkg/common/defaults"
-	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/smh/pkg/mesh-networking/validation"
 
@@ -22,7 +22,7 @@ type networkingReconciler struct {
 	ctx                context.Context
 	builder            input.Builder
 	validator          validation.Validator
-	reporter           reporter.Reporter
+	reporter           reporting.Reporter
 	istioTranslator    istio.Translator
 	masterClient       client.Client
 	multiClusterClient multicluster.Client
@@ -32,7 +32,7 @@ func Start(
 	ctx context.Context,
 	builder input.Builder,
 	validator validation.Validator,
-	reporter reporter.Reporter,
+	reporter reporting.Reporter,
 	istioTranslator istio.Translator,
 	multiClusterClient multicluster.Client,
 	mgr manager.Manager,

@@ -3,7 +3,7 @@ package meshservice
 import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
@@ -26,7 +26,7 @@ type Translator interface {
 	Translate(
 		in input.Snapshot,
 		meshService *discoveryv1alpha1.MeshService,
-		reporter reporter.Reporter,
+		reporter reporting.Reporter,
 	) Outputs
 }
 
@@ -46,7 +46,7 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory
 func (t *translator) Translate(
 	in input.Snapshot,
 	meshService *discoveryv1alpha1.MeshService,
-	reporter reporter.Reporter,
+	reporter reporting.Reporter,
 ) Outputs {
 
 	vs := t.virtualServices.Translate(in, meshService, reporter)

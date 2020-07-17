@@ -18,7 +18,7 @@ import (
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/common/defaults"
-	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/metautils"
@@ -69,7 +69,7 @@ type Translator interface {
 	Translate(
 		in input.Snapshot,
 		mesh *discoveryv1alpha1.Mesh,
-		reporter reporter.Reporter,
+		reporter reporting.Reporter,
 	) Outputs
 }
 
@@ -86,7 +86,7 @@ func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRe
 func (t *translator) Translate(
 	in input.Snapshot,
 	mesh *discoveryv1alpha1.Mesh,
-	reporter reporter.Reporter,
+	reporter reporting.Reporter,
 ) Outputs {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {

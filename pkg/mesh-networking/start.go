@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/smh/pkg/common/bootstrap"
-	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/smh/pkg/mesh-networking/validation"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -31,7 +31,7 @@ func startReconciler(
 ) error {
 
 	snapshotBuilder := input.NewSingleClusterBuilder(masterManager.GetClient())
-	reporter := reporter.NewPanickingReporter(ctx)
+	reporter := reporting.NewPanickingReporter(ctx)
 	istioTranslator := istio.NewIstioTranslator()
 	validator := validation.NewValidator(istioTranslator)
 

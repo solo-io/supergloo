@@ -15,7 +15,7 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/mesh-networking/reporter"
+	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/solo-io/smh/pkg/mesh-networking/validation"
@@ -68,7 +68,7 @@ var _ = Describe("Validator", func() {
 		)
 
 		BeforeEach(func() {
-			translator := testIstioTranslator{callReporter: func(reporter reporter.Reporter) {
+			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
 			}}
 			validator := NewValidator(translator)
@@ -127,7 +127,7 @@ var _ = Describe("Validator", func() {
 		)
 
 		BeforeEach(func() {
-			translator := testIstioTranslator{callReporter: func(reporter reporter.Reporter) {
+			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// report = reject
 				reporter.ReportTrafficPolicy(meshService, trafficPolicy, errors.New("did an oopsie"))
 			}}
@@ -152,12 +152,12 @@ var _ = Describe("Validator", func() {
 // NOTE(ilackarms): we implement a test translator here instead of using a mock because
 // we need to call methods on the reporter which is passed as an argument to the translator
 type testIstioTranslator struct {
-	callReporter func(reporter reporter.Reporter)
+	callReporter func(reporter reporting.Reporter)
 }
 
 func (t testIstioTranslator) Translate(
 	in input.Snapshot,
-	reporter reporter.Reporter,
+	reporter reporting.Reporter,
 ) (istio.Snapshot, error) {
 	t.callReporter(reporter)
 	return nil, nil
