@@ -40,7 +40,7 @@ func (p *corsDecorator) DecorateVirtualService(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	cors, err := p.translateCors(appliedPolicy.GetSpec())
+	cors, err := p.translateCors(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}

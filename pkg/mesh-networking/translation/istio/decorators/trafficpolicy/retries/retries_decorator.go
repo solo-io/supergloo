@@ -40,7 +40,7 @@ func (p *retriesDecorator) DecorateVirtualService(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	retries, err := p.translateRetries(appliedPolicy.GetSpec())
+	retries, err := p.translateRetries(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}

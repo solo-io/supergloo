@@ -53,7 +53,7 @@ func (p *mirrorDecorator) DecorateVirtualService(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	mirror, percentage, err := p.translateMirror(service, appliedPolicy.GetSpec())
+	mirror, percentage, err := p.translateMirror(service, appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}

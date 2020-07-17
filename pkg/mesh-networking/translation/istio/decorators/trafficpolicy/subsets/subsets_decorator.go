@@ -42,7 +42,7 @@ func (s *subsetsDecorator) DecorateDestinationRule(
 	output *istiov1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {
-	subsets := s.translateSubset(appliedPolicy.GetSpec())
+	subsets := s.translateSubset(appliedPolicy.Spec)
 	if subsets != nil {
 		if err := registerField(&output.Subsets, subsets); err != nil {
 			return err

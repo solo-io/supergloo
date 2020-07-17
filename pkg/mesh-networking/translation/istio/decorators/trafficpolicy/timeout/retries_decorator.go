@@ -41,7 +41,7 @@ func (p *timeoutDecorator) DecorateVirtualService(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	timeout, err := p.translateTimeout(appliedPolicy.GetSpec())
+	timeout, err := p.translateTimeout(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}

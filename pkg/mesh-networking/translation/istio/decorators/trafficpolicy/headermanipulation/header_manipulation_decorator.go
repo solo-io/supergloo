@@ -39,7 +39,7 @@ func (h *headerManipulationDecorator) DecorateVirtualService(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	headers := h.translateHeaderManipulation(appliedPolicy.GetSpec())
+	headers := h.translateHeaderManipulation(appliedPolicy.Spec)
 	if headers != nil {
 		if err := registerField(&output.Headers, headers); err != nil {
 			return err

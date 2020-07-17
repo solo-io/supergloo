@@ -65,7 +65,7 @@ func (p *trafficShiftDecorator) DecorateVirtualService(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	trafficShiftDestinations, err := p.translateTrafficShift(service, appliedPolicy.GetSpec())
+	trafficShiftDestinations, err := p.translateTrafficShift(service, appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}

@@ -40,7 +40,7 @@ func (o *outlierDetectionDecorator) DecorateDestinationRule(
 	output *istiov1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {
-	outlierDetection := o.translateOutlierDetection(appliedPolicy.GetSpec())
+	outlierDetection := o.translateOutlierDetection(appliedPolicy.Spec)
 	if outlierDetection != nil {
 		if err := registerField(&output.TrafficPolicy.OutlierDetection, outlierDetection); err != nil {
 			return err

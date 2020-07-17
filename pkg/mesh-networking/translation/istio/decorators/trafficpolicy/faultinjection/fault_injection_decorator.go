@@ -40,7 +40,7 @@ func (p *faultInjectionDecorator) DecorateVirtualService(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	faultInjection, err := translateFaultInjection(appliedPolicy.GetSpec())
+	faultInjection, err := translateFaultInjection(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
