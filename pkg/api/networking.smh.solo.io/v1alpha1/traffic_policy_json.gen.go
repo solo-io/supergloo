@@ -196,6 +196,17 @@ func (this *TrafficPolicySpec_HttpMethod) UnmarshalJSON(b []byte) error {
 	return TrafficPolicyUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for TrafficPolicySpec_OutlierDetection
+func (this *TrafficPolicySpec_OutlierDetection) MarshalJSON() ([]byte, error) {
+	str, err := TrafficPolicyMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for TrafficPolicySpec_OutlierDetection
+func (this *TrafficPolicySpec_OutlierDetection) UnmarshalJSON(b []byte) error {
+	return TrafficPolicyUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for TrafficPolicyStatus
 func (this *TrafficPolicyStatus) MarshalJSON() ([]byte, error) {
 	str, err := TrafficPolicyMarshaler.MarshalToString(this)
