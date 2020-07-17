@@ -20,7 +20,7 @@ func pluginConstructor(_ plugins.Parameters) plugins.Plugin {
 	return NewOutlierDetectionPlugin()
 }
 
-// Handles setting Headers on a VirtualService.
+// Handles setting OutlierDetection on a DestinationRule.
 type outlierDetectionPlugin struct{}
 
 func NewOutlierDetectionPlugin() *outlierDetectionPlugin {
@@ -37,7 +37,7 @@ func (o *outlierDetectionPlugin) ProcessTrafficPolicy(
 	output *istiov1alpha3spec.DestinationRule,
 	registerField plugins.RegisterField,
 ) error {
-	outlierDetection := o.translateOutlierDetection(appliedPolicy.Spec)
+	outlierDetection := o.translateOutlierDetection(appliedPolicy.GetSpec())
 	if outlierDetection != nil {
 		if err := registerField(&output.TrafficPolicy.OutlierDetection, outlierDetection); err != nil {
 			return err

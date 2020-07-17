@@ -9,7 +9,7 @@ import (
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/destinationrule/plugins/subsets"
 	virtualserviceplugins "github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/meshserviceutils"
@@ -62,7 +62,7 @@ func (p *trafficShiftPlugin) ProcessTrafficPolicy(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField plugins.RegisterField,
 ) error {
-	trafficShiftDestinations, err := p.translateTrafficShift(service, appliedPolicy.Spec)
+	trafficShiftDestinations, err := p.translateTrafficShift(service, appliedPolicy.GetSpec())
 	if err != nil {
 		return err
 	}
@@ -166,7 +166,7 @@ func (p *trafficShiftPlugin) buildKubeTrafficShiftDestination(
 		}
 
 		// Use the canonical SMH unique name for this subset.
-		httpRouteDestination.Destination.Subset = destinationrule.SubsetName(kubeDest.Subset)
+		httpRouteDestination.Destination.Subset = subsets.SubsetName(kubeDest.Subset)
 	}
 
 	return httpRouteDestination, nil

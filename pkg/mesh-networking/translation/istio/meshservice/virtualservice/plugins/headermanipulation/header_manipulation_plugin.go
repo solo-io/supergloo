@@ -36,7 +36,7 @@ func (h *headerManipulationPlugin) ProcessTrafficPolicy(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField plugins.RegisterField,
 ) error {
-	headers := h.translateHeaderManipulation(appliedPolicy.Spec)
+	headers := h.translateHeaderManipulation(appliedPolicy.GetSpec())
 	if headers != nil {
 		if err := registerField(&output.Headers, headers); err != nil {
 			return err

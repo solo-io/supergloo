@@ -41,7 +41,7 @@ func (p *timeoutPlugin) ProcessTrafficPolicy(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField plugins.RegisterField,
 ) error {
-	timeout, err := p.translateTimeout(appliedPolicy.Spec)
+	timeout, err := p.translateTimeout(appliedPolicy.GetSpec())
 	if err != nil {
 		return err
 	}

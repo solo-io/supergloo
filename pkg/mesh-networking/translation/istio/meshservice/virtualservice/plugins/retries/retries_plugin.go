@@ -40,7 +40,7 @@ func (p *retriesPlugin) ProcessTrafficPolicy(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField plugins.RegisterField,
 ) error {
-	retries, err := p.translateRetries(appliedPolicy.Spec)
+	retries, err := p.translateRetries(appliedPolicy.GetSpec())
 	if err != nil {
 		return err
 	}

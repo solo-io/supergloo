@@ -40,7 +40,7 @@ func (p *faultInjectionPlugin) ProcessTrafficPolicy(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField plugins.RegisterField,
 ) error {
-	faultInjection, err := translateFaultInjection(appliedPolicy.Spec)
+	faultInjection, err := translateFaultInjection(appliedPolicy.GetSpec())
 	if err != nil {
 		return err
 	}

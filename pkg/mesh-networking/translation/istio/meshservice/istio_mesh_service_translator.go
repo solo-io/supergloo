@@ -3,10 +3,10 @@ package meshservice
 import (
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+	"github.com/solo-io/smh/pkg/mesh-networking/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
@@ -37,7 +37,7 @@ type translator struct {
 
 func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugins.Factory) Translator {
 	return &translator{
-		destinationRules: destinationrule.NewTranslator(clusterDomains),
+		destinationRules: destinationrule.NewTranslator(clusterDomains, pluginFactory),
 		virtualServices:  virtualservice.NewTranslator(clusterDomains, pluginFactory),
 	}
 }

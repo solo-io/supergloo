@@ -2,11 +2,8 @@ package destinationrule
 
 import (
 	"reflect"
-	"sort"
-	"strings"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/kubeutils"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
@@ -125,13 +122,11 @@ func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha1.Me
 		meshService.Annotations,
 	)
 	hostname := t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.GetKubeService().Ref)
-	subsets := buildRequiredSubsets(meshService)
 
 	return &istiov1alpha3.DestinationRule{
 		ObjectMeta: meta,
 		Spec: istiov1alpha3spec.DestinationRule{
-			Host:    hostname,
-			Subsets: subsets,
+			Host: hostname,
 			TrafficPolicy: &istiov1alpha3spec.TrafficPolicy{
 				Tls: &istiov1alpha3spec.ClientTLSSettings{
 					// TODO(ilackarms): currently we set all DRs to mTLS
@@ -142,47 +137,4 @@ func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha1.Me
 			},
 		},
 	}
-}
-
-func buildRequiredSubsets(meshService *discoveryv1alpha1.MeshService) []*istiov1alpha3spec.Subset {
-	var uniqueSubsets []map[string]string
-	appendUniqueSubset := func(subsetLabels map[string]string) {
-		for _, subset := range uniqueSubsets {
-			if reflect.DeepEqual(subset, subsetLabels) {
-				return
-			}
-		}
-		uniqueSubsets = append(uniqueSubsets, subsetLabels)
-	}
-
-	for _, policy := range meshService.Status.AppliedTrafficPolicies {
-		for _, destination := range policy.GetSpec().GetTrafficShift().GetDestinations() {
-			if subsetLabels := destination.GetKubeService().GetSubset(); len(subsetLabels) > 0 {
-				appendUniqueSubset(subsetLabels)
-			}
-		}
-	}
-
-	var subsets []*istiov1alpha3spec.Subset
-	for _, subsetLabels := range uniqueSubsets {
-		subsets = append(subsets, &istiov1alpha3spec.Subset{
-			Name:   SubsetName(subsetLabels),
-			Labels: subsetLabels,
-		})
-	}
-
-	return subsets
-}
-
-// used in VirtualService translator as well
-func SubsetName(labels map[string]string) string {
-	if len(labels) == 0 {
-		return ""
-	}
-	var keys []string
-	for key, val := range labels {
-		keys = append(keys, key+"-"+val)
-	}
-	sort.Strings(keys)
-	return kubeutils.SanitizeNameV2(strings.Join(keys, "_"))
 }

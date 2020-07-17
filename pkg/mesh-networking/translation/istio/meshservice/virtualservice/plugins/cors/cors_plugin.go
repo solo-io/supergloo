@@ -41,7 +41,7 @@ func (p *corsPlugin) ProcessTrafficPolicy(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField plugins.RegisterField,
 ) error {
-	cors, err := p.translateCors(appliedPolicy.Spec)
+	cors, err := p.translateCors(appliedPolicy.GetSpec())
 	if err != nil {
 		return err
 	}

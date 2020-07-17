@@ -53,7 +53,7 @@ func (p *mirrorPlugin) ProcessTrafficPolicy(
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField plugins.RegisterField,
 ) error {
-	mirror, percentage, err := p.translateMirror(service, appliedPolicy.Spec)
+	mirror, percentage, err := p.translateMirror(service, appliedPolicy.GetSpec())
 	if err != nil {
 		return err
 	}
