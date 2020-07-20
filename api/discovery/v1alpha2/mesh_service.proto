@@ -1,11 +1,10 @@
 syntax = "proto3";
 package discovery.smh.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1";
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "service-mesh-hub/api/core/v1alpha1/status.proto";
-import "service-mesh-hub/api/networking/v1alpha1/traffic_policy.proto";
-import "service-mesh-hub/api/networking/v1alpha1/access_policy.proto";
+import "service-mesh-hub/api/networking/v1alpha2/traffic_policy.proto";
+import "service-mesh-hub/api/networking/v1alpha2/access_policy.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -61,9 +60,6 @@ message MeshServiceStatus {
     // if the observedGeneration does not match generation, the controller has not received the most
     // recent version of this resource.
     int64 observed_generation = 1;
-
-    // The status of federation artifacts being written to remote clusters as a result of the federation metadata on this object's Spec.
-    core.smh.solo.io.Status federation_status = 2;
 
     // The set of Traffic Policies that have been applied to this MeshService
     repeated AppliedTrafficPolicy applied_traffic_policies = 3;

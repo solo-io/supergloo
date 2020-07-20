@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/solo-io/service-mesh-hub/codegen/constants"
 	"log"
 
 	externalapis "github.com/solo-io/external-apis/codegen"
@@ -11,7 +12,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/solo-io/service-mesh-hub/codegen/groups"
-	"github.com/solo-io/service-mesh-hub/pkg/common/constants"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
@@ -25,7 +25,8 @@ func main() {
 }
 
 var (
-	appName = "service-mesh-hub"
+	appName                      = "service-mesh-hub"
+	serviceMeshHubApiGroupSuffix = constants.ServiceMeshHubApiGroupSuffix
 
 	discoveryInputSnapshotCodePath  = "pkg/api/discovery.smh.solo.io/snapshot/input/snapshot.go"
 	discoveryReconcilerCodePath     = "pkg/api/discovery.smh.solo.io/snapshot/input/reconciler.go"
@@ -55,7 +56,7 @@ var (
 
 	discoveryOutputTypes = map[schema.GroupVersion][]string{
 		schema.GroupVersion{
-			Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   "discovery." + serviceMeshHubApiGroupSuffix,
 			Version: "v1alpha1",
 		}: {
 			"Mesh",
@@ -66,7 +67,7 @@ var (
 
 	networkingInputTypes = map[schema.GroupVersion][]string{
 		schema.GroupVersion{
-			Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   "discovery." + serviceMeshHubApiGroupSuffix,
 			Version: "v1alpha1",
 		}: {
 			"Mesh",
@@ -74,7 +75,7 @@ var (
 			"MeshService",
 		},
 		schema.GroupVersion{
-			Group:   "networking." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   "networking." + serviceMeshHubApiGroupSuffix,
 			Version: "v1alpha1",
 		}: {
 			"TrafficPolicy",
