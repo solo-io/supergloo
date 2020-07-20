@@ -46,14 +46,16 @@ func (d meshServiceDetector) DetectMeshService(service *corev1.Service, meshWork
 	return &v1alpha1.MeshService{
 		ObjectMeta: utils.DiscoveredObjectMeta(service),
 		Spec: v1alpha1.MeshServiceSpec{
-			KubeService: &v1alpha1.MeshServiceSpec_KubeService{
-				Ref:                    ezkube.MakeClusterObjectRef(service),
-				WorkloadSelectorLabels: service.Spec.Selector,
-				Labels:                 service.Labels,
-				Ports:                  convertPorts(service),
+			Type: &v1alpha1.MeshServiceSpec_KubeService_{
+				KubeService: &v1alpha1.MeshServiceSpec_KubeService{
+					Ref:                    ezkube.MakeClusterObjectRef(service),
+					WorkloadSelectorLabels: service.Spec.Selector,
+					Labels:                 service.Labels,
+					Ports:                  convertPorts(service),
+					Subsets:                subsets,
+				},
 			},
-			Mesh:    mesh,
-			Subsets: subsets,
+			Mesh: mesh,
 		},
 	}
 }
@@ -93,7 +95,7 @@ func isBackingKubeWorkload(service *corev1.Service, kubeWorkload *v1alpha1.MeshW
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for
-func findSubsets(backingWorkloads v1alpha1.MeshWorkloadSlice) map[string]*v1alpha1.MeshServiceSpec_Subset {
+func findSubsets(backingWorkloads v1alpha1.MeshWorkloadSlice) map[string]*v1alpha1.MeshServiceSpec_KubeService_Subset {
 	uniqueLabels := make(map[string]sets.String)
 	for _, backingWorkload := range backingWorkloads {
 		for key, val := range backingWorkload.Spec.GetKubernetes().GetPodLabels() {
@@ -117,10 +119,10 @@ func findSubsets(backingWorkloads v1alpha1.MeshWorkloadSlice) map[string]*v1alph
 				- v1
 				- v2
 	*/
-	subsets := make(map[string]*v1alpha1.MeshServiceSpec_Subset)
+	subsets := make(map[string]*v1alpha1.MeshServiceSpec_KubeService_Subset)
 	for k, v := range uniqueLabels {
 		if v.Len() > 1 {
-			subsets[k] = &v1alpha1.MeshServiceSpec_Subset{Values: v.List()}
+			subsets[k] = &v1alpha1.MeshServiceSpec_KubeService_Subset{Values: v.List()}
 		}
 	}
 	if len(subsets) == 0 {

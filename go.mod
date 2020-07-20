@@ -9,8 +9,6 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
-	github.com/solo-io/service-mesh-hub => ../service-mesh-hub
-	github.com/solo-io/skv2 => ../skv2
 
 	k8s.io/api => k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.2
@@ -58,10 +56,10 @@ require (
 	github.com/peterh/liner v1.2.0 // indirect
 	github.com/rotisserie/eris v0.4.0
 	github.com/sirupsen/logrus v1.6.0
-	github.com/solo-io/external-apis v0.0.5
+	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0
-	github.com/solo-io/service-mesh-hub v0.5.1-0.20200630141134-62e606c0af98
-	github.com/solo-io/skv2 v0.6.1
+	github.com/solo-io/service-mesh-hub v0.5.1-0.20200720194235-6e7a483cdbc6
+	github.com/solo-io/skv2 v0.7.3-0.20200720193056-82d0f8632ef9
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	go.starlark.net v0.0.0-20200619143648-50ca820fafb9 // indirect

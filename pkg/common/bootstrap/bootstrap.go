@@ -14,6 +14,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	zaputil "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	// required import to enable kube client-go auth plugins
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 type StartReconciler func(

@@ -14,21 +14,22 @@ func SelectorMatchesService(selectors []*v1alpha1.ServiceSelector, service *disc
 	}
 
 	for _, selector := range selectors {
-		if service.Spec.KubeService != nil {
+		kubeService := service.Spec.GetKubeService()
+		if kubeService != nil {
 			if kubeServiceMatcher := selector.KubeServiceMatcher; kubeServiceMatcher != nil {
 				if kubeServiceMatches(
 					kubeServiceMatcher.Labels,
 					kubeServiceMatcher.Namespaces,
 					kubeServiceMatcher.Clusters,
-					service.Spec.KubeService,
+					kubeService,
 				) {
 					return true
 				}
 			}
-			if kubeServiceRefs := selector.KubeServiceRefs; kubeServiceRefs != nil && service.Spec.KubeService != nil {
+			if kubeServiceRefs := selector.KubeServiceRefs; kubeServiceRefs != nil && kubeService != nil {
 				if refsContain(
 					kubeServiceRefs.Services,
-					service.Spec.KubeService.Ref,
+					kubeService.Ref,
 				) {
 					return true
 				}
