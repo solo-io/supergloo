@@ -73,7 +73,7 @@ func (t *translator) Translate(
 		for _, decorator := range vsDecorators {
 
 			if trafficPolicyDecorator, ok := decorator.(trafficpolicy.VirtualServiceDecorator); ok {
-				if err := trafficPolicyDecorator.DecorateVirtualService(
+				if err := trafficPolicyDecorator.ApplyToVirtualService(
 					policy,
 					meshService,
 					baseRoute,

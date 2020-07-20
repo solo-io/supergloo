@@ -34,7 +34,7 @@ func (p *faultInjectionDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (p *faultInjectionDecorator) DecorateVirtualService(
+func (p *faultInjectionDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,

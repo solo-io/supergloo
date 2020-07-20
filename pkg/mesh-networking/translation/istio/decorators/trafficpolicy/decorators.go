@@ -15,7 +15,7 @@ import (
 type DestinationRuleDecorator interface {
 	decorators.Decorator
 
-	ApplyTrafficPolicy(
+	ApplyToDestinationRule(
 		appliedPolicy *v1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 		service *v1alpha1.MeshService,
 		output *v1alpha3.DestinationRule,
@@ -27,7 +27,7 @@ type DestinationRuleDecorator interface {
 type AggregatingDestinationRuleDecorator interface {
 	decorators.Decorator
 
-	ApplyAllTrafficPolicies(
+	ApplyAllToDestinationRule(
 		allAppliedPolicies []*v1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 		output *v1alpha3.DestinationRule,
 		registerField decorators.RegisterField,
@@ -38,7 +38,7 @@ type AggregatingDestinationRuleDecorator interface {
 type VirtualServiceDecorator interface {
 	decorators.Decorator
 
-	DecorateVirtualService(
+	ApplyToVirtualService(
 		appliedPolicy *v1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 		service *v1alpha1.MeshService,
 		output *v1alpha3.HTTPRoute,

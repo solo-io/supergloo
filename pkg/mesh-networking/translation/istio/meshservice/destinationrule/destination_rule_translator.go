@@ -72,12 +72,14 @@ func (t *translator) Translate(
 	for _, decorator := range drDecorators {
 
 		if aggregatingDestinationRuleDecorator, ok := decorator.(trafficpolicy.AggregatingDestinationRuleDecorator); ok {
-			if err := aggregatingDestinationRuleDecorator.ApplyAllTrafficPolicies(
+			if err := aggregatingDestinationRuleDecorator.ApplyAllToDestinationRule(
 				meshService.Status.AppliedTrafficPolicies,
 				&destinationRule.Spec,
 				registerField,
 			); err != nil {
-				reporter.ReportTrafficPolicies(meshService, trafficPolicyResourceIds, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+				for _, policyResourceId := range trafficPolicyResourceIds {
+					reporter.ReportTrafficPolicy(meshService, policyResourceId, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+				}
 			}
 		}
 	}
@@ -88,7 +90,7 @@ func (t *translator) Translate(
 		for _, decorator := range drDecorators {
 
 			if destinationRuleDecorator, ok := decorator.(trafficpolicy.DestinationRuleDecorator); ok {
-				if err := destinationRuleDecorator.ApplyTrafficPolicy(
+				if err := destinationRuleDecorator.ApplyToDestinationRule(
 					policy,
 					meshService,
 					&destinationRule.Spec,

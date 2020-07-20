@@ -34,7 +34,7 @@ func (p *corsDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (p *corsDecorator) DecorateVirtualService(
+func (p *corsDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,

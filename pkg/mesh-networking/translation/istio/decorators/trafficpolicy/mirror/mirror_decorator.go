@@ -47,7 +47,7 @@ func (p *mirrorDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (p *mirrorDecorator) DecorateVirtualService(
+func (p *mirrorDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,

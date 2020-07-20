@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/resourceidutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/selectorutils"
 )
 
@@ -127,18 +126,6 @@ func (v *validationReporter) ReportTrafficPolicy(meshService *discoveryv1alpha1.
 		invalidTrafficPoliciesForMeshService = map[string][]error{}
 	}
 	key := sets.Key(trafficPolicy)
-	errs := invalidTrafficPoliciesForMeshService[key]
-	errs = append(errs, err)
-	invalidTrafficPoliciesForMeshService[key] = errs
-	v.invalidTrafficPolicies[meshService] = invalidTrafficPoliciesForMeshService
-}
-
-func (v *validationReporter) ReportTrafficPolicies(meshService *discoveryv1alpha1.MeshService, trafficPolicies []ezkube.ResourceId, err error) {
-	invalidTrafficPoliciesForMeshService := v.invalidTrafficPolicies[meshService]
-	if invalidTrafficPoliciesForMeshService == nil {
-		invalidTrafficPoliciesForMeshService = map[string][]error{}
-	}
-	key := resourceidutils.ResourceIdsToString(trafficPolicies)
 	errs := invalidTrafficPoliciesForMeshService[key]
 	errs = append(errs, err)
 	invalidTrafficPoliciesForMeshService[key] = errs

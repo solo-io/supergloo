@@ -33,7 +33,7 @@ func (h *headerManipulationDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (h *headerManipulationDecorator) DecorateVirtualService(
+func (h *headerManipulationDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,

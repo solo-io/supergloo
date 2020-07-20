@@ -34,7 +34,7 @@ func (p *retriesDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (p *retriesDecorator) DecorateVirtualService(
+func (p *retriesDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,

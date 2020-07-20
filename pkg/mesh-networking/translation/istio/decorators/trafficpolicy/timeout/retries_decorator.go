@@ -35,7 +35,7 @@ func (p *timeoutDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (p *timeoutDecorator) DecorateVirtualService(
+func (p *timeoutDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
