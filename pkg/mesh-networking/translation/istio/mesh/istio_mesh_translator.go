@@ -19,7 +19,7 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/smh/pkg/common/defaults"
 	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/protoutils"
@@ -78,7 +78,7 @@ type translator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
 }
 
-func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRegistry, pluginFactory plugins.Factory) Translator {
+func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
 	return &translator{ctx: ctx, clusterDomains: clusterDomains}
 }
 
@@ -93,7 +93,7 @@ func (t *translator) Translate(
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.MeshType)
 		return Outputs{}
 	}
-	if mesh.Status.AppliedVirtualMesh == nil || len(mesh.Status.AppliedVirtualMesh.Spec.Meshes) < 2 {
+	if len(mesh.Status.GetAppliedVirtualMeshes()) < 2 {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring istio mesh %v which is not federated with other meshes in a virtual mesh", sets.Key(mesh))
 		return Outputs{}
 	}
@@ -169,18 +169,18 @@ func (t *translator) Translate(
 		}}
 
 		// list all client meshes
-		for _, ref := range mesh.Status.AppliedVirtualMesh.Spec.Meshes {
-			if ezkube.RefsMatch(ref, mesh) {
+		for _, appliedVirtualMesh := range mesh.Status.GetAppliedVirtualMeshes() {
+			if ezkube.RefsMatch(appliedVirtualMesh.GetRef(), mesh) {
 				continue
 			}
-			clientMesh, err := in.Meshes().Find(ref)
+			clientMesh, err := in.Meshes().Find(appliedVirtualMesh.GetRef())
 			if err != nil {
-				reporter.ReportVirtualMesh(mesh, mesh.Status.AppliedVirtualMesh.Ref, err)
+				reporter.ReportVirtualMesh(mesh, appliedVirtualMesh.GetRef(), err)
 				continue
 			}
 			clientIstio := clientMesh.Spec.GetIstio()
 			if clientIstio == nil {
-				reporter.ReportVirtualMesh(mesh, mesh.Status.AppliedVirtualMesh.Ref, eris.Errorf("non-istio mesh %v cannot be used in virtual mesh", sets.Key(clientMesh)))
+				reporter.ReportVirtualMesh(mesh, appliedVirtualMesh.GetRef(), eris.Errorf("non-istio mesh %v cannot be used in virtual mesh", sets.Key(clientMesh)))
 				continue
 			}
 

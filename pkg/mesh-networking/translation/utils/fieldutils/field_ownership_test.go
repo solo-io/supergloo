@@ -21,14 +21,14 @@ var _ = Describe("FieldOwnership", func() {
 		owner2 := &v1.ObjectRef{Name: "2"}
 
 		corsPolicyField := &istioRoute.CorsPolicy
-		err := fieldRegistry.RegisterFieldOwner(corsPolicyField, owner1, 1)
+		err := fieldRegistry.RegisterFieldOwnership(corsPolicyField, owner1, 1)
 		Expect(err).NotTo(HaveOccurred())
 
-		err = fieldRegistry.RegisterFieldOwner(corsPolicyField, owner2, 0)
+		err = fieldRegistry.RegisterFieldOwnership(corsPolicyField, owner2, 0)
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(Equal(FieldConflictError{
 			Field:    corsPolicyField,
-			Owner:    owner1,
+			Owners:   owner1,
 			Priority: 1,
 		}))
 

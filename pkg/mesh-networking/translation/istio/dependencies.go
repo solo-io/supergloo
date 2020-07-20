@@ -2,8 +2,8 @@ package istio
 
 import (
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
 )
 
@@ -22,7 +22,7 @@ func newDependencyFactory() dependencyFactory {
 
 func (d dependencyFactoryImpl) makeMeshServiceTranslator(clusters skv1alpha1sets.KubernetesClusterSet) meshservice.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
-	pluginFactory := plugins.NewFactory()
+	decoratorFactory := decorators.NewFactory()
 
-	return meshservice.NewTranslator(clusterDomains, pluginFactory)
+	return meshservice.NewTranslator(clusterDomains, decoratorFactory)
 }

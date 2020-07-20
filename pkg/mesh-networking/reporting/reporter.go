@@ -33,13 +33,26 @@ func NewPanickingReporter(ctx context.Context) Reporter {
 }
 
 func (p *panickingReporter) ReportTrafficPolicy(meshService *v1alpha1.MeshService, trafficPolicy ezkube.ResourceId, err error) {
-	contextutils.LoggerFrom(p.ctx).DPanicw("internal error: error reported on TrafficPolicy which should have been caught by validation!", "policy", sets.Key(trafficPolicy), "mesh-service", sets.Key(meshService), "error", err)
+	contextutils.LoggerFrom(p.ctx).
+		DPanicw(
+			"internal error: error reported on TrafficPolicy which should have been caught by validation!",
+			"policy", sets.Key(trafficPolicy),
+			"mesh-service", sets.Key(meshService),
+			"error", err)
 }
 
 func (p *panickingReporter) ReportAccessPolicy(meshService *v1alpha1.MeshService, accessPolicy ezkube.ResourceId, err error) {
-	contextutils.LoggerFrom(p.ctx).DPanicw("internal error: error reported on AccessPolicy which should have been caught by validation!", "policy", sets.Key(accessPolicy), "mesh-service", sets.Key(meshService), "error", err)
+	contextutils.LoggerFrom(p.ctx).
+		DPanicw("internal error: error reported on AccessPolicy which should have been caught by validation!",
+			"policy", sets.Key(accessPolicy),
+			"mesh-service", sets.Key(meshService),
+			"error", err)
 }
 
 func (p *panickingReporter) ReportVirtualMesh(mesh *v1alpha1.Mesh, virtualMesh ezkube.ResourceId, err error) {
-	contextutils.LoggerFrom(p.ctx).DPanicw("internal error: error reported on VirtualMesh which should have been caught by validation!", "mesh", sets.Key(mesh), "vmesh", sets.Key(virtualMesh), "error", err)
+	contextutils.LoggerFrom(p.ctx).
+		DPanicw("internal error: error reported on VirtualMesh which should have been caught by validation!",
+			"mesh", sets.Key(mesh),
+			"vmesh", sets.Key(virtualMesh),
+			"error", err)
 }
