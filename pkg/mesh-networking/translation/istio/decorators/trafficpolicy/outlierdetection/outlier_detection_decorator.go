@@ -37,7 +37,7 @@ func (o *outlierDetectionDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (o *outlierDetectionDecorator) DecorateDestinationRule(
+func (o *outlierDetectionDecorator) ApplyTrafficPolicy(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.DestinationRule,

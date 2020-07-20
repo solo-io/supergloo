@@ -66,12 +66,29 @@ func (t *translator) Translate(
 		Snapshot:       in,
 	})
 
+	// Apply decorators which aggregate the entire set of applicable TrafficPolicies to a field on the DestinationRule.
+	trafficPolicyResourceIds := t.trafficPolicyToResourceIds(meshService.Status.AppliedTrafficPolicies)
+	registerField := registerFieldFunc(destinationRuleFields, destinationRule, trafficPolicyResourceIds)
+	for _, decorator := range drDecorators {
+
+		if aggregatingDestinationRuleDecorator, ok := decorator.(trafficpolicy.AggregatingDestinationRuleDecorator); ok {
+			if err := aggregatingDestinationRuleDecorator.ApplyAllTrafficPolicies(
+				meshService.Status.AppliedTrafficPolicies,
+				&destinationRule.Spec,
+				registerField,
+			); err != nil {
+				reporter.ReportTrafficPolicies(meshService, trafficPolicyResourceIds, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+			}
+		}
+	}
+
+	// Apply decorators which map a single applicable TrafficPolicy to a field on the DestinationRule.
 	for _, policy := range meshService.Status.AppliedTrafficPolicies {
-		registerField := registerFieldFunc(destinationRuleFields, destinationRule, policy.Ref)
+		registerField := registerFieldFunc(destinationRuleFields, destinationRule, []ezkube.ResourceId{policy.Ref})
 		for _, decorator := range drDecorators {
 
-			if trafficPolicyDecorator, ok := decorator.(trafficpolicy.DestinationRuleDecorator); ok {
-				if err := trafficPolicyDecorator.DecorateDestinationRule(
+			if destinationRuleDecorator, ok := decorator.(trafficpolicy.DestinationRuleDecorator); ok {
+				if err := destinationRuleDecorator.ApplyTrafficPolicy(
 					policy,
 					meshService,
 					&destinationRule.Spec,
@@ -95,7 +112,7 @@ func (t *translator) Translate(
 func registerFieldFunc(
 	destinationRuleFields fieldutils.FieldOwnershipRegistry,
 	destinationRule *istiov1alpha3.DestinationRule,
-	policyRef ezkube.ResourceId,
+	policyRefs []ezkube.ResourceId,
 ) decorators.RegisterField {
 	return func(fieldPtr, val interface{}) error {
 		fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
@@ -103,10 +120,10 @@ func registerFieldFunc(
 		if equalityutils.Equals(fieldVal, val) {
 			return nil
 		}
-		if err := destinationRuleFields.RegisterFieldOwner(
+		if err := destinationRuleFields.RegisterFieldOwnership(
 			destinationRule,
 			fieldPtr,
-			policyRef,
+			policyRefs,
 			&v1alpha1.TrafficPolicy{},
 			0, //TODO(ilackarms): priority
 		); err != nil {
@@ -137,4 +154,14 @@ func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha1.Me
 			},
 		},
 	}
+}
+
+func (t *translator) trafficPolicyToResourceIds(
+	trafficPolicy []*discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
+) []ezkube.ResourceId {
+	var resourceIds []ezkube.ResourceId
+	for _, policy := range trafficPolicy {
+		resourceIds = append(resourceIds, policy.Ref)
+	}
+	return resourceIds
 }

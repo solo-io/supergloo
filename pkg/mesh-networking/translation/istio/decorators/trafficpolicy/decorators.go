@@ -11,13 +11,24 @@ import (
 	decorate a given output resource.
 */
 
-// TrafficPolicyDecorators modify the DestinationRule based on a TrafficPolicy which applies to the MeshService.
+// DestinationRuleDecorators modify the DestinationRule based on a TrafficPolicy which applies to the MeshService.
 type DestinationRuleDecorator interface {
 	decorators.Decorator
 
-	DecorateDestinationRule(
+	ApplyTrafficPolicy(
 		appliedPolicy *v1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 		service *v1alpha1.MeshService,
+		output *v1alpha3.DestinationRule,
+		registerField decorators.RegisterField,
+	) error
+}
+
+// AggregatingDestinationRuleDecorators modify the DestinationRule based on the entire list of TrafficPolicies which apply to the MeshService.
+type AggregatingDestinationRuleDecorator interface {
+	decorators.Decorator
+
+	ApplyAllTrafficPolicies(
+		allAppliedPolicies []*v1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 		output *v1alpha3.DestinationRule,
 		registerField decorators.RegisterField,
 	) error

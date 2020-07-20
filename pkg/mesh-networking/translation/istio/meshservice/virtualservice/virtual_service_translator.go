@@ -122,10 +122,10 @@ func registerFieldFunc(
 		if equalityutils.Equals(fieldVal, val) {
 			return nil
 		}
-		if err := virtualServiceFields.RegisterFieldOwner(
+		if err := virtualServiceFields.RegisterFieldOwnership(
 			virtualService,
 			fieldPtr,
-			policyRef,
+			[]ezkube.ResourceId{policyRef},
 			&v1alpha1.TrafficPolicy{},
 			0, //TODO(ilackarms): priority
 		); err != nil {

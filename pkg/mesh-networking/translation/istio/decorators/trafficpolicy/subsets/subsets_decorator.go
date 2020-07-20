@@ -4,7 +4,6 @@ import (
 	"reflect"
 
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/trafficshift"
@@ -26,7 +25,7 @@ func decoratorConstructor(_ decorators.Parameters) decorators.Decorator {
 // Handles setting subsets on a DestinationRule.
 type subsetsDecorator struct{}
 
-var _ trafficpolicy.DestinationRuleDecorator = &subsetsDecorator{}
+var _ trafficpolicy.AggregatingDestinationRuleDecorator = &subsetsDecorator{}
 
 func NewSubsetsDecorator() *subsetsDecorator {
 	return &subsetsDecorator{}
@@ -36,13 +35,12 @@ func (s *subsetsDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (s *subsetsDecorator) DecorateDestinationRule(
-	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
-	_ *discoveryv1alpha1.MeshService,
+func (s *subsetsDecorator) ApplyAllTrafficPolicies(
+	appliedPolicies []*discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	output *istiov1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {
-	subsets := s.translateSubset(appliedPolicy.Spec)
+	subsets := s.translateSubset(appliedPolicies)
 	if subsets != nil {
 		if err := registerField(&output.Subsets, subsets); err != nil {
 			return err
@@ -53,7 +51,7 @@ func (s *subsetsDecorator) DecorateDestinationRule(
 }
 
 func (s *subsetsDecorator) translateSubset(
-	trafficPolicy *v1alpha1.TrafficPolicySpec,
+	appliedPolicies []*discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 ) []*istiov1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
 	appendUniqueSubset := func(subsetLabels map[string]string) {
@@ -65,9 +63,11 @@ func (s *subsetsDecorator) translateSubset(
 		uniqueSubsets = append(uniqueSubsets, subsetLabels)
 	}
 
-	for _, destination := range trafficPolicy.GetTrafficShift().GetDestinations() {
-		if subsetLabels := destination.GetKubeService().GetSubset(); len(subsetLabels) > 0 {
-			appendUniqueSubset(subsetLabels)
+	for _, policy := range appliedPolicies {
+		for _, destination := range policy.GetSpec().GetTrafficShift().GetDestinations() {
+			if subsetLabels := destination.GetKubeService().GetSubset(); len(subsetLabels) > 0 {
+				appendUniqueSubset(subsetLabels)
+			}
 		}
 	}
 
@@ -78,5 +78,6 @@ func (s *subsetsDecorator) translateSubset(
 			Labels: subsetLabels,
 		})
 	}
+
 	return subsets
 }
