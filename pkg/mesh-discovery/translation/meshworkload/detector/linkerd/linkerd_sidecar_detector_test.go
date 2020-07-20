@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
-	. "github.com/solo-io/smh/pkg/mesh-discovery/translation/meshworkload/detector/linkerd"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector/linkerd"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

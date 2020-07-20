@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/solo-io/smh/pkg/mesh-discovery/translation/mesh/detector"
-	"github.com/solo-io/smh/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
 
 	consulconfig "github.com/hashicorp/consul/agent/config"
 	"github.com/hashicorp/hcl"

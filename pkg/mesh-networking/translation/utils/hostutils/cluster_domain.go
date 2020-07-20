@@ -6,7 +6,7 @@ import (
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/common/defaults"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 )
 
 // ClusterDomainRegistry retrieves known cluster domain suffixes for

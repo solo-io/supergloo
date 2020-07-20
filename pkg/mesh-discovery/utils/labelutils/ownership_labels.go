@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/common/defaults"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 )
 
 // the key used to differentiate discovery resources by

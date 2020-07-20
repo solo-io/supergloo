@@ -1,0 +1,81 @@
+syntax = "proto3";
+package networking.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1";
+
+import "service-mesh-hub/api/core/v1alpha1/http.proto";
+import "service-mesh-hub/api/core/v1alpha1/status.proto";
+import "service-mesh-hub/api/networking/v1alpha1/selectors.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+/*
+    access control policies apply ALLOW policies to communication in a mesh
+    access control policies specify the following:
+    ALLOW those requests:
+    - originating from from **source pods**
+    - sent to **destination pods**
+    - matching the indicated request criteria (allowed_paths, allowed_methods, allowed_ports)
+    if no access control policies are present, all traffic in the mesh will be set to ALLOW
+*/
+message AccessPolicySpec {
+    /*
+        requests originating from these pods will have the rule applied
+        leave empty to have all pods in the mesh apply these policies
+
+        note that access control policies are mapped to source pods by their
+        service account. if other pods share the same service account,
+        this access control rule will apply to those pods as well.
+
+        for fine-grained access control policies, ensure that your
+        service accounts properly reflect the desired
+        boundary for your access control policies
+    */
+    repeated IdentitySelector source_selector = 2;
+
+    /*
+        requests destined for these pods will have the rule applied
+        leave empty to apply to all destination pods in the mesh
+    */
+    repeated ServiceSelector destination_selector = 3;
+
+    /*
+        Optional. A list of HTTP paths or gRPC methods to allow.
+        gRPC methods must be presented as fully-qualified name in the form of
+        "/packageName.serviceName/methodName" and are case sensitive.
+        Exact match, prefix match, and suffix match are supported for paths.
+        For example, the path "/books/review" matches
+        "/books/review" (exact match), "*books/" (suffix match), or "/books*" (prefix match),
+
+        If not specified, it allows to any path.
+    */
+    repeated string allowed_paths = 4;
+
+    /*
+        Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
+        It is ignored in gRPC case because the value is always "POST".
+        If not specified, allows any method.
+    */
+    repeated core.smh.solo.io.HttpMethodValue allowed_methods = 5;
+
+    /*
+        Optional. A list of ports which to allow
+        if not set any port is allowed
+    */
+    repeated uint32 allowed_ports = 6;
+}
+
+message AccessPolicyStatus {
+    // TODO use a shared Status message with TrafficPolicy once autopilot allows for it
+    message TranslatorError {
+        // ID representing a translator that translates TrafficPolicy to Mesh-specific config
+        string translator_id = 1;
+        string error_message = 2;
+    }
+
+    // The status reported by the process translating this resource into mesh-specific resource(s).
+    core.smh.solo.io.Status translation_status = 1;
+
+    // More detailed errors than the base status provided by `translation_status`.
+    repeated TranslatorError translator_errors = 2;
+}

@@ -4,11 +4,11 @@ import (
 	"context"
 
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/mesh"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/mesh/federation"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/federation"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 )
 
 // the dependencyFactory creates dependencies for the translator from a given snapshot

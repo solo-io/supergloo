@@ -11,10 +11,10 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
-	"github.com/solo-io/smh/pkg/common/defaults"
-	"github.com/solo-io/smh/pkg/mesh-networking/reporting"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio"
-	"github.com/solo-io/smh/pkg/mesh-networking/validation"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/validation"
 
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 

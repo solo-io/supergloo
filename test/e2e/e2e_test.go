@@ -8,9 +8,9 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	"github.com/solo-io/smh/test/e2e"
+	"github.com/solo-io/service-mesh-hub/test/e2e"
 
-	"github.com/solo-io/smh/test/data"
+	"github.com/solo-io/service-mesh-hub/test/data"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 

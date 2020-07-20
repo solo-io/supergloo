@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/skv2/pkg/multicluster/register"
-	"github.com/solo-io/smh/pkg/common/defaults"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	rbacv1 "k8s.io/api/rbac/v1"

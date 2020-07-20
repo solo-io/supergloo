@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/resourceidutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/resourceidutils"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 

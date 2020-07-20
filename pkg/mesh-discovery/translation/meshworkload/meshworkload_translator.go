@@ -7,8 +7,8 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/smh/pkg/mesh-discovery/translation/meshworkload/detector"
-	"github.com/solo-io/smh/pkg/mesh-discovery/translation/meshworkload/types"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/types"
 )
 
 //go:generate mockgen -source ./meshworkload_translator.go -destination mocks/meshworkload_translator.go

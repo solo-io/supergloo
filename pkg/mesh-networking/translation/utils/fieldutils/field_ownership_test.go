@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	. "github.com/solo-io/smh/pkg/mesh-networking/translation/utils/fieldutils"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 

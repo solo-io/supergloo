@@ -1,0 +1,49 @@
+syntax = "proto3";
+package networking.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+// the status of a policy that has been applied to a MeshService
+message ValidationStatus {
+
+    // acceptanceOrder represents the order in which the Policy
+    // was accepted and applied to a MeshService. The first accepted policy
+    // will have an acceptance_order of zero, the second 1, etc.
+    // when conflicts are detected in the system,
+    // the Policy with the lowest acceptance_order
+    // will be chosen (and all other conflicting policies will be rejected).
+    uint32 acceptance_order = 1;
+
+    // The result of attempting to apply the policy to the MeshService,
+    // reported by the Policy controller (mesh-networking).
+    ValidationState state = 2;
+
+    // any errors observed which prevented the resource from being Accepted.
+    repeated string errors = 3;
+
+}
+
+// State of a Policy resource reflected in the status by Service Mesh Hub while processing a resource.
+enum ValidationState {
+    // Resources are in a Pending state before they have been processed by Service Mesh Hub
+    PENDING = 0;
+
+    // Resources are in a Accepted state when they are valid and have been applied successfully to
+    // the Service Mesh Hub configuration.
+    ACCEPTED = 1;
+
+    // Resources are in an Invalid state when they contain incorrect configuration parameters,
+    // such as missing required values or invalid resource references.
+    // An invalid state can also result when a resource's configuration is valid
+    // but conflicts with another resource which was accepted in an earlier point in time.
+    INVALID = 2;
+
+    // Resources are in a Failed state when they contain correct configuration parameters,
+    // but the server encountered an error trying to synchronize the system to
+    // the desired state.
+    FAILED = 3;
+}

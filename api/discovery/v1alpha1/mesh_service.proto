@@ -1,0 +1,114 @@
+syntax = "proto3";
+package discovery.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "service-mesh-hub/api/core/v1alpha1/status.proto";
+import "service-mesh-hub/api/networking/v1alpha1/traffic_policy.proto";
+import "service-mesh-hub/api/networking/v1alpha1/access_policy.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+/**
+    The MeshService is an abstraction for a service which we have discovered to be part of a
+    given mesh. The Mesh object has references to the MeshServices which belong to it.
+*/
+message MeshServiceSpec {
+    // the type of service backing the MeshService
+    oneof type {
+        // Metadata about the kube-native service backing this MeshService.
+        KubeService kube_service = 1;
+    }
+
+    // The mesh with which this service is associated.
+    .core.skv2.solo.io.ObjectRef mesh = 2;
+
+    message KubeService {
+        message KubeServicePort {
+            // external-facing port for this service (i.e., NOT the service's target port on the backing pods)
+            uint32 port = 1;
+            string name = 2;
+            string protocol = 3;
+        }
+
+        // A reference to the kube-native service that this MeshService represents.
+        .core.skv2.solo.io.ClusterObjectRef ref = 1;
+
+        // Selectors for the set of pods targeted by the k8s Service.
+        map<string, string> workload_selector_labels = 2;
+
+        // Labels on the underlying k8s Service itself.
+        map<string, string> labels = 3;
+
+        // The ports exposed by the underlying service.
+        repeated KubeServicePort ports = 4;
+
+        // Subsets for routing, based on labels.
+        map<string, Subset> subsets = 5;
+
+        message Subset {
+            repeated string values = 1;
+        }
+
+    }
+
+}
+
+message MeshServiceStatus {
+
+    // The most recent generation observed in the the TrafficPolicy metadata.
+    // if the observedGeneration does not match generation, the controller has not received the most
+    // recent version of this resource.
+    int64 observed_generation = 1;
+
+    // The status of federation artifacts being written to remote clusters as a result of the federation metadata on this object's Spec.
+    core.smh.solo.io.Status federation_status = 2;
+
+    // The set of Traffic Policies that have been applied to this MeshService
+    repeated AppliedTrafficPolicy applied_traffic_policies = 3;
+
+    // The set of Access Policies that have been applied to this MeshService
+    repeated AppliedAccessPolicy applied_access_policies = 4;
+
+    // AppliedTrafficPolicy represents a traffic policy that has been applied to the MeshService.
+    // if an existing Traffic Policy becomes invalid, the last applied policy will be used
+    message AppliedTrafficPolicy {
+        // reference to the traffic policy
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // the observed generation of the accepted traffic policy
+        int64 observedGeneration = 2;
+
+        // the last known valid spec of the traffic policy
+        .networking.smh.solo.io.TrafficPolicySpec spec = 3;
+    }
+
+    // AppliedAccessPolicy represents a access policy that has been applied to the MeshService.
+    // if an existing Access Policy becomes invalid, the last applied policy will be used
+    message AppliedAccessPolicy {
+        // reference to the access policy
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // the observed generation of the accepted access policy
+        int32 observedGeneration = 2;
+
+        // the last known valid spec of the access policy
+        .networking.smh.solo.io.AccessPolicySpec spec = 3;
+    }
+
+    // Federation policy applied to this MeshService, allowing access
+    // to the service from other meshes/clusters.
+    message AppliedFederation {
+        /**
+            For any workload that this service has federated to (i.e., any MeshWorkload whose ref appears in `federated_to_workloads`),
+            a client in that workload will be able to reach this service at this DNS name. This includes workloads on clusters other than
+            the one hosting this service.
+        */
+        string multicluster_dns_name = 1;
+
+        // The list of Meshes which are able to resolve this service's `multicluster_dns_name`.
+        repeated .core.skv2.solo.io.ObjectRef federated_to_meshes = 2;
+    }
+
+}

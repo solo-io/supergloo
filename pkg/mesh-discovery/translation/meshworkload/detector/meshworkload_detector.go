@@ -13,8 +13,8 @@ import (
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	"github.com/solo-io/smh/pkg/mesh-discovery/translation/meshworkload/types"
-	"github.com/solo-io/smh/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/types"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

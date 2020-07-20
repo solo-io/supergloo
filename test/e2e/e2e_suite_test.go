@@ -11,7 +11,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/solo-io/smh/test/e2e"
+	. "github.com/solo-io/service-mesh-hub/test/e2e"
 )
 
 // to skip testing this package, run `make run-tests SKIP_PACKAGES=test/e2e

@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/solo-io/smh/pkg/common/bootstrap"
-	mesh_discovery "github.com/solo-io/smh/pkg/mesh-discovery"
+	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
+	mesh_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/solo-io/smh
+module github.com/solo-io/service-mesh-hub
 
 go 1.14
 
@@ -58,7 +58,6 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0
-	github.com/solo-io/service-mesh-hub v0.5.1-0.20200720194235-6e7a483cdbc6
 	github.com/solo-io/skv2 v0.7.3-0.20200720193056-82d0f8632ef9
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5

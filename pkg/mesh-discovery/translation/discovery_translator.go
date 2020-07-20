@@ -6,7 +6,7 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/output"
-	"github.com/solo-io/smh/pkg/mesh-discovery/utils/labelutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/labelutils"
 )
 
 // the translator "reconciles the entire state of the world"

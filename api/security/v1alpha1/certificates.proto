@@ -1,0 +1,85 @@
+syntax = "proto3";
+package security.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/security.smh.solo.io/v1alpha1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "service-mesh-hub/api/core/v1alpha1/status.proto";
+import "service-mesh-hub/api/core/v1alpha1/mesh.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+message VirtualMeshCertificateSigningRequestSpec {
+    message CertConfig {
+        /*
+             list of hostnames and IPs to generate a certificate for.
+             This can also be set to the identity running the workload,
+             like kubernetes service account.
+
+             Generally for an Istio CA this will take the form `spiffe://cluster.local/ns/istio-system/sa/citadel`.
+
+             "cluster.local" may be replaced by the root of trust domain for the mesh.
+         */
+        repeated string hosts = 2;
+
+        // Organization for this certificate.
+        string org = 3;
+
+        /*
+            In the future, the type of mesh, and level of trust will need to be specified here,
+            but for the time being we are only supporting shared trust in Istio.
+        */
+        core.smh.solo.io.MeshType mesh_type = 5;
+    }
+
+    // Base64-encoded PKCS#10 CSR data
+    bytes csr_data = 1;
+
+    CertConfig cert_config = 2;
+
+    /*
+        Reference to the virtual mesh which this CSR corresponds to. This is important as it allows the virtual mesh
+        operator to know which trust bundle to use when signing the new certificates.
+
+        When the CSR is first created by the Virtual Mesh operator, this data will be added by it. However, during a cert
+        rotation scenario this is not possible. Therefore, the csr-agent will write this data to the secret so that
+        it can be retrieved when the cert is going to expire.
+        TODO: Decide how exactly we want to store this data.
+    */
+    .core.skv2.solo.io.ClusterObjectRef virtual_mesh_ref = 3;
+
+}
+
+message VirtualMeshCertificateSigningRequestStatus {
+    message Response {
+        // If request was approved, the controller will place the issued certificate here.
+        bytes ca_certificate = 1;
+        // root cert shared by all clusters, safe to send over the wire
+        bytes root_certificate = 2;
+    }
+
+    message ThirdPartyApprovalWorkflow {
+        // time when the status was last updated
+        google.protobuf.Timestamp last_updated_time = 2;
+
+        // a user readable message regarding the status of the CSR
+        string message = 3;
+
+        enum ApprovalStatus {
+            // have a default value which represents not being set as proto enums require a default 0th value
+            PENDING = 0;
+            APPROVED = 1;
+            DENIED = 2;
+        }
+        ApprovalStatus approval_status = 4;
+    }
+
+    // Response from the certificate authority
+    Response response = 1;
+    // Workflow for approving Certificate Signing Requests
+    ThirdPartyApprovalWorkflow third_party_approval = 2;
+
+    core.smh.solo.io.Status computed_status = 3;
+}

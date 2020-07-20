@@ -1,0 +1,145 @@
+syntax = "proto3";
+package discovery.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "service-mesh-hub/api/networking/v1alpha1/virtual_mesh.proto";
+import "google/protobuf/wrappers.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+/*
+    Meshes represent a currently registered service mesh.
+*/
+message MeshSpec {
+
+    oneof mesh_type {
+        Istio istio = 1;
+        AwsAppMesh aws_app_mesh = 2;
+        LinkerdMesh linkerd = 3;
+        ConsulConnectMesh consul_connect = 4;
+    }
+
+    // Mesh object representing an installed Istio control plane
+    message Istio {
+
+        // where istio control plane components are installed.
+        MeshInstallation installation = 1;
+
+        // configuration for Istio Citadel, Istio's security component.
+        CitadelInfo citadel_info = 2;
+
+        // configuration for Istio IngressGateway, the Istio Ingress
+        repeated IngressGatewayInfo ingress_gateways = 3;
+
+        message CitadelInfo {
+            /*
+                Istio trust domain used for https/spiffe identity.
+                https://spiffe.io/spiffe/concepts/#trust-domain
+                https://istio.io/docs/reference/glossary/#identity
+
+                If empty will default to "cluster.local"
+            */
+            string trust_domain = 1;
+
+            /*
+                istio-citadel service account, used to determine identity for the Istio CA cert.
+                If empty will default to "istio-citadel"
+            */
+            string citadel_service_account = 2;
+        }
+
+        message IngressGatewayInfo {
+
+            // labels matching the workload which backs the gateway,
+            // defaults to {"istio": "ingressgateway"}
+            map<string, string> workload_labels = 1;
+
+            // the externally-reachable address on which the gateway is listening for TLS connections.
+            // this will be the address used for cross-cluster connectivity.
+            // defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type)
+            string external_address = 2;
+
+            // the externally-reachable port on which the gateway is listening for TLS connections.
+            // this will be the port used for cross-cluster connectivity.
+            // List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio
+            // Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type)
+            uint32 external_tls_port = 3;
+
+            // container port on which the gateway is listening for TLS connections.
+            // Defaults to 15443
+            uint32 tls_container_port = 4;
+
+        }
+    }
+
+    // Mesh object representing AWS AppMesh
+    message AwsAppMesh {
+        // AWS name for the AppMesh instance, must be unique across the AWS account.
+        string name = 1;
+        // The AWS region the AWS App Mesh control plane resources exist in.
+        string region = 2;
+        // The AWS Account ID associated with the Mesh. Populated at REST API registration time.
+        string aws_account_id = 3;
+        // The k8s clusters on which sidecars for this AppMesh instance have been discovered.
+        repeated string clusters = 4;
+    }
+
+    // Mesh object representing an installed Linkerd control plane
+    message LinkerdMesh {
+        MeshInstallation installation = 1;
+
+        // The cluster domain suffix this Linkerd mesh is configured with.
+        // See https://linkerd.io/2/tasks/using-custom-domain/ for info
+        string cluster_domain = 2;
+    }
+
+    message ConsulConnectMesh {
+        MeshInstallation installation = 1;
+    }
+
+    /*
+        The cluster on which the control plane for this mesh is deployed.
+        Not all MeshTypes have a MeshInstallation. Only self-hosted
+        control planes such as Istio and Linkerd will have installation metadata.
+    */
+    message MeshInstallation {
+        // Namespace in which the control plane has been installed.
+        string namespace = 1;
+
+        // Cluster in which the control plane has been installed.
+        string cluster = 2;
+
+        // Version of the Mesh that has been installed.
+        // Determined using the image tag on the
+        // Mesh's primary control plane image (e.g. the istio-pilot image tag).
+        string version = 3;
+    }
+
+}
+
+message MeshStatus {
+
+    // The observed generation of the Mesh.
+    // When this matches the Mesh's metadata.generation, it indicates that mesh-networking
+    // has reconciled the latest version of the Mesh.
+    int64 observed_generation = 1;
+
+    // The VirtualMesh, if any, which contains this mesh.
+    repeated AppliedVirtualMesh applied_virtual_meshes = 5;
+
+    // AppliedTrafficPolicy represents a traffic policy that has been applied to the MeshService.
+    // if an existing Traffic Policy becomes invalid, the last applied policy will be used
+    message AppliedVirtualMesh {
+        // reference to the traffic policy
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // the observed generation of the accepted traffic policy
+        int64 observedGeneration = 2;
+
+        // the last known valid spec of the traffic policy
+        .networking.smh.solo.io.VirtualMeshSpec spec = 3;
+    }
+
+}

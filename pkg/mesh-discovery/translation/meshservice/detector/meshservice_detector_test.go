@@ -7,12 +7,12 @@ import (
 	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/smh/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	. "github.com/solo-io/smh/pkg/mesh-discovery/translation/meshservice/detector"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshservice/detector"
 )
 
 var _ = Describe("MeshserviceDetector", func() {

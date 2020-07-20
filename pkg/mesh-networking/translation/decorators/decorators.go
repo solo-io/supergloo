@@ -2,7 +2,7 @@ package decorators
 
 import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 )
 
 // parameters for initializing decorators
