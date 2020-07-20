@@ -4,6 +4,7 @@
 // * ConfigMaps
 // * Services
 // * Pods
+// * Nodes
 // * Deployments
 // * ReplicaSets
 // * DaemonSets
@@ -41,6 +42,8 @@ type Snapshot interface {
 	Services() v1_sets.ServiceSet
 	// return the set of input Pods
 	Pods() v1_sets.PodSet
+	// return the set of input Nodes
+	Nodes() v1_sets.NodeSet
 
 	// return the set of input Deployments
 	Deployments() apps_v1_sets.DeploymentSet
@@ -58,6 +61,7 @@ type snapshot struct {
 	configMaps v1_sets.ConfigMapSet
 	services   v1_sets.ServiceSet
 	pods       v1_sets.PodSet
+	nodes      v1_sets.NodeSet
 
 	deployments  apps_v1_sets.DeploymentSet
 	replicaSets  apps_v1_sets.ReplicaSetSet
@@ -71,6 +75,7 @@ func NewSnapshot(
 	configMaps v1_sets.ConfigMapSet,
 	services v1_sets.ServiceSet,
 	pods v1_sets.PodSet,
+	nodes v1_sets.NodeSet,
 
 	deployments apps_v1_sets.DeploymentSet,
 	replicaSets apps_v1_sets.ReplicaSetSet,
@@ -84,6 +89,7 @@ func NewSnapshot(
 		configMaps:   configMaps,
 		services:     services,
 		pods:         pods,
+		nodes:        nodes,
 		deployments:  deployments,
 		replicaSets:  replicaSets,
 		daemonSets:   daemonSets,
@@ -101,6 +107,10 @@ func (s snapshot) Services() v1_sets.ServiceSet {
 
 func (s snapshot) Pods() v1_sets.PodSet {
 	return s.pods
+}
+
+func (s snapshot) Nodes() v1_sets.NodeSet {
+	return s.nodes
 }
 
 func (s snapshot) Deployments() apps_v1_sets.DeploymentSet {
@@ -136,6 +146,8 @@ type BuildOptions struct {
 	Services []client.ListOption
 	// List options for composing a snapshot from Pods
 	Pods []client.ListOption
+	// List options for composing a snapshot from Nodes
+	Nodes []client.ListOption
 
 	// List options for composing a snapshot from Deployments
 	Deployments []client.ListOption
@@ -154,6 +166,7 @@ type multiClusterBuilder struct {
 	configMaps v1.MulticlusterConfigMapClient
 	services   v1.MulticlusterServiceClient
 	pods       v1.MulticlusterPodClient
+	nodes      v1.MulticlusterNodeClient
 
 	deployments  apps_v1.MulticlusterDeploymentClient
 	replicaSets  apps_v1.MulticlusterReplicaSetClient
@@ -172,6 +185,7 @@ func NewMultiClusterBuilder(
 		configMaps: v1.NewMulticlusterConfigMapClient(client),
 		services:   v1.NewMulticlusterServiceClient(client),
 		pods:       v1.NewMulticlusterPodClient(client),
+		nodes:      v1.NewMulticlusterNodeClient(client),
 
 		deployments:  apps_v1.NewMulticlusterDeploymentClient(client),
 		replicaSets:  apps_v1.NewMulticlusterReplicaSetClient(client),
@@ -185,6 +199,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
 	pods := v1_sets.NewPodSet()
+	nodes := v1_sets.NewNodeSet()
 
 	deployments := apps_v1_sets.NewDeploymentSet()
 	replicaSets := apps_v1_sets.NewReplicaSetSet()
@@ -202,6 +217,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods...); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertNodesFromCluster(ctx, cluster, nodes, opts.Nodes...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertDeploymentsFromCluster(ctx, cluster, deployments, opts.Deployments...); err != nil {
@@ -225,6 +243,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		configMaps,
 		services,
 		pods,
+		nodes,
 		deployments,
 		replicaSets,
 		daemonSets,
@@ -287,6 +306,25 @@ func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
 		pods.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterBuilder) insertNodesFromCluster(ctx context.Context, cluster string, nodes v1_sets.NodeSet, opts ...client.ListOption) error {
+	nodeClient, err := b.nodes.Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	nodeList, err := nodeClient.ListNode(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range nodeList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		nodes.Insert(&item)
 	}
 
 	return nil
@@ -374,6 +412,7 @@ type singleClusterBuilder struct {
 	configMaps v1.ConfigMapClient
 	services   v1.ServiceClient
 	pods       v1.PodClient
+	nodes      v1.NodeClient
 
 	deployments  apps_v1.DeploymentClient
 	replicaSets  apps_v1.ReplicaSetClient
@@ -390,6 +429,7 @@ func NewSingleClusterBuilder(
 		configMaps: v1.NewConfigMapClient(client),
 		services:   v1.NewServiceClient(client),
 		pods:       v1.NewPodClient(client),
+		nodes:      v1.NewNodeClient(client),
 
 		deployments:  apps_v1.NewDeploymentClient(client),
 		replicaSets:  apps_v1.NewReplicaSetClient(client),
@@ -403,6 +443,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
 	pods := v1_sets.NewPodSet()
+	nodes := v1_sets.NewNodeSet()
 
 	deployments := apps_v1_sets.NewDeploymentSet()
 	replicaSets := apps_v1_sets.NewReplicaSetSet()
@@ -418,6 +459,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertPods(ctx, pods, opts.Pods...); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertNodes(ctx, nodes, opts.Nodes...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertDeployments(ctx, deployments, opts.Deployments...); err != nil {
@@ -439,6 +483,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		configMaps,
 		services,
 		pods,
+		nodes,
 		deployments,
 		replicaSets,
 		daemonSets,
@@ -483,6 +528,19 @@ func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodS
 	for _, item := range podList.Items {
 		item := item // pike
 		pods.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterBuilder) insertNodes(ctx context.Context, nodes v1_sets.NodeSet, opts ...client.ListOption) error {
+	nodeList, err := b.nodes.ListNode(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range nodeList.Items {
+		item := item // pike
+		nodes.Insert(&item)
 	}
 
 	return nil

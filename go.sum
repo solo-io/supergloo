@@ -701,6 +701,7 @@ github.com/klauspost/cpuid v1.2.0/go.mod h1:Pj4uuM528wm8OyEC2QMXAi2YiTZ96dNQPGgo
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/konsorten/go-windows-terminal-sequences v1.0.2 h1:DB17ag19krx9CFsz4o3enTrPXyIXCl+2iCXH/aMAp9s=
 github.com/konsorten/go-windows-terminal-sequences v1.0.2/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
+github.com/konsorten/go-windows-terminal-sequences v1.0.3 h1:CE8S1cTafDpPvMhIxNJKvHsGVBgn1xWYf1NbHQhywc8=
 github.com/konsorten/go-windows-terminal-sequences v1.0.3/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
@@ -994,6 +995,8 @@ github.com/solo-io/external-apis v0.0.4 h1:R/Nc4LneCYnbIbvstmTC6pjtmLoyfRFj3/eJt
 github.com/solo-io/external-apis v0.0.4/go.mod h1:OD2Adcek+RqpqtnNwhMCeu9DtCO8ZJ8UtXnb897vfjw=
 github.com/solo-io/external-apis v0.0.5 h1:pbR0e17My745pQkZmmEvSpiVpIgFyvz5mhqmDVh2zYk=
 github.com/solo-io/external-apis v0.0.5/go.mod h1:zWTApZwdeW4b5MiLFhk7lxks77mpscqBTC8Lpo6dja8=
+github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528 h1:EGFHOSNosZ6f1n7bKlVqKoGuzzX+j7fNDv8QrgpYYHs=
+github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528/go.mod h1:RnyllmkXvBBBAVJPlQnkc1uVKJ1ckYOZGX13uhTwGGM=
 github.com/solo-io/go-utils v0.11.7/go.mod h1:D5lbi4EyIMq+T5gzjJacu0Ou4Z1brL7g2YYYYgYBJso=
 github.com/solo-io/go-utils v0.13.0/go.mod h1:pA8kwWDNlJueffTcC1BYddTerO8zpUUGl5/7JGeC5iU=
 github.com/solo-io/go-utils v0.15.2/go.mod h1:pA8kwWDNlJueffTcC1BYddTerO8zpUUGl5/7JGeC5iU=
@@ -1008,6 +1011,9 @@ github.com/solo-io/reporting-client v0.1.3/go.mod h1:FmBDzwc1zEwayCCrlP+1w7NcpM0
 github.com/solo-io/skv2 v0.4.2/go.mod h1:Dog3OvhkweJBYnSoJIDOZlKSZhnag4wvusxPoYOw/jw=
 github.com/solo-io/skv2 v0.5.0 h1:8pW5PPGs3RSSYexuP0VdiqZdrfXVj0M/3v8F6/eaPFw=
 github.com/solo-io/skv2 v0.5.0/go.mod h1:68YUGLJvRWsZ2UUCsr/tT7noYI3yX9CmRgW+j0OqAJE=
+github.com/solo-io/skv2 v0.6.1/go.mod h1:EbaG2+5bpOSUNIIEBqAK/yfALx5ZuSN/+37h17l+t4Q=
+github.com/solo-io/skv2 v0.7.3-0.20200720193056-82d0f8632ef9 h1:/w/3cqi2yuonL9FYZxQyGZshxukty5iRCyKRVZbbSy4=
+github.com/solo-io/skv2 v0.7.3-0.20200720193056-82d0f8632ef9/go.mod h1:yQqXNZgCWZ2LqrjK8I41YBjF6NpNSdaEBw2ipcqgDco=
 github.com/solo-io/solo-kit v0.12.2/go.mod h1:oNDT3CNTgdjNh5tgkr4Wj8tj+h0VtJjfT/ZaZ8e1/js=
 github.com/solo-io/solo-kit v0.13.3 h1:uNAYYpstQy234yMuHZyUnZxjZ+2Zl+eTHRexELDTzf0=
 github.com/solo-io/solo-kit v0.13.3/go.mod h1:Sukhlm32r1cSJIztPQ6RZxroK0VP4TGOkTecaBXTEoo=

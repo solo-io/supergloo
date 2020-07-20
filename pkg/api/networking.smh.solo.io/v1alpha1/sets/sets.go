@@ -13,17 +13,29 @@ import (
 )
 
 type TrafficPolicySet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*networking_smh_solo_io_v1alpha1.TrafficPolicy
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*networking_smh_solo_io_v1alpha1.TrafficPolicy) bool) []*networking_smh_solo_io_v1alpha1.TrafficPolicy
+	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_smh_solo_io_v1alpha1.TrafficPolicy
+	// Insert a resource into the set.
 	Insert(trafficPolicy ...*networking_smh_solo_io_v1alpha1.TrafficPolicy)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(trafficPolicySet TrafficPolicySet) bool
-	Has(trafficPolicy *networking_smh_solo_io_v1alpha1.TrafficPolicy) bool
-	Delete(trafficPolicy *networking_smh_solo_io_v1alpha1.TrafficPolicy)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(trafficPolicy ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(trafficPolicy ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set TrafficPolicySet) TrafficPolicySet
+	// Return the difference with the provided set
 	Difference(set TrafficPolicySet) TrafficPolicySet
+	// Return the intersection with the provided set
 	Intersection(set TrafficPolicySet) TrafficPolicySet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.TrafficPolicy, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -55,9 +67,17 @@ func (s *trafficPolicySet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s *trafficPolicySet) List() []*networking_smh_solo_io_v1alpha1.TrafficPolicy {
+func (s *trafficPolicySet) List(filterResource ...func(*networking_smh_solo_io_v1alpha1.TrafficPolicy) bool) []*networking_smh_solo_io_v1alpha1.TrafficPolicy {
+
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_smh_solo_io_v1alpha1.TrafficPolicy))
+		})
+	}
+
 	var trafficPolicyList []*networking_smh_solo_io_v1alpha1.TrafficPolicy
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		trafficPolicyList = append(trafficPolicyList, obj.(*networking_smh_solo_io_v1alpha1.TrafficPolicy))
 	}
 	return trafficPolicyList
@@ -79,7 +99,7 @@ func (s *trafficPolicySet) Insert(
 	}
 }
 
-func (s *trafficPolicySet) Has(trafficPolicy *networking_smh_solo_io_v1alpha1.TrafficPolicy) bool {
+func (s *trafficPolicySet) Has(trafficPolicy ezkube.ResourceId) bool {
 	return s.set.Has(trafficPolicy)
 }
 
@@ -89,7 +109,7 @@ func (s *trafficPolicySet) Equal(
 	return s.set.Equal(makeGenericTrafficPolicySet(trafficPolicySet.List()))
 }
 
-func (s *trafficPolicySet) Delete(TrafficPolicy *networking_smh_solo_io_v1alpha1.TrafficPolicy) {
+func (s *trafficPolicySet) Delete(TrafficPolicy ezkube.ResourceId) {
 	s.set.Delete(TrafficPolicy)
 }
 
@@ -125,17 +145,29 @@ func (s *trafficPolicySet) Length() int {
 }
 
 type AccessPolicySet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*networking_smh_solo_io_v1alpha1.AccessPolicy
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*networking_smh_solo_io_v1alpha1.AccessPolicy) bool) []*networking_smh_solo_io_v1alpha1.AccessPolicy
+	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_smh_solo_io_v1alpha1.AccessPolicy
+	// Insert a resource into the set.
 	Insert(accessPolicy ...*networking_smh_solo_io_v1alpha1.AccessPolicy)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(accessPolicySet AccessPolicySet) bool
-	Has(accessPolicy *networking_smh_solo_io_v1alpha1.AccessPolicy) bool
-	Delete(accessPolicy *networking_smh_solo_io_v1alpha1.AccessPolicy)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(accessPolicy ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(accessPolicy ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set AccessPolicySet) AccessPolicySet
+	// Return the difference with the provided set
 	Difference(set AccessPolicySet) AccessPolicySet
+	// Return the intersection with the provided set
 	Intersection(set AccessPolicySet) AccessPolicySet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.AccessPolicy, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -167,9 +199,17 @@ func (s *accessPolicySet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s *accessPolicySet) List() []*networking_smh_solo_io_v1alpha1.AccessPolicy {
+func (s *accessPolicySet) List(filterResource ...func(*networking_smh_solo_io_v1alpha1.AccessPolicy) bool) []*networking_smh_solo_io_v1alpha1.AccessPolicy {
+
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_smh_solo_io_v1alpha1.AccessPolicy))
+		})
+	}
+
 	var accessPolicyList []*networking_smh_solo_io_v1alpha1.AccessPolicy
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		accessPolicyList = append(accessPolicyList, obj.(*networking_smh_solo_io_v1alpha1.AccessPolicy))
 	}
 	return accessPolicyList
@@ -191,7 +231,7 @@ func (s *accessPolicySet) Insert(
 	}
 }
 
-func (s *accessPolicySet) Has(accessPolicy *networking_smh_solo_io_v1alpha1.AccessPolicy) bool {
+func (s *accessPolicySet) Has(accessPolicy ezkube.ResourceId) bool {
 	return s.set.Has(accessPolicy)
 }
 
@@ -201,7 +241,7 @@ func (s *accessPolicySet) Equal(
 	return s.set.Equal(makeGenericAccessPolicySet(accessPolicySet.List()))
 }
 
-func (s *accessPolicySet) Delete(AccessPolicy *networking_smh_solo_io_v1alpha1.AccessPolicy) {
+func (s *accessPolicySet) Delete(AccessPolicy ezkube.ResourceId) {
 	s.set.Delete(AccessPolicy)
 }
 
@@ -237,17 +277,29 @@ func (s *accessPolicySet) Length() int {
 }
 
 type VirtualMeshSet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*networking_smh_solo_io_v1alpha1.VirtualMesh
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*networking_smh_solo_io_v1alpha1.VirtualMesh) bool) []*networking_smh_solo_io_v1alpha1.VirtualMesh
+	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_smh_solo_io_v1alpha1.VirtualMesh
+	// Insert a resource into the set.
 	Insert(virtualMesh ...*networking_smh_solo_io_v1alpha1.VirtualMesh)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(virtualMeshSet VirtualMeshSet) bool
-	Has(virtualMesh *networking_smh_solo_io_v1alpha1.VirtualMesh) bool
-	Delete(virtualMesh *networking_smh_solo_io_v1alpha1.VirtualMesh)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(virtualMesh ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(virtualMesh ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set VirtualMeshSet) VirtualMeshSet
+	// Return the difference with the provided set
 	Difference(set VirtualMeshSet) VirtualMeshSet
+	// Return the intersection with the provided set
 	Intersection(set VirtualMeshSet) VirtualMeshSet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha1.VirtualMesh, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -279,9 +331,17 @@ func (s *virtualMeshSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s *virtualMeshSet) List() []*networking_smh_solo_io_v1alpha1.VirtualMesh {
+func (s *virtualMeshSet) List(filterResource ...func(*networking_smh_solo_io_v1alpha1.VirtualMesh) bool) []*networking_smh_solo_io_v1alpha1.VirtualMesh {
+
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_smh_solo_io_v1alpha1.VirtualMesh))
+		})
+	}
+
 	var virtualMeshList []*networking_smh_solo_io_v1alpha1.VirtualMesh
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		virtualMeshList = append(virtualMeshList, obj.(*networking_smh_solo_io_v1alpha1.VirtualMesh))
 	}
 	return virtualMeshList
@@ -303,7 +363,7 @@ func (s *virtualMeshSet) Insert(
 	}
 }
 
-func (s *virtualMeshSet) Has(virtualMesh *networking_smh_solo_io_v1alpha1.VirtualMesh) bool {
+func (s *virtualMeshSet) Has(virtualMesh ezkube.ResourceId) bool {
 	return s.set.Has(virtualMesh)
 }
 
@@ -313,7 +373,7 @@ func (s *virtualMeshSet) Equal(
 	return s.set.Equal(makeGenericVirtualMeshSet(virtualMeshSet.List()))
 }
 
-func (s *virtualMeshSet) Delete(VirtualMesh *networking_smh_solo_io_v1alpha1.VirtualMesh) {
+func (s *virtualMeshSet) Delete(VirtualMesh ezkube.ResourceId) {
 	s.set.Delete(VirtualMesh)
 }
 

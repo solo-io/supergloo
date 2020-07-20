@@ -13,17 +13,29 @@ import (
 )
 
 type VirtualMeshCertificateSigningRequestSet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) bool) []*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest
+	// Return the Set as a map of key to resource.
 	Map() map[string]*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest
+	// Insert a resource into the set.
 	Insert(virtualMeshCertificateSigningRequest ...*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(virtualMeshCertificateSigningRequestSet VirtualMeshCertificateSigningRequestSet) bool
-	Has(virtualMeshCertificateSigningRequest *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) bool
-	Delete(virtualMeshCertificateSigningRequest *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(virtualMeshCertificateSigningRequest ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(virtualMeshCertificateSigningRequest ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet
+	// Return the difference with the provided set
 	Difference(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet
+	// Return the intersection with the provided set
 	Intersection(set VirtualMeshCertificateSigningRequestSet) VirtualMeshCertificateSigningRequestSet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -55,9 +67,17 @@ func (s *virtualMeshCertificateSigningRequestSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s *virtualMeshCertificateSigningRequestSet) List() []*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest {
+func (s *virtualMeshCertificateSigningRequestSet) List(filterResource ...func(*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) bool) []*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest {
+
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest))
+		})
+	}
+
 	var virtualMeshCertificateSigningRequestList []*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		virtualMeshCertificateSigningRequestList = append(virtualMeshCertificateSigningRequestList, obj.(*security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest))
 	}
 	return virtualMeshCertificateSigningRequestList
@@ -79,7 +99,7 @@ func (s *virtualMeshCertificateSigningRequestSet) Insert(
 	}
 }
 
-func (s *virtualMeshCertificateSigningRequestSet) Has(virtualMeshCertificateSigningRequest *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) bool {
+func (s *virtualMeshCertificateSigningRequestSet) Has(virtualMeshCertificateSigningRequest ezkube.ResourceId) bool {
 	return s.set.Has(virtualMeshCertificateSigningRequest)
 }
 
@@ -89,7 +109,7 @@ func (s *virtualMeshCertificateSigningRequestSet) Equal(
 	return s.set.Equal(makeGenericVirtualMeshCertificateSigningRequestSet(virtualMeshCertificateSigningRequestSet.List()))
 }
 
-func (s *virtualMeshCertificateSigningRequestSet) Delete(VirtualMeshCertificateSigningRequest *security_smh_solo_io_v1alpha1.VirtualMeshCertificateSigningRequest) {
+func (s *virtualMeshCertificateSigningRequestSet) Delete(VirtualMeshCertificateSigningRequest ezkube.ResourceId) {
 	s.set.Delete(VirtualMeshCertificateSigningRequest)
 }
 

@@ -51,19 +51,21 @@ message MeshSpec {
         }
 
         message IngressGatewayInfo {
+
             // labels matching the workload which backs the gateway,
             // defaults to {"istio": "ingressgateway"}
             map<string, string> workload_labels = 1;
 
-            // the externally-reachable address
-            // this will be the addressed used for cross-cluster connectivity.
-            // defaults to the LoadBalancer Address or NodeIP of the Kubernetes Service (depending on its type)
+            // the externally-reachable address on which the gateway is listening for TLS connections.
+            // this will be the address used for cross-cluster connectivity.
+            // defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type)
             string external_address = 2;
 
-            // service port on which the gateway is listening for TLS connections.
+            // the externally-reachable port on which the gateway is listening for TLS connections.
+            // this will be the port used for cross-cluster connectivity.
             // List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio
-            // Defaults to 15443
-            uint32 tls_service_port = 3;
+            // Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type)
+            uint32 external_tls_port = 3;
 
             // container port on which the gateway is listening for TLS connections.
             // Defaults to 15443

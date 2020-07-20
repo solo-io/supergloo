@@ -128,9 +128,9 @@ func NewSinglePartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		LabeledMeshServiceSet{labeledMeshServices},
-		LabeledMeshWorkloadSet{labeledMeshWorkloads},
-		LabeledMeshSet{labeledMeshes},
+		[]LabeledMeshServiceSet{labeledMeshServices},
+		[]LabeledMeshWorkloadSet{labeledMeshWorkloads},
+		[]LabeledMeshSet{labeledMeshes},
 	), nil
 }
 

@@ -5,6 +5,7 @@
 // * ConfigMaps
 // * Services
 // * Pods
+// * Nodes
 // * Deployments
 // * ReplicaSets
 // * DaemonSets
@@ -37,6 +38,7 @@ type multiClusterReconciler interface {
 	v1_controllers.MulticlusterConfigMapReconciler
 	v1_controllers.MulticlusterServiceReconciler
 	v1_controllers.MulticlusterPodReconciler
+	v1_controllers.MulticlusterNodeReconciler
 
 	apps_v1_controllers.MulticlusterDeploymentReconciler
 	apps_v1_controllers.MulticlusterReplicaSetReconciler
@@ -71,6 +73,7 @@ func RegisterMultiClusterReconciler(
 	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters).AddMulticlusterConfigMapReconciler(ctx, r)
 	v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters).AddMulticlusterServiceReconciler(ctx, r)
 	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters).AddMulticlusterPodReconciler(ctx, r)
+	v1_controllers.NewMulticlusterNodeReconcileLoop("Node", clusters).AddMulticlusterNodeReconciler(ctx, r)
 
 	apps_v1_controllers.NewMulticlusterDeploymentReconcileLoop("Deployment", clusters).AddMulticlusterDeploymentReconciler(ctx, r)
 	apps_v1_controllers.NewMulticlusterReplicaSetReconcileLoop("ReplicaSet", clusters).AddMulticlusterReplicaSetReconciler(ctx, r)
@@ -115,6 +118,21 @@ func (r *multiClusterReconcilerImpl) ReconcilePod(clusterName string, obj *v1.Po
 }
 
 func (r *multiClusterReconcilerImpl) ReconcilePodDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileNode(clusterName string, obj *v1.Node) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileNodeDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -189,6 +207,7 @@ type singleClusterReconciler interface {
 	v1_controllers.ConfigMapReconciler
 	v1_controllers.ServiceReconciler
 	v1_controllers.PodReconciler
+	v1_controllers.NodeReconciler
 
 	apps_v1_controllers.DeploymentReconciler
 	apps_v1_controllers.ReplicaSetReconciler
@@ -227,6 +246,9 @@ func RegisterSingleClusterReconciler(
 		return err
 	}
 	if err := v1_controllers.NewPodReconcileLoop("Pod", mgr, reconcile.Options{}).RunPodReconciler(ctx, r); err != nil {
+		return err
+	}
+	if err := v1_controllers.NewNodeReconcileLoop("Node", mgr, reconcile.Options{}).RunNodeReconciler(ctx, r); err != nil {
 		return err
 	}
 
@@ -277,6 +299,19 @@ func (r *singleClusterReconcilerImpl) ReconcilePod(obj *v1.Pod) (reconcile.Resul
 }
 
 func (r *singleClusterReconcilerImpl) ReconcilePodDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileNode(obj *v1.Node) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileNodeDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

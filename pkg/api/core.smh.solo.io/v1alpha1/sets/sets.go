@@ -13,17 +13,29 @@ import (
 )
 
 type SettingsSet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*core_smh_solo_io_v1alpha1.Settings
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*core_smh_solo_io_v1alpha1.Settings) bool) []*core_smh_solo_io_v1alpha1.Settings
+	// Return the Set as a map of key to resource.
 	Map() map[string]*core_smh_solo_io_v1alpha1.Settings
+	// Insert a resource into the set.
 	Insert(settings ...*core_smh_solo_io_v1alpha1.Settings)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(settingsSet SettingsSet) bool
-	Has(settings *core_smh_solo_io_v1alpha1.Settings) bool
-	Delete(settings *core_smh_solo_io_v1alpha1.Settings)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(settings ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(settings ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set SettingsSet) SettingsSet
+	// Return the difference with the provided set
 	Difference(set SettingsSet) SettingsSet
+	// Return the intersection with the provided set
 	Intersection(set SettingsSet) SettingsSet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*core_smh_solo_io_v1alpha1.Settings, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -55,9 +67,17 @@ func (s *settingsSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s *settingsSet) List() []*core_smh_solo_io_v1alpha1.Settings {
+func (s *settingsSet) List(filterResource ...func(*core_smh_solo_io_v1alpha1.Settings) bool) []*core_smh_solo_io_v1alpha1.Settings {
+
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*core_smh_solo_io_v1alpha1.Settings))
+		})
+	}
+
 	var settingsList []*core_smh_solo_io_v1alpha1.Settings
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		settingsList = append(settingsList, obj.(*core_smh_solo_io_v1alpha1.Settings))
 	}
 	return settingsList
@@ -79,7 +99,7 @@ func (s *settingsSet) Insert(
 	}
 }
 
-func (s *settingsSet) Has(settings *core_smh_solo_io_v1alpha1.Settings) bool {
+func (s *settingsSet) Has(settings ezkube.ResourceId) bool {
 	return s.set.Has(settings)
 }
 
@@ -89,7 +109,7 @@ func (s *settingsSet) Equal(
 	return s.set.Equal(makeGenericSettingsSet(settingsSet.List()))
 }
 
-func (s *settingsSet) Delete(Settings *core_smh_solo_io_v1alpha1.Settings) {
+func (s *settingsSet) Delete(Settings ezkube.ResourceId) {
 	s.set.Delete(Settings)
 }
 

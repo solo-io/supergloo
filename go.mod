@@ -44,11 +44,11 @@ require (
 	github.com/sergi/go-diff v1.1.0
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/solo-io/anyvendor v0.0.1
-	github.com/solo-io/external-apis v0.0.5
+	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/protoc-gen-ext v0.0.9
 	github.com/solo-io/reporting-client v0.1.3
-	github.com/solo-io/skv2 v0.6.1
+	github.com/solo-io/skv2 v0.7.3-0.20200720193056-82d0f8632ef9
 	github.com/solo-io/solo-kit v0.13.8
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v1.0.0
@@ -77,7 +77,6 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
-	github.com/solo-io/skv2 => ../skv2
 
 	k8s.io/api => k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.2

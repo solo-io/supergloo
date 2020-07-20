@@ -13,17 +13,29 @@ import (
 )
 
 type MeshServiceSet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*discovery_smh_solo_io_v1alpha1.MeshService
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*discovery_smh_solo_io_v1alpha1.MeshService) bool) []*discovery_smh_solo_io_v1alpha1.MeshService
+	// Return the Set as a map of key to resource.
 	Map() map[string]*discovery_smh_solo_io_v1alpha1.MeshService
+	// Insert a resource into the set.
 	Insert(meshService ...*discovery_smh_solo_io_v1alpha1.MeshService)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(meshServiceSet MeshServiceSet) bool
-	Has(meshService *discovery_smh_solo_io_v1alpha1.MeshService) bool
-	Delete(meshService *discovery_smh_solo_io_v1alpha1.MeshService)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(meshService ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(meshService ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set MeshServiceSet) MeshServiceSet
+	// Return the difference with the provided set
 	Difference(set MeshServiceSet) MeshServiceSet
+	// Return the intersection with the provided set
 	Intersection(set MeshServiceSet) MeshServiceSet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshService, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -55,9 +67,17 @@ func (s *meshServiceSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s *meshServiceSet) List() []*discovery_smh_solo_io_v1alpha1.MeshService {
+func (s *meshServiceSet) List(filterResource ...func(*discovery_smh_solo_io_v1alpha1.MeshService) bool) []*discovery_smh_solo_io_v1alpha1.MeshService {
+
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*discovery_smh_solo_io_v1alpha1.MeshService))
+		})
+	}
+
 	var meshServiceList []*discovery_smh_solo_io_v1alpha1.MeshService
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		meshServiceList = append(meshServiceList, obj.(*discovery_smh_solo_io_v1alpha1.MeshService))
 	}
 	return meshServiceList
@@ -79,7 +99,7 @@ func (s *meshServiceSet) Insert(
 	}
 }
 
-func (s *meshServiceSet) Has(meshService *discovery_smh_solo_io_v1alpha1.MeshService) bool {
+func (s *meshServiceSet) Has(meshService ezkube.ResourceId) bool {
 	return s.set.Has(meshService)
 }
 
@@ -89,7 +109,7 @@ func (s *meshServiceSet) Equal(
 	return s.set.Equal(makeGenericMeshServiceSet(meshServiceSet.List()))
 }
 
-func (s *meshServiceSet) Delete(MeshService *discovery_smh_solo_io_v1alpha1.MeshService) {
+func (s *meshServiceSet) Delete(MeshService ezkube.ResourceId) {
 	s.set.Delete(MeshService)
 }
 
@@ -125,17 +145,29 @@ func (s *meshServiceSet) Length() int {
 }
 
 type MeshWorkloadSet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*discovery_smh_solo_io_v1alpha1.MeshWorkload
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*discovery_smh_solo_io_v1alpha1.MeshWorkload) bool) []*discovery_smh_solo_io_v1alpha1.MeshWorkload
+	// Return the Set as a map of key to resource.
 	Map() map[string]*discovery_smh_solo_io_v1alpha1.MeshWorkload
+	// Insert a resource into the set.
 	Insert(meshWorkload ...*discovery_smh_solo_io_v1alpha1.MeshWorkload)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(meshWorkloadSet MeshWorkloadSet) bool
-	Has(meshWorkload *discovery_smh_solo_io_v1alpha1.MeshWorkload) bool
-	Delete(meshWorkload *discovery_smh_solo_io_v1alpha1.MeshWorkload)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(meshWorkload ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(meshWorkload ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set MeshWorkloadSet) MeshWorkloadSet
+	// Return the difference with the provided set
 	Difference(set MeshWorkloadSet) MeshWorkloadSet
+	// Return the intersection with the provided set
 	Intersection(set MeshWorkloadSet) MeshWorkloadSet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.MeshWorkload, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -167,9 +199,17 @@ func (s *meshWorkloadSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s *meshWorkloadSet) List() []*discovery_smh_solo_io_v1alpha1.MeshWorkload {
+func (s *meshWorkloadSet) List(filterResource ...func(*discovery_smh_solo_io_v1alpha1.MeshWorkload) bool) []*discovery_smh_solo_io_v1alpha1.MeshWorkload {
+
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*discovery_smh_solo_io_v1alpha1.MeshWorkload))
+		})
+	}
+
 	var meshWorkloadList []*discovery_smh_solo_io_v1alpha1.MeshWorkload
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		meshWorkloadList = append(meshWorkloadList, obj.(*discovery_smh_solo_io_v1alpha1.MeshWorkload))
 	}
 	return meshWorkloadList
@@ -191,7 +231,7 @@ func (s *meshWorkloadSet) Insert(
 	}
 }
 
-func (s *meshWorkloadSet) Has(meshWorkload *discovery_smh_solo_io_v1alpha1.MeshWorkload) bool {
+func (s *meshWorkloadSet) Has(meshWorkload ezkube.ResourceId) bool {
 	return s.set.Has(meshWorkload)
 }
 
@@ -201,7 +241,7 @@ func (s *meshWorkloadSet) Equal(
 	return s.set.Equal(makeGenericMeshWorkloadSet(meshWorkloadSet.List()))
 }
 
-func (s *meshWorkloadSet) Delete(MeshWorkload *discovery_smh_solo_io_v1alpha1.MeshWorkload) {
+func (s *meshWorkloadSet) Delete(MeshWorkload ezkube.ResourceId) {
 	s.set.Delete(MeshWorkload)
 }
 
@@ -237,17 +277,29 @@ func (s *meshWorkloadSet) Length() int {
 }
 
 type MeshSet interface {
+	// Get the set stored keys
 	Keys() sets.String
-	List() []*discovery_smh_solo_io_v1alpha1.Mesh
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*discovery_smh_solo_io_v1alpha1.Mesh) bool) []*discovery_smh_solo_io_v1alpha1.Mesh
+	// Return the Set as a map of key to resource.
 	Map() map[string]*discovery_smh_solo_io_v1alpha1.Mesh
+	// Insert a resource into the set.
 	Insert(mesh ...*discovery_smh_solo_io_v1alpha1.Mesh)
+	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(meshSet MeshSet) bool
-	Has(mesh *discovery_smh_solo_io_v1alpha1.Mesh) bool
-	Delete(mesh *discovery_smh_solo_io_v1alpha1.Mesh)
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(mesh ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(mesh ezkube.ResourceId)
+	// Return the union with the provided set
 	Union(set MeshSet) MeshSet
+	// Return the difference with the provided set
 	Difference(set MeshSet) MeshSet
+	// Return the intersection with the provided set
 	Intersection(set MeshSet) MeshSet
+	// Find the resource with the given ID
 	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha1.Mesh, error)
+	// Get the length of the set
 	Length() int
 }
 
@@ -279,9 +331,17 @@ func (s *meshSet) Keys() sets.String {
 	return s.set.Keys()
 }
 
-func (s *meshSet) List() []*discovery_smh_solo_io_v1alpha1.Mesh {
+func (s *meshSet) List(filterResource ...func(*discovery_smh_solo_io_v1alpha1.Mesh) bool) []*discovery_smh_solo_io_v1alpha1.Mesh {
+
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*discovery_smh_solo_io_v1alpha1.Mesh))
+		})
+	}
+
 	var meshList []*discovery_smh_solo_io_v1alpha1.Mesh
-	for _, obj := range s.set.List() {
+	for _, obj := range s.set.List(genericFilters...) {
 		meshList = append(meshList, obj.(*discovery_smh_solo_io_v1alpha1.Mesh))
 	}
 	return meshList
@@ -303,7 +363,7 @@ func (s *meshSet) Insert(
 	}
 }
 
-func (s *meshSet) Has(mesh *discovery_smh_solo_io_v1alpha1.Mesh) bool {
+func (s *meshSet) Has(mesh ezkube.ResourceId) bool {
 	return s.set.Has(mesh)
 }
 
@@ -313,7 +373,7 @@ func (s *meshSet) Equal(
 	return s.set.Equal(makeGenericMeshSet(meshSet.List()))
 }
 
-func (s *meshSet) Delete(Mesh *discovery_smh_solo_io_v1alpha1.Mesh) {
+func (s *meshSet) Delete(Mesh ezkube.ResourceId) {
 	s.set.Delete(Mesh)
 }
 

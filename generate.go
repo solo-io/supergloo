@@ -43,6 +43,7 @@ var (
 			"Pod",
 			"Service",
 			"ConfigMap",
+			"Node",
 		},
 		appsv1.SchemeGroupVersion: {
 			"Deployment",

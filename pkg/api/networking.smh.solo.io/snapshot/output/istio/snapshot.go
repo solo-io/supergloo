@@ -160,11 +160,11 @@ func NewSinglePartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		LabeledDestinationRuleSet{labeledDestinationRules},
-		LabeledEnvoyFilterSet{labeledEnvoyFilters},
-		LabeledGatewaySet{labeledGateways},
-		LabeledServiceEntrySet{labeledServiceEntries},
-		LabeledVirtualServiceSet{labeledVirtualServices},
+		[]LabeledDestinationRuleSet{labeledDestinationRules},
+		[]LabeledEnvoyFilterSet{labeledEnvoyFilters},
+		[]LabeledGatewaySet{labeledGateways},
+		[]LabeledServiceEntrySet{labeledServiceEntries},
+		[]LabeledVirtualServiceSet{labeledVirtualServices},
 	), nil
 }
 
