@@ -3,8 +3,8 @@ package translation
 import (
 	"context"
 
-	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
-	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
+
 	"github.com/solo-io/smh/pkg/mesh-discovery/translation/mesh"
 	meshdetector "github.com/solo-io/smh/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/smh/pkg/mesh-discovery/translation/mesh/detector/consul"
@@ -27,13 +27,12 @@ import (
 type dependencyFactory interface {
 	makeMeshTranslator(
 		ctx context.Context,
-		configMaps corev1sets.ConfigMapSet,
+		in input.Snapshot,
 	) mesh.Translator
 
 	makeMeshWorkloadTranslator(
 		ctx context.Context,
-		pods corev1sets.PodSet,
-		replicaSets appsv1sets.ReplicaSetSet,
+		in input.Snapshot,
 	) meshworkload.Translator
 
 	makeMeshServiceTranslator(ctx context.Context) meshservice.Translator
@@ -41,12 +40,20 @@ type dependencyFactory interface {
 
 type dependencyFactoryImpl struct{}
 
-func (d dependencyFactoryImpl) makeMeshTranslator(ctx context.Context, configMaps corev1sets.ConfigMapSet) mesh.Translator {
+func (d dependencyFactoryImpl) makeMeshTranslator(ctx context.Context, in input.Snapshot) mesh.Translator {
 
 	detectors := meshdetector.MeshDetectors{
 		consul.NewMeshDetector(),
-		istio.NewMeshDetector(configMaps),
-		linkerd.NewMeshDetector(configMaps),
+		istio.NewMeshDetector(
+			ctx,
+			in.ConfigMaps(),
+			in.Services(),
+			in.Pods(),
+			in.Nodes(),
+		),
+		linkerd.NewMeshDetector(
+			in.ConfigMaps(),
+		),
 	}
 
 	return mesh.NewTranslator(ctx, detectors)
@@ -54,8 +61,7 @@ func (d dependencyFactoryImpl) makeMeshTranslator(ctx context.Context, configMap
 
 func (d dependencyFactoryImpl) makeMeshWorkloadTranslator(
 	ctx context.Context,
-	pods corev1sets.PodSet,
-	replicaSets appsv1sets.ReplicaSetSet,
+	in input.Snapshot,
 ) meshworkload.Translator {
 	sidecarDetectors := meshworkloaddetector.SidecarDetectors{
 		istiosidecar.NewSidecarDetector(ctx),
@@ -64,8 +70,8 @@ func (d dependencyFactoryImpl) makeMeshWorkloadTranslator(
 
 	workloadDetector := meshworkloaddetector.NewMeshWorkloadDetector(
 		ctx,
-		pods,
-		replicaSets,
+		in.Pods(),
+		in.ReplicaSets(),
 		sidecarDetectors,
 	)
 	return meshworkload.NewTranslator(ctx, workloadDetector)

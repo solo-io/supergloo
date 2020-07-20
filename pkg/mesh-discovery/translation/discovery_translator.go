@@ -28,14 +28,9 @@ func NewTranslator() Translator {
 
 func (t translator) Translate(ctx context.Context, in input.Snapshot) (output.Snapshot, error) {
 
-	meshTranslator := t.dependencies.makeMeshTranslator(ctx,
-		in.ConfigMaps(),
-	)
+	meshTranslator := t.dependencies.makeMeshTranslator(ctx, in)
 
-	meshWorkloadTranslator := t.dependencies.makeMeshWorkloadTranslator(ctx,
-		in.Pods(),
-		in.ReplicaSets(),
-	)
+	meshWorkloadTranslator := t.dependencies.makeMeshWorkloadTranslator(ctx, in)
 
 	meshServiceTranslator := t.dependencies.makeMeshServiceTranslator(ctx)
 

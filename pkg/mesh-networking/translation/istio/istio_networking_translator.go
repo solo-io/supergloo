@@ -45,9 +45,6 @@ func (t *istioTranslator) Translate(
 
 	destinationRules := v1alpha3sets.NewDestinationRuleSet()
 	virtualServices := v1alpha3sets.NewVirtualServiceSet()
-	envoyFilters := v1alpha3sets.NewEnvoyFilterSet()
-	gateways := v1alpha3sets.NewGatewaySet()
-	serviceEntries := v1alpha3sets.NewServiceEntrySet()
 
 	for _, meshService := range in.MeshServices().List() {
 		meshService := meshService // pike
@@ -65,6 +62,20 @@ func (t *istioTranslator) Translate(
 			contextutils.LoggerFrom(ctx).Debugf("translated virtual service %v", sets.Key(virtualService))
 			virtualServices.Insert(virtualService)
 		}
+	}
+
+	envoyFilters := v1alpha3sets.NewEnvoyFilterSet()
+	gateways := v1alpha3sets.NewGatewaySet()
+	serviceEntries := v1alpha3sets.NewServiceEntrySet()
+
+	meshTranslator := t.dependencies.makeMeshTranslator(ctx, in.KubernetesClusters())
+	for _, mesh := range in.Meshes().List() {
+		meshOutputs := meshTranslator.Translate(in, mesh, reporter)
+
+		gateways = gateways.Union(meshOutputs.Gateways)
+		serviceEntries = serviceEntries.Union(meshOutputs.ServiceEntries)
+		envoyFilters = envoyFilters.Union(meshOutputs.EnvoyFilters)
+		destinationRules = destinationRules.Union(meshOutputs.DestinationRules)
 	}
 
 	t.totalTranslates++

@@ -1,6 +1,7 @@
 package istio_test
 
 import (
+	"context"
 	"fmt"
 
 	. "github.com/onsi/ginkgo"
@@ -17,6 +18,7 @@ import (
 )
 
 var _ = Describe("IstioMeshDetector", func() {
+	ctx := context.TODO()
 	serviceAccountName := "service-account-name"
 	meshNs := "namespace"
 	clusterName := "cluster"
@@ -77,8 +79,17 @@ var _ = Describe("IstioMeshDetector", func() {
 		}
 
 		configMaps := corev1sets.NewConfigMapSet()
+		services := corev1sets.NewServiceSet()
+		pods := corev1sets.NewPodSet()
+		nodes := corev1sets.NewNodeSet()
 
-		detector := NewMeshDetector(configMaps)
+		detector := NewMeshDetector(
+			ctx,
+			configMaps,
+			services,
+			pods,
+			nodes,
+		)
 
 		mesh, err := detector.DetectMesh(deployment)
 		Expect(err).NotTo(HaveOccurred())
@@ -87,7 +98,18 @@ var _ = Describe("IstioMeshDetector", func() {
 
 	It("detects a mesh from a deployment named istio-pilot", func() {
 		configMaps := istioConfigMap()
-		detector := NewMeshDetector(configMaps)
+
+		services := corev1sets.NewServiceSet()
+		pods := corev1sets.NewPodSet()
+		nodes := corev1sets.NewNodeSet()
+
+		detector := NewMeshDetector(
+			ctx,
+			configMaps,
+			services,
+			pods,
+			nodes,
+		)
 
 		deployment := istioDeployment(pilotDeploymentName)
 		mesh, err := detector.DetectMesh(deployment)
@@ -116,7 +138,18 @@ var _ = Describe("IstioMeshDetector", func() {
 
 	It("detects a mesh from a deployment named istiod", func() {
 		configMaps := istioConfigMap()
-		detector := NewMeshDetector(configMaps)
+
+		services := corev1sets.NewServiceSet()
+		pods := corev1sets.NewPodSet()
+		nodes := corev1sets.NewNodeSet()
+
+		detector := NewMeshDetector(
+			ctx,
+			configMaps,
+			services,
+			pods,
+			nodes,
+		)
 
 		deployment := istioDeployment(istiodDeploymentName)
 		mesh, err := detector.DetectMesh(deployment)
@@ -138,6 +171,100 @@ var _ = Describe("IstioMeshDetector", func() {
 						TrustDomain:           trustDomain,
 						CitadelServiceAccount: serviceAccountName,
 					},
+				}},
+			},
+		}))
+	})
+
+	It("detects a ingress gateway which uses a nodeport service", func() {
+		configMaps := istioConfigMap()
+
+		istioNamespace := defaults.GetPodNamespace()
+
+		workloadLabels := map[string]string{"istio": "ingressgateway"}
+		services := corev1sets.NewServiceSet(&corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "ingress-svc",
+				Namespace:   meshNs,
+				ClusterName: clusterName,
+			},
+			Spec: corev1.ServiceSpec{
+				Ports: []corev1.ServicePort{{
+					Name:     "tls",
+					Protocol: "TCP",
+					Port:     1234,
+					NodePort: 5678,
+				}},
+				Selector: workloadLabels,
+				Type:     corev1.ServiceTypeNodePort,
+			},
+		})
+
+		nodeName := "ingress-node"
+		pods := corev1sets.NewPodSet(&corev1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "ingress-pod",
+				Namespace:   meshNs,
+				ClusterName: clusterName,
+				Labels:      workloadLabels,
+			},
+			Spec: corev1.PodSpec{
+				NodeName: nodeName,
+			},
+		})
+		nodes := corev1sets.NewNodeSet(&corev1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        nodeName,
+				ClusterName: clusterName,
+			},
+			Status: corev1.NodeStatus{
+				Addresses: []corev1.NodeAddress{
+					{
+						Type:    corev1.NodeInternalDNS,
+						Address: "internal.domain",
+					},
+					{
+						Type:    corev1.NodeExternalDNS,
+						Address: "external.domain",
+					},
+				},
+			},
+		})
+
+		detector := NewMeshDetector(
+			ctx,
+			configMaps,
+			services,
+			pods,
+			nodes,
+		)
+
+		deployment := istioDeployment(istiodDeploymentName)
+		mesh, err := detector.DetectMesh(deployment)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(mesh).To(Equal(&v1alpha1.Mesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "istiod-namespace-cluster",
+				Namespace: istioNamespace,
+				Labels:    labelutils.ClusterLabels(clusterName),
+			},
+			Spec: v1alpha1.MeshSpec{
+				MeshType: &v1alpha1.MeshSpec_Istio_{Istio: &v1alpha1.MeshSpec_Istio{
+					Installation: &v1alpha1.MeshSpec_MeshInstallation{
+						Namespace: meshNs,
+						Cluster:   clusterName,
+						Version:   "latest",
+					},
+					CitadelInfo: &v1alpha1.MeshSpec_Istio_CitadelInfo{
+						TrustDomain:           trustDomain,
+						CitadelServiceAccount: serviceAccountName,
+					},
+					IngressGateways: []*v1alpha1.MeshSpec_Istio_IngressGatewayInfo{{
+						WorkloadLabels:   workloadLabels,
+						ExternalAddress:  "external.domain",
+						ExternalTlsPort:  5678,
+						TlsContainerPort: 1234,
+					}},
 				}},
 			},
 		}))

@@ -3,6 +3,9 @@ package reconciliation
 import (
 	"context"
 
+	"github.com/rotisserie/eris"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/skv2/contrib/pkg/output"
@@ -83,14 +86,18 @@ func (d *networkingReconciler) syncIstio(in input.Snapshot) error {
 		return err
 	}
 
+	var errs error
 	istioSnap.ApplyMultiCluster(d.ctx, d.multiClusterClient, output.ErrorHandlerFuncs{
 		HandleWriteErrorFunc: func(resource ezkube.Object, err error) {
-
+			errs = multierror.Append(errs, eris.Wrapf(err, "writing resource %v failed", sets.Key(resource)))
 		},
-		HandleDeleteErrorFunc: nil,
-		HandleListErrorFunc:   nil,
+		HandleDeleteErrorFunc: func(resource ezkube.Object, err error) {
+			errs = multierror.Append(errs, eris.Wrapf(err, "deleting resource %v failed", sets.Key(resource)))
+		},
+		HandleListErrorFunc: func(err error) {
+			errs = multierror.Append(errs, eris.Wrapf(err, "listing failed"))
+		},
 	})
-}
 
-type writeReporter struct {
+	return errs
 }

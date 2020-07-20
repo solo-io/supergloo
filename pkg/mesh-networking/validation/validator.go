@@ -67,7 +67,7 @@ func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
 
 }
 
-// this function both validates the status of TrafficPolcies (sets error or accepted state)
+// this function both validates the status of TrafficPolicies (sets error or accepted state)
 // as well as returns a list of accepted traffic policies for the mesh service status
 func validateAndReturnAcceptedTrafficPolicies(ctx context.Context, input input.Snapshot, reporter *validationReporter, meshService *discoveryv1alpha1.MeshService) []*discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy {
 	var validatedTrafficPolicies []*discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy
