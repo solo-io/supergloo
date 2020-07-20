@@ -26,6 +26,31 @@ There are three pre-requisites to following these guides:
     - see the [guide]({{% versioned_link_path fromRoot="/getting_started" %}})
 3. Have an existing AppMesh instance and access to a set of credentials for the associated AWS account (access key ID and secret key pair).
 
+## Grant Permissions to AWS API
+
+In order for Service Mesh Hub to interact with AWS resources, credentials for the AWS account
+must be granted by creating a k8s secret containing the API credentials in the k8s cluster
+on which Service Mesh Hub is deployed. The secret must take the following form:
+
+```yaml
+apiVersion: v1
+kind: Secret
+type: solo.io/register/aws-credentials
+metadata:
+  name: <secret-name>
+  namespace: <namespace>
+stringData:
+  aws_access_key_id: <aws_access_key_id>
+  aws_secret_access_key: <aws_secret_access_key>
+```
+
+Once this secret is created, the logs for `mesh-networking` should show a log entry like the following:
+
+```json
+{"level":"info","ts":1595251860.7976727,"logger":"mesh-networking",
+"msg":"Adding new compute target with name: <secret-name>","version":"0.6.1"}
+```
+
 ## Configure discovery of Appmesh
 
 First confirm that your Appmesh instance exists by running `aws appmesh describe-mesh --mesh-name <mesh-name>`. Copy the ARN returned in the response, which you'll need in the steps below.

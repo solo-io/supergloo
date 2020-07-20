@@ -139,6 +139,31 @@ kubectl label namespace <namespace> appmesh.k8s.aws/sidecarInjectorWebhook=enabl
 
 ```k -n <namespace> apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml```
 
+## Grant Permissions to AWS API
+
+In order for Service Mesh Hub to interact with AWS resources, credentials for the AWS account
+must be granted by creating a k8s secret containing the API credentials in the k8s cluster
+on which Service Mesh Hub is deployed. The secret must take the following form:
+
+```yaml
+apiVersion: v1
+kind: Secret
+type: solo.io/register/aws-credentials
+metadata:
+  name: <secret-name>
+  namespace: <namespace>
+stringData:
+  aws_access_key_id: <aws_access_key_id>
+  aws_secret_access_key: <aws_secret_access_key>
+```
+
+Once this secret is created, the logs for `mesh-networking` should show a log entry like the following:
+
+```json
+{"level":"info","ts":1595251860.7976727,"logger":"mesh-networking",
+"msg":"Adding new compute target with name: <secret-name>","version":"0.6.1"}
+```
+
 ## Configure EKS discovery
 
 Upon installation of Service Mesh Hub v0.4.12+, you should see a `settings.core.smh.solo.io` CRD instance with the name 
