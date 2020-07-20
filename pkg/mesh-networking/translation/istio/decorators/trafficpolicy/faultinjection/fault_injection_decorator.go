@@ -4,40 +4,41 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/decorators"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
-	pluginName = "fault-injection"
+	decoratorName = "fault-injection"
 )
 
 func init() {
-	plugins.Register(pluginConstructor)
+	decorators.Register(decoratorConstructor)
 }
 
-func pluginConstructor(params plugins.Parameters) plugins.Plugin {
-	return NewFaultInjectionPlugin()
+func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
+	return NewFaultInjectionDecorator()
 }
 
 // handles setting FaultInjection on a VirtualService
-type faultInjectionPlugin struct{}
+type faultInjectionDecorator struct{}
 
-var _ plugins.TrafficPolicyPlugin = &faultInjectionPlugin{}
+var _ trafficpolicy.VirtualServiceDecorator = &faultInjectionDecorator{}
 
-func NewFaultInjectionPlugin() *faultInjectionPlugin {
-	return &faultInjectionPlugin{}
+func NewFaultInjectionDecorator() *faultInjectionDecorator {
+	return &faultInjectionDecorator{}
 }
 
-func (p *faultInjectionPlugin) PluginName() string {
-	return pluginName
+func (d *faultInjectionDecorator) DecoratorName() string {
+	return decoratorName
 }
 
-func (p *faultInjectionPlugin) ProcessTrafficPolicy(
+func (d *faultInjectionDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	registerField plugins.RegisterField,
+	registerField decorators.RegisterField,
 ) error {
 	faultInjection, err := translateFaultInjection(appliedPolicy.Spec)
 	if err != nil {

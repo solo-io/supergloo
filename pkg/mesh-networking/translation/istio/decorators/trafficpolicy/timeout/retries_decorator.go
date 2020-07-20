@@ -4,43 +4,44 @@ import (
 	"github.com/gogo/protobuf/types"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/meshservice/virtualservice/plugins"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/decorators"
+	"github.com/solo-io/smh/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
-	pluginName = "timeout"
+	decoratorName = "timeout"
 )
 
 func init() {
-	plugins.Register(pluginConstructor)
+	decorators.Register(decoratorConstructor)
 }
 
-func pluginConstructor(params plugins.Parameters) plugins.Plugin {
-	return NewTimeoutPlugin()
+func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
+	return NewTimeoutDecorator()
 }
 
 // handles setting Timeout on a VirtualService
-type timeoutPlugin struct {
+type timeoutDecorator struct {
 }
 
-var _ plugins.TrafficPolicyPlugin = &timeoutPlugin{}
+var _ trafficpolicy.VirtualServiceDecorator = &timeoutDecorator{}
 
-func NewTimeoutPlugin() *timeoutPlugin {
-	return &timeoutPlugin{}
+func NewTimeoutDecorator() *timeoutDecorator {
+	return &timeoutDecorator{}
 }
 
-func (p *timeoutPlugin) PluginName() string {
-	return pluginName
+func (d *timeoutDecorator) DecoratorName() string {
+	return decoratorName
 }
 
-func (p *timeoutPlugin) ProcessTrafficPolicy(
+func (d *timeoutDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
-	registerField plugins.RegisterField,
+	registerField decorators.RegisterField,
 ) error {
-	timeout, err := p.translateTimeout(appliedPolicy.Spec)
+	timeout, err := d.translateTimeout(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
@@ -53,7 +54,7 @@ func (p *timeoutPlugin) ProcessTrafficPolicy(
 	return nil
 }
 
-func (p *timeoutPlugin) translateTimeout(
+func (d *timeoutDecorator) translateTimeout(
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) (*types.Duration, error) {
 	return trafficPolicy.RequestTimeout, nil
