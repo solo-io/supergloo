@@ -9,21 +9,21 @@ import (
 
 var (
 	smhModule       = "github.com/solo-io/service-mesh-hub"
-	v1alpha1Version = "v1alpha1"
+	v1alpha2Version = "v1alpha2"
 	apiRoot         = "pkg/api"
 )
 
 var SMHGroups = []model.Group{
 	//TODO(ilackarms): we may need to restore settings at some point, so this is left commented
-	//makeGroup("core", v1alpha1Version, []resourceToGenerate{
+	//makeGroup("core", v1alpha2Version, []resourceToGenerate{
 	//	{kind: "Settings", noStatus: true},
 	//}),
-	makeGroup("discovery", v1alpha1Version, []resourceToGenerate{
+	makeGroup("discovery", v1alpha2Version, []resourceToGenerate{
 		{kind: "MeshService"},
 		{kind: "MeshWorkload"},
 		{kind: "Mesh"},
 	}),
-	makeGroup("networking", v1alpha1Version, []resourceToGenerate{
+	makeGroup("networking", v1alpha2Version, []resourceToGenerate{
 		{kind: "TrafficPolicy"},
 		{kind: "AccessPolicy"},
 		{kind: "VirtualMesh"},
@@ -31,7 +31,7 @@ var SMHGroups = []model.Group{
 }
 
 var CSRGroups = []model.Group{
-	makeGroup("security", v1alpha1Version, []resourceToGenerate{
+	makeGroup("security", v1alpha2Version, []resourceToGenerate{
 		{kind: "VirtualMeshCertificateSigningRequest"},
 	}),
 }

@@ -1,15 +1,15 @@
 syntax = "proto3";
 package networking.smh.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1";
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2";
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "service-mesh-hub/api/core/v1alpha1/http.proto";
-import "service-mesh-hub/api/networking/v1alpha1/selectors.proto";
-import "service-mesh-hub/api/networking/v1alpha1/validation_state.proto";
+import "service-mesh-hub/api/networking/v1alpha2/http.proto";
+import "service-mesh-hub/api/networking/v1alpha2/selectors.proto";
+import "service-mesh-hub/api/networking/v1alpha2/validation_state.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -385,7 +385,7 @@ message TrafficPolicySpec {
 
     // Express an optional HttpMethod by wrapping it in a nillable message.
     message HttpMethod {
-        core.smh.solo.io.HttpMethodValue method = 1;
+        networking.smh.solo.io.HttpMethodValue method = 1;
     }
 
     /*

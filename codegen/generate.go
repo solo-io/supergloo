@@ -57,7 +57,7 @@ var (
 	discoveryOutputTypes = map[schema.GroupVersion][]string{
 		schema.GroupVersion{
 			Group:   "discovery." + serviceMeshHubApiGroupSuffix,
-			Version: "v1alpha1",
+			Version: "v1alpha2",
 		}: {
 			"Mesh",
 			"MeshWorkload",
@@ -68,7 +68,7 @@ var (
 	networkingInputTypes = map[schema.GroupVersion][]string{
 		schema.GroupVersion{
 			Group:   "discovery." + serviceMeshHubApiGroupSuffix,
-			Version: "v1alpha1",
+			Version: "v1alpha2",
 		}: {
 			"Mesh",
 			"MeshWorkload",
@@ -76,7 +76,7 @@ var (
 		},
 		schema.GroupVersion{
 			Group:   "networking." + serviceMeshHubApiGroupSuffix,
-			Version: "v1alpha1",
+			Version: "v1alpha2",
 		}: {
 			"TrafficPolicy",
 			"AccessPolicy",
@@ -159,6 +159,8 @@ func run() error {
 	if err := makeSmhCommand().Execute(); err != nil {
 		return err
 	}
+	return nil
+	// TODO(ilackarms): revive this when reviving csr agent
 	log.Printf("generating csr-agent")
 	if err := makeCsrCommand().Execute(); err != nil {
 		return err

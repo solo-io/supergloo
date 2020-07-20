@@ -1,10 +1,9 @@
 syntax = "proto3";
 package networking.smh.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1";
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2";
 
-import "service-mesh-hub/api/core/v1alpha1/http.proto";
-import "service-mesh-hub/api/core/v1alpha1/status.proto";
-import "service-mesh-hub/api/networking/v1alpha1/selectors.proto";
+import "service-mesh-hub/api/networking/v1alpha2/http.proto";
+import "service-mesh-hub/api/networking/v1alpha2/selectors.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -56,7 +55,7 @@ message AccessPolicySpec {
         It is ignored in gRPC case because the value is always "POST".
         If not specified, allows any method.
     */
-    repeated core.smh.solo.io.HttpMethodValue allowed_methods = 5;
+    repeated networking.smh.solo.io.HttpMethodValue allowed_methods = 5;
 
     /*
         Optional. A list of ports which to allow
@@ -72,9 +71,6 @@ message AccessPolicyStatus {
         string translator_id = 1;
         string error_message = 2;
     }
-
-    // The status reported by the process translating this resource into mesh-specific resource(s).
-    core.smh.solo.io.Status translation_status = 1;
 
     // More detailed errors than the base status provided by `translation_status`.
     repeated TranslatorError translator_errors = 2;
