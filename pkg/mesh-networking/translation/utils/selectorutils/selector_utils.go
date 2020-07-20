@@ -2,13 +2,13 @@ package selectorutils
 
 import (
 	"github.com/solo-io/go-utils/stringutils"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
-func SelectorMatchesService(selectors []*v1alpha1.ServiceSelector, service *discoveryv1alpha1.MeshService) bool {
+func SelectorMatchesService(selectors []*v1alpha2.ServiceSelector, service *discoveryv1alpha2.MeshService) bool {
 	if len(selectors) == 0 {
 		return true
 	}
@@ -49,7 +49,7 @@ func kubeServiceMatches(
 	labels map[string]string,
 	namespaces []string,
 	clusters []string,
-	kubeService *discoveryv1alpha1.MeshServiceSpec_KubeService,
+	kubeService *discoveryv1alpha2.MeshServiceSpec_KubeService,
 ) bool {
 	if len(namespaces) > 0 && !stringutils.ContainsString(kubeService.GetRef().GetNamespace(), namespaces) {
 		return false

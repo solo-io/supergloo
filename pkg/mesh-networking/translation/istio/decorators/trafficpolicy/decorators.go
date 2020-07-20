@@ -1,7 +1,7 @@
 package trafficpolicy
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"istio.io/api/networking/v1alpha3"
 )
@@ -16,8 +16,8 @@ type DestinationRuleDecorator interface {
 	decorators.Decorator
 
 	ApplyToDestinationRule(
-		appliedPolicy *v1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
-		service *v1alpha1.MeshService,
+		appliedPolicy *v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
+		service *v1alpha2.MeshService,
 		output *v1alpha3.DestinationRule,
 		registerField decorators.RegisterField,
 	) error
@@ -28,7 +28,7 @@ type AggregatingDestinationRuleDecorator interface {
 	decorators.Decorator
 
 	ApplyAllToDestinationRule(
-		allAppliedPolicies []*v1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
+		allAppliedPolicies []*v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 		output *v1alpha3.DestinationRule,
 		registerField decorators.RegisterField,
 	) error
@@ -39,8 +39,8 @@ type VirtualServiceDecorator interface {
 	decorators.Decorator
 
 	ApplyToVirtualService(
-		appliedPolicy *v1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
-		service *v1alpha1.MeshService,
+		appliedPolicy *v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
+		service *v1alpha2.MeshService,
 		output *v1alpha3.HTTPRoute,
 		registerField decorators.RegisterField,
 	) error

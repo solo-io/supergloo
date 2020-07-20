@@ -2,9 +2,9 @@ package mirror
 
 import (
 	"github.com/rotisserie/eris"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
@@ -28,14 +28,14 @@ func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 // handles setting Mirror on a VirtualService
 type mirrorDecorator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
-	meshServices   discoveryv1alpha1sets.MeshServiceSet
+	meshServices   discoveryv1alpha2sets.MeshServiceSet
 }
 
 var _ trafficpolicy.VirtualServiceDecorator = &mirrorDecorator{}
 
 func NewMirrorDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
-	meshServices discoveryv1alpha1sets.MeshServiceSet,
+	meshServices discoveryv1alpha2sets.MeshServiceSet,
 ) *mirrorDecorator {
 	return &mirrorDecorator{
 		clusterDomains: clusterDomains,
@@ -48,8 +48,8 @@ func (d *mirrorDecorator) DecoratorName() string {
 }
 
 func (d *mirrorDecorator) ApplyToVirtualService(
-	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
-	service *discoveryv1alpha1.MeshService,
+	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
+	service *discoveryv1alpha2.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
@@ -68,8 +68,8 @@ func (d *mirrorDecorator) ApplyToVirtualService(
 }
 
 func (d *mirrorDecorator) translateMirror(
-	meshService *discoveryv1alpha1.MeshService,
-	trafficPolicy *v1alpha1.TrafficPolicySpec,
+	meshService *discoveryv1alpha2.MeshService,
+	trafficPolicy *v1alpha2.TrafficPolicySpec,
 ) (*istiov1alpha3spec.Destination, *istiov1alpha3spec.Percent, error) {
 	mirror := trafficPolicy.Mirror
 	if mirror == nil {
@@ -81,7 +81,7 @@ func (d *mirrorDecorator) translateMirror(
 
 	var translatedMirror *istiov1alpha3spec.Destination
 	switch destinationType := mirror.DestinationType.(type) {
-	case *v1alpha1.TrafficPolicySpec_Mirror_KubeService:
+	case *v1alpha2.TrafficPolicySpec_Mirror_KubeService:
 		var err error
 		translatedMirror, err = d.makeKubeDestinationMirror(
 			destinationType,
@@ -101,9 +101,9 @@ func (d *mirrorDecorator) translateMirror(
 }
 
 func (d *mirrorDecorator) makeKubeDestinationMirror(
-	destination *v1alpha1.TrafficPolicySpec_Mirror_KubeService,
+	destination *v1alpha2.TrafficPolicySpec_Mirror_KubeService,
 	port uint32,
-	originalService *discoveryv1alpha1.MeshService,
+	originalService *discoveryv1alpha2.MeshService,
 ) (*istiov1alpha3spec.Destination, error) {
 
 	destinationRef := destination.KubeService

@@ -1,8 +1,8 @@
 package detector
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
 	corev1 "k8s.io/api/core/v1"
@@ -21,7 +21,7 @@ var (
 // whose backing pods are injected with a Mesh sidecar.
 // If no Mesh is detected, nil is returned
 type MeshServiceDetector interface {
-	DetectMeshService(service *corev1.Service, meshWorkloads v1alpha1sets.MeshWorkloadSet) *v1alpha1.MeshService
+	DetectMeshService(service *corev1.Service, meshWorkloads v1alpha2sets.MeshWorkloadSet) *v1alpha2.MeshService
 }
 
 type meshServiceDetector struct{}
@@ -30,7 +30,7 @@ func NewMeshServiceDetector() MeshServiceDetector {
 	return &meshServiceDetector{}
 }
 
-func (d meshServiceDetector) DetectMeshService(service *corev1.Service, meshWorkloads v1alpha1sets.MeshWorkloadSet) *v1alpha1.MeshService {
+func (d meshServiceDetector) DetectMeshService(service *corev1.Service, meshWorkloads v1alpha2sets.MeshWorkloadSet) *v1alpha2.MeshService {
 	backingWorkloads := d.findBackingMeshWorkloads(service, meshWorkloads)
 	if len(backingWorkloads) == 0 {
 		// TODO(ilackarms): we currently only create mesh services for services with backing workloads; this may be problematic when working with external services (not contained inside the mesh)
@@ -43,11 +43,11 @@ func (d meshServiceDetector) DetectMeshService(service *corev1.Service, meshWork
 	// derive subsets from backing workloads
 	subsets := findSubsets(backingWorkloads)
 
-	return &v1alpha1.MeshService{
+	return &v1alpha2.MeshService{
 		ObjectMeta: utils.DiscoveredObjectMeta(service),
-		Spec: v1alpha1.MeshServiceSpec{
-			Type: &v1alpha1.MeshServiceSpec_KubeService_{
-				KubeService: &v1alpha1.MeshServiceSpec_KubeService{
+		Spec: v1alpha2.MeshServiceSpec{
+			Type: &v1alpha2.MeshServiceSpec_KubeService_{
+				KubeService: &v1alpha2.MeshServiceSpec_KubeService{
 					Ref:                    ezkube.MakeClusterObjectRef(service),
 					WorkloadSelectorLabels: service.Spec.Selector,
 					Labels:                 service.Labels,
@@ -60,8 +60,8 @@ func (d meshServiceDetector) DetectMeshService(service *corev1.Service, meshWork
 	}
 }
 
-func (d meshServiceDetector) findBackingMeshWorkloads(service *corev1.Service, meshWorkloads v1alpha1sets.MeshWorkloadSet) v1alpha1.MeshWorkloadSlice {
-	var backingMeshWorkloads v1alpha1.MeshWorkloadSlice
+func (d meshServiceDetector) findBackingMeshWorkloads(service *corev1.Service, meshWorkloads v1alpha2sets.MeshWorkloadSet) v1alpha2.MeshWorkloadSlice {
+	var backingMeshWorkloads v1alpha2.MeshWorkloadSlice
 
 	for _, workload := range meshWorkloads.List() {
 		// TODO(ilackarms): refactor this to support more than just k8s workloads
@@ -73,7 +73,7 @@ func (d meshServiceDetector) findBackingMeshWorkloads(service *corev1.Service, m
 	return backingMeshWorkloads
 }
 
-func isBackingKubeWorkload(service *corev1.Service, kubeWorkload *v1alpha1.MeshWorkloadSpec_KubernertesWorkload) bool {
+func isBackingKubeWorkload(service *corev1.Service, kubeWorkload *v1alpha2.MeshWorkloadSpec_KubernertesWorkload) bool {
 	if kubeWorkload == nil {
 		return false
 	}
@@ -95,7 +95,7 @@ func isBackingKubeWorkload(service *corev1.Service, kubeWorkload *v1alpha1.MeshW
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for
-func findSubsets(backingWorkloads v1alpha1.MeshWorkloadSlice) map[string]*v1alpha1.MeshServiceSpec_KubeService_Subset {
+func findSubsets(backingWorkloads v1alpha2.MeshWorkloadSlice) map[string]*v1alpha2.MeshServiceSpec_KubeService_Subset {
 	uniqueLabels := make(map[string]sets.String)
 	for _, backingWorkload := range backingWorkloads {
 		for key, val := range backingWorkload.Spec.GetKubernetes().GetPodLabels() {
@@ -119,10 +119,10 @@ func findSubsets(backingWorkloads v1alpha1.MeshWorkloadSlice) map[string]*v1alph
 				- v1
 				- v2
 	*/
-	subsets := make(map[string]*v1alpha1.MeshServiceSpec_KubeService_Subset)
+	subsets := make(map[string]*v1alpha2.MeshServiceSpec_KubeService_Subset)
 	for k, v := range uniqueLabels {
 		if v.Len() > 1 {
-			subsets[k] = &v1alpha1.MeshServiceSpec_KubeService_Subset{Values: v.List()}
+			subsets[k] = &v1alpha2.MeshServiceSpec_KubeService_Subset{Values: v.List()}
 		}
 	}
 	if len(subsets) == 0 {
@@ -132,9 +132,9 @@ func findSubsets(backingWorkloads v1alpha1.MeshWorkloadSlice) map[string]*v1alph
 	return subsets
 }
 
-func convertPorts(service *corev1.Service) (ports []*v1alpha1.MeshServiceSpec_KubeService_KubeServicePort) {
+func convertPorts(service *corev1.Service) (ports []*v1alpha2.MeshServiceSpec_KubeService_KubeServicePort) {
 	for _, kubePort := range service.Spec.Ports {
-		ports = append(ports, &v1alpha1.MeshServiceSpec_KubeService_KubeServicePort{
+		ports = append(ports, &v1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
 			Port:     uint32(kubePort.Port),
 			Name:     kubePort.Name,
 			Protocol: string(kubePort.Protocol),

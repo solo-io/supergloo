@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -23,7 +23,7 @@ func NewSidecarDetector(ctx context.Context) *sidecarDetector {
 	return &sidecarDetector{ctx: ctx}
 }
 
-func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha1sets.MeshSet) *v1alpha1.Mesh {
+func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
 	if !containsSidecarContainer(pod.Spec.Containers) {
 		return nil
 	}

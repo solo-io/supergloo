@@ -5,7 +5,7 @@ import (
 
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/go-utils/contextutils"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
@@ -27,7 +27,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.Snapshot,
-		mesh *discoveryv1alpha1.Mesh,
+		mesh *discoveryv1alpha2.Mesh,
 		reporter reporting.Reporter,
 	) Outputs
 }
@@ -44,7 +44,7 @@ func NewTranslator(ctx context.Context, federationTranslator federation.Translat
 // translate the appropriate resources for the given Mesh.
 func (t *translator) Translate(
 	in input.Snapshot,
-	mesh *discoveryv1alpha1.Mesh,
+	mesh *discoveryv1alpha2.Mesh,
 	reporter reporting.Reporter,
 ) Outputs {
 	istioMesh := mesh.Spec.GetIstio()

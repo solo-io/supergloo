@@ -5,8 +5,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector/istio"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,17 +36,17 @@ var _ = Describe("IstioSidecarDetector", func() {
 		}
 	}
 
-	istioMeshes := func(cluster string) v1alpha1sets.MeshSet {
-		return v1alpha1sets.NewMeshSet(
-			&v1alpha1.Mesh{
+	istioMeshes := func(cluster string) v1alpha2sets.MeshSet {
+		return v1alpha2sets.NewMeshSet(
+			&v1alpha2.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "istio-system",
 					Name:      "istio-cluster",
 				},
-				Spec: v1alpha1.MeshSpec{
-					MeshType: &v1alpha1.MeshSpec_Istio_{
-						Istio: &v1alpha1.MeshSpec_Istio{
-							Installation: &v1alpha1.MeshSpec_MeshInstallation{
+				Spec: v1alpha2.MeshSpec{
+					MeshType: &v1alpha2.MeshSpec_Istio_{
+						Istio: &v1alpha2.MeshSpec_Istio{
+							Installation: &v1alpha2.MeshSpec_MeshInstallation{
 								Cluster: cluster,
 							},
 						},
@@ -77,7 +77,7 @@ var _ = Describe("IstioSidecarDetector", func() {
 	It("does not detect workload when sidecar mesh is not present", func() {
 		pod := pod()
 
-		meshes := v1alpha1sets.NewMeshSet()
+		meshes := v1alpha2sets.NewMeshSet()
 
 		meshWorkload := detector.DetectMeshSidecar(pod, meshes)
 		Expect(meshWorkload).To(BeNil())

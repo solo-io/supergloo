@@ -6,12 +6,12 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -24,45 +24,45 @@ import (
 var _ = Describe("Validator", func() {
 	Context("valid traffic policies", func() {
 		var (
-			meshService = &discoveryv1alpha1.MeshService{
+			meshService = &discoveryv1alpha2.MeshService{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ms1",
 					Namespace: "ns",
 				},
 			}
-			trafficPolicy1 = &v1alpha1.TrafficPolicy{
+			trafficPolicy1 = &v1alpha2.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp1",
 					Namespace: "ns",
 				},
-				Spec: v1alpha1.TrafficPolicySpec{
+				Spec: v1alpha2.TrafficPolicySpec{
 					// fill an arbitrary part of the spec
-					Mirror: &v1alpha1.TrafficPolicySpec_Mirror{},
+					Mirror: &v1alpha2.TrafficPolicySpec_Mirror{},
 				},
 			}
-			trafficPolicy2 = &v1alpha1.TrafficPolicy{
+			trafficPolicy2 = &v1alpha2.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp2",
 					Namespace: "ns",
 				},
-				Spec: v1alpha1.TrafficPolicySpec{
+				Spec: v1alpha2.TrafficPolicySpec{
 					// fill an arbitrary part of the spec
-					FaultInjection: &v1alpha1.TrafficPolicySpec_FaultInjection{},
+					FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{},
 				},
 			}
 
 			snap = input.NewSnapshot("",
-				discoveryv1alpha1sets.NewMeshServiceSet(discoveryv1alpha1.MeshServiceSlice{
+				discoveryv1alpha2sets.NewMeshServiceSet(discoveryv1alpha2.MeshServiceSlice{
 					meshService,
 				}...),
-				discoveryv1alpha1sets.NewMeshWorkloadSet(),
-				discoveryv1alpha1sets.NewMeshSet(),
-				v1alpha1sets.NewTrafficPolicySet(v1alpha1.TrafficPolicySlice{
+				discoveryv1alpha2sets.NewMeshWorkloadSet(),
+				discoveryv1alpha2sets.NewMeshSet(),
+				v1alpha2sets.NewTrafficPolicySet(v1alpha2.TrafficPolicySlice{
 					trafficPolicy1,
 					trafficPolicy2,
 				}...),
-				v1alpha1sets.NewAccessPolicySet(),
-				v1alpha1sets.NewVirtualMeshSet(),
+				v1alpha2sets.NewAccessPolicySet(),
+				v1alpha2sets.NewVirtualMeshSet(),
 				skv1alpha1sets.NewKubernetesClusterSet(),
 			)
 		)
@@ -77,14 +77,14 @@ var _ = Describe("Validator", func() {
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy1.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy1.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha1.ValidationStatus{
+			Expect(trafficPolicy1.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ValidationStatus{
 				AcceptanceOrder: 0,
-				State:           v1alpha1.ValidationState_ACCEPTED,
+				State:           v1alpha2.ValidationState_ACCEPTED,
 			}))
 			Expect(trafficPolicy2.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy2.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha1.ValidationStatus{
+			Expect(trafficPolicy2.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ValidationStatus{
 				AcceptanceOrder: 1,
-				State:           v1alpha1.ValidationState_ACCEPTED,
+				State:           v1alpha2.ValidationState_ACCEPTED,
 			}))
 
 		})
@@ -98,13 +98,13 @@ var _ = Describe("Validator", func() {
 	})
 	Context("invalid traffic policies", func() {
 		var (
-			meshService = &discoveryv1alpha1.MeshService{
+			meshService = &discoveryv1alpha2.MeshService{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ms1",
 					Namespace: "ns",
 				},
 			}
-			trafficPolicy = &v1alpha1.TrafficPolicy{
+			trafficPolicy = &v1alpha2.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp1",
 					Namespace: "ns",
@@ -112,16 +112,16 @@ var _ = Describe("Validator", func() {
 			}
 
 			snap = input.NewSnapshot("",
-				discoveryv1alpha1sets.NewMeshServiceSet(discoveryv1alpha1.MeshServiceSlice{
+				discoveryv1alpha2sets.NewMeshServiceSet(discoveryv1alpha2.MeshServiceSlice{
 					meshService,
 				}...),
-				discoveryv1alpha1sets.NewMeshWorkloadSet(),
-				discoveryv1alpha1sets.NewMeshSet(),
-				v1alpha1sets.NewTrafficPolicySet(v1alpha1.TrafficPolicySlice{
+				discoveryv1alpha2sets.NewMeshWorkloadSet(),
+				discoveryv1alpha2sets.NewMeshSet(),
+				v1alpha2sets.NewTrafficPolicySet(v1alpha2.TrafficPolicySlice{
 					trafficPolicy,
 				}...),
-				v1alpha1sets.NewAccessPolicySet(),
-				v1alpha1sets.NewVirtualMeshSet(),
+				v1alpha2sets.NewAccessPolicySet(),
+				v1alpha2sets.NewVirtualMeshSet(),
 				skv1alpha1sets.NewKubernetesClusterSet(),
 			)
 		)
@@ -137,9 +137,9 @@ var _ = Describe("Validator", func() {
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha1.ValidationStatus{
+			Expect(trafficPolicy.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ValidationStatus{
 				AcceptanceOrder: 0,
-				State:           v1alpha1.ValidationState_INVALID,
+				State:           v1alpha2.ValidationState_INVALID,
 				Errors:          []string{"did an oopsie"},
 			}))
 		})

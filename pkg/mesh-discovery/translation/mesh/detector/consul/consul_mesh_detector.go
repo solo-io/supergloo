@@ -1,6 +1,7 @@
 package consul
 
 import (
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
 	"regexp"
 	"strings"
 
@@ -10,8 +11,7 @@ import (
 	consulconfig "github.com/hashicorp/consul/agent/config"
 	"github.com/hashicorp/hcl"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -48,7 +48,7 @@ func NewMeshDetector() detector.MeshDetector {
 	return &meshDetector{}
 }
 
-func (c *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha1.Mesh, error) {
+func (c *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh, error) {
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		isConsulInstallation, err := isConsulConnect(container)
 		if err != nil {
@@ -69,9 +69,9 @@ func (c *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha1.Mesh
 func (c *meshDetector) buildConsulMeshObject(
 	deployment *appsv1.Deployment,
 	container corev1.Container,
-) (*v1alpha1.Mesh, error) {
+) (*v1alpha2.Mesh, error) {
 
-	parsedImage, err := docker.ParseImageName(container.Image)
+	parsedImage, err := dockerutils.ParseImageName(container.Image)
 	if err != nil {
 		return nil, err
 	}
@@ -81,12 +81,12 @@ func (c *meshDetector) buildConsulMeshObject(
 		imageVersion = parsedImage.Digest
 	}
 
-	return &v1alpha1.Mesh{
+	return &v1alpha2.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
-		Spec: v1alpha1.MeshSpec{
-			MeshType: &v1alpha1.MeshSpec_ConsulConnect{
-				ConsulConnect: &v1alpha1.MeshSpec_ConsulConnectMesh{
-					Installation: &v1alpha1.MeshSpec_MeshInstallation{
+		Spec: v1alpha2.MeshSpec{
+			MeshType: &v1alpha2.MeshSpec_ConsulConnect{
+				ConsulConnect: &v1alpha2.MeshSpec_ConsulConnectMesh{
+					Installation: &v1alpha2.MeshSpec_MeshInstallation{
 						Namespace: deployment.Namespace,
 						Cluster:   deployment.ClusterName,
 						Version:   imageVersion,
@@ -98,7 +98,7 @@ func (c *meshDetector) buildConsulMeshObject(
 }
 
 func isConsulConnect(container corev1.Container) (bool, error) {
-	parsedImage, err := docker.ParseImageName(container.Image)
+	parsedImage, err := dockerutils.ParseImageName(container.Image)
 	if err != nil {
 		return false, InvalidImageFormatError(err, container.Image)
 	}

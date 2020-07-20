@@ -9,7 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 )
 
 // MockTranslator is a mock of Translator interface.
@@ -36,10 +36,10 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateMeshes mocks base method.
-func (m *MockTranslator) TranslateMeshes(deployments v1sets.DeploymentSet) v1alpha1sets.MeshSet {
+func (m *MockTranslator) TranslateMeshes(deployments v1sets.DeploymentSet) v1alpha2sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranslateMeshes", deployments)
-	ret0, _ := ret[0].(v1alpha1sets.MeshSet)
+	ret0, _ := ret[0].(v1alpha2sets.MeshSet)
 	return ret0
 }
 

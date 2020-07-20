@@ -1,7 +1,7 @@
 package detector
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	appsv1 "k8s.io/api/apps/v1"
 )
 
@@ -11,14 +11,14 @@ import (
 // If no mesh is detected, nil is returned
 // Separate Detectors are implemented for different Mesh types / versions.
 type MeshDetector interface {
-	DetectMesh(deployment *appsv1.Deployment) (*v1alpha1.Mesh, error)
+	DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh, error)
 }
 
 // wrapper for multiple mesh detectors.
 // returns the first successfully detected mesh
 type MeshDetectors []MeshDetector
 
-func (d MeshDetectors) DetectMesh(deployment *appsv1.Deployment) (*v1alpha1.Mesh, error) {
+func (d MeshDetectors) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh, error) {
 	for _, detector := range d {
 		if mesh, err := detector.DetectMesh(deployment); err != nil {
 			return nil, err

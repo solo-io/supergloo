@@ -4,9 +4,9 @@ import (
 	"reflect"
 
 	"github.com/rotisserie/eris"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
@@ -29,7 +29,7 @@ type Translator interface {
 	// Note that the input snapshot MeshServiceSet contains the given MeshService.
 	Translate(
 		in input.Snapshot,
-		meshService *discoveryv1alpha1.MeshService,
+		meshService *discoveryv1alpha2.MeshService,
 		reporter reporting.Reporter,
 	) *istiov1alpha3.DestinationRule
 }
@@ -48,7 +48,7 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFact
 // The input snapshot MeshServiceSet contains n the
 func (t *translator) Translate(
 	in input.Snapshot,
-	meshService *discoveryv1alpha1.MeshService,
+	meshService *discoveryv1alpha2.MeshService,
 	reporter reporting.Reporter,
 ) *istiov1alpha3.DestinationRule {
 	kubeService := meshService.Spec.GetKubeService()
@@ -126,7 +126,7 @@ func registerFieldFunc(
 			destinationRule,
 			fieldPtr,
 			policyRefs,
-			&v1alpha1.TrafficPolicy{},
+			&v1alpha2.TrafficPolicy{},
 			0, //TODO(ilackarms): priority
 		); err != nil {
 			return err
@@ -135,7 +135,7 @@ func registerFieldFunc(
 	}
 }
 
-func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha1.MeshService) *istiov1alpha3.DestinationRule {
+func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha2.MeshService) *istiov1alpha3.DestinationRule {
 	meta := metautils.TranslatedObjectMeta(
 		meshService.Spec.GetKubeService().Ref,
 		meshService.Annotations,
@@ -159,7 +159,7 @@ func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha1.Me
 }
 
 func (t *translator) trafficPolicyToResourceIds(
-	trafficPolicy []*discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
+	trafficPolicy []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 ) []ezkube.ResourceId {
 	var resourceIds []ezkube.ResourceId
 	for _, policy := range trafficPolicy {

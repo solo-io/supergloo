@@ -39,6 +39,7 @@ replace (
 
 require (
 	github.com/cosiner/argv v0.1.0 // indirect
+	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.4
 	github.com/go-delve/delve v1.4.1 // indirect
 	github.com/go-logr/zapr v0.1.1
@@ -54,7 +55,9 @@ require (
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
 	github.com/peterh/liner v1.2.0 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/rotisserie/eris v0.4.0
+	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0

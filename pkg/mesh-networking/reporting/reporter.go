@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
@@ -12,13 +12,13 @@ import (
 // the reporter reports status errors on user configuration objects
 type Reporter interface {
 	// report an error on a traffic policy that has been applied to a MeshService
-	ReportTrafficPolicy(meshService *v1alpha1.MeshService, trafficPolicy ezkube.ResourceId, err error)
+	ReportTrafficPolicy(meshService *v1alpha2.MeshService, trafficPolicy ezkube.ResourceId, err error)
 
 	// report an error on an access policy that has been applied to a MeshService
-	ReportAccessPolicy(meshService *v1alpha1.MeshService, accessPolicy ezkube.ResourceId, err error)
+	ReportAccessPolicy(meshService *v1alpha2.MeshService, accessPolicy ezkube.ResourceId, err error)
 
 	// report an error on a virtual mesh that has been applied to a Mesh
-	ReportVirtualMesh(mesh *v1alpha1.Mesh, virtualMesh ezkube.ResourceId, err error)
+	ReportVirtualMesh(mesh *v1alpha2.Mesh, virtualMesh ezkube.ResourceId, err error)
 }
 
 // this reporter implementation is only used inside
@@ -32,7 +32,7 @@ func NewPanickingReporter(ctx context.Context) Reporter {
 	return &panickingReporter{ctx: ctx}
 }
 
-func (p *panickingReporter) ReportTrafficPolicy(meshService *v1alpha1.MeshService, trafficPolicy ezkube.ResourceId, err error) {
+func (p *panickingReporter) ReportTrafficPolicy(meshService *v1alpha2.MeshService, trafficPolicy ezkube.ResourceId, err error) {
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw(
 			"internal error: error reported on TrafficPolicy which should have been caught by validation!",
@@ -41,7 +41,7 @@ func (p *panickingReporter) ReportTrafficPolicy(meshService *v1alpha1.MeshServic
 			"error", err)
 }
 
-func (p *panickingReporter) ReportAccessPolicy(meshService *v1alpha1.MeshService, accessPolicy ezkube.ResourceId, err error) {
+func (p *panickingReporter) ReportAccessPolicy(meshService *v1alpha2.MeshService, accessPolicy ezkube.ResourceId, err error) {
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw("internal error: error reported on AccessPolicy which should have been caught by validation!",
 			"policy", sets.Key(accessPolicy),
@@ -49,7 +49,7 @@ func (p *panickingReporter) ReportAccessPolicy(meshService *v1alpha1.MeshService
 			"error", err)
 }
 
-func (p *panickingReporter) ReportVirtualMesh(mesh *v1alpha1.Mesh, virtualMesh ezkube.ResourceId, err error) {
+func (p *panickingReporter) ReportVirtualMesh(mesh *v1alpha2.Mesh, virtualMesh ezkube.ResourceId, err error) {
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw("internal error: error reported on VirtualMesh which should have been caught by validation!",
 			"mesh", sets.Key(mesh),

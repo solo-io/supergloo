@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -10,11 +11,10 @@ import (
 
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
-	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
+	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	istiov1alpha1 "istio.io/api/mesh/v1alpha1"
 	"istio.io/istio/pkg/util/gogoprotomarshal"
 	appsv1 "k8s.io/api/apps/v1"
@@ -68,7 +68,7 @@ func NewMeshDetector(
 }
 
 // returns nil, nil of the deployment does not contain the istiod image
-func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha1.Mesh, error) {
+func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh, error) {
 	version, err := d.getIstiodVersion(deployment)
 	if err != nil {
 		return nil, err
@@ -93,17 +93,17 @@ func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha1.Mesh
 		d.nodes,
 	)
 
-	mesh := &v1alpha1.Mesh{
+	mesh := &v1alpha2.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
-		Spec: v1alpha1.MeshSpec{
-			MeshType: &v1alpha1.MeshSpec_Istio_{
-				Istio: &v1alpha1.MeshSpec_Istio{
-					Installation: &v1alpha1.MeshSpec_MeshInstallation{
+		Spec: v1alpha2.MeshSpec{
+			MeshType: &v1alpha2.MeshSpec_Istio_{
+				Istio: &v1alpha2.MeshSpec_Istio{
+					Installation: &v1alpha2.MeshSpec_MeshInstallation{
 						Namespace: deployment.Namespace,
 						Cluster:   deployment.ClusterName,
 						Version:   version,
 					},
-					CitadelInfo: &v1alpha1.MeshSpec_Istio_CitadelInfo{
+					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
 						TrustDomain: trustDomain,
 						// This assumes that the istiod deployment is the cert provider
 						CitadelServiceAccount: deployment.Spec.Template.Spec.ServiceAccountName,
@@ -124,9 +124,9 @@ func getIngressGateways(
 	allServices corev1sets.ServiceSet,
 	allPods corev1sets.PodSet,
 	allNodes corev1sets.NodeSet,
-) []*v1alpha1.MeshSpec_Istio_IngressGatewayInfo {
+) []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo {
 	ingressSvcs := getIngressServices(allServices, namespace, workloadLabels)
-	var ingressGateways []*v1alpha1.MeshSpec_Istio_IngressGatewayInfo
+	var ingressGateways []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo
 	for _, svc := range ingressSvcs {
 		gateway, err := getIngressGateway(svc, workloadLabels, allPods, allNodes)
 		if err != nil {
@@ -142,7 +142,7 @@ func getIngressGateway(
 	workloadLabels map[string]string,
 	allPods corev1sets.PodSet,
 	allNodes corev1sets.NodeSet,
-) (*v1alpha1.MeshSpec_Istio_IngressGatewayInfo, error) {
+) (*v1alpha2.MeshSpec_Istio_IngressGatewayInfo, error) {
 	var (
 		tlsPort *corev1.ServicePort
 	)
@@ -205,7 +205,7 @@ func getIngressGateway(
 		containerPort = tlsPort.Port
 	}
 
-	return &v1alpha1.MeshSpec_Istio_IngressGatewayInfo{
+	return &v1alpha2.MeshSpec_Istio_IngressGatewayInfo{
 		WorkloadLabels:   workloadLabels,
 		ExternalAddress:  externalAddress,
 		ExternalTlsPort:  externalPort,
@@ -264,7 +264,7 @@ func getNodeIp(
 func (d *meshDetector) getIstiodVersion(deployment *appsv1.Deployment) (string, error) {
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		if isIstiod(deployment, &container) {
-			parsedImage, err := docker.ParseImageName(container.Image)
+			parsedImage, err := dockerutils.ParseImageName(container.Image)
 			if err != nil {
 				return "", eris.Wrapf(err, "failed to parse istiod image tag: %s", container.Image)
 			}

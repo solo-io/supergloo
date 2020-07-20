@@ -11,8 +11,8 @@ import (
 	"github.com/rotisserie/eris"
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/go-utils/contextutils"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -60,8 +60,8 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.Snapshot,
-		mesh *discoveryv1alpha1.Mesh,
-		virtualMesh *discoveryv1alpha1.MeshStatus_AppliedVirtualMesh,
+		mesh *discoveryv1alpha2.Mesh,
+		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
 		reporter reporting.Reporter,
 	) Outputs
 }
@@ -78,8 +78,8 @@ func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRe
 // translate the appropriate resources for the given Mesh.
 func (t *translator) Translate(
 	in input.Snapshot,
-	mesh *discoveryv1alpha1.Mesh,
-	virtualMesh *discoveryv1alpha1.MeshStatus_AppliedVirtualMesh,
+	mesh *discoveryv1alpha2.Mesh,
+	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
 	reporter reporting.Reporter,
 ) Outputs {
 	istioMesh := mesh.Spec.GetIstio()
@@ -289,7 +289,7 @@ func (t *translator) Translate(
 	}
 }
 
-func constructUniqueIp(meshKubeService *discoveryv1alpha1.MeshServiceSpec_KubeService) (net.IP, error) {
+func constructUniqueIp(meshKubeService *discoveryv1alpha2.MeshServiceSpec_KubeService) (net.IP, error) {
 	ip, cidr, err := net.ParseCIDR(ipAssignableSubnet)
 	if err != nil {
 		return nil, err
@@ -326,10 +326,10 @@ func constructUniqueIp(meshKubeService *discoveryv1alpha1.MeshServiceSpec_KubeSe
 }
 
 func servicesForMesh(
-	mesh *discoveryv1alpha1.Mesh,
-	allMeshServices discoveryv1alpha1sets.MeshServiceSet,
-) []*discoveryv1alpha1.MeshService {
-	return allMeshServices.List(func(service *discoveryv1alpha1.MeshService) bool {
+	mesh *discoveryv1alpha2.Mesh,
+	allMeshServices discoveryv1alpha2sets.MeshServiceSet,
+) []*discoveryv1alpha2.MeshService {
+	return allMeshServices.List(func(service *discoveryv1alpha2.MeshService) bool {
 		return !ezkube.RefsMatch(service.Spec.Mesh, mesh)
 	})
 }

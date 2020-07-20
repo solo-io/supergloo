@@ -8,9 +8,9 @@ import (
 	"reflect"
 
 	"github.com/rotisserie/eris"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
@@ -30,7 +30,7 @@ type Translator interface {
 	// Note that the input snapshot MeshServiceSet contains the given MeshService.
 	Translate(
 		in input.Snapshot,
-		meshService *discoveryv1alpha1.MeshService,
+		meshService *discoveryv1alpha2.MeshService,
 		reporter reporting.Reporter,
 	) *istiov1alpha3.VirtualService
 }
@@ -49,7 +49,7 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFact
 // The input snapshot MeshServiceSet contains n the
 func (t *translator) Translate(
 	in input.Snapshot,
-	meshService *discoveryv1alpha1.MeshService,
+	meshService *discoveryv1alpha2.MeshService,
 	reporter reporting.Reporter,
 ) *istiov1alpha3.VirtualService {
 	kubeService := meshService.Spec.GetKubeService()
@@ -126,7 +126,7 @@ func registerFieldFunc(
 			virtualService,
 			fieldPtr,
 			[]ezkube.ResourceId{policyRef},
-			&v1alpha1.TrafficPolicy{},
+			&v1alpha2.TrafficPolicy{},
 			0, //TODO(ilackarms): priority
 		); err != nil {
 			return err
@@ -135,7 +135,7 @@ func registerFieldFunc(
 	}
 }
 
-func (t *translator) initializeVirtualService(meshService *discoveryv1alpha1.MeshService) *istiov1alpha3.VirtualService {
+func (t *translator) initializeVirtualService(meshService *discoveryv1alpha2.MeshService) *istiov1alpha3.VirtualService {
 	meta := metautils.TranslatedObjectMeta(
 		meshService.Spec.GetKubeService().Ref,
 		meshService.Annotations,
@@ -151,13 +151,13 @@ func (t *translator) initializeVirtualService(meshService *discoveryv1alpha1.Mes
 	}
 }
 
-func initializeBaseRoute(trafficPolicy *v1alpha1.TrafficPolicySpec) *istiov1alpha3spec.HTTPRoute {
+func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec) *istiov1alpha3spec.HTTPRoute {
 	return &istiov1alpha3spec.HTTPRoute{
 		Match: translateRequestMatchers(trafficPolicy),
 	}
 }
 
-func (t *translator) setDefaultDestination(baseRoute *istiov1alpha3spec.HTTPRoute, meshService *discoveryv1alpha1.MeshService) {
+func (t *translator) setDefaultDestination(baseRoute *istiov1alpha3spec.HTTPRoute, meshService *discoveryv1alpha2.MeshService) {
 	// if a route destination is already set, we don't need to modify the route
 	if baseRoute.Route != nil {
 		return
@@ -173,7 +173,7 @@ func (t *translator) setDefaultDestination(baseRoute *istiov1alpha3spec.HTTPRout
 // construct a copy of a route for each service port
 // required because Istio needs the destination port for every route
 // if the service has multiple service ports defined
-func duplicateRouteForEachPort(baseRoute *istiov1alpha3spec.HTTPRoute, ports []*discoveryv1alpha1.MeshServiceSpec_KubeService_KubeServicePort) []*istiov1alpha3spec.HTTPRoute {
+func duplicateRouteForEachPort(baseRoute *istiov1alpha3spec.HTTPRoute, ports []*discoveryv1alpha2.MeshServiceSpec_KubeService_KubeServicePort) []*istiov1alpha3spec.HTTPRoute {
 	if len(ports) == 1 {
 		// no need to specify port for single-port service
 		return []*istiov1alpha3spec.HTTPRoute{baseRoute}
@@ -223,7 +223,7 @@ func splitRouteByMatchers(baseRoute *istiov1alpha3spec.HTTPRoute) []*istiov1alph
 }
 
 func translateRequestMatchers(
-	trafficPolicy *v1alpha1.TrafficPolicySpec,
+	trafficPolicy *v1alpha2.TrafficPolicySpec,
 ) []*istiov1alpha3spec.HTTPMatchRequest {
 	// Generate HttpMatchRequests for SourceSelector, one per namespace.
 	var sourceMatchers []*istiov1alpha3spec.HTTPMatchRequest
@@ -279,7 +279,7 @@ func translateRequestMatchers(
 	return translatedRequestMatchers
 }
 
-func translateRequestMatcherHeaders(matchers []*v1alpha1.TrafficPolicySpec_HeaderMatcher) (
+func translateRequestMatcherHeaders(matchers []*v1alpha2.TrafficPolicySpec_HeaderMatcher) (
 	map[string]*istiov1alpha3spec.StringMatch, map[string]*istiov1alpha3spec.StringMatch,
 ) {
 	headerMatchers := map[string]*istiov1alpha3spec.StringMatch{}
@@ -312,7 +312,7 @@ func translateRequestMatcherHeaders(matchers []*v1alpha1.TrafficPolicySpec_Heade
 	return headerMatchers, inverseHeaderMatchers
 }
 
-func translateRequestMatcherQueryParams(matchers []*v1alpha1.TrafficPolicySpec_QueryParameterMatcher) map[string]*istiov1alpha3spec.StringMatch {
+func translateRequestMatcherQueryParams(matchers []*v1alpha2.TrafficPolicySpec_QueryParameterMatcher) map[string]*istiov1alpha3spec.StringMatch {
 	var translatedQueryParamMatcher map[string]*istiov1alpha3spec.StringMatch
 	if matchers != nil {
 		translatedQueryParamMatcher = map[string]*istiov1alpha3spec.StringMatch{}
@@ -331,14 +331,14 @@ func translateRequestMatcherQueryParams(matchers []*v1alpha1.TrafficPolicySpec_Q
 	return translatedQueryParamMatcher
 }
 
-func translateRequestMatcherPathSpecifier(matcher *v1alpha1.TrafficPolicySpec_HttpMatcher) *istiov1alpha3spec.StringMatch {
+func translateRequestMatcherPathSpecifier(matcher *v1alpha2.TrafficPolicySpec_HttpMatcher) *istiov1alpha3spec.StringMatch {
 	if matcher != nil && matcher.GetPathSpecifier() != nil {
 		switch pathSpecifierType := matcher.GetPathSpecifier().(type) {
-		case *v1alpha1.TrafficPolicySpec_HttpMatcher_Exact:
+		case *v1alpha2.TrafficPolicySpec_HttpMatcher_Exact:
 			return &istiov1alpha3spec.StringMatch{MatchType: &istiov1alpha3spec.StringMatch_Exact{Exact: pathSpecifierType.Exact}}
-		case *v1alpha1.TrafficPolicySpec_HttpMatcher_Prefix:
+		case *v1alpha2.TrafficPolicySpec_HttpMatcher_Prefix:
 			return &istiov1alpha3spec.StringMatch{MatchType: &istiov1alpha3spec.StringMatch_Prefix{Prefix: pathSpecifierType.Prefix}}
-		case *v1alpha1.TrafficPolicySpec_HttpMatcher_Regex:
+		case *v1alpha2.TrafficPolicySpec_HttpMatcher_Regex:
 			return &istiov1alpha3spec.StringMatch{MatchType: &istiov1alpha3spec.StringMatch_Regex{Regex: pathSpecifierType.Regex}}
 		}
 	}

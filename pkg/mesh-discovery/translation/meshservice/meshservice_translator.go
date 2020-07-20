@@ -5,7 +5,7 @@ import (
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/go-utils/contextutils"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshservice/detector"
 )
@@ -14,7 +14,7 @@ import (
 
 // the mesh-service translator converts deployments with injected sidecars into MeshService CRs
 type Translator interface {
-	TranslateMeshServices(services corev1sets.ServiceSet, meshWorkloads v1alpha1sets.MeshWorkloadSet) v1alpha1sets.MeshServiceSet
+	TranslateMeshServices(services corev1sets.ServiceSet, meshWorkloads v1alpha2sets.MeshWorkloadSet) v1alpha2sets.MeshServiceSet
 }
 
 type translator struct {
@@ -26,9 +26,9 @@ func NewTranslator(ctx context.Context, meshServiceDetector detector.MeshService
 	return &translator{ctx: ctx, meshServiceDetector: meshServiceDetector}
 }
 
-func (t *translator) TranslateMeshServices(services corev1sets.ServiceSet, meshWorkloads v1alpha1sets.MeshWorkloadSet) v1alpha1sets.MeshServiceSet {
+func (t *translator) TranslateMeshServices(services corev1sets.ServiceSet, meshWorkloads v1alpha2sets.MeshWorkloadSet) v1alpha2sets.MeshServiceSet {
 
-	meshServiceSet := v1alpha1sets.NewMeshServiceSet()
+	meshServiceSet := v1alpha2sets.NewMeshServiceSet()
 
 	for _, service := range services.List() {
 		meshService := t.meshServiceDetector.DetectMeshService(service, meshWorkloads)

@@ -10,8 +10,8 @@ import (
 	. "github.com/onsi/gomega"
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector"
 	mock_detector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/types"
@@ -95,7 +95,7 @@ var _ = Describe("MeshworkloadDetector", func() {
 		return pod
 	}
 
-	mesh := &v1alpha1.Mesh{
+	mesh := &v1alpha2.Mesh{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "mesh",
 			Namespace: "service-mesh-hub",
@@ -117,7 +117,7 @@ var _ = Describe("MeshworkloadDetector", func() {
 			mockSidecarDetector,
 		)
 
-		meshes := v1alpha1sets.NewMeshSet()
+		meshes := v1alpha2sets.NewMeshSet()
 
 		mockSidecarDetector.EXPECT().DetectMeshSidecar(pod, meshes).Return(mesh)
 
@@ -127,11 +127,11 @@ var _ = Describe("MeshworkloadDetector", func() {
 		// expect appended workload kind
 		outputMeta.Name += "-deployment"
 
-		Expect(meshWorkload).To(Equal(&v1alpha1.MeshWorkload{
+		Expect(meshWorkload).To(Equal(&v1alpha2.MeshWorkload{
 			ObjectMeta: outputMeta,
-			Spec: v1alpha1.MeshWorkloadSpec{
-				WorkloadType: &v1alpha1.MeshWorkloadSpec_Kubernetes{
-					Kubernetes: &v1alpha1.MeshWorkloadSpec_KubernertesWorkload{
+			Spec: v1alpha2.MeshWorkloadSpec{
+				WorkloadType: &v1alpha2.MeshWorkloadSpec_Kubernetes{
+					Kubernetes: &v1alpha2.MeshWorkloadSpec_KubernertesWorkload{
 						Controller:         ezkube.MakeClusterObjectRef(deployment),
 						PodLabels:          podLabels,
 						ServiceAccountName: serviceAccountName,

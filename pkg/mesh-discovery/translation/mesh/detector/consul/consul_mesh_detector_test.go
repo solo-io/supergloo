@@ -3,7 +3,7 @@ package consul_test
 import (
 	"fmt"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	consul "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/consul"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/labelutils"
@@ -74,15 +74,15 @@ var _ = Describe("Consul Mesh Detector", func() {
 
 		mesh, err := detector.DetectMesh(deployment)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(mesh).To(Equal(&v1alpha1.Mesh{
+		Expect(mesh).To(Equal(&v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "consul-server-namespace-cluster",
 				Namespace: defaults.GetPodNamespace(),
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
-			Spec: v1alpha1.MeshSpec{
-				MeshType: &v1alpha1.MeshSpec_ConsulConnect{ConsulConnect: &v1alpha1.MeshSpec_ConsulConnectMesh{
-					Installation: &v1alpha1.MeshSpec_MeshInstallation{
+			Spec: v1alpha2.MeshSpec{
+				MeshType: &v1alpha2.MeshSpec_ConsulConnect{ConsulConnect: &v1alpha2.MeshSpec_ConsulConnectMesh{
+					Installation: &v1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
 						Version:   "latest",

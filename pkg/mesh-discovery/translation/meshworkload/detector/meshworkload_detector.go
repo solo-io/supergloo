@@ -9,8 +9,8 @@ import (
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/types"
@@ -23,7 +23,7 @@ import (
 // whose backing pods are injected with a Mesh sidecar.
 // If no mesh is detected for the workload, nil is returned
 type MeshWorkloadDetector interface {
-	DetectMeshWorkload(workload types.Workload, meshes v1alpha1sets.MeshSet) *v1alpha1.MeshWorkload
+	DetectMeshWorkload(workload types.Workload, meshes v1alpha2sets.MeshSet) *v1alpha2.MeshWorkload
 }
 
 const (
@@ -54,7 +54,7 @@ func NewMeshWorkloadDetector(
 	}
 }
 
-func (d meshWorkloadDetector) DetectMeshWorkload(workload types.Workload, meshes v1alpha1sets.MeshSet) *v1alpha1.MeshWorkload {
+func (d meshWorkloadDetector) DetectMeshWorkload(workload types.Workload, meshes v1alpha2sets.MeshSet) *v1alpha2.MeshWorkload {
 	podsForWorkload := d.getPodsForWorkload(workload)
 
 	mesh := d.getMeshForPods(podsForWorkload, meshes)
@@ -72,11 +72,11 @@ func (d meshWorkloadDetector) DetectMeshWorkload(workload types.Workload, meshes
 	// append workload kind for uniqueness
 	outputMeta.Name += "-" + strings.ToLower(workload.Kind())
 
-	return &v1alpha1.MeshWorkload{
+	return &v1alpha2.MeshWorkload{
 		ObjectMeta: outputMeta,
-		Spec: v1alpha1.MeshWorkloadSpec{
-			WorkloadType: &v1alpha1.MeshWorkloadSpec_Kubernetes{
-				Kubernetes: &v1alpha1.MeshWorkloadSpec_KubernertesWorkload{
+		Spec: v1alpha2.MeshWorkloadSpec{
+			WorkloadType: &v1alpha2.MeshWorkloadSpec_Kubernetes{
+				Kubernetes: &v1alpha2.MeshWorkloadSpec_KubernertesWorkload{
 					Controller:         controllerRef,
 					PodLabels:          labels,
 					ServiceAccountName: serviceAccount,
@@ -87,7 +87,7 @@ func (d meshWorkloadDetector) DetectMeshWorkload(workload types.Workload, meshes
 	}
 }
 
-func (d meshWorkloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1alpha1sets.MeshSet) *v1alpha1.Mesh {
+func (d meshWorkloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
 	// as long as one pod is detected for a mesh, consider the set owned by that mesh.
 	for _, pod := range pods.List() {
 		if mesh := d.detector.DetectMeshSidecar(pod, meshes); mesh != nil {

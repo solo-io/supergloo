@@ -7,11 +7,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	discoveryv1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
@@ -34,18 +34,18 @@ var _ = Describe("FederationTranslator", func() {
 		namespace := "namespace"
 		clusterName := "cluster"
 
-		mesh := &discoveryv1alpha1.Mesh{
+		mesh := &discoveryv1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "config-namespace",
 				Name:      "federated-mesh",
 			},
-			Spec: discoveryv1alpha1.MeshSpec{
-				MeshType: &discoveryv1alpha1.MeshSpec_Istio_{Istio: &discoveryv1alpha1.MeshSpec_Istio{
-					Installation: &discoveryv1alpha1.MeshSpec_MeshInstallation{
+			Spec: discoveryv1alpha2.MeshSpec{
+				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: namespace,
 						Cluster:   clusterName,
 					},
-					IngressGateways: []*discoveryv1alpha1.MeshSpec_Istio_IngressGatewayInfo{{
+					IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
 						ExternalAddress:  "mesh-gateway.dns.name",
 						ExternalTlsPort:  8181,
 						TlsContainerPort: 9191,
@@ -55,14 +55,14 @@ var _ = Describe("FederationTranslator", func() {
 			},
 		}
 
-		clientMesh := &discoveryv1alpha1.Mesh{
+		clientMesh := &discoveryv1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "config-namespace",
 				Name:      "client-mesh",
 			},
-			Spec: discoveryv1alpha1.MeshSpec{
-				MeshType: &discoveryv1alpha1.MeshSpec_Istio_{Istio: &discoveryv1alpha1.MeshSpec_Istio{
-					Installation: &discoveryv1alpha1.MeshSpec_MeshInstallation{
+			Spec: discoveryv1alpha2.MeshSpec{
+				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: "remote-namespace",
 						Cluster:   "remote-cluster",
 					},
@@ -73,16 +73,16 @@ var _ = Describe("FederationTranslator", func() {
 		meshRef := ezkube.MakeObjectRef(mesh)
 		clientMeshRef := ezkube.MakeObjectRef(clientMesh)
 
-		meshService1 := &discoveryv1alpha1.MeshService{
+		meshService1 := &discoveryv1alpha2.MeshService{
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec: discoveryv1alpha1.MeshServiceSpec{
-				Type: &discoveryv1alpha1.MeshServiceSpec_KubeService_{KubeService: &discoveryv1alpha1.MeshServiceSpec_KubeService{
+			Spec: discoveryv1alpha2.MeshServiceSpec{
+				Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
 					Ref: &v1.ClusterObjectRef{
 						Name:        "some-svc",
 						Namespace:   "some-ns",
 						ClusterName: clusterName,
 					},
-					Ports: []*discoveryv1alpha1.MeshServiceSpec_KubeService_KubeServicePort{
+					Ports: []*discoveryv1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
 						{
 							Port:     1234,
 							Name:     "http",
@@ -99,12 +99,12 @@ var _ = Describe("FederationTranslator", func() {
 			},
 		}
 
-		vMesh := &discoveryv1alpha1.MeshStatus_AppliedVirtualMesh{
+		vMesh := &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
 			Ref: &v1.ObjectRef{
 				Name:      "my-virtual-mesh",
 				Namespace: "config-namespace",
 			},
-			Spec: &v1alpha1.VirtualMeshSpec{
+			Spec: &v1alpha2.VirtualMeshSpec{
 				Meshes: []*v1.ObjectRef{
 					meshRef,
 					clientMeshRef,
@@ -121,11 +121,11 @@ var _ = Describe("FederationTranslator", func() {
 
 		in := input.NewSnapshot(
 			"ignored",
-			discoveryv1alpha1sets.NewMeshServiceSet(meshService1), discoveryv1alpha1sets.NewMeshWorkloadSet(), discoveryv1alpha1sets.NewMeshSet(mesh, clientMesh),
+			discoveryv1alpha2sets.NewMeshServiceSet(meshService1), discoveryv1alpha2sets.NewMeshWorkloadSet(), discoveryv1alpha2sets.NewMeshSet(mesh, clientMesh),
 
-			v1alpha1sets.NewTrafficPolicySet(),
-			v1alpha1sets.NewAccessPolicySet(),
-			v1alpha1sets.NewVirtualMeshSet(),
+			v1alpha2sets.NewTrafficPolicySet(),
+			v1alpha2sets.NewAccessPolicySet(),
+			v1alpha2sets.NewVirtualMeshSet(),
 
 			skv1alpha1sets.NewKubernetesClusterSet(kubeCluster),
 		)

@@ -5,7 +5,7 @@ import (
 
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	"github.com/solo-io/go-utils/contextutils"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
 )
@@ -14,7 +14,7 @@ import (
 
 // the mesh translator converts deployments with control plane images into Mesh CRs
 type Translator interface {
-	TranslateMeshes(deployments appsv1sets.DeploymentSet) v1alpha1sets.MeshSet
+	TranslateMeshes(deployments appsv1sets.DeploymentSet) v1alpha2sets.MeshSet
 }
 
 type translator struct {
@@ -30,8 +30,8 @@ func NewTranslator(
 	return &translator{ctx: ctx, meshDetector: meshDetector}
 }
 
-func (t *translator) TranslateMeshes(deployments appsv1sets.DeploymentSet) v1alpha1sets.MeshSet {
-	meshSet := v1alpha1sets.NewMeshSet()
+func (t *translator) TranslateMeshes(deployments appsv1sets.DeploymentSet) v1alpha2sets.MeshSet {
+	meshSet := v1alpha2sets.NewMeshSet()
 	for _, deployment := range deployments.List() {
 		mesh, err := t.meshDetector.DetectMesh(deployment)
 		if err != nil {

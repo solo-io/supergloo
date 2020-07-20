@@ -1,7 +1,7 @@
 package meshservice
 
 import (
-	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
@@ -25,7 +25,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.Snapshot,
-		meshService *discoveryv1alpha1.MeshService,
+		meshService *discoveryv1alpha2.MeshService,
 		reporter reporting.Reporter,
 	) Outputs
 }
@@ -45,7 +45,7 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFact
 // translate the appropriate resources for the given MeshService.
 func (t *translator) Translate(
 	in input.Snapshot,
-	meshService *discoveryv1alpha1.MeshService,
+	meshService *discoveryv1alpha2.MeshService,
 	reporter reporting.Reporter,
 ) Outputs {
 

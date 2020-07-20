@@ -5,7 +5,7 @@ import (
 
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	"github.com/solo-io/go-utils/contextutils"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/types"
@@ -15,7 +15,7 @@ import (
 
 // the mesh-workload translator converts deployments with injected sidecars into MeshWorkload CRs
 type Translator interface {
-	TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha1sets.MeshSet) v1alpha1sets.MeshWorkloadSet
+	TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.MeshWorkloadSet
 }
 
 type translator struct {
@@ -27,7 +27,7 @@ func NewTranslator(ctx context.Context, meshWorkloadDetector detector.MeshWorklo
 	return &translator{ctx: ctx, meshWorkloadDetector: meshWorkloadDetector}
 }
 
-func (t *translator) TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha1sets.MeshSet) v1alpha1sets.MeshWorkloadSet {
+func (t *translator) TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.MeshWorkloadSet {
 	var workloads []types.Workload
 	for _, deployment := range deployments.List() {
 		workloads = append(workloads, types.ToWorkload(deployment))
@@ -39,7 +39,7 @@ func (t *translator) TranslateMeshWorkloads(deployments appsv1sets.DeploymentSet
 		workloads = append(workloads, types.ToWorkload(statefulSet))
 	}
 
-	meshWorkloadSet := v1alpha1sets.NewMeshWorkloadSet()
+	meshWorkloadSet := v1alpha2sets.NewMeshWorkloadSet()
 
 	for _, workload := range workloads {
 		meshWorkload := t.meshWorkloadDetector.DetectMeshWorkload(workload, meshes)

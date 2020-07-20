@@ -10,8 +10,8 @@ import (
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/output"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	v1alpha1sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	mock_mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/mocks"
 	mock_meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshservice/mocks"
 	mock_meshworkload "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/mocks"
@@ -74,9 +74,9 @@ var _ = Describe("Translator", func() {
 
 		labeledMeta := metav1.ObjectMeta{Labels: labelutils.ClusterLabels("cluster")}
 
-		meshes := v1alpha1sets.NewMeshSet(&v1alpha1.Mesh{ObjectMeta: labeledMeta})
-		meshWorkloads := v1alpha1sets.NewMeshWorkloadSet(&v1alpha1.MeshWorkload{ObjectMeta: labeledMeta})
-		meshServices := v1alpha1sets.NewMeshServiceSet(&v1alpha1.MeshService{ObjectMeta: labeledMeta})
+		meshes := v1alpha2sets.NewMeshSet(&v1alpha2.Mesh{ObjectMeta: labeledMeta})
+		meshWorkloads := v1alpha2sets.NewMeshWorkloadSet(&v1alpha2.MeshWorkload{ObjectMeta: labeledMeta})
+		meshServices := v1alpha2sets.NewMeshServiceSet(&v1alpha2.MeshService{ObjectMeta: labeledMeta})
 
 		mockMeshTranslator.EXPECT().TranslateMeshes(deployments).Return(meshes)
 		mockMeshworkloadTranslator.EXPECT().TranslateMeshWorkloads(deployments, daemonSets, statefulSets, meshes).Return(meshWorkloads)
