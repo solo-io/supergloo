@@ -29,17 +29,17 @@ func NewHeaderManipulationDecorator() *headerManipulationDecorator {
 	return &headerManipulationDecorator{}
 }
 
-func (h *headerManipulationDecorator) DecoratorName() string {
+func (d *headerManipulationDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (h *headerManipulationDecorator) ApplyToVirtualService(
+func (d *headerManipulationDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	headers := h.translateHeaderManipulation(appliedPolicy.Spec)
+	headers := d.translateHeaderManipulation(appliedPolicy.Spec)
 	if headers != nil {
 		if err := registerField(&output.Headers, headers); err != nil {
 			return err
@@ -49,7 +49,7 @@ func (h *headerManipulationDecorator) ApplyToVirtualService(
 	return nil
 }
 
-func (h *headerManipulationDecorator) translateHeaderManipulation(
+func (d *headerManipulationDecorator) translateHeaderManipulation(
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) *istiov1alpha3spec.Headers {
 	headerManipulation := trafficPolicy.GetHeaderManipulation()

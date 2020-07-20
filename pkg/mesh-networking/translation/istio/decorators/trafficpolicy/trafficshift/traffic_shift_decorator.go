@@ -186,13 +186,13 @@ func (t *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 		}
 
 		// Use the canonical SMH unique name for this subset.
-		httpRouteDestination.Destination.Subset = SubsetName(kubeDest.Subset)
+		httpRouteDestination.Destination.Subset = subsetName(kubeDest.Subset)
 	}
 
 	return httpRouteDestination, nil
 }
 
-func (t *trafficShiftDecorator) translateSubset(
+func (d *trafficShiftDecorator) translateSubset(
 	appliedPolicies []*discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 ) []*istiov1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
@@ -216,7 +216,7 @@ func (t *trafficShiftDecorator) translateSubset(
 	var subsets []*istiov1alpha3spec.Subset
 	for _, subsetLabels := range uniqueSubsets {
 		subsets = append(subsets, &istiov1alpha3spec.Subset{
-			Name:   SubsetName(subsetLabels),
+			Name:   subsetName(subsetLabels),
 			Labels: subsetLabels,
 		})
 	}
@@ -225,7 +225,7 @@ func (t *trafficShiftDecorator) translateSubset(
 }
 
 // used in DestinationRule translator as well
-func SubsetName(labels map[string]string) string {
+func subsetName(labels map[string]string) string {
 	if len(labels) == 0 {
 		return ""
 	}

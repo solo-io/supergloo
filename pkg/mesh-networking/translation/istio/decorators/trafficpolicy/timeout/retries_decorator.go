@@ -31,17 +31,17 @@ func NewTimeoutDecorator() *timeoutDecorator {
 	return &timeoutDecorator{}
 }
 
-func (p *timeoutDecorator) DecoratorName() string {
+func (d *timeoutDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (p *timeoutDecorator) ApplyToVirtualService(
+func (d *timeoutDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	timeout, err := p.translateTimeout(appliedPolicy.Spec)
+	timeout, err := d.translateTimeout(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (p *timeoutDecorator) ApplyToVirtualService(
 	return nil
 }
 
-func (p *timeoutDecorator) translateTimeout(
+func (d *timeoutDecorator) translateTimeout(
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) (*types.Duration, error) {
 	return trafficPolicy.RequestTimeout, nil

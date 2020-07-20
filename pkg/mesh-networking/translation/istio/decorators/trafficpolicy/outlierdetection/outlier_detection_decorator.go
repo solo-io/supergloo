@@ -33,17 +33,17 @@ func NewOutlierDetectionDecorator() *outlierDetectionDecorator {
 	return &outlierDetectionDecorator{}
 }
 
-func (o *outlierDetectionDecorator) DecoratorName() string {
+func (d *outlierDetectionDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (o *outlierDetectionDecorator) ApplyToDestinationRule(
+func (d *outlierDetectionDecorator) ApplyToDestinationRule(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {
-	outlierDetection := o.translateOutlierDetection(appliedPolicy.Spec)
+	outlierDetection := d.translateOutlierDetection(appliedPolicy.Spec)
 	if outlierDetection != nil {
 		if err := registerField(&output.TrafficPolicy.OutlierDetection, outlierDetection); err != nil {
 			return err
@@ -53,7 +53,7 @@ func (o *outlierDetectionDecorator) ApplyToDestinationRule(
 	return nil
 }
 
-func (o *outlierDetectionDecorator) translateOutlierDetection(
+func (d *outlierDetectionDecorator) translateOutlierDetection(
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) *istiov1alpha3spec.OutlierDetection {
 	outlierDetection := trafficPolicy.GetOutlierDetection()

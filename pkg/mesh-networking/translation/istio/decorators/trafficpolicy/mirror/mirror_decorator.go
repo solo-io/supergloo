@@ -43,17 +43,17 @@ func NewMirrorDecorator(
 	}
 }
 
-func (p *mirrorDecorator) DecoratorName() string {
+func (d *mirrorDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (p *mirrorDecorator) ApplyToVirtualService(
+func (d *mirrorDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	mirror, percentage, err := p.translateMirror(service, appliedPolicy.Spec)
+	mirror, percentage, err := d.translateMirror(service, appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (p *mirrorDecorator) ApplyToVirtualService(
 	return nil
 }
 
-func (p *mirrorDecorator) translateMirror(
+func (d *mirrorDecorator) translateMirror(
 	meshService *discoveryv1alpha1.MeshService,
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) (*istiov1alpha3spec.Destination, *istiov1alpha3spec.Percent, error) {
@@ -83,7 +83,7 @@ func (p *mirrorDecorator) translateMirror(
 	switch destinationType := mirror.DestinationType.(type) {
 	case *v1alpha1.TrafficPolicySpec_Mirror_KubeService:
 		var err error
-		translatedMirror, err = p.makeKubeDestinationMirror(
+		translatedMirror, err = d.makeKubeDestinationMirror(
 			destinationType,
 			mirror.Port,
 			meshService,
@@ -100,20 +100,20 @@ func (p *mirrorDecorator) translateMirror(
 	return translatedMirror, mirrorPercentage, nil
 }
 
-func (p *mirrorDecorator) makeKubeDestinationMirror(
+func (d *mirrorDecorator) makeKubeDestinationMirror(
 	destination *v1alpha1.TrafficPolicySpec_Mirror_KubeService,
 	port uint32,
 	originalService *discoveryv1alpha1.MeshService,
 ) (*istiov1alpha3spec.Destination, error) {
 
 	destinationRef := destination.KubeService
-	if _, err := meshserviceutils.FindMeshServiceForKubeService(p.meshServices.List(), destinationRef); err != nil {
+	if _, err := meshserviceutils.FindMeshServiceForKubeService(d.meshServices.List(), destinationRef); err != nil {
 		return nil, eris.Wrapf(err, "invalid mirror destination")
 	}
 
 	// TODO(ilackarms): support other types of MeshService destinations, e.g. via ServiceEntries
 	localCluster := originalService.Spec.GetKubeService().GetRef().GetClusterName()
-	destinationHostname := p.clusterDomains.GetDestinationServiceFQDN(
+	destinationHostname := d.clusterDomains.GetDestinationServiceFQDN(
 		localCluster,
 		destinationRef,
 	)

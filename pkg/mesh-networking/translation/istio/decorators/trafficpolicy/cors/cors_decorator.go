@@ -30,17 +30,17 @@ func NewCorsDecorator() *corsDecorator {
 	return &corsDecorator{}
 }
 
-func (p *corsDecorator) DecoratorName() string {
+func (d *corsDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (p *corsDecorator) ApplyToVirtualService(
+func (d *corsDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	cors, err := p.translateCors(appliedPolicy.Spec)
+	cors, err := d.translateCors(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (p *corsDecorator) ApplyToVirtualService(
 	return nil
 }
 
-func (p *corsDecorator) translateCors(
+func (d *corsDecorator) translateCors(
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) (*istiov1alpha3spec.CorsPolicy, error) {
 	corsPolicy := trafficPolicy.CorsPolicy

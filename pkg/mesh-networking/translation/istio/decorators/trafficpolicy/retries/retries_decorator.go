@@ -30,17 +30,17 @@ func NewRetriesDecorator() *retriesDecorator {
 	return &retriesDecorator{}
 }
 
-func (p *retriesDecorator) DecoratorName() string {
+func (d *retriesDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (p *retriesDecorator) ApplyToVirtualService(
+func (d *retriesDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha1.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha1.MeshService,
 	output *istiov1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	retries, err := p.translateRetries(appliedPolicy.Spec)
+	retries, err := d.translateRetries(appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (p *retriesDecorator) ApplyToVirtualService(
 	return nil
 }
 
-func (p *retriesDecorator) translateRetries(
+func (d *retriesDecorator) translateRetries(
 	trafficPolicy *v1alpha1.TrafficPolicySpec,
 ) (*istiov1alpha3spec.HTTPRetry, error) {
 	retries := trafficPolicy.Retries
