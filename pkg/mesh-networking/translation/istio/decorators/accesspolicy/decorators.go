@@ -11,7 +11,7 @@ import (
 	decorate a given output resource.
 */
 
-// AuthorizationPolicyDecorators modify the AuthorizationPolicy based on a TrafficPolicy which applies to the MeshService.
+// AuthorizationPolicyDecorators modify the AuthorizationPolicy based on a AccessPolicy which applies to the MeshService.
 type AuthorizationPolicyDecorator interface {
 	decorators.Decorator
 
