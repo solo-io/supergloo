@@ -16,8 +16,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
-	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
-	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
+	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
 
 // the VirtualService translator translates a MeshService into a VirtualService.
@@ -32,7 +32,7 @@ type Translator interface {
 		in input.Snapshot,
 		meshService *discoveryv1alpha2.MeshService,
 		reporter reporting.Reporter,
-	) *istiov1alpha3.VirtualService
+	) *networkingv1alpha3.VirtualService
 }
 
 type translator struct {
@@ -51,7 +51,7 @@ func (t *translator) Translate(
 	in input.Snapshot,
 	meshService *discoveryv1alpha2.MeshService,
 	reporter reporting.Reporter,
-) *istiov1alpha3.VirtualService {
+) *networkingv1alpha3.VirtualService {
 	kubeService := meshService.Spec.GetKubeService()
 
 	if kubeService == nil {
@@ -93,7 +93,7 @@ func (t *translator) Translate(
 		routesPerPort := duplicateRouteForEachPort(baseRoute, kubeService.Ports)
 
 		// split routes with multiple HTTP matchers for easier route sorting later on
-		var routesWithSingleMatcher []*istiov1alpha3spec.HTTPRoute
+		var routesWithSingleMatcher []*networkingv1alpha3spec.HTTPRoute
 		for _, route := range routesPerPort {
 			splitRoutes := splitRouteByMatchers(route)
 			routesWithSingleMatcher = append(routesWithSingleMatcher, splitRoutes...)
@@ -113,7 +113,7 @@ func (t *translator) Translate(
 // construct the callback for registering fields in the virtual service
 func registerFieldFunc(
 	virtualServiceFields fieldutils.FieldOwnershipRegistry,
-	virtualService *istiov1alpha3.VirtualService,
+	virtualService *networkingv1alpha3.VirtualService,
 	policyRef ezkube.ResourceId,
 ) decorators.RegisterField {
 	return func(fieldPtr, val interface{}) error {
@@ -135,7 +135,7 @@ func registerFieldFunc(
 	}
 }
 
-func (t *translator) initializeVirtualService(meshService *discoveryv1alpha2.MeshService) *istiov1alpha3.VirtualService {
+func (t *translator) initializeVirtualService(meshService *discoveryv1alpha2.MeshService) *networkingv1alpha3.VirtualService {
 	meta := metautils.TranslatedObjectMeta(
 		meshService.Spec.GetKubeService().Ref,
 		meshService.Annotations,
@@ -143,28 +143,28 @@ func (t *translator) initializeVirtualService(meshService *discoveryv1alpha2.Mes
 
 	hosts := []string{t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.GetKubeService().Ref)}
 
-	return &istiov1alpha3.VirtualService{
+	return &networkingv1alpha3.VirtualService{
 		ObjectMeta: meta,
-		Spec: istiov1alpha3spec.VirtualService{
+		Spec: networkingv1alpha3spec.VirtualService{
 			Hosts: hosts,
 		},
 	}
 }
 
-func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec) *istiov1alpha3spec.HTTPRoute {
-	return &istiov1alpha3spec.HTTPRoute{
+func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec) *networkingv1alpha3spec.HTTPRoute {
+	return &networkingv1alpha3spec.HTTPRoute{
 		Match: translateRequestMatchers(trafficPolicy),
 	}
 }
 
-func (t *translator) setDefaultDestination(baseRoute *istiov1alpha3spec.HTTPRoute, meshService *discoveryv1alpha2.MeshService) {
+func (t *translator) setDefaultDestination(baseRoute *networkingv1alpha3spec.HTTPRoute, meshService *discoveryv1alpha2.MeshService) {
 	// if a route destination is already set, we don't need to modify the route
 	if baseRoute.Route != nil {
 		return
 	}
 
-	baseRoute.Route = []*istiov1alpha3spec.HTTPRouteDestination{{
-		Destination: &istiov1alpha3spec.Destination{
+	baseRoute.Route = []*networkingv1alpha3spec.HTTPRouteDestination{{
+		Destination: &networkingv1alpha3spec.Destination{
 			Host: t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.GetKubeService().GetRef()),
 		},
 	}}
@@ -173,15 +173,15 @@ func (t *translator) setDefaultDestination(baseRoute *istiov1alpha3spec.HTTPRout
 // construct a copy of a route for each service port
 // required because Istio needs the destination port for every route
 // if the service has multiple service ports defined
-func duplicateRouteForEachPort(baseRoute *istiov1alpha3spec.HTTPRoute, ports []*discoveryv1alpha2.MeshServiceSpec_KubeService_KubeServicePort) []*istiov1alpha3spec.HTTPRoute {
+func duplicateRouteForEachPort(baseRoute *networkingv1alpha3spec.HTTPRoute, ports []*discoveryv1alpha2.MeshServiceSpec_KubeService_KubeServicePort) []*networkingv1alpha3spec.HTTPRoute {
 	if len(ports) == 1 {
 		// no need to specify port for single-port service
-		return []*istiov1alpha3spec.HTTPRoute{baseRoute}
+		return []*networkingv1alpha3spec.HTTPRoute{baseRoute}
 	}
-	var routesWithPort []*istiov1alpha3spec.HTTPRoute
+	var routesWithPort []*networkingv1alpha3spec.HTTPRoute
 	for _, port := range ports {
 		// create a separate set of matchers for each port on the destination service
-		var matchersWithPort []*istiov1alpha3spec.HTTPMatchRequest
+		var matchersWithPort []*networkingv1alpha3spec.HTTPMatchRequest
 
 		for _, matcher := range baseRoute.Match {
 			matcher := matcher.DeepCopy()
@@ -189,11 +189,11 @@ func duplicateRouteForEachPort(baseRoute *istiov1alpha3spec.HTTPRoute, ports []*
 			matchersWithPort = append(matchersWithPort, matcher)
 		}
 
-		var destinationsWithPort []*istiov1alpha3spec.HTTPRouteDestination
+		var destinationsWithPort []*networkingv1alpha3spec.HTTPRouteDestination
 
 		for _, destination := range baseRoute.Route {
 			destination := destination.DeepCopy()
-			destination.Destination.Port = &istiov1alpha3spec.PortSelector{
+			destination.Destination.Port = &networkingv1alpha3spec.PortSelector{
 				Number: port.GetPort(),
 			}
 			destinationsWithPort = append(destinationsWithPort, destination)
@@ -208,15 +208,15 @@ func duplicateRouteForEachPort(baseRoute *istiov1alpha3spec.HTTPRoute, ports []*
 	return routesWithPort
 }
 
-func splitRouteByMatchers(baseRoute *istiov1alpha3spec.HTTPRoute) []*istiov1alpha3spec.HTTPRoute {
+func splitRouteByMatchers(baseRoute *networkingv1alpha3spec.HTTPRoute) []*networkingv1alpha3spec.HTTPRoute {
 	if len(baseRoute.Match) < 1 {
-		return []*istiov1alpha3spec.HTTPRoute{baseRoute}
+		return []*networkingv1alpha3spec.HTTPRoute{baseRoute}
 	}
 
-	var singleMatcherRoutes []*istiov1alpha3spec.HTTPRoute
+	var singleMatcherRoutes []*networkingv1alpha3spec.HTTPRoute
 	for _, match := range baseRoute.Match {
 		singleMatcherRoute := baseRoute.DeepCopy()
-		singleMatcherRoute.Match = []*istiov1alpha3spec.HTTPMatchRequest{match}
+		singleMatcherRoute.Match = []*networkingv1alpha3spec.HTTPMatchRequest{match}
 		singleMatcherRoutes = append(singleMatcherRoutes, singleMatcherRoute)
 	}
 	return singleMatcherRoutes
@@ -224,23 +224,23 @@ func splitRouteByMatchers(baseRoute *istiov1alpha3spec.HTTPRoute) []*istiov1alph
 
 func translateRequestMatchers(
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
-) []*istiov1alpha3spec.HTTPMatchRequest {
+) []*networkingv1alpha3spec.HTTPMatchRequest {
 	// Generate HttpMatchRequests for SourceSelector, one per namespace.
-	var sourceMatchers []*istiov1alpha3spec.HTTPMatchRequest
+	var sourceMatchers []*networkingv1alpha3spec.HTTPMatchRequest
 	// Set SourceNamespace and SourceLabels.
 	for _, sourceSelector := range trafficPolicy.GetSourceSelector() {
 		if len(sourceSelector.GetLabels()) > 0 ||
 			len(sourceSelector.GetNamespaces()) > 0 {
 			if len(sourceSelector.GetNamespaces()) > 0 {
 				for _, namespace := range sourceSelector.GetNamespaces() {
-					matchRequest := &istiov1alpha3spec.HTTPMatchRequest{
+					matchRequest := &networkingv1alpha3spec.HTTPMatchRequest{
 						SourceNamespace: namespace,
 						SourceLabels:    sourceSelector.GetLabels(),
 					}
 					sourceMatchers = append(sourceMatchers, matchRequest)
 				}
 			} else {
-				sourceMatchers = append(sourceMatchers, &istiov1alpha3spec.HTTPMatchRequest{
+				sourceMatchers = append(sourceMatchers, &networkingv1alpha3spec.HTTPMatchRequest{
 					SourceLabels: sourceSelector.GetLabels(),
 				})
 			}
@@ -250,23 +250,23 @@ func translateRequestMatchers(
 		return sourceMatchers
 	}
 	// If HttpRequestMatchers exist, generate cartesian product of sourceMatchers and httpRequestMatchers.
-	var translatedRequestMatchers []*istiov1alpha3spec.HTTPMatchRequest
+	var translatedRequestMatchers []*networkingv1alpha3spec.HTTPMatchRequest
 	// If SourceSelector is nil, generate an HttpMatchRequest without SourceSelector match criteria
 	if len(sourceMatchers) == 0 {
-		sourceMatchers = append(sourceMatchers, &istiov1alpha3spec.HTTPMatchRequest{})
+		sourceMatchers = append(sourceMatchers, &networkingv1alpha3spec.HTTPMatchRequest{})
 	}
 	// Set QueryParams, Headers, WithoutHeaders, Uri, and Method.
 	for _, sourceMatcher := range sourceMatchers {
 		for _, matcher := range trafficPolicy.GetHttpRequestMatchers() {
-			httpMatcher := &istiov1alpha3spec.HTTPMatchRequest{
+			httpMatcher := &networkingv1alpha3spec.HTTPMatchRequest{
 				SourceNamespace: sourceMatcher.GetSourceNamespace(),
 				SourceLabels:    sourceMatcher.GetSourceLabels(),
 			}
 			headerMatchers, inverseHeaderMatchers := translateRequestMatcherHeaders(matcher.GetHeaders())
 			uriMatcher := translateRequestMatcherPathSpecifier(matcher)
-			var method *istiov1alpha3spec.StringMatch
+			var method *networkingv1alpha3spec.StringMatch
 			if matcher.GetMethod() != nil {
-				method = &istiov1alpha3spec.StringMatch{MatchType: &istiov1alpha3spec.StringMatch_Exact{Exact: matcher.GetMethod().GetMethod().String()}}
+				method = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: matcher.GetMethod().GetMethod().String()}}
 			}
 			httpMatcher.QueryParams = translateRequestMatcherQueryParams(matcher.GetQueryParameters())
 			httpMatcher.Headers = headerMatchers
@@ -280,11 +280,11 @@ func translateRequestMatchers(
 }
 
 func translateRequestMatcherHeaders(matchers []*v1alpha2.TrafficPolicySpec_HeaderMatcher) (
-	map[string]*istiov1alpha3spec.StringMatch, map[string]*istiov1alpha3spec.StringMatch,
+	map[string]*networkingv1alpha3spec.StringMatch, map[string]*networkingv1alpha3spec.StringMatch,
 ) {
-	headerMatchers := map[string]*istiov1alpha3spec.StringMatch{}
-	inverseHeaderMatchers := map[string]*istiov1alpha3spec.StringMatch{}
-	var matcherMap map[string]*istiov1alpha3spec.StringMatch
+	headerMatchers := map[string]*networkingv1alpha3spec.StringMatch{}
+	inverseHeaderMatchers := map[string]*networkingv1alpha3spec.StringMatch{}
+	var matcherMap map[string]*networkingv1alpha3spec.StringMatch
 	if matchers != nil {
 		for _, matcher := range matchers {
 			matcherMap = headerMatchers
@@ -292,12 +292,12 @@ func translateRequestMatcherHeaders(matchers []*v1alpha2.TrafficPolicySpec_Heade
 				matcherMap = inverseHeaderMatchers
 			}
 			if matcher.GetRegex() {
-				matcherMap[matcher.GetName()] = &istiov1alpha3spec.StringMatch{
-					MatchType: &istiov1alpha3spec.StringMatch_Regex{Regex: matcher.GetValue()},
+				matcherMap[matcher.GetName()] = &networkingv1alpha3spec.StringMatch{
+					MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: matcher.GetValue()},
 				}
 			} else {
-				matcherMap[matcher.GetName()] = &istiov1alpha3spec.StringMatch{
-					MatchType: &istiov1alpha3spec.StringMatch_Exact{Exact: matcher.GetValue()},
+				matcherMap[matcher.GetName()] = &networkingv1alpha3spec.StringMatch{
+					MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: matcher.GetValue()},
 				}
 			}
 		}
@@ -312,18 +312,18 @@ func translateRequestMatcherHeaders(matchers []*v1alpha2.TrafficPolicySpec_Heade
 	return headerMatchers, inverseHeaderMatchers
 }
 
-func translateRequestMatcherQueryParams(matchers []*v1alpha2.TrafficPolicySpec_QueryParameterMatcher) map[string]*istiov1alpha3spec.StringMatch {
-	var translatedQueryParamMatcher map[string]*istiov1alpha3spec.StringMatch
+func translateRequestMatcherQueryParams(matchers []*v1alpha2.TrafficPolicySpec_QueryParameterMatcher) map[string]*networkingv1alpha3spec.StringMatch {
+	var translatedQueryParamMatcher map[string]*networkingv1alpha3spec.StringMatch
 	if matchers != nil {
-		translatedQueryParamMatcher = map[string]*istiov1alpha3spec.StringMatch{}
+		translatedQueryParamMatcher = map[string]*networkingv1alpha3spec.StringMatch{}
 		for _, matcher := range matchers {
 			if matcher.GetRegex() {
-				translatedQueryParamMatcher[matcher.GetName()] = &istiov1alpha3spec.StringMatch{
-					MatchType: &istiov1alpha3spec.StringMatch_Regex{Regex: matcher.GetValue()},
+				translatedQueryParamMatcher[matcher.GetName()] = &networkingv1alpha3spec.StringMatch{
+					MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: matcher.GetValue()},
 				}
 			} else {
-				translatedQueryParamMatcher[matcher.GetName()] = &istiov1alpha3spec.StringMatch{
-					MatchType: &istiov1alpha3spec.StringMatch_Exact{Exact: matcher.GetValue()},
+				translatedQueryParamMatcher[matcher.GetName()] = &networkingv1alpha3spec.StringMatch{
+					MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: matcher.GetValue()},
 				}
 			}
 		}
@@ -331,15 +331,15 @@ func translateRequestMatcherQueryParams(matchers []*v1alpha2.TrafficPolicySpec_Q
 	return translatedQueryParamMatcher
 }
 
-func translateRequestMatcherPathSpecifier(matcher *v1alpha2.TrafficPolicySpec_HttpMatcher) *istiov1alpha3spec.StringMatch {
+func translateRequestMatcherPathSpecifier(matcher *v1alpha2.TrafficPolicySpec_HttpMatcher) *networkingv1alpha3spec.StringMatch {
 	if matcher != nil && matcher.GetPathSpecifier() != nil {
 		switch pathSpecifierType := matcher.GetPathSpecifier().(type) {
 		case *v1alpha2.TrafficPolicySpec_HttpMatcher_Exact:
-			return &istiov1alpha3spec.StringMatch{MatchType: &istiov1alpha3spec.StringMatch_Exact{Exact: pathSpecifierType.Exact}}
+			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: pathSpecifierType.Exact}}
 		case *v1alpha2.TrafficPolicySpec_HttpMatcher_Prefix:
-			return &istiov1alpha3spec.StringMatch{MatchType: &istiov1alpha3spec.StringMatch_Prefix{Prefix: pathSpecifierType.Prefix}}
+			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Prefix{Prefix: pathSpecifierType.Prefix}}
 		case *v1alpha2.TrafficPolicySpec_HttpMatcher_Regex:
-			return &istiov1alpha3spec.StringMatch{MatchType: &istiov1alpha3spec.StringMatch_Regex{Regex: pathSpecifierType.Regex}}
+			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: pathSpecifierType.Regex}}
 		}
 	}
 	return nil

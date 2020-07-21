@@ -6,7 +6,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
+	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
@@ -38,7 +38,7 @@ func (d *timeoutDecorator) DecoratorName() string {
 func (d *timeoutDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha2.MeshService,
-	output *istiov1alpha3spec.HTTPRoute,
+	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
 	timeout, err := d.translateTimeout(appliedPolicy.Spec)

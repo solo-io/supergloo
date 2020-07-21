@@ -5,7 +5,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
+	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
@@ -37,7 +37,7 @@ func (d *retriesDecorator) DecoratorName() string {
 func (d *retriesDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha2.MeshService,
-	output *istiov1alpha3spec.HTTPRoute,
+	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
 	retries, err := d.translateRetries(appliedPolicy.Spec)
@@ -55,12 +55,12 @@ func (d *retriesDecorator) ApplyToVirtualService(
 
 func (d *retriesDecorator) translateRetries(
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
-) (*istiov1alpha3spec.HTTPRetry, error) {
+) (*networkingv1alpha3spec.HTTPRetry, error) {
 	retries := trafficPolicy.Retries
 	if retries == nil {
 		return nil, nil
 	}
-	return &istiov1alpha3spec.HTTPRetry{
+	return &networkingv1alpha3spec.HTTPRetry{
 		Attempts:      retries.GetAttempts(),
 		PerTryTimeout: retries.GetPerTryTimeout(),
 	}, nil
