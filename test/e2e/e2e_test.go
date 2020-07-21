@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/service-mesh-hub/test/e2e"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
 	"github.com/solo-io/service-mesh-hub/test/data"
 

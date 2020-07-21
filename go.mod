@@ -78,6 +78,6 @@ require (
 	k8s.io/api v0.18.2
 	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/kubernetes v1.18.4
+	k8s.io/kubernetes v1.18.4 // indirect
 	sigs.k8s.io/controller-runtime v0.5.6
 )

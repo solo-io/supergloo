@@ -20,10 +20,10 @@ ARG=${ARG:=default}
 ## register crds
 
 # register all our CRDs in the management plane
-kubectl --context kind-$managementPlane apply -f ../service-mesh-hub/install/helm/charts/service-mesh-hub/crds
+kubectl --context kind-$managementPlane apply -f ../service-mesh-hub/install/helm/service-mesh-hub/crds
 kubectl --context kind-$managementPlane apply -f ../skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml
 # register all the CRDs in the target cluster too
-##TODO:uncomment kubectl --context kind-$remoteCluster apply -f ../service-mesh-hub/install/helm/charts/service-mesh-hub/crds
+##TODO:uncomment kubectl --context kind-$remoteCluster apply -f ../service-mesh-hub/install/helm/service-mesh-hub/crds
 
 
 # namespace

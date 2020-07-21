@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	externalapis "github.com/solo-io/external-apis/codegen"
@@ -31,13 +32,13 @@ var (
 	networkingReconcilerSnapshotCodePath  = "pkg/api/networking.smh.solo.io/snapshot/input/reconciler.go"
 	networkingOutputIstioSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/output/istio/snapshot.go"
 
-	smhManifestRoot = "install/helm/charts/service-mesh-hub"
-	csrManifestRoot = "install/helm/charts/csr-agent/"
+	smhManifestRoot = "install/helm/service-mesh-hub"
+	csrManifestRoot = "install/helm/csr-agent/"
 
 	allApiGroups = map[string][]model.Group{
 		"":                                 groups.SMHGroups,
 		"github.com/solo-io/external-apis": externalapis.Groups,
-		"github.com/solo-io/skv2":          []model.Group{skv1alpha1.Group},
+		"github.com/solo-io/skv2":          {skv1alpha1.Group},
 	}
 
 	// define custom templates
@@ -92,8 +93,10 @@ var (
 )
 
 func run() error {
-	log.Printf("generating smh")
-	if err := makeSmhCommand().Execute(); err != nil {
+	log.Printf("generating service mesh hub code")
+	chartOnly := flag.Bool("chart", false, "only generate the helm chart")
+
+	if err := makeSmhCommand(*chartOnly).Execute(); err != nil {
 		return err
 	}
 	return nil
@@ -105,10 +108,18 @@ func run() error {
 	return nil
 }
 
-func makeSmhCommand() codegen.Command {
+func makeSmhCommand(chartOnly bool) codegen.Command {
 
 	protoImports.External["github.com/solo-io/skv2"] = []string{
 		"api/**/*.proto",
+	}
+
+	if chartOnly {
+		return codegen.Command{
+			AppName:      appName,
+			ManifestRoot: smhManifestRoot,
+			Chart:        helm.Chart,
+		}
 	}
 
 	return codegen.Command{

@@ -8,9 +8,9 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output/istio"
-	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
 // the istio translator translates an input networking snapshot to an output snapshot of Istio resources

@@ -38,9 +38,9 @@ HELM_ROOTDIR := install/helm
 include install/helm/helm.mk
 
 # Generate Manifests from Helm Chart
-.PHONY: chart
+.PHONY: chart-gen
 chart-gen:
-	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) generate.go -chart
+	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
 
 .PHONY: manifest-gen
 manifest-gen: install/service-mesh-hub-default.yaml

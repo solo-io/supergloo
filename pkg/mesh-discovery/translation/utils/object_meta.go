@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/labelutils"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

@@ -6,11 +6,12 @@ package v1alpha2
 import (
 	bytes "bytes"
 	fmt "fmt"
+	math "math"
+
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	types "github.com/gogo/protobuf/types"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

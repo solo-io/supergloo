@@ -1,8 +1,9 @@
 package linkerd
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
 	"strings"
+
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
 
 	linkerdconfig "github.com/linkerd/linkerd2/controller/gen/config"
 	"github.com/linkerd/linkerd2/pkg/config"
@@ -10,9 +11,9 @@ import (
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
+	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	appsv1 "k8s.io/api/apps/v1"
 )
 

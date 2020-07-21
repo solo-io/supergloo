@@ -1,9 +1,10 @@
 package io
 
 import (
+	"sort"
+
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sort"
 )
 
 // a Snapshot is a group of individual resources from one or more GroupVersions

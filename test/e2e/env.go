@@ -10,13 +10,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/solo-io/service-mesh-hub/test/kubectl"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	smh_core "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
-	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/test/e2e/kubectl"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,7 +46,6 @@ type KubeContext struct {
 	Clientset           *kubernetes.Clientset
 	TrafficPolicyClient smh_networking.TrafficPolicyClient
 	MeshClient          smh_discovery.MeshClient
-	SettingsClient      smh_core.SettingsClient
 	SecretClient        kubernetes_core.SecretClient
 	VirtualMeshClient   smh_networking.VirtualMeshClient
 }
@@ -70,9 +69,6 @@ func NewKubeContext(kubecontext string) KubeContext {
 	discoveryClientset, err := smh_discovery.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	coreClientset, err := smh_core.NewClientsetFromConfig(restcfg)
-	Expect(err).NotTo(HaveOccurred())
-
 	return KubeContext{
 		Context:             kubecontext,
 		Config:              config,
@@ -80,7 +76,6 @@ func NewKubeContext(kubecontext string) KubeContext {
 		TrafficPolicyClient: networkingClientset.TrafficPolicies(),
 		VirtualMeshClient:   networkingClientset.VirtualMeshes(),
 		MeshClient:          discoveryClientset.Meshes(),
-		SettingsClient:      coreClientset.Settings(),
 		SecretClient:        kubeCoreClientset.Secrets(),
 	}
 }
