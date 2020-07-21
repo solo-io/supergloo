@@ -150,7 +150,7 @@ func (t *translator) initializeAuthorizationPolicy(meshService *discoveryv1alpha
 	return authPolicy
 }
 
-// Initialize AccessPolicy Rule consisting of a Rule_From for each  and Rule_To
+// Initialize AccessPolicy Rule consisting of a Rule_From for each SourceSelector and a single Rule_To containing the rules specified in the AccessPolicy.
 func (t *translator) initializeBaseRule(
 	accessPolicy *v1alpha2.AccessPolicySpec,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
