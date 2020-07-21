@@ -18,7 +18,7 @@ type AuthorizationPolicyDecorator interface {
 	ApplyToAuthorizationPolicy(
 		appliedPolicy *v1alpha2.MeshServiceStatus_AppliedAccessPolicy,
 		service *v1alpha2.MeshService,
-		output *securityv1beta1spec.AuthorizationPolicy,
+		output *securityv1beta1spec.Operation,
 		registerField decorators.RegisterField,
 	) error
 }
