@@ -1,21 +1,17 @@
 package main
 
 import (
-	"github.com/solo-io/service-mesh-hub/codegen/constants"
 	"log"
 
 	externalapis "github.com/solo-io/external-apis/codegen"
-	skv1alpha1 "github.com/solo-io/skv2/api/multicluster/v1alpha1"
-	"github.com/solo-io/skv2/contrib"
-	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-
 	"github.com/solo-io/service-mesh-hub/codegen/groups"
+	"github.com/solo-io/service-mesh-hub/codegen/helm"
+	"github.com/solo-io/service-mesh-hub/codegen/io"
+	skv1alpha1 "github.com/solo-io/skv2/api/multicluster/v1alpha1"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/contrib"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func main() {
@@ -25,8 +21,7 @@ func main() {
 }
 
 var (
-	appName                      = "service-mesh-hub"
-	serviceMeshHubApiGroupSuffix = constants.ServiceMeshHubApiGroupSuffix
+	appName = "service-mesh-hub"
 
 	discoveryInputSnapshotCodePath  = "pkg/api/discovery.smh.solo.io/snapshot/input/snapshot.go"
 	discoveryReconcilerCodePath     = "pkg/api/discovery.smh.solo.io/snapshot/input/reconciler.go"
@@ -36,66 +31,8 @@ var (
 	networkingReconcilerSnapshotCodePath  = "pkg/api/networking.smh.solo.io/snapshot/input/reconciler.go"
 	networkingOutputIstioSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/output/istio/snapshot.go"
 
-	smhCrdManifestRoot = "install/helm/charts/custom-resource-definitions"
-	csrCrdManifestRoot = "install/helm/charts/csr-agent/"
-
-	discoveryInputTypes = map[schema.GroupVersion][]string{
-		corev1.SchemeGroupVersion: {
-			"Pod",
-			"Service",
-			"ConfigMap",
-			"Node",
-		},
-		appsv1.SchemeGroupVersion: {
-			"Deployment",
-			"ReplicaSet",
-			"DaemonSet",
-			"StatefulSet",
-		},
-	}
-
-	discoveryOutputTypes = map[schema.GroupVersion][]string{
-		schema.GroupVersion{
-			Group:   "discovery." + serviceMeshHubApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"Mesh",
-			"MeshWorkload",
-			"MeshService",
-		},
-	}
-
-	networkingInputTypes = map[schema.GroupVersion][]string{
-		schema.GroupVersion{
-			Group:   "discovery." + serviceMeshHubApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"Mesh",
-			"MeshWorkload",
-			"MeshService",
-		},
-		schema.GroupVersion{
-			Group:   "networking." + serviceMeshHubApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"TrafficPolicy",
-			"AccessPolicy",
-			"VirtualMesh",
-		},
-		skv1alpha1.Group.GroupVersion: {
-			"KubernetesCluster",
-		},
-	}
-
-	networkingOutputIstioTypes = map[schema.GroupVersion][]string{
-		istionetworkingv1alpha3.SchemeGroupVersion: {
-			"DestinationRule",
-			"VirtualService",
-			"EnvoyFilter",
-			"ServiceEntry",
-			"Gateway",
-		},
-	}
+	smhManifestRoot = "install/helm/charts/service-mesh-hub"
+	csrManifestRoot = "install/helm/charts/csr-agent/"
 
 	allApiGroups = map[string][]model.Group{
 		"":                                 groups.SMHGroups,
@@ -107,37 +44,37 @@ var (
 	discoveryInputSnapshot = makeTopLevelTemplate(
 		contrib.InputSnapshot,
 		discoveryInputSnapshotCodePath,
-		discoveryInputTypes,
+		io.DiscoveryInputTypes,
 	)
 
 	discoveryReconciler = makeTopLevelTemplate(
 		contrib.InputReconciler,
 		discoveryReconcilerCodePath,
-		discoveryInputTypes,
+		io.DiscoveryInputTypes,
 	)
 
 	discoveryOutputSnapshot = makeTopLevelTemplate(
 		contrib.OutputSnapshot,
 		discoveryOutputSnapshotCodePath,
-		discoveryOutputTypes,
+		io.DiscoveryOutputTypes,
 	)
 
 	networkingInputSnapshot = makeTopLevelTemplate(
 		contrib.InputSnapshot,
 		networkingInputSnapshotCodePath,
-		networkingInputTypes,
+		io.NetworkingInputTypes,
 	)
 
 	networkingReconciler = makeTopLevelTemplate(
 		contrib.InputReconciler,
 		networkingReconcilerSnapshotCodePath,
-		networkingInputTypes,
+		io.NetworkingInputTypes,
 	)
 
 	networkingOutputIstioSnapshot = makeTopLevelTemplate(
 		contrib.OutputSnapshot,
 		networkingOutputIstioSnapshotCodePath,
-		networkingOutputIstioTypes,
+		io.NetworkingOutputIstioTypes,
 	)
 
 	topLevelTemplates = []model.CustomTemplates{
@@ -177,10 +114,11 @@ func makeSmhCommand() codegen.Command {
 	return codegen.Command{
 		AppName:           appName,
 		AnyVendorConfig:   protoImports,
-		ManifestRoot:      smhCrdManifestRoot,
+		ManifestRoot:      smhManifestRoot,
 		TopLevelTemplates: topLevelTemplates,
 		Groups:            groups.SMHGroups,
 		RenderProtos:      true,
+		Chart:             helm.Chart,
 	}
 }
 
@@ -188,13 +126,13 @@ func makeCsrCommand() codegen.Command {
 	return codegen.Command{
 		AppName:         appName,
 		AnyVendorConfig: protoImports,
-		ManifestRoot:    csrCrdManifestRoot,
+		ManifestRoot:    csrManifestRoot,
 		Groups:          groups.CSRGroups,
 		RenderProtos:    true,
 	}
 }
 
-func makeTopLevelTemplate(templateFunc func(params contrib.CrossGroupTemplateParameters) model.CustomTemplates, outPath string, resourceSnapshot map[schema.GroupVersion][]string) model.CustomTemplates {
+func makeTopLevelTemplate(templateFunc func(params contrib.CrossGroupTemplateParameters) model.CustomTemplates, outPath string, resourceSnapshot io.Snapshot) model.CustomTemplates {
 	return templateFunc(contrib.CrossGroupTemplateParameters{
 		OutputFilename:    outPath,
 		SelectFromGroups:  allApiGroups,
