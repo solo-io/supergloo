@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/solo-io/service-mesh-hub/pkg/cli/commands"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands"
 )
 
 func main() {

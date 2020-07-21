@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/zapr"
 	"github.com/solo-io/go-utils/contextutils"
@@ -30,28 +31,26 @@ type StartReconciler func(
 // bootstrap options for starting discovery
 // TODO: wire these up to Settings CR
 type Options struct {
-	// MetricsBindAddress is the TCP address that the controller should bind to
+	// MetricsBindPort is the TCP port that the controller should bind to
 	// for serving prometheus metrics.
-	// It can be set to "0" to disable the metrics serving.
-	MetricsBindAddress string
+	// It can be set to 0 to disable the metrics serving.
+	MetricsBindPort uint32
 
-	// MasterNamespace if specified restricts the Master manager's cache to watch objects in
-	// the desired namespace Defaults to all namespaces
+	// MasterNamespace if specified restricts the Master manager's cache to watch objects in the desired namespace.
+	// Defaults to all namespaces.
 	//
-	// Note: If a namespace is specified, controllers can still Watch for a
-	// cluster-scoped resource (e.g Node).  For namespaced resources the cache
-	// will only hold objects from the desired namespace.
+	// Note: If a namespace is specified, controllers can still Watch for a cluster-scoped resource (e.g Node).  For namespaced resources the cache will only hold objects from the desired namespace.
 	MasterNamespace string
 
-	// enables debug mode
-	DebugMode bool
+	// enables verbose mode
+	VerboseMode bool
 }
 
 // the mesh-discovery controller is the Kubernetes Controller/Operator
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, rootLogger string, start StartReconciler, opts Options) error {
-	setupLogging(opts.DebugMode)
+	setupLogging(opts.VerboseMode)
 
 	ctx = contextutils.WithLogger(ctx, rootLogger)
 	mgr, err := makeMasterManager(opts)
@@ -87,7 +86,7 @@ func makeMasterManager(opts Options) (manager.Manager, error) {
 
 	mgr, err := manager.New(cfg, manager.Options{
 		Namespace:          opts.MasterNamespace, // TODO (ilackarms): support configuring multiple watch namespaces on master cluster
-		MetricsBindAddress: opts.MetricsBindAddress,
+		MetricsBindAddress: fmt.Sprintf("%v", opts.MetricsBindPort),
 	})
 	if err != nil {
 		return nil, err
@@ -99,9 +98,9 @@ func makeMasterManager(opts Options) (manager.Manager, error) {
 	return mgr, nil
 }
 
-func setupLogging(debugMode bool) {
+func setupLogging(verboseMode bool) {
 	level := zapcore.InfoLevel
-	if debugMode {
+	if verboseMode {
 		level = zapcore.DebugLevel
 	}
 	atomicLevel := zap.NewAtomicLevelAt(level)
@@ -109,7 +108,7 @@ func setupLogging(debugMode bool) {
 		zaputil.Level(&atomicLevel),
 		// Only set debug mode if specified. This will use a non-json (human readable) encoder which makes it impossible
 		// to use any json parsing tools for the log. Should only be enabled explicitly
-		zaputil.UseDevMode(debugMode),
+		zaputil.UseDevMode(verboseMode),
 	)
 
 	// klog
