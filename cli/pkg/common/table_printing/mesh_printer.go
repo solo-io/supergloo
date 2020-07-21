@@ -56,7 +56,7 @@ func (m *meshPrinter) printIstioMeshes(out io.Writer, meshes []*istioMesh) error
 		return nil
 	}
 
-	fmt.Fprintln(out, "\nIstio:")
+	_, _ = fmt.Fprintln(out, "\nIstio:")
 
 	table := m.tableBuilder(out)
 
@@ -108,7 +108,7 @@ func (m *meshPrinter) printLinkerdMeshes(out io.Writer, meshes []*smh_discovery.
 		return nil
 	}
 
-	fmt.Fprintln(out, "\nLinkerd:")
+	_, _ = fmt.Fprintln(out, "\nLinkerd:")
 
 	table := m.tableBuilder(out)
 
@@ -149,7 +149,7 @@ func (m *meshPrinter) printConsulConnectMeshes(out io.Writer, meshes []*smh_disc
 		return nil
 	}
 
-	fmt.Fprintln(out, "\nConsul Connect:")
+	_, _ = fmt.Fprintln(out, "\nConsul Connect:")
 
 	table := m.tableBuilder(out)
 
@@ -190,29 +190,34 @@ func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*smh_discove
 		return nil
 	}
 
-	fmt.Fprintln(out, "\nAws AppMesh:")
+	_, _ = fmt.Fprintln(out, "\nAws AppMesh:")
 
 	table := m.tableBuilder(out)
 
-	commonHeaderRows := append([]string{}, m.commonHeaderRows...)
+	commonHeaderRows := []string{
+		"Name",
+		"Clusters",
+		"Mesh Name",
+		"AWS Account ID",
+		"Region",
+	}
 
 	var preFilteredRows [][]string
 	for _, mesh := range meshes {
-		// Append common metadata
-		newRow := []string{mesh.GetName(), mesh.Spec.GetCluster().GetName()}
-
 		// aws appmesh should be prefiltered, if they are not, simply skip it
 		awsAppMesh := mesh.Spec.GetAwsAppMesh()
 		if awsAppMesh == nil {
 			continue
 		}
-		// Append AppMesh instance info
-		newRow = append(
-			newRow,
+
+		// Create appmesh instance information, as the only common item between the generic mesh and appmesh is the name
+		newRow := []string{
+			mesh.GetName(),
+			strings.Join(awsAppMesh.GetClusters(), "\n"),
 			awsAppMesh.GetName(),
 			awsAppMesh.GetAwsAccountId(),
 			awsAppMesh.GetRegion(),
-		)
+		}
 
 		preFilteredRows = append(preFilteredRows, newRow)
 	}
