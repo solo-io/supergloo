@@ -87,7 +87,7 @@ message MeshServiceStatus {
         .core.skv2.solo.io.ObjectRef ref = 1;
 
         // the observed generation of the accepted access policy
-        int32 observedGeneration = 2;
+        int64 observedGeneration = 2;
 
         // the last known valid spec of the access policy
         .networking.smh.solo.io.AccessPolicySpec spec = 3;

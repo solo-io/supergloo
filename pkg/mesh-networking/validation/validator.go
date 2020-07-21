@@ -8,10 +8,10 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
 // the validator validates user-applied configuration
@@ -41,8 +41,10 @@ func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
 	reporter := newValidationReporter()
 	for _, meshService := range input.MeshServices().List() {
 		appliedTrafficPolicies := getAppliedTrafficPolicies(input.TrafficPolicies().List(), meshService)
-
 		meshService.Status.AppliedTrafficPolicies = appliedTrafficPolicies
+
+		appliedAccessPolicies := getAppliedAccessPolicies(input.AccessPolicies().List(), meshService)
+		meshService.Status.AppliedAccessPolicies = appliedAccessPolicies
 	}
 	_, err := v.istioTranslator.Translate(ctx, input, reporter)
 	if err != nil {
@@ -154,7 +156,10 @@ func (v *validationReporter) getTrafficPolicyErrors(meshService *discoveryv1alph
 	return tpErrors
 }
 
-func getAppliedTrafficPolicies(trafficPolicies v1alpha2.TrafficPolicySlice, meshService *discoveryv1alpha2.MeshService) []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy {
+func getAppliedTrafficPolicies(
+	trafficPolicies v1alpha2.TrafficPolicySlice,
+	meshService *discoveryv1alpha2.MeshService,
+) []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy {
 	var matchingTrafficPolicies v1alpha2.TrafficPolicySlice
 	for _, policy := range trafficPolicies {
 		if selectorutils.SelectorMatchesService(policy.Spec.DestinationSelector, meshService) {
@@ -221,4 +226,29 @@ func sortTrafficPoliciesByAcceptedDate(meshService *discoveryv1alpha2.MeshServic
 
 func isUpToDate(tp *v1alpha2.TrafficPolicy) bool {
 	return tp.Status.ObservedGeneration == tp.Generation
+}
+
+// Fetch all AccessPolicies applicable to the given MeshService.
+// Sorting is not needed because the additive semantics of AccessPolicies does not allow for conflicts.
+func getAppliedAccessPolicies(
+	accessPolicies v1alpha2.AccessPolicySlice,
+	meshService *discoveryv1alpha2.MeshService,
+) []*discoveryv1alpha2.MeshServiceStatus_AppliedAccessPolicy {
+	var matchingAccessPolicies v1alpha2.AccessPolicySlice
+	for _, policy := range accessPolicies {
+		if selectorutils.SelectorMatchesService(policy.Spec.DestinationSelector, meshService) {
+			matchingAccessPolicies = append(matchingAccessPolicies, policy)
+		}
+	}
+
+	var appliedPolicies []*discoveryv1alpha2.MeshServiceStatus_AppliedAccessPolicy
+	for _, policy := range matchingAccessPolicies {
+		policy := policy // pike
+		appliedPolicies = append(appliedPolicies, &discoveryv1alpha2.MeshServiceStatus_AppliedAccessPolicy{
+			Ref:                ezkube.MakeObjectRef(policy),
+			Spec:               &policy.Spec,
+			ObservedGeneration: policy.Generation,
+		})
+	}
+	return appliedPolicies
 }
