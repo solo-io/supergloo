@@ -7,7 +7,6 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
@@ -15,8 +14,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
-	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
-	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"github.com/solo-io/skv2/pkg/ezkube"
+	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
+	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
 
 // the DestinationRule translator translates a MeshService into a DestinationRule.
@@ -31,7 +31,7 @@ type Translator interface {
 		in input.Snapshot,
 		meshService *discoveryv1alpha2.MeshService,
 		reporter reporting.Reporter,
-	) *istiov1alpha3.DestinationRule
+	) *networkingv1alpha3.DestinationRule
 }
 
 type translator struct {
@@ -50,7 +50,7 @@ func (t *translator) Translate(
 	in input.Snapshot,
 	meshService *discoveryv1alpha2.MeshService,
 	reporter reporting.Reporter,
-) *istiov1alpha3.DestinationRule {
+) *networkingv1alpha3.DestinationRule {
 	kubeService := meshService.Spec.GetKubeService()
 
 	if kubeService == nil {
@@ -113,7 +113,7 @@ func (t *translator) Translate(
 // construct the callback for registering fields in the virtual service
 func registerFieldFunc(
 	destinationRuleFields fieldutils.FieldOwnershipRegistry,
-	destinationRule *istiov1alpha3.DestinationRule,
+	destinationRule *networkingv1alpha3.DestinationRule,
 	policyRefs []ezkube.ResourceId,
 ) decorators.RegisterField {
 	return func(fieldPtr, val interface{}) error {
@@ -135,23 +135,23 @@ func registerFieldFunc(
 	}
 }
 
-func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha2.MeshService) *istiov1alpha3.DestinationRule {
+func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha2.MeshService) *networkingv1alpha3.DestinationRule {
 	meta := metautils.TranslatedObjectMeta(
 		meshService.Spec.GetKubeService().Ref,
 		meshService.Annotations,
 	)
 	hostname := t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.GetKubeService().Ref)
 
-	return &istiov1alpha3.DestinationRule{
+	return &networkingv1alpha3.DestinationRule{
 		ObjectMeta: meta,
-		Spec: istiov1alpha3spec.DestinationRule{
+		Spec: networkingv1alpha3spec.DestinationRule{
 			Host: hostname,
-			TrafficPolicy: &istiov1alpha3spec.TrafficPolicy{
-				Tls: &istiov1alpha3spec.ClientTLSSettings{
+			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
+				Tls: &networkingv1alpha3spec.ClientTLSSettings{
 					// TODO(ilackarms): currently we set all DRs to mTLS
 					// in the future we'll want to make this configurable
 					// https://github.com/solo-io/service-mesh-hub/issues/790
-					Mode: istiov1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
+					Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 				},
 			},
 		},

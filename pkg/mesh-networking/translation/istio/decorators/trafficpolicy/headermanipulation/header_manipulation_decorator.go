@@ -5,7 +5,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
+	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
@@ -36,7 +36,7 @@ func (d *headerManipulationDecorator) DecoratorName() string {
 func (d *headerManipulationDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha2.MeshService,
-	output *istiov1alpha3spec.HTTPRoute,
+	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
 	headers := d.translateHeaderManipulation(appliedPolicy.Spec)
@@ -51,17 +51,17 @@ func (d *headerManipulationDecorator) ApplyToVirtualService(
 
 func (d *headerManipulationDecorator) translateHeaderManipulation(
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
-) *istiov1alpha3spec.Headers {
+) *networkingv1alpha3spec.Headers {
 	headerManipulation := trafficPolicy.GetHeaderManipulation()
 	if headerManipulation == nil {
 		return nil
 	}
-	return &istiov1alpha3spec.Headers{
-		Request: &istiov1alpha3spec.Headers_HeaderOperations{
+	return &networkingv1alpha3spec.Headers{
+		Request: &networkingv1alpha3spec.Headers_HeaderOperations{
 			Add:    headerManipulation.GetAppendRequestHeaders(),
 			Remove: headerManipulation.GetRemoveRequestHeaders(),
 		},
-		Response: &istiov1alpha3spec.Headers_HeaderOperations{
+		Response: &networkingv1alpha3spec.Headers_HeaderOperations{
 			Add:    headerManipulation.GetAppendResponseHeaders(),
 			Remove: headerManipulation.GetRemoveResponseHeaders(),
 		},
