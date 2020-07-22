@@ -8,6 +8,27 @@ on:
   pull_request: {}
 
 jobs:
+  unit-tests:
+    name: unit-tests
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          git fetch --prune --unshallow
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Unit Tests
+        run: |
+          make run-tests SKIP_PACKAGES=test/e2e
+
   e2e-istio-1_5:
     name: end-to-end-istio-1_5
     runs-on: ubuntu-18.04
