@@ -4,6 +4,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/codegen/constants"
 	skv1alpha1 "github.com/solo-io/skv2/api/multicluster/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -37,6 +38,9 @@ var (
 			"EnvoyFilter",
 			"ServiceEntry",
 			"Gateway",
+		},
+		istiosecurityv1beta1.SchemeGroupVersion: {
+			"AuthorizationPolicy",
 		},
 	}
 )
