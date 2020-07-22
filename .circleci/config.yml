@@ -9,16 +9,14 @@ jobs:
     working_directory: ~/go/src/github.com/solo-io/service-mesh-hub
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
       - run:
           name: install go
           command: |
-          sudo rm -rf /usr/local/go && \
-          wget https://golang.org/dl/go1.14.6.linux-amd64.tar.gz && \
-          tar -xvf go1.14.6.linux-amd64.tar.gz && sudo mv go /usr/local/go && \
-          export GOROOT=/usr/local/go && \
-          export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+            sudo rm -rf /usr/local/go && \
+            wget https://golang.org/dl/go1.14.6.linux-amd64.tar.gz && \
+            tar -xvf go1.14.6.linux-amd64.tar.gz && sudo mv go /usr/local/go && \
+            export GOROOT=/usr/local/go && \
+            export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
       - run:
           name: install deps
           command: |

@@ -28,7 +28,6 @@ jobs:
       - name: debug
         run: |
           go get -v github.com/onsi/ginkgo/ginkgo
-          find /
           echo $GOPATH
           echo $PATH
       - name: install ginkgo
