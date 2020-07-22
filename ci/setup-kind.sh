@@ -179,7 +179,8 @@ function register_cluster() {
 
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
-    --context "kind-${cluster}" \
+    --master-context "kind-${masterCluster}" \
+    --remote-context "kind-${cluster}" \
     --api-server-address "${apiServerAddress}"
 }
 

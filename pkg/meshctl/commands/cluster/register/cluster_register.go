@@ -23,16 +23,17 @@ func Command(ctx context.Context) *cobra.Command {
 			return registerCluster(ctx, opts)
 		},
 	}
-	opts.AddRegisterFlags(cmd.Flags())
+	opts.addToFlags(cmd.Flags())
 	return cmd
 }
 
 type options register.RegistrationOptions
 
-func (register *options) AddRegisterFlags(set *pflag.FlagSet) {
+func (register *options) addToFlags(set *pflag.FlagSet) {
 	set.StringVar(&register.ClusterName, "cluster-name", "", "name of the cluster to register")
 	set.StringVar(&register.KubeCfgPath, "kubeconfig", "", "path to the kubeconfig from which the registered cluster will be accessed")
-	set.StringVar(&register.KubeContext, "context", "", "name of the kubeconfig context to use for registration")
+	set.StringVar(&register.KubeContext, "master-context", "", "name of the kubeconfig context to use for the master cluster")
+	set.StringVar(&register.RemoteKubeContext, "remote-context", "", "name of the kubeconfig context to use for the remote cluster")
 	set.StringVar(&register.Namespace, "federation-namespace", defaults.DefaultPodNamespace, "namespace of the Service-Mesh-Hub control plane in which the secret for the registered cluster will be created")
 	set.StringVar(&register.RemoteNamespace, "remote-namespace", defaults.DefaultPodNamespace, "namespace in the target cluster where a service account enabling remote access will be created. If the namespace does not exist it will be created.")
 	set.StringVar(&register.APIServerAddress, "api-server-address", "", "Swap out the address of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Service Mesh Hub is different than that specified in the local kubeconfig.")
