@@ -143,12 +143,13 @@ EOF
   ${K} label ns bookinfo istio-injection=enabled --overwrite
   ${K} apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/platform/kube/bookinfo.yaml
 
-  ${K} -n bookinfo rollout status deployment details-v1
-  ${K} -n bookinfo rollout status deployment productpage-v1
-  ${K} -n bookinfo rollout status deployment ratings-v1
-  ${K} -n bookinfo rollout status deployment reviews-v1
-  ${K} -n bookinfo rollout status deployment reviews-v2
-  ${K} -n bookinfo rollout status deployment reviews-v3
+  ${K} -n bookinfo rollout status deployment --timeout 150s details-v1
+  ${K} -n bookinfo rollout status deployment --timeout 150s productpage-v1
+  ${K} -n bookinfo rollout status deployment --timeout 150s ratings-v1
+  ${K} -n bookinfo rollout status deployment --timeout 150s reviews-v1
+  ${K} -n bookinfo rollout status deployment --timeout 150s reviews-v2
+  ${K} -n bookinfo rollout status deployment --timeout 150s reviews-v3
+  ${K} -n bookinfo describe pod # debug
 
   printf "\n\n---\n"
   echo "Finished setting up cluster ${cluster}"
@@ -194,6 +195,11 @@ if [ "$1" == "cleanup" ]; then
 fi
 
 setup_kind_cluster ${masterCluster} 32001 &
+
+# NOTE(ilackarms): this sleep is used to prevent a race between kind cluster creations
+# related: https://github.com/kubernetes-sigs/kind/issues/1596
+sleep 3
+
 setup_kind_cluster ${remoteCluster} 32000 &
 
 wait

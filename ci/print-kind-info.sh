@@ -8,6 +8,8 @@ remoteCluster=remote-cluster
 
 kubectl --context kind-$masterCluster get pod -A
 kubectl --context kind-$remoteCluster get pod -A
+kubectl --context kind-$masterCluster describe pod -A
+kubectl --context kind-$remoteCluster describe pod -A
 kubectl --context kind-$masterCluster get mesh -A
 kubectl --context kind-$masterCluster get meshworkloads -A
 kubectl --context kind-$masterCluster get meshservices -A
