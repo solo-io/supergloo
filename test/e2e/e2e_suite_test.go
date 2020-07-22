@@ -18,14 +18,9 @@ import (
 // to test only this package, run `make run-tests TEST_PKG=test/e2e
 func TestE2e(t *testing.T) {
 	RegisterFailHandler(func(message string, callerSkip ...int) {
-		runShell("kubectl logs -n=service-mesh-hub -l app=service-mesh-hub")
-		runShell("kubectl logs -n=service-mesh-hub -l app=service-mesh-hub --previous")
-		runShell("kubectl get virtualservices.networking.istio.io -A -oyaml")
-		runShell("kubectl get apiproducts -A -oyaml")
+		runShell("kubectl logs -n=service-mesh-hub -l app=discovery")
+		runShell("kubectl logs -n=service-mesh-hub -l app=networking")
 		runShell("kubectl get pod -A")
-		runShell("kubectl logs -n istio-system $(kubectl get pod -n istio-system | grep istiod | awk '{print $1}')")
-		runShell("kubectl logs -n istio-system $(kubectl get pod -n istio-system | grep istio-ingressgateway | awk '{print $1}')")
-		runShell("istioctl proxy-config route $(kubectl get pod -n istio-system | grep istio-ingressgateway | awk '{print $1}').istio-system -ojson")
 		Fail(message, callerSkip...)
 	})
 	RunSpecs(t, "E2e Suite")

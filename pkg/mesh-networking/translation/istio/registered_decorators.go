@@ -1,4 +1,4 @@
-package translation
+package istio
 
 /*
 This file contains the registered set of decorators for the translator.

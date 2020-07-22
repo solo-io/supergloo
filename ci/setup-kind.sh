@@ -184,6 +184,7 @@ function register_cluster() {
     --api-server-address "${apiServerAddress}"
 }
 
+# Note(ilackarms): these names are hard-coded in test/e2e/env.go
 masterCluster=master-cluster
 remoteCluster=remote-cluster
 
@@ -211,9 +212,5 @@ register_cluster ${remoteCluster} &
 
 wait
 
-# echo context to tests if they watch us
-# dont change this line without changing StartEnv in test/e2e/env.go
-if [ -e /proc/self/fd/3 ]; then
-  echo kind-${masterCluster} >&3
-fi
-
+# set current context to master cluster
+kubectl config use-context ${masterCluster}
