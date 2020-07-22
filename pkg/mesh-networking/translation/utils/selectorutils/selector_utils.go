@@ -4,8 +4,8 @@ import (
 	"github.com/solo-io/go-utils/stringutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/resourceidutils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
 func SelectorMatchesService(selectors []*v1alpha2.ServiceSelector, service *discoveryv1alpha2.MeshService) bool {
@@ -68,15 +68,9 @@ func kubeServiceMatches(
 
 func refsContain(refs []*v1.ClusterObjectRef, targetRef *v1.ClusterObjectRef) bool {
 	for _, ref := range refs {
-		if refsEqual(targetRef, ref) {
+		if resourceidutils.ClusterRefsEqual(targetRef, ref) {
 			return true
 		}
 	}
 	return false
-}
-
-func refsEqual(ref1, ref2 ezkube.ClusterResourceId) bool {
-	return ref1.GetClusterName() == ref2.GetClusterName() &&
-		ref1.GetNamespace() == ref2.GetNamespace() &&
-		ref1.GetName() == ref2.GetName()
 }

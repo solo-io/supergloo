@@ -48,13 +48,20 @@ message FailoverServiceSpec {
 }
 
 message FailoverServiceStatus {
-    // The most recent generation observed in the the FailoverService metadata.
-    // if the observedGeneration does not match generation, the controller has not received the most
-    // recent version of this resource.
+
+    /*
+        The most recent generation observed in the the FailoverService metadata.
+        If the observedGeneration does not match generation, the controller has not received the most
+        recent version of this resource.
+    */
     int64 observed_generation = 1;
 
-    // the state of the overall resource.
-    // will only show accepted if it has been successfully
-    // applied to all target meshes.
+    /*
+        The state of the overall resource, will only show accepted if it has been successfully
+        applied to all target meshes.
+    */
     ValidationState state = 2;
+
+    // The status of the FailoverService for each Mesh to which it has been applied.
+    map<string, ValidationStatus> meshes = 3;
 }

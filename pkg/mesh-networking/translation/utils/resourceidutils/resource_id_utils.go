@@ -16,3 +16,14 @@ func ResourceIdsToString(resourceIds []ezkube.ResourceId) string {
 	}
 	return fmt.Sprintf("[%s]", strings.Join(keys, ", "))
 }
+
+func ClusterRefsEqual(ref1, ref2 ezkube.ClusterResourceId) bool {
+	return ref1.GetClusterName() == ref2.GetClusterName() &&
+		ref1.GetNamespace() == ref2.GetNamespace() &&
+		ref1.GetName() == ref2.GetName()
+}
+
+func RefsEqual(ref1, ref2 ezkube.ResourceId) bool {
+	return ref1.GetNamespace() == ref2.GetNamespace() &&
+		ref1.GetName() == ref2.GetName()
+}

@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/resourceidutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -39,6 +40,7 @@ func NewValidator(
 func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newValidationReporter()
+
 	for _, meshService := range input.MeshServices().List() {
 		appliedTrafficPolicies := getAppliedTrafficPolicies(input.TrafficPolicies().List(), meshService)
 		meshService.Status.AppliedTrafficPolicies = appliedTrafficPolicies
@@ -46,6 +48,12 @@ func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
 		appliedAccessPolicies := getAppliedAccessPolicies(input.AccessPolicies().List(), meshService)
 		meshService.Status.AppliedAccessPolicies = appliedAccessPolicies
 	}
+
+	for _, mesh := range input.Meshes().List() {
+		appliedFailoverServices := getAppliedFailoverServices(input.FailoverServices().List(), mesh)
+		mesh.Status.AppliedFailoverServices = appliedFailoverServices
+	}
+
 	_, err := v.istioTranslator.Translate(ctx, input, reporter)
 	if err != nil {
 		// should never happen
@@ -67,14 +75,27 @@ func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
 		}
 	}
 
+	// write FailoverService statuses
+	for _, failoverService := range input.FailoverServices().List() {
+		failoverService.Status = v1alpha2.FailoverServiceStatus{
+			ObservedGeneration: failoverService.Generation,
+			Meshes:             map[string]*v1alpha2.ValidationStatus{},
+		}
+	}
+
 	for _, meshService := range input.MeshServices().List() {
 		meshService.Status.ObservedGeneration = meshService.Generation
 		meshService.Status.AppliedTrafficPolicies = validateAndReturnAcceptedTrafficPolicies(ctx, input, reporter, meshService)
 		meshService.Status.AppliedAccessPolicies = validateAndReturnAcceptedAccessPolicies(ctx, input, reporter, meshService)
 	}
 
-	// TODO(ilackarms): validate meshworkloads and meshes
+	for _, mesh := range input.Meshes().List() {
+		mesh.Status.ObservedGeneration = mesh.Generation
+		mesh.Status.AppliedFailoverServices = validateAndReturnAcceptedFailoverServices(ctx, input, reporter, mesh)
+	}
 
+	// TODO(ilackarms): validate meshworkloads
+	// TODO(harveyxia): iterate through each networking CRD and update Status.State
 }
 
 // this function both validates the status of TrafficPolicies (sets error or accepted state)
@@ -147,8 +168,8 @@ func validateAndReturnAcceptedAccessPolicies(
 			acceptedIndex++
 		} else {
 			var errMsgs []string
-			for _, tpErr := range errsForAccessPolicy {
-				errMsgs = append(errMsgs, tpErr.Error())
+			for _, apErr := range errsForAccessPolicy {
+				errMsgs = append(errMsgs, apErr.Error())
 			}
 			accessPolicy.Status.MeshServices[sets.Key(meshService)] = &v1alpha2.ValidationStatus{
 				State:  v1alpha2.ValidationState_INVALID,
@@ -160,17 +181,64 @@ func validateAndReturnAcceptedAccessPolicies(
 	return validatedAccessPolicies
 }
 
+func validateAndReturnAcceptedFailoverServices(
+	ctx context.Context,
+	input input.Snapshot,
+	reporter *validationReporter,
+	mesh *discoveryv1alpha2.Mesh,
+) []*discoveryv1alpha2.MeshStatus_AppliedFailoverService {
+	var validatedFailoverServices []*discoveryv1alpha2.MeshStatus_AppliedFailoverService
+
+	// track accepted index
+	var acceptedIndex uint32
+	for _, appliedFailoverService := range mesh.Status.AppliedFailoverServices {
+		errsForFailoverService := reporter.getFailoverServiceErrors(mesh, appliedFailoverService.Ref)
+
+		failoverService, err := input.FailoverServices().Find(appliedFailoverService.Ref)
+		if err != nil {
+			// should never happen
+			contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up applied FailoverService %v: %v", appliedFailoverService.Ref, err)
+			continue
+		}
+
+		if len(errsForFailoverService) == 0 {
+			failoverService.Status.Meshes[sets.Key(mesh)] = &v1alpha2.ValidationStatus{
+				AcceptanceOrder: acceptedIndex,
+				State:           v1alpha2.ValidationState_ACCEPTED,
+			}
+			validatedFailoverServices = append(validatedFailoverServices, appliedFailoverService)
+			acceptedIndex++
+		} else {
+			var errMsgs []string
+			for _, fsErr := range errsForFailoverService {
+				errMsgs = append(errMsgs, fsErr.Error())
+			}
+			failoverService.Status.Meshes[sets.Key(mesh)] = &v1alpha2.ValidationStatus{
+				State:  v1alpha2.ValidationState_INVALID,
+				Errors: errMsgs,
+			}
+		}
+	}
+
+	return validatedFailoverServices
+}
+
 // the validation reporter uses istioTranslator reports to
 // validate individual policies
 type validationReporter struct {
 	// NOTE(ilackarms): map access should be synchronous (called in a single context),
 	// so locking should not be necessary.
-	invalidTrafficPolicies map[*discoveryv1alpha2.MeshService]map[string][]error
-	invalidAccessPolicies  map[*discoveryv1alpha2.MeshService]map[string][]error
+	invalidTrafficPolicies  map[*discoveryv1alpha2.MeshService]map[string][]error
+	invalidAccessPolicies   map[*discoveryv1alpha2.MeshService]map[string][]error
+	invalidFailoverServices map[*discoveryv1alpha2.Mesh]map[string][]error
 }
 
 func newValidationReporter() *validationReporter {
-	return &validationReporter{invalidTrafficPolicies: map[*discoveryv1alpha2.MeshService]map[string][]error{}}
+	return &validationReporter{
+		invalidTrafficPolicies:  map[*discoveryv1alpha2.MeshService]map[string][]error{},
+		invalidAccessPolicies:   map[*discoveryv1alpha2.MeshService]map[string][]error{},
+		invalidFailoverServices: map[*discoveryv1alpha2.Mesh]map[string][]error{},
+	}
 }
 
 // mark the policy with an error; will be used to filter the policy out of
@@ -197,6 +265,18 @@ func (v *validationReporter) ReportVirtualMesh(mesh *discoveryv1alpha2.Mesh, vir
 	panic("implement me")
 }
 
+func (v *validationReporter) ReportFailoverService(mesh *discoveryv1alpha2.Mesh, failoverService ezkube.ResourceId, err error) {
+	invalidFailoverServicesForMeshService := v.invalidFailoverServices[mesh]
+	if invalidFailoverServicesForMeshService == nil {
+		invalidFailoverServicesForMeshService = map[string][]error{}
+	}
+	key := sets.Key(failoverService)
+	errs := invalidFailoverServicesForMeshService[key]
+	errs = append(errs, err)
+	invalidFailoverServicesForMeshService[key] = errs
+	v.invalidFailoverServices[mesh] = invalidFailoverServicesForMeshService
+}
+
 func (v *validationReporter) getTrafficPolicyErrors(meshService *discoveryv1alpha2.MeshService, trafficPolicy ezkube.ResourceId) []error {
 	invalidTrafficPoliciesForMeshService, ok := v.invalidTrafficPolicies[meshService]
 	if !ok {
@@ -219,6 +299,18 @@ func (v *validationReporter) getAccessPolicyErrors(meshService *discoveryv1alpha
 		return nil
 	}
 	return apErrors
+}
+
+func (v *validationReporter) getFailoverServiceErrors(mesh *discoveryv1alpha2.Mesh, failoverService ezkube.ResourceId) []error {
+	invalidAccessPoliciesForMeshService, ok := v.invalidFailoverServices[mesh]
+	if !ok {
+		return nil
+	}
+	fsErrors, ok := invalidAccessPoliciesForMeshService[sets.Key(failoverService)]
+	if !ok {
+		return nil
+	}
+	return fsErrors
 }
 
 func getAppliedTrafficPolicies(
@@ -313,4 +405,26 @@ func getAppliedAccessPolicies(
 	}
 
 	return appliedPolicies
+}
+
+// Fetch all FailoverServices applicable to the given Mesh.
+func getAppliedFailoverServices(
+	failoverServices v1alpha2.FailoverServiceSlice,
+	mesh *discoveryv1alpha2.Mesh,
+) []*discoveryv1alpha2.MeshStatus_AppliedFailoverService {
+	var appliedFailoverServices []*discoveryv1alpha2.MeshStatus_AppliedFailoverService
+	for _, failoverService := range failoverServices {
+		failoverService := failoverService // pike
+		for _, meshRef := range failoverService.Spec.Meshes {
+			if !resourceidutils.RefsEqual(meshRef, mesh) {
+				continue
+			}
+			appliedFailoverServices = append(appliedFailoverServices, &discoveryv1alpha2.MeshStatus_AppliedFailoverService{
+				Ref:                ezkube.MakeObjectRef(failoverService),
+				Spec:               &failoverService.Spec,
+				ObservedGeneration: failoverService.Generation,
+			})
+		}
+	}
+	return appliedFailoverServices
 }

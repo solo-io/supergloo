@@ -19,6 +19,9 @@ type Reporter interface {
 
 	// report an error on a virtual mesh that has been applied to a Mesh
 	ReportVirtualMesh(mesh *v1alpha2.Mesh, virtualMesh ezkube.ResourceId, err error)
+
+	// report an error on a failover service that has been applied to a Mesh
+	ReportFailoverService(mesh *v1alpha2.Mesh, failoverService ezkube.ResourceId, err error)
 }
 
 // this reporter implementation is only used inside
@@ -53,6 +56,14 @@ func (p *panickingReporter) ReportVirtualMesh(mesh *v1alpha2.Mesh, virtualMesh e
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw("internal error: error reported on VirtualMesh which should have been caught by validation!",
 			"mesh", sets.Key(mesh),
-			"vmesh", sets.Key(virtualMesh),
+			"virtual-mesh", sets.Key(virtualMesh),
+			"error", err)
+}
+
+func (p *panickingReporter) ReportFailoverService(mesh *v1alpha2.Mesh, failoverService ezkube.ResourceId, err error) {
+	contextutils.LoggerFrom(p.ctx).
+		DPanicw("internal error: error reported on FailoverService which should have been caught by validation!",
+			"mesh", sets.Key(mesh),
+			"failover-service", sets.Key(failoverService),
 			"error", err)
 }
