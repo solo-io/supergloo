@@ -2,6 +2,9 @@ package io
 
 import (
 	"sort"
+	"strings"
+
+	"github.com/gertd/go-pluralize"
 
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -42,10 +45,11 @@ func (s Snapshot) rbacPolicies(
 	for groupVersion, kinds := range s {
 		var resources []string
 		for _, kind := range kinds {
+			resource := strings.ToLower(pluralize.NewClient().Plural(kind))
 			if subresource != "" {
-				kind += "/" + subresource
+				resource += "/" + subresource
 			}
-			resources = append(resources, kind)
+			resources = append(resources, resource)
 		}
 		policies = append(policies, rbacv1.PolicyRule{
 			Verbs:     verbs,

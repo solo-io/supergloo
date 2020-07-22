@@ -3,6 +3,8 @@ package register
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/solo-io/service-mesh-hub/codegen/io"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
@@ -52,5 +54,10 @@ func registerCluster(ctx context.Context, opts *options) error {
 		},
 	}
 
-	return register.RegistrationOptions(*opts).RegisterCluster(ctx)
+	if err := register.RegistrationOptions(*opts).RegisterCluster(ctx); err != nil {
+		return err
+	}
+
+	logrus.Infof("successfully registered cluster %v", opts.ClusterName)
+	return nil
 }

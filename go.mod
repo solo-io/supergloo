@@ -41,6 +41,7 @@ require (
 	github.com/cosiner/argv v0.1.0 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.4
+	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-delve/delve v1.4.1 // indirect
 	github.com/go-logr/zapr v0.1.1
 	github.com/gogo/protobuf v1.3.1

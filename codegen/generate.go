@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
-	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"log"
 	"os"
+
+	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 
 	externalapis "github.com/solo-io/external-apis/codegen"
 	"github.com/solo-io/service-mesh-hub/codegen/groups"
@@ -106,7 +107,7 @@ func run() error {
 		return err
 	}
 
-	if *chartOnly{
+	if *chartOnly {
 		return nil
 	}
 
