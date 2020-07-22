@@ -24,6 +24,7 @@ var (
 			"TrafficPolicy",
 			"AccessPolicy",
 			"VirtualMesh",
+			"FailoverService",
 		},
 		skv1alpha1.Group.GroupVersion: {
 			"KubernetesCluster",

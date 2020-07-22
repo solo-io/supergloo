@@ -27,6 +27,7 @@ var SMHGroups = []model.Group{
 		{kind: "TrafficPolicy"},
 		{kind: "AccessPolicy"},
 		{kind: "VirtualMesh"},
+		{kind: "FailoverService"},
 	}),
 }
 

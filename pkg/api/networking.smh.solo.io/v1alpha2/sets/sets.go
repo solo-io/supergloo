@@ -407,3 +407,135 @@ func (s *virtualMeshSet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1a
 func (s *virtualMeshSet) Length() int {
 	return s.set.Length()
 }
+
+type FailoverServiceSet interface {
+	// Get the set stored keys
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*networking_smh_solo_io_v1alpha2.FailoverService) bool) []*networking_smh_solo_io_v1alpha2.FailoverService
+	// Return the Set as a map of key to resource.
+	Map() map[string]*networking_smh_solo_io_v1alpha2.FailoverService
+	// Insert a resource into the set.
+	Insert(failoverService ...*networking_smh_solo_io_v1alpha2.FailoverService)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(failoverServiceSet FailoverServiceSet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(failoverService ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(failoverService ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set FailoverServiceSet) FailoverServiceSet
+	// Return the difference with the provided set
+	Difference(set FailoverServiceSet) FailoverServiceSet
+	// Return the intersection with the provided set
+	Intersection(set FailoverServiceSet) FailoverServiceSet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha2.FailoverService, error)
+	// Get the length of the set
+	Length() int
+}
+
+func makeGenericFailoverServiceSet(failoverServiceList []*networking_smh_solo_io_v1alpha2.FailoverService) sksets.ResourceSet {
+	var genericResources []ezkube.ResourceId
+	for _, obj := range failoverServiceList {
+		genericResources = append(genericResources, obj)
+	}
+	return sksets.NewResourceSet(genericResources...)
+}
+
+type failoverServiceSet struct {
+	set sksets.ResourceSet
+}
+
+func NewFailoverServiceSet(failoverServiceList ...*networking_smh_solo_io_v1alpha2.FailoverService) FailoverServiceSet {
+	return &failoverServiceSet{set: makeGenericFailoverServiceSet(failoverServiceList)}
+}
+
+func NewFailoverServiceSetFromList(failoverServiceList *networking_smh_solo_io_v1alpha2.FailoverServiceList) FailoverServiceSet {
+	list := make([]*networking_smh_solo_io_v1alpha2.FailoverService, 0, len(failoverServiceList.Items))
+	for idx := range failoverServiceList.Items {
+		list = append(list, &failoverServiceList.Items[idx])
+	}
+	return &failoverServiceSet{set: makeGenericFailoverServiceSet(list)}
+}
+
+func (s *failoverServiceSet) Keys() sets.String {
+	return s.set.Keys()
+}
+
+func (s *failoverServiceSet) List(filterResource ...func(*networking_smh_solo_io_v1alpha2.FailoverService) bool) []*networking_smh_solo_io_v1alpha2.FailoverService {
+
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_smh_solo_io_v1alpha2.FailoverService))
+		})
+	}
+
+	var failoverServiceList []*networking_smh_solo_io_v1alpha2.FailoverService
+	for _, obj := range s.set.List(genericFilters...) {
+		failoverServiceList = append(failoverServiceList, obj.(*networking_smh_solo_io_v1alpha2.FailoverService))
+	}
+	return failoverServiceList
+}
+
+func (s *failoverServiceSet) Map() map[string]*networking_smh_solo_io_v1alpha2.FailoverService {
+	newMap := map[string]*networking_smh_solo_io_v1alpha2.FailoverService{}
+	for k, v := range s.set.Map() {
+		newMap[k] = v.(*networking_smh_solo_io_v1alpha2.FailoverService)
+	}
+	return newMap
+}
+
+func (s *failoverServiceSet) Insert(
+	failoverServiceList ...*networking_smh_solo_io_v1alpha2.FailoverService,
+) {
+	for _, obj := range failoverServiceList {
+		s.set.Insert(obj)
+	}
+}
+
+func (s *failoverServiceSet) Has(failoverService ezkube.ResourceId) bool {
+	return s.set.Has(failoverService)
+}
+
+func (s *failoverServiceSet) Equal(
+	failoverServiceSet FailoverServiceSet,
+) bool {
+	return s.set.Equal(makeGenericFailoverServiceSet(failoverServiceSet.List()))
+}
+
+func (s *failoverServiceSet) Delete(FailoverService ezkube.ResourceId) {
+	s.set.Delete(FailoverService)
+}
+
+func (s *failoverServiceSet) Union(set FailoverServiceSet) FailoverServiceSet {
+	return NewFailoverServiceSet(append(s.List(), set.List()...)...)
+}
+
+func (s *failoverServiceSet) Difference(set FailoverServiceSet) FailoverServiceSet {
+	newSet := s.set.Difference(makeGenericFailoverServiceSet(set.List()))
+	return &failoverServiceSet{set: newSet}
+}
+
+func (s *failoverServiceSet) Intersection(set FailoverServiceSet) FailoverServiceSet {
+	newSet := s.set.Intersection(makeGenericFailoverServiceSet(set.List()))
+	var failoverServiceList []*networking_smh_solo_io_v1alpha2.FailoverService
+	for _, obj := range newSet.List() {
+		failoverServiceList = append(failoverServiceList, obj.(*networking_smh_solo_io_v1alpha2.FailoverService))
+	}
+	return NewFailoverServiceSet(failoverServiceList...)
+}
+
+func (s *failoverServiceSet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha2.FailoverService, error) {
+	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha2.FailoverService{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*networking_smh_solo_io_v1alpha2.FailoverService), nil
+}
+
+func (s *failoverServiceSet) Length() int {
+	return s.set.Length()
+}

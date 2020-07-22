@@ -32,6 +32,7 @@ spec:
         args:
         - operator
         - discovery
+        - --metrics-port={{ $.Values.networking }}
         - --verbose
 {{- if $discovery.env }}
         env:
@@ -125,6 +126,7 @@ spec:
         args:
         - operator
         - networking
+        - --metrics-port={{ $.Values.networking }}
         - --verbose
 {{- if $networking.env }}
         env:

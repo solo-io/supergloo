@@ -337,3 +337,110 @@ func (h genericVirtualMeshHandler) Generic(object runtime.Object) error {
 	}
 	return h.handler.GenericVirtualMesh(obj)
 }
+
+// Handle events for the FailoverService Resource
+// DEPRECATED: Prefer reconciler pattern.
+type FailoverServiceEventHandler interface {
+	CreateFailoverService(obj *networking_smh_solo_io_v1alpha2.FailoverService) error
+	UpdateFailoverService(old, new *networking_smh_solo_io_v1alpha2.FailoverService) error
+	DeleteFailoverService(obj *networking_smh_solo_io_v1alpha2.FailoverService) error
+	GenericFailoverService(obj *networking_smh_solo_io_v1alpha2.FailoverService) error
+}
+
+type FailoverServiceEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_smh_solo_io_v1alpha2.FailoverService) error
+	OnUpdate  func(old, new *networking_smh_solo_io_v1alpha2.FailoverService) error
+	OnDelete  func(obj *networking_smh_solo_io_v1alpha2.FailoverService) error
+	OnGeneric func(obj *networking_smh_solo_io_v1alpha2.FailoverService) error
+}
+
+func (f *FailoverServiceEventHandlerFuncs) CreateFailoverService(obj *networking_smh_solo_io_v1alpha2.FailoverService) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *FailoverServiceEventHandlerFuncs) DeleteFailoverService(obj *networking_smh_solo_io_v1alpha2.FailoverService) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *FailoverServiceEventHandlerFuncs) UpdateFailoverService(objOld, objNew *networking_smh_solo_io_v1alpha2.FailoverService) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *FailoverServiceEventHandlerFuncs) GenericFailoverService(obj *networking_smh_solo_io_v1alpha2.FailoverService) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type FailoverServiceEventWatcher interface {
+	AddEventHandler(ctx context.Context, h FailoverServiceEventHandler, predicates ...predicate.Predicate) error
+}
+
+type failoverServiceEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewFailoverServiceEventWatcher(name string, mgr manager.Manager) FailoverServiceEventWatcher {
+	return &failoverServiceEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_smh_solo_io_v1alpha2.FailoverService{}),
+	}
+}
+
+func (c *failoverServiceEventWatcher) AddEventHandler(ctx context.Context, h FailoverServiceEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericFailoverServiceHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericFailoverServiceHandler implements a generic events.EventHandler
+type genericFailoverServiceHandler struct {
+	handler FailoverServiceEventHandler
+}
+
+func (h genericFailoverServiceHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha2.FailoverService)
+	if !ok {
+		return errors.Errorf("internal error: FailoverService handler received event for %T", object)
+	}
+	return h.handler.CreateFailoverService(obj)
+}
+
+func (h genericFailoverServiceHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha2.FailoverService)
+	if !ok {
+		return errors.Errorf("internal error: FailoverService handler received event for %T", object)
+	}
+	return h.handler.DeleteFailoverService(obj)
+}
+
+func (h genericFailoverServiceHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*networking_smh_solo_io_v1alpha2.FailoverService)
+	if !ok {
+		return errors.Errorf("internal error: FailoverService handler received event for %T", old)
+	}
+	objNew, ok := new.(*networking_smh_solo_io_v1alpha2.FailoverService)
+	if !ok {
+		return errors.Errorf("internal error: FailoverService handler received event for %T", new)
+	}
+	return h.handler.UpdateFailoverService(objOld, objNew)
+}
+
+func (h genericFailoverServiceHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha2.FailoverService)
+	if !ok {
+		return errors.Errorf("internal error: FailoverService handler received event for %T", object)
+	}
+	return h.handler.GenericFailoverService(obj)
+}
