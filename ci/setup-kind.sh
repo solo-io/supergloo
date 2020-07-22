@@ -201,6 +201,9 @@ echo setup successfully set up clusters.
 # install service mesh hub
 ${PROJECT_ROOT}/ci/setup-smh.sh ${masterCluster}
 
+# sleep to allow crds to register
+sleep 4
+
 # register clusters
 register_cluster ${masterCluster} &
 register_cluster ${remoteCluster} &
