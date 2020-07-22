@@ -132,7 +132,7 @@ func (m *AccessPolicySpec) GetAllowedPorts() []uint32 {
 }
 
 type AccessPolicyStatus struct {
-	// The most recent generation observed in the the TrafficPolicy metadata.
+	// The most recent generation observed in the the AccessPolicy metadata.
 	// if the observedGeneration does not match generation, the controller has not received the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
@@ -140,8 +140,8 @@ type AccessPolicyStatus struct {
 	// will only show accepted if it has been successfully
 	// applied to all target meshes.
 	State ValidationState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.smh.solo.io.ValidationState" json:"state,omitempty"`
-	// The status of the TrafficPolicy for each MeshService to which it has been applied.
-	// A TrafficPolicy may be Accepted for some MeshServices and rejected for others.
+	// The status of the AccessPolicy for each MeshService to which it has been applied.
+	// A AccessPolicy may be Accepted for some MeshServices and rejected for others.
 	MeshServices         map[string]*ValidationStatus `protobuf:"bytes,3,rep,name=mesh_services,json=meshServices,proto3" json:"mesh_services,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	XXX_NoUnkeyedLiteral struct{}                     `json:"-"`
 	XXX_unrecognized     []byte                       `json:"-"`

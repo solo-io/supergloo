@@ -66,7 +66,7 @@ message AccessPolicySpec {
 }
 
 message AccessPolicyStatus {
-    // The most recent generation observed in the the TrafficPolicy metadata.
+    // The most recent generation observed in the the AccessPolicy metadata.
     // if the observedGeneration does not match generation, the controller has not received the most
     // recent version of this resource.
     int64 observed_generation = 1;
@@ -76,7 +76,7 @@ message AccessPolicyStatus {
     // applied to all target meshes.
     ValidationState state = 2;
 
-    // The status of the TrafficPolicy for each MeshService to which it has been applied.
-    // A TrafficPolicy may be Accepted for some MeshServices and rejected for others.
+    // The status of the AccessPolicy for each MeshService to which it has been applied.
+    // A AccessPolicy may be Accepted for some MeshServices and rejected for others.
     map<string, ValidationStatus> mesh_services = 3;
 }
