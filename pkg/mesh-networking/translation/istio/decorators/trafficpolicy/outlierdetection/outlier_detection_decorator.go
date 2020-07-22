@@ -6,7 +6,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
+	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
@@ -40,7 +40,7 @@ func (d *outlierDetectionDecorator) DecoratorName() string {
 func (d *outlierDetectionDecorator) ApplyToDestinationRule(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha2.MeshService,
-	output *istiov1alpha3spec.DestinationRule,
+	output *networkingv1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {
 	outlierDetection := d.translateOutlierDetection(appliedPolicy.Spec)
@@ -55,7 +55,7 @@ func (d *outlierDetectionDecorator) ApplyToDestinationRule(
 
 func (d *outlierDetectionDecorator) translateOutlierDetection(
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
-) *istiov1alpha3spec.OutlierDetection {
+) *networkingv1alpha3spec.OutlierDetection {
 	outlierDetection := trafficPolicy.GetOutlierDetection()
 	if outlierDetection == nil {
 		return nil
@@ -74,7 +74,7 @@ func (d *outlierDetectionDecorator) translateOutlierDetection(
 		ejectionTime = userEjectionTime
 	}
 
-	return &istiov1alpha3spec.OutlierDetection{
+	return &networkingv1alpha3spec.OutlierDetection{
 		Consecutive_5XxErrors: consecutiveErrs,
 		Interval:              interval,
 		BaseEjectionTime:      ejectionTime,

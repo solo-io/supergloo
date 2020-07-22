@@ -3,7 +3,7 @@ package trafficpolicy
 import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"istio.io/api/networking/v1alpha3"
+	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 /*
@@ -18,7 +18,7 @@ type DestinationRuleDecorator interface {
 	ApplyToDestinationRule(
 		appliedPolicy *v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 		service *v1alpha2.MeshService,
-		output *v1alpha3.DestinationRule,
+		output *networkingv1alpha3spec.DestinationRule,
 		registerField decorators.RegisterField,
 	) error
 }
@@ -29,7 +29,7 @@ type AggregatingDestinationRuleDecorator interface {
 
 	ApplyAllToDestinationRule(
 		allAppliedPolicies []*v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
-		output *v1alpha3.DestinationRule,
+		output *networkingv1alpha3spec.DestinationRule,
 		registerField decorators.RegisterField,
 	) error
 }
@@ -41,7 +41,7 @@ type VirtualServiceDecorator interface {
 	ApplyToVirtualService(
 		appliedPolicy *v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 		service *v1alpha2.MeshService,
-		output *v1alpha3.HTTPRoute,
+		output *networkingv1alpha3spec.HTTPRoute,
 		registerField decorators.RegisterField,
 	) error
 }

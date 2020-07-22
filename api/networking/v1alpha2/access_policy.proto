@@ -4,6 +4,7 @@ option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.
 
 import "service-mesh-hub/api/networking/v1alpha2/http.proto";
 import "service-mesh-hub/api/networking/v1alpha2/selectors.proto";
+import "service-mesh-hub/api/networking/v1alpha2/validation_state.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -65,13 +66,17 @@ message AccessPolicySpec {
 }
 
 message AccessPolicyStatus {
-    // TODO use a shared Status message with TrafficPolicy once autopilot allows for it
-    message TranslatorError {
-        // ID representing a translator that translates TrafficPolicy to Mesh-specific config
-        string translator_id = 1;
-        string error_message = 2;
-    }
+    // The most recent generation observed in the the TrafficPolicy metadata.
+    // if the observedGeneration does not match generation, the controller has not received the most
+    // recent version of this resource.
+    int64 observed_generation = 1;
 
-    // More detailed errors than the base status provided by `translation_status`.
-    repeated TranslatorError translator_errors = 2;
+    // the state of the overall resource.
+    // will only show accepted if it has been successfully
+    // applied to all target meshes.
+    ValidationState state = 2;
+
+    // The status of the TrafficPolicy for each MeshService to which it has been applied.
+    // A TrafficPolicy may be Accepted for some MeshServices and rejected for others.
+    map<string, ValidationStatus> mesh_services = 3;
 }

@@ -8,13 +8,15 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
-	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	istiov1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 )
 
 // outputs of translating a single MeshService
 type Outputs struct {
-	VirtualService  *istiov1alpha3.VirtualService
-	DestinationRule *istiov1alpha3.DestinationRule
+	VirtualService      *networkingv1alpha3.VirtualService
+	DestinationRule     *networkingv1alpha3.DestinationRule
+	AuthorizationPolicy *istiov1beta1.AuthorizationPolicy
 }
 
 // the VirtualService translator translates a MeshService into a VirtualService.

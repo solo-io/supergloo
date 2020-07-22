@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	istiov1alpha3spec "istio.io/api/networking/v1alpha3"
+	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 const (
@@ -50,7 +50,7 @@ func (d *mirrorDecorator) DecoratorName() string {
 func (d *mirrorDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha2.MeshService,
-	output *istiov1alpha3spec.HTTPRoute,
+	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
 	mirror, percentage, err := d.translateMirror(service, appliedPolicy.Spec)
@@ -70,7 +70,7 @@ func (d *mirrorDecorator) ApplyToVirtualService(
 func (d *mirrorDecorator) translateMirror(
 	meshService *discoveryv1alpha2.MeshService,
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
-) (*istiov1alpha3spec.Destination, *istiov1alpha3spec.Percent, error) {
+) (*networkingv1alpha3spec.Destination, *networkingv1alpha3spec.Percent, error) {
 	mirror := trafficPolicy.Mirror
 	if mirror == nil {
 		return nil, nil, nil
@@ -79,7 +79,7 @@ func (d *mirrorDecorator) translateMirror(
 		return nil, nil, eris.Errorf("must provide mirror destination")
 	}
 
-	var translatedMirror *istiov1alpha3spec.Destination
+	var translatedMirror *networkingv1alpha3spec.Destination
 	switch destinationType := mirror.DestinationType.(type) {
 	case *v1alpha2.TrafficPolicySpec_Mirror_KubeService:
 		var err error
@@ -93,7 +93,7 @@ func (d *mirrorDecorator) translateMirror(
 		}
 	}
 
-	mirrorPercentage := &istiov1alpha3spec.Percent{
+	mirrorPercentage := &networkingv1alpha3spec.Percent{
 		Value: mirror.GetPercentage(),
 	}
 
@@ -104,7 +104,7 @@ func (d *mirrorDecorator) makeKubeDestinationMirror(
 	destination *v1alpha2.TrafficPolicySpec_Mirror_KubeService,
 	port uint32,
 	originalService *discoveryv1alpha2.MeshService,
-) (*istiov1alpha3spec.Destination, error) {
+) (*networkingv1alpha3spec.Destination, error) {
 
 	destinationRef := destination.KubeService
 	if _, err := meshserviceutils.FindMeshServiceForKubeService(d.meshServices.List(), destinationRef); err != nil {
@@ -118,12 +118,12 @@ func (d *mirrorDecorator) makeKubeDestinationMirror(
 		destinationRef,
 	)
 
-	translatedMirror := &istiov1alpha3spec.Destination{
+	translatedMirror := &networkingv1alpha3spec.Destination{
 		Host: destinationHostname,
 	}
 
 	if port != 0 {
-		translatedMirror.Port = &istiov1alpha3spec.PortSelector{
+		translatedMirror.Port = &networkingv1alpha3spec.PortSelector{
 			Number: port,
 		}
 	} else {
