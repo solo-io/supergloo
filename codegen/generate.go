@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"log"
+	"os"
 
 	externalapis "github.com/solo-io/external-apis/codegen"
 	"github.com/solo-io/service-mesh-hub/codegen/groups"
@@ -14,12 +16,6 @@ import (
 	"github.com/solo-io/skv2/contrib"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 )
-
-func main() {
-	if err := run(); err != nil {
-		log.Fatal(err)
-	}
-}
 
 var (
 	appName = "service-mesh-hub"
@@ -34,6 +30,9 @@ var (
 
 	smhManifestRoot = "install/helm/service-mesh-hub"
 	csrManifestRoot = "install/helm/csr-agent/"
+
+	vendoredMulticlusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
+	importedMulticlusterCRDs = smhManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
 	allApiGroups = map[string][]model.Group{
 		"":                                 groups.SMHGroups,
@@ -87,18 +86,36 @@ var (
 		networkingOutputIstioSnapshot,
 	}
 
-	protoImports = sk_anyvendor.CreateDefaultMatchOptions([]string{
+	anyvendorImports = sk_anyvendor.CreateDefaultMatchOptions([]string{
 		"api/**/*.proto",
 	})
 )
 
+func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func run() error {
-	log.Printf("generating service mesh hub code")
+	log.Printf("generating service mesh hub code with version %v", version.Version)
 	chartOnly := flag.Bool("chart", false, "only generate the helm chart")
+	flag.Parse()
 
 	if err := makeSmhCommand(*chartOnly).Execute(); err != nil {
 		return err
 	}
+
+	if *chartOnly{
+		return nil
+	}
+
+	// TODO(ilackarms): we copy skv2 CRDs out of vendor_any into our helm chart.
+	// we should consider using skv2 to automate this step for us
+	if err := os.Rename(vendoredMulticlusterCRDs, importedMulticlusterCRDs); err != nil {
+		return err
+	}
+
 	return nil
 	// TODO(ilackarms): revive this when reviving csr agent
 	log.Printf("generating csr-agent")
@@ -110,8 +127,9 @@ func run() error {
 
 func makeSmhCommand(chartOnly bool) codegen.Command {
 
-	protoImports.External["github.com/solo-io/skv2"] = []string{
+	anyvendorImports.External["github.com/solo-io/skv2"] = []string{
 		"api/**/*.proto",
+		"crds/multicluster.solo.io_v1alpha1_crds.yaml",
 	}
 
 	if chartOnly {
@@ -124,7 +142,7 @@ func makeSmhCommand(chartOnly bool) codegen.Command {
 
 	return codegen.Command{
 		AppName:           appName,
-		AnyVendorConfig:   protoImports,
+		AnyVendorConfig:   anyvendorImports,
 		ManifestRoot:      smhManifestRoot,
 		TopLevelTemplates: topLevelTemplates,
 		Groups:            groups.SMHGroups,
@@ -136,7 +154,7 @@ func makeSmhCommand(chartOnly bool) codegen.Command {
 func makeCsrCommand() codegen.Command {
 	return codegen.Command{
 		AppName:         appName,
-		AnyVendorConfig: protoImports,
+		AnyVendorConfig: anyvendorImports,
 		ManifestRoot:    csrManifestRoot,
 		Groups:          groups.CSRGroups,
 		RenderProtos:    true,

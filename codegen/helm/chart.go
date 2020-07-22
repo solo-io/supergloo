@@ -67,9 +67,8 @@ func discoveryOperator() model.Operator {
 		},
 		Rbac: rbacPolicies,
 		Args: []string{
-			"operator",
 			"discovery",
-			"--metrics-port={{ $.Values.networking }}",
+			"--metrics-port={{ $.Values.networking.ports.metrics }}",
 			"--verbose",
 		},
 		Env: []v1.EnvVar{
@@ -116,9 +115,8 @@ func networkingOperator() model.Operator {
 		},
 		Rbac: rbacPolicies,
 		Args: []string{
-			"operator",
 			"networking",
-			"--metrics-port={{ $.Values.networking }}",
+			"--metrics-port={{ $.Values.networking.ports.metrics }}",
 			"--verbose",
 		},
 		Env: []v1.EnvVar{

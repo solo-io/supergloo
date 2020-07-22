@@ -163,8 +163,8 @@ func ClearEnv(ctx context.Context) error {
 func StartEnv(ctx context.Context) Env {
 
 	if useExisting := os.Getenv("USE_EXISTING"); useExisting != "" {
-		mgmt := "kind-management-plane-1"
-		target := "kind-target-cluster-1"
+		mgmt := "kind-master-cluster"
+		target := "kind-target-cluster"
 		if fields := strings.Split(useExisting, ","); len(fields) == 2 {
 			mgmt = fields[0]
 			target = fields[1]

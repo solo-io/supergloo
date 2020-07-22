@@ -84,9 +84,14 @@ func makeMasterManager(opts Options) (manager.Manager, error) {
 		return nil, err
 	}
 
+	metricsAddr := fmt.Sprintf(":%v", opts.MetricsBindPort)
+	if opts.MetricsBindPort == 0 {
+		// disable metrics
+		metricsAddr = "0"
+	}
 	mgr, err := manager.New(cfg, manager.Options{
 		Namespace:          opts.MasterNamespace, // TODO (ilackarms): support configuring multiple watch namespaces on master cluster
-		MetricsBindAddress: fmt.Sprintf("%v", opts.MetricsBindPort),
+		MetricsBindAddress: metricsAddr,
 	})
 	if err != nil {
 		return nil, err

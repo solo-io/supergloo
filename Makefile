@@ -22,7 +22,7 @@ ifeq ($(TAGGED_VERSION),)
 endif
 	echo $(VERSION)
 
-LDFLAGS := "-X github.com/solo-io/$(PROJECT)/pkg/version.Version=$(VERSION)"
+LDFLAGS := "-X github.com/solo-io/$(PROJECT)/pkg/common/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
 print-info:
@@ -31,21 +31,62 @@ print-info:
 	@echo VERSION: $(VERSION)
 
 #----------------------------------------------------------------------------------
-# Helm setup
+# Code Generation
 #----------------------------------------------------------------------------------
-HELM_ROOTDIR := install/helm
-# Include helm makefile so its targets can be ran from the root of this repo
-include install/helm/helm.mk
+.PHONY: fmt
+fmt:
+	goimports -w $(shell ls -d */ | grep -v vendor)
 
-# Generate Manifests from Helm Chart
-.PHONY: chart-gen
-chart-gen:
-	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
+.PHONY: mod-download
+mod-download:
+	go mod download
 
-.PHONY: manifest-gen
-manifest-gen: install/service-mesh-hub-default.yaml
-install/service-mesh-hub-default.yaml: chart-gen
-	helm template --include-crds --namespace service-mesh-hub install/helm/service-mesh-hub > $@
+# Dependencies for code generation
+.PHONY: install-go-tools
+install-go-tools: mod-download
+	go install istio.io/tools/cmd/protoc-gen-jsonshim
+	go install github.com/gogo/protobuf/protoc-gen-gogo
+	go install github.com/golang/protobuf/protoc-gen-go
+	go install github.com/solo-io/protoc-gen-ext
+	go install github.com/golang/mock/mockgen
+	go install golang.org/x/tools/cmd/goimports
+	go install github.com/onsi/ginkgo/ginkgo
+
+# Call all generated code targets
+.PHONY: generated-code
+generated-code: operator-gen \
+				manifest-gen \
+				go-generate \
+				generated-reference-docs \
+				fmt
+	go mod tidy
+
+#----------------------------------------------------------------------------------
+# Go generate
+#----------------------------------------------------------------------------------
+
+# Run go-generate on all sub-packages
+go-generate:
+	go generate -v ./...
+
+#----------------------------------------------------------------------------------
+# Operator Code Generation
+#----------------------------------------------------------------------------------
+
+# Generate Operator Code
+.PHONY: operator-gen
+operator-gen:
+	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go
+
+#----------------------------------------------------------------------------------
+# Docs Code Generation
+#----------------------------------------------------------------------------------
+
+# TODO(ilackarms): broken, fix
+# Generate Reference documentation
+.PHONY: generated-reference-docs
+generated-reference-docs:
+#	go run docs/generate_reference_docs.go
 
 #----------------------------------------------------------------------------------
 # Build
@@ -100,7 +141,7 @@ service-mesh-hub-image: service-mesh-hub-linux-amd64
 	rm build/service-mesh-hub/service-mesh-hub-linux-amd64
 
 #----------------------------------------------------------------------------------
-# Publish
+# Push images
 #----------------------------------------------------------------------------------
 
 .PHONY: push-all-images
@@ -111,62 +152,21 @@ service-mesh-hub-image-push:
 	docker push $(PROJECT_IMAGE):$(VERSION)
 
 #----------------------------------------------------------------------------------
-# Code Generation
+# Helm chart
 #----------------------------------------------------------------------------------
-.PHONY: fmt
-fmt:
-	goimports -w $(shell ls -d */ | grep -v vendor)
+HELM_ROOTDIR := install/helm
+# Include helm makefile so its targets can be ran from the root of this repo
+include install/helm/helm.mk
 
-.PHONY: mod-download
-mod-download:
-	go mod download
+# Generate Manifests from Helm Chart
+.PHONY: chart-gen
+chart-gen:
+	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
 
-# Dependencies for code generation
-.PHONY: codegen-deps
-codegen-deps: mod-download
-	go install istio.io/tools/cmd/protoc-gen-jsonshim
-	go install github.com/gogo/protobuf/protoc-gen-gogo
-	go install github.com/golang/protobuf/protoc-gen-go
-	go install github.com/solo-io/protoc-gen-ext
-	go install github.com/golang/mock/mockgen
-	go install golang.org/x/tools/cmd/goimports
-	go install github.com/onsi/ginkgo/ginkgo
-
-# Call all generated code targets
-.PHONY: generated-code
-generated-code: operator-gen \
-				manifest-gen \
-				go-generate \
-				generated-reference-docs \
-				fmt
-	go mod tidy
-
-#----------------------------------------------------------------------------------
-# Package Code Generation
-#----------------------------------------------------------------------------------
-
-# Run go-generate on all sub-packages
-go-generate:
-	go generate -v ./...
-
-#----------------------------------------------------------------------------------
-# Operator Code Generation
-#----------------------------------------------------------------------------------
-
-# Generate Operator Code
-.PHONY: operator-gen
-operator-gen:
-	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go
-
-#----------------------------------------------------------------------------------
-# Docs Code Generation
-#----------------------------------------------------------------------------------
-
-# TODO(ilackarms): broken, fix
-# Generate Reference documentation
-.PHONY: generated-reference-docs
-generated-reference-docs:
-#	go run docs/generate_reference_docs.go
+.PHONY: manifest-gen
+manifest-gen: install/service-mesh-hub-default.yaml
+install/service-mesh-hub-default.yaml: chart-gen
+	helm template --include-crds --namespace service-mesh-hub install/helm/service-mesh-hub > $@
 
 #----------------------------------------------------------------------------------
 # Test
