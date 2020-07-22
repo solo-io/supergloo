@@ -88,6 +88,21 @@ var _ = Describe("Mesh Table Printer", func() {
 						},
 					},
 				},
+				{
+					ObjectMeta: k8s_meta_types.ObjectMeta{
+						Name: "appmesh-mesh-1",
+					},
+					Spec: smh_discovery_types.MeshSpec{
+						MeshType: &smh_discovery_types.MeshSpec_AwsAppMesh_{
+							AwsAppMesh: &smh_discovery_types.MeshSpec_AwsAppMesh{
+								Name:         "mesh-name",
+								Region:       "us-east-2",
+								AwsAccountId: "1234567",
+								Clusters:     []string{"cluster-1", "cluster-2"},
+							},
+						},
+					},
+				},
 			},
 		),
 	)
