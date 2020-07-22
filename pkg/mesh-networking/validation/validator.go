@@ -170,7 +170,10 @@ type validationReporter struct {
 }
 
 func newValidationReporter() *validationReporter {
-	return &validationReporter{invalidTrafficPolicies: map[*discoveryv1alpha2.MeshService]map[string][]error{}}
+	return &validationReporter{
+		invalidTrafficPolicies: map[*discoveryv1alpha2.MeshService]map[string][]error{},
+		invalidAccessPolicies:  map[*discoveryv1alpha2.MeshService]map[string][]error{},
+	}
 }
 
 // mark the policy with an error; will be used to filter the policy out of
@@ -188,8 +191,15 @@ func (v *validationReporter) ReportTrafficPolicy(meshService *discoveryv1alpha2.
 }
 
 func (v *validationReporter) ReportAccessPolicy(meshService *discoveryv1alpha2.MeshService, accessPolicy ezkube.ResourceId, err error) {
-	// TODO(ilackarms):
-	panic("implement me")
+	invalidAccessPoliciesForMeshService := v.invalidAccessPolicies[meshService]
+	if invalidAccessPoliciesForMeshService == nil {
+		invalidAccessPoliciesForMeshService = map[string][]error{}
+	}
+	key := sets.Key(accessPolicy)
+	errs := invalidAccessPoliciesForMeshService[key]
+	errs = append(errs, err)
+	invalidAccessPoliciesForMeshService[key] = errs
+	v.invalidAccessPolicies[meshService] = invalidAccessPoliciesForMeshService
 }
 
 func (v *validationReporter) ReportVirtualMesh(mesh *discoveryv1alpha2.Mesh, virtualMesh ezkube.ResourceId, err error) {
