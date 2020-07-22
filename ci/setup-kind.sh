@@ -9,13 +9,14 @@
 #
 # The master cluster will have the appropriate secret for communicating with the remote cluster
 # Your kube context will be left pointing to the master cluster
-# Each cluster will have Istio set up in the istio-system namespace in its demo profile
+# Each cluster will have Istio set up in the istio-system namespace in its minimal profile
 #
 # To clean up your kind clusters, run this script as: `bash ci/setup-kind.sh cleanup`. Use this if you notice the docker VM running out of disk space (for images).
 #
 #####################################
 
 PROJECT_ROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/..
+echo "Using project root ${PROJECT_ROOT}"
 
 function setup_kind_cluster() {
   # The default version of k8s under Linux is 1.18
@@ -198,7 +199,7 @@ wait
 echo setup successfully set up clusters.
 
 # install service mesh hub
-"${PROJECT_ROOT}/ci/setup-smh.sh" "${masterCluster}"
+${PROJECT_ROOT}/ci/setup-smh.sh ${masterCluster}
 
 # register clusters
 register_cluster ${masterCluster} &

@@ -3,6 +3,7 @@ package register
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/codegen/io"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"github.com/spf13/cobra"
@@ -11,38 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var smhRbacRequirements = []rbacv1.PolicyRule{
-	{
-		Verbs: []string{"*"},
-		APIGroups: []string{
-			"networking.istio.io",
-		},
-		Resources: []string{
-			"destinationrules",
-			"envoyfilters",
-			"virtualservices",
-		},
-	},
-	{
-		Verbs:     []string{"get", "list", "watch"},
-		APIGroups: []string{"apps"},
-		Resources: []string{
-			"deployments",
-			"daemonsets",
-			"replicasets",
-			"statefulsets",
-		},
-	},
-	{
-		Verbs:     []string{"get", "list", "watch"},
-		APIGroups: []string{""},
-		Resources: []string{
-			"pods",
-			"services",
-			"configmaps",
-		},
-	},
-}
+var smhRbacRequirements = io.DiscoveryInputTypes.RbacPoliciesWatch()
 
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}

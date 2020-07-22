@@ -10,7 +10,7 @@ PROJECT_IMAGE ?= $(DOCKER_REPO)/service-mesh-hub
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
 RELEASE := "true"
 ifeq ($(TAGGED_VERSION),)
-	TAGGED_VERSION := $(shell git describe --tags --dirty)
+	TAGGED_VERSION := $(shell git describe --tags --dirty --always)
 	RELEASE := "false"
 endif
 
