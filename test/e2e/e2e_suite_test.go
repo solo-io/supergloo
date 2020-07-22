@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/solo-io/go-utils/testutils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -42,8 +45,19 @@ func runShell(c string) {
 var _ = BeforeSuite(func() {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
+
+	ensureWorkingDirectory()
 	/* env := */ StartEnvOnce(ctx)
 })
+
+func ensureWorkingDirectory() {
+	// ensure we are in proper directory
+	currentFile, err := testutils.GetCurrentFile()
+	Expect(err).NotTo(HaveOccurred())
+	projectRoot := filepath.Join(filepath.Dir(currentFile), "..", "..")
+	err = os.Chdir(projectRoot)
+	Expect(err).NotTo(HaveOccurred())
+}
 
 var _ = AfterSuite(func() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
