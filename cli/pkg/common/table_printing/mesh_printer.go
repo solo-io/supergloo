@@ -197,7 +197,7 @@ func (m *meshPrinter) printAwsAppMeshMeshes(out io.Writer, meshes []*smh_discove
 	commonHeaderRows := []string{
 		"Name",
 		"Clusters",
-		"Mesh Name",
+		"App Mesh Name",
 		"AWS Account ID",
 		"Region",
 	}
