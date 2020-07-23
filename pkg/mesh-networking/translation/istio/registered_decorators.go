@@ -18,5 +18,5 @@ import (
 	_ "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/trafficshift"
 
 	// AccessPolicy decorators
-	_ "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/accesspolicy/operations"
+	_ "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/accesspolicy/accesspolicy"
 )

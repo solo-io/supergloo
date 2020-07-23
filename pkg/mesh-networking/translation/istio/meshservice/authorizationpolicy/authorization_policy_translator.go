@@ -178,22 +178,48 @@ func (t *translator) buildSource(
 	sources *v1alpha2.IdentitySelector,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
 ) (*securityv1beta1spec.Rule_From, error) {
-	var principals []string
-	var namespaces []string
 	if sources.GetKubeIdentityMatcher() == nil && sources.GetKubeServiceAccountRefs() == nil {
 		// allow any source identity
 		return &securityv1beta1spec.Rule_From{
 			Source: &securityv1beta1spec.Source{},
 		}, nil
 	}
-	// Process Matcher
-	if len(sources.GetKubeIdentityMatcher().GetClusters()) > 0 {
+	// Select by identity matcher.
+	wildcardPrincipals, namespaces, err := t.parseIdentityMatcher(sources.KubeIdentityMatcher, meshes)
+	if err != nil {
+		return nil, err
+	}
+	// Select by direct reference to ServiceAccounts
+	serviceAccountPrincipals, err := t.parseServiceAccountRefs(sources.KubeServiceAccountRefs, meshes)
+	if err != nil {
+		return nil, err
+	}
+
+	return &securityv1beta1spec.Rule_From{
+		Source: &securityv1beta1spec.Source{
+			Principals: append(wildcardPrincipals, serviceAccountPrincipals...),
+			Namespaces: namespaces,
+		},
+	}, nil
+}
+
+// Parse a list of principals and namespaces from a KubeIdentityMatcher.
+func (t *translator) parseIdentityMatcher(
+	kubeIdentityMatcher *v1alpha2.IdentitySelector_KubeIdentityMatcher,
+	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
+) ([]string, []string, error) {
+	var principals []string
+	var namespaces []string
+	if kubeIdentityMatcher == nil {
+		return nil, nil, nil
+	}
+	if len(kubeIdentityMatcher.Clusters) > 0 {
 		// select by clusters and specifiedNamespaces
-		trustDomains, err := t.getTrustDomainsForClusters(sources.GetKubeIdentityMatcher().GetClusters(), meshes)
+		trustDomains, err := t.getTrustDomainsForClusters(kubeIdentityMatcher.Clusters, meshes)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		specifiedNamespaces := sources.GetKubeIdentityMatcher().GetNamespaces()
+		specifiedNamespaces := kubeIdentityMatcher.Namespaces
 		// Permit any namespace if unspecified.
 		if len(specifiedNamespaces) == 0 {
 			specifiedNamespaces = []string{""}
@@ -203,18 +229,27 @@ func (t *translator) buildSource(
 				// Use empty string for service account to permit any.
 				uri, err := buildSpiffeURI(trustDomain, namespace, "")
 				if err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 				principals = append(principals, uri)
 			}
 		}
-	} else if len(sources.GetKubeIdentityMatcher().GetNamespaces()) > 0 {
+	} else if len(kubeIdentityMatcher.Namespaces) > 0 {
 		// select by namespaces, permit any cluster
-		namespaces = sources.GetKubeIdentityMatcher().GetNamespaces()
+		namespaces = kubeIdentityMatcher.Namespaces
 	}
+	return principals, namespaces, nil
+}
 
-	// select by direct reference to ServiceAccounts
-	for _, serviceAccountRef := range sources.GetKubeServiceAccountRefs().GetServiceAccounts() {
+func (t *translator) parseServiceAccountRefs(
+	kubeServiceAccountRefs *v1alpha2.IdentitySelector_KubeServiceAccountRefs,
+	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
+) ([]string, error) {
+	if kubeServiceAccountRefs == nil {
+		return nil, nil
+	}
+	var principals []string
+	for _, serviceAccountRef := range kubeServiceAccountRefs.ServiceAccounts {
 		trustDomains, err := t.getTrustDomainsForClusters([]string{serviceAccountRef.ClusterName}, meshes)
 		if err != nil {
 			return nil, err
@@ -226,13 +261,7 @@ func (t *translator) buildSource(
 		}
 		principals = append(principals, uri)
 	}
-
-	return &securityv1beta1spec.Rule_From{
-		Source: &securityv1beta1spec.Source{
-			Principals: principals,
-			Namespaces: namespaces,
-		},
-	}, nil
+	return principals, nil
 }
 
 /*
