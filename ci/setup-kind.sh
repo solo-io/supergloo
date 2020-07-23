@@ -226,4 +226,4 @@ register_cluster ${remoteCluster} &
 wait
 
 # set current context to master cluster
-kubectl config use-context ${masterCluster}
+kubectl config use-context kind-${masterCluster}

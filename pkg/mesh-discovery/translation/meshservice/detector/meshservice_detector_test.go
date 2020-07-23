@@ -104,29 +104,31 @@ var _ = Describe("MeshserviceDetector", func() {
 		Expect(meshService).To(Equal(&v1alpha2.MeshService{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
 			Spec: v1alpha2.MeshServiceSpec{
-				KubeService: &v1alpha2.MeshServiceSpec_KubeService{
-					Ref:                    ezkube.MakeClusterObjectRef(svc),
-					WorkloadSelectorLabels: svc.Spec.Selector,
-					Labels:                 svc.Labels,
-					Ports: []*v1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
-						{
-							Port:     1234,
-							Name:     "port1",
-							Protocol: "TCP",
+				Type: &v1alpha2.MeshServiceSpec_KubeService_{
+					KubeService: &v1alpha2.MeshServiceSpec_KubeService{
+						Ref:                    ezkube.MakeClusterObjectRef(svc),
+						WorkloadSelectorLabels: svc.Spec.Selector,
+						Labels:                 svc.Labels,
+						Ports: []*v1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
+							{
+								Port:     1234,
+								Name:     "port1",
+								Protocol: "TCP",
+							},
+							{
+								Port:     2345,
+								Name:     "port2",
+								Protocol: "UDP",
+							},
 						},
-						{
-							Port:     2345,
-							Name:     "port2",
-							Protocol: "UDP",
+						Subsets: map[string]*v1alpha2.MeshServiceSpec_KubeService_Subset{
+							"subset": {
+								Values: []string{"v1", "v2"},
+							},
 						},
 					},
 				},
 				Mesh: mesh,
-				Subsets: map[string]*v1alpha2.MeshServiceSpec_Subset{
-					"subset": {
-						Values: []string{"v1", "v2"},
-					},
-				},
 			},
 		}))
 	})

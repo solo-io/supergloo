@@ -32,9 +32,10 @@ var _ = Describe("FieldOwnership", func() {
 		err = fieldRegistry.RegisterFieldOwnership(vs, corsPolicyField, owner2, &v1alpha2.TrafficPolicy{}, 0)
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(Equal(FieldConflictError{
-			Field:    corsPolicyField,
-			Owners:   owner1,
-			Priority: 1,
+			Field:     corsPolicyField,
+			OwnerType: &v1alpha2.TrafficPolicy{},
+			Owners:    owner1,
+			Priority:  1,
 		}))
 
 	})
