@@ -21,6 +21,7 @@ package input
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -53,6 +54,8 @@ type Snapshot interface {
 	DaemonSets() apps_v1_sets.DaemonSetSet
 	// return the set of input StatefulSets
 	StatefulSets() apps_v1_sets.StatefulSetSet
+	// serialize the entire snapshot as JSON
+	MarshalJSON() ([]byte, error)
 }
 
 type snapshot struct {
@@ -127,6 +130,20 @@ func (s snapshot) DaemonSets() apps_v1_sets.DaemonSetSet {
 
 func (s snapshot) StatefulSets() apps_v1_sets.StatefulSetSet {
 	return s.statefulSets
+}
+
+func (s snapshot) MarshalJSON() ([]byte, error) {
+	snapshotMap := map[string]interface{}{"name": s.name}
+
+	snapshotMap["configMaps"] = s.configMaps.List()
+	snapshotMap["services"] = s.services.List()
+	snapshotMap["pods"] = s.pods.List()
+	snapshotMap["nodes"] = s.nodes.List()
+	snapshotMap["deployments"] = s.deployments.List()
+	snapshotMap["replicaSets"] = s.replicaSets.List()
+	snapshotMap["daemonSets"] = s.daemonSets.List()
+	snapshotMap["statefulSets"] = s.statefulSets.List()
+	return json.Marshal(snapshotMap)
 }
 
 // builds the input snapshot from API Clients.

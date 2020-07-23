@@ -3,8 +3,8 @@ package fieldutils
 import (
 	"fmt"
 
-	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/resourceidutils"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -43,7 +43,10 @@ type ownershipRegistry struct {
 }
 
 func NewOwnershipRegistry() FieldOwnershipRegistry {
-	return &ownershipRegistry{fieldOwners: map[interface{}]FieldOwnership{}}
+	return &ownershipRegistry{
+		objOwners:   map[string][]FieldOwnership{},
+		fieldOwners: map[interface{}]FieldOwnership{},
+	}
 }
 
 type FieldOwnership struct {

@@ -9,8 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
-	v1sets0 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
 	mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh"
 	meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshservice"
 	meshworkload "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload"
@@ -40,43 +39,43 @@ func (m *MockdependencyFactory) EXPECT() *MockdependencyFactoryMockRecorder {
 }
 
 // makeMeshTranslator mocks base method.
-func (m *MockdependencyFactory) makeMeshTranslator(ctx context.Context, configMaps v1sets0.ConfigMapSet) mesh.Translator {
+func (m *MockdependencyFactory) makeMeshTranslator(ctx context.Context, in input.Snapshot) mesh.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "makeMeshTranslator", ctx, configMaps)
+	ret := m.ctrl.Call(m, "makeMeshTranslator", ctx, in)
 	ret0, _ := ret[0].(mesh.Translator)
 	return ret0
 }
 
 // makeMeshTranslator indicates an expected call of makeMeshTranslator.
-func (mr *MockdependencyFactoryMockRecorder) makeMeshTranslator(ctx, configMaps interface{}) *gomock.Call {
+func (mr *MockdependencyFactoryMockRecorder) makeMeshTranslator(ctx, in interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeMeshTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeMeshTranslator), ctx, configMaps)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeMeshTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeMeshTranslator), ctx, in)
 }
 
 // makeMeshWorkloadTranslator mocks base method.
-func (m *MockdependencyFactory) makeMeshWorkloadTranslator(ctx context.Context, pods v1sets0.PodSet, replicaSets v1sets.ReplicaSetSet) meshworkload.Translator {
+func (m *MockdependencyFactory) makeMeshWorkloadTranslator(ctx context.Context, in input.Snapshot) meshworkload.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "makeMeshWorkloadTranslator", ctx, pods, replicaSets)
+	ret := m.ctrl.Call(m, "makeMeshWorkloadTranslator", ctx, in)
 	ret0, _ := ret[0].(meshworkload.Translator)
 	return ret0
 }
 
 // makeMeshWorkloadTranslator indicates an expected call of makeMeshWorkloadTranslator.
-func (mr *MockdependencyFactoryMockRecorder) makeMeshWorkloadTranslator(ctx, pods, replicaSets interface{}) *gomock.Call {
+func (mr *MockdependencyFactoryMockRecorder) makeMeshWorkloadTranslator(ctx, in interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeMeshWorkloadTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeMeshWorkloadTranslator), ctx, pods, replicaSets)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeMeshWorkloadTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeMeshWorkloadTranslator), ctx, in)
 }
 
 // makeMeshServiceTranslator mocks base method.
-func (m *MockdependencyFactory) makeMeshServiceTranslator() meshservice.Translator {
+func (m *MockdependencyFactory) makeMeshServiceTranslator(ctx context.Context) meshservice.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "makeMeshServiceTranslator")
+	ret := m.ctrl.Call(m, "makeMeshServiceTranslator", ctx)
 	ret0, _ := ret[0].(meshservice.Translator)
 	return ret0
 }
 
 // makeMeshServiceTranslator indicates an expected call of makeMeshServiceTranslator.
-func (mr *MockdependencyFactoryMockRecorder) makeMeshServiceTranslator() *gomock.Call {
+func (mr *MockdependencyFactoryMockRecorder) makeMeshServiceTranslator(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeMeshServiceTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeMeshServiceTranslator))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeMeshServiceTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeMeshServiceTranslator), ctx)
 }

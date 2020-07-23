@@ -9,9 +9,9 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation"
 	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

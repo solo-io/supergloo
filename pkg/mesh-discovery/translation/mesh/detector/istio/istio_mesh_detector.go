@@ -2,8 +2,9 @@ package istio
 
 import (
 	"context"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
 	"strings"
+
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"

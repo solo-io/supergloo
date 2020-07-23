@@ -5,6 +5,7 @@ package istio
 
 import (
 	"context"
+	"encoding/json"
 	"sort"
 
 	"github.com/rotisserie/eris"
@@ -43,6 +44,9 @@ type Snapshot interface {
 
 	// apply resources from the snapshot across multiple clusters, garbage collecting stale resources
 	ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler)
+
+	// serialize the entire snapshot as JSON
+	MarshalJSON() ([]byte, error)
 }
 
 type snapshot struct {
@@ -458,6 +462,38 @@ func (s snapshot) ServiceEntries() []LabeledServiceEntrySet {
 
 func (s snapshot) VirtualServices() []LabeledVirtualServiceSet {
 	return s.virtualServices
+}
+
+func (s snapshot) MarshalJSON() ([]byte, error) {
+	snapshotMap := map[string]interface{}{"name": s.name}
+
+	destinationRuleSet := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
+	for _, set := range s.destinationRules {
+		destinationRuleSet = destinationRuleSet.Union(set.Set())
+	}
+	snapshotMap["destinationRules"] = destinationRuleSet.List()
+	envoyFilterSet := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
+	for _, set := range s.envoyFilters {
+		envoyFilterSet = envoyFilterSet.Union(set.Set())
+	}
+	snapshotMap["envoyFilters"] = envoyFilterSet.List()
+	gatewaySet := networking_istio_io_v1alpha3_sets.NewGatewaySet()
+	for _, set := range s.gateways {
+		gatewaySet = gatewaySet.Union(set.Set())
+	}
+	snapshotMap["gateways"] = gatewaySet.List()
+	serviceEntrySet := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
+	for _, set := range s.serviceEntries {
+		serviceEntrySet = serviceEntrySet.Union(set.Set())
+	}
+	snapshotMap["serviceEntries"] = serviceEntrySet.List()
+	virtualServiceSet := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	for _, set := range s.virtualServices {
+		virtualServiceSet = virtualServiceSet.Union(set.Set())
+	}
+	snapshotMap["virtualServices"] = virtualServiceSet.List()
+
+	return json.Marshal(snapshotMap)
 }
 
 // LabeledDestinationRuleSet represents a set of destinationRules

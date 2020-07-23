@@ -5,9 +5,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -104,29 +104,31 @@ var _ = Describe("MeshserviceDetector", func() {
 		Expect(meshService).To(Equal(&v1alpha2.MeshService{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
 			Spec: v1alpha2.MeshServiceSpec{
-				KubeService: &v1alpha2.MeshServiceSpec_KubeService{
-					Ref:                    ezkube.MakeClusterObjectRef(svc),
-					WorkloadSelectorLabels: svc.Spec.Selector,
-					Labels:                 svc.Labels,
-					Ports: []*v1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
-						{
-							Port:     1234,
-							Name:     "port1",
-							Protocol: "TCP",
+				Type: &v1alpha2.MeshServiceSpec_KubeService_{
+					KubeService: &v1alpha2.MeshServiceSpec_KubeService{
+						Ref:                    ezkube.MakeClusterObjectRef(svc),
+						WorkloadSelectorLabels: svc.Spec.Selector,
+						Labels:                 svc.Labels,
+						Ports: []*v1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
+							{
+								Port:     1234,
+								Name:     "port1",
+								Protocol: "TCP",
+							},
+							{
+								Port:     2345,
+								Name:     "port2",
+								Protocol: "UDP",
+							},
 						},
-						{
-							Port:     2345,
-							Name:     "port2",
-							Protocol: "UDP",
+						Subsets: map[string]*v1alpha2.MeshServiceSpec_KubeService_Subset{
+							"subset": {
+								Values: []string{"v1", "v2"},
+							},
 						},
 					},
 				},
 				Mesh: mesh,
-				Subsets: map[string]*v1alpha2.MeshServiceSpec_Subset{
-					"subset": {
-						Values: []string{"v1", "v2"},
-					},
-				},
 			},
 		}))
 	})

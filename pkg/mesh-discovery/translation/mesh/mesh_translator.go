@@ -6,8 +6,8 @@ import (
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
 //go:generate mockgen -source ./mesh_translator.go -destination mocks/mesh_translator.go
