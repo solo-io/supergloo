@@ -25,23 +25,20 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: debug
-        run: |
-          go get -v github.com/onsi/ginkgo/ginkgo
-          echo $GOPATH
-          echo $PATH
       - name: install ginkgo
         run: |
+          export GOPATH=$PWD/go
+          mkdir -p $GOPATH
           go get -v github.com/onsi/ginkgo/ginkgo
-          echo $GOPATH
-          find $GOPATH/bin
-          echo $PATH
+          echo $GOPATH/
+          find $GOPATH/bin/
+          find / -name */bin/ginkgo
       - name: Unit Tests
         run: |
-          go get -v github.com/onsi/ginkgo/ginkgo
-          echo $GOPATH
-          echo $PATH
-          make install-go-tools run-tests SKIP_PACKAGES=test/e2e PATH=$PATH:$GOPATH/bin/
+          export GOPATH=$PWD/go
+          export PATH=$PATH:$GOPATH/bin/
+          echo just to make sure: $PATH
+          make run-tests SKIP_PACKAGES=test/e2e
 
   e2e-istio-1_5:
     name: end-to-end-istio-1_5
@@ -76,8 +73,4 @@ jobs:
           make print-version install-go-tools manifest-gen
           curl -sSL https://github.com/istio/istio/releases/download/1.5.2/istio-1.5.2-linux.tar.gz | tar -xzf - istio-1.5.2/bin/istioctl
           export PATH=$PWD/istio-1.5.2/bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
-          make run-tests TEST_PKG=test/e2e ISTIO_VERSION=1.5
-      - name: Debug Info
-        if: failure()
-        run: |
-          bash -ex ./ci/print-kind-info.sh
+          make run-tests TEST_PKG=test/e2e

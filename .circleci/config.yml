@@ -1,13 +1,16 @@
 # Golang CircleCI 2.0 configuration file
 #
 # Check https://circleci.com/docs/2.0/language-go/ for more details
-version: 2
+version: 2.1
+orbs:
+  protobuf: izumin5210/protobuf@0.1.0
 jobs:
   build:
     machine:
       image: ubuntu-1604:201903-01
     working_directory: ~/go/src/github.com/solo-io/service-mesh-hub
     steps:
+      - protobuf/install
       - checkout
       - run:
           name: install go
@@ -21,6 +24,13 @@ jobs:
           name: install deps
           command: |
             make install-go-tools
+      - run:
+          name: e2e istio 1.5 tests
+          command: |
+            make print-version install-go-tools manifest-gen
+            curl -sSL https://github.com/istio/istio/releases/download/1.5.2/istio-1.5.2-linux.tar.gz | tar -xzf - istio-1.5.2/bin/istioctl
+            export PATH=$PWD/istio-1.5.2/bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
+            make run-tests TEST_PKG=test/e2e
       - run:
           name: unit tests
           command: |
