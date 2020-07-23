@@ -321,15 +321,22 @@ func (v *approvalReporter) getAccessPolicyErrors(meshService *discoveryv1alpha2.
 }
 
 func (v *approvalReporter) getFailoverServiceErrors(mesh *discoveryv1alpha2.Mesh, failoverService ezkube.ResourceId) []error {
+	var errs []error
+	// Mesh-dependent errors
 	invalidAccessPoliciesForMeshService, ok := v.unapprovedFailoverServices[mesh]
-	if !ok {
-		return nil
+	if ok {
+		fsErrors, ok := invalidAccessPoliciesForMeshService[sets.Key(failoverService)]
+		if ok {
+			errs = append(errs, fsErrors...)
+		}
 	}
-	fsErrors, ok := invalidAccessPoliciesForMeshService[sets.Key(failoverService)]
-	if !ok {
-		return nil
+
+	// Mesh-independent errors
+	fsErrs := v.invalidFailoverServices[sets.Key(failoverService)]
+	if fsErrs != nil {
+		errs = append(errs, fsErrs...)
 	}
-	return fsErrors
+	return errs
 }
 
 func getAppliedTrafficPolicies(

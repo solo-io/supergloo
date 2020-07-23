@@ -17,6 +17,7 @@ import (
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
+	networkingv1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
@@ -36,8 +37,8 @@ import (
 
 // Outputs of translating a FailoverService for a single Mesh
 type Outputs struct {
-	EnvoyFilters   []*networkingv1alpha3.EnvoyFilter
-	ServiceEntries []*networkingv1alpha3.ServiceEntry
+	EnvoyFilters   networkingv1alpha3sets.EnvoyFilterSet
+	ServiceEntries networkingv1alpha3sets.ServiceEntrySet
 }
 
 // The FailoverService translator translates a FailoverService for a single Mesh.
@@ -72,10 +73,14 @@ func (t *translator) Translate(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 	reporter reporting.Reporter,
 ) Outputs {
+	outputs := Outputs{
+		EnvoyFilters:   networkingv1alpha3sets.NewEnvoyFilterSet(),
+		ServiceEntries: networkingv1alpha3sets.NewServiceEntrySet(),
+	}
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.MeshType)
-		return Outputs{}
+		return outputs
 	}
 
 	// If validation fails, report the errors to the Meshes and do not translate.
@@ -87,19 +92,17 @@ func (t *translator) Translate(
 	}, failoverService.Spec)
 	if validationErrors != nil {
 		reporter.ReportFailoverService(failoverService.Ref, validationErrors)
-		return Outputs{}
 	}
 
 	serviceEntries, envoyFilters, err := t.translate(failoverService, in.MeshServices().List(), in.Meshes())
 	if err != nil {
 		t.reportErrorsToMeshes(failoverService, in.Meshes(), err, reporter)
-		return Outputs{}
+	} else {
+		outputs.EnvoyFilters.Insert(envoyFilters...)
+		outputs.ServiceEntries.Insert(serviceEntries...)
 	}
 
-	return Outputs{
-		EnvoyFilters:   envoyFilters,
-		ServiceEntries: serviceEntries,
-	}
+	return outputs
 }
 
 func (t *translator) reportErrorsToMeshes(

@@ -3,12 +3,13 @@ package istio
 import (
 	"context"
 
-	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/federation"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
+	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 )
 
 // the dependencyFactory creates dependencies for the translator from a given snapshot
@@ -35,6 +36,7 @@ func (d dependencyFactoryImpl) makeMeshServiceTranslator(clusters skv1alpha1sets
 func (d dependencyFactoryImpl) makeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet) mesh.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	federationTranslator := federation.NewTranslator(ctx, clusterDomains)
+	failoverServiceTranslator := failoverservice.NewTranslator(ctx, clusterDomains)
 
-	return mesh.NewTranslator(ctx, federationTranslator)
+	return mesh.NewTranslator(ctx, federationTranslator, failoverServiceTranslator)
 }
