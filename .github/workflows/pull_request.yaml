@@ -32,13 +32,13 @@ jobs:
           go get -v github.com/onsi/ginkgo/ginkgo
           echo $GOPATH/
           find $GOPATH/bin/
-          find / -name */bin/ginkgo
+          find / -name */bin/ginkgo || echo "not found"
       - name: Unit Tests
         run: |
           export GOPATH=$PWD/go
           export PATH=$PATH:$GOPATH/bin/
           echo just to make sure: $PATH
-          make run-tests SKIP_PACKAGES=test/e2e
+          go test `go list ./... | grep -v test/e2e`
 
   e2e-istio-1_5:
     name: end-to-end-istio-1_5

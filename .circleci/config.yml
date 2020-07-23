@@ -4,14 +4,17 @@
 version: 2.1
 orbs:
   protobuf: izumin5210/protobuf@0.1.0
+  helm: circleci/helm@1.0.0
 jobs:
   build:
     machine:
       image: ubuntu-1604:201903-01
     working_directory: ~/go/src/github.com/solo-io/service-mesh-hub
     steps:
-      - protobuf/install
       - checkout
+      - protobuf/install
+      - helm/install-helm-client:
+          version: v3.2.4
       - run:
           name: install go
           command: |
@@ -20,6 +23,18 @@ jobs:
             tar -xvf go1.14.6.linux-amd64.tar.gz && sudo mv go /usr/local/go && \
             export GOROOT=/usr/local/go && \
             export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+      - run:
+          name: install kubectl
+          command: |
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+      - run:
+          name: install kind
+          command: |
+            curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.8.1/kind-linux-amd64
+            chmod +x ./kind
+            sudo mv ./kind /usr/local/bin/
       - run:
           name: install deps
           command: |

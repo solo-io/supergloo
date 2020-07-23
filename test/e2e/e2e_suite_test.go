@@ -21,9 +21,7 @@ import (
 // to test only this package, run `make run-tests TEST_PKG=test/e2e
 func TestE2e(t *testing.T) {
 	RegisterFailHandler(func(message string, callerSkip ...int) {
-		runShell("kubectl logs -n=service-mesh-hub -l app=discovery")
-		runShell("kubectl logs -n=service-mesh-hub -l app=networking")
-		runShell("kubectl get pod -A")
+		runShell("./ci/print-kind-info.sh")
 		Fail(message, callerSkip...)
 	})
 	RunSpecs(t, "E2e Suite")

@@ -14,11 +14,11 @@
 #
 #####################################
 
-# clean up background processes on exit
-trap "kill 0" EXIT
-
 PROJECT_ROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/..
 echo "Using project root ${PROJECT_ROOT}"
+
+# clean up background processes on exit
+trap 'kill 0; ${PROJECT_ROOT}/ci/print-kind-info.sh' EXIT
 
 # print debug info on error
 trap 'catch' ERR
@@ -155,154 +155,19 @@ spec:
       - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
 EOF
 
-  # install bookinfo
+  # install (modified) bookinfo
   ${K} create namespace bookinfo
   ${K} label ns bookinfo istio-injection=enabled --overwrite
-  ${K} apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/platform/kube/bookinfo.yaml
+  ${K} apply -n bookinfo -f ${PROJECT_ROOT}/ci/bookinfo.yaml
 
-  ${K} -n bookinfo rollout status deployment --timeout 150s details-v1
-  ${K} -n bookinfo rollout status deployment --timeout 150s productpage-v1
-  ${K} -n bookinfo rollout status deployment --timeout 150s ratings-v1
-  ${K} -n bookinfo rollout status deployment --timeout 150s reviews-v1
-  ${K} -n bookinfo rollout status deployment --timeout 150s reviews-v2
-  ${K} -n bookinfo rollout status deployment --timeout 150s reviews-v3
+  ROLLOUT="${K} -n bookinfo rollout status deployment --timeout 300s"
 
-  printf "\n\n---\n"
-  echo "Finished setting up cluster ${cluster}"
-
-}
-
-function setup_kind_cluster() {
-  # The default version of k8s under Linux is 1.18
-  # https://github.com/solo-io/service-mesh-hub/issues/700
-  kindImage=kindest/node:v1.17.5
-
-  cluster=$1
-  port=$2
-
-  K="kubectl --context=kind-${cluster}"
-
-  # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
-  cat <<EOF | kind create cluster --name "${cluster}" --image $kindImage --config=-
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  extraPortMappings:
-  - containerPort: ${port}
-    hostPort: ${port}
-    protocol: TCP
-  kubeadmConfigPatches:
-  - |
-    kind: InitConfiguration
-    nodeRegistration:
-      kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
-kubeadmConfigPatches:
-- |
-  kind: InitConfiguration
-  nodeRegistration:
-    kubeletExtraArgs:
-      authorization-mode: "AlwaysAllow"
-      feature-gates: "EphemeralContainers=true"
-- |
-  kind: KubeletConfiguration
-  featureGates:
-    EphemeralContainers: true
-- |
-  kind: KubeProxyConfiguration
-  featureGates:
-    EphemeralContainers: true
-- |
-  kind: ClusterConfiguration
-  metadata:
-    name: config
-  apiServer:
-    extraArgs:
-      "feature-gates": "EphemeralContainers=true"
-  scheduler:
-    extraArgs:
-      "feature-gates": "EphemeralContainers=true"
-  controllerManager:
-    extraArgs:
-      "feature-gates": "EphemeralContainers=true"
-EOF
-
-  echo "installing istio to ${cluster}..."
-
-  cat << EOF | istioctl manifest apply --context "kind-${cluster}" -f -
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-metadata:
-  name: example-istiooperator
-  namespace: istio-system
-spec:
-  profile: minimal
-  components:
-    pilot:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    proxy:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    # Istio Gateway feature
-    ingressGateways:
-    - name: istio-ingressgateway
-      enabled: true
-      k8s:
-        env:
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-        service:
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: ${port}
-  values:
-    prometheus:
-      enabled: false
-    gateways:
-      istio-ingressgateway:
-        type: NodePort
-        ports:
-          - targetPort: 15443
-            name: tls
-            nodePort: ${port}
-            port: 15443
-    global:
-      pilotCertProvider: kubernetes
-      controlPlaneSecurityEnabled: true
-      mtls:
-        enabled: true
-      podDNSSearchNamespaces:
-      - global
-      - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
-EOF
-
-  # install bookinfo
-  ${K} create namespace bookinfo
-  ${K} label ns bookinfo istio-injection=enabled --overwrite
-  ${K} apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/platform/kube/bookinfo.yaml
-
-  ${K} -n bookinfo rollout status deployment --timeout 150s details-v1
-  ${K} -n bookinfo rollout status deployment --timeout 150s productpage-v1
-  ${K} -n bookinfo rollout status deployment --timeout 150s ratings-v1
-  ${K} -n bookinfo rollout status deployment --timeout 150s reviews-v1
-  ${K} -n bookinfo rollout status deployment --timeout 150s reviews-v2
-  ${K} -n bookinfo rollout status deployment --timeout 150s reviews-v3
+  ${ROLLOUT} details-v1
+  ${ROLLOUT} productpage-v1
+  ${ROLLOUT} ratings-v1
+  ${ROLLOUT} reviews-v1
+  ${ROLLOUT} reviews-v2
+  ${ROLLOUT} reviews-v3
 
   printf "\n\n---\n"
   echo "Finished setting up cluster ${cluster}"
@@ -349,11 +214,11 @@ fi
 
 # NOTE(ilackarms): we run the setup_kind clusters sequentially due to this bug:
 # related: https://github.com/kubernetes-sigs/kind/issues/1596
-setup_kind_cluster ${masterCluster} 32001
+create_kind_cluster ${masterCluster} 32001
 install_istio ${masterCluster} 32001 &
 pids[0]=$!
 
-setup_kind_cluster ${remoteCluster} 32000
+create_kind_cluster ${remoteCluster} 32000
 install_istio ${remoteCluster} 32000 &
 pids[1]=$!
 

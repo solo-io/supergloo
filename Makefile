@@ -176,7 +176,7 @@ install/service-mesh-hub-default.yaml: chart-gen
 # set TEST_PKG to run a specific test package
 .PHONY: run-tests
 run-tests:
-	ginkgo -r -failFast -trace -progress $(GINKGOFLAGS) \
+	ginkgo -r -failFast -trace $(GINKGOFLAGS) \
 		-ldflags=$(LDFLAGS) \
 		-gcflags=$(GCFLAGS) \
 		-progress \
