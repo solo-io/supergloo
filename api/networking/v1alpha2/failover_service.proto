@@ -36,7 +36,7 @@ message FailoverServiceSpec {
         All services must be backed by either the same service mesh instance or
         backed by service meshes that are grouped under a common VirtualMesh.
     */
-    repeated core.skv2.solo.io.ClusterObjectRef failover_services = 4;
+    repeated ComponentService component_services = 4;
 
     // The port on which the failover service listens.
     message Port {
@@ -44,6 +44,14 @@ message FailoverServiceSpec {
         uint32 port = 1;
         // Protocol of the requests sent to the failover service, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
         string protocol = 2;
+    }
+
+    message ComponentService {
+        // different service types can be selected as component services.
+        oneof composing_service_type {
+            // Name/namespace/cluster of a kubernetes service.
+            .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
+        }
     }
 }
 

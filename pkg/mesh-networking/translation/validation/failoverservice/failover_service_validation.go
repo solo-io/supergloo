@@ -65,6 +65,9 @@ var (
 	UnsupportedMeshType = func(meshType interface{}, mesh *discoveryv1alpha2.Mesh) error {
 		return eris.Errorf("Unsupported Mesh type %T for Mesh %s.%s", meshType, mesh.GetName(), mesh.GetNamespace())
 	}
+	UnsupportedServiceType = func(serviceType interface{}) error {
+		return eris.Errorf("Unsupported service type %T", serviceType)
+	}
 	MeshWithoutParentVM = func(mesh *discoveryv1alpha2.Mesh) error {
 		return eris.Errorf("Mesh %s.%s is not grouped in a VirtualMesh.", mesh.GetName(), mesh.GetNamespace())
 	}
@@ -133,11 +136,16 @@ func (f *failoverServiceValidator) validateServices(
 	meshes discoveryv1alpha2sets.MeshSet,
 ) error {
 	var multierr *multierror.Error
-	failoverServices := failoverService.GetFailoverServices()
-	if len(failoverServices) == 0 {
+	componentServices := failoverService.GetComponentServices()
+	if len(componentServices) == 0 {
 		return MissingServices
 	}
-	for _, serviceRef := range failoverServices {
+	for _, typedServiceRef := range componentServices {
+		if typedServiceRef.GetKubeService() == nil {
+			multierr = multierror.Append(multierr, UnsupportedServiceType(typedServiceRef.GetComposingServiceType()))
+			continue
+		}
+		serviceRef := typedServiceRef.GetKubeService()
 		meshService, err := f.findMeshService(serviceRef, allMeshServices)
 		if err != nil {
 			// Corresponding MeshService not found.
@@ -219,7 +227,12 @@ func (f *failoverServiceValidator) validateFederation(
 		referencedMeshes.Insert(mesh)
 	}
 	// Process declared services
-	for _, serviceRef := range failoverService.GetFailoverServices() {
+	for _, typedServiceRef := range failoverService.GetComponentServices() {
+		if typedServiceRef.GetKubeService() == nil {
+			// Error already reported when validating component services.
+			continue
+		}
+		serviceRef := typedServiceRef.GetKubeService()
 		meshService, err := f.findMeshService(serviceRef, allMeshServices)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)

@@ -152,7 +152,9 @@ func (t *translator) collectMeshServicesForFailoverService(
 	allMeshServices []*discoveryv1alpha2.MeshService,
 ) ([]*discoveryv1alpha2.MeshService, error) {
 	var prioritizedMeshServices []*discoveryv1alpha2.MeshService
-	for _, serviceRef := range failoverServiceSpec.FailoverServices {
+	for _, typedServiceRef := range failoverServiceSpec.ComponentServices {
+		// TODO(harveyxia) add support for non-k8s services
+		serviceRef := typedServiceRef.GetKubeService()
 		var matchingMeshService *discoveryv1alpha2.MeshService
 		for _, meshService := range allMeshServices {
 			if !resourceidutils.ClusterRefsEqual(serviceRef, meshService.Spec.GetKubeService().Ref) {
