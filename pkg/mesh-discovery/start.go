@@ -7,9 +7,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
-	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/reconciliation"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation"
+	"github.com/solo-io/skv2/pkg/multicluster"
 )
 
 // the mesh-discovery controller is the Kubernetes Controller/Operator

@@ -6,9 +6,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+
 	"github.com/solo-io/service-mesh-hub/test/e2e"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
 	"github.com/solo-io/service-mesh-hub/test/data"
 
@@ -28,7 +30,7 @@ var (
 	policyName     = "bookinfo-policy"
 	policyService  = "reviews"
 	appNamespace   = "bookinfo"
-	policyCluster  = "management-cluster-1"
+	policyCluster  = "master-cluster"
 	policyManifest = "test/e2e/bookinfo-policies.yaml"
 
 	trafficShiftReviewsV2 = data.TrafficShiftPolicy(policyName, appNamespace, &v1.ClusterObjectRef{
@@ -56,21 +58,14 @@ var _ = Describe("SMH E2e", func() {
 		err := writeTestManifest(policyManifest)
 		Expect(err).NotTo(HaveOccurred())
 
-		cfg, err := e2e.GetEnv().Management.Config.ClientConfig()
-		Expect(err).NotTo(HaveOccurred())
-
-		dynamicClient, err = client.New(cfg, client.Options{})
+		dynamicClient, err = client.New(e2e.GetEnv().Management.Config, client.Options{})
 		Expect(err).NotTo(HaveOccurred())
 
 	})
 
 	AfterEach(func() {
-		err := util.Kubectl(nil, "delete", "-f", policyManifest)
+		err := testutils.Kubectl("delete", "-f", policyManifest)
 		Expect(err).NotTo(HaveOccurred())
-	})
-
-	It("sets status properly on all API resources", func() {
-		assertCrdStatuses() // TODO all crd types
 	})
 
 	It("applies TrafficShift policies to local subsets", func() {
@@ -79,8 +74,11 @@ var _ = Describe("SMH E2e", func() {
 		Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
 		Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
 
-		err := util.Kubectl(nil, "apply", "-n="+appNamespace, "-f="+policyManifest)
+		err := testutils.Kubectl("apply", "-n="+appNamespace, "-f="+policyManifest)
 		Expect(err).NotTo(HaveOccurred())
+
+		// ensure status is updated
+		assertTrafficPolicyStatuses()
 
 		// check we consistently hit the v2 subset
 		Consistently(curlReviews, "10s", "0.1s").Should(ContainSubstring(`"color": "black"`))
@@ -89,7 +87,7 @@ var _ = Describe("SMH E2e", func() {
 
 func assertCrdStatuses() {
 
-	err := util.Kubectl(nil, "apply", "-n="+appNamespace, "-f="+policyManifest)
+	err := testutils.Kubectl("apply", "-n="+appNamespace, "-f="+policyManifest)
 	Expect(err).NotTo(HaveOccurred())
 
 	assertTrafficPolicyStatuses()
@@ -97,7 +95,7 @@ func assertCrdStatuses() {
 
 func assertTrafficPolicyStatuses() {
 	ctx := context.Background()
-	trafficPolicy := v1alpha1.NewTrafficPolicyClient(dynamicClient)
+	trafficPolicy := v1alpha2.NewTrafficPolicyClient(dynamicClient)
 
 	EventuallyWithOffset(1, func() bool {
 		list, err := trafficPolicy.ListTrafficPolicy(ctx, client.InNamespace(appNamespace))

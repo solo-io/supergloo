@@ -3,7 +3,7 @@ package cluster
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/cli/commands/cluster/register"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/cluster/register"
 	"github.com/spf13/cobra"
 )
 

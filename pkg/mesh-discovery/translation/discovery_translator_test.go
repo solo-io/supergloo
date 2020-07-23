@@ -52,6 +52,7 @@ var _ = Describe("Translator", func() {
 		configMaps := corev1sets.NewConfigMapSet(&corev1.ConfigMap{})
 		services := corev1sets.NewServiceSet(&corev1.Service{})
 		pods := corev1sets.NewPodSet(&corev1.Pod{})
+		nodes := corev1sets.NewNodeSet(&corev1.Node{})
 		deployments := appsv1sets.NewDeploymentSet(&appsv1.Deployment{})
 		replicaSets := appsv1sets.NewReplicaSetSet(&appsv1.ReplicaSet{})
 		daemonSets := appsv1sets.NewDaemonSetSet(&appsv1.DaemonSet{})
@@ -62,15 +63,16 @@ var _ = Describe("Translator", func() {
 			configMaps,
 			services,
 			pods,
+			nodes,
 			deployments,
 			replicaSets,
 			daemonSets,
 			statefulSets,
 		)
 
-		mockDependencyFactory.EXPECT().makeMeshTranslator(ctx, configMaps).Return(mockMeshTranslator)
-		mockDependencyFactory.EXPECT().makeMeshWorkloadTranslator(ctx, pods, replicaSets).Return(mockMeshworkloadTranslator)
-		mockDependencyFactory.EXPECT().makeMeshServiceTranslator().Return(mockMeshserviceTranslator)
+		mockDependencyFactory.EXPECT().makeMeshTranslator(ctx, in).Return(mockMeshTranslator)
+		mockDependencyFactory.EXPECT().makeMeshWorkloadTranslator(ctx, in).Return(mockMeshworkloadTranslator)
+		mockDependencyFactory.EXPECT().makeMeshServiceTranslator(ctx).Return(mockMeshserviceTranslator)
 
 		labeledMeta := metav1.ObjectMeta{Labels: labelutils.ClusterLabels("cluster")}
 
@@ -86,7 +88,7 @@ var _ = Describe("Translator", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		expectedOut, err := output.NewLabelPartitionedSnapshot(
-			"mesh-discovery",
+			"mesh-discovery-1",
 			labelutils.ClusterLabelKey,
 			meshServices,
 			meshWorkloads,

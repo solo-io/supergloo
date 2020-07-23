@@ -15,7 +15,7 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - Secret
+  - secrets
   verbs:
   - get
   - list
@@ -23,7 +23,7 @@ rules:
 - apiGroups:
   - multicluster.solo.io
   resources:
-  - KubernetesCluster
+  - kubernetesclusters
   verbs:
   - get
   - list
@@ -31,9 +31,9 @@ rules:
 - apiGroups:
   - discovery.smh.solo.io
   resources:
-  - Mesh
-  - MeshWorkload
-  - MeshService
+  - meshes
+  - meshworkloads
+  - meshservices
   verbs:
   - '*'
 
@@ -67,7 +67,7 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - Secret
+  - secrets
   verbs:
   - get
   - list
@@ -75,7 +75,7 @@ rules:
 - apiGroups:
   - multicluster.solo.io
   resources:
-  - KubernetesCluster
+  - kubernetesclusters
   verbs:
   - get
   - list
@@ -83,9 +83,9 @@ rules:
 - apiGroups:
   - discovery.smh.solo.io
   resources:
-  - Mesh
-  - MeshWorkload
-  - MeshService
+  - meshes
+  - meshworkloads
+  - meshservices
   verbs:
   - get
   - list
@@ -93,7 +93,7 @@ rules:
 - apiGroups:
   - multicluster.solo.io
   resources:
-  - KubernetesCluster
+  - kubernetesclusters
   verbs:
   - get
   - list
@@ -101,9 +101,9 @@ rules:
 - apiGroups:
   - networking.smh.solo.io
   resources:
-  - TrafficPolicy
-  - AccessPolicy
-  - VirtualMesh
+  - trafficpolicies
+  - accesspolicies
+  - virtualmeshes
   verbs:
   - get
   - list
@@ -111,42 +111,42 @@ rules:
 - apiGroups:
   - discovery.smh.solo.io
   resources:
-  - Mesh/status
-  - MeshWorkload/status
-  - MeshService/status
+  - meshes/status
+  - meshworkloads/status
+  - meshservices/status
   verbs:
   - get
   - update
 - apiGroups:
   - multicluster.solo.io
   resources:
-  - KubernetesCluster/status
+  - kubernetesclusters/status
   verbs:
   - get
   - update
 - apiGroups:
   - networking.smh.solo.io
   resources:
-  - TrafficPolicy/status
-  - AccessPolicy/status
-  - VirtualMesh/status
+  - trafficpolicies/status
+  - accesspolicies/status
+  - virtualmeshes/status
   verbs:
   - get
   - update
 - apiGroups:
   - networking.istio.io
   resources:
-  - DestinationRule
-  - VirtualService
-  - EnvoyFilter
-  - ServiceEntry
-  - Gateway
+  - destinationrules
+  - virtualservices
+  - envoyfilters
+  - serviceentries
+  - gateways
   verbs:
   - '*'
 - apiGroups:
   - security.istio.io
   resources:
-  - AuthorizationPolicy
+  - authorizationpolicies
   verbs:
   - '*'
 

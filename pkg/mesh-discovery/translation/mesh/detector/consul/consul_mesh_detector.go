@@ -1,9 +1,10 @@
 package consul
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
 	"regexp"
 	"strings"
+
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
