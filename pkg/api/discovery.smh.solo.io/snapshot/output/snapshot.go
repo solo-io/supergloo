@@ -5,6 +5,7 @@ package output
 
 import (
 	"context"
+	"encoding/json"
 	"sort"
 
 	"github.com/rotisserie/eris"
@@ -39,6 +40,9 @@ type Snapshot interface {
 
 	// apply resources from the snapshot across multiple clusters, garbage collecting stale resources
 	ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler)
+
+	// serialize the entire snapshot as JSON
+	MarshalJSON() ([]byte, error)
 }
 
 type snapshot struct {
@@ -316,6 +320,28 @@ func (s snapshot) MeshWorkloads() []LabeledMeshWorkloadSet {
 
 func (s snapshot) Meshes() []LabeledMeshSet {
 	return s.meshes
+}
+
+func (s snapshot) MarshalJSON() ([]byte, error) {
+	snapshotMap := map[string]interface{}{"name": s.name}
+
+	meshServiceSet := discovery_smh_solo_io_v1alpha2_sets.NewMeshServiceSet()
+	for _, set := range s.meshServices {
+		meshServiceSet = meshServiceSet.Union(set.Set())
+	}
+	snapshotMap["meshServices"] = meshServiceSet.List()
+	meshWorkloadSet := discovery_smh_solo_io_v1alpha2_sets.NewMeshWorkloadSet()
+	for _, set := range s.meshWorkloads {
+		meshWorkloadSet = meshWorkloadSet.Union(set.Set())
+	}
+	snapshotMap["meshWorkloads"] = meshWorkloadSet.List()
+	meshSet := discovery_smh_solo_io_v1alpha2_sets.NewMeshSet()
+	for _, set := range s.meshes {
+		meshSet = meshSet.Union(set.Set())
+	}
+	snapshotMap["meshes"] = meshSet.List()
+
+	return json.Marshal(snapshotMap)
 }
 
 // LabeledMeshServiceSet represents a set of meshServices
