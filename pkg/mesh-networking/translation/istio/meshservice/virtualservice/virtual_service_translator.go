@@ -79,7 +79,7 @@ func (t *translator) Translate(
 					baseRoute,
 					registerField,
 				); err != nil {
-					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+					reporter.ReportTrafficPolicyForMeshService(meshService, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
 				}
 			}
 		}

@@ -32,7 +32,7 @@ A valid FailoverService must satisfy the following constraints:
 */
 type FailoverServiceValidator interface {
 	// Set the validation status for FailoverServices in the Inputs
-	Validate(inputs Inputs, failoverService *networkingv1alpha2.FailoverServiceSpec) error
+	Validate(inputs Inputs, failoverService *networkingv1alpha2.FailoverServiceSpec) []error
 }
 
 type Inputs struct {
@@ -90,24 +90,24 @@ func NewFailoverServiceValidator() FailoverServiceValidator {
 	return &failoverServiceValidator{}
 }
 
-func (f *failoverServiceValidator) Validate(inputs Inputs, failoverService *networkingv1alpha2.FailoverServiceSpec) error {
-	var multierr *multierror.Error
+func (f *failoverServiceValidator) Validate(inputs Inputs, failoverService *networkingv1alpha2.FailoverServiceSpec) []error {
+	var errs []error
 	if err := f.validateHostname(failoverService); err != nil {
-		multierr = multierror.Append(multierr, err)
+		errs = append(errs, err)
 	}
 	if err := f.validatePort(failoverService); err != nil {
-		multierr = multierror.Append(multierr, err)
+		errs = append(errs, err)
 	}
 	if err := f.validateServices(failoverService, inputs.MeshServices.List(), inputs.Meshes); err != nil {
-		multierr = multierror.Append(multierr, err)
+		errs = append(errs, err)
 	}
 	if err := f.validateFederation(failoverService, inputs.MeshServices.List(), inputs.Meshes, inputs.VirtualMeshes); err != nil {
-		multierr = multierror.Append(multierr, err)
+		errs = append(errs, err)
 	}
 	if err := f.validateMeshes(failoverService, inputs.Meshes); err != nil {
-		multierr = multierror.Append(multierr, err)
+		errs = append(errs, err)
 	}
-	return multierr.ErrorOrNil()
+	return errs
 }
 
 func (f *failoverServiceValidator) validateMeshes(

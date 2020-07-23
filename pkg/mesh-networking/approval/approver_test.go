@@ -129,7 +129,7 @@ var _ = Describe("Approver", func() {
 		BeforeEach(func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// report = reject
-				reporter.ReportTrafficPolicy(meshService, trafficPolicy, errors.New("did an oopsie"))
+				reporter.ReportTrafficPolicyToMeshService(meshService, trafficPolicy, errors.New("did an oopsie"))
 			}}
 			validator := NewValidator(translator)
 			validator.Approve(context.TODO(), snap)

@@ -168,12 +168,12 @@ func (t *translator) Translate(
 			}
 			clientMesh, err := in.Meshes().Find(ref)
 			if err != nil {
-				reporter.ReportVirtualMesh(mesh, virtualMesh.Ref, err)
+				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
 				continue
 			}
 			clientIstio := clientMesh.Spec.GetIstio()
 			if clientIstio == nil {
-				reporter.ReportVirtualMesh(mesh, virtualMesh.Ref, eris.Errorf("non-istio mesh %v cannot be used in virtual mesh", sets.Key(clientMesh)))
+				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, eris.Errorf("non-istio mesh %v cannot be used in virtual mesh", sets.Key(clientMesh)))
 				continue
 			}
 

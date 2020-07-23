@@ -79,20 +79,20 @@ func (t *translator) Translate(
 	}
 
 	// If validation fails, report the errors to the Meshes and do not translate.
-	validationErr := t.validator.Validate(failoverservice.Inputs{
+	validationErrors := t.validator.Validate(failoverservice.Inputs{
 		MeshServices:  in.MeshServices(),
 		KubeClusters:  in.KubernetesClusters(),
 		Meshes:        in.Meshes(),
 		VirtualMeshes: in.VirtualMeshes(),
 	}, failoverService.Spec)
-	if validationErr != nil {
-		t.reportErrors(failoverService, in.Meshes(), validationErr, reporter)
+	if validationErrors != nil {
+		reporter.ReportFailoverService(failoverService.Ref, validationErrors)
 		return Outputs{}
 	}
 
 	serviceEntries, envoyFilters, err := t.translate(failoverService, in.MeshServices().List(), in.Meshes())
 	if err != nil {
-		t.reportErrors(failoverService, in.Meshes(), err, reporter)
+		t.reportErrorsToMeshes(failoverService, in.Meshes(), err, reporter)
 		return Outputs{}
 	}
 
@@ -102,7 +102,7 @@ func (t *translator) Translate(
 	}
 }
 
-func (t *translator) reportErrors(
+func (t *translator) reportErrorsToMeshes(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 	allMeshes v1alpha2sets.MeshSet,
 	reportedErr error,
@@ -113,7 +113,7 @@ func (t *translator) reportErrors(
 		if err != nil {
 			continue // Mesh reference not found
 		}
-		reporter.ReportFailoverService(mesh, failoverService.Ref, reportedErr)
+		reporter.ReportFailoverServiceToMesh(mesh, failoverService.Ref, reportedErr)
 	}
 }
 
