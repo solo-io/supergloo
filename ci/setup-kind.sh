@@ -17,17 +17,6 @@
 PROJECT_ROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/..
 echo "Using project root ${PROJECT_ROOT}"
 
-# clean up background processes on exit
-trap 'kill 0; ${PROJECT_ROOT}/ci/print-kind-info.sh' EXIT
-
-# print debug info on error
-trap 'catch' ERR
-catch() {
-  echo cluster setup failed! printing debug info and exiting...
-  ${PROJECT_ROOT}/ci/print-kind-info.sh
-  exit 1
-}
-
 function create_kind_cluster() {
   # The default version of k8s under Linux is 1.18
   # https://github.com/solo-io/service-mesh-hub/issues/700
@@ -216,17 +205,11 @@ fi
 # related: https://github.com/kubernetes-sigs/kind/issues/1596
 create_kind_cluster ${masterCluster} 32001
 install_istio ${masterCluster} 32001 &
-pids[0]=$!
 
 create_kind_cluster ${remoteCluster} 32000
 install_istio ${remoteCluster} 32000 &
-pids[1]=$!
 
-
-# wait for all bg processes
-for pid in ${pids[*]}; do
-    wait $pid || echo failed; exit 1
-done
+wait
 
 echo setup successfully set up clusters.
 
@@ -238,14 +221,9 @@ sleep 4
 
 # register clusters
 register_cluster ${masterCluster} &
-pids[0]=$!
 register_cluster ${remoteCluster} &
-pids[1]=$!
 
-# wait for all bg processes
-for pid in ${pids[*]}; do
-    wait $pid || echo failed; exit 1
-done
+wait
 
 # set current context to master cluster
 kubectl config use-context ${masterCluster}
