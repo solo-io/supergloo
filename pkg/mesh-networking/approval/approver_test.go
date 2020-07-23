@@ -21,7 +21,7 @@ import (
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
 )
 
-var _ = Describe("Validator", func() {
+var _ = Describe("Approver", func() {
 	Context("valid traffic policies", func() {
 		var (
 			meshService = &discoveryv1alpha2.MeshService{
@@ -72,7 +72,7 @@ var _ = Describe("Validator", func() {
 				// no report = accept
 			}}
 			validator := NewValidator(translator)
-			validator.Validate(context.TODO(), snap)
+			validator.Approve(context.TODO(), snap)
 
 		})
 		It("updates status on input traffic policies", func() {
@@ -132,7 +132,7 @@ var _ = Describe("Validator", func() {
 				reporter.ReportTrafficPolicy(meshService, trafficPolicy, errors.New("did an oopsie"))
 			}}
 			validator := NewValidator(translator)
-			validator.Validate(context.TODO(), snap)
+			validator.Approve(context.TODO(), snap)
 
 		})
 		It("updates status on input traffic policies", func() {

@@ -74,9 +74,9 @@ message AccessPolicyStatus {
     // the state of the overall resource.
     // will only show accepted if it has been successfully
     // applied to all target meshes.
-    ValidationState state = 2;
+    ApprovalState state = 2;
 
     // The status of the TrafficPolicy for each MeshService to which it has been applied.
     // A TrafficPolicy may be Accepted for some MeshServices and rejected for others.
-    map<string, ValidationStatus> mesh_services = 3;
+    map<string, ApprovalStatus> mesh_services = 3;
 }

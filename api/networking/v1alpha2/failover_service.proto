@@ -60,8 +60,11 @@ message FailoverServiceStatus {
         The state of the overall resource, will only show accepted if it has been successfully
         applied to all target meshes.
     */
-    ValidationState state = 2;
+    ApprovalState state = 2;
 
     // The status of the FailoverService for each Mesh to which it has been applied.
-    map<string, ValidationStatus> meshes = 3;
+    map<string, ApprovalStatus> meshes = 3;
+
+    // any errors observed which prevented the resource from being Accepted.
+    repeated string validation_errors = 4;
 }

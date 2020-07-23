@@ -148,7 +148,7 @@ func (f *failoverServiceValidator) validateServices(
 			multierr = multierror.Append(multierr, err)
 		}
 		meshRef := meshService.Spec.GetMesh()
-		// Validate that mesh exists
+		// Approve that mesh exists
 		parentMesh, err := meshes.Find(meshService.Spec.GetMesh())
 		if err != nil {
 			multierr = multierror.Append(multierr, MeshNotFound(meshRef, meshService.Spec.GetKubeService().GetRef()))
@@ -246,7 +246,7 @@ func (f *failoverServiceValidator) validateFederation(
 			referencedVMs.Insert(vm)
 		}
 	}
-	// Validate that there's only one common parent mesh, else that there's only a single common parent VirtualMesh
+	// Approve that there's only one common parent mesh, else that there's only a single common parent VirtualMesh
 	if len(referencedMeshes.List()) > 1 {
 		// Surface meshes without parent meshes as errors
 		for _, err := range missingParentVMErrors {

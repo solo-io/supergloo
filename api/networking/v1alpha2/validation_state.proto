@@ -7,28 +7,28 @@ import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
-// the status of a policy that has been applied to a MeshService
-message ValidationStatus {
+// The approval status of a policy that has been applied to a discovery resource.
+message ApprovalStatus {
 
     // acceptanceOrder represents the order in which the Policy
-    // was accepted and applied to a MeshService. The first accepted policy
+    // was accepted and applied to a discovery resource. The first accepted policy
     // will have an acceptance_order of zero, the second 1, etc.
     // when conflicts are detected in the system,
     // the Policy with the lowest acceptance_order
     // will be chosen (and all other conflicting policies will be rejected).
     uint32 acceptance_order = 1;
 
-    // The result of attempting to apply the policy to the MeshService,
+    // The result of attempting to apply the policy to the discovery resource,
     // reported by the Policy controller (mesh-networking).
-    ValidationState state = 2;
+    ApprovalState state = 2;
 
-    // any errors observed which prevented the resource from being Accepted.
+    // Any errors observed which prevented the resource from being Accepted.
     repeated string errors = 3;
 
 }
 
 // State of a Policy resource reflected in the status by Service Mesh Hub while processing a resource.
-enum ValidationState {
+enum ApprovalState {
     // Resources are in a Pending state before they have been processed by Service Mesh Hub
     PENDING = 0;
 

@@ -15,29 +15,29 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
-// the validator validates user-applied configuration
+// the approver validates user-applied configuration
 // and produces a snapshot that is ready for translation (i.e. with accepted policies applied to all the Status of all targeted MeshServices)
-// Note that the Validator also updates the statuses of objects contained in the input Snapshot.
+// Note that the Approver also updates the statuses of objects contained in the input Snapshot.
 // The Input Snapshot's SyncStatuses method should usually be called
-// after running the validator.
-type Validator interface {
-	Validate(ctx context.Context, input input.Snapshot)
+// after running the approver.
+type Approver interface {
+	Approve(ctx context.Context, input input.Snapshot)
 }
 
-type validator struct {
-	// the validator runs the istioTranslator in order to detect & report translation errors
+type approver struct {
+	// the approver runs the istioTranslator in order to detect & report translation errors
 	istioTranslator istio.Translator
 }
 
 func NewValidator(
 	istioTranslator istio.Translator,
-) Validator {
-	return &validator{
+) Approver {
+	return &approver{
 		istioTranslator: istioTranslator,
 	}
 }
 
-func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
+func (v *approver) Approve(ctx context.Context, input input.Snapshot) {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newValidationReporter()
 
@@ -64,14 +64,14 @@ func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
 	for _, trafficPolicy := range input.TrafficPolicies().List() {
 		trafficPolicy.Status = v1alpha2.TrafficPolicyStatus{
 			ObservedGeneration: trafficPolicy.Generation,
-			MeshServices:       map[string]*v1alpha2.ValidationStatus{},
+			MeshServices:       map[string]*v1alpha2.ApprovalStatus{},
 		}
 	}
 	// write access policy statuses
 	for _, accessPolicy := range input.AccessPolicies().List() {
 		accessPolicy.Status = v1alpha2.AccessPolicyStatus{
 			ObservedGeneration: accessPolicy.Generation,
-			MeshServices:       map[string]*v1alpha2.ValidationStatus{},
+			MeshServices:       map[string]*v1alpha2.ApprovalStatus{},
 		}
 	}
 
@@ -79,19 +79,19 @@ func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
 	for _, failoverService := range input.FailoverServices().List() {
 		failoverService.Status = v1alpha2.FailoverServiceStatus{
 			ObservedGeneration: failoverService.Generation,
-			Meshes:             map[string]*v1alpha2.ValidationStatus{},
+			Meshes:             map[string]*v1alpha2.ApprovalStatus{},
 		}
 	}
 
 	for _, meshService := range input.MeshServices().List() {
 		meshService.Status.ObservedGeneration = meshService.Generation
-		meshService.Status.AppliedTrafficPolicies = validateAndReturnAcceptedTrafficPolicies(ctx, input, reporter, meshService)
-		meshService.Status.AppliedAccessPolicies = validateAndReturnAcceptedAccessPolicies(ctx, input, reporter, meshService)
+		meshService.Status.AppliedTrafficPolicies = validateAndReturnApprovedTrafficPolicies(ctx, input, reporter, meshService)
+		meshService.Status.AppliedAccessPolicies = validateAndReturnApprovedAccessPolicies(ctx, input, reporter, meshService)
 	}
 
 	for _, mesh := range input.Meshes().List() {
 		mesh.Status.ObservedGeneration = mesh.Generation
-		mesh.Status.AppliedFailoverServices = validateAndReturnAcceptedFailoverServices(ctx, input, reporter, mesh)
+		mesh.Status.AppliedFailoverServices = validateAndReturnApprovedFailoverServices(ctx, input, reporter, mesh)
 	}
 
 	// TODO(ilackarms): validate meshworkloads
@@ -100,7 +100,7 @@ func (v *validator) Validate(ctx context.Context, input input.Snapshot) {
 
 // this function both validates the status of TrafficPolicies (sets error or accepted state)
 // as well as returns a list of accepted traffic policies for the mesh service status
-func validateAndReturnAcceptedTrafficPolicies(ctx context.Context, input input.Snapshot, reporter *validationReporter, meshService *discoveryv1alpha2.MeshService) []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy {
+func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.Snapshot, reporter *validationReporter, meshService *discoveryv1alpha2.MeshService) []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy {
 	var validatedTrafficPolicies []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy
 
 	// track accepted index
@@ -116,9 +116,9 @@ func validateAndReturnAcceptedTrafficPolicies(ctx context.Context, input input.S
 		}
 
 		if len(errsForTrafficPolicy) == 0 {
-			trafficPolicy.Status.MeshServices[sets.Key(meshService)] = &v1alpha2.ValidationStatus{
+			trafficPolicy.Status.MeshServices[sets.Key(meshService)] = &v1alpha2.ApprovalStatus{
 				AcceptanceOrder: acceptedIndex,
-				State:           v1alpha2.ValidationState_ACCEPTED,
+				State:           v1alpha2.ApprovalState_ACCEPTED,
 			}
 			validatedTrafficPolicies = append(validatedTrafficPolicies, appliedTrafficPolicy)
 			acceptedIndex++
@@ -127,8 +127,8 @@ func validateAndReturnAcceptedTrafficPolicies(ctx context.Context, input input.S
 			for _, tpErr := range errsForTrafficPolicy {
 				errMsgs = append(errMsgs, tpErr.Error())
 			}
-			trafficPolicy.Status.MeshServices[sets.Key(meshService)] = &v1alpha2.ValidationStatus{
-				State:  v1alpha2.ValidationState_INVALID,
+			trafficPolicy.Status.MeshServices[sets.Key(meshService)] = &v1alpha2.ApprovalStatus{
+				State:  v1alpha2.ApprovalState_INVALID,
 				Errors: errMsgs,
 			}
 		}
@@ -139,7 +139,7 @@ func validateAndReturnAcceptedTrafficPolicies(ctx context.Context, input input.S
 
 // this function both validates the status of AccessPolicies (sets error or accepted state)
 // as well as returns a list of accepted AccessPolicies for the mesh service status
-func validateAndReturnAcceptedAccessPolicies(
+func validateAndReturnApprovedAccessPolicies(
 	ctx context.Context,
 	input input.Snapshot,
 	reporter *validationReporter,
@@ -160,9 +160,9 @@ func validateAndReturnAcceptedAccessPolicies(
 		}
 
 		if len(errsForAccessPolicy) == 0 {
-			accessPolicy.Status.MeshServices[sets.Key(meshService)] = &v1alpha2.ValidationStatus{
+			accessPolicy.Status.MeshServices[sets.Key(meshService)] = &v1alpha2.ApprovalStatus{
 				AcceptanceOrder: acceptedIndex,
-				State:           v1alpha2.ValidationState_ACCEPTED,
+				State:           v1alpha2.ApprovalState_ACCEPTED,
 			}
 			validatedAccessPolicies = append(validatedAccessPolicies, appliedAccessPolicy)
 			acceptedIndex++
@@ -171,8 +171,8 @@ func validateAndReturnAcceptedAccessPolicies(
 			for _, apErr := range errsForAccessPolicy {
 				errMsgs = append(errMsgs, apErr.Error())
 			}
-			accessPolicy.Status.MeshServices[sets.Key(meshService)] = &v1alpha2.ValidationStatus{
-				State:  v1alpha2.ValidationState_INVALID,
+			accessPolicy.Status.MeshServices[sets.Key(meshService)] = &v1alpha2.ApprovalStatus{
+				State:  v1alpha2.ApprovalState_INVALID,
 				Errors: errMsgs,
 			}
 		}
@@ -181,7 +181,7 @@ func validateAndReturnAcceptedAccessPolicies(
 	return validatedAccessPolicies
 }
 
-func validateAndReturnAcceptedFailoverServices(
+func validateAndReturnApprovedFailoverServices(
 	ctx context.Context,
 	input input.Snapshot,
 	reporter *validationReporter,
@@ -202,9 +202,9 @@ func validateAndReturnAcceptedFailoverServices(
 		}
 
 		if len(errsForFailoverService) == 0 {
-			failoverService.Status.Meshes[sets.Key(mesh)] = &v1alpha2.ValidationStatus{
+			failoverService.Status.Meshes[sets.Key(mesh)] = &v1alpha2.ApprovalStatus{
 				AcceptanceOrder: acceptedIndex,
-				State:           v1alpha2.ValidationState_ACCEPTED,
+				State:           v1alpha2.ApprovalState_ACCEPTED,
 			}
 			validatedFailoverServices = append(validatedFailoverServices, appliedFailoverService)
 			acceptedIndex++
@@ -213,8 +213,8 @@ func validateAndReturnAcceptedFailoverServices(
 			for _, fsErr := range errsForFailoverService {
 				errMsgs = append(errMsgs, fsErr.Error())
 			}
-			failoverService.Status.Meshes[sets.Key(mesh)] = &v1alpha2.ValidationStatus{
-				State:  v1alpha2.ValidationState_INVALID,
+			failoverService.Status.Meshes[sets.Key(mesh)] = &v1alpha2.ApprovalStatus{
+				State:  v1alpha2.ApprovalState_INVALID,
 				Errors: errMsgs,
 			}
 		}
@@ -228,23 +228,23 @@ func validateAndReturnAcceptedFailoverServices(
 type validationReporter struct {
 	// NOTE(ilackarms): map access should be synchronous (called in a single context),
 	// so locking should not be necessary.
-	invalidTrafficPolicies  map[*discoveryv1alpha2.MeshService]map[string][]error
-	invalidAccessPolicies   map[*discoveryv1alpha2.MeshService]map[string][]error
-	invalidFailoverServices map[*discoveryv1alpha2.Mesh]map[string][]error
+	unapprovedTrafficPolicies  map[*discoveryv1alpha2.MeshService]map[string][]error
+	unapprovedAccessPolicies   map[*discoveryv1alpha2.MeshService]map[string][]error
+	unapprovedFailoverServices map[*discoveryv1alpha2.Mesh]map[string][]error
 }
 
 func newValidationReporter() *validationReporter {
 	return &validationReporter{
-		invalidTrafficPolicies:  map[*discoveryv1alpha2.MeshService]map[string][]error{},
-		invalidAccessPolicies:   map[*discoveryv1alpha2.MeshService]map[string][]error{},
-		invalidFailoverServices: map[*discoveryv1alpha2.Mesh]map[string][]error{},
+		unapprovedTrafficPolicies:  map[*discoveryv1alpha2.MeshService]map[string][]error{},
+		unapprovedAccessPolicies:   map[*discoveryv1alpha2.MeshService]map[string][]error{},
+		unapprovedFailoverServices: map[*discoveryv1alpha2.Mesh]map[string][]error{},
 	}
 }
 
 // mark the policy with an error; will be used to filter the policy out of
 // the accepted status later
 func (v *validationReporter) ReportTrafficPolicy(meshService *discoveryv1alpha2.MeshService, trafficPolicy ezkube.ResourceId, err error) {
-	invalidTrafficPoliciesForMeshService := v.invalidTrafficPolicies[meshService]
+	invalidTrafficPoliciesForMeshService := v.unapprovedTrafficPolicies[meshService]
 	if invalidTrafficPoliciesForMeshService == nil {
 		invalidTrafficPoliciesForMeshService = map[string][]error{}
 	}
@@ -252,7 +252,7 @@ func (v *validationReporter) ReportTrafficPolicy(meshService *discoveryv1alpha2.
 	errs := invalidTrafficPoliciesForMeshService[key]
 	errs = append(errs, err)
 	invalidTrafficPoliciesForMeshService[key] = errs
-	v.invalidTrafficPolicies[meshService] = invalidTrafficPoliciesForMeshService
+	v.unapprovedTrafficPolicies[meshService] = invalidTrafficPoliciesForMeshService
 }
 
 func (v *validationReporter) ReportAccessPolicy(meshService *discoveryv1alpha2.MeshService, accessPolicy ezkube.ResourceId, err error) {
@@ -266,7 +266,7 @@ func (v *validationReporter) ReportVirtualMesh(mesh *discoveryv1alpha2.Mesh, vir
 }
 
 func (v *validationReporter) ReportFailoverService(mesh *discoveryv1alpha2.Mesh, failoverService ezkube.ResourceId, err error) {
-	invalidFailoverServicesForMeshService := v.invalidFailoverServices[mesh]
+	invalidFailoverServicesForMeshService := v.unapprovedFailoverServices[mesh]
 	if invalidFailoverServicesForMeshService == nil {
 		invalidFailoverServicesForMeshService = map[string][]error{}
 	}
@@ -274,11 +274,11 @@ func (v *validationReporter) ReportFailoverService(mesh *discoveryv1alpha2.Mesh,
 	errs := invalidFailoverServicesForMeshService[key]
 	errs = append(errs, err)
 	invalidFailoverServicesForMeshService[key] = errs
-	v.invalidFailoverServices[mesh] = invalidFailoverServicesForMeshService
+	v.unapprovedFailoverServices[mesh] = invalidFailoverServicesForMeshService
 }
 
 func (v *validationReporter) getTrafficPolicyErrors(meshService *discoveryv1alpha2.MeshService, trafficPolicy ezkube.ResourceId) []error {
-	invalidTrafficPoliciesForMeshService, ok := v.invalidTrafficPolicies[meshService]
+	invalidTrafficPoliciesForMeshService, ok := v.unapprovedTrafficPolicies[meshService]
 	if !ok {
 		return nil
 	}
@@ -290,7 +290,7 @@ func (v *validationReporter) getTrafficPolicyErrors(meshService *discoveryv1alph
 }
 
 func (v *validationReporter) getAccessPolicyErrors(meshService *discoveryv1alpha2.MeshService, accessPolicy ezkube.ResourceId) []error {
-	invalidAccessPoliciesForMeshService, ok := v.invalidAccessPolicies[meshService]
+	invalidAccessPoliciesForMeshService, ok := v.unapprovedAccessPolicies[meshService]
 	if !ok {
 		return nil
 	}
@@ -302,7 +302,7 @@ func (v *validationReporter) getAccessPolicyErrors(meshService *discoveryv1alpha
 }
 
 func (v *validationReporter) getFailoverServiceErrors(mesh *discoveryv1alpha2.Mesh, failoverService ezkube.ResourceId) []error {
-	invalidAccessPoliciesForMeshService, ok := v.invalidFailoverServices[mesh]
+	invalidAccessPoliciesForMeshService, ok := v.unapprovedFailoverServices[mesh]
 	if !ok {
 		return nil
 	}
@@ -358,8 +358,8 @@ func sortTrafficPoliciesByAcceptedDate(meshService *discoveryv1alpha2.MeshServic
 		}
 
 		switch {
-		case status1.State == v1alpha2.ValidationState_ACCEPTED:
-			if status2.State != v1alpha2.ValidationState_ACCEPTED {
+		case status1.State == v1alpha2.ApprovalState_ACCEPTED:
+			if status2.State != v1alpha2.ApprovalState_ACCEPTED {
 				// accepted comes before non accepted
 				return true
 			}
@@ -371,7 +371,7 @@ func sortTrafficPoliciesByAcceptedDate(meshService *discoveryv1alpha2.MeshServic
 
 			// sort by the previous acceptance order
 			return status1.AcceptanceOrder < status2.AcceptanceOrder
-		case status2.State == v1alpha2.ValidationState_ACCEPTED:
+		case status2.State == v1alpha2.ApprovalState_ACCEPTED:
 			// accepted comes before non accepted
 			return false
 		default:
