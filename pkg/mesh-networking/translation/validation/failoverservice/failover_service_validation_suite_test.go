@@ -1,4 +1,4 @@
-package validation_test
+package failoverservice_test
 
 import (
 	"testing"

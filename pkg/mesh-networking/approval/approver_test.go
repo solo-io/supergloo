@@ -1,4 +1,4 @@
-package validation_test
+package approval_test
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/validation"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
 )
 
 var _ = Describe("Validator", func() {

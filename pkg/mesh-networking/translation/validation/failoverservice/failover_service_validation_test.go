@@ -1,4 +1,4 @@
-package validation_test
+package failoverservice_test
 
 import (
 	"github.com/golang/mock/gomock"
@@ -8,7 +8,7 @@ import (
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	networkingv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice/validation"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/validation/failoverservice"
 	corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	multiclusterv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	multiclusterv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
@@ -18,12 +18,12 @@ import (
 var _ = Describe("Validation", func() {
 	var (
 		ctrl      *gomock.Controller
-		validator validation.FailoverServiceValidator
+		validator failoverservice.FailoverServiceValidator
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		validator = validation.NewFailoverServiceValidator()
+		validator = failoverservice.NewFailoverServiceValidator()
 	})
 
 	AfterEach(func() {
@@ -44,8 +44,8 @@ var _ = Describe("Validation", func() {
 	}
 
 	// Snapshot with valid FailoverService.
-	var validInputs = func() (validation.Inputs, *networkingv1alpha2.FailoverServiceSpec) {
-		return validation.Inputs{
+	var validInputs = func() (failoverservice.Inputs, *networkingv1alpha2.FailoverServiceSpec) {
+		return failoverservice.Inputs{
 				MeshServices: discoveryv1alpha2sets.NewMeshServiceSet(
 					&discoveryv1alpha2.MeshService{
 						ObjectMeta: metav1.ObjectMeta{
@@ -169,8 +169,8 @@ var _ = Describe("Validation", func() {
 	}
 
 	// Snapshot with valid FailoverService in a single mesh.
-	var validInputSnapshotSingleMesh = func() (validation.Inputs, *networkingv1alpha2.FailoverServiceSpec) {
-		return validation.Inputs{
+	var validInputSnapshotSingleMesh = func() (failoverservice.Inputs, *networkingv1alpha2.FailoverServiceSpec) {
+		return failoverservice.Inputs{
 				MeshServices: discoveryv1alpha2sets.NewMeshServiceSet(
 					&discoveryv1alpha2.MeshService{
 						ObjectMeta: metav1.ObjectMeta{
@@ -264,8 +264,8 @@ var _ = Describe("Validation", func() {
 	}
 
 	// Snapshot with invalid FailoverService.
-	var invalidInputSnapshot = func() (validation.Inputs, *networkingv1alpha2.FailoverServiceSpec) {
-		return validation.Inputs{
+	var invalidInputSnapshot = func() (failoverservice.Inputs, *networkingv1alpha2.FailoverServiceSpec) {
+		return failoverservice.Inputs{
 				MeshServices: discoveryv1alpha2sets.NewMeshServiceSet(
 					&discoveryv1alpha2.MeshService{
 						ObjectMeta: metav1.ObjectMeta{
@@ -514,15 +514,15 @@ var _ = Describe("Validation", func() {
 		inputSnapshot, failoverServiceSpec := invalidInputSnapshot()
 		err := validator.Validate(inputSnapshot, failoverServiceSpec)
 		// Missing port
-		Expect(err.Error()).To(ContainSubstring(validation.MissingPort.Error()))
+		Expect(err.Error()).To(ContainSubstring(failoverservice.MissingPort.Error()))
 		// Invalid DNS hostname
 		Expect(err.Error()).To(ContainSubstring("a DNS-1123 subdomain must consist of lower case alphanumeric characters"))
 		// Service without OutlierDetection
-		Expect(err.Error()).To(ContainSubstring(validation.MissingOutlierDetection(inputSnapshot.MeshServices.List()[3]).Error()))
+		Expect(err.Error()).To(ContainSubstring(failoverservice.MissingOutlierDetection(inputSnapshot.MeshServices.List()[3]).Error()))
 		// Mesh without parent VirtualMesh
 		Expect(err.Error()).To(ContainSubstring(
-			validation.MeshWithoutParentVM(inputSnapshot.Meshes.List()[2]).Error()))
+			failoverservice.MeshWithoutParentVM(inputSnapshot.Meshes.List()[2]).Error()))
 		// Multiple parent VirtualMeshes
-		Expect(err.Error()).To(ContainSubstring(validation.MultipleParentVirtualMeshes(inputSnapshot.VirtualMeshes.List()).Error()))
+		Expect(err.Error()).To(ContainSubstring(failoverservice.MultipleParentVirtualMeshes(inputSnapshot.VirtualMeshes.List()).Error()))
 	})
 })

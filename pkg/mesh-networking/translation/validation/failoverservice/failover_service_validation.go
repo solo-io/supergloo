@@ -1,4 +1,4 @@
-package validation
+package failoverservice
 
 import (
 	"fmt"
@@ -16,6 +16,32 @@ import (
 	"istio.io/istio/pkg/config/protocol"
 	"k8s.io/apimachinery/pkg/util/validation"
 )
+
+//go:generate mockgen -source ./failover_service_validation.go -destination ./mocks/mock_failover_service_validation.go -package mock_validation
+
+/*
+A valid FailoverService must satisfy the following constraints:
+
+1. TargetService must exist
+2. Must consist of at least 1 failover service.
+3. All declared failover services must exist.
+4. All declared failover services must be owned by a supported Mesh type (currently only Istio).
+5. All declared failover services must exist in the same VirtualMesh, or belong to a common parent Mesh.
+6. All declared failover services must have OutlierDetection settings declared in a TP (grab this from the MeshService status).
+7. All targeted Meshes must be of a supported type.
+*/
+type FailoverServiceValidator interface {
+	// Set the validation status for FailoverServices in the Inputs
+	Validate(inputs Inputs, failoverService *networkingv1alpha2.FailoverServiceSpec) error
+}
+
+type Inputs struct {
+	MeshServices discoveryv1alpha2sets.MeshServiceSet
+	// For validation
+	KubeClusters  v1alpha1sets.KubernetesClusterSet
+	Meshes        discoveryv1alpha2sets.MeshSet
+	VirtualMeshes networkingv1alpha2sets.VirtualMeshSet
+}
 
 var (
 	MissingHostname         = eris.New("Missing required field \"hostname\".")
@@ -56,30 +82,6 @@ var (
 			meshService.Spec.GetKubeService().GetRef().GetClusterName())
 	}
 )
-
-/*
-A valid FailoverService must satisfy the following constraints:
-
-1. TargetService must exist
-2. Must consist of at least 1 failover service.
-3. All declared failover services must exist.
-4. All declared failover services must be owned by a supported Mesh type (currently only Istio).
-5. All declared failover services must exist in the same VirtualMesh, or belong to a common parent Mesh.
-6. All declared failover services must have OutlierDetection settings declared in a TP (grab this from the MeshService status).
-7. All targeted Meshes must be of a supported type.
-*/
-type FailoverServiceValidator interface {
-	// Set the validation status for FailoverServices in the Inputs
-	Validate(inputs Inputs, failoverService *networkingv1alpha2.FailoverServiceSpec) error
-}
-
-type Inputs struct {
-	MeshServices discoveryv1alpha2sets.MeshServiceSet
-	// For validation
-	KubeClusters  v1alpha1sets.KubernetesClusterSet
-	Meshes        discoveryv1alpha2sets.MeshSet
-	VirtualMeshes networkingv1alpha2sets.VirtualMeshSet
-}
 
 type failoverServiceValidator struct {
 }

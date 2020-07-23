@@ -14,7 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/validation"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
 
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -24,7 +24,7 @@ import (
 type networkingReconciler struct {
 	ctx                context.Context
 	builder            input.Builder
-	validator          validation.Validator
+	validator          approval.Validator
 	reporter           reporting.Reporter
 	istioTranslator    istio.Translator
 	masterClient       client.Client
@@ -34,7 +34,7 @@ type networkingReconciler struct {
 func Start(
 	ctx context.Context,
 	builder input.Builder,
-	validator validation.Validator,
+	validator approval.Validator,
 	reporter reporting.Reporter,
 	istioTranslator istio.Translator,
 	multiClusterClient multicluster.Client,

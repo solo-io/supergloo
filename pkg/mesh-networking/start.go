@@ -6,7 +6,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/validation"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
@@ -33,7 +33,7 @@ func startReconciler(
 	snapshotBuilder := input.NewSingleClusterBuilder(masterManager.GetClient())
 	reporter := reporting.NewPanickingReporter(ctx)
 	istioTranslator := istio.NewIstioTranslator()
-	validator := validation.NewValidator(istioTranslator)
+	validator := approval.NewValidator(istioTranslator)
 
 	return reconciliation.Start(
 		ctx,

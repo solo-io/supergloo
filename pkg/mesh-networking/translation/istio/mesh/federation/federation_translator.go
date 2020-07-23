@@ -3,8 +3,6 @@ package federation
 import (
 	"context"
 	"fmt"
-	"hash/fnv"
-	"net"
 
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
 	"github.com/gogo/protobuf/types"
@@ -17,6 +15,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/protoutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -35,13 +34,6 @@ var (
 
 	envoySniClusterFilterName        = "envoy.filters.network.sni_cluster"
 	envoyTcpClusterRewriteFilterName = "envoy.filters.network.tcp_cluster_rewrite"
-
-	// We must generate IPs to use for Service Entries. for now we simply generate them from this subnet.
-	// https://preliminary.istio.io/docs/setup/install/multicluster/gateways/#configure-the-example-services
-	//
-	// TODO(ilackarms): allow this to be inferred, configured by the user, or remove when
-	// istio supports creating service entries without assigning IPs.
-	ipAssignableSubnet = "240.0.0.0/4"
 )
 
 // outputs of translating a single Mesh
@@ -142,7 +134,7 @@ func (t *translator) Translate(
 			continue
 		}
 
-		serviceEntryIp, err := constructUniqueIp(meshKubeService)
+		serviceEntryIp, err := meshserviceutils.ConstructUniqueIpForKubeService(meshKubeService.Ref)
 		if err != nil {
 			// should never happen
 			contextutils.LoggerFrom(t.ctx).Errorf("unexpected error: failed to generate service entry ip: %v", err)
@@ -287,42 +279,6 @@ func (t *translator) Translate(
 		DestinationRules: destinationRules,
 		ServiceEntries:   serviceEntries,
 	}
-}
-
-func constructUniqueIp(meshKubeService *discoveryv1alpha2.MeshServiceSpec_KubeService) (net.IP, error) {
-	ip, cidr, err := net.ParseCIDR(ipAssignableSubnet)
-	if err != nil {
-		return nil, err
-	}
-	ip = ip.Mask(cidr.Mask)
-	if len(ip) != 4 {
-		return nil, eris.Errorf("unexpected length for cidr IP: %v", len(ip))
-	}
-
-	h := fnv.New32()
-	if _, err := h.Write([]byte(meshKubeService.Ref.Name)); err != nil {
-		return nil, err
-	}
-	if _, err := h.Write([]byte(meshKubeService.Ref.Namespace)); err != nil {
-		return nil, err
-	}
-	if _, err := h.Write([]byte(meshKubeService.Ref.ClusterName)); err != nil {
-		return nil, err
-	}
-	hash := h.Sum32()
-	var hashedIP net.IP = []byte{
-		byte(hash),
-		byte(hash >> 8),
-		byte(hash >> 16),
-		byte(hash >> 24),
-	}
-	hashedIP.Mask(cidr.Mask)
-
-	for i := range hashedIP {
-		hashedIP[i] = hashedIP[i] | ip[i]
-	}
-
-	return hashedIP, nil
 }
 
 func servicesForMesh(
