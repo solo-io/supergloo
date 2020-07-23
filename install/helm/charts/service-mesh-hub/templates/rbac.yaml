@@ -145,6 +145,12 @@ rules:
   - Gateway
   verbs:
   - '*'
+- apiGroups:
+  - security.istio.io
+  resources:
+  - AuthorizationPolicy
+  verbs:
+  - '*'
 
 ---
 

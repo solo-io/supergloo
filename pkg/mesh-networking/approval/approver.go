@@ -29,7 +29,7 @@ type approver struct {
 	istioTranslator istio.Translator
 }
 
-func NewValidator(
+func NewApprover(
 	istioTranslator istio.Translator,
 ) Approver {
 	return &approver{
@@ -258,8 +258,15 @@ func (v *approvalReporter) ReportTrafficPolicyToMeshService(meshService *discove
 }
 
 func (v *approvalReporter) ReportAccessPolicyToMeshService(meshService *discoveryv1alpha2.MeshService, accessPolicy ezkube.ResourceId, err error) {
-	// TODO(ilackarms):
-	panic("implement me")
+	invalidAccessPoliciesForMeshService := v.unapprovedAccessPolicies[meshService]
+	if invalidAccessPoliciesForMeshService == nil {
+		invalidAccessPoliciesForMeshService = map[string][]error{}
+	}
+	key := sets.Key(accessPolicy)
+	errs := invalidAccessPoliciesForMeshService[key]
+	errs = append(errs, err)
+	invalidAccessPoliciesForMeshService[key] = errs
+	v.unapprovedAccessPolicies[meshService] = invalidAccessPoliciesForMeshService
 }
 
 func (v *approvalReporter) ReportVirtualMeshToMesh(mesh *discoveryv1alpha2.Mesh, virtualMesh ezkube.ResourceId, err error) {

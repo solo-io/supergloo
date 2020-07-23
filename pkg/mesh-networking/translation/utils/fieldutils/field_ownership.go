@@ -43,7 +43,10 @@ type ownershipRegistry struct {
 }
 
 func NewOwnershipRegistry() FieldOwnershipRegistry {
-	return &ownershipRegistry{fieldOwners: map[interface{}]FieldOwnership{}}
+	return &ownershipRegistry{
+		objOwners: map[string][]FieldOwnership{},
+		fieldOwners: map[interface{}]FieldOwnership{},
+	}
 }
 
 type FieldOwnership struct {

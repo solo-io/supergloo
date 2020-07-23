@@ -16,6 +16,9 @@ import (
 
 	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+
+	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
+	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 )
 
 // this error can occur if constructing a Partitioned Snapshot from a resource
@@ -37,6 +40,8 @@ type Snapshot interface {
 	ServiceEntries() []LabeledServiceEntrySet
 	// return the set of VirtualServices with a given set of labels
 	VirtualServices() []LabeledVirtualServiceSet
+	// return the set of AuthorizationPolicies with a given set of labels
+	AuthorizationPolicies() []LabeledAuthorizationPolicySet
 
 	// apply the snapshot to the cluster, garbage collecting stale resources
 	Apply(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -48,11 +53,12 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	destinationRules []LabeledDestinationRuleSet
-	envoyFilters     []LabeledEnvoyFilterSet
-	gateways         []LabeledGatewaySet
-	serviceEntries   []LabeledServiceEntrySet
-	virtualServices  []LabeledVirtualServiceSet
+	destinationRules      []LabeledDestinationRuleSet
+	envoyFilters          []LabeledEnvoyFilterSet
+	gateways              []LabeledGatewaySet
+	serviceEntries        []LabeledServiceEntrySet
+	virtualServices       []LabeledVirtualServiceSet
+	authorizationPolicies []LabeledAuthorizationPolicySet
 }
 
 func NewSnapshot(
@@ -63,16 +69,18 @@ func NewSnapshot(
 	gateways []LabeledGatewaySet,
 	serviceEntries []LabeledServiceEntrySet,
 	virtualServices []LabeledVirtualServiceSet,
+	authorizationPolicies []LabeledAuthorizationPolicySet,
 
 ) Snapshot {
 	return &snapshot{
 		name: name,
 
-		destinationRules: destinationRules,
-		envoyFilters:     envoyFilters,
-		gateways:         gateways,
-		serviceEntries:   serviceEntries,
-		virtualServices:  virtualServices,
+		destinationRules:      destinationRules,
+		envoyFilters:          envoyFilters,
+		gateways:              gateways,
+		serviceEntries:        serviceEntries,
+		virtualServices:       virtualServices,
+		authorizationPolicies: authorizationPolicies,
 	}
 }
 
@@ -87,6 +95,8 @@ func NewLabelPartitionedSnapshot(
 	gateways networking_istio_io_v1alpha3_sets.GatewaySet,
 	serviceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+
+	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
 ) (Snapshot, error) {
 
@@ -110,6 +120,10 @@ func NewLabelPartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
+	partitionedAuthorizationPolicies, err := partitionAuthorizationPoliciesByLabel(labelKey, authorizationPolicies)
+	if err != nil {
+		return nil, err
+	}
 
 	return NewSnapshot(
 		name,
@@ -119,6 +133,7 @@ func NewLabelPartitionedSnapshot(
 		partitionedGateways,
 		partitionedServiceEntries,
 		partitionedVirtualServices,
+		partitionedAuthorizationPolicies,
 	), nil
 }
 
@@ -133,6 +148,8 @@ func NewSinglePartitionedSnapshot(
 	gateways networking_istio_io_v1alpha3_sets.GatewaySet,
 	serviceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+
+	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
 ) (Snapshot, error) {
 
@@ -156,6 +173,10 @@ func NewSinglePartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
+	labeledAuthorizationPolicies, err := NewLabeledAuthorizationPolicySet(authorizationPolicies, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
 
 	return NewSnapshot(
 		name,
@@ -165,6 +186,7 @@ func NewSinglePartitionedSnapshot(
 		[]LabeledGatewaySet{labeledGateways},
 		[]LabeledServiceEntrySet{labeledServiceEntries},
 		[]LabeledVirtualServiceSet{labeledVirtualServices},
+		[]LabeledAuthorizationPolicySet{labeledAuthorizationPolicies},
 	), nil
 }
 
@@ -185,6 +207,9 @@ func (s *snapshot) Apply(ctx context.Context, cli client.Client, errHandler outp
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.virtualServices {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.authorizationPolicies {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -211,6 +236,9 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.virtualServices {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.authorizationPolicies {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -440,6 +468,50 @@ func partitionVirtualServicesByLabel(labelKey string, set networking_istio_io_v1
 	return partitionedVirtualServices, nil
 }
 
+func partitionAuthorizationPoliciesByLabel(labelKey string, set security_istio_io_v1beta1_sets.AuthorizationPolicySet) ([]LabeledAuthorizationPolicySet, error) {
+	setsByLabel := map[string]security_istio_io_v1beta1_sets.AuthorizationPolicySet{}
+
+	for _, obj := range set.List() {
+		if obj.Labels == nil {
+			return nil, MissingRequiredLabelError(labelKey, "AuthorizationPolicy", obj)
+		}
+		labelValue := obj.Labels[labelKey]
+		if labelValue == "" {
+			return nil, MissingRequiredLabelError(labelKey, "AuthorizationPolicy", obj)
+		}
+
+		setForValue, ok := setsByLabel[labelValue]
+		if !ok {
+			setForValue = security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
+			setsByLabel[labelValue] = setForValue
+		}
+		setForValue.Insert(obj)
+	}
+
+	// partition by label key
+	var partitionedAuthorizationPolicies []LabeledAuthorizationPolicySet
+
+	for labelValue, setForValue := range setsByLabel {
+		labels := map[string]string{labelKey: labelValue}
+
+		partitionedSet, err := NewLabeledAuthorizationPolicySet(setForValue, labels)
+		if err != nil {
+			return nil, err
+		}
+
+		partitionedAuthorizationPolicies = append(partitionedAuthorizationPolicies, partitionedSet)
+	}
+
+	// sort for idempotency
+	sort.SliceStable(partitionedAuthorizationPolicies, func(i, j int) bool {
+		leftLabelValue := partitionedAuthorizationPolicies[i].Labels()[labelKey]
+		rightLabelValue := partitionedAuthorizationPolicies[j].Labels()[labelKey]
+		return leftLabelValue < rightLabelValue
+	})
+
+	return partitionedAuthorizationPolicies, nil
+}
+
 func (s snapshot) DestinationRules() []LabeledDestinationRuleSet {
 	return s.destinationRules
 }
@@ -458,6 +530,10 @@ func (s snapshot) ServiceEntries() []LabeledServiceEntrySet {
 
 func (s snapshot) VirtualServices() []LabeledVirtualServiceSet {
 	return s.virtualServices
+}
+
+func (s snapshot) AuthorizationPolicies() []LabeledAuthorizationPolicySet {
+	return s.authorizationPolicies
 }
 
 // LabeledDestinationRuleSet represents a set of destinationRules
@@ -797,5 +873,73 @@ func (l labeledVirtualServiceSet) Generic() output.ResourceList {
 		Resources:    desiredResources,
 		ListFunc:     listFunc,
 		ResourceKind: "VirtualService",
+	}
+}
+
+// LabeledAuthorizationPolicySet represents a set of authorizationPolicies
+// which share a common set of labels.
+// These labels are used to find diffs between AuthorizationPolicySets.
+type LabeledAuthorizationPolicySet interface {
+	// returns the set of Labels shared by this AuthorizationPolicySet
+	Labels() map[string]string
+
+	// returns the set of AuthorizationPolicyes with the given labels
+	Set() security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
+	Generic() output.ResourceList
+}
+
+type labeledAuthorizationPolicySet struct {
+	set    security_istio_io_v1beta1_sets.AuthorizationPolicySet
+	labels map[string]string
+}
+
+func NewLabeledAuthorizationPolicySet(set security_istio_io_v1beta1_sets.AuthorizationPolicySet, labels map[string]string) (LabeledAuthorizationPolicySet, error) {
+	// validate that each AuthorizationPolicy contains the labels, else this is not a valid LabeledAuthorizationPolicySet
+	for _, item := range set.List() {
+		for k, v := range labels {
+			// k=v must be present in the item
+			if item.Labels[k] != v {
+				return nil, eris.Errorf("internal error: %v=%v missing on AuthorizationPolicy %v", k, v, item.Name)
+			}
+		}
+	}
+
+	return &labeledAuthorizationPolicySet{set: set, labels: labels}, nil
+}
+
+func (l *labeledAuthorizationPolicySet) Labels() map[string]string {
+	return l.labels
+}
+
+func (l *labeledAuthorizationPolicySet) Set() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
+	return l.set
+}
+
+func (l labeledAuthorizationPolicySet) Generic() output.ResourceList {
+	var desiredResources []ezkube.Object
+	for _, desired := range l.set.List() {
+		desiredResources = append(desiredResources, desired)
+	}
+
+	// enable list func for garbage collection
+	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+		var list security_istio_io_v1beta1.AuthorizationPolicyList
+		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+			return nil, err
+		}
+		var items []ezkube.Object
+		for _, item := range list.Items {
+			item := item // pike
+			items = append(items, &item)
+		}
+		return items, nil
+	}
+
+	return output.ResourceList{
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "AuthorizationPolicy",
 	}
 }

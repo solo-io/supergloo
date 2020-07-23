@@ -1,4 +1,4 @@
-package translation
+package istio
 
 /*
 This file contains the registered set of decorators for the translator.
@@ -17,7 +17,5 @@ import (
 	_ "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/timeout"
 	_ "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/trafficshift"
 	// AccessPolicy decorators
-	_ "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/accesspolicy/methods"
-	_ "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/accesspolicy/paths"
-	_ "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/accesspolicy/ports"
+	_ "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/accesspolicy/operations"
 )

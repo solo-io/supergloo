@@ -24,6 +24,15 @@ var smhRbacRequirements = []rbacv1.PolicyRule{
 		},
 	},
 	{
+		Verbs: []string{"*"},
+		APIGroups: []string{
+			"security.istio.io",
+		},
+		Resources: []string{
+			"authorizationpolicies",
+		},
+	},
+	{
 		Verbs:     []string{"get", "list", "watch"},
 		APIGroups: []string{"apps"},
 		Resources: []string{

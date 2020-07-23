@@ -71,7 +71,7 @@ var _ = Describe("Approver", func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
 			}}
-			validator := NewValidator(translator)
+			validator := NewApprover(translator)
 			validator.Approve(context.TODO(), snap)
 
 		})
@@ -131,7 +131,7 @@ var _ = Describe("Approver", func() {
 				// report = reject
 				reporter.ReportTrafficPolicyToMeshService(meshService, trafficPolicy, errors.New("did an oopsie"))
 			}}
-			validator := NewValidator(translator)
+			validator := NewApprover(translator)
 			validator.Approve(context.TODO(), snap)
 
 		})
