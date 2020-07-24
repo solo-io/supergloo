@@ -7,6 +7,7 @@ package v1alpha2sets
 import (
 	networking_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 
+	"github.com/rotisserie/eris"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -64,11 +65,16 @@ func NewTrafficPolicySetFromList(trafficPolicyList *networking_smh_solo_io_v1alp
 }
 
 func (s *trafficPolicySet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
 func (s *trafficPolicySet) List(filterResource ...func(*networking_smh_solo_io_v1alpha2.TrafficPolicy) bool) []*networking_smh_solo_io_v1alpha2.TrafficPolicy {
-
+	if s == nil {
+		return nil
+	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -84,6 +90,10 @@ func (s *trafficPolicySet) List(filterResource ...func(*networking_smh_solo_io_v
 }
 
 func (s *trafficPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha2.TrafficPolicy {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*networking_smh_solo_io_v1alpha2.TrafficPolicy{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*networking_smh_solo_io_v1alpha2.TrafficPolicy)
@@ -94,35 +104,57 @@ func (s *trafficPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha2.Tra
 func (s *trafficPolicySet) Insert(
 	trafficPolicyList ...*networking_smh_solo_io_v1alpha2.TrafficPolicy,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range trafficPolicyList {
 		s.set.Insert(obj)
 	}
 }
 
 func (s *trafficPolicySet) Has(trafficPolicy ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(trafficPolicy)
 }
 
 func (s *trafficPolicySet) Equal(
 	trafficPolicySet TrafficPolicySet,
 ) bool {
+	if s == nil {
+		return trafficPolicySet == nil
+	}
 	return s.set.Equal(makeGenericTrafficPolicySet(trafficPolicySet.List()))
 }
 
 func (s *trafficPolicySet) Delete(TrafficPolicy ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(TrafficPolicy)
 }
 
 func (s *trafficPolicySet) Union(set TrafficPolicySet) TrafficPolicySet {
+	if s == nil {
+		return set
+	}
 	return NewTrafficPolicySet(append(s.List(), set.List()...)...)
 }
 
 func (s *trafficPolicySet) Difference(set TrafficPolicySet) TrafficPolicySet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericTrafficPolicySet(set.List()))
 	return &trafficPolicySet{set: newSet}
 }
 
 func (s *trafficPolicySet) Intersection(set TrafficPolicySet) TrafficPolicySet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericTrafficPolicySet(set.List()))
 	var trafficPolicyList []*networking_smh_solo_io_v1alpha2.TrafficPolicy
 	for _, obj := range newSet.List() {
@@ -132,6 +164,9 @@ func (s *trafficPolicySet) Intersection(set TrafficPolicySet) TrafficPolicySet {
 }
 
 func (s *trafficPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha2.TrafficPolicy, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find TrafficPolicy %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha2.TrafficPolicy{}, id)
 	if err != nil {
 		return nil, err
@@ -141,6 +176,9 @@ func (s *trafficPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v
 }
 
 func (s *trafficPolicySet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }
 
@@ -196,11 +234,16 @@ func NewAccessPolicySetFromList(accessPolicyList *networking_smh_solo_io_v1alpha
 }
 
 func (s *accessPolicySet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
 func (s *accessPolicySet) List(filterResource ...func(*networking_smh_solo_io_v1alpha2.AccessPolicy) bool) []*networking_smh_solo_io_v1alpha2.AccessPolicy {
-
+	if s == nil {
+		return nil
+	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -216,6 +259,10 @@ func (s *accessPolicySet) List(filterResource ...func(*networking_smh_solo_io_v1
 }
 
 func (s *accessPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha2.AccessPolicy {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*networking_smh_solo_io_v1alpha2.AccessPolicy{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*networking_smh_solo_io_v1alpha2.AccessPolicy)
@@ -226,35 +273,57 @@ func (s *accessPolicySet) Map() map[string]*networking_smh_solo_io_v1alpha2.Acce
 func (s *accessPolicySet) Insert(
 	accessPolicyList ...*networking_smh_solo_io_v1alpha2.AccessPolicy,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range accessPolicyList {
 		s.set.Insert(obj)
 	}
 }
 
 func (s *accessPolicySet) Has(accessPolicy ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(accessPolicy)
 }
 
 func (s *accessPolicySet) Equal(
 	accessPolicySet AccessPolicySet,
 ) bool {
+	if s == nil {
+		return accessPolicySet == nil
+	}
 	return s.set.Equal(makeGenericAccessPolicySet(accessPolicySet.List()))
 }
 
 func (s *accessPolicySet) Delete(AccessPolicy ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(AccessPolicy)
 }
 
 func (s *accessPolicySet) Union(set AccessPolicySet) AccessPolicySet {
+	if s == nil {
+		return set
+	}
 	return NewAccessPolicySet(append(s.List(), set.List()...)...)
 }
 
 func (s *accessPolicySet) Difference(set AccessPolicySet) AccessPolicySet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericAccessPolicySet(set.List()))
 	return &accessPolicySet{set: newSet}
 }
 
 func (s *accessPolicySet) Intersection(set AccessPolicySet) AccessPolicySet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericAccessPolicySet(set.List()))
 	var accessPolicyList []*networking_smh_solo_io_v1alpha2.AccessPolicy
 	for _, obj := range newSet.List() {
@@ -264,6 +333,9 @@ func (s *accessPolicySet) Intersection(set AccessPolicySet) AccessPolicySet {
 }
 
 func (s *accessPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha2.AccessPolicy, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find AccessPolicy %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha2.AccessPolicy{}, id)
 	if err != nil {
 		return nil, err
@@ -273,6 +345,9 @@ func (s *accessPolicySet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1
 }
 
 func (s *accessPolicySet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }
 
@@ -328,11 +403,16 @@ func NewVirtualMeshSetFromList(virtualMeshList *networking_smh_solo_io_v1alpha2.
 }
 
 func (s *virtualMeshSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
 func (s *virtualMeshSet) List(filterResource ...func(*networking_smh_solo_io_v1alpha2.VirtualMesh) bool) []*networking_smh_solo_io_v1alpha2.VirtualMesh {
-
+	if s == nil {
+		return nil
+	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -348,6 +428,10 @@ func (s *virtualMeshSet) List(filterResource ...func(*networking_smh_solo_io_v1a
 }
 
 func (s *virtualMeshSet) Map() map[string]*networking_smh_solo_io_v1alpha2.VirtualMesh {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*networking_smh_solo_io_v1alpha2.VirtualMesh{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*networking_smh_solo_io_v1alpha2.VirtualMesh)
@@ -358,35 +442,57 @@ func (s *virtualMeshSet) Map() map[string]*networking_smh_solo_io_v1alpha2.Virtu
 func (s *virtualMeshSet) Insert(
 	virtualMeshList ...*networking_smh_solo_io_v1alpha2.VirtualMesh,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range virtualMeshList {
 		s.set.Insert(obj)
 	}
 }
 
 func (s *virtualMeshSet) Has(virtualMesh ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(virtualMesh)
 }
 
 func (s *virtualMeshSet) Equal(
 	virtualMeshSet VirtualMeshSet,
 ) bool {
+	if s == nil {
+		return virtualMeshSet == nil
+	}
 	return s.set.Equal(makeGenericVirtualMeshSet(virtualMeshSet.List()))
 }
 
 func (s *virtualMeshSet) Delete(VirtualMesh ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(VirtualMesh)
 }
 
 func (s *virtualMeshSet) Union(set VirtualMeshSet) VirtualMeshSet {
+	if s == nil {
+		return set
+	}
 	return NewVirtualMeshSet(append(s.List(), set.List()...)...)
 }
 
 func (s *virtualMeshSet) Difference(set VirtualMeshSet) VirtualMeshSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericVirtualMeshSet(set.List()))
 	return &virtualMeshSet{set: newSet}
 }
 
 func (s *virtualMeshSet) Intersection(set VirtualMeshSet) VirtualMeshSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericVirtualMeshSet(set.List()))
 	var virtualMeshList []*networking_smh_solo_io_v1alpha2.VirtualMesh
 	for _, obj := range newSet.List() {
@@ -396,6 +502,9 @@ func (s *virtualMeshSet) Intersection(set VirtualMeshSet) VirtualMeshSet {
 }
 
 func (s *virtualMeshSet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha2.VirtualMesh, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find VirtualMesh %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha2.VirtualMesh{}, id)
 	if err != nil {
 		return nil, err
@@ -405,6 +514,9 @@ func (s *virtualMeshSet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1a
 }
 
 func (s *virtualMeshSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }
 
@@ -460,11 +572,16 @@ func NewFailoverServiceSetFromList(failoverServiceList *networking_smh_solo_io_v
 }
 
 func (s *failoverServiceSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
 func (s *failoverServiceSet) List(filterResource ...func(*networking_smh_solo_io_v1alpha2.FailoverService) bool) []*networking_smh_solo_io_v1alpha2.FailoverService {
-
+	if s == nil {
+		return nil
+	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -480,6 +597,10 @@ func (s *failoverServiceSet) List(filterResource ...func(*networking_smh_solo_io
 }
 
 func (s *failoverServiceSet) Map() map[string]*networking_smh_solo_io_v1alpha2.FailoverService {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*networking_smh_solo_io_v1alpha2.FailoverService{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*networking_smh_solo_io_v1alpha2.FailoverService)
@@ -490,35 +611,57 @@ func (s *failoverServiceSet) Map() map[string]*networking_smh_solo_io_v1alpha2.F
 func (s *failoverServiceSet) Insert(
 	failoverServiceList ...*networking_smh_solo_io_v1alpha2.FailoverService,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range failoverServiceList {
 		s.set.Insert(obj)
 	}
 }
 
 func (s *failoverServiceSet) Has(failoverService ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(failoverService)
 }
 
 func (s *failoverServiceSet) Equal(
 	failoverServiceSet FailoverServiceSet,
 ) bool {
+	if s == nil {
+		return failoverServiceSet == nil
+	}
 	return s.set.Equal(makeGenericFailoverServiceSet(failoverServiceSet.List()))
 }
 
 func (s *failoverServiceSet) Delete(FailoverService ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(FailoverService)
 }
 
 func (s *failoverServiceSet) Union(set FailoverServiceSet) FailoverServiceSet {
+	if s == nil {
+		return set
+	}
 	return NewFailoverServiceSet(append(s.List(), set.List()...)...)
 }
 
 func (s *failoverServiceSet) Difference(set FailoverServiceSet) FailoverServiceSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericFailoverServiceSet(set.List()))
 	return &failoverServiceSet{set: newSet}
 }
 
 func (s *failoverServiceSet) Intersection(set FailoverServiceSet) FailoverServiceSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericFailoverServiceSet(set.List()))
 	var failoverServiceList []*networking_smh_solo_io_v1alpha2.FailoverService
 	for _, obj := range newSet.List() {
@@ -528,6 +671,9 @@ func (s *failoverServiceSet) Intersection(set FailoverServiceSet) FailoverServic
 }
 
 func (s *failoverServiceSet) Find(id ezkube.ResourceId) (*networking_smh_solo_io_v1alpha2.FailoverService, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find FailoverService %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&networking_smh_solo_io_v1alpha2.FailoverService{}, id)
 	if err != nil {
 		return nil, err
@@ -537,5 +683,8 @@ func (s *failoverServiceSet) Find(id ezkube.ResourceId) (*networking_smh_solo_io
 }
 
 func (s *failoverServiceSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }
