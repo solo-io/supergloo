@@ -1,4 +1,4 @@
-package operations
+package accesspolicy
 
 import (
 	"strconv"
@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	decoratorName = "operations"
+	decoratorName = "access-policy"
 )
 
 func init() {
@@ -20,48 +20,48 @@ func init() {
 }
 
 func decoratorConstructor(_ decorators.Parameters) decorators.Decorator {
-	return NewPathsDecorator()
+	return NewAccessPolicyDecorator()
 }
 
-// handles setting Cors on a VirtualService
-type operationsDecorator struct{}
+// handles setting access policy (allowed paths, methods, ports) on an AuthorizationPolicy
+type accessPolicyDecorator struct{}
 
-var _ accesspolicy.AuthorizationPolicyDecorator = &operationsDecorator{}
+var _ accesspolicy.AuthorizationPolicyDecorator = &accessPolicyDecorator{}
 
-func NewPathsDecorator() *operationsDecorator {
-	return &operationsDecorator{}
+func NewAccessPolicyDecorator() *accessPolicyDecorator {
+	return &accessPolicyDecorator{}
 }
 
-func (d *operationsDecorator) DecoratorName() string {
+func (d *accessPolicyDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (d *operationsDecorator) ApplyToAuthorizationPolicy(
+func (d *accessPolicyDecorator) ApplyToAuthorizationPolicy(
 	appliedPolicy *v1alpha2.MeshServiceStatus_AppliedAccessPolicy,
 	_ *v1alpha2.MeshService,
 	output *securityv1beta1spec.Operation,
 	registerField decorators.RegisterField,
 ) error {
 	var errs *multierror.Error
-	// allowed paths
 	allowedPaths := appliedPolicy.Spec.AllowedPaths
 	if err := registerField(&output.Paths, allowedPaths); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	output.Paths = allowedPaths
-	// allowed methods
 	allowedMethods := convertHttpMethodsToStrings(appliedPolicy.Spec.AllowedMethods)
 	if err := registerField(&output.Methods, allowedMethods); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	output.Methods = allowedMethods
-	// allowed ports
 	allowedPorts := convertIntsToStrings(appliedPolicy.Spec.AllowedPorts)
 	if err := registerField(&output.Ports, allowedPorts); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	output.Ports = allowedPorts
-	return errs.ErrorOrNil()
+	err := errs.ErrorOrNil()
+	if err == nil {
+		output.Paths = allowedPaths
+		output.Methods = allowedMethods
+		output.Ports = allowedPorts
+	}
+	return err
 }
 
 func convertHttpMethodsToStrings(allowedMethods []types.HttpMethodValue) []string {
