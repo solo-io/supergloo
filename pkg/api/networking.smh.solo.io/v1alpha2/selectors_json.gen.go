@@ -6,13 +6,12 @@ package v1alpha2
 import (
 	bytes "bytes"
 	fmt "fmt"
-	math "math"
-
 	_ "github.com/gogo/protobuf/gogoproto"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/gogo/protobuf/types"
 	_ "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -75,25 +74,25 @@ func (this *IdentitySelector) UnmarshalJSON(b []byte) error {
 	return SelectorsUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for IdentitySelector_Matcher
-func (this *IdentitySelector_Matcher) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for IdentitySelector_KubeIdentityMatcher
+func (this *IdentitySelector_KubeIdentityMatcher) MarshalJSON() ([]byte, error) {
 	str, err := SelectorsMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for IdentitySelector_Matcher
-func (this *IdentitySelector_Matcher) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for IdentitySelector_KubeIdentityMatcher
+func (this *IdentitySelector_KubeIdentityMatcher) UnmarshalJSON(b []byte) error {
 	return SelectorsUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for IdentitySelector_ServiceAccountRefs
-func (this *IdentitySelector_ServiceAccountRefs) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for IdentitySelector_KubeServiceAccountRefs
+func (this *IdentitySelector_KubeServiceAccountRefs) MarshalJSON() ([]byte, error) {
 	str, err := SelectorsMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for IdentitySelector_ServiceAccountRefs
-func (this *IdentitySelector_ServiceAccountRefs) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for IdentitySelector_KubeServiceAccountRefs
+func (this *IdentitySelector_KubeServiceAccountRefs) UnmarshalJSON(b []byte) error {
 	return SelectorsUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
