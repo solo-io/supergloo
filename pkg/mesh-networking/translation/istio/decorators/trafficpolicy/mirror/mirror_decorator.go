@@ -105,9 +105,9 @@ func (d *mirrorDecorator) makeKubeDestinationMirror(
 	port uint32,
 	originalService *discoveryv1alpha2.MeshService,
 ) (*networkingv1alpha3spec.Destination, error) {
-
 	destinationRef := destination.KubeService
-	if _, err := meshserviceutils.FindMeshServiceForKubeService(d.meshServices.List(), destinationRef); err != nil {
+	mirrorService, err := meshserviceutils.FindMeshServiceForKubeService(d.meshServices.List(), destinationRef)
+	if err != nil {
 		return nil, eris.Wrapf(err, "invalid mirror destination")
 	}
 
@@ -128,8 +128,8 @@ func (d *mirrorDecorator) makeKubeDestinationMirror(
 		}
 	} else {
 		// validate that mesh service only has one port
-		if numPorts := len(originalService.Spec.GetKubeService().GetPorts()); numPorts > 1 {
-			return nil, eris.Errorf("must provide port for mirror destination service %v with multiple ports (%v) defined", sets.Key(originalService.Spec.GetKubeService().GetRef()), numPorts)
+		if numPorts := len(mirrorService.Spec.GetKubeService().GetPorts()); numPorts > 1 {
+			return nil, eris.Errorf("must provide port for mirror destination service %v with multiple ports (%v) defined", sets.Key(mirrorService.Spec.GetKubeService().GetRef()), numPorts)
 		}
 	}
 

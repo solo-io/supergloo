@@ -9,6 +9,8 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
+//go:generate mockgen -source ./cluster_domain.go -destination mocks/cluster_domain_mocks.go
+
 // ClusterDomainRegistry retrieves known cluster domain suffixes for
 // registered clusters. Returns the default 'cluster.local' when
 // domain cannot be found
