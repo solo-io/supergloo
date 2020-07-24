@@ -15,10 +15,12 @@ import (
 var _ = Describe("HeaderManipulationDecorator", func() {
 	var (
 		headerManipulationDecorator trafficpolicy.VirtualServiceDecorator
+		output                      *v1alpha3.HTTPRoute
 	)
 
 	BeforeEach(func() {
 		headerManipulationDecorator = headermanipulation.NewHeaderManipulationDecorator()
+		output = &v1alpha3.HTTPRoute{}
 	})
 
 	It("should set headers", func() {
@@ -35,7 +37,6 @@ var _ = Describe("HeaderManipulationDecorator", func() {
 				},
 			},
 		}
-		output := &v1alpha3.HTTPRoute{}
 		expectedHeaderManipulation := &v1alpha3.Headers{
 			Request: &v1alpha3.Headers_HeaderOperations{
 				Add:    map[string]string{"a": "b"},
@@ -66,7 +67,6 @@ var _ = Describe("HeaderManipulationDecorator", func() {
 				HeaderManipulation: &v1alpha2.TrafficPolicySpec_HeaderManipulation{},
 			},
 		}
-		output := &v1alpha3.HTTPRoute{}
 		err := headerManipulationDecorator.ApplyToVirtualService(
 			appliedPolicy,
 			nil,

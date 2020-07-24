@@ -16,10 +16,14 @@ import (
 var _ = Describe("OutlierDetectionDecorator", func() {
 	var (
 		outlierDecorator trafficpolicy.DestinationRuleDecorator
+		output           *v1alpha3.DestinationRule
 	)
 
 	BeforeEach(func() {
 		outlierDecorator = outlierdetection.NewOutlierDetectionDecorator()
+		output = &v1alpha3.DestinationRule{
+			TrafficPolicy: &v1alpha3.TrafficPolicy{},
+		}
 	})
 
 	It("should set outlier detection", func() {
@@ -32,9 +36,6 @@ var _ = Describe("OutlierDetectionDecorator", func() {
 					ConsecutiveErrors: 2,
 				},
 			},
-		}
-		output := &v1alpha3.DestinationRule{
-			TrafficPolicy: &v1alpha3.TrafficPolicy{},
 		}
 		expectedOutlierDetection := &v1alpha3.OutlierDetection{
 			Consecutive_5XxErrors: &types.UInt32Value{Value: 2},
@@ -62,9 +63,6 @@ var _ = Describe("OutlierDetectionDecorator", func() {
 					ConsecutiveErrors: 2,
 				},
 			},
-		}
-		output := &v1alpha3.DestinationRule{
-			TrafficPolicy: &v1alpha3.TrafficPolicy{},
 		}
 		err := outlierDecorator.ApplyToDestinationRule(
 			appliedPolicy,

@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/trafficpolicyutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -57,17 +58,17 @@ func NewTrafficShiftDecorator(
 	}
 }
 
-func (t *trafficShiftDecorator) DecoratorName() string {
+func (d *trafficShiftDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (t *trafficShiftDecorator) ApplyToVirtualService(
+func (d *trafficShiftDecorator) ApplyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha2.MeshService,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	trafficShiftDestinations, err := t.translateTrafficShift(service, appliedPolicy.Spec)
+	trafficShiftDestinations, err := d.translateTrafficShift(service, appliedPolicy.Spec)
 	if err != nil {
 		return err
 	}
@@ -80,12 +81,12 @@ func (t *trafficShiftDecorator) ApplyToVirtualService(
 	return nil
 }
 
-func (t *trafficShiftDecorator) ApplyAllToDestinationRule(
+func (d *trafficShiftDecorator) ApplyAllToDestinationRule(
 	appliedPolicies []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	output *networkingv1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {
-	subsets := t.translateSubset(appliedPolicies)
+	subsets := d.translateSubset(appliedPolicies)
 	if subsets != nil {
 		if err := registerField(&output.Subsets, subsets); err != nil {
 			return err
@@ -95,7 +96,7 @@ func (t *trafficShiftDecorator) ApplyAllToDestinationRule(
 	return nil
 }
 
-func (t *trafficShiftDecorator) translateTrafficShift(
+func (d *trafficShiftDecorator) translateTrafficShift(
 	meshService *discoveryv1alpha2.MeshService,
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
 ) ([]*networkingv1alpha3spec.HTTPRouteDestination, error) {
@@ -113,7 +114,7 @@ func (t *trafficShiftDecorator) translateTrafficShift(
 		switch destinationType := destination.DestinationType.(type) {
 		case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
 			var err error
-			trafficShiftDestination, err = t.buildKubeTrafficShiftDestination(
+			trafficShiftDestination, err = d.buildKubeTrafficShiftDestination(
 				destinationType.KubeService,
 				meshService,
 				destination.Weight,
@@ -131,7 +132,7 @@ func (t *trafficShiftDecorator) translateTrafficShift(
 	return shiftedDestinations, nil
 }
 
-func (t *trafficShiftDecorator) buildKubeTrafficShiftDestination(
+func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	kubeDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination,
 	originalService *discoveryv1alpha2.MeshService,
 	weight uint32,
@@ -152,22 +153,27 @@ func (t *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	}
 
 	// validate destination service is a known meshservice
-	if _, err := meshserviceutils.FindMeshServiceForKubeService(t.meshServices.List(), svcRef); err != nil {
-		return nil, eris.Wrapf(err, "invalid mirror destination")
+	trafficShiftService, err := meshserviceutils.FindMeshServiceForKubeService(d.meshServices.List(), svcRef)
+	if err != nil {
+		return nil, eris.Wrapf(err, "invalid traffic shift destination %s", sets.Key(svcRef))
 	}
+	trafficShiftKubeService := trafficShiftService.Spec.GetKubeService()
 
 	sourceCluster := originalKubeService.Ref.ClusterName
-	destinationHost := t.clusterDomains.GetDestinationServiceFQDN(sourceCluster, svcRef)
+	destinationHost := d.clusterDomains.GetDestinationServiceFQDN(sourceCluster, svcRef)
 
 	var destinationPort *networkingv1alpha3spec.PortSelector
 	if port := kubeDest.GetPort(); port != 0 {
+		if !trafficpolicyutils.ContainsPort(trafficShiftKubeService.Ports, port) {
+			return nil, eris.Errorf("specified port %d does not exist for traffic shift destination service %v", port, sets.Key(trafficShiftKubeService.Ref))
+		}
 		destinationPort = &networkingv1alpha3spec.PortSelector{
 			Number: port,
 		}
 	} else {
 		// validate that mesh service only has one port
-		if numPorts := len(originalKubeService.Ports); numPorts > 1 {
-			return nil, eris.Errorf("must provide port for traffic shift destination service %v with multiple ports (%v) defined", sets.Key(originalKubeService.Ref), numPorts)
+		if numPorts := len(trafficShiftKubeService.Ports); numPorts > 1 {
+			return nil, eris.Errorf("must provide port for traffic shift destination service %v with multiple ports (%v) defined", sets.Key(trafficShiftKubeService.Ref), numPorts)
 		}
 	}
 

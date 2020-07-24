@@ -16,10 +16,12 @@ import (
 var _ = Describe("FaultInjectionDecorator", func() {
 	var (
 		faulInjectionDecorator trafficpolicy.VirtualServiceDecorator
+		output                 *v1alpha3.HTTPRoute
 	)
 
 	BeforeEach(func() {
 		faulInjectionDecorator = faultinjection.NewFaultInjectionDecorator()
+		output = &v1alpha3.HTTPRoute{}
 	})
 
 	It("should set fault injection of type abort", func() {
@@ -38,7 +40,6 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				},
 			},
 		}
-		output := &v1alpha3.HTTPRoute{}
 		expectedFaultInjection := &v1alpha3.HTTPFaultInjection{
 			Abort: &v1alpha3.HTTPFaultInjection_Abort{
 				ErrorType:  &v1alpha3.HTTPFaultInjection_Abort_HttpStatus{HttpStatus: 404},
@@ -73,7 +74,6 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				},
 			},
 		}
-		output := &v1alpha3.HTTPRoute{}
 		expectedFaultInjection := &v1alpha3.HTTPFaultInjection{
 			Delay: &v1alpha3.HTTPFaultInjection_Delay{
 				HttpDelayType: &v1alpha3.HTTPFaultInjection_Delay_FixedDelay{FixedDelay: &types.Duration{Seconds: 2}},
@@ -108,7 +108,6 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				},
 			},
 		}
-		output := &v1alpha3.HTTPRoute{}
 		expectedFaultInjection := &v1alpha3.HTTPFaultInjection{
 			Delay: &v1alpha3.HTTPFaultInjection_Delay{
 				HttpDelayType: &v1alpha3.HTTPFaultInjection_Delay_ExponentialDelay{ExponentialDelay: &types.Duration{Seconds: 2}},
@@ -143,7 +142,6 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				},
 			},
 		}
-		output := &v1alpha3.HTTPRoute{}
 		err := faulInjectionDecorator.ApplyToVirtualService(
 			appliedPolicy,
 			nil,
@@ -165,7 +163,6 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				},
 			},
 		}
-		output := &v1alpha3.HTTPRoute{}
 		err := faulInjectionDecorator.ApplyToVirtualService(
 			appliedPolicy,
 			nil,

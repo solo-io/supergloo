@@ -21,11 +21,13 @@ var _ = Describe("MirrorDecorator", func() {
 		ctrl                      *gomock.Controller
 		mockClusterDomainRegistry *mock_hostutils.MockClusterDomainRegistry
 		mirrorDecorator           trafficpolicy.VirtualServiceDecorator
+		output                    *v1alpha3.HTTPRoute
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockClusterDomainRegistry = mock_hostutils.NewMockClusterDomainRegistry(ctrl)
+		output = &v1alpha3.HTTPRoute{}
 	})
 
 	It("should decorate mirror", func() {
@@ -87,7 +89,6 @@ var _ = Describe("MirrorDecorator", func() {
 			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicy.Spec.Mirror.GetKubeService()).
 			Return(localHostname)
 
-		output := &v1alpha3.HTTPRoute{}
 		expectedMirror := &v1alpha3.Destination{
 			Host: localHostname,
 		}
@@ -148,7 +149,7 @@ var _ = Describe("MirrorDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicyMissingPort := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				Mirror: &v1alpha2.TrafficPolicySpec_Mirror{
 					DestinationType: &v1alpha2.TrafficPolicySpec_Mirror_KubeService{
@@ -163,21 +164,44 @@ var _ = Describe("MirrorDecorator", func() {
 				},
 			},
 		}
+		appliedPolicyNonexistentPort := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+			Spec: &v1alpha2.TrafficPolicySpec{
+				Mirror: &v1alpha2.TrafficPolicySpec_Mirror{
+					DestinationType: &v1alpha2.TrafficPolicySpec_Mirror_KubeService{
+						KubeService: &v1.ClusterObjectRef{
+							Name:        "mirror",
+							Namespace:   "namespace",
+							ClusterName: "local-cluster",
+						},
+					},
+					Percentage: 50,
+					Port:       1,
+				},
+			},
+		}
 
 		localHostname := "name.namespace.svc.cluster.local"
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicy.Spec.Mirror.GetKubeService()).
-			Return(localHostname)
+			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicyMissingPort.Spec.Mirror.GetKubeService()).
+			Return(localHostname).
+			Times(2)
 
-		output := &v1alpha3.HTTPRoute{}
 		err := mirrorDecorator.ApplyToVirtualService(
-			appliedPolicy,
+			appliedPolicyMissingPort,
 			originalService,
 			output,
 			registerField,
 		)
 		Expect(err.Error()).To(ContainSubstring("must provide port for mirror destination service"))
+
+		err = mirrorDecorator.ApplyToVirtualService(
+			appliedPolicyNonexistentPort,
+			originalService,
+			output,
+			registerField,
+		)
+		Expect(err.Error()).To(ContainSubstring("does not exist for mirror destination service"))
 	})
 
 	It("should not set mirror if error during field registration", func() {
@@ -240,7 +264,6 @@ var _ = Describe("MirrorDecorator", func() {
 			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicy.Spec.Mirror.GetKubeService()).
 			Return(localHostname)
 
-		output := &v1alpha3.HTTPRoute{}
 		err := mirrorDecorator.ApplyToVirtualService(
 			appliedPolicy,
 			originalService,

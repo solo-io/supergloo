@@ -16,10 +16,12 @@ import (
 var _ = Describe("CorsDecorator", func() {
 	var (
 		corsDecorator trafficpolicy.VirtualServiceDecorator
+		output        *v1alpha3.HTTPRoute
 	)
 
 	BeforeEach(func() {
 		corsDecorator = cors.NewCorsDecorator()
+		output = &v1alpha3.HTTPRoute{}
 	})
 
 	It("should set cors policy", func() {
@@ -42,7 +44,6 @@ var _ = Describe("CorsDecorator", func() {
 				},
 			},
 		}
-		output := &v1alpha3.HTTPRoute{}
 		expectedCorsPolicy := &v1alpha3.CorsPolicy{
 			AllowOrigins: []*v1alpha3.StringMatch{
 				{MatchType: &v1alpha3.StringMatch_Exact{Exact: "exact"}},
@@ -75,7 +76,6 @@ var _ = Describe("CorsDecorator", func() {
 				CorsPolicy: &v1alpha2.TrafficPolicySpec_CorsPolicy{},
 			},
 		}
-		output := &v1alpha3.HTTPRoute{}
 		err := corsDecorator.ApplyToVirtualService(
 			appliedPolicy,
 			nil,
