@@ -143,6 +143,12 @@ rules:
   - gateways
   verbs:
   - '*'
+- apiGroups:
+  - security.istio.io
+  resources:
+  - authorizationpolicies
+  verbs:
+  - '*'
 
 ---
 

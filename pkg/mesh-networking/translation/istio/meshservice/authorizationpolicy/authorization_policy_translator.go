@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/stringutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discovery_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
@@ -27,9 +27,8 @@ const (
 )
 
 var (
-	TrustDomainNotFound = func(resourceId ezkube.ClusterResourceId) error {
-		return eris.Errorf("Trust domain not found for Mesh %s.%s.%s",
-			resourceId.GetName(), resourceId.GetNamespace(), resourceId.GetClusterName())
+	trustDomainNotFound = func(clusterName string) error {
+		return eris.Errorf("Trust domain not found for cluster %s", clusterName)
 	}
 )
 
@@ -179,66 +178,90 @@ func (t *translator) buildSource(
 	sources *v1alpha2.IdentitySelector,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
 ) (*securityv1beta1spec.Rule_From, error) {
-	var principals []string
-	var namespaces []string
-	if sources.GetIdentitySelectorType() == nil {
+	if sources.GetKubeIdentityMatcher() == nil && sources.GetKubeServiceAccountRefs() == nil {
 		// allow any source identity
 		return &securityv1beta1spec.Rule_From{
-			Source: &securityv1beta1spec.Source{
-				Principals: []string{"*"},
-			},
+			Source: &securityv1beta1spec.Source{},
 		}, nil
 	}
-	switch selectorType := sources.GetIdentitySelectorType().(type) {
-	case *v1alpha2.IdentitySelector_Matcher_:
-		if len(sources.GetMatcher().Clusters) > 0 {
-			// select by clusters and specifiedNamespaces
-			trustDomains, err := t.getTrustDomainsForClusters(sources.GetMatcher().Clusters, meshes)
-			if err != nil {
-				return nil, err
-			}
-			specifiedNamespaces := sources.GetMatcher().Namespaces
-			// Permit any namespace if unspecified.
-			if len(specifiedNamespaces) == 0 {
-				specifiedNamespaces = []string{""}
-			}
-			for _, trustDomain := range trustDomains {
-				for _, namespace := range specifiedNamespaces {
-					// Use empty string for service account to permit any.
-					uri, err := buildSpiffeURI(trustDomain, namespace, "")
-					if err != nil {
-						return nil, err
-					}
-					principals = append(principals, uri)
-				}
-			}
-		} else {
-			// select by namespaces, permit any cluster
-			namespaces = sources.GetMatcher().Namespaces
-		}
-	case *v1alpha2.IdentitySelector_ServiceAccountRefs_:
-		// select by direct reference to ServiceAccounts
-		for _, serviceAccountRef := range sources.GetServiceAccountRefs().GetServiceAccounts() {
-			trustDomains, err := t.getTrustDomainsForClusters([]string{serviceAccountRef.ClusterName}, meshes)
-			if err != nil {
-				return nil, err
-			}
-			// If no error thrown, trustDomains is guaranteed to be of length 1.
-			uri, err := buildSpiffeURI(trustDomains[0], serviceAccountRef.Namespace, serviceAccountRef.Name)
-			if err != nil {
-				return nil, err
-			}
-			principals = append(principals, uri)
-		}
-	default:
-		return nil, eris.Errorf("IdentitySelector has unexpected type %T", selectorType)
+	// Select by identity matcher.
+	wildcardPrincipals, namespaces, err := t.parseIdentityMatcher(sources.KubeIdentityMatcher, meshes)
+	if err != nil {
+		return nil, err
 	}
+	// Select by direct reference to ServiceAccounts
+	serviceAccountPrincipals, err := t.parseServiceAccountRefs(sources.KubeServiceAccountRefs, meshes)
+	if err != nil {
+		return nil, err
+	}
+
 	return &securityv1beta1spec.Rule_From{
 		Source: &securityv1beta1spec.Source{
-			Principals: principals,
+			Principals: append(wildcardPrincipals, serviceAccountPrincipals...),
 			Namespaces: namespaces,
 		},
 	}, nil
+}
+
+// Parse a list of principals and namespaces from a KubeIdentityMatcher.
+func (t *translator) parseIdentityMatcher(
+	kubeIdentityMatcher *v1alpha2.IdentitySelector_KubeIdentityMatcher,
+	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
+) ([]string, []string, error) {
+	var principals []string
+	var namespaces []string
+	if kubeIdentityMatcher == nil {
+		return nil, nil, nil
+	}
+	if len(kubeIdentityMatcher.Clusters) > 0 {
+		// select by clusters and specifiedNamespaces
+		trustDomains, err := t.getTrustDomainsForClusters(kubeIdentityMatcher.Clusters, meshes)
+		if err != nil {
+			return nil, nil, err
+		}
+		specifiedNamespaces := kubeIdentityMatcher.Namespaces
+		// Permit any namespace if unspecified.
+		if len(specifiedNamespaces) == 0 {
+			specifiedNamespaces = []string{""}
+		}
+		for _, trustDomain := range trustDomains {
+			for _, namespace := range specifiedNamespaces {
+				// Use empty string for service account to permit any.
+				uri, err := buildSpiffeURI(trustDomain, namespace, "")
+				if err != nil {
+					return nil, nil, err
+				}
+				principals = append(principals, uri)
+			}
+		}
+	} else if len(kubeIdentityMatcher.Namespaces) > 0 {
+		// select by namespaces, permit any cluster
+		namespaces = kubeIdentityMatcher.Namespaces
+	}
+	return principals, namespaces, nil
+}
+
+func (t *translator) parseServiceAccountRefs(
+	kubeServiceAccountRefs *v1alpha2.IdentitySelector_KubeServiceAccountRefs,
+	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
+) ([]string, error) {
+	if kubeServiceAccountRefs == nil {
+		return nil, nil
+	}
+	var principals []string
+	for _, serviceAccountRef := range kubeServiceAccountRefs.ServiceAccounts {
+		trustDomains, err := t.getTrustDomainsForClusters([]string{serviceAccountRef.ClusterName}, meshes)
+		if err != nil {
+			return nil, err
+		}
+		// If no error thrown, trustDomains is guaranteed to be of length 1.
+		uri, err := buildSpiffeURI(trustDomains[0], serviceAccountRef.Namespace, serviceAccountRef.Name)
+		if err != nil {
+			return nil, err
+		}
+		principals = append(principals, uri)
+	}
+	return principals, nil
 }
 
 /*
@@ -249,17 +272,35 @@ func (t *translator) getTrustDomainsForClusters(
 	clusterNames []string,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
 ) ([]string, error) {
+	var errs *multierror.Error
 	var trustDomains []string
-	// Only consider Istio Meshes that exist on one of the given clusters.
-	for _, mesh := range meshes.List(func(mesh *discoveryv1alpha2.Mesh) bool {
-		return mesh.Spec.GetIstio() == nil || !stringutils.ContainsString(mesh.Spec.GetIstio().Installation.Cluster, clusterNames)
-	}) {
-		if mesh.Spec.GetIstio().GetCitadelInfo().GetTrustDomain() == "" {
-			return nil, TrustDomainNotFound(mesh)
+	for _, clusterName := range clusterNames {
+		trustDomain, err := getTrustDomainForCluster(clusterName, meshes)
+		if err != nil {
+			errs = multierror.Append(errs, err)
+			continue
 		}
-		trustDomains = append(trustDomains, mesh.Spec.GetIstio().CitadelInfo.TrustDomain)
+		trustDomains = append(trustDomains, trustDomain)
 	}
-	return trustDomains, nil
+	return trustDomains, errs.ErrorOrNil()
+}
+
+// Fetch trust domains by cluster so we can attribute missing trust domains to the problematic clusterName and report back to user.
+func getTrustDomainForCluster(
+	clusterName string,
+	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
+) (string, error) {
+	var trustDomain string
+	for _, mesh := range meshes.List(func(mesh *discoveryv1alpha2.Mesh) bool {
+		istio := mesh.Spec.GetIstio()
+		return istio == nil || istio.GetInstallation().GetCluster() != clusterName
+	}) {
+		trustDomain = mesh.Spec.GetIstio().GetCitadelInfo().GetTrustDomain()
+	}
+	if trustDomain == "" {
+		return "", trustDomainNotFound(clusterName)
+	}
+	return trustDomain, nil
 }
 
 /*

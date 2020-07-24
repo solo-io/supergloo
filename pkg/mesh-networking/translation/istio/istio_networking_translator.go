@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output/istio"
@@ -45,6 +46,7 @@ func (t *istioTranslator) Translate(
 
 	destinationRules := v1alpha3sets.NewDestinationRuleSet()
 	virtualServices := v1alpha3sets.NewVirtualServiceSet()
+	authorizationPolicies := v1beta1sets.NewAuthorizationPolicySet()
 
 	for _, meshService := range in.MeshServices().List() {
 		meshService := meshService // pike
@@ -61,6 +63,12 @@ func (t *istioTranslator) Translate(
 		if virtualService != nil {
 			contextutils.LoggerFrom(ctx).Debugf("translated virtual service %v", sets.Key(virtualService))
 			virtualServices.Insert(virtualService)
+		}
+
+		authorizationPolicy := serviceOutputs.AuthorizationPolicy
+		if authorizationPolicy != nil {
+			contextutils.LoggerFrom(ctx).Debugf("translated virtual service %v", sets.Key(authorizationPolicy))
+			authorizationPolicies.Insert(authorizationPolicy)
 		}
 	}
 
@@ -88,5 +96,6 @@ func (t *istioTranslator) Translate(
 		gateways,
 		serviceEntries,
 		virtualServices,
+		authorizationPolicies,
 	)
 }
