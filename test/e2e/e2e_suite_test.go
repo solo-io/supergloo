@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/solo-io/go-utils/testutils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -18,14 +21,7 @@ import (
 // to test only this package, run `make run-tests TEST_PKG=test/e2e
 func TestE2e(t *testing.T) {
 	RegisterFailHandler(func(message string, callerSkip ...int) {
-		runShell("kubectl logs -n=service-mesh-hub -l app=service-mesh-hub")
-		runShell("kubectl logs -n=service-mesh-hub -l app=service-mesh-hub --previous")
-		runShell("kubectl get virtualservices.networking.istio.io -A -oyaml")
-		runShell("kubectl get apiproducts -A -oyaml")
-		runShell("kubectl get pod -A")
-		runShell("kubectl logs -n istio-system $(kubectl get pod -n istio-system | grep istiod | awk '{print $1}')")
-		runShell("kubectl logs -n istio-system $(kubectl get pod -n istio-system | grep istio-ingressgateway | awk '{print $1}')")
-		runShell("istioctl proxy-config route $(kubectl get pod -n istio-system | grep istio-ingressgateway | awk '{print $1}').istio-system -ojson")
+		runShell("./ci/print-kind-info.sh")
 		Fail(message, callerSkip...)
 	})
 	RunSpecs(t, "E2e Suite")
@@ -47,8 +43,19 @@ func runShell(c string) {
 var _ = BeforeSuite(func() {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
+
+	ensureWorkingDirectory()
 	/* env := */ StartEnvOnce(ctx)
 })
+
+func ensureWorkingDirectory() {
+	// ensure we are in proper directory
+	currentFile, err := testutils.GetCurrentFile()
+	Expect(err).NotTo(HaveOccurred())
+	projectRoot := filepath.Join(filepath.Dir(currentFile), "..", "..")
+	err = os.Chdir(projectRoot)
+	Expect(err).NotTo(HaveOccurred())
+}
 
 var _ = AfterSuite(func() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)

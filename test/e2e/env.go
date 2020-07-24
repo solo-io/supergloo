@@ -2,7 +2,6 @@ package e2e
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -10,18 +9,24 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/client-go/rest"
+
+	"github.com/solo-io/service-mesh-hub/test/kubectl"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	smh_core "github.com/solo-io/service-mesh-hub/pkg/api/core.smh.solo.io/v1alpha1"
-	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha1"
-	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/test/e2e/kubectl"
-	"golang.org/x/sync/errgroup"
+	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+)
+
+const (
+	masterContext = "kind-master-cluster"
+	remoteContext = "kind-remote-cluster"
 )
 
 type Env struct {
@@ -36,17 +41,16 @@ func (e Env) DumpState() {
 func newEnv(mgmt, remote string) Env {
 	return Env{
 		Management: NewKubeContext(mgmt),
-		//Remote:     NewKubeContext(remote),
+		Remote:     NewKubeContext(remote),
 	}
 }
 
 type KubeContext struct {
 	Context             string
-	Config              clientcmd.ClientConfig
+	Config              *rest.Config
 	Clientset           *kubernetes.Clientset
 	TrafficPolicyClient smh_networking.TrafficPolicyClient
 	MeshClient          smh_discovery.MeshClient
-	SettingsClient      smh_core.SettingsClient
 	SecretClient        kubernetes_core.SecretClient
 	VirtualMeshClient   smh_networking.VirtualMeshClient
 }
@@ -54,6 +58,8 @@ type KubeContext struct {
 // If kubecontext is empty string, use current context.
 func NewKubeContext(kubecontext string) KubeContext {
 	cfg, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
+	Expect(err).NotTo(HaveOccurred())
+
 	config := clientcmd.NewNonInteractiveClientConfig(*cfg, kubecontext, &clientcmd.ConfigOverrides{}, nil)
 	restcfg, err := config.ClientConfig()
 	Expect(err).NotTo(HaveOccurred())
@@ -70,17 +76,13 @@ func NewKubeContext(kubecontext string) KubeContext {
 	discoveryClientset, err := smh_discovery.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	coreClientset, err := smh_core.NewClientsetFromConfig(restcfg)
-	Expect(err).NotTo(HaveOccurred())
-
 	return KubeContext{
 		Context:             kubecontext,
-		Config:              config,
+		Config:              restcfg,
 		Clientset:           clientset,
 		TrafficPolicyClient: networkingClientset.TrafficPolicies(),
 		VirtualMeshClient:   networkingClientset.VirtualMeshes(),
 		MeshClient:          discoveryClientset.Meshes(),
-		SettingsClient:      coreClientset.Settings(),
 		SecretClient:        kubeCoreClientset.Secrets(),
 	}
 }
@@ -161,57 +163,32 @@ func ClearEnv(ctx context.Context) error {
 	cmd := exec.CommandContext(ctx, "./ci/setup-kind.sh", "cleanup", strconv.Itoa(GinkgoParallelNode()))
 	cmd.Stdout = GinkgoWriter
 	cmd.Stderr = GinkgoWriter
-	cmd.Dir = "../.."
 	return cmd.Run()
 }
 
 func StartEnv(ctx context.Context) Env {
 
 	if useExisting := os.Getenv("USE_EXISTING"); useExisting != "" {
-		mgmt := "kind-management-plane-1"
-		target := "kind-target-cluster-1"
+		mgmt := "kind-master-cluster"
+		remote := "kind-remote-cluster"
 		if fields := strings.Split(useExisting, ","); len(fields) == 2 {
 			mgmt = fields[0]
-			target = fields[1]
+			remote = fields[1]
 		}
-		return newEnv(mgmt, target)
+		return newEnv(mgmt, remote)
 	}
 
-	eg, ctx := errgroup.WithContext(ctx)
-
-	r, w, err := os.Pipe()
-	Expect(err).NotTo(HaveOccurred())
-	defer r.Close()
-
 	cmd := exec.CommandContext(ctx, "./ci/setup-kind.sh", strconv.Itoa(GinkgoParallelNode()))
-	cmd.Dir = "../.."
 	cmd.Stdout = GinkgoWriter
 	cmd.Stderr = GinkgoWriter
-	cmd.ExtraFiles = append(cmd.ExtraFiles, w)
-	err = cmd.Start()
-	// close this end after start, as we dont need it.
-	w.Close()
-	Expect(err).NotTo(HaveOccurred())
 
-	eg.Go(cmd.Wait)
-
-	var data []byte
-	eg.Go(func() error {
-		var err error
-		data, err = ioutil.ReadAll(r)
-		return err
-	})
-
-	err = eg.Wait()
+	err := cmd.Run()
 	if err != nil {
 		dumpState()
 	}
-
 	Expect(err).NotTo(HaveOccurred())
 
-	// read our contexts:
-	fields := strings.Fields(string(data))
-	return newEnv(fields[0], fields[1])
+	return newEnv(masterContext, remoteContext)
 }
 
 func dumpState() {
@@ -221,5 +198,5 @@ func dumpState() {
 	dbgCmd.Dir = "../.."
 	dbgCmd.Stdout = GinkgoWriter
 	dbgCmd.Stderr = GinkgoWriter
-	dbgCmd.Run()
+	_ = dbgCmd.Run()
 }

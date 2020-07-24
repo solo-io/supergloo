@@ -12,10 +12,10 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
@@ -155,10 +155,7 @@ type testIstioTranslator struct {
 	callReporter func(reporter reporting.Reporter)
 }
 
-func (t testIstioTranslator) Translate(
-	in input.Snapshot,
-	reporter reporting.Reporter,
-) (istio.Snapshot, error) {
+func (t testIstioTranslator) Translate(ctx context.Context, in input.Snapshot, reporter reporting.Reporter) (istio.Snapshot, error) {
 	t.callReporter(reporter)
 	return nil, nil
 }

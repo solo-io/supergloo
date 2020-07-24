@@ -1,9 +1,9 @@
 package virtualservice
 
 import (
-	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/skv2/pkg/ezkube"
 
 	"reflect"
 

@@ -10,8 +10,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reconciliation"
+	"github.com/solo-io/skv2/pkg/multicluster"
 )
 
 // the mesh-networking controller is the Kubernetes Controller/Operator

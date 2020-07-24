@@ -30,9 +30,8 @@ spec:
       containers:
       - image: {{ $discoveryImage.registry }}/{{ $discoveryImage.repository }}:{{ $discoveryImage.tag }}
         args:
-        - operator
         - discovery
-        - --metrics-port={{ $.Values.networking }}
+        - --metrics-port={{ $.Values.networking.ports.metrics }}
         - --verbose
 {{- if $discovery.env }}
         env:
@@ -124,9 +123,8 @@ spec:
       containers:
       - image: {{ $networkingImage.registry }}/{{ $networkingImage.repository }}:{{ $networkingImage.tag }}
         args:
-        - operator
         - networking
-        - --metrics-port={{ $.Values.networking }}
+        - --metrics-port={{ $.Values.networking.ports.metrics }}
         - --verbose
 {{- if $networking.env }}
         env:

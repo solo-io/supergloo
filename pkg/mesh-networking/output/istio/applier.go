@@ -18,7 +18,7 @@ type applier struct {
 }
 
 func (a applier) HandleWriteError(resource ezkube.Object, err error) {
-	resource.GetAnnotations()[""]
+
 }
 
 func (a applier) HandleDeleteError(resource ezkube.Object, err error) {

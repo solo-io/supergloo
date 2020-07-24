@@ -1,0 +1,65 @@
+name: pull_request
+
+on:
+  push:
+    branches:
+      - 'master'
+      - 'merge-repos' #TODO(ilackarms): remove when refactor merges to master
+  pull_request: {}
+
+jobs:
+  unit-tests:
+    name: unit-tests
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          git fetch --prune --unshallow
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Unit Tests
+        run: |
+          go test `go list ./... | grep -v test/e2e`
+
+  e2e-istio-1_5:
+    name: end-to-end-istio-1_5
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          git fetch --prune --unshallow
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+      - uses: engineerd/setup-kind@v0.4.0
+        with:
+          skipClusterCreation: "true"
+          version: v0.8.0
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1.1.0
+        with:
+          version: '3.6.1'
+      - uses: azure/setup-kubectl@v1
+        with:
+          version: 'v1.18.0'
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: E2e Tests
+        run: |
+          make print-version install-go-tools manifest-gen
+          curl -sSL https://github.com/istio/istio/releases/download/1.5.2/istio-1.5.2-linux.tar.gz | tar -xzf - istio-1.5.2/bin/istioctl
+          export PATH=$PWD/istio-1.5.2/bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
+          make run-tests TEST_PKG=test/e2e

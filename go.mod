@@ -42,11 +42,12 @@ require (
 	github.com/cosiner/argv v0.1.0 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.4
-	github.com/go-delve/delve v1.4.1 // indirect
+	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/zapr v0.1.1
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1
 	github.com/golang/protobuf v1.3.5
+	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
@@ -56,31 +57,28 @@ require (
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
-	github.com/peterh/liner v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/rotisserie/eris v0.4.0
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/protoc-gen-ext v0.0.9
-	github.com/solo-io/skv2 v0.7.3-0.20200720193056-82d0f8632ef9
+	github.com/solo-io/skv2 v0.7.3-0.20200723170505-4fbaf1fabcd9
 	github.com/solo-io/solo-kit v0.13.8
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
-	go.starlark.net v0.0.0-20200619143648-50ca820fafb9 // indirect
 	go.uber.org/multierr v1.5.0 // indirect
 	go.uber.org/zap v1.13.0
-	golang.org/x/arch v0.0.0-20200511175325-f7c78586839d // indirect
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
-	gopkg.in/yaml.v2 v2.3.0 // indirect
+	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975 // indirect
 	istio.io/api v0.0.0-20200610220835-a1a958746907
 	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
 	k8s.io/api v0.18.2
 	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/kubernetes v1.18.4
+	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6 // indirect
 	sigs.k8s.io/controller-runtime v0.5.6
+	sigs.k8s.io/yaml v1.2.0
 )

@@ -21,6 +21,7 @@ package input
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/skv2/pkg/controllerutils"
@@ -61,6 +62,8 @@ type Snapshot interface {
 	// update the status of all input objects which support
 	// the Status subresource
 	SyncStatuses(ctx context.Context, c client.Client) error
+	// serialize the entire snapshot as JSON
+	MarshalJSON() ([]byte, error)
 }
 
 type snapshot struct {
@@ -183,6 +186,20 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 		}
 	}
 	return nil
+}
+
+func (s snapshot) MarshalJSON() ([]byte, error) {
+	snapshotMap := map[string]interface{}{"name": s.name}
+
+	snapshotMap["meshServices"] = s.meshServices.List()
+	snapshotMap["meshWorkloads"] = s.meshWorkloads.List()
+	snapshotMap["meshes"] = s.meshes.List()
+	snapshotMap["trafficPolicies"] = s.trafficPolicies.List()
+	snapshotMap["accessPolicies"] = s.accessPolicies.List()
+	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
+	snapshotMap["failoverServices"] = s.failoverServices.List()
+	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
+	return json.Marshal(snapshotMap)
 }
 
 // builds the input snapshot from API Clients.
