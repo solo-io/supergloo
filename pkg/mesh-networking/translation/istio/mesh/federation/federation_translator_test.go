@@ -126,6 +126,7 @@ var _ = Describe("FederationTranslator", func() {
 			v1alpha2sets.NewTrafficPolicySet(),
 			v1alpha2sets.NewAccessPolicySet(),
 			v1alpha2sets.NewVirtualMeshSet(),
+			v1alpha2sets.NewFailoverServiceSet(),
 
 			skv1alpha1sets.NewKubernetesClusterSet(kubeCluster),
 		)

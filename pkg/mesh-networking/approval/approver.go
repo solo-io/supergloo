@@ -9,7 +9,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/resourceidutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -442,7 +441,7 @@ func getAppliedFailoverServices(
 	for _, failoverService := range failoverServices {
 		failoverService := failoverService // pike
 		for _, meshRef := range failoverService.Spec.Meshes {
-			if !resourceidutils.RefsEqual(meshRef, mesh) {
+			if !ezkube.RefsMatch(meshRef, mesh) {
 				continue
 			}
 			appliedFailoverServices = append(appliedFailoverServices, &discoveryv1alpha2.MeshStatus_AppliedFailoverService{

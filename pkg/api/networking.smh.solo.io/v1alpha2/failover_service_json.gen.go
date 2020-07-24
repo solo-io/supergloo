@@ -40,14 +40,14 @@ func (this *FailoverServiceSpec_Port) UnmarshalJSON(b []byte) error {
 	return FailoverServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for FailoverServiceSpec_ComponentService
-func (this *FailoverServiceSpec_ComponentService) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for FailoverServiceSpec_BackingService
+func (this *FailoverServiceSpec_BackingService) MarshalJSON() ([]byte, error) {
 	str, err := FailoverServiceMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for FailoverServiceSpec_ComponentService
-func (this *FailoverServiceSpec_ComponentService) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for FailoverServiceSpec_BackingService
+func (this *FailoverServiceSpec_BackingService) UnmarshalJSON(b []byte) error {
 	return FailoverServiceUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
