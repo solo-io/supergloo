@@ -275,7 +275,7 @@ func (t *translator) getTrustDomainsForClusters(
 	var errs *multierror.Error
 	var trustDomains []string
 	for _, clusterName := range clusterNames {
-		trustDomain, err := t.getTrustDomainForCluster(clusterName, meshes)
+		trustDomain, err := getTrustDomainForCluster(clusterName, meshes)
 		if err != nil {
 			errs = multierror.Append(errs, err)
 			continue
@@ -286,13 +286,14 @@ func (t *translator) getTrustDomainsForClusters(
 }
 
 // Fetch trust domains by cluster so we can attribute missing trust domains to the problematic clusterName and report back to user.
-func (t *translator) getTrustDomainForCluster(
+func getTrustDomainForCluster(
 	clusterName string,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
 ) (string, error) {
 	var trustDomain string
 	for _, mesh := range meshes.List(func(mesh *discoveryv1alpha2.Mesh) bool {
-		return mesh.Spec.GetIstio() == nil || mesh.Spec.GetIstio().GetInstallation().GetCluster() != clusterName
+		istio := mesh.Spec.GetIstio()
+		return istio == nil || istio.GetInstallation().GetCluster() != clusterName
 	}) {
 		trustDomain = mesh.Spec.GetIstio().GetCitadelInfo().GetTrustDomain()
 	}

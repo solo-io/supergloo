@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	networkingv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/resourceidutils"
 	skv2core "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"istio.io/istio/pkg/config/protocol"
 	"k8s.io/apimachinery/pkg/util/validation"
 )
@@ -98,17 +97,17 @@ func (f *failoverServiceValidator) Validate(inputs Inputs, failoverService *netw
 	if err := f.validateHostname(failoverService); err != nil {
 		errs = append(errs, err)
 	}
-	if err := f.validatePort(failoverService); err != nil {
-		errs = append(errs, err)
+	if portErrs := f.validatePort(failoverService); portErrs != nil {
+		errs = append(errs, portErrs...)
 	}
-	if err := f.validateServices(failoverService, inputs.MeshServices.List(), inputs.Meshes); err != nil {
-		errs = append(errs, err)
+	if serviceErrs := f.validateServices(failoverService, inputs.MeshServices.List(), inputs.Meshes); serviceErrs != nil {
+		errs = append(errs, serviceErrs...)
 	}
-	if err := f.validateFederation(failoverService, inputs.MeshServices.List(), inputs.Meshes, inputs.VirtualMeshes); err != nil {
-		errs = append(errs, err)
+	if federationErrs := f.validateFederation(failoverService, inputs.MeshServices.List(), inputs.Meshes, inputs.VirtualMeshes); federationErrs != nil {
+		errs = append(errs, federationErrs...)
 	}
-	if err := f.validateMeshes(failoverService, inputs.Meshes); err != nil {
-		errs = append(errs, err)
+	if meshErrs := f.validateMeshes(failoverService, inputs.Meshes); meshErrs != nil {
+		errs = append(errs, meshErrs...)
 	}
 	return errs
 }
@@ -116,57 +115,57 @@ func (f *failoverServiceValidator) Validate(inputs Inputs, failoverService *netw
 func (f *failoverServiceValidator) validateMeshes(
 	failoverService *networkingv1alpha2.FailoverServiceSpec,
 	meshes discoveryv1alpha2sets.MeshSet,
-) error {
-	var multierr *multierror.Error
+) []error {
+	var errs []error
 	for _, meshRef := range failoverService.Meshes {
 		mesh, err := meshes.Find(meshRef)
 		if err != nil {
-			multierr = multierror.Append(multierr, err)
+			errs = append(errs, err)
 		}
 		if err := f.validateMesh(mesh); err != nil {
-			multierr = multierror.Append(multierr, err)
+			errs = append(errs, err)
 		}
 	}
-	return multierr.ErrorOrNil()
+	return errs
 }
 
 func (f *failoverServiceValidator) validateServices(
 	failoverService *networkingv1alpha2.FailoverServiceSpec,
 	allMeshServices []*discoveryv1alpha2.MeshService,
 	meshes discoveryv1alpha2sets.MeshSet,
-) error {
-	var multierr *multierror.Error
-	componentServices := failoverService.GetComponentServices()
+) []error {
+	var errs []error
+	componentServices := failoverService.GetBackingServices()
 	if len(componentServices) == 0 {
-		return MissingServices
+		return []error{MissingServices}
 	}
 	for _, typedServiceRef := range componentServices {
 		if typedServiceRef.GetKubeService() == nil {
-			multierr = multierror.Append(multierr, UnsupportedServiceType(typedServiceRef.GetComposingServiceType()))
+			errs = append(errs, UnsupportedServiceType(typedServiceRef.GetBackingServiceType()))
 			continue
 		}
 		serviceRef := typedServiceRef.GetKubeService()
 		meshService, err := f.findMeshService(serviceRef, allMeshServices)
 		if err != nil {
 			// Corresponding MeshService not found.
-			multierr = multierror.Append(multierr, FailoverServiceNotFound(serviceRef))
+			errs = append(errs, FailoverServiceNotFound(serviceRef))
 			continue
 		}
 		if err := f.validateServiceOutlierDetection(meshService); err != nil {
-			multierr = multierror.Append(multierr, err)
+			errs = append(errs, err)
 		}
 		meshRef := meshService.Spec.GetMesh()
 		// Approve that mesh exists
 		parentMesh, err := meshes.Find(meshService.Spec.GetMesh())
 		if err != nil {
-			multierr = multierror.Append(multierr, MeshNotFound(meshRef, meshService.Spec.GetKubeService().GetRef()))
+			errs = append(errs, MeshNotFound(meshRef, meshService.Spec.GetKubeService().GetRef()))
 			continue
 		}
 		if err := f.validateMesh(parentMesh); err != nil {
-			multierr = multierror.Append(multierr, err)
+			errs = append(errs, err)
 		}
 	}
-	return multierr.ErrorOrNil()
+	return errs
 }
 
 func (f *failoverServiceValidator) findMeshService(
@@ -174,7 +173,7 @@ func (f *failoverServiceValidator) findMeshService(
 	allMeshServices []*discoveryv1alpha2.MeshService,
 ) (*discoveryv1alpha2.MeshService, error) {
 	for _, meshService := range allMeshServices {
-		if resourceidutils.ClusterRefsEqual(serviceRef, meshService.Spec.GetKubeService().GetRef()) {
+		if ezkube.ClusterRefsMatch(serviceRef, meshService.Spec.GetKubeService().GetRef()) {
 			return meshService, nil
 		}
 	}
@@ -208,26 +207,26 @@ func (f *failoverServiceValidator) validateFederation(
 	allMeshServices []*discoveryv1alpha2.MeshService,
 	allMeshes discoveryv1alpha2sets.MeshSet,
 	allVirtualMeshes networkingv1alpha2sets.VirtualMeshSet,
-) error {
+) []error {
 	// Surface these errors only if the FailoverService references multiple meshes.
 	var missingParentVMErrors []error
-	var multierr *multierror.Error
+	var errs []error
 	referencedMeshes := discoveryv1alpha2sets.NewMeshSet()
 	referencedVMs := networkingv1alpha2sets.NewVirtualMeshSet()
 	if failoverService.GetMeshes() == nil {
-		return MissingMeshes
+		return []error{MissingMeshes}
 	}
 	// Process declared meshes
 	for _, meshRef := range failoverService.GetMeshes() {
 		mesh, err := allMeshes.Find(meshRef)
 		if err != nil {
-			multierr = multierror.Append(multierr, err)
+			errs = append(errs, err)
 			continue
 		}
 		referencedMeshes.Insert(mesh)
 	}
 	// Process declared services
-	for _, typedServiceRef := range failoverService.GetComponentServices() {
+	for _, typedServiceRef := range failoverService.GetBackingServices() {
 		if typedServiceRef.GetKubeService() == nil {
 			// Error already reported when validating component services.
 			continue
@@ -235,12 +234,12 @@ func (f *failoverServiceValidator) validateFederation(
 		serviceRef := typedServiceRef.GetKubeService()
 		meshService, err := f.findMeshService(serviceRef, allMeshServices)
 		if err != nil {
-			multierr = multierror.Append(multierr, err)
+			errs = append(errs, err)
 			continue
 		}
 		mesh, err := allMeshes.Find(meshService.Spec.Mesh)
 		if err != nil {
-			multierr = multierror.Append(multierr, err)
+			errs = append(errs, err)
 			continue
 		}
 		referencedMeshes.Insert(mesh)
@@ -253,7 +252,7 @@ func (f *failoverServiceValidator) validateFederation(
 		for _, appliedVM := range mesh.Status.AppliedVirtualMeshes {
 			vm, err := allVirtualMeshes.Find(appliedVM.Ref)
 			if err != nil {
-				multierr = multierror.Append(multierr, err)
+				errs = append(errs, err)
 				continue
 			}
 			referencedVMs.Insert(vm)
@@ -263,13 +262,13 @@ func (f *failoverServiceValidator) validateFederation(
 	if len(referencedMeshes.List()) > 1 {
 		// Surface meshes without parent meshes as errors
 		for _, err := range missingParentVMErrors {
-			multierr = multierror.Append(multierr, err)
+			errs = append(errs, err)
 		}
 		if len(referencedVMs.List()) > 1 {
-			multierr = multierror.Append(multierr, MultipleParentVirtualMeshes(referencedVMs.List()))
+			errs = append(errs, MultipleParentVirtualMeshes(referencedVMs.List()))
 		}
 	}
-	return multierr.ErrorOrNil()
+	return errs
 }
 
 func (f *failoverServiceValidator) validateHostname(failoverService *networkingv1alpha2.FailoverServiceSpec) error {
@@ -284,19 +283,19 @@ func (f *failoverServiceValidator) validateHostname(failoverService *networkingv
 	return nil
 }
 
-func (f *failoverServiceValidator) validatePort(failoverService *networkingv1alpha2.FailoverServiceSpec) error {
+func (f *failoverServiceValidator) validatePort(failoverService *networkingv1alpha2.FailoverServiceSpec) []error {
+	var errs []error
 	port := failoverService.GetPort()
 	if port == nil {
-		return MissingPort
+		return []error{MissingPort}
 	}
-	var multierr *multierror.Error
-	if errStrings := validation.IsValidPortNum(int(port.GetPort())); errStrings != nil {
-		multierr = multierror.Append(multierr, eris.New(strings.Join(errStrings, ", ")))
+	if errStrings := validation.IsValidPortNum(int(port.GetNumber())); errStrings != nil {
+		errs = append(errs, eris.New(strings.Join(errStrings, ", ")))
 	}
 	if protocol.Parse(port.GetProtocol()) == protocol.Unsupported {
-		multierr = multierror.Append(multierr, eris.Errorf("Invalid protocol for port: %s", port.GetProtocol()))
+		errs = append(errs, eris.Errorf("Invalid protocol for port: %s", port.GetProtocol()))
 	}
-	return multierr.ErrorOrNil()
+	return errs
 }
 
 func (f *failoverServiceValidator) findVirtualMeshForMesh(
@@ -307,7 +306,7 @@ func (f *failoverServiceValidator) findVirtualMeshForMesh(
 	for _, vm := range virtualMeshes {
 		for _, meshRef := range vm.Spec.GetMeshes() {
 			// A Mesh can be grouped into at most one VirtualMesh.
-			if resourceidutils.RefsEqual(mesh, meshRef) {
+			if ezkube.RefsMatch(mesh, meshRef) {
 				return vm
 			}
 		}

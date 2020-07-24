@@ -1,9 +1,12 @@
 package failoverservice_test
 
 import (
+	"strings"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/go-utils/testutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
@@ -149,7 +152,7 @@ var _ = Describe("Validation", func() {
 			}, &networkingv1alpha2.FailoverServiceSpec{
 				Hostname: "service1.namespace1.cluster1",
 				Port: &networkingv1alpha2.FailoverServiceSpec_Port{
-					Port:     9080,
+					Number:     9080,
 					Protocol: "http",
 				},
 				Meshes: []*corev1.ObjectRef{
@@ -158,11 +161,15 @@ var _ = Describe("Validation", func() {
 						Namespace: "namespace1",
 					},
 				},
-				FailoverServices: []*corev1.ClusterObjectRef{
+				BackingServices: []*networkingv1alpha2.FailoverServiceSpec_BackingService{
 					{
-						Name:        "service1",
-						Namespace:   "namespace1",
-						ClusterName: "cluster2",
+						BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
+							KubeService: &corev1.ClusterObjectRef{
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster2",
+							},
+						},
 					},
 				},
 			}
@@ -244,7 +251,7 @@ var _ = Describe("Validation", func() {
 			}, &networkingv1alpha2.FailoverServiceSpec{
 				Hostname: "service1.namespace1.cluster1",
 				Port: &networkingv1alpha2.FailoverServiceSpec_Port{
-					Port:     9080,
+					Number:     9080,
 					Protocol: "http",
 				},
 				Meshes: []*corev1.ObjectRef{
@@ -253,11 +260,15 @@ var _ = Describe("Validation", func() {
 						Namespace: "namespace1",
 					},
 				},
-				FailoverServices: []*corev1.ClusterObjectRef{
+				BackingServices: []*networkingv1alpha2.FailoverServiceSpec_BackingService{
 					{
-						Name:        "service1",
-						Namespace:   "namespace1",
-						ClusterName: "cluster2",
+						BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
+							KubeService: &corev1.ClusterObjectRef{
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster2",
+							},
+						},
 					},
 				},
 			}
@@ -473,26 +484,42 @@ var _ = Describe("Validation", func() {
 						Namespace: "namespace1",
 					},
 				},
-				FailoverServices: []*corev1.ClusterObjectRef{
+				BackingServices: []*networkingv1alpha2.FailoverServiceSpec_BackingService{
 					{
-						Name:        "service1",
-						Namespace:   "namespace1",
-						ClusterName: "cluster1",
+						BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
+							KubeService: &corev1.ClusterObjectRef{
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster1",
+							},
+						},
 					},
 					{
-						Name:        "service1",
-						Namespace:   "namespace1",
-						ClusterName: "cluster2",
+						BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
+							KubeService: &corev1.ClusterObjectRef{
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster2",
+							},
+						},
 					},
 					{
-						Name:        "service1",
-						Namespace:   "namespace1",
-						ClusterName: "cluster3",
+						BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
+							KubeService: &corev1.ClusterObjectRef{
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster3",
+							},
+						},
 					},
 					{
-						Name:        "service1",
-						Namespace:   "namespace1",
-						ClusterName: "cluster4",
+						BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
+							KubeService: &corev1.ClusterObjectRef{
+								Name:        "service1",
+								Namespace:   "namespace1",
+								ClusterName: "cluster4",
+							},
+						},
 					},
 				},
 			}
@@ -500,29 +527,38 @@ var _ = Describe("Validation", func() {
 
 	It("should return no errors for valid FailoverService", func() {
 		inputSnapshot, failoverServiceSpec := validInputs()
-		err := validator.Validate(inputSnapshot, failoverServiceSpec)
-		Expect(err).ToNot(HaveOccurred())
+		errs := validator.Validate(inputSnapshot, failoverServiceSpec)
+		Expect(errs).To(BeEmpty())
 	})
 
 	It("should return no errors for FailoverService composed of services belonging to a single common mesh, with no VirtualMesh", func() {
 		inputSnapshot, failoverServiceSpec := validInputSnapshotSingleMesh()
-		err := validator.Validate(inputSnapshot, failoverServiceSpec)
-		Expect(err).ToNot(HaveOccurred())
+		errs := validator.Validate(inputSnapshot, failoverServiceSpec)
+		Expect(errs).To(BeEmpty())
 	})
+
+	var containsErrorString = func(errs []error, errString string) bool {
+		for _, err := range errs {
+			if strings.Contains(err.Error(), errString) {
+				return true
+			}
+		}
+		return false
+	}
 
 	It("should return errors for invalid FailoverService", func() {
 		inputSnapshot, failoverServiceSpec := invalidInputSnapshot()
-		err := validator.Validate(inputSnapshot, failoverServiceSpec)
+		errs := validator.Validate(inputSnapshot, failoverServiceSpec)
 		// Missing port
-		Expect(err.Error()).To(ContainSubstring(failoverservice.MissingPort.Error()))
+		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.MissingPort)))
 		// Invalid DNS hostname
-		Expect(err.Error()).To(ContainSubstring("a DNS-1123 subdomain must consist of lower case alphanumeric characters"))
+		Expect(containsErrorString(errs, "a DNS-1123 subdomain must consist of lower case alphanumeric characters")).To(BeTrue())
 		// Service without OutlierDetection
-		Expect(err.Error()).To(ContainSubstring(failoverservice.MissingOutlierDetection(inputSnapshot.MeshServices.List()[3]).Error()))
+		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.MissingOutlierDetection(inputSnapshot.MeshServices.List()[3]))))
 		// Mesh without parent VirtualMesh
-		Expect(err.Error()).To(ContainSubstring(
-			failoverservice.MeshWithoutParentVM(inputSnapshot.Meshes.List()[2]).Error()))
+		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(
+			failoverservice.MeshWithoutParentVM(inputSnapshot.Meshes.List()[2]))))
 		// Multiple parent VirtualMeshes
-		Expect(err.Error()).To(ContainSubstring(failoverservice.MultipleParentVirtualMeshes(inputSnapshot.VirtualMeshes.List()).Error()))
+		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.MultipleParentVirtualMeshes(inputSnapshot.VirtualMeshes.List()))))
 	})
 })
