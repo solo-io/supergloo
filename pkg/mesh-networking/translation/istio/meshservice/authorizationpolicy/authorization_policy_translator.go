@@ -2,7 +2,7 @@ package authorizationpolicy
 
 import (
 	"fmt"
-	"reflect"
+	"strconv"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
@@ -10,13 +10,9 @@ import (
 	discovery_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/types"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/accesspolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/equalityutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
-	"github.com/solo-io/skv2/pkg/ezkube"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
 	typesv1beta1 "istio.io/api/type/v1beta1"
 	securityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -47,12 +43,10 @@ type Translator interface {
 	) *securityv1beta1.AuthorizationPolicy
 }
 
-type translator struct {
-	decoratorFactory decorators.Factory
-}
+type translator struct{}
 
-func NewTranslator(decoratorFactory decorators.Factory) *translator {
-	return &translator{decoratorFactory: decoratorFactory}
+func NewTranslator() Translator {
+	return &translator{}
 }
 
 func (t *translator) Translate(
@@ -68,36 +62,14 @@ func (t *translator) Translate(
 	}
 
 	authPolicy := t.initializeAuthorizationPolicy(meshService)
-	// register the owners of the AuthorizationPolicy fields
-	authPolicyFields := fieldutils.NewOwnershipRegistry()
-	apDecorators := t.decoratorFactory.MakeDecorators(decorators.Parameters{
-		Snapshot: in,
-	})
 
-	// Apply decorators which map each AccessPolicy to a AuthorizationPolicy Rule.
 	for _, policy := range meshService.Status.AppliedAccessPolicies {
-		baseRule, err := t.initializeBaseRule(policy.Spec, in.Meshes())
+		rule, err := t.translateAccessPolicy(policy.Spec, in.Meshes())
 		if err != nil {
-			// If error encountered while translating source selector, do not translate.
 			reporter.ReportAccessPolicyToMeshService(meshService, policy.Ref, eris.Wrapf(err, "%v", translatorName))
 			continue
 		}
-
-		registerField := registerFieldFunc(authPolicyFields, authPolicy, []ezkube.ResourceId{policy.Ref})
-		for _, decorator := range apDecorators {
-			if authPolicyDecorator, ok := decorator.(accesspolicy.AuthorizationPolicyDecorator); ok {
-				if err := authPolicyDecorator.ApplyToAuthorizationPolicy(
-					policy,
-					meshService,
-					baseRule.To[0].Operation,
-					registerField,
-				); err != nil {
-					reporter.ReportAccessPolicyToMeshService(meshService, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
-				}
-			}
-		}
-
-		authPolicy.Spec.Rules = append(authPolicy.Spec.Rules, baseRule)
+		authPolicy.Spec.Rules = append(authPolicy.Spec.Rules, rule)
 	}
 
 	if len(authPolicy.Spec.Rules) == 0 {
@@ -107,32 +79,9 @@ func (t *translator) Translate(
 	return authPolicy
 }
 
-// construct the callback for registering fields in the virtual service
-func registerFieldFunc(
-	authPolicyFields fieldutils.FieldOwnershipRegistry,
-	authPolicy *securityv1beta1.AuthorizationPolicy,
-	policyRefs []ezkube.ResourceId,
-) decorators.RegisterField {
-	return func(fieldPtr, val interface{}) error {
-		fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
-
-		if equalityutils.Equals(fieldVal, val) {
-			return nil
-		}
-		if err := authPolicyFields.RegisterFieldOwnership(
-			authPolicy,
-			fieldPtr,
-			policyRefs,
-			&v1alpha2.AccessPolicy{},
-			0, //TODO(harveyxia): priority
-		); err != nil {
-			return err
-		}
-		return nil
-	}
-}
-
-func (t *translator) initializeAuthorizationPolicy(meshService *discoveryv1alpha2.MeshService) *securityv1beta1.AuthorizationPolicy {
+func (t *translator) initializeAuthorizationPolicy(
+	meshService *discoveryv1alpha2.MeshService,
+) *securityv1beta1.AuthorizationPolicy {
 	meta := metautils.TranslatedObjectMeta(
 		meshService.Spec.GetKubeService().Ref,
 		meshService.Annotations,
@@ -149,8 +98,11 @@ func (t *translator) initializeAuthorizationPolicy(meshService *discoveryv1alpha
 	return authPolicy
 }
 
-// Initialize AccessPolicy Rule consisting of a Rule_From for each SourceSelector and a single Rule_To containing the rules specified in the AccessPolicy.
-func (t *translator) initializeBaseRule(
+/*
+	Translate an AccessPolicy instance into a Rule consisting of a Rule_From for each SourceSelector
+	and a single Rule_To containing the rules specified in the AccessPolicy.
+*/
+func (t *translator) translateAccessPolicy(
 	accessPolicy *v1alpha2.AccessPolicySpec,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
 ) (*securityv1beta1spec.Rule, error) {
@@ -162,11 +114,17 @@ func (t *translator) initializeBaseRule(
 		}
 		fromRules = append(fromRules, fromRule)
 	}
+	allowedMethods := convertHttpMethodsToStrings(accessPolicy.AllowedMethods)
+	allowedPorts := convertIntsToStrings(accessPolicy.AllowedPorts)
 	return &securityv1beta1spec.Rule{
 		From: fromRules,
 		To: []*securityv1beta1spec.Rule_To{
 			{
-				Operation: &securityv1beta1spec.Operation{}, // To be populated by AuthorizationPolicyDecorators
+				Operation: &securityv1beta1spec.Operation{
+					Paths:   accessPolicy.AllowedPaths,
+					Methods: allowedMethods,
+					Ports:   allowedPorts,
+				},
 			},
 		},
 	}, nil
@@ -185,12 +143,12 @@ func (t *translator) buildSource(
 		}, nil
 	}
 	// Select by identity matcher.
-	wildcardPrincipals, namespaces, err := t.parseIdentityMatcher(sources.KubeIdentityMatcher, meshes)
+	wildcardPrincipals, namespaces, err := parseIdentityMatcher(sources.KubeIdentityMatcher, meshes)
 	if err != nil {
 		return nil, err
 	}
 	// Select by direct reference to ServiceAccounts
-	serviceAccountPrincipals, err := t.parseServiceAccountRefs(sources.KubeServiceAccountRefs, meshes)
+	serviceAccountPrincipals, err := parseServiceAccountRefs(sources.KubeServiceAccountRefs, meshes)
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +162,7 @@ func (t *translator) buildSource(
 }
 
 // Parse a list of principals and namespaces from a KubeIdentityMatcher.
-func (t *translator) parseIdentityMatcher(
+func parseIdentityMatcher(
 	kubeIdentityMatcher *v1alpha2.IdentitySelector_KubeIdentityMatcher,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
 ) ([]string, []string, error) {
@@ -215,7 +173,7 @@ func (t *translator) parseIdentityMatcher(
 	}
 	if len(kubeIdentityMatcher.Clusters) > 0 {
 		// select by clusters and specifiedNamespaces
-		trustDomains, err := t.getTrustDomainsForClusters(kubeIdentityMatcher.Clusters, meshes)
+		trustDomains, err := getTrustDomainsForClusters(kubeIdentityMatcher.Clusters, meshes)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -241,7 +199,7 @@ func (t *translator) parseIdentityMatcher(
 	return principals, namespaces, nil
 }
 
-func (t *translator) parseServiceAccountRefs(
+func parseServiceAccountRefs(
 	kubeServiceAccountRefs *v1alpha2.IdentitySelector_KubeServiceAccountRefs,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
 ) ([]string, error) {
@@ -250,7 +208,7 @@ func (t *translator) parseServiceAccountRefs(
 	}
 	var principals []string
 	for _, serviceAccountRef := range kubeServiceAccountRefs.ServiceAccounts {
-		trustDomains, err := t.getTrustDomainsForClusters([]string{serviceAccountRef.ClusterName}, meshes)
+		trustDomains, err := getTrustDomainsForClusters([]string{serviceAccountRef.ClusterName}, meshes)
 		if err != nil {
 			return nil, err
 		}
@@ -268,7 +226,7 @@ func (t *translator) parseServiceAccountRefs(
 	Fetch trust domains for the Istio mesh of the given cluster.
 	Multiple mesh installations of the same type on the same cluster are unsupported, simply use the first Mesh encountered.
 */
-func (t *translator) getTrustDomainsForClusters(
+func getTrustDomainsForClusters(
 	clusterNames []string,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
 ) ([]string, error) {
@@ -319,4 +277,27 @@ func buildSpiffeURI(trustDomain, namespace, serviceAccount string) (string, erro
 	} else {
 		return fmt.Sprintf("%s/ns/%s/sa/%s", trustDomain, namespace, serviceAccount), nil
 	}
+}
+
+func convertHttpMethodsToStrings(allowedMethods []types.HttpMethodValue) []string {
+	var methods []string
+	// Istio considers AuthorizationPolicies without at least one defined To.Operation invalid,
+	// The workaround is to populate a dummy "*" for METHOD if not user specified. This guarantees existence of at least
+	// one To.Operation.
+	if len(allowedMethods) < 1 {
+		methods = []string{"*"}
+		return methods
+	}
+	for _, methodEnum := range allowedMethods {
+		methods = append(methods, methodEnum.String())
+	}
+	return methods
+}
+
+func convertIntsToStrings(ints []uint32) []string {
+	var strings []string
+	for _, i := range ints {
+		strings = append(strings, strconv.Itoa(int(i)))
+	}
+	return strings
 }

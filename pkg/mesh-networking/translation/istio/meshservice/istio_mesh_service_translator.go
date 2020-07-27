@@ -43,7 +43,7 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFact
 	return &translator{
 		destinationRules:      destinationrule.NewTranslator(clusterDomains, decoratorFactory),
 		virtualServices:       virtualservice.NewTranslator(clusterDomains, decoratorFactory),
-		authorizationPolicies: authorizationpolicy.NewTranslator(decoratorFactory),
+		authorizationPolicies: authorizationpolicy.NewTranslator(),
 	}
 }
 

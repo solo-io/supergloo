@@ -9,6 +9,8 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
+//go:generate mockgen -source ./reporter.go -destination mocks/reporter.go
+
 // the reporter reports status errors on user configuration objects
 type Reporter interface {
 	// report an error on a traffic policy that has been applied to a MeshService
