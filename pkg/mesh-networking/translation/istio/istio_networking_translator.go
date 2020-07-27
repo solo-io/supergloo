@@ -3,12 +3,13 @@ package istio
 import (
 	"context"
 	"fmt"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output/istio"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -39,7 +40,7 @@ func (t *istioTranslator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
 	reporter reporting.Reporter,
-) (istio.Snapshot, error) {
+) (output.Snapshot, error) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translator-%v", t.totalTranslates))
 
 	meshServiceTranslator := t.dependencies.makeMeshServiceTranslator(in.KubernetesClusters())

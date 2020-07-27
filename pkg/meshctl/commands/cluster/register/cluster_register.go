@@ -14,7 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var smhRbacRequirements = append(io.DiscoveryInputTypes.RbacPoliciesWatch(), io.NetworkingOutputIstioTypes.RbacPoliciesWrite()...)
+var smhRbacRequirements = append(io.DiscoveryInputTypes.RbacPoliciesWatch(), io.NetworkingOutputTypes.RbacPoliciesWrite()...)
 
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
@@ -43,6 +43,7 @@ func (register *options) addToFlags(set *pflag.FlagSet) {
 }
 
 func registerCluster(ctx context.Context, opts *options) error {
+	logrus.Debugf("registering cluster with opts %+v", opts)
 
 	opts.ClusterRoles = []*rbacv1.ClusterRole{
 		{
