@@ -172,13 +172,6 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 								},
 							},
 						},
-						To: []*securityv1beta1spec.Rule_To{
-							{
-								Operation: &securityv1beta1spec.Operation{
-									Methods: []string{"*"},
-								},
-							},
-						},
 					},
 				},
 				Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
