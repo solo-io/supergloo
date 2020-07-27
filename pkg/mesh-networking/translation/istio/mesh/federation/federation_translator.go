@@ -294,14 +294,14 @@ func buildTcpRewritePatch(clusterName, clusterDomain string) (*types.Struct, err
 	if clusterDomain == "" {
 		clusterDomain = defaults.DefaultClusterDomain
 	}
-	tcpRewrite, err := protoutils.MessageToGolangStruct(&v2alpha1.TcpClusterRewrite{
+	tcpRewrite, err := protoutils.GogoMessageToGolangStruct(&v2alpha1.TcpClusterRewrite{
 		ClusterPattern:     fmt.Sprintf("\\.%s$", clusterName),
 		ClusterReplacement: ".svc." + clusterDomain,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return protoutils.MessageToGogoStruct(&envoy_api_v2_listener.Filter{
+	return protoutils.GogoMessageToGogoStruct(&envoy_api_v2_listener.Filter{
 		Name: envoyTcpClusterRewriteFilterName,
 		ConfigType: &envoy_api_v2_listener.Filter_Config{
 			Config: tcpRewrite,

@@ -1,7 +1,6 @@
 package failoverservice
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 
@@ -9,10 +8,6 @@ import (
 	envoy_api_v2 "github.com/envoyproxy/go-control-plane/envoy/api/v2"
 	envoy_config_cluster_aggregate_v2alpha "github.com/envoyproxy/go-control-plane/envoy/config/cluster/aggregate/v2alpha"
 	"github.com/envoyproxy/go-control-plane/pkg/conversion"
-	gogo_jsonpb "github.com/gogo/protobuf/jsonpb"
-	gogo_proto_types "github.com/gogo/protobuf/types"
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/hashicorp/go-multierror"
@@ -27,6 +22,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/protoutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/validation/failoverservice"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -331,7 +327,7 @@ func (t *translator) buildEnvoyFailoverPatch(
 		},
 	}
 	// This is needed because Envoy API's use Golang protobufs whereas Istio API's use Gogo protobufs.
-	envoyClusterStruct, err := golangMessageToGogoStruct(envoyCluster)
+	envoyClusterStruct, err := protoutils.GolangMessageToGogoStruct(envoyCluster)
 	if err != nil {
 		return nil, err
 	}
@@ -370,21 +366,4 @@ func (t *translator) buildEnvoyAggregateClusterConfig(
 
 func buildIstioEnvoyClusterName(port uint32, hostname string) string {
 	return fmt.Sprintf("outbound|%d||%s", port, hostname)
-}
-
-func golangMessageToGogoStruct(msg proto.Message) (*gogo_proto_types.Struct, error) {
-	if msg == nil {
-		return nil, eris.New("nil message")
-	}
-	// Marshal to bytes using golang protobuf
-	buf := &bytes.Buffer{}
-	if err := (&jsonpb.Marshaler{OrigName: true}).Marshal(buf, msg); err != nil {
-		return nil, err
-	}
-	// Unmarshal to gogo protobuf Struct using gogo unmarshaller
-	pbs := &gogo_proto_types.Struct{}
-	if err := gogo_jsonpb.Unmarshal(buf, pbs); err != nil {
-		return nil, err
-	}
-	return pbs, nil
 }
