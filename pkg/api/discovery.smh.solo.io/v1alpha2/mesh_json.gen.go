@@ -130,6 +130,17 @@ func (this *MeshStatus_AppliedVirtualMesh) UnmarshalJSON(b []byte) error {
 	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for MeshStatus_AppliedFailoverService
+func (this *MeshStatus_AppliedFailoverService) MarshalJSON() ([]byte, error) {
+	str, err := MeshMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for MeshStatus_AppliedFailoverService
+func (this *MeshStatus_AppliedFailoverService) UnmarshalJSON(b []byte) error {
+	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 var (
 	MeshMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
 	MeshUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}

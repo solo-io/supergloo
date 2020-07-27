@@ -178,3 +178,60 @@ func (in *VirtualMeshList) DeepCopyObject() runtime.Object {
 	}
 	return nil
 }
+
+// Generated Deepcopy methods for FailoverService
+
+func (in *FailoverService) DeepCopyInto(out *FailoverService) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	in.Spec.DeepCopyInto(&out.Spec)
+	in.Status.DeepCopyInto(&out.Status)
+	return
+}
+
+func (in *FailoverService) DeepCopy() *FailoverService {
+	if in == nil {
+		return nil
+	}
+	out := new(FailoverService)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *FailoverService) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}
+
+func (in *FailoverServiceList) DeepCopyInto(out *FailoverServiceList) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]FailoverService, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	return
+}
+
+func (in *FailoverServiceList) DeepCopy() *FailoverServiceList {
+	if in == nil {
+		return nil
+	}
+	out := new(FailoverServiceList)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *FailoverServiceList) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}

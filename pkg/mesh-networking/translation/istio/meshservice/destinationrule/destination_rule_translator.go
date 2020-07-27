@@ -78,7 +78,7 @@ func (t *translator) Translate(
 				registerField,
 			); err != nil {
 				for _, policyResourceId := range trafficPolicyResourceIds {
-					reporter.ReportTrafficPolicy(meshService, policyResourceId, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+					reporter.ReportTrafficPolicyToMeshService(meshService, policyResourceId, eris.Wrapf(err, "%v", decorator.DecoratorName()))
 				}
 			}
 		}
@@ -96,7 +96,7 @@ func (t *translator) Translate(
 					&destinationRule.Spec,
 					registerField,
 				); err != nil {
-					reporter.ReportTrafficPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+					reporter.ReportTrafficPolicyToMeshService(meshService, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
 				}
 			}
 		}

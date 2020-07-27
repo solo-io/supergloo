@@ -7,6 +7,7 @@ package v1alpha2sets
 import (
 	discovery_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 
+	"github.com/rotisserie/eris"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -64,11 +65,16 @@ func NewMeshServiceSetFromList(meshServiceList *discovery_smh_solo_io_v1alpha2.M
 }
 
 func (s *meshServiceSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
 func (s *meshServiceSet) List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.MeshService) bool) []*discovery_smh_solo_io_v1alpha2.MeshService {
-
+	if s == nil {
+		return nil
+	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -84,6 +90,10 @@ func (s *meshServiceSet) List(filterResource ...func(*discovery_smh_solo_io_v1al
 }
 
 func (s *meshServiceSet) Map() map[string]*discovery_smh_solo_io_v1alpha2.MeshService {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*discovery_smh_solo_io_v1alpha2.MeshService{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*discovery_smh_solo_io_v1alpha2.MeshService)
@@ -94,35 +104,57 @@ func (s *meshServiceSet) Map() map[string]*discovery_smh_solo_io_v1alpha2.MeshSe
 func (s *meshServiceSet) Insert(
 	meshServiceList ...*discovery_smh_solo_io_v1alpha2.MeshService,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range meshServiceList {
 		s.set.Insert(obj)
 	}
 }
 
 func (s *meshServiceSet) Has(meshService ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(meshService)
 }
 
 func (s *meshServiceSet) Equal(
 	meshServiceSet MeshServiceSet,
 ) bool {
+	if s == nil {
+		return meshServiceSet == nil
+	}
 	return s.set.Equal(makeGenericMeshServiceSet(meshServiceSet.List()))
 }
 
 func (s *meshServiceSet) Delete(MeshService ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(MeshService)
 }
 
 func (s *meshServiceSet) Union(set MeshServiceSet) MeshServiceSet {
+	if s == nil {
+		return set
+	}
 	return NewMeshServiceSet(append(s.List(), set.List()...)...)
 }
 
 func (s *meshServiceSet) Difference(set MeshServiceSet) MeshServiceSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericMeshServiceSet(set.List()))
 	return &meshServiceSet{set: newSet}
 }
 
 func (s *meshServiceSet) Intersection(set MeshServiceSet) MeshServiceSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericMeshServiceSet(set.List()))
 	var meshServiceList []*discovery_smh_solo_io_v1alpha2.MeshService
 	for _, obj := range newSet.List() {
@@ -132,6 +164,9 @@ func (s *meshServiceSet) Intersection(set MeshServiceSet) MeshServiceSet {
 }
 
 func (s *meshServiceSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.MeshService, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find MeshService %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha2.MeshService{}, id)
 	if err != nil {
 		return nil, err
@@ -141,6 +176,9 @@ func (s *meshServiceSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1al
 }
 
 func (s *meshServiceSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }
 
@@ -196,11 +234,16 @@ func NewMeshWorkloadSetFromList(meshWorkloadList *discovery_smh_solo_io_v1alpha2
 }
 
 func (s *meshWorkloadSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
 func (s *meshWorkloadSet) List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.MeshWorkload) bool) []*discovery_smh_solo_io_v1alpha2.MeshWorkload {
-
+	if s == nil {
+		return nil
+	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -216,6 +259,10 @@ func (s *meshWorkloadSet) List(filterResource ...func(*discovery_smh_solo_io_v1a
 }
 
 func (s *meshWorkloadSet) Map() map[string]*discovery_smh_solo_io_v1alpha2.MeshWorkload {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*discovery_smh_solo_io_v1alpha2.MeshWorkload{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*discovery_smh_solo_io_v1alpha2.MeshWorkload)
@@ -226,35 +273,57 @@ func (s *meshWorkloadSet) Map() map[string]*discovery_smh_solo_io_v1alpha2.MeshW
 func (s *meshWorkloadSet) Insert(
 	meshWorkloadList ...*discovery_smh_solo_io_v1alpha2.MeshWorkload,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range meshWorkloadList {
 		s.set.Insert(obj)
 	}
 }
 
 func (s *meshWorkloadSet) Has(meshWorkload ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(meshWorkload)
 }
 
 func (s *meshWorkloadSet) Equal(
 	meshWorkloadSet MeshWorkloadSet,
 ) bool {
+	if s == nil {
+		return meshWorkloadSet == nil
+	}
 	return s.set.Equal(makeGenericMeshWorkloadSet(meshWorkloadSet.List()))
 }
 
 func (s *meshWorkloadSet) Delete(MeshWorkload ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(MeshWorkload)
 }
 
 func (s *meshWorkloadSet) Union(set MeshWorkloadSet) MeshWorkloadSet {
+	if s == nil {
+		return set
+	}
 	return NewMeshWorkloadSet(append(s.List(), set.List()...)...)
 }
 
 func (s *meshWorkloadSet) Difference(set MeshWorkloadSet) MeshWorkloadSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericMeshWorkloadSet(set.List()))
 	return &meshWorkloadSet{set: newSet}
 }
 
 func (s *meshWorkloadSet) Intersection(set MeshWorkloadSet) MeshWorkloadSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericMeshWorkloadSet(set.List()))
 	var meshWorkloadList []*discovery_smh_solo_io_v1alpha2.MeshWorkload
 	for _, obj := range newSet.List() {
@@ -264,6 +333,9 @@ func (s *meshWorkloadSet) Intersection(set MeshWorkloadSet) MeshWorkloadSet {
 }
 
 func (s *meshWorkloadSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.MeshWorkload, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find MeshWorkload %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha2.MeshWorkload{}, id)
 	if err != nil {
 		return nil, err
@@ -273,6 +345,9 @@ func (s *meshWorkloadSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1a
 }
 
 func (s *meshWorkloadSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }
 
@@ -328,11 +403,16 @@ func NewMeshSetFromList(meshList *discovery_smh_solo_io_v1alpha2.MeshList) MeshS
 }
 
 func (s *meshSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
 	return s.set.Keys()
 }
 
 func (s *meshSet) List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.Mesh) bool) []*discovery_smh_solo_io_v1alpha2.Mesh {
-
+	if s == nil {
+		return nil
+	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
@@ -348,6 +428,10 @@ func (s *meshSet) List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.Me
 }
 
 func (s *meshSet) Map() map[string]*discovery_smh_solo_io_v1alpha2.Mesh {
+	if s == nil {
+		return nil
+	}
+
 	newMap := map[string]*discovery_smh_solo_io_v1alpha2.Mesh{}
 	for k, v := range s.set.Map() {
 		newMap[k] = v.(*discovery_smh_solo_io_v1alpha2.Mesh)
@@ -358,35 +442,57 @@ func (s *meshSet) Map() map[string]*discovery_smh_solo_io_v1alpha2.Mesh {
 func (s *meshSet) Insert(
 	meshList ...*discovery_smh_solo_io_v1alpha2.Mesh,
 ) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
 	for _, obj := range meshList {
 		s.set.Insert(obj)
 	}
 }
 
 func (s *meshSet) Has(mesh ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
 	return s.set.Has(mesh)
 }
 
 func (s *meshSet) Equal(
 	meshSet MeshSet,
 ) bool {
+	if s == nil {
+		return meshSet == nil
+	}
 	return s.set.Equal(makeGenericMeshSet(meshSet.List()))
 }
 
 func (s *meshSet) Delete(Mesh ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
 	s.set.Delete(Mesh)
 }
 
 func (s *meshSet) Union(set MeshSet) MeshSet {
+	if s == nil {
+		return set
+	}
 	return NewMeshSet(append(s.List(), set.List()...)...)
 }
 
 func (s *meshSet) Difference(set MeshSet) MeshSet {
+	if s == nil {
+		return set
+	}
 	newSet := s.set.Difference(makeGenericMeshSet(set.List()))
 	return &meshSet{set: newSet}
 }
 
 func (s *meshSet) Intersection(set MeshSet) MeshSet {
+	if s == nil {
+		return nil
+	}
 	newSet := s.set.Intersection(makeGenericMeshSet(set.List()))
 	var meshList []*discovery_smh_solo_io_v1alpha2.Mesh
 	for _, obj := range newSet.List() {
@@ -396,6 +502,9 @@ func (s *meshSet) Intersection(set MeshSet) MeshSet {
 }
 
 func (s *meshSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.Mesh, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find Mesh %v", sksets.Key(id))
+	}
 	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha2.Mesh{}, id)
 	if err != nil {
 		return nil, err
@@ -405,5 +514,8 @@ func (s *meshSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.Me
 }
 
 func (s *meshSet) Length() int {
+	if s == nil {
+		return 0
+	}
 	return s.set.Length()
 }

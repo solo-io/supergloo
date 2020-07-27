@@ -8,6 +8,7 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/federation"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
@@ -33,12 +34,21 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx                  context.Context
-	federationTranslator federation.Translator
+	ctx                       context.Context
+	federationTranslator      federation.Translator
+	failoverServiceTranslator failoverservice.Translator
 }
 
-func NewTranslator(ctx context.Context, federationTranslator federation.Translator) Translator {
-	return &translator{ctx: ctx, federationTranslator: federationTranslator}
+func NewTranslator(
+	ctx context.Context,
+	federationTranslator federation.Translator,
+	failoverServiceTranslator failoverservice.Translator,
+) Translator {
+	return &translator{
+		ctx:                       ctx,
+		federationTranslator:      federationTranslator,
+		failoverServiceTranslator: failoverServiceTranslator,
+	}
 }
 
 // translate the appropriate resources for the given Mesh.
@@ -69,6 +79,13 @@ func (t *translator) Translate(
 		}
 		destinationRules = destinationRules.Union(federationOutputs.DestinationRules)
 		serviceEntries = serviceEntries.Union(federationOutputs.ServiceEntries)
+	}
+
+	for _, failoverService := range mesh.Status.AppliedFailoverServices {
+		failoverServiceOutputs := t.failoverServiceTranslator.Translate(in, mesh, failoverService, reporter)
+
+		envoyFilters = envoyFilters.Union(failoverServiceOutputs.EnvoyFilters)
+		serviceEntries = serviceEntries.Union(failoverServiceOutputs.ServiceEntries)
 	}
 
 	return Outputs{

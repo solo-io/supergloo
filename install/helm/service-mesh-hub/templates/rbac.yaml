@@ -104,6 +104,7 @@ rules:
   - trafficpolicies
   - accesspolicies
   - virtualmeshes
+  - failoverservices
   verbs:
   - get
   - list
@@ -130,6 +131,7 @@ rules:
   - trafficpolicies/status
   - accesspolicies/status
   - virtualmeshes/status
+  - failoverservices/status
   verbs:
   - get
   - update

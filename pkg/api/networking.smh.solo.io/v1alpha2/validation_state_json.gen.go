@@ -18,14 +18,14 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// MarshalJSON is a custom marshaler for ValidationStatus
-func (this *ValidationStatus) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for ApprovalStatus
+func (this *ApprovalStatus) MarshalJSON() ([]byte, error) {
 	str, err := ValidationStateMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for ValidationStatus
-func (this *ValidationStatus) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for ApprovalStatus
+func (this *ApprovalStatus) UnmarshalJSON(b []byte) error {
 	return ValidationStateUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

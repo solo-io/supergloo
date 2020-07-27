@@ -134,11 +134,11 @@ message VirtualMeshStatus {
     // the state of the overall resource.
     // will only show accepted if it has been successfully
     // applied to all target meshes.
-    ValidationState state = 2;
+    ApprovalState state = 2;
 
     // The status of the VirtualMesh for each Mesh to which it has been applied.
     // A TrafficPolicy may be Accepted for some Meshes and rejected for others.
-    map<string, ValidationStatus> meshes = 3;
+    map<string, ApprovalStatus> meshes = 3;
 
 //    // Status of the process writing federation decision metadata onto MeshServices.
 //    core.smh.solo.io.Status federation_status = 1;

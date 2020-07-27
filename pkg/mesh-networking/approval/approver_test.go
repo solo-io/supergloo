@@ -1,4 +1,4 @@
-package validation_test
+package approval_test
 
 import (
 	"context"
@@ -18,11 +18,11 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/validation"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
 )
 
-var _ = Describe("Validator", func() {
-	Context("valid traffic policies", func() {
+var _ = Describe("Approver", func() {
+	Context("approved traffic policies", func() {
 		var (
 			meshService = &discoveryv1alpha2.MeshService{
 				ObjectMeta: metav1.ObjectMeta{
@@ -63,6 +63,7 @@ var _ = Describe("Validator", func() {
 				}...),
 				v1alpha2sets.NewAccessPolicySet(),
 				v1alpha2sets.NewVirtualMeshSet(),
+				v1alpha2sets.NewFailoverServiceSet(),
 				skv1alpha1sets.NewKubernetesClusterSet(),
 			)
 		)
@@ -71,20 +72,20 @@ var _ = Describe("Validator", func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
 			}}
-			validator := NewValidator(translator)
-			validator.Validate(context.TODO(), snap)
+			approver := NewApprover(translator)
+			approver.Approve(context.TODO(), snap)
 
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy1.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy1.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ValidationStatus{
+			Expect(trafficPolicy1.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ApprovalStatus{
 				AcceptanceOrder: 0,
-				State:           v1alpha2.ValidationState_ACCEPTED,
+				State:           v1alpha2.ApprovalState_ACCEPTED,
 			}))
 			Expect(trafficPolicy2.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy2.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ValidationStatus{
+			Expect(trafficPolicy2.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ApprovalStatus{
 				AcceptanceOrder: 1,
-				State:           v1alpha2.ValidationState_ACCEPTED,
+				State:           v1alpha2.ApprovalState_ACCEPTED,
 			}))
 
 		})
@@ -122,6 +123,7 @@ var _ = Describe("Validator", func() {
 				}...),
 				v1alpha2sets.NewAccessPolicySet(),
 				v1alpha2sets.NewVirtualMeshSet(),
+				v1alpha2sets.NewFailoverServiceSet(),
 				skv1alpha1sets.NewKubernetesClusterSet(),
 			)
 		)
@@ -129,17 +131,17 @@ var _ = Describe("Validator", func() {
 		BeforeEach(func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// report = reject
-				reporter.ReportTrafficPolicy(meshService, trafficPolicy, errors.New("did an oopsie"))
+				reporter.ReportTrafficPolicyToMeshService(meshService, trafficPolicy, errors.New("did an oopsie"))
 			}}
-			validator := NewValidator(translator)
-			validator.Validate(context.TODO(), snap)
+			approver := NewApprover(translator)
+			approver.Approve(context.TODO(), snap)
 
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ValidationStatus{
+			Expect(trafficPolicy.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ApprovalStatus{
 				AcceptanceOrder: 0,
-				State:           v1alpha2.ValidationState_INVALID,
+				State:           v1alpha2.ApprovalState_INVALID,
 				Errors:          []string{"did an oopsie"},
 			}))
 		})

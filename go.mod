@@ -38,6 +38,8 @@ replace (
 )
 
 require (
+	github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f
+	github.com/cosiner/argv v0.1.0 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.4
 	github.com/gertd/go-pluralize v0.1.1
@@ -50,6 +52,9 @@ require (
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
+	github.com/mattn/go-colorable v0.1.7 // indirect
+	github.com/mattn/go-runewidth v0.0.9 // indirect
+	github.com/mitchellh/hashstructure v1.0.0
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.9.1
@@ -59,7 +64,8 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0
-	github.com/solo-io/skv2 v0.7.3-0.20200723170505-4fbaf1fabcd9
+	github.com/solo-io/protoc-gen-ext v0.0.9
+	github.com/solo-io/skv2 v0.7.3-0.20200724181741-be7d38ebd30a
 	github.com/solo-io/solo-kit v0.13.8
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
