@@ -14,8 +14,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-//go:generate mockgen -source ./enforcement_policy_translator.go -destination mocks/mock_enforcement_policy_translator.go
-
 // The access control translator translates a VirtualMesh EnforcementPolicy into Istio AuthorizationPolicies.
 type Translator interface {
 	// Returns nil if no AuthorizationPolicies are required for the mesh (i.e. because enforcement is disabled).
