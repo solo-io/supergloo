@@ -136,6 +136,12 @@ rules:
   - get
   - update
 - apiGroups:
+  - certificates.smh.solo.io
+  resources:
+  - issuedcertificates
+  verbs:
+  - '*'
+- apiGroups:
   - networking.istio.io
   resources:
   - destinationrules

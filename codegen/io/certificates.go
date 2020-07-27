@@ -22,7 +22,6 @@ var (
 		},
 	}
 
-
 	CertificateAgentInputTypes = Snapshot{
 		schema.GroupVersion{
 			Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
