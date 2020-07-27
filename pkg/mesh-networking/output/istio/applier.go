@@ -2,9 +2,10 @@ package istio
 
 import (
 	"context"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
 )

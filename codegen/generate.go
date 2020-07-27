@@ -73,25 +73,25 @@ var (
 	topLevelComponents = []topLevelComponent{
 		// discovery component
 		{
-			generatedCodeRoot: "pkg/api/discovery.smh.solo.io/snapshot",
+			generatedCodeRoot: "pkg/api/discovery.smh.solo.io",
 			inputResources:    io.DiscoveryInputTypes,
 			outputResources:   io.DiscoveryOutputTypes,
 		},
 		// networking component
 		{
-			generatedCodeRoot: "pkg/api/networking.smh.solo.io/snapshot",
+			generatedCodeRoot: "pkg/api/networking.smh.solo.io",
 			inputResources:    io.NetworkingInputTypes,
 			outputResources:   io.NetworkingOutputTypes,
 		},
 		// certificate issuer component
 		{
-			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/issuer/snapshot",
+			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/issuer",
 			inputResources:    io.CertificateIssuerInputTypes,
 			outputResources:   io.CertificateIssuerOutputTypes,
 		},
 		// certificate agent component
 		{
-			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/agent/snapshot",
+			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/agent",
 			inputResources:    io.CertificateAgentInputTypes,
 			outputResources:   io.CertificateAgentOutputTypes,
 		},
