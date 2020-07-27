@@ -20,6 +20,10 @@ import (
 // to skip testing this package, run `make run-tests SKIP_PACKAGES=test/e2e
 // to test only this package, run `make run-tests TEST_PKG=test/e2e
 func TestE2e(t *testing.T) {
+	if os.Getenv("RUN_E2E") == "" {
+		fmt.Println("skipping E2E tests")
+		return
+	}
 	RegisterFailHandler(func(message string, callerSkip ...int) {
 		runShell("./ci/print-kind-info.sh")
 		Fail(message, callerSkip...)

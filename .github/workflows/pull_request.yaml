@@ -27,7 +27,7 @@ jobs:
             ${{ runner.os }}-go-
       - name: Unit Tests
         run: |
-          go test `go list ./... | grep -v test/e2e`
+          go test ./...
 
   e2e-istio-1_5:
     name: end-to-end-istio-1_5
@@ -58,6 +58,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: E2e Tests
+        env:
+          RUN_E2E: "1"
         run: |
           make print-version install-go-tools manifest-gen
           curl -sSL https://github.com/istio/istio/releases/download/1.5.2/istio-1.5.2-linux.tar.gz | tar -xzf - istio-1.5.2/bin/istioctl
