@@ -43,3 +43,15 @@ func (in *VirtualMeshStatus) DeepCopyInto(out *VirtualMeshStatus) {
 	p := proto.Clone(in).(*VirtualMeshStatus)
 	*out = *p
 }
+
+// DeepCopyInto for the FailoverService.Spec
+func (in *FailoverServiceSpec) DeepCopyInto(out *FailoverServiceSpec) {
+	p := proto.Clone(in).(*FailoverServiceSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the FailoverService.Status
+func (in *FailoverServiceStatus) DeepCopyInto(out *FailoverServiceStatus) {
+	p := proto.Clone(in).(*FailoverServiceStatus)
+	*out = *p
+}

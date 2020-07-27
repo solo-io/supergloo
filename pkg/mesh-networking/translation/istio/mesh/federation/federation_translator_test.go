@@ -126,6 +126,7 @@ var _ = Describe("FederationTranslator", func() {
 			v1alpha2sets.NewTrafficPolicySet(),
 			v1alpha2sets.NewAccessPolicySet(),
 			v1alpha2sets.NewVirtualMeshSet(),
+			v1alpha2sets.NewFailoverServiceSet(),
 
 			skv1alpha1sets.NewKubernetesClusterSet(kubeCluster),
 		)
@@ -259,7 +260,7 @@ var expected = Outputs{
 				"some-svc.some-ns.svc.cluster",
 			},
 			Addresses: []string{
-				"242.147.203.114",
+				"243.21.204.125",
 			},
 			Ports: []*networkingv1alpha3spec.Port{
 				{

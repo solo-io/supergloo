@@ -79,7 +79,7 @@ func (t *translator) Translate(
 		baseRule, err := t.initializeBaseRule(policy.Spec, in.Meshes())
 		if err != nil {
 			// If error encountered while translating source selector, do not translate.
-			reporter.ReportAccessPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", translatorName))
+			reporter.ReportAccessPolicyToMeshService(meshService, policy.Ref, eris.Wrapf(err, "%v", translatorName))
 			continue
 		}
 
@@ -92,7 +92,7 @@ func (t *translator) Translate(
 					baseRule.To[0].Operation,
 					registerField,
 				); err != nil {
-					reporter.ReportAccessPolicy(meshService, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+					reporter.ReportAccessPolicyToMeshService(meshService, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
 				}
 			}
 		}

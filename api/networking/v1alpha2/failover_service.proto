@@ -1,0 +1,78 @@
+syntax = "proto3";
+package networking.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "service-mesh-hub/api/networking/v1alpha2/validation_state.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+/*
+    A FailoverService creates a new hostname to which services can send requests.
+    Requests will be routed based on a list of backing services ordered by
+    decreasing priority. When outlier detection detects that a service in the list is
+    in an unhealthy state, requests sent to the FailoverService will be routed
+    to the next healthy service in the list. For each service referenced in the
+    failover services list, outlier detection must be configured using a TrafficPolicy.
+
+    Currently this feature only supports Services backed by Istio.
+*/
+message FailoverServiceSpec {
+    /*
+        The DNS name of the failover service. Must be unique within the service mesh instance
+        since it is used as the hostname with which clients communicate.
+    */
+    string hostname = 1;
+
+    // The port on which the failover service listens.
+    Port port = 2;
+
+    // The meshes that this failover service will be visible to.
+    repeated core.skv2.solo.io.ObjectRef meshes = 3;
+
+    /*
+        The list of services backing the FailoverService, ordered by decreasing priority.
+        All services must be backed by either the same service mesh instance or
+        backed by service meshes that are grouped under a common VirtualMesh.
+    */
+    repeated BackingService backing_services = 4;
+
+    // The port on which the failover service listens.
+    message Port {
+        // Port number.
+        uint32 number = 1;
+        // Protocol of the requests sent to the failover service, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
+        string protocol = 2;
+    }
+
+    message BackingService {
+        // different service types can be selected as component services.
+        oneof backing_service_type {
+            // Name/namespace/cluster of a kubernetes service.
+            .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
+        }
+    }
+}
+
+message FailoverServiceStatus {
+
+    /*
+        The most recent generation observed in the the FailoverService metadata.
+        If the observedGeneration does not match generation, the controller has not received the most
+        recent version of this resource.
+    */
+    int64 observed_generation = 1;
+
+    /*
+        The state of the overall resource, will only show accepted if it has been successfully
+        applied to all target meshes.
+    */
+    ApprovalState state = 2;
+
+    // The status of the FailoverService for each Mesh to which it has been applied.
+    map<string, ApprovalStatus> meshes = 3;
+
+    // any errors observed which prevented the resource from being Accepted.
+    repeated string validation_errors = 4;
+}

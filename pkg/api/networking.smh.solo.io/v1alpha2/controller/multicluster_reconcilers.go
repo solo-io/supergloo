@@ -230,3 +230,74 @@ func (g genericVirtualMeshMulticlusterReconciler) Reconcile(cluster string, obje
 	}
 	return g.reconciler.ReconcileVirtualMesh(cluster, obj)
 }
+
+// Reconcile Upsert events for the FailoverService Resource across clusters.
+// implemented by the user
+type MulticlusterFailoverServiceReconciler interface {
+	ReconcileFailoverService(clusterName string, obj *networking_smh_solo_io_v1alpha2.FailoverService) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the FailoverService Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type MulticlusterFailoverServiceDeletionReconciler interface {
+	ReconcileFailoverServiceDeletion(clusterName string, req reconcile.Request) error
+}
+
+type MulticlusterFailoverServiceReconcilerFuncs struct {
+	OnReconcileFailoverService         func(clusterName string, obj *networking_smh_solo_io_v1alpha2.FailoverService) (reconcile.Result, error)
+	OnReconcileFailoverServiceDeletion func(clusterName string, req reconcile.Request) error
+}
+
+func (f *MulticlusterFailoverServiceReconcilerFuncs) ReconcileFailoverService(clusterName string, obj *networking_smh_solo_io_v1alpha2.FailoverService) (reconcile.Result, error) {
+	if f.OnReconcileFailoverService == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileFailoverService(clusterName, obj)
+}
+
+func (f *MulticlusterFailoverServiceReconcilerFuncs) ReconcileFailoverServiceDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileFailoverServiceDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileFailoverServiceDeletion(clusterName, req)
+}
+
+type MulticlusterFailoverServiceReconcileLoop interface {
+	// AddMulticlusterFailoverServiceReconciler adds a MulticlusterFailoverServiceReconciler to the MulticlusterFailoverServiceReconcileLoop.
+	AddMulticlusterFailoverServiceReconciler(ctx context.Context, rec MulticlusterFailoverServiceReconciler, predicates ...predicate.Predicate)
+}
+
+type multiclusterFailoverServiceReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterFailoverServiceReconcileLoop) AddMulticlusterFailoverServiceReconciler(ctx context.Context, rec MulticlusterFailoverServiceReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericFailoverServiceMulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticlusterFailoverServiceReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterFailoverServiceReconcileLoop {
+	return &multiclusterFailoverServiceReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_smh_solo_io_v1alpha2.FailoverService{})}
+}
+
+type genericFailoverServiceMulticlusterReconciler struct {
+	reconciler MulticlusterFailoverServiceReconciler
+}
+
+func (g genericFailoverServiceMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterFailoverServiceDeletionReconciler); ok {
+		return deletionReconciler.ReconcileFailoverServiceDeletion(cluster, req)
+	}
+	return nil
+}
+
+func (g genericFailoverServiceMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_smh_solo_io_v1alpha2.FailoverService)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: FailoverService handler received event for %T", object)
+	}
+	return g.reconciler.ReconcileFailoverService(cluster, obj)
+}

@@ -8,6 +8,7 @@
 // * TrafficPolicies
 // * AccessPolicies
 // * VirtualMeshes
+// * FailoverServices
 // * KubernetesClusters
 // for a given cluster or set of clusters.
 //
@@ -44,6 +45,7 @@ type multiClusterReconciler interface {
 	networking_smh_solo_io_v1alpha2_controllers.MulticlusterTrafficPolicyReconciler
 	networking_smh_solo_io_v1alpha2_controllers.MulticlusterAccessPolicyReconciler
 	networking_smh_solo_io_v1alpha2_controllers.MulticlusterVirtualMeshReconciler
+	networking_smh_solo_io_v1alpha2_controllers.MulticlusterFailoverServiceReconciler
 
 	multicluster_solo_io_v1alpha1_controllers.MulticlusterKubernetesClusterReconciler
 }
@@ -79,6 +81,7 @@ func RegisterMultiClusterReconciler(
 	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterTrafficPolicyReconcileLoop("TrafficPolicy", clusters).AddMulticlusterTrafficPolicyReconciler(ctx, r)
 	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterAccessPolicyReconcileLoop("AccessPolicy", clusters).AddMulticlusterAccessPolicyReconciler(ctx, r)
 	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterVirtualMeshReconcileLoop("VirtualMesh", clusters).AddMulticlusterVirtualMeshReconciler(ctx, r)
+	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterFailoverServiceReconcileLoop("FailoverService", clusters).AddMulticlusterFailoverServiceReconciler(ctx, r)
 
 	multicluster_solo_io_v1alpha1_controllers.NewMulticlusterKubernetesClusterReconcileLoop("KubernetesCluster", clusters).AddMulticlusterKubernetesClusterReconciler(ctx, r)
 
@@ -174,6 +177,21 @@ func (r *multiClusterReconcilerImpl) ReconcileVirtualMeshDeletion(clusterName st
 	return err
 }
 
+func (r *multiClusterReconcilerImpl) ReconcileFailoverService(clusterName string, obj *networking_smh_solo_io_v1alpha2.FailoverService) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileFailoverServiceDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
+}
+
 func (r *multiClusterReconcilerImpl) ReconcileKubernetesCluster(clusterName string, obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileClusterGeneric(obj)
@@ -198,6 +216,7 @@ type singleClusterReconciler interface {
 	networking_smh_solo_io_v1alpha2_controllers.TrafficPolicyReconciler
 	networking_smh_solo_io_v1alpha2_controllers.AccessPolicyReconciler
 	networking_smh_solo_io_v1alpha2_controllers.VirtualMeshReconciler
+	networking_smh_solo_io_v1alpha2_controllers.FailoverServiceReconciler
 
 	multicluster_solo_io_v1alpha1_controllers.KubernetesClusterReconciler
 }
@@ -243,6 +262,9 @@ func RegisterSingleClusterReconciler(
 		return err
 	}
 	if err := networking_smh_solo_io_v1alpha2_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, reconcile.Options{}).RunVirtualMeshReconciler(ctx, r); err != nil {
+		return err
+	}
+	if err := networking_smh_solo_io_v1alpha2_controllers.NewFailoverServiceReconcileLoop("FailoverService", mgr, reconcile.Options{}).RunFailoverServiceReconciler(ctx, r); err != nil {
 		return err
 	}
 
@@ -323,6 +345,19 @@ func (r *singleClusterReconcilerImpl) ReconcileVirtualMesh(obj *networking_smh_s
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileFailoverService(obj *networking_smh_solo_io_v1alpha2.FailoverService) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileFailoverServiceDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
