@@ -3,7 +3,6 @@ package meshserviceutils
 import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/resourceidutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
@@ -23,5 +22,5 @@ func IsMeshServiceForKubeService(meshService *v1alpha2.MeshService, kubeService 
 		// not a kube service
 		return false
 	}
-	return resourceidutils.ClusterRefsEqual(ref, kubeService)
+	return ezkube.RefsMatch(ref, kubeService)
 }

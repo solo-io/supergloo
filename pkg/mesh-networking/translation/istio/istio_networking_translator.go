@@ -67,7 +67,7 @@ func (t *istioTranslator) Translate(
 
 		authorizationPolicy := serviceOutputs.AuthorizationPolicy
 		if authorizationPolicy != nil {
-			contextutils.LoggerFrom(ctx).Debugf("translated virtual service %v", sets.Key(authorizationPolicy))
+			contextutils.LoggerFrom(ctx).Debugf("translated authorization policy %v", sets.Key(authorizationPolicy))
 			authorizationPolicies.Insert(authorizationPolicy)
 		}
 	}
