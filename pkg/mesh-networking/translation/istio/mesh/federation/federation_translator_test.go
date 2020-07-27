@@ -260,7 +260,7 @@ var expected = Outputs{
 				"some-svc.some-ns.svc.cluster",
 			},
 			Addresses: []string{
-				"242.147.203.114",
+				"243.21.204.125",
 			},
 			Ports: []*networkingv1alpha3spec.Port{
 				{
