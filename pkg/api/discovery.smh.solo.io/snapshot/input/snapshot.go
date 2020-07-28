@@ -615,3 +615,82 @@ func (b *singleClusterBuilder) insertStatefulSets(ctx context.Context, statefulS
 
 	return nil
 }
+
+// Utility for manually building input snapshots.
+type InputSnapshotBuilder struct {
+	name string
+
+	configMaps v1_sets.ConfigMapSet
+	services   v1_sets.ServiceSet
+	pods       v1_sets.PodSet
+	nodes      v1_sets.NodeSet
+
+	deployments  apps_v1_sets.DeploymentSet
+	replicaSets  apps_v1_sets.ReplicaSetSet
+	daemonSets   apps_v1_sets.DaemonSetSet
+	statefulSets apps_v1_sets.StatefulSetSet
+}
+
+func NewInputSnapshotBuilder(name string) *InputSnapshotBuilder {
+	return &InputSnapshotBuilder{
+		name: name,
+
+		configMaps: v1_sets.NewConfigMapSet(),
+		services:   v1_sets.NewServiceSet(),
+		pods:       v1_sets.NewPodSet(),
+		nodes:      v1_sets.NewNodeSet(),
+
+		deployments:  apps_v1_sets.NewDeploymentSet(),
+		replicaSets:  apps_v1_sets.NewReplicaSetSet(),
+		daemonSets:   apps_v1_sets.NewDaemonSetSet(),
+		statefulSets: apps_v1_sets.NewStatefulSetSet(),
+	}
+}
+
+func (i *InputSnapshotBuilder) Build() Snapshot {
+	return NewSnapshot(
+		i.name,
+
+		i.configMaps,
+		i.services,
+		i.pods,
+		i.nodes,
+
+		i.deployments,
+		i.replicaSets,
+		i.daemonSets,
+		i.statefulSets,
+	)
+}
+func (i *InputSnapshotBuilder) AddConfigMaps(configMaps []*v1.ConfigMap) *InputSnapshotBuilder {
+	i.configMaps.Insert(configMaps...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddServices(services []*v1.Service) *InputSnapshotBuilder {
+	i.services.Insert(services...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddPods(pods []*v1.Pod) *InputSnapshotBuilder {
+	i.pods.Insert(pods...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddNodes(nodes []*v1.Node) *InputSnapshotBuilder {
+	i.nodes.Insert(nodes...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddDeployments(deployments []*apps_v1.Deployment) *InputSnapshotBuilder {
+	i.deployments.Insert(deployments...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddReplicaSets(replicaSets []*apps_v1.ReplicaSet) *InputSnapshotBuilder {
+	i.replicaSets.Insert(replicaSets...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddDaemonSets(daemonSets []*apps_v1.DaemonSet) *InputSnapshotBuilder {
+	i.daemonSets.Insert(daemonSets...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddStatefulSets(statefulSets []*apps_v1.StatefulSet) *InputSnapshotBuilder {
+	i.statefulSets.Insert(statefulSets...)
+	return i
+}

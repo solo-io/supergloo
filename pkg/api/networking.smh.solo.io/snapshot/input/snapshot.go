@@ -680,3 +680,85 @@ func (b *singleClusterBuilder) insertKubernetesClusters(ctx context.Context, kub
 
 	return nil
 }
+
+// Utility for manually building input snapshots.
+type InputSnapshotBuilder struct {
+	name string
+
+	meshServices  discovery_smh_solo_io_v1alpha2_sets.MeshServiceSet
+	meshWorkloads discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
+	meshes        discovery_smh_solo_io_v1alpha2_sets.MeshSet
+
+	trafficPolicies  networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet
+	accessPolicies   networking_smh_solo_io_v1alpha2_sets.AccessPolicySet
+	virtualMeshes    networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet
+	failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet
+
+	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
+}
+
+func NewInputSnapshotBuilder(name string) *InputSnapshotBuilder {
+	return &InputSnapshotBuilder{
+		name: name,
+
+		meshServices:  discovery_smh_solo_io_v1alpha2_sets.NewMeshServiceSet(),
+		meshWorkloads: discovery_smh_solo_io_v1alpha2_sets.NewMeshWorkloadSet(),
+		meshes:        discovery_smh_solo_io_v1alpha2_sets.NewMeshSet(),
+
+		trafficPolicies:  networking_smh_solo_io_v1alpha2_sets.NewTrafficPolicySet(),
+		accessPolicies:   networking_smh_solo_io_v1alpha2_sets.NewAccessPolicySet(),
+		virtualMeshes:    networking_smh_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
+		failoverServices: networking_smh_solo_io_v1alpha2_sets.NewFailoverServiceSet(),
+
+		kubernetesClusters: multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet(),
+	}
+}
+
+func (i *InputSnapshotBuilder) Build() Snapshot {
+	return NewSnapshot(
+		i.name,
+
+		i.meshServices,
+		i.meshWorkloads,
+		i.meshes,
+
+		i.trafficPolicies,
+		i.accessPolicies,
+		i.virtualMeshes,
+		i.failoverServices,
+
+		i.kubernetesClusters,
+	)
+}
+func (i *InputSnapshotBuilder) AddMeshServices(meshServices []*discovery_smh_solo_io_v1alpha2.MeshService) *InputSnapshotBuilder {
+	i.meshServices.Insert(meshServices...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddMeshWorkloads(meshWorkloads []*discovery_smh_solo_io_v1alpha2.MeshWorkload) *InputSnapshotBuilder {
+	i.meshWorkloads.Insert(meshWorkloads...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddMeshes(meshes []*discovery_smh_solo_io_v1alpha2.Mesh) *InputSnapshotBuilder {
+	i.meshes.Insert(meshes...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddTrafficPolicies(trafficPolicies []*networking_smh_solo_io_v1alpha2.TrafficPolicy) *InputSnapshotBuilder {
+	i.trafficPolicies.Insert(trafficPolicies...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddAccessPolicies(accessPolicies []*networking_smh_solo_io_v1alpha2.AccessPolicy) *InputSnapshotBuilder {
+	i.accessPolicies.Insert(accessPolicies...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddVirtualMeshes(virtualMeshes []*networking_smh_solo_io_v1alpha2.VirtualMesh) *InputSnapshotBuilder {
+	i.virtualMeshes.Insert(virtualMeshes...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddFailoverServices(failoverServices []*networking_smh_solo_io_v1alpha2.FailoverService) *InputSnapshotBuilder {
+	i.failoverServices.Insert(failoverServices...)
+	return i
+}
+func (i *InputSnapshotBuilder) AddKubernetesClusters(kubernetesClusters []*multicluster_solo_io_v1alpha1.KubernetesCluster) *InputSnapshotBuilder {
+	i.kubernetesClusters.Insert(kubernetesClusters...)
+	return i
+}
