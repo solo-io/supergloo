@@ -3,9 +3,7 @@ package enforcement
 import (
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
@@ -18,10 +16,8 @@ type Translator interface {
 	// Returns nil if no AuthorizationPolicies are required for the mesh (i.e. because enforcement is disabled).
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
-		in input.Snapshot,
 		mesh *discoveryv1alpha2.Mesh,
 		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
-		reporter reporting.Reporter,
 	) v1beta1sets.AuthorizationPolicySet
 }
 
@@ -37,10 +33,8 @@ func NewTranslator() Translator {
 }
 
 func (t *translator) Translate(
-	_ input.Snapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
-	_ reporting.Reporter,
 ) v1beta1sets.AuthorizationPolicySet {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {

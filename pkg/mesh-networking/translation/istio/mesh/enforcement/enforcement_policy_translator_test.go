@@ -102,7 +102,7 @@ var _ = Describe("EnforcementPolicyTranslator", func() {
 				Spec: securityv1beta1spec.AuthorizationPolicy{},
 			},
 		)
-		authPolicies := translator.Translate(nil, mesh, mesh.Status.AppliedVirtualMeshes[0], nil)
+		authPolicies := translator.Translate(mesh, mesh.Status.AppliedVirtualMeshes[0])
 		Expect(authPolicies).To(Equal(expectedAuthPolicies))
 	})
 
@@ -127,7 +127,7 @@ var _ = Describe("EnforcementPolicyTranslator", func() {
 				},
 			},
 		}
-		authPolicies := translator.Translate(nil, mesh, mesh.Status.AppliedVirtualMeshes[0], nil)
+		authPolicies := translator.Translate(mesh, mesh.Status.AppliedVirtualMeshes[0])
 		Expect(authPolicies).To(BeNil())
 	})
 })
