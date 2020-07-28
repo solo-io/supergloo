@@ -29,12 +29,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	discovery_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	discovery_smh_solo_io_v1alpha2_client "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discovery_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 
 	networking_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	networking_smh_solo_io_v1alpha2_client "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	networking_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+	multicluster_solo_io_v1alpha1_client "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	multicluster_solo_io_v1alpha1_sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 )
 
@@ -237,16 +240,16 @@ type BuildOptions struct {
 type multiClusterBuilder struct {
 	clusters multicluster.ClusterSet
 
-	meshServices  discovery_smh_solo_io_v1alpha2.MulticlusterMeshServiceClient
-	meshWorkloads discovery_smh_solo_io_v1alpha2.MulticlusterMeshWorkloadClient
-	meshes        discovery_smh_solo_io_v1alpha2.MulticlusterMeshClient
+	meshServices  discovery_smh_solo_io_v1alpha2_client.MulticlusterMeshServiceClient
+	meshWorkloads discovery_smh_solo_io_v1alpha2_client.MulticlusterMeshWorkloadClient
+	meshes        discovery_smh_solo_io_v1alpha2_client.MulticlusterMeshClient
 
-	trafficPolicies  networking_smh_solo_io_v1alpha2.MulticlusterTrafficPolicyClient
-	accessPolicies   networking_smh_solo_io_v1alpha2.MulticlusterAccessPolicyClient
-	virtualMeshes    networking_smh_solo_io_v1alpha2.MulticlusterVirtualMeshClient
-	failoverServices networking_smh_solo_io_v1alpha2.MulticlusterFailoverServiceClient
+	trafficPolicies  networking_smh_solo_io_v1alpha2_client.MulticlusterTrafficPolicyClient
+	accessPolicies   networking_smh_solo_io_v1alpha2_client.MulticlusterAccessPolicyClient
+	virtualMeshes    networking_smh_solo_io_v1alpha2_client.MulticlusterVirtualMeshClient
+	failoverServices networking_smh_solo_io_v1alpha2_client.MulticlusterFailoverServiceClient
 
-	kubernetesClusters multicluster_solo_io_v1alpha1.MulticlusterKubernetesClusterClient
+	kubernetesClusters multicluster_solo_io_v1alpha1_client.MulticlusterKubernetesClusterClient
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -257,16 +260,16 @@ func NewMultiClusterBuilder(
 	return &multiClusterBuilder{
 		clusters: clusters,
 
-		meshServices:  discovery_smh_solo_io_v1alpha2.NewMulticlusterMeshServiceClient(client),
-		meshWorkloads: discovery_smh_solo_io_v1alpha2.NewMulticlusterMeshWorkloadClient(client),
-		meshes:        discovery_smh_solo_io_v1alpha2.NewMulticlusterMeshClient(client),
+		meshServices:  discovery_smh_solo_io_v1alpha2_client.NewMulticlusterMeshServiceClient(client),
+		meshWorkloads: discovery_smh_solo_io_v1alpha2_client.NewMulticlusterMeshWorkloadClient(client),
+		meshes:        discovery_smh_solo_io_v1alpha2_client.NewMulticlusterMeshClient(client),
 
-		trafficPolicies:  networking_smh_solo_io_v1alpha2.NewMulticlusterTrafficPolicyClient(client),
-		accessPolicies:   networking_smh_solo_io_v1alpha2.NewMulticlusterAccessPolicyClient(client),
-		virtualMeshes:    networking_smh_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(client),
-		failoverServices: networking_smh_solo_io_v1alpha2.NewMulticlusterFailoverServiceClient(client),
+		trafficPolicies:  networking_smh_solo_io_v1alpha2_client.NewMulticlusterTrafficPolicyClient(client),
+		accessPolicies:   networking_smh_solo_io_v1alpha2_client.NewMulticlusterAccessPolicyClient(client),
+		virtualMeshes:    networking_smh_solo_io_v1alpha2_client.NewMulticlusterVirtualMeshClient(client),
+		failoverServices: networking_smh_solo_io_v1alpha2_client.NewMulticlusterFailoverServiceClient(client),
 
-		kubernetesClusters: multicluster_solo_io_v1alpha1.NewMulticlusterKubernetesClusterClient(client),
+		kubernetesClusters: multicluster_solo_io_v1alpha1_client.NewMulticlusterKubernetesClusterClient(client),
 	}
 }
 
@@ -487,16 +490,16 @@ func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Co
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
-	meshServices  discovery_smh_solo_io_v1alpha2.MeshServiceClient
-	meshWorkloads discovery_smh_solo_io_v1alpha2.MeshWorkloadClient
-	meshes        discovery_smh_solo_io_v1alpha2.MeshClient
+	meshServices  discovery_smh_solo_io_v1alpha2_client.MeshServiceClient
+	meshWorkloads discovery_smh_solo_io_v1alpha2_client.MeshWorkloadClient
+	meshes        discovery_smh_solo_io_v1alpha2_client.MeshClient
 
-	trafficPolicies  networking_smh_solo_io_v1alpha2.TrafficPolicyClient
-	accessPolicies   networking_smh_solo_io_v1alpha2.AccessPolicyClient
-	virtualMeshes    networking_smh_solo_io_v1alpha2.VirtualMeshClient
-	failoverServices networking_smh_solo_io_v1alpha2.FailoverServiceClient
+	trafficPolicies  networking_smh_solo_io_v1alpha2_client.TrafficPolicyClient
+	accessPolicies   networking_smh_solo_io_v1alpha2_client.AccessPolicyClient
+	virtualMeshes    networking_smh_solo_io_v1alpha2_client.VirtualMeshClient
+	failoverServices networking_smh_solo_io_v1alpha2_client.FailoverServiceClient
 
-	kubernetesClusters multicluster_solo_io_v1alpha1.KubernetesClusterClient
+	kubernetesClusters multicluster_solo_io_v1alpha1_client.KubernetesClusterClient
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -505,16 +508,16 @@ func NewSingleClusterBuilder(
 ) Builder {
 	return &singleClusterBuilder{
 
-		meshServices:  discovery_smh_solo_io_v1alpha2.NewMeshServiceClient(client),
-		meshWorkloads: discovery_smh_solo_io_v1alpha2.NewMeshWorkloadClient(client),
-		meshes:        discovery_smh_solo_io_v1alpha2.NewMeshClient(client),
+		meshServices:  discovery_smh_solo_io_v1alpha2_client.NewMeshServiceClient(client),
+		meshWorkloads: discovery_smh_solo_io_v1alpha2_client.NewMeshWorkloadClient(client),
+		meshes:        discovery_smh_solo_io_v1alpha2_client.NewMeshClient(client),
 
-		trafficPolicies:  networking_smh_solo_io_v1alpha2.NewTrafficPolicyClient(client),
-		accessPolicies:   networking_smh_solo_io_v1alpha2.NewAccessPolicyClient(client),
-		virtualMeshes:    networking_smh_solo_io_v1alpha2.NewVirtualMeshClient(client),
-		failoverServices: networking_smh_solo_io_v1alpha2.NewFailoverServiceClient(client),
+		trafficPolicies:  networking_smh_solo_io_v1alpha2_client.NewTrafficPolicyClient(client),
+		accessPolicies:   networking_smh_solo_io_v1alpha2_client.NewAccessPolicyClient(client),
+		virtualMeshes:    networking_smh_solo_io_v1alpha2_client.NewVirtualMeshClient(client),
+		failoverServices: networking_smh_solo_io_v1alpha2_client.NewFailoverServiceClient(client),
 
-		kubernetesClusters: multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(client),
+		kubernetesClusters: multicluster_solo_io_v1alpha1_client.NewKubernetesClusterClient(client),
 	}
 }
 

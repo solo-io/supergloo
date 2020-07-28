@@ -25,12 +25,14 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	apps_v1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	v1_client "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
-	apps_v1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
+	apps_v1_client "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	apps_v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 )
 
@@ -180,15 +182,15 @@ type BuildOptions struct {
 type multiClusterBuilder struct {
 	clusters multicluster.ClusterSet
 
-	configMaps v1.MulticlusterConfigMapClient
-	services   v1.MulticlusterServiceClient
-	pods       v1.MulticlusterPodClient
-	nodes      v1.MulticlusterNodeClient
+	configMaps v1_client.MulticlusterConfigMapClient
+	services   v1_client.MulticlusterServiceClient
+	pods       v1_client.MulticlusterPodClient
+	nodes      v1_client.MulticlusterNodeClient
 
-	deployments  apps_v1.MulticlusterDeploymentClient
-	replicaSets  apps_v1.MulticlusterReplicaSetClient
-	daemonSets   apps_v1.MulticlusterDaemonSetClient
-	statefulSets apps_v1.MulticlusterStatefulSetClient
+	deployments  apps_v1_client.MulticlusterDeploymentClient
+	replicaSets  apps_v1_client.MulticlusterReplicaSetClient
+	daemonSets   apps_v1_client.MulticlusterDaemonSetClient
+	statefulSets apps_v1_client.MulticlusterStatefulSetClient
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -199,15 +201,15 @@ func NewMultiClusterBuilder(
 	return &multiClusterBuilder{
 		clusters: clusters,
 
-		configMaps: v1.NewMulticlusterConfigMapClient(client),
-		services:   v1.NewMulticlusterServiceClient(client),
-		pods:       v1.NewMulticlusterPodClient(client),
-		nodes:      v1.NewMulticlusterNodeClient(client),
+		configMaps: v1_client.NewMulticlusterConfigMapClient(client),
+		services:   v1_client.NewMulticlusterServiceClient(client),
+		pods:       v1_client.NewMulticlusterPodClient(client),
+		nodes:      v1_client.NewMulticlusterNodeClient(client),
 
-		deployments:  apps_v1.NewMulticlusterDeploymentClient(client),
-		replicaSets:  apps_v1.NewMulticlusterReplicaSetClient(client),
-		daemonSets:   apps_v1.NewMulticlusterDaemonSetClient(client),
-		statefulSets: apps_v1.NewMulticlusterStatefulSetClient(client),
+		deployments:  apps_v1_client.NewMulticlusterDeploymentClient(client),
+		replicaSets:  apps_v1_client.NewMulticlusterReplicaSetClient(client),
+		daemonSets:   apps_v1_client.NewMulticlusterDaemonSetClient(client),
+		statefulSets: apps_v1_client.NewMulticlusterStatefulSetClient(client),
 	}
 }
 
@@ -426,15 +428,15 @@ func (b *multiClusterBuilder) insertStatefulSetsFromCluster(ctx context.Context,
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
-	configMaps v1.ConfigMapClient
-	services   v1.ServiceClient
-	pods       v1.PodClient
-	nodes      v1.NodeClient
+	configMaps v1_client.ConfigMapClient
+	services   v1_client.ServiceClient
+	pods       v1_client.PodClient
+	nodes      v1_client.NodeClient
 
-	deployments  apps_v1.DeploymentClient
-	replicaSets  apps_v1.ReplicaSetClient
-	daemonSets   apps_v1.DaemonSetClient
-	statefulSets apps_v1.StatefulSetClient
+	deployments  apps_v1_client.DeploymentClient
+	replicaSets  apps_v1_client.ReplicaSetClient
+	daemonSets   apps_v1_client.DaemonSetClient
+	statefulSets apps_v1_client.StatefulSetClient
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -443,15 +445,15 @@ func NewSingleClusterBuilder(
 ) Builder {
 	return &singleClusterBuilder{
 
-		configMaps: v1.NewConfigMapClient(client),
-		services:   v1.NewServiceClient(client),
-		pods:       v1.NewPodClient(client),
-		nodes:      v1.NewNodeClient(client),
+		configMaps: v1_client.NewConfigMapClient(client),
+		services:   v1_client.NewServiceClient(client),
+		pods:       v1_client.NewPodClient(client),
+		nodes:      v1_client.NewNodeClient(client),
 
-		deployments:  apps_v1.NewDeploymentClient(client),
-		replicaSets:  apps_v1.NewReplicaSetClient(client),
-		daemonSets:   apps_v1.NewDaemonSetClient(client),
-		statefulSets: apps_v1.NewStatefulSetClient(client),
+		deployments:  apps_v1_client.NewDeploymentClient(client),
+		replicaSets:  apps_v1_client.NewReplicaSetClient(client),
+		daemonSets:   apps_v1_client.NewDaemonSetClient(client),
+		statefulSets: apps_v1_client.NewStatefulSetClient(client),
 	}
 }
 
