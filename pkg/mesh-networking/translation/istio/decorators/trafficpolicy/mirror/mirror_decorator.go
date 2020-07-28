@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/trafficpolicyutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
@@ -105,11 +106,12 @@ func (d *mirrorDecorator) makeKubeDestinationMirror(
 	port uint32,
 	originalService *discoveryv1alpha2.MeshService,
 ) (*networkingv1alpha3spec.Destination, error) {
-
 	destinationRef := destination.KubeService
-	if _, err := meshserviceutils.FindMeshServiceForKubeService(d.meshServices.List(), destinationRef); err != nil {
+	mirrorService, err := meshserviceutils.FindMeshServiceForKubeService(d.meshServices.List(), destinationRef)
+	if err != nil {
 		return nil, eris.Wrapf(err, "invalid mirror destination")
 	}
+	mirrorKubeService := mirrorService.Spec.GetKubeService()
 
 	// TODO(ilackarms): support other types of MeshService destinations, e.g. via ServiceEntries
 	localCluster := originalService.Spec.GetKubeService().GetRef().GetClusterName()
@@ -123,13 +125,16 @@ func (d *mirrorDecorator) makeKubeDestinationMirror(
 	}
 
 	if port != 0 {
+		if !trafficpolicyutils.ContainsPort(mirrorKubeService.Ports, port) {
+			return nil, eris.Errorf("specified port %d does not exist for mirror destination service %v", port, sets.Key(mirrorKubeService.Ref))
+		}
 		translatedMirror.Port = &networkingv1alpha3spec.PortSelector{
 			Number: port,
 		}
 	} else {
 		// validate that mesh service only has one port
-		if numPorts := len(originalService.Spec.GetKubeService().GetPorts()); numPorts > 1 {
-			return nil, eris.Errorf("must provide port for mirror destination service %v with multiple ports (%v) defined", sets.Key(originalService.Spec.GetKubeService().GetRef()), numPorts)
+		if numPorts := len(mirrorKubeService.GetPorts()); numPorts > 1 {
+			return nil, eris.Errorf("must provide port for mirror destination service %v with multiple ports (%v) defined", sets.Key(mirrorKubeService.GetRef()), numPorts)
 		}
 	}
 

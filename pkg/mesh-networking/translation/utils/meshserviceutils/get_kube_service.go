@@ -3,6 +3,7 @@ package meshserviceutils
 import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
@@ -12,7 +13,7 @@ func FindMeshServiceForKubeService(meshServices v1alpha2.MeshServiceSlice, kubeS
 			return service, nil
 		}
 	}
-	return nil, eris.Errorf("MeshService not found for kube ")
+	return nil, eris.Errorf("MeshService not found for kube service %s", sets.Key(kubeService))
 }
 
 func IsMeshServiceForKubeService(meshService *v1alpha2.MeshService, kubeService ezkube.ClusterResourceId) bool {
@@ -21,7 +22,5 @@ func IsMeshServiceForKubeService(meshService *v1alpha2.MeshService, kubeService 
 		// not a kube service
 		return false
 	}
-	return ref.GetName() == kubeService.GetName() &&
-		ref.GetNamespace() == kubeService.GetNamespace() &&
-		ref.GetClusterName() == kubeService.GetClusterName()
+	return ezkube.RefsMatch(ref, kubeService)
 }

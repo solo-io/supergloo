@@ -58,6 +58,9 @@ func translateFaultInjection(validatedPolicy *v1alpha2.TrafficPolicySpec) (*netw
 	if faultInjection == nil {
 		return nil, nil
 	}
+	if faultInjection.GetFaultInjectionType() == nil {
+		return nil, eris.New("FaultInjection type must be specified.")
+	}
 	var translatedFaultInjection *networkingv1alpha3spec.HTTPFaultInjection
 	switch injectionType := faultInjection.GetFaultInjectionType().(type) {
 	case *v1alpha2.TrafficPolicySpec_FaultInjection_Abort_:

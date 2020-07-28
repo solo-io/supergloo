@@ -16,7 +16,7 @@ func init() {
 	decorators.Register(decoratorConstructor)
 }
 
-func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
+func decoratorConstructor(_ decorators.Parameters) decorators.Decorator {
 	return NewRetriesDecorator()
 }
 
