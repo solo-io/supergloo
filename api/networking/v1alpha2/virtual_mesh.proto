@@ -42,8 +42,8 @@ message VirtualMeshSpec {
         // Select a trust model in order to establish trust between mTLS-secured meshes.
         oneof trust_model {
             // Shared trust
-            SharedTrust shared = 5;
-            LimitedTrust limited = 6;
+            SharedTrust shared = 1;
+            LimitedTrust limited = 2;
         }
 
         /*
@@ -78,32 +78,27 @@ message VirtualMeshSpec {
     }
 
     message CertificateAuthority {
+
+        // If no CA type is provided, a builtin.
+        oneof ca_type {
+            // Generate a self-signed root certificate with the given options.
+            SelfSigned self_signed = 1;
+
+            // Use a Secret containing a root certificate.
+            .core.skv2.solo.io.ObjectRef secret = 2;
+        }
+
         /*
-            Configuration for auto-generated root certificate unique to the VirtualMesh
+            Configuration for generating a self-signed root certificate.
             Uses the X.509 format, RFC5280
         */
-        message Builtin {
+        message SelfSigned {
             // Number of days before root cert expires. Defaults to 365.
             uint32 ttl_days = 1;
             // Size in bytes of the root cert's private key. Defaults to 4096
             uint32 rsa_key_size_bytes = 2;
             // Root cert organization name. Defaults to "service-mesh-hub"
             string org_name = 3;
-        }
-
-        // Configuration for user-provided root certificate.
-        message Provided {
-            // Reference to a Secret object containing the root certificate.
-            .core.skv2.solo.io.ClusterObjectRef certificate = 3;
-        }
-
-        // If omitted, defaults to builtin.
-        oneof type {
-            // Use auto-generated root certificate.
-            Builtin builtin = 1;
-
-            // Use user-provided root certificate.
-            Provided provided = 2;
         }
     }
 
