@@ -25,9 +25,10 @@ var (
 	discoveryReconcilerCodePath     = "pkg/api/discovery.smh.solo.io/snapshot/input/reconciler.go"
 	discoveryOutputSnapshotCodePath = "pkg/api/discovery.smh.solo.io/snapshot/output/snapshot.go"
 
-	networkingInputSnapshotCodePath       = "pkg/api/networking.smh.solo.io/snapshot/input/snapshot.go"
-	networkingReconcilerSnapshotCodePath  = "pkg/api/networking.smh.solo.io/snapshot/input/reconciler.go"
-	networkingOutputIstioSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/output/istio/snapshot.go"
+	networkingInputSnapshotCodePath        = "pkg/api/networking.smh.solo.io/snapshot/input/snapshot.go"
+	networkingInputSnapshotBuilderCodePath = "pkg/api/networking.smh.solo.io/testutils/input/snapshot_builder.go"
+	networkingReconcilerSnapshotCodePath   = "pkg/api/networking.smh.solo.io/snapshot/input/reconciler.go"
+	networkingOutputIstioSnapshotCodePath  = "pkg/api/networking.smh.solo.io/snapshot/output/istio/snapshot.go"
 
 	smhManifestRoot = "install/helm/service-mesh-hub"
 	csrManifestRoot = "install/helm/csr-agent/"
@@ -66,6 +67,12 @@ var (
 		io.NetworkingInputTypes,
 	)
 
+	networkingInputSnapshotBuilder = makeTopLevelTemplate(
+		contrib.InputSnapshotTestBuilder,
+		networkingInputSnapshotBuilderCodePath,
+		io.NetworkingInputTypes,
+	)
+
 	networkingReconciler = makeTopLevelTemplate(
 		contrib.InputReconciler,
 		networkingReconcilerSnapshotCodePath,
@@ -83,6 +90,7 @@ var (
 		discoveryReconciler,
 		discoveryOutputSnapshot,
 		networkingInputSnapshot,
+		networkingInputSnapshotBuilder,
 		networkingReconciler,
 		networkingOutputIstioSnapshot,
 	}
