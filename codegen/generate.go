@@ -100,8 +100,8 @@ var (
 	smhManifestRoot = "install/helm/service-mesh-hub"
 	csrManifestRoot = "install/helm/csr-agent/"
 
-	vendoredMulticlusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
-	importedMulticlusterCRDs = smhManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
+	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
+	importedMultiClusterCRDs = smhManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
 	allApiGroups = map[string][]model.Group{
 		"":                                 groups.SMHGroups,
@@ -137,14 +137,10 @@ func run() error {
 
 	// TODO(ilackarms): we copy skv2 CRDs out of vendor_any into our helm chart.
 	// we should consider using skv2 to automate this step for us
-	if err := os.Rename(vendoredMulticlusterCRDs, importedMulticlusterCRDs); err != nil {
+	if err := os.Rename(vendoredMultiClusterCRDs, importedMultiClusterCRDs); err != nil {
 		return err
 	}
 
-	log.Printf("generating certificate-requesting-agent")
-	if err := makeCRACommand().Execute(); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -171,14 +167,6 @@ func makeSmhCommand(chartOnly bool) codegen.Command {
 		Groups:            groups.SMHGroups,
 		RenderProtos:      true,
 		Chart:             helm.Chart,
-	}
-}
-
-func makeCRACommand() codegen.Command {
-	return codegen.Command{
-		AppName:         appName,
-		AnyVendorConfig: anyvendorImports,
-		ManifestRoot:    csrManifestRoot,
 	}
 }
 

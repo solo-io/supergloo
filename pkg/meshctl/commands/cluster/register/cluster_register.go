@@ -14,7 +14,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var smhRbacRequirements = append(io.DiscoveryInputTypes.RbacPoliciesWatch(), io.NetworkingOutputTypes.RbacPoliciesWrite()...)
+var smhRbacRequirements = func() []rbacv1.PolicyRule {
+	var policyRules []rbacv1.PolicyRule
+	policyRules = append(policyRules, io.DiscoveryInputTypes.RbacPoliciesWatch()...)
+	policyRules = append(policyRules, io.NetworkingOutputTypes.RbacPoliciesWrite()...)
+	policyRules = append(policyRules, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)
+	policyRules = append(policyRules, io.CertificateIssuerOutputTypes.RbacPoliciesWrite()...)
+	return policyRules
+}()
 
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
