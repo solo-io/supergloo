@@ -5,7 +5,6 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
@@ -43,7 +42,8 @@ func (t *translator) Translate(
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
 	_ reporting.Reporter,
 ) v1beta1sets.AuthorizationPolicySet {
-	if mesh.Spec.GetIstio() == nil {
+	istioMesh := mesh.Spec.GetIstio()
+	if istioMesh == nil {
 		return nil
 	}
 
@@ -52,36 +52,42 @@ func (t *translator) Translate(
 		virtualMesh.Spec.EnforceAccessControl == v1alpha2.VirtualMeshSpec_DISABLED {
 		return nil
 	}
-
-	installationNamespace := mesh.Spec.GetIstio().Installation.Namespace
-	ingressGatewayAuthPolicy := buildIngressGatewayAuthPolicy(installationNamespace)
+	installationNamespace := istioMesh.Installation.Namespace
 	globalAuthPolicy := buildGlobalAuthPolicy(installationNamespace)
+	ingressGatewayAuthPolicies := buildAuthPoliciesForIngressgateways(installationNamespace, istioMesh.IngressGateways)
 
-	return v1beta1sets.NewAuthorizationPolicySet(
-		ingressGatewayAuthPolicy,
-		globalAuthPolicy,
-	)
+	authPolicies := v1beta1sets.NewAuthorizationPolicySet()
+	authPolicies.Insert(globalAuthPolicy)
+	authPolicies.Insert(ingressGatewayAuthPolicies...)
+	return authPolicies
 }
 
 // Creates an AuthorizationPolicy that allows all traffic into the "istio-ingressgateway" service
 // which backs the Gateway used for multi cluster traffic.
-func buildIngressGatewayAuthPolicy(installationNamespace string) *securityv1beta1.AuthorizationPolicy {
-	return &securityv1beta1.AuthorizationPolicy{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      IngressGatewayAuthPolicyName,
-			Namespace: installationNamespace,
-			Labels:    metautils.TranslatedObjectLabels(),
-		},
-		Spec: securityv1beta1spec.AuthorizationPolicy{
-			Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
-			// A single empty rule allows all traffic.
-			// Reference: https://istio.io/docs/reference/config/security/authorization-policy/#AuthorizationPolicy
-			Rules: []*securityv1beta1spec.Rule{{}},
-			Selector: &v1beta1.WorkloadSelector{
-				MatchLabels: defaults.DefaultGatewayWorkloadLabels,
+func buildAuthPoliciesForIngressgateways(
+	installationNamespace string,
+	ingressGateways []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo,
+) []*securityv1beta1.AuthorizationPolicy {
+	var authPolicies []*securityv1beta1.AuthorizationPolicy
+	for _, ingressGateway := range ingressGateways {
+		authPolicies = append(authPolicies, &securityv1beta1.AuthorizationPolicy{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      IngressGatewayAuthPolicyName,
+				Namespace: installationNamespace,
+				Labels:    metautils.TranslatedObjectLabels(),
 			},
-		},
+			Spec: securityv1beta1spec.AuthorizationPolicy{
+				Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
+				// A single empty rule allows all traffic.
+				// Reference: https://istio.io/docs/reference/config/security/authorization-policy/#AuthorizationPolicy
+				Rules: []*securityv1beta1spec.Rule{{}},
+				Selector: &v1beta1.WorkloadSelector{
+					MatchLabels: ingressGateway.WorkloadLabels,
+				},
+			},
+		})
 	}
+	return authPolicies
 }
 
 // Creates a global AuthorizationPolicy that denies all traffic within the Mesh unless explicitly allowed by SMH AccessControl resources.

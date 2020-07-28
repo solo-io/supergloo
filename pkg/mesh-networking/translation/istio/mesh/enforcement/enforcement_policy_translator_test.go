@@ -6,7 +6,6 @@ import (
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/enforcement"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
@@ -31,6 +30,18 @@ var _ = Describe("EnforcementPolicyTranslator", func() {
 					Istio: &discoveryv1alpha2.MeshSpec_Istio{
 						Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 							Namespace: "istio-system",
+						},
+						IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{
+							{
+								WorkloadLabels: map[string]string{
+									"istio": "ingressgateway",
+								},
+							},
+							{
+								WorkloadLabels: map[string]string{
+									"istio": "ingressgateway2",
+								},
+							},
 						},
 					},
 				},
@@ -58,7 +69,27 @@ var _ = Describe("EnforcementPolicyTranslator", func() {
 					// Reference: https://istio.io/docs/reference/config/security/authorization-policy/#AuthorizationPolicy
 					Rules: []*securityv1beta1spec.Rule{{}},
 					Selector: &v1beta1.WorkloadSelector{
-						MatchLabels: defaults.DefaultGatewayWorkloadLabels,
+						MatchLabels: map[string]string{
+							"istio": "ingressgateway",
+						},
+					},
+				},
+			},
+			&securityv1beta1.AuthorizationPolicy{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      enforcement.IngressGatewayAuthPolicyName,
+					Namespace: "istio-system",
+					Labels:    metautils.TranslatedObjectLabels(),
+				},
+				Spec: securityv1beta1spec.AuthorizationPolicy{
+					Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
+					// A single empty rule allows all traffic.
+					// Reference: https://istio.io/docs/reference/config/security/authorization-policy/#AuthorizationPolicy
+					Rules: []*securityv1beta1spec.Rule{{}},
+					Selector: &v1beta1.WorkloadSelector{
+						MatchLabels: map[string]string{
+							"istio": "ingressgateway2",
+						},
 					},
 				},
 			},

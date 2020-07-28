@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -33,6 +32,15 @@ const (
 
 	// https://istio.io/docs/ops/deployment/requirements/#ports-used-by-istio
 	defaultGatewayPortName = "tls"
+)
+
+var (
+	// "istio": "ingressgateway" is a known string pair to Istio- it's semantically meaningful but unfortunately not exported from anywhere
+	// their ingress gateway is hardcoded in their own implementation to have this label
+	// https://github.com/istio/istio/blob/4e27ddc64f6a12e622c4cd5c836f5d7edf94e971/istioctl/cmd/describe.go#L1138
+	defaultGatewayWorkloadLabels = map[string]string{
+		"istio": "ingressgateway",
+	}
 )
 
 // detects Istio if a deployment contains the istiod container.
@@ -80,7 +88,7 @@ func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 	ingressGateways := getIngressGateways(
 		d.ctx,
 		deployment.Namespace,
-		defaults.DefaultGatewayWorkloadLabels,
+		defaultGatewayWorkloadLabels,
 		d.services,
 		d.pods,
 		d.nodes,
