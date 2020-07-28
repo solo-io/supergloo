@@ -25,15 +25,15 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/skv2/pkg/multicluster"
-	apps_v1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	v1_client "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	v1 "k8s.io/api/core/v1"
 
 	apps_v1_client "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	apps_v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
+	apps_v1 "k8s.io/api/apps/v1"
 )
 
 // the snapshot of input resources consumed by translation
