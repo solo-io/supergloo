@@ -60,7 +60,7 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0
-	github.com/solo-io/skv2 v0.7.3-0.20200724181741-be7d38ebd30a
+	github.com/solo-io/skv2 v0.7.3-0.20200728133631-b71c2aba4db0
 	github.com/solo-io/solo-kit v0.13.8
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
