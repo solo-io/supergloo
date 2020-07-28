@@ -114,20 +114,28 @@ func (t *translator) translateAccessPolicy(
 		}
 		fromRules = append(fromRules, fromRule)
 	}
-	allowedMethods := convertHttpMethodsToStrings(accessPolicy.AllowedMethods)
-	allowedPorts := convertIntsToStrings(accessPolicy.AllowedPorts)
+	toRules := buildToRules(accessPolicy)
 	return &securityv1beta1spec.Rule{
 		From: fromRules,
-		To: []*securityv1beta1spec.Rule_To{
-			{
-				Operation: &securityv1beta1spec.Operation{
-					Paths:   accessPolicy.AllowedPaths,
-					Methods: allowedMethods,
-					Ports:   allowedPorts,
-				},
-			},
-		},
+		To:   toRules,
 	}, nil
+}
+
+func buildToRules(accessPolicy *v1alpha2.AccessPolicySpec) []*securityv1beta1spec.Rule_To {
+	allowedPaths := accessPolicy.AllowedPaths
+	allowedMethods := convertHttpMethodsToStrings(accessPolicy.AllowedMethods)
+	allowedPorts := convertIntsToStrings(accessPolicy.AllowedPorts)
+	var ruleTo []*securityv1beta1spec.Rule_To
+	if allowedPaths != nil || allowedMethods != nil || allowedPorts != nil {
+		ruleTo = append(ruleTo, &securityv1beta1spec.Rule_To{
+			Operation: &securityv1beta1spec.Operation{
+				Paths:   accessPolicy.AllowedPaths,
+				Methods: allowedMethods,
+				Ports:   allowedPorts,
+			},
+		})
+	}
+	return ruleTo
 }
 
 // Generate all fully qualified principal names for specified service accounts.
@@ -281,13 +289,6 @@ func buildSpiffeURI(trustDomain, namespace, serviceAccount string) (string, erro
 
 func convertHttpMethodsToStrings(allowedMethods []types.HttpMethodValue) []string {
 	var methods []string
-	// Istio considers AuthorizationPolicies without at least one defined To.Operation invalid,
-	// The workaround is to populate a dummy "*" for METHOD if not user specified. This guarantees existence of at least
-	// one To.Operation.
-	if len(allowedMethods) < 1 {
-		methods = []string{"*"}
-		return methods
-	}
 	for _, methodEnum := range allowedMethods {
 		methods = append(methods, methodEnum.String())
 	}
