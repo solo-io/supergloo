@@ -17,10 +17,11 @@ import (
 
 // outputs of translating a single Mesh
 type Outputs struct {
-	Gateways         istiov1alpha3sets.GatewaySet
-	EnvoyFilters     istiov1alpha3sets.EnvoyFilterSet
-	DestinationRules istiov1alpha3sets.DestinationRuleSet
-	ServiceEntries   istiov1alpha3sets.ServiceEntrySet
+	Gateways           istiov1alpha3sets.GatewaySet
+	EnvoyFilters       istiov1alpha3sets.EnvoyFilterSet
+	DestinationRules   istiov1alpha3sets.DestinationRuleSet
+	ServiceEntries     istiov1alpha3sets.ServiceEntrySet
+	IssuedCertificates certificatesv1alpha2sets.IssuedCertificateSet
 }
 
 // the VirtualService translator translates a Mesh into a VirtualService.

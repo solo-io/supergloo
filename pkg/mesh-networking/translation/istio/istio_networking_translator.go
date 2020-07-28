@@ -10,20 +10,28 @@ import (
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
+// output types of Istio translation
+type Outputs struct {
+	IssuedCertificates    certificatesv1alpha2sets.IssuedCertificateSet
+	DestinationRules      v1alpha3sets.DestinationRuleSet
+	EnvoyFilters          v1alpha3sets.EnvoyFilterSet
+	Gateways              v1alpha3sets.GatewaySet
+	ServiceEntries        v1alpha3sets.ServiceEntrySet
+	VirtualServices       v1alpha3sets.VirtualServiceSet
+	AuthorizationPolicies v1beta1sets.AuthorizationPolicySet
+}
+
 // the istio translator translates an input networking snapshot to an output snapshot of Istio resources
 type Translator interface {
-	// errors reflect an internal translation error and should never happen
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
 		reporter reporting.Reporter,
-	) (output.Snapshot, error)
+	) Outputs
 }
 
 type istioTranslator struct {
@@ -41,7 +49,7 @@ func (t *istioTranslator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
 	reporter reporting.Reporter,
-) (output.Snapshot, error) {
+) Outputs {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translator-%v", t.totalTranslates))
 
 	meshServiceTranslator := t.dependencies.makeMeshServiceTranslator(in.KubernetesClusters())
@@ -77,6 +85,7 @@ func (t *istioTranslator) Translate(
 	envoyFilters := v1alpha3sets.NewEnvoyFilterSet()
 	gateways := v1alpha3sets.NewGatewaySet()
 	serviceEntries := v1alpha3sets.NewServiceEntrySet()
+	issuedCertificates := certificatesv1alpha2sets.NewIssuedCertificateSet()
 
 	meshTranslator := t.dependencies.makeMeshTranslator(ctx, in.KubernetesClusters())
 	for _, mesh := range in.Meshes().List() {
@@ -86,18 +95,18 @@ func (t *istioTranslator) Translate(
 		serviceEntries = serviceEntries.Union(meshOutputs.ServiceEntries)
 		envoyFilters = envoyFilters.Union(meshOutputs.EnvoyFilters)
 		destinationRules = destinationRules.Union(meshOutputs.DestinationRules)
+		issuedCertificates = issuedCertificates.Union(meshOutputs.IssuedCertificates)
 	}
 
 	t.totalTranslates++
 
-	return istio.NewSinglePartitionedSnapshot(
-		fmt.Sprintf("istio-networking-%v", t.totalTranslates),
-		metautils.TranslatedObjectLabels(),
-		destinationRules,
-		envoyFilters,
-		gateways,
-		serviceEntries,
-		virtualServices,
-		authorizationPolicies,
-	)
+	return Outputs{
+		IssuedCertificates:    issuedCertificates,
+		DestinationRules:      destinationRules,
+		EnvoyFilters:          envoyFilters,
+		Gateways:              gateways,
+		ServiceEntries:        serviceEntries,
+		VirtualServices:       virtualServices,
+		AuthorizationPolicies: authorizationPolicies,
+	}
 }
