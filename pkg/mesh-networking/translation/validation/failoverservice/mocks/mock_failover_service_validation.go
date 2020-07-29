@@ -5,10 +5,11 @@
 package mock_validation
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	failoverservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/validation/failoverservice"
-	reflect "reflect"
 )
 
 // MockFailoverServiceValidator is a mock of FailoverServiceValidator interface.
@@ -34,16 +35,16 @@ func (m *MockFailoverServiceValidator) EXPECT() *MockFailoverServiceValidatorMoc
 	return m.recorder
 }
 
-// Approve mocks base method.
-func (m *MockFailoverServiceValidator) Validate(inputs failoverservice.Inputs, failoverService *v1alpha2.FailoverServiceSpec) error {
+// Validate mocks base method.
+func (m *MockFailoverServiceValidator) Validate(inputs failoverservice.Inputs, failoverService *v1alpha2.FailoverServiceSpec) []error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Approve", inputs, failoverService)
-	ret0, _ := ret[0].(error)
+	ret := m.ctrl.Call(m, "Validate", inputs, failoverService)
+	ret0, _ := ret[0].([]error)
 	return ret0
 }
 
-// Approve indicates an expected call of Approve.
+// Validate indicates an expected call of Validate.
 func (mr *MockFailoverServiceValidatorMockRecorder) Validate(inputs, failoverService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Approve", reflect.TypeOf((*MockFailoverServiceValidator)(nil).Validate), inputs, failoverService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockFailoverServiceValidator)(nil).Validate), inputs, failoverService)
 }

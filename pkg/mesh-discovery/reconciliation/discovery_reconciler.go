@@ -59,7 +59,7 @@ func (d *discoveryReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, error
 	}
 
 	var errs error
-	outputSnap.Apply(d.ctx, d.masterClient, output.ErrorHandlerFuncs{
+	outputSnap.ApplyLocalCluster(d.ctx, d.masterClient, output.ErrorHandlerFuncs{
 		HandleWriteErrorFunc: func(resource ezkube.Object, err error) {
 			errs = multierror.Append(errs, eris.Wrapf(err, "writing resource %v failed", sets.Key(resource)))
 		},

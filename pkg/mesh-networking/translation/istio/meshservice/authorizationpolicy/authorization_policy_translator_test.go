@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input/test"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/types"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
@@ -184,7 +184,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
 			},
 		}
-		inputSnapshot := input.NewInputSnapshotBuilder("").AddMeshes(meshes).Build()
+		inputSnapshot := test.NewInputSnapshotBuilder("").AddMeshes(meshes).Build()
 		authPolicy := translator.Translate(inputSnapshot, meshService, mockReporter)
 		Expect(authPolicy).To(Equal(expectedAuthPolicy))
 	})
