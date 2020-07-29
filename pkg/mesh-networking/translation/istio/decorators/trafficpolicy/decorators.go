@@ -6,6 +6,8 @@ import (
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
+//go:generate mockgen -source ./decorators.go -destination mocks/decorators.go
+
 /*
 	Interface definitions for decorators which take TrafficPolicy as an input and
 	decorate a given output resource.
