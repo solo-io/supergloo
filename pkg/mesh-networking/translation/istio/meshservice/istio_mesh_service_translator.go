@@ -36,16 +36,16 @@ type Translator interface {
 }
 
 type translator struct {
-	destinationRules      destinationrule.Translator
-	virtualServices       virtualservice.Translator
-	authorizationPolicies authorizationpolicy.Translator
+	destinationRuleTranslator     destinationrule.Translator
+	virtualServiceTranslator      virtualservice.Translator
+	authorizationPolicyTranslator authorizationpolicy.Translator
 }
 
 func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
 	return &translator{
-		destinationRules:      destinationrule.NewTranslator(clusterDomains, decoratorFactory),
-		virtualServices:       virtualservice.NewTranslator(clusterDomains, decoratorFactory),
-		authorizationPolicies: authorizationpolicy.NewTranslator(),
+		destinationRuleTranslator:     destinationrule.NewTranslator(clusterDomains, decoratorFactory),
+		virtualServiceTranslator:      virtualservice.NewTranslator(clusterDomains, decoratorFactory),
+		authorizationPolicyTranslator: authorizationpolicy.NewTranslator(),
 	}
 }
 
@@ -56,9 +56,9 @@ func (t *translator) Translate(
 	reporter reporting.Reporter,
 ) Outputs {
 
-	vs := t.virtualServices.Translate(in, meshService, reporter)
-	dr := t.destinationRules.Translate(in, meshService, reporter)
-	ap := t.authorizationPolicies.Translate(in, meshService, reporter)
+	vs := t.virtualServiceTranslator.Translate(in, meshService, reporter)
+	dr := t.destinationRuleTranslator.Translate(in, meshService, reporter)
+	ap := t.authorizationPolicyTranslator.Translate(in, meshService, reporter)
 
 	return Outputs{
 		VirtualService:      vs,

@@ -20,6 +20,8 @@ import (
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
 
+//go:generate mockgen -source ./virtual_service_translator.go -destination mocks/virtual_service_translator.go
+
 // the VirtualService translator translates a MeshService into a VirtualService.
 type Translator interface {
 	// Translate translates the appropriate VirtualService for the given MeshService.

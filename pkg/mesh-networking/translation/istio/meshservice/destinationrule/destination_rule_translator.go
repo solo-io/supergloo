@@ -19,6 +19,8 @@ import (
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
 
+//go:generate mockgen -source ./destination_rule_translator.go -destination mocks/destination_rule_translator.go
+
 // the DestinationRule translator translates a MeshService into a DestinationRule.
 type Translator interface {
 	// Translate translates the appropriate DestinationRule for the given MeshService.
