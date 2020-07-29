@@ -131,7 +131,7 @@ func (t *translator) translate(
 	}
 	var multierr *multierror.Error
 	if len(prioritizedMeshServices) < 1 {
-		return nil, nil, eris.New("FailoverService has fewer than 1 MeshService.")
+		return nil, nil, eris.New("FailoverService has fewer than one MeshService.")
 	}
 	for _, meshRef := range failoverService.Spec.Meshes {
 		mesh, err := allMeshes.Find(meshRef)
@@ -182,7 +182,7 @@ func (t *translator) collectMeshServicesForFailoverService(
 		}
 		if matchingMeshService == nil {
 			// Should never happen because it would be caught in validation.
-			return nil, failoverservice.FailoverServiceNotFound(serviceRef)
+			return nil, failoverservice.BackingServiceNotFound(serviceRef)
 		}
 		prioritizedMeshServices = append(prioritizedMeshServices, matchingMeshService)
 	}
