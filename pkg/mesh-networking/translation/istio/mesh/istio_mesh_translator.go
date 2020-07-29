@@ -4,10 +4,12 @@ import (
 	"context"
 
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/enforcement"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/federation"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -15,10 +17,11 @@ import (
 
 // outputs of translating a single Mesh
 type Outputs struct {
-	Gateways         istiov1alpha3sets.GatewaySet
-	EnvoyFilters     istiov1alpha3sets.EnvoyFilterSet
-	DestinationRules istiov1alpha3sets.DestinationRuleSet
-	ServiceEntries   istiov1alpha3sets.ServiceEntrySet
+	Gateways              istiov1alpha3sets.GatewaySet
+	EnvoyFilters          istiov1alpha3sets.EnvoyFilterSet
+	DestinationRules      istiov1alpha3sets.DestinationRuleSet
+	ServiceEntries        istiov1alpha3sets.ServiceEntrySet
+	AuthorizationPolicies v1beta1sets.AuthorizationPolicySet
 }
 
 // the VirtualService translator translates a Mesh into a VirtualService.
@@ -36,17 +39,20 @@ type Translator interface {
 type translator struct {
 	ctx                       context.Context
 	federationTranslator      federation.Translator
+	enforcementTranslator     enforcement.Translator
 	failoverServiceTranslator failoverservice.Translator
 }
 
 func NewTranslator(
 	ctx context.Context,
 	federationTranslator federation.Translator,
+	enforcementTranslator enforcement.Translator,
 	failoverServiceTranslator failoverservice.Translator,
 ) Translator {
 	return &translator{
 		ctx:                       ctx,
 		federationTranslator:      federationTranslator,
+		enforcementTranslator:     enforcementTranslator,
 		failoverServiceTranslator: failoverServiceTranslator,
 	}
 }
@@ -67,9 +73,11 @@ func (t *translator) Translate(
 	envoyFilters := istiov1alpha3sets.NewEnvoyFilterSet()
 	destinationRules := istiov1alpha3sets.NewDestinationRuleSet()
 	serviceEntries := istiov1alpha3sets.NewServiceEntrySet()
+	authPolicies := v1beta1sets.NewAuthorizationPolicySet()
 
 	for _, vMesh := range mesh.Status.AppliedVirtualMeshes {
 		federationOutputs := t.federationTranslator.Translate(in, mesh, vMesh, reporter)
+		enforcementAuthPolicies := t.enforcementTranslator.Translate(in, mesh, vMesh, reporter)
 
 		if federationOutputs.Gateway != nil {
 			gateways.Insert(federationOutputs.Gateway)
@@ -79,6 +87,7 @@ func (t *translator) Translate(
 		}
 		destinationRules = destinationRules.Union(federationOutputs.DestinationRules)
 		serviceEntries = serviceEntries.Union(federationOutputs.ServiceEntries)
+		authPolicies = authPolicies.Union(enforcementAuthPolicies)
 	}
 
 	for _, failoverService := range mesh.Status.AppliedFailoverServices {
