@@ -987,3 +987,83 @@ func (l labeledAuthorizationPolicySet) Generic() output.ResourceList {
 		ResourceKind: "AuthorizationPolicy",
 	}
 }
+
+type Builder struct {
+	name string
+
+	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
+	envoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
+	gateways         networking_istio_io_v1alpha3_sets.GatewaySet
+	serviceEntries   networking_istio_io_v1alpha3_sets.ServiceEntrySet
+	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
+
+	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
+}
+
+func NewBuilder(name string) *Builder {
+	return &Builder{
+		name: name,
+
+		destinationRules: networking_istio_io_v1alpha3_sets.NewDestinationRuleSet(),
+		envoyFilters:     networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet(),
+		gateways:         networking_istio_io_v1alpha3_sets.NewGatewaySet(),
+		serviceEntries:   networking_istio_io_v1alpha3_sets.NewServiceEntrySet(),
+		virtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
+
+		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
+	}
+}
+
+func (i *Builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
+	return NewLabelPartitionedSnapshot(
+		i.name,
+		labelKey,
+
+		i.destinationRules,
+		i.envoyFilters,
+		i.gateways,
+		i.serviceEntries,
+		i.virtualServices,
+
+		i.authorizationPolicies,
+	)
+}
+
+func (i *Builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
+	return NewSinglePartitionedSnapshot(
+		i.name,
+		snapshotLabels,
+
+		i.destinationRules,
+		i.envoyFilters,
+		i.gateways,
+		i.serviceEntries,
+		i.virtualServices,
+
+		i.authorizationPolicies,
+	)
+}
+func (i *Builder) AddDestinationRules(destinationRules []*networking_istio_io_v1alpha3.DestinationRule) *Builder {
+	i.destinationRules.Insert(destinationRules...)
+	return i
+}
+func (i *Builder) AddEnvoyFilters(envoyFilters []*networking_istio_io_v1alpha3.EnvoyFilter) *Builder {
+	i.envoyFilters.Insert(envoyFilters...)
+	return i
+}
+func (i *Builder) AddGateways(gateways []*networking_istio_io_v1alpha3.Gateway) *Builder {
+	i.gateways.Insert(gateways...)
+	return i
+}
+func (i *Builder) AddServiceEntries(serviceEntries []*networking_istio_io_v1alpha3.ServiceEntry) *Builder {
+	i.serviceEntries.Insert(serviceEntries...)
+	return i
+}
+func (i *Builder) AddVirtualServices(virtualServices []*networking_istio_io_v1alpha3.VirtualService) *Builder {
+	i.virtualServices.Insert(virtualServices...)
+	return i
+}
+func (i *Builder) AddAuthorizationPolicies(authorizationPolicies []*security_istio_io_v1beta1.AuthorizationPolicy) *Builder {
+	i.authorizationPolicies.Insert(authorizationPolicies...)
+	return i
+}

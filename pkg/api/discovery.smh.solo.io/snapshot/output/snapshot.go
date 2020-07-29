@@ -549,3 +549,55 @@ func (l labeledMeshSet) Generic() output.ResourceList {
 		ResourceKind: "Mesh",
 	}
 }
+
+type Builder struct {
+	name string
+
+	meshServices  discovery_smh_solo_io_v1alpha2_sets.MeshServiceSet
+	meshWorkloads discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
+	meshes        discovery_smh_solo_io_v1alpha2_sets.MeshSet
+}
+
+func NewBuilder(name string) *Builder {
+	return &Builder{
+		name: name,
+
+		meshServices:  discovery_smh_solo_io_v1alpha2_sets.NewMeshServiceSet(),
+		meshWorkloads: discovery_smh_solo_io_v1alpha2_sets.NewMeshWorkloadSet(),
+		meshes:        discovery_smh_solo_io_v1alpha2_sets.NewMeshSet(),
+	}
+}
+
+func (i *Builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
+	return NewLabelPartitionedSnapshot(
+		i.name,
+		labelKey,
+
+		i.meshServices,
+		i.meshWorkloads,
+		i.meshes,
+	)
+}
+
+func (i *Builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
+	return NewSinglePartitionedSnapshot(
+		i.name,
+		snapshotLabels,
+
+		i.meshServices,
+		i.meshWorkloads,
+		i.meshes,
+	)
+}
+func (i *Builder) AddMeshServices(meshServices []*discovery_smh_solo_io_v1alpha2.MeshService) *Builder {
+	i.meshServices.Insert(meshServices...)
+	return i
+}
+func (i *Builder) AddMeshWorkloads(meshWorkloads []*discovery_smh_solo_io_v1alpha2.MeshWorkload) *Builder {
+	i.meshWorkloads.Insert(meshWorkloads...)
+	return i
+}
+func (i *Builder) AddMeshes(meshes []*discovery_smh_solo_io_v1alpha2.Mesh) *Builder {
+	i.meshes.Insert(meshes...)
+	return i
+}
