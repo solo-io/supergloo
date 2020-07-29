@@ -77,7 +77,7 @@ func (t *translator) Translate(
 
 	for _, vMesh := range mesh.Status.AppliedVirtualMeshes {
 		federationOutputs := t.federationTranslator.Translate(in, mesh, vMesh, reporter)
-		enforcementAuthPolicies := t.enforcementTranslator.Translate(in, mesh, vMesh, reporter)
+		enforcementAuthPolicies := t.enforcementTranslator.Translate(mesh, vMesh)
 
 		if federationOutputs.Gateway != nil {
 			gateways.Insert(federationOutputs.Gateway)
