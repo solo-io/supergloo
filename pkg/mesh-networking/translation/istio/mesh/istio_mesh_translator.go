@@ -76,6 +76,7 @@ func (t *translator) Translate(
 	authPolicies := v1beta1sets.NewAuthorizationPolicySet()
 
 	for _, vMesh := range mesh.Status.AppliedVirtualMeshes {
+		
 		federationOutputs := t.federationTranslator.Translate(in, mesh, vMesh, reporter)
 		enforcementAuthPolicies := t.enforcementTranslator.Translate(mesh, vMesh)
 
