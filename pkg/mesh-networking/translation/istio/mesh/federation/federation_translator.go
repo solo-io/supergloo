@@ -27,6 +27,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+//go:generate mockgen -source ./federation_translator.go -destination mocks/federation_translator.go
+
 var (
 	// NOTE(ilackarms): we may want to support federating over non-tls port at some point.
 	defaultGatewayProtocol = "TLS"

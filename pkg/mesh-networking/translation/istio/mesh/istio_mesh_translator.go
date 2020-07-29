@@ -100,9 +100,10 @@ func (t *translator) Translate(
 	}
 
 	return Outputs{
-		Gateways:         gateways,
-		EnvoyFilters:     envoyFilters,
-		DestinationRules: destinationRules,
-		ServiceEntries:   serviceEntries,
+		Gateways:              gateways,
+		EnvoyFilters:          envoyFilters,
+		DestinationRules:      destinationRules,
+		ServiceEntries:        serviceEntries,
+		AuthorizationPolicies: authPolicies,
 	}
 }

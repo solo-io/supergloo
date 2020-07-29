@@ -31,6 +31,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+//go:generate mockgen -source ./failover_service_translator.go -destination mocks/failover_service_translator.go
+
 // Outputs of translating a FailoverService for a single Mesh
 type Outputs struct {
 	EnvoyFilters   networkingv1alpha3sets.EnvoyFilterSet
