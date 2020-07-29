@@ -10,6 +10,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/internal"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
@@ -26,12 +27,12 @@ type Translator interface {
 
 type istioTranslator struct {
 	totalTranslates int // TODO(ilackarms): metric
-	dependencies    dependencyFactory
+	dependencies    internal.DependencyFactory
 }
 
 func NewIstioTranslator() Translator {
 	return &istioTranslator{
-		dependencies: dependencyFactoryImpl{},
+		dependencies: internal.NewDependencyFactory(),
 	}
 }
 
@@ -42,7 +43,7 @@ func (t *istioTranslator) Translate(
 ) (istio.Snapshot, error) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translator-%v", t.totalTranslates))
 
-	meshServiceTranslator := t.dependencies.makeMeshServiceTranslator(in.KubernetesClusters())
+	meshServiceTranslator := t.dependencies.MakeMeshServiceTranslator(in.KubernetesClusters())
 
 	destinationRules := v1alpha3sets.NewDestinationRuleSet()
 	virtualServices := v1alpha3sets.NewVirtualServiceSet()
@@ -76,7 +77,7 @@ func (t *istioTranslator) Translate(
 	gateways := v1alpha3sets.NewGatewaySet()
 	serviceEntries := v1alpha3sets.NewServiceEntrySet()
 
-	meshTranslator := t.dependencies.makeMeshTranslator(ctx, in.KubernetesClusters())
+	meshTranslator := t.dependencies.MakeMeshTranslator(ctx, in.KubernetesClusters())
 	for _, mesh := range in.Meshes().List() {
 		meshOutputs := meshTranslator.Translate(in, mesh, reporter)
 
@@ -84,6 +85,7 @@ func (t *istioTranslator) Translate(
 		serviceEntries = serviceEntries.Union(meshOutputs.ServiceEntries)
 		envoyFilters = envoyFilters.Union(meshOutputs.EnvoyFilters)
 		destinationRules = destinationRules.Union(meshOutputs.DestinationRules)
+		authorizationPolicies = authorizationPolicies.Union(meshOutputs.AuthorizationPolicies)
 	}
 
 	t.totalTranslates++

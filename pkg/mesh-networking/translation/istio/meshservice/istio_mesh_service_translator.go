@@ -13,6 +13,8 @@ import (
 	istiov1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 )
 
+//go:generate mockgen -source ./istio_mesh_service_translator.go -destination mocks/istio_mesh_service_translator.go
+
 // outputs of translating a single MeshService
 type Outputs struct {
 	VirtualService      *networkingv1alpha3.VirtualService

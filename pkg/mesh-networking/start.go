@@ -32,7 +32,7 @@ func startReconciler(
 
 	snapshotBuilder := input.NewSingleClusterBuilder(masterManager.GetClient())
 	reporter := reporting.NewPanickingReporter(ctx)
-	istioTranslator := istio.NewIstioTranslator()
+	istioTranslator := istio.NewIstioTranslator(nil)
 	validator := approval.NewApprover(istioTranslator)
 
 	return reconciliation.Start(
