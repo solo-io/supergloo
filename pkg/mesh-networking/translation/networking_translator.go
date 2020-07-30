@@ -32,7 +32,7 @@ type translator struct {
 	istioTranslator istio.Translator
 }
 
-func NewIstioTranslator(
+func NewTranslator(
 	istioTranslator istio.Translator,
 ) Translator {
 	return &translator{
