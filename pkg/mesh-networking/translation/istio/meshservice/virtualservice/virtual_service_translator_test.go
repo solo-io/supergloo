@@ -40,7 +40,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockVirtualServiceDecorator(ctrl)
 		virtualServiceTranslator = virtualservice.NewTranslator(mockClusterDomainRegistry, mockDecoratorFactory)
-		in = test.NewInputSnapshotBuilder("").Build()
+		in = test.NewInputSnapshotManualBuilder("").Build()
 	})
 
 	AfterEach(func() {

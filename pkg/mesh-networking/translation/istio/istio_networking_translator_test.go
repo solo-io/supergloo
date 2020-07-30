@@ -53,7 +53,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 	})
 
 	It("should translate", func() {
-		in := test.NewInputSnapshotBuilder("").
+		in := test.NewInputSnapshotManualBuilder("").
 			AddKubernetesClusters([]*multiclusterv1alpha1.KubernetesCluster{
 				{
 					ObjectMeta: metav1.ObjectMeta{

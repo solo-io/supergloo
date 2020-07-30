@@ -5,12 +5,13 @@
 package mock_enforcement
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface.

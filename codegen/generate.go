@@ -67,8 +67,8 @@ var (
 		io.NetworkingInputTypes,
 	)
 
-	networkingTestInputSnapshot = makeTopLevelTemplate(
-		contrib.InputSnapshotTestBuilder,
+	networkingInputSnapshotManualBuilder = makeTopLevelTemplate(
+		contrib.InputSnapshotManualBuilder,
 		networkingTestInputSnapshotBuilderCodePath,
 		io.NetworkingInputTypes,
 	)
@@ -90,7 +90,7 @@ var (
 		discoveryReconciler,
 		discoveryOutputSnapshot,
 		networkingInputSnapshot,
-		networkingTestInputSnapshot,
+		networkingInputSnapshotManualBuilder,
 		networkingReconciler,
 		networkingOutputIstioSnapshot,
 	}

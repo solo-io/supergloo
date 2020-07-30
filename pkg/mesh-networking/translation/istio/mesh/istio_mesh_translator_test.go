@@ -42,7 +42,7 @@ var _ = Describe("IstioMeshTranslator", func() {
 		mockEnforcementTranslator = mock_enforcement.NewMockTranslator(ctrl)
 		mockFailoverServiceTranslator = mock_failoverservice.NewMockTranslator(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		in = test.NewInputSnapshotBuilder("").Build()
+		in = test.NewInputSnapshotManualBuilder("").Build()
 		istioMeshTranslator = mesh.NewTranslator(ctx, mockFederationTranslator, mockEnforcementTranslator, mockFailoverServiceTranslator)
 	})
 

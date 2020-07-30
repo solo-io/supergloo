@@ -23,7 +23,7 @@ type InputSnapshotBuilder struct {
 	kubernetesClusters multiclusterv1alpha1sets.KubernetesClusterSet
 }
 
-func NewInputSnapshotBuilder(name string) *InputSnapshotBuilder {
+func NewInputSnapshotManualBuilder(name string) *InputSnapshotBuilder {
 	return &InputSnapshotBuilder{
 		name:               name,
 		meshServices:       discoveryv1alpha2sets.NewMeshServiceSet(),

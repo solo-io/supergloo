@@ -32,7 +32,7 @@ var _ = Describe("IstioMeshServiceTranslator", func() {
 		mockVirtualServiceTranslator = mock_virtualservice.NewMockTranslator(ctrl)
 		mockAuthorizationPolicyTranslator = mock_authorizationpolicy.NewMockTranslator(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		in = test.NewInputSnapshotBuilder("").Build()
+		in = test.NewInputSnapshotManualBuilder("").Build()
 		istioMeshServiceTranslator = &translator{
 			destinationRuleTranslator:     mockDestinationRuleTranslator,
 			virtualServiceTranslator:      mockVirtualServiceTranslator,

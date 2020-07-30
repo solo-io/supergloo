@@ -45,7 +45,7 @@ require (
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/zapr v0.1.1
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1
+	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.3.5
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/hashicorp/consul v1.6.2
@@ -61,7 +61,7 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0
-	github.com/solo-io/skv2 v0.7.3-0.20200728135958-4b17023f5035
+	github.com/solo-io/skv2 v0.8.1-0.20200730152005-7f8fa1c51fea
 	github.com/solo-io/solo-kit v0.13.8
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5

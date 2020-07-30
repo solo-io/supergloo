@@ -177,7 +177,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
 			},
 		}
-		inputSnapshot := testutils.NewInputSnapshotBuilder("").AddMeshes(meshes).Build()
+		inputSnapshot := testutils.NewInputSnapshotManualBuilder("").AddMeshes(meshes).Build()
 		authPolicy := translator.Translate(inputSnapshot, meshService, mockReporter)
 		Expect(authPolicy).To(Equal(expectedAuthPolicy))
 	})

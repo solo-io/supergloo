@@ -40,7 +40,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockAggregatingDecorator = mock_trafficpolicy.NewMockAggregatingDestinationRuleDecorator(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockDestinationRuleDecorator(ctrl)
 		destinationRuleTranslator = destinationrule.NewTranslator(mockClusterDomainRegistry, mockDecoratorFactory)
-		in = test.NewInputSnapshotBuilder("").Build()
+		in = test.NewInputSnapshotManualBuilder("").Build()
 	})
 
 	AfterEach(func() {

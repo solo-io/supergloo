@@ -5,12 +5,13 @@
 package mock_virtualservice
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
 	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface.

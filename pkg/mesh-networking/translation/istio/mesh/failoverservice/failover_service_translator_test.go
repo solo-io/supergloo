@@ -176,7 +176,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 			},
 		}
 
-		in := test.NewInputSnapshotBuilder("").
+		in := test.NewInputSnapshotManualBuilder("").
 			AddMeshServices(allMeshServices).
 			AddMeshes(allMeshes).
 			AddKubernetesClusters([]*v1alpha1.KubernetesCluster{{ObjectMeta: metav1.ObjectMeta{Name: "kube-cluster"}}}).
