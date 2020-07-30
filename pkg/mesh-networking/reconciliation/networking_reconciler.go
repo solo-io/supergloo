@@ -7,11 +7,11 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -26,7 +26,7 @@ type networkingReconciler struct {
 	builder            input.Builder
 	approver           approval.Approver
 	reporter           reporting.Reporter
-	istioTranslator    istio.Translator
+	translator         translation.Translator
 	masterClient       client.Client
 	multiClusterClient multicluster.Client
 }
@@ -36,7 +36,7 @@ func Start(
 	builder input.Builder,
 	validator approval.Approver,
 	reporter reporting.Reporter,
-	istioTranslator istio.Translator,
+	translator translation.Translator,
 	multiClusterClient multicluster.Client,
 	mgr manager.Manager,
 ) error {
@@ -45,7 +45,7 @@ func Start(
 		builder:            builder,
 		approver:           validator,
 		reporter:           reporter,
-		istioTranslator:    istioTranslator,
+		translator:         translator,
 		masterClient:       mgr.GetClient(),
 		multiClusterClient: multiClusterClient,
 	}
@@ -80,14 +80,14 @@ func (d *networkingReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 }
 
 func (d *networkingReconciler) syncIstio(in input.Snapshot) error {
-	istioSnap, err := d.istioTranslator.Translate(d.ctx, in, d.reporter)
+	outputSnap, err := d.translator.Translate(d.ctx, in, d.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err
 	}
 
 	var errs error
-	istioSnap.ApplyMultiCluster(d.ctx, d.multiClusterClient, output.ErrorHandlerFuncs{
+	outputSnap.ApplyMultiCluster(d.ctx, d.multiClusterClient, output.ErrorHandlerFuncs{
 		HandleWriteErrorFunc: func(resource ezkube.Object, err error) {
 			errs = multierror.Append(errs, eris.Wrapf(err, "writing resource %v failed", sets.Key(resource)))
 		},

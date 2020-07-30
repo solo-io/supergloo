@@ -29,11 +29,9 @@ var SMHGroups = []model.Group{
 		{kind: "VirtualMesh"},
 		{kind: "FailoverService"},
 	}),
-}
-
-var CSRGroups = []model.Group{
-	makeGroup("security", v1alpha2Version, []resourceToGenerate{
-		{kind: "VirtualMeshCertificateSigningRequest"},
+	makeGroup("certificates", v1alpha2Version, []resourceToGenerate{
+		{kind: "IssuedCertificate"},
+		{kind: "CertificateRequest"},
 	}),
 }
 

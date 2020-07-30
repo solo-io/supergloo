@@ -5,11 +5,12 @@
 package mock_trafficpolicy
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	decorators "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	v1alpha3 "istio.io/api/networking/v1alpha3"
-	reflect "reflect"
 )
 
 // MockDestinationRuleDecorator is a mock of DestinationRuleDecorator interface.

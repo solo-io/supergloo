@@ -9,9 +9,10 @@ import (
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
+	certificatesv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input/test"
-	istio2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
 	mock_istio "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/internal/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh"
@@ -53,7 +54,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 	})
 
 	It("should translate", func() {
-		in := test.NewInputSnapshotBuilder("").
+		in := input.NewInputSnapshotManualBuilder("").
 			AddKubernetesClusters([]*multiclusterv1alpha1.KubernetesCluster{
 				{
 					ObjectMeta: metav1.ObjectMeta{
@@ -218,6 +219,20 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 				},
 			},
 		}
+		mIssuedCertificates := []*v1alpha2.IssuedCertificate{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:   "m-issued-certificate-1",
+					Labels: metautils.TranslatedObjectLabels(),
+				},
+			},
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:   "m-issued-certificate-2",
+					Labels: metautils.TranslatedObjectLabels(),
+				},
+			},
+		}
 		mockDependencyFactory.
 			EXPECT().
 			MakeMeshTranslator(ctxWithValue, in.KubernetesClusters()).
@@ -232,21 +247,21 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 					DestinationRules:      v1alpha3sets.NewDestinationRuleSet(mDestinationRules[i]),
 					ServiceEntries:        v1alpha3sets.NewServiceEntrySet(mServiceEntries[i]),
 					AuthorizationPolicies: v1beta1sets.NewAuthorizationPolicySet(mAuthPolicies[i]),
+					IssuedCertificates:    certificatesv1alpha2sets.NewIssuedCertificateSet(mIssuedCertificates[i]),
 				})
 		}
 
-		expectedOutput, err := istio2.NewBuilder("istio-networking-1").
-			AddDestinationRules(append(msDestinationRules, mDestinationRules...)).
-			AddEnvoyFilters(mEnvoyFilters).
-			AddGateways(mGateways).
-			AddServiceEntries(mServiceEntries).
-			AddVirtualServices(msVirtualServices).
-			AddAuthorizationPolicies(append(msAuthPolicies, mAuthPolicies...)).
-			BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
-		Expect(err).ToNot(HaveOccurred())
+		expectedOutput := Outputs{
+			IssuedCertificates:    certificatesv1alpha2sets.NewIssuedCertificateSet(mIssuedCertificates...),
+			DestinationRules:      v1alpha3sets.NewDestinationRuleSet(append(msDestinationRules, mDestinationRules...)...),
+			EnvoyFilters:          v1alpha3sets.NewEnvoyFilterSet(mEnvoyFilters...),
+			Gateways:              v1alpha3sets.NewGatewaySet(mGateways...),
+			ServiceEntries:        v1alpha3sets.NewServiceEntrySet(mServiceEntries...),
+			VirtualServices:       v1alpha3sets.NewVirtualServiceSet(msVirtualServices...),
+			AuthorizationPolicies: v1beta1sets.NewAuthorizationPolicySet(append(msAuthPolicies, mAuthPolicies...)...),
+		}
 
-		output, err := translator.Translate(ctx, in, mockReporter)
-		Expect(err).ToNot(HaveOccurred())
+		output := translator.Translate(ctx, in, mockReporter)
 		Expect(output).To(Equal(expectedOutput))
 	})
 })

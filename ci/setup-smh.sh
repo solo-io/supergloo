@@ -29,7 +29,7 @@ DEFAULT_MANIFEST="${INSTALL_DIR}/service-mesh-hub-default.yaml"
 
 ## build
 MAKE="make -C $PROJECT_ROOT"
-eval "${MAKE} manifest-gen service-mesh-hub-image -B"
+eval "${MAKE} manifest-gen build-all-images -B"
 
 ## install to kube
 

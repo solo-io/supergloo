@@ -5,8 +5,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input/test"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	mock_decorators "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators/mocks"
@@ -40,7 +39,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockAggregatingDecorator = mock_trafficpolicy.NewMockAggregatingDestinationRuleDecorator(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockDestinationRuleDecorator(ctrl)
 		destinationRuleTranslator = destinationrule.NewTranslator(mockClusterDomainRegistry, mockDecoratorFactory)
-		in = test.NewInputSnapshotBuilder("").Build()
+		in = input.NewInputSnapshotManualBuilder("").Build()
 	})
 
 	AfterEach(func() {

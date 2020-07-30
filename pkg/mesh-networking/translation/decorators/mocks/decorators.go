@@ -5,9 +5,10 @@
 package mock_decorators
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	decorators "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	reflect "reflect"
 )
 
 // MockFactory is a mock of Factory interface.

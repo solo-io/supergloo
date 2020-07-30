@@ -4,11 +4,12 @@ import (
 	"context"
 	"sort"
 
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
+
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -24,15 +25,15 @@ type Approver interface {
 }
 
 type approver struct {
-	// the approver runs the istioTranslator in order to detect & report translation errors
-	istioTranslator istio.Translator
+	// the approver runs the networking translator in order to detect & report translation errors
+	translator translation.Translator
 }
 
 func NewApprover(
-	istioTranslator istio.Translator,
+	translator translation.Translator,
 ) Approver {
 	return &approver{
-		istioTranslator: istioTranslator,
+		translator: translator,
 	}
 }
 
@@ -41,11 +42,12 @@ func (v *approver) Approve(ctx context.Context, input input.Snapshot) {
 	reporter := newApprovalReporter()
 
 	for _, meshService := range input.MeshServices().List() {
-		appliedTrafficPolicies := getAppliedTrafficPolicies(input.TrafficPolicies().List(), meshService)
-		meshService.Status.AppliedTrafficPolicies = appliedTrafficPolicies
+		meshService.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), meshService)
 
-		appliedAccessPolicies := getAppliedAccessPolicies(input.AccessPolicies().List(), meshService)
-		meshService.Status.AppliedAccessPolicies = appliedAccessPolicies
+		meshService.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), meshService)
+	}
+	for _, mesh := range input.Meshes().List() {
+		mesh.Status.AppliedVirtualMeshes = getAppliedVirtualMeshes(input.VirtualMeshes().List(), mesh)
 	}
 
 	for _, mesh := range input.Meshes().List() {
@@ -53,22 +55,25 @@ func (v *approver) Approve(ctx context.Context, input input.Snapshot) {
 		mesh.Status.AppliedFailoverServices = appliedFailoverServices
 	}
 
-	_, err := v.istioTranslator.Translate(ctx, input, reporter)
+	_, err := v.translator.Translate(ctx, input, reporter)
 	if err != nil {
 		// should never happen
-		contextutils.LoggerFrom(ctx).Errorf("internal error: failed to run istio translator: %v", err)
+		contextutils.LoggerFrom(ctx).Errorf("internal error: failed to run translator: %v", err)
 	}
 
-	// write traffic policy statuses
+	// initialize traffic policy statuses
 	for _, trafficPolicy := range input.TrafficPolicies().List() {
 		trafficPolicy.Status = v1alpha2.TrafficPolicyStatus{
+			State:              v1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: trafficPolicy.Generation,
 			MeshServices:       map[string]*v1alpha2.ApprovalStatus{},
 		}
 	}
-	// write access policy statuses
+
+	// initialize access policy statuses
 	for _, accessPolicy := range input.AccessPolicies().List() {
 		accessPolicy.Status = v1alpha2.AccessPolicyStatus{
+			State:              v1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: accessPolicy.Generation,
 			MeshServices:       map[string]*v1alpha2.ApprovalStatus{},
 		}
@@ -77,11 +82,13 @@ func (v *approver) Approve(ctx context.Context, input input.Snapshot) {
 	// write FailoverService statuses
 	for _, failoverService := range input.FailoverServices().List() {
 		failoverService.Status = v1alpha2.FailoverServiceStatus{
+			State:              v1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: failoverService.Generation,
 			Meshes:             map[string]*v1alpha2.ApprovalStatus{},
 		}
 	}
 
+	// update meshservice, trafficpolicy, and accesspolicy statuses
 	for _, meshService := range input.MeshServices().List() {
 		meshService.Status.ObservedGeneration = meshService.Generation
 		meshService.Status.AppliedTrafficPolicies = validateAndReturnApprovedTrafficPolicies(ctx, input, reporter, meshService)
@@ -94,7 +101,6 @@ func (v *approver) Approve(ctx context.Context, input input.Snapshot) {
 	}
 
 	// TODO(ilackarms): validate meshworkloads
-	// TODO(harveyxia): iterate through each networking CRD and update Status.State
 }
 
 // this function both validates the status of TrafficPolicies (sets error or accepted state)
@@ -130,6 +136,7 @@ func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.S
 				State:  v1alpha2.ApprovalState_INVALID,
 				Errors: errMsgs,
 			}
+			trafficPolicy.Status.State = v1alpha2.ApprovalState_INVALID
 		}
 	}
 
@@ -174,6 +181,7 @@ func validateAndReturnApprovedAccessPolicies(
 				State:  v1alpha2.ApprovalState_INVALID,
 				Errors: errMsgs,
 			}
+			accessPolicy.Status.State = v1alpha2.ApprovalState_INVALID
 		}
 	}
 
@@ -216,14 +224,14 @@ func validateAndReturnApprovedFailoverServices(
 				State:  v1alpha2.ApprovalState_INVALID,
 				Errors: errMsgs,
 			}
+			failoverService.Status.State = v1alpha2.ApprovalState_INVALID
 		}
 	}
 
 	return validatedFailoverServices
 }
 
-// the validation reporter uses istioTranslator reports to
-// validate individual policies
+// the approval reporter validates individual policies and reports any encountered errors
 type approvalReporter struct {
 	// NOTE(ilackarms): map access should be synchronous (called in a single context),
 	// so locking should not be necessary.
@@ -370,6 +378,10 @@ func getAppliedTrafficPolicies(
 // Next will be the policies which have been modified and rejected.
 // Finally, policies which are rejected and modified
 func sortTrafficPoliciesByAcceptedDate(meshService *discoveryv1alpha2.MeshService, trafficPolicies v1alpha2.TrafficPolicySlice) {
+	isUpToDate := func(tp *v1alpha2.TrafficPolicy) bool {
+		return tp.Status.ObservedGeneration == tp.Generation
+	}
+
 	sort.SliceStable(trafficPolicies, func(i, j int) bool {
 		tp1, tp2 := trafficPolicies[i], trafficPolicies[j]
 
@@ -406,10 +418,6 @@ func sortTrafficPoliciesByAcceptedDate(meshService *discoveryv1alpha2.MeshServic
 	})
 }
 
-func isUpToDate(tp *v1alpha2.TrafficPolicy) bool {
-	return tp.Status.ObservedGeneration == tp.Generation
-}
-
 // Fetch all AccessPolicies applicable to the given MeshService.
 // Sorting is not needed because the additive semantics of AccessPolicies does not allow for conflicts.
 func getAppliedAccessPolicies(
@@ -432,6 +440,34 @@ func getAppliedAccessPolicies(
 	return appliedPolicies
 }
 
+func getAppliedVirtualMeshes(
+	virtualMeshes v1alpha2.VirtualMeshSlice,
+	mesh *discoveryv1alpha2.Mesh,
+) []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh {
+	var matchingVirtualMeshes v1alpha2.VirtualMeshSlice
+	for _, vMesh := range virtualMeshes {
+		for _, meshRef := range vMesh.Spec.Meshes {
+			if ezkube.RefsMatch(mesh, meshRef) {
+				matchingVirtualMeshes = append(matchingVirtualMeshes, vMesh)
+				break
+			}
+		}
+	}
+
+	sortVirtualMeshesByAcceptedDate(mesh, matchingVirtualMeshes)
+
+	var appliedVirtualMeshes []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh
+	for _, vMesh := range matchingVirtualMeshes {
+		vMesh := vMesh // pike
+		appliedVirtualMeshes = append(appliedVirtualMeshes, &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
+			Ref:                ezkube.MakeObjectRef(vMesh),
+			Spec:               &vMesh.Spec,
+			ObservedGeneration: vMesh.Generation,
+		})
+	}
+	return appliedVirtualMeshes
+}
+
 // Fetch all FailoverServices applicable to the given Mesh.
 func getAppliedFailoverServices(
 	failoverServices v1alpha2.FailoverServiceSlice,
@@ -452,4 +488,51 @@ func getAppliedFailoverServices(
 		}
 	}
 	return appliedFailoverServices
+}
+
+// sort the set of virtual meshes in the order in which they were accepted.
+// VMeshes which were accepted first and have not changed (i.e. their observedGeneration is up-to-date) take precedence.
+// Next are vMeshes that were previously accepted but whose observedGeneration is out of date. This permits vmeshes which were modified but formerly correct to maintain
+// their acceptance status ahead of vmeshes which were unmodified and previously rejected.
+// Next will be the vmeshes which have been modified and rejected.
+// Finally, vmeshes which are rejected and modified
+func sortVirtualMeshesByAcceptedDate(mesh *discoveryv1alpha2.Mesh, virtualMeshes v1alpha2.VirtualMeshSlice) {
+	isUpToDate := func(vm *v1alpha2.VirtualMesh) bool {
+		return vm.Status.ObservedGeneration == vm.Generation
+	}
+
+	sort.SliceStable(virtualMeshes, func(i, j int) bool {
+		vMesh1, vMesh2 := virtualMeshes[i], virtualMeshes[j]
+
+		status1 := vMesh1.Status.Meshes[sets.Key(mesh)]
+		status2 := vMesh2.Status.Meshes[sets.Key(mesh)]
+
+		if status2 == nil {
+			// if status is not set, the vMesh is "pending" for this mesh
+			// and should get sorted after an accepted status.
+			return status1 != nil
+		}
+
+		switch {
+		case status1.State == v1alpha2.ApprovalState_ACCEPTED:
+			if status2.State != v1alpha2.ApprovalState_ACCEPTED {
+				// accepted comes before non accepted
+				return true
+			}
+
+			if vMesh1UpToDate := isUpToDate(vMesh1); vMesh1UpToDate != isUpToDate(vMesh2) {
+				// up to date is validated before modified
+				return vMesh1UpToDate
+			}
+
+			// sort by the previous acceptance order
+			return status1.AcceptanceOrder < status2.AcceptanceOrder
+		case status2.State == v1alpha2.ApprovalState_ACCEPTED:
+			// accepted comes before non accepted
+			return false
+		default:
+			// neither policy has been accepted, we can simply sort by unique key
+			return sets.Key(vMesh1) < sets.Key(vMesh2)
+		}
+	})
 }
