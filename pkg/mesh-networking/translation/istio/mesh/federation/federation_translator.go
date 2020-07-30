@@ -76,18 +76,23 @@ func (t *translator) Translate(
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
 	reporter reporting.Reporter,
 ) Outputs {
+	// TODO(harveyxia) temp until nil safe set unions
+	output := Outputs{
+		DestinationRules: istiov1alpha3sets.NewDestinationRuleSet(),
+		ServiceEntries:   istiov1alpha3sets.NewServiceEntrySet(),
+	}
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.MeshType)
-		return Outputs{}
+		return output
 	}
 	if virtualMesh == nil || len(virtualMesh.Spec.Meshes) < 2 {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring istio mesh %v which is not federated with other meshes in a virtual mesh", sets.Key(mesh))
-		return Outputs{}
+		return output
 	}
 	if len(istioMesh.IngressGateways) < 1 {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring istio mesh %v has no ingress gateway", sets.Key(mesh))
-		return Outputs{}
+		return output
 	}
 	// TODO(ilackarms): consider supporting multiple ingress gateways or selecting a specific gateway.
 	// Currently, we just default to using the first one in the list.
@@ -97,7 +102,7 @@ func (t *translator) Translate(
 
 	if len(meshServices) == 0 {
 		contextutils.LoggerFrom(t.ctx).Debugf("no services found in istio mesh %v", sets.Key(mesh))
-		return Outputs{}
+		return output
 	}
 
 	istioCluster := istioMesh.Installation.Cluster
@@ -108,7 +113,7 @@ func (t *translator) Translate(
 	})
 	if err != nil {
 		contextutils.LoggerFrom(t.ctx).Errorf("internal error: cluster %v for istio mesh %v not found", istioCluster, sets.Key(mesh))
-		return Outputs{}
+		return output
 	}
 
 	istioNamespace := istioMesh.Installation.Namespace
@@ -120,7 +125,7 @@ func (t *translator) Translate(
 	if err != nil {
 		// should never happen
 		contextutils.LoggerFrom(t.ctx).DPanicf("failed generating tcp rewrite patch: %v", err)
-		return Outputs{}
+		return output
 	}
 
 	destinationRules := istiov1alpha3sets.NewDestinationRuleSet()

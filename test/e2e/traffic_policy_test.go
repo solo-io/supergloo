@@ -9,7 +9,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/test/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/solo-io/service-mesh-hub/test/e2e"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
 	"github.com/solo-io/service-mesh-hub/test/data"
@@ -34,15 +33,10 @@ var _ = Describe("TrafficPolicy E2e", func() {
 	)
 
 	BeforeEach(func() {
-
 		err := utils.WriteTestManifest(policyManifest, []metav1.Object{
 			trafficShiftReviewsV2,
 		})
 		Expect(err).NotTo(HaveOccurred())
-
-		dynamicClient, err = client.New(e2e.GetEnv().Management.Config, client.Options{})
-		Expect(err).NotTo(HaveOccurred())
-
 	})
 
 	AfterEach(func() {

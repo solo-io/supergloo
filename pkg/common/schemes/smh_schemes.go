@@ -3,6 +3,7 @@ package schemes
 import (
 	linkerdconfig "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
 	smiconfig "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
+	smhcertificates "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
 	smhdiscovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	smhnetworking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
@@ -19,6 +20,7 @@ var SchemeBuilder = runtime.SchemeBuilder{
 	// internal types
 	smhdiscovery.AddToScheme,
 	smhnetworking.AddToScheme,
+	smhcertificates.AddToScheme,
 
 	// external types
 	istiosecurityv1beta1.AddToScheme,

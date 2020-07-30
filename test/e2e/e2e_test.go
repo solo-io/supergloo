@@ -15,6 +15,7 @@ var (
 	appNamespace   = "bookinfo"
 	policyManifest = "test/e2e/bookinfo-policies.yaml"
 
+	// Initialize in BeforeSuite
 	dynamicClient client.Client
 
 	curlReviews = func() string {

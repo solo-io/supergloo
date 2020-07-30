@@ -863,6 +863,8 @@ github.com/solo-io/protoc-gen-ext v0.0.9/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz
 github.com/solo-io/skv2 v0.7.3-0.20200720193056-82d0f8632ef9/go.mod h1:yQqXNZgCWZ2LqrjK8I41YBjF6NpNSdaEBw2ipcqgDco=
 github.com/solo-io/skv2 v0.8.1-0.20200730165225-9a9c16fb4b0e h1:GtNnqzBtBdSkQhqTdpEq2ZY3AloKXpQJSmtNEkoGY80=
 github.com/solo-io/skv2 v0.8.1-0.20200730165225-9a9c16fb4b0e/go.mod h1:lYmLP3IZtbQw2H4nlQbaOoDL3hgwQylHWiNArI1jYbA=
+github.com/solo-io/skv2 v0.8.1-0.20200730174526-43ff3f2eccbc h1:0aFbEgewpMeJmSqFVmJ0CCVSushpJnqZJlQ+HGMpr1o=
+github.com/solo-io/skv2 v0.8.1-0.20200730174526-43ff3f2eccbc/go.mod h1:lYmLP3IZtbQw2H4nlQbaOoDL3hgwQylHWiNArI1jYbA=
 github.com/solo-io/solo-kit v0.13.8 h1:3FVs2g71vQp1zjrEh9kdjAQ650MijRxRW/X2E00eghI=
 github.com/solo-io/solo-kit v0.13.8/go.mod h1:1cSoxO1Cgzn++03nnp5V1iGf0S45OLDTUmj70rD/+hY=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
