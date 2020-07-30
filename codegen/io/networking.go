@@ -32,7 +32,7 @@ var (
 		},
 	}
 
-	NetworkingOutputIstioTypes = Snapshot{
+	NetworkingOutputTypes = Snapshot{
 		istionetworkingv1alpha3.SchemeGroupVersion: {
 			"DestinationRule",
 			"VirtualService",
@@ -42,6 +42,12 @@ var (
 		},
 		istiosecurityv1beta1.SchemeGroupVersion: {
 			"AuthorizationPolicy",
+		},
+		schema.GroupVersion{
+			Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
+			Version: "v1alpha2",
+		}: {
+			"IssuedCertificate",
 		},
 	}
 )

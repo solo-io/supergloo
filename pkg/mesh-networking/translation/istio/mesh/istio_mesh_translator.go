@@ -3,10 +3,12 @@ package mesh
 import (
 	"context"
 
+	certificatesv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
+
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/federation"
@@ -15,10 +17,11 @@ import (
 
 // outputs of translating a single Mesh
 type Outputs struct {
-	Gateways         istiov1alpha3sets.GatewaySet
-	EnvoyFilters     istiov1alpha3sets.EnvoyFilterSet
-	DestinationRules istiov1alpha3sets.DestinationRuleSet
-	ServiceEntries   istiov1alpha3sets.ServiceEntrySet
+	Gateways           istiov1alpha3sets.GatewaySet
+	EnvoyFilters       istiov1alpha3sets.EnvoyFilterSet
+	DestinationRules   istiov1alpha3sets.DestinationRuleSet
+	ServiceEntries     istiov1alpha3sets.ServiceEntrySet
+	IssuedCertificates certificatesv1alpha2sets.IssuedCertificateSet
 }
 
 // the VirtualService translator translates a Mesh into a VirtualService.

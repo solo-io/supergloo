@@ -5,7 +5,8 @@ OUTDIR ?= _output
 PROJECT ?= service-mesh-hub
 
 DOCKER_REPO ?= soloio
-PROJECT_IMAGE ?= $(DOCKER_REPO)/service-mesh-hub
+SMH_IMAGE ?= $(DOCKER_REPO)/service-mesh-hub
+CA_IMAGE ?= $(DOCKER_REPO)/cert-agent
 
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
 RELEASE := "true"
@@ -93,10 +94,10 @@ generated-reference-docs:
 #----------------------------------------------------------------------------------
 
 .PHONY: build-all-images
-build-all-images: service-mesh-hub-image
+build-all-images: service-mesh-hub-image cert-agent-image
 
 #----------------------------------------------------------------------------------
-# Build service-mesh-hub controller + cli images
+# Build service-mesh-hub controller + image
 #----------------------------------------------------------------------------------
 
 # for local development only; to build docker image, use service-mesh-hub-linux-amd-64
@@ -109,6 +110,49 @@ $(OUTDIR)/service-mesh-hub: $(SOURCES)
 service-mesh-hub-linux-amd64: $(OUTDIR)/service-mesh-hub-linux-amd64
 $(OUTDIR)/service-mesh-hub-linux-amd64: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/service-mesh-hub/main.go
+
+# build image with service-mesh-hub binary
+# this is an alternative to using operator-gen to build the image
+.PHONY: service-mesh-hub-image
+service-mesh-hub-image: service-mesh-hub-linux-amd64
+	cp $(OUTDIR)/service-mesh-hub-linux-amd64 build/service-mesh-hub/ && \
+	docker build -t $(SMH_IMAGE):$(VERSION) build/service-mesh-hub/
+	rm build/service-mesh-hub/service-mesh-hub-linux-amd64
+
+.PHONY: service-mesh-hub-image-push
+service-mesh-hub-image-push:
+	docker push $(SMH_IMAGE):$(VERSION)
+
+#----------------------------------------------------------------------------------
+# Build cert-agent + image
+#----------------------------------------------------------------------------------
+
+# for local development only; to build docker image, use cert-agent-linux-amd-64
+.PHONY: cert-agent
+cert-agent: $(OUTDIR)/cert-agent
+$(OUTDIR)/cert-agent: $(SOURCES)
+	go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/cert-agent/main.go
+
+.PHONY: cert-agent-linux-amd64
+cert-agent-linux-amd64: $(OUTDIR)/cert-agent-linux-amd64
+$(OUTDIR)/cert-agent-linux-amd64: $(SOURCES)
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/cert-agent/main.go
+
+# build image with cert-agent binary
+# this is an alternative to using operator-gen to build the image
+.PHONY: cert-agent-image
+cert-agent-image: cert-agent-linux-amd64
+	cp $(OUTDIR)/cert-agent-linux-amd64 build/cert-agent/ && \
+	docker build -t $(CA_IMAGE):$(VERSION) build/cert-agent/
+	rm build/cert-agent/cert-agent-linux-amd64
+
+.PHONY: cert-agent-image-push
+cert-agent-image-push:
+	docker push $(CA_IMAGE):$(VERSION)
+
+#----------------------------------------------------------------------------------
+# Build service-mesh-hub cli (meshctl)
+#----------------------------------------------------------------------------------
 
 .PHONY: meshctl-linux-amd64
 meshctl-linux-amd64: $(OUTDIR)/meshctl-linux-amd64
@@ -132,24 +176,12 @@ build-cli: meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64
 install-cli:
 	go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o ${GOPATH}/bin/meshctl cmd/meshctl/main.go
 
-# build image with service-mesh-hub binary
-# this is an alternative to using operator-gen to build the image
-.PHONY: service-mesh-hub-image
-service-mesh-hub-image: service-mesh-hub-linux-amd64
-	cp $(OUTDIR)/service-mesh-hub-linux-amd64 build/service-mesh-hub/ && \
-	docker build -t $(PROJECT_IMAGE):$(VERSION) build/service-mesh-hub/
-	rm build/service-mesh-hub/service-mesh-hub-linux-amd64
-
 #----------------------------------------------------------------------------------
 # Push images
 #----------------------------------------------------------------------------------
 
 .PHONY: push-all-images
 push-all-images: service-mesh-hub-image-push
-
-.PHONY: service-mesh-hub-image-push
-service-mesh-hub-image-push:
-	docker push $(PROJECT_IMAGE):$(VERSION)
 
 #----------------------------------------------------------------------------------
 # Helm chart

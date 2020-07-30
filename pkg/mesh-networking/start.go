@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reconciliation"
 	"github.com/solo-io/skv2/pkg/multicluster"
 )

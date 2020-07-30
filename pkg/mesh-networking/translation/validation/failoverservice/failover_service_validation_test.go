@@ -152,7 +152,7 @@ var _ = Describe("Validation", func() {
 			}, &networkingv1alpha2.FailoverServiceSpec{
 				Hostname: "service1.namespace1.cluster1",
 				Port: &networkingv1alpha2.FailoverServiceSpec_Port{
-					Number:     9080,
+					Number:   9080,
 					Protocol: "http",
 				},
 				Meshes: []*corev1.ObjectRef{
@@ -251,7 +251,7 @@ var _ = Describe("Validation", func() {
 			}, &networkingv1alpha2.FailoverServiceSpec{
 				Hostname: "service1.namespace1.cluster1",
 				Port: &networkingv1alpha2.FailoverServiceSpec_Port{
-					Number:     9080,
+					Number:   9080,
 					Protocol: "http",
 				},
 				Meshes: []*corev1.ObjectRef{
