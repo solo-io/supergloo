@@ -1,4 +1,4 @@
-package enforcement
+package access
 
 import (
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
@@ -13,7 +13,7 @@ import (
 
 // The access control translator translates a VirtualMesh EnforcementPolicy into Istio AuthorizationPolicies.
 type Translator interface {
-	// Returns nil if no AuthorizationPolicies are required for the mesh (i.e. because enforcement is disabled).
+	// Returns nil if no AuthorizationPolicies are required for the mesh (i.e. because access policy enforcement is disabled).
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		mesh *discoveryv1alpha2.Mesh,
@@ -41,7 +41,7 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	// Istio's default enforcement policy is disabled.
+	// Istio's default access enforcement policy is disabled.
 	if virtualMesh.Spec.EnforceAccessControl == v1alpha2.VirtualMeshSpec_MESH_DEFAULT ||
 		virtualMesh.Spec.EnforceAccessControl == v1alpha2.VirtualMeshSpec_DISABLED {
 		return nil

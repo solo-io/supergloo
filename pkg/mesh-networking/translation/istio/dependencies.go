@@ -5,7 +5,7 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/enforcement"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/access"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/federation"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice"
@@ -37,13 +37,13 @@ func (d dependencyFactoryImpl) makeMeshServiceTranslator(clusters skv1alpha1sets
 func (d dependencyFactoryImpl) makeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet) mesh.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	federationTranslator := federation.NewTranslator(ctx, clusterDomains)
-	enforcementTranslator := enforcement.NewTranslator()
+	accessTranslator := access.NewTranslator()
 	failoverServiceTranslator := failoverservice.NewTranslator(ctx, clusterDomains)
 
 	return mesh.NewTranslator(
 		ctx,
 		federationTranslator,
-		enforcementTranslator,
+		accessTranslator,
 		failoverServiceTranslator,
 	)
 }

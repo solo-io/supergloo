@@ -1,4 +1,4 @@
-package enforcement_test
+package access_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestEnforcement(t *testing.T) {
+func TestAccess(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Enforcement Suite")
+	RunSpecs(t, "Access Suite")
 }

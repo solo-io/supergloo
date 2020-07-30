@@ -1,4 +1,4 @@
-package enforcement_test
+package access_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -6,7 +6,7 @@ import (
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/enforcement"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/access"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
@@ -14,13 +14,13 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("EnforcementPolicyTranslator", func() {
+var _ = Describe("AccessPolicyTranslator", func() {
 	var (
-		translator enforcement.Translator
+		translator access.Translator
 	)
 
 	BeforeEach(func() {
-		translator = enforcement.NewTranslator()
+		translator = access.NewTranslator()
 	})
 
 	It("should translate an AuthorizationPolicy for the ingress gateway and in the installation namespace", func() {
@@ -59,7 +59,7 @@ var _ = Describe("EnforcementPolicyTranslator", func() {
 		expectedAuthPolicies := v1beta1sets.NewAuthorizationPolicySet(
 			&securityv1beta1.AuthorizationPolicy{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      enforcement.IngressGatewayAuthPolicyName,
+					Name:      access.IngressGatewayAuthPolicyName,
 					Namespace: "istio-system",
 					Labels:    metautils.TranslatedObjectLabels(),
 				},
@@ -77,7 +77,7 @@ var _ = Describe("EnforcementPolicyTranslator", func() {
 			},
 			&securityv1beta1.AuthorizationPolicy{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      enforcement.IngressGatewayAuthPolicyName,
+					Name:      access.IngressGatewayAuthPolicyName,
 					Namespace: "istio-system",
 					Labels:    metautils.TranslatedObjectLabels(),
 				},
@@ -95,7 +95,7 @@ var _ = Describe("EnforcementPolicyTranslator", func() {
 			},
 			&securityv1beta1.AuthorizationPolicy{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      enforcement.GlobalAccessControlAuthPolicyName,
+					Name:      access.GlobalAccessControlAuthPolicyName,
 					Namespace: "istio-system",
 					Labels:    metautils.TranslatedObjectLabels(),
 				},
