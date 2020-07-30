@@ -231,8 +231,7 @@ func validateAndReturnApprovedFailoverServices(
 	return validatedFailoverServices
 }
 
-// the approval reporter uses istioTranslator reports to
-// validate individual policies
+// the approval reporter validates individual policies and reports any encountered errors
 type approvalReporter struct {
 	// NOTE(ilackarms): map access should be synchronous (called in a single context),
 	// so locking should not be necessary.
@@ -494,7 +493,7 @@ func getAppliedFailoverServices(
 // sort the set of virtual meshes in the order in which they were accepted.
 // VMeshes which were accepted first and have not changed (i.e. their observedGeneration is up-to-date) take precedence.
 // Next are vMeshes that were previously accepted but whose observedGeneration is out of date. This permits vmeshes which were modified but formerly correct to maintain
-// their acceptance status ahead of vmeshes which were unomdified and previously rejected.
+// their acceptance status ahead of vmeshes which were unmodified and previously rejected.
 // Next will be the vmeshes which have been modified and rejected.
 // Finally, vmeshes which are rejected and modified
 func sortVirtualMeshesByAcceptedDate(mesh *discoveryv1alpha2.Mesh, virtualMeshes v1alpha2.VirtualMeshSlice) {
