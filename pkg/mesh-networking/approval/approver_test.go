@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/gomega"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/output/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
@@ -157,7 +157,7 @@ type testIstioTranslator struct {
 	callReporter func(reporter reporting.Reporter)
 }
 
-func (t testIstioTranslator) Translate(ctx context.Context, in input.Snapshot, reporter reporting.Reporter) (istio.Snapshot, error) {
+func (t testIstioTranslator) Translate(ctx context.Context, in input.Snapshot, reporter reporting.Reporter) (output.Snapshot, error) {
 	t.callReporter(reporter)
 	return nil, nil
 }

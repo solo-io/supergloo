@@ -9,11 +9,10 @@ import (
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input/test"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh"
-	mock_enforcement "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/enforcement/mocks"
+	mock_access "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/access/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice"
 	mock_failoverservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/federation"
@@ -28,7 +27,7 @@ var _ = Describe("IstioMeshTranslator", func() {
 		ctrl                          *gomock.Controller
 		ctx                           context.Context
 		mockFederationTranslator      *mock_federation.MockTranslator
-		mockEnforcementTranslator     *mock_enforcement.MockTranslator
+		mockAccessTranslator          *mock_access.MockTranslator
 		mockFailoverServiceTranslator *mock_failoverservice.MockTranslator
 		mockReporter                  *mock_reporting.MockReporter
 		in                            input.Snapshot
@@ -39,11 +38,11 @@ var _ = Describe("IstioMeshTranslator", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockFederationTranslator = mock_federation.NewMockTranslator(ctrl)
-		mockEnforcementTranslator = mock_enforcement.NewMockTranslator(ctrl)
+		mockAccessTranslator = mock_access.NewMockTranslator(ctrl)
 		mockFailoverServiceTranslator = mock_failoverservice.NewMockTranslator(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		in = test.NewInputSnapshotManualBuilder("").Build()
-		istioMeshTranslator = mesh.NewTranslator(ctx, mockFederationTranslator, mockEnforcementTranslator, mockFailoverServiceTranslator)
+		in = input.NewInputSnapshotManualBuilder("").Build()
+		istioMeshTranslator = mesh.NewTranslator(ctx, mockFederationTranslator, mockAccessTranslator, mockFailoverServiceTranslator)
 	})
 
 	AfterEach(func() {
@@ -106,9 +105,9 @@ var _ = Describe("IstioMeshTranslator", func() {
 				ServiceEntries:   istiov1alpha3sets.NewServiceEntrySet(expectedOutputs.ServiceEntries.List()[0]),
 			})
 
-		mockEnforcementTranslator.
+		mockAccessTranslator.
 			EXPECT().
-			Translate(in, istioMesh, istioMesh.Status.AppliedVirtualMeshes[0], mockReporter).
+			Translate(istioMesh, istioMesh.Status.AppliedVirtualMeshes[0]).
 			Return(expectedOutputs.AuthorizationPolicies)
 
 		mockFailoverServiceTranslator.

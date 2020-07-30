@@ -68,19 +68,15 @@ func (VirtualMeshSpec_EnforcementPolicy) EnumDescriptor() ([]byte, []int) {
 // Currently, VirtualMeshes can only be constructed from Istio
 // meshes.
 type VirtualMeshSpec struct {
-	// User-provided display name for the virtual mesh.
+	// Optional User-facing display name for the Virtual Mesh.
 	DisplayName string `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	// The meshes contained in this virtual mesh.
 	Meshes []*v1.ObjectRef `protobuf:"bytes,2,rep,name=meshes,proto3" json:"meshes,omitempty"`
-	// Sets a shared Certificate Authority across the defined meshes.
-	CertificateAuthority *VirtualMeshSpec_CertificateAuthority `protobuf:"bytes,3,opt,name=certificate_authority,json=certificateAuthority,proto3" json:"certificate_authority,omitempty"`
-	// Expose services to traffic from any workload in
-	// the virtual mesh using Service Federation.
-	Federation *VirtualMeshSpec_Federation `protobuf:"bytes,4,opt,name=federation,proto3" json:"federation,omitempty"`
-	// Types that are valid to be assigned to TrustModel:
-	//	*VirtualMeshSpec_Shared
-	//	*VirtualMeshSpec_Limited
-	TrustModel           isVirtualMeshSpec_TrustModel      `protobuf_oneof:"trust_model"`
+	// Configuration options for managing Mutual-TLS mTLS in a virtual mesh.Sets
+	// a shared Certificate Authority across the defined meshes.
+	MtlsConfig *VirtualMeshSpec_MTLSConfig `protobuf:"bytes,3,opt,name=mtls_config,json=mtlsConfig,proto3" json:"mtls_config,omitempty"`
+	// Determine how to expose services to cross-mesh traffic using Service Federation.
+	Federation           *VirtualMeshSpec_Federation       `protobuf:"bytes,4,opt,name=federation,proto3" json:"federation,omitempty"`
 	EnforceAccessControl VirtualMeshSpec_EnforcementPolicy `protobuf:"varint,7,opt,name=enforce_access_control,json=enforceAccessControl,proto3,enum=networking.smh.solo.io.VirtualMeshSpec_EnforcementPolicy" json:"enforce_access_control,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                          `json:"-"`
 	XXX_unrecognized     []byte                            `json:"-"`
@@ -111,28 +107,6 @@ func (m *VirtualMeshSpec) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_VirtualMeshSpec proto.InternalMessageInfo
 
-type isVirtualMeshSpec_TrustModel interface {
-	isVirtualMeshSpec_TrustModel()
-	Equal(interface{}) bool
-}
-
-type VirtualMeshSpec_Shared struct {
-	Shared *VirtualMeshSpec_SharedTrust `protobuf:"bytes,5,opt,name=shared,proto3,oneof" json:"shared,omitempty"`
-}
-type VirtualMeshSpec_Limited struct {
-	Limited *VirtualMeshSpec_LimitedTrust `protobuf:"bytes,6,opt,name=limited,proto3,oneof" json:"limited,omitempty"`
-}
-
-func (*VirtualMeshSpec_Shared) isVirtualMeshSpec_TrustModel()  {}
-func (*VirtualMeshSpec_Limited) isVirtualMeshSpec_TrustModel() {}
-
-func (m *VirtualMeshSpec) GetTrustModel() isVirtualMeshSpec_TrustModel {
-	if m != nil {
-		return m.TrustModel
-	}
-	return nil
-}
-
 func (m *VirtualMeshSpec) GetDisplayName() string {
 	if m != nil {
 		return m.DisplayName
@@ -147,9 +121,9 @@ func (m *VirtualMeshSpec) GetMeshes() []*v1.ObjectRef {
 	return nil
 }
 
-func (m *VirtualMeshSpec) GetCertificateAuthority() *VirtualMeshSpec_CertificateAuthority {
+func (m *VirtualMeshSpec) GetMtlsConfig() *VirtualMeshSpec_MTLSConfig {
 	if m != nil {
-		return m.CertificateAuthority
+		return m.MtlsConfig
 	}
 	return nil
 }
@@ -161,20 +135,6 @@ func (m *VirtualMeshSpec) GetFederation() *VirtualMeshSpec_Federation {
 	return nil
 }
 
-func (m *VirtualMeshSpec) GetShared() *VirtualMeshSpec_SharedTrust {
-	if x, ok := m.GetTrustModel().(*VirtualMeshSpec_Shared); ok {
-		return x.Shared
-	}
-	return nil
-}
-
-func (m *VirtualMeshSpec) GetLimited() *VirtualMeshSpec_LimitedTrust {
-	if x, ok := m.GetTrustModel().(*VirtualMeshSpec_Limited); ok {
-		return x.Limited
-	}
-	return nil
-}
-
 func (m *VirtualMeshSpec) GetEnforceAccessControl() VirtualMeshSpec_EnforcementPolicy {
 	if m != nil {
 		return m.EnforceAccessControl
@@ -182,31 +142,199 @@ func (m *VirtualMeshSpec) GetEnforceAccessControl() VirtualMeshSpec_EnforcementP
 	return VirtualMeshSpec_MESH_DEFAULT
 }
 
+// Mutual TLS Config for a Virtual Mesh.
+// This includes options for configuring Mutual TLS within an indvidual mesh, as
+// well as enabling mTLS across Meshes by establishing cross-mesh trust.
+type VirtualMeshSpec_MTLSConfig struct {
+	// Select a trust model in order to establish trust between mTLS-secured meshes.
+	//
+	// Types that are valid to be assigned to TrustModel:
+	//	*VirtualMeshSpec_MTLSConfig_Shared
+	//	*VirtualMeshSpec_MTLSConfig_Limited
+	TrustModel           isVirtualMeshSpec_MTLSConfig_TrustModel `protobuf_oneof:"trust_model"`
+	XXX_NoUnkeyedLiteral struct{}                                `json:"-"`
+	XXX_unrecognized     []byte                                  `json:"-"`
+	XXX_sizecache        int32                                   `json:"-"`
+}
+
+func (m *VirtualMeshSpec_MTLSConfig) Reset()         { *m = VirtualMeshSpec_MTLSConfig{} }
+func (m *VirtualMeshSpec_MTLSConfig) String() string { return proto.CompactTextString(m) }
+func (*VirtualMeshSpec_MTLSConfig) ProtoMessage()    {}
+func (*VirtualMeshSpec_MTLSConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d8ec20aa69a8d951, []int{0, 0}
+}
+func (m *VirtualMeshSpec_MTLSConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_VirtualMeshSpec_MTLSConfig.Unmarshal(m, b)
+}
+func (m *VirtualMeshSpec_MTLSConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_VirtualMeshSpec_MTLSConfig.Marshal(b, m, deterministic)
+}
+func (m *VirtualMeshSpec_MTLSConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VirtualMeshSpec_MTLSConfig.Merge(m, src)
+}
+func (m *VirtualMeshSpec_MTLSConfig) XXX_Size() int {
+	return xxx_messageInfo_VirtualMeshSpec_MTLSConfig.Size(m)
+}
+func (m *VirtualMeshSpec_MTLSConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_VirtualMeshSpec_MTLSConfig.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_VirtualMeshSpec_MTLSConfig proto.InternalMessageInfo
+
+type isVirtualMeshSpec_MTLSConfig_TrustModel interface {
+	isVirtualMeshSpec_MTLSConfig_TrustModel()
+	Equal(interface{}) bool
+}
+
+type VirtualMeshSpec_MTLSConfig_Shared struct {
+	Shared *VirtualMeshSpec_MTLSConfig_SharedTrust `protobuf:"bytes,1,opt,name=shared,proto3,oneof" json:"shared,omitempty"`
+}
+type VirtualMeshSpec_MTLSConfig_Limited struct {
+	Limited *VirtualMeshSpec_MTLSConfig_LimitedTrust `protobuf:"bytes,2,opt,name=limited,proto3,oneof" json:"limited,omitempty"`
+}
+
+func (*VirtualMeshSpec_MTLSConfig_Shared) isVirtualMeshSpec_MTLSConfig_TrustModel()  {}
+func (*VirtualMeshSpec_MTLSConfig_Limited) isVirtualMeshSpec_MTLSConfig_TrustModel() {}
+
+func (m *VirtualMeshSpec_MTLSConfig) GetTrustModel() isVirtualMeshSpec_MTLSConfig_TrustModel {
+	if m != nil {
+		return m.TrustModel
+	}
+	return nil
+}
+
+func (m *VirtualMeshSpec_MTLSConfig) GetShared() *VirtualMeshSpec_MTLSConfig_SharedTrust {
+	if x, ok := m.GetTrustModel().(*VirtualMeshSpec_MTLSConfig_Shared); ok {
+		return x.Shared
+	}
+	return nil
+}
+
+func (m *VirtualMeshSpec_MTLSConfig) GetLimited() *VirtualMeshSpec_MTLSConfig_LimitedTrust {
+	if x, ok := m.GetTrustModel().(*VirtualMeshSpec_MTLSConfig_Limited); ok {
+		return x.Limited
+	}
+	return nil
+}
+
 // XXX_OneofWrappers is for the internal use of the proto package.
-func (*VirtualMeshSpec) XXX_OneofWrappers() []interface{} {
+func (*VirtualMeshSpec_MTLSConfig) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
-		(*VirtualMeshSpec_Shared)(nil),
-		(*VirtualMeshSpec_Limited)(nil),
+		(*VirtualMeshSpec_MTLSConfig_Shared)(nil),
+		(*VirtualMeshSpec_MTLSConfig_Limited)(nil),
 	}
 }
 
+//
+//Shared trust is a virtual mesh trust model requiring a shared root certificate, as well as shared identity
+//between all entities which wish to communicate within the virtual mesh.
+//
+//The best current example of this would be the replicated control planes example from Istio:
+//https://preliminary.istio.io/docs/setup/install/multicluster/gateways/
+type VirtualMeshSpec_MTLSConfig_SharedTrust struct {
+	// Configure a Root Certificate Authority which will be shared by the
+	// members of the virtual mesh.
+	// If this is not provided, a self-signed certificate will be used
+	// by Service Mesh Hub to establish shared trust for the purposes of failover and federation.
+	RootCertificateAuthority *VirtualMeshSpec_CertificateAuthority `protobuf:"bytes,1,opt,name=root_certificate_authority,json=rootCertificateAuthority,proto3" json:"root_certificate_authority,omitempty"`
+	XXX_NoUnkeyedLiteral     struct{}                              `json:"-"`
+	XXX_unrecognized         []byte                                `json:"-"`
+	XXX_sizecache            int32                                 `json:"-"`
+}
+
+func (m *VirtualMeshSpec_MTLSConfig_SharedTrust) Reset() {
+	*m = VirtualMeshSpec_MTLSConfig_SharedTrust{}
+}
+func (m *VirtualMeshSpec_MTLSConfig_SharedTrust) String() string { return proto.CompactTextString(m) }
+func (*VirtualMeshSpec_MTLSConfig_SharedTrust) ProtoMessage()    {}
+func (*VirtualMeshSpec_MTLSConfig_SharedTrust) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d8ec20aa69a8d951, []int{0, 0, 0}
+}
+func (m *VirtualMeshSpec_MTLSConfig_SharedTrust) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_VirtualMeshSpec_MTLSConfig_SharedTrust.Unmarshal(m, b)
+}
+func (m *VirtualMeshSpec_MTLSConfig_SharedTrust) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_VirtualMeshSpec_MTLSConfig_SharedTrust.Marshal(b, m, deterministic)
+}
+func (m *VirtualMeshSpec_MTLSConfig_SharedTrust) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VirtualMeshSpec_MTLSConfig_SharedTrust.Merge(m, src)
+}
+func (m *VirtualMeshSpec_MTLSConfig_SharedTrust) XXX_Size() int {
+	return xxx_messageInfo_VirtualMeshSpec_MTLSConfig_SharedTrust.Size(m)
+}
+func (m *VirtualMeshSpec_MTLSConfig_SharedTrust) XXX_DiscardUnknown() {
+	xxx_messageInfo_VirtualMeshSpec_MTLSConfig_SharedTrust.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_VirtualMeshSpec_MTLSConfig_SharedTrust proto.InternalMessageInfo
+
+func (m *VirtualMeshSpec_MTLSConfig_SharedTrust) GetRootCertificateAuthority() *VirtualMeshSpec_CertificateAuthority {
+	if m != nil {
+		return m.RootCertificateAuthority
+	}
+	return nil
+}
+
+//
+//Limited trust is a virtual mesh trust model which does not require all meshes sharing the same root certificate
+//or identity model. But rather, the limited trust creates trust between meshes running on different clusters
+//by connecting their ingress/egress gateways with a common cert/identity. In this model all requests
+//between different have the following request path when communicating between clusters
+//
+//cluster 1 MTLS               shared MTLS                  cluster 2 MTLS
+//client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server
+//
+//This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc
+//addition of additional clusters into a virtual mesh.
+type VirtualMeshSpec_MTLSConfig_LimitedTrust struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) Reset() {
+	*m = VirtualMeshSpec_MTLSConfig_LimitedTrust{}
+}
+func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) String() string { return proto.CompactTextString(m) }
+func (*VirtualMeshSpec_MTLSConfig_LimitedTrust) ProtoMessage()    {}
+func (*VirtualMeshSpec_MTLSConfig_LimitedTrust) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d8ec20aa69a8d951, []int{0, 0, 1}
+}
+func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_VirtualMeshSpec_MTLSConfig_LimitedTrust.Unmarshal(m, b)
+}
+func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_VirtualMeshSpec_MTLSConfig_LimitedTrust.Marshal(b, m, deterministic)
+}
+func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VirtualMeshSpec_MTLSConfig_LimitedTrust.Merge(m, src)
+}
+func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) XXX_Size() int {
+	return xxx_messageInfo_VirtualMeshSpec_MTLSConfig_LimitedTrust.Size(m)
+}
+func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) XXX_DiscardUnknown() {
+	xxx_messageInfo_VirtualMeshSpec_MTLSConfig_LimitedTrust.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_VirtualMeshSpec_MTLSConfig_LimitedTrust proto.InternalMessageInfo
+
 type VirtualMeshSpec_CertificateAuthority struct {
-	// If omitted, defaults to builtin.
+	// If no CA type is provided, a builtin.
 	//
-	// Types that are valid to be assigned to Type:
-	//	*VirtualMeshSpec_CertificateAuthority_Builtin_
-	//	*VirtualMeshSpec_CertificateAuthority_Provided_
-	Type                 isVirtualMeshSpec_CertificateAuthority_Type `protobuf_oneof:"type"`
-	XXX_NoUnkeyedLiteral struct{}                                    `json:"-"`
-	XXX_unrecognized     []byte                                      `json:"-"`
-	XXX_sizecache        int32                                       `json:"-"`
+	// Types that are valid to be assigned to CaType:
+	//	*VirtualMeshSpec_CertificateAuthority_SelfSigned_
+	//	*VirtualMeshSpec_CertificateAuthority_Secret
+	CaType               isVirtualMeshSpec_CertificateAuthority_CaType `protobuf_oneof:"ca_type"`
+	XXX_NoUnkeyedLiteral struct{}                                      `json:"-"`
+	XXX_unrecognized     []byte                                        `json:"-"`
+	XXX_sizecache        int32                                         `json:"-"`
 }
 
 func (m *VirtualMeshSpec_CertificateAuthority) Reset()         { *m = VirtualMeshSpec_CertificateAuthority{} }
 func (m *VirtualMeshSpec_CertificateAuthority) String() string { return proto.CompactTextString(m) }
 func (*VirtualMeshSpec_CertificateAuthority) ProtoMessage()    {}
 func (*VirtualMeshSpec_CertificateAuthority) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d8ec20aa69a8d951, []int{0, 0}
+	return fileDescriptor_d8ec20aa69a8d951, []int{0, 1}
 }
 func (m *VirtualMeshSpec_CertificateAuthority) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_VirtualMeshSpec_CertificateAuthority.Unmarshal(m, b)
@@ -226,39 +354,39 @@ func (m *VirtualMeshSpec_CertificateAuthority) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_VirtualMeshSpec_CertificateAuthority proto.InternalMessageInfo
 
-type isVirtualMeshSpec_CertificateAuthority_Type interface {
-	isVirtualMeshSpec_CertificateAuthority_Type()
+type isVirtualMeshSpec_CertificateAuthority_CaType interface {
+	isVirtualMeshSpec_CertificateAuthority_CaType()
 	Equal(interface{}) bool
 }
 
-type VirtualMeshSpec_CertificateAuthority_Builtin_ struct {
-	Builtin *VirtualMeshSpec_CertificateAuthority_Builtin `protobuf:"bytes,1,opt,name=builtin,proto3,oneof" json:"builtin,omitempty"`
+type VirtualMeshSpec_CertificateAuthority_SelfSigned_ struct {
+	SelfSigned *VirtualMeshSpec_CertificateAuthority_SelfSigned `protobuf:"bytes,1,opt,name=self_signed,json=selfSigned,proto3,oneof" json:"self_signed,omitempty"`
 }
-type VirtualMeshSpec_CertificateAuthority_Provided_ struct {
-	Provided *VirtualMeshSpec_CertificateAuthority_Provided `protobuf:"bytes,2,opt,name=provided,proto3,oneof" json:"provided,omitempty"`
-}
-
-func (*VirtualMeshSpec_CertificateAuthority_Builtin_) isVirtualMeshSpec_CertificateAuthority_Type() {}
-func (*VirtualMeshSpec_CertificateAuthority_Provided_) isVirtualMeshSpec_CertificateAuthority_Type() {
+type VirtualMeshSpec_CertificateAuthority_Secret struct {
+	Secret *v1.ObjectRef `protobuf:"bytes,2,opt,name=secret,proto3,oneof" json:"secret,omitempty"`
 }
 
-func (m *VirtualMeshSpec_CertificateAuthority) GetType() isVirtualMeshSpec_CertificateAuthority_Type {
+func (*VirtualMeshSpec_CertificateAuthority_SelfSigned_) isVirtualMeshSpec_CertificateAuthority_CaType() {
+}
+func (*VirtualMeshSpec_CertificateAuthority_Secret) isVirtualMeshSpec_CertificateAuthority_CaType() {}
+
+func (m *VirtualMeshSpec_CertificateAuthority) GetCaType() isVirtualMeshSpec_CertificateAuthority_CaType {
 	if m != nil {
-		return m.Type
+		return m.CaType
 	}
 	return nil
 }
 
-func (m *VirtualMeshSpec_CertificateAuthority) GetBuiltin() *VirtualMeshSpec_CertificateAuthority_Builtin {
-	if x, ok := m.GetType().(*VirtualMeshSpec_CertificateAuthority_Builtin_); ok {
-		return x.Builtin
+func (m *VirtualMeshSpec_CertificateAuthority) GetSelfSigned() *VirtualMeshSpec_CertificateAuthority_SelfSigned {
+	if x, ok := m.GetCaType().(*VirtualMeshSpec_CertificateAuthority_SelfSigned_); ok {
+		return x.SelfSigned
 	}
 	return nil
 }
 
-func (m *VirtualMeshSpec_CertificateAuthority) GetProvided() *VirtualMeshSpec_CertificateAuthority_Provided {
-	if x, ok := m.GetType().(*VirtualMeshSpec_CertificateAuthority_Provided_); ok {
-		return x.Provided
+func (m *VirtualMeshSpec_CertificateAuthority) GetSecret() *v1.ObjectRef {
+	if x, ok := m.GetCaType().(*VirtualMeshSpec_CertificateAuthority_Secret); ok {
+		return x.Secret
 	}
 	return nil
 }
@@ -266,15 +394,15 @@ func (m *VirtualMeshSpec_CertificateAuthority) GetProvided() *VirtualMeshSpec_Ce
 // XXX_OneofWrappers is for the internal use of the proto package.
 func (*VirtualMeshSpec_CertificateAuthority) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
-		(*VirtualMeshSpec_CertificateAuthority_Builtin_)(nil),
-		(*VirtualMeshSpec_CertificateAuthority_Provided_)(nil),
+		(*VirtualMeshSpec_CertificateAuthority_SelfSigned_)(nil),
+		(*VirtualMeshSpec_CertificateAuthority_Secret)(nil),
 	}
 }
 
 //
-//Configuration for auto-generated root certificate unique to the VirtualMesh
+//Configuration for generating a self-signed root certificate.
 //Uses the X.509 format, RFC5280
-type VirtualMeshSpec_CertificateAuthority_Builtin struct {
+type VirtualMeshSpec_CertificateAuthority_SelfSigned struct {
 	// Number of days before root cert expires. Defaults to 365.
 	TtlDays uint32 `protobuf:"varint,1,opt,name=ttl_days,json=ttlDays,proto3" json:"ttl_days,omitempty"`
 	// Size in bytes of the root cert's private key. Defaults to 4096
@@ -286,97 +414,53 @@ type VirtualMeshSpec_CertificateAuthority_Builtin struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *VirtualMeshSpec_CertificateAuthority_Builtin) Reset() {
-	*m = VirtualMeshSpec_CertificateAuthority_Builtin{}
+func (m *VirtualMeshSpec_CertificateAuthority_SelfSigned) Reset() {
+	*m = VirtualMeshSpec_CertificateAuthority_SelfSigned{}
 }
-func (m *VirtualMeshSpec_CertificateAuthority_Builtin) String() string {
+func (m *VirtualMeshSpec_CertificateAuthority_SelfSigned) String() string {
 	return proto.CompactTextString(m)
 }
-func (*VirtualMeshSpec_CertificateAuthority_Builtin) ProtoMessage() {}
-func (*VirtualMeshSpec_CertificateAuthority_Builtin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d8ec20aa69a8d951, []int{0, 0, 0}
+func (*VirtualMeshSpec_CertificateAuthority_SelfSigned) ProtoMessage() {}
+func (*VirtualMeshSpec_CertificateAuthority_SelfSigned) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d8ec20aa69a8d951, []int{0, 1, 0}
 }
-func (m *VirtualMeshSpec_CertificateAuthority_Builtin) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Builtin.Unmarshal(m, b)
+func (m *VirtualMeshSpec_CertificateAuthority_SelfSigned) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_SelfSigned.Unmarshal(m, b)
 }
-func (m *VirtualMeshSpec_CertificateAuthority_Builtin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Builtin.Marshal(b, m, deterministic)
+func (m *VirtualMeshSpec_CertificateAuthority_SelfSigned) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_SelfSigned.Marshal(b, m, deterministic)
 }
-func (m *VirtualMeshSpec_CertificateAuthority_Builtin) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Builtin.Merge(m, src)
+func (m *VirtualMeshSpec_CertificateAuthority_SelfSigned) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_SelfSigned.Merge(m, src)
 }
-func (m *VirtualMeshSpec_CertificateAuthority_Builtin) XXX_Size() int {
-	return xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Builtin.Size(m)
+func (m *VirtualMeshSpec_CertificateAuthority_SelfSigned) XXX_Size() int {
+	return xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_SelfSigned.Size(m)
 }
-func (m *VirtualMeshSpec_CertificateAuthority_Builtin) XXX_DiscardUnknown() {
-	xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Builtin.DiscardUnknown(m)
+func (m *VirtualMeshSpec_CertificateAuthority_SelfSigned) XXX_DiscardUnknown() {
+	xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_SelfSigned.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Builtin proto.InternalMessageInfo
+var xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_SelfSigned proto.InternalMessageInfo
 
-func (m *VirtualMeshSpec_CertificateAuthority_Builtin) GetTtlDays() uint32 {
+func (m *VirtualMeshSpec_CertificateAuthority_SelfSigned) GetTtlDays() uint32 {
 	if m != nil {
 		return m.TtlDays
 	}
 	return 0
 }
 
-func (m *VirtualMeshSpec_CertificateAuthority_Builtin) GetRsaKeySizeBytes() uint32 {
+func (m *VirtualMeshSpec_CertificateAuthority_SelfSigned) GetRsaKeySizeBytes() uint32 {
 	if m != nil {
 		return m.RsaKeySizeBytes
 	}
 	return 0
 }
 
-func (m *VirtualMeshSpec_CertificateAuthority_Builtin) GetOrgName() string {
+func (m *VirtualMeshSpec_CertificateAuthority_SelfSigned) GetOrgName() string {
 	if m != nil {
 		return m.OrgName
 	}
 	return ""
-}
-
-// Configuration for user-provided root certificate.
-type VirtualMeshSpec_CertificateAuthority_Provided struct {
-	// Reference to a Secret object containing the root certificate.
-	Certificate          *v1.ClusterObjectRef `protobuf:"bytes,3,opt,name=certificate,proto3" json:"certificate,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
-}
-
-func (m *VirtualMeshSpec_CertificateAuthority_Provided) Reset() {
-	*m = VirtualMeshSpec_CertificateAuthority_Provided{}
-}
-func (m *VirtualMeshSpec_CertificateAuthority_Provided) String() string {
-	return proto.CompactTextString(m)
-}
-func (*VirtualMeshSpec_CertificateAuthority_Provided) ProtoMessage() {}
-func (*VirtualMeshSpec_CertificateAuthority_Provided) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d8ec20aa69a8d951, []int{0, 0, 1}
-}
-func (m *VirtualMeshSpec_CertificateAuthority_Provided) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Provided.Unmarshal(m, b)
-}
-func (m *VirtualMeshSpec_CertificateAuthority_Provided) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Provided.Marshal(b, m, deterministic)
-}
-func (m *VirtualMeshSpec_CertificateAuthority_Provided) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Provided.Merge(m, src)
-}
-func (m *VirtualMeshSpec_CertificateAuthority_Provided) XXX_Size() int {
-	return xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Provided.Size(m)
-}
-func (m *VirtualMeshSpec_CertificateAuthority_Provided) XXX_DiscardUnknown() {
-	xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Provided.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_VirtualMeshSpec_CertificateAuthority_Provided proto.InternalMessageInfo
-
-func (m *VirtualMeshSpec_CertificateAuthority_Provided) GetCertificate() *v1.ClusterObjectRef {
-	if m != nil {
-		return m.Certificate
-	}
-	return nil
 }
 
 // In Service Mesh Hub, Federation refers to the ability
@@ -384,7 +468,7 @@ func (m *VirtualMeshSpec_CertificateAuthority_Provided) GetCertificate() *v1.Clu
 // for traffic originating from any service within the
 // virtual mesh.
 type VirtualMeshSpec_Federation struct {
-	// The "mode" in which to run federate services within this virtual mesh.
+	// The "mode" in which to federate services within this virtual mesh.
 	//
 	// Types that are valid to be assigned to Mode:
 	//	*VirtualMeshSpec_Federation_Permissive
@@ -398,7 +482,7 @@ func (m *VirtualMeshSpec_Federation) Reset()         { *m = VirtualMeshSpec_Fede
 func (m *VirtualMeshSpec_Federation) String() string { return proto.CompactTextString(m) }
 func (*VirtualMeshSpec_Federation) ProtoMessage()    {}
 func (*VirtualMeshSpec_Federation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d8ec20aa69a8d951, []int{0, 1}
+	return fileDescriptor_d8ec20aa69a8d951, []int{0, 2}
 }
 func (m *VirtualMeshSpec_Federation) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_VirtualMeshSpec_Federation.Unmarshal(m, b)
@@ -449,83 +533,6 @@ func (*VirtualMeshSpec_Federation) XXX_OneofWrappers() []interface{} {
 		(*VirtualMeshSpec_Federation_Permissive)(nil),
 	}
 }
-
-//
-//Shared trust is a virtual mesh trust model requiring a shared root certificate, as well as shared identity
-//between all entities which wish to communicate within the virtual mesh.
-//
-//The best current example of this would be the replicated control planes example from Istio:
-//https://preliminary.istio.io/docs/setup/install/multicluster/gateways/
-type VirtualMeshSpec_SharedTrust struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *VirtualMeshSpec_SharedTrust) Reset()         { *m = VirtualMeshSpec_SharedTrust{} }
-func (m *VirtualMeshSpec_SharedTrust) String() string { return proto.CompactTextString(m) }
-func (*VirtualMeshSpec_SharedTrust) ProtoMessage()    {}
-func (*VirtualMeshSpec_SharedTrust) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d8ec20aa69a8d951, []int{0, 2}
-}
-func (m *VirtualMeshSpec_SharedTrust) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_VirtualMeshSpec_SharedTrust.Unmarshal(m, b)
-}
-func (m *VirtualMeshSpec_SharedTrust) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_VirtualMeshSpec_SharedTrust.Marshal(b, m, deterministic)
-}
-func (m *VirtualMeshSpec_SharedTrust) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_VirtualMeshSpec_SharedTrust.Merge(m, src)
-}
-func (m *VirtualMeshSpec_SharedTrust) XXX_Size() int {
-	return xxx_messageInfo_VirtualMeshSpec_SharedTrust.Size(m)
-}
-func (m *VirtualMeshSpec_SharedTrust) XXX_DiscardUnknown() {
-	xxx_messageInfo_VirtualMeshSpec_SharedTrust.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_VirtualMeshSpec_SharedTrust proto.InternalMessageInfo
-
-//
-//Limited trust is a virtual mesh trust model which does not require all meshes sharing the same root certificate
-//or identity model. But rather, the limited trust creates trust between meshes running on different clusters
-//by connecting their ingress/egress gateways with a common cert/identity. In this model all requests
-//between different have the following request path when communicating between clusters
-//
-//cluster 1 MTLS               shared MTLS                  cluster 2 MTLS
-//client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server
-//
-//This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc
-//addition of additional clusters into a virtual mesh.
-type VirtualMeshSpec_LimitedTrust struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *VirtualMeshSpec_LimitedTrust) Reset()         { *m = VirtualMeshSpec_LimitedTrust{} }
-func (m *VirtualMeshSpec_LimitedTrust) String() string { return proto.CompactTextString(m) }
-func (*VirtualMeshSpec_LimitedTrust) ProtoMessage()    {}
-func (*VirtualMeshSpec_LimitedTrust) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d8ec20aa69a8d951, []int{0, 3}
-}
-func (m *VirtualMeshSpec_LimitedTrust) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_VirtualMeshSpec_LimitedTrust.Unmarshal(m, b)
-}
-func (m *VirtualMeshSpec_LimitedTrust) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_VirtualMeshSpec_LimitedTrust.Marshal(b, m, deterministic)
-}
-func (m *VirtualMeshSpec_LimitedTrust) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_VirtualMeshSpec_LimitedTrust.Merge(m, src)
-}
-func (m *VirtualMeshSpec_LimitedTrust) XXX_Size() int {
-	return xxx_messageInfo_VirtualMeshSpec_LimitedTrust.Size(m)
-}
-func (m *VirtualMeshSpec_LimitedTrust) XXX_DiscardUnknown() {
-	xxx_messageInfo_VirtualMeshSpec_LimitedTrust.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_VirtualMeshSpec_LimitedTrust proto.InternalMessageInfo
 
 type VirtualMeshStatus struct {
 	// The most recent generation observed in the the TrafficPolicy metadata.
@@ -592,12 +599,12 @@ func (m *VirtualMeshStatus) GetMeshes() map[string]*ApprovalStatus {
 func init() {
 	proto.RegisterEnum("networking.smh.solo.io.VirtualMeshSpec_EnforcementPolicy", VirtualMeshSpec_EnforcementPolicy_name, VirtualMeshSpec_EnforcementPolicy_value)
 	proto.RegisterType((*VirtualMeshSpec)(nil), "networking.smh.solo.io.VirtualMeshSpec")
+	proto.RegisterType((*VirtualMeshSpec_MTLSConfig)(nil), "networking.smh.solo.io.VirtualMeshSpec.MTLSConfig")
+	proto.RegisterType((*VirtualMeshSpec_MTLSConfig_SharedTrust)(nil), "networking.smh.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust")
+	proto.RegisterType((*VirtualMeshSpec_MTLSConfig_LimitedTrust)(nil), "networking.smh.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust")
 	proto.RegisterType((*VirtualMeshSpec_CertificateAuthority)(nil), "networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority")
-	proto.RegisterType((*VirtualMeshSpec_CertificateAuthority_Builtin)(nil), "networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Builtin")
-	proto.RegisterType((*VirtualMeshSpec_CertificateAuthority_Provided)(nil), "networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Provided")
+	proto.RegisterType((*VirtualMeshSpec_CertificateAuthority_SelfSigned)(nil), "networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.SelfSigned")
 	proto.RegisterType((*VirtualMeshSpec_Federation)(nil), "networking.smh.solo.io.VirtualMeshSpec.Federation")
-	proto.RegisterType((*VirtualMeshSpec_SharedTrust)(nil), "networking.smh.solo.io.VirtualMeshSpec.SharedTrust")
-	proto.RegisterType((*VirtualMeshSpec_LimitedTrust)(nil), "networking.smh.solo.io.VirtualMeshSpec.LimitedTrust")
 	proto.RegisterType((*VirtualMeshStatus)(nil), "networking.smh.solo.io.VirtualMeshStatus")
 	proto.RegisterMapType((map[string]*ApprovalStatus)(nil), "networking.smh.solo.io.VirtualMeshStatus.MeshesEntry")
 }
@@ -607,61 +614,61 @@ func init() {
 }
 
 var fileDescriptor_d8ec20aa69a8d951 = []byte{
-	// 850 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x95, 0x51, 0x6f, 0xdb, 0x36,
-	0x10, 0xc7, 0xe3, 0xb8, 0xb1, 0xd3, 0x73, 0x92, 0xa6, 0x5c, 0x16, 0x78, 0xda, 0x50, 0x64, 0x19,
-	0x36, 0x04, 0x18, 0x22, 0xa1, 0x6e, 0x07, 0x74, 0x5b, 0x81, 0xcd, 0x8e, 0xd5, 0x65, 0x68, 0x92,
-	0xa5, 0x72, 0xb7, 0x87, 0xbd, 0x68, 0xb4, 0x74, 0x96, 0x39, 0x4b, 0xa2, 0x46, 0x52, 0x2e, 0xd4,
-	0x0f, 0x34, 0xec, 0x61, 0x6f, 0xfb, 0x46, 0xfb, 0x24, 0x03, 0x29, 0x29, 0x11, 0x32, 0x17, 0x30,
-	0xd0, 0x27, 0x51, 0x24, 0xef, 0x77, 0x3c, 0xde, 0xff, 0x8e, 0x70, 0x15, 0x31, 0x35, 0xcf, 0xa7,
-	0x76, 0xc0, 0x13, 0x47, 0xf2, 0x98, 0x9f, 0x32, 0xee, 0x48, 0x14, 0x4b, 0x16, 0xe0, 0x69, 0x82,
-	0x72, 0x7e, 0x3a, 0xcf, 0xa7, 0x0e, 0xcd, 0x98, 0x93, 0xa2, 0x7a, 0xc3, 0xc5, 0x82, 0xa5, 0x91,
-	0xb3, 0x7c, 0x4c, 0xe3, 0x6c, 0x4e, 0x07, 0xce, 0x92, 0x09, 0x95, 0xd3, 0xd8, 0xd7, 0x1b, 0xed,
-	0x4c, 0x70, 0xc5, 0xc9, 0xe1, 0xed, 0x3e, 0x5b, 0x26, 0x73, 0x5b, 0x33, 0x6d, 0xc6, 0x2d, 0x7b,
-	0x95, 0x9f, 0xc5, 0x72, 0x60, 0xd8, 0x01, 0x17, 0xe8, 0x2c, 0x1f, 0x9b, 0x6f, 0xc9, 0xb1, 0xbe,
-	0x5b, 0xff, 0x10, 0x34, 0x66, 0x21, 0x55, 0x8c, 0xa7, 0xbe, 0x54, 0x54, 0xd5, 0x80, 0x8f, 0x23,
-	0xce, 0xa3, 0x18, 0x1d, 0xf3, 0x37, 0xcd, 0x67, 0x0e, 0x26, 0x99, 0x2a, 0xaa, 0xc5, 0x47, 0x77,
-	0x17, 0xdf, 0x08, 0x9a, 0x65, 0x28, 0x64, 0xb5, 0x7e, 0x10, 0xf1, 0x88, 0x9b, 0xa1, 0xa3, 0x47,
-	0xe5, 0xec, 0xf1, 0xdf, 0xf7, 0xe1, 0xc1, 0x2f, 0x65, 0xc8, 0x97, 0x28, 0xe7, 0x93, 0x0c, 0x03,
-	0xf2, 0x29, 0xec, 0x84, 0x4c, 0x66, 0x31, 0x2d, 0xfc, 0x94, 0x26, 0xd8, 0x6f, 0x1d, 0xb5, 0x4e,
-	0xee, 0x7b, 0xbd, 0x6a, 0xee, 0x8a, 0x26, 0x48, 0x9e, 0x42, 0x47, 0x07, 0x81, 0xb2, 0xbf, 0x79,
-	0xd4, 0x3e, 0xe9, 0x0d, 0x3e, 0xb1, 0x4d, 0x9c, 0x3a, 0xfa, 0xfa, 0x7a, 0xec, 0x9f, 0xa6, 0xbf,
-	0x63, 0xa0, 0x3c, 0x9c, 0x79, 0xd5, 0x5e, 0xf2, 0x07, 0x7c, 0x18, 0xa0, 0x50, 0x6c, 0xc6, 0x02,
-	0xaa, 0xd0, 0xa7, 0xb9, 0x9a, 0x73, 0xc1, 0x54, 0xd1, 0x6f, 0x1f, 0xb5, 0x4e, 0x7a, 0x83, 0xe7,
-	0xf6, 0xea, 0x8b, 0xb6, 0xef, 0x1c, 0xd0, 0x3e, 0xbb, 0x85, 0x0c, 0x6b, 0x86, 0x77, 0x10, 0xac,
-	0x98, 0x25, 0x1e, 0xc0, 0x0c, 0x43, 0x14, 0xe6, 0x32, 0xfb, 0xf7, 0x8c, 0x9f, 0xc1, 0xba, 0x7e,
-	0x5e, 0xdc, 0x58, 0x7a, 0x0d, 0x0a, 0xb9, 0x84, 0x8e, 0x9c, 0x53, 0x81, 0x61, 0x7f, 0xcb, 0xf0,
-	0x9e, 0xac, 0xcb, 0x9b, 0x18, 0xab, 0xd7, 0x22, 0x97, 0xea, 0x7c, 0xc3, 0xab, 0x20, 0xe4, 0x1a,
-	0xba, 0x31, 0x4b, 0x98, 0xc2, 0xb0, 0xdf, 0x31, 0xbc, 0xa7, 0xeb, 0xf2, 0x2e, 0x4a, 0xb3, 0x1a,
-	0x58, 0x63, 0x08, 0x87, 0x43, 0x4c, 0x67, 0x5c, 0x04, 0xe8, 0xd3, 0x20, 0x40, 0x29, 0xfd, 0x80,
-	0xa7, 0x4a, 0xf0, 0xb8, 0xdf, 0x3d, 0x6a, 0x9d, 0xec, 0x0d, 0xbe, 0x5e, 0xd7, 0x81, 0x5b, 0x52,
-	0x12, 0x4c, 0xd5, 0x35, 0x8f, 0x59, 0x50, 0x78, 0x07, 0x15, 0x78, 0x68, 0xb8, 0x67, 0x25, 0xd6,
-	0xfa, 0xb3, 0x0d, 0x07, 0xab, 0x92, 0x42, 0x7e, 0x83, 0xee, 0x34, 0x67, 0xb1, 0x62, 0xa9, 0x51,
-	0x51, 0x6f, 0x30, 0x7e, 0x9f, 0x1c, 0xdb, 0xa3, 0x92, 0xa5, 0x63, 0xad, 0xb0, 0x24, 0x80, 0xed,
-	0x4c, 0xf0, 0x25, 0x0b, 0x31, 0xec, 0x6f, 0x1a, 0x17, 0xee, 0x7b, 0xb9, 0xb8, 0xae, 0x60, 0xe7,
-	0x1b, 0xde, 0x0d, 0xd8, 0x8a, 0xa1, 0x5b, 0xb9, 0x26, 0x1f, 0xc1, 0xb6, 0x52, 0xb1, 0x1f, 0xd2,
-	0x42, 0x9a, 0x90, 0x76, 0xbd, 0xae, 0x52, 0xf1, 0x98, 0x16, 0x92, 0x7c, 0x09, 0x44, 0x48, 0xea,
-	0x2f, 0xb0, 0xf0, 0x25, 0x7b, 0x8b, 0xfe, 0xb4, 0x50, 0xa6, 0x40, 0xf4, 0xa6, 0x07, 0x42, 0xd2,
-	0x97, 0x58, 0x4c, 0xd8, 0x5b, 0x1c, 0xe9, 0x69, 0xcd, 0xe1, 0x22, 0x2a, 0x0b, 0xac, 0x6d, 0x0a,
-	0xac, 0xcb, 0x45, 0xa4, 0x8b, 0xcb, 0x7a, 0x05, 0xdb, 0xf5, 0x29, 0x88, 0x0b, 0xbd, 0x86, 0xae,
-	0xab, 0x42, 0xf9, 0x6c, 0x45, 0xb5, 0x9d, 0xc5, 0xb9, 0x54, 0x28, 0x6e, 0x8b, 0xae, 0x69, 0x37,
-	0xea, 0xc0, 0x3d, 0x55, 0x64, 0x68, 0x5d, 0x01, 0xdc, 0x8a, 0x9a, 0x3c, 0x03, 0xc8, 0x50, 0x24,
-	0x4c, 0x4a, 0xb6, 0xc4, 0x2a, 0x41, 0x87, 0x76, 0xd9, 0x47, 0xec, 0xba, 0x8f, 0xd8, 0xae, 0x6e,
-	0x32, 0xe7, 0x1b, 0x5e, 0x63, 0xaf, 0xe6, 0x25, 0x3c, 0x44, 0x6b, 0x17, 0x7a, 0x0d, 0x51, 0x5b,
-	0x7b, 0xb0, 0xd3, 0xd4, 0xe4, 0xf1, 0xf7, 0xf0, 0xf0, 0x7f, 0x12, 0x22, 0xfb, 0xb0, 0x73, 0xe9,
-	0x4e, 0xce, 0xfd, 0xb1, 0xfb, 0x62, 0xf8, 0xf3, 0xc5, 0xeb, 0xfd, 0x0d, 0xd2, 0x83, 0xae, 0x7b,
-	0x35, 0x1c, 0x5d, 0xb8, 0xe3, 0xfd, 0x16, 0xd9, 0x81, 0xed, 0xf1, 0x8f, 0x93, 0xf2, 0x6f, 0x73,
-	0xb4, 0x0b, 0x3d, 0xa5, 0x51, 0xbe, 0x76, 0x17, 0x1f, 0xff, 0xb3, 0x09, 0x0f, 0x9b, 0x69, 0x54,
-	0x54, 0xe5, 0x92, 0x38, 0xf0, 0x01, 0x9f, 0xea, 0xe6, 0x8a, 0xa1, 0x1f, 0x61, 0x5a, 0x57, 0xbb,
-	0x0e, 0xa8, 0xed, 0x91, 0x7a, 0xe9, 0x87, 0x9b, 0x15, 0xf2, 0x2d, 0x6c, 0x99, 0xbe, 0x6a, 0x92,
-	0xb3, 0x37, 0xf8, 0xfc, 0x5d, 0x8a, 0x19, 0x66, 0x5a, 0x02, 0x34, 0xd6, 0x7e, 0xd0, 0x2b, 0x6d,
-	0x74, 0xf9, 0x57, 0xbd, 0xaf, 0x6d, 0x7a, 0xdf, 0x57, 0xeb, 0xe8, 0xcd, 0x1c, 0xd4, 0xbe, 0x34,
-	0x76, 0x6e, 0xaa, 0x44, 0x51, 0x37, 0x45, 0x8b, 0x42, 0xaf, 0x31, 0x4d, 0xf6, 0xa1, 0xbd, 0xc0,
-	0xa2, 0xea, 0xb9, 0x7a, 0x48, 0x9e, 0xc3, 0xd6, 0x92, 0xc6, 0x39, 0x56, 0xf2, 0xfe, 0x62, 0x9d,
-	0xc3, 0xe6, 0xd2, 0x2b, 0x8d, 0xbe, 0xd9, 0x7c, 0xd6, 0x1a, 0xbd, 0xfa, 0xeb, 0xdf, 0x47, 0xad,
-	0x5f, 0x5f, 0xae, 0xf3, 0x2c, 0x66, 0x8b, 0xe8, 0xce, 0xab, 0xd4, 0xf4, 0x71, 0xf3, 0x42, 0x4d,
-	0x3b, 0x46, 0x1e, 0x4f, 0xfe, 0x0b, 0x00, 0x00, 0xff, 0xff, 0xa9, 0x2e, 0x0f, 0xee, 0x6c, 0x07,
-	0x00, 0x00,
+	// 864 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x95, 0xdd, 0x6e, 0xe3, 0xc4,
+	0x17, 0xc0, 0x9b, 0x64, 0x37, 0xd9, 0x1e, 0x77, 0xbb, 0xdd, 0xf9, 0x57, 0x55, 0xfe, 0x06, 0xad,
+	0x4a, 0x25, 0x50, 0x25, 0x54, 0x5b, 0x1b, 0x3e, 0xb4, 0xc0, 0x8a, 0x25, 0x69, 0xb3, 0x5b, 0xb4,
+	0x4d, 0x01, 0xbb, 0x20, 0x04, 0x17, 0xd6, 0xc4, 0x39, 0x71, 0x66, 0x63, 0x7b, 0xac, 0x99, 0x71,
+	0x56, 0xee, 0x1b, 0xf0, 0x26, 0xdc, 0x23, 0x71, 0xcd, 0xb3, 0xf0, 0x00, 0x3c, 0x03, 0x9a, 0xb1,
+	0x9d, 0x44, 0xa5, 0xa0, 0x2c, 0x5c, 0x79, 0x66, 0xce, 0x39, 0xbf, 0x39, 0x1f, 0x3e, 0x67, 0xe0,
+	0x32, 0x62, 0x6a, 0x96, 0x8f, 0x9d, 0x90, 0x27, 0xae, 0xe4, 0x31, 0x3f, 0x61, 0xdc, 0x95, 0x28,
+	0x16, 0x2c, 0xc4, 0x93, 0x04, 0xe5, 0xec, 0x64, 0x96, 0x8f, 0x5d, 0x9a, 0x31, 0x37, 0x45, 0xf5,
+	0x9a, 0x8b, 0x39, 0x4b, 0x23, 0x77, 0xf1, 0x98, 0xc6, 0xd9, 0x8c, 0xf6, 0xdc, 0x05, 0x13, 0x2a,
+	0xa7, 0x71, 0xa0, 0x15, 0x9d, 0x4c, 0x70, 0xc5, 0xc9, 0xc1, 0x4a, 0xcf, 0x91, 0xc9, 0xcc, 0xd1,
+	0x4c, 0x87, 0x71, 0xdb, 0xb9, 0xed, 0x9e, 0xf9, 0xa2, 0x67, 0xd8, 0x21, 0x17, 0xe8, 0x2e, 0x1e,
+	0x9b, 0x6f, 0xc9, 0xb1, 0x9f, 0x6d, 0xee, 0x04, 0x8d, 0xd9, 0x84, 0x2a, 0xc6, 0xd3, 0x40, 0x2a,
+	0xaa, 0x6a, 0xc0, 0x5b, 0x11, 0xe7, 0x51, 0x8c, 0xae, 0xd9, 0x8d, 0xf3, 0xa9, 0x8b, 0x49, 0xa6,
+	0x8a, 0x4a, 0xf8, 0xe8, 0xa6, 0xf0, 0xb5, 0xa0, 0x59, 0x86, 0x42, 0x56, 0xf2, 0xfd, 0x88, 0x47,
+	0xdc, 0x2c, 0x5d, 0xbd, 0x2a, 0x4f, 0x8f, 0x7e, 0xdb, 0x86, 0x07, 0xdf, 0x95, 0x21, 0x8f, 0x50,
+	0xce, 0xfc, 0x0c, 0x43, 0xf2, 0x0e, 0xec, 0x4c, 0x98, 0xcc, 0x62, 0x5a, 0x04, 0x29, 0x4d, 0xb0,
+	0xdb, 0x38, 0x6c, 0x1c, 0x6f, 0x7b, 0x56, 0x75, 0x76, 0x49, 0x13, 0x24, 0x1f, 0x42, 0x5b, 0x07,
+	0x81, 0xb2, 0xdb, 0x3c, 0x6c, 0x1d, 0x5b, 0xbd, 0xb7, 0x1d, 0x13, 0xa7, 0x8e, 0xbe, 0x4e, 0x8f,
+	0xf3, 0xd5, 0xf8, 0x15, 0x86, 0xca, 0xc3, 0xa9, 0x57, 0xe9, 0x12, 0x1f, 0xac, 0x44, 0xc5, 0x32,
+	0x08, 0x79, 0x3a, 0x65, 0x51, 0xb7, 0x75, 0xd8, 0x38, 0xb6, 0x7a, 0x3d, 0xe7, 0xf6, 0xf4, 0x3a,
+	0x37, 0xdc, 0x72, 0x46, 0x57, 0x17, 0xfe, 0xa9, 0xb1, 0xf4, 0x40, 0x63, 0xca, 0x35, 0xf1, 0x00,
+	0xa6, 0x38, 0x41, 0x61, 0xd2, 0xd5, 0xbd, 0xf3, 0x66, 0xcc, 0xe7, 0x4b, 0x4b, 0x6f, 0x8d, 0x42,
+	0x38, 0x1c, 0x60, 0x3a, 0xe5, 0x22, 0xc4, 0x80, 0x86, 0x21, 0x4a, 0xe3, 0xb2, 0x12, 0x3c, 0xee,
+	0x76, 0x0e, 0x1b, 0xc7, 0xbb, 0xbd, 0x4f, 0x36, 0xe5, 0x0f, 0x4b, 0x4a, 0x82, 0xa9, 0xfa, 0x9a,
+	0xc7, 0x2c, 0x2c, 0xbc, 0xfd, 0x0a, 0xdc, 0x37, 0xdc, 0xd3, 0x12, 0x6b, 0xff, 0xd1, 0x04, 0x58,
+	0xc5, 0x47, 0xbe, 0x87, 0xb6, 0x9c, 0x51, 0x81, 0x13, 0x93, 0x7b, 0xab, 0xf7, 0xf9, 0x9b, 0xe7,
+	0xc8, 0xf1, 0x0d, 0xe0, 0x4a, 0xe4, 0x52, 0x9d, 0x6f, 0x79, 0x15, 0x8f, 0xfc, 0x08, 0x9d, 0x98,
+	0x25, 0x4c, 0xe1, 0xa4, 0xdb, 0x34, 0xe8, 0x67, 0xff, 0x02, 0x7d, 0x51, 0x12, 0x6a, 0x76, 0x4d,
+	0xb4, 0x7f, 0x6a, 0x80, 0xb5, 0x76, 0x2d, 0xb9, 0x06, 0x5b, 0x70, 0xae, 0x82, 0x10, 0x85, 0x62,
+	0x53, 0x16, 0x52, 0x85, 0x01, 0xcd, 0xd5, 0x8c, 0x0b, 0xa6, 0x8a, 0x2a, 0xb4, 0xa7, 0x9b, 0xde,
+	0x7f, 0xba, 0x82, 0xf4, 0x6b, 0x86, 0xd7, 0xd5, 0xfc, 0xdb, 0x24, 0xf6, 0x2e, 0xec, 0xac, 0xbb,
+	0x39, 0xb8, 0x0f, 0x96, 0xd2, 0x8b, 0x20, 0xe1, 0x13, 0x8c, 0xed, 0x5f, 0x9b, 0xb0, 0x7f, 0x9b,
+	0x1d, 0x79, 0x05, 0x96, 0xc4, 0x78, 0x1a, 0x48, 0x16, 0xa5, 0xcb, 0xfc, 0xbf, 0xf8, 0x2f, 0x4e,
+	0x3a, 0x3e, 0xc6, 0x53, 0xdf, 0xe0, 0xce, 0xb7, 0x3c, 0x90, 0xcb, 0x1d, 0xf9, 0x18, 0xda, 0x12,
+	0x43, 0x81, 0xaa, 0xaa, 0xc5, 0x3f, 0x76, 0x91, 0x29, 0xa2, 0xd1, 0xb6, 0x39, 0xc0, 0x8a, 0x49,
+	0xfe, 0x0f, 0xf7, 0x94, 0x8a, 0x83, 0x09, 0x2d, 0xa4, 0x71, 0xf7, 0xbe, 0xd7, 0x51, 0x2a, 0x3e,
+	0xa3, 0x85, 0x24, 0xef, 0x03, 0x11, 0x92, 0x06, 0x73, 0x2c, 0x02, 0xc9, 0xae, 0x31, 0x18, 0x17,
+	0xca, 0xb4, 0xac, 0x56, 0x7a, 0x20, 0x24, 0x7d, 0x89, 0x85, 0xcf, 0xae, 0x71, 0xa0, 0x8f, 0x35,
+	0x87, 0x8b, 0xa8, 0x6c, 0xf9, 0x96, 0x69, 0xf9, 0x0e, 0x17, 0x91, 0x6e, 0xf7, 0xc1, 0x36, 0x74,
+	0x42, 0x1a, 0xa8, 0x22, 0x43, 0xfb, 0x12, 0x60, 0xd5, 0x34, 0xe4, 0x09, 0x40, 0x86, 0x22, 0x61,
+	0x52, 0xb2, 0x05, 0x56, 0xc9, 0x3a, 0x70, 0xca, 0x49, 0xe4, 0xd4, 0x93, 0xc8, 0x19, 0xea, 0x31,
+	0xa5, 0x63, 0x5f, 0xe9, 0x0e, 0xda, 0x70, 0x47, 0x57, 0xe2, 0xe8, 0x0b, 0x78, 0xf8, 0x97, 0x26,
+	0x21, 0x7b, 0xb0, 0x33, 0x1a, 0xfa, 0xe7, 0xc1, 0xd9, 0xf0, 0x79, 0xff, 0xdb, 0x8b, 0xab, 0xbd,
+	0x2d, 0x62, 0x41, 0x67, 0x78, 0xd9, 0x1f, 0x5c, 0x0c, 0xcf, 0xf6, 0x1a, 0x64, 0x07, 0xee, 0x9d,
+	0x7d, 0xe9, 0x97, 0xbb, 0xe6, 0xd1, 0x2f, 0x4d, 0x78, 0xb8, 0x5e, 0x07, 0x45, 0x55, 0x2e, 0x89,
+	0x0b, 0xff, 0xe3, 0x63, 0x3d, 0x70, 0x71, 0x12, 0x44, 0x98, 0xd6, 0xf3, 0x41, 0xbb, 0xd8, 0xf2,
+	0x48, 0x2d, 0x7a, 0xb1, 0x94, 0x90, 0xcf, 0xe0, 0xae, 0x99, 0xb5, 0x26, 0x3d, 0xbb, 0xbd, 0x77,
+	0xff, 0xae, 0xe4, 0xfd, 0x2c, 0x13, 0x7c, 0x41, 0x63, 0x7d, 0x0f, 0x7a, 0xa5, 0x0d, 0x19, 0x2d,
+	0xe7, 0x61, 0xcb, 0xcc, 0xc3, 0x8f, 0x36, 0xf9, 0x61, 0x8c, 0xa3, 0xce, 0xc8, 0xd8, 0x0d, 0x53,
+	0x25, 0x8a, 0x7a, 0x50, 0xda, 0x14, 0xac, 0xb5, 0x63, 0xb2, 0x07, 0xad, 0x39, 0x16, 0xd5, 0x1c,
+	0xd6, 0x4b, 0xf2, 0x14, 0xee, 0x2e, 0x68, 0x9c, 0x63, 0xf5, 0xe3, 0xbc, 0xb7, 0x89, 0xb3, 0xb9,
+	0xf4, 0x4a, 0xa3, 0x4f, 0x9b, 0x4f, 0x1a, 0x83, 0x6f, 0x7e, 0xfe, 0xfd, 0x51, 0xe3, 0x87, 0x97,
+	0x9b, 0x3c, 0x95, 0xd9, 0x3c, 0xba, 0xf1, 0x52, 0xad, 0xdf, 0xb1, 0x7c, 0xb5, 0xc6, 0x6d, 0x53,
+	0xf0, 0x0f, 0xfe, 0x0c, 0x00, 0x00, 0xff, 0xff, 0xcb, 0xeb, 0x38, 0x69, 0x80, 0x07, 0x00, 0x00,
 }
 
 func (this *VirtualMeshSpec) Equal(that interface{}) bool {
@@ -694,10 +701,37 @@ func (this *VirtualMeshSpec) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if !this.CertificateAuthority.Equal(that1.CertificateAuthority) {
+	if !this.MtlsConfig.Equal(that1.MtlsConfig) {
 		return false
 	}
 	if !this.Federation.Equal(that1.Federation) {
+		return false
+	}
+	if this.EnforceAccessControl != that1.EnforceAccessControl {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *VirtualMeshSpec_MTLSConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*VirtualMeshSpec_MTLSConfig)
+	if !ok {
+		that2, ok := that.(VirtualMeshSpec_MTLSConfig)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
 		return false
 	}
 	if that1.TrustModel == nil {
@@ -709,22 +743,19 @@ func (this *VirtualMeshSpec) Equal(that interface{}) bool {
 	} else if !this.TrustModel.Equal(that1.TrustModel) {
 		return false
 	}
-	if this.EnforceAccessControl != that1.EnforceAccessControl {
-		return false
-	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
 		return false
 	}
 	return true
 }
-func (this *VirtualMeshSpec_Shared) Equal(that interface{}) bool {
+func (this *VirtualMeshSpec_MTLSConfig_Shared) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*VirtualMeshSpec_Shared)
+	that1, ok := that.(*VirtualMeshSpec_MTLSConfig_Shared)
 	if !ok {
-		that2, ok := that.(VirtualMeshSpec_Shared)
+		that2, ok := that.(VirtualMeshSpec_MTLSConfig_Shared)
 		if ok {
 			that1 = &that2
 		} else {
@@ -741,14 +772,14 @@ func (this *VirtualMeshSpec_Shared) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *VirtualMeshSpec_Limited) Equal(that interface{}) bool {
+func (this *VirtualMeshSpec_MTLSConfig_Limited) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*VirtualMeshSpec_Limited)
+	that1, ok := that.(*VirtualMeshSpec_MTLSConfig_Limited)
 	if !ok {
-		that2, ok := that.(VirtualMeshSpec_Limited)
+		that2, ok := that.(VirtualMeshSpec_MTLSConfig_Limited)
 		if ok {
 			that1 = &that2
 		} else {
@@ -761,6 +792,57 @@ func (this *VirtualMeshSpec_Limited) Equal(that interface{}) bool {
 		return false
 	}
 	if !this.Limited.Equal(that1.Limited) {
+		return false
+	}
+	return true
+}
+func (this *VirtualMeshSpec_MTLSConfig_SharedTrust) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*VirtualMeshSpec_MTLSConfig_SharedTrust)
+	if !ok {
+		that2, ok := that.(VirtualMeshSpec_MTLSConfig_SharedTrust)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.RootCertificateAuthority.Equal(that1.RootCertificateAuthority) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *VirtualMeshSpec_MTLSConfig_LimitedTrust) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*VirtualMeshSpec_MTLSConfig_LimitedTrust)
+	if !ok {
+		that2, ok := that.(VirtualMeshSpec_MTLSConfig_LimitedTrust)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
 		return false
 	}
 	return true
@@ -784,13 +866,13 @@ func (this *VirtualMeshSpec_CertificateAuthority) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if that1.Type == nil {
-		if this.Type != nil {
+	if that1.CaType == nil {
+		if this.CaType != nil {
 			return false
 		}
-	} else if this.Type == nil {
+	} else if this.CaType == nil {
 		return false
-	} else if !this.Type.Equal(that1.Type) {
+	} else if !this.CaType.Equal(that1.CaType) {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -798,14 +880,14 @@ func (this *VirtualMeshSpec_CertificateAuthority) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *VirtualMeshSpec_CertificateAuthority_Builtin_) Equal(that interface{}) bool {
+func (this *VirtualMeshSpec_CertificateAuthority_SelfSigned_) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*VirtualMeshSpec_CertificateAuthority_Builtin_)
+	that1, ok := that.(*VirtualMeshSpec_CertificateAuthority_SelfSigned_)
 	if !ok {
-		that2, ok := that.(VirtualMeshSpec_CertificateAuthority_Builtin_)
+		that2, ok := that.(VirtualMeshSpec_CertificateAuthority_SelfSigned_)
 		if ok {
 			that1 = &that2
 		} else {
@@ -817,19 +899,19 @@ func (this *VirtualMeshSpec_CertificateAuthority_Builtin_) Equal(that interface{
 	} else if this == nil {
 		return false
 	}
-	if !this.Builtin.Equal(that1.Builtin) {
+	if !this.SelfSigned.Equal(that1.SelfSigned) {
 		return false
 	}
 	return true
 }
-func (this *VirtualMeshSpec_CertificateAuthority_Provided_) Equal(that interface{}) bool {
+func (this *VirtualMeshSpec_CertificateAuthority_Secret) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*VirtualMeshSpec_CertificateAuthority_Provided_)
+	that1, ok := that.(*VirtualMeshSpec_CertificateAuthority_Secret)
 	if !ok {
-		that2, ok := that.(VirtualMeshSpec_CertificateAuthority_Provided_)
+		that2, ok := that.(VirtualMeshSpec_CertificateAuthority_Secret)
 		if ok {
 			that1 = &that2
 		} else {
@@ -841,19 +923,19 @@ func (this *VirtualMeshSpec_CertificateAuthority_Provided_) Equal(that interface
 	} else if this == nil {
 		return false
 	}
-	if !this.Provided.Equal(that1.Provided) {
+	if !this.Secret.Equal(that1.Secret) {
 		return false
 	}
 	return true
 }
-func (this *VirtualMeshSpec_CertificateAuthority_Builtin) Equal(that interface{}) bool {
+func (this *VirtualMeshSpec_CertificateAuthority_SelfSigned) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*VirtualMeshSpec_CertificateAuthority_Builtin)
+	that1, ok := that.(*VirtualMeshSpec_CertificateAuthority_SelfSigned)
 	if !ok {
-		that2, ok := that.(VirtualMeshSpec_CertificateAuthority_Builtin)
+		that2, ok := that.(VirtualMeshSpec_CertificateAuthority_SelfSigned)
 		if ok {
 			that1 = &that2
 		} else {
@@ -872,33 +954,6 @@ func (this *VirtualMeshSpec_CertificateAuthority_Builtin) Equal(that interface{}
 		return false
 	}
 	if this.OrgName != that1.OrgName {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *VirtualMeshSpec_CertificateAuthority_Provided) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*VirtualMeshSpec_CertificateAuthority_Provided)
-	if !ok {
-		that2, ok := that.(VirtualMeshSpec_CertificateAuthority_Provided)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Certificate.Equal(that1.Certificate) {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -959,54 +1014,6 @@ func (this *VirtualMeshSpec_Federation_Permissive) Equal(that interface{}) bool 
 		return false
 	}
 	if !this.Permissive.Equal(that1.Permissive) {
-		return false
-	}
-	return true
-}
-func (this *VirtualMeshSpec_SharedTrust) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*VirtualMeshSpec_SharedTrust)
-	if !ok {
-		that2, ok := that.(VirtualMeshSpec_SharedTrust)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *VirtualMeshSpec_LimitedTrust) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*VirtualMeshSpec_LimitedTrust)
-	if !ok {
-		that2, ok := that.(VirtualMeshSpec_LimitedTrust)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
 		return false
 	}
 	return true

@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"

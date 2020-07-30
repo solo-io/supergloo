@@ -5,8 +5,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input/test"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
 	mock_authorizationpolicy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/authorizationpolicy/mocks"
 	mock_destinationrule "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/destinationrule/mocks"
@@ -32,7 +31,7 @@ var _ = Describe("IstioMeshServiceTranslator", func() {
 		mockVirtualServiceTranslator = mock_virtualservice.NewMockTranslator(ctrl)
 		mockAuthorizationPolicyTranslator = mock_authorizationpolicy.NewMockTranslator(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		in = test.NewInputSnapshotManualBuilder("").Build()
+		in = input.NewInputSnapshotManualBuilder("").Build()
 		istioMeshServiceTranslator = &translator{
 			destinationRuleTranslator:     mockDestinationRuleTranslator,
 			virtualServiceTranslator:      mockVirtualServiceTranslator,

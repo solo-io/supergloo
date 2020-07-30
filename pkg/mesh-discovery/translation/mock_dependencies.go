@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
+	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh"
 	meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshservice"
 	meshworkload "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload"

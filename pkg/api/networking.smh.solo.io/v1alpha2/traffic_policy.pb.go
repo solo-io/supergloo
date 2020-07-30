@@ -27,8 +27,8 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //
-//A routing rule applies some L7 routing features to an existing mesh.
-//Routing rules specify the following for all requests:
+//A Traffic Policy applies some L7 routing features to an existing mesh.
+//Traffic Policies specify the following for all requests:
 //- originating from from **source pods**
 //- sent to **destination services**
 //- matching one or more **request matcher**

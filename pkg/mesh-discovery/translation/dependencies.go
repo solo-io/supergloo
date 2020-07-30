@@ -3,7 +3,7 @@ package translation
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/snapshot/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh"
 	meshdetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"

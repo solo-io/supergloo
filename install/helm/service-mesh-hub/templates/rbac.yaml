@@ -135,22 +135,6 @@ rules:
   verbs:
   - get
   - update
-- apiGroups:
-  - networking.istio.io
-  resources:
-  - destinationrules
-  - virtualservices
-  - envoyfilters
-  - serviceentries
-  - gateways
-  verbs:
-  - '*'
-- apiGroups:
-  - security.istio.io
-  resources:
-  - authorizationpolicies
-  verbs:
-  - '*'
 
 ---
 

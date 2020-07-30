@@ -5,8 +5,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/snapshot/input/test"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/types"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
@@ -40,7 +39,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockVirtualServiceDecorator(ctrl)
 		virtualServiceTranslator = virtualservice.NewTranslator(mockClusterDomainRegistry, mockDecoratorFactory)
-		in = test.NewInputSnapshotManualBuilder("").Build()
+		in = input.NewInputSnapshotManualBuilder("").Build()
 	})
 
 	AfterEach(func() {
