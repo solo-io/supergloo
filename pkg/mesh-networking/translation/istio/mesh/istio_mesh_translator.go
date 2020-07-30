@@ -79,6 +79,7 @@ func (t *translator) Translate(
 	destinationRules := istiov1alpha3sets.NewDestinationRuleSet()
 	serviceEntries := istiov1alpha3sets.NewServiceEntrySet()
 	authPolicies := v1beta1sets.NewAuthorizationPolicySet()
+	issuedCertificates := certificatesv1alpha2sets.NewIssuedCertificateSet()
 
 	for _, vMesh := range mesh.Status.AppliedVirtualMeshes {
 
@@ -109,5 +110,6 @@ func (t *translator) Translate(
 		DestinationRules:      destinationRules,
 		ServiceEntries:        serviceEntries,
 		AuthorizationPolicies: authPolicies,
+		IssuedCertificates:    issuedCertificates,
 	}
 }
