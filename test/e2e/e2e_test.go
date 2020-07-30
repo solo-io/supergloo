@@ -52,7 +52,7 @@ var (
 )
 
 // Must run `make generated-code` before running this test
-var _ = Describe("SMH E2e", func() {
+var _ = Describe("SMH e2e", func() {
 	BeforeEach(func() {
 
 		err := writeTestManifest(policyManifest)
@@ -69,7 +69,6 @@ var _ = Describe("SMH E2e", func() {
 	})
 
 	It("applies TrafficShift policies to local subsets", func() {
-
 		// first check that we can hit both subsets
 		Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
 		Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
