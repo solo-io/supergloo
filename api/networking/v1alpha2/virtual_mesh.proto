@@ -19,54 +19,86 @@ option (gogoproto.equal_all) = true;
 // Currently, VirtualMeshes can only be constructed from Istio
 // meshes.
 message VirtualMeshSpec {
-    // User-provided display name for the virtual mesh.
+    // Optional User-facing display name for the Virtual Mesh.
     string display_name = 1;
 
     // The meshes contained in this virtual mesh.
     repeated .core.skv2.solo.io.ObjectRef meshes = 2;
 
-    // Sets a shared Certificate Authority across the defined meshes.
-    CertificateAuthority certificate_authority = 3;
+    // Configuration options for managing Mutual-TLS mTLS in a virtual mesh.Sets
+    // a shared Certificate Authority across the defined meshes.
+    MTLSConfig mtls_config = 3;
 
-    // Expose services to traffic from any workload in
-    // the virtual mesh using Service Federation.
+    // Determine how to expose services to cross-mesh traffic using Service Federation.
     Federation federation = 4;
-
-    oneof trust_model {
-        SharedTrust shared = 5;
-        LimitedTrust limited = 6;
-    }
 
     EnforcementPolicy enforce_access_control = 7;
 
+    // Mutual TLS Config for a Virtual Mesh.
+    // This includes options for configuring Mutual TLS within an indvidual mesh, as
+    // well as enabling mTLS across Meshes by establishing cross-mesh trust.
+    message MTLSConfig {
+
+        // Select a trust model in order to establish trust between mTLS-secured meshes.
+        oneof trust_model {
+            // Shared trust
+            SharedTrust shared = 1;
+            LimitedTrust limited = 2;
+        }
+
+        /*
+            Shared trust is a virtual mesh trust model requiring a shared root certificate, as well as shared identity
+            between all entities which wish to communicate within the virtual mesh.
+
+            The best current example of this would be the replicated control planes example from Istio:
+            https://preliminary.istio.io/docs/setup/install/multicluster/gateways/
+        */
+        message SharedTrust {
+            // Configure a Root Certificate Authority which will be shared by the
+            // members of the virtual mesh.
+            // If this is not provided, a self-signed certificate will be used
+            // by Service Mesh Hub to establish shared trust for the purposes of failover and federation.
+            CertificateAuthority root_certificate_authority = 1;
+        }
+
+        /*
+            Limited trust is a virtual mesh trust model which does not require all meshes sharing the same root certificate
+            or identity model. But rather, the limited trust creates trust between meshes running on different clusters
+            by connecting their ingress/egress gateways with a common cert/identity. In this model all requests
+            between different have the following request path when communicating between clusters
+
+                            cluster 1 MTLS               shared MTLS                  cluster 2 MTLS
+            client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server
+
+            This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc
+            addition of additional clusters into a virtual mesh.
+        */
+        message LimitedTrust {}
+
+    }
 
     message CertificateAuthority {
+
+        // If no CA type is provided, a builtin.
+        oneof ca_type {
+            // Generate a self-signed root certificate with the given options.
+            SelfSigned self_signed = 1;
+
+            // Use a Secret containing a root certificate.
+            .core.skv2.solo.io.ObjectRef secret = 2;
+        }
+
         /*
-            Configuration for auto-generated root certificate unique to the VirtualMesh
+            Configuration for generating a self-signed root certificate.
             Uses the X.509 format, RFC5280
         */
-        message Builtin {
+        message SelfSigned {
             // Number of days before root cert expires. Defaults to 365.
             uint32 ttl_days = 1;
             // Size in bytes of the root cert's private key. Defaults to 4096
             uint32 rsa_key_size_bytes = 2;
             // Root cert organization name. Defaults to "service-mesh-hub"
             string org_name = 3;
-        }
-
-        // Configuration for user-provided root certificate.
-        message Provided {
-            // Reference to a Secret object containing the root certificate.
-            .core.skv2.solo.io.ClusterObjectRef certificate = 3;
-        }
-
-        // If omitted, defaults to builtin.
-        oneof type {
-            // Use auto-generated root certificate.
-            Builtin builtin = 1;
-
-            // Use user-provided root certificate.
-            Provided provided = 2;
         }
     }
 
@@ -75,7 +107,7 @@ message VirtualMeshSpec {
     // for traffic originating from any service within the
     // virtual mesh.
     message Federation {
-        // The "mode" in which to run federate services within this virtual mesh.
+        // The "mode" in which to federate services within this virtual mesh.
         oneof mode {
             // Select permissive mode to expose all services in a
             // VirtualMesh to cross-cluster traffic from all workloads
@@ -83,29 +115,6 @@ message VirtualMeshSpec {
             .google.protobuf.Empty permissive = 1;
         };
     }
-
-    /*
-        Shared trust is a virtual mesh trust model requiring a shared root certificate, as well as shared identity
-        between all entities which wish to communicate within the virtual mesh.
-
-        The best current example of this would be the replicated control planes example from Istio:
-        https://preliminary.istio.io/docs/setup/install/multicluster/gateways/
-    */
-    message SharedTrust {}
-
-    /*
-        Limited trust is a virtual mesh trust model which does not require all meshes sharing the same root certificate
-        or identity model. But rather, the limited trust creates trust between meshes running on different clusters
-        by connecting their ingress/egress gateways with a common cert/identity. In this model all requests
-        between different have the following request path when communicating between clusters
-
-                        cluster 1 MTLS               shared MTLS                  cluster 2 MTLS
-        client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server
-
-        This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc
-        addition of additional clusters into a virtual mesh.
-    */
-    message LimitedTrust {}
 
     /*
         If ENABLED, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies.
@@ -124,8 +133,6 @@ message VirtualMeshSpec {
 
 message VirtualMeshStatus {
 
-
-
     // The most recent generation observed in the the TrafficPolicy metadata.
     // if the observedGeneration does not match generation, the controller has not received the most
     // recent version of this resource.
@@ -140,15 +147,15 @@ message VirtualMeshStatus {
     // A TrafficPolicy may be Accepted for some Meshes and rejected for others.
     map<string, ApprovalStatus> meshes = 3;
 
-//    // Status of the process writing federation decision metadata onto MeshServices.
-//    core.smh.solo.io.Status federation_status = 1;
-//
-//    // Status of the process signing CSRs.
-//    core.smh.solo.io.Status certificate_status = 2;
-//
-//    // Overall validation status of this VirtualMesh.
-//    core.smh.solo.io.Status config_status = 3;
-//
-//    // Status of ensuring that access control is enforced within this VirtualMesh.
-//    core.smh.solo.io.Status access_control_enforcement_status = 4;
+    //    // Status of the process writing federation decision metadata onto MeshServices.
+    //    core.smh.solo.io.Status federation_status = 1;
+    //
+    //    // Status of the process signing CSRs.
+    //    core.smh.solo.io.Status certificate_status = 2;
+    //
+    //    // Overall validation status of this VirtualMesh.
+    //    core.smh.solo.io.Status config_status = 3;
+    //
+    //    // Status of ensuring that access control is enforced within this VirtualMesh.
+    //    core.smh.solo.io.Status access_control_enforcement_status = 4;
 }

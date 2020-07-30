@@ -6,12 +6,13 @@ package v1alpha2
 import (
 	bytes "bytes"
 	fmt "fmt"
+	math "math"
+
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	types "github.com/gogo/protobuf/types"
 	types1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/types"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -26,8 +27,8 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //
-//A routing rule applies some L7 routing features to an existing mesh.
-//Routing rules specify the following for all requests:
+//A Traffic Policy applies some L7 routing features to an existing mesh.
+//Traffic Policies specify the following for all requests:
 //- originating from from **source pods**
 //- sent to **destination services**
 //- matching one or more **request matcher**

@@ -18,22 +18,90 @@ import (
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 )
 
+func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// generates an input snapshot, input reconciler, and output snapshot for each
+// top-level component. top-level components are defined
+// by mapping a given set of inputs to outputs.
+type topLevelComponent struct {
+	// path where the generated top-level component's code will be placed.
+	// input snapshots will live in <generatedCodeRoot>/input/snapshot.go
+	// input reconcilers will live in <generatedCodeRoot>/input/reconciler.go
+	// output snapshots will live in <generatedCodeRoot>/output/snapshot.go
+	generatedCodeRoot string
+
+	// the set of input resources for which to generate a snapshot and reconciler
+	inputResources io.Snapshot
+
+	// the set of output resources for which to generate a snapshot
+	outputResources io.Snapshot
+}
+
+func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
+	inputSnapshot := makeTopLevelTemplate(
+		contrib.InputSnapshot,
+		t.generatedCodeRoot+"/input/snapshot.go",
+		t.inputResources,
+	)
+
+	inputReconciler := makeTopLevelTemplate(
+		contrib.InputReconciler,
+		t.generatedCodeRoot+"/input/reconciler.go",
+		t.inputResources,
+	)
+
+	outputSnapshot := makeTopLevelTemplate(
+		contrib.OutputSnapshot,
+		t.generatedCodeRoot+"/output/snapshot.go",
+		t.outputResources,
+	)
+
+	return []model.CustomTemplates{
+		inputSnapshot,
+		inputReconciler,
+		outputSnapshot,
+	}
+}
+
 var (
 	appName = "service-mesh-hub"
 
-	discoveryInputSnapshotCodePath  = "pkg/api/discovery.smh.solo.io/snapshot/input/snapshot.go"
-	discoveryReconcilerCodePath     = "pkg/api/discovery.smh.solo.io/snapshot/input/reconciler.go"
-	discoveryOutputSnapshotCodePath = "pkg/api/discovery.smh.solo.io/snapshot/output/snapshot.go"
-
-	networkingInputSnapshotCodePath       = "pkg/api/networking.smh.solo.io/snapshot/input/snapshot.go"
-	networkingReconcilerSnapshotCodePath  = "pkg/api/networking.smh.solo.io/snapshot/input/reconciler.go"
-	networkingOutputIstioSnapshotCodePath = "pkg/api/networking.smh.solo.io/snapshot/output/istio/snapshot.go"
+	topLevelComponents = []topLevelComponent{
+		// discovery component
+		{
+			generatedCodeRoot: "pkg/api/discovery.smh.solo.io",
+			inputResources:    io.DiscoveryInputTypes,
+			outputResources:   io.DiscoveryOutputTypes,
+		},
+		// networking component
+		{
+			generatedCodeRoot: "pkg/api/networking.smh.solo.io",
+			inputResources:    io.NetworkingInputTypes,
+			outputResources:   io.NetworkingOutputTypes,
+		},
+		// certificate issuer component
+		{
+			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/issuer",
+			inputResources:    io.CertificateIssuerInputTypes,
+			outputResources:   io.CertificateIssuerOutputTypes,
+		},
+		// certificate agent component
+		{
+			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/agent",
+			inputResources:    io.CertificateAgentInputTypes,
+			outputResources:   io.CertificateAgentOutputTypes,
+		},
+	}
 
 	smhManifestRoot = "install/helm/service-mesh-hub"
 	csrManifestRoot = "install/helm/csr-agent/"
 
-	vendoredMulticlusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
-	importedMulticlusterCRDs = smhManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
+	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
+	importedMultiClusterCRDs = smhManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
 	allApiGroups = map[string][]model.Group{
 		"":                                 groups.SMHGroups,
@@ -41,62 +109,18 @@ var (
 		"github.com/solo-io/skv2":          {skv1alpha1.Group},
 	}
 
-	// define custom templates
-	discoveryInputSnapshot = makeTopLevelTemplate(
-		contrib.InputSnapshot,
-		discoveryInputSnapshotCodePath,
-		io.DiscoveryInputTypes,
-	)
-
-	discoveryReconciler = makeTopLevelTemplate(
-		contrib.InputReconciler,
-		discoveryReconcilerCodePath,
-		io.DiscoveryInputTypes,
-	)
-
-	discoveryOutputSnapshot = makeTopLevelTemplate(
-		contrib.OutputSnapshot,
-		discoveryOutputSnapshotCodePath,
-		io.DiscoveryOutputTypes,
-	)
-
-	networkingInputSnapshot = makeTopLevelTemplate(
-		contrib.InputSnapshot,
-		networkingInputSnapshotCodePath,
-		io.NetworkingInputTypes,
-	)
-
-	networkingReconciler = makeTopLevelTemplate(
-		contrib.InputReconciler,
-		networkingReconcilerSnapshotCodePath,
-		io.NetworkingInputTypes,
-	)
-
-	networkingOutputIstioSnapshot = makeTopLevelTemplate(
-		contrib.OutputSnapshot,
-		networkingOutputIstioSnapshotCodePath,
-		io.NetworkingOutputIstioTypes,
-	)
-
-	topLevelTemplates = []model.CustomTemplates{
-		discoveryInputSnapshot,
-		discoveryReconciler,
-		discoveryOutputSnapshot,
-		networkingInputSnapshot,
-		networkingReconciler,
-		networkingOutputIstioSnapshot,
-	}
+	topLevelTemplates = func() []model.CustomTemplates {
+		var allTemplates []model.CustomTemplates
+		for _, component := range topLevelComponents {
+			allTemplates = append(allTemplates, component.makeCodegenTemplates()...)
+		}
+		return allTemplates
+	}()
 
 	anyvendorImports = sk_anyvendor.CreateDefaultMatchOptions([]string{
 		"api/**/*.proto",
 	})
 )
-
-func main() {
-	if err := run(); err != nil {
-		log.Fatal(err)
-	}
-}
 
 func run() error {
 	log.Printf("generating service mesh hub code with version %v", version.Version)
@@ -113,16 +137,10 @@ func run() error {
 
 	// TODO(ilackarms): we copy skv2 CRDs out of vendor_any into our helm chart.
 	// we should consider using skv2 to automate this step for us
-	if err := os.Rename(vendoredMulticlusterCRDs, importedMulticlusterCRDs); err != nil {
+	if err := os.Rename(vendoredMultiClusterCRDs, importedMultiClusterCRDs); err != nil {
 		return err
 	}
 
-	return nil
-	// TODO(ilackarms): revive this when reviving csr agent
-	log.Printf("generating csr-agent")
-	if err := makeCsrCommand().Execute(); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -149,16 +167,6 @@ func makeSmhCommand(chartOnly bool) codegen.Command {
 		Groups:            groups.SMHGroups,
 		RenderProtos:      true,
 		Chart:             helm.Chart,
-	}
-}
-
-func makeCsrCommand() codegen.Command {
-	return codegen.Command{
-		AppName:         appName,
-		AnyVendorConfig: anyvendorImports,
-		ManifestRoot:    csrManifestRoot,
-		Groups:          groups.CSRGroups,
-		RenderProtos:    true,
 	}
 }
 
