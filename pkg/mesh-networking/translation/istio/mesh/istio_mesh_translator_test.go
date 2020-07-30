@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
@@ -93,6 +94,7 @@ var _ = Describe("IstioMeshTranslator", func() {
 			AuthorizationPolicies: v1beta1sets.NewAuthorizationPolicySet(
 				&v1beta1.AuthorizationPolicy{ObjectMeta: metav1.ObjectMeta{Name: "authorization-policy"}},
 			),
+			IssuedCertificates: v1alpha2sets.NewIssuedCertificateSet(),
 		}
 
 		mockFederationTranslator.
