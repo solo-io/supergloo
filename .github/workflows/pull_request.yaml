@@ -45,7 +45,7 @@ jobs:
           skipClusterCreation: "true"
           version: v0.8.0
       - name: Install Protoc
-        uses: arduino/setup-protoc@v1.1.0
+        uses: solo-io/setup-protoc@master
         with:
           version: '3.6.1'
       - uses: azure/setup-kubectl@v1
