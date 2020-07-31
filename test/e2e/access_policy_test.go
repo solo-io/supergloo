@@ -3,64 +3,105 @@ package e2e_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/test/utils"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2core "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = FDescribe("SMH e2e", func() {
+var _ = Describe("SMH e2e", func() {
 	var (
-	//accessPolicyClient v1alpha2.AccessPolicyClient
+		err      error
+		manifest utils.Manifest
 	)
 
-	BeforeEach(func() {
-		var err error
-		//accessPolicyClient = v1alpha2.NewAccessPolicyClient(dynamicClient)
-		Expect(err).NotTo(HaveOccurred())
-	})
-
 	AfterEach(func() {
-		//err := testutils.Kubectl("delete", "-f", policyManifest)
-		//Expect(err).NotTo(HaveOccurred())
+		manifest.Cleanup(BookinfoNamespace)
 	})
 
-	It("should enforce access policy when enabled", func() {
-		By("creating a VirtualMesh with access policy enforcement enabled", func() {
-			virtualMesh := &v1alpha2.VirtualMesh{
+	It("control global access policy enforcement", func() {
+		manifest, err = utils.NewManifest("access_policy_test_manifest.yaml")
+		Expect(err).ToNot(HaveOccurred())
+
+		By("restricting connectivity when VirtualMesh with enforcement enabled is created", func() {
+			virtualMesh := &networkingv1alpha2.VirtualMesh{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "VirtualMesh",
-					APIVersion: v1alpha2.SchemeGroupVersion.String(),
+					APIVersion: networkingv1alpha2.SchemeGroupVersion.String(),
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "enforcement-enabled",
-					Namespace: appNamespace,
+					Namespace: BookinfoNamespace,
 				},
-				Spec: v1alpha2.VirtualMeshSpec{
-					Meshes: []*v1.ObjectRef{
+				Spec: networkingv1alpha2.VirtualMeshSpec{
+					Meshes: []*skv2core.ObjectRef{
 						{
 							Name:      "istiod-istio-system-master-cluster",
 							Namespace: "service-mesh-hub",
 						},
 					},
-					EnforceAccessControl: v1alpha2.VirtualMeshSpec_ENABLED,
+					EnforceAccessControl: networkingv1alpha2.VirtualMeshSpec_ENABLED,
 				},
 			}
-			err := utils.WriteTestManifest(policyManifest, []metav1.Object{
-				virtualMesh,
-			})
+			err := manifest.AppendResource(virtualMesh)
 			Expect(err).NotTo(HaveOccurred())
-			err = testutils.Kubectl("apply", "-n="+appNamespace, "-f="+policyManifest)
+			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring("403 Forbidden"))
 		})
 
-		By("restore connectivity by deleting VirtualMesh", func() {
-			err := testutils.Kubectl("delete", "-f", policyManifest)
+		By("restoring connectivity to the reviews service when AccessPolicy is created", func() {
+			accessPolicy := &networkingv1alpha2.AccessPolicy{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "AccessPolicy",
+					APIVersion: networkingv1alpha2.SchemeGroupVersion.String(),
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "allow-reviews",
+					Namespace: BookinfoNamespace,
+				},
+				Spec: networkingv1alpha2.AccessPolicySpec{
+					SourceSelector: []*networkingv1alpha2.IdentitySelector{
+						{
+							KubeServiceAccountRefs: &networkingv1alpha2.IdentitySelector_KubeServiceAccountRefs{
+								ServiceAccounts: []*skv2core.ClusterObjectRef{
+									{
+										Name:        "bookinfo-productpage",
+										Namespace:   BookinfoNamespace,
+										ClusterName: masterClusterName,
+									},
+								},
+							},
+						},
+					},
+					DestinationSelector: []*networkingv1alpha2.ServiceSelector{
+						{
+							KubeServiceRefs: &networkingv1alpha2.ServiceSelector_KubeServiceRefs{
+								Services: []*skv2core.ClusterObjectRef{
+									{
+										Name:        "reviews",
+										Namespace:   BookinfoNamespace,
+										ClusterName: masterClusterName,
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			err := manifest.AppendResource(accessPolicy)
+			Expect(err).NotTo(HaveOccurred())
+			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring("200 OK"))
+		})
+
+		By("restoring connectivity to all services when VirtualMesh is deleted", func() {
+			err := manifest.KubeDelete(BookinfoNamespace)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(curlDetails, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 	})
 })
