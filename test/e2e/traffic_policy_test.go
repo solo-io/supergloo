@@ -17,7 +17,7 @@ import (
 )
 
 // Must run `make generated-code` before running this test
-var _ = Describe("TrafficPolicy E2e", func() {
+var _ = Describe("TrafficPolicy", func() {
 	var (
 		err      error
 		manifest utils.Manifest
@@ -27,7 +27,7 @@ var _ = Describe("TrafficPolicy E2e", func() {
 		manifest.Cleanup(BookinfoNamespace)
 	})
 
-	It("applies TrafficShift policies to local subsets", func() {
+	It("applies traffic shift policies to local subsets", func() {
 		manifest, err = utils.NewManifest("bookinfo-policies.yaml")
 		Expect(err).NotTo(HaveOccurred())
 

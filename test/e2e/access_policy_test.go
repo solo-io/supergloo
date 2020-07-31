@@ -9,7 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("SMH e2e", func() {
+var _ = Describe("AccessPolicy", func() {
 	var (
 		err      error
 		manifest utils.Manifest
@@ -19,7 +19,7 @@ var _ = Describe("SMH e2e", func() {
 		manifest.Cleanup(BookinfoNamespace)
 	})
 
-	It("control global access policy enforcement", func() {
+	It("controls global access policy enforcement", func() {
 		manifest, err = utils.NewManifest("access_policy_test_manifest.yaml")
 		Expect(err).ToNot(HaveOccurred())
 
