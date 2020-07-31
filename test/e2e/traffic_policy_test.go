@@ -37,7 +37,7 @@ var _ = Describe("TrafficPolicy E2e", func() {
 		})
 
 		By("creating a TrafficPolicy with traffic shift to reviews-v2 should consistently shift traffic", func() {
-			trafficShiftReviewsV2 := data.TrafficShiftPolicy(policyName, BookinfoNamespace, &v1.ClusterObjectRef{
+			trafficShiftReviewsV2 := data.TrafficShiftPolicy("bookinfo-policy", BookinfoNamespace, &v1.ClusterObjectRef{
 				Name:        "reviews",
 				Namespace:   BookinfoNamespace,
 				ClusterName: masterClusterName,

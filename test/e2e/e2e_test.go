@@ -11,7 +11,6 @@ import (
 
 // Shared test vars
 var (
-	policyName        = "bookinfo-policy"
 	BookinfoNamespace = "bookinfo"
 
 	masterClusterName = "master-cluster"
