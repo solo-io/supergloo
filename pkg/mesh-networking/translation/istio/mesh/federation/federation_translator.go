@@ -3,11 +3,11 @@ package federation
 import (
 	"context"
 	"fmt"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
-	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
@@ -36,14 +36,6 @@ var (
 	envoyTcpClusterRewriteFilterName = "envoy.filters.network.tcp_cluster_rewrite"
 )
 
-// outputs of translating a single Mesh
-type Outputs struct {
-	Gateway          *networkingv1alpha3.Gateway
-	EnvoyFilter      *networkingv1alpha3.EnvoyFilter
-	DestinationRules istiov1alpha3sets.DestinationRuleSet
-	ServiceEntries   istiov1alpha3sets.ServiceEntrySet
-}
-
 // the VirtualService translator translates a Mesh into a VirtualService.
 type Translator interface {
 	// Translate translates the appropriate VirtualService and DestinationRule for the given Mesh.
@@ -54,8 +46,9 @@ type Translator interface {
 		in input.Snapshot,
 		mesh *discoveryv1alpha2.Mesh,
 		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+		outputs output.Builder,
 		reporter reporting.Reporter,
-	) Outputs
+	)
 }
 
 type translator struct {
@@ -72,20 +65,21 @@ func (t *translator) Translate(
 	in input.Snapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+	outputs output.Builder,
 	reporter reporting.Reporter,
-) Outputs {
+) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.MeshType)
-		return Outputs{}
+		return
 	}
 	if virtualMesh == nil || len(virtualMesh.Spec.Meshes) < 2 {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring istio mesh %v which is not federated with other meshes in a virtual mesh", sets.Key(mesh))
-		return Outputs{}
+		return
 	}
 	if len(istioMesh.IngressGateways) < 1 {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring istio mesh %v has no ingress gateway", sets.Key(mesh))
-		return Outputs{}
+		return
 	}
 	// TODO(ilackarms): consider supporting multiple ingress gateways or selecting a specific gateway.
 	// Currently, we just default to using the first one in the list.
@@ -95,7 +89,7 @@ func (t *translator) Translate(
 
 	if len(meshServices) == 0 {
 		contextutils.LoggerFrom(t.ctx).Debugf("no services found in istio mesh %v", sets.Key(mesh))
-		return Outputs{}
+		return
 	}
 
 	istioCluster := istioMesh.Installation.Cluster
@@ -106,7 +100,7 @@ func (t *translator) Translate(
 	})
 	if err != nil {
 		contextutils.LoggerFrom(t.ctx).Errorf("internal error: cluster %v for istio mesh %v not found", istioCluster, sets.Key(mesh))
-		return Outputs{}
+		return
 	}
 
 	istioNamespace := istioMesh.Installation.Namespace
@@ -118,12 +112,8 @@ func (t *translator) Translate(
 	if err != nil {
 		// should never happen
 		contextutils.LoggerFrom(t.ctx).DPanicf("failed generating tcp rewrite patch: %v", err)
-		return Outputs{}
+		return
 	}
-
-	destinationRules := istiov1alpha3sets.NewDestinationRuleSet()
-
-	serviceEntries := istiov1alpha3sets.NewServiceEntrySet()
 
 	var federatedHostnames []string
 	for _, meshService := range meshServices {
@@ -212,8 +202,8 @@ func (t *translator) Translate(
 				},
 			}
 
-			serviceEntries.Insert(se)
-			destinationRules.Insert(dr)
+			outputs.AddServiceEntries(se)
+			outputs.AddDestinationRules(dr)
 		}
 	}
 
@@ -239,6 +229,7 @@ func (t *translator) Translate(
 			Selector: ingressGateway.WorkloadLabels,
 		},
 	}
+	outputs.AddGateways(gw)
 
 	ef := &networkingv1alpha3.EnvoyFilter{
 		ObjectMeta: metav1.ObjectMeta{
@@ -272,13 +263,7 @@ func (t *translator) Translate(
 			}},
 		},
 	}
-
-	return Outputs{
-		Gateway:          gw,
-		EnvoyFilter:      ef,
-		DestinationRules: destinationRules,
-		ServiceEntries:   serviceEntries,
-	}
+	outputs.AddEnvoyFilters(ef)
 }
 
 func servicesForMesh(

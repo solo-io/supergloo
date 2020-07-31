@@ -1,7 +1,8 @@
-package istio
+package output
 
 import (
 	"context"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 
@@ -16,10 +17,14 @@ type Applier interface {
 }
 
 type applier struct {
+	fieldOwners fieldutils.FieldOwnershipRegistry
 }
 
 func (a applier) HandleWriteError(resource ezkube.Object, err error) {
-
+	owners := a.fieldOwners.GetRegisteredOwnerships(resource)
+	for _, owner := range owners {
+		owner.Status = failed
+	}
 }
 
 func (a applier) HandleDeleteError(resource ezkube.Object, err error) {

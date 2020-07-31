@@ -1,8 +1,8 @@
 package access
 
 import (
-	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
@@ -18,7 +18,8 @@ type Translator interface {
 	Translate(
 		mesh *discoveryv1alpha2.Mesh,
 		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
-	) v1beta1sets.AuthorizationPolicySet
+		outputs output.Builder,
+	)
 }
 
 const (
@@ -35,25 +36,24 @@ func NewTranslator() Translator {
 func (t *translator) Translate(
 	mesh *discoveryv1alpha2.Mesh,
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
-) v1beta1sets.AuthorizationPolicySet {
+	outputs output.Builder,
+) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
-		return nil
+		return
 	}
 
 	// Istio's default access enforcement policy is disabled.
-	if virtualMesh.Spec.EnforceAccessControl == v1alpha2.VirtualMeshSpec_MESH_DEFAULT ||
-		virtualMesh.Spec.EnforceAccessControl == v1alpha2.VirtualMeshSpec_DISABLED {
-		return nil
+	if virtualMesh.Spec.GlobalAccessPolicy == v1alpha2.VirtualMeshSpec_MESH_DEFAULT ||
+		virtualMesh.Spec.GlobalAccessPolicy == v1alpha2.VirtualMeshSpec_DISABLED {
+		return
 	}
 	installationNamespace := istioMesh.Installation.Namespace
 	globalAuthPolicy := buildGlobalAuthPolicy(installationNamespace)
 	ingressGatewayAuthPolicies := buildAuthPoliciesForIngressgateways(installationNamespace, istioMesh.IngressGateways)
 
-	authPolicies := v1beta1sets.NewAuthorizationPolicySet()
-	authPolicies.Insert(globalAuthPolicy)
-	authPolicies.Insert(ingressGatewayAuthPolicies...)
-	return authPolicies
+	outputs.AddAuthorizationPolicies(globalAuthPolicy)
+	outputs.AddAuthorizationPolicies(ingressGatewayAuthPolicies...)
 }
 
 // Creates an AuthorizationPolicy that allows all traffic into the "istio-ingressgateway" service

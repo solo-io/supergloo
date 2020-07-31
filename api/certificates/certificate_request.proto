@@ -35,11 +35,30 @@ message CertificateRequestStatus {
     // recent version of this request.
     int64 observed_generation = 1;
 
-    // any errors observed which prevented the CertificateRequest from being processed.
-    // if errors is empty, the request has been processed successfully
-    repeated string errors = 2;
+    // any error observed which prevented the CertificateRequest from being processed.
+    // if the error is empty, the request has been processed successfully
+    string error = 2;
 
-    // the name of the secret containing the issued SSL certificate, once it has been
-    // populated by the issuing CA (Service Mesh Hub).
-    string secret_name = 3;
+    // the current state of the CertificateRequest workflow,
+    // reported by the Issuer.
+    State state = 3;
+
+    // possible states in which a CertificateRequest can exist
+    enum State {
+        // the CertificateRequest has yet to be picked up by the issuer.
+        PENDING = 0;
+
+        // the Issuer has replied to the request and the signedCertificate and SigningRootCa
+        // status fields will be populated.
+        FINISHED = 1;
+
+        // processing the certificate workflow failed.
+        FAILED = 2;
+    }
+
+    // the signed intermediate certificate issued by the CA
+    bytes signed_certificate = 4;
+
+    // the root CA used by the CA to sign the certificate
+    bytes signing_root_ca = 5;
 }

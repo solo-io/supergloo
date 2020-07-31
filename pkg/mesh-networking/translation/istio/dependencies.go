@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh"
@@ -37,11 +38,13 @@ func (d dependencyFactoryImpl) makeMeshServiceTranslator(clusters skv1alpha1sets
 func (d dependencyFactoryImpl) makeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet) mesh.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	federationTranslator := federation.NewTranslator(ctx, clusterDomains)
+	mtlsTranslator := mtls.NewTranslator(ctx)
 	accessTranslator := access.NewTranslator()
 	failoverServiceTranslator := failoverservice.NewTranslator(ctx, clusterDomains)
 
 	return mesh.NewTranslator(
 		ctx,
+		mtlsTranslator,
 		federationTranslator,
 		accessTranslator,
 		failoverServiceTranslator,

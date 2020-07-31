@@ -12,13 +12,8 @@ var (
 			Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
 			Version: "v1alpha2",
 		}: {
+			"IssuedCertificate",
 			"CertificateRequest",
-		},
-	}
-
-	CertificateIssuerOutputTypes = Snapshot{
-		corev1.SchemeGroupVersion: {
-			"Secret",
 		},
 	}
 
@@ -28,6 +23,10 @@ var (
 			Version: "v1alpha2",
 		}: {
 			"IssuedCertificate",
+			"CertificateRequest",
+		},
+		corev1.SchemeGroupVersion: {
+			"Secret",
 		},
 	}
 
@@ -37,6 +36,9 @@ var (
 			Version: "v1alpha2",
 		}: {
 			"CertificateRequest",
+		},
+		corev1.SchemeGroupVersion: {
+			"Secret",
 		},
 	}
 )

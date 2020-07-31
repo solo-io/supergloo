@@ -42,29 +42,31 @@ type topLevelComponent struct {
 }
 
 func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
-	inputSnapshot := makeTopLevelTemplate(
-		contrib.InputSnapshot,
-		t.generatedCodeRoot+"/input/snapshot.go",
-		t.inputResources,
-	)
+	var topLevelTemplates []model.CustomTemplates
 
-	inputReconciler := makeTopLevelTemplate(
-		contrib.InputReconciler,
-		t.generatedCodeRoot+"/input/reconciler.go",
-		t.inputResources,
-	)
+	if len(t.inputResources) > 0 {
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshot,
+			t.generatedCodeRoot+"/input/snapshot.go",
+			t.inputResources,
+		))
 
-	outputSnapshot := makeTopLevelTemplate(
-		contrib.OutputSnapshot,
-		t.generatedCodeRoot+"/output/snapshot.go",
-		t.outputResources,
-	)
-
-	return []model.CustomTemplates{
-		inputSnapshot,
-		inputReconciler,
-		outputSnapshot,
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputReconciler,
+			t.generatedCodeRoot+"/input/reconciler.go",
+			t.inputResources,
+		))
 	}
+
+	if len(t.outputResources) > 0 {
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.OutputSnapshot,
+			t.generatedCodeRoot+"/output/snapshot.go",
+			t.outputResources,
+		))
+	}
+
+	return topLevelTemplates
 }
 
 var (
@@ -87,7 +89,6 @@ var (
 		{
 			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/issuer",
 			inputResources:    io.CertificateIssuerInputTypes,
-			outputResources:   io.CertificateIssuerOutputTypes,
 		},
 		// certificate agent component
 		{

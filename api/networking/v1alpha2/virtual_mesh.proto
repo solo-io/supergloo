@@ -19,20 +19,19 @@ option (gogoproto.equal_all) = true;
 // Currently, VirtualMeshes can only be constructed from Istio
 // meshes.
 message VirtualMeshSpec {
-    // Optional User-facing display name for the Virtual Mesh.
-    string display_name = 1;
 
     // The meshes contained in this virtual mesh.
-    repeated .core.skv2.solo.io.ObjectRef meshes = 2;
+    repeated .core.skv2.solo.io.ObjectRef meshes = 1;
 
     // Configuration options for managing Mutual-TLS mTLS in a virtual mesh.Sets
     // a shared Certificate Authority across the defined meshes.
-    MTLSConfig mtls_config = 3;
+    MTLSConfig mtls_config = 2;
 
     // Determine how to expose services to cross-mesh traffic using Service Federation.
-    Federation federation = 4;
+    Federation federation = 3;
 
-    EnforcementPolicy enforce_access_control = 7;
+    // Sets an Access Policy for the whole mesh.
+    GlobalAccessPolicy global_access_policy = 4;
 
     // Mutual TLS Config for a Virtual Mesh.
     // This includes options for configuring Mutual TLS within an indvidual mesh, as
@@ -58,7 +57,7 @@ message VirtualMeshSpec {
             // members of the virtual mesh.
             // If this is not provided, a self-signed certificate will be used
             // by Service Mesh Hub to establish shared trust for the purposes of failover and federation.
-            CertificateAuthority root_certificate_authority = 1;
+            RootCertificateAuthority root_certificate_authority = 1;
         }
 
         /*
@@ -77,14 +76,17 @@ message VirtualMeshSpec {
 
     }
 
-    message CertificateAuthority {
+    // RootCertificateAuthority defines parameters for configuring the
+    // root CA for a Virtual Mesh.
+    message RootCertificateAuthority {
 
-        // If no CA type is provided, a builtin.
-        oneof ca_type {
+        // Select a source for the Root CA data which Service Mesh Hub will use for the Virtual Mesh.
+        oneof ca_source {
             // Generate a self-signed root certificate with the given options.
-            SelfSigned self_signed = 1;
+            SelfSignedCert generated = 1;
 
-            // Use a Secret containing a root certificate.
+            // Use a root certificate provided in a Kubernetes Secret.
+            // [Secrets provided in this way must follow a specified format, documented here.]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}})
             .core.skv2.solo.io.ObjectRef secret = 2;
         }
 
@@ -92,7 +94,7 @@ message VirtualMeshSpec {
             Configuration for generating a self-signed root certificate.
             Uses the X.509 format, RFC5280
         */
-        message SelfSigned {
+        message SelfSignedCert {
             // Number of days before root cert expires. Defaults to 365.
             uint32 ttl_days = 1;
             // Size in bytes of the root cert's private key. Defaults to 4096
@@ -123,7 +125,7 @@ message VirtualMeshSpec {
             Istio: false
             Appmesh: true
     */
-    enum EnforcementPolicy {
+    enum GlobalAccessPolicy {
         MESH_DEFAULT = 0;
         ENABLED = 1;
         DISABLED = 2;

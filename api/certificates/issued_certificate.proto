@@ -39,8 +39,11 @@ message IssuedCertificateSpec {
     // Organization for this certificate.
     string org = 2;
 
-    // the secret containing the SSL certificate to be generated for this IssuedCertificate
-    .core.skv2.solo.io.ObjectRef secret_ref = 3;
+    // the secret containing the root SSL certificate used to sign this IssuedCertificate (located in the Certificate Issuer's cluster)
+    .core.skv2.solo.io.ObjectRef signing_certificate_secret = 3;
+
+    // the secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster)
+    .core.skv2.solo.io.ObjectRef issued_certificate_secret = 4;
 }
 
 // the IssuedCertificate status is written by the CertificateRequesting agent
@@ -51,11 +54,31 @@ message IssuedCertificateStatus {
     // recent version of this IssuedCertificate.
     int64 observed_generation = 1;
 
-    // any errors observed which prevented the IssuedCertificate from being processed.
-    // if errors is empty, the request has been processed successfully
-    repeated string errors = 2;
+    // any error observed which prevented the CertificateRequest from being processed.
+    // if the error is empty, the request has been processed successfully
+    string error = 2;
 
-    // the name of the CertificateRequest containing the Certificate Signing Request,
-    // generated for the IssuedCertificate.
-    string certificate_request_name = 3;
+    // the current state of the IssuedCertificate workflow,
+    // reported by the agent.
+    State state = 3;
+
+    // possible states in which an IssuedCertificate can exist
+    enum State {
+        // the IssuedCertificate has yet to be picked up by the agent.
+        PENDING = 0;
+
+        // the agent has created a local private key
+        // and a CertificateRequest for the IssuedCertificate.
+        // in this state, the agent is waiting for the Issuer
+        // to issue certificates for the CertificateRequest before proceeding.
+        REQUESTED = 1;
+
+        // the reply from the Issuer has been process and
+        // the agent has placed the final certificate secret
+        // in the target location specified by the IssuedCertificate.
+        FINISHED = 2;
+
+        // processing the certificate workflow failed.
+        FAILED = 3;
+    }
 }
