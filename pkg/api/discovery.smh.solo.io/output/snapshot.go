@@ -603,24 +603,30 @@ type Builder interface {
 
 func (b *builder) AddMeshServices(meshServices ...*discovery_smh_solo_io_v1alpha2.MeshService) {
 	for _, obj := range meshServices {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output MeshService %v", sets.Key(obj))
+		b.meshServices.Insert(obj)
 	}
-
-	b.meshServices.Insert(meshServices...)
 }
 func (b *builder) AddMeshWorkloads(meshWorkloads ...*discovery_smh_solo_io_v1alpha2.MeshWorkload) {
 	for _, obj := range meshWorkloads {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output MeshWorkload %v", sets.Key(obj))
+		b.meshWorkloads.Insert(obj)
 	}
-
-	b.meshWorkloads.Insert(meshWorkloads...)
 }
 func (b *builder) AddMeshes(meshes ...*discovery_smh_solo_io_v1alpha2.Mesh) {
 	for _, obj := range meshes {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output Mesh %v", sets.Key(obj))
+		b.meshes.Insert(obj)
 	}
-
-	b.meshes.Insert(meshes...)
 }
 
 func (b *builder) GetMeshServices() discovery_smh_solo_io_v1alpha2_sets.MeshServiceSet {

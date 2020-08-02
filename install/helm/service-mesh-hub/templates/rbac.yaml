@@ -163,6 +163,23 @@ rules:
   - authorizationpolicies
   verbs:
   - '*'
+- apiGroups:
+  - certificates.smh.solo.io
+  resources:
+  - issuedcertificates
+  - certificaterequests
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - certificates.smh.solo.io
+  resources:
+  - issuedcertificates/status
+  - certificaterequests/status
+  verbs:
+  - get
+  - update
 
 ---
 

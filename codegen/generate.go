@@ -99,13 +99,13 @@ var (
 	}
 
 	smhManifestRoot = "install/helm/service-mesh-hub"
-	csrManifestRoot = "install/helm/csr-agent/"
+	certAgentManifestRoot = "install/helm/cert-agent/"
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 	importedMultiClusterCRDs = smhManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
 	allApiGroups = map[string][]model.Group{
-		"":                                 groups.SMHGroups,
+		"":                                 append(groups.SMHGroups, groups.CertAgentGroups...),
 		"github.com/solo-io/external-apis": externalapis.Groups,
 		"github.com/solo-io/skv2":          {skv1alpha1.Group},
 	}
@@ -129,6 +129,10 @@ func run() error {
 	flag.Parse()
 
 	if err := makeSmhCommand(*chartOnly).Execute(); err != nil {
+		return err
+	}
+
+	if err := makeCertAgentCommand(*chartOnly).Execute(); err != nil {
 		return err
 	}
 
@@ -168,6 +172,27 @@ func makeSmhCommand(chartOnly bool) codegen.Command {
 		Groups:            groups.SMHGroups,
 		RenderProtos:      true,
 		Chart:             helm.Chart,
+	}
+}
+
+
+func makeCertAgentCommand(chartOnly bool) codegen.Command {
+	if chartOnly {
+		return codegen.Command{
+			AppName:      appName,
+			ManifestRoot: certAgentManifestRoot,
+			Chart:        helm.CertAgentChart,
+		}
+	}
+
+	return codegen.Command{
+		AppName:           appName,
+		AnyVendorConfig:   anyvendorImports,
+		ManifestRoot:      certAgentManifestRoot,
+		TopLevelTemplates: topLevelTemplates,
+		Groups:            groups.CertAgentGroups,
+		RenderProtos:      true,
+		Chart:             helm.CertAgentChart,
 	}
 }
 

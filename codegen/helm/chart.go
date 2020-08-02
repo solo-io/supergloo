@@ -13,8 +13,18 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-// this file provides the source of truth for the DevPortal Helm chart.
+// this file provides the source of truth for the Service Mesh Hub Helm chart.
 // it is imported into the root level generate.go to generate the Portal manifest
+
+var (
+	registry = func() string {
+		registry := os.Getenv("IMAGE_REGISTRY")
+		if registry == "" {
+			registry = defaultRegistry
+		}
+		return registry
+	}()
+)
 
 var Chart = &model.Chart{
 	Operators: []model.Operator{
@@ -34,6 +44,23 @@ var Chart = &model.Chart{
 	Values: defaultValues(),
 }
 
+var CertAgentChart = &model.Chart{
+	Operators: []model.Operator{
+		certAgentOperator(),
+	},
+	// Exclude the standard namespace template
+	FilterTemplate: func(outPath string) bool {
+		return outPath == "templates/namespace.yaml"
+	},
+	Data: model.Data{
+		ApiVersion:  "v1",
+		Name:        "cert-agent",
+		Description: "Helm chart for the Service Mesh Hub Certificate Agent.",
+		Version:     version.Version,
+	},
+	Values: nil,
+}
+
 var (
 	defaultRegistry = "soloio"
 )
@@ -48,7 +75,7 @@ func discoveryOperator() model.Operator {
 	return model.Operator{
 		Name: "discovery",
 		Deployment: model.Deployment{
-			Image: makeImage(),
+			Image: smhImage(),
 			Resources: &v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU:    resource.MustParse("125m"),
@@ -68,12 +95,12 @@ func discoveryOperator() model.Operator {
 		Rbac: rbacPolicies,
 		Args: []string{
 			"discovery",
-			"--metrics-port={{ $.Values.networking.ports.metrics }}",
+			"--metrics-port={{ $.Values.discovery.ports.metrics }}",
 			"--verbose",
 		},
 		Env: []v1.EnvVar{
 			{
-				Name: defaults.GetPodNamespace(),
+				Name: defaults.PodNamespaceEnv,
 				ValueFrom: &v1.EnvVarSource{
 					FieldRef: &v1.ObjectFieldSelector{
 						FieldPath: "metadata.namespace",
@@ -92,11 +119,13 @@ func networkingOperator() model.Operator {
 	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesUpdateStatus()...)
 	rbacPolicies = append(rbacPolicies, io.NetworkingOutputTypes.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)
+	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesUpdateStatus()...)
 
 	return model.Operator{
 		Name: "networking",
 		Deployment: model.Deployment{
-			Image: makeImage(),
+			Image: smhImage(),
 			Resources: &v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU:    resource.MustParse("125m"),
@@ -121,7 +150,7 @@ func networkingOperator() model.Operator {
 		},
 		Env: []v1.EnvVar{
 			{
-				Name: defaults.GetPodNamespace(),
+				Name: defaults.PodNamespaceEnv,
 				ValueFrom: &v1.EnvVarSource{
 					FieldRef: &v1.ObjectFieldSelector{
 						FieldPath: "metadata.namespace",
@@ -132,15 +161,65 @@ func networkingOperator() model.Operator {
 	}
 }
 
-// cache and operator share same image
-func makeImage() model.Image {
-	registry := os.Getenv("IMAGE_REGISTRY")
-	if registry == "" {
-		registry = defaultRegistry
+func certAgentOperator() model.Operator {
+
+	var rbacPolicies []rbacv1.PolicyRule
+
+	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.RbacPoliciesWatch()...)
+	rbacPolicies = append(rbacPolicies, io.CertificateAgentOutputTypes.RbacPoliciesUpdateStatus()...)
+
+	return model.Operator{
+		Name: "cert-agent",
+		Deployment: model.Deployment{
+			Image: certAgentImage(),
+			Resources: &v1.ResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("50m"),
+					v1.ResourceMemory: resource.MustParse("128Mi"),
+				},
+			},
+		},
+		Service: model.Service{
+			Type: v1.ServiceTypeClusterIP,
+			Ports: []model.ServicePort{
+				{
+					Name:        "metrics",
+					DefaultPort: 9091,
+				},
+			},
+		},
+		Rbac: rbacPolicies,
+		Args: []string{
+			"--metrics-port={{ $.Values.certAgent.ports.metrics }}",
+			"--verbose",
+		},
+		Env: []v1.EnvVar{
+			{
+				Name: defaults.PodNamespaceEnv,
+				ValueFrom: &v1.EnvVarSource{
+					FieldRef: &v1.ObjectFieldSelector{
+						FieldPath: "metadata.namespace",
+					},
+				},
+			},
+		},
 	}
+}
+
+// both smh operators share same image
+func smhImage() model.Image {
 	return model.Image{
 		Registry:   registry,
 		Repository: "service-mesh-hub",
+		Tag:        version.Version,
+		PullPolicy: v1.PullIfNotPresent,
+	}
+}
+
+func certAgentImage() model.Image {
+	return model.Image{
+		Registry:   registry,
+		Repository: "cert-agent",
 		Tag:        version.Version,
 		PullPolicy: v1.PullIfNotPresent,
 	}

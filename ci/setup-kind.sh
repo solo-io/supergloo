@@ -17,6 +17,8 @@
 PROJECT_ROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/..
 echo "Using project root ${PROJECT_ROOT}"
 
+#### FUNCTIONS
+
 function create_kind_cluster() {
   # The default version of k8s under Linux is 1.18
   # https://github.com/solo-io/service-mesh-hub/issues/700
@@ -183,14 +185,31 @@ function register_cluster() {
     } ;;
   esac
 
-  ${K} create ns service-mesh-hub || echo exists
+  K="kubectl --context kind-${cluster}"
+
+  echo "registering ${cluster} with local cert-agent image..."
+
+  INSTALL_DIR="${PROJECT_ROOT}/install/"
+  AGENT_VALUES=${INSTALL_DIR}/helm/cert-agent/values.yaml
+  AGENT_IMAGE_REGISTRY=$(cat ${AGENT_VALUES} | grep "registry: " | awk '{print $2}')
+  AGENT_IMAGE_REPOSITORY=$(cat ${AGENT_VALUES} | grep "repository: " | awk '{print $2}')
+  AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}')
+
+  AGENT_IMAGE="${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}"
+  AGENT_CHART="${INSTALL_DIR}/helm/_output/charts/cert-agent-${AGENT_IMAGE_TAG}.tgz"
+
+  # load cert-agent image
+  kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
 
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
     --master-context "kind-${masterCluster}" \
     --remote-context "kind-${cluster}" \
-    --api-server-address "${apiServerAddress}"
+    --api-server-address "${apiServerAddress}" \
+    --cert-agent-chart-file "${AGENT_CHART}"
 }
+
+#### START SCRIPT
 
 # Note(ilackarms): these names are hard-coded in test/e2e/env.go
 masterCluster=master-cluster

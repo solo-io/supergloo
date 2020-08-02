@@ -1,4 +1,7 @@
 service-mesh-hub-default.yaml
+cert-agent-default.yaml
 helm/_output
 helm/service-mesh-hub/Chart.yaml
 helm/service-mesh-hub/values.yaml
+helm/cert-agent/Chart.yaml
+helm/cert-agent/values.yaml

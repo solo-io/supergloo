@@ -18,9 +18,6 @@ K="kubectl --context kind-${cluster}"
 
 echo "deploying smh to ${cluster} from local images..."
 
-# register our CRDs
-${K} apply -f "${PROJECT_ROOT}/install/helm/service-mesh-hub/crds"
-
 # namespace
 ${K} create ns service-mesh-hub || echo exists
 
@@ -29,7 +26,7 @@ DEFAULT_MANIFEST="${INSTALL_DIR}/service-mesh-hub-default.yaml"
 
 ## build
 MAKE="make -C $PROJECT_ROOT"
-eval "${MAKE} manifest-gen build-all-images -B"
+eval "${MAKE} manifest-gen package-helm build-all-images -B"
 
 ## install to kube
 

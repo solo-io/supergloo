@@ -459,17 +459,21 @@ type Builder interface {
 
 func (b *builder) AddCertificateRequests(certificateRequests ...*certificates_smh_solo_io_v1alpha2.CertificateRequest) {
 	for _, obj := range certificateRequests {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output CertificateRequest %v", sets.Key(obj))
+		b.certificateRequests.Insert(obj)
 	}
-
-	b.certificateRequests.Insert(certificateRequests...)
 }
 func (b *builder) AddSecrets(secrets ...*v1.Secret) {
 	for _, obj := range secrets {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output Secret %v", sets.Key(obj))
+		b.secrets.Insert(obj)
 	}
-
-	b.secrets.Insert(secrets...)
 }
 
 func (b *builder) GetCertificateRequests() certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet {

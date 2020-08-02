@@ -1387,59 +1387,75 @@ type Builder interface {
 
 func (b *builder) AddIssuedCertificates(issuedCertificates ...*certificates_smh_solo_io_v1alpha2.IssuedCertificate) {
 	for _, obj := range issuedCertificates {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output IssuedCertificate %v", sets.Key(obj))
+		b.issuedCertificates.Insert(obj)
 	}
-
-	b.issuedCertificates.Insert(issuedCertificates...)
 }
 func (b *builder) AddDestinationRules(destinationRules ...*networking_istio_io_v1alpha3.DestinationRule) {
 	for _, obj := range destinationRules {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output DestinationRule %v", sets.Key(obj))
+		b.destinationRules.Insert(obj)
 	}
-
-	b.destinationRules.Insert(destinationRules...)
 }
 func (b *builder) AddEnvoyFilters(envoyFilters ...*networking_istio_io_v1alpha3.EnvoyFilter) {
 	for _, obj := range envoyFilters {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output EnvoyFilter %v", sets.Key(obj))
+		b.envoyFilters.Insert(obj)
 	}
-
-	b.envoyFilters.Insert(envoyFilters...)
 }
 func (b *builder) AddGateways(gateways ...*networking_istio_io_v1alpha3.Gateway) {
 	for _, obj := range gateways {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output Gateway %v", sets.Key(obj))
+		b.gateways.Insert(obj)
 	}
-
-	b.gateways.Insert(gateways...)
 }
 func (b *builder) AddServiceEntries(serviceEntries ...*networking_istio_io_v1alpha3.ServiceEntry) {
 	for _, obj := range serviceEntries {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output ServiceEntry %v", sets.Key(obj))
+		b.serviceEntries.Insert(obj)
 	}
-
-	b.serviceEntries.Insert(serviceEntries...)
 }
 func (b *builder) AddVirtualServices(virtualServices ...*networking_istio_io_v1alpha3.VirtualService) {
 	for _, obj := range virtualServices {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output VirtualService %v", sets.Key(obj))
+		b.virtualServices.Insert(obj)
 	}
-
-	b.virtualServices.Insert(virtualServices...)
 }
 func (b *builder) AddAuthorizationPolicies(authorizationPolicies ...*security_istio_io_v1beta1.AuthorizationPolicy) {
 	for _, obj := range authorizationPolicies {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output AuthorizationPolicy %v", sets.Key(obj))
+		b.authorizationPolicies.Insert(obj)
 	}
-
-	b.authorizationPolicies.Insert(authorizationPolicies...)
 }
 func (b *builder) AddSecrets(secrets ...*v1.Secret) {
 	for _, obj := range secrets {
+		if obj == nil {
+			continue
+		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output Secret %v", sets.Key(obj))
+		b.secrets.Insert(obj)
 	}
-
-	b.secrets.Insert(secrets...)
 }
 
 func (b *builder) GetIssuedCertificates() certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet {
