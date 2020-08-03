@@ -10,11 +10,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/solo-io/go-utils/testutils"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/go-utils/testutils"
 	. "github.com/solo-io/service-mesh-hub/test/e2e"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // to skip testing this package, run `make run-tests SKIP_PACKAGES=test/e2e
@@ -50,6 +50,10 @@ var _ = BeforeSuite(func() {
 
 	ensureWorkingDirectory()
 	/* env := */ StartEnvOnce(ctx)
+
+	var err error
+	dynamicClient, err = client.New(GetEnv().Management.Config, client.Options{})
+	Expect(err).NotTo(HaveOccurred())
 })
 
 func ensureWorkingDirectory() {

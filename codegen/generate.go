@@ -48,6 +48,12 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 		t.inputResources,
 	)
 
+	inputSnapshotManualBuilder := makeTopLevelTemplate(
+		contrib.InputSnapshotManualBuilder,
+		t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
+		t.inputResources,
+	)
+
 	inputReconciler := makeTopLevelTemplate(
 		contrib.InputReconciler,
 		t.generatedCodeRoot+"/input/reconciler.go",
@@ -62,6 +68,7 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 
 	return []model.CustomTemplates{
 		inputSnapshot,
+		inputSnapshotManualBuilder,
 		inputReconciler,
 		outputSnapshot,
 	}

@@ -18,6 +18,8 @@ import (
 	securityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 )
 
+//go:generate mockgen -source ./authorization_policy_translator.go -destination mocks/authorization_policy_translator.go
+
 const (
 	translatorName = "authorization-policy-translator"
 )

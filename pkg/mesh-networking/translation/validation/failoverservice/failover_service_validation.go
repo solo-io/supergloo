@@ -43,12 +43,12 @@ type Inputs struct {
 }
 
 var (
-	MissingHostname         = eris.New("Missing required field \"hostname\".")
-	MissingPort             = eris.New("Missing required field \"port\".")
-	MissingMeshes           = eris.New("Missing required field \"meshes\".")
-	MissingServices         = eris.New("There must be at least one service declared for the FailoverService.")
-	FailoverServiceNotFound = func(serviceRef *skv2core.ClusterObjectRef) error {
-		return eris.Errorf("Failover service %s.%s.%s not found in SMH discovery resources.",
+	MissingHostname        = eris.New("Missing required field \"hostname\".")
+	MissingPort            = eris.New("Missing required field \"port\".")
+	MissingMeshes          = eris.New("Missing required field \"meshes\".")
+	MissingServices        = eris.New("There must be at least one service declared for the FailoverService.")
+	BackingServiceNotFound = func(serviceRef *skv2core.ClusterObjectRef) error {
+		return eris.Errorf("Backing service %s.%s.%s not found in SMH discovery resources.",
 			serviceRef.GetName(),
 			serviceRef.GetNamespace(),
 			serviceRef.GetClusterName())
@@ -148,7 +148,7 @@ func (f *failoverServiceValidator) validateServices(
 		meshService, err := f.findMeshService(serviceRef, allMeshServices)
 		if err != nil {
 			// Corresponding MeshService not found.
-			errs = append(errs, FailoverServiceNotFound(serviceRef))
+			errs = append(errs, BackingServiceNotFound(serviceRef))
 			continue
 		}
 		if err := f.validateServiceOutlierDetection(meshService); err != nil {
@@ -177,7 +177,7 @@ func (f *failoverServiceValidator) findMeshService(
 			return meshService, nil
 		}
 	}
-	return nil, FailoverServiceNotFound(serviceRef)
+	return nil, BackingServiceNotFound(serviceRef)
 }
 
 func (f *failoverServiceValidator) validateServiceOutlierDetection(meshService *discoveryv1alpha2.MeshService) error {

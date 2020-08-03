@@ -5,6 +5,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 )
 
+//go:generate mockgen -source ./decorators.go -destination mocks/decorators.go
+
 // parameters for initializing decorators
 type Parameters struct {
 	ClusterDomains hostutils.ClusterDomainRegistry

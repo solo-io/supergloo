@@ -17,6 +17,8 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
+//go:generate mockgen -source ./istio_mesh_translator.go -destination mocks/istio_mesh_translator.go
+
 // outputs of translating a single Mesh
 type Outputs struct {
 	Gateways              istiov1alpha3sets.GatewaySet
@@ -34,7 +36,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.Snapshot,
-		mesh *discoveryv1alpha2.Mesh,
+		istioMesh *discoveryv1alpha2.Mesh,
 		reporter reporting.Reporter,
 	) Outputs
 }
@@ -77,6 +79,7 @@ func (t *translator) Translate(
 	destinationRules := istiov1alpha3sets.NewDestinationRuleSet()
 	serviceEntries := istiov1alpha3sets.NewServiceEntrySet()
 	authPolicies := v1beta1sets.NewAuthorizationPolicySet()
+	issuedCertificates := certificatesv1alpha2sets.NewIssuedCertificateSet()
 
 	for _, vMesh := range mesh.Status.AppliedVirtualMeshes {
 
@@ -102,9 +105,11 @@ func (t *translator) Translate(
 	}
 
 	return Outputs{
-		Gateways:         gateways,
-		EnvoyFilters:     envoyFilters,
-		DestinationRules: destinationRules,
-		ServiceEntries:   serviceEntries,
+		Gateways:              gateways,
+		EnvoyFilters:          envoyFilters,
+		DestinationRules:      destinationRules,
+		ServiceEntries:        serviceEntries,
+		AuthorizationPolicies: authPolicies,
+		IssuedCertificates:    issuedCertificates,
 	}
 }

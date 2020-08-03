@@ -5,9 +5,10 @@
 package mock_hostutils
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
-	reflect "reflect"
 )
 
 // MockClusterDomainRegistry is a mock of ClusterDomainRegistry interface.

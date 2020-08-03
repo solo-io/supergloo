@@ -375,6 +375,8 @@ github.com/golang/mock v1.2.0/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfb
 github.com/golang/mock v1.3.1/go.mod h1:sBzyDLLjw3U8JLTeZvSv8jJB+tU5PVekmnlKIyFUx0Y=
 github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1 h1:YS+8QJ8yKSoB7Qy3WF0DMDFj2TkfASqhc0aNIIxjl6I=
 github.com/golang/mock v1.4.4-0.20200406172829-6d816de489c1/go.mod h1:UOMv5ysSaYNkG+OFQykRIcU/QvvxJf3p21QfJ2Bt3cw=
+github.com/golang/mock v1.4.4 h1:l75CXGRSwbaYNpl/Z2X1XIIAMSCquvXgpVZDhwEIJsc=
+github.com/golang/mock v1.4.4/go.mod h1:l3mdAwkq5BuhzHwde/uurv3sEJeZMXNpwsxVWU71h+4=
 github.com/golang/protobuf v0.0.0-20161109072736-4bd1920723d7/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.0.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
@@ -859,10 +861,10 @@ github.com/solo-io/protoc-gen-ext v0.0.7/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz
 github.com/solo-io/protoc-gen-ext v0.0.9 h1:dU9C8nSLNkjqLXd5QGJ2dvBcrNUvNUP92qlxMfe3t7A=
 github.com/solo-io/protoc-gen-ext v0.0.9/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz4Cbw6tBcmaNsEk=
 github.com/solo-io/skv2 v0.7.3-0.20200720193056-82d0f8632ef9/go.mod h1:yQqXNZgCWZ2LqrjK8I41YBjF6NpNSdaEBw2ipcqgDco=
-github.com/solo-io/skv2 v0.7.3-0.20200724181741-be7d38ebd30a h1:XIG87aV/GX3rbIBQQd5r2vOZjkLHmqi3UBLb4YiLkUA=
-github.com/solo-io/skv2 v0.7.3-0.20200724181741-be7d38ebd30a/go.mod h1:yQqXNZgCWZ2LqrjK8I41YBjF6NpNSdaEBw2ipcqgDco=
-github.com/solo-io/skv2 v0.7.3-0.20200728133631-b71c2aba4db0 h1:itBd8yBNSSoctrR2q1398YhQEtNDkGo3tXJaloPfsDk=
-github.com/solo-io/skv2 v0.7.3-0.20200728133631-b71c2aba4db0/go.mod h1:yQqXNZgCWZ2LqrjK8I41YBjF6NpNSdaEBw2ipcqgDco=
+github.com/solo-io/skv2 v0.8.1-0.20200730165225-9a9c16fb4b0e h1:GtNnqzBtBdSkQhqTdpEq2ZY3AloKXpQJSmtNEkoGY80=
+github.com/solo-io/skv2 v0.8.1-0.20200730165225-9a9c16fb4b0e/go.mod h1:lYmLP3IZtbQw2H4nlQbaOoDL3hgwQylHWiNArI1jYbA=
+github.com/solo-io/skv2 v0.8.1-0.20200730174526-43ff3f2eccbc h1:0aFbEgewpMeJmSqFVmJ0CCVSushpJnqZJlQ+HGMpr1o=
+github.com/solo-io/skv2 v0.8.1-0.20200730174526-43ff3f2eccbc/go.mod h1:lYmLP3IZtbQw2H4nlQbaOoDL3hgwQylHWiNArI1jYbA=
 github.com/solo-io/solo-kit v0.13.8 h1:3FVs2g71vQp1zjrEh9kdjAQ650MijRxRW/X2E00eghI=
 github.com/solo-io/solo-kit v0.13.8/go.mod h1:1cSoxO1Cgzn++03nnp5V1iGf0S45OLDTUmj70rD/+hY=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
