@@ -43,7 +43,7 @@ var _ = Describe("AccessPolicy", func() {
 					EnforceAccessControl: networkingv1alpha2.VirtualMeshSpec_ENABLED,
 				},
 			}
-			err := manifest.AppendResource(virtualMesh)
+			err := manifest.AppendResources(virtualMesh)
 			Expect(err).NotTo(HaveOccurred())
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
@@ -89,7 +89,7 @@ var _ = Describe("AccessPolicy", func() {
 					},
 				},
 			}
-			err := manifest.AppendResource(accessPolicy)
+			err := manifest.AppendResources(accessPolicy)
 			Expect(err).NotTo(HaveOccurred())
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())

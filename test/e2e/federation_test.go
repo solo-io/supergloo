@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("TrafficPolicy", func() {
+var _ = Describe("Federation", func() {
 	var (
 		err      error
 		manifest utils.Manifest
@@ -31,52 +31,45 @@ var _ = Describe("TrafficPolicy", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("initially curling reviews should return both reviews-v2 and reviews-v3", func() {
-			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
-			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
+			Expect(curlRemoteReviews()).To(ContainSubstring("Could not resolve host"))
 		})
 
 		By("creating a TrafficPolicy with traffic shift to reviews-v2 should consistently shift traffic", func() {
-			trafficShiftReviewsV2 := data.TrafficShiftPolicy("bookinfo-policy", BookinfoNamespace, &v1.ClusterObjectRef{
-				Name:        "reviews",
-				Namespace:   BookinfoNamespace,
-				ClusterName: masterClusterName,
-			}, map[string]string{"version": "v2"}, 9080)
+			virtualMesh := data.SelfSignedVirtualMesh(
+				"bookinfo-federation",
+				BookinfoNamespace,
+				[]*v1.ObjectRef{
+					masterMesh,
+					remoteMesh,
+				})
 
-			err = manifest.AppendResources(trafficShiftReviewsV2)
+			err = manifest.AppendResources(virtualMesh)
 			Expect(err).NotTo(HaveOccurred())
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
 			// ensure status is updated
-			assertTrafficPolicyStatuses()
-			// check we consistently hit the v2 subset
-			Consistently(curlReviews, "10s", "0.1s").Should(ContainSubstring(`"color": "black"`))
+			assertVirtualMeshStatuses()
+
+			// check we can hit the remote service
+			Eventually(curlRemoteReviews, "10s", "0.1s").Should(ContainSubstring(`"color": "black"`))
 		})
 
-		By("delete TrafficPolicy should remove traffic shift", func() {
+		By("delete VirtualMesh should remove the federated service", func() {
 			err = manifest.KubeDelete(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
-			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
+			Eventually(curlRemoteReviews, "1m", "1s").Should(ContainSubstring("Could not resolve host"))
 		})
 	})
 })
 
-//func assertCrdStatuses() {
-//
-//	err := testutils.Kubectl("apply", "-n="+BookinfoNamespace, "-f="+policyManifest)
-//	Expect(err).NotTo(HaveOccurred())
-//
-//	assertTrafficPolicyStatuses()
-//}
-
-func assertTrafficPolicyStatuses() {
+func assertVirtualMeshStatuses() {
 	ctx := context.Background()
-	trafficPolicy := v1alpha2.NewTrafficPolicyClient(dynamicClient)
+	virtualMesh := v1alpha2.NewVirtualMeshClient(dynamicClient)
 
 	EventuallyWithOffset(1, func() bool {
-		list, err := trafficPolicy.ListTrafficPolicy(ctx, client.InNamespace(BookinfoNamespace))
+		list, err := virtualMesh.ListVirtualMesh(ctx, client.InNamespace(BookinfoNamespace))
 		ExpectWithOffset(1, err).NotTo(HaveOccurred())
 		ExpectWithOffset(1, list.Items).To(HaveLen(1))
 		for _, policy := range list.Items {

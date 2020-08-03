@@ -42,11 +42,7 @@ func (m Manifest) Cleanup(namespace string) {
 	testutils.Kubectl("delete", "-n="+namespace, "-f="+m.filename)
 }
 
-func (m Manifest) AppendResource(resource metav1.Object) error {
-	return m.AppendResources([]metav1.Object{resource})
-}
-
-func (m Manifest) AppendResources(resources []metav1.Object) error {
+func (m Manifest) AppendResources(resources ... metav1.Object) error {
 	// use skv2 libraries to write the resources as yaml
 	manifest, err := render.ManifestsRenderer{
 		AppName: "bookinfo-policies",
