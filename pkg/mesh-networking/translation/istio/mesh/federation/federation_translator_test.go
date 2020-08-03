@@ -2,6 +2,7 @@ package federation_test
 
 import (
 	"context"
+
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 
 	"github.com/gogo/protobuf/types"

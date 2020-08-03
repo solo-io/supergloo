@@ -1,21 +1,23 @@
 package helm
 
 import (
+	"io/ioutil"
+	"os"
+
 	"github.com/sirupsen/logrus"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/getter"
-	"io/ioutil"
-	"os"
 
-	"github.com/rotisserie/eris"
-	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/chart/loader"
 	"io"
 	"net/http"
 	"path/filepath"
 	"strings"
+
+	"github.com/rotisserie/eris"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 const (

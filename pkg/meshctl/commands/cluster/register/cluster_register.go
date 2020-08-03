@@ -2,6 +2,7 @@ package register
 
 import (
 	"context"
+
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/agent"
 

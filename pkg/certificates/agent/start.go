@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+
 	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/input"
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"

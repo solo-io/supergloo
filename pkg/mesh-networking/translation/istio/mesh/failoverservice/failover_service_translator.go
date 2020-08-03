@@ -3,6 +3,7 @@ package failoverservice
 import (
 	"context"
 	"fmt"
+
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 
 	udpa_type_v1 "github.com/cncf/udpa/go/udpa/type/v1"
@@ -30,6 +31,8 @@ import (
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+//go:generate mockgen -source ./failover_service_translator.go -destination mocks/failover_service_translator.go
 
 // The FailoverService translator translates a FailoverService for a single Mesh.
 type Translator interface {
@@ -121,7 +124,7 @@ func (t *translator) translate(
 	}
 	var multierr *multierror.Error
 	if len(prioritizedMeshServices) < 1 {
-		return nil, nil, eris.New("FailoverService has fewer than 1 MeshService.")
+		return nil, nil, eris.New("FailoverService has fewer than one MeshService.")
 	}
 	for _, meshRef := range failoverService.Spec.Meshes {
 		mesh, err := allMeshes.Find(meshRef)
@@ -172,7 +175,7 @@ func (t *translator) collectMeshServicesForFailoverService(
 		}
 		if matchingMeshService == nil {
 			// Should never happen because it would be caught in validation.
-			return nil, failoverservice.FailoverServiceNotFound(serviceRef)
+			return nil, failoverservice.BackingServiceNotFound(serviceRef)
 		}
 		prioritizedMeshServices = append(prioritizedMeshServices, matchingMeshService)
 	}

@@ -2,6 +2,7 @@ package reconciliation
 
 import (
 	"context"
+
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 
@@ -67,7 +68,7 @@ func (r *networkingReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 
 	var errs error
 
-	if err := r.syncIstio(inputSnap); err != nil {
+	if err := r.applyTranslation(inputSnap); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -78,7 +79,7 @@ func (r *networkingReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 	return false, errs
 }
 
-func (r *networkingReconciler) syncIstio(in input.Snapshot) error {
+func (r *networkingReconciler) applyTranslation(in input.Snapshot) error {
 	outputSnap, err := r.translator.Translate(r.ctx, in, r.reporter)
 	if err != nil {
 		// internal translator errors should never happen

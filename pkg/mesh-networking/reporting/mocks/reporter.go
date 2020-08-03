@@ -5,10 +5,11 @@
 package mock_reporting
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
-	reflect "reflect"
 )
 
 // MockReporter is a mock of Reporter interface.

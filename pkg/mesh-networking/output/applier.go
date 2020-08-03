@@ -2,6 +2,7 @@ package output
 
 import (
 	"context"
+
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"

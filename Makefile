@@ -94,7 +94,7 @@ generated-reference-docs:
 #----------------------------------------------------------------------------------
 
 .PHONY: build-all-images
-build-all-images: service-mesh-hub-image cert-agent-image
+build-all-images: service-mesh-hub-image
 
 #----------------------------------------------------------------------------------
 # Build service-mesh-hub controller + image

@@ -2,6 +2,7 @@ package access_test
 
 import (
 	"context"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
@@ -32,17 +33,20 @@ var _ = Describe("AccessPolicyTranslator", func() {
 					Istio: &discoveryv1alpha2.MeshSpec_Istio{
 						Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 							Namespace: "istio-system",
+							Cluster:   "cluster-name",
 						},
 						IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{
 							{
 								WorkloadLabels: map[string]string{
 									"istio": "ingressgateway",
 								},
+								ExternalAddress: "1.1.1.1",
 							},
 							{
 								WorkloadLabels: map[string]string{
 									"istio": "ingressgateway2",
 								},
+								ExternalAddress: "2.2.2.2",
 							},
 						},
 					},
@@ -61,9 +65,10 @@ var _ = Describe("AccessPolicyTranslator", func() {
 		expectedAuthPolicies := v1beta1sets.NewAuthorizationPolicySet(
 			&securityv1beta1.AuthorizationPolicy{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      access.IngressGatewayAuthPolicyName,
-					Namespace: "istio-system",
-					Labels:    metautils.TranslatedObjectLabels(),
+					Name:        access.IngressGatewayAuthPolicyName + "-1-1-1-1",
+					Namespace:   "istio-system",
+					ClusterName: "cluster-name",
+					Labels:      metautils.TranslatedObjectLabels(),
 				},
 				Spec: securityv1beta1spec.AuthorizationPolicy{
 					Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
@@ -79,9 +84,10 @@ var _ = Describe("AccessPolicyTranslator", func() {
 			},
 			&securityv1beta1.AuthorizationPolicy{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      access.IngressGatewayAuthPolicyName,
-					Namespace: "istio-system",
-					Labels:    metautils.TranslatedObjectLabels(),
+					Name:        access.IngressGatewayAuthPolicyName + "-2-2-2-2",
+					Namespace:   "istio-system",
+					ClusterName: "cluster-name",
+					Labels:      metautils.TranslatedObjectLabels(),
 				},
 				Spec: securityv1beta1spec.AuthorizationPolicy{
 					Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
@@ -97,9 +103,10 @@ var _ = Describe("AccessPolicyTranslator", func() {
 			},
 			&securityv1beta1.AuthorizationPolicy{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      access.GlobalAccessControlAuthPolicyName,
-					Namespace: "istio-system",
-					Labels:    metautils.TranslatedObjectLabels(),
+					Name:        access.GlobalAccessControlAuthPolicyName,
+					Namespace:   "istio-system",
+					ClusterName: "cluster-name",
+					Labels:      metautils.TranslatedObjectLabels(),
 				},
 				Spec: securityv1beta1spec.AuthorizationPolicy{},
 			},

@@ -3,6 +3,7 @@ package federation
 import (
 	"context"
 	"fmt"
+
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
@@ -26,6 +27,8 @@ import (
 	"istio.io/istio/security/proto/envoy/config/filter/network/tcp_cluster_rewrite/v2alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+//go:generate mockgen -source ./federation_translator.go -destination mocks/federation_translator.go
 
 var (
 	// NOTE(ilackarms): we may want to support federating over non-tls port at some point.

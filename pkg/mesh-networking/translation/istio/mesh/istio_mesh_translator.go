@@ -2,6 +2,7 @@ package mesh
 
 import (
 	"context"
+
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
 
@@ -14,6 +15,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/federation"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
+
+//go:generate mockgen -source ./istio_mesh_translator.go -destination mocks/istio_mesh_translator.go
 
 // the VirtualService translator translates a Mesh into a VirtualService.
 type Translator interface {

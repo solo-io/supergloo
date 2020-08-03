@@ -5,9 +5,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"strings"
+
 	"github.com/rotisserie/eris"
 	pkiutil "istio.io/istio/security/pkg/pki/util"
-	"strings"
 )
 
 const (

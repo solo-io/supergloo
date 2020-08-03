@@ -21,7 +21,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		ctrl                      *gomock.Controller
 		mockClusterDomainRegistry *mock_hostutils.MockClusterDomainRegistry
 		trafficShiftDecorator     trafficpolicy.VirtualServiceDecorator
-		output *v1alpha3.HTTPRoute
+		output                    *v1alpha3.HTTPRoute
 	)
 
 	BeforeEach(func() {

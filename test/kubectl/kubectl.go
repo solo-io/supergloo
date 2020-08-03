@@ -13,10 +13,15 @@ import (
 )
 
 func CurlWithEphemeralPod(ctx context.Context, kubecontext, fromns, frompod string, args ...string) string {
-	// note, we use sudo so that the curl is not from the istio-proxy user. we dont really need root.
-	args = append([]string{"alpha", "debug", "--quiet",
+	createargs := []string{"alpha", "debug", "--quiet",
 		"--image=curlimages/curl@sha256:aa45e9d93122a3cfdf8d7de272e2798ea63733eeee6d06bd2ee4f2f8c4027d7c",
-		"-i", frompod, "-n", fromns, "--", "curl", "--connect-timeout", "1", "--max-time", "5"}, args...)
+		"--container=curl", frompod, "-n", fromns, "--", "sleep", "10h"}
+	// Execute curl commands from the same pod each time to avoid creating a burdensome number of ephemeral pods.
+	// create the curl pod; we do this every time and it will only work the first time, so ignore failures
+	executeNoFail(ctx, kubecontext, createargs...)
+	// note, we use sudo so that the curl is not from the istio-proxy user. we dont really need root.
+	args = append([]string{"exec",
+		"--container=curl", frompod, "-n", fromns, "--", "curl", "--connect-timeout", "1", "--max-time", "5"}, args...)
 	return execute(ctx, kubecontext, args...)
 }
 
@@ -77,17 +82,27 @@ func SetDeploymentEnvVars(
 }
 
 func execute(ctx context.Context, kubeContext string, args ...string) string {
+	data, err := executeNoFail(ctx, kubeContext, args...)
+	Expect(err).NotTo(HaveOccurred())
+	return data
+}
+
+func executeNoFail(ctx context.Context, kubeContext string, args ...string) (string, error) {
 	args = append([]string{"--context", kubeContext}, args...)
 	fmt.Fprintf(GinkgoWriter, "Executing: kubectl %v \n", args)
 	readerChan, done, err := testutils.KubectlOutChan(&bytes.Buffer{}, args...)
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		return "", err
+	}
 	defer close(done)
 	select {
 	case <-ctx.Done():
-		return ""
+		return "", nil
 	case reader := <-readerChan:
 		data, err := ioutil.ReadAll(reader)
-		Expect(err).NotTo(HaveOccurred())
-		return string(data)
+		if err != nil {
+			return "", err
+		}
+		return string(data), nil
 	}
 }

@@ -2,8 +2,9 @@ package utils
 
 import (
 	"encoding/pem"
-	pkiutil "istio.io/istio/security/pkg/pki/util"
 	"time"
+
+	pkiutil "istio.io/istio/security/pkg/pki/util"
 )
 
 /*

@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/internal"
 )
 
 // the istio translator translates an input networking snapshot to an output snapshot of Istio resources
@@ -23,12 +24,12 @@ type Translator interface {
 
 type istioTranslator struct {
 	totalTranslates int // TODO(ilackarms): metric
-	dependencies    dependencyFactory
+	dependencies    internal.DependencyFactory
 }
 
 func NewIstioTranslator() Translator {
 	return &istioTranslator{
-		dependencies: dependencyFactoryImpl{},
+		dependencies: internal.NewDependencyFactory(),
 	}
 }
 
@@ -40,7 +41,7 @@ func (t *istioTranslator) Translate(
 ) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translator-%v", t.totalTranslates))
 
-	meshServiceTranslator := t.dependencies.makeMeshServiceTranslator(in.KubernetesClusters())
+	meshServiceTranslator := t.dependencies.MakeMeshServiceTranslator(in.KubernetesClusters())
 
 	for _, meshService := range in.MeshServices().List() {
 		meshService := meshService // pike
@@ -48,7 +49,7 @@ func (t *istioTranslator) Translate(
 		meshServiceTranslator.Translate(in, meshService, outputs, reporter)
 	}
 
-	meshTranslator := t.dependencies.makeMeshTranslator(ctx, in.KubernetesClusters())
+	meshTranslator := t.dependencies.MakeMeshTranslator(ctx, in.KubernetesClusters())
 	for _, mesh := range in.Meshes().List() {
 		meshTranslator.Translate(in, mesh, outputs, reporter)
 	}

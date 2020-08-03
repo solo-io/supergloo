@@ -12,6 +12,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 )
 
+//go:generate mockgen -source ./istio_mesh_service_translator.go -destination mocks/istio_mesh_service_translator.go
+
 // the VirtualService translator translates a MeshService into a VirtualService.
 type Translator interface {
 	// Translate translates the appropriate VirtualService and DestinationRule for the given MeshService.

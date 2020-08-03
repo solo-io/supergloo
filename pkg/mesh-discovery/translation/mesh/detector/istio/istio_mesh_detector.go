@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -32,15 +33,6 @@ const (
 
 	// https://istio.io/docs/ops/deployment/requirements/#ports-used-by-istio
 	defaultGatewayPortName = "tls"
-)
-
-var (
-	// "istio": "ingressgateway" is a known string pair to Istio- it's semantically meaningful but unfortunately not exported from anywhere
-	// their ingress gateway is hardcoded in their own implementation to have this label
-	// https://github.com/istio/istio/blob/4e27ddc64f6a12e622c4cd5c836f5d7edf94e971/istioctl/cmd/describe.go#L1138
-	defaultGatewayWorkloadLabels = map[string]string{
-		"istio": "ingressgateway",
-	}
 )
 
 // detects Istio if a deployment contains the istiod container.
@@ -88,7 +80,8 @@ func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 	ingressGateways := getIngressGateways(
 		d.ctx,
 		deployment.Namespace,
-		defaultGatewayWorkloadLabels,
+		deployment.ClusterName,
+		defaults.DefaultGatewayWorkloadLabels,
 		d.services,
 		d.pods,
 		d.nodes,
@@ -121,12 +114,13 @@ func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 func getIngressGateways(
 	ctx context.Context,
 	namespace string,
+	clusterName string,
 	workloadLabels map[string]string,
 	allServices corev1sets.ServiceSet,
 	allPods corev1sets.PodSet,
 	allNodes corev1sets.NodeSet,
 ) []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo {
-	ingressSvcs := getIngressServices(allServices, namespace, workloadLabels)
+	ingressSvcs := getIngressServices(allServices, namespace, clusterName, workloadLabels)
 	var ingressGateways []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo
 	for _, svc := range ingressSvcs {
 		gateway, err := getIngressGateway(svc, workloadLabels, allPods, allNodes)
@@ -217,11 +211,13 @@ func getIngressGateway(
 func getIngressServices(
 	allServices corev1sets.ServiceSet,
 	namespace string,
+	clusterName string,
 	workloadLabels map[string]string,
 ) []*corev1.Service {
 	return allServices.List(func(svc *corev1.Service) bool {
 		return svc.Namespace != namespace ||
-			!labels.SelectorFromSet(svc.Spec.Selector).Matches(labels.Set(workloadLabels))
+			svc.ClusterName != clusterName ||
+			!labels.SelectorFromSet(workloadLabels).Matches(labels.Set(svc.Spec.Selector))
 	})
 }
 
@@ -251,15 +247,30 @@ func getNodeIp(
 		return "", eris.Wrapf(err, "failed to find ingress node for pod %v", sets.Key(ingressPod))
 	}
 
+	isKindNode := isKindNode(ingressNode)
 	for _, addr := range ingressNode.Status.Addresses {
-		if addr.Type == corev1.NodeInternalIP || addr.Type == corev1.NodeInternalDNS {
-			// skip internal addresses
+		if isKindNode {
+			// For Kind clusters, we use the NodeInteralIP for the external IP address.
+			if addr.Type != corev1.NodeInternalIP {
+				continue
+			}
+		} else if addr.Type == corev1.NodeInternalIP || addr.Type == corev1.NodeInternalDNS {
 			continue
 		}
-		// select the first external address of the node
 		return addr.Address, nil
 	}
 	return "", eris.Errorf("no external addresses reported for ingress node %v", sets.Key(ingressNode))
+}
+
+func isKindNode(node *corev1.Node) bool {
+	for _, image := range node.Status.Images {
+		for _, name := range image.Names {
+			if strings.Contains(name, "kindnetd") {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (d *meshDetector) getIstiodVersion(deployment *appsv1.Deployment) (string, error) {

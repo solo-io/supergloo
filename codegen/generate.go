@@ -56,6 +56,13 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 			t.generatedCodeRoot+"/input/reconciler.go",
 			t.inputResources,
 		))
+
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshotManualBuilder,
+			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
+			t.inputResources,
+		))
+
 	}
 
 	if len(t.outputResources) > 0 {
@@ -98,7 +105,7 @@ var (
 		},
 	}
 
-	smhManifestRoot = "install/helm/service-mesh-hub"
+	smhManifestRoot       = "install/helm/service-mesh-hub"
 	certAgentManifestRoot = "install/helm/cert-agent/"
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
@@ -174,7 +181,6 @@ func makeSmhCommand(chartOnly bool) codegen.Command {
 		Chart:             helm.Chart,
 	}
 }
-
 
 func makeCertAgentCommand(chartOnly bool) codegen.Command {
 	if chartOnly {
