@@ -17,6 +17,19 @@
 PROJECT_ROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/..
 echo "Using project root ${PROJECT_ROOT}"
 
+INSTALL_DIR="${PROJECT_ROOT}/install"
+AGENT_VALUES=${INSTALL_DIR}/helm/cert-agent/values.yaml
+AGENT_IMAGE_REGISTRY=$(cat ${AGENT_VALUES} | grep "registry: " | awk '{print $2}')
+AGENT_IMAGE_REPOSITORY=$(cat ${AGENT_VALUES} | grep "repository: " | awk '{print $2}')
+AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}')
+
+AGENT_IMAGE="${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}"
+AGENT_CHART="${INSTALL_DIR}/helm/_output/charts/cert-agent/cert-agent-${AGENT_IMAGE_TAG}.tgz"
+
+SMH_VALUES=${INSTALL_DIR}/helm/service-mesh-hub/values.yaml
+SMH_IMAGE_TAG=$(cat ${SMH_VALUES} | grep -m 1 "tag: " | awk '{print $2}')
+SMH_CHART="${INSTALL_DIR}/helm/_output/charts/service-mesh-hub/service-mesh-hub-${SMH_IMAGE_TAG}.tgz"
+
 #### FUNCTIONS
 
 function create_kind_cluster() {
@@ -165,10 +178,8 @@ EOF
 
 }
 
-function register_cluster() {
+function get_api_address() {
   cluster=$1
-  K="kubectl --context=kind-${cluster}"
-
   case $(uname) in
     "Darwin")
     {
@@ -184,22 +195,16 @@ function register_cluster() {
         exit 1
     } ;;
   esac
+  echo ${apiServerAddress}
+}
+
+function register_cluster() {
+  cluster=$1
+  apiServerAddress=$(get_api_address ${cluster})
 
   K="kubectl --context kind-${cluster}"
 
   echo "registering ${cluster} with local cert-agent image..."
-
-  INSTALL_DIR="${PROJECT_ROOT}/install/"
-  AGENT_VALUES=${INSTALL_DIR}/helm/cert-agent/values.yaml
-  AGENT_IMAGE_REGISTRY=$(cat ${AGENT_VALUES} | grep "registry: " | awk '{print $2}')
-  AGENT_IMAGE_REPOSITORY=$(cat ${AGENT_VALUES} | grep "repository: " | awk '{print $2}')
-  AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}')
-
-  AGENT_IMAGE="${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}"
-  AGENT_CHART="${INSTALL_DIR}/helm/_output/charts/cert-agent-${AGENT_IMAGE_TAG}.tgz"
-
-  # load cert-agent image
-  kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
 
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
@@ -207,6 +212,13 @@ function register_cluster() {
     --remote-context "kind-${cluster}" \
     --api-server-address "${apiServerAddress}" \
     --cert-agent-chart-file "${AGENT_CHART}"
+}
+
+function install_smh() {
+  cluster=$1
+  apiServerAddress=$(get_api_address ${cluster})
+
+  ${PROJECT_ROOT}/ci/setup-smh.sh ${cluster} ${SMH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
 }
 
 #### START SCRIPT
@@ -230,16 +242,15 @@ install_istio ${remoteCluster} 32000 &
 
 wait
 
-echo setup successfully set up clusters.
+echo successfully set up clusters.
 
 # install service mesh hub
-${PROJECT_ROOT}/ci/setup-smh.sh ${masterCluster}
+install_smh ${masterCluster}
 
 # sleep to allow crds to register
 sleep 4
 
-# register clusters
-register_cluster ${masterCluster} &
+# register remote cluster
 register_cluster ${remoteCluster} &
 
 wait

@@ -9,8 +9,8 @@ import (
 )
 
 const (
+	ServiceMeshHubChartUriTemplate = "https://storage.googleapis.com/service-mesh-hub/service-mesh-hub/service-mesh-hub-%s.tgz"
 	certAgentChartUriTemplate      = "https://storage.googleapis.com/service-mesh-hub/cert-agent/cert-agent-%s.tgz"
-	serviceMeshHubChartUriTemplate = "https://storage.googleapis.com/service-mesh-hub/service-mesh-hub/service-mesh-hub-%s.tgz"
 	certAgentReleaseName           = "cert-agent"
 	serviceMeshHubReleaseName      = "service-mesh-hub"
 )
@@ -29,7 +29,7 @@ type Installer struct {
 func (i Installer) InstallServiceMeshHub(
 	ctx context.Context,
 ) error {
-	return i.install(ctx, serviceMeshHubChartUriTemplate, serviceMeshHubReleaseName)
+	return i.install(ctx, ServiceMeshHubChartUriTemplate, serviceMeshHubReleaseName)
 }
 
 func (i Installer) InstallCertAgent(

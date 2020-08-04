@@ -9,12 +9,6 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var (
-	UinstallErr = func(err error) error {
-		return eris.Wrap(err, "Error installing Service Mesh Hub")
-	}
-)
-
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
 

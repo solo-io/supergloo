@@ -7,16 +7,10 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
+	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-)
-
-const serviceMeshHubChartUriTemplate = "https://storage.googleapis.com/service-mesh-hub/service-mesh-hub/service-mesh-hub-%s.tgz"
-
-var (
-	InstallErr = func(err error) error {
-		return eris.Wrap(err, "Error installing Service Mesh Hub")
-	}
 )
 
 func Command(ctx context.Context) *cobra.Command {
@@ -35,8 +29,6 @@ func Command(ctx context.Context) *cobra.Command {
 }
 
 type options struct {
-	dryRun bool
-
 	kubeCfgPath     string
 	kubeContext     string
 	namespace       string
@@ -44,9 +36,18 @@ type options struct {
 	chartValuesFile string
 	releaseName     string
 	version         string
-	register        bool
-	clusterName     string
 	verbose         bool
+	dryRun          bool
+	registrationOptions
+}
+
+type registrationOptions struct {
+	register            bool
+	clusterName         string
+	apiServerAddress    string
+	clusterDomain       string
+	certAgentChartPath  string
+	certAgentValuesPath string
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
@@ -58,9 +59,14 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.chartValuesFile, "chart-values-file", "", "", "File containing value overrides for the Service Mesh Hub Helm chart")
 	flags.StringVar(&o.releaseName, "release-name", "service-mesh-hub", "Helm release name")
 	flags.StringVar(&o.version, "version", "", "Version to install, defaults to latest if omitted")
+
 	flags.BoolVarP(&o.register, "register", "r", false, "Register the management plane cluster")
 	flags.StringVar(&o.clusterName, "cluster-name", "management-cluster",
 		"Name with which to register the management-plane cluster in Service Mesh Hub, only applies if --register is also set")
+	flags.StringVar(&o.apiServerAddress, "api-server-address", "", "Swap out the address of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Service Mesh Hub is different than that specified in the local kubeconfig.")
+	flags.StringVar(&o.clusterDomain, "cluster-domain", "", "The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'. Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/")
+	flags.StringVar(&o.certAgentChartPath, "cert-agent-chart-file", "", "Path to a local Helm chart for installing the Certificate Agent. If unset, this command will install the Certificate Agent from the publicly released Helm chart.")
+	flags.StringVar(&o.certAgentValuesPath, "cert-agent-chart-values", "", "Path to a Helm values.yaml file for customizing the installation of the Certificate Agent. If unset, this command will install the Certificate Agent with default Helm values.")
 	flags.BoolVarP(&o.verbose, "verbose", "v", false, "Enable verbose output")
 }
 
@@ -72,7 +78,7 @@ func install(ctx context.Context, opts *options) error {
 		smhVersion = version.Version
 	}
 	if smhChartUri == "" {
-		smhChartUri = fmt.Sprintf(serviceMeshHubChartUriTemplate, smhVersion)
+		smhChartUri = fmt.Sprintf(smh.ServiceMeshHubChartUriTemplate, smhVersion)
 	}
 
 	err := smh.Installer{
@@ -92,7 +98,27 @@ func install(ctx context.Context, opts *options) error {
 		return eris.Wrap(err, "installing service-mesh-hub")
 	}
 
-	// TODO(harveyxia) register cluster
-
+	if opts.register && !opts.dryRun {
+		registrant := &registration.Registrant{
+			RegistrationOptions: register.RegistrationOptions{
+				ClusterName:       opts.clusterName,
+				KubeCfgPath:       opts.kubeCfgPath,
+				KubeContext:       opts.kubeContext,
+				RemoteKubeContext: opts.kubeContext,
+				Namespace:         opts.namespace,
+				RemoteNamespace:   opts.namespace,
+				APIServerAddress:  opts.apiServerAddress,
+				ClusterDomain:     opts.clusterDomain,
+			},
+			CertAgentInstallOptions: registration.CertAgentInstallOptions{
+				ChartPath:   opts.certAgentChartPath,
+				ChartValues: opts.certAgentValuesPath,
+			},
+			Verbose: opts.verbose,
+		}
+		if err := registrant.RegisterCluster(ctx); err != nil {
+			return eris.Wrap(err, "registering management-plane cluster")
+		}
+	}
 	return nil
 }
