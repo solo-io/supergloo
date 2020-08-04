@@ -11,6 +11,13 @@ import (
 
 //go:generate mockgen -source ./cluster_domain.go -destination mocks/cluster_domain_mocks.go
 
+const (
+	// this suffix is used for all global fqdns; this is due to the
+	// fact that istio Coredns comes with the *.global suffix already configured:
+	// https://istio.io/latest/docs/setup/install/multicluster/gateways/
+	GlobalHostnameSuffix = "global"
+)
+
 // ClusterDomainRegistry retrieves known cluster domain suffixes for
 // registered clusters. Returns the default 'cluster.local' when
 // domain cannot be found
@@ -63,7 +70,7 @@ func (c *clusterDomainRegistry) GetServiceLocalFQDN(serviceRef ezkube.ClusterRes
 }
 
 func (c *clusterDomainRegistry) GetServiceGlobalFQDN(serviceRef ezkube.ClusterResourceId) string {
-	return fmt.Sprintf("%s.%s.svc.%s", serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetClusterName())
+	return fmt.Sprintf("%s.%s.svc.%s.%v", serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetClusterName(), GlobalHostnameSuffix)
 }
 
 func (c *clusterDomainRegistry) GetDestinationServiceFQDN(originatingCluster string, destination ezkube.ClusterResourceId) string {

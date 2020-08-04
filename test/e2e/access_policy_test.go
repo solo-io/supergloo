@@ -40,7 +40,7 @@ var _ = Describe("AccessPolicy", func() {
 							Namespace: "service-mesh-hub",
 						},
 					},
-					EnforceAccessControl: networkingv1alpha2.VirtualMeshSpec_ENABLED,
+					GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_ENABLED,
 				},
 			}
 			err := manifest.AppendResources(virtualMesh)

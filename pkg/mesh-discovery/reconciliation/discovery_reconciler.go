@@ -12,7 +12,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
-	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -21,7 +20,6 @@ type discoveryReconciler struct {
 	builder      input.Builder
 	translator   translation.Translator
 	masterClient client.Client
-	events       workqueue.RateLimitingInterface
 }
 
 func Start(
@@ -37,7 +35,6 @@ func Start(
 		builder:      builder,
 		translator:   translator,
 		masterClient: masterClient,
-		events:       workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
 	}
 
 	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile)

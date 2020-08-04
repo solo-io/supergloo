@@ -30,13 +30,15 @@ import (
 
 //go:generate mockgen -source ./federation_translator.go -destination mocks/federation_translator.go
 
-var (
+const (
 	// NOTE(ilackarms): we may want to support federating over non-tls port at some point.
 	defaultGatewayProtocol = "TLS"
 	defaultGatewayPortName = "tls"
 
 	envoySniClusterFilterName        = "envoy.filters.network.sni_cluster"
 	envoyTcpClusterRewriteFilterName = "envoy.filters.network.tcp_cluster_rewrite"
+
+	globalHostnameMatch = "*." + hostutils.GlobalHostnameSuffix
 )
 
 // the VirtualService translator translates a Mesh into a VirtualService.
@@ -118,7 +120,6 @@ func (t *translator) Translate(
 		return
 	}
 
-	var federatedHostnames []string
 	for _, meshService := range meshServices {
 		meshKubeService := meshService.Spec.GetKubeService()
 		if meshKubeService == nil {
@@ -134,9 +135,6 @@ func (t *translator) Translate(
 			continue
 		}
 		federatedHostname := t.clusterDomains.GetServiceGlobalFQDN(meshKubeService.GetRef())
-
-		// add the hostname to the set
-		federatedHostnames = append(federatedHostnames, federatedHostname)
 
 		endpointPorts := make(map[string]uint32)
 		var ports []*networkingv1alpha3spec.Port
@@ -224,7 +222,7 @@ func (t *translator) Translate(
 					Protocol: defaultGatewayProtocol,
 					Name:     defaultGatewayPortName,
 				},
-				Hosts: federatedHostnames,
+				Hosts: []string{globalHostnameMatch},
 				Tls: &networkingv1alpha3spec.ServerTLSSettings{
 					Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
 				},
@@ -283,8 +281,8 @@ func buildTcpRewritePatch(clusterName, clusterDomain string) (*types.Struct, err
 		clusterDomain = defaults.DefaultClusterDomain
 	}
 	tcpRewrite, err := protoutils.GogoMessageToGolangStruct(&v2alpha1.TcpClusterRewrite{
-		ClusterPattern:     fmt.Sprintf("\\.%s$", clusterName),
-		ClusterReplacement: ".svc." + clusterDomain,
+		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, hostutils.GlobalHostnameSuffix),
+		ClusterReplacement: clusterDomain,
 	})
 	if err != nil {
 		return nil, err
