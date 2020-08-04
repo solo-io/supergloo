@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/sirupsen/logrus"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/agent"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
 
 	"github.com/solo-io/service-mesh-hub/codegen/io"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
@@ -91,13 +91,13 @@ func registerCluster(ctx context.Context, opts *options) error {
 }
 
 func installCertAgent(ctx context.Context, opts *options) error {
-	return agent.Installer{
-		HelmChartOverride: opts.chartPath,
-		HelmValuesPath:    opts.chartValues,
-		KubeConfig:        opts.RemoteKubeCfgPath,
-		KubeContext:       opts.RemoteKubeContext,
-		Namespace:         opts.RemoteNamespace,
-		Verbose:           false,
+	return smh.Installer{
+		HelmChartPath:  opts.chartPath,
+		HelmValuesPath: opts.chartValues,
+		KubeConfig:     opts.RemoteKubeCfgPath,
+		KubeContext:    opts.RemoteKubeContext,
+		Namespace:      opts.RemoteNamespace,
+		Verbose:        false,
 	}.InstallCertAgent(
 		ctx,
 	)
