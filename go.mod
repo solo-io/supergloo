@@ -3,6 +3,7 @@ module github.com/solo-io/service-mesh-hub
 go 1.14
 
 replace (
+	github.com/solo-io/skv2 => /Users/harvey/skv2
 	// github.com/Azure/go-autorest/autorest has different versions for the Go
 	// modules than it does for releases on the repository. Note the correct
 	// version when updating.

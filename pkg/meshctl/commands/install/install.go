@@ -99,7 +99,7 @@ func install(ctx context.Context, opts *options) error {
 	}
 
 	if opts.register && !opts.dryRun {
-		registrant := &registration.Registrant{
+		registrantOpts := &registration.RegistrantOptions{
 			RegistrationOptions: register.RegistrationOptions{
 				ClusterName:       opts.clusterName,
 				KubeCfgPath:       opts.kubeCfgPath,
@@ -116,7 +116,7 @@ func install(ctx context.Context, opts *options) error {
 			},
 			Verbose: opts.verbose,
 		}
-		if err := registrant.RegisterCluster(ctx); err != nil {
+		if err := registration.NewRegistrant(registrantOpts).RegisterCluster(ctx); err != nil {
 			return eris.Wrap(err, "registering management-plane cluster")
 		}
 	}

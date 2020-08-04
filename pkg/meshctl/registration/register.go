@@ -20,9 +20,27 @@ var smhRbacRequirements = func() []rbacv1.PolicyRule {
 }()
 
 type Registrant struct {
+	*RegistrantOptions
+}
+
+type RegistrantOptions struct {
 	register.RegistrationOptions
 	CertAgentInstallOptions
 	Verbose bool
+}
+
+func NewRegistrant(opts *RegistrantOptions) *Registrant {
+	registrant := &Registrant{opts}
+	registrant.ClusterRoles = []*rbacv1.ClusterRole{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: registrant.RemoteNamespace,
+				Name:      "smh-remote-access",
+			},
+			Rules: smhRbacRequirements,
+		},
+	}
+	return registrant
 }
 
 type CertAgentInstallOptions struct {
@@ -42,18 +60,18 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 	return r.registerCluster(ctx)
 }
 
+func (r *Registrant) DeregisterCluster(ctx context.Context) error {
+	if r.Verbose {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
+	if err := r.uninstallCertAgent(ctx); err != nil {
+		return err
+	}
+	return r.RegistrationOptions.DeregisterCluster(ctx)
+}
+
 func (r *Registrant) registerCluster(ctx context.Context) error {
 	logrus.Debugf("registering cluster with opts %+v", r)
-
-	r.ClusterRoles = []*rbacv1.ClusterRole{
-		{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: r.RemoteNamespace,
-				Name:      "smh-remote-access",
-			},
-			Rules: smhRbacRequirements,
-		},
-	}
 
 	if err := r.RegistrationOptions.RegisterCluster(ctx); err != nil {
 		return err
@@ -72,6 +90,17 @@ func (r *Registrant) installCertAgent(ctx context.Context) error {
 		Namespace:      r.RemoteNamespace,
 		Verbose:        r.Verbose,
 	}.InstallCertAgent(
+		ctx,
+	)
+}
+
+func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
+	return smh.Uninstaller{
+		KubeConfig:  r.RemoteKubeCfgPath,
+		KubeContext: r.RemoteKubeContext,
+		Namespace:   r.RemoteNamespace,
+		Verbose:     r.Verbose,
+	}.UninstallCertAgent(
 		ctx,
 	)
 }
