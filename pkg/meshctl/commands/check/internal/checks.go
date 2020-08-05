@@ -2,9 +2,10 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"net/url"
+	"strings"
 
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/check/internal/components"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -23,7 +24,7 @@ type Check interface {
 
 type Failure struct {
 	// user-facing error message describing failed check
-	ErrorMessage string
+	Errors []error
 
 	// optionally provide a link to a docs page that a user should consult to resolve the error
 	DocsLink *url.URL
@@ -33,12 +34,15 @@ type Failure struct {
 }
 
 var (
+	checkMarkChar = "\u2705"
+	redXChar      = "\u274C"
+
 	// TODO implement kube connectivity check
 
 	managementPlane = Category{
 		Name: "Service Mesh Hub Management Plane",
 		Checks: []Check{
-			components.NewComponentsCheck(),
+			NewDeploymentsCheck(),
 		},
 	}
 
@@ -49,11 +53,23 @@ var (
 
 func RunChecks(ctx context.Context, client client.Client, installNamespace string) error {
 	for _, category := range categories {
+		fmt.Println(category.Name)
+		fmt.Printf(strings.Repeat("-", len(category.Name)+3) + "\n")
 		for _, check := range category.Checks {
 			failure := check.Run(ctx, client, installNamespace)
+			printResult(failure, check.GetDescription())
 		}
 	}
 	return nil
 }
 
-func print
+func printResult(failure *Failure, description string) {
+	if failure != nil {
+		fmt.Printf("%s %s\n", redXChar, description)
+		for _, err := range failure.Errors {
+			fmt.Printf("  - %s\n", err.Error())
+		}
+	} else {
+		fmt.Printf("%s %s\n", checkMarkChar, description)
+	}
+}

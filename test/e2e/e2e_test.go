@@ -3,8 +3,9 @@ package e2e_test
 import (
 	"context"
 	"fmt"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"time"
+
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/service-mesh-hub/test/e2e"
@@ -19,13 +20,13 @@ var (
 	remoteClusterName = "remote-cluster"
 
 	masterMesh = &v1.ObjectRef{
-		Name:                 "istiod-istio-system-master-cluster",
-		Namespace:            "service-mesh-hub",
+		Name:      "istiod-istio-system-master-cluster",
+		Namespace: "service-mesh-hub",
 	}
 
 	remoteMesh = &v1.ObjectRef{
-		Name:                 "istiod-istio-system-remote-cluster",
-		Namespace:            "service-mesh-hub",
+		Name:      "istiod-istio-system-remote-cluster",
+		Namespace: "service-mesh-hub",
 	}
 
 	// Initialize in BeforeSuite

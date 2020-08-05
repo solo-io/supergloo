@@ -21,7 +21,7 @@ func Command(ctx context.Context) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return internal.RunChecks(client)
+			return internal.RunChecks(ctx, client, opts.namespace)
 		},
 	}
 	opts.addToFlags(cmd.Flags())
@@ -32,12 +32,13 @@ func Command(ctx context.Context) *cobra.Command {
 type options struct {
 	kubeconfig  string
 	kubecontext string
+	namespace   string
 }
 
 func (o *options) addToFlags(set *pflag.FlagSet) {
 	set.StringVar(&o.kubeconfig, "kubeconfig", "", "path to the kubeconfig from which the registered cluster will be accessed")
 	set.StringVar(&o.kubecontext, "kubecontext", "", "name of the kubeconfig context to use for the management cluster")
-	set.StringVar(&o.kubecontext, "namespace", defaults.DefaultPodNamespace, "namespace that Service Mesh Hub is installed in")
+	set.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace that Service Mesh Hub is installed in")
 }
 
 // TODO(harveyxia) move this into a shared CLI util
