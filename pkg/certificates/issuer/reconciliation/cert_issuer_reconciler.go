@@ -2,6 +2,7 @@ package reconciliation
 
 import (
 	"context"
+	"time"
 
 	"github.com/rotisserie/eris"
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
@@ -38,7 +39,7 @@ func Start(
 		masterSecrets: corev1.NewSecretClient(masterClient),
 	}
 
-	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile)
+	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile, time.Second/2)
 }
 
 // reconcile global state
@@ -52,6 +53,7 @@ func (r *certIssuerReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, erro
 	for _, certificateRequest := range inputSnap.CertificateRequests().List() {
 		if err := r.reconcileCertificateRequest(certificateRequest, inputSnap.IssuedCertificates()); err != nil {
 			certificateRequest.Status.Error = err.Error()
+			certificateRequest.Status.State = v1alpha2.CertificateRequestStatus_FAILED
 		}
 	}
 
@@ -100,8 +102,8 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v
 	// generate the issued cert PEM encoded bytes
 	signedCert, err := utils.GenCertForCSR(
 		certificateRequest.Spec.CertificateSigningRequest,
-		signingCA.PrivateKey,
 		signingCA.RootCert,
+		signingCA.PrivateKey,
 	)
 	if err != nil {
 		return eris.Wrapf(err, "failed to find master signing certificate matching issued request %v", sets.Key(issuedCertificate))

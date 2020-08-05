@@ -3,11 +3,16 @@ package reconciliation
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/service-mesh-hub/pkg/common/utils/errhandlers"
 
 	"github.com/rotisserie/eris"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/output"
 	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/agent/utils"
@@ -22,12 +27,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// all output resources are labeled to prevent
-// resource collisions & garbage collection of
-// secrets the agent doesn't own
-var agentLabels = map[string]string{
-	fmt.Sprintf("agent.%v", v1alpha2.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
-}
+var (
+	// all output resources are labeled to prevent
+	// resource collisions & garbage collection of
+	// secrets the agent doesn't own
+	agentLabels = map[string]string{
+		fmt.Sprintf("agent.%v", v1alpha2.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
+	}
+
+	privateKeySecretType        = corev1.SecretType(fmt.Sprintf("%s/generated_private_key", v1alpha2.SchemeGroupVersion.Group))
+	issuedCertificateSecretType = corev1.SecretType(fmt.Sprintf("%s/issued_certificate", v1alpha2.SchemeGroupVersion.Group))
+)
 
 type certAgentReconciler struct {
 	ctx         context.Context
@@ -46,7 +56,7 @@ func Start(
 		localClient: mgr.GetClient(),
 	}
 
-	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile)
+	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2)
 }
 
 const (
@@ -62,27 +72,41 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 		return false, err
 	}
 
-	certificateRequests := v1alpha2sets.NewCertificateRequestSet()
-	secrets := v1sets.NewSecretSet()
+	outputs := output.NewBuilder(r.ctx, "agent")
 
 	// process issued certificates
 	for _, issuedCertificate := range inputSnap.IssuedCertificates().List() {
 		if err := r.reconcileIssuedCertificate(
 			issuedCertificate,
-			inputSnap.Secrets(), secrets,
-			inputSnap.CertificateRequests(), certificateRequests,
+			inputSnap.Secrets(),
+			inputSnap.CertificateRequests(),
+			outputs,
 		); err != nil {
 			issuedCertificate.Status.Error = err.Error()
+			issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_FAILED
 		}
 	}
+	outSnap, err := outputs.BuildSinglePartitionedSnapshot(agentLabels)
+	if err != nil {
+		return false, err
+	}
 
-	return false, inputSnap.SyncStatuses(r.ctx, r.localClient)
+	errHandler := errhandlers.AppendingErrHandler{}
+	outSnap.ApplyLocalCluster(r.ctx, r.localClient, errHandler)
+
+	errs := errHandler.Errors()
+	if err := inputSnap.SyncStatuses(r.ctx, r.localClient); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	return false, errs
 }
 
 func (r *certAgentReconciler) reconcileIssuedCertificate(
 	issuedCertificate *v1alpha2.IssuedCertificate,
-	inputSecrets, outputSecrets v1sets.SecretSet,
-	inputCertificateRequests, outputCertificateRequests v1alpha2sets.CertificateRequestSet,
+	inputSecrets v1sets.SecretSet,
+	inputCertificateRequests v1alpha2sets.CertificateRequestSet,
+	outputs output.Builder,
 ) error {
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
 	if issuedCertificate.Status.ObservedGeneration != issuedCertificate.Generation {
@@ -97,7 +121,9 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	switch issuedCertificate.Status.State {
 	case v1alpha2.IssuedCertificateStatus_FINISHED:
 		// ensure issued cert secret exists, nothing to do for this issued certificate
-		if _, err := inputSecrets.Find(issuedCertificate.Spec.IssuedCertificateSecret); err == nil {
+		if issuedCertificateSecret, err := inputSecrets.Find(issuedCertificate.Spec.IssuedCertificateSecret); err == nil {
+			// add secret output to prevent it from being GC'ed
+			outputs.AddSecrets(issuedCertificateSecret)
 			return nil
 		}
 		// otherwise, restart the workflow from PENDING
@@ -111,13 +137,14 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		if err != nil {
 			return err
 		}
-		outputSecrets.Insert(&corev1.Secret{
+		outputs.AddSecrets(&corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      issuedCertificate.Name,
 				Namespace: issuedCertificate.Namespace,
 				Labels:    agentLabels,
 			},
 			Data: map[string][]byte{privateKeySecretKey: privateKey},
+			Type: privateKeySecretType,
 		})
 
 		// create certificate request for private key
@@ -139,7 +166,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 				CertificateSigningRequest: csrBytes,
 			},
 		}
-		outputCertificateRequests.Insert(certificateRequest)
+		outputs.AddCertificateRequests(certificateRequest)
 
 		// set status to REQUESTED
 		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_REQUESTED
@@ -165,6 +192,10 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		switch certificateRequest.Status.State {
 		case v1alpha2.CertificateRequestStatus_PENDING:
 			contextutils.LoggerFrom(r.ctx).Infof("waiting for certificate request %v to be signed by Issuer", sets.Key(certificateRequest))
+
+			// add secret and certrequest to output to prevent them from being GC'ed
+			outputs.AddSecrets(privateKeySecret)
+			outputs.AddCertificateRequests(certificateRequest)
 
 			// if the certificate signing request has not been
 			// fulfilled, return and wait for the next reconcile
@@ -193,8 +224,9 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 				Labels:    agentLabels,
 			},
 			Data: issuedCertificateData.ToSecretData(),
+			Type: issuedCertificateSecretType,
 		}
-		outputSecrets.Insert(issuedCertificateSecret)
+		outputs.AddSecrets(issuedCertificateSecret)
 
 		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_FINISHED
 	default:

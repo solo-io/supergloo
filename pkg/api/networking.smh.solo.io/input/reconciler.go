@@ -11,6 +11,7 @@
 // * AccessPolicies
 // * VirtualMeshes
 // * FailoverServices
+// * Secrets
 // * KubernetesClusters
 // for a given cluster or set of clusters.
 //
@@ -20,6 +21,7 @@ package input
 
 import (
 	"context"
+	"time"
 
 	"github.com/solo-io/skv2/contrib/pkg/input"
 	sk_core_v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -33,6 +35,9 @@ import (
 
 	networking_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	networking_smh_solo_io_v1alpha2_controllers "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/controller"
+
+	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
+	v1 "k8s.io/api/core/v1"
 
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	multicluster_solo_io_v1alpha1_controllers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/controller"
@@ -49,6 +54,8 @@ type multiClusterReconciler interface {
 	networking_smh_solo_io_v1alpha2_controllers.MulticlusterVirtualMeshReconciler
 	networking_smh_solo_io_v1alpha2_controllers.MulticlusterFailoverServiceReconciler
 
+	v1_controllers.MulticlusterSecretReconciler
+
 	multicluster_solo_io_v1alpha1_controllers.MulticlusterKubernetesClusterReconciler
 }
 
@@ -59,15 +66,19 @@ type multiClusterReconcilerImpl struct {
 }
 
 // register the reconcile func with the cluster watcher
+// the reconcileInterval, if greater than 0, will limit the number of reconciles
+// to one per interval.
 func RegisterMultiClusterReconciler(
 	ctx context.Context,
 	clusters multicluster.ClusterWatcher,
 	reconcileFunc input.MultiClusterReconcileFunc,
+	reconcileInterval time.Duration,
 ) {
 
 	base := input.NewMultiClusterReconcilerImpl(
 		ctx,
 		reconcileFunc,
+		reconcileInterval,
 	)
 
 	r := &multiClusterReconcilerImpl{
@@ -84,6 +95,8 @@ func RegisterMultiClusterReconciler(
 	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterAccessPolicyReconcileLoop("AccessPolicy", clusters).AddMulticlusterAccessPolicyReconciler(ctx, r)
 	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterVirtualMeshReconcileLoop("VirtualMesh", clusters).AddMulticlusterVirtualMeshReconciler(ctx, r)
 	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterFailoverServiceReconcileLoop("FailoverService", clusters).AddMulticlusterFailoverServiceReconciler(ctx, r)
+
+	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters).AddMulticlusterSecretReconciler(ctx, r)
 
 	multicluster_solo_io_v1alpha1_controllers.NewMulticlusterKubernetesClusterReconcileLoop("KubernetesCluster", clusters).AddMulticlusterKubernetesClusterReconciler(ctx, r)
 
@@ -194,6 +207,21 @@ func (r *multiClusterReconcilerImpl) ReconcileFailoverServiceDeletion(clusterNam
 	return err
 }
 
+func (r *multiClusterReconcilerImpl) ReconcileSecret(clusterName string, obj *v1.Secret) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileSecretDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
+}
+
 func (r *multiClusterReconcilerImpl) ReconcileKubernetesCluster(clusterName string, obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileClusterGeneric(obj)
@@ -220,6 +248,8 @@ type singleClusterReconciler interface {
 	networking_smh_solo_io_v1alpha2_controllers.VirtualMeshReconciler
 	networking_smh_solo_io_v1alpha2_controllers.FailoverServiceReconciler
 
+	v1_controllers.SecretReconciler
+
 	multicluster_solo_io_v1alpha1_controllers.KubernetesClusterReconciler
 }
 
@@ -230,15 +260,19 @@ type singleClusterReconcilerImpl struct {
 }
 
 // register the reconcile func with the manager
+// the reconcileInterval, if greater than 0, will limit the number of reconciles
+// to one per interval.
 func RegisterSingleClusterReconciler(
 	ctx context.Context,
 	mgr manager.Manager,
 	reconcileFunc input.SingleClusterReconcileFunc,
+	reconcileInterval time.Duration,
 ) error {
 
 	base := input.NewSingleClusterReconciler(
 		ctx,
 		reconcileFunc,
+		reconcileInterval,
 	)
 
 	r := &singleClusterReconcilerImpl{
@@ -267,6 +301,10 @@ func RegisterSingleClusterReconciler(
 		return err
 	}
 	if err := networking_smh_solo_io_v1alpha2_controllers.NewFailoverServiceReconcileLoop("FailoverService", mgr, reconcile.Options{}).RunFailoverServiceReconciler(ctx, r); err != nil {
+		return err
+	}
+
+	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, reconcile.Options{}).RunSecretReconciler(ctx, r); err != nil {
 		return err
 	}
 
@@ -360,6 +398,19 @@ func (r *singleClusterReconcilerImpl) ReconcileFailoverService(obj *networking_s
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileFailoverServiceDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileSecretDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

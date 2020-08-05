@@ -91,7 +91,7 @@ func isBackingKubeWorkload(service *corev1.Service, kubeWorkload *v1alpha2.MeshW
 		return false
 	}
 
-	return labels.AreLabelsInWhiteList(selectorLabels, podLabels)
+	return labels.SelectorFromSet(selectorLabels).Matches(labels.Set(podLabels))
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for

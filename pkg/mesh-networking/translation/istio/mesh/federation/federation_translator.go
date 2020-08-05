@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
@@ -208,9 +209,12 @@ func (t *translator) Translate(
 		}
 	}
 
+	// istio gateway names must be DNS-1123 labels
+	// hyphens are legal, dots are not, so we convert here
+	gwName := kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace))
 	gw := &networkingv1alpha3.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("%v.%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace),
+			Name:        gwName,
 			Namespace:   istioNamespace,
 			ClusterName: istioCluster,
 			Labels:      metautils.TranslatedObjectLabels(),

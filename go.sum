@@ -15,6 +15,7 @@ cloud.google.com/go/logging v1.0.0/go.mod h1:V1cc3ogwobYzQq5f2R7DS/GvRIrI4FKj01G
 cloud.google.com/go/pubsub v1.0.1/go.mod h1:R0Gpsv3s54REJCy4fxDixWD93lHJMoZTyQ2kNxGRt3I=
 cloud.google.com/go/storage v1.0.0/go.mod h1:IhtSnM/ZTZV8YYJWCY8RULGVqBDmpoyjwiyrjsg+URw=
 contrib.go.opencensus.io/exporter/ocagent v0.6.0/go.mod h1:zmKjrJcdo0aYcVS7bmEeSEBLPA9YJp5bjrofdU3pIXs=
+contrib.go.opencensus.io/exporter/prometheus v0.1.0 h1:SByaIoWwNgMdPSgl5sMqM2KDE5H/ukPWBRo314xiDvg=
 contrib.go.opencensus.io/exporter/prometheus v0.1.0/go.mod h1:cGFniUXGZlKRjzOyuZJ6mgB+PgBcCIa79kEKR8YCW+A=
 contrib.go.opencensus.io/exporter/stackdriver v0.12.9/go.mod h1:XyyafDnFOsqoxHJgTFycKZMrRUrPThLh2iYTJF6uoO0=
 contrib.go.opencensus.io/exporter/zipkin v0.1.1/go.mod h1:GMvdSl3eJ2gapOaLKzTKE3qDgUkJ86k9k3yY2eqwkzc=
@@ -906,8 +907,8 @@ github.com/solo-io/protoc-gen-ext v0.0.7/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz
 github.com/solo-io/protoc-gen-ext v0.0.9 h1:dU9C8nSLNkjqLXd5QGJ2dvBcrNUvNUP92qlxMfe3t7A=
 github.com/solo-io/protoc-gen-ext v0.0.9/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz4Cbw6tBcmaNsEk=
 github.com/solo-io/skv2 v0.7.3-0.20200720193056-82d0f8632ef9/go.mod h1:yQqXNZgCWZ2LqrjK8I41YBjF6NpNSdaEBw2ipcqgDco=
-github.com/solo-io/skv2 v0.8.1-0.20200803150646-d492c171ae7d h1:kzbbyvz8YLcWWafcvQsxiYTGPJUwBww565+R2DUzFyo=
-github.com/solo-io/skv2 v0.8.1-0.20200803150646-d492c171ae7d/go.mod h1:lYmLP3IZtbQw2H4nlQbaOoDL3hgwQylHWiNArI1jYbA=
+github.com/solo-io/skv2 v0.8.1-0.20200805155126-6f89a6186916 h1:EOx/E2f/1UO0i6GxPWOK7sA0bVLS9460lYDzBFe2cjk=
+github.com/solo-io/skv2 v0.8.1-0.20200805155126-6f89a6186916/go.mod h1:lYmLP3IZtbQw2H4nlQbaOoDL3hgwQylHWiNArI1jYbA=
 github.com/solo-io/solo-kit v0.13.8 h1:3FVs2g71vQp1zjrEh9kdjAQ650MijRxRW/X2E00eghI=
 github.com/solo-io/solo-kit v0.13.8/go.mod h1:1cSoxO1Cgzn++03nnp5V1iGf0S45OLDTUmj70rD/+hY=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=

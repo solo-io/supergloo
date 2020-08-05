@@ -35,6 +35,12 @@ const (
 	defaultGatewayPortName = "tls"
 )
 
+var (
+	// these labels are hard-coded to match the labels used on
+	// the cert-agent pod template in the cert-agent helm chart.
+	agentLabels = map[string]string{"app": "cert-agent"}
+)
+
 // detects Istio if a deployment contains the istiod container.
 type meshDetector struct {
 	ctx        context.Context
@@ -87,6 +93,11 @@ func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 		d.nodes,
 	)
 
+	agent := getAgent(
+		deployment.ClusterName,
+		d.pods,
+	)
+
 	mesh := &v1alpha2.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
 		Spec: v1alpha2.MeshSpec{
@@ -105,6 +116,7 @@ func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 					IngressGateways: ingressGateways,
 				},
 			},
+			AgentInfo: agent,
 		},
 	}
 
@@ -321,4 +333,26 @@ func getTrustDomain(
 		return "", eris.Errorf("Failed to find 'mesh' entry in ConfigMap with name/namespace/cluster %s/%s/%s", istioConfigMapName, namespace, cluster)
 	}
 	return meshConfig.TrustDomain, nil
+}
+
+type Agent struct {
+	Namespace string
+}
+
+func getAgent(
+	cluster string,
+	pods corev1sets.PodSet,
+) *v1alpha2.MeshSpec_AgentInfo {
+	agentPods := pods.List(func(pod *corev1.Pod) bool {
+		return pod.ClusterName != cluster ||
+			!labels.SelectorFromSet(agentLabels).Matches(labels.Set(pod.Labels))
+	})
+	if len(agentPods) == 0 {
+		return nil
+	}
+	// currently assume only one agent installed per cluster/mesh
+	agentNamespace := agentPods[0].Namespace
+	return &v1alpha2.MeshSpec_AgentInfo{
+		AgentNamespace: agentNamespace,
+	}
 }

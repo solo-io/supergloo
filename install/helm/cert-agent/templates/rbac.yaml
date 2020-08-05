@@ -39,6 +39,21 @@ rules:
 - apiGroups:
   - certificates.smh.solo.io
   resources:
+  - issuedcertificates/status
+  - certificaterequests/status
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - secrets/status
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - certificates.smh.solo.io
+  resources:
   - certificaterequests/status
   verbs:
   - get

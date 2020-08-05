@@ -143,7 +143,7 @@ EOF
 
   # enable istio dns for .global stub domain:
   ISTIO_COREDNS=$(${K} get svc -n istio-system istiocoredns -o jsonpath={.spec.clusterIP})
-  kubectl apply -f - <<EOF
+  ${K} apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -170,10 +170,9 @@ data:
     global:53 {
         errors
         cache 30
-        forward . $(kubectl get svc -n istio-system istiocoredns -o jsonpath={.spec.clusterIP}):53
+        forward . ${ISTIO_COREDNS}:53
     }
 EOF
-
 
   # install (modified) bookinfo
   ${K} create namespace bookinfo

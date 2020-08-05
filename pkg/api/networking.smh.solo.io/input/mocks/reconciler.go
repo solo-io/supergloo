@@ -12,6 +12,7 @@ import (
 	v1alpha20 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
+	v1 "k8s.io/api/core/v1"
 )
 
 // MockmultiClusterReconciler is a mock of multiClusterReconciler interface.
@@ -140,6 +141,21 @@ func (m *MockmultiClusterReconciler) ReconcileFailoverService(clusterName string
 func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileFailoverService(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverService", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileFailoverService), clusterName, obj)
+}
+
+// ReconcileSecret mocks base method.
+func (m *MockmultiClusterReconciler) ReconcileSecret(clusterName string, obj *v1.Secret) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileSecret", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileSecret indicates an expected call of ReconcileSecret.
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileSecret(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSecret", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileSecret), clusterName, obj)
 }
 
 // ReconcileKubernetesCluster mocks base method.
@@ -283,6 +299,21 @@ func (m *MocksingleClusterReconciler) ReconcileFailoverService(obj *v1alpha20.Fa
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileFailoverService(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverService", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileFailoverService), obj)
+}
+
+// ReconcileSecret mocks base method.
+func (m *MocksingleClusterReconciler) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileSecret", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileSecret indicates an expected call of ReconcileSecret.
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileSecret(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSecret", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileSecret), obj)
 }
 
 // ReconcileKubernetesCluster mocks base method.

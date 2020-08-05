@@ -2,16 +2,18 @@ package reconciliation
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/skv2/contrib/pkg/output"
-	"github.com/solo-io/skv2/contrib/pkg/sets"
-
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation"
+	"github.com/solo-io/skv2/contrib/pkg/output"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -37,12 +39,17 @@ func Start(
 		masterClient: masterClient,
 	}
 
-	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile)
+	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile, time.Second/2)
 }
 
 // TODO(ilackarms): it would be nice to make inputSnap and outputSnap available on
 // a admin interface, i.e. in JSON format similar to Envoy config dump.
-func (r *discoveryReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, error) {
+func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, error) {
+	if isLeaderElectionObject(obj) {
+		contextutils.LoggerFrom(r.ctx).Debugf("ignoring object %v which is being used for leader election", sets.Key(obj))
+		return false, nil
+	}
+
 	inputSnap, err := r.builder.BuildSnapshot(r.ctx, "mesh-discovery", input.BuildOptions{})
 	if err != nil {
 		// failed to read from cache; should never happen
@@ -69,4 +76,14 @@ func (r *discoveryReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, error
 	})
 
 	return false, errs
+}
+
+// returns true if the passed object is used for leader election
+func isLeaderElectionObject(obj ezkube.ClusterResourceId) bool {
+	metaObj, ok := obj.(metav1.Object)
+	if !ok {
+		return false
+	}
+	_, isLeaderElectionObj := metaObj.GetAnnotations()["control-plane.alpha.kubernetes.io/leader"]
+	return isLeaderElectionObj
 }

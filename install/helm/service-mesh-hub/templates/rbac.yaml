@@ -81,6 +81,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - discovery.smh.solo.io
   resources:
   - meshes
@@ -109,6 +117,13 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets/status
+  verbs:
+  - get
+  - update
 - apiGroups:
   - discovery.smh.solo.io
   resources:

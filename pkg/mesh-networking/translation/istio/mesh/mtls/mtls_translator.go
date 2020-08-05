@@ -5,6 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/common/secrets"
@@ -19,8 +24,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	"github.com/solo-io/skv2/pkg/ezkube"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -31,6 +34,10 @@ const (
 	// name of the istio root CA secret
 	// https://istio.io/latest/docs/tasks/security/cert-management/plugin-ca-cert/
 	istioCaSecretName = "cacerts"
+)
+
+var (
+	signingCertSecretType = corev1.SecretType(fmt.Sprintf("%s/generated_signing_cert", certificatesv1alpha2.SchemeGroupVersion.Group))
 )
 
 // the VirtualService translator translates a Mesh into a VirtualService.
@@ -48,11 +55,15 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx context.Context
+	ctx     context.Context
+	secrets corev1sets.SecretSet
 }
 
-func NewTranslator(ctx context.Context) Translator {
-	return &translator{ctx: ctx}
+func NewTranslator(ctx context.Context, secrets corev1sets.SecretSet) Translator {
+	return &translator{
+		ctx:     ctx,
+		secrets: secrets,
+	}
 }
 
 // translate the appropriate resources for the given Mesh.
@@ -78,23 +89,46 @@ func (t *translator) Translate(
 	// we'll want to expand this to support limited trust in the future
 	sharedTrust := mtlsConfig.GetShared()
 	rootCA := sharedTrust.GetRootCertificateAuthority()
+	agentInfo := mesh.Spec.AgentInfo
+	if agentInfo == nil {
+		contextutils.LoggerFrom(t.ctx).Debugf("cannot configure root certificates for mesh %v which has no cert-agent", sets.Key(mesh))
+		return
+	}
 
 	var rootCaSecret *v1.ObjectRef
 	switch caType := rootCA.CaSource.(type) {
 	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Generated:
-		selfSignedCert, err := generateSelfSignedCert(caType.Generated)
-		if err != nil {
-			// should never happen
-			reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
-			return
+		generatedSecretName := virtualMesh.Ref.Name + "." + virtualMesh.Ref.Namespace
+		// write the signing secret to the smh namespace
+		generatedSecretNamespace := defaults.GetPodNamespace()
+		// use the existing secret if it exists
+		rootCaSecret = &v1.ObjectRef{
+			Name:      generatedSecretName,
+			Namespace: generatedSecretNamespace,
 		}
-		// the self signed cert goes to the master/local cluster
-		selfSignedCertSecret := &corev1.Secret{
-			ObjectMeta: metautils.TranslatedObjectMeta(mesh, mesh.Annotations),
-			Data:       selfSignedCert.ToSecretData(),
+		selfSignedCertSecret, err := t.secrets.Find(rootCaSecret)
+		if err != nil {
+			selfSignedCert, err := generateSelfSignedCert(caType.Generated)
+			if err != nil {
+				// should never happen
+				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
+				return
+			}
+			// the self signed cert goes to the master/local cluster
+			selfSignedCertSecret = &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: generatedSecretName,
+					// write to the agent namespace
+					Namespace: generatedSecretNamespace,
+					// ensure the secret is written to the maser/local cluster
+					ClusterName: "",
+					Labels:      metautils.TranslatedObjectLabels(),
+				},
+				Data: selfSignedCert.ToSecretData(),
+				Type: signingCertSecretType,
+			}
 		}
 		outputs.AddSecrets(selfSignedCertSecret)
-		rootCaSecret = ezkube.MakeObjectRef(selfSignedCertSecret)
 	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Secret:
 		rootCaSecret = caType.Secret
 	}
@@ -119,9 +153,16 @@ func (t *translator) Translate(
 		Namespace: istioNamespace,
 	}
 
+	// issue a certificate to the mesh agent
 	issuedCertificate := &certificatesv1alpha2.IssuedCertificate{
-		TypeMeta:   metav1.TypeMeta{},
-		ObjectMeta: metav1.ObjectMeta{},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: mesh.Name,
+			// write to the agent namespace
+			Namespace: agentInfo.AgentNamespace,
+			// write to the mesh cluster
+			ClusterName: istioMesh.GetInstallation().GetCluster(),
+			Labels:      metautils.TranslatedObjectLabels(),
+		},
 		Spec: certificatesv1alpha2.IssuedCertificateSpec{
 			Hosts:                    []string{buildSpiffeURI(trustDomain, istioNamespace, citadelServiceAccount)},
 			Org:                      defaultIstioOrg,

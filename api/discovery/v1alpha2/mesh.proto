@@ -15,12 +15,17 @@ option (gogoproto.equal_all) = true;
 */
 message MeshSpec {
 
+    // the mesh type indicates information specific to the particular type of
+    // Mesh represented by this Mesh resource.
     oneof mesh_type {
         Istio istio = 1;
         AwsAppMesh aws_app_mesh = 2;
         LinkerdMesh linkerd = 3;
         ConsulConnectMesh consul_connect = 4;
     }
+
+    // information about the SMH certificate agent, if it has been installed to the remote cluster.
+    AgentInfo agent_info = 5;
 
     // Mesh object representing an installed Istio control plane
     message Istio {
@@ -116,6 +121,13 @@ message MeshSpec {
         // Determined using the image tag on the
         // Mesh's primary control plane image (e.g. the istio-pilot image tag).
         string version = 3;
+    }
+
+    // information about the SMH Cert-Agent which may be installed
+    // to the remote cluster which contains the Mesh control plane
+    message AgentInfo {
+        // the namespace in which the agent is installed
+        string agent_namespace = 1;
     }
 
 }

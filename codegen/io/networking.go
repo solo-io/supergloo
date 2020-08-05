@@ -31,6 +31,9 @@ var (
 		skv1alpha1.Group.GroupVersion: {
 			"KubernetesCluster",
 		},
+		corev1.SchemeGroupVersion: {
+			"Secret",
+		},
 	}
 
 	NetworkingOutputTypes = Snapshot{

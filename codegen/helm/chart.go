@@ -166,6 +166,7 @@ func certAgentOperator() model.Operator {
 	var rbacPolicies []rbacv1.PolicyRule
 
 	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.RbacPoliciesWatch()...)
+	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.RbacPoliciesUpdateStatus()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateAgentOutputTypes.RbacPoliciesUpdateStatus()...)
 
 	return model.Operator{
