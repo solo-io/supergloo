@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/service-mesh-hub/codegen/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
@@ -54,10 +56,10 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.BoolVarP(&o.dryRun, "dry-run", "d", false, "Output installation manifest")
 	flags.StringVar(&o.kubeCfgPath, "kubeconfig", "", "path to the kubeconfig from which the master cluster will be accessed")
 	flags.StringVar(&o.kubeContext, "kubecontext", "", "name of the kubeconfig context to use for the master cluster")
-	flags.StringVar(&o.namespace, "namespace", "", "namespace in which to install Service Mesh Hub")
+	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to install Service Mesh Hub")
 	flags.StringVar(&o.chartPath, "chart-file", "", "Path to a local Helm chart for installing Service Mesh Hub. If unset, this command will install Service Mesh Hub from the publicly released Helm chart.")
 	flags.StringVarP(&o.chartValuesFile, "chart-values-file", "", "", "File containing value overrides for the Service Mesh Hub Helm chart")
-	flags.StringVar(&o.releaseName, "release-name", "service-mesh-hub", "Helm release name")
+	flags.StringVar(&o.releaseName, "release-name", helm.Chart.Data.Name, "Helm release name")
 	flags.StringVar(&o.version, "version", "", "Version to install, defaults to latest if omitted")
 
 	flags.BoolVarP(&o.register, "register", "r", false, "Register the management plane cluster")

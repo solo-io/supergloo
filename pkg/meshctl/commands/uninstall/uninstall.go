@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/service-mesh-hub/codegen/helm"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -37,8 +39,8 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.BoolVarP(&o.dryRun, "dry-run", "d", false, "Output installation manifest")
 	flags.StringVar(&o.kubeCfgPath, "kubeconfig", "", "path to the kubeconfig from which the master cluster will be accessed")
 	flags.StringVar(&o.kubeContext, "kubecontext", "", "name of the kubeconfig context to use for the master cluster")
-	flags.StringVar(&o.namespace, "namespace", "", "namespace in which to install Service Mesh Hub")
-	flags.StringVar(&o.releaseName, "release-name", "service-mesh-hub", "Helm release name")
+	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to install Service Mesh Hub")
+	flags.StringVar(&o.releaseName, "release-name", helm.Chart.Data.Name, "Helm release name")
 	flags.BoolVarP(&o.verbose, "verbose", "v", false, "Enable verbose output")
 }
 
