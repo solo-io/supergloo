@@ -40,14 +40,22 @@ var (
 	// TODO implement kube connectivity check
 
 	managementPlane = Category{
-		Name: "Service Mesh Hub Management Plane",
+		Name: "Management Plane",
 		Checks: []Check{
 			NewDeploymentsCheck(),
 		},
 	}
 
+	configuration = Category{
+		Name: "Management Configuration",
+		Checks: []Check{
+			NewNetworkingCrdCheck(),
+		},
+	}
+
 	categories = []Category{
 		managementPlane,
+		configuration,
 	}
 )
 
@@ -59,6 +67,7 @@ func RunChecks(ctx context.Context, client client.Client, installNamespace strin
 			failure := check.Run(ctx, client, installNamespace)
 			printResult(failure, check.GetDescription())
 		}
+		fmt.Println()
 	}
 	return nil
 }

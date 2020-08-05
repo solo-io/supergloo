@@ -4,9 +4,11 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/check/internal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -54,7 +56,15 @@ func buildClient(kubeconfig, kubecontext string) (client.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	client, err := client.New(cfg, client.Options{})
+	
+	scheme := scheme.Scheme
+	if err := schemes.SchemeBuilder.AddToScheme(scheme); err != nil {
+		return nil, err
+	}
+
+	client, err := client.New(cfg, client.Options{
+		Scheme: scheme,
+	})
 	if err != nil {
 		return nil, err
 	}
