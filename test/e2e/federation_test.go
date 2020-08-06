@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("Federation", func() {
+var _ = Describe("Federation", func() {
 	var (
 		err      error
 		manifest utils.Manifest

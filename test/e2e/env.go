@@ -156,7 +156,7 @@ func GetEnv() Env {
 }
 
 func ClearEnv(ctx context.Context) error {
-	if useExisting := os.Getenv("USE_EXISTING"); useExisting != "" {
+	if useExisting := os.Getenv("USE_EXISTING"); useExisting == "1" {
 		// dont clear existing env
 		return nil
 	}
@@ -168,7 +168,7 @@ func ClearEnv(ctx context.Context) error {
 
 func StartEnv(ctx context.Context) Env {
 
-	if useExisting := os.Getenv("USE_EXISTING"); useExisting != "" {
+	if useExisting := os.Getenv("USE_EXISTING"); useExisting == "1" {
 		mgmt := "kind-master-cluster"
 		remote := "kind-remote-cluster"
 		if fields := strings.Split(useExisting, ","); len(fields) == 2 {
