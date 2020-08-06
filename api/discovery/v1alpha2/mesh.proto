@@ -117,10 +117,13 @@ message MeshSpec {
         // Cluster in which the control plane has been installed.
         string cluster = 2;
 
+        // the labels on the control plane pods (read from the deployment)
+        map<string, string> pod_labels = 3;
+
         // Version of the Mesh that has been installed.
         // Determined using the image tag on the
         // Mesh's primary control plane image (e.g. the istio-pilot image tag).
-        string version = 3;
+        string version = 4;
     }
 
     // information about the SMH Cert-Agent which may be installed

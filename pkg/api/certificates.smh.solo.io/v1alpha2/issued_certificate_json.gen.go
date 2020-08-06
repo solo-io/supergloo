@@ -31,6 +31,17 @@ func (this *IssuedCertificateSpec) UnmarshalJSON(b []byte) error {
 	return IssuedCertificateUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for IssuedCertificateSpec_PodSelector
+func (this *IssuedCertificateSpec_PodSelector) MarshalJSON() ([]byte, error) {
+	str, err := IssuedCertificateMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for IssuedCertificateSpec_PodSelector
+func (this *IssuedCertificateSpec_PodSelector) UnmarshalJSON(b []byte) error {
+	return IssuedCertificateUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for IssuedCertificateStatus
 func (this *IssuedCertificateStatus) MarshalJSON() ([]byte, error) {
 	str, err := IssuedCertificateMarshaler.MarshalToString(this)

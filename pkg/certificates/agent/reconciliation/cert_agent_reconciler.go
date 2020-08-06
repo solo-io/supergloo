@@ -6,10 +6,9 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/service-mesh-hub/pkg/common/utils/errhandlers"
-
 	"github.com/rotisserie/eris"
-	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	corev1client "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/output"
@@ -18,10 +17,12 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/agent/utils"
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/common/secrets"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/service-mesh-hub/pkg/common/utils/errhandlers"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -79,6 +80,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 		if err := r.reconcileIssuedCertificate(
 			issuedCertificate,
 			inputSnap.Secrets(),
+			inputSnap.Pods(),
 			inputSnap.CertificateRequests(),
 			outputs,
 		); err != nil {
@@ -104,7 +106,8 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 
 func (r *certAgentReconciler) reconcileIssuedCertificate(
 	issuedCertificate *v1alpha2.IssuedCertificate,
-	inputSecrets v1sets.SecretSet,
+	inputSecrets corev1sets.SecretSet,
+	inputPods corev1sets.PodSet,
 	inputCertificateRequests v1alpha2sets.CertificateRequestSet,
 	outputs output.Builder,
 ) error {
@@ -228,10 +231,50 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		}
 		outputs.AddSecrets(issuedCertificateSecret)
 
+		// mark issued certificate as ISSUED
+		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_ISSUED
+	case v1alpha2.IssuedCertificateStatus_ISSUED:
+		// ensure issued cert secret exists, if not, return an error (restart the workflow)
+		if issuedCertificateSecret, err := inputSecrets.Find(issuedCertificate.Spec.IssuedCertificateSecret); err != nil {
+			return err
+		} else {
+			// add secret output to prevent it from being GC'ed
+			outputs.AddSecrets(issuedCertificateSecret)
+		}
+
+		// now we must bounce all the pods
+		if err := r.bouncePods(issuedCertificate.Spec.PodsToBounce, inputPods); err != nil {
+			return eris.Wrap(err, "bouncing pods")
+		}
+
+		// mark issued certificate as finished
 		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_FINISHED
 	default:
 		return eris.Errorf("unknown issued certificate state: %v", issuedCertificate.Status.State)
 	}
 
 	return nil
+}
+
+// bounce (delete) the listed pods
+func (r *certAgentReconciler) bouncePods(podSelectors []*v1alpha2.IssuedCertificateSpec_PodSelector, allPods corev1sets.PodSet) error {
+	podsToDelete := allPods.List(func(pod *corev1.Pod) bool {
+		for _, selector := range podSelectors {
+			if selector.Namespace == pod.Namespace &&
+				labels.SelectorFromSet(selector.Labels).Matches(labels.Set(pod.Labels)) {
+				return false
+			}
+		}
+		return true
+	})
+
+	podClient := corev1client.NewPodClient(r.localClient)
+	var errs error
+	for _, pod := range podsToDelete {
+		contextutils.LoggerFrom(r.ctx).Debugf("deleting pod %v", sets.Key(pod))
+		if err := podClient.DeletePod(r.ctx, ezkube.MakeClientObjectKey(pod)); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+	}
+	return errs
 }

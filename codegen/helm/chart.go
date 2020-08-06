@@ -167,7 +167,13 @@ func certAgentOperator() model.Operator {
 
 	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.RbacPoliciesUpdateStatus()...)
-	rbacPolicies = append(rbacPolicies, io.CertificateAgentOutputTypes.RbacPoliciesUpdateStatus()...)
+	rbacPolicies = append(rbacPolicies, io.CertificateAgentOutputTypes.RbacPoliciesWrite()...)
+	// ability to bounce pods
+	rbacPolicies = append(rbacPolicies, rbacv1.PolicyRule{
+		Verbs:     []string{"*"},
+		APIGroups: []string{""},
+		Resources: []string{"pods"},
+	})
 
 	return model.Operator{
 		Name: "cert-agent",

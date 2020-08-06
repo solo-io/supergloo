@@ -242,3 +242,18 @@ function register_cluster() {
 # Note(ilackarms): these names are hard-coded in test/e2e/env.go
 masterCluster=master-cluster
 remoteCluster=remote-cluster
+
+### DEBUG FUNCS
+function debug_proxy() {
+  set -x
+  deployment=$1
+  namespace=$2
+  cluster=$3
+  port=$4
+  kpf --context=kind-$cluster -n $namespace deployment/$deployment $port:15000 &
+  sleep 2
+  curl "localhost:${port}/logging?level=debug" -XPOST
+  curl "localhost:${port}/logging?filter=trace" -XPOST
+  k logs --context="kind-$cluster" -n "$namespace" "deployment/$deployment" -c istio-proxy -f
+  set +x
+}

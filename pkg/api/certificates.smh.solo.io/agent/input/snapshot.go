@@ -6,6 +6,7 @@
 // * IssuedCertificates
 // * CertificateRequests
 // * Secrets
+// * Pods
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -42,6 +43,8 @@ type Snapshot interface {
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
+	// return the set of input Pods
+	Pods() v1_sets.PodSet
 	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
 	SyncStatuses(ctx context.Context, c client.Client) error
@@ -60,6 +63,7 @@ type snapshot struct {
 	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet
 
 	secrets v1_sets.SecretSet
+	pods    v1_sets.PodSet
 }
 
 func NewSnapshot(
@@ -69,6 +73,7 @@ func NewSnapshot(
 	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet,
 
 	secrets v1_sets.SecretSet,
+	pods v1_sets.PodSet,
 
 ) Snapshot {
 	return &snapshot{
@@ -77,6 +82,7 @@ func NewSnapshot(
 		issuedCertificates:  issuedCertificates,
 		certificateRequests: certificateRequests,
 		secrets:             secrets,
+		pods:                pods,
 	}
 }
 
@@ -90,6 +96,10 @@ func (s snapshot) CertificateRequests() certificates_smh_solo_io_v1alpha2_sets.C
 
 func (s snapshot) Secrets() v1_sets.SecretSet {
 	return s.secrets
+}
+
+func (s snapshot) Pods() v1_sets.PodSet {
+	return s.pods
 }
 func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 
@@ -137,6 +147,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap["issuedCertificates"] = s.issuedCertificates.List()
 	snapshotMap["certificateRequests"] = s.certificateRequests.List()
 	snapshotMap["secrets"] = s.secrets.List()
+	snapshotMap["pods"] = s.pods.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -158,6 +169,8 @@ type BuildOptions struct {
 
 	// List options for composing a snapshot from Secrets
 	Secrets []client.ListOption
+	// List options for composing a snapshot from Pods
+	Pods []client.ListOption
 }
 
 // build a snapshot from resources across multiple clusters
@@ -168,6 +181,7 @@ type multiClusterBuilder struct {
 	certificateRequests certificates_smh_solo_io_v1alpha2.MulticlusterCertificateRequestClient
 
 	secrets v1.MulticlusterSecretClient
+	pods    v1.MulticlusterPodClient
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -182,6 +196,7 @@ func NewMultiClusterBuilder(
 		certificateRequests: certificates_smh_solo_io_v1alpha2.NewMulticlusterCertificateRequestClient(client),
 
 		secrets: v1.NewMulticlusterSecretClient(client),
+		pods:    v1.NewMulticlusterPodClient(client),
 	}
 }
 
@@ -191,6 +206,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	certificateRequests := certificates_smh_solo_io_v1alpha2_sets.NewCertificateRequestSet()
 
 	secrets := v1_sets.NewSecretSet()
+	pods := v1_sets.NewPodSet()
 
 	var errs error
 
@@ -205,6 +221,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods...); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 
 	}
 
@@ -214,6 +233,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		issuedCertificates,
 		certificateRequests,
 		secrets,
+		pods,
 	)
 
 	return outputSnap, errs
@@ -277,6 +297,25 @@ func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, clus
 
 	return nil
 }
+func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet, opts ...client.ListOption) error {
+	podClient, err := b.pods.Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	podList, err := podClient.ListPod(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range podList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		pods.Insert(&item)
+	}
+
+	return nil
+}
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
@@ -284,6 +323,7 @@ type singleClusterBuilder struct {
 	certificateRequests certificates_smh_solo_io_v1alpha2.CertificateRequestClient
 
 	secrets v1.SecretClient
+	pods    v1.PodClient
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -296,6 +336,7 @@ func NewSingleClusterBuilder(
 		certificateRequests: certificates_smh_solo_io_v1alpha2.NewCertificateRequestClient(client),
 
 		secrets: v1.NewSecretClient(client),
+		pods:    v1.NewPodClient(client),
 	}
 }
 
@@ -305,6 +346,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	certificateRequests := certificates_smh_solo_io_v1alpha2_sets.NewCertificateRequestSet()
 
 	secrets := v1_sets.NewSecretSet()
+	pods := v1_sets.NewPodSet()
 
 	var errs error
 
@@ -317,6 +359,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	if err := b.insertSecrets(ctx, secrets, opts.Secrets...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertPods(ctx, pods, opts.Pods...); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 
 	outputSnap := NewSnapshot(
 		name,
@@ -324,6 +369,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		issuedCertificates,
 		certificateRequests,
 		secrets,
+		pods,
 	)
 
 	return outputSnap, errs
@@ -365,6 +411,19 @@ func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_set
 	for _, item := range secretList.Items {
 		item := item // pike
 		secrets.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet, opts ...client.ListOption) error {
+	podList, err := b.pods.ListPod(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range podList.Items {
+		item := item // pike
+		pods.Insert(&item)
 	}
 
 	return nil

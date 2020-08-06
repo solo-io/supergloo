@@ -7,6 +7,7 @@
 // * IssuedCertificates
 // * CertificateRequests
 // * Secrets
+// * Pods
 // for a given cluster or set of clusters.
 //
 // Input Reconcilers can be be constructed from either a single Manager (watch events in a single cluster)
@@ -37,6 +38,7 @@ type multiClusterReconciler interface {
 	certificates_smh_solo_io_v1alpha2_controllers.MulticlusterCertificateRequestReconciler
 
 	v1_controllers.MulticlusterSecretReconciler
+	v1_controllers.MulticlusterPodReconciler
 }
 
 var _ multiClusterReconciler = &multiClusterReconcilerImpl{}
@@ -71,6 +73,7 @@ func RegisterMultiClusterReconciler(
 	certificates_smh_solo_io_v1alpha2_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters).AddMulticlusterCertificateRequestReconciler(ctx, r)
 
 	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters).AddMulticlusterSecretReconciler(ctx, r)
+	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters).AddMulticlusterPodReconciler(ctx, r)
 
 }
 
@@ -119,12 +122,28 @@ func (r *multiClusterReconcilerImpl) ReconcileSecretDeletion(clusterName string,
 	return err
 }
 
+func (r *multiClusterReconcilerImpl) ReconcilePod(clusterName string, obj *v1.Pod) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcilePodDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
+}
+
 // the singleClusterReconciler reconciles events for input resources across clusters
 type singleClusterReconciler interface {
 	certificates_smh_solo_io_v1alpha2_controllers.IssuedCertificateReconciler
 	certificates_smh_solo_io_v1alpha2_controllers.CertificateRequestReconciler
 
 	v1_controllers.SecretReconciler
+	v1_controllers.PodReconciler
 }
 
 var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
@@ -165,6 +184,9 @@ func RegisterSingleClusterReconciler(
 	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, reconcile.Options{}).RunSecretReconciler(ctx, r); err != nil {
 		return err
 	}
+	if err := v1_controllers.NewPodReconcileLoop("Pod", mgr, reconcile.Options{}).RunPodReconciler(ctx, r); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -200,6 +222,19 @@ func (r *singleClusterReconcilerImpl) ReconcileSecret(obj *v1.Secret) (reconcile
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileSecretDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
+}
+
+func (r *singleClusterReconcilerImpl) ReconcilePod(obj *v1.Pod) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcilePodDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

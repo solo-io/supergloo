@@ -286,7 +286,7 @@ func buildTcpRewritePatch(clusterName, clusterDomain string) (*types.Struct, err
 	}
 	tcpRewrite, err := protoutils.GogoMessageToGolangStruct(&v2alpha1.TcpClusterRewrite{
 		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, hostutils.GlobalHostnameSuffix),
-		ClusterReplacement: clusterDomain,
+		ClusterReplacement: "." + clusterDomain,
 	})
 	if err != nil {
 		return nil, err

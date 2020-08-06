@@ -16,6 +16,7 @@ rules:
   - ""
   resources:
   - secrets
+  - pods
   verbs:
   - get
   - list
@@ -33,6 +34,7 @@ rules:
   - ""
   resources:
   - secrets/status
+  - pods/status
   verbs:
   - get
   - update
@@ -47,17 +49,21 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - secrets/status
+  - secrets
   verbs:
-  - get
-  - update
+  - '*'
 - apiGroups:
   - certificates.smh.solo.io
   resources:
-  - certificaterequests/status
+  - certificaterequests
   verbs:
-  - get
-  - update
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - '*'
 
 ---
 

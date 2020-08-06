@@ -106,6 +106,7 @@ func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 					Installation: &v1alpha2.MeshSpec_MeshInstallation{
 						Namespace: deployment.Namespace,
 						Cluster:   deployment.ClusterName,
+						PodLabels: deployment.Spec.Selector.MatchLabels,
 						Version:   version,
 					},
 					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{

@@ -27,6 +27,7 @@ var (
 		},
 		corev1.SchemeGroupVersion: {
 			"Secret",
+			"Pod",
 		},
 	}
 

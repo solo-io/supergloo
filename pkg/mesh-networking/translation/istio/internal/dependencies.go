@@ -3,6 +3,8 @@ package internal
 import (
 	"context"
 
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
@@ -24,7 +26,7 @@ import (
 // define our DependencyFactory anywhere else
 type DependencyFactory interface {
 	MakeMeshServiceTranslator(clusters skv1alpha1sets.KubernetesClusterSet) meshservice.Translator
-	MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet) mesh.Translator
+	MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet) mesh.Translator
 }
 
 type dependencyFactoryImpl struct{}
@@ -40,10 +42,10 @@ func (d dependencyFactoryImpl) MakeMeshServiceTranslator(clusters skv1alpha1sets
 	return meshservice.NewTranslator(clusterDomains, decoratorFactory)
 }
 
-func (d dependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet) mesh.Translator {
+func (d dependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet) mesh.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	federationTranslator := federation.NewTranslator(ctx, clusterDomains)
-	mtlsTranslator := mtls.NewTranslator(ctx, secrets)
+	mtlsTranslator := mtls.NewTranslator(ctx, secrets, meshWorkloads)
 	accessTranslator := access.NewTranslator()
 	failoverServiceTranslator := failoverservice.NewTranslator(ctx, clusterDomains)
 

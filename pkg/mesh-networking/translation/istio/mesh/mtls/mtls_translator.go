@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
+
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
@@ -55,14 +58,16 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx     context.Context
-	secrets corev1sets.SecretSet
+	ctx           context.Context
+	secrets       corev1sets.SecretSet
+	meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet
 }
 
-func NewTranslator(ctx context.Context, secrets corev1sets.SecretSet) Translator {
+func NewTranslator(ctx context.Context, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet) Translator {
 	return &translator{
-		ctx:     ctx,
-		secrets: secrets,
+		ctx:           ctx,
+		secrets:       secrets,
+		meshWorkloads: meshWorkloads,
 	}
 }
 
@@ -153,6 +158,9 @@ func (t *translator) Translate(
 		Namespace: istioNamespace,
 	}
 
+	// get the pods that need to be bounced for this mesh
+	podsToBounce := getPodsToBounce(mesh, t.meshWorkloads)
+
 	// issue a certificate to the mesh agent
 	issuedCertificate := &certificatesv1alpha2.IssuedCertificate{
 		ObjectMeta: metav1.ObjectMeta{
@@ -168,10 +176,10 @@ func (t *translator) Translate(
 			Org:                      defaultIstioOrg,
 			SigningCertificateSecret: rootCaSecret,
 			IssuedCertificateSecret:  istioCaCerts,
+			PodsToBounce:             podsToBounce,
 		},
 	}
 	outputs.AddIssuedCertificates(issuedCertificate)
-
 }
 
 const (
@@ -217,4 +225,42 @@ func generateSelfSignedCert(
 
 func buildSpiffeURI(trustDomain, namespace, serviceAccount string) string {
 	return fmt.Sprintf("%s%s/ns/%s/sa/%s", spiffe.URIPrefix, trustDomain, namespace, serviceAccount)
+}
+
+// get selectors for all the pods in a mesh; they need to be bounced (including the mesh control plane itself)
+func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allMeshWorkloads discoveryv1alpha2sets.MeshWorkloadSet) []*certificatesv1alpha2.IssuedCertificateSpec_PodSelector {
+	istioMesh := mesh.Spec.GetIstio()
+	istioInstall := istioMesh.GetInstallation()
+
+	// bounce the control plane pod
+	podsToBounce := []*certificatesv1alpha2.IssuedCertificateSpec_PodSelector{
+		{
+			Namespace: istioInstall.Namespace,
+			Labels:    istioInstall.PodLabels,
+		},
+	}
+
+	// bounce the ingress gateway pods
+	for _, gateway := range istioMesh.IngressGateways {
+		podsToBounce = append(podsToBounce, &certificatesv1alpha2.IssuedCertificateSpec_PodSelector{
+			Namespace: istioInstall.Namespace,
+			Labels:    gateway.WorkloadLabels,
+		})
+	}
+
+	// collect selectors from workloads matching this mesh
+	allMeshWorkloads.List(func(workload *discoveryv1alpha2.MeshWorkload) bool {
+		kubeWorkload := workload.Spec.GetKubernetes()
+
+		if kubeWorkload != nil && ezkube.RefsMatch(workload.Spec.Mesh, mesh) {
+			podsToBounce = append(podsToBounce, &certificatesv1alpha2.IssuedCertificateSpec_PodSelector{
+				Namespace: kubeWorkload.Controller.GetNamespace(),
+				Labels:    kubeWorkload.PodLabels,
+			})
+		}
+
+		return false
+	})
+
+	return podsToBounce
 }
