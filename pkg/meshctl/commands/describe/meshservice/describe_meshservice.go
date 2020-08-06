@@ -1,10 +1,12 @@
 package meshservice
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"strings"
 
+	"github.com/olekukonko/tablewriter"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
@@ -20,8 +22,9 @@ import (
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
 	cmd := &cobra.Command{
-		Use:   "meshservice",
-		Short: "Description of managed mesh services",
+		Use:     "meshservice",
+		Short:   "Description of managed mesh services",
+		Aliases: []string{"meshservices"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := buildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
@@ -52,37 +55,31 @@ func describeMeshServices(ctx context.Context, c client.Client) (string, error) 
 		meshServiceDescriptions = append(meshServiceDescriptions, describeMeshService(&meshService))
 	}
 
-	var s strings.Builder
-	for i, meshDescription := range meshServiceDescriptions {
-		s.WriteString(meshDescription.toString())
-		if i < len(meshServiceDescriptions)-1 {
-			s.WriteString("\n---\n\n")
-		}
-	}
+	buf := new(bytes.Buffer)
+	table := tablewriter.NewWriter(buf)
+	table.SetHeader([]string{"Metadata", "Traffic_Policies", "Access_Policies"})
+	table.SetRowLine(true)
+	table.SetAutoWrapText(false)
 
-	return s.String(), nil
+	for _, description := range meshServiceDescriptions {
+		table.Append([]string{
+			description.Metadata.string(),
+			printing.FormattedObjectRefs(description.TrafficPolicies),
+			printing.FormattedObjectRefs(description.AccessPolicies),
+		})
+	}
+	table.Render()
+
+	return buf.String(), nil
 }
 
-func (m meshServiceDescription) toString() string {
-	builder := printing.NewDescriptionBuilder()
-	metadata := m.Metadata
-	indent := 0
-	builder.AddField(indent, "Name", metadata.Name)
-	builder.AddField(indent, "Namespace", metadata.Namespace)
-	builder.AddField(indent, "Cluster", metadata.Cluster)
-	builder.AddField(indent, "Type", metadata.Type)
-	builder.AddObjectRefs(indent, "TrafficPolicies", m.TrafficPolicies)
-	builder.AddObjectRefs(indent, "AccessPolicies", m.AccessPolicies)
-
-	//s.WriteString(printing.FormattedField(indent, "Name", metadata.Name))
-	//s.WriteString(printing.FormattedField(indent, "Namespace", metadata.Namespace))
-	//s.WriteString(printing.FormattedField(indent, "Cluster", metadata.Cluster))
-	//s.WriteString(printing.FormattedField(indent, "Type", metadata.Type))
-	//
-	//s.WriteString(printing.FormattedObjectRefs(indent, "TrafficPolicies", m.TrafficPolicies))
-	//s.WriteString(printing.FormattedObjectRefs(indent, "AccessPolicies", m.AccessPolicies))
-	//
-	return builder.String()
+func (m meshServiceMetadata) string() string {
+	var s strings.Builder
+	s.WriteString(printing.FormattedField("Name", m.Name))
+	s.WriteString(printing.FormattedField("Namespace", m.Namespace))
+	s.WriteString(printing.FormattedField("Cluster", m.Cluster))
+	s.WriteString(printing.FormattedField("Type", m.Type))
+	return s.String()
 }
 
 type meshServiceDescription struct {
@@ -146,7 +143,7 @@ func (o *options) addToFlags(set *pflag.FlagSet) {
 
 // TODO(harveyxia) move this into a shared CLI util
 func buildClient(kubeconfig, kubecontext string) (client.Client, error) {
-	if kubeconfig != "" {
+	if kubeconfig == "" {
 		kubeconfig = clientcmd.RecommendedHomeFile
 	}
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()

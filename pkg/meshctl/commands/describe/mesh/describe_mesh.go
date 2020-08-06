@@ -1,10 +1,12 @@
 package mesh
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"strings"
 
+	"github.com/olekukonko/tablewriter"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
@@ -20,8 +22,9 @@ import (
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
 	cmd := &cobra.Command{
-		Use:   "mesh",
-		Short: "Description of managed meshes",
+		Use:     "mesh",
+		Short:   "Description of managed meshes",
+		Aliases: []string{"meshes"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := buildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
@@ -52,32 +55,34 @@ func describeMeshes(ctx context.Context, c client.Client) (string, error) {
 		meshDescriptions = append(meshDescriptions, describeMesh(&mesh))
 	}
 
-	var s strings.Builder
-	for i, meshDescription := range meshDescriptions {
-		s.WriteString(meshDescription.toString())
-		if i < len(meshDescriptions)-1 {
-			s.WriteString("\n---\n\n")
-		}
+	buf := new(bytes.Buffer)
+	table := tablewriter.NewWriter(buf)
+	table.SetHeader([]string{"Metadata", "Virtual_Meshes", "Failover_Services"})
+	table.SetRowLine(true)
+	table.SetAutoWrapText(false)
+
+	for _, description := range meshDescriptions {
+		table.Append([]string{
+			description.Metadata.string(),
+			printing.FormattedObjectRefs(description.VirtualMeshes),
+			printing.FormattedObjectRefs(description.FailoverServices),
+		})
 	}
-	return s.String(), nil
+	table.Render()
+
+	return buf.String(), nil
 }
 
-func (m meshDescription) toString() string {
+func (m meshMetadata) string() string {
 	var s strings.Builder
-	indent := 0
-	metadata := m.Metadata
-	s.WriteString(printing.FormattedField(indent, "Name", metadata.Name))
-	s.WriteString(printing.FormattedField(indent, "Namespace", metadata.Namespace))
-	s.WriteString(printing.FormattedField(indent, "Cluster", metadata.Cluster))
-	s.WriteString(printing.FormattedField(indent, "Clusters", strings.Join(metadata.Clusters, ", ")))
-	s.WriteString(printing.FormattedField(indent, "Type", metadata.Type))
-	s.WriteString(printing.FormattedField(indent, "Region", metadata.Region))
-	s.WriteString(printing.FormattedField(indent, "AwsAccountId", metadata.AwsAccountId))
-	s.WriteString(printing.FormattedField(indent, "Version", metadata.Version))
-
-	s.WriteString(printing.FormattedObjectRefs(indent, "VirtualMeshes", m.VirtualMeshes))
-	s.WriteString(printing.FormattedObjectRefs(indent, "FailoverServices", m.FailoverServices))
-
+	s.WriteString(printing.FormattedField("Name", m.Name))
+	s.WriteString(printing.FormattedField("Namespace", m.Namespace))
+	s.WriteString(printing.FormattedField("Cluster", m.Cluster))
+	s.WriteString(printing.FormattedField("Clusters", strings.Join(m.Clusters, ", ")))
+	s.WriteString(printing.FormattedField("Type", m.Type))
+	s.WriteString(printing.FormattedField("Region", m.Region))
+	s.WriteString(printing.FormattedField("AwsAccountId", m.AwsAccountId))
+	s.WriteString(printing.FormattedField("Version", m.Version))
 	return s.String()
 }
 
@@ -164,7 +169,7 @@ func (o *options) addToFlags(set *pflag.FlagSet) {
 
 // TODO(harveyxia) move this into a shared CLI util
 func buildClient(kubeconfig, kubecontext string) (client.Client, error) {
-	if kubeconfig != "" {
+	if kubeconfig == "" {
 		kubeconfig = clientcmd.RecommendedHomeFile
 	}
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
