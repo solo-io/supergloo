@@ -3,11 +3,12 @@ package mesh
 import (
 	"context"
 	"fmt"
+	"strings"
 
-	"github.com/ghodss/yaml"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/printing"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -51,37 +52,50 @@ func describeMeshes(ctx context.Context, c client.Client) (string, error) {
 		meshDescriptions = append(meshDescriptions, describeMesh(&mesh))
 	}
 
-	d := description{Meshes: meshDescriptions}
-	return d.toString()
-}
-
-type description struct {
-	Meshes []meshDescription `json:"meshes,omitempty"`
-}
-
-func (m description) toString() (string, error) {
-	bytes, err := yaml.Marshal(m)
-	if err != nil {
-		return "", err
+	var s strings.Builder
+	for i, meshDescription := range meshDescriptions {
+		s.WriteString(meshDescription.toString())
+		if i < len(meshDescriptions)-1 {
+			s.WriteString("\n---\n\n")
+		}
 	}
-	return string(bytes), nil
+	return s.String(), nil
+}
+
+func (m meshDescription) toString() string {
+	var s strings.Builder
+	indent := 0
+	metadata := m.Metadata
+	s.WriteString(printing.FormattedField(indent, "Name", metadata.Name))
+	s.WriteString(printing.FormattedField(indent, "Namespace", metadata.Namespace))
+	s.WriteString(printing.FormattedField(indent, "Cluster", metadata.Cluster))
+	s.WriteString(printing.FormattedField(indent, "Clusters", strings.Join(metadata.Clusters, ", ")))
+	s.WriteString(printing.FormattedField(indent, "Type", metadata.Type))
+	s.WriteString(printing.FormattedField(indent, "Region", metadata.Region))
+	s.WriteString(printing.FormattedField(indent, "AwsAccountId", metadata.AwsAccountId))
+	s.WriteString(printing.FormattedField(indent, "Version", metadata.Version))
+
+	s.WriteString(printing.FormattedObjectRefs(indent, "VirtualMeshes", m.VirtualMeshes))
+	s.WriteString(printing.FormattedObjectRefs(indent, "FailoverServices", m.FailoverServices))
+
+	return s.String()
 }
 
 type meshDescription struct {
-	Mesh             *meshMetadata   `json:"metadata,omitempty"`
-	VirtualMeshes    []*v1.ObjectRef `json:"virtualMeshes,omitempty"`
-	FailoverServices []*v1.ObjectRef `json:"failoverServices,omitempty"`
+	Metadata         *meshMetadata
+	VirtualMeshes    []*v1.ObjectRef
+	FailoverServices []*v1.ObjectRef
 }
 
 type meshMetadata struct {
-	Type         string   `json:"type,omitempty"`
-	Name         string   `json:"name,omitempty"`
-	Namespace    string   `json:"namespace,omitempty"`
-	Region       string   `json:"region,omitempty"`
-	AwsAccountId string   `json:"awsAccountId,omitempty"`
-	Cluster      string   `json:"cluster,omitempty"`
-	Clusters     []string `json:"clusters,omitempty"`
-	Version      string   `json:"version,omitempty"`
+	Name         string
+	Namespace    string
+	Cluster      string
+	Clusters     []string
+	Type         string
+	Region       string
+	AwsAccountId string
+	Version      string
 }
 
 func describeMesh(mesh *discoveryv1alpha2.Mesh) meshDescription {
@@ -98,7 +112,7 @@ func describeMesh(mesh *discoveryv1alpha2.Mesh) meshDescription {
 	}
 
 	return meshDescription{
-		Mesh:             &meshMeta,
+		Metadata:         &meshMeta,
 		VirtualMeshes:    virtualMeshes,
 		FailoverServices: failoverServices,
 	}
