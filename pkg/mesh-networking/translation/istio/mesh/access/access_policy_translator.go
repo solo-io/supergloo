@@ -17,6 +17,7 @@ import (
 // The access control translator translates a VirtualMesh EnforcementPolicy into Istio AuthorizationPolicies.
 type Translator interface {
 	// Returns nil if no AuthorizationPolicies are required for the mesh (i.e. because access policy enforcement is disabled).
+	// Output resources will be added to the output.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		mesh *discoveryv1alpha2.Mesh,

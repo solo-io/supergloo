@@ -14,6 +14,9 @@ import (
 
 // the istio translator translates an input networking snapshot to an output snapshot of Istio resources
 type Translator interface {
+	// Translate translates the appropriate resources to apply input configuration resources for all Istio meshes contained in the input snapshot.
+	// Output resources will be added to the output.Builder
+	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,

@@ -18,7 +18,7 @@ import (
 type Translator interface {
 	// Translate translates the appropriate VirtualService and DestinationRule for the given MeshService.
 	// returns nil if no VirtualService or DestinationRule is required for the MeshService (i.e. if no VirtualService/DestinationRule features are required, such as subsets).
-	//
+	// Output resources will be added to the output.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.Snapshot,

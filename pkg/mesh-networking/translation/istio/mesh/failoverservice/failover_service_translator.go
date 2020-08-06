@@ -37,6 +37,7 @@ import (
 // The FailoverService translator translates a FailoverService for a single Mesh.
 type Translator interface {
 	// Translate translates the FailoverService into a ServiceEntry representing the new service and an accompanying EnvoyFilter.
+	// Output resources will be added to the output.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.Snapshot,

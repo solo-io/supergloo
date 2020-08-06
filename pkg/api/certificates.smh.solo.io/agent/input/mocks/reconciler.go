@@ -81,6 +81,21 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileSecret(clusterName, o
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSecret", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileSecret), clusterName, obj)
 }
 
+// ReconcilePod mocks base method.
+func (m *MockmultiClusterReconciler) ReconcilePod(clusterName string, obj *v1.Pod) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcilePod", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcilePod indicates an expected call of ReconcilePod.
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcilePod(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePod", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcilePod), clusterName, obj)
+}
+
 // MocksingleClusterReconciler is a mock of singleClusterReconciler interface.
 type MocksingleClusterReconciler struct {
 	ctrl     *gomock.Controller
@@ -147,4 +162,19 @@ func (m *MocksingleClusterReconciler) ReconcileSecret(obj *v1.Secret) (reconcile
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileSecret(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSecret", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileSecret), obj)
+}
+
+// ReconcilePod mocks base method.
+func (m *MocksingleClusterReconciler) ReconcilePod(obj *v1.Pod) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcilePod", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcilePod indicates an expected call of ReconcilePod.
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcilePod(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePod", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcilePod), obj)
 }

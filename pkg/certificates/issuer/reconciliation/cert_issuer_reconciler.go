@@ -106,7 +106,7 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v
 		signingCA.PrivateKey,
 	)
 	if err != nil {
-		return eris.Wrapf(err, "failed to find master signing certificate matching issued request %v", sets.Key(issuedCertificate))
+		return eris.Wrapf(err, "failed to generate signed cert for certificate request %v", sets.Key(certificateRequest))
 	}
 
 	certificateRequest.Status = v1alpha2.CertificateRequestStatus{

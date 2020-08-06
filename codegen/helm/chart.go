@@ -24,6 +24,12 @@ var (
 		}
 		return registry
 	}()
+
+	// built-in skv2 templates we don't need
+	filterTemplates = func(outPath string) bool {
+		return outPath == "templates/namespace.yaml" ||
+			outPath == "templates/chart.yaml"
+	}
 )
 
 var Chart = &model.Chart{
@@ -31,10 +37,7 @@ var Chart = &model.Chart{
 		discoveryOperator(),
 		networkingOperator(),
 	},
-	// Exclude the standard namespace template
-	FilterTemplate: func(outPath string) bool {
-		return outPath == "templates/namespace.yaml"
-	},
+	FilterTemplate: filterTemplates,
 	Data: model.Data{
 		ApiVersion:  "v1",
 		Name:        "service-mesh-hub",
@@ -48,10 +51,7 @@ var CertAgentChart = &model.Chart{
 	Operators: []model.Operator{
 		certAgentOperator(),
 	},
-	// Exclude the standard namespace template
-	FilterTemplate: func(outPath string) bool {
-		return outPath == "templates/namespace.yaml"
-	},
+	FilterTemplate: filterTemplates,
 	Data: model.Data{
 		ApiVersion:  "v1",
 		Name:        "cert-agent",

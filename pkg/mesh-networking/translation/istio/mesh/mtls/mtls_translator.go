@@ -33,8 +33,8 @@ import (
 
 const (
 	defaultIstioOrg              = "Istio"
-	defaultCitadelServiceAccount = "istio-citadel" // The default SPIFFE URL value for trust domain
-	defaultTrustDomain           = "cluster.local"
+	defaultCitadelServiceAccount = "istio-citadel"
+	defaultTrustDomain           = "cluster.local" // The default SPIFFE URL value for trust domain
 	defaultIstioNamespace        = "istio-system"
 	// name of the istio root CA secret
 	// https://istio.io/latest/docs/tasks/security/cert-management/plugin-ca-cert/
@@ -49,7 +49,7 @@ var (
 type Translator interface {
 	// Translate translates the appropriate VirtualService and DestinationRule for the given Mesh.
 	// returns nil if no VirtualService or DestinationRule is required for the Mesh (i.e. if no VirtualService/DestinationRule features are required, such as subsets).
-	//
+	// Output resources will be added to the output.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		mesh *discoveryv1alpha2.Mesh,

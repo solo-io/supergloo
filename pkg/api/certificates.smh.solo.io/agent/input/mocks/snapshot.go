@@ -81,6 +81,20 @@ func (mr *MockSnapshotMockRecorder) Secrets() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secrets", reflect.TypeOf((*MockSnapshot)(nil).Secrets))
 }
 
+// Pods mocks base method.
+func (m *MockSnapshot) Pods() v1sets.PodSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Pods")
+	ret0, _ := ret[0].(v1sets.PodSet)
+	return ret0
+}
+
+// Pods indicates an expected call of Pods.
+func (mr *MockSnapshotMockRecorder) Pods() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pods", reflect.TypeOf((*MockSnapshot)(nil).Pods))
+}
+
 // SyncStatuses mocks base method.
 func (m *MockSnapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 	m.ctrl.T.Helper()
