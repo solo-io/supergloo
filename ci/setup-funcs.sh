@@ -182,12 +182,12 @@ EOF
   ${K} label ns bookinfo istio-injection=enabled --overwrite
   ${K} apply -n bookinfo -f ${PROJECT_ROOT}/ci/bookinfo.yaml
 
-  # NOTE: we delete the ratings service to free up CPU for ci
-  ${K} delete -n bookinfo deployment ratings-v1
+  # NOTE: we delete the details service to free up CPU for ci
+  ${K} delete -n bookinfo deployment details-v1
 
   ROLLOUT="${K} -n bookinfo rollout status deployment --timeout 300s"
 
-  ${ROLLOUT} details-v1
+  ${ROLLOUT} ratings-v1
   ${ROLLOUT} productpage-v1
   ${ROLLOUT} reviews-v1
   ${ROLLOUT} reviews-v2
