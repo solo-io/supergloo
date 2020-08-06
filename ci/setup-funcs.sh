@@ -67,6 +67,9 @@ kubeadmConfigPatches:
     extraArgs:
       "feature-gates": "EphemeralContainers=true"
 EOF
+
+  # NOTE: we delete the local-path-storage ns to free up CPU for ci
+  ${K} delete ns local-path-storage
 }
 
 function install_istio() {
@@ -179,11 +182,13 @@ EOF
   ${K} label ns bookinfo istio-injection=enabled --overwrite
   ${K} apply -n bookinfo -f ${PROJECT_ROOT}/ci/bookinfo.yaml
 
+  # NOTE: we delete the ratings service to free up CPU for ci
+  ${K} delete -n bookinfo deployment ratings-v1
+
   ROLLOUT="${K} -n bookinfo rollout status deployment --timeout 300s"
 
   ${ROLLOUT} details-v1
   ${ROLLOUT} productpage-v1
-  ${ROLLOUT} ratings-v1
   ${ROLLOUT} reviews-v1
   ${ROLLOUT} reviews-v2
   ${ROLLOUT} reviews-v3

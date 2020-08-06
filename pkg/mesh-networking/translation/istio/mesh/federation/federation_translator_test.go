@@ -3,15 +3,15 @@ package federation_test
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
-
 	"github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
@@ -129,7 +129,7 @@ var _ = Describe("FederationTranslator", func() {
 			v1alpha2sets.NewAccessPolicySet(),
 			v1alpha2sets.NewVirtualMeshSet(),
 			v1alpha2sets.NewFailoverServiceSet(),
-
+			corev1sets.NewSecretSet(),
 			skv1alpha1sets.NewKubernetesClusterSet(kubeCluster),
 		)
 
@@ -155,7 +155,7 @@ var _ = Describe("FederationTranslator", func() {
 
 var expectedGateway = &networkingv1alpha3.Gateway{
 	ObjectMeta: metav1.ObjectMeta{
-		Name:        "my-virtual-mesh.config-namespace",
+		Name:        "my-virtual-mesh-config-namespace",
 		Namespace:   "namespace",
 		ClusterName: "cluster",
 		Labels:      metautils.TranslatedObjectLabels(),
@@ -169,7 +169,7 @@ var expectedGateway = &networkingv1alpha3.Gateway{
 					Name:     "tls",
 				},
 				Hosts: []string{
-					"some-svc.some-ns.svc.cluster",
+					"*.global",
 				},
 				Tls: &networkingv1alpha3spec.ServerTLSSettings{
 					Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
@@ -221,12 +221,12 @@ var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
 										Fields: map[string]*types.Value{
 											"cluster_replacement": {
 												Kind: &types.Value_StringValue{
-													StringValue: ".svc.cluster.local",
+													StringValue: ".cluster.local",
 												},
 											},
 											"cluster_pattern": {
 												Kind: &types.Value_StringValue{
-													StringValue: "\\.cluster$",
+													StringValue: "\\.cluster.global$",
 												},
 											},
 										},
@@ -242,13 +242,13 @@ var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
 }
 var expectedDestinationRules = istiov1alpha3sets.NewDestinationRuleSet(&networkingv1alpha3.DestinationRule{
 	ObjectMeta: metav1.ObjectMeta{
-		Name:        "some-svc.some-ns.svc.cluster",
+		Name:        "some-svc.some-ns.svc.cluster.global",
 		Namespace:   "remote-namespace",
 		ClusterName: "remote-cluster",
 		Labels:      metautils.TranslatedObjectLabels(),
 	},
 	Spec: networkingv1alpha3spec.DestinationRule{
-		Host: "some-svc.some-ns.svc.cluster",
+		Host: "some-svc.some-ns.svc.cluster.global",
 		TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
 			Tls: &networkingv1alpha3spec.ClientTLSSettings{
 				Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
@@ -258,14 +258,14 @@ var expectedDestinationRules = istiov1alpha3sets.NewDestinationRuleSet(&networki
 })
 var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
 	ObjectMeta: metav1.ObjectMeta{
-		Name:        "some-svc.some-ns.svc.cluster",
+		Name:        "some-svc.some-ns.svc.cluster.global",
 		Namespace:   "remote-namespace",
 		ClusterName: "remote-cluster",
 		Labels:      metautils.TranslatedObjectLabels(),
 	},
 	Spec: networkingv1alpha3spec.ServiceEntry{
 		Hosts: []string{
-			"some-svc.some-ns.svc.cluster",
+			"some-svc.some-ns.svc.cluster.global",
 		},
 		Addresses: []string{
 			"243.21.204.125",

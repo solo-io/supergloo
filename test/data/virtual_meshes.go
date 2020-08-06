@@ -24,6 +24,7 @@ func SelfSignedVirtualMesh(name, namespace string, meshes []*v1.ObjectRef) *v1al
 						CaSource: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Generated{},
 					},
 				}},
+				AutoRestartPods: true,
 			},
 			Federation: &v1alpha2.VirtualMeshSpec_Federation{},
 		},

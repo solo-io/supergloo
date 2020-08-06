@@ -29,6 +29,8 @@ import (
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 )
 
+//go:generate mockgen -source ./mtls_translator.go -destination mocks/mtls_translator.go
+
 const (
 	defaultIstioOrg              = "Istio"
 	defaultCitadelServiceAccount = "istio-citadel" // The default SPIFFE URL value for trust domain
@@ -159,7 +161,7 @@ func (t *translator) Translate(
 	}
 
 	// get the pods that need to be bounced for this mesh
-	podsToBounce := getPodsToBounce(mesh, t.meshWorkloads)
+	podsToBounce := getPodsToBounce(mesh, t.meshWorkloads, mtlsConfig.AutoRestartPods)
 
 	// issue a certificate to the mesh agent
 	issuedCertificate := &certificatesv1alpha2.IssuedCertificate{
@@ -228,7 +230,11 @@ func buildSpiffeURI(trustDomain, namespace, serviceAccount string) string {
 }
 
 // get selectors for all the pods in a mesh; they need to be bounced (including the mesh control plane itself)
-func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allMeshWorkloads discoveryv1alpha2sets.MeshWorkloadSet) []*certificatesv1alpha2.IssuedCertificateSpec_PodSelector {
+func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allMeshWorkloads discoveryv1alpha2sets.MeshWorkloadSet, autoRestartPods bool) []*certificatesv1alpha2.IssuedCertificateSpec_PodSelector {
+	// if autoRestartPods is false, we rely on the user to manually restart their pods
+	if !autoRestartPods {
+		return nil
+	}
 	istioMesh := mesh.Spec.GetIstio()
 	istioInstall := istioMesh.GetInstallation()
 

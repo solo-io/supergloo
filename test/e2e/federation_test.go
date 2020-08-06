@@ -52,14 +52,16 @@ var _ = Describe("Federation", func() {
 			assertVirtualMeshStatuses()
 
 			// check we can hit the remote service
-			Eventually(curlRemoteReviews, "10s", "0.1s").Should(ContainSubstring(`"color": "black"`))
+			// give 5 minutes because the workflow depends on restarting pods
+			// which can take several minutes
+			Eventually(curlRemoteReviews, "5m", "1s").Should(ContainSubstring(`"color": "black"`))
 		})
 
 		By("delete VirtualMesh should remove the federated service", func() {
 			err = manifest.KubeDelete(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(curlRemoteReviews, "1m", "1s").Should(ContainSubstring("Could not resolve host"))
+			Eventually(curlRemoteReviews, "5m", "1s").Should(ContainSubstring("Could not resolve host"))
 		})
 	})
 })

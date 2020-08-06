@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
@@ -64,6 +66,7 @@ var _ = Describe("Approver", func() {
 				v1alpha2sets.NewAccessPolicySet(),
 				v1alpha2sets.NewVirtualMeshSet(),
 				v1alpha2sets.NewFailoverServiceSet(),
+				corev1sets.NewSecretSet(),
 				skv1alpha1sets.NewKubernetesClusterSet(),
 			)
 		)
@@ -124,6 +127,7 @@ var _ = Describe("Approver", func() {
 				v1alpha2sets.NewAccessPolicySet(),
 				v1alpha2sets.NewVirtualMeshSet(),
 				v1alpha2sets.NewFailoverServiceSet(),
+				corev1sets.NewSecretSet(),
 				skv1alpha1sets.NewKubernetesClusterSet(),
 			)
 		)

@@ -3,6 +3,8 @@ package failoverservice
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -195,12 +197,14 @@ var _ = Describe("FailoverServiceTranslator", func() {
 			mockClusterDomainRegistry.EXPECT().GetServiceGlobalFQDN(meshService.Spec.GetKubeService().Ref).Return(meshService.Name + "." + meshService.Namespace + ".global")
 		}
 
-		outputs := failoverServiceTranslator.Translate(
+		outputs := output.NewBuilder(context.TODO(), "")
+		failoverServiceTranslator.Translate(
 			in,
 			&discoveryv1alpha2.Mesh{
 				Spec: discoveryv1alpha2.MeshSpec{MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{}}},
 			},
 			failoverService,
+			outputs,
 			mockReporter,
 		)
 
@@ -312,13 +316,13 @@ resolution: DNS
 		var envoyFilterObjectMetas []metav1.ObjectMeta
 		var serviceEntryYamls []string
 		var serviceEntryObjectMetas []metav1.ObjectMeta
-		for _, envoyFilter := range outputs.EnvoyFilters.List() {
+		for _, envoyFilter := range outputs.GetEnvoyFilters().List() {
 			envoyFilterYaml, err := protomarshal.ToYAML(&envoyFilter.Spec)
 			Expect(err).ToNot(HaveOccurred())
 			envoyFilterYamls = append(envoyFilterYamls, envoyFilterYaml)
 			envoyFilterObjectMetas = append(envoyFilterObjectMetas, envoyFilter.ObjectMeta)
 		}
-		for _, serviceEntry := range outputs.ServiceEntries.List() {
+		for _, serviceEntry := range outputs.GetServiceEntries().List() {
 			serviceEntryYaml, err := protomarshal.ToYAML(&serviceEntry.Spec)
 			Expect(err).ToNot(HaveOccurred())
 			serviceEntryYamls = append(serviceEntryYamls, serviceEntryYaml)

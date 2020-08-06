@@ -45,6 +45,12 @@ message VirtualMeshSpec {
             LimitedTrust limited = 2;
         }
 
+        // Allow Service Mesh Hub to restart mesh pods when certificates are rotated.
+        // If this option is not explicitly enabled,
+        // users must restart the pods manually for the new certificates to be picked up.
+        // `meshctl` provides the command `meshctl mesh restart` to simplify this process.
+        bool auto_restart_pods = 3;
+
         /*
             Shared trust is a virtual mesh trust model requiring a shared root certificate, as well as shared identity
             between all entities which wish to communicate within the virtual mesh.

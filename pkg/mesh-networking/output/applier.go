@@ -22,10 +22,9 @@ type applier struct {
 }
 
 func (a applier) HandleWriteError(resource ezkube.Object, err error) {
-	owners := a.fieldOwners.GetRegisteredOwnerships(resource)
-	for _, owner := range owners {
-		owner.Status = failed
-	}
+	//owners := a.fieldOwners.GetRegisteredOwnerships(resource)
+	//for _, owner := range owners {
+	//}
 }
 
 func (a applier) HandleDeleteError(resource ezkube.Object, err error) {
