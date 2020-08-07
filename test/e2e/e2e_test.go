@@ -40,8 +40,8 @@ var (
 		return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v:9080/reviews/1", BookinfoNamespace, remoteClusterName))
 	}
 
-	curlDetails = func() string {
-		return curlFromProductpage("http://details:9080/details/1")
+	curlRatings = func() string {
+		return curlFromProductpage("http://ratings:9080/ratings/1")
 	}
 
 	curlFromProductpage = func(url string) string {

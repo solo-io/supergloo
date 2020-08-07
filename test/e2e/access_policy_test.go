@@ -101,7 +101,7 @@ var _ = Describe("AccessPolicy", func() {
 			err := manifest.KubeDelete(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(curlDetails, "1m", "1s").Should(ContainSubstring("200 OK"))
+			Eventually(curlRatings, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 	})
 })
