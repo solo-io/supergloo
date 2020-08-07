@@ -87,9 +87,9 @@ var _ = Describe("Translator", func() {
 		out, err := t.Translate(ctx, in)
 		Expect(err).NotTo(HaveOccurred())
 
-		expectedOut, err := output.NewLabelPartitionedSnapshot(
+		expectedOut, err := output.NewSinglePartitionedSnapshot(
 			"mesh-discovery-1",
-			labelutils.ClusterLabelKey,
+			labelutils.OwnershipLabels(),
 			meshServices,
 			meshWorkloads,
 			meshes,
