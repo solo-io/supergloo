@@ -47,9 +47,9 @@ func (t translator) Translate(ctx context.Context, in input.Snapshot) (output.Sn
 
 	t.totalTranslates++
 
-	return output.NewLabelPartitionedSnapshot(
+	return output.NewSinglePartitionedSnapshot(
 		fmt.Sprintf("mesh-discovery-%v", t.totalTranslates),
-		labelutils.ClusterLabelKey,
+		labelutils.OwnershipLabels(),
 		meshServices,
 		meshWorkloads,
 		meshes,
