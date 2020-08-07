@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/codegen/helm"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -27,8 +28,8 @@ func Command(ctx context.Context) *cobra.Command {
 }
 
 type options struct {
-	kubeCfgPath string
-	kubeContext string
+	kubeconfig  string
+	kubecontext string
 	namespace   string
 	releaseName string
 	verbose     bool
@@ -36,9 +37,8 @@ type options struct {
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
+	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
 	flags.BoolVarP(&o.dryRun, "dry-run", "d", false, "Output installation manifest")
-	flags.StringVar(&o.kubeCfgPath, "kubeconfig", "", "path to the kubeconfig from which the master cluster will be accessed")
-	flags.StringVar(&o.kubeContext, "kubecontext", "", "name of the kubeconfig context to use for the master cluster")
 	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to install Service Mesh Hub")
 	flags.StringVar(&o.releaseName, "release-name", helm.Chart.Data.Name, "Helm release name")
 	flags.BoolVarP(&o.verbose, "verbose", "v", false, "Enable verbose output")
@@ -53,8 +53,8 @@ func uninstall(ctx context.Context, opts *options) error {
 
 func uninstallServiceMeshHub(ctx context.Context, opts *options) error {
 	return smh.Uninstaller{
-		KubeConfig:  opts.kubeCfgPath,
-		KubeContext: opts.kubeContext,
+		KubeConfig:  opts.kubeconfig,
+		KubeContext: opts.kubecontext,
 		Namespace:   opts.namespace,
 		ReleaseName: opts.releaseName,
 		Verbose:     opts.verbose,

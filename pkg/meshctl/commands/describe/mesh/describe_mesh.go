@@ -8,23 +8,21 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/internal/flags"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func Command(ctx context.Context) *cobra.Command {
-	opts := &options{}
+func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "mesh",
 		Short:   "Description of managed meshes",
 		Aliases: []string{"meshes"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
+			c, err := utils.BuildClient(opts.Kubeconfig, opts.Kubecontext)
 			if err != nil {
 				return err
 			}
@@ -36,7 +34,6 @@ func Command(ctx context.Context) *cobra.Command {
 			return nil
 		},
 	}
-	opts.addToFlags(cmd.Flags())
 
 	return cmd
 }
@@ -151,16 +148,4 @@ func getMeshMetadata(mesh *discoveryv1alpha2.Mesh) meshMetadata {
 		Cluster:   meshInstallation.Cluster,
 		Version:   meshInstallation.Version,
 	}
-}
-
-type options struct {
-	kubeconfig  string
-	kubecontext string
-	namespace   string
-}
-
-func (o *options) addToFlags(set *pflag.FlagSet) {
-	set.StringVar(&o.kubeconfig, "kubeconfig", "", "path to the kubeconfig from which the registered cluster will be accessed")
-	set.StringVar(&o.kubecontext, "kubecontext", "", "name of the kubeconfig context to use for the management cluster")
-	set.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace that Service MeshService Hub is installed in")
 }
