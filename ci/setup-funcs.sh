@@ -211,10 +211,8 @@ EOF
 
 }
 
-function register_cluster() {
+function get_api_address() {
   cluster=$1
-  K="kubectl --context=kind-${cluster}"
-
   case $(uname) in
     "Darwin")
     {
@@ -230,13 +228,16 @@ function register_cluster() {
         exit 1
     } ;;
   esac
+  echo ${apiServerAddress}
+}
+
+function register_cluster() {
+  cluster=$1
+  apiServerAddress=$(get_api_address ${cluster})
 
   K="kubectl --context kind-${cluster}"
 
   echo "registering ${cluster} with local cert-agent image..."
-
-  # load cert-agent image
-  kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
 
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
@@ -244,6 +245,13 @@ function register_cluster() {
     --remote-context "kind-${cluster}" \
     --api-server-address "${apiServerAddress}" \
     --cert-agent-chart-file "${AGENT_CHART}"
+}
+
+function install_smh() {
+  cluster=$1
+  apiServerAddress=$(get_api_address ${cluster})
+
+  ${PROJECT_ROOT}/ci/setup-smh.sh ${cluster} ${SMH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
 }
 
 #### START SCRIPT
