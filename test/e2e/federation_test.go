@@ -26,15 +26,15 @@ var _ = Describe("Federation", func() {
 		manifest.Cleanup(BookinfoNamespace)
 	})
 
-	It("applies traffic shift policies to local subsets", func() {
+	It("enables communication across clusters using global dns names", func() {
 		manifest, err = utils.NewManifest("bookinfo-policies.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		By("initially curling reviews should return both reviews-v2 and reviews-v3", func() {
+		By("initially curling remote reviews should fail to resolve", func() {
 			Expect(curlRemoteReviews()).To(ContainSubstring("Could not resolve host"))
 		})
 
-		By("creating a TrafficPolicy with traffic shift to reviews-v2 should consistently shift traffic", func() {
+		By("creating a VirtualMesh with federation enabled, cross-mesh communication should be enabled", func() {
 			virtualMesh := data.SelfSignedVirtualMesh(
 				"bookinfo-federation",
 				BookinfoNamespace,
