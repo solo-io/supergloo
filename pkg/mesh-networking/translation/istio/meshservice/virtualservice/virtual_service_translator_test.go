@@ -9,9 +9,9 @@ import (
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/types"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	mock_decorators "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators/mocks"
-	mock_trafficpolicy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	mock_decorators "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/mocks"
+	mock_trafficpolicy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
 	mock_hostutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
@@ -27,7 +27,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockClusterDomainRegistry *mock_hostutils.MockClusterDomainRegistry
 		mockDecoratorFactory      *mock_decorators.MockFactory
 		mockReporter              *mock_reporting.MockReporter
-		mockDecorator             *mock_trafficpolicy.MockVirtualServiceDecorator
+		mockDecorator             *mock_trafficpolicy.MockTrafficPolicyVirtualServiceDecorator
 		virtualServiceTranslator  virtualservice.Translator
 		in                        input.Snapshot
 	)
@@ -37,7 +37,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockClusterDomainRegistry = mock_hostutils.NewMockClusterDomainRegistry(ctrl)
 		mockDecoratorFactory = mock_decorators.NewMockFactory(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		mockDecorator = mock_trafficpolicy.NewMockVirtualServiceDecorator(ctrl)
+		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyVirtualServiceDecorator(ctrl)
 		virtualServiceTranslator = virtualservice.NewTranslator(mockClusterDomainRegistry, mockDecoratorFactory)
 		in = input.NewInputSnapshotManualBuilder("").Build()
 	})
@@ -197,7 +197,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		mockDecorator.
 			EXPECT().
-			ApplyToVirtualService(
+			ApplyTrafficPolicyToVirtualService(
 				meshService.Status.AppliedTrafficPolicies[0],
 				meshService,
 				&networkingv1alpha3spec.HTTPRoute{

@@ -9,8 +9,8 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/mirror"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/mirror"
 	mock_hostutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/api/networking/v1alpha3"
@@ -20,7 +20,7 @@ var _ = Describe("MirrorDecorator", func() {
 	var (
 		ctrl                      *gomock.Controller
 		mockClusterDomainRegistry *mock_hostutils.MockClusterDomainRegistry
-		mirrorDecorator           trafficpolicy.VirtualServiceDecorator
+		mirrorDecorator           decorators.TrafficPolicyVirtualServiceDecorator
 		output                    *v1alpha3.HTTPRoute
 	)
 
@@ -95,7 +95,7 @@ var _ = Describe("MirrorDecorator", func() {
 		expectedMirrorPercentage := &v1alpha3.Percent{
 			Value: appliedPolicy.Spec.Mirror.Percentage,
 		}
-		err := mirrorDecorator.ApplyToVirtualService(
+		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			originalService,
 			output,
@@ -187,7 +187,7 @@ var _ = Describe("MirrorDecorator", func() {
 			Return(localHostname).
 			Times(2)
 
-		err := mirrorDecorator.ApplyToVirtualService(
+		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicyMissingPort,
 			originalService,
 			output,
@@ -195,7 +195,7 @@ var _ = Describe("MirrorDecorator", func() {
 		)
 		Expect(err.Error()).To(ContainSubstring("must provide port for mirror destination service"))
 
-		err = mirrorDecorator.ApplyToVirtualService(
+		err = mirrorDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicyNonexistentPort,
 			originalService,
 			output,
@@ -264,7 +264,7 @@ var _ = Describe("MirrorDecorator", func() {
 			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicy.Spec.Mirror.GetKubeService()).
 			Return(localHostname)
 
-		err := mirrorDecorator.ApplyToVirtualService(
+		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			originalService,
 			output,

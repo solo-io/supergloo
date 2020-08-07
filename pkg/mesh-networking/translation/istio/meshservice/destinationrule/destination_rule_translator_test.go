@@ -7,9 +7,9 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	mock_decorators "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators/mocks"
-	mock_trafficpolicy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	mock_decorators "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/mocks"
+	mock_trafficpolicy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
 	mock_hostutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
@@ -25,8 +25,8 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockClusterDomainRegistry *mock_hostutils.MockClusterDomainRegistry
 		mockDecoratorFactory      *mock_decorators.MockFactory
 		mockReporter              *mock_reporting.MockReporter
-		mockAggregatingDecorator  *mock_trafficpolicy.MockAggregatingDestinationRuleDecorator
-		mockDecorator             *mock_trafficpolicy.MockDestinationRuleDecorator
+		mockAggregatingDecorator  *mock_trafficpolicy.MockAggregatingTrafficPolicyDestinationRuleDecorator
+		mockDecorator             *mock_trafficpolicy.MockTrafficPolicyDestinationRuleDecorator
 		destinationRuleTranslator destinationrule.Translator
 		in                        input.Snapshot
 	)
@@ -36,8 +36,8 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockClusterDomainRegistry = mock_hostutils.NewMockClusterDomainRegistry(ctrl)
 		mockDecoratorFactory = mock_decorators.NewMockFactory(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		mockAggregatingDecorator = mock_trafficpolicy.NewMockAggregatingDestinationRuleDecorator(ctrl)
-		mockDecorator = mock_trafficpolicy.NewMockDestinationRuleDecorator(ctrl)
+		mockAggregatingDecorator = mock_trafficpolicy.NewMockAggregatingTrafficPolicyDestinationRuleDecorator(ctrl)
+		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyDestinationRuleDecorator(ctrl)
 		destinationRuleTranslator = destinationrule.NewTranslator(mockClusterDomainRegistry, mockDecoratorFactory)
 		in = input.NewInputSnapshotManualBuilder("").Build()
 	})
@@ -110,7 +110,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockAggregatingDecorator.
 			EXPECT().
-			ApplyAllToDestinationRule(
+			ApplyAllTrafficPoliciesToDestinationRule(
 				meshService.Status.AppliedTrafficPolicies,
 				&initializedDestinatonRule.Spec,
 				gomock.Any(),
@@ -119,7 +119,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockDecorator.
 			EXPECT().
-			ApplyToDestinationRule(
+			ApplyTrafficPolicyToDestinationRule(
 				meshService.Status.AppliedTrafficPolicies[0],
 				meshService,
 				&initializedDestinatonRule.Spec,
@@ -128,7 +128,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			Return(nil)
 		mockDecorator.
 			EXPECT().
-			ApplyToDestinationRule(
+			ApplyTrafficPolicyToDestinationRule(
 				meshService.Status.AppliedTrafficPolicies[1],
 				meshService,
 				&initializedDestinatonRule.Spec,

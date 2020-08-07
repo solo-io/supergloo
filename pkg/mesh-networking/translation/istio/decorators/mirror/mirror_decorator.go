@@ -5,8 +5,7 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/trafficpolicyutils"
@@ -32,7 +31,7 @@ type mirrorDecorator struct {
 	meshServices   discoveryv1alpha2sets.MeshServiceSet
 }
 
-var _ trafficpolicy.VirtualServiceDecorator = &mirrorDecorator{}
+var _ decorators.TrafficPolicyVirtualServiceDecorator = &mirrorDecorator{}
 
 func NewMirrorDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
@@ -48,7 +47,7 @@ func (d *mirrorDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (d *mirrorDecorator) ApplyToVirtualService(
+func (d *mirrorDecorator) ApplyTrafficPolicyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha2.MeshService,
 	output *networkingv1alpha3spec.HTTPRoute,

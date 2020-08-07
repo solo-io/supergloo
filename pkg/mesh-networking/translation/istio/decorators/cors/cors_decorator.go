@@ -4,8 +4,7 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -24,7 +23,7 @@ func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 // handles setting Cors on a VirtualService
 type corsDecorator struct{}
 
-var _ trafficpolicy.VirtualServiceDecorator = &corsDecorator{}
+var _ decorators.TrafficPolicyVirtualServiceDecorator = &corsDecorator{}
 
 func NewCorsDecorator() *corsDecorator {
 	return &corsDecorator{}
@@ -34,7 +33,7 @@ func (d *corsDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (d *corsDecorator) ApplyToVirtualService(
+func (d *corsDecorator) ApplyTrafficPolicyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha2.MeshService,
 	output *networkingv1alpha3spec.HTTPRoute,

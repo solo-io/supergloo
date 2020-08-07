@@ -1,8 +1,10 @@
 package decorators
 
 import (
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
+	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
 //go:generate mockgen -source ./decorators.go -destination mocks/decorators.go
@@ -54,3 +56,43 @@ type Decorator interface {
 }
 
 type RegisterField func(fieldPtr, val interface{}) error
+
+/*
+	Interface definitions for decorators which take TrafficPolicy as an input and
+	decorate a given output resource.
+*/
+
+// a TrafficPolicyDestinationRuleDecorator modifies the DestinationRule based on a TrafficPolicy which applies to the MeshService.
+type TrafficPolicyDestinationRuleDecorator interface {
+	Decorator
+
+	ApplyTrafficPolicyToDestinationRule(
+		appliedPolicy *v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
+		service *v1alpha2.MeshService,
+		output *networkingv1alpha3spec.DestinationRule,
+		registerField RegisterField,
+	) error
+}
+
+// an AggregatingTrafficPolicyDestinationRuleDecorator modifies the DestinationRule based on the entire list of TrafficPolicies which apply to the MeshService.
+type AggregatingTrafficPolicyDestinationRuleDecorator interface {
+	Decorator
+
+	ApplyAllTrafficPoliciesToDestinationRule(
+		allAppliedPolicies []*v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
+		output *networkingv1alpha3spec.DestinationRule,
+		registerField RegisterField,
+	) error
+}
+
+// a TrafficPolicyVirtualServiceDecorator modifies the VirtualService based on a TrafficPolicy which applies to the MeshService.
+type TrafficPolicyVirtualServiceDecorator interface {
+	Decorator
+
+	ApplyTrafficPolicyToVirtualService(
+		appliedPolicy *v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
+		service *v1alpha2.MeshService,
+		output *networkingv1alpha3spec.HTTPRoute,
+		registerField RegisterField,
+	) error
+}

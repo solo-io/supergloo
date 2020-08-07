@@ -8,8 +8,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
@@ -73,8 +72,8 @@ func (t *translator) Translate(
 	registerField := registerFieldFunc(destinationRuleFields, destinationRule, trafficPolicyResourceIds)
 	for _, decorator := range drDecorators {
 
-		if aggregatingDestinationRuleDecorator, ok := decorator.(trafficpolicy.AggregatingDestinationRuleDecorator); ok {
-			if err := aggregatingDestinationRuleDecorator.ApplyAllToDestinationRule(
+		if aggregatingDestinationRuleDecorator, ok := decorator.(decorators.AggregatingTrafficPolicyDestinationRuleDecorator); ok {
+			if err := aggregatingDestinationRuleDecorator.ApplyAllTrafficPoliciesToDestinationRule(
 				meshService.Status.AppliedTrafficPolicies,
 				&destinationRule.Spec,
 				registerField,
@@ -91,8 +90,8 @@ func (t *translator) Translate(
 		registerField := registerFieldFunc(destinationRuleFields, destinationRule, []ezkube.ResourceId{policy.Ref})
 		for _, decorator := range drDecorators {
 
-			if destinationRuleDecorator, ok := decorator.(trafficpolicy.DestinationRuleDecorator); ok {
-				if err := destinationRuleDecorator.ApplyToDestinationRule(
+			if destinationRuleDecorator, ok := decorator.(decorators.TrafficPolicyDestinationRuleDecorator); ok {
+				if err := destinationRuleDecorator.ApplyTrafficPolicyToDestinationRule(
 					policy,
 					meshService,
 					&destinationRule.Spec,

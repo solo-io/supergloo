@@ -1,4 +1,4 @@
-package timeout_test
+package retries_test
 
 import (
 	"github.com/gogo/protobuf/types"
@@ -8,19 +8,19 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/timeout"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/retries"
 	"istio.io/api/networking/v1alpha3"
 )
 
-var _ = Describe("TimeoutDecorator", func() {
+var _ = Describe("RetriesDecorator", func() {
 	var (
-		timeoutDecorator trafficpolicy.VirtualServiceDecorator
+		retriesDecorator decorators.TrafficPolicyVirtualServiceDecorator
 		output           *v1alpha3.HTTPRoute
 	)
 
 	BeforeEach(func() {
-		timeoutDecorator = timeout.NewTimeoutDecorator()
+		retriesDecorator = retries.NewRetriesDecorator()
 		output = &v1alpha3.HTTPRoute{}
 	})
 
@@ -30,18 +30,24 @@ var _ = Describe("TimeoutDecorator", func() {
 		}
 		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				RequestTimeout: &types.Duration{Seconds: 5},
+				Retries: &v1alpha2.TrafficPolicySpec_RetryPolicy{
+					Attempts:      5,
+					PerTryTimeout: &types.Duration{Seconds: 2},
+				},
 			},
 		}
-		expectedTimeout := &types.Duration{Seconds: 5}
-		err := timeoutDecorator.ApplyToVirtualService(
+		expectedRetries := &v1alpha3.HTTPRetry{
+			Attempts:      5,
+			PerTryTimeout: &types.Duration{Seconds: 2},
+		}
+		err := retriesDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			nil,
 			output,
 			registerField,
 		)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(output.Timeout).To(Equal(expectedTimeout))
+		Expect(output.Retries).To(Equal(expectedRetries))
 	})
 
 	It("should not set retries if error during field registration", func() {
@@ -51,10 +57,13 @@ var _ = Describe("TimeoutDecorator", func() {
 		}
 		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				RequestTimeout: &types.Duration{Seconds: 5},
+				Retries: &v1alpha2.TrafficPolicySpec_RetryPolicy{
+					Attempts:      5,
+					PerTryTimeout: &types.Duration{Seconds: 2},
+				},
 			},
 		}
-		err := timeoutDecorator.ApplyToVirtualService(
+		err := retriesDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			nil,
 			output,

@@ -3,13 +3,14 @@ package internal
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/access"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice"

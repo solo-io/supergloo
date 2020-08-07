@@ -8,14 +8,14 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/cors"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/cors"
 	"istio.io/api/networking/v1alpha3"
 )
 
 var _ = Describe("CorsDecorator", func() {
 	var (
-		corsDecorator trafficpolicy.VirtualServiceDecorator
+		corsDecorator decorators.TrafficPolicyVirtualServiceDecorator
 		output        *v1alpha3.HTTPRoute
 	)
 
@@ -56,7 +56,7 @@ var _ = Describe("CorsDecorator", func() {
 			MaxAge:           &types.Duration{Seconds: 1},
 			AllowCredentials: &types.BoolValue{Value: false},
 		}
-		err := corsDecorator.ApplyToVirtualService(
+		err := corsDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			nil,
 			output,
@@ -76,7 +76,7 @@ var _ = Describe("CorsDecorator", func() {
 				CorsPolicy: &v1alpha2.TrafficPolicySpec_CorsPolicy{},
 			},
 		}
-		err := corsDecorator.ApplyToVirtualService(
+		err := corsDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			nil,
 			output,

@@ -10,8 +10,7 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/trafficpolicyutils"
@@ -45,8 +44,8 @@ type trafficShiftDecorator struct {
 	meshServices   discoveryv1alpha2sets.MeshServiceSet
 }
 
-var _ trafficpolicy.VirtualServiceDecorator = &trafficShiftDecorator{}
-var _ trafficpolicy.AggregatingDestinationRuleDecorator = &trafficShiftDecorator{}
+var _ decorators.TrafficPolicyVirtualServiceDecorator = &trafficShiftDecorator{}
+var _ decorators.AggregatingTrafficPolicyDestinationRuleDecorator = &trafficShiftDecorator{}
 
 func NewTrafficShiftDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
@@ -62,7 +61,7 @@ func (d *trafficShiftDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (d *trafficShiftDecorator) ApplyToVirtualService(
+func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha2.MeshService,
 	output *networkingv1alpha3spec.HTTPRoute,
@@ -81,7 +80,7 @@ func (d *trafficShiftDecorator) ApplyToVirtualService(
 	return nil
 }
 
-func (d *trafficShiftDecorator) ApplyAllToDestinationRule(
+func (d *trafficShiftDecorator) ApplyAllTrafficPoliciesToDestinationRule(
 	appliedPolicies []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	output *networkingv1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,

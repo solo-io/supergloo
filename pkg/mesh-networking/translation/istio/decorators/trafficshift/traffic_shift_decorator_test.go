@@ -9,8 +9,8 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/trafficshift"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	mock_hostutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/api/networking/v1alpha3"
@@ -20,7 +20,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 	var (
 		ctrl                      *gomock.Controller
 		mockClusterDomainRegistry *mock_hostutils.MockClusterDomainRegistry
-		trafficShiftDecorator     trafficpolicy.VirtualServiceDecorator
+		trafficShiftDecorator     decorators.TrafficPolicyVirtualServiceDecorator
 		output                    *v1alpha3.HTTPRoute
 	)
 
@@ -114,7 +114,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				Weight: 50,
 			},
 		}
-		err := trafficShiftDecorator.ApplyToVirtualService(
+		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			originalService,
 			output,
@@ -216,7 +216,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				}).
 			Return(trafficShiftHostname).Times(2)
 
-		noPortError := trafficShiftDecorator.ApplyToVirtualService(
+		noPortError := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicyMissingPort,
 			originalService,
 			output,
@@ -224,7 +224,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		)
 		Expect(noPortError.Error()).To(ContainSubstring("must provide port for traffic shift destination service"))
 
-		nonexistentPort := trafficShiftDecorator.ApplyToVirtualService(
+		nonexistentPort := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicyNonexistentPort,
 			originalService,
 			output,
@@ -308,7 +308,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				}).
 			Return(trafficShiftHostname)
 
-		err := trafficShiftDecorator.ApplyToVirtualService(
+		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			originalService,
 			output,

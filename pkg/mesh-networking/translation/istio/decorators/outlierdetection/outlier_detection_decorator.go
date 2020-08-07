@@ -4,8 +4,7 @@ import (
 	"github.com/gogo/protobuf/types"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -27,7 +26,7 @@ func decoratorConstructor(_ decorators.Parameters) decorators.Decorator {
 // Handles setting OutlierDetection on a DestinationRule.
 type outlierDetectionDecorator struct{}
 
-var _ trafficpolicy.DestinationRuleDecorator = &outlierDetectionDecorator{}
+var _ decorators.TrafficPolicyDestinationRuleDecorator = &outlierDetectionDecorator{}
 
 func NewOutlierDetectionDecorator() *outlierDetectionDecorator {
 	return &outlierDetectionDecorator{}
@@ -37,7 +36,7 @@ func (d *outlierDetectionDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (d *outlierDetectionDecorator) ApplyToDestinationRule(
+func (d *outlierDetectionDecorator) ApplyTrafficPolicyToDestinationRule(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha2.MeshService,
 	output *networkingv1alpha3spec.DestinationRule,
