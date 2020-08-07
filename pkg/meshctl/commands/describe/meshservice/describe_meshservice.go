@@ -9,13 +9,11 @@ import (
 	"github.com/olekukonko/tablewriter"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/printing"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -26,7 +24,7 @@ func Command(ctx context.Context) *cobra.Command {
 		Short:   "Description of managed mesh services",
 		Aliases: []string{"meshservices"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := buildClient(opts.kubeconfig, opts.kubecontext)
+			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
 				return err
 			}
@@ -139,33 +137,4 @@ func (o *options) addToFlags(set *pflag.FlagSet) {
 	set.StringVar(&o.kubeconfig, "kubeconfig", "", "path to the kubeconfig from which the registered cluster will be accessed")
 	set.StringVar(&o.kubecontext, "kubecontext", "", "name of the kubeconfig context to use for the management cluster")
 	set.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace that Service MeshService Hub is installed in")
-}
-
-// TODO(harveyxia) move this into a shared CLI util
-func buildClient(kubeconfig, kubecontext string) (client.Client, error) {
-	if kubeconfig == "" {
-		kubeconfig = clientcmd.RecommendedHomeFile
-	}
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	loadingRules.ExplicitPath = kubeconfig
-	configOverrides := &clientcmd.ConfigOverrides{CurrentContext: kubecontext}
-
-	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ClientConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	scheme := scheme.Scheme
-	if err := schemes.SchemeBuilder.AddToScheme(scheme); err != nil {
-		return nil, err
-	}
-
-	client, err := client.New(cfg, client.Options{
-		Scheme: scheme,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
 }

@@ -5,14 +5,12 @@ import (
 
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/mesh/flags"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
 	skcorev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -21,7 +19,7 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 		Use:   "restart",
 		Short: "Restart all pods in the specified mesh",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := buildClient(opts.Kubeconfig, opts.Kubeconfig)
+			c, err := utils.BuildClient(opts.Kubeconfig, opts.Kubeconfig)
 			if err != nil {
 				return err
 			}
@@ -66,33 +64,4 @@ func restartPods(ctx context.Context, c client.Client, meshRef *skcorev1.ObjectR
 		}
 	}
 	return nil
-}
-
-// TODO(harveyxia) move this into a shared CLI util
-func buildClient(kubeconfig, kubecontext string) (client.Client, error) {
-	if kubeconfig == "" {
-		kubeconfig = clientcmd.RecommendedHomeFile
-	}
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	loadingRules.ExplicitPath = kubeconfig
-	configOverrides := &clientcmd.ConfigOverrides{CurrentContext: kubecontext}
-
-	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ClientConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	scheme := scheme.Scheme
-	if err := schemes.SchemeBuilder.AddToScheme(scheme); err != nil {
-		return nil, err
-	}
-
-	client, err := client.New(cfg, client.Options{
-		Scheme: scheme,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
 }
