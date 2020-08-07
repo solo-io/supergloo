@@ -14,11 +14,9 @@ var ClusterLabelKey = fmt.Sprintf("cluster.%s", v1alpha2.SchemeGroupVersion.Grou
 // Create a label that identifies the cluster used to discover a resource.
 func ClusterLabels(cluster string) map[string]string {
 	clusterK, clusterV := ClusterLabel(cluster)
-	ownerK, ownerV := OwnershipLabel()
-	return map[string]string{
-		clusterK: clusterV,
-		ownerK:   ownerV,
-	}
+	labels := OwnershipLabels()
+	labels[clusterK] = clusterV
+	return labels
 }
 
 func ClusterLabel(cluster string) (string, string) {
@@ -28,7 +26,9 @@ func ClusterLabel(cluster string) (string, string) {
 
 // identifies the instance of service-mesh-hub discovery that produced the resource.
 // uses pod namespace to identify the instance
-func OwnershipLabel() (string, string) {
-	return fmt.Sprintf("owner.%s", v1alpha2.SchemeGroupVersion.Group),
-		defaults.GetPodNamespace()
+func OwnershipLabels() map[string]string {
+	return map[string]string{
+		fmt.Sprintf("owner.%s", v1alpha2.SchemeGroupVersion.Group):
+		defaults.GetPodNamespace(),
+	}
 }
