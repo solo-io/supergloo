@@ -1,0 +1,30 @@
+package printing
+
+import (
+	"fmt"
+	"strings"
+
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+)
+
+func FormattedField(key, value string) string {
+	if value == "" {
+		return ""
+	}
+	return fmt.Sprintf("%s: %s\n", key, value)
+}
+
+func FormattedObjectRefs(refs []*v1.ObjectRef) string {
+	if len(refs) < 1 {
+		return ""
+	}
+	var s strings.Builder
+	for i, ref := range refs {
+		s.WriteString(FormattedField("Name", ref.Name))
+		s.WriteString(FormattedField("Namespace", ref.Namespace))
+		if i < len(refs)-1 {
+			s.WriteString("\n")
+		}
+	}
+	return s.String()
+}

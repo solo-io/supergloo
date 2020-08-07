@@ -42,6 +42,7 @@ require (
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.4
 	github.com/gertd/go-pluralize v0.1.1
+	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-logr/zapr v0.1.1
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
@@ -51,6 +52,7 @@ require (
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
+	github.com/olekukonko/tablewriter v0.0.4
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.9.1
