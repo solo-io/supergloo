@@ -16,7 +16,7 @@ func Command(ctx context.Context) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "uninstall",
-		Short: "Uninstall Service Mesh Hub and clean up any associated resources",
+		Short: "Uninstall Service Mesh Hub from the referenced cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return uninstall(ctx, opts)
 		},

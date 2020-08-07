@@ -56,7 +56,7 @@ func buildClient(kubeconfig, kubecontext string) (client.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	scheme := scheme.Scheme
 	if err := schemes.SchemeBuilder.AddToScheme(scheme); err != nil {
 		return nil, err

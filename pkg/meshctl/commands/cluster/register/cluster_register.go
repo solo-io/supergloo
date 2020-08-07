@@ -3,27 +3,26 @@ package register
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
-
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	registrant := &registration.Registrant{}
+	registrantOpts := &registration.RegistrantOptions{}
 	cmd := &cobra.Command{
 		Use:   "register",
 		Short: "Register a Kubernetes cluster with Service Mesh Hub",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return registrant.RegisterCluster(ctx)
+			return registration.NewRegistrant(registrantOpts).RegisterCluster(ctx)
 		},
 	}
-	addToFlags(registrant, cmd.Flags())
+	addToFlags(registrantOpts, cmd.Flags())
 	return cmd
 }
 
-func addToFlags(opts *registration.Registrant, set *pflag.FlagSet) {
+func addToFlags(opts *registration.RegistrantOptions, set *pflag.FlagSet) {
 	set.StringVar(&opts.ClusterName, "cluster-name", "", "name of the cluster to register")
 	set.StringVar(&opts.KubeCfgPath, "kubeconfig", "", "path to the kubeconfig from which the registered cluster will be accessed")
 	set.StringVar(&opts.KubeContext, "master-context", "", "name of the kubeconfig context to use for the master cluster")
