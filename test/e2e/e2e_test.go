@@ -37,7 +37,7 @@ var (
 	}
 
 	curlRemoteReviews = func() string {
-		return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v:9080/reviews/1", BookinfoNamespace, remoteClusterName))
+		return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v.global:9080/reviews/1", BookinfoNamespace, remoteClusterName))
 	}
 
 	curlRatings = func() string {
