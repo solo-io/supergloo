@@ -6,8 +6,6 @@
 
 #!/bin/bash
 
-PROJECT_ROOT=$( cd "$( dirname "${0}" )" >/dev/null 2>&1 && pwd )/..
-
 INSTALL_DIR="${PROJECT_ROOT}/install"
 AGENT_VALUES=${INSTALL_DIR}/helm/cert-agent/values.yaml
 AGENT_IMAGE_REGISTRY=$(cat ${AGENT_VALUES} | grep "registry: " | awk '{print $2}')
