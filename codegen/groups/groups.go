@@ -29,6 +29,9 @@ var SMHGroups = []model.Group{
 		{kind: "VirtualMesh"},
 		{kind: "FailoverService"},
 	}),
+}
+
+var CertAgentGroups = []model.Group{
 	makeGroup("certificates", v1alpha2Version, []resourceToGenerate{
 		{kind: "IssuedCertificate"},
 		{kind: "CertificateRequest"},

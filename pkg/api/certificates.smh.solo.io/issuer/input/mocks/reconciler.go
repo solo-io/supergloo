@@ -35,6 +35,21 @@ func (m *MockmultiClusterReconciler) EXPECT() *MockmultiClusterReconcilerMockRec
 	return m.recorder
 }
 
+// ReconcileIssuedCertificate mocks base method.
+func (m *MockmultiClusterReconciler) ReconcileIssuedCertificate(clusterName string, obj *v1alpha2.IssuedCertificate) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileIssuedCertificate", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileIssuedCertificate indicates an expected call of ReconcileIssuedCertificate.
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileIssuedCertificate(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileIssuedCertificate", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileIssuedCertificate), clusterName, obj)
+}
+
 // ReconcileCertificateRequest mocks base method.
 func (m *MockmultiClusterReconciler) ReconcileCertificateRequest(clusterName string, obj *v1alpha2.CertificateRequest) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
@@ -71,6 +86,21 @@ func NewMocksingleClusterReconciler(ctrl *gomock.Controller) *MocksingleClusterR
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MocksingleClusterReconciler) EXPECT() *MocksingleClusterReconcilerMockRecorder {
 	return m.recorder
+}
+
+// ReconcileIssuedCertificate mocks base method.
+func (m *MocksingleClusterReconciler) ReconcileIssuedCertificate(obj *v1alpha2.IssuedCertificate) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileIssuedCertificate", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileIssuedCertificate indicates an expected call of ReconcileIssuedCertificate.
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileIssuedCertificate(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileIssuedCertificate", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileIssuedCertificate), obj)
 }
 
 // ReconcileCertificateRequest mocks base method.

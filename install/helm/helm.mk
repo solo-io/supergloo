@@ -1,5 +1,6 @@
 HELM_ROOTDIR ?= .
-CHART_DIR := $(HELM_ROOTDIR)/service-mesh-hub
+SMH_CHART_DIR := $(HELM_ROOTDIR)/service-mesh-hub
+CA_CHART_DIR := $(HELM_ROOTDIR)/cert-agent
 HELM_OUTPUT_DIR := $(HELM_ROOTDIR)/_output
 PACKAGED_CHARTS_DIR := $(HELM_OUTPUT_DIR)/charts
 
@@ -9,18 +10,15 @@ _ := $(shell mkdir -p $(PACKAGED_CHARTS_DIR))
 .PHONY: clean-helm
 clean-helm:
 	rm -rf $(HELM_OUTPUT_DIR)
-	rm $(CHART_DIR)/Chart.yaml
-	rm $(CHART_DIR)/values.yamls
-
-.PHONY: update-chart-dependencies
-update-chart-dependencies:
-	helm repo add ext-auth-service https://storage.googleapis.com/ext-auth-service-helm
-	helm repo add rate-limiter https://storage.googleapis.com/rate-limiter-helm
-	helm dependency update $(CHART_DIR)
+	rm $(SMH_CHART_DIR)/Chart.yaml
+	rm $(SMH_CHART_DIR)/values.yamls
+	rm $(CA_CHART_DIR)/Chart.yaml
+	rm $(CA_CHART_DIR)/values.yamls
 
 .PHONY: package-helm
-package-helm: update-chart-dependencies
-	helm package --destination $(PACKAGED_CHARTS_DIR) $(CHART_DIR)
+package-helm:
+	helm package --destination $(PACKAGED_CHARTS_DIR) $(SMH_CHART_DIR)
+	helm package --destination $(PACKAGED_CHARTS_DIR) $(CA_CHART_DIR)
 
 .PHONY: fetch-helm
 fetch-helm:

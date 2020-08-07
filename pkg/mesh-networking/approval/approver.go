@@ -79,11 +79,20 @@ func (v *approver) Approve(ctx context.Context, input input.Snapshot) {
 		}
 	}
 
-	// write FailoverService statuses
+	// initialize FailoverService statuses
 	for _, failoverService := range input.FailoverServices().List() {
 		failoverService.Status = v1alpha2.FailoverServiceStatus{
 			State:              v1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: failoverService.Generation,
+			Meshes:             map[string]*v1alpha2.ApprovalStatus{},
+		}
+	}
+
+	// initialize VirtualMesh statuses
+	for _, virtualMesh := range input.VirtualMeshes().List() {
+		virtualMesh.Status = v1alpha2.VirtualMeshStatus{
+			State:              v1alpha2.ApprovalState_ACCEPTED,
+			ObservedGeneration: virtualMesh.Generation,
 			Meshes:             map[string]*v1alpha2.ApprovalStatus{},
 		}
 	}
@@ -98,6 +107,7 @@ func (v *approver) Approve(ctx context.Context, input input.Snapshot) {
 	for _, mesh := range input.Meshes().List() {
 		mesh.Status.ObservedGeneration = mesh.Generation
 		mesh.Status.AppliedFailoverServices = validateAndReturnApprovedFailoverServices(ctx, input, reporter, mesh)
+		mesh.Status.AppliedVirtualMeshes = validateAndReturnApprovedVirtualMeshes(ctx, input, reporter, mesh)
 	}
 
 	// TODO(ilackarms): validate meshworkloads
@@ -231,6 +241,49 @@ func validateAndReturnApprovedFailoverServices(
 	return validatedFailoverServices
 }
 
+func validateAndReturnApprovedVirtualMeshes(
+	ctx context.Context,
+	input input.Snapshot,
+	reporter *approvalReporter,
+	mesh *discoveryv1alpha2.Mesh,
+) []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh {
+	var validatedVirtualMeshes []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh
+
+	// track accepted index
+	var acceptedIndex uint32
+	for _, appliedVirtualMesh := range mesh.Status.AppliedVirtualMeshes {
+		errsForVirtualMesh := reporter.getVirtualMeshErrors(mesh, appliedVirtualMesh.Ref)
+
+		virtualMesh, err := input.VirtualMeshes().Find(appliedVirtualMesh.Ref)
+		if err != nil {
+			// should never happen
+			contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up applied VirtualMesh %v: %v", appliedVirtualMesh.Ref, err)
+			continue
+		}
+
+		if len(errsForVirtualMesh) == 0 {
+			virtualMesh.Status.Meshes[sets.Key(mesh)] = &v1alpha2.ApprovalStatus{
+				AcceptanceOrder: acceptedIndex,
+				State:           v1alpha2.ApprovalState_ACCEPTED,
+			}
+			validatedVirtualMeshes = append(validatedVirtualMeshes, appliedVirtualMesh)
+			acceptedIndex++
+		} else {
+			var errMsgs []string
+			for _, fsErr := range errsForVirtualMesh {
+				errMsgs = append(errMsgs, fsErr.Error())
+			}
+			virtualMesh.Status.Meshes[sets.Key(mesh)] = &v1alpha2.ApprovalStatus{
+				State:  v1alpha2.ApprovalState_INVALID,
+				Errors: errMsgs,
+			}
+			virtualMesh.Status.State = v1alpha2.ApprovalState_INVALID
+		}
+	}
+
+	return validatedVirtualMeshes
+}
+
 // the approval reporter validates individual policies and reports any encountered errors
 type approvalReporter struct {
 	// NOTE(ilackarms): map access should be synchronous (called in a single context),
@@ -238,6 +291,7 @@ type approvalReporter struct {
 	unapprovedTrafficPolicies  map[*discoveryv1alpha2.MeshService]map[string][]error
 	unapprovedAccessPolicies   map[*discoveryv1alpha2.MeshService]map[string][]error
 	unapprovedFailoverServices map[*discoveryv1alpha2.Mesh]map[string][]error
+	unapprovedVirtualMeshes    map[*discoveryv1alpha2.Mesh]map[string][]error
 	invalidFailoverServices    map[string][]error
 }
 
@@ -246,6 +300,7 @@ func newApprovalReporter() *approvalReporter {
 		unapprovedTrafficPolicies:  map[*discoveryv1alpha2.MeshService]map[string][]error{},
 		unapprovedAccessPolicies:   map[*discoveryv1alpha2.MeshService]map[string][]error{},
 		unapprovedFailoverServices: map[*discoveryv1alpha2.Mesh]map[string][]error{},
+		unapprovedVirtualMeshes:    map[*discoveryv1alpha2.Mesh]map[string][]error{},
 		invalidFailoverServices:    map[string][]error{},
 	}
 }
@@ -277,8 +332,15 @@ func (v *approvalReporter) ReportAccessPolicyToMeshService(meshService *discover
 }
 
 func (v *approvalReporter) ReportVirtualMeshToMesh(mesh *discoveryv1alpha2.Mesh, virtualMesh ezkube.ResourceId, err error) {
-	// TODO(ilackarms):
-	panic("implement me")
+	invalidVirtualMeshesForMesh := v.unapprovedVirtualMeshes[mesh]
+	if invalidVirtualMeshesForMesh == nil {
+		invalidVirtualMeshesForMesh = map[string][]error{}
+	}
+	key := sets.Key(virtualMesh)
+	errs := invalidVirtualMeshesForMesh[key]
+	errs = append(errs, err)
+	invalidVirtualMeshesForMesh[key] = errs
+	v.unapprovedVirtualMeshes[mesh] = invalidVirtualMeshesForMesh
 }
 
 func (v *approvalReporter) ReportFailoverServiceToMesh(mesh *discoveryv1alpha2.Mesh, failoverService ezkube.ResourceId, err error) {
@@ -343,6 +405,20 @@ func (v *approvalReporter) getFailoverServiceErrors(mesh *discoveryv1alpha2.Mesh
 	if fsErrs != nil {
 		errs = append(errs, fsErrs...)
 	}
+	return errs
+}
+
+func (v *approvalReporter) getVirtualMeshErrors(mesh *discoveryv1alpha2.Mesh, virtualMesh ezkube.ResourceId) []error {
+	var errs []error
+	// Mesh-dependent errors
+	invalidAccessPoliciesForMeshService, ok := v.unapprovedVirtualMeshes[mesh]
+	if ok {
+		fsErrors, ok := invalidAccessPoliciesForMeshService[sets.Key(virtualMesh)]
+		if ok {
+			errs = append(errs, fsErrors...)
+		}
+	}
+
 	return errs
 }
 

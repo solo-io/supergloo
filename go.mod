@@ -54,19 +54,21 @@ require (
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.2.1
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/rotisserie/eris v0.4.0
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0
-	github.com/solo-io/skv2 v0.8.1-0.20200730174526-43ff3f2eccbc
+	github.com/solo-io/skv2 v0.8.1-0.20200805155126-6f89a6186916
 	github.com/solo-io/solo-kit v0.13.8
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/multierr v1.5.0 // indirect
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975 // indirect
+	helm.sh/helm/v3 v3.0.0
 	istio.io/api v0.0.0-20200610220835-a1a958746907
 	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
@@ -75,4 +77,5 @@ require (
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6 // indirect
 	sigs.k8s.io/controller-runtime v0.5.6
+	sigs.k8s.io/yaml v1.2.0
 )

@@ -3,9 +3,9 @@ package meshservice
 import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	mock_output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/mocks"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
 	mock_authorizationpolicy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/authorizationpolicy/mocks"
 	mock_destinationrule "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/destinationrule/mocks"
@@ -20,6 +20,7 @@ var _ = Describe("IstioMeshServiceTranslator", func() {
 		mockDestinationRuleTranslator     *mock_destinationrule.MockTranslator
 		mockVirtualServiceTranslator      *mock_virtualservice.MockTranslator
 		mockAuthorizationPolicyTranslator *mock_authorizationpolicy.MockTranslator
+		mockOutputs                       *mock_output.MockBuilder
 		mockReporter                      *mock_reporting.MockReporter
 		in                                input.Snapshot
 		istioMeshServiceTranslator        Translator
@@ -30,12 +31,13 @@ var _ = Describe("IstioMeshServiceTranslator", func() {
 		mockDestinationRuleTranslator = mock_destinationrule.NewMockTranslator(ctrl)
 		mockVirtualServiceTranslator = mock_virtualservice.NewMockTranslator(ctrl)
 		mockAuthorizationPolicyTranslator = mock_authorizationpolicy.NewMockTranslator(ctrl)
+		mockOutputs = mock_output.NewMockBuilder(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		in = input.NewInputSnapshotManualBuilder("").Build()
 		istioMeshServiceTranslator = &translator{
-			destinationRuleTranslator:     mockDestinationRuleTranslator,
-			virtualServiceTranslator:      mockVirtualServiceTranslator,
-			authorizationPolicyTranslator: mockAuthorizationPolicyTranslator,
+			destinationRules:      mockDestinationRuleTranslator,
+			virtualServices:       mockVirtualServiceTranslator,
+			authorizationPolicies: mockAuthorizationPolicyTranslator,
 		}
 	})
 
@@ -46,26 +48,32 @@ var _ = Describe("IstioMeshServiceTranslator", func() {
 	It("should translate", func() {
 		meshService := &v1alpha2.MeshService{}
 
-		expectedOutputs := Outputs{
-			VirtualService:      &v1alpha3.VirtualService{},
-			DestinationRule:     &v1alpha3.DestinationRule{},
-			AuthorizationPolicy: &v1beta1.AuthorizationPolicy{},
-		}
+		vs := &v1alpha3.VirtualService{}
+		dr := &v1alpha3.DestinationRule{}
+		ap := &v1beta1.AuthorizationPolicy{}
 
 		mockDestinationRuleTranslator.
 			EXPECT().
 			Translate(in, meshService, mockReporter).
-			Return(expectedOutputs.DestinationRule)
+			Return(dr)
 		mockVirtualServiceTranslator.
 			EXPECT().
 			Translate(in, meshService, mockReporter).
-			Return(expectedOutputs.VirtualService)
+			Return(vs)
 		mockAuthorizationPolicyTranslator.
 			EXPECT().
 			Translate(in, meshService, mockReporter).
-			Return(expectedOutputs.AuthorizationPolicy)
+			Return(ap)
+		mockOutputs.
+			EXPECT().
+			AddVirtualServices(vs)
+		mockOutputs.
+			EXPECT().
+			AddDestinationRules(dr)
+		mockOutputs.
+			EXPECT().
+			AddAuthorizationPolicies(ap)
 
-		outputs := istioMeshServiceTranslator.Translate(in, meshService, mockReporter)
-		Expect(outputs).To(Equal(expectedOutputs))
+		istioMeshServiceTranslator.Translate(in, meshService, mockOutputs, mockReporter)
 	})
 })

@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	output "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output"
+	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	output0 "github.com/solo-io/skv2/contrib/pkg/output"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
@@ -313,4 +314,147 @@ func (m *MockLabeledMeshSet) Generic() output0.ResourceList {
 func (mr *MockLabeledMeshSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledMeshSet)(nil).Generic))
+}
+
+// MockBuilder is a mock of Builder interface.
+type MockBuilder struct {
+	ctrl     *gomock.Controller
+	recorder *MockBuilderMockRecorder
+}
+
+// MockBuilderMockRecorder is the mock recorder for MockBuilder.
+type MockBuilderMockRecorder struct {
+	mock *MockBuilder
+}
+
+// NewMockBuilder creates a new mock instance.
+func NewMockBuilder(ctrl *gomock.Controller) *MockBuilder {
+	mock := &MockBuilder{ctrl: ctrl}
+	mock.recorder = &MockBuilderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockBuilder) EXPECT() *MockBuilderMockRecorder {
+	return m.recorder
+}
+
+// AddMeshServices mocks base method.
+func (m *MockBuilder) AddMeshServices(meshServices ...*v1alpha2.MeshService) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range meshServices {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddMeshServices", varargs...)
+}
+
+// AddMeshServices indicates an expected call of AddMeshServices.
+func (mr *MockBuilderMockRecorder) AddMeshServices(meshServices ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMeshServices", reflect.TypeOf((*MockBuilder)(nil).AddMeshServices), meshServices...)
+}
+
+// GetMeshServices mocks base method.
+func (m *MockBuilder) GetMeshServices() v1alpha2sets.MeshServiceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMeshServices")
+	ret0, _ := ret[0].(v1alpha2sets.MeshServiceSet)
+	return ret0
+}
+
+// GetMeshServices indicates an expected call of GetMeshServices.
+func (mr *MockBuilderMockRecorder) GetMeshServices() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshServices", reflect.TypeOf((*MockBuilder)(nil).GetMeshServices))
+}
+
+// AddMeshWorkloads mocks base method.
+func (m *MockBuilder) AddMeshWorkloads(meshWorkloads ...*v1alpha2.MeshWorkload) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range meshWorkloads {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddMeshWorkloads", varargs...)
+}
+
+// AddMeshWorkloads indicates an expected call of AddMeshWorkloads.
+func (mr *MockBuilderMockRecorder) AddMeshWorkloads(meshWorkloads ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMeshWorkloads", reflect.TypeOf((*MockBuilder)(nil).AddMeshWorkloads), meshWorkloads...)
+}
+
+// GetMeshWorkloads mocks base method.
+func (m *MockBuilder) GetMeshWorkloads() v1alpha2sets.MeshWorkloadSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMeshWorkloads")
+	ret0, _ := ret[0].(v1alpha2sets.MeshWorkloadSet)
+	return ret0
+}
+
+// GetMeshWorkloads indicates an expected call of GetMeshWorkloads.
+func (mr *MockBuilderMockRecorder) GetMeshWorkloads() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshWorkloads", reflect.TypeOf((*MockBuilder)(nil).GetMeshWorkloads))
+}
+
+// AddMeshes mocks base method.
+func (m *MockBuilder) AddMeshes(meshes ...*v1alpha2.Mesh) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range meshes {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddMeshes", varargs...)
+}
+
+// AddMeshes indicates an expected call of AddMeshes.
+func (mr *MockBuilderMockRecorder) AddMeshes(meshes ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMeshes", reflect.TypeOf((*MockBuilder)(nil).AddMeshes), meshes...)
+}
+
+// GetMeshes mocks base method.
+func (m *MockBuilder) GetMeshes() v1alpha2sets.MeshSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMeshes")
+	ret0, _ := ret[0].(v1alpha2sets.MeshSet)
+	return ret0
+}
+
+// GetMeshes indicates an expected call of GetMeshes.
+func (mr *MockBuilderMockRecorder) GetMeshes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshes", reflect.TypeOf((*MockBuilder)(nil).GetMeshes))
+}
+
+// BuildLabelPartitionedSnapshot mocks base method.
+func (m *MockBuilder) BuildLabelPartitionedSnapshot(labelKey string) (output.Snapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BuildLabelPartitionedSnapshot", labelKey)
+	ret0, _ := ret[0].(output.Snapshot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BuildLabelPartitionedSnapshot indicates an expected call of BuildLabelPartitionedSnapshot.
+func (mr *MockBuilderMockRecorder) BuildLabelPartitionedSnapshot(labelKey interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildLabelPartitionedSnapshot", reflect.TypeOf((*MockBuilder)(nil).BuildLabelPartitionedSnapshot), labelKey)
+}
+
+// BuildSinglePartitionedSnapshot mocks base method.
+func (m *MockBuilder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (output.Snapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BuildSinglePartitionedSnapshot", snapshotLabels)
+	ret0, _ := ret[0].(output.Snapshot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BuildSinglePartitionedSnapshot indicates an expected call of BuildSinglePartitionedSnapshot.
+func (mr *MockBuilderMockRecorder) BuildSinglePartitionedSnapshot(snapshotLabels interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildSinglePartitionedSnapshot", reflect.TypeOf((*MockBuilder)(nil).BuildSinglePartitionedSnapshot), snapshotLabels)
 }

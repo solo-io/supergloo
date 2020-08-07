@@ -10,8 +10,8 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	failoverservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice"
 )
 
 // MockTranslator is a mock of Translator interface.
@@ -38,15 +38,13 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method.
-func (m *MockTranslator) Translate(in input.Snapshot, mesh *v1alpha2.Mesh, failoverService *v1alpha2.MeshStatus_AppliedFailoverService, reporter reporting.Reporter) failoverservice.Outputs {
+func (m *MockTranslator) Translate(in input.Snapshot, mesh *v1alpha2.Mesh, failoverService *v1alpha2.MeshStatus_AppliedFailoverService, outputs output.Builder, reporter reporting.Reporter) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Translate", in, mesh, failoverService, reporter)
-	ret0, _ := ret[0].(failoverservice.Outputs)
-	return ret0
+	m.ctrl.Call(m, "Translate", in, mesh, failoverService, outputs, reporter)
 }
 
 // Translate indicates an expected call of Translate.
-func (mr *MockTranslatorMockRecorder) Translate(in, mesh, failoverService, reporter interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) Translate(in, mesh, failoverService, outputs, reporter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), in, mesh, failoverService, reporter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), in, mesh, failoverService, outputs, reporter)
 }

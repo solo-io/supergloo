@@ -9,10 +9,13 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	output "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/output"
+	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
 	output0 "github.com/solo-io/skv2/contrib/pkg/output"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
+	v1 "k8s.io/api/core/v1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -51,6 +54,20 @@ func (m *MockSnapshot) CertificateRequests() []output.LabeledCertificateRequestS
 func (mr *MockSnapshotMockRecorder) CertificateRequests() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateRequests", reflect.TypeOf((*MockSnapshot)(nil).CertificateRequests))
+}
+
+// Secrets mocks base method.
+func (m *MockSnapshot) Secrets() []output.LabeledSecretSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Secrets")
+	ret0, _ := ret[0].([]output.LabeledSecretSet)
+	return ret0
+}
+
+// Secrets indicates an expected call of Secrets.
+func (mr *MockSnapshotMockRecorder) Secrets() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secrets", reflect.TypeOf((*MockSnapshot)(nil).Secrets))
 }
 
 // ApplyLocalCluster mocks base method.
@@ -155,4 +172,182 @@ func (m *MockLabeledCertificateRequestSet) Generic() output0.ResourceList {
 func (mr *MockLabeledCertificateRequestSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledCertificateRequestSet)(nil).Generic))
+}
+
+// MockLabeledSecretSet is a mock of LabeledSecretSet interface.
+type MockLabeledSecretSet struct {
+	ctrl     *gomock.Controller
+	recorder *MockLabeledSecretSetMockRecorder
+}
+
+// MockLabeledSecretSetMockRecorder is the mock recorder for MockLabeledSecretSet.
+type MockLabeledSecretSetMockRecorder struct {
+	mock *MockLabeledSecretSet
+}
+
+// NewMockLabeledSecretSet creates a new mock instance.
+func NewMockLabeledSecretSet(ctrl *gomock.Controller) *MockLabeledSecretSet {
+	mock := &MockLabeledSecretSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledSecretSetMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockLabeledSecretSet) EXPECT() *MockLabeledSecretSetMockRecorder {
+	return m.recorder
+}
+
+// Labels mocks base method.
+func (m *MockLabeledSecretSet) Labels() map[string]string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Labels")
+	ret0, _ := ret[0].(map[string]string)
+	return ret0
+}
+
+// Labels indicates an expected call of Labels.
+func (mr *MockLabeledSecretSetMockRecorder) Labels() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledSecretSet)(nil).Labels))
+}
+
+// Set mocks base method.
+func (m *MockLabeledSecretSet) Set() v1sets.SecretSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Set")
+	ret0, _ := ret[0].(v1sets.SecretSet)
+	return ret0
+}
+
+// Set indicates an expected call of Set.
+func (mr *MockLabeledSecretSetMockRecorder) Set() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledSecretSet)(nil).Set))
+}
+
+// Generic mocks base method.
+func (m *MockLabeledSecretSet) Generic() output0.ResourceList {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(output0.ResourceList)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic.
+func (mr *MockLabeledSecretSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledSecretSet)(nil).Generic))
+}
+
+// MockBuilder is a mock of Builder interface.
+type MockBuilder struct {
+	ctrl     *gomock.Controller
+	recorder *MockBuilderMockRecorder
+}
+
+// MockBuilderMockRecorder is the mock recorder for MockBuilder.
+type MockBuilderMockRecorder struct {
+	mock *MockBuilder
+}
+
+// NewMockBuilder creates a new mock instance.
+func NewMockBuilder(ctrl *gomock.Controller) *MockBuilder {
+	mock := &MockBuilder{ctrl: ctrl}
+	mock.recorder = &MockBuilderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockBuilder) EXPECT() *MockBuilderMockRecorder {
+	return m.recorder
+}
+
+// AddCertificateRequests mocks base method.
+func (m *MockBuilder) AddCertificateRequests(certificateRequests ...*v1alpha2.CertificateRequest) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range certificateRequests {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddCertificateRequests", varargs...)
+}
+
+// AddCertificateRequests indicates an expected call of AddCertificateRequests.
+func (mr *MockBuilderMockRecorder) AddCertificateRequests(certificateRequests ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCertificateRequests", reflect.TypeOf((*MockBuilder)(nil).AddCertificateRequests), certificateRequests...)
+}
+
+// GetCertificateRequests mocks base method.
+func (m *MockBuilder) GetCertificateRequests() v1alpha2sets.CertificateRequestSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCertificateRequests")
+	ret0, _ := ret[0].(v1alpha2sets.CertificateRequestSet)
+	return ret0
+}
+
+// GetCertificateRequests indicates an expected call of GetCertificateRequests.
+func (mr *MockBuilderMockRecorder) GetCertificateRequests() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCertificateRequests", reflect.TypeOf((*MockBuilder)(nil).GetCertificateRequests))
+}
+
+// AddSecrets mocks base method.
+func (m *MockBuilder) AddSecrets(secrets ...*v1.Secret) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range secrets {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddSecrets", varargs...)
+}
+
+// AddSecrets indicates an expected call of AddSecrets.
+func (mr *MockBuilderMockRecorder) AddSecrets(secrets ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSecrets", reflect.TypeOf((*MockBuilder)(nil).AddSecrets), secrets...)
+}
+
+// GetSecrets mocks base method.
+func (m *MockBuilder) GetSecrets() v1sets.SecretSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSecrets")
+	ret0, _ := ret[0].(v1sets.SecretSet)
+	return ret0
+}
+
+// GetSecrets indicates an expected call of GetSecrets.
+func (mr *MockBuilderMockRecorder) GetSecrets() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecrets", reflect.TypeOf((*MockBuilder)(nil).GetSecrets))
+}
+
+// BuildLabelPartitionedSnapshot mocks base method.
+func (m *MockBuilder) BuildLabelPartitionedSnapshot(labelKey string) (output.Snapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BuildLabelPartitionedSnapshot", labelKey)
+	ret0, _ := ret[0].(output.Snapshot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BuildLabelPartitionedSnapshot indicates an expected call of BuildLabelPartitionedSnapshot.
+func (mr *MockBuilderMockRecorder) BuildLabelPartitionedSnapshot(labelKey interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildLabelPartitionedSnapshot", reflect.TypeOf((*MockBuilder)(nil).BuildLabelPartitionedSnapshot), labelKey)
+}
+
+// BuildSinglePartitionedSnapshot mocks base method.
+func (m *MockBuilder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (output.Snapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BuildSinglePartitionedSnapshot", snapshotLabels)
+	ret0, _ := ret[0].(output.Snapshot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BuildSinglePartitionedSnapshot indicates an expected call of BuildSinglePartitionedSnapshot.
+func (mr *MockBuilderMockRecorder) BuildSinglePartitionedSnapshot(snapshotLabels interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildSinglePartitionedSnapshot", reflect.TypeOf((*MockBuilder)(nil).BuildSinglePartitionedSnapshot), snapshotLabels)
 }

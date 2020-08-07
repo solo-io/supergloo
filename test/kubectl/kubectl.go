@@ -103,6 +103,7 @@ func executeNoFail(ctx context.Context, kubeContext string, args ...string) (str
 		if err != nil {
 			return "", err
 		}
+		fmt.Fprintf(GinkgoWriter, "<kubectl %v> output: %v\n", args, string(data))
 		return string(data), nil
 	}
 }

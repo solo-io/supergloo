@@ -4,6 +4,9 @@
 
 // The Input Snapshot contains the set of all:
 // * IssuedCertificates
+// * CertificateRequests
+// * Secrets
+// * Pods
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -25,6 +28,9 @@ import (
 
 	certificates_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
 	certificates_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
+
+	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 )
 
 // the snapshot of input resources consumed by translation
@@ -32,6 +38,13 @@ type Snapshot interface {
 
 	// return the set of input IssuedCertificates
 	IssuedCertificates() certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
+	// return the set of input CertificateRequests
+	CertificateRequests() certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet
+
+	// return the set of input Secrets
+	Secrets() v1_sets.SecretSet
+	// return the set of input Pods
+	Pods() v1_sets.PodSet
 	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
 	SyncStatuses(ctx context.Context, c client.Client) error
@@ -46,24 +59,47 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
+	issuedCertificates  certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
+	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet
+
+	secrets v1_sets.SecretSet
+	pods    v1_sets.PodSet
 }
 
 func NewSnapshot(
 	name string,
 
 	issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet,
+	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet,
+
+	secrets v1_sets.SecretSet,
+	pods v1_sets.PodSet,
 
 ) Snapshot {
 	return &snapshot{
 		name: name,
 
-		issuedCertificates: issuedCertificates,
+		issuedCertificates:  issuedCertificates,
+		certificateRequests: certificateRequests,
+		secrets:             secrets,
+		pods:                pods,
 	}
 }
 
 func (s snapshot) IssuedCertificates() certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet {
 	return s.issuedCertificates
+}
+
+func (s snapshot) CertificateRequests() certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet {
+	return s.certificateRequests
+}
+
+func (s snapshot) Secrets() v1_sets.SecretSet {
+	return s.secrets
+}
+
+func (s snapshot) Pods() v1_sets.PodSet {
+	return s.pods
 }
 func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 
@@ -72,6 +108,12 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 			return err
 		}
 	}
+	for _, obj := range s.CertificateRequests().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -86,6 +128,16 @@ func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicl
 			return err
 		}
 	}
+	for _, obj := range s.CertificateRequests().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -93,6 +145,9 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
 	snapshotMap["issuedCertificates"] = s.issuedCertificates.List()
+	snapshotMap["certificateRequests"] = s.certificateRequests.List()
+	snapshotMap["secrets"] = s.secrets.List()
+	snapshotMap["pods"] = s.pods.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -109,13 +164,24 @@ type BuildOptions struct {
 
 	// List options for composing a snapshot from IssuedCertificates
 	IssuedCertificates []client.ListOption
+	// List options for composing a snapshot from CertificateRequests
+	CertificateRequests []client.ListOption
+
+	// List options for composing a snapshot from Secrets
+	Secrets []client.ListOption
+	// List options for composing a snapshot from Pods
+	Pods []client.ListOption
 }
 
 // build a snapshot from resources across multiple clusters
 type multiClusterBuilder struct {
 	clusters multicluster.ClusterSet
 
-	issuedCertificates certificates_smh_solo_io_v1alpha2.MulticlusterIssuedCertificateClient
+	issuedCertificates  certificates_smh_solo_io_v1alpha2.MulticlusterIssuedCertificateClient
+	certificateRequests certificates_smh_solo_io_v1alpha2.MulticlusterCertificateRequestClient
+
+	secrets v1.MulticlusterSecretClient
+	pods    v1.MulticlusterPodClient
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -126,19 +192,36 @@ func NewMultiClusterBuilder(
 	return &multiClusterBuilder{
 		clusters: clusters,
 
-		issuedCertificates: certificates_smh_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(client),
+		issuedCertificates:  certificates_smh_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(client),
+		certificateRequests: certificates_smh_solo_io_v1alpha2.NewMulticlusterCertificateRequestClient(client),
+
+		secrets: v1.NewMulticlusterSecretClient(client),
+		pods:    v1.NewMulticlusterPodClient(client),
 	}
 }
 
 func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
 	issuedCertificates := certificates_smh_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
+	certificateRequests := certificates_smh_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+
+	secrets := v1_sets.NewSecretSet()
+	pods := v1_sets.NewPodSet()
 
 	var errs error
 
 	for _, cluster := range b.clusters.ListClusters() {
 
 		if err := b.insertIssuedCertificatesFromCluster(ctx, cluster, issuedCertificates, opts.IssuedCertificates...); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertCertificateRequestsFromCluster(ctx, cluster, certificateRequests, opts.CertificateRequests...); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets...); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -148,6 +231,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		name,
 
 		issuedCertificates,
+		certificateRequests,
+		secrets,
+		pods,
 	)
 
 	return outputSnap, errs
@@ -172,10 +258,72 @@ func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Co
 
 	return nil
 }
+func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.Context, cluster string, certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet, opts ...client.ListOption) error {
+	certificateRequestClient, err := b.certificateRequests.Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	certificateRequestList, err := certificateRequestClient.ListCertificateRequest(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range certificateRequestList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		certificateRequests.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ...client.ListOption) error {
+	secretClient, err := b.secrets.Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	secretList, err := secretClient.ListSecret(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range secretList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		secrets.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet, opts ...client.ListOption) error {
+	podClient, err := b.pods.Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	podList, err := podClient.ListPod(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range podList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		pods.Insert(&item)
+	}
+
+	return nil
+}
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
-	issuedCertificates certificates_smh_solo_io_v1alpha2.IssuedCertificateClient
+	issuedCertificates  certificates_smh_solo_io_v1alpha2.IssuedCertificateClient
+	certificateRequests certificates_smh_solo_io_v1alpha2.CertificateRequestClient
+
+	secrets v1.SecretClient
+	pods    v1.PodClient
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -184,17 +332,34 @@ func NewSingleClusterBuilder(
 ) Builder {
 	return &singleClusterBuilder{
 
-		issuedCertificates: certificates_smh_solo_io_v1alpha2.NewIssuedCertificateClient(client),
+		issuedCertificates:  certificates_smh_solo_io_v1alpha2.NewIssuedCertificateClient(client),
+		certificateRequests: certificates_smh_solo_io_v1alpha2.NewCertificateRequestClient(client),
+
+		secrets: v1.NewSecretClient(client),
+		pods:    v1.NewPodClient(client),
 	}
 }
 
 func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
 	issuedCertificates := certificates_smh_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
+	certificateRequests := certificates_smh_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+
+	secrets := v1_sets.NewSecretSet()
+	pods := v1_sets.NewPodSet()
 
 	var errs error
 
 	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates...); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertCertificateRequests(ctx, certificateRequests, opts.CertificateRequests...); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertSecrets(ctx, secrets, opts.Secrets...); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertPods(ctx, pods, opts.Pods...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -202,6 +367,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		name,
 
 		issuedCertificates,
+		certificateRequests,
+		secrets,
+		pods,
 	)
 
 	return outputSnap, errs
@@ -216,6 +384,46 @@ func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, iss
 	for _, item := range issuedCertificateList.Items {
 		item := item // pike
 		issuedCertificates.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet, opts ...client.ListOption) error {
+	certificateRequestList, err := b.certificateRequests.ListCertificateRequest(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range certificateRequestList.Items {
+		item := item // pike
+		certificateRequests.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts ...client.ListOption) error {
+	secretList, err := b.secrets.ListSecret(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range secretList.Items {
+		item := item // pike
+		secrets.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet, opts ...client.ListOption) error {
+	podList, err := b.pods.ListPod(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range podList.Items {
+		item := item // pike
+		pods.Insert(&item)
 	}
 
 	return nil

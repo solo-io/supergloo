@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+
 	udpa_type_v1 "github.com/cncf/udpa/go/udpa/type/v1"
 	envoy_api_v2 "github.com/envoyproxy/go-control-plane/envoy/api/v2"
 	envoy_config_cluster_aggregate_v2alpha "github.com/envoyproxy/go-control-plane/envoy/config/cluster/aggregate/v2alpha"
@@ -12,7 +14,6 @@ import (
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
-	networkingv1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
@@ -33,22 +34,18 @@ import (
 
 //go:generate mockgen -source ./failover_service_translator.go -destination mocks/failover_service_translator.go
 
-// Outputs of translating a FailoverService for a single Mesh
-type Outputs struct {
-	EnvoyFilters   networkingv1alpha3sets.EnvoyFilterSet
-	ServiceEntries networkingv1alpha3sets.ServiceEntrySet
-}
-
 // The FailoverService translator translates a FailoverService for a single Mesh.
 type Translator interface {
 	// Translate translates the FailoverService into a ServiceEntry representing the new service and an accompanying EnvoyFilter.
+	// Output resources will be added to the output.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.Snapshot,
 		mesh *discoveryv1alpha2.Mesh,
 		failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
+		outputs output.Builder,
 		reporter reporting.Reporter,
-	) Outputs
+	)
 }
 
 type translator struct {
@@ -69,14 +66,13 @@ func (t *translator) Translate(
 	in input.Snapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
+	outputs output.Builder,
 	reporter reporting.Reporter,
-) Outputs {
-	envoyFilterSet := networkingv1alpha3sets.NewEnvoyFilterSet()
-	serviceEntrySet := networkingv1alpha3sets.NewServiceEntrySet()
+) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.MeshType)
-		return Outputs{}
+		return
 	}
 
 	// If validation fails, report the errors to the Meshes and do not translate.
@@ -94,12 +90,8 @@ func (t *translator) Translate(
 	if err != nil {
 		reportErrorsToMeshes(failoverService, in.Meshes(), err, reporter)
 	} else {
-		envoyFilterSet.Insert(envoyFilters...)
-		serviceEntrySet.Insert(serviceEntries...)
-	}
-	return Outputs{
-		EnvoyFilters:   envoyFilterSet,
-		ServiceEntries: serviceEntrySet,
+		outputs.AddEnvoyFilters(envoyFilters...)
+		outputs.AddServiceEntries(serviceEntries...)
 	}
 }
 

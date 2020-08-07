@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"sort"
 
+	"github.com/solo-io/go-utils/contextutils"
+
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -19,6 +21,9 @@ import (
 
 	certificates_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
 	certificates_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
+
+	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	v1 "k8s.io/api/core/v1"
 )
 
 // this error can occur if constructing a Partitioned Snapshot from a resource
@@ -32,6 +37,8 @@ type Snapshot interface {
 
 	// return the set of CertificateRequests with a given set of labels
 	CertificateRequests() []LabeledCertificateRequestSet
+	// return the set of Secrets with a given set of labels
+	Secrets() []LabeledSecretSet
 
 	// apply the snapshot to the local cluster, garbage collecting stale resources
 	ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -47,18 +54,21 @@ type snapshot struct {
 	name string
 
 	certificateRequests []LabeledCertificateRequestSet
+	secrets             []LabeledSecretSet
 }
 
 func NewSnapshot(
 	name string,
 
 	certificateRequests []LabeledCertificateRequestSet,
+	secrets []LabeledSecretSet,
 
 ) Snapshot {
 	return &snapshot{
 		name: name,
 
 		certificateRequests: certificateRequests,
+		secrets:             secrets,
 	}
 }
 
@@ -70,9 +80,15 @@ func NewLabelPartitionedSnapshot(
 
 	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet,
 
+	secrets v1_sets.SecretSet,
+
 ) (Snapshot, error) {
 
 	partitionedCertificateRequests, err := partitionCertificateRequestsByLabel(labelKey, certificateRequests)
+	if err != nil {
+		return nil, err
+	}
+	partitionedSecrets, err := partitionSecretsByLabel(labelKey, secrets)
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +97,7 @@ func NewLabelPartitionedSnapshot(
 		name,
 
 		partitionedCertificateRequests,
+		partitionedSecrets,
 	), nil
 }
 
@@ -92,9 +109,15 @@ func NewSinglePartitionedSnapshot(
 
 	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet,
 
+	secrets v1_sets.SecretSet,
+
 ) (Snapshot, error) {
 
 	labeledCertificateRequests, err := NewLabeledCertificateRequestSet(certificateRequests, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+	labeledSecrets, err := NewLabeledSecretSet(secrets, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -103,6 +126,7 @@ func NewSinglePartitionedSnapshot(
 		name,
 
 		[]LabeledCertificateRequestSet{labeledCertificateRequests},
+		[]LabeledSecretSet{labeledSecrets},
 	), nil
 }
 
@@ -111,6 +135,9 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 	var genericLists []output.ResourceList
 
 	for _, outputSet := range s.certificateRequests {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.secrets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -125,6 +152,9 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	var genericLists []output.ResourceList
 
 	for _, outputSet := range s.certificateRequests {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.secrets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -178,8 +208,56 @@ func partitionCertificateRequestsByLabel(labelKey string, set certificates_smh_s
 	return partitionedCertificateRequests, nil
 }
 
+func partitionSecretsByLabel(labelKey string, set v1_sets.SecretSet) ([]LabeledSecretSet, error) {
+	setsByLabel := map[string]v1_sets.SecretSet{}
+
+	for _, obj := range set.List() {
+		if obj.Labels == nil {
+			return nil, MissingRequiredLabelError(labelKey, "Secret", obj)
+		}
+		labelValue := obj.Labels[labelKey]
+		if labelValue == "" {
+			return nil, MissingRequiredLabelError(labelKey, "Secret", obj)
+		}
+
+		setForValue, ok := setsByLabel[labelValue]
+		if !ok {
+			setForValue = v1_sets.NewSecretSet()
+			setsByLabel[labelValue] = setForValue
+		}
+		setForValue.Insert(obj)
+	}
+
+	// partition by label key
+	var partitionedSecrets []LabeledSecretSet
+
+	for labelValue, setForValue := range setsByLabel {
+		labels := map[string]string{labelKey: labelValue}
+
+		partitionedSet, err := NewLabeledSecretSet(setForValue, labels)
+		if err != nil {
+			return nil, err
+		}
+
+		partitionedSecrets = append(partitionedSecrets, partitionedSet)
+	}
+
+	// sort for idempotency
+	sort.SliceStable(partitionedSecrets, func(i, j int) bool {
+		leftLabelValue := partitionedSecrets[i].Labels()[labelKey]
+		rightLabelValue := partitionedSecrets[j].Labels()[labelKey]
+		return leftLabelValue < rightLabelValue
+	})
+
+	return partitionedSecrets, nil
+}
+
 func (s snapshot) CertificateRequests() []LabeledCertificateRequestSet {
 	return s.certificateRequests
+}
+
+func (s snapshot) Secrets() []LabeledSecretSet {
+	return s.secrets
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
@@ -190,6 +268,12 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 		certificateRequestSet = certificateRequestSet.Union(set.Set())
 	}
 	snapshotMap["certificateRequests"] = certificateRequestSet.List()
+
+	secretSet := v1_sets.NewSecretSet()
+	for _, set := range s.secrets {
+		secretSet = secretSet.Union(set.Set())
+	}
+	snapshotMap["secrets"] = secretSet.List()
 
 	return json.Marshal(snapshotMap)
 }
@@ -262,38 +346,162 @@ func (l labeledCertificateRequestSet) Generic() output.ResourceList {
 	}
 }
 
-type Builder struct {
-	name string
+// LabeledSecretSet represents a set of secrets
+// which share a common set of labels.
+// These labels are used to find diffs between SecretSets.
+type LabeledSecretSet interface {
+	// returns the set of Labels shared by this SecretSet
+	Labels() map[string]string
 
-	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet
+	// returns the set of Secretes with the given labels
+	Set() v1_sets.SecretSet
+
+	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
+	Generic() output.ResourceList
 }
 
-func NewBuilder(name string) *Builder {
-	return &Builder{
-		name: name,
+type labeledSecretSet struct {
+	set    v1_sets.SecretSet
+	labels map[string]string
+}
 
-		certificateRequests: certificates_smh_solo_io_v1alpha2_sets.NewCertificateRequestSet(),
+func NewLabeledSecretSet(set v1_sets.SecretSet, labels map[string]string) (LabeledSecretSet, error) {
+	// validate that each Secret contains the labels, else this is not a valid LabeledSecretSet
+	for _, item := range set.List() {
+		for k, v := range labels {
+			// k=v must be present in the item
+			if item.Labels[k] != v {
+				return nil, eris.Errorf("internal error: %v=%v missing on Secret %v", k, v, item.Name)
+			}
+		}
+	}
+
+	return &labeledSecretSet{set: set, labels: labels}, nil
+}
+
+func (l *labeledSecretSet) Labels() map[string]string {
+	return l.labels
+}
+
+func (l *labeledSecretSet) Set() v1_sets.SecretSet {
+	return l.set
+}
+
+func (l labeledSecretSet) Generic() output.ResourceList {
+	var desiredResources []ezkube.Object
+	for _, desired := range l.set.List() {
+		desiredResources = append(desiredResources, desired)
+	}
+
+	// enable list func for garbage collection
+	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+		var list v1.SecretList
+		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+			return nil, err
+		}
+		var items []ezkube.Object
+		for _, item := range list.Items {
+			item := item // pike
+			items = append(items, &item)
+		}
+		return items, nil
+	}
+
+	return output.ResourceList{
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "Secret",
 	}
 }
 
-func (i *Builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
+type builder struct {
+	ctx  context.Context
+	name string
+
+	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet
+
+	secrets v1_sets.SecretSet
+}
+
+func NewBuilder(ctx context.Context, name string) *builder {
+	return &builder{
+		ctx:  ctx,
+		name: name,
+
+		certificateRequests: certificates_smh_solo_io_v1alpha2_sets.NewCertificateRequestSet(),
+
+		secrets: v1_sets.NewSecretSet(),
+	}
+}
+
+// the output Builder uses a builder pattern to allow
+// iteratively collecting outputs before producing a final snapshot
+type Builder interface {
+
+	// add CertificateRequests to the collected outputs
+	AddCertificateRequests(certificateRequests ...*certificates_smh_solo_io_v1alpha2.CertificateRequest)
+
+	// get the collected CertificateRequests
+	GetCertificateRequests() certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet
+
+	// add Secrets to the collected outputs
+	AddSecrets(secrets ...*v1.Secret)
+
+	// get the collected Secrets
+	GetSecrets() v1_sets.SecretSet
+
+	// build the collected outputs into a label-partitioned snapshot
+	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
+
+	// build the collected outputs into a snapshot with a single partition
+	BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error)
+}
+
+func (b *builder) AddCertificateRequests(certificateRequests ...*certificates_smh_solo_io_v1alpha2.CertificateRequest) {
+	for _, obj := range certificateRequests {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output CertificateRequest %v", sets.Key(obj))
+		b.certificateRequests.Insert(obj)
+	}
+}
+func (b *builder) AddSecrets(secrets ...*v1.Secret) {
+	for _, obj := range secrets {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output Secret %v", sets.Key(obj))
+		b.secrets.Insert(obj)
+	}
+}
+
+func (b *builder) GetCertificateRequests() certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet {
+	return b.certificateRequests
+}
+
+func (b *builder) GetSecrets() v1_sets.SecretSet {
+	return b.secrets
+}
+
+func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
 	return NewLabelPartitionedSnapshot(
-		i.name,
+		b.name,
 		labelKey,
 
-		i.certificateRequests,
+		b.certificateRequests,
+
+		b.secrets,
 	)
 }
 
-func (i *Builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
+func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
 	return NewSinglePartitionedSnapshot(
-		i.name,
+		b.name,
 		snapshotLabels,
 
-		i.certificateRequests,
+		b.certificateRequests,
+
+		b.secrets,
 	)
-}
-func (i *Builder) AddCertificateRequests(certificateRequests []*certificates_smh_solo_io_v1alpha2.CertificateRequest) *Builder {
-	i.certificateRequests.Insert(certificateRequests...)
-	return i
 }

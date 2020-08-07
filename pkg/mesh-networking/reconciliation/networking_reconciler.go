@@ -2,9 +2,11 @@ package reconciliation
 
 import (
 	"context"
+	"fmt"
+	"time"
 
-	"github.com/rotisserie/eris"
-	"github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/service-mesh-hub/pkg/common/utils/errhandlers"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
@@ -12,7 +14,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
-	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
 
@@ -29,6 +30,7 @@ type networkingReconciler struct {
 	translator         translation.Translator
 	masterClient       client.Client
 	multiClusterClient multicluster.Client
+	totalReconciles    int
 }
 
 func Start(
@@ -50,12 +52,15 @@ func Start(
 		multiClusterClient: multiClusterClient,
 	}
 
-	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile)
+	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2)
 }
 
 // reconcile global state
-func (d *networkingReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
-	inputSnap, err := d.builder.BuildSnapshot(d.ctx, "mesh-networking", input.BuildOptions{
+func (r *networkingReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
+	r.totalReconciles++
+	//return false, nil //noop
+	ctx := contextutils.WithLogger(r.ctx, fmt.Sprintf("reconcile-%v", r.totalReconciles))
+	inputSnap, err := r.builder.BuildSnapshot(ctx, "mesh-networking", input.BuildOptions{
 		// only look at kube clusters in our own namespace
 		KubernetesClusters: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
 	})
@@ -64,40 +69,33 @@ func (d *networkingReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 		return false, err
 	}
 
-	d.approver.Approve(d.ctx, inputSnap)
+	r.approver.Approve(ctx, inputSnap)
 
 	var errs error
 
-	if err := d.syncIstio(inputSnap); err != nil {
+	if err := r.applyTranslation(ctx, inputSnap); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
-	if err := inputSnap.SyncStatuses(d.ctx, d.masterClient); err != nil {
+	if err := inputSnap.SyncStatuses(ctx, r.masterClient); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
 	return false, errs
 }
 
-func (d *networkingReconciler) syncIstio(in input.Snapshot) error {
-	outputSnap, err := d.translator.Translate(d.ctx, in, d.reporter)
+func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Snapshot) error {
+	outputSnap, err := r.translator.Translate(ctx, in, r.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err
 	}
 
-	var errs error
-	outputSnap.ApplyMultiCluster(d.ctx, d.multiClusterClient, output.ErrorHandlerFuncs{
-		HandleWriteErrorFunc: func(resource ezkube.Object, err error) {
-			errs = multierror.Append(errs, eris.Wrapf(err, "writing resource %v failed", sets.Key(resource)))
-		},
-		HandleDeleteErrorFunc: func(resource ezkube.Object, err error) {
-			errs = multierror.Append(errs, eris.Wrapf(err, "deleting resource %v failed", sets.Key(resource)))
-		},
-		HandleListErrorFunc: func(err error) {
-			errs = multierror.Append(errs, eris.Wrapf(err, "listing failed"))
-		},
-	})
+	errHandler := errhandlers.AppendingErrHandler{}
 
-	return errs
+	outputSnap.ApplyMultiCluster(ctx, r.multiClusterClient, errHandler)
+
+	outputSnap.ApplyLocalCluster(ctx, r.masterClient, errHandler)
+
+	return errHandler.Errors()
 }

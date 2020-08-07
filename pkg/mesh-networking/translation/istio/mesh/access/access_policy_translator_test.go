@@ -1,10 +1,13 @@
 package access_test
 
 import (
+	"context"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/access"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
@@ -53,7 +56,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 				AppliedVirtualMeshes: []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
 					{
 						Spec: &networkingv1alpha2.VirtualMeshSpec{
-							EnforceAccessControl: networkingv1alpha2.VirtualMeshSpec_ENABLED,
+							GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_ENABLED,
 						},
 					},
 				},
@@ -108,8 +111,9 @@ var _ = Describe("AccessPolicyTranslator", func() {
 				Spec: securityv1beta1spec.AuthorizationPolicy{},
 			},
 		)
-		authPolicies := translator.Translate(mesh, mesh.Status.AppliedVirtualMeshes[0])
-		Expect(authPolicies).To(Equal(expectedAuthPolicies))
+		outputs := output.NewBuilder(context.TODO(), "")
+		translator.Translate(mesh, mesh.Status.AppliedVirtualMeshes[0], outputs)
+		Expect(outputs.GetAuthorizationPolicies()).To(Equal(expectedAuthPolicies))
 	})
 
 	It("should not translate any AuthorizationPolicies", func() {
@@ -127,13 +131,14 @@ var _ = Describe("AccessPolicyTranslator", func() {
 				AppliedVirtualMeshes: []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
 					{
 						Spec: &networkingv1alpha2.VirtualMeshSpec{
-							EnforceAccessControl: networkingv1alpha2.VirtualMeshSpec_DISABLED,
+							GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_DISABLED,
 						},
 					},
 				},
 			},
 		}
-		authPolicies := translator.Translate(mesh, mesh.Status.AppliedVirtualMeshes[0])
-		Expect(authPolicies).To(BeNil())
+		outputs := output.NewBuilder(context.TODO(), "")
+		translator.Translate(mesh, mesh.Status.AppliedVirtualMeshes[0], outputs)
+		Expect(outputs.GetAuthorizationPolicies().Length()).To(Equal(0))
 	})
 })

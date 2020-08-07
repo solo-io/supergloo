@@ -16,7 +16,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// Must run `make generated-code` before running this test
 var _ = Describe("TrafficPolicy", func() {
 	var (
 		err      error
@@ -43,7 +42,7 @@ var _ = Describe("TrafficPolicy", func() {
 				ClusterName: masterClusterName,
 			}, map[string]string{"version": "v2"}, 9080)
 
-			err = manifest.AppendResource(trafficShiftReviewsV2)
+			err = manifest.AppendResources(trafficShiftReviewsV2)
 			Expect(err).NotTo(HaveOccurred())
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())

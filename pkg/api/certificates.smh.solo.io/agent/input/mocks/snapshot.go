@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/input"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
@@ -50,6 +51,48 @@ func (m *MockSnapshot) IssuedCertificates() v1alpha2sets.IssuedCertificateSet {
 func (mr *MockSnapshotMockRecorder) IssuedCertificates() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificates", reflect.TypeOf((*MockSnapshot)(nil).IssuedCertificates))
+}
+
+// CertificateRequests mocks base method.
+func (m *MockSnapshot) CertificateRequests() v1alpha2sets.CertificateRequestSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CertificateRequests")
+	ret0, _ := ret[0].(v1alpha2sets.CertificateRequestSet)
+	return ret0
+}
+
+// CertificateRequests indicates an expected call of CertificateRequests.
+func (mr *MockSnapshotMockRecorder) CertificateRequests() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateRequests", reflect.TypeOf((*MockSnapshot)(nil).CertificateRequests))
+}
+
+// Secrets mocks base method.
+func (m *MockSnapshot) Secrets() v1sets.SecretSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Secrets")
+	ret0, _ := ret[0].(v1sets.SecretSet)
+	return ret0
+}
+
+// Secrets indicates an expected call of Secrets.
+func (mr *MockSnapshotMockRecorder) Secrets() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secrets", reflect.TypeOf((*MockSnapshot)(nil).Secrets))
+}
+
+// Pods mocks base method.
+func (m *MockSnapshot) Pods() v1sets.PodSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Pods")
+	ret0, _ := ret[0].(v1sets.PodSet)
+	return ret0
+}
+
+// Pods indicates an expected call of Pods.
+func (mr *MockSnapshotMockRecorder) Pods() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pods", reflect.TypeOf((*MockSnapshot)(nil).Pods))
 }
 
 // SyncStatuses mocks base method.

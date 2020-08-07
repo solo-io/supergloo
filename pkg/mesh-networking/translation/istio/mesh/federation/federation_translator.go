@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
-	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
@@ -29,35 +31,30 @@ import (
 
 //go:generate mockgen -source ./federation_translator.go -destination mocks/federation_translator.go
 
-var (
+const (
 	// NOTE(ilackarms): we may want to support federating over non-tls port at some point.
 	defaultGatewayProtocol = "TLS"
 	defaultGatewayPortName = "tls"
 
 	envoySniClusterFilterName        = "envoy.filters.network.sni_cluster"
 	envoyTcpClusterRewriteFilterName = "envoy.filters.network.tcp_cluster_rewrite"
-)
 
-// outputs of translating a single Mesh
-type Outputs struct {
-	Gateway          *networkingv1alpha3.Gateway
-	EnvoyFilter      *networkingv1alpha3.EnvoyFilter
-	DestinationRules istiov1alpha3sets.DestinationRuleSet
-	ServiceEntries   istiov1alpha3sets.ServiceEntrySet
-}
+	globalHostnameMatch = "*." + hostutils.GlobalHostnameSuffix
+)
 
 // the VirtualService translator translates a Mesh into a VirtualService.
 type Translator interface {
 	// Translate translates the appropriate VirtualService and DestinationRule for the given Mesh.
 	// returns nil if no VirtualService or DestinationRule is required for the Mesh (i.e. if no VirtualService/DestinationRule features are required, such as subsets).
-	//
+	// Output resources will be added to the output.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.Snapshot,
 		mesh *discoveryv1alpha2.Mesh,
 		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+		outputs output.Builder,
 		reporter reporting.Reporter,
-	) Outputs
+	)
 }
 
 type translator struct {
@@ -74,25 +71,21 @@ func (t *translator) Translate(
 	in input.Snapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+	outputs output.Builder,
 	reporter reporting.Reporter,
-) Outputs {
-	// TODO(harveyxia) temp until nil safe set unions
-	output := Outputs{
-		DestinationRules: istiov1alpha3sets.NewDestinationRuleSet(),
-		ServiceEntries:   istiov1alpha3sets.NewServiceEntrySet(),
-	}
+) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.MeshType)
-		return output
+		return
 	}
 	if virtualMesh == nil || len(virtualMesh.Spec.Meshes) < 2 {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring istio mesh %v which is not federated with other meshes in a virtual mesh", sets.Key(mesh))
-		return output
+		return
 	}
 	if len(istioMesh.IngressGateways) < 1 {
 		contextutils.LoggerFrom(t.ctx).Debugf("ignoring istio mesh %v has no ingress gateway", sets.Key(mesh))
-		return output
+		return
 	}
 	// TODO(ilackarms): consider supporting multiple ingress gateways or selecting a specific gateway.
 	// Currently, we just default to using the first one in the list.
@@ -102,7 +95,7 @@ func (t *translator) Translate(
 
 	if len(meshServices) == 0 {
 		contextutils.LoggerFrom(t.ctx).Debugf("no services found in istio mesh %v", sets.Key(mesh))
-		return output
+		return
 	}
 
 	istioCluster := istioMesh.Installation.Cluster
@@ -113,7 +106,7 @@ func (t *translator) Translate(
 	})
 	if err != nil {
 		contextutils.LoggerFrom(t.ctx).Errorf("internal error: cluster %v for istio mesh %v not found", istioCluster, sets.Key(mesh))
-		return output
+		return
 	}
 
 	istioNamespace := istioMesh.Installation.Namespace
@@ -125,14 +118,9 @@ func (t *translator) Translate(
 	if err != nil {
 		// should never happen
 		contextutils.LoggerFrom(t.ctx).DPanicf("failed generating tcp rewrite patch: %v", err)
-		return output
+		return
 	}
 
-	destinationRules := istiov1alpha3sets.NewDestinationRuleSet()
-
-	serviceEntries := istiov1alpha3sets.NewServiceEntrySet()
-
-	var federatedHostnames []string
 	for _, meshService := range meshServices {
 		meshKubeService := meshService.Spec.GetKubeService()
 		if meshKubeService == nil {
@@ -148,9 +136,6 @@ func (t *translator) Translate(
 			continue
 		}
 		federatedHostname := t.clusterDomains.GetServiceGlobalFQDN(meshKubeService.GetRef())
-
-		// add the hostname to the set
-		federatedHostnames = append(federatedHostnames, federatedHostname)
 
 		endpointPorts := make(map[string]uint32)
 		var ports []*networkingv1alpha3spec.Port
@@ -219,14 +204,17 @@ func (t *translator) Translate(
 				},
 			}
 
-			serviceEntries.Insert(se)
-			destinationRules.Insert(dr)
+			outputs.AddServiceEntries(se)
+			outputs.AddDestinationRules(dr)
 		}
 	}
 
+	// istio gateway names must be DNS-1123 labels
+	// hyphens are legal, dots are not, so we convert here
+	gwName := kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace))
 	gw := &networkingv1alpha3.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("%v.%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace),
+			Name:        gwName,
 			Namespace:   istioNamespace,
 			ClusterName: istioCluster,
 			Labels:      metautils.TranslatedObjectLabels(),
@@ -238,7 +226,7 @@ func (t *translator) Translate(
 					Protocol: defaultGatewayProtocol,
 					Name:     defaultGatewayPortName,
 				},
-				Hosts: federatedHostnames,
+				Hosts: []string{globalHostnameMatch},
 				Tls: &networkingv1alpha3spec.ServerTLSSettings{
 					Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
 				},
@@ -246,6 +234,7 @@ func (t *translator) Translate(
 			Selector: ingressGateway.WorkloadLabels,
 		},
 	}
+	outputs.AddGateways(gw)
 
 	ef := &networkingv1alpha3.EnvoyFilter{
 		ObjectMeta: metav1.ObjectMeta{
@@ -279,13 +268,7 @@ func (t *translator) Translate(
 			}},
 		},
 	}
-
-	return Outputs{
-		Gateway:          gw,
-		EnvoyFilter:      ef,
-		DestinationRules: destinationRules,
-		ServiceEntries:   serviceEntries,
-	}
+	outputs.AddEnvoyFilters(ef)
 }
 
 func servicesForMesh(
@@ -302,8 +285,8 @@ func buildTcpRewritePatch(clusterName, clusterDomain string) (*types.Struct, err
 		clusterDomain = defaults.DefaultClusterDomain
 	}
 	tcpRewrite, err := protoutils.GogoMessageToGolangStruct(&v2alpha1.TcpClusterRewrite{
-		ClusterPattern:     fmt.Sprintf("\\.%s$", clusterName),
-		ClusterReplacement: ".svc." + clusterDomain,
+		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, hostutils.GlobalHostnameSuffix),
+		ClusterReplacement: "." + clusterDomain,
 	})
 	if err != nil {
 		return nil, err

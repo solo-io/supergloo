@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"sort"
 
+	"github.com/solo-io/go-utils/contextutils"
+
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -550,7 +552,8 @@ func (l labeledMeshSet) Generic() output.ResourceList {
 	}
 }
 
-type Builder struct {
+type builder struct {
+	ctx  context.Context
 	name string
 
 	meshServices  discovery_smh_solo_io_v1alpha2_sets.MeshServiceSet
@@ -558,8 +561,9 @@ type Builder struct {
 	meshes        discovery_smh_solo_io_v1alpha2_sets.MeshSet
 }
 
-func NewBuilder(name string) *Builder {
-	return &Builder{
+func NewBuilder(ctx context.Context, name string) *builder {
+	return &builder{
+		ctx:  ctx,
 		name: name,
 
 		meshServices:  discovery_smh_solo_io_v1alpha2_sets.NewMeshServiceSet(),
@@ -568,36 +572,91 @@ func NewBuilder(name string) *Builder {
 	}
 }
 
-func (i *Builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
+// the output Builder uses a builder pattern to allow
+// iteratively collecting outputs before producing a final snapshot
+type Builder interface {
+
+	// add MeshServices to the collected outputs
+	AddMeshServices(meshServices ...*discovery_smh_solo_io_v1alpha2.MeshService)
+
+	// get the collected MeshServices
+	GetMeshServices() discovery_smh_solo_io_v1alpha2_sets.MeshServiceSet
+
+	// add MeshWorkloads to the collected outputs
+	AddMeshWorkloads(meshWorkloads ...*discovery_smh_solo_io_v1alpha2.MeshWorkload)
+
+	// get the collected MeshWorkloads
+	GetMeshWorkloads() discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
+
+	// add Meshes to the collected outputs
+	AddMeshes(meshes ...*discovery_smh_solo_io_v1alpha2.Mesh)
+
+	// get the collected Meshes
+	GetMeshes() discovery_smh_solo_io_v1alpha2_sets.MeshSet
+
+	// build the collected outputs into a label-partitioned snapshot
+	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
+
+	// build the collected outputs into a snapshot with a single partition
+	BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error)
+}
+
+func (b *builder) AddMeshServices(meshServices ...*discovery_smh_solo_io_v1alpha2.MeshService) {
+	for _, obj := range meshServices {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output MeshService %v", sets.Key(obj))
+		b.meshServices.Insert(obj)
+	}
+}
+func (b *builder) AddMeshWorkloads(meshWorkloads ...*discovery_smh_solo_io_v1alpha2.MeshWorkload) {
+	for _, obj := range meshWorkloads {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output MeshWorkload %v", sets.Key(obj))
+		b.meshWorkloads.Insert(obj)
+	}
+}
+func (b *builder) AddMeshes(meshes ...*discovery_smh_solo_io_v1alpha2.Mesh) {
+	for _, obj := range meshes {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output Mesh %v", sets.Key(obj))
+		b.meshes.Insert(obj)
+	}
+}
+
+func (b *builder) GetMeshServices() discovery_smh_solo_io_v1alpha2_sets.MeshServiceSet {
+	return b.meshServices
+}
+func (b *builder) GetMeshWorkloads() discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet {
+	return b.meshWorkloads
+}
+func (b *builder) GetMeshes() discovery_smh_solo_io_v1alpha2_sets.MeshSet {
+	return b.meshes
+}
+
+func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
 	return NewLabelPartitionedSnapshot(
-		i.name,
+		b.name,
 		labelKey,
 
-		i.meshServices,
-		i.meshWorkloads,
-		i.meshes,
+		b.meshServices,
+		b.meshWorkloads,
+		b.meshes,
 	)
 }
 
-func (i *Builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
+func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
 	return NewSinglePartitionedSnapshot(
-		i.name,
+		b.name,
 		snapshotLabels,
 
-		i.meshServices,
-		i.meshWorkloads,
-		i.meshes,
+		b.meshServices,
+		b.meshWorkloads,
+		b.meshes,
 	)
-}
-func (i *Builder) AddMeshServices(meshServices []*discovery_smh_solo_io_v1alpha2.MeshService) *Builder {
-	i.meshServices.Insert(meshServices...)
-	return i
-}
-func (i *Builder) AddMeshWorkloads(meshWorkloads []*discovery_smh_solo_io_v1alpha2.MeshWorkload) *Builder {
-	i.meshWorkloads.Insert(meshWorkloads...)
-	return i
-}
-func (i *Builder) AddMeshes(meshes []*discovery_smh_solo_io_v1alpha2.Mesh) *Builder {
-	i.meshes.Insert(meshes...)
-	return i
 }

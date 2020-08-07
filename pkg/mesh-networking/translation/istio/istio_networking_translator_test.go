@@ -5,24 +5,16 @@ import (
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
-	certificatesv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	mock_output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/mocks"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
 	mock_istio "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/internal/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh"
 	mock_mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice"
 	mock_meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	multiclusterv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
-	"istio.io/client-go/pkg/apis/networking/v1alpha3"
-	"istio.io/client-go/pkg/apis/security/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -32,6 +24,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		ctx                       context.Context
 		ctxWithValue              context.Context
 		mockReporter              *mock_reporting.MockReporter
+		mockOutputs               *mock_output.MockBuilder
 		mockMeshServiceTranslator *mock_meshservice.MockTranslator
 		mockMeshTranslator        *mock_mesh.MockTranslator
 		mockDependencyFactory     *mock_istio.MockDependencyFactory
@@ -46,6 +39,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		mockMeshServiceTranslator = mock_meshservice.NewMockTranslator(ctrl)
 		mockMeshTranslator = mock_mesh.NewMockTranslator(ctrl)
 		mockDependencyFactory = mock_istio.NewMockDependencyFactory(ctrl)
+		mockOutputs = mock_output.NewMockBuilder(ctrl)
 		translator = &istioTranslator{dependencies: mockDependencyFactory}
 	})
 
@@ -90,49 +84,6 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 				},
 			}).Build()
 
-		// MeshService translation
-		msVirtualServices := []*v1alpha3.VirtualService{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "ms-virtual-service-1",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "ms-virtual-service-2",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-		}
-		msDestinationRules := []*v1alpha3.DestinationRule{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "ms-destination-rule-1",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "ms-destination-rule-2",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-		}
-		msAuthPolicies := []*v1beta1.AuthorizationPolicy{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "ms-authorization-policy-1",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "ms-authorization-policy-2",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-		}
 		mockDependencyFactory.
 			EXPECT().
 			MakeMeshServiceTranslator(in.KubernetesClusters()).
@@ -140,128 +91,19 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		for i := range in.MeshServices().List() {
 			mockMeshServiceTranslator.
 				EXPECT().
-				Translate(in, in.MeshServices().List()[i], mockReporter).
-				Return(meshservice.Outputs{
-					VirtualService:      msVirtualServices[i],
-					DestinationRule:     msDestinationRules[i],
-					AuthorizationPolicy: msAuthPolicies[i],
-				})
+				Translate(in, in.MeshServices().List()[i], mockOutputs, mockReporter)
 		}
 
-		// Mesh translation
-		mGateways := []*v1alpha3.Gateway{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-gateway-1",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-gateway-2",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-		}
-		mEnvoyFilters := []*v1alpha3.EnvoyFilter{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-envoy-filter-1",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-envoy-filter-2",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-		}
-		mDestinationRules := []*v1alpha3.DestinationRule{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-destination-rule-1",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-destination-rule-2",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-		}
-		mServiceEntries := []*v1alpha3.ServiceEntry{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-service-entry-1",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-service-entry-2",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-		}
-		mAuthPolicies := []*v1beta1.AuthorizationPolicy{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-authorization-policy-1",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-authorization-policy-2",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-		}
-		mIssuedCertificates := []*v1alpha2.IssuedCertificate{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-issued-certificate-1",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:   "m-issued-certificate-2",
-					Labels: metautils.TranslatedObjectLabels(),
-				},
-			},
-		}
 		mockDependencyFactory.
 			EXPECT().
-			MakeMeshTranslator(ctxWithValue, in.KubernetesClusters()).
+			MakeMeshTranslator(ctxWithValue, in.KubernetesClusters(), in.Secrets(), in.MeshWorkloads()).
 			Return(mockMeshTranslator)
 		for i := range in.Meshes().List() {
 			mockMeshTranslator.
 				EXPECT().
-				Translate(in, in.Meshes().List()[i], mockReporter).
-				Return(mesh.Outputs{
-					Gateways:              v1alpha3sets.NewGatewaySet(mGateways[i]),
-					EnvoyFilters:          v1alpha3sets.NewEnvoyFilterSet(mEnvoyFilters[i]),
-					DestinationRules:      v1alpha3sets.NewDestinationRuleSet(mDestinationRules[i]),
-					ServiceEntries:        v1alpha3sets.NewServiceEntrySet(mServiceEntries[i]),
-					AuthorizationPolicies: v1beta1sets.NewAuthorizationPolicySet(mAuthPolicies[i]),
-					IssuedCertificates:    certificatesv1alpha2sets.NewIssuedCertificateSet(mIssuedCertificates[i]),
-				})
+				Translate(in, in.Meshes().List()[i], mockOutputs, mockReporter)
 		}
 
-		expectedOutput := Outputs{
-			IssuedCertificates:    certificatesv1alpha2sets.NewIssuedCertificateSet(mIssuedCertificates...),
-			DestinationRules:      v1alpha3sets.NewDestinationRuleSet(append(msDestinationRules, mDestinationRules...)...),
-			EnvoyFilters:          v1alpha3sets.NewEnvoyFilterSet(mEnvoyFilters...),
-			Gateways:              v1alpha3sets.NewGatewaySet(mGateways...),
-			ServiceEntries:        v1alpha3sets.NewServiceEntrySet(mServiceEntries...),
-			VirtualServices:       v1alpha3sets.NewVirtualServiceSet(msVirtualServices...),
-			AuthorizationPolicies: v1beta1sets.NewAuthorizationPolicySet(append(msAuthPolicies, mAuthPolicies...)...),
-		}
-
-		output := translator.Translate(ctx, in, mockReporter)
-		Expect(output).To(Equal(expectedOutput))
+		translator.Translate(ctx, in, mockOutputs, mockReporter)
 	})
 })

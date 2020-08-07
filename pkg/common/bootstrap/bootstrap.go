@@ -2,11 +2,11 @@ package bootstrap
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-logr/zapr"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
+	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
 	"go.uber.org/zap"
@@ -58,6 +58,8 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 		return err
 	}
 
+	stats.MustStartServerBackground(opts.MetricsBindPort)
+
 	clusterWatcher := watch.NewClusterWatcher(ctx, manager.Options{
 		Namespace: "", // TODO (ilackarms): support configuring specific watch namespaces on remote clusters
 		Scheme:    mgr.GetScheme(),
@@ -84,14 +86,9 @@ func makeMasterManager(opts Options) (manager.Manager, error) {
 		return nil, err
 	}
 
-	metricsAddr := fmt.Sprintf(":%v", opts.MetricsBindPort)
-	if opts.MetricsBindPort == 0 {
-		// disable metrics
-		metricsAddr = "0"
-	}
 	mgr, err := manager.New(cfg, manager.Options{
 		Namespace:          opts.MasterNamespace, // TODO (ilackarms): support configuring multiple watch namespaces on master cluster
-		MetricsBindAddress: metricsAddr,
+		MetricsBindAddress: "0",                  // serve metrics using custom stats server
 	})
 	if err != nil {
 		return nil, err

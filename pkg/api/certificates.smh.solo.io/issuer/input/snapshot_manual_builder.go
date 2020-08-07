@@ -13,6 +13,7 @@ import (
 type InputSnapshotManualBuilder struct {
 	name string
 
+	issuedCertificates  certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
 	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet
 }
 
@@ -20,6 +21,7 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 	return &InputSnapshotManualBuilder{
 		name: name,
 
+		issuedCertificates:  certificates_smh_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
 		certificateRequests: certificates_smh_solo_io_v1alpha2_sets.NewCertificateRequestSet(),
 	}
 }
@@ -28,8 +30,13 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 	return NewSnapshot(
 		i.name,
 
+		i.issuedCertificates,
 		i.certificateRequests,
 	)
+}
+func (i *InputSnapshotManualBuilder) AddIssuedCertificates(issuedCertificates []*certificates_smh_solo_io_v1alpha2.IssuedCertificate) *InputSnapshotManualBuilder {
+	i.issuedCertificates.Insert(issuedCertificates...)
+	return i
 }
 func (i *InputSnapshotManualBuilder) AddCertificateRequests(certificateRequests []*certificates_smh_solo_io_v1alpha2.CertificateRequest) *InputSnapshotManualBuilder {
 	i.certificateRequests.Insert(certificateRequests...)

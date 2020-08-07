@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	v1alpha2sets0 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
@@ -136,6 +137,20 @@ func (m *MockSnapshot) FailoverServices() v1alpha2sets0.FailoverServiceSet {
 func (mr *MockSnapshotMockRecorder) FailoverServices() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailoverServices", reflect.TypeOf((*MockSnapshot)(nil).FailoverServices))
+}
+
+// Secrets mocks base method.
+func (m *MockSnapshot) Secrets() v1sets.SecretSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Secrets")
+	ret0, _ := ret[0].(v1sets.SecretSet)
+	return ret0
+}
+
+// Secrets indicates an expected call of Secrets.
+func (mr *MockSnapshotMockRecorder) Secrets() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secrets", reflect.TypeOf((*MockSnapshot)(nil).Secrets))
 }
 
 // KubernetesClusters mocks base method.

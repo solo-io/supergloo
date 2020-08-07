@@ -8,8 +8,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 )
 
 // MockTranslator is a mock of Translator interface.
@@ -36,15 +36,13 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method.
-func (m *MockTranslator) Translate(mesh *v1alpha2.Mesh, virtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh) v1beta1sets.AuthorizationPolicySet {
+func (m *MockTranslator) Translate(mesh *v1alpha2.Mesh, virtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh, outputs output.Builder) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Translate", mesh, virtualMesh)
-	ret0, _ := ret[0].(v1beta1sets.AuthorizationPolicySet)
-	return ret0
+	m.ctrl.Call(m, "Translate", mesh, virtualMesh, outputs)
 }
 
 // Translate indicates an expected call of Translate.
-func (mr *MockTranslatorMockRecorder) Translate(mesh, virtualMesh interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) Translate(mesh, virtualMesh, outputs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), mesh, virtualMesh)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), mesh, virtualMesh, outputs)
 }

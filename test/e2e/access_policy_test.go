@@ -40,10 +40,10 @@ var _ = Describe("AccessPolicy", func() {
 							Namespace: "service-mesh-hub",
 						},
 					},
-					EnforceAccessControl: networkingv1alpha2.VirtualMeshSpec_ENABLED,
+					GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_ENABLED,
 				},
 			}
-			err := manifest.AppendResource(virtualMesh)
+			err := manifest.AppendResources(virtualMesh)
 			Expect(err).NotTo(HaveOccurred())
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
@@ -89,7 +89,7 @@ var _ = Describe("AccessPolicy", func() {
 					},
 				},
 			}
-			err := manifest.AppendResource(accessPolicy)
+			err := manifest.AppendResources(accessPolicy)
 			Expect(err).NotTo(HaveOccurred())
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
@@ -101,7 +101,7 @@ var _ = Describe("AccessPolicy", func() {
 			err := manifest.KubeDelete(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(curlDetails, "1m", "1s").Should(ContainSubstring("200 OK"))
+			Eventually(curlRatings, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 	})
 })

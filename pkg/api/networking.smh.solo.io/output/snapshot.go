@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"sort"
 
+	"github.com/solo-io/go-utils/contextutils"
+
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -25,6 +27,9 @@ import (
 
 	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+
+	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	v1 "k8s.io/api/core/v1"
 )
 
 // this error can occur if constructing a Partitioned Snapshot from a resource
@@ -50,6 +55,8 @@ type Snapshot interface {
 	VirtualServices() []LabeledVirtualServiceSet
 	// return the set of AuthorizationPolicies with a given set of labels
 	AuthorizationPolicies() []LabeledAuthorizationPolicySet
+	// return the set of Secrets with a given set of labels
+	Secrets() []LabeledSecretSet
 
 	// apply the snapshot to the local cluster, garbage collecting stale resources
 	ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -71,6 +78,7 @@ type snapshot struct {
 	serviceEntries        []LabeledServiceEntrySet
 	virtualServices       []LabeledVirtualServiceSet
 	authorizationPolicies []LabeledAuthorizationPolicySet
+	secrets               []LabeledSecretSet
 }
 
 func NewSnapshot(
@@ -83,6 +91,7 @@ func NewSnapshot(
 	serviceEntries []LabeledServiceEntrySet,
 	virtualServices []LabeledVirtualServiceSet,
 	authorizationPolicies []LabeledAuthorizationPolicySet,
+	secrets []LabeledSecretSet,
 
 ) Snapshot {
 	return &snapshot{
@@ -95,6 +104,7 @@ func NewSnapshot(
 		serviceEntries:        serviceEntries,
 		virtualServices:       virtualServices,
 		authorizationPolicies: authorizationPolicies,
+		secrets:               secrets,
 	}
 }
 
@@ -113,6 +123,8 @@ func NewLabelPartitionedSnapshot(
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
+
+	secrets v1_sets.SecretSet,
 
 ) (Snapshot, error) {
 
@@ -144,6 +156,10 @@ func NewLabelPartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
+	partitionedSecrets, err := partitionSecretsByLabel(labelKey, secrets)
+	if err != nil {
+		return nil, err
+	}
 
 	return NewSnapshot(
 		name,
@@ -155,6 +171,7 @@ func NewLabelPartitionedSnapshot(
 		partitionedServiceEntries,
 		partitionedVirtualServices,
 		partitionedAuthorizationPolicies,
+		partitionedSecrets,
 	), nil
 }
 
@@ -173,6 +190,8 @@ func NewSinglePartitionedSnapshot(
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
+
+	secrets v1_sets.SecretSet,
 
 ) (Snapshot, error) {
 
@@ -204,6 +223,10 @@ func NewSinglePartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
+	labeledSecrets, err := NewLabeledSecretSet(secrets, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
 
 	return NewSnapshot(
 		name,
@@ -215,6 +238,7 @@ func NewSinglePartitionedSnapshot(
 		[]LabeledServiceEntrySet{labeledServiceEntries},
 		[]LabeledVirtualServiceSet{labeledVirtualServices},
 		[]LabeledAuthorizationPolicySet{labeledAuthorizationPolicies},
+		[]LabeledSecretSet{labeledSecrets},
 	), nil
 }
 
@@ -241,6 +265,9 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.authorizationPolicies {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.secrets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -273,6 +300,9 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.authorizationPolicies {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.secrets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -590,6 +620,50 @@ func partitionAuthorizationPoliciesByLabel(labelKey string, set security_istio_i
 	return partitionedAuthorizationPolicies, nil
 }
 
+func partitionSecretsByLabel(labelKey string, set v1_sets.SecretSet) ([]LabeledSecretSet, error) {
+	setsByLabel := map[string]v1_sets.SecretSet{}
+
+	for _, obj := range set.List() {
+		if obj.Labels == nil {
+			return nil, MissingRequiredLabelError(labelKey, "Secret", obj)
+		}
+		labelValue := obj.Labels[labelKey]
+		if labelValue == "" {
+			return nil, MissingRequiredLabelError(labelKey, "Secret", obj)
+		}
+
+		setForValue, ok := setsByLabel[labelValue]
+		if !ok {
+			setForValue = v1_sets.NewSecretSet()
+			setsByLabel[labelValue] = setForValue
+		}
+		setForValue.Insert(obj)
+	}
+
+	// partition by label key
+	var partitionedSecrets []LabeledSecretSet
+
+	for labelValue, setForValue := range setsByLabel {
+		labels := map[string]string{labelKey: labelValue}
+
+		partitionedSet, err := NewLabeledSecretSet(setForValue, labels)
+		if err != nil {
+			return nil, err
+		}
+
+		partitionedSecrets = append(partitionedSecrets, partitionedSet)
+	}
+
+	// sort for idempotency
+	sort.SliceStable(partitionedSecrets, func(i, j int) bool {
+		leftLabelValue := partitionedSecrets[i].Labels()[labelKey]
+		rightLabelValue := partitionedSecrets[j].Labels()[labelKey]
+		return leftLabelValue < rightLabelValue
+	})
+
+	return partitionedSecrets, nil
+}
+
 func (s snapshot) IssuedCertificates() []LabeledIssuedCertificateSet {
 	return s.issuedCertificates
 }
@@ -616,6 +690,10 @@ func (s snapshot) VirtualServices() []LabeledVirtualServiceSet {
 
 func (s snapshot) AuthorizationPolicies() []LabeledAuthorizationPolicySet {
 	return s.authorizationPolicies
+}
+
+func (s snapshot) Secrets() []LabeledSecretSet {
+	return s.secrets
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
@@ -658,6 +736,12 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 		authorizationPolicySet = authorizationPolicySet.Union(set.Set())
 	}
 	snapshotMap["authorizationPolicies"] = authorizationPolicySet.List()
+
+	secretSet := v1_sets.NewSecretSet()
+	for _, set := range s.secrets {
+		secretSet = secretSet.Union(set.Set())
+	}
+	snapshotMap["secrets"] = secretSet.List()
 
 	return json.Marshal(snapshotMap)
 }
@@ -1138,7 +1222,76 @@ func (l labeledAuthorizationPolicySet) Generic() output.ResourceList {
 	}
 }
 
-type Builder struct {
+// LabeledSecretSet represents a set of secrets
+// which share a common set of labels.
+// These labels are used to find diffs between SecretSets.
+type LabeledSecretSet interface {
+	// returns the set of Labels shared by this SecretSet
+	Labels() map[string]string
+
+	// returns the set of Secretes with the given labels
+	Set() v1_sets.SecretSet
+
+	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
+	Generic() output.ResourceList
+}
+
+type labeledSecretSet struct {
+	set    v1_sets.SecretSet
+	labels map[string]string
+}
+
+func NewLabeledSecretSet(set v1_sets.SecretSet, labels map[string]string) (LabeledSecretSet, error) {
+	// validate that each Secret contains the labels, else this is not a valid LabeledSecretSet
+	for _, item := range set.List() {
+		for k, v := range labels {
+			// k=v must be present in the item
+			if item.Labels[k] != v {
+				return nil, eris.Errorf("internal error: %v=%v missing on Secret %v", k, v, item.Name)
+			}
+		}
+	}
+
+	return &labeledSecretSet{set: set, labels: labels}, nil
+}
+
+func (l *labeledSecretSet) Labels() map[string]string {
+	return l.labels
+}
+
+func (l *labeledSecretSet) Set() v1_sets.SecretSet {
+	return l.set
+}
+
+func (l labeledSecretSet) Generic() output.ResourceList {
+	var desiredResources []ezkube.Object
+	for _, desired := range l.set.List() {
+		desiredResources = append(desiredResources, desired)
+	}
+
+	// enable list func for garbage collection
+	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+		var list v1.SecretList
+		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+			return nil, err
+		}
+		var items []ezkube.Object
+		for _, item := range list.Items {
+			item := item // pike
+			items = append(items, &item)
+		}
+		return items, nil
+	}
+
+	return output.ResourceList{
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "Secret",
+	}
+}
+
+type builder struct {
+	ctx  context.Context
 	name string
 
 	issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
@@ -1150,10 +1303,13 @@ type Builder struct {
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	secrets v1_sets.SecretSet
 }
 
-func NewBuilder(name string) *Builder {
-	return &Builder{
+func NewBuilder(ctx context.Context, name string) *builder {
+	return &builder{
+		ctx:  ctx,
 		name: name,
 
 		issuedCertificates: certificates_smh_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
@@ -1165,67 +1321,205 @@ func NewBuilder(name string) *Builder {
 		virtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
 
 		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
+
+		secrets: v1_sets.NewSecretSet(),
 	}
 }
 
-func (i *Builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
+// the output Builder uses a builder pattern to allow
+// iteratively collecting outputs before producing a final snapshot
+type Builder interface {
+
+	// add IssuedCertificates to the collected outputs
+	AddIssuedCertificates(issuedCertificates ...*certificates_smh_solo_io_v1alpha2.IssuedCertificate)
+
+	// get the collected IssuedCertificates
+	GetIssuedCertificates() certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
+
+	// add DestinationRules to the collected outputs
+	AddDestinationRules(destinationRules ...*networking_istio_io_v1alpha3.DestinationRule)
+
+	// get the collected DestinationRules
+	GetDestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet
+
+	// add EnvoyFilters to the collected outputs
+	AddEnvoyFilters(envoyFilters ...*networking_istio_io_v1alpha3.EnvoyFilter)
+
+	// get the collected EnvoyFilters
+	GetEnvoyFilters() networking_istio_io_v1alpha3_sets.EnvoyFilterSet
+
+	// add Gateways to the collected outputs
+	AddGateways(gateways ...*networking_istio_io_v1alpha3.Gateway)
+
+	// get the collected Gateways
+	GetGateways() networking_istio_io_v1alpha3_sets.GatewaySet
+
+	// add ServiceEntries to the collected outputs
+	AddServiceEntries(serviceEntries ...*networking_istio_io_v1alpha3.ServiceEntry)
+
+	// get the collected ServiceEntries
+	GetServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet
+
+	// add VirtualServices to the collected outputs
+	AddVirtualServices(virtualServices ...*networking_istio_io_v1alpha3.VirtualService)
+
+	// get the collected VirtualServices
+	GetVirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet
+
+	// add AuthorizationPolicies to the collected outputs
+	AddAuthorizationPolicies(authorizationPolicies ...*security_istio_io_v1beta1.AuthorizationPolicy)
+
+	// get the collected AuthorizationPolicies
+	GetAuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	// add Secrets to the collected outputs
+	AddSecrets(secrets ...*v1.Secret)
+
+	// get the collected Secrets
+	GetSecrets() v1_sets.SecretSet
+
+	// build the collected outputs into a label-partitioned snapshot
+	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
+
+	// build the collected outputs into a snapshot with a single partition
+	BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error)
+}
+
+func (b *builder) AddIssuedCertificates(issuedCertificates ...*certificates_smh_solo_io_v1alpha2.IssuedCertificate) {
+	for _, obj := range issuedCertificates {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output IssuedCertificate %v", sets.Key(obj))
+		b.issuedCertificates.Insert(obj)
+	}
+}
+func (b *builder) AddDestinationRules(destinationRules ...*networking_istio_io_v1alpha3.DestinationRule) {
+	for _, obj := range destinationRules {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output DestinationRule %v", sets.Key(obj))
+		b.destinationRules.Insert(obj)
+	}
+}
+func (b *builder) AddEnvoyFilters(envoyFilters ...*networking_istio_io_v1alpha3.EnvoyFilter) {
+	for _, obj := range envoyFilters {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output EnvoyFilter %v", sets.Key(obj))
+		b.envoyFilters.Insert(obj)
+	}
+}
+func (b *builder) AddGateways(gateways ...*networking_istio_io_v1alpha3.Gateway) {
+	for _, obj := range gateways {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output Gateway %v", sets.Key(obj))
+		b.gateways.Insert(obj)
+	}
+}
+func (b *builder) AddServiceEntries(serviceEntries ...*networking_istio_io_v1alpha3.ServiceEntry) {
+	for _, obj := range serviceEntries {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output ServiceEntry %v", sets.Key(obj))
+		b.serviceEntries.Insert(obj)
+	}
+}
+func (b *builder) AddVirtualServices(virtualServices ...*networking_istio_io_v1alpha3.VirtualService) {
+	for _, obj := range virtualServices {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output VirtualService %v", sets.Key(obj))
+		b.virtualServices.Insert(obj)
+	}
+}
+func (b *builder) AddAuthorizationPolicies(authorizationPolicies ...*security_istio_io_v1beta1.AuthorizationPolicy) {
+	for _, obj := range authorizationPolicies {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output AuthorizationPolicy %v", sets.Key(obj))
+		b.authorizationPolicies.Insert(obj)
+	}
+}
+func (b *builder) AddSecrets(secrets ...*v1.Secret) {
+	for _, obj := range secrets {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output Secret %v", sets.Key(obj))
+		b.secrets.Insert(obj)
+	}
+}
+
+func (b *builder) GetIssuedCertificates() certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet {
+	return b.issuedCertificates
+}
+
+func (b *builder) GetDestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet {
+	return b.destinationRules
+}
+func (b *builder) GetEnvoyFilters() networking_istio_io_v1alpha3_sets.EnvoyFilterSet {
+	return b.envoyFilters
+}
+func (b *builder) GetGateways() networking_istio_io_v1alpha3_sets.GatewaySet {
+	return b.gateways
+}
+func (b *builder) GetServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet {
+	return b.serviceEntries
+}
+func (b *builder) GetVirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
+	return b.virtualServices
+}
+
+func (b *builder) GetAuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
+	return b.authorizationPolicies
+}
+
+func (b *builder) GetSecrets() v1_sets.SecretSet {
+	return b.secrets
+}
+
+func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
 	return NewLabelPartitionedSnapshot(
-		i.name,
+		b.name,
 		labelKey,
 
-		i.issuedCertificates,
+		b.issuedCertificates,
 
-		i.destinationRules,
-		i.envoyFilters,
-		i.gateways,
-		i.serviceEntries,
-		i.virtualServices,
+		b.destinationRules,
+		b.envoyFilters,
+		b.gateways,
+		b.serviceEntries,
+		b.virtualServices,
 
-		i.authorizationPolicies,
+		b.authorizationPolicies,
+
+		b.secrets,
 	)
 }
 
-func (i *Builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
+func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error) {
 	return NewSinglePartitionedSnapshot(
-		i.name,
+		b.name,
 		snapshotLabels,
 
-		i.issuedCertificates,
+		b.issuedCertificates,
 
-		i.destinationRules,
-		i.envoyFilters,
-		i.gateways,
-		i.serviceEntries,
-		i.virtualServices,
+		b.destinationRules,
+		b.envoyFilters,
+		b.gateways,
+		b.serviceEntries,
+		b.virtualServices,
 
-		i.authorizationPolicies,
+		b.authorizationPolicies,
+
+		b.secrets,
 	)
-}
-func (i *Builder) AddIssuedCertificates(issuedCertificates []*certificates_smh_solo_io_v1alpha2.IssuedCertificate) *Builder {
-	i.issuedCertificates.Insert(issuedCertificates...)
-	return i
-}
-func (i *Builder) AddDestinationRules(destinationRules []*networking_istio_io_v1alpha3.DestinationRule) *Builder {
-	i.destinationRules.Insert(destinationRules...)
-	return i
-}
-func (i *Builder) AddEnvoyFilters(envoyFilters []*networking_istio_io_v1alpha3.EnvoyFilter) *Builder {
-	i.envoyFilters.Insert(envoyFilters...)
-	return i
-}
-func (i *Builder) AddGateways(gateways []*networking_istio_io_v1alpha3.Gateway) *Builder {
-	i.gateways.Insert(gateways...)
-	return i
-}
-func (i *Builder) AddServiceEntries(serviceEntries []*networking_istio_io_v1alpha3.ServiceEntry) *Builder {
-	i.serviceEntries.Insert(serviceEntries...)
-	return i
-}
-func (i *Builder) AddVirtualServices(virtualServices []*networking_istio_io_v1alpha3.VirtualService) *Builder {
-	i.virtualServices.Insert(virtualServices...)
-	return i
-}
-func (i *Builder) AddAuthorizationPolicies(authorizationPolicies []*security_istio_io_v1beta1.AuthorizationPolicy) *Builder {
-	i.authorizationPolicies.Insert(authorizationPolicies...)
-	return i
 }

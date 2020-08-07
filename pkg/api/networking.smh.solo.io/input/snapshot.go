@@ -10,6 +10,7 @@
 // * AccessPolicies
 // * VirtualMeshes
 // * FailoverServices
+// * Secrets
 // * KubernetesClusters
 // read from a given cluster or set of clusters, across all namespaces.
 //
@@ -36,6 +37,9 @@ import (
 	networking_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	networking_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 
+	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	multicluster_solo_io_v1alpha1_sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 )
@@ -58,6 +62,9 @@ type Snapshot interface {
 	VirtualMeshes() networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet
 	// return the set of input FailoverServices
 	FailoverServices() networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet
+
+	// return the set of input Secrets
+	Secrets() v1_sets.SecretSet
 
 	// return the set of input KubernetesClusters
 	KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -84,6 +91,8 @@ type snapshot struct {
 	virtualMeshes    networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet
 	failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet
 
+	secrets v1_sets.SecretSet
+
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
 }
 
@@ -99,6 +108,8 @@ func NewSnapshot(
 	virtualMeshes networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet,
 	failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet,
 
+	secrets v1_sets.SecretSet,
+
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
 
 ) Snapshot {
@@ -112,6 +123,7 @@ func NewSnapshot(
 		accessPolicies:     accessPolicies,
 		virtualMeshes:      virtualMeshes,
 		failoverServices:   failoverServices,
+		secrets:            secrets,
 		kubernetesClusters: kubernetesClusters,
 	}
 }
@@ -142,6 +154,10 @@ func (s snapshot) VirtualMeshes() networking_smh_solo_io_v1alpha2_sets.VirtualMe
 
 func (s snapshot) FailoverServices() networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet {
 	return s.failoverServices
+}
+
+func (s snapshot) Secrets() v1_sets.SecretSet {
+	return s.secrets
 }
 
 func (s snapshot) KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet {
@@ -283,6 +299,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap["accessPolicies"] = s.accessPolicies.List()
 	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
 	snapshotMap["failoverServices"] = s.failoverServices.List()
+	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
 	return json.Marshal(snapshotMap)
 }
@@ -314,6 +331,9 @@ type BuildOptions struct {
 	// List options for composing a snapshot from FailoverServices
 	FailoverServices []client.ListOption
 
+	// List options for composing a snapshot from Secrets
+	Secrets []client.ListOption
+
 	// List options for composing a snapshot from KubernetesClusters
 	KubernetesClusters []client.ListOption
 }
@@ -330,6 +350,8 @@ type multiClusterBuilder struct {
 	accessPolicies   networking_smh_solo_io_v1alpha2.MulticlusterAccessPolicyClient
 	virtualMeshes    networking_smh_solo_io_v1alpha2.MulticlusterVirtualMeshClient
 	failoverServices networking_smh_solo_io_v1alpha2.MulticlusterFailoverServiceClient
+
+	secrets v1.MulticlusterSecretClient
 
 	kubernetesClusters multicluster_solo_io_v1alpha1.MulticlusterKubernetesClusterClient
 }
@@ -351,6 +373,8 @@ func NewMultiClusterBuilder(
 		virtualMeshes:    networking_smh_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(client),
 		failoverServices: networking_smh_solo_io_v1alpha2.NewMulticlusterFailoverServiceClient(client),
 
+		secrets: v1.NewMulticlusterSecretClient(client),
+
 		kubernetesClusters: multicluster_solo_io_v1alpha1.NewMulticlusterKubernetesClusterClient(client),
 	}
 }
@@ -365,6 +389,8 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	accessPolicies := networking_smh_solo_io_v1alpha2_sets.NewAccessPolicySet()
 	virtualMeshes := networking_smh_solo_io_v1alpha2_sets.NewVirtualMeshSet()
 	failoverServices := networking_smh_solo_io_v1alpha2_sets.NewFailoverServiceSet()
+
+	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
 
@@ -393,6 +419,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		if err := b.insertFailoverServicesFromCluster(ctx, cluster, failoverServices, opts.FailoverServices...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets...); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertKubernetesClustersFromCluster(ctx, cluster, kubernetesClusters, opts.KubernetesClusters...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -409,6 +438,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		accessPolicies,
 		virtualMeshes,
 		failoverServices,
+		secrets,
 		kubernetesClusters,
 	)
 
@@ -550,6 +580,26 @@ func (b *multiClusterBuilder) insertFailoverServicesFromCluster(ctx context.Cont
 	return nil
 }
 
+func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ...client.ListOption) error {
+	secretClient, err := b.secrets.Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	secretList, err := secretClient.ListSecret(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range secretList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		secrets.Insert(&item)
+	}
+
+	return nil
+}
+
 func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Context, cluster string, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ...client.ListOption) error {
 	kubernetesClusterClient, err := b.kubernetesClusters.Cluster(cluster)
 	if err != nil {
@@ -581,6 +631,8 @@ type singleClusterBuilder struct {
 	virtualMeshes    networking_smh_solo_io_v1alpha2.VirtualMeshClient
 	failoverServices networking_smh_solo_io_v1alpha2.FailoverServiceClient
 
+	secrets v1.SecretClient
+
 	kubernetesClusters multicluster_solo_io_v1alpha1.KubernetesClusterClient
 }
 
@@ -599,6 +651,8 @@ func NewSingleClusterBuilder(
 		virtualMeshes:    networking_smh_solo_io_v1alpha2.NewVirtualMeshClient(client),
 		failoverServices: networking_smh_solo_io_v1alpha2.NewFailoverServiceClient(client),
 
+		secrets: v1.NewSecretClient(client),
+
 		kubernetesClusters: multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(client),
 	}
 }
@@ -613,6 +667,8 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	accessPolicies := networking_smh_solo_io_v1alpha2_sets.NewAccessPolicySet()
 	virtualMeshes := networking_smh_solo_io_v1alpha2_sets.NewVirtualMeshSet()
 	failoverServices := networking_smh_solo_io_v1alpha2_sets.NewFailoverServiceSet()
+
+	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
 
@@ -639,6 +695,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	if err := b.insertFailoverServices(ctx, failoverServices, opts.FailoverServices...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertSecrets(ctx, secrets, opts.Secrets...); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertKubernetesClusters(ctx, kubernetesClusters, opts.KubernetesClusters...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -653,6 +712,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		accessPolicies,
 		virtualMeshes,
 		failoverServices,
+		secrets,
 		kubernetesClusters,
 	)
 
@@ -747,6 +807,20 @@ func (b *singleClusterBuilder) insertFailoverServices(ctx context.Context, failo
 	for _, item := range failoverServiceList.Items {
 		item := item // pike
 		failoverServices.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts ...client.ListOption) error {
+	secretList, err := b.secrets.ListSecret(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range secretList.Items {
+		item := item // pike
+		secrets.Insert(&item)
 	}
 
 	return nil

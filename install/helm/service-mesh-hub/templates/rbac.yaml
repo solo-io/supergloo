@@ -81,6 +81,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - discovery.smh.solo.io
   resources:
   - meshes
@@ -110,6 +118,13 @@ rules:
   - list
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - secrets/status
+  verbs:
+  - get
+  - update
+- apiGroups:
   - discovery.smh.solo.io
   resources:
   - meshes/status
@@ -132,6 +147,51 @@ rules:
   - accesspolicies/status
   - virtualmeshes/status
   - failoverservices/status
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - '*'
+- apiGroups:
+  - certificates.smh.solo.io
+  resources:
+  - issuedcertificates
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - destinationrules
+  - virtualservices
+  - envoyfilters
+  - serviceentries
+  - gateways
+  verbs:
+  - '*'
+- apiGroups:
+  - security.istio.io
+  resources:
+  - authorizationpolicies
+  verbs:
+  - '*'
+- apiGroups:
+  - certificates.smh.solo.io
+  resources:
+  - issuedcertificates
+  - certificaterequests
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - certificates.smh.solo.io
+  resources:
+  - issuedcertificates/status
+  - certificaterequests/status
   verbs:
   - get
   - update

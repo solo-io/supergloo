@@ -66,8 +66,8 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/proxyCPU: 50m
-        sidecar.istio.io/proxyMemory: 64Mi
+        sidecar.istio.io/proxyCPU: 25m
+        sidecar.istio.io/proxyMemory: 32Mi
       labels:
         app: details
         version: v1
@@ -120,8 +120,8 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/proxyCPU: 50m
-        sidecar.istio.io/proxyMemory: 64Mi
+        sidecar.istio.io/proxyCPU: 25m
+        sidecar.istio.io/proxyMemory: 32Mi
       labels:
         app: ratings
         version: v1
@@ -174,8 +174,8 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/proxyCPU: 50m
-        sidecar.istio.io/proxyMemory: 64Mi
+        sidecar.istio.io/proxyCPU: 25m
+        sidecar.istio.io/proxyMemory: 32Mi
       labels:
         app: reviews
         version: v1
@@ -217,8 +217,8 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/proxyCPU: 50m
-        sidecar.istio.io/proxyMemory: 64Mi
+        sidecar.istio.io/proxyCPU: 25m
+        sidecar.istio.io/proxyMemory: 32Mi
       labels:
         app: reviews
         version: v2
@@ -260,8 +260,8 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/proxyCPU: 50m
-        sidecar.istio.io/proxyMemory: 64Mi
+        sidecar.istio.io/proxyCPU: 25m
+        sidecar.istio.io/proxyMemory: 32Mi
       labels:
         app: reviews
         version: v3
@@ -327,8 +327,8 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/proxyCPU: 50m
-        sidecar.istio.io/proxyMemory: 64Mi
+        sidecar.istio.io/proxyCPU: 25m
+        sidecar.istio.io/proxyMemory: 32Mi
       labels:
         app: productpage
         version: v1

@@ -43,6 +43,9 @@ var _ = Describe("IstioMeshDetector", func() {
 						ServiceAccountName: serviceAccountName,
 					},
 				},
+				Selector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{"app": "istiod"},
+				},
 			},
 		}
 	}
@@ -126,6 +129,7 @@ var _ = Describe("IstioMeshDetector", func() {
 						Namespace: meshNs,
 						Cluster:   clusterName,
 						Version:   "latest",
+						PodLabels: map[string]string{"app": "istiod"},
 					},
 					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
 						TrustDomain:           trustDomain,
@@ -165,6 +169,7 @@ var _ = Describe("IstioMeshDetector", func() {
 					Installation: &v1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
+						PodLabels: map[string]string{"app": "istiod"},
 						Version:   "latest",
 					},
 					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
@@ -242,7 +247,8 @@ var _ = Describe("IstioMeshDetector", func() {
 		deployment := istioDeployment(istiodDeploymentName)
 		mesh, err := detector.DetectMesh(deployment)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(mesh).To(Equal(&v1alpha2.Mesh{
+
+		expectedMesh := &v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istiod-namespace-cluster",
 				Namespace: istioNamespace,
@@ -254,6 +260,7 @@ var _ = Describe("IstioMeshDetector", func() {
 						Namespace: meshNs,
 						Cluster:   clusterName,
 						Version:   "latest",
+						PodLabels: map[string]string{"app": "istiod"},
 					},
 					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
 						TrustDomain:           trustDomain,
@@ -267,7 +274,9 @@ var _ = Describe("IstioMeshDetector", func() {
 					}},
 				}},
 			},
-		}))
+		}
+
+		Expect(mesh).To(Equal(expectedMesh))
 	})
 
 })

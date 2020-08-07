@@ -31,7 +31,7 @@ spec:
       - image: {{ $discoveryImage.registry }}/{{ $discoveryImage.repository }}:{{ $discoveryImage.tag }}
         args:
         - discovery
-        - --metrics-port={{ $.Values.networking.ports.metrics }}
+        - --metrics-port={{ $.Values.discovery.ports.metrics }}
         - --verbose
 {{- if $discovery.env }}
         env:

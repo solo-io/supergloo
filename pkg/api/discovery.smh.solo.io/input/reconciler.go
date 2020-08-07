@@ -20,6 +20,7 @@ package input
 
 import (
 	"context"
+	"time"
 
 	"github.com/solo-io/skv2/contrib/pkg/input"
 	sk_core_v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -55,15 +56,19 @@ type multiClusterReconcilerImpl struct {
 }
 
 // register the reconcile func with the cluster watcher
+// the reconcileInterval, if greater than 0, will limit the number of reconciles
+// to one per interval.
 func RegisterMultiClusterReconciler(
 	ctx context.Context,
 	clusters multicluster.ClusterWatcher,
 	reconcileFunc input.MultiClusterReconcileFunc,
+	reconcileInterval time.Duration,
 ) {
 
 	base := input.NewMultiClusterReconcilerImpl(
 		ctx,
 		reconcileFunc,
+		reconcileInterval,
 	)
 
 	r := &multiClusterReconcilerImpl{
@@ -224,15 +229,19 @@ type singleClusterReconcilerImpl struct {
 }
 
 // register the reconcile func with the manager
+// the reconcileInterval, if greater than 0, will limit the number of reconciles
+// to one per interval.
 func RegisterSingleClusterReconciler(
 	ctx context.Context,
 	mgr manager.Manager,
 	reconcileFunc input.SingleClusterReconcileFunc,
+	reconcileInterval time.Duration,
 ) error {
 
 	base := input.NewSingleClusterReconciler(
 		ctx,
 		reconcileFunc,
+		reconcileInterval,
 	)
 
 	r := &singleClusterReconcilerImpl{

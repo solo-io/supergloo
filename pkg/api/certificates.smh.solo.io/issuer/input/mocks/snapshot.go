@@ -38,6 +38,20 @@ func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
 }
 
+// IssuedCertificates mocks base method.
+func (m *MockSnapshot) IssuedCertificates() v1alpha2sets.IssuedCertificateSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IssuedCertificates")
+	ret0, _ := ret[0].(v1alpha2sets.IssuedCertificateSet)
+	return ret0
+}
+
+// IssuedCertificates indicates an expected call of IssuedCertificates.
+func (mr *MockSnapshotMockRecorder) IssuedCertificates() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificates", reflect.TypeOf((*MockSnapshot)(nil).IssuedCertificates))
+}
+
 // CertificateRequests mocks base method.
 func (m *MockSnapshot) CertificateRequests() v1alpha2sets.CertificateRequestSet {
 	m.ctrl.T.Helper()

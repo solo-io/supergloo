@@ -7,9 +7,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
@@ -127,99 +129,104 @@ var _ = Describe("FederationTranslator", func() {
 			v1alpha2sets.NewAccessPolicySet(),
 			v1alpha2sets.NewVirtualMeshSet(),
 			v1alpha2sets.NewFailoverServiceSet(),
-
+			corev1sets.NewSecretSet(),
 			skv1alpha1sets.NewKubernetesClusterSet(kubeCluster),
 		)
 
 		t := NewTranslator(ctx, clusterDomains)
-		outputs := t.Translate(
+		outputs := output.NewBuilder(context.TODO(), "")
+		t.Translate(
 			in,
 			mesh,
 			vMesh,
+			outputs,
 			nil, // no reports expected
 		)
 
-		Expect(outputs).To(Equal(expected))
+		Expect(outputs.GetGateways().Length()).To(Equal(1))
+		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway))
+		Expect(outputs.GetEnvoyFilters().Length()).To(Equal(1))
+		Expect(outputs.GetEnvoyFilters().List()[0]).To(Equal(expectedEnvoyFilter))
+		Expect(outputs.GetDestinationRules()).To(Equal(expectedDestinationRules))
+		Expect(outputs.GetServiceEntries()).To(Equal(expectedServiceEntries))
 
 	})
 })
 
-var expected = Outputs{
-	Gateway: &networkingv1alpha3.Gateway{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        "my-virtual-mesh.config-namespace",
-			Namespace:   "namespace",
-			ClusterName: "cluster",
-			Labels:      metautils.TranslatedObjectLabels(),
-		},
-		Spec: networkingv1alpha3spec.Gateway{
-			Servers: []*networkingv1alpha3spec.Server{
-				{
-					Port: &networkingv1alpha3spec.Port{
-						Number:   9191,
-						Protocol: "TLS",
-						Name:     "tls",
-					},
-					Hosts: []string{
-						"some-svc.some-ns.svc.cluster",
-					},
-					Tls: &networkingv1alpha3spec.ServerTLSSettings{
-						Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
-					},
+var expectedGateway = &networkingv1alpha3.Gateway{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:        "my-virtual-mesh-config-namespace",
+		Namespace:   "namespace",
+		ClusterName: "cluster",
+		Labels:      metautils.TranslatedObjectLabels(),
+	},
+	Spec: networkingv1alpha3spec.Gateway{
+		Servers: []*networkingv1alpha3spec.Server{
+			{
+				Port: &networkingv1alpha3spec.Port{
+					Number:   9191,
+					Protocol: "TLS",
+					Name:     "tls",
+				},
+				Hosts: []string{
+					"*.global",
+				},
+				Tls: &networkingv1alpha3spec.ServerTLSSettings{
+					Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
 				},
 			},
-			Selector: map[string]string{"gatewaylabels": "righthere"},
 		},
+		Selector: map[string]string{"gatewaylabels": "righthere"},
 	},
-	EnvoyFilter: &networkingv1alpha3.EnvoyFilter{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        "my-virtual-mesh.config-namespace",
-			Namespace:   "namespace",
-			ClusterName: "cluster",
-			Labels:      metautils.TranslatedObjectLabels(),
+}
+var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:        "my-virtual-mesh.config-namespace",
+		Namespace:   "namespace",
+		ClusterName: "cluster",
+		Labels:      metautils.TranslatedObjectLabels(),
+	},
+	Spec: networkingv1alpha3spec.EnvoyFilter{
+		WorkloadSelector: &networkingv1alpha3spec.WorkloadSelector{
+			Labels: map[string]string{"gatewaylabels": "righthere"},
 		},
-		Spec: networkingv1alpha3spec.EnvoyFilter{
-			WorkloadSelector: &networkingv1alpha3spec.WorkloadSelector{
-				Labels: map[string]string{"gatewaylabels": "righthere"},
-			},
-			ConfigPatches: []*networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectPatch{
-				{
-					ApplyTo: networkingv1alpha3spec.EnvoyFilter_NETWORK_FILTER,
-					Match: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch{
-						Context: networkingv1alpha3spec.EnvoyFilter_GATEWAY,
-						ObjectTypes: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-							Listener: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch{
-								PortNumber: 9191,
-								FilterChain: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterChainMatch{
-									Filter: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterMatch{
-										Name: "envoy.filters.network.sni_cluster",
-									},
+		ConfigPatches: []*networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectPatch{
+			{
+				ApplyTo: networkingv1alpha3spec.EnvoyFilter_NETWORK_FILTER,
+				Match: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch{
+					Context: networkingv1alpha3spec.EnvoyFilter_GATEWAY,
+					ObjectTypes: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+						Listener: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch{
+							PortNumber: 9191,
+							FilterChain: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterChainMatch{
+								Filter: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterMatch{
+									Name: "envoy.filters.network.sni_cluster",
 								},
 							},
 						},
 					},
-					Patch: &networkingv1alpha3spec.EnvoyFilter_Patch{
-						Operation: 5,
-						Value: &types.Struct{
-							Fields: map[string]*types.Value{
-								"name": {
-									Kind: &types.Value_StringValue{
-										StringValue: "envoy.filters.network.tcp_cluster_rewrite",
-									},
+				},
+				Patch: &networkingv1alpha3spec.EnvoyFilter_Patch{
+					Operation: 5,
+					Value: &types.Struct{
+						Fields: map[string]*types.Value{
+							"name": {
+								Kind: &types.Value_StringValue{
+									StringValue: "envoy.filters.network.tcp_cluster_rewrite",
 								},
-								"config": {
-									Kind: &types.Value_StructValue{
-										StructValue: &types.Struct{
-											Fields: map[string]*types.Value{
-												"cluster_replacement": {
-													Kind: &types.Value_StringValue{
-														StringValue: ".svc.cluster.local",
-													},
+							},
+							"config": {
+								Kind: &types.Value_StructValue{
+									StructValue: &types.Struct{
+										Fields: map[string]*types.Value{
+											"cluster_replacement": {
+												Kind: &types.Value_StringValue{
+													StringValue: ".cluster.local",
 												},
-												"cluster_pattern": {
-													Kind: &types.Value_StringValue{
-														StringValue: "\\.cluster$",
-													},
+											},
+											"cluster_pattern": {
+												Kind: &types.Value_StringValue{
+													StringValue: "\\.cluster.global$",
 												},
 											},
 										},
@@ -232,59 +239,59 @@ var expected = Outputs{
 			},
 		},
 	},
-	DestinationRules: istiov1alpha3sets.NewDestinationRuleSet(&networkingv1alpha3.DestinationRule{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        "some-svc.some-ns.svc.cluster",
-			Namespace:   "remote-namespace",
-			ClusterName: "remote-cluster",
-			Labels:      metautils.TranslatedObjectLabels(),
-		},
-		Spec: networkingv1alpha3spec.DestinationRule{
-			Host: "some-svc.some-ns.svc.cluster",
-			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
-				Tls: &networkingv1alpha3spec.ClientTLSSettings{
-					Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
-				},
-			},
-		},
-	}),
-	ServiceEntries: istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        "some-svc.some-ns.svc.cluster",
-			Namespace:   "remote-namespace",
-			ClusterName: "remote-cluster",
-			Labels:      metautils.TranslatedObjectLabels(),
-		},
-		Spec: networkingv1alpha3spec.ServiceEntry{
-			Hosts: []string{
-				"some-svc.some-ns.svc.cluster",
-			},
-			Addresses: []string{
-				"243.21.204.125",
-			},
-			Ports: []*networkingv1alpha3spec.Port{
-				{
-					Number:   1234,
-					Protocol: "TCP",
-					Name:     "http",
-				},
-				{
-					Number:   5678,
-					Protocol: "TCP",
-					Name:     "grpc",
-				},
-			},
-			Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
-			Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
-			Endpoints: []*networkingv1alpha3spec.WorkloadEntry{
-				{
-					Address: "mesh-gateway.dns.name",
-					Ports: map[string]uint32{
-						"http": 8181,
-						"grpc": 8181,
-					},
-				},
-			},
-		},
-	}),
 }
+var expectedDestinationRules = istiov1alpha3sets.NewDestinationRuleSet(&networkingv1alpha3.DestinationRule{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:        "some-svc.some-ns.svc.cluster.global",
+		Namespace:   "remote-namespace",
+		ClusterName: "remote-cluster",
+		Labels:      metautils.TranslatedObjectLabels(),
+	},
+	Spec: networkingv1alpha3spec.DestinationRule{
+		Host: "some-svc.some-ns.svc.cluster.global",
+		TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
+			Tls: &networkingv1alpha3spec.ClientTLSSettings{
+				Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
+			},
+		},
+	},
+})
+var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:        "some-svc.some-ns.svc.cluster.global",
+		Namespace:   "remote-namespace",
+		ClusterName: "remote-cluster",
+		Labels:      metautils.TranslatedObjectLabels(),
+	},
+	Spec: networkingv1alpha3spec.ServiceEntry{
+		Hosts: []string{
+			"some-svc.some-ns.svc.cluster.global",
+		},
+		Addresses: []string{
+			"243.21.204.125",
+		},
+		Ports: []*networkingv1alpha3spec.Port{
+			{
+				Number:   1234,
+				Protocol: "TCP",
+				Name:     "http",
+			},
+			{
+				Number:   5678,
+				Protocol: "TCP",
+				Name:     "grpc",
+			},
+		},
+		Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
+		Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
+		Endpoints: []*networkingv1alpha3spec.WorkloadEntry{
+			{
+				Address: "mesh-gateway.dns.name",
+				Ports: map[string]uint32{
+					"http": 8181,
+					"grpc": 8181,
+				},
+			},
+		},
+	},
+})

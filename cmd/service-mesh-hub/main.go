@@ -36,7 +36,7 @@ func (opts *bootstrapOpts) addToFlags(flags *pflag.FlagSet) {
 }
 
 func rootCommand(ctx context.Context) *cobra.Command {
-	var opts bootstrapOpts
+	opts := &bootstrapOpts{}
 	cmd := &cobra.Command{
 		Use:     "service-mesh-hub [command]",
 		Short:   "Start the Service Mesh Hub Operators (discovery and networking)",
@@ -57,11 +57,11 @@ func rootCommand(ctx context.Context) *cobra.Command {
 }
 
 type discoveryOpts struct {
-	bootstrapOpts
+	*bootstrapOpts
 }
 
-func discoveryCommand(ctx context.Context, bs bootstrapOpts) *cobra.Command {
-	opts := discoveryOpts{bootstrapOpts: bs}
+func discoveryCommand(ctx context.Context, bs *bootstrapOpts) *cobra.Command {
+	opts := &discoveryOpts{bootstrapOpts: bs}
 	cmd := &cobra.Command{
 		Use:   "discovery",
 		Short: "Start the Service Mesh Hub Discovery Operator",
@@ -72,16 +72,16 @@ func discoveryCommand(ctx context.Context, bs bootstrapOpts) *cobra.Command {
 	return cmd
 }
 
-func startDiscovery(ctx context.Context, opts discoveryOpts) error {
+func startDiscovery(ctx context.Context, opts *discoveryOpts) error {
 	return mesh_discovery.Start(ctx, opts.getBootstrap())
 }
 
 type networkingOpts struct {
-	bootstrapOpts
+	*bootstrapOpts
 }
 
-func networkingCommand(ctx context.Context, bs bootstrapOpts) *cobra.Command {
-	opts := networkingOpts{bootstrapOpts: bs}
+func networkingCommand(ctx context.Context, bs *bootstrapOpts) *cobra.Command {
+	opts := &networkingOpts{bootstrapOpts: bs}
 	cmd := &cobra.Command{
 		Use:   "networking",
 		Short: "Start the Service Mesh Hub Networking Operator",
@@ -92,6 +92,6 @@ func networkingCommand(ctx context.Context, bs bootstrapOpts) *cobra.Command {
 	return cmd
 }
 
-func startNetworking(ctx context.Context, opts networkingOpts) error {
+func startNetworking(ctx context.Context, opts *networkingOpts) error {
 	return mesh_networking.Start(ctx, opts.getBootstrap())
 }

@@ -2,7 +2,10 @@ package e2e_test
 
 import (
 	"context"
+	"fmt"
 	"time"
+
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/service-mesh-hub/test/e2e"
@@ -16,6 +19,16 @@ var (
 	masterClusterName = "master-cluster"
 	remoteClusterName = "remote-cluster"
 
+	masterMesh = &v1.ObjectRef{
+		Name:      "istiod-istio-system-master-cluster",
+		Namespace: "service-mesh-hub",
+	}
+
+	remoteMesh = &v1.ObjectRef{
+		Name:      "istiod-istio-system-remote-cluster",
+		Namespace: "service-mesh-hub",
+	}
+
 	// Initialize in BeforeSuite
 	dynamicClient client.Client
 
@@ -23,8 +36,12 @@ var (
 		return curlFromProductpage("http://reviews:9080/reviews/1")
 	}
 
-	curlDetails = func() string {
-		return curlFromProductpage("http://details:9080/details/1")
+	curlRemoteReviews = func() string {
+		return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v:9080/reviews/1", BookinfoNamespace, remoteClusterName))
+	}
+
+	curlRatings = func() string {
+		return curlFromProductpage("http://ratings:9080/ratings/1")
 	}
 
 	curlFromProductpage = func(url string) string {

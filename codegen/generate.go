@@ -42,36 +42,38 @@ type topLevelComponent struct {
 }
 
 func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
-	inputSnapshot := makeTopLevelTemplate(
-		contrib.InputSnapshot,
-		t.generatedCodeRoot+"/input/snapshot.go",
-		t.inputResources,
-	)
+	var topLevelTemplates []model.CustomTemplates
 
-	inputSnapshotManualBuilder := makeTopLevelTemplate(
-		contrib.InputSnapshotManualBuilder,
-		t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
-		t.inputResources,
-	)
+	if len(t.inputResources) > 0 {
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshot,
+			t.generatedCodeRoot+"/input/snapshot.go",
+			t.inputResources,
+		))
 
-	inputReconciler := makeTopLevelTemplate(
-		contrib.InputReconciler,
-		t.generatedCodeRoot+"/input/reconciler.go",
-		t.inputResources,
-	)
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputReconciler,
+			t.generatedCodeRoot+"/input/reconciler.go",
+			t.inputResources,
+		))
 
-	outputSnapshot := makeTopLevelTemplate(
-		contrib.OutputSnapshot,
-		t.generatedCodeRoot+"/output/snapshot.go",
-		t.outputResources,
-	)
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshotManualBuilder,
+			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
+			t.inputResources,
+		))
 
-	return []model.CustomTemplates{
-		inputSnapshot,
-		inputSnapshotManualBuilder,
-		inputReconciler,
-		outputSnapshot,
 	}
+
+	if len(t.outputResources) > 0 {
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.OutputSnapshot,
+			t.generatedCodeRoot+"/output/snapshot.go",
+			t.outputResources,
+		))
+	}
+
+	return topLevelTemplates
 }
 
 var (
@@ -94,7 +96,6 @@ var (
 		{
 			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/issuer",
 			inputResources:    io.CertificateIssuerInputTypes,
-			outputResources:   io.CertificateIssuerOutputTypes,
 		},
 		// certificate agent component
 		{
@@ -104,14 +105,14 @@ var (
 		},
 	}
 
-	smhManifestRoot = "install/helm/service-mesh-hub"
-	csrManifestRoot = "install/helm/csr-agent/"
+	smhManifestRoot       = "install/helm/service-mesh-hub"
+	certAgentManifestRoot = "install/helm/cert-agent/"
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 	importedMultiClusterCRDs = smhManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
 	allApiGroups = map[string][]model.Group{
-		"":                                 groups.SMHGroups,
+		"":                                 append(groups.SMHGroups, groups.CertAgentGroups...),
 		"github.com/solo-io/external-apis": externalapis.Groups,
 		"github.com/solo-io/skv2":          {skv1alpha1.Group},
 	}
@@ -135,6 +136,10 @@ func run() error {
 	flag.Parse()
 
 	if err := makeSmhCommand(*chartOnly).Execute(); err != nil {
+		return err
+	}
+
+	if err := makeCertAgentCommand(*chartOnly).Execute(); err != nil {
 		return err
 	}
 
@@ -174,6 +179,26 @@ func makeSmhCommand(chartOnly bool) codegen.Command {
 		Groups:            groups.SMHGroups,
 		RenderProtos:      true,
 		Chart:             helm.Chart,
+	}
+}
+
+func makeCertAgentCommand(chartOnly bool) codegen.Command {
+	if chartOnly {
+		return codegen.Command{
+			AppName:      appName,
+			ManifestRoot: certAgentManifestRoot,
+			Chart:        helm.CertAgentChart,
+		}
+	}
+
+	return codegen.Command{
+		AppName:           appName,
+		AnyVendorConfig:   anyvendorImports,
+		ManifestRoot:      certAgentManifestRoot,
+		TopLevelTemplates: topLevelTemplates,
+		Groups:            groups.CertAgentGroups,
+		RenderProtos:      true,
+		Chart:             helm.CertAgentChart,
 	}
 }
 
