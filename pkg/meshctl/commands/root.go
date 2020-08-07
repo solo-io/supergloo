@@ -5,6 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/check"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/cluster"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/install"
@@ -29,6 +30,7 @@ func RootCommand(ctx context.Context) *cobra.Command {
 		mesh.Command(ctx),
 		install.Command(ctx),
 		uninstall.Command(ctx),
+		check.Command(ctx),
 	)
 
 	return cmd
