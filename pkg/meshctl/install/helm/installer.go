@@ -1,19 +1,24 @@
 package helm
 
 import (
+	"context"
+	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/sirupsen/logrus"
+	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/getter"
-
-	"io"
-	"net/http"
-	"path/filepath"
-	"strings"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rotisserie/eris"
 	"helm.sh/helm/v3/pkg/chart"
@@ -33,9 +38,10 @@ type Installer struct {
 	ReleaseName string
 	ValuesFile  string
 	Verbose     bool
+	DryRun      bool
 }
 
-func (i Installer) InstallChart() error {
+func (i Installer) InstallChart(ctx context.Context) error {
 	kubeConfig := i.KubeConfig
 	kubeContext := i.KubeContext
 	chartUri := i.ChartUri
@@ -43,6 +49,16 @@ func (i Installer) InstallChart() error {
 	releaseName := i.ReleaseName
 	valuesFile := i.ValuesFile
 	verbose := i.Verbose
+	dryRun := i.DryRun
+
+	if kubeConfig != "" {
+		kubeConfig = clientcmd.RecommendedHomeFile
+	}
+
+	err := ensureNamespace(ctx, kubeConfig, kubeContext, namespace)
+	if err != nil {
+		return eris.Wrapf(err, "creating namespace")
+	}
 
 	actionConfig, settings, err := newActionConfig(kubeConfig, kubeContext, namespace)
 	if err != nil {
@@ -71,6 +87,7 @@ func (i Installer) InstallChart() error {
 	if err == nil && len(h) > 0 {
 		client := action.NewUpgrade(actionConfig)
 		client.Namespace = namespace
+		client.DryRun = dryRun
 
 		release, err := client.Run(releaseName, chartObj, parsedValues)
 		if err != nil {
@@ -85,6 +102,7 @@ func (i Installer) InstallChart() error {
 		client := action.NewInstall(actionConfig)
 		client.ReleaseName = releaseName
 		client.Namespace = namespace
+		client.DryRun = dryRun
 
 		release, err := client.Run(chartObj, parsedValues)
 		if err != nil {
@@ -95,6 +113,28 @@ func (i Installer) InstallChart() error {
 	}
 
 	return nil
+}
+
+func ensureNamespace(ctx context.Context, kubeConfig, kubeContext, namespace string) error {
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	loadingRules.ExplicitPath = kubeConfig
+	configOverrides := &clientcmd.ConfigOverrides{CurrentContext: kubeContext}
+
+	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ClientConfig()
+	if err != nil {
+		return err
+	}
+	c, err := client.New(cfg, client.Options{})
+	if err != nil {
+		return err
+	}
+	namespaces := v1.NewNamespaceClient(c)
+	return namespaces.UpsertNamespace(ctx, &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: namespace,
+		},
+		Spec: corev1.NamespaceSpec{Finalizers: []corev1.FinalizerName{"kubernetes"}},
+	})
 }
 
 // Returns an action configuration that can be used to create Helm actions and the Helm env settings.

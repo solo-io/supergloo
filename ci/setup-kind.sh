@@ -33,19 +33,19 @@ install_istio ${remoteCluster} 32000 &
 
 wait
 
-echo setup successfully set up clusters.
+echo successfully set up clusters.
 
 # install service mesh hub
-${PROJECT_ROOT}/ci/setup-smh.sh ${masterCluster}
+install_smh ${masterCluster}
 
 # sleep to allow crds to register
 sleep 4
 
-# register clusters
-register_cluster ${masterCluster} &
+# register remote cluster
 register_cluster ${remoteCluster} &
 
 wait
 
 # set current context to master cluster
 kubectl config use-context kind-${masterCluster}
+

@@ -7,6 +7,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/cluster"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/mesh"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/install"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/uninstall"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +25,8 @@ func RootCommand(ctx context.Context) *cobra.Command {
 	cmd.AddCommand(
 		cluster.Command(ctx),
 		mesh.Command(ctx),
+		install.Command(ctx),
+		uninstall.Command(ctx),
 	)
 
 	return cmd
