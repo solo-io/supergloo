@@ -13,30 +13,30 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// MockmultiClusterReconciler is a mock of multiClusterReconciler interface.
+// MockmultiClusterReconciler is a mock of multiClusterReconciler interface
 type MockmultiClusterReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockmultiClusterReconcilerMockRecorder
 }
 
-// MockmultiClusterReconcilerMockRecorder is the mock recorder for MockmultiClusterReconciler.
+// MockmultiClusterReconcilerMockRecorder is the mock recorder for MockmultiClusterReconciler
 type MockmultiClusterReconcilerMockRecorder struct {
 	mock *MockmultiClusterReconciler
 }
 
-// NewMockmultiClusterReconciler creates a new mock instance.
+// NewMockmultiClusterReconciler creates a new mock instance
 func NewMockmultiClusterReconciler(ctrl *gomock.Controller) *MockmultiClusterReconciler {
 	mock := &MockmultiClusterReconciler{ctrl: ctrl}
 	mock.recorder = &MockmultiClusterReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockmultiClusterReconciler) EXPECT() *MockmultiClusterReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileIssuedCertificate mocks base method.
+// ReconcileIssuedCertificate mocks base method
 func (m *MockmultiClusterReconciler) ReconcileIssuedCertificate(clusterName string, obj *v1alpha2.IssuedCertificate) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileIssuedCertificate", clusterName, obj)
@@ -45,13 +45,13 @@ func (m *MockmultiClusterReconciler) ReconcileIssuedCertificate(clusterName stri
 	return ret0, ret1
 }
 
-// ReconcileIssuedCertificate indicates an expected call of ReconcileIssuedCertificate.
+// ReconcileIssuedCertificate indicates an expected call of ReconcileIssuedCertificate
 func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileIssuedCertificate(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileIssuedCertificate", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileIssuedCertificate), clusterName, obj)
 }
 
-// ReconcileCertificateRequest mocks base method.
+// ReconcileCertificateRequest mocks base method
 func (m *MockmultiClusterReconciler) ReconcileCertificateRequest(clusterName string, obj *v1alpha2.CertificateRequest) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCertificateRequest", clusterName, obj)
@@ -60,13 +60,13 @@ func (m *MockmultiClusterReconciler) ReconcileCertificateRequest(clusterName str
 	return ret0, ret1
 }
 
-// ReconcileCertificateRequest indicates an expected call of ReconcileCertificateRequest.
+// ReconcileCertificateRequest indicates an expected call of ReconcileCertificateRequest
 func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileCertificateRequest(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCertificateRequest", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileCertificateRequest), clusterName, obj)
 }
 
-// ReconcileSecret mocks base method.
+// ReconcileSecret mocks base method
 func (m *MockmultiClusterReconciler) ReconcileSecret(clusterName string, obj *v1.Secret) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileSecret", clusterName, obj)
@@ -75,13 +75,13 @@ func (m *MockmultiClusterReconciler) ReconcileSecret(clusterName string, obj *v1
 	return ret0, ret1
 }
 
-// ReconcileSecret indicates an expected call of ReconcileSecret.
+// ReconcileSecret indicates an expected call of ReconcileSecret
 func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileSecret(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSecret", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileSecret), clusterName, obj)
 }
 
-// ReconcilePod mocks base method.
+// ReconcilePod mocks base method
 func (m *MockmultiClusterReconciler) ReconcilePod(clusterName string, obj *v1.Pod) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcilePod", clusterName, obj)
@@ -90,36 +90,36 @@ func (m *MockmultiClusterReconciler) ReconcilePod(clusterName string, obj *v1.Po
 	return ret0, ret1
 }
 
-// ReconcilePod indicates an expected call of ReconcilePod.
+// ReconcilePod indicates an expected call of ReconcilePod
 func (mr *MockmultiClusterReconcilerMockRecorder) ReconcilePod(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePod", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcilePod), clusterName, obj)
 }
 
-// MocksingleClusterReconciler is a mock of singleClusterReconciler interface.
+// MocksingleClusterReconciler is a mock of singleClusterReconciler interface
 type MocksingleClusterReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MocksingleClusterReconcilerMockRecorder
 }
 
-// MocksingleClusterReconcilerMockRecorder is the mock recorder for MocksingleClusterReconciler.
+// MocksingleClusterReconcilerMockRecorder is the mock recorder for MocksingleClusterReconciler
 type MocksingleClusterReconcilerMockRecorder struct {
 	mock *MocksingleClusterReconciler
 }
 
-// NewMocksingleClusterReconciler creates a new mock instance.
+// NewMocksingleClusterReconciler creates a new mock instance
 func NewMocksingleClusterReconciler(ctrl *gomock.Controller) *MocksingleClusterReconciler {
 	mock := &MocksingleClusterReconciler{ctrl: ctrl}
 	mock.recorder = &MocksingleClusterReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MocksingleClusterReconciler) EXPECT() *MocksingleClusterReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileIssuedCertificate mocks base method.
+// ReconcileIssuedCertificate mocks base method
 func (m *MocksingleClusterReconciler) ReconcileIssuedCertificate(obj *v1alpha2.IssuedCertificate) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileIssuedCertificate", obj)
@@ -128,13 +128,13 @@ func (m *MocksingleClusterReconciler) ReconcileIssuedCertificate(obj *v1alpha2.I
 	return ret0, ret1
 }
 
-// ReconcileIssuedCertificate indicates an expected call of ReconcileIssuedCertificate.
+// ReconcileIssuedCertificate indicates an expected call of ReconcileIssuedCertificate
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileIssuedCertificate(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileIssuedCertificate", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileIssuedCertificate), obj)
 }
 
-// ReconcileCertificateRequest mocks base method.
+// ReconcileCertificateRequest mocks base method
 func (m *MocksingleClusterReconciler) ReconcileCertificateRequest(obj *v1alpha2.CertificateRequest) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCertificateRequest", obj)
@@ -143,13 +143,13 @@ func (m *MocksingleClusterReconciler) ReconcileCertificateRequest(obj *v1alpha2.
 	return ret0, ret1
 }
 
-// ReconcileCertificateRequest indicates an expected call of ReconcileCertificateRequest.
+// ReconcileCertificateRequest indicates an expected call of ReconcileCertificateRequest
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileCertificateRequest(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCertificateRequest", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileCertificateRequest), obj)
 }
 
-// ReconcileSecret mocks base method.
+// ReconcileSecret mocks base method
 func (m *MocksingleClusterReconciler) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileSecret", obj)
@@ -158,13 +158,13 @@ func (m *MocksingleClusterReconciler) ReconcileSecret(obj *v1.Secret) (reconcile
 	return ret0, ret1
 }
 
-// ReconcileSecret indicates an expected call of ReconcileSecret.
+// ReconcileSecret indicates an expected call of ReconcileSecret
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileSecret(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSecret", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileSecret), obj)
 }
 
-// ReconcilePod mocks base method.
+// ReconcilePod mocks base method
 func (m *MocksingleClusterReconciler) ReconcilePod(obj *v1.Pod) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcilePod", obj)
@@ -173,7 +173,7 @@ func (m *MocksingleClusterReconciler) ReconcilePod(obj *v1.Pod) (reconcile.Resul
 	return ret0, ret1
 }
 
-// ReconcilePod indicates an expected call of ReconcilePod.
+// ReconcilePod indicates an expected call of ReconcilePod
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcilePod(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePod", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcilePod), obj)

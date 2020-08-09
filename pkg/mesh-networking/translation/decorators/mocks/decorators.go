@@ -11,30 +11,30 @@ import (
 	decorators "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
 )
 
-// MockFactory is a mock of Factory interface.
+// MockFactory is a mock of Factory interface
 type MockFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockFactoryMockRecorder
 }
 
-// MockFactoryMockRecorder is the mock recorder for MockFactory.
+// MockFactoryMockRecorder is the mock recorder for MockFactory
 type MockFactoryMockRecorder struct {
 	mock *MockFactory
 }
 
-// NewMockFactory creates a new mock instance.
+// NewMockFactory creates a new mock instance
 func NewMockFactory(ctrl *gomock.Controller) *MockFactory {
 	mock := &MockFactory{ctrl: ctrl}
 	mock.recorder = &MockFactoryMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockFactory) EXPECT() *MockFactoryMockRecorder {
 	return m.recorder
 }
 
-// MakeDecorators mocks base method.
+// MakeDecorators mocks base method
 func (m *MockFactory) MakeDecorators(params decorators.Parameters) []decorators.Decorator {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MakeDecorators", params)
@@ -42,36 +42,36 @@ func (m *MockFactory) MakeDecorators(params decorators.Parameters) []decorators.
 	return ret0
 }
 
-// MakeDecorators indicates an expected call of MakeDecorators.
+// MakeDecorators indicates an expected call of MakeDecorators
 func (mr *MockFactoryMockRecorder) MakeDecorators(params interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeDecorators", reflect.TypeOf((*MockFactory)(nil).MakeDecorators), params)
 }
 
-// MockDecorator is a mock of Decorator interface.
+// MockDecorator is a mock of Decorator interface
 type MockDecorator struct {
 	ctrl     *gomock.Controller
 	recorder *MockDecoratorMockRecorder
 }
 
-// MockDecoratorMockRecorder is the mock recorder for MockDecorator.
+// MockDecoratorMockRecorder is the mock recorder for MockDecorator
 type MockDecoratorMockRecorder struct {
 	mock *MockDecorator
 }
 
-// NewMockDecorator creates a new mock instance.
+// NewMockDecorator creates a new mock instance
 func NewMockDecorator(ctrl *gomock.Controller) *MockDecorator {
 	mock := &MockDecorator{ctrl: ctrl}
 	mock.recorder = &MockDecoratorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockDecorator) EXPECT() *MockDecoratorMockRecorder {
 	return m.recorder
 }
 
-// DecoratorName mocks base method.
+// DecoratorName mocks base method
 func (m *MockDecorator) DecoratorName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DecoratorName")
@@ -79,7 +79,7 @@ func (m *MockDecorator) DecoratorName() string {
 	return ret0
 }
 
-// DecoratorName indicates an expected call of DecoratorName.
+// DecoratorName indicates an expected call of DecoratorName
 func (mr *MockDecoratorMockRecorder) DecoratorName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecoratorName", reflect.TypeOf((*MockDecorator)(nil).DecoratorName))

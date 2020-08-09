@@ -98,6 +98,17 @@ func (this *MeshSpec_ConsulConnectMesh) UnmarshalJSON(b []byte) error {
 	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for MeshSpec_OpenServiceMesh
+func (this *MeshSpec_OpenServiceMesh) MarshalJSON() ([]byte, error) {
+	str, err := MeshMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for MeshSpec_OpenServiceMesh
+func (this *MeshSpec_OpenServiceMesh) UnmarshalJSON(b []byte) error {
+	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for MeshSpec_MeshInstallation
 func (this *MeshSpec_MeshInstallation) MarshalJSON() ([]byte, error) {
 	str, err := MeshMarshaler.MarshalToString(this)
