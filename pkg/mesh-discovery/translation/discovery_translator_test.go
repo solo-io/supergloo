@@ -12,6 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/internal/mocks"
 	mock_mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/mocks"
 	mock_meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshservice/mocks"
 	mock_meshworkload "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/mocks"
@@ -27,7 +28,7 @@ var _ = Describe("Translator", func() {
 		ctl *gomock.Controller
 		ctx context.Context
 
-		mockDependencyFactory      *MockdependencyFactory
+		mockDependencyFactory      *MockDependencyFactory
 		mockMeshTranslator         *mock_mesh.MockTranslator
 		mockMeshworkloadTranslator *mock_meshworkload.MockTranslator
 		mockMeshserviceTranslator  *mock_meshservice.MockTranslator
@@ -36,7 +37,7 @@ var _ = Describe("Translator", func() {
 	BeforeEach(func() {
 		ctl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockDependencyFactory = NewMockdependencyFactory(ctl)
+		mockDependencyFactory = NewMockDependencyFactory(ctl)
 		mockMeshTranslator = mock_mesh.NewMockTranslator(ctl)
 		mockMeshworkloadTranslator = mock_meshworkload.NewMockTranslator(ctl)
 		mockMeshserviceTranslator = mock_meshservice.NewMockTranslator(ctl)
@@ -70,9 +71,9 @@ var _ = Describe("Translator", func() {
 			statefulSets,
 		)
 
-		mockDependencyFactory.EXPECT().makeMeshTranslator(ctx, in).Return(mockMeshTranslator)
-		mockDependencyFactory.EXPECT().makeMeshWorkloadTranslator(ctx, in).Return(mockMeshworkloadTranslator)
-		mockDependencyFactory.EXPECT().makeMeshServiceTranslator(ctx).Return(mockMeshserviceTranslator)
+		mockDependencyFactory.EXPECT().MakeMeshTranslator(ctx, in).Return(mockMeshTranslator)
+		mockDependencyFactory.EXPECT().MakeMeshWorkloadTranslator(ctx, in).Return(mockMeshworkloadTranslator)
+		mockDependencyFactory.EXPECT().MakeMeshServiceTranslator(ctx).Return(mockMeshserviceTranslator)
 
 		labeledMeta := metav1.ObjectMeta{Labels: labelutils.ClusterLabels("cluster")}
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output"
+	translator_internal "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/internal"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/labelutils"
 )
 
@@ -17,22 +18,22 @@ type Translator interface {
 
 type translator struct {
 	totalTranslates int // TODO(ilackarms): metric
-	dependencies    dependencyFactory
+	dependencies    translator_internal.DependencyFactory
 }
 
 func NewTranslator() Translator {
 	return &translator{
-		dependencies: dependencyFactoryImpl{},
+		dependencies: translator_internal.DependencyFactoryImpl{},
 	}
 }
 
 func (t translator) Translate(ctx context.Context, in input.Snapshot) (output.Snapshot, error) {
 
-	meshTranslator := t.dependencies.makeMeshTranslator(ctx, in)
+	meshTranslator := t.dependencies.MakeMeshTranslator(ctx, in)
 
-	meshWorkloadTranslator := t.dependencies.makeMeshWorkloadTranslator(ctx, in)
+	meshWorkloadTranslator := t.dependencies.MakeMeshWorkloadTranslator(ctx, in)
 
-	meshServiceTranslator := t.dependencies.makeMeshServiceTranslator(ctx)
+	meshServiceTranslator := t.dependencies.MakeMeshServiceTranslator(ctx)
 
 	meshes := meshTranslator.TranslateMeshes(in.Deployments())
 

@@ -77,6 +77,7 @@ go-generate:
 # Generate Operator Code
 .PHONY: operator-gen
 operator-gen:
+	rm -rf vendor_any
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go
 
 #----------------------------------------------------------------------------------
