@@ -1,8 +1,10 @@
 package destinationrule
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"reflect"
+
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
@@ -39,10 +41,15 @@ type Translator interface {
 type translator struct {
 	clusterDomains   hostutils.ClusterDomainRegistry
 	decoratorFactory decorators.Factory
+	meshServices     discoveryv1alpha2sets.MeshServiceSet
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
-	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory}
+func NewTranslator(
+	clusterDomains hostutils.ClusterDomainRegistry,
+	decoratorFactory decorators.Factory,
+	meshServices discoveryv1alpha2sets.MeshServiceSet,
+) Translator {
+	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory, meshServices: meshServices}
 }
 
 // translate the appropriate DestinationRUle for the given MeshService.
@@ -138,7 +145,10 @@ func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha2.Me
 					Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 				},
 			},
-			Subsets: trafficshift.MakeDestinationRuleSubsets(meshService.Status.AppliedTrafficPolicies),
+			Subsets: trafficshift.MakeDestinationRuleSubsets(
+				meshService,
+				t.meshServices,
+			),
 		},
 	}
 }

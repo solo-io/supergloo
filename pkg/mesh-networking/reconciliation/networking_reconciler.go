@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/errhandlers"
 
@@ -56,7 +60,13 @@ func Start(
 }
 
 // reconcile global state
-func (r *networkingReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
+func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
+	if isIgnoredSecret(obj) {
+		contextutils.LoggerFrom(r.ctx).Debugf("ignoring secret %v which is not used to reconcile", sets.Key(obj))
+		return false, nil
+	}
+	contextutils.LoggerFrom(r.ctx).Debugf("object triggered resync: %T<%v>", obj, sets.Key(obj))
+
 	r.totalReconciles++
 	//return false, nil //noop
 	ctx := contextutils.WithLogger(r.ctx, fmt.Sprintf("reconcile-%v", r.totalReconciles))
@@ -98,4 +108,13 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Sn
 	outputSnap.ApplyLocalCluster(ctx, r.masterClient, errHandler)
 
 	return errHandler.Errors()
+}
+
+// returns true if the passed object is a secret which is of a type that is ignored by SMH
+func isIgnoredSecret(obj ezkube.ResourceId) bool {
+	secret, ok := obj.(*corev1.Secret)
+	if !ok {
+		return false
+	}
+	return !mtls.IsSigningCert(secret)
 }

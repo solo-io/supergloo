@@ -49,6 +49,7 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		contextutils.LoggerFrom(r.ctx).Debugf("ignoring object %v which is being used for leader election", sets.Key(obj))
 		return false, nil
 	}
+	contextutils.LoggerFrom(r.ctx).Debugf("object triggered resync: %T<%v>", obj, sets.Key(obj))
 
 	inputSnap, err := r.builder.BuildSnapshot(r.ctx, "mesh-discovery", input.BuildOptions{})
 	if err != nil {

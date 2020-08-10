@@ -87,6 +87,108 @@ func (mr *MockDecoratorMockRecorder) DecoratorName() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecoratorName", reflect.TypeOf((*MockDecorator)(nil).DecoratorName))
 }
 
+// MockVirtualMeshDestinationRuleDecorator is a mock of VirtualMeshDestinationRuleDecorator interface.
+type MockVirtualMeshDestinationRuleDecorator struct {
+	ctrl     *gomock.Controller
+	recorder *MockVirtualMeshDestinationRuleDecoratorMockRecorder
+}
+
+// MockVirtualMeshDestinationRuleDecoratorMockRecorder is the mock recorder for MockVirtualMeshDestinationRuleDecorator.
+type MockVirtualMeshDestinationRuleDecoratorMockRecorder struct {
+	mock *MockVirtualMeshDestinationRuleDecorator
+}
+
+// NewMockVirtualMeshDestinationRuleDecorator creates a new mock instance.
+func NewMockVirtualMeshDestinationRuleDecorator(ctrl *gomock.Controller) *MockVirtualMeshDestinationRuleDecorator {
+	mock := &MockVirtualMeshDestinationRuleDecorator{ctrl: ctrl}
+	mock.recorder = &MockVirtualMeshDestinationRuleDecoratorMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockVirtualMeshDestinationRuleDecorator) EXPECT() *MockVirtualMeshDestinationRuleDecoratorMockRecorder {
+	return m.recorder
+}
+
+// DecoratorName mocks base method.
+func (m *MockVirtualMeshDestinationRuleDecorator) DecoratorName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DecoratorName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// DecoratorName indicates an expected call of DecoratorName.
+func (mr *MockVirtualMeshDestinationRuleDecoratorMockRecorder) DecoratorName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecoratorName", reflect.TypeOf((*MockVirtualMeshDestinationRuleDecorator)(nil).DecoratorName))
+}
+
+// ApplyVirtualMeshToDestinationRule mocks base method.
+func (m *MockVirtualMeshDestinationRuleDecorator) ApplyVirtualMeshToDestinationRule(appliedVirtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh, service *v1alpha2.MeshService, output *v1alpha3.DestinationRule, registerField decorators.RegisterField) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApplyVirtualMeshToDestinationRule", appliedVirtualMesh, service, output, registerField)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ApplyVirtualMeshToDestinationRule indicates an expected call of ApplyVirtualMeshToDestinationRule.
+func (mr *MockVirtualMeshDestinationRuleDecoratorMockRecorder) ApplyVirtualMeshToDestinationRule(appliedVirtualMesh, service, output, registerField interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyVirtualMeshToDestinationRule", reflect.TypeOf((*MockVirtualMeshDestinationRuleDecorator)(nil).ApplyVirtualMeshToDestinationRule), appliedVirtualMesh, service, output, registerField)
+}
+
+// MockVirtualMeshServiceEntryDecorator is a mock of VirtualMeshServiceEntryDecorator interface.
+type MockVirtualMeshServiceEntryDecorator struct {
+	ctrl     *gomock.Controller
+	recorder *MockVirtualMeshServiceEntryDecoratorMockRecorder
+}
+
+// MockVirtualMeshServiceEntryDecoratorMockRecorder is the mock recorder for MockVirtualMeshServiceEntryDecorator.
+type MockVirtualMeshServiceEntryDecoratorMockRecorder struct {
+	mock *MockVirtualMeshServiceEntryDecorator
+}
+
+// NewMockVirtualMeshServiceEntryDecorator creates a new mock instance.
+func NewMockVirtualMeshServiceEntryDecorator(ctrl *gomock.Controller) *MockVirtualMeshServiceEntryDecorator {
+	mock := &MockVirtualMeshServiceEntryDecorator{ctrl: ctrl}
+	mock.recorder = &MockVirtualMeshServiceEntryDecoratorMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockVirtualMeshServiceEntryDecorator) EXPECT() *MockVirtualMeshServiceEntryDecoratorMockRecorder {
+	return m.recorder
+}
+
+// DecoratorName mocks base method.
+func (m *MockVirtualMeshServiceEntryDecorator) DecoratorName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DecoratorName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// DecoratorName indicates an expected call of DecoratorName.
+func (mr *MockVirtualMeshServiceEntryDecoratorMockRecorder) DecoratorName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecoratorName", reflect.TypeOf((*MockVirtualMeshServiceEntryDecorator)(nil).DecoratorName))
+}
+
+// ApplyVirtualMeshToServiceEntry mocks base method.
+func (m *MockVirtualMeshServiceEntryDecorator) ApplyVirtualMeshToServiceEntry(appliedVirtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh, service *v1alpha2.MeshService, output *v1alpha3.ServiceEntry, registerField decorators.RegisterField) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApplyVirtualMeshToServiceEntry", appliedVirtualMesh, service, output, registerField)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ApplyVirtualMeshToServiceEntry indicates an expected call of ApplyVirtualMeshToServiceEntry.
+func (mr *MockVirtualMeshServiceEntryDecoratorMockRecorder) ApplyVirtualMeshToServiceEntry(appliedVirtualMesh, service, output, registerField interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyVirtualMeshToServiceEntry", reflect.TypeOf((*MockVirtualMeshServiceEntryDecorator)(nil).ApplyVirtualMeshToServiceEntry), appliedVirtualMesh, service, output, registerField)
+}
+
 // MockTrafficPolicyDestinationRuleDecorator is a mock of TrafficPolicyDestinationRuleDecorator interface.
 type MockTrafficPolicyDestinationRuleDecorator struct {
 	ctrl     *gomock.Controller
@@ -136,57 +238,6 @@ func (m *MockTrafficPolicyDestinationRuleDecorator) ApplyTrafficPolicyToDestinat
 func (mr *MockTrafficPolicyDestinationRuleDecoratorMockRecorder) ApplyTrafficPolicyToDestinationRule(appliedPolicy, service, output, registerField interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyTrafficPolicyToDestinationRule", reflect.TypeOf((*MockTrafficPolicyDestinationRuleDecorator)(nil).ApplyTrafficPolicyToDestinationRule), appliedPolicy, service, output, registerField)
-}
-
-// MockAggregatingTrafficPolicyDestinationRuleDecorator is a mock of AggregatingTrafficPolicyDestinationRuleDecorator interface.
-type MockAggregatingTrafficPolicyDestinationRuleDecorator struct {
-	ctrl     *gomock.Controller
-	recorder *MockAggregatingTrafficPolicyDestinationRuleDecoratorMockRecorder
-}
-
-// MockAggregatingTrafficPolicyDestinationRuleDecoratorMockRecorder is the mock recorder for MockAggregatingTrafficPolicyDestinationRuleDecorator.
-type MockAggregatingTrafficPolicyDestinationRuleDecoratorMockRecorder struct {
-	mock *MockAggregatingTrafficPolicyDestinationRuleDecorator
-}
-
-// NewMockAggregatingTrafficPolicyDestinationRuleDecorator creates a new mock instance.
-func NewMockAggregatingTrafficPolicyDestinationRuleDecorator(ctrl *gomock.Controller) *MockAggregatingTrafficPolicyDestinationRuleDecorator {
-	mock := &MockAggregatingTrafficPolicyDestinationRuleDecorator{ctrl: ctrl}
-	mock.recorder = &MockAggregatingTrafficPolicyDestinationRuleDecoratorMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockAggregatingTrafficPolicyDestinationRuleDecorator) EXPECT() *MockAggregatingTrafficPolicyDestinationRuleDecoratorMockRecorder {
-	return m.recorder
-}
-
-// DecoratorName mocks base method.
-func (m *MockAggregatingTrafficPolicyDestinationRuleDecorator) DecoratorName() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DecoratorName")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// DecoratorName indicates an expected call of DecoratorName.
-func (mr *MockAggregatingTrafficPolicyDestinationRuleDecoratorMockRecorder) DecoratorName() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecoratorName", reflect.TypeOf((*MockAggregatingTrafficPolicyDestinationRuleDecorator)(nil).DecoratorName))
-}
-
-// ApplyAllTrafficPoliciesToDestinationRule mocks base method.
-func (m *MockAggregatingTrafficPolicyDestinationRuleDecorator) ApplyAllTrafficPoliciesToDestinationRule(allAppliedPolicies []*v1alpha2.MeshServiceStatus_AppliedTrafficPolicy, output *v1alpha3.DestinationRule, registerField decorators.RegisterField) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ApplyAllTrafficPoliciesToDestinationRule", allAppliedPolicies, output, registerField)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ApplyAllTrafficPoliciesToDestinationRule indicates an expected call of ApplyAllTrafficPoliciesToDestinationRule.
-func (mr *MockAggregatingTrafficPolicyDestinationRuleDecoratorMockRecorder) ApplyAllTrafficPoliciesToDestinationRule(allAppliedPolicies, output, registerField interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyAllTrafficPoliciesToDestinationRule", reflect.TypeOf((*MockAggregatingTrafficPolicyDestinationRuleDecorator)(nil).ApplyAllTrafficPoliciesToDestinationRule), allAppliedPolicies, output, registerField)
 }
 
 // MockTrafficPolicyVirtualServiceDecorator is a mock of TrafficPolicyVirtualServiceDecorator interface.

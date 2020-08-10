@@ -132,7 +132,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	svcRef := &v1.ClusterObjectRef{
 		Name:        kubeDest.Name,
 		Namespace:   kubeDest.Namespace,
-		ClusterName: kubeDest.Cluster,
+		ClusterName: kubeDest.ClusterName,
 	}
 
 	// validate destination service is a known meshservice
@@ -170,7 +170,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 
 	if kubeDest.Subset != nil {
 		// cross-cluster subsets are currently unsupported, so return an error on the traffic policy
-		if kubeDest.Cluster != sourceCluster {
+		if kubeDest.ClusterName != sourceCluster {
 			return nil, MultiClusterSubsetsNotSupportedErr(kubeDest)
 		}
 
@@ -181,12 +181,17 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	return httpRouteDestination, nil
 }
 
-// exposed for use in translators that initialize DestinationRules
+// make all the necessary subsets for the destination rule for the given meshservice.
+// traverses all the applied traffic policies to find subsets matching this meshervice
 func MakeDestinationRuleSubsets(
-	appliedPolicies []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
+	meshService *discoveryv1alpha2.MeshService,
+	allMeshServices discoveryv1alpha2sets.MeshServiceSet,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
 	appendUniqueSubset := func(subsetLabels map[string]string) {
+		if len(subsetLabels) == 0 {
+			return
+		}
 		for _, subset := range uniqueSubsets {
 			if reflect.DeepEqual(subset, subsetLabels) {
 				return
@@ -195,13 +200,20 @@ func MakeDestinationRuleSubsets(
 		uniqueSubsets = append(uniqueSubsets, subsetLabels)
 	}
 
-	for _, policy := range appliedPolicies {
-		for _, destination := range policy.GetSpec().GetTrafficShift().GetDestinations() {
-			if subsetLabels := destination.GetKubeService().GetSubset(); len(subsetLabels) > 0 {
-				appendUniqueSubset(subsetLabels)
+	allMeshServices.List(func(service *discoveryv1alpha2.MeshService) bool {
+		for _, policy := range service.Status.AppliedTrafficPolicies {
+			trafficShiftDestinations := policy.Spec.GetTrafficShift().GetDestinations()
+			for _, dest := range trafficShiftDestinations {
+				switch destType := dest.DestinationType.(type) {
+				case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
+					if meshserviceutils.IsMeshServiceForKubeService(meshService, destType.KubeService) {
+						appendUniqueSubset(destType.KubeService.Subset)
+					}
+				}
 			}
 		}
-	}
+		return true
+	})
 
 	var subsets []*networkingv1alpha3spec.Subset
 	for _, subsetLabels := range uniqueSubsets {
