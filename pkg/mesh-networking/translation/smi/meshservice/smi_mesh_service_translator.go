@@ -59,7 +59,7 @@ func (t *translator) Translate(
 	reporter reporting.Reporter,
 ) {
 	// only translate istio meshServices
-	if !t.isIstioMeshService(t.ctx, meshService, t.allMeshes) {
+	if !t.isSmiMeshService(t.ctx, meshService, t.allMeshes) {
 		return
 	}
 
@@ -72,7 +72,7 @@ func (t *translator) Translate(
 	outputs.AddAuthorizationPolicies(ap)
 }
 
-func (t *translator) isIstioMeshService(
+func (t *translator) isSmiMeshService(
 	ctx context.Context,
 	meshService *discoveryv1alpha2.MeshService,
 	allMeshes v1alpha2sets.MeshSet,
