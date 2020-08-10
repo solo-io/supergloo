@@ -198,6 +198,29 @@ EOF
 
 }
 
+function install_osm() {
+  cluster=$1
+  port=$2
+  K="kubectl --context=kind-${cluster}"
+
+  echo "installing osm to ${cluster}..."
+
+  # install in permissive mode for testing
+  osm install --enable-permissive-traffic-policy
+
+  for i in bookstore bookbuyer bookthief bookwarehouse; do kubectl create ns $i; done
+
+  for i in bookstore bookbuyer bookthief bookwarehouse; do osm namespace add $i; done
+
+  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/apps/bookbuyer.yaml
+  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/apps/bookstore-v1.yaml
+  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/apps/bookthief.yaml
+  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/apps/bookwarehouse.yaml
+  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/access/traffic-access.yaml
+  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/bookstore-v2/bookstore-v2.yaml
+  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/bookstore-v2/traffic-access-v2.yaml
+}
+
 function register_cluster() {
   cluster=$1
   K="kubectl --context=kind-${cluster}"

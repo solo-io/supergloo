@@ -23,29 +23,55 @@ if [ "$1" == "cleanup" ]; then
   exit 0
 fi
 
+
+
 # NOTE(ilackarms): we run the setup_kind clusters sequentially due to this bug:
 # related: https://github.com/kubernetes-sigs/kind/issues/1596
-create_kind_cluster ${masterCluster} 32001
-install_istio ${masterCluster} 32001 &
+if [ "$1" == "osm" ]; then
+  # optionally install open service mesh
+  create_kind_cluster ${masterCluster} 32001
+  install_osm ${masterCluster} 32001 &
 
-create_kind_cluster ${remoteCluster} 32000
-install_istio ${remoteCluster} 32000 &
+  wait
+
+  echo setup successfully set up clusters.
+
+  # install service mesh hub
+  ${PROJECT_ROOT}/ci/setup-smh.sh ${masterCluster}
+
+  # sleep to allow crds to register
+  sleep 4
+
+  # register clusters
+  register_cluster ${masterCluster} &
+
+  wait
+
+else
+  # default to istio install
+  create_kind_cluster ${masterCluster} 32001
+  install_istio ${masterCluster} 32001 &
+
+  create_kind_cluster ${remoteCluster} 32000
+  install_istio ${remoteCluster} 32000 &
+
+  wait
+
+  echo setup successfully set up clusters.
+
+  # install service mesh hub
+  ${PROJECT_ROOT}/ci/setup-smh.sh ${masterCluster}
+
+  # sleep to allow crds to register
+  sleep 4
+
+  # register clusters
+  register_cluster ${masterCluster} &
+  register_cluster ${remoteCluster} &
 
 wait
 
-echo setup successfully set up clusters.
-
-# install service mesh hub
-${PROJECT_ROOT}/ci/setup-smh.sh ${masterCluster}
-
-# sleep to allow crds to register
-sleep 4
-
-# register clusters
-register_cluster ${masterCluster} &
-register_cluster ${remoteCluster} &
-
-wait
+fi
 
 # set current context to master cluster
 kubectl config use-context kind-${masterCluster}
