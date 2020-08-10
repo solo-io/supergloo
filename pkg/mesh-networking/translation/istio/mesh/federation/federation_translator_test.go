@@ -2,6 +2,7 @@ package federation_test
 
 import (
 	"context"
+	"github.com/solo-io/service-mesh-hub/test/data"
 
 	"github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
@@ -75,6 +76,17 @@ var _ = Describe("FederationTranslator", func() {
 		meshRef := ezkube.MakeObjectRef(mesh)
 		clientMeshRef := ezkube.MakeObjectRef(clientMesh)
 
+		makeTrafficSplit := func(subset map[string]string) *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy {
+			return &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{Spec: &data.TrafficShiftPolicy(
+				"",
+				"",
+				nil,
+				// NOTE(ilackarms): we only care about the subset labels here
+				subset,
+				0,
+			).Spec}
+		}
+
 		meshService1 := &discoveryv1alpha2.MeshService{
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec: discoveryv1alpha2.MeshServiceSpec{
@@ -98,6 +110,14 @@ var _ = Describe("FederationTranslator", func() {
 					},
 				}},
 				Mesh: meshRef,
+			},
+			// include some applied subsets
+			Status: discoveryv1alpha2.MeshServiceStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+					makeTrafficSplit(map[string]string{"foo": "bar"}),
+					makeTrafficSplit(map[string]string{"foo": "baz"}),
+					makeTrafficSplit(map[string]string{"bar": "qux"}),
+				},
 			},
 		}
 
@@ -254,6 +274,20 @@ var expectedDestinationRules = istiov1alpha3sets.NewDestinationRuleSet(&networki
 				Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 			},
 		},
+		Subsets: []*networkingv1alpha3spec.Subset{
+			{
+				Name:   "foo-bar",
+				Labels: map[string]string{"cluster": "cluster"},
+			},
+			{
+				Name:   "foo-baz",
+				Labels: map[string]string{"cluster": "cluster"},
+			},
+			{
+				Name:   "bar-qux",
+				Labels: map[string]string{"cluster": "cluster"},
+			},
+		},
 	},
 })
 var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
@@ -291,6 +325,7 @@ var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1a
 					"http": 8181,
 					"grpc": 8181,
 				},
+				Labels: map[string]string{"cluster": "cluster"},
 			},
 		},
 	},

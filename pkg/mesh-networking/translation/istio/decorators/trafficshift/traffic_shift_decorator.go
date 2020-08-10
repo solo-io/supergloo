@@ -45,7 +45,6 @@ type trafficShiftDecorator struct {
 }
 
 var _ decorators.TrafficPolicyVirtualServiceDecorator = &trafficShiftDecorator{}
-var _ decorators.AggregatingTrafficPolicyDestinationRuleDecorator = &trafficShiftDecorator{}
 
 func NewTrafficShiftDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
@@ -76,21 +75,6 @@ func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
 			return err
 		}
 		output.Route = trafficShiftDestinations
-	}
-	return nil
-}
-
-func (d *trafficShiftDecorator) ApplyAllTrafficPoliciesToDestinationRule(
-	appliedPolicies []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
-	output *networkingv1alpha3spec.DestinationRule,
-	registerField decorators.RegisterField,
-) error {
-	subsets := d.translateSubset(appliedPolicies)
-	if subsets != nil {
-		if err := registerField(&output.Subsets, subsets); err != nil {
-			return err
-		}
-		output.Subsets = subsets
 	}
 	return nil
 }
@@ -197,7 +181,8 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	return httpRouteDestination, nil
 }
 
-func (d *trafficShiftDecorator) translateSubset(
+// exposed for use in translators that initialize DestinationRules
+func MakeDestinationRuleSubsets(
 	appliedPolicies []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string

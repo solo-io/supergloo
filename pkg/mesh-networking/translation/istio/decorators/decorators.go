@@ -58,6 +58,35 @@ type Decorator interface {
 type RegisterField func(fieldPtr, val interface{}) error
 
 /*
+	Interface definitions for decorators which take VirtualMesh as an input and
+	decorate a given output resource.
+*/
+
+// a VirtualMeshDestinationRuleDecorator modifies the DestinationRule based on a VirtualMesh which applies to the MeshService.
+type VirtualMeshDestinationRuleDecorator interface {
+	Decorator
+
+	ApplyVirtualMeshToDestinationRule(
+		appliedVirtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh,
+		service *v1alpha2.MeshService,
+		output *networkingv1alpha3spec.DestinationRule,
+		registerField RegisterField,
+	) error
+}
+
+// a VirtualMeshServiceEntryDecorator modifies the ServiceEntry based on a VirtualMesh which applies to the MeshService.
+type VirtualMeshServiceEntryDecorator interface {
+	Decorator
+
+	ApplyVirtualMeshToServiceEntry(
+		appliedVirtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh,
+		service *v1alpha2.MeshService,
+		output *networkingv1alpha3spec.ServiceEntry,
+		registerField RegisterField,
+	) error
+}
+
+/*
 	Interface definitions for decorators which take TrafficPolicy as an input and
 	decorate a given output resource.
 */
@@ -69,17 +98,6 @@ type TrafficPolicyDestinationRuleDecorator interface {
 	ApplyTrafficPolicyToDestinationRule(
 		appliedPolicy *v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 		service *v1alpha2.MeshService,
-		output *networkingv1alpha3spec.DestinationRule,
-		registerField RegisterField,
-	) error
-}
-
-// an AggregatingTrafficPolicyDestinationRuleDecorator modifies the DestinationRule based on the entire list of TrafficPolicies which apply to the MeshService.
-type AggregatingTrafficPolicyDestinationRuleDecorator interface {
-	Decorator
-
-	ApplyAllTrafficPoliciesToDestinationRule(
-		allAppliedPolicies []*v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 		output *networkingv1alpha3spec.DestinationRule,
 		registerField RegisterField,
 	) error
