@@ -876,6 +876,8 @@ github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg
 github.com/sergi/go-diff v1.0.0/go.mod h1:0CfEIISq7TuYL3j771MWULgwwjU+GofnZX9QAmXWZgo=
 github.com/servicemeshinterface/smi-sdk-go v0.3.0 h1:tJ2D0u5KnbtmbZLfJNJtMZg4EqofyLTdmeQekSlgLSA=
 github.com/servicemeshinterface/smi-sdk-go v0.3.0/go.mod h1:/jM1BV6xy7OgcmHuZ5cyMO4IC4dG2+ska2KsL1/8MLE=
+github.com/servicemeshinterface/smi-sdk-go v0.4.1 h1:L8nS7WtVlGoEJF7RdCbwh0Oj/JheGY+5fa3R+cA2ReY=
+github.com/servicemeshinterface/smi-sdk-go v0.4.1/go.mod h1:9rsLPBNcqfDNmEgyYwpopn93aE9yz46d2EHFBNOYj/w=
 github.com/shirou/gopsutil v0.0.0-20181107111621-48177ef5f880/go.mod h1:5b4v6he4MtMOwMlS0TUMTu2PcXUg8+E1lC7eC3UO/RA=
 github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4/go.mod h1:qsXQc7+bwAM3Q1u/4XEfrquwF8Lw7D7y5cD8CuHnfIc=
 github.com/shurcooL/githubv4 v0.0.0-20190625031733-ee671ab25ff0/go.mod h1:hAF0iLZy4td2EX+/8Tw+4nodhlMrwN3HupfaXj3zkGo=
@@ -899,6 +901,8 @@ github.com/solo-io/anyvendor v0.0.1 h1:csAXLNLkUQWlr/ll4tgmc+Id9kHw2ibncf35weg03
 github.com/solo-io/anyvendor v0.0.1/go.mod h1:SLucIeU8qBOYI82BveNVn2LzZFcMWJSCf8Kd1S4Jcr4=
 github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528 h1:EGFHOSNosZ6f1n7bKlVqKoGuzzX+j7fNDv8QrgpYYHs=
 github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528/go.mod h1:RnyllmkXvBBBAVJPlQnkc1uVKJ1ckYOZGX13uhTwGGM=
+github.com/solo-io/external-apis v0.0.6 h1:AXXxrgT2QVBVR5n04Qj6Bml14aWTrXXHWkMrknebe4w=
+github.com/solo-io/external-apis v0.0.6/go.mod h1:bAI7nedgxkHR4x3RgQ113Ir2Nfkfs9ndbdGaj8vQAYU=
 github.com/solo-io/go-utils v0.13.0/go.mod h1:pA8kwWDNlJueffTcC1BYddTerO8zpUUGl5/7JGeC5iU=
 github.com/solo-io/go-utils v0.15.2/go.mod h1:pA8kwWDNlJueffTcC1BYddTerO8zpUUGl5/7JGeC5iU=
 github.com/solo-io/go-utils v0.16.0 h1:VC5/aTqM6qmx6TwP4bmmABRTLeseOAnNS84+Aqrbf0Y=
@@ -909,6 +913,8 @@ github.com/solo-io/protoc-gen-ext v0.0.9/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz
 github.com/solo-io/skv2 v0.7.3-0.20200720193056-82d0f8632ef9/go.mod h1:yQqXNZgCWZ2LqrjK8I41YBjF6NpNSdaEBw2ipcqgDco=
 github.com/solo-io/skv2 v0.8.1-0.20200805155126-6f89a6186916 h1:EOx/E2f/1UO0i6GxPWOK7sA0bVLS9460lYDzBFe2cjk=
 github.com/solo-io/skv2 v0.8.1-0.20200805155126-6f89a6186916/go.mod h1:lYmLP3IZtbQw2H4nlQbaOoDL3hgwQylHWiNArI1jYbA=
+github.com/solo-io/skv2 v0.8.1 h1:M45iMM97a3z5pSRYxcw8hScmqYcP6+oFxrtjauos8Ms=
+github.com/solo-io/skv2 v0.8.1/go.mod h1:Da9SOUuIlb61Fxi3E/aFFXjxzRAAvx34qglWrNg3wEQ=
 github.com/solo-io/solo-kit v0.13.8 h1:3FVs2g71vQp1zjrEh9kdjAQ650MijRxRW/X2E00eghI=
 github.com/solo-io/solo-kit v0.13.8/go.mod h1:1cSoxO1Cgzn++03nnp5V1iGf0S45OLDTUmj70rD/+hY=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
@@ -1266,6 +1272,7 @@ google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6/go.mod h1:n3cpQtvx
 google.golang.org/genproto v0.0.0-20191216164720-4f79533eabd1/go.mod h1:n3cpQtvxv34hfy77yVDNjmbRyujviMdxYliBSkLhpCc=
 google.golang.org/genproto v0.0.0-20191223191004-3caeed10a8bf h1:1x8rC5/IgdLMPbPTvlQTN28+rcy8XL9Q19UWUMDyqYs=
 google.golang.org/genproto v0.0.0-20191223191004-3caeed10a8bf/go.mod h1:n3cpQtvxv34hfy77yVDNjmbRyujviMdxYliBSkLhpCc=
+google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24/go.mod h1:n3cpQtvxv34hfy77yVDNjmbRyujviMdxYliBSkLhpCc=
 google.golang.org/grpc v1.14.0/go.mod h1:yo6s7OP7yaDglbqo1J04qKzAhqBH6lvTonzMVmEdcZw=
 google.golang.org/grpc v1.16.0/go.mod h1:0JHn/cJsOMiMfNA9+DeHDlAU7KAAB5GDlYFpa9MZMio=
 google.golang.org/grpc v1.17.0/go.mod h1:6QZJwpn2B+Zp71q/5VxRsJ6NXXVCE5NRUHRo+f3cWCs=
@@ -1337,8 +1344,12 @@ istio.io/api v0.0.0-20190515205759-982e5c3888c6/go.mod h1:hhLFQmpHia8zgaM37vb2ml
 istio.io/api v0.0.0-20200213230120-00efe7317328/go.mod h1:bcY3prusO/6vA6zGHz4PNG2v79clPyTw06Xx3fprJSQ=
 istio.io/api v0.0.0-20200610220835-a1a958746907 h1:8zvSmV6s7kEyR/KI/5lBOeCh0oXzVfYph8sfak2Cx0k=
 istio.io/api v0.0.0-20200610220835-a1a958746907/go.mod h1:uXD10AwGZkxIrVKTntYm2uyFWQQfNzhAGkIxLfRNocs=
+istio.io/api v0.0.0-20200807153343-42453f1c8ffc h1:1biR5ESeewdudLhfFCUP683FsFoNlmQR9NPl4Oyzi+8=
+istio.io/api v0.0.0-20200807153343-42453f1c8ffc/go.mod h1:88HN3o1fSD1jo+Z1WTLlJfMm9biopur6Ct9BFKjiB64=
 istio.io/client-go v0.0.0-20200610222318-1cfead1f1938 h1:YDUe60UTScZqwgbxbQU5Ta49YSucJ93cHptb0BtUS3Q=
 istio.io/client-go v0.0.0-20200610222318-1cfead1f1938/go.mod h1:WdL2eDruJRYIVMggI/UJIYfDpOwOCFiFchIsQvf+XGU=
+istio.io/client-go v0.0.0-20200807223845-61c70ad04ec9 h1:wIQ5qrSBR8MZCssrIk0r7cAV+mRadn6/DucaSJ5Cwy0=
+istio.io/client-go v0.0.0-20200807223845-61c70ad04ec9/go.mod h1:5oqiJTfg7GsSYfKeix2L5vYaiAP18PNRhoOSrNziVlM=
 istio.io/gogo-genproto v0.0.0-20190124151557-6d926a6e6feb/go.mod h1:eIDJ6jNk/IeJz6ODSksHl5Aiczy5JUq6vFhJWI5OtiI=
 istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a/go.mod h1:OzpAts7jljZceG4Vqi5/zXy/pOg1b209T3jb7Nv5wIs=
 istio.io/gogo-genproto v0.0.0-20200122005450-9b171d92064b h1:IGfxOYlHvdE5UeSCGvOFNHVQcPGJYAAUQ5iJm2Z7i18=

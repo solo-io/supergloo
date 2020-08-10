@@ -6,13 +6,14 @@ package mock_internal
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh"
 	meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice"
 	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
-	reflect "reflect"
 )
 
 // MockDependencyFactory is a mock of DependencyFactory interface
@@ -39,17 +40,17 @@ func (m *MockDependencyFactory) EXPECT() *MockDependencyFactoryMockRecorder {
 }
 
 // MakeMeshServiceTranslator mocks base method
-func (m *MockDependencyFactory) MakeMeshServiceTranslator(ctx context.Context, clusters v1alpha1sets.KubernetesClusterSet, meshes v1alpha2sets.MeshSet) meshservice.Translator {
+func (m *MockDependencyFactory) MakeMeshServiceTranslator(clusters v1alpha1sets.KubernetesClusterSet) meshservice.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeMeshServiceTranslator", ctx, clusters, meshes)
+	ret := m.ctrl.Call(m, "MakeMeshServiceTranslator", clusters)
 	ret0, _ := ret[0].(meshservice.Translator)
 	return ret0
 }
 
 // MakeMeshServiceTranslator indicates an expected call of MakeMeshServiceTranslator
-func (mr *MockDependencyFactoryMockRecorder) MakeMeshServiceTranslator(ctx, clusters, meshes interface{}) *gomock.Call {
+func (mr *MockDependencyFactoryMockRecorder) MakeMeshServiceTranslator(clusters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshServiceTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshServiceTranslator), ctx, clusters, meshes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshServiceTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshServiceTranslator), clusters)
 }
 
 // MakeMeshTranslator mocks base method

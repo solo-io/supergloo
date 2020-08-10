@@ -29,7 +29,7 @@ message MeshSpec {
     AgentInfo agent_info = 5;
 
     // translate to SMI resources for this mesh
-    bool smi_enabled = 6;
+    bool smi_enabled = 7;
 
     // Mesh object representing an installed Istio control plane
     message Istio {

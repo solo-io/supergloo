@@ -25,18 +25,8 @@ import (
 // NOTE(ilackarms): private interface used here as it's not expected we'll need to
 // define our DependencyFactory anywhere else
 type DependencyFactory interface {
-	MakeMeshServiceTranslator(
-		ctx context.Context,
-		clusters skv1alpha1sets.KubernetesClusterSet,
-		meshes discoveryv1alpha2sets.MeshSet,
-	) meshservice.Translator
-
-	MakeMeshTranslator(
-		ctx context.Context,
-		clusters skv1alpha1sets.KubernetesClusterSet,
-		secrets corev1sets.SecretSet,
-		meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet,
-	) mesh.Translator
+	MakeMeshServiceTranslator(clusters skv1alpha1sets.KubernetesClusterSet) meshservice.Translator
+	MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet) mesh.Translator
 }
 
 type dependencyFactoryImpl struct{}
@@ -45,23 +35,14 @@ func NewDependencyFactory() DependencyFactory {
 	return dependencyFactoryImpl{}
 }
 
-func (d dependencyFactoryImpl) MakeMeshServiceTranslator(
-	ctx context.Context,
-	clusters skv1alpha1sets.KubernetesClusterSet,
-	meshes discoveryv1alpha2sets.MeshSet,
-) meshservice.Translator {
+func (d dependencyFactoryImpl) MakeMeshServiceTranslator(clusters skv1alpha1sets.KubernetesClusterSet) meshservice.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	decoratorFactory := decorators.NewFactory()
 
-	return meshservice.NewTranslator(ctx, meshes, clusterDomains, decoratorFactory)
+	return meshservice.NewTranslator(clusterDomains, decoratorFactory)
 }
 
-func (d dependencyFactoryImpl) MakeMeshTranslator(
-	ctx context.Context,
-	clusters skv1alpha1sets.KubernetesClusterSet,
-	secrets corev1sets.SecretSet,
-	meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet,
-) mesh.Translator {
+func (d dependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet) mesh.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	federationTranslator := federation.NewTranslator(ctx, clusterDomains)
 	mtlsTranslator := mtls.NewTranslator(ctx, secrets, meshWorkloads)

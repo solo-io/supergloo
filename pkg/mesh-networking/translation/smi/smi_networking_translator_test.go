@@ -18,7 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("IstioNetworkingTranslator", func() {
+var _ = Describe("SmiNetworkingTranslator", func() {
 	var (
 		ctrl                      *gomock.Controller
 		ctx                       context.Context
@@ -86,7 +86,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 
 		mockDependencyFactory.
 			EXPECT().
-			MakeMeshServiceTranslator(ctx, in.KubernetesClusters(), in.Meshes()).
+			MakeMeshServiceTranslator(in.KubernetesClusters()).
 			Return(mockMeshServiceTranslator)
 		for i := range in.MeshServices().List() {
 			mockMeshServiceTranslator.
