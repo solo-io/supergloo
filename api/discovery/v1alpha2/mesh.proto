@@ -27,6 +27,9 @@ message MeshSpec {
     // information about the SMH certificate agent, if it has been installed to the remote cluster.
     AgentInfo agent_info = 5;
 
+    // translate to SMI resources for this mesh
+    bool smi_enabled = 6;
+
     // Mesh object representing an installed Istio control plane
     message Istio {
 
