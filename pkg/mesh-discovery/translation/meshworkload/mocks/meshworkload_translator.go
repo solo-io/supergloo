@@ -12,30 +12,30 @@ import (
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 )
 
-// MockTranslator is a mock of Translator interface.
+// MockTranslator is a mock of Translator interface
 type MockTranslator struct {
 	ctrl     *gomock.Controller
 	recorder *MockTranslatorMockRecorder
 }
 
-// MockTranslatorMockRecorder is the mock recorder for MockTranslator.
+// MockTranslatorMockRecorder is the mock recorder for MockTranslator
 type MockTranslatorMockRecorder struct {
 	mock *MockTranslator
 }
 
-// NewMockTranslator creates a new mock instance.
+// NewMockTranslator creates a new mock instance
 func NewMockTranslator(ctrl *gomock.Controller) *MockTranslator {
 	mock := &MockTranslator{ctrl: ctrl}
 	mock.recorder = &MockTranslatorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 	return m.recorder
 }
 
-// TranslateMeshWorkloads mocks base method.
+// TranslateMeshWorkloads mocks base method
 func (m *MockTranslator) TranslateMeshWorkloads(deployments v1sets.DeploymentSet, daemonSets v1sets.DaemonSetSet, statefulSets v1sets.StatefulSetSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.MeshWorkloadSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranslateMeshWorkloads", deployments, daemonSets, statefulSets, meshes)
@@ -43,7 +43,7 @@ func (m *MockTranslator) TranslateMeshWorkloads(deployments v1sets.DeploymentSet
 	return ret0
 }
 
-// TranslateMeshWorkloads indicates an expected call of TranslateMeshWorkloads.
+// TranslateMeshWorkloads indicates an expected call of TranslateMeshWorkloads
 func (mr *MockTranslatorMockRecorder) TranslateMeshWorkloads(deployments, daemonSets, statefulSets, meshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateMeshWorkloads", reflect.TypeOf((*MockTranslator)(nil).TranslateMeshWorkloads), deployments, daemonSets, statefulSets, meshes)
