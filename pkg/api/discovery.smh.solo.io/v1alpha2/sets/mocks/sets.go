@@ -14,30 +14,30 @@ import (
 	sets "k8s.io/apimachinery/pkg/util/sets"
 )
 
-// MockMeshServiceSet is a mock of MeshServiceSet interface.
+// MockMeshServiceSet is a mock of MeshServiceSet interface
 type MockMeshServiceSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshServiceSetMockRecorder
 }
 
-// MockMeshServiceSetMockRecorder is the mock recorder for MockMeshServiceSet.
+// MockMeshServiceSetMockRecorder is the mock recorder for MockMeshServiceSet
 type MockMeshServiceSetMockRecorder struct {
 	mock *MockMeshServiceSet
 }
 
-// NewMockMeshServiceSet creates a new mock instance.
+// NewMockMeshServiceSet creates a new mock instance
 func NewMockMeshServiceSet(ctrl *gomock.Controller) *MockMeshServiceSet {
 	mock := &MockMeshServiceSet{ctrl: ctrl}
 	mock.recorder = &MockMeshServiceSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMeshServiceSet) EXPECT() *MockMeshServiceSetMockRecorder {
 	return m.recorder
 }
 
-// Keys mocks base method.
+// Keys mocks base method
 func (m *MockMeshServiceSet) Keys() sets.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
@@ -45,13 +45,13 @@ func (m *MockMeshServiceSet) Keys() sets.String {
 	return ret0
 }
 
-// Keys indicates an expected call of Keys.
+// Keys indicates an expected call of Keys
 func (mr *MockMeshServiceSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockMeshServiceSet)(nil).Keys))
 }
 
-// List mocks base method.
+// List mocks base method
 func (m *MockMeshServiceSet) List(filterResource ...func(*v1alpha2.MeshService) bool) []*v1alpha2.MeshService {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -63,13 +63,13 @@ func (m *MockMeshServiceSet) List(filterResource ...func(*v1alpha2.MeshService) 
 	return ret0
 }
 
-// List indicates an expected call of List.
+// List indicates an expected call of List
 func (mr *MockMeshServiceSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshServiceSet)(nil).List), filterResource...)
 }
 
-// Map mocks base method.
+// Map mocks base method
 func (m *MockMeshServiceSet) Map() map[string]*v1alpha2.MeshService {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Map")
@@ -77,13 +77,13 @@ func (m *MockMeshServiceSet) Map() map[string]*v1alpha2.MeshService {
 	return ret0
 }
 
-// Map indicates an expected call of Map.
+// Map indicates an expected call of Map
 func (mr *MockMeshServiceSetMockRecorder) Map() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockMeshServiceSet)(nil).Map))
 }
 
-// Insert mocks base method.
+// Insert mocks base method
 func (m *MockMeshServiceSet) Insert(meshService ...*v1alpha2.MeshService) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -93,13 +93,13 @@ func (m *MockMeshServiceSet) Insert(meshService ...*v1alpha2.MeshService) {
 	m.ctrl.Call(m, "Insert", varargs...)
 }
 
-// Insert indicates an expected call of Insert.
+// Insert indicates an expected call of Insert
 func (mr *MockMeshServiceSetMockRecorder) Insert(meshService ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockMeshServiceSet)(nil).Insert), meshService...)
 }
 
-// Equal mocks base method.
+// Equal mocks base method
 func (m *MockMeshServiceSet) Equal(meshServiceSet v1alpha2sets.MeshServiceSet) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Equal", meshServiceSet)
@@ -107,13 +107,13 @@ func (m *MockMeshServiceSet) Equal(meshServiceSet v1alpha2sets.MeshServiceSet) b
 	return ret0
 }
 
-// Equal indicates an expected call of Equal.
+// Equal indicates an expected call of Equal
 func (mr *MockMeshServiceSetMockRecorder) Equal(meshServiceSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockMeshServiceSet)(nil).Equal), meshServiceSet)
 }
 
-// Has mocks base method.
+// Has mocks base method
 func (m *MockMeshServiceSet) Has(meshService ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", meshService)
@@ -121,25 +121,25 @@ func (m *MockMeshServiceSet) Has(meshService ezkube.ResourceId) bool {
 	return ret0
 }
 
-// Has indicates an expected call of Has.
+// Has indicates an expected call of Has
 func (mr *MockMeshServiceSetMockRecorder) Has(meshService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockMeshServiceSet)(nil).Has), meshService)
 }
 
-// Delete mocks base method.
+// Delete mocks base method
 func (m *MockMeshServiceSet) Delete(meshService ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", meshService)
 }
 
-// Delete indicates an expected call of Delete.
+// Delete indicates an expected call of Delete
 func (mr *MockMeshServiceSetMockRecorder) Delete(meshService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshServiceSet)(nil).Delete), meshService)
 }
 
-// Union mocks base method.
+// Union mocks base method
 func (m *MockMeshServiceSet) Union(set v1alpha2sets.MeshServiceSet) v1alpha2sets.MeshServiceSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Union", set)
@@ -147,13 +147,13 @@ func (m *MockMeshServiceSet) Union(set v1alpha2sets.MeshServiceSet) v1alpha2sets
 	return ret0
 }
 
-// Union indicates an expected call of Union.
+// Union indicates an expected call of Union
 func (mr *MockMeshServiceSetMockRecorder) Union(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockMeshServiceSet)(nil).Union), set)
 }
 
-// Difference mocks base method.
+// Difference mocks base method
 func (m *MockMeshServiceSet) Difference(set v1alpha2sets.MeshServiceSet) v1alpha2sets.MeshServiceSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Difference", set)
@@ -161,13 +161,13 @@ func (m *MockMeshServiceSet) Difference(set v1alpha2sets.MeshServiceSet) v1alpha
 	return ret0
 }
 
-// Difference indicates an expected call of Difference.
+// Difference indicates an expected call of Difference
 func (mr *MockMeshServiceSetMockRecorder) Difference(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockMeshServiceSet)(nil).Difference), set)
 }
 
-// Intersection mocks base method.
+// Intersection mocks base method
 func (m *MockMeshServiceSet) Intersection(set v1alpha2sets.MeshServiceSet) v1alpha2sets.MeshServiceSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Intersection", set)
@@ -175,13 +175,13 @@ func (m *MockMeshServiceSet) Intersection(set v1alpha2sets.MeshServiceSet) v1alp
 	return ret0
 }
 
-// Intersection indicates an expected call of Intersection.
+// Intersection indicates an expected call of Intersection
 func (mr *MockMeshServiceSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockMeshServiceSet)(nil).Intersection), set)
 }
 
-// Find mocks base method.
+// Find mocks base method
 func (m *MockMeshServiceSet) Find(id ezkube.ResourceId) (*v1alpha2.MeshService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", id)
@@ -190,13 +190,13 @@ func (m *MockMeshServiceSet) Find(id ezkube.ResourceId) (*v1alpha2.MeshService, 
 	return ret0, ret1
 }
 
-// Find indicates an expected call of Find.
+// Find indicates an expected call of Find
 func (mr *MockMeshServiceSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockMeshServiceSet)(nil).Find), id)
 }
 
-// Length mocks base method.
+// Length mocks base method
 func (m *MockMeshServiceSet) Length() int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Length")
@@ -204,36 +204,36 @@ func (m *MockMeshServiceSet) Length() int {
 	return ret0
 }
 
-// Length indicates an expected call of Length.
+// Length indicates an expected call of Length
 func (mr *MockMeshServiceSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockMeshServiceSet)(nil).Length))
 }
 
-// MockMeshWorkloadSet is a mock of MeshWorkloadSet interface.
+// MockMeshWorkloadSet is a mock of MeshWorkloadSet interface
 type MockMeshWorkloadSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshWorkloadSetMockRecorder
 }
 
-// MockMeshWorkloadSetMockRecorder is the mock recorder for MockMeshWorkloadSet.
+// MockMeshWorkloadSetMockRecorder is the mock recorder for MockMeshWorkloadSet
 type MockMeshWorkloadSetMockRecorder struct {
 	mock *MockMeshWorkloadSet
 }
 
-// NewMockMeshWorkloadSet creates a new mock instance.
+// NewMockMeshWorkloadSet creates a new mock instance
 func NewMockMeshWorkloadSet(ctrl *gomock.Controller) *MockMeshWorkloadSet {
 	mock := &MockMeshWorkloadSet{ctrl: ctrl}
 	mock.recorder = &MockMeshWorkloadSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMeshWorkloadSet) EXPECT() *MockMeshWorkloadSetMockRecorder {
 	return m.recorder
 }
 
-// Keys mocks base method.
+// Keys mocks base method
 func (m *MockMeshWorkloadSet) Keys() sets.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
@@ -241,13 +241,13 @@ func (m *MockMeshWorkloadSet) Keys() sets.String {
 	return ret0
 }
 
-// Keys indicates an expected call of Keys.
+// Keys indicates an expected call of Keys
 func (mr *MockMeshWorkloadSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Keys))
 }
 
-// List mocks base method.
+// List mocks base method
 func (m *MockMeshWorkloadSet) List(filterResource ...func(*v1alpha2.MeshWorkload) bool) []*v1alpha2.MeshWorkload {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -259,13 +259,13 @@ func (m *MockMeshWorkloadSet) List(filterResource ...func(*v1alpha2.MeshWorkload
 	return ret0
 }
 
-// List indicates an expected call of List.
+// List indicates an expected call of List
 func (mr *MockMeshWorkloadSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshWorkloadSet)(nil).List), filterResource...)
 }
 
-// Map mocks base method.
+// Map mocks base method
 func (m *MockMeshWorkloadSet) Map() map[string]*v1alpha2.MeshWorkload {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Map")
@@ -273,13 +273,13 @@ func (m *MockMeshWorkloadSet) Map() map[string]*v1alpha2.MeshWorkload {
 	return ret0
 }
 
-// Map indicates an expected call of Map.
+// Map indicates an expected call of Map
 func (mr *MockMeshWorkloadSetMockRecorder) Map() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Map))
 }
 
-// Insert mocks base method.
+// Insert mocks base method
 func (m *MockMeshWorkloadSet) Insert(meshWorkload ...*v1alpha2.MeshWorkload) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -289,13 +289,13 @@ func (m *MockMeshWorkloadSet) Insert(meshWorkload ...*v1alpha2.MeshWorkload) {
 	m.ctrl.Call(m, "Insert", varargs...)
 }
 
-// Insert indicates an expected call of Insert.
+// Insert indicates an expected call of Insert
 func (mr *MockMeshWorkloadSetMockRecorder) Insert(meshWorkload ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Insert), meshWorkload...)
 }
 
-// Equal mocks base method.
+// Equal mocks base method
 func (m *MockMeshWorkloadSet) Equal(meshWorkloadSet v1alpha2sets.MeshWorkloadSet) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Equal", meshWorkloadSet)
@@ -303,13 +303,13 @@ func (m *MockMeshWorkloadSet) Equal(meshWorkloadSet v1alpha2sets.MeshWorkloadSet
 	return ret0
 }
 
-// Equal indicates an expected call of Equal.
+// Equal indicates an expected call of Equal
 func (mr *MockMeshWorkloadSetMockRecorder) Equal(meshWorkloadSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Equal), meshWorkloadSet)
 }
 
-// Has mocks base method.
+// Has mocks base method
 func (m *MockMeshWorkloadSet) Has(meshWorkload ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", meshWorkload)
@@ -317,25 +317,25 @@ func (m *MockMeshWorkloadSet) Has(meshWorkload ezkube.ResourceId) bool {
 	return ret0
 }
 
-// Has indicates an expected call of Has.
+// Has indicates an expected call of Has
 func (mr *MockMeshWorkloadSetMockRecorder) Has(meshWorkload interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Has), meshWorkload)
 }
 
-// Delete mocks base method.
+// Delete mocks base method
 func (m *MockMeshWorkloadSet) Delete(meshWorkload ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", meshWorkload)
 }
 
-// Delete indicates an expected call of Delete.
+// Delete indicates an expected call of Delete
 func (mr *MockMeshWorkloadSetMockRecorder) Delete(meshWorkload interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Delete), meshWorkload)
 }
 
-// Union mocks base method.
+// Union mocks base method
 func (m *MockMeshWorkloadSet) Union(set v1alpha2sets.MeshWorkloadSet) v1alpha2sets.MeshWorkloadSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Union", set)
@@ -343,13 +343,13 @@ func (m *MockMeshWorkloadSet) Union(set v1alpha2sets.MeshWorkloadSet) v1alpha2se
 	return ret0
 }
 
-// Union indicates an expected call of Union.
+// Union indicates an expected call of Union
 func (mr *MockMeshWorkloadSetMockRecorder) Union(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Union), set)
 }
 
-// Difference mocks base method.
+// Difference mocks base method
 func (m *MockMeshWorkloadSet) Difference(set v1alpha2sets.MeshWorkloadSet) v1alpha2sets.MeshWorkloadSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Difference", set)
@@ -357,13 +357,13 @@ func (m *MockMeshWorkloadSet) Difference(set v1alpha2sets.MeshWorkloadSet) v1alp
 	return ret0
 }
 
-// Difference indicates an expected call of Difference.
+// Difference indicates an expected call of Difference
 func (mr *MockMeshWorkloadSetMockRecorder) Difference(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Difference), set)
 }
 
-// Intersection mocks base method.
+// Intersection mocks base method
 func (m *MockMeshWorkloadSet) Intersection(set v1alpha2sets.MeshWorkloadSet) v1alpha2sets.MeshWorkloadSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Intersection", set)
@@ -371,13 +371,13 @@ func (m *MockMeshWorkloadSet) Intersection(set v1alpha2sets.MeshWorkloadSet) v1a
 	return ret0
 }
 
-// Intersection indicates an expected call of Intersection.
+// Intersection indicates an expected call of Intersection
 func (mr *MockMeshWorkloadSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Intersection), set)
 }
 
-// Find mocks base method.
+// Find mocks base method
 func (m *MockMeshWorkloadSet) Find(id ezkube.ResourceId) (*v1alpha2.MeshWorkload, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", id)
@@ -386,13 +386,13 @@ func (m *MockMeshWorkloadSet) Find(id ezkube.ResourceId) (*v1alpha2.MeshWorkload
 	return ret0, ret1
 }
 
-// Find indicates an expected call of Find.
+// Find indicates an expected call of Find
 func (mr *MockMeshWorkloadSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Find), id)
 }
 
-// Length mocks base method.
+// Length mocks base method
 func (m *MockMeshWorkloadSet) Length() int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Length")
@@ -400,36 +400,36 @@ func (m *MockMeshWorkloadSet) Length() int {
 	return ret0
 }
 
-// Length indicates an expected call of Length.
+// Length indicates an expected call of Length
 func (mr *MockMeshWorkloadSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockMeshWorkloadSet)(nil).Length))
 }
 
-// MockMeshSet is a mock of MeshSet interface.
+// MockMeshSet is a mock of MeshSet interface
 type MockMeshSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshSetMockRecorder
 }
 
-// MockMeshSetMockRecorder is the mock recorder for MockMeshSet.
+// MockMeshSetMockRecorder is the mock recorder for MockMeshSet
 type MockMeshSetMockRecorder struct {
 	mock *MockMeshSet
 }
 
-// NewMockMeshSet creates a new mock instance.
+// NewMockMeshSet creates a new mock instance
 func NewMockMeshSet(ctrl *gomock.Controller) *MockMeshSet {
 	mock := &MockMeshSet{ctrl: ctrl}
 	mock.recorder = &MockMeshSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMeshSet) EXPECT() *MockMeshSetMockRecorder {
 	return m.recorder
 }
 
-// Keys mocks base method.
+// Keys mocks base method
 func (m *MockMeshSet) Keys() sets.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
@@ -437,13 +437,13 @@ func (m *MockMeshSet) Keys() sets.String {
 	return ret0
 }
 
-// Keys indicates an expected call of Keys.
+// Keys indicates an expected call of Keys
 func (mr *MockMeshSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockMeshSet)(nil).Keys))
 }
 
-// List mocks base method.
+// List mocks base method
 func (m *MockMeshSet) List(filterResource ...func(*v1alpha2.Mesh) bool) []*v1alpha2.Mesh {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -455,13 +455,13 @@ func (m *MockMeshSet) List(filterResource ...func(*v1alpha2.Mesh) bool) []*v1alp
 	return ret0
 }
 
-// List indicates an expected call of List.
+// List indicates an expected call of List
 func (mr *MockMeshSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshSet)(nil).List), filterResource...)
 }
 
-// Map mocks base method.
+// Map mocks base method
 func (m *MockMeshSet) Map() map[string]*v1alpha2.Mesh {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Map")
@@ -469,13 +469,13 @@ func (m *MockMeshSet) Map() map[string]*v1alpha2.Mesh {
 	return ret0
 }
 
-// Map indicates an expected call of Map.
+// Map indicates an expected call of Map
 func (mr *MockMeshSetMockRecorder) Map() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockMeshSet)(nil).Map))
 }
 
-// Insert mocks base method.
+// Insert mocks base method
 func (m *MockMeshSet) Insert(mesh ...*v1alpha2.Mesh) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -485,13 +485,13 @@ func (m *MockMeshSet) Insert(mesh ...*v1alpha2.Mesh) {
 	m.ctrl.Call(m, "Insert", varargs...)
 }
 
-// Insert indicates an expected call of Insert.
+// Insert indicates an expected call of Insert
 func (mr *MockMeshSetMockRecorder) Insert(mesh ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockMeshSet)(nil).Insert), mesh...)
 }
 
-// Equal mocks base method.
+// Equal mocks base method
 func (m *MockMeshSet) Equal(meshSet v1alpha2sets.MeshSet) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Equal", meshSet)
@@ -499,13 +499,13 @@ func (m *MockMeshSet) Equal(meshSet v1alpha2sets.MeshSet) bool {
 	return ret0
 }
 
-// Equal indicates an expected call of Equal.
+// Equal indicates an expected call of Equal
 func (mr *MockMeshSetMockRecorder) Equal(meshSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockMeshSet)(nil).Equal), meshSet)
 }
 
-// Has mocks base method.
+// Has mocks base method
 func (m *MockMeshSet) Has(mesh ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", mesh)
@@ -513,25 +513,25 @@ func (m *MockMeshSet) Has(mesh ezkube.ResourceId) bool {
 	return ret0
 }
 
-// Has indicates an expected call of Has.
+// Has indicates an expected call of Has
 func (mr *MockMeshSetMockRecorder) Has(mesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockMeshSet)(nil).Has), mesh)
 }
 
-// Delete mocks base method.
+// Delete mocks base method
 func (m *MockMeshSet) Delete(mesh ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", mesh)
 }
 
-// Delete indicates an expected call of Delete.
+// Delete indicates an expected call of Delete
 func (mr *MockMeshSetMockRecorder) Delete(mesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshSet)(nil).Delete), mesh)
 }
 
-// Union mocks base method.
+// Union mocks base method
 func (m *MockMeshSet) Union(set v1alpha2sets.MeshSet) v1alpha2sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Union", set)
@@ -539,13 +539,13 @@ func (m *MockMeshSet) Union(set v1alpha2sets.MeshSet) v1alpha2sets.MeshSet {
 	return ret0
 }
 
-// Union indicates an expected call of Union.
+// Union indicates an expected call of Union
 func (mr *MockMeshSetMockRecorder) Union(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockMeshSet)(nil).Union), set)
 }
 
-// Difference mocks base method.
+// Difference mocks base method
 func (m *MockMeshSet) Difference(set v1alpha2sets.MeshSet) v1alpha2sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Difference", set)
@@ -553,13 +553,13 @@ func (m *MockMeshSet) Difference(set v1alpha2sets.MeshSet) v1alpha2sets.MeshSet 
 	return ret0
 }
 
-// Difference indicates an expected call of Difference.
+// Difference indicates an expected call of Difference
 func (mr *MockMeshSetMockRecorder) Difference(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockMeshSet)(nil).Difference), set)
 }
 
-// Intersection mocks base method.
+// Intersection mocks base method
 func (m *MockMeshSet) Intersection(set v1alpha2sets.MeshSet) v1alpha2sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Intersection", set)
@@ -567,13 +567,13 @@ func (m *MockMeshSet) Intersection(set v1alpha2sets.MeshSet) v1alpha2sets.MeshSe
 	return ret0
 }
 
-// Intersection indicates an expected call of Intersection.
+// Intersection indicates an expected call of Intersection
 func (mr *MockMeshSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockMeshSet)(nil).Intersection), set)
 }
 
-// Find mocks base method.
+// Find mocks base method
 func (m *MockMeshSet) Find(id ezkube.ResourceId) (*v1alpha2.Mesh, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", id)
@@ -582,13 +582,13 @@ func (m *MockMeshSet) Find(id ezkube.ResourceId) (*v1alpha2.Mesh, error) {
 	return ret0, ret1
 }
 
-// Find indicates an expected call of Find.
+// Find indicates an expected call of Find
 func (mr *MockMeshSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockMeshSet)(nil).Find), id)
 }
 
-// Length mocks base method.
+// Length mocks base method
 func (m *MockMeshSet) Length() int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Length")
@@ -596,7 +596,7 @@ func (m *MockMeshSet) Length() int {
 	return ret0
 }
 
-// Length indicates an expected call of Length.
+// Length indicates an expected call of Length
 func (mr *MockMeshSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockMeshSet)(nil).Length))

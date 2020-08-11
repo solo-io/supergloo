@@ -13,30 +13,30 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// MockSidecarDetector is a mock of SidecarDetector interface.
+// MockSidecarDetector is a mock of SidecarDetector interface
 type MockSidecarDetector struct {
 	ctrl     *gomock.Controller
 	recorder *MockSidecarDetectorMockRecorder
 }
 
-// MockSidecarDetectorMockRecorder is the mock recorder for MockSidecarDetector.
+// MockSidecarDetectorMockRecorder is the mock recorder for MockSidecarDetector
 type MockSidecarDetectorMockRecorder struct {
 	mock *MockSidecarDetector
 }
 
-// NewMockSidecarDetector creates a new mock instance.
+// NewMockSidecarDetector creates a new mock instance
 func NewMockSidecarDetector(ctrl *gomock.Controller) *MockSidecarDetector {
 	mock := &MockSidecarDetector{ctrl: ctrl}
 	mock.recorder = &MockSidecarDetectorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSidecarDetector) EXPECT() *MockSidecarDetectorMockRecorder {
 	return m.recorder
 }
 
-// DetectMeshSidecar mocks base method.
+// DetectMeshSidecar mocks base method
 func (m *MockSidecarDetector) DetectMeshSidecar(pod *v1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DetectMeshSidecar", pod, meshes)
@@ -44,7 +44,7 @@ func (m *MockSidecarDetector) DetectMeshSidecar(pod *v1.Pod, meshes v1alpha2sets
 	return ret0
 }
 
-// DetectMeshSidecar indicates an expected call of DetectMeshSidecar.
+// DetectMeshSidecar indicates an expected call of DetectMeshSidecar
 func (mr *MockSidecarDetectorMockRecorder) DetectMeshSidecar(pod, meshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetectMeshSidecar", reflect.TypeOf((*MockSidecarDetector)(nil).DetectMeshSidecar), pod, meshes)

@@ -15,30 +15,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockMulticlusterTrafficPolicyReconciler is a mock of MulticlusterTrafficPolicyReconciler interface.
+// MockMulticlusterTrafficPolicyReconciler is a mock of MulticlusterTrafficPolicyReconciler interface
 type MockMulticlusterTrafficPolicyReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterTrafficPolicyReconcilerMockRecorder
 }
 
-// MockMulticlusterTrafficPolicyReconcilerMockRecorder is the mock recorder for MockMulticlusterTrafficPolicyReconciler.
+// MockMulticlusterTrafficPolicyReconcilerMockRecorder is the mock recorder for MockMulticlusterTrafficPolicyReconciler
 type MockMulticlusterTrafficPolicyReconcilerMockRecorder struct {
 	mock *MockMulticlusterTrafficPolicyReconciler
 }
 
-// NewMockMulticlusterTrafficPolicyReconciler creates a new mock instance.
+// NewMockMulticlusterTrafficPolicyReconciler creates a new mock instance
 func NewMockMulticlusterTrafficPolicyReconciler(ctrl *gomock.Controller) *MockMulticlusterTrafficPolicyReconciler {
 	mock := &MockMulticlusterTrafficPolicyReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterTrafficPolicyReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterTrafficPolicyReconciler) EXPECT() *MockMulticlusterTrafficPolicyReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileTrafficPolicy mocks base method.
+// ReconcileTrafficPolicy mocks base method
 func (m *MockMulticlusterTrafficPolicyReconciler) ReconcileTrafficPolicy(clusterName string, obj *v1alpha2.TrafficPolicy) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileTrafficPolicy", clusterName, obj)
@@ -47,36 +47,36 @@ func (m *MockMulticlusterTrafficPolicyReconciler) ReconcileTrafficPolicy(cluster
 	return ret0, ret1
 }
 
-// ReconcileTrafficPolicy indicates an expected call of ReconcileTrafficPolicy.
+// ReconcileTrafficPolicy indicates an expected call of ReconcileTrafficPolicy
 func (mr *MockMulticlusterTrafficPolicyReconcilerMockRecorder) ReconcileTrafficPolicy(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileTrafficPolicy", reflect.TypeOf((*MockMulticlusterTrafficPolicyReconciler)(nil).ReconcileTrafficPolicy), clusterName, obj)
 }
 
-// MockMulticlusterTrafficPolicyDeletionReconciler is a mock of MulticlusterTrafficPolicyDeletionReconciler interface.
+// MockMulticlusterTrafficPolicyDeletionReconciler is a mock of MulticlusterTrafficPolicyDeletionReconciler interface
 type MockMulticlusterTrafficPolicyDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterTrafficPolicyDeletionReconcilerMockRecorder
 }
 
-// MockMulticlusterTrafficPolicyDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterTrafficPolicyDeletionReconciler.
+// MockMulticlusterTrafficPolicyDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterTrafficPolicyDeletionReconciler
 type MockMulticlusterTrafficPolicyDeletionReconcilerMockRecorder struct {
 	mock *MockMulticlusterTrafficPolicyDeletionReconciler
 }
 
-// NewMockMulticlusterTrafficPolicyDeletionReconciler creates a new mock instance.
+// NewMockMulticlusterTrafficPolicyDeletionReconciler creates a new mock instance
 func NewMockMulticlusterTrafficPolicyDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterTrafficPolicyDeletionReconciler {
 	mock := &MockMulticlusterTrafficPolicyDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterTrafficPolicyDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterTrafficPolicyDeletionReconciler) EXPECT() *MockMulticlusterTrafficPolicyDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileTrafficPolicyDeletion mocks base method.
+// ReconcileTrafficPolicyDeletion mocks base method
 func (m *MockMulticlusterTrafficPolicyDeletionReconciler) ReconcileTrafficPolicyDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileTrafficPolicyDeletion", clusterName, req)
@@ -84,36 +84,36 @@ func (m *MockMulticlusterTrafficPolicyDeletionReconciler) ReconcileTrafficPolicy
 	return ret0
 }
 
-// ReconcileTrafficPolicyDeletion indicates an expected call of ReconcileTrafficPolicyDeletion.
+// ReconcileTrafficPolicyDeletion indicates an expected call of ReconcileTrafficPolicyDeletion
 func (mr *MockMulticlusterTrafficPolicyDeletionReconcilerMockRecorder) ReconcileTrafficPolicyDeletion(clusterName, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileTrafficPolicyDeletion", reflect.TypeOf((*MockMulticlusterTrafficPolicyDeletionReconciler)(nil).ReconcileTrafficPolicyDeletion), clusterName, req)
 }
 
-// MockMulticlusterTrafficPolicyReconcileLoop is a mock of MulticlusterTrafficPolicyReconcileLoop interface.
+// MockMulticlusterTrafficPolicyReconcileLoop is a mock of MulticlusterTrafficPolicyReconcileLoop interface
 type MockMulticlusterTrafficPolicyReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterTrafficPolicyReconcileLoopMockRecorder
 }
 
-// MockMulticlusterTrafficPolicyReconcileLoopMockRecorder is the mock recorder for MockMulticlusterTrafficPolicyReconcileLoop.
+// MockMulticlusterTrafficPolicyReconcileLoopMockRecorder is the mock recorder for MockMulticlusterTrafficPolicyReconcileLoop
 type MockMulticlusterTrafficPolicyReconcileLoopMockRecorder struct {
 	mock *MockMulticlusterTrafficPolicyReconcileLoop
 }
 
-// NewMockMulticlusterTrafficPolicyReconcileLoop creates a new mock instance.
+// NewMockMulticlusterTrafficPolicyReconcileLoop creates a new mock instance
 func NewMockMulticlusterTrafficPolicyReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterTrafficPolicyReconcileLoop {
 	mock := &MockMulticlusterTrafficPolicyReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterTrafficPolicyReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterTrafficPolicyReconcileLoop) EXPECT() *MockMulticlusterTrafficPolicyReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// AddMulticlusterTrafficPolicyReconciler mocks base method.
+// AddMulticlusterTrafficPolicyReconciler mocks base method
 func (m *MockMulticlusterTrafficPolicyReconcileLoop) AddMulticlusterTrafficPolicyReconciler(ctx context.Context, rec controller.MulticlusterTrafficPolicyReconciler, predicates ...predicate.Predicate) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -123,37 +123,37 @@ func (m *MockMulticlusterTrafficPolicyReconcileLoop) AddMulticlusterTrafficPolic
 	m.ctrl.Call(m, "AddMulticlusterTrafficPolicyReconciler", varargs...)
 }
 
-// AddMulticlusterTrafficPolicyReconciler indicates an expected call of AddMulticlusterTrafficPolicyReconciler.
+// AddMulticlusterTrafficPolicyReconciler indicates an expected call of AddMulticlusterTrafficPolicyReconciler
 func (mr *MockMulticlusterTrafficPolicyReconcileLoopMockRecorder) AddMulticlusterTrafficPolicyReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterTrafficPolicyReconciler", reflect.TypeOf((*MockMulticlusterTrafficPolicyReconcileLoop)(nil).AddMulticlusterTrafficPolicyReconciler), varargs...)
 }
 
-// MockMulticlusterAccessPolicyReconciler is a mock of MulticlusterAccessPolicyReconciler interface.
+// MockMulticlusterAccessPolicyReconciler is a mock of MulticlusterAccessPolicyReconciler interface
 type MockMulticlusterAccessPolicyReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterAccessPolicyReconcilerMockRecorder
 }
 
-// MockMulticlusterAccessPolicyReconcilerMockRecorder is the mock recorder for MockMulticlusterAccessPolicyReconciler.
+// MockMulticlusterAccessPolicyReconcilerMockRecorder is the mock recorder for MockMulticlusterAccessPolicyReconciler
 type MockMulticlusterAccessPolicyReconcilerMockRecorder struct {
 	mock *MockMulticlusterAccessPolicyReconciler
 }
 
-// NewMockMulticlusterAccessPolicyReconciler creates a new mock instance.
+// NewMockMulticlusterAccessPolicyReconciler creates a new mock instance
 func NewMockMulticlusterAccessPolicyReconciler(ctrl *gomock.Controller) *MockMulticlusterAccessPolicyReconciler {
 	mock := &MockMulticlusterAccessPolicyReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterAccessPolicyReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterAccessPolicyReconciler) EXPECT() *MockMulticlusterAccessPolicyReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileAccessPolicy mocks base method.
+// ReconcileAccessPolicy mocks base method
 func (m *MockMulticlusterAccessPolicyReconciler) ReconcileAccessPolicy(clusterName string, obj *v1alpha2.AccessPolicy) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileAccessPolicy", clusterName, obj)
@@ -162,36 +162,36 @@ func (m *MockMulticlusterAccessPolicyReconciler) ReconcileAccessPolicy(clusterNa
 	return ret0, ret1
 }
 
-// ReconcileAccessPolicy indicates an expected call of ReconcileAccessPolicy.
+// ReconcileAccessPolicy indicates an expected call of ReconcileAccessPolicy
 func (mr *MockMulticlusterAccessPolicyReconcilerMockRecorder) ReconcileAccessPolicy(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessPolicy", reflect.TypeOf((*MockMulticlusterAccessPolicyReconciler)(nil).ReconcileAccessPolicy), clusterName, obj)
 }
 
-// MockMulticlusterAccessPolicyDeletionReconciler is a mock of MulticlusterAccessPolicyDeletionReconciler interface.
+// MockMulticlusterAccessPolicyDeletionReconciler is a mock of MulticlusterAccessPolicyDeletionReconciler interface
 type MockMulticlusterAccessPolicyDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterAccessPolicyDeletionReconcilerMockRecorder
 }
 
-// MockMulticlusterAccessPolicyDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterAccessPolicyDeletionReconciler.
+// MockMulticlusterAccessPolicyDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterAccessPolicyDeletionReconciler
 type MockMulticlusterAccessPolicyDeletionReconcilerMockRecorder struct {
 	mock *MockMulticlusterAccessPolicyDeletionReconciler
 }
 
-// NewMockMulticlusterAccessPolicyDeletionReconciler creates a new mock instance.
+// NewMockMulticlusterAccessPolicyDeletionReconciler creates a new mock instance
 func NewMockMulticlusterAccessPolicyDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterAccessPolicyDeletionReconciler {
 	mock := &MockMulticlusterAccessPolicyDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterAccessPolicyDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterAccessPolicyDeletionReconciler) EXPECT() *MockMulticlusterAccessPolicyDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileAccessPolicyDeletion mocks base method.
+// ReconcileAccessPolicyDeletion mocks base method
 func (m *MockMulticlusterAccessPolicyDeletionReconciler) ReconcileAccessPolicyDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileAccessPolicyDeletion", clusterName, req)
@@ -199,36 +199,36 @@ func (m *MockMulticlusterAccessPolicyDeletionReconciler) ReconcileAccessPolicyDe
 	return ret0
 }
 
-// ReconcileAccessPolicyDeletion indicates an expected call of ReconcileAccessPolicyDeletion.
+// ReconcileAccessPolicyDeletion indicates an expected call of ReconcileAccessPolicyDeletion
 func (mr *MockMulticlusterAccessPolicyDeletionReconcilerMockRecorder) ReconcileAccessPolicyDeletion(clusterName, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessPolicyDeletion", reflect.TypeOf((*MockMulticlusterAccessPolicyDeletionReconciler)(nil).ReconcileAccessPolicyDeletion), clusterName, req)
 }
 
-// MockMulticlusterAccessPolicyReconcileLoop is a mock of MulticlusterAccessPolicyReconcileLoop interface.
+// MockMulticlusterAccessPolicyReconcileLoop is a mock of MulticlusterAccessPolicyReconcileLoop interface
 type MockMulticlusterAccessPolicyReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterAccessPolicyReconcileLoopMockRecorder
 }
 
-// MockMulticlusterAccessPolicyReconcileLoopMockRecorder is the mock recorder for MockMulticlusterAccessPolicyReconcileLoop.
+// MockMulticlusterAccessPolicyReconcileLoopMockRecorder is the mock recorder for MockMulticlusterAccessPolicyReconcileLoop
 type MockMulticlusterAccessPolicyReconcileLoopMockRecorder struct {
 	mock *MockMulticlusterAccessPolicyReconcileLoop
 }
 
-// NewMockMulticlusterAccessPolicyReconcileLoop creates a new mock instance.
+// NewMockMulticlusterAccessPolicyReconcileLoop creates a new mock instance
 func NewMockMulticlusterAccessPolicyReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterAccessPolicyReconcileLoop {
 	mock := &MockMulticlusterAccessPolicyReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterAccessPolicyReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterAccessPolicyReconcileLoop) EXPECT() *MockMulticlusterAccessPolicyReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// AddMulticlusterAccessPolicyReconciler mocks base method.
+// AddMulticlusterAccessPolicyReconciler mocks base method
 func (m *MockMulticlusterAccessPolicyReconcileLoop) AddMulticlusterAccessPolicyReconciler(ctx context.Context, rec controller.MulticlusterAccessPolicyReconciler, predicates ...predicate.Predicate) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -238,37 +238,37 @@ func (m *MockMulticlusterAccessPolicyReconcileLoop) AddMulticlusterAccessPolicyR
 	m.ctrl.Call(m, "AddMulticlusterAccessPolicyReconciler", varargs...)
 }
 
-// AddMulticlusterAccessPolicyReconciler indicates an expected call of AddMulticlusterAccessPolicyReconciler.
+// AddMulticlusterAccessPolicyReconciler indicates an expected call of AddMulticlusterAccessPolicyReconciler
 func (mr *MockMulticlusterAccessPolicyReconcileLoopMockRecorder) AddMulticlusterAccessPolicyReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterAccessPolicyReconciler", reflect.TypeOf((*MockMulticlusterAccessPolicyReconcileLoop)(nil).AddMulticlusterAccessPolicyReconciler), varargs...)
 }
 
-// MockMulticlusterVirtualMeshReconciler is a mock of MulticlusterVirtualMeshReconciler interface.
+// MockMulticlusterVirtualMeshReconciler is a mock of MulticlusterVirtualMeshReconciler interface
 type MockMulticlusterVirtualMeshReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterVirtualMeshReconcilerMockRecorder
 }
 
-// MockMulticlusterVirtualMeshReconcilerMockRecorder is the mock recorder for MockMulticlusterVirtualMeshReconciler.
+// MockMulticlusterVirtualMeshReconcilerMockRecorder is the mock recorder for MockMulticlusterVirtualMeshReconciler
 type MockMulticlusterVirtualMeshReconcilerMockRecorder struct {
 	mock *MockMulticlusterVirtualMeshReconciler
 }
 
-// NewMockMulticlusterVirtualMeshReconciler creates a new mock instance.
+// NewMockMulticlusterVirtualMeshReconciler creates a new mock instance
 func NewMockMulticlusterVirtualMeshReconciler(ctrl *gomock.Controller) *MockMulticlusterVirtualMeshReconciler {
 	mock := &MockMulticlusterVirtualMeshReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterVirtualMeshReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterVirtualMeshReconciler) EXPECT() *MockMulticlusterVirtualMeshReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileVirtualMesh mocks base method.
+// ReconcileVirtualMesh mocks base method
 func (m *MockMulticlusterVirtualMeshReconciler) ReconcileVirtualMesh(clusterName string, obj *v1alpha2.VirtualMesh) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileVirtualMesh", clusterName, obj)
@@ -277,36 +277,36 @@ func (m *MockMulticlusterVirtualMeshReconciler) ReconcileVirtualMesh(clusterName
 	return ret0, ret1
 }
 
-// ReconcileVirtualMesh indicates an expected call of ReconcileVirtualMesh.
+// ReconcileVirtualMesh indicates an expected call of ReconcileVirtualMesh
 func (mr *MockMulticlusterVirtualMeshReconcilerMockRecorder) ReconcileVirtualMesh(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualMesh", reflect.TypeOf((*MockMulticlusterVirtualMeshReconciler)(nil).ReconcileVirtualMesh), clusterName, obj)
 }
 
-// MockMulticlusterVirtualMeshDeletionReconciler is a mock of MulticlusterVirtualMeshDeletionReconciler interface.
+// MockMulticlusterVirtualMeshDeletionReconciler is a mock of MulticlusterVirtualMeshDeletionReconciler interface
 type MockMulticlusterVirtualMeshDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterVirtualMeshDeletionReconcilerMockRecorder
 }
 
-// MockMulticlusterVirtualMeshDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterVirtualMeshDeletionReconciler.
+// MockMulticlusterVirtualMeshDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterVirtualMeshDeletionReconciler
 type MockMulticlusterVirtualMeshDeletionReconcilerMockRecorder struct {
 	mock *MockMulticlusterVirtualMeshDeletionReconciler
 }
 
-// NewMockMulticlusterVirtualMeshDeletionReconciler creates a new mock instance.
+// NewMockMulticlusterVirtualMeshDeletionReconciler creates a new mock instance
 func NewMockMulticlusterVirtualMeshDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterVirtualMeshDeletionReconciler {
 	mock := &MockMulticlusterVirtualMeshDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterVirtualMeshDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterVirtualMeshDeletionReconciler) EXPECT() *MockMulticlusterVirtualMeshDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileVirtualMeshDeletion mocks base method.
+// ReconcileVirtualMeshDeletion mocks base method
 func (m *MockMulticlusterVirtualMeshDeletionReconciler) ReconcileVirtualMeshDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileVirtualMeshDeletion", clusterName, req)
@@ -314,36 +314,36 @@ func (m *MockMulticlusterVirtualMeshDeletionReconciler) ReconcileVirtualMeshDele
 	return ret0
 }
 
-// ReconcileVirtualMeshDeletion indicates an expected call of ReconcileVirtualMeshDeletion.
+// ReconcileVirtualMeshDeletion indicates an expected call of ReconcileVirtualMeshDeletion
 func (mr *MockMulticlusterVirtualMeshDeletionReconcilerMockRecorder) ReconcileVirtualMeshDeletion(clusterName, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualMeshDeletion", reflect.TypeOf((*MockMulticlusterVirtualMeshDeletionReconciler)(nil).ReconcileVirtualMeshDeletion), clusterName, req)
 }
 
-// MockMulticlusterVirtualMeshReconcileLoop is a mock of MulticlusterVirtualMeshReconcileLoop interface.
+// MockMulticlusterVirtualMeshReconcileLoop is a mock of MulticlusterVirtualMeshReconcileLoop interface
 type MockMulticlusterVirtualMeshReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterVirtualMeshReconcileLoopMockRecorder
 }
 
-// MockMulticlusterVirtualMeshReconcileLoopMockRecorder is the mock recorder for MockMulticlusterVirtualMeshReconcileLoop.
+// MockMulticlusterVirtualMeshReconcileLoopMockRecorder is the mock recorder for MockMulticlusterVirtualMeshReconcileLoop
 type MockMulticlusterVirtualMeshReconcileLoopMockRecorder struct {
 	mock *MockMulticlusterVirtualMeshReconcileLoop
 }
 
-// NewMockMulticlusterVirtualMeshReconcileLoop creates a new mock instance.
+// NewMockMulticlusterVirtualMeshReconcileLoop creates a new mock instance
 func NewMockMulticlusterVirtualMeshReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterVirtualMeshReconcileLoop {
 	mock := &MockMulticlusterVirtualMeshReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterVirtualMeshReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterVirtualMeshReconcileLoop) EXPECT() *MockMulticlusterVirtualMeshReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// AddMulticlusterVirtualMeshReconciler mocks base method.
+// AddMulticlusterVirtualMeshReconciler mocks base method
 func (m *MockMulticlusterVirtualMeshReconcileLoop) AddMulticlusterVirtualMeshReconciler(ctx context.Context, rec controller.MulticlusterVirtualMeshReconciler, predicates ...predicate.Predicate) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -353,37 +353,37 @@ func (m *MockMulticlusterVirtualMeshReconcileLoop) AddMulticlusterVirtualMeshRec
 	m.ctrl.Call(m, "AddMulticlusterVirtualMeshReconciler", varargs...)
 }
 
-// AddMulticlusterVirtualMeshReconciler indicates an expected call of AddMulticlusterVirtualMeshReconciler.
+// AddMulticlusterVirtualMeshReconciler indicates an expected call of AddMulticlusterVirtualMeshReconciler
 func (mr *MockMulticlusterVirtualMeshReconcileLoopMockRecorder) AddMulticlusterVirtualMeshReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterVirtualMeshReconciler", reflect.TypeOf((*MockMulticlusterVirtualMeshReconcileLoop)(nil).AddMulticlusterVirtualMeshReconciler), varargs...)
 }
 
-// MockMulticlusterFailoverServiceReconciler is a mock of MulticlusterFailoverServiceReconciler interface.
+// MockMulticlusterFailoverServiceReconciler is a mock of MulticlusterFailoverServiceReconciler interface
 type MockMulticlusterFailoverServiceReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterFailoverServiceReconcilerMockRecorder
 }
 
-// MockMulticlusterFailoverServiceReconcilerMockRecorder is the mock recorder for MockMulticlusterFailoverServiceReconciler.
+// MockMulticlusterFailoverServiceReconcilerMockRecorder is the mock recorder for MockMulticlusterFailoverServiceReconciler
 type MockMulticlusterFailoverServiceReconcilerMockRecorder struct {
 	mock *MockMulticlusterFailoverServiceReconciler
 }
 
-// NewMockMulticlusterFailoverServiceReconciler creates a new mock instance.
+// NewMockMulticlusterFailoverServiceReconciler creates a new mock instance
 func NewMockMulticlusterFailoverServiceReconciler(ctrl *gomock.Controller) *MockMulticlusterFailoverServiceReconciler {
 	mock := &MockMulticlusterFailoverServiceReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterFailoverServiceReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterFailoverServiceReconciler) EXPECT() *MockMulticlusterFailoverServiceReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileFailoverService mocks base method.
+// ReconcileFailoverService mocks base method
 func (m *MockMulticlusterFailoverServiceReconciler) ReconcileFailoverService(clusterName string, obj *v1alpha2.FailoverService) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileFailoverService", clusterName, obj)
@@ -392,36 +392,36 @@ func (m *MockMulticlusterFailoverServiceReconciler) ReconcileFailoverService(clu
 	return ret0, ret1
 }
 
-// ReconcileFailoverService indicates an expected call of ReconcileFailoverService.
+// ReconcileFailoverService indicates an expected call of ReconcileFailoverService
 func (mr *MockMulticlusterFailoverServiceReconcilerMockRecorder) ReconcileFailoverService(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverService", reflect.TypeOf((*MockMulticlusterFailoverServiceReconciler)(nil).ReconcileFailoverService), clusterName, obj)
 }
 
-// MockMulticlusterFailoverServiceDeletionReconciler is a mock of MulticlusterFailoverServiceDeletionReconciler interface.
+// MockMulticlusterFailoverServiceDeletionReconciler is a mock of MulticlusterFailoverServiceDeletionReconciler interface
 type MockMulticlusterFailoverServiceDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder
 }
 
-// MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterFailoverServiceDeletionReconciler.
+// MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterFailoverServiceDeletionReconciler
 type MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder struct {
 	mock *MockMulticlusterFailoverServiceDeletionReconciler
 }
 
-// NewMockMulticlusterFailoverServiceDeletionReconciler creates a new mock instance.
+// NewMockMulticlusterFailoverServiceDeletionReconciler creates a new mock instance
 func NewMockMulticlusterFailoverServiceDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterFailoverServiceDeletionReconciler {
 	mock := &MockMulticlusterFailoverServiceDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterFailoverServiceDeletionReconciler) EXPECT() *MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileFailoverServiceDeletion mocks base method.
+// ReconcileFailoverServiceDeletion mocks base method
 func (m *MockMulticlusterFailoverServiceDeletionReconciler) ReconcileFailoverServiceDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileFailoverServiceDeletion", clusterName, req)
@@ -429,36 +429,36 @@ func (m *MockMulticlusterFailoverServiceDeletionReconciler) ReconcileFailoverSer
 	return ret0
 }
 
-// ReconcileFailoverServiceDeletion indicates an expected call of ReconcileFailoverServiceDeletion.
+// ReconcileFailoverServiceDeletion indicates an expected call of ReconcileFailoverServiceDeletion
 func (mr *MockMulticlusterFailoverServiceDeletionReconcilerMockRecorder) ReconcileFailoverServiceDeletion(clusterName, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverServiceDeletion", reflect.TypeOf((*MockMulticlusterFailoverServiceDeletionReconciler)(nil).ReconcileFailoverServiceDeletion), clusterName, req)
 }
 
-// MockMulticlusterFailoverServiceReconcileLoop is a mock of MulticlusterFailoverServiceReconcileLoop interface.
+// MockMulticlusterFailoverServiceReconcileLoop is a mock of MulticlusterFailoverServiceReconcileLoop interface
 type MockMulticlusterFailoverServiceReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterFailoverServiceReconcileLoopMockRecorder
 }
 
-// MockMulticlusterFailoverServiceReconcileLoopMockRecorder is the mock recorder for MockMulticlusterFailoverServiceReconcileLoop.
+// MockMulticlusterFailoverServiceReconcileLoopMockRecorder is the mock recorder for MockMulticlusterFailoverServiceReconcileLoop
 type MockMulticlusterFailoverServiceReconcileLoopMockRecorder struct {
 	mock *MockMulticlusterFailoverServiceReconcileLoop
 }
 
-// NewMockMulticlusterFailoverServiceReconcileLoop creates a new mock instance.
+// NewMockMulticlusterFailoverServiceReconcileLoop creates a new mock instance
 func NewMockMulticlusterFailoverServiceReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterFailoverServiceReconcileLoop {
 	mock := &MockMulticlusterFailoverServiceReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterFailoverServiceReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockMulticlusterFailoverServiceReconcileLoop) EXPECT() *MockMulticlusterFailoverServiceReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// AddMulticlusterFailoverServiceReconciler mocks base method.
+// AddMulticlusterFailoverServiceReconciler mocks base method
 func (m *MockMulticlusterFailoverServiceReconcileLoop) AddMulticlusterFailoverServiceReconciler(ctx context.Context, rec controller.MulticlusterFailoverServiceReconciler, predicates ...predicate.Predicate) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -468,7 +468,7 @@ func (m *MockMulticlusterFailoverServiceReconcileLoop) AddMulticlusterFailoverSe
 	m.ctrl.Call(m, "AddMulticlusterFailoverServiceReconciler", varargs...)
 }
 
-// AddMulticlusterFailoverServiceReconciler indicates an expected call of AddMulticlusterFailoverServiceReconciler.
+// AddMulticlusterFailoverServiceReconciler indicates an expected call of AddMulticlusterFailoverServiceReconciler
 func (mr *MockMulticlusterFailoverServiceReconcileLoopMockRecorder) AddMulticlusterFailoverServiceReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
