@@ -66,7 +66,7 @@ jobs:
         env:
           RUN_E2E: "1"
         run: |
-          make print-version install-go-tools manifest-gen
+          make print-version manifest-gen
 
           curl -sSL https://github.com/istio/istio/releases/download/1.5.2/istio-1.5.2-linux.tar.gz | tar -xzf - istio-1.5.2/bin/istioctl
           # move istio binary to _output, which is gitignored, to avoid `-dirty` suffix when computing version in subsequent makefile invocations
