@@ -14,30 +14,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockIssuedCertificateEventHandler is a mock of IssuedCertificateEventHandler interface.
+// MockIssuedCertificateEventHandler is a mock of IssuedCertificateEventHandler interface
 type MockIssuedCertificateEventHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockIssuedCertificateEventHandlerMockRecorder
 }
 
-// MockIssuedCertificateEventHandlerMockRecorder is the mock recorder for MockIssuedCertificateEventHandler.
+// MockIssuedCertificateEventHandlerMockRecorder is the mock recorder for MockIssuedCertificateEventHandler
 type MockIssuedCertificateEventHandlerMockRecorder struct {
 	mock *MockIssuedCertificateEventHandler
 }
 
-// NewMockIssuedCertificateEventHandler creates a new mock instance.
+// NewMockIssuedCertificateEventHandler creates a new mock instance
 func NewMockIssuedCertificateEventHandler(ctrl *gomock.Controller) *MockIssuedCertificateEventHandler {
 	mock := &MockIssuedCertificateEventHandler{ctrl: ctrl}
 	mock.recorder = &MockIssuedCertificateEventHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockIssuedCertificateEventHandler) EXPECT() *MockIssuedCertificateEventHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateIssuedCertificate mocks base method.
+// CreateIssuedCertificate mocks base method
 func (m *MockIssuedCertificateEventHandler) CreateIssuedCertificate(obj *v1alpha2.IssuedCertificate) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateIssuedCertificate", obj)
@@ -45,13 +45,13 @@ func (m *MockIssuedCertificateEventHandler) CreateIssuedCertificate(obj *v1alpha
 	return ret0
 }
 
-// CreateIssuedCertificate indicates an expected call of CreateIssuedCertificate.
+// CreateIssuedCertificate indicates an expected call of CreateIssuedCertificate
 func (mr *MockIssuedCertificateEventHandlerMockRecorder) CreateIssuedCertificate(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateEventHandler)(nil).CreateIssuedCertificate), obj)
 }
 
-// UpdateIssuedCertificate mocks base method.
+// UpdateIssuedCertificate mocks base method
 func (m *MockIssuedCertificateEventHandler) UpdateIssuedCertificate(old, new *v1alpha2.IssuedCertificate) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateIssuedCertificate", old, new)
@@ -59,13 +59,13 @@ func (m *MockIssuedCertificateEventHandler) UpdateIssuedCertificate(old, new *v1
 	return ret0
 }
 
-// UpdateIssuedCertificate indicates an expected call of UpdateIssuedCertificate.
+// UpdateIssuedCertificate indicates an expected call of UpdateIssuedCertificate
 func (mr *MockIssuedCertificateEventHandlerMockRecorder) UpdateIssuedCertificate(old, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateEventHandler)(nil).UpdateIssuedCertificate), old, new)
 }
 
-// DeleteIssuedCertificate mocks base method.
+// DeleteIssuedCertificate mocks base method
 func (m *MockIssuedCertificateEventHandler) DeleteIssuedCertificate(obj *v1alpha2.IssuedCertificate) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteIssuedCertificate", obj)
@@ -73,13 +73,13 @@ func (m *MockIssuedCertificateEventHandler) DeleteIssuedCertificate(obj *v1alpha
 	return ret0
 }
 
-// DeleteIssuedCertificate indicates an expected call of DeleteIssuedCertificate.
+// DeleteIssuedCertificate indicates an expected call of DeleteIssuedCertificate
 func (mr *MockIssuedCertificateEventHandlerMockRecorder) DeleteIssuedCertificate(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateEventHandler)(nil).DeleteIssuedCertificate), obj)
 }
 
-// GenericIssuedCertificate mocks base method.
+// GenericIssuedCertificate mocks base method
 func (m *MockIssuedCertificateEventHandler) GenericIssuedCertificate(obj *v1alpha2.IssuedCertificate) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenericIssuedCertificate", obj)
@@ -87,36 +87,36 @@ func (m *MockIssuedCertificateEventHandler) GenericIssuedCertificate(obj *v1alph
 	return ret0
 }
 
-// GenericIssuedCertificate indicates an expected call of GenericIssuedCertificate.
+// GenericIssuedCertificate indicates an expected call of GenericIssuedCertificate
 func (mr *MockIssuedCertificateEventHandlerMockRecorder) GenericIssuedCertificate(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateEventHandler)(nil).GenericIssuedCertificate), obj)
 }
 
-// MockIssuedCertificateEventWatcher is a mock of IssuedCertificateEventWatcher interface.
+// MockIssuedCertificateEventWatcher is a mock of IssuedCertificateEventWatcher interface
 type MockIssuedCertificateEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockIssuedCertificateEventWatcherMockRecorder
 }
 
-// MockIssuedCertificateEventWatcherMockRecorder is the mock recorder for MockIssuedCertificateEventWatcher.
+// MockIssuedCertificateEventWatcherMockRecorder is the mock recorder for MockIssuedCertificateEventWatcher
 type MockIssuedCertificateEventWatcherMockRecorder struct {
 	mock *MockIssuedCertificateEventWatcher
 }
 
-// NewMockIssuedCertificateEventWatcher creates a new mock instance.
+// NewMockIssuedCertificateEventWatcher creates a new mock instance
 func NewMockIssuedCertificateEventWatcher(ctrl *gomock.Controller) *MockIssuedCertificateEventWatcher {
 	mock := &MockIssuedCertificateEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockIssuedCertificateEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockIssuedCertificateEventWatcher) EXPECT() *MockIssuedCertificateEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method.
+// AddEventHandler mocks base method
 func (m *MockIssuedCertificateEventWatcher) AddEventHandler(ctx context.Context, h controller.IssuedCertificateEventHandler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, h}
@@ -128,37 +128,37 @@ func (m *MockIssuedCertificateEventWatcher) AddEventHandler(ctx context.Context,
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler.
+// AddEventHandler indicates an expected call of AddEventHandler
 func (mr *MockIssuedCertificateEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, h}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockIssuedCertificateEventWatcher)(nil).AddEventHandler), varargs...)
 }
 
-// MockCertificateRequestEventHandler is a mock of CertificateRequestEventHandler interface.
+// MockCertificateRequestEventHandler is a mock of CertificateRequestEventHandler interface
 type MockCertificateRequestEventHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertificateRequestEventHandlerMockRecorder
 }
 
-// MockCertificateRequestEventHandlerMockRecorder is the mock recorder for MockCertificateRequestEventHandler.
+// MockCertificateRequestEventHandlerMockRecorder is the mock recorder for MockCertificateRequestEventHandler
 type MockCertificateRequestEventHandlerMockRecorder struct {
 	mock *MockCertificateRequestEventHandler
 }
 
-// NewMockCertificateRequestEventHandler creates a new mock instance.
+// NewMockCertificateRequestEventHandler creates a new mock instance
 func NewMockCertificateRequestEventHandler(ctrl *gomock.Controller) *MockCertificateRequestEventHandler {
 	mock := &MockCertificateRequestEventHandler{ctrl: ctrl}
 	mock.recorder = &MockCertificateRequestEventHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCertificateRequestEventHandler) EXPECT() *MockCertificateRequestEventHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateCertificateRequest mocks base method.
+// CreateCertificateRequest mocks base method
 func (m *MockCertificateRequestEventHandler) CreateCertificateRequest(obj *v1alpha2.CertificateRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateCertificateRequest", obj)
@@ -166,13 +166,13 @@ func (m *MockCertificateRequestEventHandler) CreateCertificateRequest(obj *v1alp
 	return ret0
 }
 
-// CreateCertificateRequest indicates an expected call of CreateCertificateRequest.
+// CreateCertificateRequest indicates an expected call of CreateCertificateRequest
 func (mr *MockCertificateRequestEventHandlerMockRecorder) CreateCertificateRequest(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCertificateRequest", reflect.TypeOf((*MockCertificateRequestEventHandler)(nil).CreateCertificateRequest), obj)
 }
 
-// UpdateCertificateRequest mocks base method.
+// UpdateCertificateRequest mocks base method
 func (m *MockCertificateRequestEventHandler) UpdateCertificateRequest(old, new *v1alpha2.CertificateRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateCertificateRequest", old, new)
@@ -180,13 +180,13 @@ func (m *MockCertificateRequestEventHandler) UpdateCertificateRequest(old, new *
 	return ret0
 }
 
-// UpdateCertificateRequest indicates an expected call of UpdateCertificateRequest.
+// UpdateCertificateRequest indicates an expected call of UpdateCertificateRequest
 func (mr *MockCertificateRequestEventHandlerMockRecorder) UpdateCertificateRequest(old, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRequest", reflect.TypeOf((*MockCertificateRequestEventHandler)(nil).UpdateCertificateRequest), old, new)
 }
 
-// DeleteCertificateRequest mocks base method.
+// DeleteCertificateRequest mocks base method
 func (m *MockCertificateRequestEventHandler) DeleteCertificateRequest(obj *v1alpha2.CertificateRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteCertificateRequest", obj)
@@ -194,13 +194,13 @@ func (m *MockCertificateRequestEventHandler) DeleteCertificateRequest(obj *v1alp
 	return ret0
 }
 
-// DeleteCertificateRequest indicates an expected call of DeleteCertificateRequest.
+// DeleteCertificateRequest indicates an expected call of DeleteCertificateRequest
 func (mr *MockCertificateRequestEventHandlerMockRecorder) DeleteCertificateRequest(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCertificateRequest", reflect.TypeOf((*MockCertificateRequestEventHandler)(nil).DeleteCertificateRequest), obj)
 }
 
-// GenericCertificateRequest mocks base method.
+// GenericCertificateRequest mocks base method
 func (m *MockCertificateRequestEventHandler) GenericCertificateRequest(obj *v1alpha2.CertificateRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenericCertificateRequest", obj)
@@ -208,36 +208,36 @@ func (m *MockCertificateRequestEventHandler) GenericCertificateRequest(obj *v1al
 	return ret0
 }
 
-// GenericCertificateRequest indicates an expected call of GenericCertificateRequest.
+// GenericCertificateRequest indicates an expected call of GenericCertificateRequest
 func (mr *MockCertificateRequestEventHandlerMockRecorder) GenericCertificateRequest(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericCertificateRequest", reflect.TypeOf((*MockCertificateRequestEventHandler)(nil).GenericCertificateRequest), obj)
 }
 
-// MockCertificateRequestEventWatcher is a mock of CertificateRequestEventWatcher interface.
+// MockCertificateRequestEventWatcher is a mock of CertificateRequestEventWatcher interface
 type MockCertificateRequestEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertificateRequestEventWatcherMockRecorder
 }
 
-// MockCertificateRequestEventWatcherMockRecorder is the mock recorder for MockCertificateRequestEventWatcher.
+// MockCertificateRequestEventWatcherMockRecorder is the mock recorder for MockCertificateRequestEventWatcher
 type MockCertificateRequestEventWatcherMockRecorder struct {
 	mock *MockCertificateRequestEventWatcher
 }
 
-// NewMockCertificateRequestEventWatcher creates a new mock instance.
+// NewMockCertificateRequestEventWatcher creates a new mock instance
 func NewMockCertificateRequestEventWatcher(ctrl *gomock.Controller) *MockCertificateRequestEventWatcher {
 	mock := &MockCertificateRequestEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockCertificateRequestEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockCertificateRequestEventWatcher) EXPECT() *MockCertificateRequestEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method.
+// AddEventHandler mocks base method
 func (m *MockCertificateRequestEventWatcher) AddEventHandler(ctx context.Context, h controller.CertificateRequestEventHandler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, h}
@@ -249,7 +249,7 @@ func (m *MockCertificateRequestEventWatcher) AddEventHandler(ctx context.Context
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler.
+// AddEventHandler indicates an expected call of AddEventHandler
 func (mr *MockCertificateRequestEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, h}, predicates...)

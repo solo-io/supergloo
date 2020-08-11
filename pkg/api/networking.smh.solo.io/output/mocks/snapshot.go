@@ -23,30 +23,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockSnapshot is a mock of Snapshot interface.
+// MockSnapshot is a mock of Snapshot interface
 type MockSnapshot struct {
 	ctrl     *gomock.Controller
 	recorder *MockSnapshotMockRecorder
 }
 
-// MockSnapshotMockRecorder is the mock recorder for MockSnapshot.
+// MockSnapshotMockRecorder is the mock recorder for MockSnapshot
 type MockSnapshotMockRecorder struct {
 	mock *MockSnapshot
 }
 
-// NewMockSnapshot creates a new mock instance.
+// NewMockSnapshot creates a new mock instance
 func NewMockSnapshot(ctrl *gomock.Controller) *MockSnapshot {
 	mock := &MockSnapshot{ctrl: ctrl}
 	mock.recorder = &MockSnapshotMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
 }
 
-// IssuedCertificates mocks base method.
+// IssuedCertificates mocks base method
 func (m *MockSnapshot) IssuedCertificates() []output.LabeledIssuedCertificateSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IssuedCertificates")
@@ -54,13 +54,13 @@ func (m *MockSnapshot) IssuedCertificates() []output.LabeledIssuedCertificateSet
 	return ret0
 }
 
-// IssuedCertificates indicates an expected call of IssuedCertificates.
+// IssuedCertificates indicates an expected call of IssuedCertificates
 func (mr *MockSnapshotMockRecorder) IssuedCertificates() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificates", reflect.TypeOf((*MockSnapshot)(nil).IssuedCertificates))
 }
 
-// DestinationRules mocks base method.
+// DestinationRules mocks base method
 func (m *MockSnapshot) DestinationRules() []output.LabeledDestinationRuleSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DestinationRules")
@@ -68,13 +68,13 @@ func (m *MockSnapshot) DestinationRules() []output.LabeledDestinationRuleSet {
 	return ret0
 }
 
-// DestinationRules indicates an expected call of DestinationRules.
+// DestinationRules indicates an expected call of DestinationRules
 func (mr *MockSnapshotMockRecorder) DestinationRules() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DestinationRules", reflect.TypeOf((*MockSnapshot)(nil).DestinationRules))
 }
 
-// EnvoyFilters mocks base method.
+// EnvoyFilters mocks base method
 func (m *MockSnapshot) EnvoyFilters() []output.LabeledEnvoyFilterSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EnvoyFilters")
@@ -82,13 +82,13 @@ func (m *MockSnapshot) EnvoyFilters() []output.LabeledEnvoyFilterSet {
 	return ret0
 }
 
-// EnvoyFilters indicates an expected call of EnvoyFilters.
+// EnvoyFilters indicates an expected call of EnvoyFilters
 func (mr *MockSnapshotMockRecorder) EnvoyFilters() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnvoyFilters", reflect.TypeOf((*MockSnapshot)(nil).EnvoyFilters))
 }
 
-// Gateways mocks base method.
+// Gateways mocks base method
 func (m *MockSnapshot) Gateways() []output.LabeledGatewaySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gateways")
@@ -96,13 +96,13 @@ func (m *MockSnapshot) Gateways() []output.LabeledGatewaySet {
 	return ret0
 }
 
-// Gateways indicates an expected call of Gateways.
+// Gateways indicates an expected call of Gateways
 func (mr *MockSnapshotMockRecorder) Gateways() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gateways", reflect.TypeOf((*MockSnapshot)(nil).Gateways))
 }
 
-// ServiceEntries mocks base method.
+// ServiceEntries mocks base method
 func (m *MockSnapshot) ServiceEntries() []output.LabeledServiceEntrySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceEntries")
@@ -110,13 +110,13 @@ func (m *MockSnapshot) ServiceEntries() []output.LabeledServiceEntrySet {
 	return ret0
 }
 
-// ServiceEntries indicates an expected call of ServiceEntries.
+// ServiceEntries indicates an expected call of ServiceEntries
 func (mr *MockSnapshotMockRecorder) ServiceEntries() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceEntries", reflect.TypeOf((*MockSnapshot)(nil).ServiceEntries))
 }
 
-// VirtualServices mocks base method.
+// VirtualServices mocks base method
 func (m *MockSnapshot) VirtualServices() []output.LabeledVirtualServiceSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VirtualServices")
@@ -124,13 +124,13 @@ func (m *MockSnapshot) VirtualServices() []output.LabeledVirtualServiceSet {
 	return ret0
 }
 
-// VirtualServices indicates an expected call of VirtualServices.
+// VirtualServices indicates an expected call of VirtualServices
 func (mr *MockSnapshotMockRecorder) VirtualServices() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualServices", reflect.TypeOf((*MockSnapshot)(nil).VirtualServices))
 }
 
-// AuthorizationPolicies mocks base method.
+// AuthorizationPolicies mocks base method
 func (m *MockSnapshot) AuthorizationPolicies() []output.LabeledAuthorizationPolicySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AuthorizationPolicies")
@@ -138,13 +138,13 @@ func (m *MockSnapshot) AuthorizationPolicies() []output.LabeledAuthorizationPoli
 	return ret0
 }
 
-// AuthorizationPolicies indicates an expected call of AuthorizationPolicies.
+// AuthorizationPolicies indicates an expected call of AuthorizationPolicies
 func (mr *MockSnapshotMockRecorder) AuthorizationPolicies() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthorizationPolicies", reflect.TypeOf((*MockSnapshot)(nil).AuthorizationPolicies))
 }
 
-// Secrets mocks base method.
+// Secrets mocks base method
 func (m *MockSnapshot) Secrets() []output.LabeledSecretSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Secrets")
@@ -152,37 +152,37 @@ func (m *MockSnapshot) Secrets() []output.LabeledSecretSet {
 	return ret0
 }
 
-// Secrets indicates an expected call of Secrets.
+// Secrets indicates an expected call of Secrets
 func (mr *MockSnapshotMockRecorder) Secrets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secrets", reflect.TypeOf((*MockSnapshot)(nil).Secrets))
 }
 
-// ApplyLocalCluster mocks base method.
+// ApplyLocalCluster mocks base method
 func (m *MockSnapshot) ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output0.ErrorHandler) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "ApplyLocalCluster", ctx, clusterClient, errHandler)
 }
 
-// ApplyLocalCluster indicates an expected call of ApplyLocalCluster.
+// ApplyLocalCluster indicates an expected call of ApplyLocalCluster
 func (mr *MockSnapshotMockRecorder) ApplyLocalCluster(ctx, clusterClient, errHandler interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyLocalCluster", reflect.TypeOf((*MockSnapshot)(nil).ApplyLocalCluster), ctx, clusterClient, errHandler)
 }
 
-// ApplyMultiCluster mocks base method.
+// ApplyMultiCluster mocks base method
 func (m *MockSnapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output0.ErrorHandler) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "ApplyMultiCluster", ctx, multiClusterClient, errHandler)
 }
 
-// ApplyMultiCluster indicates an expected call of ApplyMultiCluster.
+// ApplyMultiCluster indicates an expected call of ApplyMultiCluster
 func (mr *MockSnapshotMockRecorder) ApplyMultiCluster(ctx, multiClusterClient, errHandler interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyMultiCluster", reflect.TypeOf((*MockSnapshot)(nil).ApplyMultiCluster), ctx, multiClusterClient, errHandler)
 }
 
-// MarshalJSON mocks base method.
+// MarshalJSON mocks base method
 func (m *MockSnapshot) MarshalJSON() ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MarshalJSON")
@@ -191,36 +191,36 @@ func (m *MockSnapshot) MarshalJSON() ([]byte, error) {
 	return ret0, ret1
 }
 
-// MarshalJSON indicates an expected call of MarshalJSON.
+// MarshalJSON indicates an expected call of MarshalJSON
 func (mr *MockSnapshotMockRecorder) MarshalJSON() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarshalJSON", reflect.TypeOf((*MockSnapshot)(nil).MarshalJSON))
 }
 
-// MockLabeledIssuedCertificateSet is a mock of LabeledIssuedCertificateSet interface.
+// MockLabeledIssuedCertificateSet is a mock of LabeledIssuedCertificateSet interface
 type MockLabeledIssuedCertificateSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockLabeledIssuedCertificateSetMockRecorder
 }
 
-// MockLabeledIssuedCertificateSetMockRecorder is the mock recorder for MockLabeledIssuedCertificateSet.
+// MockLabeledIssuedCertificateSetMockRecorder is the mock recorder for MockLabeledIssuedCertificateSet
 type MockLabeledIssuedCertificateSetMockRecorder struct {
 	mock *MockLabeledIssuedCertificateSet
 }
 
-// NewMockLabeledIssuedCertificateSet creates a new mock instance.
+// NewMockLabeledIssuedCertificateSet creates a new mock instance
 func NewMockLabeledIssuedCertificateSet(ctrl *gomock.Controller) *MockLabeledIssuedCertificateSet {
 	mock := &MockLabeledIssuedCertificateSet{ctrl: ctrl}
 	mock.recorder = &MockLabeledIssuedCertificateSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockLabeledIssuedCertificateSet) EXPECT() *MockLabeledIssuedCertificateSetMockRecorder {
 	return m.recorder
 }
 
-// Labels mocks base method.
+// Labels mocks base method
 func (m *MockLabeledIssuedCertificateSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
@@ -228,13 +228,13 @@ func (m *MockLabeledIssuedCertificateSet) Labels() map[string]string {
 	return ret0
 }
 
-// Labels indicates an expected call of Labels.
+// Labels indicates an expected call of Labels
 func (mr *MockLabeledIssuedCertificateSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledIssuedCertificateSet)(nil).Labels))
 }
 
-// Set mocks base method.
+// Set mocks base method
 func (m *MockLabeledIssuedCertificateSet) Set() v1alpha2sets.IssuedCertificateSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
@@ -242,13 +242,13 @@ func (m *MockLabeledIssuedCertificateSet) Set() v1alpha2sets.IssuedCertificateSe
 	return ret0
 }
 
-// Set indicates an expected call of Set.
+// Set indicates an expected call of Set
 func (mr *MockLabeledIssuedCertificateSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledIssuedCertificateSet)(nil).Set))
 }
 
-// Generic mocks base method.
+// Generic mocks base method
 func (m *MockLabeledIssuedCertificateSet) Generic() output0.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
@@ -256,36 +256,36 @@ func (m *MockLabeledIssuedCertificateSet) Generic() output0.ResourceList {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic.
+// Generic indicates an expected call of Generic
 func (mr *MockLabeledIssuedCertificateSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledIssuedCertificateSet)(nil).Generic))
 }
 
-// MockLabeledDestinationRuleSet is a mock of LabeledDestinationRuleSet interface.
+// MockLabeledDestinationRuleSet is a mock of LabeledDestinationRuleSet interface
 type MockLabeledDestinationRuleSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockLabeledDestinationRuleSetMockRecorder
 }
 
-// MockLabeledDestinationRuleSetMockRecorder is the mock recorder for MockLabeledDestinationRuleSet.
+// MockLabeledDestinationRuleSetMockRecorder is the mock recorder for MockLabeledDestinationRuleSet
 type MockLabeledDestinationRuleSetMockRecorder struct {
 	mock *MockLabeledDestinationRuleSet
 }
 
-// NewMockLabeledDestinationRuleSet creates a new mock instance.
+// NewMockLabeledDestinationRuleSet creates a new mock instance
 func NewMockLabeledDestinationRuleSet(ctrl *gomock.Controller) *MockLabeledDestinationRuleSet {
 	mock := &MockLabeledDestinationRuleSet{ctrl: ctrl}
 	mock.recorder = &MockLabeledDestinationRuleSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockLabeledDestinationRuleSet) EXPECT() *MockLabeledDestinationRuleSetMockRecorder {
 	return m.recorder
 }
 
-// Labels mocks base method.
+// Labels mocks base method
 func (m *MockLabeledDestinationRuleSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
@@ -293,13 +293,13 @@ func (m *MockLabeledDestinationRuleSet) Labels() map[string]string {
 	return ret0
 }
 
-// Labels indicates an expected call of Labels.
+// Labels indicates an expected call of Labels
 func (mr *MockLabeledDestinationRuleSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledDestinationRuleSet)(nil).Labels))
 }
 
-// Set mocks base method.
+// Set mocks base method
 func (m *MockLabeledDestinationRuleSet) Set() v1alpha3sets.DestinationRuleSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
@@ -307,13 +307,13 @@ func (m *MockLabeledDestinationRuleSet) Set() v1alpha3sets.DestinationRuleSet {
 	return ret0
 }
 
-// Set indicates an expected call of Set.
+// Set indicates an expected call of Set
 func (mr *MockLabeledDestinationRuleSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledDestinationRuleSet)(nil).Set))
 }
 
-// Generic mocks base method.
+// Generic mocks base method
 func (m *MockLabeledDestinationRuleSet) Generic() output0.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
@@ -321,36 +321,36 @@ func (m *MockLabeledDestinationRuleSet) Generic() output0.ResourceList {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic.
+// Generic indicates an expected call of Generic
 func (mr *MockLabeledDestinationRuleSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledDestinationRuleSet)(nil).Generic))
 }
 
-// MockLabeledEnvoyFilterSet is a mock of LabeledEnvoyFilterSet interface.
+// MockLabeledEnvoyFilterSet is a mock of LabeledEnvoyFilterSet interface
 type MockLabeledEnvoyFilterSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockLabeledEnvoyFilterSetMockRecorder
 }
 
-// MockLabeledEnvoyFilterSetMockRecorder is the mock recorder for MockLabeledEnvoyFilterSet.
+// MockLabeledEnvoyFilterSetMockRecorder is the mock recorder for MockLabeledEnvoyFilterSet
 type MockLabeledEnvoyFilterSetMockRecorder struct {
 	mock *MockLabeledEnvoyFilterSet
 }
 
-// NewMockLabeledEnvoyFilterSet creates a new mock instance.
+// NewMockLabeledEnvoyFilterSet creates a new mock instance
 func NewMockLabeledEnvoyFilterSet(ctrl *gomock.Controller) *MockLabeledEnvoyFilterSet {
 	mock := &MockLabeledEnvoyFilterSet{ctrl: ctrl}
 	mock.recorder = &MockLabeledEnvoyFilterSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockLabeledEnvoyFilterSet) EXPECT() *MockLabeledEnvoyFilterSetMockRecorder {
 	return m.recorder
 }
 
-// Labels mocks base method.
+// Labels mocks base method
 func (m *MockLabeledEnvoyFilterSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
@@ -358,13 +358,13 @@ func (m *MockLabeledEnvoyFilterSet) Labels() map[string]string {
 	return ret0
 }
 
-// Labels indicates an expected call of Labels.
+// Labels indicates an expected call of Labels
 func (mr *MockLabeledEnvoyFilterSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledEnvoyFilterSet)(nil).Labels))
 }
 
-// Set mocks base method.
+// Set mocks base method
 func (m *MockLabeledEnvoyFilterSet) Set() v1alpha3sets.EnvoyFilterSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
@@ -372,13 +372,13 @@ func (m *MockLabeledEnvoyFilterSet) Set() v1alpha3sets.EnvoyFilterSet {
 	return ret0
 }
 
-// Set indicates an expected call of Set.
+// Set indicates an expected call of Set
 func (mr *MockLabeledEnvoyFilterSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledEnvoyFilterSet)(nil).Set))
 }
 
-// Generic mocks base method.
+// Generic mocks base method
 func (m *MockLabeledEnvoyFilterSet) Generic() output0.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
@@ -386,36 +386,36 @@ func (m *MockLabeledEnvoyFilterSet) Generic() output0.ResourceList {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic.
+// Generic indicates an expected call of Generic
 func (mr *MockLabeledEnvoyFilterSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledEnvoyFilterSet)(nil).Generic))
 }
 
-// MockLabeledGatewaySet is a mock of LabeledGatewaySet interface.
+// MockLabeledGatewaySet is a mock of LabeledGatewaySet interface
 type MockLabeledGatewaySet struct {
 	ctrl     *gomock.Controller
 	recorder *MockLabeledGatewaySetMockRecorder
 }
 
-// MockLabeledGatewaySetMockRecorder is the mock recorder for MockLabeledGatewaySet.
+// MockLabeledGatewaySetMockRecorder is the mock recorder for MockLabeledGatewaySet
 type MockLabeledGatewaySetMockRecorder struct {
 	mock *MockLabeledGatewaySet
 }
 
-// NewMockLabeledGatewaySet creates a new mock instance.
+// NewMockLabeledGatewaySet creates a new mock instance
 func NewMockLabeledGatewaySet(ctrl *gomock.Controller) *MockLabeledGatewaySet {
 	mock := &MockLabeledGatewaySet{ctrl: ctrl}
 	mock.recorder = &MockLabeledGatewaySetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockLabeledGatewaySet) EXPECT() *MockLabeledGatewaySetMockRecorder {
 	return m.recorder
 }
 
-// Labels mocks base method.
+// Labels mocks base method
 func (m *MockLabeledGatewaySet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
@@ -423,13 +423,13 @@ func (m *MockLabeledGatewaySet) Labels() map[string]string {
 	return ret0
 }
 
-// Labels indicates an expected call of Labels.
+// Labels indicates an expected call of Labels
 func (mr *MockLabeledGatewaySetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledGatewaySet)(nil).Labels))
 }
 
-// Set mocks base method.
+// Set mocks base method
 func (m *MockLabeledGatewaySet) Set() v1alpha3sets.GatewaySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
@@ -437,13 +437,13 @@ func (m *MockLabeledGatewaySet) Set() v1alpha3sets.GatewaySet {
 	return ret0
 }
 
-// Set indicates an expected call of Set.
+// Set indicates an expected call of Set
 func (mr *MockLabeledGatewaySetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledGatewaySet)(nil).Set))
 }
 
-// Generic mocks base method.
+// Generic mocks base method
 func (m *MockLabeledGatewaySet) Generic() output0.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
@@ -451,36 +451,36 @@ func (m *MockLabeledGatewaySet) Generic() output0.ResourceList {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic.
+// Generic indicates an expected call of Generic
 func (mr *MockLabeledGatewaySetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledGatewaySet)(nil).Generic))
 }
 
-// MockLabeledServiceEntrySet is a mock of LabeledServiceEntrySet interface.
+// MockLabeledServiceEntrySet is a mock of LabeledServiceEntrySet interface
 type MockLabeledServiceEntrySet struct {
 	ctrl     *gomock.Controller
 	recorder *MockLabeledServiceEntrySetMockRecorder
 }
 
-// MockLabeledServiceEntrySetMockRecorder is the mock recorder for MockLabeledServiceEntrySet.
+// MockLabeledServiceEntrySetMockRecorder is the mock recorder for MockLabeledServiceEntrySet
 type MockLabeledServiceEntrySetMockRecorder struct {
 	mock *MockLabeledServiceEntrySet
 }
 
-// NewMockLabeledServiceEntrySet creates a new mock instance.
+// NewMockLabeledServiceEntrySet creates a new mock instance
 func NewMockLabeledServiceEntrySet(ctrl *gomock.Controller) *MockLabeledServiceEntrySet {
 	mock := &MockLabeledServiceEntrySet{ctrl: ctrl}
 	mock.recorder = &MockLabeledServiceEntrySetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockLabeledServiceEntrySet) EXPECT() *MockLabeledServiceEntrySetMockRecorder {
 	return m.recorder
 }
 
-// Labels mocks base method.
+// Labels mocks base method
 func (m *MockLabeledServiceEntrySet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
@@ -488,13 +488,13 @@ func (m *MockLabeledServiceEntrySet) Labels() map[string]string {
 	return ret0
 }
 
-// Labels indicates an expected call of Labels.
+// Labels indicates an expected call of Labels
 func (mr *MockLabeledServiceEntrySetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledServiceEntrySet)(nil).Labels))
 }
 
-// Set mocks base method.
+// Set mocks base method
 func (m *MockLabeledServiceEntrySet) Set() v1alpha3sets.ServiceEntrySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
@@ -502,13 +502,13 @@ func (m *MockLabeledServiceEntrySet) Set() v1alpha3sets.ServiceEntrySet {
 	return ret0
 }
 
-// Set indicates an expected call of Set.
+// Set indicates an expected call of Set
 func (mr *MockLabeledServiceEntrySetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledServiceEntrySet)(nil).Set))
 }
 
-// Generic mocks base method.
+// Generic mocks base method
 func (m *MockLabeledServiceEntrySet) Generic() output0.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
@@ -516,36 +516,36 @@ func (m *MockLabeledServiceEntrySet) Generic() output0.ResourceList {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic.
+// Generic indicates an expected call of Generic
 func (mr *MockLabeledServiceEntrySetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledServiceEntrySet)(nil).Generic))
 }
 
-// MockLabeledVirtualServiceSet is a mock of LabeledVirtualServiceSet interface.
+// MockLabeledVirtualServiceSet is a mock of LabeledVirtualServiceSet interface
 type MockLabeledVirtualServiceSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockLabeledVirtualServiceSetMockRecorder
 }
 
-// MockLabeledVirtualServiceSetMockRecorder is the mock recorder for MockLabeledVirtualServiceSet.
+// MockLabeledVirtualServiceSetMockRecorder is the mock recorder for MockLabeledVirtualServiceSet
 type MockLabeledVirtualServiceSetMockRecorder struct {
 	mock *MockLabeledVirtualServiceSet
 }
 
-// NewMockLabeledVirtualServiceSet creates a new mock instance.
+// NewMockLabeledVirtualServiceSet creates a new mock instance
 func NewMockLabeledVirtualServiceSet(ctrl *gomock.Controller) *MockLabeledVirtualServiceSet {
 	mock := &MockLabeledVirtualServiceSet{ctrl: ctrl}
 	mock.recorder = &MockLabeledVirtualServiceSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockLabeledVirtualServiceSet) EXPECT() *MockLabeledVirtualServiceSetMockRecorder {
 	return m.recorder
 }
 
-// Labels mocks base method.
+// Labels mocks base method
 func (m *MockLabeledVirtualServiceSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
@@ -553,13 +553,13 @@ func (m *MockLabeledVirtualServiceSet) Labels() map[string]string {
 	return ret0
 }
 
-// Labels indicates an expected call of Labels.
+// Labels indicates an expected call of Labels
 func (mr *MockLabeledVirtualServiceSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledVirtualServiceSet)(nil).Labels))
 }
 
-// Set mocks base method.
+// Set mocks base method
 func (m *MockLabeledVirtualServiceSet) Set() v1alpha3sets.VirtualServiceSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
@@ -567,13 +567,13 @@ func (m *MockLabeledVirtualServiceSet) Set() v1alpha3sets.VirtualServiceSet {
 	return ret0
 }
 
-// Set indicates an expected call of Set.
+// Set indicates an expected call of Set
 func (mr *MockLabeledVirtualServiceSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledVirtualServiceSet)(nil).Set))
 }
 
-// Generic mocks base method.
+// Generic mocks base method
 func (m *MockLabeledVirtualServiceSet) Generic() output0.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
@@ -581,36 +581,36 @@ func (m *MockLabeledVirtualServiceSet) Generic() output0.ResourceList {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic.
+// Generic indicates an expected call of Generic
 func (mr *MockLabeledVirtualServiceSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledVirtualServiceSet)(nil).Generic))
 }
 
-// MockLabeledAuthorizationPolicySet is a mock of LabeledAuthorizationPolicySet interface.
+// MockLabeledAuthorizationPolicySet is a mock of LabeledAuthorizationPolicySet interface
 type MockLabeledAuthorizationPolicySet struct {
 	ctrl     *gomock.Controller
 	recorder *MockLabeledAuthorizationPolicySetMockRecorder
 }
 
-// MockLabeledAuthorizationPolicySetMockRecorder is the mock recorder for MockLabeledAuthorizationPolicySet.
+// MockLabeledAuthorizationPolicySetMockRecorder is the mock recorder for MockLabeledAuthorizationPolicySet
 type MockLabeledAuthorizationPolicySetMockRecorder struct {
 	mock *MockLabeledAuthorizationPolicySet
 }
 
-// NewMockLabeledAuthorizationPolicySet creates a new mock instance.
+// NewMockLabeledAuthorizationPolicySet creates a new mock instance
 func NewMockLabeledAuthorizationPolicySet(ctrl *gomock.Controller) *MockLabeledAuthorizationPolicySet {
 	mock := &MockLabeledAuthorizationPolicySet{ctrl: ctrl}
 	mock.recorder = &MockLabeledAuthorizationPolicySetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockLabeledAuthorizationPolicySet) EXPECT() *MockLabeledAuthorizationPolicySetMockRecorder {
 	return m.recorder
 }
 
-// Labels mocks base method.
+// Labels mocks base method
 func (m *MockLabeledAuthorizationPolicySet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
@@ -618,13 +618,13 @@ func (m *MockLabeledAuthorizationPolicySet) Labels() map[string]string {
 	return ret0
 }
 
-// Labels indicates an expected call of Labels.
+// Labels indicates an expected call of Labels
 func (mr *MockLabeledAuthorizationPolicySetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledAuthorizationPolicySet)(nil).Labels))
 }
 
-// Set mocks base method.
+// Set mocks base method
 func (m *MockLabeledAuthorizationPolicySet) Set() v1beta1sets.AuthorizationPolicySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
@@ -632,13 +632,13 @@ func (m *MockLabeledAuthorizationPolicySet) Set() v1beta1sets.AuthorizationPolic
 	return ret0
 }
 
-// Set indicates an expected call of Set.
+// Set indicates an expected call of Set
 func (mr *MockLabeledAuthorizationPolicySetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledAuthorizationPolicySet)(nil).Set))
 }
 
-// Generic mocks base method.
+// Generic mocks base method
 func (m *MockLabeledAuthorizationPolicySet) Generic() output0.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
@@ -646,36 +646,36 @@ func (m *MockLabeledAuthorizationPolicySet) Generic() output0.ResourceList {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic.
+// Generic indicates an expected call of Generic
 func (mr *MockLabeledAuthorizationPolicySetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledAuthorizationPolicySet)(nil).Generic))
 }
 
-// MockLabeledSecretSet is a mock of LabeledSecretSet interface.
+// MockLabeledSecretSet is a mock of LabeledSecretSet interface
 type MockLabeledSecretSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockLabeledSecretSetMockRecorder
 }
 
-// MockLabeledSecretSetMockRecorder is the mock recorder for MockLabeledSecretSet.
+// MockLabeledSecretSetMockRecorder is the mock recorder for MockLabeledSecretSet
 type MockLabeledSecretSetMockRecorder struct {
 	mock *MockLabeledSecretSet
 }
 
-// NewMockLabeledSecretSet creates a new mock instance.
+// NewMockLabeledSecretSet creates a new mock instance
 func NewMockLabeledSecretSet(ctrl *gomock.Controller) *MockLabeledSecretSet {
 	mock := &MockLabeledSecretSet{ctrl: ctrl}
 	mock.recorder = &MockLabeledSecretSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockLabeledSecretSet) EXPECT() *MockLabeledSecretSetMockRecorder {
 	return m.recorder
 }
 
-// Labels mocks base method.
+// Labels mocks base method
 func (m *MockLabeledSecretSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
@@ -683,13 +683,13 @@ func (m *MockLabeledSecretSet) Labels() map[string]string {
 	return ret0
 }
 
-// Labels indicates an expected call of Labels.
+// Labels indicates an expected call of Labels
 func (mr *MockLabeledSecretSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledSecretSet)(nil).Labels))
 }
 
-// Set mocks base method.
+// Set mocks base method
 func (m *MockLabeledSecretSet) Set() v1sets.SecretSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
@@ -697,13 +697,13 @@ func (m *MockLabeledSecretSet) Set() v1sets.SecretSet {
 	return ret0
 }
 
-// Set indicates an expected call of Set.
+// Set indicates an expected call of Set
 func (mr *MockLabeledSecretSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledSecretSet)(nil).Set))
 }
 
-// Generic mocks base method.
+// Generic mocks base method
 func (m *MockLabeledSecretSet) Generic() output0.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
@@ -711,36 +711,36 @@ func (m *MockLabeledSecretSet) Generic() output0.ResourceList {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic.
+// Generic indicates an expected call of Generic
 func (mr *MockLabeledSecretSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledSecretSet)(nil).Generic))
 }
 
-// MockBuilder is a mock of Builder interface.
+// MockBuilder is a mock of Builder interface
 type MockBuilder struct {
 	ctrl     *gomock.Controller
 	recorder *MockBuilderMockRecorder
 }
 
-// MockBuilderMockRecorder is the mock recorder for MockBuilder.
+// MockBuilderMockRecorder is the mock recorder for MockBuilder
 type MockBuilderMockRecorder struct {
 	mock *MockBuilder
 }
 
-// NewMockBuilder creates a new mock instance.
+// NewMockBuilder creates a new mock instance
 func NewMockBuilder(ctrl *gomock.Controller) *MockBuilder {
 	mock := &MockBuilder{ctrl: ctrl}
 	mock.recorder = &MockBuilderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockBuilder) EXPECT() *MockBuilderMockRecorder {
 	return m.recorder
 }
 
-// AddIssuedCertificates mocks base method.
+// AddIssuedCertificates mocks base method
 func (m *MockBuilder) AddIssuedCertificates(issuedCertificates ...*v1alpha2.IssuedCertificate) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -750,13 +750,13 @@ func (m *MockBuilder) AddIssuedCertificates(issuedCertificates ...*v1alpha2.Issu
 	m.ctrl.Call(m, "AddIssuedCertificates", varargs...)
 }
 
-// AddIssuedCertificates indicates an expected call of AddIssuedCertificates.
+// AddIssuedCertificates indicates an expected call of AddIssuedCertificates
 func (mr *MockBuilderMockRecorder) AddIssuedCertificates(issuedCertificates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddIssuedCertificates", reflect.TypeOf((*MockBuilder)(nil).AddIssuedCertificates), issuedCertificates...)
 }
 
-// GetIssuedCertificates mocks base method.
+// GetIssuedCertificates mocks base method
 func (m *MockBuilder) GetIssuedCertificates() v1alpha2sets.IssuedCertificateSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetIssuedCertificates")
@@ -764,13 +764,13 @@ func (m *MockBuilder) GetIssuedCertificates() v1alpha2sets.IssuedCertificateSet 
 	return ret0
 }
 
-// GetIssuedCertificates indicates an expected call of GetIssuedCertificates.
+// GetIssuedCertificates indicates an expected call of GetIssuedCertificates
 func (mr *MockBuilderMockRecorder) GetIssuedCertificates() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIssuedCertificates", reflect.TypeOf((*MockBuilder)(nil).GetIssuedCertificates))
 }
 
-// AddDestinationRules mocks base method.
+// AddDestinationRules mocks base method
 func (m *MockBuilder) AddDestinationRules(destinationRules ...*v1alpha3.DestinationRule) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -780,13 +780,13 @@ func (m *MockBuilder) AddDestinationRules(destinationRules ...*v1alpha3.Destinat
 	m.ctrl.Call(m, "AddDestinationRules", varargs...)
 }
 
-// AddDestinationRules indicates an expected call of AddDestinationRules.
+// AddDestinationRules indicates an expected call of AddDestinationRules
 func (mr *MockBuilderMockRecorder) AddDestinationRules(destinationRules ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDestinationRules", reflect.TypeOf((*MockBuilder)(nil).AddDestinationRules), destinationRules...)
 }
 
-// GetDestinationRules mocks base method.
+// GetDestinationRules mocks base method
 func (m *MockBuilder) GetDestinationRules() v1alpha3sets.DestinationRuleSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDestinationRules")
@@ -794,13 +794,13 @@ func (m *MockBuilder) GetDestinationRules() v1alpha3sets.DestinationRuleSet {
 	return ret0
 }
 
-// GetDestinationRules indicates an expected call of GetDestinationRules.
+// GetDestinationRules indicates an expected call of GetDestinationRules
 func (mr *MockBuilderMockRecorder) GetDestinationRules() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestinationRules", reflect.TypeOf((*MockBuilder)(nil).GetDestinationRules))
 }
 
-// AddEnvoyFilters mocks base method.
+// AddEnvoyFilters mocks base method
 func (m *MockBuilder) AddEnvoyFilters(envoyFilters ...*v1alpha3.EnvoyFilter) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -810,13 +810,13 @@ func (m *MockBuilder) AddEnvoyFilters(envoyFilters ...*v1alpha3.EnvoyFilter) {
 	m.ctrl.Call(m, "AddEnvoyFilters", varargs...)
 }
 
-// AddEnvoyFilters indicates an expected call of AddEnvoyFilters.
+// AddEnvoyFilters indicates an expected call of AddEnvoyFilters
 func (mr *MockBuilderMockRecorder) AddEnvoyFilters(envoyFilters ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEnvoyFilters", reflect.TypeOf((*MockBuilder)(nil).AddEnvoyFilters), envoyFilters...)
 }
 
-// GetEnvoyFilters mocks base method.
+// GetEnvoyFilters mocks base method
 func (m *MockBuilder) GetEnvoyFilters() v1alpha3sets.EnvoyFilterSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEnvoyFilters")
@@ -824,13 +824,13 @@ func (m *MockBuilder) GetEnvoyFilters() v1alpha3sets.EnvoyFilterSet {
 	return ret0
 }
 
-// GetEnvoyFilters indicates an expected call of GetEnvoyFilters.
+// GetEnvoyFilters indicates an expected call of GetEnvoyFilters
 func (mr *MockBuilderMockRecorder) GetEnvoyFilters() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEnvoyFilters", reflect.TypeOf((*MockBuilder)(nil).GetEnvoyFilters))
 }
 
-// AddGateways mocks base method.
+// AddGateways mocks base method
 func (m *MockBuilder) AddGateways(gateways ...*v1alpha3.Gateway) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -840,13 +840,13 @@ func (m *MockBuilder) AddGateways(gateways ...*v1alpha3.Gateway) {
 	m.ctrl.Call(m, "AddGateways", varargs...)
 }
 
-// AddGateways indicates an expected call of AddGateways.
+// AddGateways indicates an expected call of AddGateways
 func (mr *MockBuilderMockRecorder) AddGateways(gateways ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddGateways", reflect.TypeOf((*MockBuilder)(nil).AddGateways), gateways...)
 }
 
-// GetGateways mocks base method.
+// GetGateways mocks base method
 func (m *MockBuilder) GetGateways() v1alpha3sets.GatewaySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetGateways")
@@ -854,13 +854,13 @@ func (m *MockBuilder) GetGateways() v1alpha3sets.GatewaySet {
 	return ret0
 }
 
-// GetGateways indicates an expected call of GetGateways.
+// GetGateways indicates an expected call of GetGateways
 func (mr *MockBuilderMockRecorder) GetGateways() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGateways", reflect.TypeOf((*MockBuilder)(nil).GetGateways))
 }
 
-// AddServiceEntries mocks base method.
+// AddServiceEntries mocks base method
 func (m *MockBuilder) AddServiceEntries(serviceEntries ...*v1alpha3.ServiceEntry) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -870,13 +870,13 @@ func (m *MockBuilder) AddServiceEntries(serviceEntries ...*v1alpha3.ServiceEntry
 	m.ctrl.Call(m, "AddServiceEntries", varargs...)
 }
 
-// AddServiceEntries indicates an expected call of AddServiceEntries.
+// AddServiceEntries indicates an expected call of AddServiceEntries
 func (mr *MockBuilderMockRecorder) AddServiceEntries(serviceEntries ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddServiceEntries", reflect.TypeOf((*MockBuilder)(nil).AddServiceEntries), serviceEntries...)
 }
 
-// GetServiceEntries mocks base method.
+// GetServiceEntries mocks base method
 func (m *MockBuilder) GetServiceEntries() v1alpha3sets.ServiceEntrySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceEntries")
@@ -884,13 +884,13 @@ func (m *MockBuilder) GetServiceEntries() v1alpha3sets.ServiceEntrySet {
 	return ret0
 }
 
-// GetServiceEntries indicates an expected call of GetServiceEntries.
+// GetServiceEntries indicates an expected call of GetServiceEntries
 func (mr *MockBuilderMockRecorder) GetServiceEntries() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceEntries", reflect.TypeOf((*MockBuilder)(nil).GetServiceEntries))
 }
 
-// AddVirtualServices mocks base method.
+// AddVirtualServices mocks base method
 func (m *MockBuilder) AddVirtualServices(virtualServices ...*v1alpha3.VirtualService) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -900,13 +900,13 @@ func (m *MockBuilder) AddVirtualServices(virtualServices ...*v1alpha3.VirtualSer
 	m.ctrl.Call(m, "AddVirtualServices", varargs...)
 }
 
-// AddVirtualServices indicates an expected call of AddVirtualServices.
+// AddVirtualServices indicates an expected call of AddVirtualServices
 func (mr *MockBuilderMockRecorder) AddVirtualServices(virtualServices ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVirtualServices", reflect.TypeOf((*MockBuilder)(nil).AddVirtualServices), virtualServices...)
 }
 
-// GetVirtualServices mocks base method.
+// GetVirtualServices mocks base method
 func (m *MockBuilder) GetVirtualServices() v1alpha3sets.VirtualServiceSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVirtualServices")
@@ -914,13 +914,13 @@ func (m *MockBuilder) GetVirtualServices() v1alpha3sets.VirtualServiceSet {
 	return ret0
 }
 
-// GetVirtualServices indicates an expected call of GetVirtualServices.
+// GetVirtualServices indicates an expected call of GetVirtualServices
 func (mr *MockBuilderMockRecorder) GetVirtualServices() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVirtualServices", reflect.TypeOf((*MockBuilder)(nil).GetVirtualServices))
 }
 
-// AddAuthorizationPolicies mocks base method.
+// AddAuthorizationPolicies mocks base method
 func (m *MockBuilder) AddAuthorizationPolicies(authorizationPolicies ...*v1beta1.AuthorizationPolicy) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -930,13 +930,13 @@ func (m *MockBuilder) AddAuthorizationPolicies(authorizationPolicies ...*v1beta1
 	m.ctrl.Call(m, "AddAuthorizationPolicies", varargs...)
 }
 
-// AddAuthorizationPolicies indicates an expected call of AddAuthorizationPolicies.
+// AddAuthorizationPolicies indicates an expected call of AddAuthorizationPolicies
 func (mr *MockBuilderMockRecorder) AddAuthorizationPolicies(authorizationPolicies ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAuthorizationPolicies", reflect.TypeOf((*MockBuilder)(nil).AddAuthorizationPolicies), authorizationPolicies...)
 }
 
-// GetAuthorizationPolicies mocks base method.
+// GetAuthorizationPolicies mocks base method
 func (m *MockBuilder) GetAuthorizationPolicies() v1beta1sets.AuthorizationPolicySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAuthorizationPolicies")
@@ -944,13 +944,13 @@ func (m *MockBuilder) GetAuthorizationPolicies() v1beta1sets.AuthorizationPolicy
 	return ret0
 }
 
-// GetAuthorizationPolicies indicates an expected call of GetAuthorizationPolicies.
+// GetAuthorizationPolicies indicates an expected call of GetAuthorizationPolicies
 func (mr *MockBuilderMockRecorder) GetAuthorizationPolicies() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthorizationPolicies", reflect.TypeOf((*MockBuilder)(nil).GetAuthorizationPolicies))
 }
 
-// AddSecrets mocks base method.
+// AddSecrets mocks base method
 func (m *MockBuilder) AddSecrets(secrets ...*v1.Secret) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -960,13 +960,13 @@ func (m *MockBuilder) AddSecrets(secrets ...*v1.Secret) {
 	m.ctrl.Call(m, "AddSecrets", varargs...)
 }
 
-// AddSecrets indicates an expected call of AddSecrets.
+// AddSecrets indicates an expected call of AddSecrets
 func (mr *MockBuilderMockRecorder) AddSecrets(secrets ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSecrets", reflect.TypeOf((*MockBuilder)(nil).AddSecrets), secrets...)
 }
 
-// GetSecrets mocks base method.
+// GetSecrets mocks base method
 func (m *MockBuilder) GetSecrets() v1sets.SecretSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSecrets")
@@ -974,13 +974,13 @@ func (m *MockBuilder) GetSecrets() v1sets.SecretSet {
 	return ret0
 }
 
-// GetSecrets indicates an expected call of GetSecrets.
+// GetSecrets indicates an expected call of GetSecrets
 func (mr *MockBuilderMockRecorder) GetSecrets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecrets", reflect.TypeOf((*MockBuilder)(nil).GetSecrets))
 }
 
-// BuildLabelPartitionedSnapshot mocks base method.
+// BuildLabelPartitionedSnapshot mocks base method
 func (m *MockBuilder) BuildLabelPartitionedSnapshot(labelKey string) (output.Snapshot, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BuildLabelPartitionedSnapshot", labelKey)
@@ -989,13 +989,13 @@ func (m *MockBuilder) BuildLabelPartitionedSnapshot(labelKey string) (output.Sna
 	return ret0, ret1
 }
 
-// BuildLabelPartitionedSnapshot indicates an expected call of BuildLabelPartitionedSnapshot.
+// BuildLabelPartitionedSnapshot indicates an expected call of BuildLabelPartitionedSnapshot
 func (mr *MockBuilderMockRecorder) BuildLabelPartitionedSnapshot(labelKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildLabelPartitionedSnapshot", reflect.TypeOf((*MockBuilder)(nil).BuildLabelPartitionedSnapshot), labelKey)
 }
 
-// BuildSinglePartitionedSnapshot mocks base method.
+// BuildSinglePartitionedSnapshot mocks base method
 func (m *MockBuilder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (output.Snapshot, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BuildSinglePartitionedSnapshot", snapshotLabels)
@@ -1004,7 +1004,7 @@ func (m *MockBuilder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]s
 	return ret0, ret1
 }
 
-// BuildSinglePartitionedSnapshot indicates an expected call of BuildSinglePartitionedSnapshot.
+// BuildSinglePartitionedSnapshot indicates an expected call of BuildSinglePartitionedSnapshot
 func (mr *MockBuilderMockRecorder) BuildSinglePartitionedSnapshot(snapshotLabels interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildSinglePartitionedSnapshot", reflect.TypeOf((*MockBuilder)(nil).BuildSinglePartitionedSnapshot), snapshotLabels)
