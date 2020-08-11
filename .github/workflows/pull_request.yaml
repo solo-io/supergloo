@@ -57,7 +57,9 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: E2e Tests
+      - name: Clean
+        run: make clean || true
+      - name: e2e Tests
         env:
           RUN_E2E: "1"
         run: |
