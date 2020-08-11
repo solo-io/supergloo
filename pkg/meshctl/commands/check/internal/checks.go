@@ -40,7 +40,7 @@ var (
 	// TODO implement kube connectivity check
 
 	managementPlane = Category{
-		Name: "Management Plane",
+		Name: "Service Mesh Hub",
 		Checks: []Check{
 			NewDeploymentsCheck(),
 		},
