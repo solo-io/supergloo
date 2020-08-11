@@ -19,7 +19,7 @@ func NewDeploymentsCheck() Check {
 }
 
 func (d *deploymentsCheck) GetDescription() string {
-	return "Service Mesh Hub deployments are running"
+	return "Service Mesh Hub pods are running"
 }
 
 func (d *deploymentsCheck) Run(ctx context.Context, c client.Client, installNamespace string) *Failure {
@@ -53,7 +53,7 @@ func (d *deploymentsCheck) checkDeployments(deployments *apps_v1.DeploymentList,
 	var errs []error
 	for _, deployment := range deployments.Items {
 		if deployment.Status.AvailableReplicas < 1 {
-			errs = append(errs, eris.Errorf(`deployment "%s" has no available replicas`, deployment.Name))
+			errs = append(errs, eris.Errorf(`deployment "%s" has no available pods`, deployment.Name))
 		}
 	}
 	if len(errs) > 0 {

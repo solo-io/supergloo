@@ -11,11 +11,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type networkingCrdStatus interface {
-	GetObservedGeneration() int64
-	GetState() v1alpha2.ApprovalState
-}
-
 type networkingCrdCheck struct{}
 
 func NewNetworkingCrdCheck() Check {
@@ -27,20 +22,16 @@ func (c *networkingCrdCheck) GetDescription() string {
 }
 
 func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ string) *Failure {
-	tpClient := v1alpha2.NewTrafficPolicyClient(client)
-	apClient := v1alpha2.NewAccessPolicyClient(client)
-	fsClient := v1alpha2.NewFailoverServiceClient(client)
-
 	var allErrors []error
-	tpList, err := tpClient.ListTrafficPolicy(ctx)
+	tpList, err := v1alpha2.NewTrafficPolicyClient(client).ListTrafficPolicy(ctx)
 	if err != nil {
 		allErrors = append(allErrors, err)
 	}
-	apList, err := apClient.ListAccessPolicy(ctx)
+	apList, err := v1alpha2.NewAccessPolicyClient(client).ListAccessPolicy(ctx)
 	if err != nil {
 		allErrors = append(allErrors, err)
 	}
-	fsList, err := fsClient.ListFailoverService(ctx)
+	fsList, err := v1alpha2.NewFailoverServiceClient(client).ListFailoverService(ctx)
 	if err != nil {
 		allErrors = append(allErrors, err)
 	}
@@ -104,6 +95,12 @@ func (c *networkingCrdCheck) checkFailoverServices(fsList *v1alpha2.FailoverServ
 		}
 	}
 	return errs
+}
+
+// This struct captures metadata common to all networking CRD statuses
+type networkingCrdStatus interface {
+	GetObservedGeneration() int64
+	GetState() v1alpha2.ApprovalState
 }
 
 func (c *networkingCrdCheck) checkStatus(kind string, id ezkube.ResourceId, generation int64, status networkingCrdStatus) error {
