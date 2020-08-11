@@ -10,19 +10,23 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	registrantOpts := &registration.RegistrantOptions{}
+	registrationOpts := registrationOptions{}
 	cmd := &cobra.Command{
 		Use:   "register",
 		Short: "Register a Kubernetes cluster with Service Mesh Hub",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return registration.NewRegistrant(registrantOpts).RegisterCluster(ctx)
+			options := registration.RegistrantOptions(registrationOpts)
+			return registration.NewRegistrant(&options).RegisterCluster(ctx)
 		},
 	}
-	addToFlags(registrantOpts, cmd.Flags())
+	registrationOpts.addToFlags(cmd.Flags())
 	return cmd
 }
 
-func addToFlags(opts *registration.RegistrantOptions, set *pflag.FlagSet) {
+// Use type alias to allow defining receiver method in this package
+type registrationOptions registration.RegistrantOptions
+
+func (opts *registrationOptions) addToFlags(set *pflag.FlagSet) {
 	set.StringVar(&opts.ClusterName, "cluster-name", "", "name of the cluster to register")
 	set.StringVar(&opts.KubeCfgPath, "kubeconfig", "", "path to the kubeconfig from which the registered cluster will be accessed")
 	set.StringVar(&opts.KubeContext, "master-context", "", "name of the kubeconfig context to use for the master cluster")

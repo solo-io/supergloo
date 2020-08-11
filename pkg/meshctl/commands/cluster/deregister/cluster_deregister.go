@@ -11,19 +11,23 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	registrantOpts := &registration.RegistrantOptions{}
+	deregistrationOpts := deregistrationOptions{}
 	cmd := &cobra.Command{
 		Use:   "deregister",
 		Short: "Deregister a Kubernetes cluster from Service Mesh Hub, cleaning up any associated resources",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return registration.NewRegistrant(registrantOpts).DeregisterCluster(ctx)
+			options := registration.RegistrantOptions(deregistrationOpts)
+			return registration.NewRegistrant(&options).DeregisterCluster(ctx)
 		},
 	}
-	addToFlags(registrantOpts, cmd.Flags())
+	deregistrationOpts.addToFlags(cmd.Flags())
 	return cmd
 }
 
-func addToFlags(opts *registration.RegistrantOptions, set *pflag.FlagSet) {
+// Use type alias to allow defining receiver method in this package
+type deregistrationOptions registration.RegistrantOptions
+
+func (opts *deregistrationOptions) addToFlags(set *pflag.FlagSet) {
 	set.StringVar(&opts.ClusterName, "cluster-name", "", "name of the cluster to deregister")
 	set.StringVar(&opts.KubeCfgPath, "kubeconfig", "", "path to the kubeconfig from which the deregistered cluster will be accessed")
 	set.StringVar(&opts.KubeContext, "master-context", "", "name of the kubeconfig context to use for the master cluster")
