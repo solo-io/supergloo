@@ -16,7 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = FDescribe("FailoverService", func() {
+var _ = Describe("FailoverService", func() {
 	var (
 		err      error
 		manifest utils.Manifest
@@ -25,6 +25,14 @@ var _ = FDescribe("FailoverService", func() {
 
 	AfterEach(func() {
 		manifest.Cleanup(BookinfoNamespace)
+		// Ensure restoring bookinfo containers if test fails.
+		env := e2e.GetEnv()
+		env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v1")
+		env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v2")
+		env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v3")
+		env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v1")
+		env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
+		env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v3")
 	})
 
 	It("should create a failover service", func() {
@@ -38,6 +46,13 @@ var _ = FDescribe("FailoverService", func() {
 		}
 
 		By("creating a new FailoverService with the prerequisite TrafficPolicy and VirtualMesh", func() {
+			virtualMesh := data.SelfSignedVirtualMesh(
+				"bookinfo-federation",
+				BookinfoNamespace,
+				[]*v1.ObjectRef{
+					masterMesh,
+					remoteMesh,
+				})
 			trafficPolicy := &networkingv1alpha2.TrafficPolicy{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "TrafficPolicy",
@@ -111,46 +126,41 @@ var _ = FDescribe("FailoverService", func() {
 					},
 				},
 			}
-			virtualMesh := data.SelfSignedVirtualMesh(
-				"bookinfo-federation",
-				BookinfoNamespace,
-				[]*v1.ObjectRef{
-					masterMesh,
-					remoteMesh,
-				})
+
 			err := manifest.AppendResources(trafficPolicy)
-			Expect(err).NotTo(HaveOccurred())
-			err = manifest.AppendResources(failoverService)
 			Expect(err).NotTo(HaveOccurred())
 			err = manifest.AppendResources(virtualMesh)
 			Expect(err).NotTo(HaveOccurred())
-
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
 			// ensure status is updated
 			assertVirtualMeshStatuses()
-
 			// check we can hit the remote service
 			// give 5 minutes because the workflow depends on restarting pods
 			// which can take several minutes
 			Eventually(curlRemoteReviews, "5m", "1s").Should(ContainSubstring(`"color": "black"`))
 
-			// Make it failover to remote cluster with reviews-v3
+			err = manifest.AppendResources(failoverService)
+			Expect(err).NotTo(HaveOccurred())
+			err = manifest.KubeApply(BookinfoNamespace)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Make it failover to remote cluster with reviews-v3, disable all master cluster reviews pods to prove
+			// that request is being served by remote cluster
 			env.Management.DisableContainer(ctx, BookinfoNamespace, "reviews-v1", "reviews")
 			env.Management.DisableContainer(ctx, BookinfoNamespace, "reviews-v2", "reviews")
-			// Disable reviews-v3 on master cluster to prove that the request is hitting the remote cluster
 			env.Management.DisableContainer(ctx, BookinfoNamespace, "reviews-v3", "reviews")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v1")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v3")
 
 			// first check that we have a response to reduce flakiness
-			Eventually(curlFailoverService, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
+			Eventually(curlFailoverService, "1m", "1s").Should(ContainSubstring("200 OK"))
 			// now check that it is consistent 10 times in a row
 			Eventually(func() bool {
 				for i := 0; i < 5; i++ {
-					if !strings.Contains(curlFailoverService(), `"color": "red"`) {
+					if !strings.Contains(curlFailoverService(), "200 OK") {
 						return false
 					}
 					time.Sleep(2 * time.Second)
@@ -169,7 +179,7 @@ var _ = FDescribe("FailoverService", func() {
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v1")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v3")
-			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
+			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 	})
 })
