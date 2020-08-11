@@ -35,22 +35,47 @@ type options struct {
 	kubecontext string
 }
 
+type versionInfo struct {
+	Client clientVersion   `json:"client"`
+	Server []serverVersion `json:"server"`
+}
+type clientVersion struct {
+	Version string `json:"version"`
+}
+type serverVersion struct {
+	Namespace  string      `json:"namespace"`
+	Components []component `json:"components"`
+}
+type component struct {
+	ComponentName string         `json:"componentName"`
+	Image         componentImage `json:"image"`
+}
+type componentImage struct {
+	Domain  string `json:"domain"`
+	Path    string `json:"path"`
+	Version string `json:"version"`
+}
+
 const (
 	appLabelKey         = "app"
 	imageMatchSubstring = "service-mesh-hub"
 )
 
-func getSMHImageVersion(deployment *v1.Deployment) (string, error) {
+func getImage(deployment *v1.Deployment) (*componentImage, error) {
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		if strings.Contains(container.Image, imageMatchSubstring) {
 			parsedImage, err := dockerutils.ParseImageName(container.Image)
 			if err != nil {
-				return "", err
+				return nil, err
 			}
-			return parsedImage.Tag, nil
+			imageVersion := parsedImage.Tag
+			if parsedImage.Digest != "" {
+				imageVersion = parsedImage.Digest
+			}
+			return &componentImage{Domain: parsedImage.Domain, Path: parsedImage.Path, Version: imageVersion}, nil
 		}
 	}
-	return "", nil
+	return nil, nil
 }
 
 func printVersion(ctx context.Context, opts *options) error {
@@ -64,22 +89,30 @@ func printVersion(ctx context.Context, opts *options) error {
 		return err
 	}
 
-	serverComponents := make(map[string]string)
+	// map of namespace to list of components
+	componentMap := make(map[string][]component)
 	for _, deployment := range deployments.Items {
-		version, err := getSMHImageVersion(&deployment)
+		image, err := getImage(&deployment)
 		if err != nil {
 			return err
 		}
-		if version != "" {
-			component := deployment.GetObjectMeta().GetLabels()[appLabelKey]
-			serverComponents[component] = version
+		if image != nil {
+			namespace := deployment.GetObjectMeta().GetNamespace()
+			componentName := deployment.GetObjectMeta().GetLabels()[appLabelKey]
+			componentMap[namespace] = append(componentMap[namespace], component{ComponentName: componentName, Image: *image})
 		}
 	}
 
-	versions := map[string]interface{}{
-		"Client Version": version.Version,
-		"Server Version": serverComponents,
+	// convert to output format
+	var serverVersions []serverVersion
+	for namespace, components := range componentMap {
+		serverVersions = append(serverVersions, serverVersion{Namespace: namespace, Components: components})
 	}
+	versions := versionInfo{
+		Client: clientVersion{Version: version.Version},
+		Server: serverVersions,
+	}
+
 	bytes, err := json.MarshalIndent(versions, "", "  ")
 	if err != nil {
 		return err
