@@ -24,8 +24,6 @@ echo "Using project root ${PROJECT_ROOT}"
 
 source ${PROJECT_ROOT}/ci/setup-funcs.sh
 
-make clean || true
-
 # NOTE(ilackarms): we run the setup_kind clusters sequentially due to this bug:
 # related: https://github.com/kubernetes-sigs/kind/issues/1596
 create_kind_cluster ${masterCluster} 32001
