@@ -54,7 +54,7 @@ func (i Installer) InstallCertAgent(
 		ReleaseName: "cert-agent",
 		ValuesFile:  helmValuesPath,
 		Verbose:     verbose,
-	}.InstallChart()
+	}.InstallChart(ctx)
 }
 
 func ensureNamespace(ctx context.Context, kubeConfig, kubeContext, namespace string) error {

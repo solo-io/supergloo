@@ -244,7 +244,8 @@ test-everything: clean-generated-code generated-code manifest-gen run-tests
 #----------------------------------------------------------------------------------
 
 .PHONY: clean
-clean:
+clean: clean-helm
+	rm install/service-mesh-hub-default.yaml
 	rm -rf  _output/ vendor_any/
 
 .PHONY: clean-generated-code
