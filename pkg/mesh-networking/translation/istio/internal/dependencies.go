@@ -26,7 +26,7 @@ import (
 // NOTE(ilackarms): private interface used here as it's not expected we'll need to
 // define our DependencyFactory anywhere else
 type DependencyFactory interface {
-	MakeMeshServiceTranslator(clusters skv1alpha1sets.KubernetesClusterSet) meshservice.Translator
+	MakeMeshServiceTranslator(clusters skv1alpha1sets.KubernetesClusterSet, meshServices discoveryv1alpha2sets.MeshServiceSet) meshservice.Translator
 	MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet, meshServices discoveryv1alpha2sets.MeshServiceSet) mesh.Translator
 }
 
@@ -36,11 +36,11 @@ func NewDependencyFactory() DependencyFactory {
 	return dependencyFactoryImpl{}
 }
 
-func (d dependencyFactoryImpl) MakeMeshServiceTranslator(clusters skv1alpha1sets.KubernetesClusterSet) meshservice.Translator {
+func (d dependencyFactoryImpl) MakeMeshServiceTranslator(clusters skv1alpha1sets.KubernetesClusterSet, meshServices discoveryv1alpha2sets.MeshServiceSet) meshservice.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	decoratorFactory := decorators.NewFactory()
 
-	return meshservice.NewTranslator(clusterDomains, decoratorFactory)
+	return meshservice.NewTranslator(clusterDomains, decoratorFactory, meshServices)
 }
 
 func (d dependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet, meshServices discoveryv1alpha2sets.MeshServiceSet) mesh.Translator {

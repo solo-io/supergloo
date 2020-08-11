@@ -79,10 +79,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 						{
 							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
 								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-									Name:      "traffic-shift",
-									Namespace: "namespace",
-									Cluster:   "cluster",
-									Port:      9080,
+									Name:        "traffic-shift",
+									Namespace:   "namespace",
+									ClusterName: "cluster",
+									Port:        9080,
 								},
 							},
 							Weight: 50,
@@ -99,7 +99,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				&v1.ClusterObjectRef{
 					Name:        appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Namespace,
-					ClusterName: appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Cluster,
+					ClusterName: appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().ClusterName,
 				}).
 			Return(trafficShiftHostname)
 
@@ -174,9 +174,9 @@ var _ = Describe("TrafficShiftDecorator", func() {
 						{
 							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
 								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-									Name:      "traffic-shift",
-									Namespace: "namespace",
-									Cluster:   "cluster",
+									Name:        "traffic-shift",
+									Namespace:   "namespace",
+									ClusterName: "cluster",
 								},
 							},
 							Weight: 50,
@@ -192,10 +192,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 						{
 							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
 								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-									Name:      "traffic-shift",
-									Namespace: "namespace",
-									Cluster:   "cluster",
-									Port:      1,
+									Name:        "traffic-shift",
+									Namespace:   "namespace",
+									ClusterName: "cluster",
+									Port:        1,
 								},
 							},
 							Weight: 50,
@@ -212,7 +212,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				&v1.ClusterObjectRef{
 					Name:        appliedPolicyMissingPort.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicyMissingPort.Spec.TrafficShift.Destinations[0].GetKubeService().Namespace,
-					ClusterName: appliedPolicyMissingPort.Spec.TrafficShift.Destinations[0].GetKubeService().Cluster,
+					ClusterName: appliedPolicyMissingPort.Spec.TrafficShift.Destinations[0].GetKubeService().ClusterName,
 				}).
 			Return(trafficShiftHostname).Times(2)
 
@@ -284,10 +284,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 						{
 							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
 								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-									Name:      "traffic-shift",
-									Namespace: "namespace",
-									Cluster:   "cluster",
-									Port:      9080,
+									Name:        "traffic-shift",
+									Namespace:   "namespace",
+									ClusterName: "cluster",
+									Port:        9080,
 								},
 							},
 							Weight: 50,
@@ -304,7 +304,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				&v1.ClusterObjectRef{
 					Name:        appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Namespace,
-					ClusterName: appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Cluster,
+					ClusterName: appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().ClusterName,
 				}).
 			Return(trafficShiftHostname)
 

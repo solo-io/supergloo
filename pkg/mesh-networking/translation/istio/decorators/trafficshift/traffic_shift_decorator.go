@@ -16,7 +16,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/trafficpolicyutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -31,12 +30,6 @@ func init() {
 func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 	return NewTrafficShiftDecorator(params.ClusterDomains, params.Snapshot.MeshServices())
 }
-
-var (
-	MultiClusterSubsetsNotSupportedErr = func(dest ezkube.ResourceId) error {
-		return eris.Errorf("Multi cluster subsets are currently not supported, found one on destination: %v", sets.Key(dest))
-	}
-)
 
 // handles setting Weighted Destinations on a VirtualService
 type trafficShiftDecorator struct {
@@ -169,11 +162,6 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	}
 
 	if kubeDest.Subset != nil {
-		// cross-cluster subsets are currently unsupported, so return an error on the traffic policy
-		if kubeDest.ClusterName != sourceCluster {
-			return nil, MultiClusterSubsetsNotSupportedErr(kubeDest)
-		}
-
 		// Use the canonical SMH unique name for this subset.
 		httpRouteDestination.Destination.Subset = subsetName(kubeDest.Subset)
 	}

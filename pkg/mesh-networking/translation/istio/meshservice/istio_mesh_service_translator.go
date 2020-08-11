@@ -2,6 +2,7 @@ package meshservice
 
 import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
@@ -34,9 +35,9 @@ type translator struct {
 	authorizationPolicies authorizationpolicy.Translator
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
+func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory, meshServices discoveryv1alpha2sets.MeshServiceSet) Translator {
 	return &translator{
-		destinationRules:      destinationrule.NewTranslator(clusterDomains, decoratorFactory),
+		destinationRules:      destinationrule.NewTranslator(clusterDomains, decoratorFactory, meshServices),
 		virtualServices:       virtualservice.NewTranslator(clusterDomains, decoratorFactory),
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
 	}
