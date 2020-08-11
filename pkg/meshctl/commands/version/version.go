@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"k8s.io/api/apps/v1"
+	v1 "k8s.io/api/apps/v1"
 )
 
 func Command(ctx context.Context) *cobra.Command {

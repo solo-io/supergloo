@@ -28,7 +28,6 @@ func ClusterLabel(cluster string) (string, string) {
 // uses pod namespace to identify the instance
 func OwnershipLabels() map[string]string {
 	return map[string]string{
-		fmt.Sprintf("owner.%s", v1alpha2.SchemeGroupVersion.Group):
-		defaults.GetPodNamespace(),
+		fmt.Sprintf("owner.%s", v1alpha2.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
 	}
 }

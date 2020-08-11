@@ -1,4 +1,4 @@
-package internal
+package checks
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func (c *networkingCrdCheck) GetDescription() string {
 	return "Service Mesh Hub networking configuration resources are in a valid state"
 }
 
-func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, installNamespace string) *Failure {
+func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ string) *Failure {
 	tpClient := v1alpha2.NewTrafficPolicyClient(client)
 	apClient := v1alpha2.NewAccessPolicyClient(client)
 	fsClient := v1alpha2.NewFailoverServiceClient(client)
