@@ -51,9 +51,9 @@ jobs:
       - uses: azure/setup-kubectl@v1
         with:
           version: 'v1.18.0'
-      - name: Check code
+      - name: Install go tools and check code gen
         run: |
-          ./ci/check-code-diff.sh
+          ./ci/check-code-gen.sh
       - uses: actions/cache@v1
         with:
           path: ~/go/pkg/mod
