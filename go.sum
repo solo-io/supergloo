@@ -658,6 +658,7 @@ github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0/go.mod h1:fT/uN
 github.com/linkerd/linkerd2-proxy-api v0.1.12/go.mod h1:2WJHEYXoww5ALM6c1QspRFiROGZg08tGxCO1js0tTVA=
 github.com/linkerd/linkerd2-proxy-init v1.3.2/go.mod h1:M6iaaLLi06ofuIV6x74SDknSFi7VS/MFqa5m+CwHgLY=
 github.com/lithammer/dedent v1.1.0/go.mod h1:jrXYCQtgg0nJiN+StA2KgR7w6CiQNv9Fd/Z9BP0jIOc=
+github.com/lyft/protoc-gen-star v0.4.14 h1:HUkD4H4dYFIgu3Bns/3N6J5GmKHCEGnhYBwNu3fvXgA=
 github.com/lyft/protoc-gen-star v0.4.14/go.mod h1:mE8fbna26u7aEA2QCVvvfBU/ZrPgocG1206xAFPcs94=
 github.com/lyft/protoc-gen-validate v0.0.13/go.mod h1:XbGvPuh87YZc5TdIa2/I4pLk0QoUACkjt2znoq26NVQ=
 github.com/magiconair/properties v1.8.0/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
@@ -1343,6 +1344,8 @@ istio.io/api v0.0.0-20190515205759-982e5c3888c6/go.mod h1:hhLFQmpHia8zgaM37vb2ml
 istio.io/api v0.0.0-20200213230120-00efe7317328/go.mod h1:bcY3prusO/6vA6zGHz4PNG2v79clPyTw06Xx3fprJSQ=
 istio.io/api v0.0.0-20200610220835-a1a958746907 h1:8zvSmV6s7kEyR/KI/5lBOeCh0oXzVfYph8sfak2Cx0k=
 istio.io/api v0.0.0-20200610220835-a1a958746907/go.mod h1:uXD10AwGZkxIrVKTntYm2uyFWQQfNzhAGkIxLfRNocs=
+istio.io/api v0.0.0-20200723170824-3c2193e74947 h1:XuaHTufmKp6ZZNSZXZJOQ3uoMstXZtWMVVuHOrEv31s=
+istio.io/api v0.0.0-20200723170824-3c2193e74947/go.mod h1:88HN3o1fSD1jo+Z1WTLlJfMm9biopur6Ct9BFKjiB64=
 istio.io/client-go v0.0.0-20200610222318-1cfead1f1938 h1:YDUe60UTScZqwgbxbQU5Ta49YSucJ93cHptb0BtUS3Q=
 istio.io/client-go v0.0.0-20200610222318-1cfead1f1938/go.mod h1:WdL2eDruJRYIVMggI/UJIYfDpOwOCFiFchIsQvf+XGU=
 istio.io/gogo-genproto v0.0.0-20190124151557-6d926a6e6feb/go.mod h1:eIDJ6jNk/IeJz6ODSksHl5Aiczy5JUq6vFhJWI5OtiI=

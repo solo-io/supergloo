@@ -70,7 +70,7 @@ require (
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975 // indirect
 	helm.sh/helm/v3 v3.0.0
-	istio.io/api v0.0.0-20200610220835-a1a958746907
+	istio.io/api v0.0.0-20200723170824-3c2193e74947
 	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
 	k8s.io/api v0.18.2
