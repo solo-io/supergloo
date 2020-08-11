@@ -237,6 +237,9 @@ function register_cluster() {
 
   echo "registering ${cluster} with local cert-agent image..."
 
+  # load cert-agent image
+  kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
+
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
     --master-context "kind-${masterCluster}" \
