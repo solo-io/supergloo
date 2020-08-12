@@ -29,8 +29,8 @@ jobs:
         run: |
           go test ./...
 
-  e2e-istio-1_5:
-    name: end-to-end-istio-1_5
+  e2e-istio:
+    name: end-to-end-istio
     runs-on: ubuntu-18.04
     strategy:
       matrix:
