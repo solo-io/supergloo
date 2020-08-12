@@ -7,14 +7,14 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/headermanipulation"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/headermanipulation"
 	"istio.io/api/networking/v1alpha3"
 )
 
 var _ = Describe("HeaderManipulationDecorator", func() {
 	var (
-		headerManipulationDecorator trafficpolicy.VirtualServiceDecorator
+		headerManipulationDecorator decorators.TrafficPolicyVirtualServiceDecorator
 		output                      *v1alpha3.HTTPRoute
 	)
 
@@ -47,7 +47,7 @@ var _ = Describe("HeaderManipulationDecorator", func() {
 				Remove: []string{"1", "2"},
 			},
 		}
-		err := headerManipulationDecorator.ApplyToVirtualService(
+		err := headerManipulationDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			nil,
 			output,
@@ -67,7 +67,7 @@ var _ = Describe("HeaderManipulationDecorator", func() {
 				HeaderManipulation: &v1alpha2.TrafficPolicySpec_HeaderManipulation{},
 			},
 		}
-		err := headerManipulationDecorator.ApplyToVirtualService(
+		err := headerManipulationDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			nil,
 			output,

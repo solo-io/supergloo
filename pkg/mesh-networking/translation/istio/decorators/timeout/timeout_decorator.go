@@ -4,8 +4,7 @@ import (
 	"github.com/gogo/protobuf/types"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -25,7 +24,7 @@ func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 type timeoutDecorator struct {
 }
 
-var _ trafficpolicy.VirtualServiceDecorator = &timeoutDecorator{}
+var _ decorators.TrafficPolicyVirtualServiceDecorator = &timeoutDecorator{}
 
 func NewTimeoutDecorator() *timeoutDecorator {
 	return &timeoutDecorator{}
@@ -35,7 +34,7 @@ func (d *timeoutDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (d *timeoutDecorator) ApplyToVirtualService(
+func (d *timeoutDecorator) ApplyTrafficPolicyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha2.MeshService,
 	output *networkingv1alpha3spec.HTTPRoute,

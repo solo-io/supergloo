@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 
@@ -60,10 +62,11 @@ type Translator interface {
 type translator struct {
 	ctx            context.Context
 	clusterDomains hostutils.ClusterDomainRegistry
+	meshServices   discoveryv1alpha2sets.MeshServiceSet
 }
 
-func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRegistry) Translator {
-	return &translator{ctx: ctx, clusterDomains: clusterDomains}
+func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRegistry, meshServices discoveryv1alpha2sets.MeshServiceSet) Translator {
+	return &translator{ctx: ctx, clusterDomains: clusterDomains, meshServices: meshServices}
 }
 
 // translate the appropriate resources for the given Mesh.
@@ -148,9 +151,19 @@ func (t *translator) Translate(
 			endpointPorts[port.Name] = ingressGateway.ExternalTlsPort
 		}
 
+		// NOTE(ilackarms): we use these labels to support federated subsets.
+		// the values don't actually matter; but the subset names should
+		// match those on the DestinationRule for the MeshService in the
+		// remote cluster.
+		// based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
+		clusterLabels := map[string]string{
+			"cluster": istioCluster,
+		}
+
 		endpoints := []*networkingv1alpha3spec.WorkloadEntry{{
 			Address: ingressGateway.ExternalAddress,
 			Ports:   endpointPorts,
+			Labels:  clusterLabels,
 		}}
 
 		// list all client meshes
@@ -186,6 +199,22 @@ func (t *translator) Translate(
 				},
 			}
 
+			// NOTE(ilackarms): we make subsets here for the client-side destination rule
+			// which contain all the matching subset names for the remote destination rule.
+			// the labels for the subsets must match the labels on the ServiceEntry Endpoint(s).
+			federatedSubsets := trafficshift.MakeDestinationRuleSubsets(
+				meshService,
+				t.meshServices,
+			)
+			for _, subset := range federatedSubsets {
+				// only the name of the subset matters here.
+				// the labels must match the ServiceEntry.
+				subset.Labels = clusterLabels
+				// we also remove the traffic policy, leaving
+				// it to the server-side DestinationRule to enforce.
+				subset.TrafficPolicy = nil
+			}
+
 			dr := &networkingv1alpha3.DestinationRule{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        federatedHostname,
@@ -201,6 +230,7 @@ func (t *translator) Translate(
 							Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 						},
 					},
+					Subsets: federatedSubsets,
 				},
 			}
 

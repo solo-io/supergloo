@@ -8,14 +8,14 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/outlierdetection"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/outlierdetection"
 	"istio.io/api/networking/v1alpha3"
 )
 
 var _ = Describe("OutlierDetectionDecorator", func() {
 	var (
-		outlierDecorator trafficpolicy.DestinationRuleDecorator
+		outlierDecorator decorators.TrafficPolicyDestinationRuleDecorator
 		output           *v1alpha3.DestinationRule
 	)
 
@@ -42,7 +42,7 @@ var _ = Describe("OutlierDetectionDecorator", func() {
 			Interval:              &types.Duration{Seconds: 10},
 			BaseEjectionTime:      &types.Duration{Seconds: 30},
 		}
-		err := outlierDecorator.ApplyToDestinationRule(
+		err := outlierDecorator.ApplyTrafficPolicyToDestinationRule(
 			appliedPolicy,
 			nil,
 			output,
@@ -64,7 +64,7 @@ var _ = Describe("OutlierDetectionDecorator", func() {
 				},
 			},
 		}
-		err := outlierDecorator.ApplyToDestinationRule(
+		err := outlierDecorator.ApplyTrafficPolicyToDestinationRule(
 			appliedPolicy,
 			nil,
 			output,

@@ -9,8 +9,8 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/trafficshift"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	mock_hostutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/api/networking/v1alpha3"
@@ -20,7 +20,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 	var (
 		ctrl                      *gomock.Controller
 		mockClusterDomainRegistry *mock_hostutils.MockClusterDomainRegistry
-		trafficShiftDecorator     trafficpolicy.VirtualServiceDecorator
+		trafficShiftDecorator     decorators.TrafficPolicyVirtualServiceDecorator
 		output                    *v1alpha3.HTTPRoute
 	)
 
@@ -79,10 +79,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 						{
 							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
 								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-									Name:      "traffic-shift",
-									Namespace: "namespace",
-									Cluster:   "cluster",
-									Port:      9080,
+									Name:        "traffic-shift",
+									Namespace:   "namespace",
+									ClusterName: "cluster",
+									Port:        9080,
 								},
 							},
 							Weight: 50,
@@ -99,7 +99,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				&v1.ClusterObjectRef{
 					Name:        appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Namespace,
-					ClusterName: appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Cluster,
+					ClusterName: appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().ClusterName,
 				}).
 			Return(trafficShiftHostname)
 
@@ -114,7 +114,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				Weight: 50,
 			},
 		}
-		err := trafficShiftDecorator.ApplyToVirtualService(
+		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			originalService,
 			output,
@@ -174,9 +174,9 @@ var _ = Describe("TrafficShiftDecorator", func() {
 						{
 							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
 								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-									Name:      "traffic-shift",
-									Namespace: "namespace",
-									Cluster:   "cluster",
+									Name:        "traffic-shift",
+									Namespace:   "namespace",
+									ClusterName: "cluster",
 								},
 							},
 							Weight: 50,
@@ -192,10 +192,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 						{
 							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
 								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-									Name:      "traffic-shift",
-									Namespace: "namespace",
-									Cluster:   "cluster",
-									Port:      1,
+									Name:        "traffic-shift",
+									Namespace:   "namespace",
+									ClusterName: "cluster",
+									Port:        1,
 								},
 							},
 							Weight: 50,
@@ -212,11 +212,11 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				&v1.ClusterObjectRef{
 					Name:        appliedPolicyMissingPort.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicyMissingPort.Spec.TrafficShift.Destinations[0].GetKubeService().Namespace,
-					ClusterName: appliedPolicyMissingPort.Spec.TrafficShift.Destinations[0].GetKubeService().Cluster,
+					ClusterName: appliedPolicyMissingPort.Spec.TrafficShift.Destinations[0].GetKubeService().ClusterName,
 				}).
 			Return(trafficShiftHostname).Times(2)
 
-		noPortError := trafficShiftDecorator.ApplyToVirtualService(
+		noPortError := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicyMissingPort,
 			originalService,
 			output,
@@ -224,7 +224,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		)
 		Expect(noPortError.Error()).To(ContainSubstring("must provide port for traffic shift destination service"))
 
-		nonexistentPort := trafficShiftDecorator.ApplyToVirtualService(
+		nonexistentPort := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicyNonexistentPort,
 			originalService,
 			output,
@@ -284,10 +284,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 						{
 							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
 								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-									Name:      "traffic-shift",
-									Namespace: "namespace",
-									Cluster:   "cluster",
-									Port:      9080,
+									Name:        "traffic-shift",
+									Namespace:   "namespace",
+									ClusterName: "cluster",
+									Port:        9080,
 								},
 							},
 							Weight: 50,
@@ -304,11 +304,11 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				&v1.ClusterObjectRef{
 					Name:        appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Namespace,
-					ClusterName: appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Cluster,
+					ClusterName: appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().ClusterName,
 				}).
 			Return(trafficShiftHostname)
 
-		err := trafficShiftDecorator.ApplyToVirtualService(
+		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			originalService,
 			output,

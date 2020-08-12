@@ -8,14 +8,14 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy/faultinjection"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/faultinjection"
 	"istio.io/api/networking/v1alpha3"
 )
 
 var _ = Describe("FaultInjectionDecorator", func() {
 	var (
-		faulInjectionDecorator trafficpolicy.VirtualServiceDecorator
+		faulInjectionDecorator decorators.TrafficPolicyVirtualServiceDecorator
 		output                 *v1alpha3.HTTPRoute
 	)
 
@@ -46,7 +46,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				Percentage: &v1alpha3.Percent{Value: 50},
 			},
 		}
-		err := faulInjectionDecorator.ApplyToVirtualService(
+		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			nil,
 			output,
@@ -80,7 +80,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				Percentage:    &v1alpha3.Percent{Value: 50},
 			},
 		}
-		err := faulInjectionDecorator.ApplyToVirtualService(
+		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			nil,
 			output,
@@ -114,7 +114,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				Percentage:    &v1alpha3.Percent{Value: 50},
 			},
 		}
-		err := faulInjectionDecorator.ApplyToVirtualService(
+		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			nil,
 			output,
@@ -142,7 +142,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				},
 			},
 		}
-		err := faulInjectionDecorator.ApplyToVirtualService(
+		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			nil,
 			output,
@@ -163,7 +163,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				},
 			},
 		}
-		err := faulInjectionDecorator.ApplyToVirtualService(
+		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			nil,
 			output,

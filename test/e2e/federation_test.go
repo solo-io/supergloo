@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/go-utils/testutils"
+
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/test/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -55,6 +57,38 @@ var _ = Describe("Federation", func() {
 			// give 5 minutes because the workflow depends on restarting pods
 			// which can take several minutes
 			Eventually(curlRemoteReviews, "5m", "1s").Should(ContainSubstring(`"color": "black"`))
+		})
+
+		By("with federation enabled, TrafficShifts can be used for subsets across meshes ", func() {
+			// delete version v3 of the reviews service in the master cluster
+			err = testutils.Kubectl("scale", "deployment", "--namespace", BookinfoNamespace, "reviews-v3", "--replicas=0")
+			Expect(err).NotTo(HaveOccurred())
+
+			defer testutils.Kubectl("scale", "deployment", "--namespace", BookinfoNamespace, "reviews-v3", "--replicas=1")
+
+			// TODO(ilackarms): general util to wait for pods to be scaled up/down
+			time.Sleep(time.Second * 2)
+
+			// ensure we can no longer reach the v3 service locally
+			Consistently(curlReviews, "8s", "0.1s").ShouldNot(ContainSubstring(`"color": "red"`))
+
+			// create cross cluster traffic shift
+			trafficShiftReviewsV3 := data.RemoteTrafficShiftPolicy("bookinfo-policy", BookinfoNamespace, &v1.ClusterObjectRef{
+				Name:        "reviews",
+				Namespace:   BookinfoNamespace,
+				ClusterName: masterClusterName,
+			}, remoteClusterName, map[string]string{"version": "v3"}, 9080)
+
+			err = manifest.AppendResources(trafficShiftReviewsV3)
+			Expect(err).NotTo(HaveOccurred())
+			err = manifest.KubeApply(BookinfoNamespace)
+			Expect(err).NotTo(HaveOccurred())
+
+			// ensure status is updated
+			assertTrafficPolicyStatuses()
+
+			// check we can eventually hit the v3 subset
+			Eventually(curlReviews, "20s", "0.1s").Should(ContainSubstring(`"color": "red"`))
 		})
 
 		By("delete VirtualMesh should remove the federated service", func() {

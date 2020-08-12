@@ -3,8 +3,7 @@ package headermanipulation
 import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -23,7 +22,7 @@ func decoratorConstructor(_ decorators.Parameters) decorators.Decorator {
 // Handles setting Headers on a VirtualService.
 type headerManipulationDecorator struct{}
 
-var _ trafficpolicy.VirtualServiceDecorator = &headerManipulationDecorator{}
+var _ decorators.TrafficPolicyVirtualServiceDecorator = &headerManipulationDecorator{}
 
 func NewHeaderManipulationDecorator() *headerManipulationDecorator {
 	return &headerManipulationDecorator{}
@@ -33,7 +32,7 @@ func (d *headerManipulationDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (d *headerManipulationDecorator) ApplyToVirtualService(
+func (d *headerManipulationDecorator) ApplyTrafficPolicyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha2.MeshService,
 	output *networkingv1alpha3spec.HTTPRoute,

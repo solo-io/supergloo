@@ -30,13 +30,13 @@ var _ = Describe("TrafficPolicy", func() {
 		manifest, err = utils.NewManifest("bookinfo-policies.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		By("initially curling reviews should return both reviews-v2 and reviews-v3", func() {
+		By("initially curling reviews should return both reviews-v1 and reviews-v2", func() {
 			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
-			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
+			Eventually(curlReviews, "1m", "1s").ShouldNot(ContainSubstring(`"color": "black"`))
 		})
 
 		By("creating a TrafficPolicy with traffic shift to reviews-v2 should consistently shift traffic", func() {
-			trafficShiftReviewsV2 := data.TrafficShiftPolicy("bookinfo-policy", BookinfoNamespace, &v1.ClusterObjectRef{
+			trafficShiftReviewsV2 := data.LocalTrafficShiftPolicy("bookinfo-policy", BookinfoNamespace, &v1.ClusterObjectRef{
 				Name:        "reviews",
 				Namespace:   BookinfoNamespace,
 				ClusterName: masterClusterName,
@@ -58,7 +58,7 @@ var _ = Describe("TrafficPolicy", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "black"`))
-			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
+			Eventually(curlReviews, "1m", "1s").ShouldNot(ContainSubstring(`"color": "black"`))
 		})
 	})
 })

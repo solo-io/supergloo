@@ -45,6 +45,11 @@ var (
 	signingCertSecretType = corev1.SecretType(fmt.Sprintf("%s/generated_signing_cert", certificatesv1alpha2.SchemeGroupVersion.Group))
 )
 
+// used by networking reconciler to filter ignored secrets
+func IsSigningCert(secret *corev1.Secret) bool {
+	return secret.Type == signingCertSecretType
+}
+
 // the VirtualService translator translates a Mesh into a VirtualService.
 type Translator interface {
 	// Translate translates the appropriate VirtualService and DestinationRule for the given Mesh.

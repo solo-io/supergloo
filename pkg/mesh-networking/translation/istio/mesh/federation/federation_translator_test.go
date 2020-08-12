@@ -3,6 +3,8 @@ package federation_test
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/test/data"
+
 	"github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -75,15 +77,28 @@ var _ = Describe("FederationTranslator", func() {
 		meshRef := ezkube.MakeObjectRef(mesh)
 		clientMeshRef := ezkube.MakeObjectRef(clientMesh)
 
+		makeTrafficSplit := func(backingService *v1.ClusterObjectRef, subset map[string]string) *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy {
+			return &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{Spec: &data.RemoteTrafficShiftPolicy(
+				"",
+				"",
+				backingService,
+				clusterName,
+				// NOTE(ilackarms): we only care about the subset labels here
+				subset,
+				0,
+			).Spec}
+		}
+
+		backingService := &v1.ClusterObjectRef{
+			Name:        "some-svc",
+			Namespace:   "some-ns",
+			ClusterName: clusterName,
+		}
 		meshService1 := &discoveryv1alpha2.MeshService{
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec: discoveryv1alpha2.MeshServiceSpec{
 				Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
-					Ref: &v1.ClusterObjectRef{
-						Name:        "some-svc",
-						Namespace:   "some-ns",
-						ClusterName: clusterName,
-					},
+					Ref: backingService,
 					Ports: []*discoveryv1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
 						{
 							Port:     1234,
@@ -98,6 +113,14 @@ var _ = Describe("FederationTranslator", func() {
 					},
 				}},
 				Mesh: meshRef,
+			},
+			// include some applied subsets
+			Status: discoveryv1alpha2.MeshServiceStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+					makeTrafficSplit(backingService, map[string]string{"foo": "bar"}),
+					makeTrafficSplit(backingService, map[string]string{"foo": "baz"}),
+					makeTrafficSplit(backingService, map[string]string{"bar": "qux"}),
+				},
 			},
 		}
 
@@ -133,7 +156,7 @@ var _ = Describe("FederationTranslator", func() {
 			skv1alpha1sets.NewKubernetesClusterSet(kubeCluster),
 		)
 
-		t := NewTranslator(ctx, clusterDomains)
+		t := NewTranslator(ctx, clusterDomains, in.MeshServices())
 		outputs := output.NewBuilder(context.TODO(), "")
 		t.Translate(
 			in,
@@ -254,6 +277,20 @@ var expectedDestinationRules = istiov1alpha3sets.NewDestinationRuleSet(&networki
 				Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 			},
 		},
+		Subsets: []*networkingv1alpha3spec.Subset{
+			{
+				Name:   "foo-bar",
+				Labels: map[string]string{"cluster": "cluster"},
+			},
+			{
+				Name:   "foo-baz",
+				Labels: map[string]string{"cluster": "cluster"},
+			},
+			{
+				Name:   "bar-qux",
+				Labels: map[string]string{"cluster": "cluster"},
+			},
+		},
 	},
 })
 var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
@@ -291,6 +328,7 @@ var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1a
 					"http": 8181,
 					"grpc": 8181,
 				},
+				Labels: map[string]string{"cluster": "cluster"},
 			},
 		},
 	},

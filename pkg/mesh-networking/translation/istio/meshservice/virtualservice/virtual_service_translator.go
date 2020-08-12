@@ -1,8 +1,7 @@
 package virtualservice
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/skv2/pkg/ezkube"
 
 	"reflect"
@@ -74,8 +73,8 @@ func (t *translator) Translate(
 		registerField := registerFieldFunc(virtualServiceFields, virtualService, policy.Ref)
 		for _, decorator := range vsDecorators {
 
-			if trafficPolicyDecorator, ok := decorator.(trafficpolicy.VirtualServiceDecorator); ok {
-				if err := trafficPolicyDecorator.ApplyToVirtualService(
+			if trafficPolicyDecorator, ok := decorator.(decorators.TrafficPolicyVirtualServiceDecorator); ok {
+				if err := trafficPolicyDecorator.ApplyTrafficPolicyToVirtualService(
 					policy,
 					meshService,
 					baseRoute,

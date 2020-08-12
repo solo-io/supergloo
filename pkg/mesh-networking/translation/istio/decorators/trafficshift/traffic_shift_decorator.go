@@ -10,14 +10,12 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/trafficpolicyutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -33,20 +31,13 @@ func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 	return NewTrafficShiftDecorator(params.ClusterDomains, params.Snapshot.MeshServices())
 }
 
-var (
-	MultiClusterSubsetsNotSupportedErr = func(dest ezkube.ResourceId) error {
-		return eris.Errorf("Multi cluster subsets are currently not supported, found one on destination: %v", sets.Key(dest))
-	}
-)
-
 // handles setting Weighted Destinations on a VirtualService
 type trafficShiftDecorator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
 	meshServices   discoveryv1alpha2sets.MeshServiceSet
 }
 
-var _ trafficpolicy.VirtualServiceDecorator = &trafficShiftDecorator{}
-var _ trafficpolicy.AggregatingDestinationRuleDecorator = &trafficShiftDecorator{}
+var _ decorators.TrafficPolicyVirtualServiceDecorator = &trafficShiftDecorator{}
 
 func NewTrafficShiftDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
@@ -62,7 +53,7 @@ func (d *trafficShiftDecorator) DecoratorName() string {
 	return decoratorName
 }
 
-func (d *trafficShiftDecorator) ApplyToVirtualService(
+func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
 	service *discoveryv1alpha2.MeshService,
 	output *networkingv1alpha3spec.HTTPRoute,
@@ -77,21 +68,6 @@ func (d *trafficShiftDecorator) ApplyToVirtualService(
 			return err
 		}
 		output.Route = trafficShiftDestinations
-	}
-	return nil
-}
-
-func (d *trafficShiftDecorator) ApplyAllToDestinationRule(
-	appliedPolicies []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
-	output *networkingv1alpha3spec.DestinationRule,
-	registerField decorators.RegisterField,
-) error {
-	subsets := d.translateSubset(appliedPolicies)
-	if subsets != nil {
-		if err := registerField(&output.Subsets, subsets); err != nil {
-			return err
-		}
-		output.Subsets = subsets
 	}
 	return nil
 }
@@ -149,7 +125,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	svcRef := &v1.ClusterObjectRef{
 		Name:        kubeDest.Name,
 		Namespace:   kubeDest.Namespace,
-		ClusterName: kubeDest.Cluster,
+		ClusterName: kubeDest.ClusterName,
 	}
 
 	// validate destination service is a known meshservice
@@ -186,11 +162,6 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	}
 
 	if kubeDest.Subset != nil {
-		// cross-cluster subsets are currently unsupported, so return an error on the traffic policy
-		if kubeDest.Cluster != sourceCluster {
-			return nil, MultiClusterSubsetsNotSupportedErr(kubeDest)
-		}
-
 		// Use the canonical SMH unique name for this subset.
 		httpRouteDestination.Destination.Subset = subsetName(kubeDest.Subset)
 	}
@@ -198,11 +169,17 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	return httpRouteDestination, nil
 }
 
-func (d *trafficShiftDecorator) translateSubset(
-	appliedPolicies []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
+// make all the necessary subsets for the destination rule for the given meshservice.
+// traverses all the applied traffic policies to find subsets matching this meshervice
+func MakeDestinationRuleSubsets(
+	meshService *discoveryv1alpha2.MeshService,
+	allMeshServices discoveryv1alpha2sets.MeshServiceSet,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
 	appendUniqueSubset := func(subsetLabels map[string]string) {
+		if len(subsetLabels) == 0 {
+			return
+		}
 		for _, subset := range uniqueSubsets {
 			if reflect.DeepEqual(subset, subsetLabels) {
 				return
@@ -211,13 +188,20 @@ func (d *trafficShiftDecorator) translateSubset(
 		uniqueSubsets = append(uniqueSubsets, subsetLabels)
 	}
 
-	for _, policy := range appliedPolicies {
-		for _, destination := range policy.GetSpec().GetTrafficShift().GetDestinations() {
-			if subsetLabels := destination.GetKubeService().GetSubset(); len(subsetLabels) > 0 {
-				appendUniqueSubset(subsetLabels)
+	allMeshServices.List(func(service *discoveryv1alpha2.MeshService) bool {
+		for _, policy := range service.Status.AppliedTrafficPolicies {
+			trafficShiftDestinations := policy.Spec.GetTrafficShift().GetDestinations()
+			for _, dest := range trafficShiftDestinations {
+				switch destType := dest.DestinationType.(type) {
+				case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
+					if meshserviceutils.IsMeshServiceForKubeService(meshService, destType.KubeService) {
+						appendUniqueSubset(destType.KubeService.Subset)
+					}
+				}
 			}
 		}
-	}
+		return true
+	})
 
 	var subsets []*networkingv1alpha3spec.Subset
 	for _, subsetLabels := range uniqueSubsets {
