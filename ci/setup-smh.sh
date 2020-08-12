@@ -24,7 +24,7 @@ echo "deploying smh to ${cluster} from local images..."
 
 ## build and load SMH docker images
 MAKE="make -C $PROJECT_ROOT"
-eval "${MAKE} manifest-gen package-helm build-all-images -B"
+eval "${MAKE} package-helm build-all-images -B"
 
 INSTALL_DIR="${PROJECT_ROOT}/install/"
 DEFAULT_MANIFEST="${INSTALL_DIR}/service-mesh-hub-default.yaml"

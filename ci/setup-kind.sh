@@ -17,6 +17,8 @@
 PROJECT_ROOT=$( cd "$( dirname "${0}" )" >/dev/null 2>&1 && pwd )/..
 echo "Using project root ${PROJECT_ROOT}"
 
+make clean-helm manifest-gen
+
 source ${PROJECT_ROOT}/ci/setup-funcs.sh
 
 if [ "$1" == "cleanup" ]; then
