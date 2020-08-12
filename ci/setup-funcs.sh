@@ -152,7 +152,6 @@ spec:
         enabled: true
       podDNSSearchNamespaces:
       - global
-      - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
 EOF
 
   # enable istio dns for .global stub domain:
