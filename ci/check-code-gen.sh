@@ -12,6 +12,15 @@ fi
 
 make install-go-tools
 
+go mod tidy
+
+if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
+  echo "Need to run go mod tidy before committing"
+  git diff
+  exit 1;
+fi
+
+
 set +e
 
 make generated-code -B > /dev/null
@@ -25,13 +34,5 @@ if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
   echo "Try running 'make install-go-tools generated-code -B' then re-pushing."
   git status --porcelain
   git diff | cat
-  exit 1;
-fi
-
-go mod tidy
-
-if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
-  echo "Need to run go mod tidy before committing"
-  git diff
   exit 1;
 fi
