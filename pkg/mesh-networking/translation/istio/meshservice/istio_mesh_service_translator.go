@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/authorizationpolicy"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
@@ -41,11 +41,11 @@ type translator struct {
 	authorizationPolicies authorizationpolicy.Translator
 }
 
-func NewTranslator(ctx context.Context, allMeshes v1alpha2sets.MeshSet, clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
+func NewTranslator(ctx context.Context, allMeshes v1alpha2sets.MeshSet, clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory, meshServices v1alpha2sets.MeshServiceSet) Translator {
 	return &translator{
 		ctx:                   ctx,
 		allMeshes:             allMeshes,
-		destinationRules:      destinationrule.NewTranslator(clusterDomains, decoratorFactory),
+		destinationRules:      destinationrule.NewTranslator(clusterDomains, decoratorFactory, meshServices),
 		virtualServices:       virtualservice.NewTranslator(clusterDomains, decoratorFactory),
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
 	}

@@ -14,7 +14,7 @@
 #
 #####################################
 
-PROJECT_ROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/..
+PROJECT_ROOT=$( cd "$( dirname "${0}" )" >/dev/null 2>&1 && pwd )/..
 echo "Using project root ${PROJECT_ROOT}"
 source ${PROJECT_ROOT}/ci/setup-funcs.sh
 
@@ -22,8 +22,6 @@ if [ "$1" == "cleanup" ]; then
   kind get clusters | grep -E "${masterCluster}|${remoteCluster}" | while read -r r; do kind delete cluster --name "${r}"; done
   exit 0
 fi
-
-
 
 # NOTE(ilackarms): we run the setup_kind clusters sequentially due to this bug:
 # related: https://github.com/kubernetes-sigs/kind/issues/1596
@@ -75,3 +73,4 @@ fi
 
 # set current context to master cluster
 kubectl config use-context kind-${masterCluster}
+

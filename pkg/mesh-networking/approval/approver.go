@@ -48,11 +48,7 @@ func (v *approver) Approve(ctx context.Context, input input.Snapshot) {
 	}
 	for _, mesh := range input.Meshes().List() {
 		mesh.Status.AppliedVirtualMeshes = getAppliedVirtualMeshes(input.VirtualMeshes().List(), mesh)
-	}
-
-	for _, mesh := range input.Meshes().List() {
-		appliedFailoverServices := getAppliedFailoverServices(input.FailoverServices().List(), mesh)
-		mesh.Status.AppliedFailoverServices = appliedFailoverServices
+		mesh.Status.AppliedFailoverServices = getAppliedFailoverServices(input.FailoverServices().List(), mesh)
 	}
 
 	_, err := v.translator.Translate(ctx, input, reporter)

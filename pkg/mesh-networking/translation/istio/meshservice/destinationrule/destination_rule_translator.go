@@ -3,13 +3,15 @@ package destinationrule
 import (
 	"reflect"
 
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficpolicy"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
@@ -39,10 +41,15 @@ type Translator interface {
 type translator struct {
 	clusterDomains   hostutils.ClusterDomainRegistry
 	decoratorFactory decorators.Factory
+	meshServices     discoveryv1alpha2sets.MeshServiceSet
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
-	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory}
+func NewTranslator(
+	clusterDomains hostutils.ClusterDomainRegistry,
+	decoratorFactory decorators.Factory,
+	meshServices discoveryv1alpha2sets.MeshServiceSet,
+) Translator {
+	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory, meshServices: meshServices}
 }
 
 // translate the appropriate DestinationRUle for the given MeshService.
@@ -68,31 +75,13 @@ func (t *translator) Translate(
 		Snapshot:       in,
 	})
 
-	// Apply decorators which aggregate the entire set of applicable TrafficPolicies to a field on the DestinationRule.
-	trafficPolicyResourceIds := t.trafficPolicyToResourceIds(meshService.Status.AppliedTrafficPolicies)
-	registerField := registerFieldFunc(destinationRuleFields, destinationRule, trafficPolicyResourceIds)
-	for _, decorator := range drDecorators {
-
-		if aggregatingDestinationRuleDecorator, ok := decorator.(trafficpolicy.AggregatingDestinationRuleDecorator); ok {
-			if err := aggregatingDestinationRuleDecorator.ApplyAllToDestinationRule(
-				meshService.Status.AppliedTrafficPolicies,
-				&destinationRule.Spec,
-				registerField,
-			); err != nil {
-				for _, policyResourceId := range trafficPolicyResourceIds {
-					reporter.ReportTrafficPolicyToMeshService(meshService, policyResourceId, eris.Wrapf(err, "%v", decorator.DecoratorName()))
-				}
-			}
-		}
-	}
-
 	// Apply decorators which map a single applicable TrafficPolicy to a field on the DestinationRule.
 	for _, policy := range meshService.Status.AppliedTrafficPolicies {
-		registerField := registerFieldFunc(destinationRuleFields, destinationRule, []ezkube.ResourceId{policy.Ref})
+		registerField := registerFieldFunc(destinationRuleFields, destinationRule, policy.Ref)
 		for _, decorator := range drDecorators {
 
-			if destinationRuleDecorator, ok := decorator.(trafficpolicy.DestinationRuleDecorator); ok {
-				if err := destinationRuleDecorator.ApplyToDestinationRule(
+			if destinationRuleDecorator, ok := decorator.(decorators.TrafficPolicyDestinationRuleDecorator); ok {
+				if err := destinationRuleDecorator.ApplyTrafficPolicyToDestinationRule(
 					policy,
 					meshService,
 					&destinationRule.Spec,
@@ -116,7 +105,7 @@ func (t *translator) Translate(
 func registerFieldFunc(
 	destinationRuleFields fieldutils.FieldOwnershipRegistry,
 	destinationRule *networkingv1alpha3.DestinationRule,
-	policyRefs []ezkube.ResourceId,
+	policy ezkube.ResourceId,
 ) decorators.RegisterField {
 	return func(fieldPtr, val interface{}) error {
 		fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
@@ -127,7 +116,7 @@ func registerFieldFunc(
 		if err := destinationRuleFields.RegisterFieldOwnership(
 			destinationRule,
 			fieldPtr,
-			policyRefs,
+			[]ezkube.ResourceId{policy},
 			&v1alpha2.TrafficPolicy{},
 			0, //TODO(ilackarms): priority
 		); err != nil {
@@ -156,16 +145,10 @@ func (t *translator) initializeDestinationRule(meshService *discoveryv1alpha2.Me
 					Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 				},
 			},
+			Subsets: trafficshift.MakeDestinationRuleSubsets(
+				meshService,
+				t.meshServices,
+			),
 		},
 	}
-}
-
-func (t *translator) trafficPolicyToResourceIds(
-	trafficPolicy []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
-) []ezkube.ResourceId {
-	var resourceIds []ezkube.ResourceId
-	for _, policy := range trafficPolicy {
-		resourceIds = append(resourceIds, policy.Ref)
-	}
-	return resourceIds
 }

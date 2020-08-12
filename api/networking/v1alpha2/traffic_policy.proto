@@ -123,7 +123,7 @@ message TrafficPolicySpec {
                 string namespace = 2;
 
                 // cluster of the destination service (as it is registered with Service Mesh Hub)
-                string cluster = 3;
+                string cluster_name = 3;
 
                 // Subset routing is currently only supported on Istio.
                 map<string, string> subset = 4;
