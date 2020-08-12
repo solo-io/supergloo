@@ -4,18 +4,17 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
-
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh"
 	meshdetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/consul"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/linkerd"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/osm"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshservice"
 	meshservicedetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshservice/detector"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload"
 	meshworkloaddetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector"
 	istiosidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector/istio"
 	linkerdsidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector/linkerd"
+	osmsidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector/osm"
 )
 
 // we must generate in the same package because the interface is private
@@ -43,7 +42,7 @@ type DependencyFactoryImpl struct{}
 func (d DependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, in input.Snapshot) mesh.Translator {
 
 	detectors := meshdetector.MeshDetectors{
-		consul.NewMeshDetector(),
+		// consul.NewMeshDetector(),
 		istio.NewMeshDetector(
 			ctx,
 			in.ConfigMaps(),
@@ -51,9 +50,10 @@ func (d DependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, in input.
 			in.Pods(),
 			in.Nodes(),
 		),
-		linkerd.NewMeshDetector(
-			in.ConfigMaps(),
-		),
+		// linkerd.NewMeshDetector(
+		// 	in.ConfigMaps(),
+		// ),
+		osm.NewMeshDetector(ctx),
 	}
 
 	return mesh.NewTranslator(ctx, detectors)
@@ -66,6 +66,7 @@ func (d DependencyFactoryImpl) MakeMeshWorkloadTranslator(
 	sidecarDetectors := meshworkloaddetector.SidecarDetectors{
 		istiosidecar.NewSidecarDetector(ctx),
 		linkerdsidecar.NewSidecarDetector(ctx),
+		osmsidecar.NewSidecarDetector(ctx),
 	}
 
 	workloadDetector := meshworkloaddetector.NewMeshWorkloadDetector(

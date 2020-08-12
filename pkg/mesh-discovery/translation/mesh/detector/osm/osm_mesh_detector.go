@@ -36,6 +36,9 @@ func (m *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 	if err != nil {
 		return nil, err
 	}
+	if version == "" {
+		return nil, nil
+	}
 	return &v1alpha2.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
 		Spec: v1alpha2.MeshSpec{

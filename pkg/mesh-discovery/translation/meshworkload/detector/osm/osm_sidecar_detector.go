@@ -37,7 +37,7 @@ func NewSidecarDetector(ctx context.Context) *sidecarDetector {
 
 */
 func (s *sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
-	if !containsSidecarAndInitContainer(pod.Spec.Containers) {
+	if !(containsInitContainer(pod.Spec.InitContainers) && containsSidecar(pod.Spec.Containers)) {
 		return nil
 	}
 
@@ -60,16 +60,20 @@ func (s *sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets
 	return nil
 }
 
-func containsSidecarAndInitContainer(containers []corev1.Container) bool {
-	var hasSidecar, hasInit bool
+func containsInitContainer(containers []corev1.Container) bool {
 	for _, container := range containers {
-		if strings.Contains(container.Image, sidecarProxy) {
-			hasSidecar = true
-		}
 		if strings.Contains(container.Image, proxyInit) && strings.Contains(container.Name, proxyInitName) {
-			hasInit = true
+			return true
 		}
 	}
-	// Only return valid workload if sidecar and init container are present
-	return hasSidecar && hasInit
+	return false
+}
+
+func containsSidecar(containers []corev1.Container) bool {
+	for _, container := range containers {
+		if strings.Contains(container.Image, sidecarProxy) {
+			return true
+		}
+	}
+	return false
 }
