@@ -54,7 +54,7 @@ var _ = Describe("Federation", func() {
 			// check we can hit the remote service
 			// give 5 minutes because the workflow depends on restarting pods
 			// which can take several minutes
-			Eventually(curlRemoteReviews, "5m", "1s").Should(ContainSubstring(`"color": "red"`))
+			Eventually(curlRemoteReviews, "10m", "2s").Should(ContainSubstring("200 OK"))
 		})
 
 		By("with federation enabled, TrafficShifts can be used for subsets across meshes ", func() {
