@@ -29,9 +29,15 @@ jobs:
         run: |
           go test ./...
 
-  e2e-istio-1_5:
-    name: end-to-end-istio-1_5
+  e2e-istio:
+    name: end-to-end-istio
     runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        istioctl-binary: [
+          'https://github.com/istio/istio/releases/download/1.5.2/istio-1.5.2-linux.tar.gz',
+          'https://github.com/istio/istio/releases/download/1.6.8/istio-1.6.8-linux-amd64.tar.gz',
+        ]
     steps:
       - uses: actions/checkout@v2
       - run: |
@@ -65,12 +71,15 @@ jobs:
       - name: e2e Tests
         env:
           RUN_E2E: "1"
+          ISTIOCTL_BINARY: ${{ matrix.istioctl-binary }}
         run: |
           make print-version manifest-gen
 
-          curl -sSL https://github.com/istio/istio/releases/download/1.5.2/istio-1.5.2-linux.tar.gz | tar -xzf - istio-1.5.2/bin/istioctl
+          ISTIO_VERSION=$(echo $ISTIOCTL_BINARY | grep -o "istio-[0-9.]*")
+          curl -sSL $ISTIOCTL_BINARY | tar -xzf - $ISTIO_VERSION/bin/istioctl
           # move istio binary to _output, which is gitignored, to avoid `-dirty` suffix when computing version in subsequent makefile invocations
-          mkdir _output && mv istio-1.5.2 _output/istio-1.5.2
-          export PATH=$PWD/_output/istio-1.5.2/bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
+          mkdir _output && mv $ISTIO_VERSION _output/$ISTIO_VERSION
+          export PATH=$PWD/_output/$ISTIO_VERSION/bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
+          istioctl version
 
           make run-tests TEST_PKG=test/e2e RUN_E2E=1 GINKGOFLAGS=-v
