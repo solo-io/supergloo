@@ -85,5 +85,5 @@ func assertTrafficPolicyStatuses() {
 			}
 		}
 		return true
-	}, time.Second*20).Should(BeTrue())
+	}, time.Second*60).Should(BeTrue())
 }
