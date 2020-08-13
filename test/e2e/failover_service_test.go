@@ -29,10 +29,8 @@ var _ = Describe("FailoverService", func() {
 		env := e2e.GetEnv()
 		env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v1")
 		env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v2")
-		env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v3")
 		env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v1")
 		env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
-		env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v3")
 	})
 
 	It("should create a failover service", func() {
@@ -139,7 +137,7 @@ var _ = Describe("FailoverService", func() {
 			// check we can hit the remote service
 			// give 5 minutes because the workflow depends on restarting pods
 			// which can take several minutes
-			Eventually(curlRemoteReviews, "5m", "1s").Should(ContainSubstring(`"color": "black"`))
+			Eventually(curlRemoteReviews, "5m", "1s").Should(ContainSubstring(`"color": "red"`))
 
 			err = manifest.AppendResources(failoverService)
 			Expect(err).NotTo(HaveOccurred())
@@ -150,17 +148,15 @@ var _ = Describe("FailoverService", func() {
 			// that request is being served by remote cluster
 			env.Management.DisableContainer(ctx, BookinfoNamespace, "reviews-v1", "reviews")
 			env.Management.DisableContainer(ctx, BookinfoNamespace, "reviews-v2", "reviews")
-			env.Management.DisableContainer(ctx, BookinfoNamespace, "reviews-v3", "reviews")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v1")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
-			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v3")
 
 			// first check that we have a response to reduce flakiness
-			Eventually(curlFailoverService, "1m", "1s").Should(ContainSubstring("200 OK"))
+			Eventually(curlFailoverService, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
 			// now check that it is consistent 10 times in a row
 			Eventually(func() bool {
 				for i := 0; i < 5; i++ {
-					if !strings.Contains(curlFailoverService(), "200 OK") {
+					if !strings.Contains(curlFailoverService(), `"color": "red"`) {
 						return false
 					}
 					time.Sleep(2 * time.Second)
@@ -175,10 +171,8 @@ var _ = Describe("FailoverService", func() {
 
 			env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v1")
 			env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v2")
-			env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v3")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v1")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
-			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v3")
 			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 	})

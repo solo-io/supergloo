@@ -63,14 +63,6 @@ var _ = Describe("TrafficPolicy", func() {
 	})
 })
 
-//func assertCrdStatuses() {
-//
-//	err := testutils.Kubectl("apply", "-n="+BookinfoNamespace, "-f="+policyManifest)
-//	Expect(err).NotTo(HaveOccurred())
-//
-//	assertTrafficPolicyStatuses()
-//}
-
 func assertTrafficPolicyStatuses() {
 	ctx := context.Background()
 	trafficPolicy := v1alpha2.NewTrafficPolicyClient(dynamicClient)
