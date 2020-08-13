@@ -10,8 +10,6 @@ replace (
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 
-	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.1.0
-
 	k8s.io/client-go => k8s.io/client-go v0.18.6
 
 )
@@ -20,7 +18,6 @@ require (
 	cloud.google.com/go/logging v1.0.0 // indirect
 	contrib.go.opencensus.io/exporter/stackdriver v0.12.9 // indirect
 	contrib.go.opencensus.io/exporter/zipkin v0.1.1 // indirect
-	github.com/Azure/go-autorest/autorest v0.9.4 // indirect
 	github.com/Jeffail/gabs v1.1.0 // indirect
 	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
@@ -92,6 +89,7 @@ require (
 	github.com/onsi/ginkgo v1.13.0
 	github.com/onsi/gomega v1.10.1
 	github.com/open-policy-agent/opa v0.8.2 // indirect
+	github.com/openservicemesh/osm v0.2.0 // indirect
 	github.com/openshift/api v3.9.1-0.20191008181517-e4fd21196097+incompatible // indirect
 	github.com/openzipkin/zipkin-go v0.1.7 // indirect
 	github.com/ory/dockertest v3.3.4+incompatible // indirect
@@ -106,7 +104,6 @@ require (
 	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
 	github.com/rotisserie/eris v0.4.0
 	github.com/servicemeshinterface/smi-sdk-go v0.4.1
-	github.com/shirou/gopsutil v0.0.0-20181107111621-48177ef5f880 // indirect
 	github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/softlayer/softlayer-go v0.0.0-20180806151055-260589d94c7d // indirect

@@ -1,8 +1,11 @@
 package internal
 
 import (
+	"context"
+
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice"
+	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 )
 
 //go:generate mockgen -source ./dependencies.go -destination mocks/dependencies.go

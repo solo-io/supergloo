@@ -54,7 +54,7 @@ func (v *approver) Approve(ctx context.Context, input input.Snapshot) {
 	_, err := v.translator.Translate(ctx, input, reporter)
 	if err != nil {
 		// should never happen
-		contextutils.LoggerFrom(ctx).Errorf("internal error: failed to run translator: %v", err)
+		contextutils.LoggerFrom(ctx).DPanicf("internal error: failed to run translator: %v", err)
 	}
 
 	// initialize traffic policy statuses

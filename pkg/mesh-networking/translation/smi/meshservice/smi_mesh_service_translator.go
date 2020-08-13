@@ -9,11 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/authorizationpolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/destinationrule"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/virtualservice"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice/split"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
@@ -26,6 +22,7 @@ type Translator interface {
 	// Output resources will be added to the output.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
+		ctx context.Context,
 		in input.Snapshot,
 		meshService *discoveryv1alpha2.MeshService,
 		outputs output.Builder,
@@ -34,25 +31,21 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx                   context.Context
-	allMeshes             v1alpha2sets.MeshSet
-	destinationRules      destinationrule.Translator
-	virtualServices       virtualservice.Translator
-	authorizationPolicies authorizationpolicy.Translator
+	ctx          context.Context
+	allMeshes    v1alpha2sets.MeshSet
+	trafficSplit split.Translator
 }
 
-func NewTranslator(ctx context.Context, allMeshes v1alpha2sets.MeshSet, clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
+func NewTranslator(allMeshes v1alpha2sets.MeshSet) Translator {
 	return &translator{
-		ctx:                   ctx,
-		allMeshes:             allMeshes,
-		destinationRules:      destinationrule.NewTranslator(clusterDomains, decoratorFactory),
-		virtualServices:       virtualservice.NewTranslator(clusterDomains, decoratorFactory),
-		authorizationPolicies: authorizationpolicy.NewTranslator(),
+		allMeshes:    allMeshes,
+		trafficSplit: split.NewTranslator(),
 	}
 }
 
 // translate the appropriate resources for the given MeshService.
 func (t *translator) Translate(
+	ctx context.Context,
 	in input.Snapshot,
 	meshService *discoveryv1alpha2.MeshService,
 	outputs output.Builder,
@@ -63,13 +56,8 @@ func (t *translator) Translate(
 		return
 	}
 
-	vs := t.virtualServices.Translate(in, meshService, reporter)
-	dr := t.destinationRules.Translate(in, meshService, reporter)
-	ap := t.authorizationPolicies.Translate(in, meshService, reporter)
-
-	outputs.AddVirtualServices(vs)
-	outputs.AddDestinationRules(dr)
-	outputs.AddAuthorizationPolicies(ap)
+	ts := t.trafficSplit.Translate(ctx, in, meshService, reporter)
+	outputs.AddTrafficSplits(ts)
 }
 
 func (t *translator) isSmiMeshService(
@@ -87,5 +75,5 @@ func (t *translator) isSmiMeshService(
 		contextutils.LoggerFrom(ctx).Errorf("internal error: could not find mesh %v for meshService %v", sets.Key(meshRef), sets.Key(meshService))
 		return false
 	}
-	return mesh.Spec.GetIstio() != nil
+	return mesh.Spec.GetSmiEnabled()
 }

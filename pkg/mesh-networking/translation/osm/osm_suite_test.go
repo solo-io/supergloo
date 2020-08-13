@@ -1,4 +1,4 @@
-package smi_test
+package osm_test
 
 import (
 	"testing"

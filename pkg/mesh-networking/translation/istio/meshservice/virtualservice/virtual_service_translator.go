@@ -138,11 +138,11 @@ func registerFieldFunc(
 
 func (t *translator) initializeVirtualService(meshService *discoveryv1alpha2.MeshService) *networkingv1alpha3.VirtualService {
 	meta := metautils.TranslatedObjectMeta(
-		meshService.Spec.GetKubeService().Ref,
+		meshService.Spec.GetKubeService().GetRef(),
 		meshService.Annotations,
 	)
 
-	hosts := []string{t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.GetKubeService().Ref)}
+	hosts := []string{t.clusterDomains.GetServiceLocalFQDN(meshService.Spec.GetKubeService().GetRef())}
 
 	return &networkingv1alpha3.VirtualService{
 		ObjectMeta: meta,
@@ -160,7 +160,7 @@ func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec) *networkingv
 
 func (t *translator) setDefaultDestination(baseRoute *networkingv1alpha3spec.HTTPRoute, meshService *discoveryv1alpha2.MeshService) {
 	// if a route destination is already set, we don't need to modify the route
-	if baseRoute.Route != nil {
+	if baseRoute.GetRoute() != nil {
 		return
 	}
 

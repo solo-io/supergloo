@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 )
 
@@ -25,13 +26,16 @@ type Translator interface {
 type translator struct {
 	totalTranslates int // TODO(ilackarms): metric
 	istioTranslator istio.Translator
+	smiTranslator   smi.Translator
 }
 
 func NewTranslator(
 	istioTranslator istio.Translator,
+	smiTranslator smi.Translator,
 ) Translator {
 	return &translator{
 		istioTranslator: istioTranslator,
+		smiTranslator:   smiTranslator,
 	}
 }
 
@@ -46,6 +50,8 @@ func (t *translator) Translate(
 	outputs := output.NewBuilder(ctx, fmt.Sprintf("networking-%v", t.totalTranslates))
 
 	t.istioTranslator.Translate(ctx, in, outputs, reporter)
+
+	t.smiTranslator.Translate(ctx, in, outputs, reporter)
 
 	return outputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
 }
