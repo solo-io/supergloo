@@ -32,6 +32,24 @@ install_istio ${masterCluster} 32001 &
 create_kind_cluster ${remoteCluster} 32000
 install_istio ${remoteCluster} 32000 &
 
+# install bookinfo without reviews-v3 to master cluster
+kubectl --context kind-${masterCluster} apply -f ./ci/bookinfo.yaml -l 'app,version notin (v3)'
+kubectl --context kind-${masterCluster} apply -f ./ci/bookinfo.yaml -l 'account'
+
+# install only reviews-v3 to remote cluster
+kubectl --context kind-${remoteCluster} apply -f ./ci/bookinfo.yaml -l 'app,version in (v3)'
+kubectl --context kind-${remoteCluster} apply -f ./ci/bookinfo.yaml -l 'service=reviews'
+kubectl --context kind-${remoteCluster} apply -f ./ci/bookinfo.yaml -l 'account=reviews'
+kubectl --context kind-${remoteCluster} apply -f ./ci/bookinfo.yaml -l 'app=ratings'
+kubectl --context kind-${remoteCluster} apply -f ./ci/bookinfo.yaml -l 'account=ratings'
+
+# wait for deployments to finish
+kubectl --context kind-${masterCluster} rollout status deployment/productpage-v1 --timeout=300s
+kubectl --context kind-${masterCluster} rollout status deployment/reviews-v1 --timeout=300s
+kubectl --context kind-${masterCluster} rollout status deployment/reviews-v2 --timeout=300s
+
+kubectl --context kind-${remoteCluster} rollout status deployment/reviews-v3 --timeout=300s
+
 wait
 
 echo successfully set up clusters.
