@@ -43,6 +43,7 @@ jobs:
           name: e2e istio 1.5 tests
           no_output_timeout: 30m
           command: |
+            
             make print-version install-go-tools manifest-gen
             curl -sSL https://github.com/istio/istio/releases/download/1.5.2/istio-1.5.2-linux.tar.gz | tar -xzf - istio-1.5.2/bin/istioctl
             export PATH=$PWD/istio-1.5.2/bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
