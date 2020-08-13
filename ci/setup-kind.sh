@@ -32,6 +32,8 @@ install_istio ${masterCluster} 32001 &
 create_kind_cluster ${remoteCluster} 32000
 install_istio ${remoteCluster} 32000 &
 
+wait
+
 # create istio-injectable namespace
 kubectl --context kind-${masterCluster} create namespace bookinfo
 kubectl --context kind-${masterCluster} label ns bookinfo istio-injection=enabled --overwrite
@@ -55,8 +57,6 @@ kubectl --context kind-${masterCluster} -n bookinfo rollout status deployment/re
 kubectl --context kind-${masterCluster} -n bookinfo rollout status deployment/reviews-v2 --timeout=300s
 
 kubectl --context kind-${remoteCluster} -n bookinfo rollout status deployment/reviews-v3 --timeout=300s
-
-wait
 
 echo successfully set up clusters.
 
