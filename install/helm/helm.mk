@@ -7,10 +7,10 @@ CHART_OUTPUT_DIR := $(HELM_OUTPUT_DIR)/charts
 .PHONY: clean-helm
 clean-helm:
 	rm -rf $(HELM_OUTPUT_DIR)
-	rm $(SMH_CHART_DIR)/Chart.yaml
-	rm $(SMH_CHART_DIR)/values.yamls
-	rm $(CA_CHART_DIR)/Chart.yaml
-	rm $(CA_CHART_DIR)/values.yamls
+	rm -f $(SMH_CHART_DIR)/Chart.yaml
+	rm -f $(SMH_CHART_DIR)/values.yaml
+	rm -f $(CA_CHART_DIR)/Chart.yaml
+	rm -f $(CA_CHART_DIR)/values.yaml
 
 .PHONY: package-helm
 package-helm: chart-gen
