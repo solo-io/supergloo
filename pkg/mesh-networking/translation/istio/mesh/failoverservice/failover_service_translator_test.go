@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -293,11 +294,13 @@ resolution: DNS
 				Name:        "failover-service",
 				Namespace:   "istio-system",
 				ClusterName: "cluster-1",
+				Labels:      metautils.TranslatedObjectLabels(),
 			},
 			{
 				Name:        "failover-service",
 				Namespace:   "istio-system",
 				ClusterName: "cluster-2",
+				Labels:      metautils.TranslatedObjectLabels(),
 			},
 		}
 		expectedServiceEntryObjectMetas := []metav1.ObjectMeta{
@@ -305,11 +308,13 @@ resolution: DNS
 				Name:        "failover-service",
 				Namespace:   defaults.GetPodNamespace(),
 				ClusterName: "cluster-1",
+				Labels:      metautils.TranslatedObjectLabels(),
 			},
 			{
 				Name:        "failover-service",
 				Namespace:   defaults.GetPodNamespace(),
 				ClusterName: "cluster-2",
+				Labels:      metautils.TranslatedObjectLabels(),
 			},
 		}
 		var envoyFilterYamls []string
