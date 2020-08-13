@@ -32,6 +32,12 @@ install_istio ${masterCluster} 32001 &
 create_kind_cluster ${remoteCluster} 32000
 install_istio ${remoteCluster} 32000 &
 
+# create istio-injectable namespace
+kubectl --context kind-${masterCluster} create namespace bookinfo
+kubectl --context kind-${masterCluster} label ns bookinfo istio-injection=enabled --overwrite
+kubectl --context kind-${remoteCluster} create namespace bookinfo
+kubectl --context kind-${remoteCluster} label ns bookinfo istio-injection=enabled --overwrite
+
 # install bookinfo without reviews-v3 to master cluster
 kubectl --context kind-${masterCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app notin (details),version notin (v3)'
 kubectl --context kind-${masterCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'account'

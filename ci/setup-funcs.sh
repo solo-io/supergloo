@@ -187,10 +187,6 @@ data:
     }
 EOF
 
-  # prepare bookinfo namespace
-  ${K} create namespace bookinfo
-  ${K} label ns bookinfo istio-injection=enabled --overwrite
-
   printf "\n\n---\n"
   echo "Finished setting up cluster ${cluster}"
 
