@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 
 	udpa_type_v1 "github.com/cncf/udpa/go/udpa/type/v1"
 	envoy_api_v2 "github.com/envoyproxy/go-control-plane/envoy/api/v2"
@@ -198,6 +199,7 @@ func (t *translator) translateServiceEntries(
 			Name:        failoverService.Ref.Name,
 			Namespace:   defaults.GetPodNamespace(),
 			ClusterName: mesh.Spec.GetIstio().Installation.Cluster,
+			Labels:      metautils.TranslatedObjectLabels(),
 		},
 		Spec: networkingv1alpha3spec.ServiceEntry{
 			Hosts: []string{failoverService.Spec.GetHostname()},
@@ -233,6 +235,7 @@ func (t *translator) translateEnvoyFilters(
 			Name:        failoverService.Ref.Name,
 			Namespace:   istioInstallation.Namespace,
 			ClusterName: istioInstallation.Cluster,
+			Labels:      metautils.TranslatedObjectLabels(),
 		},
 		Spec: networkingv1alpha3spec.EnvoyFilter{
 			ConfigPatches: patches,
