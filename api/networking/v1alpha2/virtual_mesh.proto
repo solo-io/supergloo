@@ -78,7 +78,8 @@ message VirtualMeshSpec {
             This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc
             addition of additional clusters into a virtual mesh.
         */
-        message LimitedTrust {}
+        message LimitedTrust {
+        }
 
     }
 
@@ -149,7 +150,7 @@ message VirtualMeshStatus {
     // the state of the overall resource.
     // will only show accepted if it has been successfully
     // applied to all target meshes.
-    ApprovalState state = 2;
+    ApprovalStatus status = 2;
 
     // The status of the VirtualMesh for each Mesh to which it has been applied.
     // A TrafficPolicy may be Accepted for some Meshes and rejected for others.

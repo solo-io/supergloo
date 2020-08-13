@@ -68,10 +68,11 @@ func (t *translator) Translate(
 		return
 	}
 
-	for _, vMesh := range mesh.Status.AppliedVirtualMeshes {
-		t.mtlsTranslator.Translate(mesh, vMesh, outputs, reporter)
-		t.federationTranslator.Translate(in, mesh, vMesh, outputs, reporter)
-		t.accessTranslator.Translate(mesh, vMesh, outputs)
+	appliedVirtualMesh := mesh.Status.AppliedVirtualMesh
+	if appliedVirtualMesh != nil {
+		t.mtlsTranslator.Translate(mesh, appliedVirtualMesh, outputs, reporter)
+		t.federationTranslator.Translate(in, mesh, appliedVirtualMesh, outputs, reporter)
+		t.accessTranslator.Translate(mesh, appliedVirtualMesh, outputs)
 	}
 
 	for _, failoverService := range mesh.Status.AppliedFailoverServices {
