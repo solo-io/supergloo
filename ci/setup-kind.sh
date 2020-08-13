@@ -33,11 +33,11 @@ create_kind_cluster ${remoteCluster} 32000
 install_istio ${remoteCluster} 32000 &
 
 # install bookinfo without reviews-v3 to master cluster
-kubectl --context kind-${masterCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app,version notin (v3)'
+kubectl --context kind-${masterCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app notin (details),version notin (v3)'
 kubectl --context kind-${masterCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'account'
 
 # install only reviews-v3 to remote cluster
-kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app,version in (v3)'
+kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app notin (details),version in (v3)'
 kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'service=reviews'
 kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'account=reviews'
 kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app=ratings'
