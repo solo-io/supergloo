@@ -148,8 +148,8 @@ func (p *Pod) Curl(ctx context.Context, args ...string) string {
 	return kubectl.CurlWithEphemeralPod(ctx, p.Cluster.Context, p.Namespace, p.Name, args...)
 }
 
-func (k *KubeContext) GetPod(ns, app string) *Pod {
-	pl, err := k.Clientset.CoreV1().Pods(ns).List(v1.ListOptions{LabelSelector: "app=" + app})
+func (k *KubeContext) GetPod(ctx context.Context, ns, app string) *Pod {
+	pl, err := k.Clientset.CoreV1().Pods(ns).List(ctx, v1.ListOptions{LabelSelector: "app=" + app})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(pl.Items).NotTo(BeEmpty())
 

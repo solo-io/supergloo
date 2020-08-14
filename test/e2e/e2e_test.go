@@ -48,7 +48,7 @@ var (
 		env := e2e.GetEnv()
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute/3)
 		defer cancel()
-		out := env.Management.GetPod(BookinfoNamespace, "productpage").Curl(ctx, url, "-v")
+		out := env.Management.GetPod(ctx, BookinfoNamespace, "productpage").Curl(ctx, url, "-v")
 		GinkgoWriter.Write([]byte(out))
 		return out
 	}

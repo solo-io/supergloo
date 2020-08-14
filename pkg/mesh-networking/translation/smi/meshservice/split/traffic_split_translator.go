@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	smiaccessv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
+	"github.com/rotisserie/eris"
 	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
-	smislpitv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha3"
+	smislpitv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -33,10 +32,8 @@ type Translator interface {
 		in input.Snapshot,
 		meshService *discoveryv1alpha2.MeshService,
 		reporter reporting.Reporter,
-	) (*smislpitv1alpha3.TrafficSplit, *smispecsv1alpha3.HTTPRouteGroup)
+	) *smislpitv1alpha2.TrafficSplit
 }
-
-type registerFieldFunc func(backends *[]smislpitv1alpha3.TrafficSplitBackend) error
 
 func NewUnsupportedFeatureError(resource ezkube.ResourceId, fieldName, reason string) error {
 	return &UnsupportedFeatureError{
@@ -74,7 +71,7 @@ func (t *translator) Translate(
 	in input.Snapshot,
 	meshService *discoveryv1alpha2.MeshService,
 	reporter reporting.Reporter,
-) (*smislpitv1alpha3.TrafficSplit, *smispecsv1alpha3.HTTPRouteGroup) {
+) *smislpitv1alpha2.TrafficSplit {
 	kubeService := meshService.Spec.GetKubeService()
 
 	if kubeService == nil {
@@ -82,25 +79,17 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	trafficSplit := &smislpitv1alpha3.TrafficSplit{
+	trafficSplit := &smislpitv1alpha2.TrafficSplit{
 		ObjectMeta: metautils.TranslatedObjectMeta(
 			meshService.Spec.GetKubeService().Ref,
 			meshService.Annotations,
 		),
-		Spec: smislpitv1alpha3.TrafficSplitSpec{
+		Spec: smislpitv1alpha2.TrafficSplitSpec{
 			// TODO: Fix this key
 			Service:  fmt.Sprintf("%s.%s", kubeService.GetRef().GetName(), kubeService.GetRef().GetNamespace()),
 			Backends: nil,
-			Matches:  nil,
 		},
 	}
-
-	httpRoute := &smispecsv1alpha3.HTTPRouteGroup{}
-
-	trafficTarget := &smiaccessv1alpha2.TrafficTarget{}
-	// register the owners of the traffic split fields
-	trafficSplitFields := fieldutils.NewOwnershipRegistry()
-	fieldFunc := t.registerFieldFunc()
 
 	for _, tp := range meshService.Status.GetAppliedTrafficPolicies() {
 		if tp.Spec.GetCorsPolicy() != nil {
@@ -145,9 +134,45 @@ func (t *translator) Translate(
 				"Smi does not support request timeout",
 			))
 		}
-		tp.Spec.GetTrafficShift()
-	}
 
+		// If there is no traffic shifting, skip the rest of the translation
+		if len(tp.Spec.GetTrafficShift().GetDestinations()) == 0 {
+			continue
+		} else if len(trafficSplit.Spec.Backends) != 0 {
+			// Each smi mesh service can only have a single applied traffic policy
+			// TODO(EItanya): clearer error
+			reporter.ReportTrafficPolicyToMeshService(meshService, tp.GetRef(), eris.New("too many owners"))
+		}
+
+		backends, err := t.buildBackends(tp.GetRef(), tp.Spec.GetTrafficShift(), kubeService)
+		if err != nil {
+			reporter.ReportTrafficPolicyToMeshService(meshService, tp.GetRef(), err)
+		}
+
+		trafficSplit.Spec.Backends = backends
+
+		// Only create the route group if there are any matchers
+		if len(tp.Spec.GetHttpRequestMatchers()) == 0 {
+			continue
+		}
+
+		// httpMatchers, err := t.buildRouteMatches(tp.GetRef(), tp.Spec.GetHttpRequestMatchers())
+		// if err != nil {
+		// 	reporter.ReportTrafficPolicyToMeshService(meshService, tp.GetRef(), err)
+		// }
+
+		// httpRouteGroup = &smispecsv1alpha3.HTTPRouteGroup{
+		// 	ObjectMeta: metautils.TranslatedObjectMeta(
+		// 		meshService.Spec.GetKubeService().Ref,
+		// 		meshService.Annotations,
+		// 	),
+		// 	// set the route group matchers to the current
+		// 	Spec: smispecsv1alpha3.HTTPRouteGroupSpec{
+		// 		Matches: httpMatchers,
+		// 	},
+		// }
+	}
+	return trafficSplit
 }
 
 func (t *translator) buildRouteMatches(
@@ -167,21 +192,21 @@ func (t *translator) buildRouteMatches(
 		if matcher.GetPrefix() != "" {
 			return nil, NewUnsupportedFeatureError(
 				tp,
-				"HttpMatcher.Prefix",
+				fmt.Sprintf("HttpMatcher[%d].Prefix", idx),
 				"Smi does not support prefix path matching",
 			)
 		}
 		if matcher.GetExact() != "" {
 			return nil, NewUnsupportedFeatureError(
 				tp,
-				"HttpMatcher.Exact",
+				fmt.Sprintf("HttpMatcher[%d].Exact", idx),
 				"Smi does not support exact path matching",
 			)
 		}
 
 		httpMatch := smispecsv1alpha3.HTTPMatch{
 			// create a unique key for this HTTP route match name
-			Name:      fmt.Sprintf("%s_%d", sets.Key(tp), idx),
+			Name:      fmt.Sprintf("%s_%d", sets.TypedKey(tp), idx),
 			PathRegex: matcher.GetRegex(),
 			// Initialize just in case
 			Headers: map[string]string{},
@@ -195,12 +220,12 @@ func (t *translator) buildRouteMatches(
 			httpMatch.Methods = []string{string(smispecsv1alpha3.HTTPRouteMethodAll)}
 		}
 
-		for _, header := range matcher.GetHeaders() {
+		for headerIdx, header := range matcher.GetHeaders() {
 
 			if header.GetInvertMatch() {
 				return nil, NewUnsupportedFeatureError(
 					tp,
-					"HttpMatcher.Headers.Invert",
+					fmt.Sprintf("HttpMatcher[%d].Headers[%d].Invert", idx, headerIdx),
 					"Smi does not support inverted header matching",
 				)
 			}
@@ -208,7 +233,7 @@ func (t *translator) buildRouteMatches(
 			if header.GetRegex() {
 				return nil, NewUnsupportedFeatureError(
 					tp,
-					"HttpMatcher.Headers.Regex",
+					fmt.Sprintf("HttpMatcher[%d].Headers[%d].Regex", idx, headerIdx),
 					"Smi does not support regex header matching",
 				)
 			}
@@ -221,26 +246,47 @@ func (t *translator) buildRouteMatches(
 	return result, nil
 }
 
-func (t *translator) buildBackends() []smislpitv1alpha3.TrafficSplitBackend {
-
-}
-
-// construct the callback for registering fields in the virtual service
-func (t *translator) registerFieldFunc(
-	trafficSplitFields fieldutils.FieldOwnershipRegistry,
-	trafficSplit *smislpitv1alpha3.TrafficSplit,
-	policyRef ezkube.ResourceId,
-) registerFieldFunc {
-	return func(backends *[]smislpitv1alpha3.TrafficSplitBackend) error {
-		if err := trafficSplitFields.RegisterFieldOwnership(
-			trafficSplit,
-			backends,
-			[]ezkube.ResourceId{policyRef},
-			&v1alpha2.TrafficPolicy{},
-			0,
-		); err != nil {
-			return err
+func (t *translator) buildBackends(
+	tp *v1.ObjectRef,
+	multiDest *v1alpha2.TrafficPolicySpec_MultiDestination,
+	meshKubeService *discoveryv1alpha2.MeshServiceSpec_KubeService,
+) ([]smislpitv1alpha2.TrafficSplitBackend, error) {
+	var result []smislpitv1alpha2.TrafficSplitBackend
+	for idx, dest := range multiDest.GetDestinations() {
+		backend := smislpitv1alpha2.TrafficSplitBackend{
+			Weight: int(dest.GetWeight()),
 		}
-		return nil
+		kubeService := dest.GetKubeService()
+		if kubeService == nil {
+			return nil, eris.New("no desination type found")
+		}
+
+		if len(kubeService.GetSubset()) != 0 {
+			return nil, NewUnsupportedFeatureError(
+				tp,
+				fmt.Sprintf("TrafficShift.Destination[%d].Subest", idx),
+				"Smi does not support subset routing",
+			)
+		}
+
+		if kubeService.GetPort() != 0 {
+			return nil, NewUnsupportedFeatureError(
+				tp,
+				fmt.Sprintf("TrafficShift.Destination[%d].Port", idx),
+				"Smi does not support specifying a service port for traffic shifting",
+			)
+		}
+
+		if kubeService.GetClusterName() != meshKubeService.GetRef().GetClusterName() {
+			return nil, NewUnsupportedFeatureError(
+				tp,
+				fmt.Sprintf("TrafficShift.Destination[%d].Cluster", idx),
+				"Smi does not currently support multi cluster traffic shifting",
+			)
+		}
+
+		backend.Service = fmt.Sprintf("%s.%s", kubeService.GetName(), kubeService.GetNamespace())
+		result = append(result, backend)
 	}
+	return result, nil
 }

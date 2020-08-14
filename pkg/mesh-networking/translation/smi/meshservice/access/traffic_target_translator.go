@@ -5,6 +5,7 @@ import (
 	"context"
 
 	smiaccessv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
+	"github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
@@ -25,7 +26,7 @@ type Translator interface {
 		in input.Snapshot,
 		meshService *discoveryv1alpha2.MeshService,
 		reporter reporting.Reporter,
-	) *smiaccessv1alpha2.TrafficTarget
+	) (*smiaccessv1alpha2.TrafficTarget, *v1alpha3.HTTPRouteGroup)
 }
 
 func NewTranslator() Translator {
@@ -40,10 +41,9 @@ func (t *translator) Translate(
 	in input.Snapshot,
 	meshService *discoveryv1alpha2.MeshService,
 	reporter reporting.Reporter,
-) *smiaccessv1alpha2.TrafficTarget {
-
-	for _, tp := range meshService.Status.GetAppliedTrafficPolicies() {
-		tp.Spec.GetTrafficShift()
-	}
-
+) (*smiaccessv1alpha2.TrafficTarget, *v1alpha3.HTTPRouteGroup) {
+	panic("not implemented")
+	// for _, tp := range meshService.Status.GetAppliedTrafficPolicies() {
+	// 	tp.Spec.GetTrafficShift()
+	// }
 }

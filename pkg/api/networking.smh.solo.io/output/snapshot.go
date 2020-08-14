@@ -31,8 +31,8 @@ import (
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1 "k8s.io/api/core/v1"
 
-	split_smi_spec_io_v1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha3"
-	split_smi_spec_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/smi/split.smi-spec.io/v1alpha3/sets"
+	split_smi_spec_io_v1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
+	split_smi_spec_io_v1alpha2_sets "github.com/solo-io/external-apis/pkg/api/smi/split.smi-spec.io/v1alpha2/sets"
 
 	access_smi_spec_io_v1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	access_smi_spec_io_v1alpha2_sets "github.com/solo-io/external-apis/pkg/api/smi/access.smi-spec.io/v1alpha2/sets"
@@ -150,7 +150,7 @@ func NewLabelPartitionedSnapshot(
 
 	secrets v1_sets.SecretSet,
 
-	trafficSplits split_smi_spec_io_v1alpha3_sets.TrafficSplitSet,
+	trafficSplits split_smi_spec_io_v1alpha2_sets.TrafficSplitSet,
 
 	trafficTargets access_smi_spec_io_v1alpha2_sets.TrafficTargetSet,
 
@@ -238,7 +238,7 @@ func NewSinglePartitionedSnapshot(
 
 	secrets v1_sets.SecretSet,
 
-	trafficSplits split_smi_spec_io_v1alpha3_sets.TrafficSplitSet,
+	trafficSplits split_smi_spec_io_v1alpha2_sets.TrafficSplitSet,
 
 	trafficTargets access_smi_spec_io_v1alpha2_sets.TrafficTargetSet,
 
@@ -748,8 +748,8 @@ func partitionSecretsByLabel(labelKey string, set v1_sets.SecretSet) ([]LabeledS
 	return partitionedSecrets, nil
 }
 
-func partitionTrafficSplitsByLabel(labelKey string, set split_smi_spec_io_v1alpha3_sets.TrafficSplitSet) ([]LabeledTrafficSplitSet, error) {
-	setsByLabel := map[string]split_smi_spec_io_v1alpha3_sets.TrafficSplitSet{}
+func partitionTrafficSplitsByLabel(labelKey string, set split_smi_spec_io_v1alpha2_sets.TrafficSplitSet) ([]LabeledTrafficSplitSet, error) {
+	setsByLabel := map[string]split_smi_spec_io_v1alpha2_sets.TrafficSplitSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
@@ -762,7 +762,7 @@ func partitionTrafficSplitsByLabel(labelKey string, set split_smi_spec_io_v1alph
 
 		setForValue, ok := setsByLabel[labelValue]
 		if !ok {
-			setForValue = split_smi_spec_io_v1alpha3_sets.NewTrafficSplitSet()
+			setForValue = split_smi_spec_io_v1alpha2_sets.NewTrafficSplitSet()
 			setsByLabel[labelValue] = setForValue
 		}
 		setForValue.Insert(obj)
@@ -971,7 +971,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	}
 	snapshotMap["secrets"] = secretSet.List()
 
-	trafficSplitSet := split_smi_spec_io_v1alpha3_sets.NewTrafficSplitSet()
+	trafficSplitSet := split_smi_spec_io_v1alpha2_sets.NewTrafficSplitSet()
 	for _, set := range s.trafficSplits {
 		trafficSplitSet = trafficSplitSet.Union(set.Set())
 	}
@@ -1544,18 +1544,18 @@ type LabeledTrafficSplitSet interface {
 	Labels() map[string]string
 
 	// returns the set of TrafficSplites with the given labels
-	Set() split_smi_spec_io_v1alpha3_sets.TrafficSplitSet
+	Set() split_smi_spec_io_v1alpha2_sets.TrafficSplitSet
 
 	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
 	Generic() output.ResourceList
 }
 
 type labeledTrafficSplitSet struct {
-	set    split_smi_spec_io_v1alpha3_sets.TrafficSplitSet
+	set    split_smi_spec_io_v1alpha2_sets.TrafficSplitSet
 	labels map[string]string
 }
 
-func NewLabeledTrafficSplitSet(set split_smi_spec_io_v1alpha3_sets.TrafficSplitSet, labels map[string]string) (LabeledTrafficSplitSet, error) {
+func NewLabeledTrafficSplitSet(set split_smi_spec_io_v1alpha2_sets.TrafficSplitSet, labels map[string]string) (LabeledTrafficSplitSet, error) {
 	// validate that each TrafficSplit contains the labels, else this is not a valid LabeledTrafficSplitSet
 	for _, item := range set.List() {
 		for k, v := range labels {
@@ -1573,7 +1573,7 @@ func (l *labeledTrafficSplitSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledTrafficSplitSet) Set() split_smi_spec_io_v1alpha3_sets.TrafficSplitSet {
+func (l *labeledTrafficSplitSet) Set() split_smi_spec_io_v1alpha2_sets.TrafficSplitSet {
 	return l.set
 }
 
@@ -1585,7 +1585,7 @@ func (l labeledTrafficSplitSet) Generic() output.ResourceList {
 
 	// enable list func for garbage collection
 	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list split_smi_spec_io_v1alpha3.TrafficSplitList
+		var list split_smi_spec_io_v1alpha2.TrafficSplitList
 		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
 			return nil, err
 		}
@@ -1756,7 +1756,7 @@ type builder struct {
 
 	secrets v1_sets.SecretSet
 
-	trafficSplits split_smi_spec_io_v1alpha3_sets.TrafficSplitSet
+	trafficSplits split_smi_spec_io_v1alpha2_sets.TrafficSplitSet
 
 	trafficTargets access_smi_spec_io_v1alpha2_sets.TrafficTargetSet
 
@@ -1780,7 +1780,7 @@ func NewBuilder(ctx context.Context, name string) *builder {
 
 		secrets: v1_sets.NewSecretSet(),
 
-		trafficSplits: split_smi_spec_io_v1alpha3_sets.NewTrafficSplitSet(),
+		trafficSplits: split_smi_spec_io_v1alpha2_sets.NewTrafficSplitSet(),
 
 		trafficTargets: access_smi_spec_io_v1alpha2_sets.NewTrafficTargetSet(),
 
@@ -1841,10 +1841,10 @@ type Builder interface {
 	GetSecrets() v1_sets.SecretSet
 
 	// add TrafficSplits to the collected outputs
-	AddTrafficSplits(trafficSplits ...*split_smi_spec_io_v1alpha3.TrafficSplit)
+	AddTrafficSplits(trafficSplits ...*split_smi_spec_io_v1alpha2.TrafficSplit)
 
 	// get the collected TrafficSplits
-	GetTrafficSplits() split_smi_spec_io_v1alpha3_sets.TrafficSplitSet
+	GetTrafficSplits() split_smi_spec_io_v1alpha2_sets.TrafficSplitSet
 
 	// add TrafficTargets to the collected outputs
 	AddTrafficTargets(trafficTargets ...*access_smi_spec_io_v1alpha2.TrafficTarget)
@@ -1937,7 +1937,7 @@ func (b *builder) AddSecrets(secrets ...*v1.Secret) {
 		b.secrets.Insert(obj)
 	}
 }
-func (b *builder) AddTrafficSplits(trafficSplits ...*split_smi_spec_io_v1alpha3.TrafficSplit) {
+func (b *builder) AddTrafficSplits(trafficSplits ...*split_smi_spec_io_v1alpha2.TrafficSplit) {
 	for _, obj := range trafficSplits {
 		if obj == nil {
 			continue
@@ -1993,7 +1993,7 @@ func (b *builder) GetSecrets() v1_sets.SecretSet {
 	return b.secrets
 }
 
-func (b *builder) GetTrafficSplits() split_smi_spec_io_v1alpha3_sets.TrafficSplitSet {
+func (b *builder) GetTrafficSplits() split_smi_spec_io_v1alpha2_sets.TrafficSplitSet {
 	return b.trafficSplits
 }
 

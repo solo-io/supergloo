@@ -216,46 +216,15 @@ function install_osm() {
   echo "installing osm to ${cluster}..."
 
   # install in permissive mode for testing
-  osm install --enable-permissive-traffic-policy
+  osm install --enable-permissive-traffic-policy --enable-metrics-stack=false --deploy-zipkin=false
 
-  for i in bookstore bookbuyer bookthief bookwarehouse; do kubectl create ns $i; done
+  osm namespace add default
 
-  for i in bookstore bookbuyer bookthief bookwarehouse; do osm namespace add $i; done
-
-  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/apps/bookbuyer.yaml
-  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/apps/bookstore-v1.yaml
-  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/apps/bookthief.yaml
-  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/apps/bookwarehouse.yaml
-  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/access/traffic-access.yaml
-  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/bookstore-v2/bookstore-v2.yaml
-  ${K} apply -f https://raw.githubusercontent.com/openservicemesh/osm/main/docs/example/manifests/bookstore-v2/traffic-access-v2.yaml
+  ${K} apply -f bookinfo-osm.yaml
 }
 
 function get_api_address() {
   cluster=$1
-  case $(uname) in
-    "Darwin")
-    {
-        apiServerAddress=host.docker.internal
-    } ;;
-    "Linux")
-    {
-        apiServerAddress=$(docker exec "${cluster}-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p'):6443
-    } ;;
-    *)
-    {
-        echo "Unsupported OS"
-        exit 1
-    } ;;
-  esac
-  echo ${apiServerAddress}
-}
-
-
-function register_cluster() {
-  cluster=$1
-  K="kubectl --context=kind-${cluster}"
-
   case $(uname) in
     "Darwin")
     {
