@@ -53,11 +53,9 @@ var _ = Describe("AccessPolicyTranslator", func() {
 				},
 			},
 			Status: discoveryv1alpha2.MeshStatus{
-				AppliedVirtualMeshes: []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
-					{
-						Spec: &networkingv1alpha2.VirtualMeshSpec{
-							GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_ENABLED,
-						},
+				AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
+					Spec: &networkingv1alpha2.VirtualMeshSpec{
+						GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_ENABLED,
 					},
 				},
 			},
@@ -112,7 +110,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 			},
 		)
 		outputs := output.NewBuilder(context.TODO(), "")
-		translator.Translate(mesh, mesh.Status.AppliedVirtualMeshes[0], outputs)
+		translator.Translate(mesh, mesh.Status.AppliedVirtualMesh, outputs)
 		Expect(outputs.GetAuthorizationPolicies()).To(Equal(expectedAuthPolicies))
 	})
 
@@ -128,17 +126,15 @@ var _ = Describe("AccessPolicyTranslator", func() {
 				},
 			},
 			Status: discoveryv1alpha2.MeshStatus{
-				AppliedVirtualMeshes: []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
-					{
-						Spec: &networkingv1alpha2.VirtualMeshSpec{
-							GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_DISABLED,
-						},
+				AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
+					Spec: &networkingv1alpha2.VirtualMeshSpec{
+						GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_DISABLED,
 					},
 				},
 			},
 		}
 		outputs := output.NewBuilder(context.TODO(), "")
-		translator.Translate(mesh, mesh.Status.AppliedVirtualMeshes[0], outputs)
+		translator.Translate(mesh, mesh.Status.AppliedVirtualMesh, outputs)
 		Expect(outputs.GetAuthorizationPolicies().Length()).To(Equal(0))
 	})
 })

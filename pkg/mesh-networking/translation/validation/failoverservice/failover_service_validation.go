@@ -249,6 +249,7 @@ func (f *failoverServiceValidator) validateFederation(
 		appliedVirtualMesh := mesh.Status.AppliedVirtualMesh
 		if appliedVirtualMesh == nil {
 			missingParentVMErrors = append(missingParentVMErrors, MeshWithoutParentVM(mesh))
+			continue
 		}
 		vm, err := allVirtualMeshes.Find(appliedVirtualMesh.Ref)
 		if err != nil {

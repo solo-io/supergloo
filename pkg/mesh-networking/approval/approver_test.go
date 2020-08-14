@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -12,7 +13,7 @@ import (
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -32,24 +33,24 @@ var _ = Describe("Approver", func() {
 					Namespace: "ns",
 				},
 			}
-			trafficPolicy1 = &v1alpha2.TrafficPolicy{
+			trafficPolicy1 = &networkingv1alpha2.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp1",
 					Namespace: "ns",
 				},
-				Spec: v1alpha2.TrafficPolicySpec{
+				Spec: networkingv1alpha2.TrafficPolicySpec{
 					// fill an arbitrary part of the spec
-					Mirror: &v1alpha2.TrafficPolicySpec_Mirror{},
+					Mirror: &networkingv1alpha2.TrafficPolicySpec_Mirror{},
 				},
 			}
-			trafficPolicy2 = &v1alpha2.TrafficPolicy{
+			trafficPolicy2 = &networkingv1alpha2.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp2",
 					Namespace: "ns",
 				},
-				Spec: v1alpha2.TrafficPolicySpec{
+				Spec: networkingv1alpha2.TrafficPolicySpec{
 					// fill an arbitrary part of the spec
-					FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{},
+					FaultInjection: &networkingv1alpha2.TrafficPolicySpec_FaultInjection{},
 				},
 			}
 
@@ -59,7 +60,7 @@ var _ = Describe("Approver", func() {
 				}...),
 				discoveryv1alpha2sets.NewMeshWorkloadSet(),
 				discoveryv1alpha2sets.NewMeshSet(),
-				v1alpha2sets.NewTrafficPolicySet(v1alpha2.TrafficPolicySlice{
+				v1alpha2sets.NewTrafficPolicySet(networkingv1alpha2.TrafficPolicySlice{
 					trafficPolicy1,
 					trafficPolicy2,
 				}...),
@@ -81,14 +82,14 @@ var _ = Describe("Approver", func() {
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy1.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy1.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ApprovalStatus{
+			Expect(trafficPolicy1.Status.MeshServices[sets.Key(meshService)]).To(Equal(&networkingv1alpha2.ApprovalStatus{
 				AcceptanceOrder: 0,
-				State:           v1alpha2.ApprovalState_ACCEPTED,
+				State:           networkingv1alpha2.ApprovalState_ACCEPTED,
 			}))
 			Expect(trafficPolicy2.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy2.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ApprovalStatus{
+			Expect(trafficPolicy2.Status.MeshServices[sets.Key(meshService)]).To(Equal(&networkingv1alpha2.ApprovalStatus{
 				AcceptanceOrder: 1,
-				State:           v1alpha2.ApprovalState_ACCEPTED,
+				State:           networkingv1alpha2.ApprovalState_ACCEPTED,
 			}))
 
 		})
@@ -108,7 +109,7 @@ var _ = Describe("Approver", func() {
 					Namespace: "ns",
 				},
 			}
-			trafficPolicy = &v1alpha2.TrafficPolicy{
+			trafficPolicy = &networkingv1alpha2.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp1",
 					Namespace: "ns",
@@ -121,7 +122,7 @@ var _ = Describe("Approver", func() {
 				}...),
 				discoveryv1alpha2sets.NewMeshWorkloadSet(),
 				discoveryv1alpha2sets.NewMeshSet(),
-				v1alpha2sets.NewTrafficPolicySet(v1alpha2.TrafficPolicySlice{
+				v1alpha2sets.NewTrafficPolicySet(networkingv1alpha2.TrafficPolicySlice{
 					trafficPolicy,
 				}...),
 				v1alpha2sets.NewAccessPolicySet(),
@@ -143,14 +144,132 @@ var _ = Describe("Approver", func() {
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ApprovalStatus{
+			Expect(trafficPolicy.Status.MeshServices[sets.Key(meshService)]).To(Equal(&networkingv1alpha2.ApprovalStatus{
 				AcceptanceOrder: 0,
-				State:           v1alpha2.ApprovalState_INVALID,
+				State:           networkingv1alpha2.ApprovalState_INVALID,
 				Errors:          []string{"did an oopsie"},
 			}))
 		})
 		It("does not add the policy to the mesh service status", func() {
 			Expect(meshService.Status.AppliedTrafficPolicies).To(HaveLen(0))
+		})
+	})
+
+	Context("validate one VirtualMesh per mesh", func() {
+		var (
+			vm1 = &networkingv1alpha2.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm1",
+					Namespace: "namespace1",
+				},
+				Spec: networkingv1alpha2.VirtualMeshSpec{
+					Meshes: []*corev1.ObjectRef{
+						{
+							Name:      "mesh1",
+							Namespace: "namespace1",
+						},
+					},
+				},
+				Status: networkingv1alpha2.VirtualMeshStatus{
+					ObservedGeneration: 0,
+					Status: &networkingv1alpha2.ApprovalStatus{
+						State: networkingv1alpha2.ApprovalState_ACCEPTED,
+					},
+				},
+			}
+			vm2 = &networkingv1alpha2.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm2",
+					Namespace: "namespace1",
+				},
+				Spec: networkingv1alpha2.VirtualMeshSpec{
+					Meshes: []*corev1.ObjectRef{
+						{
+							Name:      "mesh1",
+							Namespace: "namespace1",
+						},
+						{
+							Name:      "mesh2",
+							Namespace: "namespace1",
+						},
+					},
+				},
+			}
+			vm3 = &networkingv1alpha2.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm3",
+					Namespace: "namespace1",
+				},
+				Spec: networkingv1alpha2.VirtualMeshSpec{
+					Meshes: []*corev1.ObjectRef{
+						{
+							Name:      "mesh2",
+							Namespace: "namespace1",
+						},
+					},
+				},
+			}
+			vm4 = &networkingv1alpha2.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm4",
+					Namespace: "namespace1",
+				},
+				Spec: networkingv1alpha2.VirtualMeshSpec{
+					Meshes: []*corev1.ObjectRef{
+						{
+							Name:      "mesh3",
+							Namespace: "namespace1",
+						},
+					},
+				},
+				Status: networkingv1alpha2.VirtualMeshStatus{
+					ObservedGeneration: 0,
+					Status: &networkingv1alpha2.ApprovalStatus{
+						State: networkingv1alpha2.ApprovalState_INVALID,
+					},
+				},
+			}
+			vm5 = &networkingv1alpha2.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm5",
+					Namespace: "namespace1",
+				},
+				Spec: networkingv1alpha2.VirtualMeshSpec{
+					Meshes: []*corev1.ObjectRef{
+						{
+							Name:      "mesh3",
+							Namespace: "namespace1",
+						},
+					},
+				},
+			}
+			snap = input.NewSnapshot("",
+				discoveryv1alpha2sets.NewMeshServiceSet(),
+				discoveryv1alpha2sets.NewMeshWorkloadSet(),
+				discoveryv1alpha2sets.NewMeshSet(),
+				v1alpha2sets.NewTrafficPolicySet(),
+				v1alpha2sets.NewAccessPolicySet(),
+				v1alpha2sets.NewVirtualMeshSet(
+					vm1, vm2, vm3, vm4, vm5,
+				),
+				v1alpha2sets.NewFailoverServiceSet(),
+				corev1sets.NewSecretSet(),
+				skv1alpha1sets.NewKubernetesClusterSet(),
+			)
+		)
+		BeforeEach(func() {
+			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
+				return
+			}}
+			approver := NewApprover(translator)
+			approver.Approve(context.TODO(), snap)
+		})
+		It("vm1 should render vm2 invalid, which should permit vm3", func() {
+			Expect(vm2.Status.Status.State).To(Equal(networkingv1alpha2.ApprovalState_INVALID))
+			Expect(vm3.Status.Status.State).To(Equal(networkingv1alpha2.ApprovalState_ACCEPTED))
+		})
+		It("vm5 should be permitted given that vm4 is invalid", func() {
+			Expect(vm5.Status.Status.State).To(Equal(networkingv1alpha2.ApprovalState_ACCEPTED))
 		})
 	})
 })
