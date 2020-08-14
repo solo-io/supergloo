@@ -90,7 +90,8 @@ function install_istio() {
 
   echo "installing istio to ${cluster}..."
 
-  cat << EOF | istioctl manifest install --context "kind-${cluster}" -f -
+  # avoid using istioctl manifest install (v1.7.x) / apply (v1.5.x, v1.6.x) for version compatibility
+  cat << EOF | istioctl manifest generate --context "kind-${cluster}" -f - | ${K} apply -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
