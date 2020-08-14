@@ -1,10 +1,9 @@
 package utils
 
 import (
-	. "github.com/onsi/gomega"
-
 	"context"
-	"time"
+
+	. "github.com/onsi/gomega"
 
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -24,7 +23,7 @@ func AssertTrafficPolicyStatuses(dynamicClient client.Client, namespace string) 
 			}
 		}
 		return true
-	}, time.Second*20).Should(BeTrue())
+	}, "20s").Should(BeTrue())
 }
 
 func AssertVirtualMeshStatuses(dynamicClient client.Client, namespace string) {
@@ -41,5 +40,5 @@ func AssertVirtualMeshStatuses(dynamicClient client.Client, namespace string) {
 			}
 		}
 		return true
-	}, time.Second*60).Should(BeTrue())
+	}, "2m").Should(BeTrue())
 }
