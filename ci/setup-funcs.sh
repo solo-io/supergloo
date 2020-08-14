@@ -90,7 +90,7 @@ function install_istio() {
 
   echo "installing istio to ${cluster}..."
 
-  istioManifest="
+  cat << EOF | istioctl manifest install --context "kind-${cluster}" -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -152,11 +152,7 @@ spec:
         enabled: true
       podDNSSearchNamespaces:
       - global
-"
-
-  # istioctl 1.7 uses "manifest install", 1.5 and 1.6 use "manifest apply"
-  printf $istioManifest | istioctl manifest apply --context "kind-${cluster}" -f - ||
-  printf $istioManifest | istioctl manifest install --context "kind-${cluster}" -f -
+EOF
 
   # enable istio dns for .global stub domain:
   ISTIO_COREDNS=$(${K} get svc -n istio-system istiocoredns -o jsonpath={.spec.clusterIP})
