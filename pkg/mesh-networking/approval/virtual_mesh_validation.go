@@ -21,6 +21,10 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*networkingv1alpha2.VirtualMe
 	for _, vMesh := range virtualMeshes {
 		vMesh := vMesh
 		for _, mesh := range vMesh.Spec.Meshes {
+			// Ignore virtual mesh if previously invalidated.
+			if vMesh.Status.Status != nil && vMesh.Status.Status.State == networkingv1alpha2.ApprovalState_INVALID {
+				continue
+			}
 			meshKey := sets.Key(mesh)
 			existingVirtualMesh, ok := vMeshesPerMesh[meshKey]
 			if !ok {
@@ -35,9 +39,10 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*networkingv1alpha2.VirtualMe
 					ObservedGeneration: vMesh.Generation,
 					Status: &networkingv1alpha2.ApprovalStatus{
 						State: networkingv1alpha2.ApprovalState_INVALID,
-						Errors: []string{fmt.Sprintf("Applies to a Mesh that already is grouped in a VirtualMesh %s.%s",
-							existingVirtualMesh.Name,
-							existingVirtualMesh.Namespace)},
+						Errors: []string{fmt.Sprintf("Includes a Mesh (%s.%s) that already is grouped in a VirtualMesh (%s.%s)",
+							mesh.Name, mesh.Namespace,
+							existingVirtualMesh.Name, existingVirtualMesh.Namespace,
+						)},
 					},
 				}
 			}
