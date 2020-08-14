@@ -17,7 +17,7 @@ func NewSnapshotHistory() *SnapshotHistory {
 	return &SnapshotHistory{}
 }
 
-func (h *SnapshotHistory) SetInput(latestInput  json.Marshaler) {
+func (h *SnapshotHistory) SetInput(latestInput json.Marshaler) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 	h.latestInput = latestInput
@@ -29,7 +29,7 @@ func (h *SnapshotHistory) GetInput() ([]byte, error) {
 	return h.latestInput.MarshalJSON()
 }
 
-func (h *SnapshotHistory) SetOutput(latestOutput  json.Marshaler) {
+func (h *SnapshotHistory) SetOutput(latestOutput json.Marshaler) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 	h.latestOutput = latestOutput

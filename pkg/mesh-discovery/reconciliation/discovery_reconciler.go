@@ -2,9 +2,10 @@ package reconciliation
 
 import (
 	"context"
+	"time"
+
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
 	"github.com/solo-io/skv2/pkg/predicate"
-	"time"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
