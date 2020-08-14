@@ -2,6 +2,8 @@ package reconciliation
 
 import (
 	"context"
+	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
+	"github.com/solo-io/skv2/pkg/predicate"
 	"time"
 
 	"github.com/hashicorp/go-multierror"
@@ -22,6 +24,7 @@ type discoveryReconciler struct {
 	builder      input.Builder
 	translator   translation.Translator
 	masterClient client.Client
+	history      *stats.SnapshotHistory
 }
 
 func Start(
@@ -30,6 +33,7 @@ func Start(
 	translator translation.Translator,
 	masterClient client.Client,
 	clusters multicluster.ClusterWatcher,
+	history *stats.SnapshotHistory,
 ) {
 
 	r := &discoveryReconciler{
@@ -37,18 +41,17 @@ func Start(
 		builder:      builder,
 		translator:   translator,
 		masterClient: masterClient,
+		history:      history,
 	}
 
-	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile, time.Second/2)
+	filterDiscoveryEvents := predicate.SimplePredicate{
+		Filter: predicate.SimpleEventFilterFunc(isLeaderElectionObject),
+	}
+
+	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile, time.Second/2, filterDiscoveryEvents)
 }
 
-// TODO(ilackarms): it would be nice to make inputSnap and outputSnap available on
-// a admin interface, i.e. in JSON format similar to Envoy config dump.
 func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, error) {
-	if isLeaderElectionObject(obj) {
-		contextutils.LoggerFrom(r.ctx).Debugf("ignoring object %v which is being used for leader election", sets.Key(obj))
-		return false, nil
-	}
 	contextutils.LoggerFrom(r.ctx).Debugf("object triggered resync: %T<%v>", obj, sets.Key(obj))
 
 	inputSnap, err := r.builder.BuildSnapshot(r.ctx, "mesh-discovery", input.BuildOptions{})
@@ -76,15 +79,14 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		},
 	})
 
+	r.history.SetInput(inputSnap)
+	r.history.SetOutput(outputSnap)
+
 	return false, errs
 }
 
 // returns true if the passed object is used for leader election
-func isLeaderElectionObject(obj ezkube.ClusterResourceId) bool {
-	metaObj, ok := obj.(metav1.Object)
-	if !ok {
-		return false
-	}
-	_, isLeaderElectionObj := metaObj.GetAnnotations()["control-plane.alpha.kubernetes.io/leader"]
+func isLeaderElectionObject(obj metav1.Object) bool {
+	_, isLeaderElectionObj := obj.GetAnnotations()["control-plane.alpha.kubernetes.io/leader"]
 	return isLeaderElectionObj
 }

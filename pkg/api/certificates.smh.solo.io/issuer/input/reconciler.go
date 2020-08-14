@@ -22,6 +22,7 @@ import (
 	"github.com/solo-io/skv2/pkg/reconcile"
 
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	certificates_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
 	certificates_smh_solo_io_v1alpha2_controllers "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/controller"
@@ -47,6 +48,7 @@ func RegisterMultiClusterReconciler(
 	clusters multicluster.ClusterWatcher,
 	reconcileFunc input.MultiClusterReconcileFunc,
 	reconcileInterval time.Duration,
+	predicates ...predicate.Predicate,
 ) {
 
 	base := input.NewMultiClusterReconcilerImpl(
@@ -61,8 +63,8 @@ func RegisterMultiClusterReconciler(
 
 	// initialize reconcile loops
 
-	certificates_smh_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters).AddMulticlusterIssuedCertificateReconciler(ctx, r)
-	certificates_smh_solo_io_v1alpha2_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters).AddMulticlusterCertificateRequestReconciler(ctx, r)
+	certificates_smh_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters).AddMulticlusterIssuedCertificateReconciler(ctx, r, predicates...)
+	certificates_smh_solo_io_v1alpha2_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters).AddMulticlusterCertificateRequestReconciler(ctx, r, predicates...)
 
 }
 
@@ -116,6 +118,7 @@ func RegisterSingleClusterReconciler(
 	mgr manager.Manager,
 	reconcileFunc input.SingleClusterReconcileFunc,
 	reconcileInterval time.Duration,
+	predicates ...predicate.Predicate,
 ) error {
 
 	base := input.NewSingleClusterReconciler(
@@ -130,10 +133,10 @@ func RegisterSingleClusterReconciler(
 
 	// initialize reconcile loops
 
-	if err := certificates_smh_solo_io_v1alpha2_controllers.NewIssuedCertificateReconcileLoop("IssuedCertificate", mgr, reconcile.Options{}).RunIssuedCertificateReconciler(ctx, r); err != nil {
+	if err := certificates_smh_solo_io_v1alpha2_controllers.NewIssuedCertificateReconcileLoop("IssuedCertificate", mgr, reconcile.Options{}).RunIssuedCertificateReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := certificates_smh_solo_io_v1alpha2_controllers.NewCertificateRequestReconcileLoop("CertificateRequest", mgr, reconcile.Options{}).RunCertificateRequestReconciler(ctx, r); err != nil {
+	if err := certificates_smh_solo_io_v1alpha2_controllers.NewCertificateRequestReconcileLoop("CertificateRequest", mgr, reconcile.Options{}).RunCertificateRequestReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
 
