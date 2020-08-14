@@ -83,7 +83,7 @@ jobs:
 
           go install github.com/onsi/ginkgo/ginkgo
 
-          ISTIO_VERSION=istio-$(echo $ISTIOCTL_BINARY | grep -o "download/.*/" | sed 's/[[:<:]]download[[:>:]]//g' |  sed 's/[\/]//g')
+          ISTIO_VERSION=istio-$(echo $ISTIOCTL_BINARY | grep -o "download/.*/" | sed 's/\bdownload\b//g' |  sed 's/[\/]//g')
           curl -sSL $ISTIOCTL_BINARY | tar -xzf - $ISTIO_VERSION/bin/istioctl
           # move istio binary to _output, which is gitignored, to avoid `-dirty` suffix when computing version in subsequent makefile invocations
           mkdir _output && mv $ISTIO_VERSION _output/$ISTIO_VERSION
