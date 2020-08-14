@@ -120,6 +120,25 @@ func (k *KubeContext) SetDeploymentEnvVars(
 	kubectl.SetDeploymentEnvVars(ctx, k.Context, ns, deploymentName, containerName, envVars)
 }
 
+// Modify the deployment's container entrypoint command to "sleep 20h" to disable the application.
+func (k *KubeContext) DisableContainer(
+	ctx context.Context,
+	ns string,
+	deploymentName string,
+	containerName string,
+) {
+	kubectl.DisableContainer(ctx, k.Context, ns, deploymentName, containerName)
+}
+
+// Remove the sleep command to re-enable the application container.
+func (k *KubeContext) EnableContainer(
+	ctx context.Context,
+	ns string,
+	deploymentName string,
+) {
+	kubectl.EnableContainer(ctx, k.Context, ns, deploymentName)
+}
+
 type Pod struct {
 	corev1.Pod
 	Cluster *KubeContext

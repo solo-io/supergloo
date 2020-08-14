@@ -6,18 +6,19 @@ import (
 	"net/http"
 )
 
-func MustStartServerBackground(port uint32) {
+func MustStartServerBackground(snapshotHistory *SnapshotHistory, port uint32) {
 	go func() {
-		if err := StartServer(port); err != nil {
+		if err := StartServer(snapshotHistory, port); err != nil {
 			log.Fatal(err)
 		}
 	}()
 }
 
-func StartServer(port uint32) error {
+func StartServer(snapshotHistory *SnapshotHistory, port uint32) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Index)
 	AddPprof(mux)
 	AddMetrics(mux)
+	AddSnapshots(mux, snapshotHistory)
 	return http.ListenAndServe(fmt.Sprintf(":%v", port), mux)
 }

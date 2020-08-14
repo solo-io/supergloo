@@ -152,7 +152,6 @@ spec:
         enabled: true
       podDNSSearchNamespaces:
       - global
-      - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
 EOF
 
   # enable istio dns for .global stub domain:
@@ -187,22 +186,6 @@ data:
         forward . ${ISTIO_COREDNS}:53
     }
 EOF
-
-  # install (modified) bookinfo
-  ${K} create namespace bookinfo
-  ${K} label ns bookinfo istio-injection=enabled --overwrite
-  ${K} apply -n bookinfo -f ${PROJECT_ROOT}/ci/bookinfo.yaml
-
-  # NOTE: we delete the details service to free up CPU for ci
-  ${K} delete -n bookinfo deployment details-v1
-
-  ROLLOUT="${K} -n bookinfo rollout status deployment --timeout 300s"
-
-  ${ROLLOUT} ratings-v1
-  ${ROLLOUT} productpage-v1
-  ${ROLLOUT} reviews-v1
-  ${ROLLOUT} reviews-v2
-  ${ROLLOUT} reviews-v3
 
   printf "\n\n---\n"
   echo "Finished setting up cluster ${cluster}"

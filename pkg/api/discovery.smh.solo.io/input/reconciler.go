@@ -28,6 +28,7 @@ import (
 	"github.com/solo-io/skv2/pkg/reconcile"
 
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	v1 "k8s.io/api/core/v1"
@@ -63,6 +64,7 @@ func RegisterMultiClusterReconciler(
 	clusters multicluster.ClusterWatcher,
 	reconcileFunc input.MultiClusterReconcileFunc,
 	reconcileInterval time.Duration,
+	predicates ...predicate.Predicate,
 ) {
 
 	base := input.NewMultiClusterReconcilerImpl(
@@ -77,15 +79,15 @@ func RegisterMultiClusterReconciler(
 
 	// initialize reconcile loops
 
-	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters).AddMulticlusterConfigMapReconciler(ctx, r)
-	v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters).AddMulticlusterServiceReconciler(ctx, r)
-	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters).AddMulticlusterPodReconciler(ctx, r)
-	v1_controllers.NewMulticlusterNodeReconcileLoop("Node", clusters).AddMulticlusterNodeReconciler(ctx, r)
+	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters).AddMulticlusterConfigMapReconciler(ctx, r, predicates...)
+	v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters).AddMulticlusterServiceReconciler(ctx, r, predicates...)
+	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters).AddMulticlusterPodReconciler(ctx, r, predicates...)
+	v1_controllers.NewMulticlusterNodeReconcileLoop("Node", clusters).AddMulticlusterNodeReconciler(ctx, r, predicates...)
 
-	apps_v1_controllers.NewMulticlusterDeploymentReconcileLoop("Deployment", clusters).AddMulticlusterDeploymentReconciler(ctx, r)
-	apps_v1_controllers.NewMulticlusterReplicaSetReconcileLoop("ReplicaSet", clusters).AddMulticlusterReplicaSetReconciler(ctx, r)
-	apps_v1_controllers.NewMulticlusterDaemonSetReconcileLoop("DaemonSet", clusters).AddMulticlusterDaemonSetReconciler(ctx, r)
-	apps_v1_controllers.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters).AddMulticlusterStatefulSetReconciler(ctx, r)
+	apps_v1_controllers.NewMulticlusterDeploymentReconcileLoop("Deployment", clusters).AddMulticlusterDeploymentReconciler(ctx, r, predicates...)
+	apps_v1_controllers.NewMulticlusterReplicaSetReconcileLoop("ReplicaSet", clusters).AddMulticlusterReplicaSetReconciler(ctx, r, predicates...)
+	apps_v1_controllers.NewMulticlusterDaemonSetReconcileLoop("DaemonSet", clusters).AddMulticlusterDaemonSetReconciler(ctx, r, predicates...)
+	apps_v1_controllers.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters).AddMulticlusterStatefulSetReconciler(ctx, r, predicates...)
 
 }
 
@@ -236,6 +238,7 @@ func RegisterSingleClusterReconciler(
 	mgr manager.Manager,
 	reconcileFunc input.SingleClusterReconcileFunc,
 	reconcileInterval time.Duration,
+	predicates ...predicate.Predicate,
 ) error {
 
 	base := input.NewSingleClusterReconciler(
@@ -250,29 +253,29 @@ func RegisterSingleClusterReconciler(
 
 	// initialize reconcile loops
 
-	if err := v1_controllers.NewConfigMapReconcileLoop("ConfigMap", mgr, reconcile.Options{}).RunConfigMapReconciler(ctx, r); err != nil {
+	if err := v1_controllers.NewConfigMapReconcileLoop("ConfigMap", mgr, reconcile.Options{}).RunConfigMapReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := v1_controllers.NewServiceReconcileLoop("Service", mgr, reconcile.Options{}).RunServiceReconciler(ctx, r); err != nil {
+	if err := v1_controllers.NewServiceReconcileLoop("Service", mgr, reconcile.Options{}).RunServiceReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := v1_controllers.NewPodReconcileLoop("Pod", mgr, reconcile.Options{}).RunPodReconciler(ctx, r); err != nil {
+	if err := v1_controllers.NewPodReconcileLoop("Pod", mgr, reconcile.Options{}).RunPodReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := v1_controllers.NewNodeReconcileLoop("Node", mgr, reconcile.Options{}).RunNodeReconciler(ctx, r); err != nil {
+	if err := v1_controllers.NewNodeReconcileLoop("Node", mgr, reconcile.Options{}).RunNodeReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
 
-	if err := apps_v1_controllers.NewDeploymentReconcileLoop("Deployment", mgr, reconcile.Options{}).RunDeploymentReconciler(ctx, r); err != nil {
+	if err := apps_v1_controllers.NewDeploymentReconcileLoop("Deployment", mgr, reconcile.Options{}).RunDeploymentReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := apps_v1_controllers.NewReplicaSetReconcileLoop("ReplicaSet", mgr, reconcile.Options{}).RunReplicaSetReconciler(ctx, r); err != nil {
+	if err := apps_v1_controllers.NewReplicaSetReconcileLoop("ReplicaSet", mgr, reconcile.Options{}).RunReplicaSetReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := apps_v1_controllers.NewDaemonSetReconcileLoop("DaemonSet", mgr, reconcile.Options{}).RunDaemonSetReconciler(ctx, r); err != nil {
+	if err := apps_v1_controllers.NewDaemonSetReconcileLoop("DaemonSet", mgr, reconcile.Options{}).RunDaemonSetReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := apps_v1_controllers.NewStatefulSetReconcileLoop("StatefulSet", mgr, reconcile.Options{}).RunStatefulSetReconciler(ctx, r); err != nil {
+	if err := apps_v1_controllers.NewStatefulSetReconcileLoop("StatefulSet", mgr, reconcile.Options{}).RunStatefulSetReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
 
