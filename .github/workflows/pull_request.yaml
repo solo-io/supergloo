@@ -25,6 +25,9 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: Check code gen
+        run: |
+          ./ci/check-code-gen.sh
       - name: Unit Tests
         run: |
           go test ./...
@@ -58,9 +61,6 @@ jobs:
       - uses: azure/setup-kubectl@v1
         with:
           version: 'v1.18.0'
-      - name: Install go tools and check code gen
-        run: |
-          ./ci/check-code-gen.sh
       - uses: actions/cache@v1
         with:
           path: ~/go/pkg/mod
@@ -75,6 +75,8 @@ jobs:
           ISTIOCTL_BINARY: ${{ matrix.istioctl-binary }}
         run: |
           make print-version manifest-gen
+
+          go install github.com/onsi/ginkgo/ginkgo
 
           ISTIO_VERSION=$(echo $ISTIOCTL_BINARY | grep -o "istio-[0-9.]*")
           curl -sSL $ISTIOCTL_BINARY | tar -xzf - $ISTIO_VERSION/bin/istioctl
