@@ -1,6 +1,8 @@
 package virtualservice
 
 import (
+	"sort"
+
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/skv2/pkg/ezkube"
 
@@ -102,6 +104,8 @@ func (t *translator) Translate(
 
 		virtualService.Spec.Http = append(virtualService.Spec.Http, routesWithSingleMatcher...)
 	}
+
+	sort.Sort(SpecificitySortableRoutes(virtualService.Spec.Http))
 
 	if len(virtualService.Spec.Http) == 0 {
 		// no need to create this VirtualService as it has no effect
