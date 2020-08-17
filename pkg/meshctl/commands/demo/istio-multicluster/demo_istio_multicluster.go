@@ -8,6 +8,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	masterCluster = "master-cluster"
+	remoteCluster = "remote-cluster"
+)
+
 func Command(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "istio-multicluster",
@@ -15,8 +20,8 @@ func Command(ctx context.Context) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		install.Command(ctx),
-		cleanup.Command(ctx),
+		install.Command(ctx, masterCluster, remoteCluster),
+		cleanup.Command(ctx, masterCluster, remoteCluster),
 	)
 
 	return cmd
