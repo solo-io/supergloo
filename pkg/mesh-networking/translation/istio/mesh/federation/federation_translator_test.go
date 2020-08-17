@@ -238,10 +238,15 @@ var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
 									StringValue: "envoy.filters.network.tcp_cluster_rewrite",
 								},
 							},
-							"config": {
+							"typed_config": {
 								Kind: &types.Value_StructValue{
 									StructValue: &types.Struct{
 										Fields: map[string]*types.Value{
+											"@type": {
+												Kind: &types.Value_StringValue{
+													StringValue: "type.googleapis.com/istio.envoy.config.filter.network.tcp_cluster_rewrite.v2alpha1.TcpClusterRewrite",
+												},
+											},
 											"cluster_replacement": {
 												Kind: &types.Value_StringValue{
 													StringValue: ".cluster.local",

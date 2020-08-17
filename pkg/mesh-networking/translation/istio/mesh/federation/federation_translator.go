@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
-
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
 	"github.com/gogo/protobuf/types"
@@ -314,17 +313,17 @@ func buildTcpRewritePatch(clusterName, clusterDomain string) (*types.Struct, err
 	if clusterDomain == "" {
 		clusterDomain = defaults.DefaultClusterDomain
 	}
-	tcpRewrite, err := protoutils.GogoMessageToGolangStruct(&v2alpha1.TcpClusterRewrite{
+	tcpClusterRewrite, err := protoutils.MessageToAnyWithError(&v2alpha1.TcpClusterRewrite{
 		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, hostutils.GlobalHostnameSuffix),
 		ClusterReplacement: "." + clusterDomain,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return protoutils.GogoMessageToGogoStruct(&envoy_api_v2_listener.Filter{
+	return protoutils.GolangMessageToGogoStruct(&envoy_api_v2_listener.Filter{
 		Name: envoyTcpClusterRewriteFilterName,
-		ConfigType: &envoy_api_v2_listener.Filter_Config{
-			Config: tcpRewrite,
+		ConfigType: &envoy_api_v2_listener.Filter_TypedConfig{
+			TypedConfig: tcpClusterRewrite,
 		},
 	})
 }
