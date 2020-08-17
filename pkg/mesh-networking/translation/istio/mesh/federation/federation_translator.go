@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Masterminds/semver"
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
@@ -114,6 +115,7 @@ func (t *translator) Translate(
 	istioNamespace := istioMesh.Installation.Namespace
 
 	tcpRewritePatch, err := buildTcpRewritePatch(
+		istioMesh,
 		istioCluster,
 		kubeCluster.Spec.ClusterDomain,
 	)
@@ -309,7 +311,28 @@ func servicesForMesh(
 	})
 }
 
-func buildTcpRewritePatch(clusterName, clusterDomain string) (*types.Struct, error) {
+func buildTcpRewritePatch(
+	istioMesh *discoveryv1alpha2.MeshSpec_Istio,
+	clusterName string,
+	clusterDomain string,
+) (*types.Struct, error) {
+	version, err := semver.NewVersion(istioMesh.Installation.Version)
+	if err != nil {
+		return nil, err
+	}
+	constraint, err := semver.NewConstraint("<= 1.6.8")
+	if err != nil {
+		return nil, err
+	}
+	// If Istio version less than 1.7.x, use untyped config
+	if constraint.Check(version) {
+		return buildTcpRewritePatchAsConfig(clusterName, clusterDomain)
+	}
+	// If Istio version >= 1.7.x, used typed config
+	return buildTcpRewritePatchAsTypedConfig(clusterName, clusterDomain)
+}
+
+func buildTcpRewritePatchAsTypedConfig(clusterName, clusterDomain string) (*types.Struct, error) {
 	if clusterDomain == "" {
 		clusterDomain = defaults.DefaultClusterDomain
 	}
@@ -324,6 +347,25 @@ func buildTcpRewritePatch(clusterName, clusterDomain string) (*types.Struct, err
 		Name: envoyTcpClusterRewriteFilterName,
 		ConfigType: &envoy_api_v2_listener.Filter_TypedConfig{
 			TypedConfig: tcpClusterRewrite,
+		},
+	})
+}
+
+func buildTcpRewritePatchAsConfig(clusterName, clusterDomain string) (*types.Struct, error) {
+	if clusterDomain == "" {
+		clusterDomain = defaults.DefaultClusterDomain
+	}
+	tcpRewrite, err := protoutils.GogoMessageToGolangStruct(&v2alpha1.TcpClusterRewrite{
+		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, hostutils.GlobalHostnameSuffix),
+		ClusterReplacement: "." + clusterDomain,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return protoutils.GogoMessageToGogoStruct(&envoy_api_v2_listener.Filter{
+		Name: envoyTcpClusterRewriteFilterName,
+		ConfigType: &envoy_api_v2_listener.Filter_Config{
+			Config: tcpRewrite,
 		},
 	})
 }
