@@ -92,42 +92,42 @@ func (t *translator) Translate(
 	}
 
 	for _, tp := range meshService.Status.GetAppliedTrafficPolicies() {
-		if tp.Spec.GetCorsPolicy() != nil {
+		if tp.GetSpec().GetCorsPolicy() != nil {
 			reporter.ReportTrafficPolicyToMeshService(meshService, tp.GetRef(), NewUnsupportedFeatureError(
 				tp.GetRef(),
 				"CorsPolicy",
 				"Smi does not support cors policy",
 			))
 		}
-		if tp.Spec.GetFaultInjection() != nil {
+		if tp.GetSpec().GetFaultInjection() != nil {
 			reporter.ReportTrafficPolicyToMeshService(meshService, tp.GetRef(), NewUnsupportedFeatureError(
 				tp.GetRef(),
 				"FaultInjection",
 				"Smi does not support fault injection",
 			))
 		}
-		if tp.Spec.GetHeaderManipulation() != nil {
+		if tp.GetSpec().GetHeaderManipulation() != nil {
 			reporter.ReportTrafficPolicyToMeshService(meshService, tp.GetRef(), NewUnsupportedFeatureError(
 				tp.GetRef(),
 				"HeaderManipulation",
 				"Smi does not support header manipulation",
 			))
 		}
-		if tp.Spec.GetMirror() != nil {
+		if tp.GetSpec().GetMirror() != nil {
 			reporter.ReportTrafficPolicyToMeshService(meshService, tp.GetRef(), NewUnsupportedFeatureError(
 				tp.GetRef(),
 				"Mirror",
 				"Smi does not support request mirroring",
 			))
 		}
-		if tp.Spec.GetRetries() != nil {
+		if tp.GetSpec().GetRetries() != nil {
 			reporter.ReportTrafficPolicyToMeshService(meshService, tp.GetRef(), NewUnsupportedFeatureError(
 				tp.GetRef(),
 				"Mirror",
 				"Smi does not support retries",
 			))
 		}
-		if tp.Spec.GetRequestTimeout() != nil {
+		if tp.GetSpec().GetRequestTimeout() != nil {
 			reporter.ReportTrafficPolicyToMeshService(meshService, tp.GetRef(), NewUnsupportedFeatureError(
 				tp.GetRef(),
 				"RequestTimeout",
@@ -136,7 +136,7 @@ func (t *translator) Translate(
 		}
 
 		// If there is no traffic shifting, skip the rest of the translation
-		if len(tp.Spec.GetTrafficShift().GetDestinations()) == 0 {
+		if len(tp.GetSpec().GetTrafficShift().GetDestinations()) == 0 {
 			continue
 		} else if len(trafficSplit.Spec.Backends) != 0 {
 			// Each smi mesh service can only have a single applied traffic policy
@@ -152,7 +152,7 @@ func (t *translator) Translate(
 		trafficSplit.Spec.Backends = backends
 
 		// Only create the route group if there are any matchers
-		if len(tp.Spec.GetHttpRequestMatchers()) == 0 {
+		if len(tp.GetSpec().GetHttpRequestMatchers()) == 0 {
 			continue
 		}
 
@@ -161,7 +161,7 @@ func (t *translator) Translate(
 		// 	reporter.ReportTrafficPolicyToMeshService(meshService, tp.GetRef(), err)
 		// }
 
-		// httpRouteGroup = &smispecsv1alpha3.HTTPRouteGroup{
+		//		// httpRouteGroup = &smispecsv1alpha3.HTTPRouteGroup{
 		// 	ObjectMeta: metautils.TranslatedObjectMeta(
 		// 		meshService.Spec.GetKubeService().Ref,
 		// 		meshService.Annotations,

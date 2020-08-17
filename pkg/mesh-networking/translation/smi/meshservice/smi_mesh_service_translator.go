@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice/access"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice/split"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
@@ -31,15 +32,17 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx          context.Context
-	allMeshes    v1alpha2sets.MeshSet
-	trafficSplit split.Translator
+	ctx           context.Context
+	allMeshes     v1alpha2sets.MeshSet
+	trafficSplit  split.Translator
+	trafficTarget access.Translator
 }
 
 func NewTranslator(allMeshes v1alpha2sets.MeshSet) Translator {
 	return &translator{
-		allMeshes:    allMeshes,
-		trafficSplit: split.NewTranslator(),
+		allMeshes:     allMeshes,
+		trafficSplit:  split.NewTranslator(),
+		trafficTarget: access.NewTranslator(),
 	}
 }
 
@@ -58,6 +61,10 @@ func (t *translator) Translate(
 
 	ts := t.trafficSplit.Translate(ctx, in, meshService, reporter)
 	outputs.AddTrafficSplits(ts)
+
+	tt, hgr := t.trafficTarget.Translate(ctx, in, meshService, reporter)
+	outputs.AddTrafficTargets(tt...)
+	outputs.AddHTTPRouteGroups(hgr...)
 }
 
 func (t *translator) isSmiMeshService(

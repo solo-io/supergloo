@@ -39,11 +39,11 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, meshService *v1alpha20.MeshService, reporter reporting.Reporter) (*v1alpha2.TrafficTarget, *v1alpha3.HTTPRouteGroup) {
+func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, meshService *v1alpha20.MeshService, reporter reporting.Reporter) ([]*v1alpha2.TrafficTarget, []*v1alpha3.HTTPRouteGroup) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", ctx, in, meshService, reporter)
-	ret0, _ := ret[0].(*v1alpha2.TrafficTarget)
-	ret1, _ := ret[1].(*v1alpha3.HTTPRouteGroup)
+	ret0, _ := ret[0].([]*v1alpha2.TrafficTarget)
+	ret1, _ := ret[1].([]*v1alpha3.HTTPRouteGroup)
 	return ret0, ret1
 }
 

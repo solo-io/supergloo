@@ -11,9 +11,11 @@ import (
 // NOTE(ilackarms): private interface used here as it's not expected we'll need to
 // define our DependencyFactory anywhere else
 type DependencyFactory interface {
+
 	MakeMeshServiceTranslator(
 		meshes discoveryv1alpha2sets.MeshSet,
 	) meshservice.Translator
+
 }
 
 type dependencyFactoryImpl struct{}
