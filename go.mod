@@ -46,7 +46,6 @@ require (
 	github.com/gobuffalo/envy v1.9.0 // indirect
 	github.com/gobuffalo/packd v1.0.0 // indirect
 	github.com/gobuffalo/packr v1.30.1
-	github.com/gobuffalo/packr/v2 v2.8.0 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.3.5
@@ -54,7 +53,6 @@ require (
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
-	github.com/karrick/godirwalk v1.15.8 // indirect
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/onsi/ginkgo v1.12.0
@@ -86,5 +84,4 @@ require (
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6 // indirect
 	sigs.k8s.io/controller-runtime v0.5.6
-	sigs.k8s.io/kind v0.8.1
 )

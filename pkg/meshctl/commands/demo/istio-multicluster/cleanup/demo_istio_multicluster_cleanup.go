@@ -2,28 +2,38 @@ package cleanup
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 
+	"github.com/gobuffalo/packr"
 	"github.com/spf13/cobra"
 )
 
-func Command(ctx context.Context) *cobra.Command {
+func Command(ctx context.Context, masterCluster string, remoteCluster string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cleanup",
 		Short: "Clean up bootstrapped local resources",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return cleanup(ctx)
+			return cleanup(ctx, masterCluster, remoteCluster)
 		},
 	}
 
 	return cmd
 }
 
-func cleanup(ctx context.Context) error {
-	cmd := exec.Command("bash", "./ci/setup-kind.sh", "cleanup")
-	cmd.Stdin = os.Stdin
+func cleanup(ctx context.Context, masterCluster string, remoteCluster string) error {
+	fmt.Println("Cleaning up clusters")
+
+	box := packr.NewBox("./scripts")
+	script, err := box.FindString("delete_clusters.sh")
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command("bash", "-c", script, masterCluster, remoteCluster)
 	cmd.Stdout = os.Stdout
-	err := cmd.Run()
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
 	return err
 }
