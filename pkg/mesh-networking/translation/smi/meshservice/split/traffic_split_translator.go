@@ -172,6 +172,15 @@ func (t *translator) Translate(
 		// 	},
 		// }
 	}
+
+	// If no backends have been set, use the default backing service
+	if len(trafficSplit.Spec.Backends) == 0 {
+
+		trafficSplit.Spec.Backends = append(trafficSplit.Spec.Backends, smislpitv1alpha2.TrafficSplitBackend{
+			Service: kubeService.GetRef().GetName(),
+			Weight:  100,
+		})
+	}
 	return trafficSplit
 }
 

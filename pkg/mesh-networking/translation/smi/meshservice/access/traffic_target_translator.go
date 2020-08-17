@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/openservicemesh/osm/pkg/constants"
 	"github.com/rotisserie/eris"
 	smiaccessv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
@@ -13,8 +14,10 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
-	"github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
 )
+
+const
 
 //go:generate mockgen -source ./traffic_target_translator.go -destination mocks/traffic_target_translator.go
 
@@ -79,7 +82,7 @@ func (t *translator) Translate(
 
 		var trafficTargetsByAp []*smiaccessv1alpha2.TrafficTarget
 
-		backingWordload := backingWorkloads.List()[0]
+		backingWorkload := backingWorkloads.List()[0]
 		trafficTarget := &smiaccessv1alpha2.TrafficTarget{
 			ObjectMeta: metautils.TranslatedObjectMeta(
 				meshService.Spec.GetKubeService().Ref,
@@ -88,8 +91,8 @@ func (t *translator) Translate(
 			Spec: smiaccessv1alpha2.TrafficTargetSpec{
 				Destination: smiaccessv1alpha2.IdentityBindingSubject{
 					Kind:      "ServiceAccount",
-					Name:      backingWordload.Spec.GetKubernetes().GetController().GetNamespace(),
-					Namespace: backingWordload.Spec.GetKubernetes().GetServiceAccountName(),
+					Namespace: backingWorkload.Spec.GetKubernetes().GetController().GetNamespace(),
+					Name:      backingWorkload.Spec.GetKubernetes().GetServiceAccountName(),
 				},
 			},
 		}
@@ -123,13 +126,13 @@ func (t *translator) Translate(
 		}
 
 		// Append the ap ref to the name as each ap gets it's own traffic target
-		trafficTarget.Name += fmt.Sprintf(".%s", sets.TypedKey(ap.GetRef()))
+		trafficTarget.Name += fmt.Sprintf("-%s", kubeValidName(ap.GetRef()))
 
 		if len(ap.GetSpec().GetAllowedPorts()) > 1 {
 			// Add a traffic target per port
 			for _, port := range ap.GetSpec().GetAllowedPorts() {
 				ttByPort := trafficTarget.DeepCopy()
-				ttByPort.Name += fmt.Sprintf(".%d", port)
+				ttByPort.Name += fmt.Sprintf("-%d", port)
 				intPort := int(port)
 				ttByPort.Spec.Destination.Port = &intPort
 				trafficTargetsByAp = append(trafficTargetsByAp, ttByPort)
@@ -141,8 +144,10 @@ func (t *translator) Translate(
 		}
 
 		httpMatch := smispecsv1alpha3.HTTPMatch{
-			Name:    sets.Key(ap.GetRef()),
-			Methods: methodsToString(ap.GetSpec().GetAllowedMethods()),
+			Name:      kubeValidName(ap.GetRef()),
+			Methods:   methodsToString(ap.GetSpec().GetAllowedMethods()),
+			// Need to default to * or OSM does not route at all
+			PathRegex: constants.RegexMatchAll,
 		}
 
 		var httpMatches []smispecsv1alpha3.HTTPMatch
@@ -150,7 +155,7 @@ func (t *translator) Translate(
 		if len(ap.GetSpec().GetAllowedPaths()) > 1 {
 			for idx, path := range ap.GetSpec().GetAllowedPaths() {
 				matchByPath := httpMatch.DeepCopy()
-				matchByPath.Name += fmt.Sprintf(".%d", idx)
+				matchByPath.Name += fmt.Sprintf("-%d", idx)
 				matchByPath.PathRegex = path
 				httpMatches = append(httpMatches, httpMatch)
 			}
@@ -168,7 +173,7 @@ func (t *translator) Translate(
 			},
 		}
 		// Append the ap ref to the name as each ap gets it's own route group
-		routeGroup.Name += fmt.Sprintf(".%s", sets.TypedKey(ap.GetRef()))
+		routeGroup.Name += fmt.Sprintf("-%s", kubeValidName(ap.GetRef()))
 
 		// add all of the http matches to all of the traffic targets
 		for _, tt := range trafficTargetsByAp {
@@ -188,7 +193,15 @@ func (t *translator) Translate(
 	return trafficTargets, httpRouteGroups
 }
 
+func kubeValidName(id ezkube.ResourceId) string {
+	return id.GetName() + "." + id.GetNamespace()
+}
+
 func methodsToString(methods []types.HttpMethodValue) []string {
+	// If no method(s) has been specified, need to default to all or OSM doesn't work
+	if len(methods) == 0 {
+		return []string{string(smispecsv1alpha3.HTTPRouteMethodAll)}
+	}
 	var result []string
 	for _, method := range methods {
 		result = append(result, method.String())

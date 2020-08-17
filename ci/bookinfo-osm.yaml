@@ -189,6 +189,20 @@ metadata:
   labels:
     account: reviews
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookinfo-reviews-v2
+  labels:
+    account: reviews
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookinfo-reviews-v3
+  labels:
+    account: reviews
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -254,7 +268,7 @@ spec:
         app: reviews
         version: v2
     spec:
-      serviceAccountName: bookinfo-reviews
+      serviceAccountName: bookinfo-reviews-v2
       containers:
       - name: reviews
         image: docker.io/istio/examples-bookinfo-reviews-v2:1.15.0
@@ -297,7 +311,7 @@ spec:
         app: reviews
         version: v3
     spec:
-      serviceAccountName: bookinfo-reviews
+      serviceAccountName: bookinfo-reviews-v3
       containers:
       - name: reviews
         image: docker.io/istio/examples-bookinfo-reviews-v3:1.15.0

@@ -89,7 +89,7 @@ require (
 	github.com/onsi/ginkgo v1.13.0
 	github.com/onsi/gomega v1.10.1
 	github.com/open-policy-agent/opa v0.8.2 // indirect
-	github.com/openservicemesh/osm v0.2.0 // indirect
+	github.com/openservicemesh/osm v0.3.0 // indirect
 	github.com/openshift/api v3.9.1-0.20191008181517-e4fd21196097+incompatible // indirect
 	github.com/openzipkin/zipkin-go v0.1.7 // indirect
 	github.com/ory/dockertest v3.3.4+incompatible // indirect

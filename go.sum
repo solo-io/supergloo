@@ -1173,6 +1173,8 @@ github.com/opencontainers/runtime-spec v0.1.2-0.20190507144316-5b71a03e2700/go.m
 github.com/opencontainers/runtime-tools v0.0.0-20181011054405-1d69bd0f9c39/go.mod h1:r3f7wjNzSs2extwzU3Y+6pKfobzPh+kKFJ3ofN+3nfs=
 github.com/openservicemesh/osm v0.2.0 h1:7tAQhi93/nJ0g5YMiYmzdQ66wtS1keqEd1IUJ8qZRVw=
 github.com/openservicemesh/osm v0.2.0/go.mod h1:gyK0vN5ENnP26Y8huqgeTR52fOotZhnEorie215FnpU=
+github.com/openservicemesh/osm v0.3.0 h1:U88Nv1xm+7M+xYNkwjYVU6WSMp3MHIObTcO+gH20nOw=
+github.com/openservicemesh/osm v0.3.0/go.mod h1:gyK0vN5ENnP26Y8huqgeTR52fOotZhnEorie215FnpU=
 github.com/openshift/api v0.0.0-20200713203337-b2494ecb17dd/go.mod h1:vWmWTm4y7XR3wkLR+bDDjRbvkBfx2yP7yve6kfb7+Ts=
 github.com/openshift/api v3.9.1-0.20191008181517-e4fd21196097+incompatible/go.mod h1:dh9o4Fs58gpFXGSYfnVxGR9PnV53I8TW84pQaJDdGiY=
 github.com/openshift/build-machinery-go v0.0.0-20200713135615-1f43d26dccc7/go.mod h1:b1BuldmJlbA/xYtdZvKi+7j5YGB44qJUJDZ9zwiNCfE=
