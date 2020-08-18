@@ -79,8 +79,8 @@ Have a nice day! 👋
 To connect to each of the clusters, run the following:
 
 ```shell
-export MGMT_PLANE_CTX=kind-management-plane-bdefd91b0749a8854b3af6d7e44a1f53
-export REMOTE_CTX=kind-remote-cluster-88c93dcb26cfed3408ee0e64579a70cb
+export MGMT_PLANE_CTX=kind-management-plane
+export REMOTE_CTX=kind-remote-cluster
 ```
 
 Then you can run the following to connect to the management-plane cluster:
@@ -123,7 +123,7 @@ You should see something similar:
 ✅ Service Mesh Hub check found no errors
 ```
 
-Setting up Kind and multiple clusters on your machine isnt' always the easiest, and there may be some issues/hurdles you run into, especially on "company laptops" with extra security constraints. If you ran into any issues in the previous steps, please join us on the [Solo.io slack](https://slack.solo.io) and we'll be more than happy to help troubleshoot. 
+Setting up Kind and multiple clusters on your machine isn't always the easiest, and there may be some issues/hurdles you run into, especially on "company laptops" with extra security constraints. If you ran into any issues in the previous steps, please join us on the [Solo.io slack](https://slack.solo.io) and we'll be more than happy to help troubleshoot. 
 
 You should be ready to run the steps in the rest of the [Guides]({{% versioned_link_path fromRoot="/guides/" %}}).
 
@@ -137,4 +137,4 @@ meshctl demo cleanup
 
 ## Next steps
 
-In this quick-start guide, we installed Service Mesh Hub. If these installation usecases were to simplistic or not representative of your environment, please check out our [Setup Guide]({{% versioned_link_path fromRoot="/setup/" %}}). Otherwise, please check out our [Guides]({{% versioned_link_path fromRoot="/guides/" %}}) to explore the power of Service Mesh Hub.
+In this quick-start guide, we installed Service Mesh Hub. If these installation use cases were too simplistic or not representative of your environment, please check out our [Setup Guide]({{% versioned_link_path fromRoot="/setup/" %}}). Otherwise, please check out our [Guides]({{% versioned_link_path fromRoot="/guides/" %}}) to explore the power of Service Mesh Hub.

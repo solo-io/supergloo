@@ -4,117 +4,165 @@ menuTitle: Introductory Guides
 weight: 10
 ---
 
-
-We can use `meshctl mesh` command to easily install any supported service mesh. For Istio, this is accomplished by installing the [Istio Operator](https://istio.io/blog/2019/introducing-istio-operator/) to the cluster and letting it handle the complex Istio installation process.
-
-Currently, the supported versions of Istio are 1.6 and 1.5.
+We can use `istioctl` CLI to easily install Istio in our registered cluster. You can find `istioctl` on the [Getting Started page](https://istio.io/latest/docs/setup/getting-started/) of the Istio site. Currently, Service Mesh Hub supports Istio versions 1.5 and 1.6.
 
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document. If you used the `meshctl demo init` command, Istio has already been installed for you.
 {{% /notice %}}
 
 
-{{% notice warning %}}
-We do not yet support automatically upgrading Istio in-place from versions 1.4 and earlier to 1.5, due to a number of
-breaking changes across that version change. If you are currently running Istio prior to 1.5, you may have to
-fully uninstall the mesh before attempting an installation of 1.5. 
-
-<br/>
-
-Users have reported seeing the following when attempting to upgrade in-place:
-
-<br/>
-
-https://discuss.istio.io/t/istio-upgrade-from-1-4-6-1-5-0-throws-istiod-errors-remote-error-tls-error-decrypting-message/5727
-
-{{% /notice %}}
+In this guide we will walk you through two options for installing Istio for use with Service Mesh Hub in a single cluster and multi-cluster setting. The instructions here are for reference only, and your installation process for Istio will likely be different depending on your organization's policies and procedures.
 
 ## Istio quick install (single cluster)
 
-An easy way to get up and running quickly with Istio (**but insufficient for a multi-cluster demo**) is by installing Istio in its "demo" profile ([profile documentation](https://istio.io/docs/setup/additional-setup/config-profiles/)) is:
+An easy way to get up and running quickly with Istio (**but insufficient for a multi-cluster demo**) is by installing Istio in its "demo" profile ([profile documentation](https://istio.io/docs/setup/additional-setup/config-profiles/)). Using the Istio command line tool, the command is as follows:
 
 
 ```shell
-# note here that you could replace "istio1.5" with "istio1.6" to install that version
-meshctl mesh install istio1.5 --profile=demo --context remote-cluster-context
+istioctl install --set profile=demo
 ```
+
 {{% notice note %}}
 This will NOT install Istio suitable for a multi-cluster installation. For a correct multi-cluster installation, see the next section.
 {{% /notice %}}
 
-All configuration profiles supported by Istio should be supported by `meshctl`.
-
-To uninstall Istio, you can leverage the `--dry-run` command from `meshctl` and pass to `kubectl delete`
-
-```shell
-# note here that you could replace "istio1.5" with "istio1.6" to install that version
-meshctl mesh install istio1.5 --profile=demo --context remote-cluster-context --dry-run \
-| k delete -f - --context remote-cluster-context
-```
-
-{{% notice note %}}
-At times, the *finalizer* on the Istio CRD for IstioOperator hangs and can halt an uninstall. You can fix this by deleting the finalizer in this CR:
-
-```
-kubectl edit istiooperators.install.istio.io -n istio-operator
-```
-{{% /notice %}}
-
 ## Istio quick install (multi cluster)
 
-For following some of the other Istio guides, we assume two clusters with Istio installed for mult-cluster communication in both of them. 
+For following some of the other Service Mesh Hub guides, we assume two clusters with Istio installed for multi-cluster communication across both of them. 
+
 We will install Istio with a suitable configuration for a multi-cluster demonstration by overriding some of the Istio Operator values.
 
-Let's install Istio into both the `management-plane-context` **AND** the `remote-cluster-context`
+Let's install Istio into both the management plane **AND** the remote cluster. The configuration below assumes that you are using the Kind clusters created in the Setup guide. The contexts for those clusters should be `kind-management-plane` and `kind-remote-cluster`. Both clusters are using a NodePort to expose the ingress gateway for Istio. If you are deploying Istio on different cluster setup, update your context and gateway settings accordingly.
 
 ```shell
-# note here that you could replace "istio1.5" with "istio1.6" to install that version
-meshctl mesh install istio1.5 --context management-plane-context --operator-spec=- <<EOF
+cat << EOF | istioctl manifest apply --context kind-management-plane -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
-  name: istiocontrolplane-default
-  namespace: istio-operator
+  name: mgmt-plane-istiooperator
+  namespace: istio-system
 spec:
-  profile: default
+  profile: minimal
   addonComponents:
     istiocoredns:
-      enabled: true  
+      enabled: true
+  components:
+    pilot:
+      k8s:
+        env:
+          - name: PILOT_CERT_PROVIDER
+            value: "kubernetes"
+    proxy:
+      k8s:
+        env:
+          - name: PILOT_CERT_PROVIDER
+            value: "kubernetes"
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+          - name: PILOT_CERT_PROVIDER
+            value: "kubernetes"
+        service:
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: 32001
   values:
+    prometheus:
+      enabled: false
+    gateways:
+      istio-ingressgateway:
+        type: NodePort
+        ports:
+          - targetPort: 15443
+            name: tls
+            nodePort: 32001
+            port: 15443
     global:
+      pilotCertProvider: kubernetes
       controlPlaneSecurityEnabled: true
       mtls:
         enabled: true
-      pilotCertProvider: kubernetes
       podDNSSearchNamespaces:
       - global
-      - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
-    prometheus:
-      enabled: false
 EOF
 ```
 
 ```shell
-# note here that you could replace "istio1.5" with "istio1.6" to install that version
-meshctl mesh install istio1.5 --context remote-cluster-context --operator-spec=- <<EOF
+cat << EOF | istioctl manifest apply --context kind-remote-cluster -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
-  name: istiocontrolplane-default
-  namespace: istio-operator
+  name: remote-cluster-istiooperator
+  namespace: istio-system
 spec:
-  profile: default
+  profile: minimal
+  addonComponents:
+    istiocoredns:
+      enabled: true
+  components:
+    pilot:
+      k8s:
+        env:
+          - name: PILOT_CERT_PROVIDER
+            value: "kubernetes"
+    proxy:
+      k8s:
+        env:
+          - name: PILOT_CERT_PROVIDER
+            value: "kubernetes"
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+          - name: PILOT_CERT_PROVIDER
+            value: "kubernetes"
+        service:
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: 32000
   values:
+    prometheus:
+      enabled: false
+    gateways:
+      istio-ingressgateway:
+        type: NodePort
+        ports:
+          - targetPort: 15443
+            name: tls
+            nodePort: 32000
+            port: 15443
     global:
+      pilotCertProvider: kubernetes
       controlPlaneSecurityEnabled: true
       mtls:
         enabled: true
-      pilotCertProvider: kubernetes
       podDNSSearchNamespaces:
       - global
-      - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
-    prometheus:
-      enabled: false
 EOF
 ```
 
@@ -126,9 +174,12 @@ When the Istio Operator has finished the installation (can take up to 90 seconds
 you should see the Istio control plane pods running successfully:
 
 ```shell
+kubectl get pods -n istio-system
+
 NAME                                    READY   STATUS    RESTARTS   AGE
-istio-ingressgateway-749468d8cd-x5w9p   1/1     Running   0          4h16m
-istiod-58696868d5-gtvg8                 1/1     Running   0          4h16m
+istio-ingressgateway-746d597f7c-g6whv   1/1     Running   0          5d23h
+istiocoredns-7ffc9b7fcf-crhr2           2/2     Running   0          5d23h
+istiod-7795ccf9dc-vr4cq                 1/1     Running   0          5d22h
 ```
 
 ## Next steps

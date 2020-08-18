@@ -37,6 +37,69 @@ To verify you're running the following commands in the correct context, run:
 kubectl config use-context management-plane-context
 ```
 
+### Using Kind
+
+If you do not have access to two Kubernetes clusters, you can easily create two on your local workstation using Kind. Simply run the following commands to create the management-plane and remote-cluster clusters.
+
+```bash
+#Set version, cluster name, and port
+kindImage=kindest/node:v1.17.5
+cluster=management-plane
+port=32001
+
+cat <<EOF | kind create cluster --name "${cluster}" --image $kindImage --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: ${port}
+    hostPort: ${port}
+    protocol: TCP
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+kubeadmConfigPatches:
+- |
+  kind: InitConfiguration
+  nodeRegistration:
+    kubeletExtraArgs:
+      authorization-mode: "AlwaysAllow"
+EOF
+
+cluster=remote-cluster
+port=32000
+
+cat <<EOF | kind create cluster --name "${cluster}" --image $kindImage --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: ${port}
+    hostPort: ${port}
+    protocol: TCP
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+kubeadmConfigPatches:
+- |
+  kind: InitConfiguration
+  nodeRegistration:
+    kubeletExtraArgs:
+      authorization-mode: "AlwaysAllow"
+EOF
+
+#Switch to the management-plane context
+kubectl config use-context kind-management-plane
+```
+
 ## Install Service Mesh Hub
 
 {{% notice note %}}
@@ -144,19 +207,13 @@ meshctl check
 ```
 
 ```shell
-✅ Kubernetes API
------------------
-✅ Kubernetes API server is reachable
-✅ running the minimum supported Kubernetes version (required: >=1.13)
+Service Mesh Hub
+-------------------
+✅ Service Mesh Hub pods are running
 
-
-✅ Service Mesh Hub Management Plane
-------------------------------------
-✅ installation namespace exists
-✅ components are running
-
-
-✅ Service Mesh Hub check found no errors
+Management Configuration
+---------------------------
+✅ Service Mesh Hub networking configuration resources are in a valid state
 ```
 
 At this point you're ready to add clusters to the management plane, or discover existing service meshes on the cluster on which we just deployed Service Mesh Hub. 
@@ -173,7 +230,7 @@ For remote clusters, we will register with the `meshctl cluster register` comman
 
 ```shell
 meshctl cluster register \
-  --remote-cluster-name new-remote-cluster \
+  --remote-cluster-name remote-cluster \
   --remote-context remote-cluster-context
 ```
 
@@ -216,6 +273,6 @@ To go into slightly more detail about what just happened:
 * Future communications that Service Mesh Hub does to the remote cluster's Kubernetes API server
  will be done using the service account auth token created in the first bullet point
 
-And we're done! Any meshes in that cluster will be discovered and available to be configured at
-this point. See the guide on [installing Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}),
-to see how to easily get Istio running on that cluster.
+## Next Steps
+
+And we're done! Any meshes in that cluster will be discovered and available to be configured at this point. See the guide on [installing Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}), to see how to easily get Istio running on that cluster.
