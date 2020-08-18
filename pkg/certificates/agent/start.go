@@ -5,11 +5,8 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/input"
 
-	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/agent/reconciliation"
-	"github.com/solo-io/skv2/pkg/multicluster"
+	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
 )
 
 // the mesh-networking controller is the Kubernetes Controller/Operator
@@ -21,18 +18,14 @@ func Start(ctx context.Context, opts bootstrap.Options) error {
 
 // start the main reconcile loop
 func startReconciler(
-	ctx context.Context,
-	masterManager manager.Manager,
-	_ multicluster.Client,
-	_ multicluster.ClusterSet,
-	_ multicluster.ClusterWatcher,
+	parameters bootstrap.StartParameters,
 ) error {
 
-	snapshotBuilder := input.NewSingleClusterBuilder(masterManager.GetClient())
+	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager.GetClient())
 
 	return reconciliation.Start(
-		ctx,
+		parameters.Ctx,
 		snapshotBuilder,
-		masterManager,
+		parameters.MasterManager,
 	)
 }
