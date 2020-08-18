@@ -33,13 +33,12 @@ You can add `meshctl` to your path for global access on the command line. See:
 
 ## Spinning up clusters with Kind (Kubernetes in Docker)
 
-You should have access to a Docker daemon along with `kubectl` and `kind` installed for the following to work. 
+The easiest way to get started is by using Kind to run local Kubernetes clusters in Docker. There is a `demo` command in meshctl that will create a full demonstration environment on your local system. All you need is Docker, Kind, and kubectl installed. 
 
 * [Docker](https://www.docker.com/products/docker-desktop) for desktop
 * [Kind](https://kind.sigs.k8s.io) Kubernetes in Docker
 
-If you have access to a single Kubernetes cluster, skip to the section below for a single cluster.
-
+If you prefer to use an existing Kubernetes cluster, check out our [Setup Guide]({{% versioned_link_path fromRoot="/setup/" %}}).
 
 To spin up two Kubernetes clusters with Kind, run:
 

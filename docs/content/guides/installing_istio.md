@@ -10,7 +10,7 @@ We can use `meshctl mesh` command to easily install any supported service mesh. 
 Currently, the supported versions of Istio are 1.6 and 1.5.
 
 {{% notice note %}}
-Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
+Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document. If you used the `meshctl demo init` command, Istio has already been installed for you.
 {{% /notice %}}
 
 
