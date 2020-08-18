@@ -132,9 +132,9 @@ Once you've installed Service Mesh Hub, verify what components got installed:
 kubectl get po -n service-mesh-hub
 
 NAME                          READY   STATUS    RESTARTS   AGE
-cert-agent-69f64645c5-mtbpd   1/1     Running   0          5d23h
-discovery-66675cf6fd-cdlpq    1/1     Running   0          5d23h
-networking-6d7686564d-ngrdq   1/1     Running   0          5d23h
+cert-agent-69f64645c5-mtbpd   1/1     Running   0          32m
+discovery-66675cf6fd-cdlpq    1/1     Running   0          32m
+networking-6d7686564d-ngrdq   1/1     Running   0          32m
 ```
 
 Running the check command will verify everything was installed correctly:
