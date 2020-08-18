@@ -17,15 +17,16 @@ title: "mesh_service.proto"
 
 ## Table of Contents
   - [MeshServiceSpec](#discovery.smh.solo.io.MeshServiceSpec)
-  - [MeshServiceSpec.Federation](#discovery.smh.solo.io.MeshServiceSpec.Federation)
   - [MeshServiceSpec.KubeService](#discovery.smh.solo.io.MeshServiceSpec.KubeService)
   - [MeshServiceSpec.KubeService.KubeServicePort](#discovery.smh.solo.io.MeshServiceSpec.KubeService.KubeServicePort)
   - [MeshServiceSpec.KubeService.LabelsEntry](#discovery.smh.solo.io.MeshServiceSpec.KubeService.LabelsEntry)
+  - [MeshServiceSpec.KubeService.Subset](#discovery.smh.solo.io.MeshServiceSpec.KubeService.Subset)
+  - [MeshServiceSpec.KubeService.SubsetsEntry](#discovery.smh.solo.io.MeshServiceSpec.KubeService.SubsetsEntry)
   - [MeshServiceSpec.KubeService.WorkloadSelectorLabelsEntry](#discovery.smh.solo.io.MeshServiceSpec.KubeService.WorkloadSelectorLabelsEntry)
-  - [MeshServiceSpec.Subset](#discovery.smh.solo.io.MeshServiceSpec.Subset)
-  - [MeshServiceSpec.SubsetsEntry](#discovery.smh.solo.io.MeshServiceSpec.SubsetsEntry)
   - [MeshServiceStatus](#discovery.smh.solo.io.MeshServiceStatus)
-  - [MeshServiceStatus.ValidatedTrafficPolicy](#discovery.smh.solo.io.MeshServiceStatus.ValidatedTrafficPolicy)
+  - [MeshServiceStatus.AppliedAccessPolicy](#discovery.smh.solo.io.MeshServiceStatus.AppliedAccessPolicy)
+  - [MeshServiceStatus.AppliedFederation](#discovery.smh.solo.io.MeshServiceStatus.AppliedFederation)
+  - [MeshServiceStatus.AppliedTrafficPolicy](#discovery.smh.solo.io.MeshServiceStatus.AppliedTrafficPolicy)
 
 
 
@@ -42,25 +43,7 @@ The MeshService is an abstraction for a service which we have discovered to be p
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | kubeService | [MeshServiceSpec.KubeService](#discovery.smh.solo.io.MeshServiceSpec.KubeService) |  | Metadata about the kube-native service backing this MeshService. |
-| mesh | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | The mesh with which this service is associated. |
-| subsets | [][MeshServiceSpec.SubsetsEntry](#discovery.smh.solo.io.MeshServiceSpec.SubsetsEntry) | repeated | Subsets for routing, based on labels. |
-| federation | [MeshServiceSpec.Federation](#discovery.smh.solo.io.MeshServiceSpec.Federation) |  | Metadata about the decisions that Service Mesh Hub has made about what workloads this service is federated to. |
-
-
-
-
-
-
-<a name="discovery.smh.solo.io.MeshServiceSpec.Federation"></a>
-
-### MeshServiceSpec.Federation
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| multiclusterDnsName | [string](#string) |  | For any workload that this service has federated to (i.e., any MeshWorkload whose ref appears in `federated_to_workloads`), a client in that workload will be able to reach this service at this DNS name. This includes workloads on clusters other than the one hosting this service. |
-| federatedToWorkloads | [][core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) | repeated | The list of MeshWorkloads which are able to resolve this service's `multicluster_dns_name`. |
+| mesh | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | The mesh with which this service is associated. |
 
 
 
@@ -75,10 +58,11 @@ The MeshService is an abstraction for a service which we have discovered to be p
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | A reference to the kube-native service that this MeshService represents. |
+| ref | [core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) |  | A reference to the kube-native service that this MeshService represents. |
 | workloadSelectorLabels | [][MeshServiceSpec.KubeService.WorkloadSelectorLabelsEntry](#discovery.smh.solo.io.MeshServiceSpec.KubeService.WorkloadSelectorLabelsEntry) | repeated | Selectors for the set of pods targeted by the k8s Service. |
 | labels | [][MeshServiceSpec.KubeService.LabelsEntry](#discovery.smh.solo.io.MeshServiceSpec.KubeService.LabelsEntry) | repeated | Labels on the underlying k8s Service itself. |
 | ports | [][MeshServiceSpec.KubeService.KubeServicePort](#discovery.smh.solo.io.MeshServiceSpec.KubeService.KubeServicePort) | repeated | The ports exposed by the underlying service. |
+| subsets | [][MeshServiceSpec.KubeService.SubsetsEntry](#discovery.smh.solo.io.MeshServiceSpec.KubeService.SubsetsEntry) | repeated | Subsets for routing, based on labels. |
 
 
 
@@ -118,6 +102,37 @@ The MeshService is an abstraction for a service which we have discovered to be p
 
 
 
+<a name="discovery.smh.solo.io.MeshServiceSpec.KubeService.Subset"></a>
+
+### MeshServiceSpec.KubeService.Subset
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| values | [][string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="discovery.smh.solo.io.MeshServiceSpec.KubeService.SubsetsEntry"></a>
+
+### MeshServiceSpec.KubeService.SubsetsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [MeshServiceSpec.KubeService.Subset](#discovery.smh.solo.io.MeshServiceSpec.KubeService.Subset) |  |  |
+
+
+
+
+
+
 <a name="discovery.smh.solo.io.MeshServiceSpec.KubeService.WorkloadSelectorLabelsEntry"></a>
 
 ### MeshServiceSpec.KubeService.WorkloadSelectorLabelsEntry
@@ -134,37 +149,6 @@ The MeshService is an abstraction for a service which we have discovered to be p
 
 
 
-<a name="discovery.smh.solo.io.MeshServiceSpec.Subset"></a>
-
-### MeshServiceSpec.Subset
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| values | [][string](#string) | repeated |  |
-
-
-
-
-
-
-<a name="discovery.smh.solo.io.MeshServiceSpec.SubsetsEntry"></a>
-
-### MeshServiceSpec.SubsetsEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [MeshServiceSpec.Subset](#discovery.smh.solo.io.MeshServiceSpec.Subset) |  |  |
-
-
-
-
-
-
 <a name="discovery.smh.solo.io.MeshServiceStatus"></a>
 
 ### MeshServiceStatus
@@ -173,24 +157,59 @@ The MeshService is an abstraction for a service which we have discovered to be p
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| federationStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | The status of federation artifacts being written to remote clusters as a result of the federation metadata on this object's Spec. |
-| validatedTrafficPolicies | [][MeshServiceStatus.ValidatedTrafficPolicy](#discovery.smh.solo.io.MeshServiceStatus.ValidatedTrafficPolicy) | repeated |  |
+| observedGeneration | [int64](#int64) |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
+| appliedTrafficPolicies | [][MeshServiceStatus.AppliedTrafficPolicy](#discovery.smh.solo.io.MeshServiceStatus.AppliedTrafficPolicy) | repeated | The set of Traffic Policies that have been applied to this MeshService |
+| appliedAccessPolicies | [][MeshServiceStatus.AppliedAccessPolicy](#discovery.smh.solo.io.MeshServiceStatus.AppliedAccessPolicy) | repeated | The set of Access Policies that have been applied to this MeshService |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.MeshServiceStatus.ValidatedTrafficPolicy"></a>
+<a name="discovery.smh.solo.io.MeshServiceStatus.AppliedAccessPolicy"></a>
 
-### MeshServiceStatus.ValidatedTrafficPolicy
-
+### MeshServiceStatus.AppliedAccessPolicy
+AppliedAccessPolicy represents a access policy that has been applied to the MeshService. if an existing Access Policy becomes invalid, the last applied policy will be used
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  |  |
-| trafficPolicySpec | [networking.smh.solo.io.TrafficPolicySpec](#networking.smh.solo.io.TrafficPolicySpec) |  |  |
+| ref | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | reference to the access policy |
+| observedGeneration | [int64](#int64) |  | the observed generation of the accepted access policy |
+| spec | [networking.smh.solo.io.AccessPolicySpec](#networking.smh.solo.io.AccessPolicySpec) |  | the last known valid spec of the access policy |
+
+
+
+
+
+
+<a name="discovery.smh.solo.io.MeshServiceStatus.AppliedFederation"></a>
+
+### MeshServiceStatus.AppliedFederation
+Federation policy applied to this MeshService, allowing access to the service from other meshes/clusters.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| multiclusterDnsName | [string](#string) |  | For any workload that this service has federated to (i.e., any MeshWorkload whose ref appears in `federated_to_workloads`), a client in that workload will be able to reach this service at this DNS name. This includes workloads on clusters other than the one hosting this service. |
+| federatedToMeshes | [][core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) | repeated | The list of Meshes which are able to resolve this service's `multicluster_dns_name`. |
+
+
+
+
+
+
+<a name="discovery.smh.solo.io.MeshServiceStatus.AppliedTrafficPolicy"></a>
+
+### MeshServiceStatus.AppliedTrafficPolicy
+AppliedTrafficPolicy represents a traffic policy that has been applied to the MeshService. if an existing Traffic Policy becomes invalid, the last applied policy will be used
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ref | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | reference to the traffic policy |
+| observedGeneration | [int64](#int64) |  | the observed generation of the accepted traffic policy |
+| spec | [networking.smh.solo.io.TrafficPolicySpec](#networking.smh.solo.io.TrafficPolicySpec) |  | the last known valid spec of the traffic policy |
 
 
 

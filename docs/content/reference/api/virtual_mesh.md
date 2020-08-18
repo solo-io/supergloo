@@ -17,16 +17,16 @@ title: "virtual_mesh.proto"
 
 ## Table of Contents
   - [VirtualMeshSpec](#networking.smh.solo.io.VirtualMeshSpec)
-  - [VirtualMeshSpec.CertificateAuthority](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority)
-  - [VirtualMeshSpec.CertificateAuthority.Builtin](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Builtin)
-  - [VirtualMeshSpec.CertificateAuthority.Provided](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Provided)
   - [VirtualMeshSpec.Federation](#networking.smh.solo.io.VirtualMeshSpec.Federation)
-  - [VirtualMeshSpec.LimitedTrust](#networking.smh.solo.io.VirtualMeshSpec.LimitedTrust)
-  - [VirtualMeshSpec.SharedTrust](#networking.smh.solo.io.VirtualMeshSpec.SharedTrust)
+  - [VirtualMeshSpec.MTLSConfig](#networking.smh.solo.io.VirtualMeshSpec.MTLSConfig)
+  - [VirtualMeshSpec.MTLSConfig.LimitedTrust](#networking.smh.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust)
+  - [VirtualMeshSpec.MTLSConfig.SharedTrust](#networking.smh.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust)
+  - [VirtualMeshSpec.RootCertificateAuthority](#networking.smh.solo.io.VirtualMeshSpec.RootCertificateAuthority)
+  - [VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert](#networking.smh.solo.io.VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert)
   - [VirtualMeshStatus](#networking.smh.solo.io.VirtualMeshStatus)
+  - [VirtualMeshStatus.MeshesEntry](#networking.smh.solo.io.VirtualMeshStatus.MeshesEntry)
 
-  - [VirtualMeshSpec.EnforcementPolicy](#networking.smh.solo.io.VirtualMeshSpec.EnforcementPolicy)
-  - [VirtualMeshSpec.Federation.Mode](#networking.smh.solo.io.VirtualMeshSpec.Federation.Mode)
+  - [VirtualMeshSpec.GlobalAccessPolicy](#networking.smh.solo.io.VirtualMeshSpec.GlobalAccessPolicy)
 
 
 
@@ -36,66 +36,15 @@ title: "virtual_mesh.proto"
 <a name="networking.smh.solo.io.VirtualMeshSpec"></a>
 
 ### VirtualMeshSpec
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| displayName | [string](#string) |  | User-provided display name for the virtual mesh. |
-| meshes | [][core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) | repeated | The meshes contained in this virtual mesh. |
-| certificateAuthority | [VirtualMeshSpec.CertificateAuthority](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority) |  |  |
-| federation | [VirtualMeshSpec.Federation](#networking.smh.solo.io.VirtualMeshSpec.Federation) |  |  |
-| shared | [VirtualMeshSpec.SharedTrust](#networking.smh.solo.io.VirtualMeshSpec.SharedTrust) |  |  |
-| limited | [VirtualMeshSpec.LimitedTrust](#networking.smh.solo.io.VirtualMeshSpec.LimitedTrust) |  |  |
-| enforceAccessControl | [VirtualMeshSpec.EnforcementPolicy](#networking.smh.solo.io.VirtualMeshSpec.EnforcementPolicy) |  |  |
-
-
-
-
-
-
-<a name="networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority"></a>
-
-### VirtualMeshSpec.CertificateAuthority
-
+A VirtualMesh represents a logical grouping of meshes for shared configuration and cross-mesh interoperability.<br>VirtualMeshes are used to configure things like shared trust roots (for mTLS) and federation of services (for cross-cluster networking).<br>Currently, VirtualMeshes can only be constructed from Istio meshes.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| builtin | [VirtualMeshSpec.CertificateAuthority.Builtin](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Builtin) |  | Use auto-generated root certificate. |
-| provided | [VirtualMeshSpec.CertificateAuthority.Provided](#networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Provided) |  | Use user-provided root certificate. |
-
-
-
-
-
-
-<a name="networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Builtin"></a>
-
-### VirtualMeshSpec.CertificateAuthority.Builtin
-Configuration for auto-generated root certificate unique to the VirtualMesh Uses the X.509 format, RFC5280
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| ttlDays | [uint32](#uint32) |  | Number of days before root cert expires. Defaults to 365. |
-| rsaKeySizeBytes | [uint32](#uint32) |  | Size in bytes of the root cert's private key. Defaults to 4096 |
-| orgName | [string](#string) |  | Root cert organization name. Defaults to "service-mesh-hub" |
-
-
-
-
-
-
-<a name="networking.smh.solo.io.VirtualMeshSpec.CertificateAuthority.Provided"></a>
-
-### VirtualMeshSpec.CertificateAuthority.Provided
-Configuration for user-provided root certificate.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| certificate | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | Reference to a Secret object containing the root certificate. |
+| meshes | [][core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) | repeated | The meshes contained in this virtual mesh. |
+| mtlsConfig | [VirtualMeshSpec.MTLSConfig](#networking.smh.solo.io.VirtualMeshSpec.MTLSConfig) |  | Configuration options for managing Mutual-TLS mTLS in a virtual mesh.Sets a shared Certificate Authority across the defined meshes. |
+| federation | [VirtualMeshSpec.Federation](#networking.smh.solo.io.VirtualMeshSpec.Federation) |  | Determine how to expose services to cross-mesh traffic using Service Federation. |
+| globalAccessPolicy | [VirtualMeshSpec.GlobalAccessPolicy](#networking.smh.solo.io.VirtualMeshSpec.GlobalAccessPolicy) |  | Sets an Access Policy for the whole mesh. |
 
 
 
@@ -105,21 +54,38 @@ Configuration for user-provided root certificate.
 <a name="networking.smh.solo.io.VirtualMeshSpec.Federation"></a>
 
 ### VirtualMeshSpec.Federation
-
+In Service Mesh Hub, Federation refers to the ability to expose services on with a global DNS name for traffic originating from any service within the virtual mesh.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| mode | [VirtualMeshSpec.Federation.Mode](#networking.smh.solo.io.VirtualMeshSpec.Federation.Mode) |  |  |
+| permissive | [google.protobuf.Empty](#google.protobuf.Empty) |  | Select permissive mode to expose all services in a VirtualMesh to cross-cluster traffic from all workloads in that Virtual Mesh. |
 
 
 
 
 
 
-<a name="networking.smh.solo.io.VirtualMeshSpec.LimitedTrust"></a>
+<a name="networking.smh.solo.io.VirtualMeshSpec.MTLSConfig"></a>
 
-### VirtualMeshSpec.LimitedTrust
+### VirtualMeshSpec.MTLSConfig
+Mutual TLS Config for a Virtual Mesh. This includes options for configuring Mutual TLS within an indvidual mesh, as well as enabling mTLS across Meshes by establishing cross-mesh trust.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| shared | [VirtualMeshSpec.MTLSConfig.SharedTrust](#networking.smh.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust) |  | Shared trust |
+| limited | [VirtualMeshSpec.MTLSConfig.LimitedTrust](#networking.smh.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust) |  |  |
+| autoRestartPods | [bool](#bool) |  | Allow Service Mesh Hub to restart mesh pods when certificates are rotated. If this option is not explicitly enabled, users must restart the pods manually for the new certificates to be picked up. `meshctl` provides the command `meshctl mesh restart` to simplify this process. |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust"></a>
+
+### VirtualMeshSpec.MTLSConfig.LimitedTrust
 Limited trust is a virtual mesh trust model which does not require all meshes sharing the same root certificate or identity model. But rather, the limited trust creates trust between meshes running on different clusters by connecting their ingress/egress gateways with a common cert/identity. In this model all requests between different have the following request path when communicating between clusters<br>cluster 1 MTLS               shared MTLS                  cluster 2 MTLS client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server<br>This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc addition of additional clusters into a virtual mesh.
 
 
@@ -127,10 +93,48 @@ Limited trust is a virtual mesh trust model which does not require all meshes sh
 
 
 
-<a name="networking.smh.solo.io.VirtualMeshSpec.SharedTrust"></a>
+<a name="networking.smh.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust"></a>
 
-### VirtualMeshSpec.SharedTrust
+### VirtualMeshSpec.MTLSConfig.SharedTrust
 Shared trust is a virtual mesh trust model requiring a shared root certificate, as well as shared identity between all entities which wish to communicate within the virtual mesh.<br>The best current example of this would be the replicated control planes example from Istio: https://preliminary.istio.io/docs/setup/install/multicluster/gateways/
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| rootCertificateAuthority | [VirtualMeshSpec.RootCertificateAuthority](#networking.smh.solo.io.VirtualMeshSpec.RootCertificateAuthority) |  | Configure a Root Certificate Authority which will be shared by the members of the virtual mesh. If this is not provided, a self-signed certificate will be used by Service Mesh Hub to establish shared trust for the purposes of failover and federation. |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.VirtualMeshSpec.RootCertificateAuthority"></a>
+
+### VirtualMeshSpec.RootCertificateAuthority
+RootCertificateAuthority defines parameters for configuring the root CA for a Virtual Mesh.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| generated | [VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert](#networking.smh.solo.io.VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert) |  | Generate a self-signed root certificate with the given options. |
+| secret | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | Use a root certificate provided in a Kubernetes Secret. [Secrets provided in this way must follow a specified format, documented here.]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}) |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert"></a>
+
+### VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert
+Configuration for generating a self-signed root certificate. Uses the X.509 format, RFC5280
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ttlDays | [uint32](#uint32) |  | Number of days before root cert expires. Defaults to 365. |
+| rsaKeySizeBytes | [uint32](#uint32) |  | Size in bytes of the root cert's private key. Defaults to 4096 |
+| orgName | [string](#string) |  | Root cert organization name. Defaults to "service-mesh-hub" |
 
 
 
@@ -145,10 +149,25 @@ Shared trust is a virtual mesh trust model requiring a shared root certificate, 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| federationStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Status of the process writing federation decision metadata onto MeshServices. |
-| certificateStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Status of the process signing CSRs. |
-| configStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Overall validation status of this VirtualMesh. |
-| accessControlEnforcementStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Status of ensuring that access control is enforced within this VirtualMesh. |
+| observedGeneration | [int64](#int64) |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
+| state | [ApprovalState](#networking.smh.solo.io.ApprovalState) |  | the state of the overall resource. will only show accepted if it has been successfully applied to all target meshes. |
+| meshes | [][VirtualMeshStatus.MeshesEntry](#networking.smh.solo.io.VirtualMeshStatus.MeshesEntry) | repeated | The status of the VirtualMesh for each Mesh to which it has been applied. A TrafficPolicy may be Accepted for some Meshes and rejected for others. |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.VirtualMeshStatus.MeshesEntry"></a>
+
+### VirtualMeshStatus.MeshesEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [ApprovalStatus](#networking.smh.solo.io.ApprovalStatus) |  |  |
 
 
 
@@ -157,9 +176,9 @@ Shared trust is a virtual mesh trust model requiring a shared root certificate, 
  <!-- end messages -->
 
 
-<a name="networking.smh.solo.io.VirtualMeshSpec.EnforcementPolicy"></a>
+<a name="networking.smh.solo.io.VirtualMeshSpec.GlobalAccessPolicy"></a>
 
-### VirtualMeshSpec.EnforcementPolicy
+### VirtualMeshSpec.GlobalAccessPolicy
 If ENABLED, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies. If DISABLED, by default allow traffic to all Services in the VirtualMesh. If MESH_DEFAULT, the default value depends on the type service mesh: Istio: false Appmesh: true
 
 | Name | Number | Description |
@@ -167,17 +186,6 @@ If ENABLED, by default disallow traffic to all Services in the VirtualMesh unles
 | MESH_DEFAULT | 0 |  |
 | ENABLED | 1 |  |
 | DISABLED | 2 |  |
-
-
-
-<a name="networking.smh.solo.io.VirtualMeshSpec.Federation.Mode"></a>
-
-### VirtualMeshSpec.Federation.Mode
-
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| PERMISSIVE | 0 | All services in a VirtualMesh will be federated to all workloads in that Virtual Mesh. |
 
 
  <!-- end enums -->

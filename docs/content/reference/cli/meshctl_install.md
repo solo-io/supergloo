@@ -17,28 +17,25 @@ meshctl install [flags]
 ### Options
 
 ```
-      --cluster-name string   Name by which to register the management-plane cluster in Service Mesh Hub. This flag will only be considered if --register is set. (default "management-plane")
-      --create-namespace      Create the namespace to install Service Mesh Hub into (default true)
-  -d, --dry-run               Send the raw installation yaml to stdout instead of applying it to kubernetes
-  -f, --file string           Install Service Mesh Hub from this Helm chart archive file rather than from a release
-  -h, --help                  help for install
-  -r, --register              Register the management plane cluster. This would be the same as running the meshctl cluster register command on the management plane cluster after installing.
-      --release-name string   Helm release name (default "service-mesh-hub")
-      --values strings        List of files with value overrides for the Service Mesh Hub Helm chart, (e.g. --values file1,file2 or --values file1 --values file2)
-      --version string        Version to install (e.g. v1.2.0, defaults to latest)
-```
-
-### Options inherited from parent commands
-
-```
-      --context string          Specify which context from the kubeconfig should be used; uses current context if none is specified
-      --kube-timeout duration   Specify the default timeout for requests to kubernetes API servers (default 5s)
-      --kubeconfig string       Specify the kubeconfig for the current command
-  -n, --namespace string        Specify the namespace where Service Mesh Hub resources should be written (default "service-mesh-hub")
-  -v, --verbose                 Enable verbose mode, which outputs additional execution details that may be helpful for debugging
+      --api-server-address string        Swap out the address of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Service Mesh Hub is different than that specified in the local kubeconfig.
+      --cert-agent-chart-file string     Path to a local Helm chart for installing the Certificate Agent. If unset, this command will install the Certificate Agent from the publicly released Helm chart.
+      --cert-agent-chart-values string   Path to a Helm values.yaml file for customizing the installation of the Certificate Agent. If unset, this command will install the Certificate Agent with default Helm values.
+      --chart-file string                Path to a local Helm chart for installing Service Mesh Hub. If unset, this command will install Service Mesh Hub from the publicly released Helm chart.
+      --chart-values-file string         File containing value overrides for the Service Mesh Hub Helm chart
+      --cluster-domain string            The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'. Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
+      --cluster-name string              Name with which to register the cluster running Service Mesh Hub, only applies if --register is also set (default "management-cluster")
+  -d, --dry-run                          Output installation manifest
+  -h, --help                             help for install
+      --kubeconfig string                path to the kubeconfig from which the master cluster will be accessed
+      --kubecontext string               name of the kubeconfig context to use for the master cluster
+      --namespace string                 namespace in which to install Service Mesh Hub (default "service-mesh-hub")
+  -r, --register                         Register the cluster running Service Mesh Hub
+      --release-name string              Helm release name (default "service-mesh-hub")
+  -v, --verbose                          Enable verbose output
+      --version string                   Version to install, defaults to latest if omitted
 ```
 
 ### SEE ALSO
 
-* [meshctl](../meshctl)	 - CLI for Service Mesh Hub
+* [meshctl](../meshctl)	 - The Command Line Interface for managing Service Mesh Hub.
 

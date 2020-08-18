@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl cluster deregister
 
-Deregister an existing cluster
+Deregister a Kubernetes cluster from Service Mesh Hub, cleaning up any associated resources
 
 ### Synopsis
 
-Deregister an existing cluster
+Deregister a Kubernetes cluster from Service Mesh Hub, cleaning up any associated resources
 
 ```
 meshctl cluster deregister [flags]
@@ -17,21 +17,18 @@ meshctl cluster deregister [flags]
 ### Options
 
 ```
-  -h, --help                         help for deregister
-      --remote-cluster-name string   Name of the cluster to deregister
-```
-
-### Options inherited from parent commands
-
-```
-      --context string          Specify which context from the kubeconfig should be used; uses current context if none is specified
-      --kube-timeout duration   Specify the default timeout for requests to kubernetes API servers (default 5s)
-      --kubeconfig string       Specify the kubeconfig for the current command
-  -n, --namespace string        Specify the namespace where Service Mesh Hub resources should be written (default "service-mesh-hub")
-  -v, --verbose                 Enable verbose mode, which outputs additional execution details that may be helpful for debugging
+      --api-server-address string     Swap out the address of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Service Mesh Hub is different than that specified in the local kubeconfig.
+      --cluster-name string           name of the cluster to deregister
+      --federation-namespace string   namespace of the Service-Mesh-Hub control plane in which the secret for the deregistered cluster will be created (default "service-mesh-hub")
+  -h, --help                          help for deregister
+      --kubeconfig string             path to the kubeconfig from which the deregistered cluster will be accessed
+      --master-context string         name of the kubeconfig context to use for the master cluster
+      --remote-context string         name of the kubeconfig context to use for the remote cluster
+      --remote-namespace string       namespace in the target cluster where a service account enabling remote access will be created. If the namespace does not exist it will be created. (default "service-mesh-hub")
+      --verbose                       enable/disable verbose logging during installation of cert-agent (default true)
 ```
 
 ### SEE ALSO
 
-* [meshctl cluster](../meshctl_cluster)	 - Register and perform operations on clusters
+* [meshctl cluster](../meshctl_cluster)	 - Interacting with remote Kubernetes clusters registered to Service Mesh Hub
 

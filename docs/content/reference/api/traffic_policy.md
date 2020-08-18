@@ -30,14 +30,14 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.Mirror](#networking.smh.solo.io.TrafficPolicySpec.Mirror)
   - [TrafficPolicySpec.MultiDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination)
-  - [TrafficPolicySpec.MultiDestination.WeightedDestination.SubsetEntry](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.SubsetEntry)
+  - [TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination)
+  - [TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry)
   - [TrafficPolicySpec.OutlierDetection](#networking.smh.solo.io.TrafficPolicySpec.OutlierDetection)
   - [TrafficPolicySpec.QueryParameterMatcher](#networking.smh.solo.io.TrafficPolicySpec.QueryParameterMatcher)
   - [TrafficPolicySpec.RetryPolicy](#networking.smh.solo.io.TrafficPolicySpec.RetryPolicy)
   - [TrafficPolicySpec.StringMatch](#networking.smh.solo.io.TrafficPolicySpec.StringMatch)
   - [TrafficPolicyStatus](#networking.smh.solo.io.TrafficPolicyStatus)
-  - [TrafficPolicyStatus.ConflictError](#networking.smh.solo.io.TrafficPolicyStatus.ConflictError)
-  - [TrafficPolicyStatus.TranslatorError](#networking.smh.solo.io.TrafficPolicyStatus.TranslatorError)
+  - [TrafficPolicyStatus.MeshServicesEntry](#networking.smh.solo.io.TrafficPolicyStatus.MeshServicesEntry)
 
 
 
@@ -48,13 +48,13 @@ title: "traffic_policy.proto"
 <a name="networking.smh.solo.io.TrafficPolicySpec"></a>
 
 ### TrafficPolicySpec
-A routing rule applies some L7 routing features to an existing mesh. Routing rules specify the following for all requests: - originating from from **source pods** - sent to **destination services** - matching one or more **request matcher** apply the specified TrafficPolicySpec the routing configuration that will be applied to the mesh(es)<br>Throughout the documentation below, the term "destination" or "destination service" refers to the underlying Kubernetes service that is represented in Service Mesh Hub as a MeshService.<br>NB: If any additional TrafficPolicy action fields (i.e. non selection related fields) are added, the TrafficPolicy Merger's "AreTrafficPolicyActionsEqual" method must be updated to reflect the new field.
+A Traffic Policy applies some L7 routing features to an existing mesh. Traffic Policies specify the following for all requests: - originating from from **source pods** - sent to **destination services** - matching one or more **request matcher** apply the specified TrafficPolicySpec the routing configuration that will be applied to the mesh(es)<br>Throughout the documentation below, the term "destination" or "destination service" refers to the underlying Kubernetes service that is represented in Service Mesh Hub as a MeshService.<br>NB: If any additional TrafficPolicy action fields (i.e. non selection related fields) are added, the TrafficPolicy Merger's "AreTrafficPolicyActionsEqual" method must be updated to reflect the new field.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sourceSelector | [core.smh.solo.io.WorkloadSelector](#core.smh.solo.io.WorkloadSelector) |  | Requests originating from these pods will have the rule applied. Leave empty to have all pods in the mesh apply these rules.<br>Note: Source Selectors are ignored when TrafficPolicies are applied to pods in a Linkerd mesh. TrafficPolicies will apply to all selected destinations in Linkerd, regardless of the source.<br>Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio. |
-| destinationSelector | [core.smh.solo.io.ServiceSelector](#core.smh.solo.io.ServiceSelector) |  | Requests destined for these k8s services will have the rule applied. Leave empty to apply to all destination k8s services in the mesh. |
+| sourceSelector | [][WorkloadSelector](#networking.smh.solo.io.WorkloadSelector) | repeated | Requests originating from these workloads will have the rule applied. Leave empty to have all workloads in the mesh apply these rules.<br>Note: Source Selectors are ignored when TrafficPolicies are applied to pods in a Linkerd mesh. TrafficPolicies will apply to all selected destinations in Linkerd, regardless of the source.<br>Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio. |
+| destinationSelector | [][ServiceSelector](#networking.smh.solo.io.ServiceSelector) | repeated | Requests destined for these k8s services will have the rule applied. Leave empty to apply to all destination k8s services in the mesh. |
 | httpRequestMatchers | [][TrafficPolicySpec.HttpMatcher](#networking.smh.solo.io.TrafficPolicySpec.HttpMatcher) | repeated | If specified, this rule will only apply to http requests matching these conditions. Within a single matcher, all conditions must be satisfied for a match to occur. Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply. NB: Linkerd only supports matching on Request Path and Method |
 | trafficShift | [TrafficPolicySpec.MultiDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination) |  | A routing rule can have one of several types. Note: types imported from Istio will be replaced with our own simpler types, this is just a place to start from.<br>Enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services. |
 | faultInjection | [TrafficPolicySpec.FaultInjection](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection) |  | Enable fault injection on requests. |
@@ -234,7 +234,7 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| method | [core.smh.solo.io.HttpMethodValue](#core.smh.solo.io.HttpMethodValue) |  |  |
+| method | [HttpMethodValue](#networking.smh.solo.io.HttpMethodValue) |  |  |
 
 
 
@@ -249,7 +249,7 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destination | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | Destination to mirror traffic to |
+| kubeService | [core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) |  | Name/namespace/cluster of a kubernetes service. |
 | percentage | [double](#double) |  | Percentage of traffic to mirror. If absent, 100% will be mirrored. Values range between 0 and 100 |
 | port | [uint32](#uint32) |  | Port on the destination service to receive traffic. If multiple are found, and none are specified, then the configuration will be considered invalid. |
 
@@ -281,19 +281,36 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destination | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | Name/namespace/cluster of a kubernetes service. |
+| kubeService | [TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination) |  | use kubeService to shift traffic a Kubernetes Service/subset. |
 | weight | [uint32](#uint32) |  | Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100. |
-| subset | [][TrafficPolicySpec.MultiDestination.WeightedDestination.SubsetEntry](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.SubsetEntry) | repeated | Subset routing is currently only supported on Istio. |
-| port | [uint32](#uint32) |  | Port on the destination service to receive traffic. If multiple are found, and none are specified, then the configuration will be considered invalid |
 
 
 
 
 
 
-<a name="networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.SubsetEntry"></a>
+<a name="networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination"></a>
 
-### TrafficPolicySpec.MultiDestination.WeightedDestination.SubsetEntry
+### TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination
+a traffic shift destination which lives in kubernetes
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  | name of the destination service |
+| namespace | [string](#string) |  | namespace of the destination service |
+| clusterName | [string](#string) |  | cluster of the destination service (as it is registered with Service Mesh Hub) |
+| subset | [][TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry) | repeated | Subset routing is currently only supported on Istio. |
+| port | [uint32](#uint32) |  | Port on the destination service to receive traffic. Required if the service exposes more than one port. |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry"></a>
+
+### TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry
 
 
 
@@ -310,7 +327,7 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 <a name="networking.smh.solo.io.TrafficPolicySpec.OutlierDetection"></a>
 
 ### TrafficPolicySpec.OutlierDetection
-Configure outlier detection settings on targeted services. If set, source selectors must be empty because outlier detection settings apply to all incoming traffic.
+Configure outlier detection settings on targeted services. If set, source selectors must be empty. Outlier detection settings apply to all incoming traffic.
 
 
 | Field | Type | Label | Description |
@@ -382,43 +399,25 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| translationStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration. |
-| translatorErrors | [][TrafficPolicyStatus.TranslatorError](#networking.smh.solo.io.TrafficPolicyStatus.TranslatorError) | repeated | Provides details on any translation errors that occurred. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config. |
-| validationStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific routing configuration. |
-| conflictErrors | [][TrafficPolicyStatus.ConflictError](#networking.smh.solo.io.TrafficPolicyStatus.ConflictError) | repeated | Provides details on any configuration conflicts between this TrafficPolicy and other TrafficPolicies that apply to the same configuration target. If any errors exist, this TrafficPolicy has not been translated into mesh-specific config. |
-| observedGeneration | [int64](#int64) |  | The generation the validation_status was observed on. Note that translation_status, translation_errors conflict_errors can still appear even if validation_status is accepted, as these errors can happen due to other traffic policies and specific mesh implementation. |
+| observedGeneration | [int64](#int64) |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
+| state | [ApprovalState](#networking.smh.solo.io.ApprovalState) |  | the state of the overall resource. will only show accepted if it has been successfully applied to all target meshes. |
+| meshServices | [][TrafficPolicyStatus.MeshServicesEntry](#networking.smh.solo.io.TrafficPolicyStatus.MeshServicesEntry) | repeated | The status of the TrafficPolicy for each MeshService to which it has been applied. A TrafficPolicy may be Accepted for some MeshServices and rejected for others. |
 
 
 
 
 
 
-<a name="networking.smh.solo.io.TrafficPolicyStatus.ConflictError"></a>
+<a name="networking.smh.solo.io.TrafficPolicyStatus.MeshServicesEntry"></a>
 
-### TrafficPolicyStatus.ConflictError
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| configurationTarget | [core.smh.solo.io.ResourceRef](#core.smh.solo.io.ResourceRef) |  | The service on which this Traffic Policy conflicts with other Traffic policies. |
-| errorMessage | [string](#string) |  | Details about the nature of the conflict. |
-
-
-
-
-
-
-<a name="networking.smh.solo.io.TrafficPolicyStatus.TranslatorError"></a>
-
-### TrafficPolicyStatus.TranslatorError
+### TrafficPolicyStatus.MeshServicesEntry
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| translatorId | [string](#string) |  | ID representing a translator that translates TrafficPolicy to Mesh-specific config. |
-| errorMessage | [string](#string) |  |  |
+| key | [string](#string) |  |  |
+| value | [ApprovalStatus](#networking.smh.solo.io.ApprovalStatus) |  |  |
 
 
 

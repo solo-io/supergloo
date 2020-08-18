@@ -17,9 +17,10 @@ title: "failover_service.proto"
 
 ## Table of Contents
   - [FailoverServiceSpec](#networking.smh.solo.io.FailoverServiceSpec)
+  - [FailoverServiceSpec.BackingService](#networking.smh.solo.io.FailoverServiceSpec.BackingService)
   - [FailoverServiceSpec.Port](#networking.smh.solo.io.FailoverServiceSpec.Port)
   - [FailoverServiceStatus](#networking.smh.solo.io.FailoverServiceStatus)
-  - [FailoverServiceStatus.TranslatorError](#networking.smh.solo.io.FailoverServiceStatus.TranslatorError)
+  - [FailoverServiceStatus.MeshesEntry](#networking.smh.solo.io.FailoverServiceStatus.MeshesEntry)
 
 
 
@@ -38,7 +39,22 @@ A FailoverService creates a new hostname to which services can send requests. Re
 | hostname | [string](#string) |  | The DNS name of the failover service. Must be unique within the service mesh instance since it is used as the hostname with which clients communicate. |
 | port | [FailoverServiceSpec.Port](#networking.smh.solo.io.FailoverServiceSpec.Port) |  | The port on which the failover service listens. |
 | meshes | [][core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) | repeated | The meshes that this failover service will be visible to. |
-| failoverServices | [][core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) | repeated | A list of services ordered by decreasing priority for failover. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
+| backingServices | [][FailoverServiceSpec.BackingService](#networking.smh.solo.io.FailoverServiceSpec.BackingService) | repeated | The list of services backing the FailoverService, ordered by decreasing priority. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.FailoverServiceSpec.BackingService"></a>
+
+### FailoverServiceSpec.BackingService
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| kubeService | [core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) |  | Name/namespace/cluster of a kubernetes service. |
 
 
 
@@ -53,7 +69,7 @@ The port on which the failover service listens.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| port | [uint32](#uint32) |  | Port number. |
+| number | [uint32](#uint32) |  | Port number. |
 | protocol | [string](#string) |  | Protocol of the requests sent to the failover service, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS. |
 
 
@@ -69,26 +85,26 @@ The port on which the failover service listens.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | [int64](#int64) |  | The generation the validation_status was observed on. |
-| translationStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Whether or not the resource has been successfully translated into concrete, mesh-specific routing configuration. |
-| translatorErrors | [][FailoverServiceStatus.TranslatorError](#networking.smh.solo.io.FailoverServiceStatus.TranslatorError) | repeated | Provides details on any translation errors that occurred. If any errors exist, this FailoverService has not been translated into mesh-specific config. |
-| validationStatus | [core.smh.solo.io.Status](#core.smh.solo.io.Status) |  | Whether or not this resource has passed validation. This is a required step before it can be translated into concrete, mesh-specific failover configuration. |
+| observedGeneration | [int64](#int64) |  | The most recent generation observed in the the FailoverService metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
+| state | [ApprovalState](#networking.smh.solo.io.ApprovalState) |  | The state of the overall resource, will only show accepted if it has been successfully applied to all target meshes. |
+| meshes | [][FailoverServiceStatus.MeshesEntry](#networking.smh.solo.io.FailoverServiceStatus.MeshesEntry) | repeated | The status of the FailoverService for each Mesh to which it has been applied. |
+| validationErrors | [][string](#string) | repeated | any errors observed which prevented the resource from being Accepted. |
 
 
 
 
 
 
-<a name="networking.smh.solo.io.FailoverServiceStatus.TranslatorError"></a>
+<a name="networking.smh.solo.io.FailoverServiceStatus.MeshesEntry"></a>
 
-### FailoverServiceStatus.TranslatorError
-An error pertaining to translation of the FailoverService to mesh-specific configuration.
+### FailoverServiceStatus.MeshesEntry
+
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| translatorId | [string](#string) |  | ID representing a translator that translates FailoverService to Mesh-specific config. |
-| errorMessage | [string](#string) |  | Message describing the error(s). |
+| key | [string](#string) |  |  |
+| value | [ApprovalStatus](#networking.smh.solo.io.ApprovalStatus) |  |  |
 
 
 

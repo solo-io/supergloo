@@ -4,15 +4,11 @@ weight: 5
 ---
 ## meshctl cluster
 
-Register and perform operations on clusters
+Interacting with remote Kubernetes clusters registered to Service Mesh Hub
 
 ### Synopsis
 
-Register and perform operations on clusters
-
-```
-meshctl cluster [flags]
-```
+Interacting with remote Kubernetes clusters registered to Service Mesh Hub
 
 ### Options
 
@@ -20,19 +16,9 @@ meshctl cluster [flags]
   -h, --help   help for cluster
 ```
 
-### Options inherited from parent commands
-
-```
-      --context string          Specify which context from the kubeconfig should be used; uses current context if none is specified
-      --kube-timeout duration   Specify the default timeout for requests to kubernetes API servers (default 5s)
-      --kubeconfig string       Specify the kubeconfig for the current command
-  -n, --namespace string        Specify the namespace where Service Mesh Hub resources should be written (default "service-mesh-hub")
-  -v, --verbose                 Enable verbose mode, which outputs additional execution details that may be helpful for debugging
-```
-
 ### SEE ALSO
 
-* [meshctl](../meshctl)	 - CLI for Service Mesh Hub
-* [meshctl cluster deregister](../meshctl_cluster_deregister)	 - Deregister an existing cluster
-* [meshctl cluster register](../meshctl_cluster_register)	 - Register a new cluster by creating a service account token in that cluster through which to authorize Service Mesh Hub
+* [meshctl](../meshctl)	 - The Command Line Interface for managing Service Mesh Hub.
+* [meshctl cluster deregister](../meshctl_cluster_deregister)	 - Deregister a Kubernetes cluster from Service Mesh Hub, cleaning up any associated resources
+* [meshctl cluster register](../meshctl_cluster_register)	 - Register a Kubernetes cluster with Service Mesh Hub
 
