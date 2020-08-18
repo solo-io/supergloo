@@ -206,7 +206,7 @@ function install_osm() {
   echo "installing osm to ${cluster}..."
 
   # install in permissive mode for testing
-  osm install --enable-permissive-traffic-policy --enable-metrics-stack=false --deploy-zipkin=false
+  osm install --enable-metrics-stack=false --deploy-zipkin=false
 
 
   ${K} create namespace bookinfo

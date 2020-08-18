@@ -149,6 +149,20 @@ spec:
   - port: 9080
     name: http
   selector:
+    selects: nothing
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviews-v1
+  labels:
+    app: reviews
+    service: reviews
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
     app: reviews
     version: v1
 ---
@@ -185,7 +199,7 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: bookinfo-reviews
+  name: bookinfo-reviews-v1
   labels:
     account: reviews
 ---
@@ -225,7 +239,7 @@ spec:
         app: reviews
         version: v1
     spec:
-      serviceAccountName: bookinfo-reviews
+      serviceAccountName: bookinfo-reviews-v1
       containers:
       - name: reviews
         image: docker.io/istio/examples-bookinfo-reviews-v1:1.15.0
