@@ -1,0 +1,48 @@
+name: Docs
+
+on:
+  push:
+    branches:
+    - 'master'
+  release:
+    types:
+    - created
+
+jobs:
+  build:
+    name: Generate versioned docs site
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Set up Go 1.14
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.14
+      id: go
+    - name: Install Protoc
+      uses: solo-io/setup-protoc@master
+      with:
+        version: '3.6.1'
+
+    - name: Setup Hugo
+      uses: peaceiris/actions-hugo@v2
+      with:
+        hugo-version: '0.62.2'
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Update deps
+      run: |
+        make install-go-tools
+
+    - name: Generate versioned docs site
+      run: ./ci/build-docs-site.sh
+
+    - name: Deploy to Firebase
+      uses: w9jds/firebase-action@master
+      with:
+        args: deploy --only hosting:service-mesh-hub
+      env:
+        PROJECT_ID: solo-corp
+        PROJECT_PATH: ./ci/docs-site/
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
