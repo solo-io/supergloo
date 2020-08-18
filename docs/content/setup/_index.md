@@ -45,7 +45,7 @@ Note that these contexts need not be different; you may install and manage a ser
 
 ### Installing with `meshctl`
 
-`meshctl` is a CLI tool that helps bootstrap Service Mesh Hub, register clusters, install meshes, and more. Get the latest `meshctl` from the [releases page on solo-io/service-mesh-hub](https://github.com/solo-io/service-mesh-hub/releases).
+`meshctl` is a CLI tool that helps bootstrap Service Mesh Hub, register clusters, describe configured resources, and more. Get the latest `meshctl` from the [releases page on solo-io/service-mesh-hub](https://github.com/solo-io/service-mesh-hub/releases).
 
 You can also quickly install like this:
 
@@ -96,7 +96,7 @@ meshctl install --dry-run | kubectl --context apply -f -
 ```
 
 {{% notice note %}}
-Note that the `--dry-run` outputs the entire `yaml`, but does not take care of proper ordering of resources. For example, there can be a *race* between CRDs being registered and any CRs being created that may appear to be an error. If that happens, just re-run the `kubectl apply`.
+Note that the `--dry-run` outputs the entire `yaml`, but does not take care of proper ordering of resources. For example, there can be a *race* between Custom Resource Definitions being registered and any Custom Resources being created that may appear to be an error. If that happens, just re-run the `kubectl apply`.
 {{% /notice %}}
 
 To undo the installation, run:
@@ -121,6 +121,7 @@ Note that the location of the Service Mesh Hub Helm charts is subject to change.
 Then install Service Mesh Hub into the `service-mesh-hub` namespace:
 
 ```shell
+kubectl create ns service-mesh-hub
 helm install smh smh/service-mesh-hub --namespace service-mesh-hub
 ```
 
@@ -129,9 +130,11 @@ Once you've installed Service Mesh Hub, verify what components got installed:
 
 ```shell
 kubectl get po -n service-mesh-hub
-NAME                               READY   STATUS    RESTARTS   AGE
-mesh-discovery-7796c6bd6c-fwtck    1/1     Running   0          36s
-mesh-networking-68fbf6c455-jrdbx   1/1     Running   0          36s
+
+NAME                          READY   STATUS    RESTARTS   AGE
+cert-agent-69f64645c5-mtbpd   1/1     Running   0          5d23h
+discovery-66675cf6fd-cdlpq    1/1     Running   0          5d23h
+networking-6d7686564d-ngrdq   1/1     Running   0          5d23h
 ```
 
 Running the check command will verify everything was installed correctly:
