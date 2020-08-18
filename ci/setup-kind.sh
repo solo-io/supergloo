@@ -55,19 +55,42 @@ else
 
   wait
 
-  echo setup successfully set up clusters.
+  # create istio-injectable namespace
+  kubectl --context kind-${masterCluster} create namespace bookinfo
+  kubectl --context kind-${masterCluster} label ns bookinfo istio-injection=enabled --overwrite
+  kubectl --context kind-${remoteCluster} create namespace bookinfo
+  kubectl --context kind-${remoteCluster} label ns bookinfo istio-injection=enabled --overwrite
+
+  # install bookinfo without reviews-v3 to master cluster
+  kubectl --context kind-${masterCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app notin (details),version notin (v3)'
+  kubectl --context kind-${masterCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'account'
+
+  # install only reviews-v3 to remote cluster
+  kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app notin (details),version in (v3)'
+  kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'service=reviews'
+  kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'account=reviews'
+  kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app=ratings'
+  kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'account=ratings'
+
+  # wait for deployments to finish
+  kubectl --context kind-${masterCluster} -n bookinfo rollout status deployment/productpage-v1 --timeout=300s
+  kubectl --context kind-${masterCluster} -n bookinfo rollout status deployment/reviews-v1 --timeout=300s
+  kubectl --context kind-${masterCluster} -n bookinfo rollout status deployment/reviews-v2 --timeout=300s
+
+  kubectl --context kind-${remoteCluster} -n bookinfo rollout status deployment/reviews-v3 --timeout=300s
+
+  echo successfully set up clusters.
 
   # install service mesh hub
-  ${PROJECT_ROOT}/ci/setup-smh.sh ${masterCluster}
+  install_smh ${masterCluster}
 
   # sleep to allow crds to register
   sleep 4
 
-  # register clusters
-  register_cluster ${masterCluster} &
+  # register remote cluster
   register_cluster ${remoteCluster} &
 
-wait
+  wait
 
 fi
 

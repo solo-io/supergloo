@@ -20,12 +20,17 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
+type StartParameters struct {
+	Ctx             context.Context
+	MasterManager   manager.Manager
+	McClient        multicluster.Client
+	Clusters        multicluster.ClusterSet
+	ClusterWatcher  multicluster.ClusterWatcher
+	SnapshotHistory *stats.SnapshotHistory
+}
+
 type StartReconciler func(
-	ctx context.Context,
-	masterManager manager.Manager,
-	mcClient multicluster.Client,
-	clusters multicluster.ClusterSet,
-	mcWatcher multicluster.ClusterWatcher,
+	parameters StartParameters,
 ) error
 
 // bootstrap options for starting discovery
@@ -58,7 +63,9 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 		return err
 	}
 
-	stats.MustStartServerBackground(opts.MetricsBindPort)
+	snapshotHistory := stats.NewSnapshotHistory()
+
+	stats.MustStartServerBackground(snapshotHistory, opts.MetricsBindPort)
 
 	clusterWatcher := watch.NewClusterWatcher(ctx, manager.Options{
 		Namespace: "", // TODO (ilackarms): support configuring specific watch namespaces on remote clusters
@@ -67,7 +74,16 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 
 	mcClient := multicluster.NewClient(clusterWatcher)
 
-	if err := start(ctx, mgr, mcClient, clusterWatcher, clusterWatcher); err != nil {
+	params := StartParameters{
+		Ctx:             ctx,
+		MasterManager:   mgr,
+		McClient:        mcClient,
+		Clusters:        clusterWatcher,
+		ClusterWatcher:  clusterWatcher,
+		SnapshotHistory: snapshotHistory,
+	}
+
+	if err := start(params); err != nil {
 		return err
 	}
 

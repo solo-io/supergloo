@@ -6,7 +6,18 @@
 
 #!/bin/bash
 
-PROJECT_ROOT=$( cd "$( dirname "${0}" )" >/dev/null 2>&1 && pwd )/..
+INSTALL_DIR=${PROJECT_ROOT}/install
+AGENT_VALUES=${INSTALL_DIR}/helm/cert-agent/values.yaml
+AGENT_IMAGE_REGISTRY=$(cat ${AGENT_VALUES} | grep "registry: " | awk '{print $2}')
+AGENT_IMAGE_REPOSITORY=$(cat ${AGENT_VALUES} | grep "repository: " | awk '{print $2}')
+AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}' | sed 's/"//g')
+
+AGENT_IMAGE=${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}
+AGENT_CHART=${INSTALL_DIR}/helm/_output/charts/cert-agent/cert-agent-${AGENT_IMAGE_TAG}.tgz
+
+SMH_VALUES=${INSTALL_DIR}/helm/service-mesh-hub/values.yaml
+SMH_IMAGE_TAG=$(cat ${SMH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
+SMH_CHART=${INSTALL_DIR}/helm/_output/charts/service-mesh-hub/service-mesh-hub-${SMH_IMAGE_TAG}.tgz
 
 #### FUNCTIONS
 
@@ -72,7 +83,8 @@ EOF
   ${K} delete ns local-path-storage
 }
 
-function install_istio() {
+# Operator spec for istio 1.5.x and 1.6.x
+function install_istio_1_5() {
   cluster=$1
   port=$2
   K="kubectl --context=kind-${cluster}"
@@ -141,8 +153,81 @@ spec:
         enabled: true
       podDNSSearchNamespaces:
       - global
-      - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
 EOF
+}
+
+# Operator spec for istio 1.7.x
+function install_istio_1_7() {
+  cluster=$1
+  port=$2
+  K="kubectl --context=kind-${cluster}"
+
+  echo "installing istio to ${cluster}..."
+
+  cat << EOF | istioctl manifest install --context "kind-${cluster}" -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  profile: minimal
+  addonComponents:
+    istiocoredns:
+      enabled: true
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: ${port}
+  meshConfig:
+    enableAutoMtls: true
+  values:
+    prometheus:
+      enabled: false
+    gateways:
+      istio-ingressgateway:
+        type: NodePort
+        ports:
+          - targetPort: 15443
+            name: tls
+            nodePort: ${port}
+            port: 15443
+    global:
+      pilotCertProvider: kubernetes
+      controlPlaneSecurityEnabled: true
+      podDNSSearchNamespaces:
+      - global
+EOF
+}
+
+function install_istio() {
+  cluster=$1
+  port=$2
+  K="kubectl --context=kind-${cluster}"
+
+  if istioctl version | grep 1.7
+  then
+    install_istio_1_7 $cluster $port
+  else
+    install_istio_1_5 $cluster $port
+  fi
 
   # enable istio dns for .global stub domain:
   ISTIO_COREDNS=$(${K} get svc -n istio-system istiocoredns -o jsonpath={.spec.clusterIP})
@@ -223,10 +308,8 @@ function install_osm() {
   ${ROLLOUT} -n bookbuyer bookbuyer
 }
 
-function register_cluster() {
+function get_api_address() {
   cluster=$1
-  K="kubectl --context=kind-${cluster}"
-
   case $(uname) in
     "Darwin")
     {
@@ -242,19 +325,16 @@ function register_cluster() {
         exit 1
     } ;;
   esac
+  echo ${apiServerAddress}
+}
+
+function register_cluster() {
+  cluster=$1
+  apiServerAddress=$(get_api_address ${cluster})
 
   K="kubectl --context kind-${cluster}"
 
   echo "registering ${cluster} with local cert-agent image..."
-
-  INSTALL_DIR="${PROJECT_ROOT}/install/"
-  AGENT_VALUES=${INSTALL_DIR}/helm/cert-agent/values.yaml
-  AGENT_IMAGE_REGISTRY=$(cat ${AGENT_VALUES} | grep "registry: " | awk '{print $2}')
-  AGENT_IMAGE_REPOSITORY=$(cat ${AGENT_VALUES} | grep "repository: " | awk '{print $2}')
-  AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}')
-
-  AGENT_IMAGE="${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}"
-  AGENT_CHART="${INSTALL_DIR}/helm/_output/charts/cert-agent/cert-agent-${AGENT_IMAGE_TAG}.tgz"
 
   # load cert-agent image
   kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
@@ -265,6 +345,13 @@ function register_cluster() {
     --remote-context "kind-${cluster}" \
     --api-server-address "${apiServerAddress}" \
     --cert-agent-chart-file "${AGENT_CHART}"
+}
+
+function install_smh() {
+  cluster=$1
+  apiServerAddress=$(get_api_address ${cluster})
+
+  ${PROJECT_ROOT}/ci/setup-smh.sh ${cluster} ${SMH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
 }
 
 #### START SCRIPT
