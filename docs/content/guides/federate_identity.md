@@ -94,22 +94,18 @@ You should notice that the root certificates that signed the workload certificat
 Service Mesh Hub uses the [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}) Custom Resource to configure a Virtual Mesh, which is a logical grouping of one or multiple service meshes for the purposes of federation according to some parameters. Let's take a look at a VirtualMesh configuration that can help unify our two service meshes and establish a *shared trust* model for identity:
 
 {{< highlight yaml "hl_lines=8-15 17-21" >}}
-apiVersion: networking.smh.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha2
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
   namespace: service-mesh-hub
 spec:
-  displayName: "Demo Mesh Federation"
-  certificateAuthority:
-    builtin:
-      ttlDays: 356
-      rsaKeySizeBytes: 4096
-      orgName: "service-mesh-hub"
-  federation: 
-    mode: PERMISSIVE
-  shared: {}
-  enforceAccessControl: MESH_DEFAULT
+  mtlsConfig:
+    autoRestartPods: true
+    shared:
+      rootCertificateAuthority:
+        generated: null
+  federation: {}
   meshes:
   - name: istio-istio-system-management-plane 
     namespace: service-mesh-hub
@@ -124,11 +120,13 @@ In the first highlighted section, we can see the parameters to establishing shar
 We could have also configured an existing Root CA by providing an existing secret:
 
 ```yaml
-  certificateAuthority:
-    provided:
-      certificate:
-        name: root-ca-name
-        namespace: root-ca-namespace
+  mtlsConfig:
+    autoRestartPods: true
+    shared:
+      rootCertificateAuthority:
+        secret:
+          name: root-ca-name
+          namespace: root-ca-namespace
 ```
 
 See the section on [User Provided Certificates]({{% versioned_link_path fromRoot="/guides/federate_identity/#user-provided-certificates" %}}) below for details on how to format the certificate as a k8s Secret.
@@ -172,16 +170,12 @@ If you saved this VirtualMesh CR to a file named `demo-virtual-mesh.yaml`, you c
 kubectl --context management-plane-context apply -f demo-virtual-mesh.yaml
 ```
 
-At this point **we need to bounce the `istiod` control plane**. This is because the Istio control plane picks up the CA for Citadel and does not rotate it often enough. This is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993). 
+Notice the `autoRestartPods: true` in the mtlsConfig stanza. This instructs Service Mesh Hub to restart the istio pods in the relevant clusters. 
+This is due to a limitation of Istio—the Istio control plane picks up the CA for Citadel and does not rotate it often enough. This is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993). 
+If you wish to perform this step manually, set `autoRestartPods: false` and run the following:
 
 ```shell
-kubectl --context management-plane-context \
-delete pod -n istio-system -l app=istiod 
-```
-
-```shell
-kubectl --context remote-cluster-context \
-delete pod -n istio-system -l app=istiod 
+meshctl mesh restart --mesh-name istiod-istio-system-master-cluster
 ```
 
 {{% notice note %}}
