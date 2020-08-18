@@ -31,25 +31,23 @@ which is done through the [TrafficPolicy]({{< versioned_link_path fromRoot="/ref
 Apply the following config on the `management-plane` cluster:
 
 {{< highlight yaml "hl_lines=16-19" >}}
-apiVersion: networking.smh.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   namespace: service-mesh-hub
   name: mgmt-reviews-outlier
 spec:
   destinationSelector:
-    serviceRefs:
+  - kubeServiceRefs:
       services:
       - name: reviews
         namespace: default
-        cluster: management-plane
+        clusterName: management-plane
       - name: reviews
         namespace: default
-        cluster: new-remote-cluster
+        clusterName: new-remote-cluster
   outlierDetection:
     consecutiveErrors: 1
-    interval: 10s
-    baseEjectionTime: 30s
 {{< /highlight >}}
 
 For demonstration purposes, we're setting `consectiveErrors` to 1 for more easily
@@ -64,10 +62,13 @@ into mesh-specific config:
 
 ```yaml
 status:
-  translationStatus:
-    state: ACCEPTED
-  validationStatus:
-    state: ACCEPTED
+  meshServices:
+    reviews-default-management-plane.service-mesh-hub.:
+      state: ACCEPTED
+    reviews-default-new-remote-cluster.service-mesh-hub.:
+      state: ACCEPTED
+  observedGeneration: "1"
+  state: ACCEPTED
 ```
 
 ## Create the FailoverService
@@ -77,29 +78,36 @@ reviews service on the `management-plane` cluster in first priority and on `new-
 in second priority. If the `reviews` service on the `management-plane` cluster is unhealthy,
  requests will automatically be shifted over to the service on `new-remote-cluster`.
  Apply the following config to the `management-plane` cluster:
-
+ 
 ```yaml
-apiVersion: networking.smh.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha2
 kind: FailoverService
 metadata:
   name: reviews-failover
   namespace: default
 spec:
-  hostname: reviews.default.failover
+  hostname: reviews-failover.default.global
   port:
-    port: 9080
+    number: 9080
     protocol: http
   meshes:
     - name: istio-istio-system-management-plane-cluster
       namespace: service-mesh-hub
-  failoverServices:
+  backingServices:
+  - kubeService:
     - name: reviews
       namespace: default
       clusterName: management-plane
+  - kubeService:
     - name: reviews
       namespace: default
       clusterName: new-remote-cluster
 ```
+
+{{% notice note %}}
+The `.global` suffix is needed if you want the failoverService's hostname to be resolvable in the k8s context (e.g. with commands like `curl`), assuming
+your Istio installation has istiocoredns enabled. This leverages Istio's default DNS setup, which creates DNS configuration for hostnames with `.global` suffix.
+{{% /notice %}}
 
 Notice that the services referenced under `failoverServices` matches the services
 for which we just configured outlier detection. This is a requirement for all services composing
@@ -118,9 +126,10 @@ and you should see the following status:
 
 ```yaml
 status:
-  translationStatus:
-    state: ACCEPTED
-  validationStatus:
+    meshes:
+      istiod-istio-system-management-plane.service-mesh-hub.:
+        state: ACCEPTED
+    observedGeneration: "1"
     state: ACCEPTED
 ```
 
@@ -153,7 +162,7 @@ spec:
   http:
   - route:
     - destination:
-        host: reviews.default.failover
+        host: reviews-failover.default.global
         port:
           number: 9080
 ```
