@@ -19,6 +19,7 @@ require (
 	contrib.go.opencensus.io/exporter/stackdriver v0.12.9 // indirect
 	contrib.go.opencensus.io/exporter/zipkin v0.1.1 // indirect
 	github.com/Jeffail/gabs v1.1.0 // indirect
+	github.com/Masterminds/semver v1.5.0
 	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/SAP/go-hdb v0.12.0 // indirect

@@ -19,10 +19,10 @@ import (
 
 //go:generate mockgen -source ./traffic_target_translator.go -destination mocks/traffic_target_translator.go
 
-// the VirtualService translator translates a MeshService into a VirtualService.
+// the SMI Access translator translates a MeshService into sets of SMI access resources.
 type Translator interface {
-	// Translate translates the appropriate VirtualService for the given MeshService.
-	// returns nil if no VirtualService is required for the MeshService (i.e. if no VirtualService features are required, such as subsets).
+	// Translate translates the appropriate TrafficTargets and HTTPRoutesGroups for the given MeshService.
+	// returns empty lists if none are required
 	//
 	// Errors caused by invalid user config will be reported using the Reporter.
 	//

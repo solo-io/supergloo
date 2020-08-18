@@ -181,7 +181,7 @@ func (t *translator) buildBackends(
 		}
 		kubeService := dest.GetKubeService()
 		if kubeService == nil {
-			return nil, eris.New("no desination type found")
+			return nil, eris.New("no no destination type found")
 		}
 
 		if len(kubeService.GetSubset()) != 0 {

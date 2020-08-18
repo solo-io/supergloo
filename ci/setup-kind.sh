@@ -32,10 +32,10 @@ if [ "$1" == "osm" ]; then
 
   wait
 
-  echo setup successfully set up clusters.
+  echo successfully set up clusters.
 
   # install service mesh hub
-  ${PROJECT_ROOT}/ci/setup-smh.sh ${masterCluster}
+  install_smh ${masterCluster}
 
   # sleep to allow crds to register
   sleep 4

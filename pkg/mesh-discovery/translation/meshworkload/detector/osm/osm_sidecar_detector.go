@@ -34,7 +34,6 @@ func NewSidecarDetector(ctx context.Context) *sidecarDetector {
 
 /*
 	OSM uses vanilla envoy sidecars currently, specifically `envoyproxy/envoy-alpine`.
-
 */
 func (s *sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
 	if !(containsInitContainer(pod.Spec.InitContainers) && containsSidecar(pod.Spec.Containers)) {

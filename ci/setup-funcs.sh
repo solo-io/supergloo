@@ -289,17 +289,18 @@ function install_osm() {
   K="kubectl --context=kind-${cluster}"
 
   echo "installing osm to ${cluster}..."
+  ROLLOUT="${K} rollout status deployment --timeout 300s"
 
   # install in permissive mode for testing
   osm install --enable-metrics-stack=false --deploy-zipkin=false
+
+  ${ROLLOUT} -n osm-system osm-controller
 
   for i in bookstore bookbuyer bookthief bookwarehouse; do ${K} create ns $i; done
 
   for i in bookstore bookbuyer bookthief bookwarehouse; do osm namespace add $i; done
 
   ${K} apply -f ${PROJECT_ROOT}/ci/osm-demo.yaml
-
-  ROLLOUT="${K} rollout status deployment --timeout 300s"
 
   ${ROLLOUT} -n bookstore bookstore-v1
   ${ROLLOUT} -n bookstore bookstore-v2
