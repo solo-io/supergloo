@@ -49,4 +49,3 @@ kubeadmConfigPatches:
     extraArgs:
       "feature-gates": "EphemeralContainers=true"
 EOF
-}

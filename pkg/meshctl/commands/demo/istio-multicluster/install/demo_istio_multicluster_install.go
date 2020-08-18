@@ -20,6 +20,13 @@ func Command(ctx context.Context, masterCluster string, remoteCluster string) *c
 	cmd := &cobra.Command{
 		Use:   "install",
 		Short: "Bootstrap a multicluster Istio demo with Service Mesh Hub",
+		Long: `
+Running the Service Mesh Hub demo setup locally requires 4 tools to be installed and 
+accessible via your PATH: kubectl, kind, docker, and istioctl
+
+This command will bootstrap 2 clusters, one of which will run the Service Mesh Hub
+management-plane as well as Istio, and the other will just run Istio.
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return install(ctx, masterCluster, remoteCluster)
 		},
@@ -38,6 +45,7 @@ func install(ctx context.Context, masterCluster string, remoteCluster string) er
 	box := packr.NewBox("./scripts")
 	projectRoot, err := os.Getwd()
 	if err != nil {
+		fmt.Printf("Unable to get working directory: %v\n", err)
 		return err
 	}
 	fmt.Printf("Using project root %s\n", projectRoot)
@@ -63,7 +71,19 @@ func install(ctx context.Context, masterCluster string, remoteCluster string) er
 	}
 
 	// install SMH to master cluster
-	installServiceMeshHub(ctx, masterCluster, box)
+	err = installServiceMeshHub(ctx, masterCluster, box)
+	if err != nil {
+		return err
+	}
+
+	// register remote cluster
+	err = registerCluster(ctx, masterCluster, remoteCluster, box)
+	if err != nil {
+		return err
+	}
+
+	// set context to master cluster
+	err = switchContext(masterCluster, box)
 
 	return err
 }
@@ -73,6 +93,7 @@ func createKindCluster(cluster string, port string, box packr.Box) error {
 
 	script, err := box.FindString("create_kind_cluster.sh")
 	if err != nil {
+		fmt.Printf("Error loading script: %v\n", err)
 		return err
 	}
 
@@ -80,7 +101,13 @@ func createKindCluster(cluster string, port string, box packr.Box) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
-	return err
+	if err != nil {
+		fmt.Printf("Error creating cluster %s: %v\n", cluster, err)
+		return err
+	}
+
+	fmt.Printf("Successfully created cluster %s\n", cluster)
+	return nil
 }
 
 func installIstio(cluster string, port string, box packr.Box) error {
@@ -88,6 +115,7 @@ func installIstio(cluster string, port string, box packr.Box) error {
 
 	script, err := box.FindString("install_istio.sh")
 	if err != nil {
+		fmt.Printf("Error loading script: %v\n", err)
 		return err
 	}
 	cmd := exec.Command("bash", "-c", script, cluster, port)
@@ -95,10 +123,11 @@ func installIstio(cluster string, port string, box packr.Box) error {
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
+		fmt.Printf("Error installing Istio on cluster %s: %v\n", cluster, err)
 		return err
 	}
 
-	fmt.Printf("Finished setting up cluster %s\n", cluster)
+	fmt.Printf("Successfully installed Istio on cluster %s\n", cluster)
 	return nil
 }
 
@@ -115,7 +144,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	namespace := defaults.DefaultPodNamespace
 	verbose := true
 	smhChartUri := fmt.Sprintf(smh.ServiceMeshHubChartUriTemplate, version.Version)
-	certAgentCharUri := fmt.Sprintf(smh.CertAgentChartUriTemplate, version.Version)
+	certAgentChartUri := fmt.Sprintf(smh.CertAgentChartUriTemplate, version.Version)
 
 	err = smh.Installer{
 		HelmChartPath:  smhChartUri,
@@ -130,6 +159,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 		ctx,
 	)
 	if err != nil {
+		fmt.Printf("Error installing Service Mesh Hub: %v\n", err)
 		return err
 	}
 
@@ -145,17 +175,96 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 			ClusterDomain:     "",
 		},
 		CertAgentInstallOptions: registration.CertAgentInstallOptions{
-			ChartPath:   certAgentCharUri,
+			ChartPath:   certAgentChartUri,
 			ChartValues: "",
 		},
 		Verbose: verbose,
 	}
+
 	err = registration.NewRegistrant(registrantOpts).RegisterCluster(ctx)
 	if err != nil {
+		fmt.Printf("Error registering cluster %s: %v\n", cluster, err)
 		return err
 	}
 
 	script, err := box.FindString("post_install_smh.sh")
+	if err != nil {
+		fmt.Printf("Error loading script: %v\n", err)
+		return err
+	}
+
+	cmd := exec.Command("bash", "-c", script, cluster)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		fmt.Printf("Error running post-install script: %v\n", err)
+		return err
+	}
+
+	fmt.Printf("Successfully set up Service Mesh Hub on cluster %s\n", cluster)
+	return nil
+}
+
+func registerCluster(ctx context.Context, masterCluster string, cluster string, box packr.Box) error {
+	fmt.Printf("Registering cluster %s with cert-agent image\n", cluster)
+
+	apiServerAddress, err := getApiAddress(cluster, box)
+	if err != nil {
+		return err
+	}
+
+	kubeContext := fmt.Sprintf("kind-%s", masterCluster)
+	remoteKubeContext := fmt.Sprintf("kind-%s", cluster)
+	namespace := defaults.DefaultPodNamespace
+	certAgentChartUri := fmt.Sprintf(smh.CertAgentChartUriTemplate, version.Version)
+
+	registrantOpts := &registration.RegistrantOptions{
+		RegistrationOptions: register.RegistrationOptions{
+			ClusterName:       cluster,
+			KubeCfgPath:       "",
+			KubeContext:       kubeContext,
+			RemoteKubeContext: remoteKubeContext,
+			Namespace:         namespace,
+			RemoteNamespace:   namespace,
+			APIServerAddress:  apiServerAddress,
+			ClusterDomain:     "",
+		},
+		CertAgentInstallOptions: registration.CertAgentInstallOptions{
+			ChartPath:   certAgentChartUri,
+			ChartValues: "",
+		},
+		Verbose: true,
+	}
+
+	err = registration.NewRegistrant(registrantOpts).RegisterCluster(ctx)
+	if err != nil {
+		fmt.Printf("Error registering cluster %s: %v\n", cluster, err)
+		return err
+	}
+
+	fmt.Printf("Successfully registered cluster %s\n", cluster)
+	return nil
+}
+
+func getApiAddress(cluster string, box packr.Box) (string, error) {
+	script, err := box.FindString("get_api_address.sh")
+	if err != nil {
+		fmt.Printf("Error loading script: %v\n", err)
+		return "", err
+	}
+	cmd := exec.Command("bash", "-c", script, cluster)
+	bytes, err := cmd.Output()
+	if err != nil {
+		fmt.Printf("Error getting API server address: %v\n", err)
+		return "", err
+	}
+
+	return string(bytes), nil
+}
+
+func switchContext(cluster string, box packr.Box) error {
+	script, err := box.FindString("switch_context.sh")
 	if err != nil {
 		return err
 	}
@@ -164,29 +273,8 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
+		fmt.Printf("Could not switch context to %s: %v\n", fmt.Sprintf("kind-%s", cluster), err)
 		return err
 	}
-
-	fmt.Println("Successfully set up Service Mesh Hub")
 	return nil
-}
-
-//func registerCluster(cluster string) error {
-//
-//}
-
-func getApiAddress(cluster string, box packr.Box) (string, error) {
-	fmt.Printf("getApiAddress %s\n", cluster)
-
-	script, err := box.FindString("get_api_address.sh")
-	if err != nil {
-		return "", err
-	}
-	cmd := exec.Command("bash", "-c", script, cluster)
-	bytes, err := cmd.Output()
-	if err != nil {
-		return "", err
-	}
-
-	return string(bytes), nil
 }
