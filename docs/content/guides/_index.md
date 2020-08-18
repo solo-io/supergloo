@@ -5,9 +5,9 @@ description: Guides for getting started using Service Mesh Hub
 weight: 40
 ---
 
-There are several guides available. The complete list can be seen below. A reasonable
-introduction to Service Mesh Hub can be obtained by following the guides in the order
-that they appear here, starting from the top and going down.
+There are several guides available. To follow the guides included in this section, you will need at least two Kubernetes clusters with Service Mesh Hub installed on one. You can easily set up two such clusters [using Kind](#using-kind) as detailed below. Some of the guides also make use of the Bookinfo sample application. You can install the application by following the steps in the [Bookinfo deployment section](#bookinfo-deployment).
+
+To become familiar with Service Mesh Hub, we recommend following the guides in the order that they appear here, starting from the top and going down.
 
 * [Installing Multi-cluster Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * [Intro to Discovery]({{% versioned_link_path fromRoot="/guides/discovery_intro" %}})
@@ -22,12 +22,12 @@ There are three pre-requisites to following these guides:
     - https://kubernetes.io/docs/tasks/tools/install-kubectl/
 2. Install `meshctl`
     - https://github.com/solo-io/service-mesh-hub/releases
-3. Have multiple Kubernetes clusters ready to use, accessible in different `kubeconfig` contexts. If you don't have access to multiple Kubernetes clusters, see the [Getting Started Guide]({{% versioned_link_path fromRoot="/getting_started/" %}}) to use Kubernetes in Docker (Kind) to spin up two clusters in containers.
+3. Have multiple Kubernetes clusters ready to use, accessible in different `kubeconfig` contexts. If you don't have access to multiple Kubernetes clusters, see the section below, [Using Kind](#using-kind) to use Kubernetes in Docker (Kind) to spin up two clusters in containers.
 
 
 ## Assumptions made in the guides
 
-We will assume in this guide that we have access to two clusters and the following two contexts available in our `kubeconfig` file. 
+We will assume in this guide that you have access to two clusters and the following two contexts are available in your `kubeconfig` file. 
 
 Your actual context names will likely be different.
 
@@ -51,20 +51,34 @@ meshctl cluster register \
 
 ```shell
 meshctl cluster register \
-  --remote-cluster-name new-remote-cluster \
+  --remote-cluster-name remote-cluster \
   --remote-context remote-cluster-context
 ```
 
 At this point we have two clusters, `management-plane-context` and `remote-cluster-context` both registered with Service Mesh Hub which happens to be installed on the `management-plane-context` cluster.
 
-## Next steps
+## Using Kind
 
-At this point we have two clusters registered with Service Mesh Hub. You should now [Install Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) and then install the Bookinfo demo (see below). 
+Kubernetes in Docker makes it easy to stand up Kubernetes clusters on your local desktop for testing and development. To assist with learning about Service Mesh Hub, you can use Kind to deploy two Kubernetes clusters. You can install Kind by following the [installation steps in their Quick Start guide](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-#### Bookinfo deployed on two clusters
+Once you have Kind installed, you can create the two clusters in question by running the following:
+
+```bash
+meshctl demo init
+```
+
+The command will do the following:
+
+* Create two kind clusters: management-plane and remote-cluster
+* Install Service Mesh Hub on the management-plane cluster
+* Install Istio on both clusters
+* Register both clusters with Service Mesh Hub
+
+You should now be ready to start going through the guides.
+
+#### Bookinfo deployment
 
 For some parts of the guide, you'll want to have the [Bookinfo](https://istio.io/docs/examples/bookinfo/) demo deployed to two clusters. 
-
 
 {{% notice note %}}
 You'll want to first have [Istio installed for multi-cluster]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) **before** installing the Bookinfo demo. 
@@ -79,7 +93,11 @@ Be sure to switch the `kubeconfig` context to the `management-plane-context`
 {{% /notice %}}
 
 ```shell
-kubectl config use-context management-plane-context # your management-plane context name may be different
+# Set the proper context value for each cluster
+MGMT_CONTEXT=your_management_plane_context
+REMOTE_CONTEXT=your_remote_context
+
+kubectl config use-context $MGMT_CONTEXT
 kubectl label namespace default istio-injection=enabled
 ​
 # we deploy everything except reviews-v3 to the management-plane cluster
@@ -89,12 +107,8 @@ kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/sampl
 
 Now deploy only reviews-v3 to your `remote-cluster-context` cluster:
 
-{{% notice note %}}
-Be sure to switch the `kubeconfig` context to the `remote-cluster-context`
-{{% /notice %}}
-
 ```shell
-kubectl config use-context remote-cluster-context # your remote cluster context name may be different
+kubectl config use-context $REMOTE_CONTEXT
 
 kubectl label namespace default istio-injection=enabled
 ​

@@ -37,8 +37,6 @@ To verify you're running the following commands in the correct context, run:
 kubectl config use-context management-plane-context
 ```
 
-If you're using only one cluster, see below.
-
 ## Install Service Mesh Hub
 
 {{% notice note %}}
@@ -62,10 +60,10 @@ Once you have the `meshctl` tool, you can install Service Mesh Hub onto a cluste
 meshctl install
 ```
 
-If you're not connected to the `management-plane-context` cluster, you can explicitly speficy it like this:
+If you're not connected to the `management-plane-context` cluster, you can explicitly specify it like this:
 
 ```shell
-meshctl install --context management-plane-context
+meshctl install --kubecontext management-plane-context
 ```
 
 You should see output similar to this:
