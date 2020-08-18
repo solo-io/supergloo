@@ -464,6 +464,8 @@ func sortTrafficPoliciesByAcceptedDate(meshService *discoveryv1alpha2.MeshServic
 			// if status is not set, the traffic policy is "pending" for this mesh service
 			// and should get sorted after an accepted status.
 			return status1 != nil
+		} else if status1 == nil {
+			return true
 		}
 
 		switch {

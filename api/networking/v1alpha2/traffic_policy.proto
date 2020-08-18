@@ -6,7 +6,7 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "skv2/api/core/v1/core.proto";
 import "service-mesh-hub/api/networking/v1alpha2/http.proto";
 import "service-mesh-hub/api/networking/v1alpha2/selectors.proto";
 import "service-mesh-hub/api/networking/v1alpha2/validation_state.proto";

@@ -9,7 +9,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/test/data"
 	"github.com/solo-io/service-mesh-hub/test/e2e"
 	"github.com/solo-io/service-mesh-hub/test/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -29,10 +28,8 @@ var _ = Describe("FailoverService", func() {
 		env := e2e.GetEnv()
 		env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v1")
 		env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v2")
-		env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v3")
 		env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v1")
 		env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
-		env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v3")
 	})
 
 	It("should create a failover service", func() {
@@ -46,13 +43,6 @@ var _ = Describe("FailoverService", func() {
 		}
 
 		By("creating a new FailoverService with the prerequisite TrafficPolicy and VirtualMesh", func() {
-			virtualMesh := data.SelfSignedVirtualMesh(
-				"bookinfo-federation",
-				BookinfoNamespace,
-				[]*v1.ObjectRef{
-					masterMesh,
-					remoteMesh,
-				})
 			trafficPolicy := &networkingv1alpha2.TrafficPolicy{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "TrafficPolicy",
@@ -129,17 +119,10 @@ var _ = Describe("FailoverService", func() {
 
 			err := manifest.AppendResources(trafficPolicy)
 			Expect(err).NotTo(HaveOccurred())
-			err = manifest.AppendResources(virtualMesh)
-			Expect(err).NotTo(HaveOccurred())
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
-
-			// ensure status is updated
-			assertVirtualMeshStatuses()
-			// check we can hit the remote service
-			// give 5 minutes because the workflow depends on restarting pods
-			// which can take several minutes
-			Eventually(curlRemoteReviews, "5m", "1s").Should(ContainSubstring(`"color": "black"`))
+			// Wait for TrafficPolicy with outlier detection to be processed before creating FailoverService.
+			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
 
 			err = manifest.AppendResources(failoverService)
 			Expect(err).NotTo(HaveOccurred())
@@ -150,10 +133,8 @@ var _ = Describe("FailoverService", func() {
 			// that request is being served by remote cluster
 			env.Management.DisableContainer(ctx, BookinfoNamespace, "reviews-v1", "reviews")
 			env.Management.DisableContainer(ctx, BookinfoNamespace, "reviews-v2", "reviews")
-			env.Management.DisableContainer(ctx, BookinfoNamespace, "reviews-v3", "reviews")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v1")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
-			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v3")
 
 			// first check that we have a response to reduce flakiness
 			Eventually(curlFailoverService, "1m", "1s").Should(ContainSubstring("200 OK"))
@@ -175,10 +156,8 @@ var _ = Describe("FailoverService", func() {
 
 			env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v1")
 			env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v2")
-			env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v3")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v1")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
-			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v3")
 			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 	})

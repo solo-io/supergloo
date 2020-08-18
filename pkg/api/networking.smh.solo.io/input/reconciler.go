@@ -29,6 +29,7 @@ import (
 	"github.com/solo-io/skv2/pkg/reconcile"
 
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	discovery_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discovery_smh_solo_io_v1alpha2_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/controller"
@@ -73,6 +74,7 @@ func RegisterMultiClusterReconciler(
 	clusters multicluster.ClusterWatcher,
 	reconcileFunc input.MultiClusterReconcileFunc,
 	reconcileInterval time.Duration,
+	predicates ...predicate.Predicate,
 ) {
 
 	base := input.NewMultiClusterReconcilerImpl(
@@ -87,18 +89,18 @@ func RegisterMultiClusterReconciler(
 
 	// initialize reconcile loops
 
-	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterMeshServiceReconcileLoop("MeshService", clusters).AddMulticlusterMeshServiceReconciler(ctx, r)
-	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterMeshWorkloadReconcileLoop("MeshWorkload", clusters).AddMulticlusterMeshWorkloadReconciler(ctx, r)
-	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters).AddMulticlusterMeshReconciler(ctx, r)
+	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterMeshServiceReconcileLoop("MeshService", clusters).AddMulticlusterMeshServiceReconciler(ctx, r, predicates...)
+	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterMeshWorkloadReconcileLoop("MeshWorkload", clusters).AddMulticlusterMeshWorkloadReconciler(ctx, r, predicates...)
+	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters).AddMulticlusterMeshReconciler(ctx, r, predicates...)
 
-	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterTrafficPolicyReconcileLoop("TrafficPolicy", clusters).AddMulticlusterTrafficPolicyReconciler(ctx, r)
-	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterAccessPolicyReconcileLoop("AccessPolicy", clusters).AddMulticlusterAccessPolicyReconciler(ctx, r)
-	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterVirtualMeshReconcileLoop("VirtualMesh", clusters).AddMulticlusterVirtualMeshReconciler(ctx, r)
-	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterFailoverServiceReconcileLoop("FailoverService", clusters).AddMulticlusterFailoverServiceReconciler(ctx, r)
+	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterTrafficPolicyReconcileLoop("TrafficPolicy", clusters).AddMulticlusterTrafficPolicyReconciler(ctx, r, predicates...)
+	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterAccessPolicyReconcileLoop("AccessPolicy", clusters).AddMulticlusterAccessPolicyReconciler(ctx, r, predicates...)
+	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterVirtualMeshReconcileLoop("VirtualMesh", clusters).AddMulticlusterVirtualMeshReconciler(ctx, r, predicates...)
+	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterFailoverServiceReconcileLoop("FailoverService", clusters).AddMulticlusterFailoverServiceReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters).AddMulticlusterSecretReconciler(ctx, r)
+	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters).AddMulticlusterSecretReconciler(ctx, r, predicates...)
 
-	multicluster_solo_io_v1alpha1_controllers.NewMulticlusterKubernetesClusterReconcileLoop("KubernetesCluster", clusters).AddMulticlusterKubernetesClusterReconciler(ctx, r)
+	multicluster_solo_io_v1alpha1_controllers.NewMulticlusterKubernetesClusterReconcileLoop("KubernetesCluster", clusters).AddMulticlusterKubernetesClusterReconciler(ctx, r, predicates...)
 
 }
 
@@ -267,6 +269,7 @@ func RegisterSingleClusterReconciler(
 	mgr manager.Manager,
 	reconcileFunc input.SingleClusterReconcileFunc,
 	reconcileInterval time.Duration,
+	predicates ...predicate.Predicate,
 ) error {
 
 	base := input.NewSingleClusterReconciler(
@@ -281,34 +284,34 @@ func RegisterSingleClusterReconciler(
 
 	// initialize reconcile loops
 
-	if err := discovery_smh_solo_io_v1alpha2_controllers.NewMeshServiceReconcileLoop("MeshService", mgr, reconcile.Options{}).RunMeshServiceReconciler(ctx, r); err != nil {
+	if err := discovery_smh_solo_io_v1alpha2_controllers.NewMeshServiceReconcileLoop("MeshService", mgr, reconcile.Options{}).RunMeshServiceReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := discovery_smh_solo_io_v1alpha2_controllers.NewMeshWorkloadReconcileLoop("MeshWorkload", mgr, reconcile.Options{}).RunMeshWorkloadReconciler(ctx, r); err != nil {
+	if err := discovery_smh_solo_io_v1alpha2_controllers.NewMeshWorkloadReconcileLoop("MeshWorkload", mgr, reconcile.Options{}).RunMeshWorkloadReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := discovery_smh_solo_io_v1alpha2_controllers.NewMeshReconcileLoop("Mesh", mgr, reconcile.Options{}).RunMeshReconciler(ctx, r); err != nil {
-		return err
-	}
-
-	if err := networking_smh_solo_io_v1alpha2_controllers.NewTrafficPolicyReconcileLoop("TrafficPolicy", mgr, reconcile.Options{}).RunTrafficPolicyReconciler(ctx, r); err != nil {
-		return err
-	}
-	if err := networking_smh_solo_io_v1alpha2_controllers.NewAccessPolicyReconcileLoop("AccessPolicy", mgr, reconcile.Options{}).RunAccessPolicyReconciler(ctx, r); err != nil {
-		return err
-	}
-	if err := networking_smh_solo_io_v1alpha2_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, reconcile.Options{}).RunVirtualMeshReconciler(ctx, r); err != nil {
-		return err
-	}
-	if err := networking_smh_solo_io_v1alpha2_controllers.NewFailoverServiceReconcileLoop("FailoverService", mgr, reconcile.Options{}).RunFailoverServiceReconciler(ctx, r); err != nil {
+	if err := discovery_smh_solo_io_v1alpha2_controllers.NewMeshReconcileLoop("Mesh", mgr, reconcile.Options{}).RunMeshReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
 
-	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, reconcile.Options{}).RunSecretReconciler(ctx, r); err != nil {
+	if err := networking_smh_solo_io_v1alpha2_controllers.NewTrafficPolicyReconcileLoop("TrafficPolicy", mgr, reconcile.Options{}).RunTrafficPolicyReconciler(ctx, r, predicates...); err != nil {
+		return err
+	}
+	if err := networking_smh_solo_io_v1alpha2_controllers.NewAccessPolicyReconcileLoop("AccessPolicy", mgr, reconcile.Options{}).RunAccessPolicyReconciler(ctx, r, predicates...); err != nil {
+		return err
+	}
+	if err := networking_smh_solo_io_v1alpha2_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, reconcile.Options{}).RunVirtualMeshReconciler(ctx, r, predicates...); err != nil {
+		return err
+	}
+	if err := networking_smh_solo_io_v1alpha2_controllers.NewFailoverServiceReconcileLoop("FailoverService", mgr, reconcile.Options{}).RunFailoverServiceReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
 
-	if err := multicluster_solo_io_v1alpha1_controllers.NewKubernetesClusterReconcileLoop("KubernetesCluster", mgr, reconcile.Options{}).RunKubernetesClusterReconciler(ctx, r); err != nil {
+	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, reconcile.Options{}).RunSecretReconciler(ctx, r, predicates...); err != nil {
+		return err
+	}
+
+	if err := multicluster_solo_io_v1alpha1_controllers.NewKubernetesClusterReconcileLoop("KubernetesCluster", mgr, reconcile.Options{}).RunKubernetesClusterReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
 
