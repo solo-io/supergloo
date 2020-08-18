@@ -208,21 +208,19 @@ function install_osm() {
   # install in permissive mode for testing
   osm install --enable-metrics-stack=false --deploy-zipkin=false
 
+  for i in bookstore bookbuyer bookthief bookwarehouse; do ${K} create ns $i; done
 
-  ${K} create namespace bookinfo
+  for i in bookstore bookbuyer bookthief bookwarehouse; do osm namespace add $i; done
 
-  osm namespace add bookinfo
+  ${K} apply -f ${PROJECT_ROOT}/ci/osm-demo.yaml
 
-  ${K} apply -n bookinfo -f ${PROJECT_ROOT}/ci/bookinfo-osm.yaml
+  ROLLOUT="${K} rollout status deployment --timeout 300s"
 
-  ROLLOUT="${K} -n bookinfo rollout status deployment --timeout 300s"
-
-  ${ROLLOUT} ratings-v1
-  ${ROLLOUT} details-v1
-  ${ROLLOUT} productpage-v1
-  ${ROLLOUT} reviews-v1
-  ${ROLLOUT} reviews-v2
-  ${ROLLOUT} reviews-v3
+  ${ROLLOUT} -n bookstore bookstore-v1
+  ${ROLLOUT} -n bookstore bookstore-v2
+  ${ROLLOUT} -n bookthief bookthief
+  ${ROLLOUT} -n bookwarehouse bookwarehouse
+  ${ROLLOUT} -n bookbuyer bookbuyer
 }
 
 function register_cluster() {
