@@ -6,8 +6,6 @@ package mock_output
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	output "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/output"
@@ -16,6 +14,7 @@ import (
 	output0 "github.com/solo-io/skv2/contrib/pkg/output"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	v1 "k8s.io/api/core/v1"
+	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 

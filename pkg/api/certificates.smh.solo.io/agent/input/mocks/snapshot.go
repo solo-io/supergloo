@@ -6,13 +6,12 @@ package mock_input
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/input"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
+	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
