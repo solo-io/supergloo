@@ -25,83 +25,78 @@ We will now perform a *multi-cluster traffic split*, splitting traffic from the 
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.smh.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   namespace: service-mesh-hub
   name: simple
 spec:
   destinationSelector:
-    serviceRefs:
+  - kubeServiceRefs:
       services:
-        - cluster: management-plane
+        - clusterName: management-plane
           name: reviews
           namespace: default
   trafficShift:
     destinations:
-      - destination:
-          cluster: new-remote-cluster
+      - kubeService:
+          clusterName: new-remote-cluster
           name: reviews
           namespace: default
         weight: 75
-      - destination:
-          cluster: management-plane
+      - kubeService:
+          clusterName: management-plane
           name: reviews
           namespace: default
+          subset:
+            version: v1
         weight: 15
-        subset:
-          version: v1
-      - destination:
-          cluster: management-plane
+      - kubeService:
+          clusterName: management-plane
           name: reviews
           namespace: default
+          subset:
+            version: v2
         weight: 10
-        subset:
-          version: v2
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context management-plane-context -f - << EOF
-apiVersion: networking.smh.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   namespace: service-mesh-hub
   name: simple
 spec:
   destinationSelector:
-    serviceRefs:
+  - kubeServiceRefs:
       services:
-        - cluster: management-plane
+        - clusterName: management-plane
           name: reviews
           namespace: default
   trafficShift:
     destinations:
-      - destination:
-          cluster: new-remote-cluster
+      - kubeService:
+          clusterName: new-remote-cluster
           name: reviews
           namespace: default
         weight: 75
-      - destination:
-          cluster: management-plane
+      - kubeService:
+          clusterName: management-plane
           name: reviews
           namespace: default
+          subset:
+            version: v1
         weight: 15
-        subset:
-          version: v1
-      - destination:
-          cluster: management-plane
+      - kubeService:
+          clusterName: management-plane
           name: reviews
           namespace: default
+          subset:
+            version: v2
         weight: 10
-        subset:
-          version: v2
 EOF
 {{< /tab >}}
 {{< /tabs >}}
-
-{{% notice warning %}}
-You may need to restart your workloads to ensure that they pick up the newly-distributed certs. Istio currently does not have support
-for workloads detecting a change in root cert and re-issuing an SDS request.
-{{% /notice %}}
 
 Once you apply this resource to the `management-plane-context` cluster, you should occasionally see traffic being routed to the reviews-v3 service, which will produce red-colored stars on the product page.
 
