@@ -38,29 +38,26 @@ kubectl -n default port-forward deployment/productpage-v1 9080:9080
 
 In a browser, visit [http://localhost:9080](http://localhost:9080) (potentially selecting "normal user" if this is your first time using the app) and verify that both the book details and the reviews are loading correctly. Half of the responses should have no stars, while half of the responses should have black stars.
 
-Let's use the Service Mesh Hub [AccessControlPolicy]({{% versioned_link_path fromRoot="/reference/api/access_control_policy/" %}}) resource to enforce access control across the logical VirtualMesh. The default behavior is to `deny-all`.
+Let's use the Service Mesh Hub [AccessPolicy]({{% versioned_link_path fromRoot="/reference/api/access_policy/" %}}) resource to enforce access control across the logical VirtualMesh. The default behavior is to `deny-all`.
 
 In the previous guide, [we created a VirtualMesh resource]({{% versioned_link_path fromRoot="/guides/federate_identity/#creating-a-virtual-mesh" %}}), but we had access control disabled. Let's take a look at the same VirtualService, with access control enabled:
 
 {{< highlight yaml "hl_lines=16" >}}
-apiVersion: networking.smh.solo.io/v1alpha1
+apiVersion: networking.smh.solo.io/v1alpha2
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
   namespace: service-mesh-hub
 spec:
-  displayName: "Demo Mesh Federation"
-  certificateAuthority:
-    builtin:
-      ttlDays: 356
-      rsaKeySizeBytes: 4096
-      orgName: "service-mesh-hub"
-  federation: 
-    mode: PERMISSIVE
-  shared: {}
-  enforceAccessControl: ENABLED
+  mtlsConfig:
+    autoRestartPods: true
+    shared:
+      rootCertificateAuthority:
+        generated: null
+  federation: {}
+  globalAccessPolicy: ENABLED
   meshes:
-  - name: istio-istio-system-management-plane 
+  - name: istio-istio-system-management-plane
     namespace: service-mesh-hub
   - name: istio-istio-system-new-remote-cluster
     namespace: service-mesh-hub
@@ -75,14 +72,20 @@ kubectl --context management-plane-context apply -f demo-virtual-mesh.yaml
 virtualmesh.networking.smh.solo.io/virtual-mesh configured
 ```
 
-With the `enforceAccessControl` setting `enabled` and with no other `AccessControlPolicies`, we should see a `deny-all` access posture. Try going back to [http://localhost:9080](http://localhost:9080) and refresh the bookinfo sample and you should see the `details` and `reviews` services blocked.
-
 {{% notice note %}}
 It may take a few moments for the access policy / authorizations propagate to the workloads. 
 {{% /notice %}}
 
+With the `enforceAccessControl` setting `enabled` and with no other `AccessControlPolicies`, we should see a `deny-all` access posture. 
+Try going back to [http://localhost:9080](http://localhost:9080) and refresh the bookinfo sample and you should see the `details` and `reviews` services blocked.
 
-## Using `AccessControlPolicy`
+For Istio, global access control is enforced using an AuthorizationPolicy with an empty spec, placed in Istio's root namespace (usually `istio-system`).
+For more details refer to the [Istio AuthorizationPolicy documentation](https://istio.io/latest/docs/reference/config/security/authorization-policy/#AuthorizationPolicy).
+
+Note that Service Mesh Hub will also create additional AuthorizationPolicies in order to allow all traffic through ingress gateways 
+so that federated traffic can continue working as expected.
+
+## Using `AccessPolicy`
 
 To allow traffic to continue as before, we apply the following two pieces of config. Respectively these
 configs:
@@ -93,22 +96,22 @@ configs:
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.smh.solo.io/v1alpha1
-kind: AccessControlPolicy
+apiVersion: networking.smh.solo.io/v1alpha2
+kind: AccessPolicy
 metadata:
   namespace: service-mesh-hub
   name: productpage
 spec:
   sourceSelector:
-    serviceAccountRefs:
+  - kubeServiceAccountRefs:
       serviceAccounts:
         - name: bookinfo-productpage
           namespace: default
-          cluster: management-plane
+          clusterName: management-plane
   destinationSelector:
-    matcher:
+  - kubeServiceMatcher:
       namespaces:
-        - default       
+      - default
 EOF
 {{< /tab >}}
 {{< /tabs >}}
@@ -120,48 +123,47 @@ kubectl --context management-plane-context \
  apply -f product-details-access.yaml
 ```
 
-
 In this configuration, we select sources (in this case the `productpage` service account) and allow traffic the any service in the `default` namespace.
 
 In this next configuration, we enable traffic from `reviews` to `ratings`:
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.smh.solo.io/v1alpha1
-kind: AccessControlPolicy
+apiVersion: networking.smh.solo.io/v1alpha2
+kind: AccessPolicy
 metadata:
   namespace: service-mesh-hub
   name: reviews
 spec:
   sourceSelector:
-    serviceAccountRefs:
+  - kubeServiceAccountRefs:
       serviceAccounts:
         - name: bookinfo-reviews
           namespace: default
-          cluster: remote-cluster
+          clusterName: remote-cluster
   destinationSelector:
-    matcher:
+  - kubeServiceMatcher:
       namespaces:
-        - default
+      - default
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context management-plane-context -f - << EOF
-apiVersion: networking.smh.solo.io/v1alpha1
-kind: AccessControlPolicy
+apiVersion: networking.smh.solo.io/v1alpha2
+kind: AccessPolicy
 metadata:
   namespace: service-mesh-hub
   name: productpage
 spec:
   sourceSelector:
-    serviceAccountRefs:
+  - kubeServiceAccountRefs:
       serviceAccounts:
         - name: bookinfo-productpage
           namespace: default
-          cluster: management-plane
+          clusterName: management-plane
   destinationSelector:
-    matcher:
+  - kubeServiceMatcher:
       namespaces:
-        - default       
+      - default
 EOF
 {{< /tab >}}
 {{< /tabs >}}
@@ -180,43 +182,43 @@ In this next configuration, we enable traffic from `reviews` to `ratings`:
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.smh.solo.io/v1alpha1
-kind: AccessControlPolicy
+apiVersion: networking.smh.solo.io/v1alpha2
+kind: AccessPolicy
 metadata:
   namespace: service-mesh-hub
   name: reviews
 spec:
   sourceSelector:
-    serviceAccountRefs:
+  - kubeServiceAccountRefs:
       serviceAccounts:
         - name: bookinfo-reviews
           namespace: default
-          cluster: management-plane
+          clusterName: management-plane
   destinationSelector:
-    matcher:
+  - kubeServiceMatcher:
       namespaces:
-        - default
+      - default
       labels:
         service: ratings
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context management-plane-context -f - <<EOF
-apiVersion: networking.smh.solo.io/v1alpha1
-kind: AccessControlPolicy
+apiVersion: networking.smh.solo.io/v1alpha2
+kind: AccessPolicy
 metadata:
   namespace: service-mesh-hub
   name: reviews
 spec:
   sourceSelector:
-    serviceAccountRefs:
+  - kubeServiceAccountRefs:
       serviceAccounts:
         - name: bookinfo-reviews
           namespace: default
-          cluster: management-plane
+          clusterName: management-plane
   destinationSelector:
-    matcher:
+  - kubeServiceMatcher:
       namespaces:
-        - default
+      - default
       labels:
         service: ratings    
 EOF
