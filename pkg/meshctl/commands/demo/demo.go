@@ -11,7 +11,7 @@ import (
 func Command(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "demo",
-		Short: "Command line utilities for running/interacting with Service Mesh Hub demos",
+		Short: "Bootstrap environments for various demos demonstrating Service Mesh Hub functionality.",
 	}
 
 	cmd.AddCommand(
