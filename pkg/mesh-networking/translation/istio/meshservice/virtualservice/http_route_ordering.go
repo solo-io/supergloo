@@ -5,19 +5,19 @@ import (
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
-type SpecificitySortableRoutes []*networkingv1alpha3spec.HTTPRoute
+type RoutesBySpecificity []*networkingv1alpha3spec.HTTPRoute
 
-func (b SpecificitySortableRoutes) Len() int {
+func (b RoutesBySpecificity) Len() int {
 	return len(b)
 }
 
-func (b SpecificitySortableRoutes) Less(i, j int) bool {
+func (b RoutesBySpecificity) Less(i, j int) bool {
 	// if the first HTTPRoute matches more specific criteria than the second HTTPRoute,
 	// order them such that the first precedes the second (i.e. takes precedence over)
 	return isHttpRouteMatcherMoreSpecific(b[i], b[j])
 }
 
-func (b SpecificitySortableRoutes) Swap(i, j int) {
+func (b RoutesBySpecificity) Swap(i, j int) {
 	b[i], b[j] = b[j], b[i]
 }
 
@@ -35,7 +35,8 @@ ordering needs to be changed.
 7. WithoutHeaders, number of items decreasing
 */
 func isHttpRouteMatcherMoreSpecific(httpRouteA, httpRouteB *networkingv1alpha3spec.HTTPRoute) bool {
-	// each HttpRoute is guaranteed to only have a single HttpMatchRequest
+	// each HttpRoute is guaranteed to only have a single HttpMatchRequest, see
+	// https://github.com/solo-io/service-mesh-hub/blob/f05b08c4fec934eb7d492f414808789613f2e7f8/pkg/mesh-networking/translation/istio/meshservice/virtualservice/virtual_service_translator.go#L99
 	a := httpRouteA.GetMatch()[0]
 	b := httpRouteB.GetMatch()[0]
 	if len(a.GetHeaders()) > len(b.GetHeaders()) {
