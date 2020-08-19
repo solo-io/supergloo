@@ -90,4 +90,4 @@ jobs:
           export PATH=$PWD/_output/$ISTIO_VERSION/bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
           istioctl version
 
-          make run-tests TEST_PKG=test/e2e RUN_E2E=1 GINKGOFLAGS=-v
+          make run-tests TEST_PKG=test/e2e/istio RUN_E2E=1 GINKGOFLAGS=-v

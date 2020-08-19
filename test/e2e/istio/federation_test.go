@@ -1,4 +1,4 @@
-package e2e_test
+package istio_test
 
 import (
 	"github.com/solo-io/service-mesh-hub/test/data"
