@@ -84,7 +84,7 @@ For some parts of the guide, you'll want to have the [Bookinfo](https://istio.io
 You'll want to first have [Istio installed for multi-cluster]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) **before** installing the Bookinfo demo. 
 {{% /notice %}}
 
-The core components, including reviews-v1 and reviews-v2, are deployed to `management-plane-cluster`, while `reviews-v3` is deployed on the `remote-cluster-context` cluster.
+The core components, including reviews-v1 and reviews-v2, are deployed to the management plane cluster, while `reviews-v3` is deployed on the remote cluster.
 
 Deploy part of the bookinfo application to the `management-plane-context` cluster:
 
@@ -98,11 +98,13 @@ MGMT_CONTEXT=your_management_plane_context
 REMOTE_CONTEXT=your_remote_context
 
 kubectl config use-context $MGMT_CONTEXT
-kubectl label namespace default istio-injection=enabled
+
+kubectl create ns bookinfo
+kubectl label namespace bookinfo istio-injection=enabled
 ​
 # we deploy everything except reviews-v3 to the management-plane cluster
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version notin (v3)'
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account'
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version notin (v3)'
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account'
 ```
 
 Now deploy only reviews-v3 to your `remote-cluster-context` cluster:
@@ -110,13 +112,14 @@ Now deploy only reviews-v3 to your `remote-cluster-context` cluster:
 ```shell
 kubectl config use-context $REMOTE_CONTEXT
 
-kubectl label namespace default istio-injection=enabled
+kubectl create ns bookinfo
+kubectl label namespace bookinfo istio-injection=enabled
 ​
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version in (v3)' 
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'service=reviews' 
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account=reviews' 
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app=ratings' 
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account=ratings' 
+kubectl apply -n bookinfo -f  https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version in (v3)' 
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'service=reviews' 
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account=reviews' 
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app=ratings' 
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account=ratings' 
 ```
 
 Now you have Bookinfo demo set up for the rest of the guides. From here you can [federate]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}) your two clusters, or start configuring [multi-cluster access]({{% versioned_link_path fromRoot="/guides/access_control_intro" %}}) and [traffic policy]({{% versioned_link_path fromRoot="/guides/multicluster_communication" %}}).

@@ -4,7 +4,7 @@ menuTitle: Mesh Discovery
 weight: 20
 ---
 
-Service Mesh Hub, when appropriate clusters are registered, can automatically discover service mesh installations (based on control plane and sidecar discovery), as well as workloads and service exposed through the service mesh.
+Service Mesh Hub, when appropriate clusters are registered, can automatically discover service mesh installations (based on control plane and sidecar discovery), as well as workloads and services exposed through the service mesh.
 
 In this guide we will learn about the four main discovery capabilities:
 
@@ -40,7 +40,9 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 Ensure that your `kubeconfig` has the correct context set as its `currentContext`:
 
 ```shell
-kubectl config use-context management-plane-context
+MGMT_CONTEXT=your_management_plane_context
+REMOTE_CONTEXT=your_remote_context
+kubectl config use-context $MGMT_CONTEXT
 ```
 
 Validate that the cluster have been registered by checking for `KubernetesClusters` custom resources:
@@ -50,9 +52,9 @@ kubectl get kubernetesclusters -n service-mesh-hub
 ```
 
 ```shell
-NAME             AGE
-management-plane-cluster   5d23h
-remote-cluster   5d23h
+NAME               AGE
+management-plane   23h
+remote-cluster     23h
 ```
 
 ### Discover Meshes
@@ -84,7 +86,7 @@ meshctl describe mesh
 We can print it in YAML form to see all the information we discovered:
 
 ```shell
-kubectl -n service-mesh-hub get mesh istio-istio-system-remote-cluster -oyaml
+kubectl -n service-mesh-hub get mesh istiod-istio-system-remote-cluster -oyaml
 ```
 
 (snipped for brevity)
@@ -137,15 +139,16 @@ kubectl -n service-mesh-hub get workloads
 
 ```
 NAME                                                            AGE
-istio-ingressgateway-istio-system-management-plane-deployment   5d23h
-istio-ingressgateway-istio-system-remote-cluster-deployment     6d
-productpage-v1-bookinfo-management-plane-deployment             5d23h
-productpage-v1-bookinfo-remote-cluster-deployment               6d
-ratings-v1-bookinfo-management-plane-deployment                 5d23h
-ratings-v1-bookinfo-remote-cluster-deployment                   6d
-reviews-v1-bookinfo-management-plane-deployment                 5d23h
-reviews-v2-bookinfo-management-plane-deployment                 5d23h
-reviews-v3-bookinfo-remote-cluster-deployment                   6d
+NAME                                                            AGE
+details-v1-bookinfo-management-plane-deployment                 3m54s
+istio-ingressgateway-istio-system-management-plane-deployment   23h
+istio-ingressgateway-istio-system-remote-cluster-deployment     23h
+productpage-v1-bookinfo-management-plane-deployment             3m54s
+ratings-v1-bookinfo-management-plane-deployment                 3m53s
+ratings-v1-bookinfo-remote-cluster-deployment                   3m25s
+reviews-v1-bookinfo-management-plane-deployment                 3m53s
+reviews-v2-bookinfo-management-plane-deployment                 3m53s
+reviews-v3-bookinfo-remote-cluster-deployment                   2m
 ```
 
 ### Discover Mesh Services
@@ -158,14 +161,14 @@ kubectl -n service-mesh-hub get meshservices
 
 ```
 NAME                                                 AGE
-istio-ingressgateway-istio-system-management-plane   5d23h
-istio-ingressgateway-istio-system-remote-cluster     6d
-productpage-bookinfo-management-plane                5d23h
-productpage-bookinfo-remote-cluster                  6d
-ratings-bookinfo-management-plane                    5d23h
-ratings-bookinfo-remote-cluster                      6d
-reviews-bookinfo-management-plane                    5d23h
-reviews-bookinfo-remote-cluster                      6d
+details-bookinfo-management-plane                    4m23s
+istio-ingressgateway-istio-system-management-plane   23h
+istio-ingressgateway-istio-system-remote-cluster     23h
+productpage-bookinfo-management-plane                4m23s
+ratings-bookinfo-management-plane                    4m22s
+ratings-bookinfo-remote-cluster                      3m54s
+reviews-bookinfo-management-plane                    4m22s
+reviews-bookinfo-remote-cluster                      2m29s
 ```
 
 ## See it in action

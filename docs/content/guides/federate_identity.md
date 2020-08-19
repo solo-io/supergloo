@@ -28,7 +28,10 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 We can see the certificate chain used to establish mTLS between Istio services in `management-plane-context` cluster and `remote-cluster-context` cluster and can compare them to be different. One way to see the certificates, is to use the `openssl s_client` tool with the `-showcerts` param when calling between two services. Let's try it on the `management-plane-cluster`:
 
 ```shell
-kubectl --context management-plane-context -n bookinfo exec -it deploy/reviews-v1 -c istio-proxy \
+MGMT_CONTEXT=your_management_plane_context
+REMOTE_CONTEXT=your_remote_context
+
+kubectl --context $MGMT_CONTEXT -n bookinfo exec -it deploy/reviews-v1 -c istio-proxy \
 -- openssl s_client -showcerts -connect ratings.bookinfo:9080
 ```
 You should see an output of the certificate chain among other handshake-related information. You can review the last certificate in the chain and that's the root cert:
@@ -83,7 +86,7 @@ Run the same thing in the `remote-cluster-context` and explore the output and co
 
 
 ```shell
-kubectl --context remote-cluster-context -n bookinfo exec -it deploy/reviews-v3 -c istio-proxy \
+kubectl --context $REMOTE_CONTEXT -n bookinfo exec -it deploy/reviews-v3 -c istio-proxy \
 -- openssl s_client -showcerts -connect ratings.bookinfo:9080
 ```
 
@@ -107,16 +110,17 @@ spec:
         generated: null
   federation: {}
   meshes:
-  - name: istio-istio-system-management-plane 
+  - name: istiod-istio-system-management-plane 
     namespace: service-mesh-hub
-  - name: istio-istio-system-remote-cluster
+  - name: istiod-istio-system-remote-cluster
     namespace: service-mesh-hub
 {{< /highlight >}}
 
 
 ##### Understanding VirtualMesh
 
-In the first highlighted section, we can see the parameters establishing shared identity and federation. In this case, we tell Service Mesh Hub to create a Root CA using the parameters specified above (ttl, key size, org name, etc). 
+In the first highlighted section, we can see the parameters establishing shared identity and federation. In this case, we tell Service Mesh Hub to create a Root CA using the parameters specified above (ttl, key size, org name, etc).
+
 We could have also configured an existing Root CA by providing an existing secret:
 
 ```yaml
@@ -133,7 +137,7 @@ See the section on [User Provided Certificates]({{% versioned_link_path fromRoot
 
 We also specify the federation mode to be `PERMISSIVE`. This means we'll make services available between meshes. You can control this later by specifying different global service properties. 
 
-Lastly, we are creating the VirtualMesh with two different service meshes: `istio-istio-system-management-plane` and `istio-istio-system-remote-cluster`. We can have any meshes defined here that should be part of this virtual grouping and federation.
+Lastly, we are creating the VirtualMesh with two different service meshes: `istiod-istio-system-management-plane` and `istiod-istio-system-remote-cluster`. We can have any meshes defined here that should be part of this virtual grouping and federation.
 
 ##### User Provided Certificates
 
@@ -166,7 +170,7 @@ that unifies the trust root between Meshes in the VirtualMesh.
 If you saved this VirtualMesh CR to a file named `demo-virtual-mesh.yaml`, you can apply it like this:
 
 ```shell
-kubectl --context management-plane-context apply -f demo-virtual-mesh.yaml
+kubectl --context $MGMT_CONTEXT apply -f demo-virtual-mesh.yaml
 ```
 
 Notice the `autoRestartPods: true` in the mtlsConfig stanza. This instructs Service Mesh Hub to restart the istio pods in the relevant clusters. 
@@ -176,15 +180,15 @@ This is due to a limitation of Istio. The Istio control plane picks up the CA fo
 If you wish to perform this step manually, set `autoRestartPods: false` and run the following:
 
 ```shell
-meshctl mesh restart --mesh-name istiod-istio-system-master-cluster
+meshctl mesh restart --mesh-name istiod-istio-system-management-plane
 ```
 
 {{% notice note %}}
 Note, after you bounce the control plane, it may still take time for the workload certs to get re-issued with the new CA. You can force the workloads to re-load by bouncing them. For example, for the bookinfo sample running in the `bookinfo` namespace:
 
 ```shell
-kubectl --context management-plane-context -n bookinfo delete po --all
-kubectl --context remote-cluster-context -n bookinfo delete po --all
+kubectl --context $MGMT_CONTEXT-n bookinfo delete po --all
+kubectl --context $REMOTE_CONTEXT -n bookinfo delete po --all
 ```
 {{% /notice %}}
 
@@ -198,34 +202,36 @@ Then Service Mesh Hub will use a Certificate Signing Request (CSR) agent on each
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-csr.png" %}})
 
-To verify, let's check the `VirtualServiceCertificateSigningRequest` CR in `remote-cluster-context`:
+To verify, let's check the `IssuedCertificates` CR in `remote-cluster-context`:
 
 ```shell
-kubectl --context remote-cluster-context \
-get virtualmeshcertificatesigningrequest -n service-mesh-hub
+kubectl --context $REMOTE_CONTEXT \
+get issuedcertificates -n service-mesh-hub
 ```
 
 We should see this on the remote cluster:
 
 ```shell
-NAME                              AGE
-istio-virtual-mesh-cert-request   3m15s
+NAME                                 AGE
+istiod-istio-system-remote-cluster   3m15s
 ```
 
-If we do the same on the `management-plane-cluster`, we should also see a `VirtualMeshCertificateSigningRequest` there as well.
+If we do the same on the `management-plane-cluster`, we should also see an `IssuedCertificates` entry there as well.
 
 Lastly, let's verify the correct `cacerts` was created in the `istio-system` namespace that can be used for Istio's Citadel:
 
 ```shell
-kubectl --context management-plane-context get secret -n istio-system cacerts 
-NAME      TYPE                      DATA   AGE
-cacerts   solo.io/ca-intermediate   5      8m10s
+kubectl --context $MGMT_CONTEXT get secret -n istio-system cacerts 
+
+NAME      TYPE                                          DATA   AGE
+cacerts   certificates.smh.solo.io/issued_certificate   5      20s
 ```
 
 ```shell
-kubectl --context remote-cluster-context get secret -n istio-system cacerts 
-NAME      TYPE                      DATA   AGE
-cacerts   solo.io/ca-intermediate   5      8m34s
+kubectl --context $REMOTE_CONTEXT get secret -n istio-system cacerts 
+
+NAME      TYPE                                          DATA   AGE
+cacerts   certificates.smh.solo.io/issued_certificate   5      5m3s
 ```
 
 In the previous section, we bounced the Istio control plane to pick up these intermediate certs. Again, this is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993). 
@@ -238,31 +244,31 @@ Once trust has been established, Service Mesh Hub will start federating services
 For example, you can see what Istio `ServiceEntry` objects were created. On the `management-plane-context` cluster you can see:
 
 ```shell
-kubectl --context management-plane-context \
+kubectl --context $MGMT_CONTEXT \
 get serviceentry -n istio-system
 ```
 
 ```shell
-NAME                                                   HOSTS                                                    LOCATION        RESOLUTION   AGE
-istio-ingressgateway.istio-system.new-remote-cluster   [istio-ingressgateway.istio-system.new-remote-cluster]   MESH_INTERNAL   DNS          62m
-ratings.default.new-remote-cluster                     [ratings.default.new-remote-cluster]                     MESH_INTERNAL   DNS          62m
-reviews.default.new-remote-cluster                     [reviews.default.new-remote-cluster]                     MESH_INTERNAL   DNS          62m
+NAME                                                          HOSTS                                                           LOCATION        RESOLUTION   AGE
+istio-ingressgateway.istio-system.svc.remote-cluster.global   [istio-ingressgateway.istio-system.svc.remote-cluster.global]   MESH_INTERNAL   DNS          6m2s
+ratings.bookinfo.svc.remote-cluster.global                    [ratings.bookinfo.svc.remote-cluster.global]                    MESH_INTERNAL   DNS          6m2s
+reviews.bookinfo.svc.remote-cluster.global                    [reviews.bookinfo.svc.remote-cluster.global]                    MESH_INTERNAL   DNS          6m2s
 ```
 
 On the `remote-cluster-context` cluster, you can see:
 
 ```shell
-kubectl --context remote-cluster-context \
+kubectl --context $REMOTE_CONTEXT \
 get serviceentry -n istio-system
 ```
 
 ```shell
-NAME                                                 HOSTS                                                  LOCATION        RESOLUTION   AGE
-details.default.management-plane                     [details.default.management-plane]                     MESH_INTERNAL   DNS          63m
-istio-ingressgateway.istio-system.management-plane   [istio-ingressgateway.istio-system.management-plane]   MESH_INTERNAL   DNS          63m
-productpage.default.management-plane                 [productpage.default.management-plane]                 MESH_INTERNAL   DNS          63m
-ratings.default.management-plane                     [ratings.default.management-plane]                     MESH_INTERNAL   DNS          63m
-reviews.default.management-plane                     [reviews.default.management-plane]                     MESH_INTERNAL   DNS          63m
+NAME                                                            HOSTS                                                             LOCATION        RESOLUTION   AGE
+details.bookinfo.svc.management-plane.global                    [details.bookinfo.svc.management-plane.global]                    MESH_INTERNAL   DNS          2m5s     
+istio-ingressgateway.istio-system.svc.management-plane.global   [istio-ingressgateway.istio-system.svc.management-plane.global]   MESH_INTERNAL   DNS          5m18s    
+productpage.bookinfo.svc.management-plane.global                [productpage.bookinfo.svc.management-plane.global]                MESH_INTERNAL   DNS          55s      
+ratings.bookinfo.svc.management-plane.global                    [ratings.bookinfo.svc.management-plane.global]                    MESH_INTERNAL   DNS          7m2s     
+reviews.bookinfo.svc.management-plane.global                    [reviews.bookinfo.svc.management-plane.global]                    MESH_INTERNAL   DNS          90s 
 ```
 
 ## See it in action
