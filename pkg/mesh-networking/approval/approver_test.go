@@ -172,9 +172,7 @@ var _ = Describe("Approver", func() {
 				},
 				Status: v1alpha2.VirtualMeshStatus{
 					ObservedGeneration: 0,
-					Status: &v1alpha2.ApprovalStatus{
-						State: v1alpha2.ApprovalState_ACCEPTED,
-					},
+					State:              v1alpha2.ApprovalState_ACCEPTED,
 				},
 			}
 			vm2 = &v1alpha2.VirtualMesh{
@@ -217,15 +215,9 @@ var _ = Describe("Approver", func() {
 				Spec: v1alpha2.VirtualMeshSpec{
 					Meshes: []*corev1.ObjectRef{
 						{
-							Name:      "mesh3",
+							Name:      "mesh2",
 							Namespace: "namespace1",
 						},
-					},
-				},
-				Status: v1alpha2.VirtualMeshStatus{
-					ObservedGeneration: 0,
-					Status: &v1alpha2.ApprovalStatus{
-						State: v1alpha2.ApprovalState_INVALID,
 					},
 				},
 			}
@@ -265,11 +257,11 @@ var _ = Describe("Approver", func() {
 			approver.Approve(context.TODO(), snap)
 		})
 		It("vm1 should render vm2 invalid, which should permit vm3", func() {
-			Expect(vm2.Status.Status.State).To(Equal(v1alpha2.ApprovalState_INVALID))
-			Expect(vm3.Status.Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
+			Expect(vm2.Status.State).To(Equal(v1alpha2.ApprovalState_INVALID))
+			Expect(vm3.Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
 		})
 		It("vm5 should be permitted given that vm4 is invalid", func() {
-			Expect(vm5.Status.Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
+			Expect(vm5.Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
 		})
 	})
 })

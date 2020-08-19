@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
@@ -14,6 +15,7 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*networkingv1alpha2.VirtualMe
 	sortVirtualMeshesByAcceptedDate(virtualMeshes)
 
 	vMeshesPerMesh := map[string]*networkingv1alpha2.VirtualMesh{}
+	invalidVirtualMeshes := v1alpha2sets.NewVirtualMeshSet()
 
 	// track accepted index
 	var acceptedIndex uint32
@@ -22,29 +24,25 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*networkingv1alpha2.VirtualMe
 		vMesh := vMesh
 		for _, mesh := range vMesh.Spec.Meshes {
 			// Ignore virtual mesh if previously invalidated.
-			if vMesh.Status.Status != nil && vMesh.Status.Status.State == networkingv1alpha2.ApprovalState_INVALID {
+			if invalidVirtualMeshes.Has(vMesh) {
 				continue
 			}
 			meshKey := sets.Key(mesh)
 			existingVirtualMesh, ok := vMeshesPerMesh[meshKey]
 			if !ok {
 				vMeshesPerMesh[meshKey] = vMesh
-				vMesh.Status.Status = &networkingv1alpha2.ApprovalStatus{
-					AcceptanceOrder: acceptedIndex,
-					State:           networkingv1alpha2.ApprovalState_ACCEPTED,
-				}
+				vMesh.Status.State = networkingv1alpha2.ApprovalState_ACCEPTED
 				acceptedIndex++
 			} else {
 				vMesh.Status = networkingv1alpha2.VirtualMeshStatus{
 					ObservedGeneration: vMesh.Generation,
-					Status: &networkingv1alpha2.ApprovalStatus{
-						State: networkingv1alpha2.ApprovalState_INVALID,
-						Errors: []string{fmt.Sprintf("Includes a Mesh (%s.%s) that already is grouped in a VirtualMesh (%s.%s)",
-							mesh.Name, mesh.Namespace,
-							existingVirtualMesh.Name, existingVirtualMesh.Namespace,
-						)},
-					},
+					State:              networkingv1alpha2.ApprovalState_INVALID,
+					ValidationErrors: []string{fmt.Sprintf("Includes a Mesh (%s.%s) that already is grouped in a VirtualMesh (%s.%s)",
+						mesh.Name, mesh.Namespace,
+						existingVirtualMesh.Name, existingVirtualMesh.Namespace,
+					)},
 				}
+				invalidVirtualMeshes.Insert(vMesh)
 			}
 		}
 	}
@@ -64,19 +62,19 @@ func sortVirtualMeshesByAcceptedDate(virtualMeshes networkingv1alpha2.VirtualMes
 	sort.SliceStable(virtualMeshes, func(i, j int) bool {
 		vMesh1, vMesh2 := virtualMeshes[i], virtualMeshes[j]
 
-		status1 := vMesh1.Status.Status
-		status2 := vMesh2.Status.Status
+		state1 := vMesh1.Status.State
+		state2 := vMesh2.Status.State
 
-		// Accepted takes priority over Pending (nil), which takes priority over Invalid
-		if status1 == nil {
-			return status2 == nil || status2.State == networkingv1alpha2.ApprovalState_INVALID || status2.State == networkingv1alpha2.ApprovalState_FAILED
-		} else if status2 == nil {
-			return status1.State != networkingv1alpha2.ApprovalState_INVALID && status1.State != networkingv1alpha2.ApprovalState_FAILED
-		}
+		//// Accepted takes priority over Pending, which takes priority over Invalid
+		//if state1 == networkingv1alpha2.ApprovalState_PENDING {
+		//	return state2 != networkingv1alpha2.ApprovalState_ACCEPTED
+		//} else if state2 == networkingv1alpha2.ApprovalState_PENDING {
+		//	return state1 != networkingv1alpha2.ApprovalState_INVALID && state1 != networkingv1alpha2.ApprovalState_FAILED
+		//}
 
 		switch {
-		case status1.State == networkingv1alpha2.ApprovalState_ACCEPTED:
-			if status2.State != networkingv1alpha2.ApprovalState_ACCEPTED {
+		case state1 == networkingv1alpha2.ApprovalState_ACCEPTED:
+			if state2 != networkingv1alpha2.ApprovalState_ACCEPTED {
 				// accepted comes before non accepted
 				return true
 			}
@@ -86,9 +84,8 @@ func sortVirtualMeshesByAcceptedDate(virtualMeshes networkingv1alpha2.VirtualMes
 				return vMesh1UpToDate
 			}
 
-			// sort by the previous acceptance order
-			return status1.AcceptanceOrder < status2.AcceptanceOrder
-		case status2.State == networkingv1alpha2.ApprovalState_ACCEPTED:
+			return true
+		case state2 == networkingv1alpha2.ApprovalState_ACCEPTED:
 			// accepted comes before non accepted
 			return false
 		default:

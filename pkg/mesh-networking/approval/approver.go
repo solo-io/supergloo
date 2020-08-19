@@ -89,7 +89,7 @@ func (v *approver) Approve(ctx context.Context, input input.Snapshot) {
 	// By this point, VirtualMeshes have already undergone pre-translation validation.
 	// If VirtualMesh is accepted by previous validation, reset its status so it can be populated by translation.
 	for _, virtualMesh := range virtualMeshes {
-		if virtualMesh.Status.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
+		if virtualMesh.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
 			continue
 		}
 		virtualMesh.Status.ObservedGeneration = virtualMesh.Generation
@@ -273,9 +273,7 @@ func validateAndReturnVirtualMesh(
 			State:  networkingv1alpha2.ApprovalState_INVALID,
 			Errors: errMsgs,
 		}
-		virtualMesh.Status.Status = &networkingv1alpha2.ApprovalStatus{
-			State: networkingv1alpha2.ApprovalState_INVALID,
-		}
+		virtualMesh.Status.State = networkingv1alpha2.ApprovalState_INVALID
 		return nil
 	}
 }
@@ -520,7 +518,7 @@ func getAppliedVirtualMesh(
 ) *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh {
 	for _, vMesh := range virtualMeshes {
 		vMesh := vMesh // pike
-		if vMesh.Status.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
+		if vMesh.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
 			continue
 		}
 		for _, meshRef := range vMesh.Spec.Meshes {
