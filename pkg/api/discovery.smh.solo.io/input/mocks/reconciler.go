@@ -5,11 +5,12 @@
 package mock_input
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
 	v1 "k8s.io/api/apps/v1"
 	v10 "k8s.io/api/core/v1"
-	reflect "reflect"
 )
 
 // MockmultiClusterReconciler is a mock of multiClusterReconciler interface

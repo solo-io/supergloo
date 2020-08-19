@@ -1,4 +1,5 @@
 package consul_test
+
 // TODO: Uncomment to re-enable consul discovery
 //
 // import (

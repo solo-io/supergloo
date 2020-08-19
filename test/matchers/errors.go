@@ -23,4 +23,3 @@ func (e *errorMatcher) Matches(x interface{}) bool {
 func (e *errorMatcher) String() string {
 	return e.err.Error()
 }
-

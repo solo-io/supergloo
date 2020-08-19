@@ -5,10 +5,11 @@
 package mock_access
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
-	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface

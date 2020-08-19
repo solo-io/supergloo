@@ -125,7 +125,7 @@ func (t *translator) Translate(
 		if tp.GetSpec().GetRetries() != nil {
 			reporter.ReportTrafficPolicyToMeshService(meshService, tp.GetRef(), NewUnsupportedFeatureError(
 				tp.GetRef(),
-				"Mirror",
+				"Retries",
 				"Smi does not support retries",
 			))
 		}
@@ -153,7 +153,7 @@ func (t *translator) Translate(
 				meshService,
 				tp.GetRef(),
 				eris.New("SMI only supports one TrafficSplit per service, multiple found"),
-				)
+			)
 			continue
 		}
 
@@ -181,7 +181,7 @@ func (t *translator) buildBackends(
 		}
 		kubeService := dest.GetKubeService()
 		if kubeService == nil {
-			return nil, eris.New("no no destination type found")
+			return nil, eris.Errorf("Smi traffic split only supports Kube destinations, found %T", dest.GetDestinationType())
 		}
 
 		if len(kubeService.GetSubset()) != 0 {

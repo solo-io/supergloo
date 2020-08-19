@@ -44,7 +44,7 @@ var (
 		" workloads exist")
 
 	CouldNotDetermineServiceAccountError = func(total int) error {
-		return eris.Errorf("Could not determine ServiceAccount target for MeshService as workloads belong to " +
+		return eris.Errorf("Could not determine ServiceAccount target for MeshService as workloads belong to "+
 			"%d service accounts", total)
 	}
 )
@@ -53,7 +53,7 @@ func NewTranslator() Translator {
 	return &translator{}
 }
 
-type translator struct {}
+type translator struct{}
 
 func (t *translator) Translate(
 	ctx context.Context,
@@ -102,7 +102,6 @@ func (t *translator) Translate(
 			)
 			continue
 		}
-
 
 		var trafficTargetsByAp []*smiaccessv1alpha2.TrafficTarget
 
@@ -168,8 +167,8 @@ func (t *translator) Translate(
 		}
 
 		httpMatch := smispecsv1alpha3.HTTPMatch{
-			Name:      t.kubeValidName(ap.GetRef()),
-			Methods:   t.methodsToString(ap.GetSpec().GetAllowedMethods()),
+			Name:    t.kubeValidName(ap.GetRef()),
+			Methods: t.methodsToString(ap.GetSpec().GetAllowedMethods()),
 			// Need to default to * or OSM does not route at all
 			PathRegex: constants.RegexMatchAll,
 		}

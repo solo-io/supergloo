@@ -1,4 +1,5 @@
 package linkerd
+
 // TODO: Uncomment to re-enable linkerd discovery
 //
 // import (
