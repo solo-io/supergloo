@@ -38,6 +38,7 @@ replace (
 )
 
 require (
+	github.com/Masterminds/semver v1.4.2
 	github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.4
