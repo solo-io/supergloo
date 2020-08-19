@@ -32,7 +32,7 @@ type smiTranslator struct {
 	dependencies    internal.DependencyFactory
 }
 
-func NewIstioTranslator(deps internal.DependencyFactory) Translator {
+func NewSmiTranslator(deps internal.DependencyFactory) Translator {
 	return &smiTranslator{
 		dependencies: deps,
 	}
@@ -46,7 +46,7 @@ func (s *smiTranslator) Translate(
 ) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("smi-translator-%v", s.totalTranslates))
 
-	meshServiceTranslator := s.dependencies.MakeMeshServiceTranslator(in.Meshes())
+	meshServiceTranslator := s.dependencies.MakeMeshServiceTranslator()
 
 	for _, meshService := range in.MeshServices().List() {
 		meshService := meshService // pike

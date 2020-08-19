@@ -14,7 +14,7 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
-//go:generate mockgen -source ./istio_mesh_service_translator.go -destination mocks/istio_mesh_service_translator.go
+//go:generate mockgen -source ./smi_mesh_service_translator.go -destination mocks/smi_mesh_service_translator.go
 
 // the VirtualService translator translates a MeshService into a VirtualService.
 type Translator interface {
@@ -32,17 +32,14 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx           context.Context
-	allMeshes     v1alpha2sets.MeshSet
 	trafficSplit  split.Translator
 	trafficTarget access.Translator
 }
 
-func NewTranslator(allMeshes v1alpha2sets.MeshSet) Translator {
+func NewTranslator(tsTranslator split.Translator, ttTranslator access.Translator) Translator {
 	return &translator{
-		allMeshes:     allMeshes,
-		trafficSplit:  split.NewTranslator(),
-		trafficTarget: access.NewTranslator(),
+		trafficSplit:  tsTranslator,
+		trafficTarget: ttTranslator,
 	}
 }
 
@@ -55,7 +52,7 @@ func (t *translator) Translate(
 	reporter reporting.Reporter,
 ) {
 	// only translate istio meshServices
-	if !t.isSmiMeshService(t.ctx, meshService, t.allMeshes) {
+	if !t.isSmiMeshService(ctx, meshService, in.Meshes()) {
 		return
 	}
 

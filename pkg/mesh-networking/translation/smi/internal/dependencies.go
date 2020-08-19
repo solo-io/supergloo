@@ -1,8 +1,9 @@
 package internal
 
 import (
-	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice/access"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice/split"
 )
 
 //go:generate mockgen -source ./dependencies.go -destination mocks/dependencies.go
@@ -12,9 +13,7 @@ import (
 // define our DependencyFactory anywhere else
 type DependencyFactory interface {
 
-	MakeMeshServiceTranslator(
-		meshes discoveryv1alpha2sets.MeshSet,
-	) meshservice.Translator
+	MakeMeshServiceTranslator() meshservice.Translator
 
 }
 
@@ -24,8 +23,6 @@ func NewDependencyFactory() DependencyFactory {
 	return dependencyFactoryImpl{}
 }
 
-func (d dependencyFactoryImpl) MakeMeshServiceTranslator(
-	meshes discoveryv1alpha2sets.MeshSet,
-) meshservice.Translator {
-	return meshservice.NewTranslator(meshes)
+func (d dependencyFactoryImpl) MakeMeshServiceTranslator() meshservice.Translator {
+	return meshservice.NewTranslator(split.NewTrafficSplitTranslator(), access.NewTranslator())
 }

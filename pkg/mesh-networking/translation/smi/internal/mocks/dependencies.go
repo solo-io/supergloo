@@ -5,11 +5,8 @@
 package mock_internal
 
 import (
-	context "context"
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice"
-	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
+	meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice"
 	reflect "reflect"
 )
 
@@ -37,15 +34,15 @@ func (m *MockDependencyFactory) EXPECT() *MockDependencyFactoryMockRecorder {
 }
 
 // MakeMeshServiceTranslator mocks base method
-func (m *MockDependencyFactory) MakeMeshServiceTranslator(ctx context.Context, clusters v1alpha1sets.KubernetesClusterSet, meshes v1alpha2sets.MeshSet) meshservice.Translator {
+func (m *MockDependencyFactory) MakeMeshServiceTranslator() meshservice.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeMeshServiceTranslator", ctx, clusters, meshes)
+	ret := m.ctrl.Call(m, "MakeMeshServiceTranslator")
 	ret0, _ := ret[0].(meshservice.Translator)
 	return ret0
 }
 
 // MakeMeshServiceTranslator indicates an expected call of MakeMeshServiceTranslator
-func (mr *MockDependencyFactoryMockRecorder) MakeMeshServiceTranslator(ctx, clusters, meshes interface{}) *gomock.Call {
+func (mr *MockDependencyFactoryMockRecorder) MakeMeshServiceTranslator() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshServiceTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshServiceTranslator), ctx, clusters, meshes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshServiceTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshServiceTranslator))
 }

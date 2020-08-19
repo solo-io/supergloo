@@ -7,20 +7,17 @@ import (
 )
 
 func FindBackingMeshWorkloads(
-	service *v1alpha2.MeshService,
+	service *v1alpha2.MeshServiceSpec_KubeService,
 	meshWorkloads v1alpha2sets.MeshWorkloadSet,
-) v1alpha2sets.MeshWorkloadSet {
+) v1alpha2.MeshWorkloadSlice {
 
-	result := v1alpha2sets.NewMeshWorkloadSet()
-	if service.Spec.GetKubeService() == nil {
-		return result
-	}
+	var result []*v1alpha2.MeshWorkload
 
 	for _, workload := range meshWorkloads.List() {
 		// TODO(ilackarms): refactor this to support more than just k8s workloads
 		// should probably go with a platform-based meshservice detector (e.g. one for k8s, one for vm, etc.)
-		if isBackingKubeWorkload(service.Spec.GetKubeService(), workload.Spec.GetKubernetes()) {
-			result.Insert(workload)
+		if isBackingKubeWorkload(service, workload.Spec.GetKubernetes()) {
+			result = append(result, workload)
 		}
 	}
 	return result

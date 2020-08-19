@@ -4,9 +4,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -30,8 +30,16 @@ func NewMeshServiceDetector() MeshServiceDetector {
 	return &meshServiceDetector{}
 }
 
-func (d meshServiceDetector) DetectMeshService(service *corev1.Service, meshWorkloads v1alpha2sets.MeshWorkloadSet) *v1alpha2.MeshService {
-	backingWorkloads := d.findBackingMeshWorkloads(service, meshWorkloads)
+func (m *meshServiceDetector) DetectMeshService(service *corev1.Service, meshWorkloads v1alpha2sets.MeshWorkloadSet) *v1alpha2.MeshService {
+
+	kubeService := &v1alpha2.MeshServiceSpec_KubeService{
+		Ref:                    ezkube.MakeClusterObjectRef(service),
+		WorkloadSelectorLabels: service.Spec.Selector,
+		Labels:                 service.Labels,
+		Ports:                  convertPorts(service),
+	}
+
+	backingWorkloads := workloadutils.FindBackingMeshWorkloads(kubeService, meshWorkloads)
 	if len(backingWorkloads) == 0 {
 		// TODO(ilackarms): we currently only create mesh services for services with backing workloads; this may be problematic when working with external services (not contained inside the mesh)
 		return nil
@@ -41,61 +49,21 @@ func (d meshServiceDetector) DetectMeshService(service *corev1.Service, meshWork
 	mesh := backingWorkloads[0].Spec.Mesh
 
 	// derive subsets from backing workloads
-	subsets := findSubsets(backingWorkloads)
+	kubeService.Subsets = m.findSubsets(backingWorkloads)
 
 	return &v1alpha2.MeshService{
 		ObjectMeta: utils.DiscoveredObjectMeta(service),
 		Spec: v1alpha2.MeshServiceSpec{
 			Type: &v1alpha2.MeshServiceSpec_KubeService_{
-				KubeService: &v1alpha2.MeshServiceSpec_KubeService{
-					Ref:                    ezkube.MakeClusterObjectRef(service),
-					WorkloadSelectorLabels: service.Spec.Selector,
-					Labels:                 service.Labels,
-					Ports:                  convertPorts(service),
-					Subsets:                subsets,
-				},
+				KubeService: kubeService,
 			},
 			Mesh: mesh,
 		},
 	}
 }
 
-func (d meshServiceDetector) findBackingMeshWorkloads(service *corev1.Service, meshWorkloads v1alpha2sets.MeshWorkloadSet) v1alpha2.MeshWorkloadSlice {
-	var backingMeshWorkloads v1alpha2.MeshWorkloadSlice
-
-	for _, workload := range meshWorkloads.List() {
-		// TODO(ilackarms): refactor this to support more than just k8s workloads
-		// should probably go with a platform-based meshservice detector (e.g. one for k8s, one for vm, etc.)
-		if isBackingKubeWorkload(service, workload.Spec.GetKubernetes()) {
-			backingMeshWorkloads = append(backingMeshWorkloads, workload)
-		}
-	}
-	return backingMeshWorkloads
-}
-
-func isBackingKubeWorkload(service *corev1.Service, kubeWorkload *v1alpha2.MeshWorkloadSpec_KubernertesWorkload) bool {
-	if kubeWorkload == nil {
-		return false
-	}
-
-	workloadRef := kubeWorkload.Controller
-
-	if workloadRef.ClusterName != service.ClusterName || workloadRef.Namespace != service.Namespace {
-		return false
-	}
-
-	podLabels := kubeWorkload.GetPodLabels()
-	selectorLabels := service.Spec.Selector
-
-	if len(podLabels) == 0 || len(selectorLabels) == 0 {
-		return false
-	}
-
-	return labels.SelectorFromSet(selectorLabels).Matches(labels.Set(podLabels))
-}
-
 // expects a list of just the workloads that back the service you're finding subsets for
-func findSubsets(backingWorkloads v1alpha2.MeshWorkloadSlice) map[string]*v1alpha2.MeshServiceSpec_KubeService_Subset {
+func (m *meshServiceDetector) findSubsets(backingWorkloads v1alpha2.MeshWorkloadSlice) map[string]*v1alpha2.MeshServiceSpec_KubeService_Subset {
 	uniqueLabels := make(map[string]sets.String)
 	for _, backingWorkload := range backingWorkloads {
 		for key, val := range backingWorkload.Spec.GetKubernetes().GetPodLabels() {

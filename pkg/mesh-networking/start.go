@@ -35,7 +35,7 @@ func startReconciler(
 	reporter := reporting.NewPanickingReporter(parameters.Ctx)
 	translator := translation.NewTranslator(
 		istio.NewIstioTranslator(),
-		smi.NewIstioTranslator(smi.DefaultDependencyFactory),
+		smi.NewSmiTranslator(smi.DefaultDependencyFactory),
 	)
 	validator := approval.NewApprover(translator)
 

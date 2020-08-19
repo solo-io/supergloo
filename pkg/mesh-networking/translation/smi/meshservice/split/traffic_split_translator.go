@@ -58,7 +58,7 @@ func (u *UnsupportedFeatureError) Error() string {
 	)
 }
 
-func NewTranslator() Translator {
+func NewTrafficSplitTranslator() Translator {
 	return &translator{}
 }
 

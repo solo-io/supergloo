@@ -8,13 +8,17 @@ import (
 	"github.com/rotisserie/eris"
 	smiaccessv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
+	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/types"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
+	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 //go:generate mockgen -source ./traffic_target_translator.go -destination mocks/traffic_target_translator.go
@@ -35,12 +39,21 @@ type Translator interface {
 	) ([]*smiaccessv1alpha2.TrafficTarget, []*smispecsv1alpha3.HTTPRouteGroup)
 }
 
+var (
+	NoServiceAccountError = eris.New("Could not determine ServiceAccount target for MeshService as no backing" +
+		" workloads exist")
+
+	CouldNotDetermineServiceAccountError = func(total int) error {
+		return eris.Errorf("Could not determine ServiceAccount target for MeshService as workloads belong to " +
+			"%d service accounts", total)
+	}
+)
+
 func NewTranslator() Translator {
 	return &translator{}
 }
 
-type translator struct {
-}
+type translator struct {}
 
 func (t *translator) Translate(
 	ctx context.Context,
@@ -48,39 +61,52 @@ func (t *translator) Translate(
 	meshService *discoveryv1alpha2.MeshService,
 	reporter reporting.Reporter,
 ) ([]*smiaccessv1alpha2.TrafficTarget, []*smispecsv1alpha3.HTTPRouteGroup) {
-
+	logger := contextutils.LoggerFrom(ctx).With(zap.String("translator", "access"))
 	kubeService := meshService.Spec.GetKubeService()
 
 	if kubeService == nil {
-		// TODO(ilackarms): non kube services currently unsupported
+		logger.Debugf("non kubernetes mesh service %s found, skipping", sksets.TypedKey(meshService))
 		return nil, nil
 	}
 
 	var trafficTargets []*smiaccessv1alpha2.TrafficTarget
 	var httpRouteGroups []*smispecsv1alpha3.HTTPRouteGroup
 
-	backingWorkloads := workloadutils.FindBackingMeshWorkloads(meshService, in.MeshWorkloads())
+	backingWorkloads := workloadutils.FindBackingMeshWorkloads(meshService.Spec.GetKubeService(), in.MeshWorkloads())
 	for _, ap := range meshService.Status.GetAppliedAccessPolicies() {
 
-		if backingWorkloads.Length() == 0 {
+		if len(backingWorkloads) == 0 {
 			reporter.ReportAccessPolicyToMeshService(
 				meshService,
 				ap.GetRef(),
-				eris.New("Could not determine ServiceAccount target for MeshService as no backing workloads exist"),
-			)
-			continue
-		} else if backingWorkloads.Length() > 1 {
-			reporter.ReportAccessPolicyToMeshService(
-				meshService,
-				ap.GetRef(),
-				eris.New("Could not determine ServiceAccount target for MeshService as more than 1 workloads exist"),
+				NoServiceAccountError,
 			)
 			continue
 		}
 
+		// Check workloads for all possible service accounts, if they belong to more than 1, report an error
+		serviceAccounts := sets.NewString()
+		for _, workload := range backingWorkloads {
+			kubeWorkload := workload.Spec.GetKubernetes()
+			if kubeWorkload == nil {
+				continue
+			}
+			serviceAccounts.Insert(kubeWorkload.GetServiceAccountName())
+		}
+
+		if serviceAccounts.Len() > 1 {
+			reporter.ReportAccessPolicyToMeshService(
+				meshService,
+				ap.GetRef(),
+				CouldNotDetermineServiceAccountError(serviceAccounts.Len()),
+			)
+			continue
+		}
+
+
 		var trafficTargetsByAp []*smiaccessv1alpha2.TrafficTarget
 
-		backingWorkload := backingWorkloads.List()[0]
+		backingWorkload := backingWorkloads[0]
 		trafficTarget := &smiaccessv1alpha2.TrafficTarget{
 			ObjectMeta: metautils.TranslatedObjectMeta(
 				meshService.Spec.GetKubeService().Ref,
@@ -124,13 +150,13 @@ func (t *translator) Translate(
 		}
 
 		// Append the ap ref to the name as each ap gets it's own traffic target
-		trafficTarget.Name += fmt.Sprintf("-%s", kubeValidName(ap.GetRef()))
+		trafficTarget.Name += fmt.Sprintf(".%s", t.kubeValidName(ap.GetRef()))
 
 		if len(ap.GetSpec().GetAllowedPorts()) > 1 {
 			// Add a traffic target per port
 			for _, port := range ap.GetSpec().GetAllowedPorts() {
 				ttByPort := trafficTarget.DeepCopy()
-				ttByPort.Name += fmt.Sprintf("-%d", port)
+				ttByPort.Name += fmt.Sprintf(".%d", port)
 				intPort := int(port)
 				ttByPort.Spec.Destination.Port = &intPort
 				trafficTargetsByAp = append(trafficTargetsByAp, ttByPort)
@@ -142,8 +168,8 @@ func (t *translator) Translate(
 		}
 
 		httpMatch := smispecsv1alpha3.HTTPMatch{
-			Name:      kubeValidName(ap.GetRef()),
-			Methods:   methodsToString(ap.GetSpec().GetAllowedMethods()),
+			Name:      t.kubeValidName(ap.GetRef()),
+			Methods:   t.methodsToString(ap.GetSpec().GetAllowedMethods()),
 			// Need to default to * or OSM does not route at all
 			PathRegex: constants.RegexMatchAll,
 		}
@@ -153,7 +179,7 @@ func (t *translator) Translate(
 		if len(ap.GetSpec().GetAllowedPaths()) > 1 {
 			for idx, path := range ap.GetSpec().GetAllowedPaths() {
 				matchByPath := httpMatch.DeepCopy()
-				matchByPath.Name += fmt.Sprintf("-%d", idx)
+				matchByPath.Name += fmt.Sprintf(".%d", idx)
 				matchByPath.PathRegex = path
 				httpMatches = append(httpMatches, httpMatch)
 			}
@@ -171,7 +197,7 @@ func (t *translator) Translate(
 			},
 		}
 		// Append the ap ref to the name as each ap gets it's own route group
-		routeGroup.Name += fmt.Sprintf("-%s", kubeValidName(ap.GetRef()))
+		routeGroup.Name += fmt.Sprintf(".%s", t.kubeValidName(ap.GetRef()))
 
 		// add all of the http matches to all of the traffic targets
 		for _, tt := range trafficTargetsByAp {
@@ -191,11 +217,11 @@ func (t *translator) Translate(
 	return trafficTargets, httpRouteGroups
 }
 
-func kubeValidName(id ezkube.ResourceId) string {
+func (t *translator) kubeValidName(id ezkube.ResourceId) string {
 	return id.GetName() + "." + id.GetNamespace()
 }
 
-func methodsToString(methods []types.HttpMethodValue) []string {
+func (t *translator) methodsToString(methods []types.HttpMethodValue) []string {
 	// If no method(s) has been specified, need to default to all or OSM doesn't work
 	if len(methods) == 0 {
 		return []string{string(smispecsv1alpha3.HTTPRouteMethodAll)}
