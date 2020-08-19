@@ -1,4 +1,4 @@
-package install
+package init
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 
 func Command(ctx context.Context, masterCluster string, remoteCluster string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "install",
+		Use:   "init",
 		Short: "Bootstrap a multicluster Istio demo with Service Mesh Hub",
 		Long: `
 Running the Service Mesh Hub demo setup locally requires 4 tools to be installed and 
@@ -28,7 +28,7 @@ This command will bootstrap 2 clusters, one of which will run the Service Mesh H
 management-plane as well as Istio, and the other will just run Istio.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return install(ctx, masterCluster, remoteCluster)
+			return initCmd(ctx, masterCluster, remoteCluster)
 		},
 	}
 	return cmd
@@ -41,7 +41,7 @@ const (
 	remotePort = "32000"
 )
 
-func install(ctx context.Context, masterCluster string, remoteCluster string) error {
+func initCmd(ctx context.Context, masterCluster string, remoteCluster string) error {
 	box := packr.NewBox("./scripts")
 	projectRoot, err := os.Getwd()
 	if err != nil {

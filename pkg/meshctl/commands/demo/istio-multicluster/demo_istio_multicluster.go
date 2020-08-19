@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/istio-multicluster/cleanup"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/istio-multicluster/install"
+	istio_init "github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/istio-multicluster/init"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +20,7 @@ func Command(ctx context.Context) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		install.Command(ctx, masterCluster, remoteCluster),
+		istio_init.Command(ctx, masterCluster, remoteCluster),
 		cleanup.Command(ctx, masterCluster, remoteCluster),
 	)
 
