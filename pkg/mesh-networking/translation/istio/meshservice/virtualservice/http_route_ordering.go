@@ -26,11 +26,11 @@ Note that the precedence of the matcher fields listed below is somewhat arbitrar
 is less specific than matching on headers), and the precedence of the fields can be safely rearranged if the resulting
 ordering needs to be changed.
 
-1. Headers, number of items decreasing
-2. QueryParams, number of items decreasing
-3. SourceLabels, number of items decreasing
-4. SourceNamespace, alphabetical decreasing
-5. Uri, according to StringMatch specificity defined below
+1. URI, according to StringMatch specificity defined below
+2. Headers, number of items decreasing
+3. QueryParams, number of items decreasing
+4. SourceLabels, number of items decreasing
+5. SourceNamespace, alphabetical decreasing
 6. Method, according to ordering declared in HTTPMethodOrdering
 7. WithoutHeaders, number of items decreasing
 */
@@ -39,6 +39,11 @@ func isHttpRouteMatcherMoreSpecific(httpRouteA, httpRouteB *networkingv1alpha3sp
 	// https://github.com/solo-io/service-mesh-hub/blob/f05b08c4fec934eb7d492f414808789613f2e7f8/pkg/mesh-networking/translation/istio/meshservice/virtualservice/virtual_service_translator.go#L99
 	a := httpRouteA.GetMatch()[0]
 	b := httpRouteB.GetMatch()[0]
+	if isStringMatchMoreSpecific(a.GetUri(), b.GetUri()) {
+		return true
+	} else if isStringMatchMoreSpecific(b.GetUri(), a.GetUri()) {
+		return false
+	}
 	if len(a.GetHeaders()) > len(b.GetHeaders()) {
 		return true
 	} else if len(a.GetHeaders()) < len(b.GetHeaders()) {
@@ -57,11 +62,6 @@ func isHttpRouteMatcherMoreSpecific(httpRouteA, httpRouteB *networkingv1alpha3sp
 	if a.GetSourceNamespace() > b.GetSourceNamespace() {
 		return true
 	} else if a.GetSourceNamespace() < b.GetSourceNamespace() {
-		return false
-	}
-	if isStringMatchMoreSpecific(a.GetUri(), b.GetUri()) {
-		return true
-	} else if isStringMatchMoreSpecific(b.GetUri(), a.GetUri()) {
 		return false
 	}
 	if isMethodMoreSpecific(a.GetMethod(), b.GetMethod()) {
@@ -84,17 +84,26 @@ func isStringMatchMoreSpecific(a, b *networkingv1alpha3spec.StringMatch) bool {
 		return true
 	} else if len(a.GetExact()) < len(b.GetExact()) {
 		return false
+	} else if a.GetExact() != "" {
+		// If same length, sort lexically for determinism
+		return a.GetExact() < b.GetExact()
 	}
 	// the notion of specificity doesn't apply to this regex string ordering, but this is needed for determinism
 	if len(a.GetRegex()) > len(b.GetRegex()) {
 		return true
 	} else if len(a.GetRegex()) < len(b.GetRegex()) {
 		return false
+	} else if a.GetRegex() != "" {
+		// If same length, sort lexically for determinism
+		return a.GetRegex() < b.GetRegex()
 	}
 	if len(a.GetPrefix()) > len(b.GetPrefix()) {
 		return true
 	} else if len(a.GetPrefix()) < len(b.GetPrefix()) {
 		return false
+	} else if a.GetPrefix() != "" {
+		// If same length, sort lexically for determinism
+		return a.GetPrefix() < b.GetPrefix()
 	}
 	return false
 }

@@ -203,6 +203,44 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
 					{
+						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "GET"}},
+						Uri:             &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "path"}},
+						SourceLabels:    sourceSelectorLabels,
+						SourceNamespace: sourceSelectorNamespaces[0],
+						Port:            8080,
+					},
+				},
+				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
+					Destination: &networkingv1alpha3spec.Destination{
+						Host: "local-hostname",
+						Port: &networkingv1alpha3spec.PortSelector{
+							Number: 8080,
+						},
+					},
+				}},
+			},
+			{
+				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+					{
+						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "GET"}},
+						Uri:             &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "path"}},
+						SourceLabels:    sourceSelectorLabels,
+						SourceNamespace: sourceSelectorNamespaces[0],
+						Port:            9080,
+					},
+				},
+				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
+					Destination: &networkingv1alpha3spec.Destination{
+						Host: "local-hostname",
+						Port: &networkingv1alpha3spec.PortSelector{
+							Number: 9080,
+						},
+					},
+				}},
+			},
+			{
+				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+					{
 						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "POST"}},
 						SourceLabels:    sourceSelectorLabels,
 						SourceNamespace: sourceSelectorNamespaces[1],
@@ -231,44 +269,6 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							"name3": {MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: "[a-z]+"}},
 						},
 						Port: 9080,
-					},
-				},
-				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
-					Destination: &networkingv1alpha3spec.Destination{
-						Host: "local-hostname",
-						Port: &networkingv1alpha3spec.PortSelector{
-							Number: 9080,
-						},
-					},
-				}},
-			},
-			{
-				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
-					{
-						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "GET"}},
-						Uri:             &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "path"}},
-						SourceLabels:    sourceSelectorLabels,
-						SourceNamespace: sourceSelectorNamespaces[0],
-						Port:            8080,
-					},
-				},
-				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
-					Destination: &networkingv1alpha3spec.Destination{
-						Host: "local-hostname",
-						Port: &networkingv1alpha3spec.PortSelector{
-							Number: 8080,
-						},
-					},
-				}},
-			},
-			{
-				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
-					{
-						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "GET"}},
-						Uri:             &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "path"}},
-						SourceLabels:    sourceSelectorLabels,
-						SourceNamespace: sourceSelectorNamespaces[0],
-						Port:            9080,
 					},
 				},
 				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
