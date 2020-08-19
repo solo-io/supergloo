@@ -80,6 +80,9 @@ metadata:
   namespace: bookstore
   labels:
     app: bookstore
+  annotations:
+    # annotation for mesh service discovery
+    "discovery.smh.solo.io/mesh-name": osm-controller-osm-system-master-cluster
 spec:
   ports:
   - port: 80

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/contextutils"
+	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
@@ -19,15 +19,17 @@ const (
 )
 
 type meshDetector struct {
-	ctx context.Context
+	ctx        context.Context
+	configMaps corev1sets.ConfigMapSet
 }
 
 func NewMeshDetector(
 	ctx context.Context,
+	configMaps corev1sets.ConfigMapSet,
 ) detector.MeshDetector {
-
 	return &meshDetector{
-		ctx: contextutils.WithLogger(ctx, "detector"),
+		ctx:        ctx,
+		configMaps: configMaps,
 	}
 }
 

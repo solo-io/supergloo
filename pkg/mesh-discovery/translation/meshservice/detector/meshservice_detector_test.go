@@ -1,10 +1,13 @@
 package detector_test
 
 import (
+	"context"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -95,11 +98,12 @@ var _ = Describe("MeshserviceDetector", func() {
 			makeWorkload("v1"),
 			makeWorkload("v2"),
 		)
+		meshes := v1alpha2sets.NewMeshSet()
 		svc := makeService()
 
 		detector := NewMeshServiceDetector()
 
-		meshService := detector.DetectMeshService(svc, workloads)
+		meshService := detector.DetectMeshService(context.Background(), svc, workloads, meshes)
 
 		Expect(meshService).To(Equal(&v1alpha2.MeshService{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
@@ -129,6 +133,53 @@ var _ = Describe("MeshserviceDetector", func() {
 					},
 				},
 				Mesh: mesh,
+			},
+		}))
+	})
+
+	It("translates a service with a discovery annotation to a meshservice", func() {
+		workloads := v1alpha2sets.NewMeshWorkloadSet()
+		meshes := v1alpha2sets.NewMeshSet(&v1alpha2.Mesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "hello",
+				Namespace: defaults.GetPodNamespace(),
+			},
+		})
+		svc := makeService()
+		svc.Annotations = map[string]string{
+			DiscoveryMeshNameAnnotation: "hello",
+		}
+
+		detector := NewMeshServiceDetector()
+
+		meshService := detector.DetectMeshService(context.Background(), svc, workloads, meshes)
+
+		Expect(meshService).To(Equal(&v1alpha2.MeshService{
+			ObjectMeta: utils.DiscoveredObjectMeta(svc),
+			Spec: v1alpha2.MeshServiceSpec{
+				Type: &v1alpha2.MeshServiceSpec_KubeService_{
+					KubeService: &v1alpha2.MeshServiceSpec_KubeService{
+						Ref:                    ezkube.MakeClusterObjectRef(svc),
+						WorkloadSelectorLabels: svc.Spec.Selector,
+						Labels:                 svc.Labels,
+						Ports: []*v1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
+							{
+								Port:     1234,
+								Name:     "port1",
+								Protocol: "TCP",
+							},
+							{
+								Port:     2345,
+								Name:     "port2",
+								Protocol: "UDP",
+							},
+						},
+					},
+				},
+				Mesh: &skv1.ObjectRef{
+					Name:      "hello",
+					Namespace: defaults.GetPodNamespace(),
+				},
 			},
 		}))
 	})

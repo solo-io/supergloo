@@ -44,7 +44,7 @@ func (t translator) Translate(ctx context.Context, in input.Snapshot) (output.Sn
 		meshes,
 	)
 
-	meshServices := meshServiceTranslator.TranslateMeshServices(in.Services(), meshWorkloads)
+	meshServices := meshServiceTranslator.TranslateMeshServices(in.Services(), meshWorkloads, meshes)
 
 	t.totalTranslates++
 

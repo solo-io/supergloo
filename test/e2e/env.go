@@ -45,6 +45,20 @@ func newEnv(mgmt, remote string) Env {
 	}
 }
 
+type SingleClusterEnv struct {
+	Management KubeContext
+}
+
+func (s SingleClusterEnv) DumpState() {
+	dumpState()
+}
+
+func newSingleClusterEnv(mgmt string) SingleClusterEnv {
+	return SingleClusterEnv{
+		Management: NewKubeContext(mgmt),
+	}
+}
+
 type KubeContext struct {
 	Context             string
 	Config              *rest.Config
@@ -208,6 +222,54 @@ func StartEnv(ctx context.Context) Env {
 	Expect(err).NotTo(HaveOccurred())
 
 	return newEnv(masterContext, remoteContext)
+}
+
+var (
+	singleClusterEnv     SingleClusterEnv
+	singleClusterEnvOnce sync.Once
+)
+
+func StartSingleClusterEnvOnce(ctx context.Context) SingleClusterEnv {
+	singleClusterEnvOnce.Do(func() {
+		singleClusterEnv = StartSingleClusterEnv(ctx)
+	})
+
+	return singleClusterEnv
+}
+
+func GetSingleClusterEnv() SingleClusterEnv {
+	return singleClusterEnv
+}
+
+func ClearSingleClusterEnv(ctx context.Context) error {
+	if useExisting := os.Getenv("USE_EXISTING"); useExisting == "1" {
+		// dont clear existing env
+		return nil
+	}
+	cmd := exec.CommandContext(ctx, "./ci/setup-kind.sh", "cleanup", strconv.Itoa(GinkgoParallelNode()))
+	cmd.Stdout = GinkgoWriter
+	cmd.Stderr = GinkgoWriter
+	return cmd.Run()
+}
+
+func StartSingleClusterEnv(ctx context.Context) SingleClusterEnv {
+
+	if useExisting := os.Getenv("USE_EXISTING"); useExisting == "1" {
+		return newSingleClusterEnv(masterContext)
+	}
+
+	// TODO: don't hardcode osm installation here
+	cmd := exec.CommandContext(ctx, "./ci/setup-kind.sh", "osm")
+	cmd.Stdout = GinkgoWriter
+	cmd.Stderr = GinkgoWriter
+
+	err := cmd.Run()
+	if err != nil {
+		dumpState()
+	}
+	Expect(err).NotTo(HaveOccurred())
+
+	return newSingleClusterEnv(masterContext)
 }
 
 func dumpState() {

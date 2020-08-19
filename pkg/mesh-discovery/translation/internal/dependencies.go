@@ -54,7 +54,7 @@ func (d DependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, in input.
 		// linkerd.NewMeshDetector(
 		// 	in.ConfigMaps(),
 		// ),
-		osm.NewMeshDetector(ctx),
+		osm.NewMeshDetector(ctx, in.ConfigMaps()),
 	}
 
 	return mesh.NewTranslator(ctx, detectors)
@@ -81,6 +81,6 @@ func (d DependencyFactoryImpl) MakeMeshWorkloadTranslator(
 }
 
 func (d DependencyFactoryImpl) MakeMeshServiceTranslator(ctx context.Context) meshservice.Translator {
-	return meshservice.NewTranslator(ctx, meshservicedetector.NewMeshServiceDetector())
+	return meshservice.NewTranslator(ctx, meshservicedetector.NewMeshServiceDetector(ctx))
 
 }

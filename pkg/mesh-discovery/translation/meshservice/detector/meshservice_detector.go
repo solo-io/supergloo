@@ -1,13 +1,23 @@
 package detector
 
 import (
+	"context"
+
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/workloadutils"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+)
+
+const (
+	DiscoveryMeshNameAnnotation      = "discovery.smh.solo.io/mesh-name"
+	DiscoveryMeshNamespaceAnnotation = "discovery.smh.solo.io/mesh-namespace"
 )
 
 var (
@@ -21,16 +31,26 @@ var (
 // whose backing pods are injected with a Mesh sidecar.
 // If no Mesh is detected, nil is returned
 type MeshServiceDetector interface {
-	DetectMeshService(service *corev1.Service, meshWorkloads v1alpha2sets.MeshWorkloadSet) *v1alpha2.MeshService
+	DetectMeshService(
+		service *corev1.Service,
+		meshWorkloads v1alpha2sets.MeshWorkloadSet,
+		meshes v1alpha2sets.MeshSet,
+	) *v1alpha2.MeshService
 }
 
-type meshServiceDetector struct{}
-
-func NewMeshServiceDetector() MeshServiceDetector {
-	return &meshServiceDetector{}
+type meshServiceDetector struct {
+	ctx context.Context
 }
 
-func (m *meshServiceDetector) DetectMeshService(service *corev1.Service, meshWorkloads v1alpha2sets.MeshWorkloadSet) *v1alpha2.MeshService {
+func NewMeshServiceDetector(ctx context.Context) MeshServiceDetector {
+	return &meshServiceDetector{ctx: ctx}
+}
+
+func (m *meshServiceDetector) DetectMeshService(
+	service *corev1.Service,
+	meshWorkloads v1alpha2sets.MeshWorkloadSet,
+	meshes v1alpha2sets.MeshSet,
+) *v1alpha2.MeshService {
 
 	kubeService := &v1alpha2.MeshServiceSpec_KubeService{
 		Ref:                    ezkube.MakeClusterObjectRef(service),
@@ -39,17 +59,42 @@ func (m *meshServiceDetector) DetectMeshService(service *corev1.Service, meshWor
 		Ports:                  convertPorts(service),
 	}
 
-	backingWorkloads := workloadutils.FindBackingMeshWorkloads(kubeService, meshWorkloads)
-	if len(backingWorkloads) == 0 {
-		// TODO(ilackarms): we currently only create mesh services for services with backing workloads; this may be problematic when working with external services (not contained inside the mesh)
-		return nil
+	var validMesh *v1.ObjectRef
+
+	// TODO: support subsets from services which have been discovered via the annotation
+	meshName, ok := service.Annotations[DiscoveryMeshNameAnnotation]
+	if ok {
+		// If no mesh namespace has been set via annotation, use default
+		meshNamespace, ok := service.Annotations[DiscoveryMeshNamespaceAnnotation]
+		if !ok {
+			meshNamespace = defaults.GetPodNamespace()
+		}
+		possibleMeshRef := &v1.ObjectRef{
+			Name:      meshName,
+			Namespace: meshNamespace,
+		}
+		_, err := meshes.Find(possibleMeshRef)
+		if err != nil {
+			contextutils.LoggerFrom(m.ctx).Errorf("mesh %s could not be found in ns %s", meshName, meshNamespace)
+		} else {
+			validMesh = possibleMeshRef
+		}
 	}
 
-	// all backing workloads should be in the same mesh
-	mesh := backingWorkloads[0].Spec.Mesh
+	// if no mesh was found from the annotation, check the workloads
+	if validMesh == nil {
+		backingWorkloads := workloadutils.FindBackingMeshWorkloads(kubeService, meshWorkloads)
+		// if discovery is enabled, do not return
+		if len(backingWorkloads) == 0 {
+			return nil
+		}
 
-	// derive subsets from backing workloads
-	kubeService.Subsets = m.findSubsets(backingWorkloads)
+		// all backing workloads should be in the same mesh
+		validMesh = backingWorkloads[0].Spec.Mesh
+
+		// derive subsets from backing workloads
+		kubeService.Subsets = m.findSubsets(backingWorkloads)
+	}
 
 	return &v1alpha2.MeshService{
 		ObjectMeta: utils.DiscoveredObjectMeta(service),
@@ -57,7 +102,7 @@ func (m *meshServiceDetector) DetectMeshService(service *corev1.Service, meshWor
 			Type: &v1alpha2.MeshServiceSpec_KubeService_{
 				KubeService: kubeService,
 			},
-			Mesh: mesh,
+			Mesh: validMesh,
 		},
 	}
 }
