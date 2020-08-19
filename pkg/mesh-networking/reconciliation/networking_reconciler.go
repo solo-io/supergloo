@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
+	"github.com/solo-io/skv2/pkg/predicate"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	corev1 "k8s.io/api/core/v1"
@@ -34,6 +38,7 @@ type networkingReconciler struct {
 	translator         translation.Translator
 	masterClient       client.Client
 	multiClusterClient multicluster.Client
+	history            *stats.SnapshotHistory
 	totalReconciles    int
 }
 
@@ -45,6 +50,7 @@ func Start(
 	translator translation.Translator,
 	multiClusterClient multicluster.Client,
 	mgr manager.Manager,
+	history *stats.SnapshotHistory,
 ) error {
 	d := &networkingReconciler{
 		ctx:                ctx,
@@ -54,21 +60,22 @@ func Start(
 		translator:         translator,
 		masterClient:       mgr.GetClient(),
 		multiClusterClient: multiClusterClient,
+		history:            history,
 	}
 
-	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2)
+	filterNetworkingEvents := predicate.SimplePredicate{
+		Filter: predicate.SimpleEventFilterFunc(isIgnoredSecret),
+	}
+
+	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, filterNetworkingEvents)
 }
 
 // reconcile global state
 func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
-	if isIgnoredSecret(obj) {
-		contextutils.LoggerFrom(r.ctx).Debugf("ignoring secret %v which is not used to reconcile", sets.Key(obj))
-		return false, nil
-	}
 	contextutils.LoggerFrom(r.ctx).Debugf("object triggered resync: %T<%v>", obj, sets.Key(obj))
 
 	r.totalReconciles++
-	//return false, nil //noop
+
 	ctx := contextutils.WithLogger(r.ctx, fmt.Sprintf("reconcile-%v", r.totalReconciles))
 	inputSnap, err := r.builder.BuildSnapshot(ctx, "mesh-networking", input.BuildOptions{
 		// only look at kube clusters in our own namespace
@@ -107,11 +114,14 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Sn
 
 	outputSnap.ApplyLocalCluster(ctx, r.masterClient, errHandler)
 
+	r.history.SetInput(in)
+	r.history.SetOutput(outputSnap)
+
 	return errHandler.Errors()
 }
 
 // returns true if the passed object is a secret which is of a type that is ignored by SMH
-func isIgnoredSecret(obj ezkube.ResourceId) bool {
+func isIgnoredSecret(obj metav1.Object) bool {
 	secret, ok := obj.(*corev1.Secret)
 	if !ok {
 		return false

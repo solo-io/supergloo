@@ -27,36 +27,33 @@ func Start(ctx context.Context, opts bootstrap.Options) error {
 
 // start the main reconcile loop
 func startReconciler(
-	ctx context.Context,
-	masterManager manager.Manager,
-	mcClient multicluster.Client,
-	clusters multicluster.ClusterSet,
-	clusterWatcher multicluster.ClusterWatcher,
+	parameters bootstrap.StartParameters,
 ) error {
 
-	snapshotBuilder := input.NewSingleClusterBuilder(masterManager.GetClient())
-	reporter := reporting.NewPanickingReporter(ctx)
+	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager.GetClient())
+	reporter := reporting.NewPanickingReporter(parameters.Ctx)
 	translator := translation.NewTranslator(
 		istio.NewIstioTranslator(),
 	)
 	validator := approval.NewApprover(translator)
 
 	startCertIssuer(
-		ctx,
-		masterManager,
-		mcClient,
-		clusters,
-		clusterWatcher,
+		parameters.Ctx,
+		parameters.MasterManager,
+		parameters.McClient,
+		parameters.Clusters,
+		parameters.ClusterWatcher,
 	)
 
 	return reconciliation.Start(
-		ctx,
+		parameters.Ctx,
 		snapshotBuilder,
 		validator,
 		reporter,
 		translator,
-		mcClient,
-		masterManager,
+		parameters.McClient,
+		parameters.MasterManager,
+		parameters.SnapshotHistory,
 	)
 }
 
