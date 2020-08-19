@@ -544,16 +544,15 @@ func (*VirtualMeshSpec_Federation) XXX_OneofWrappers() []interface{} {
 }
 
 type VirtualMeshStatus struct {
-	// The most recent generation observed in the the TrafficPolicy metadata.
-	// if the observedGeneration does not match generation, the controller has not received the most
+	// The most recent generation observed in the the VirtualMesh metadata.
+	// If the observedGeneration does not match generation, the controller has not received the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
-	// the state of the overall resource.
-	// will only show accepted if it has been successfully
+	// The status of the overall resource. It will only show accepted if it has been successfully
 	// applied to all target meshes.
 	Status *ApprovalStatus `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
 	// The status of the VirtualMesh for each Mesh to which it has been applied.
-	// A TrafficPolicy may be Accepted for some Meshes and rejected for others.
+	// A VirtualMesh may be Accepted for some Meshes and rejected for others.
 	Meshes               map[string]*ApprovalStatus `protobuf:"bytes,3,rep,name=meshes,proto3" json:"meshes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
 	XXX_unrecognized     []byte                     `json:"-"`
