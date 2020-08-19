@@ -1,4 +1,5 @@
 package consul
+// TODO: Uncomment to re-enable consul discovery
 //
 // import (
 // 	"regexp"
