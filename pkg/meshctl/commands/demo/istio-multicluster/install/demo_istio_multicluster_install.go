@@ -22,7 +22,7 @@ func Command(ctx context.Context, masterCluster string, remoteCluster string) *c
 		Short: "Bootstrap a multicluster Istio demo with Service Mesh Hub",
 		Long: `
 Running the Service Mesh Hub demo setup locally requires 4 tools to be installed and 
-accessible via your PATH: kubectl, kind, docker, and istioctl
+accessible via your PATH: kubectl, kind, docker, and istioctl < v1.7.0.
 
 This command will bootstrap 2 clusters, one of which will run the Service Mesh Hub
 management-plane as well as Istio, and the other will just run Istio.
