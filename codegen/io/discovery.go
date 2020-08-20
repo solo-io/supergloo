@@ -30,7 +30,7 @@ var (
 		}: {
 			"Mesh",
 			"MeshWorkload",
-			"MeshService",
+			"TrafficTarget",
 		},
 	}
 )

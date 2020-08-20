@@ -410,5 +410,5 @@ message TrafficPolicyStatus {
 
     // The status of the TrafficPolicy for each TrafficTarget to which it has been applied.
     // A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others.
-    map<string, ApprovalStatus> mesh_services = 3;
+    map<string, ApprovalStatus> traffic_targets = 3;
 }

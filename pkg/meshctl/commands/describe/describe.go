@@ -5,7 +5,7 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/internal/flags"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/mesh"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/meshservice"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/traffictarget"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +19,7 @@ func Command(ctx context.Context) *cobra.Command {
 
 	cmd.AddCommand(
 		mesh.Command(ctx, opts),
-		meshservice.Command(ctx, opts),
+		traffictarget.Command(ctx, opts),
 	)
 
 	return cmd

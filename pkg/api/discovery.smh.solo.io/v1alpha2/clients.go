@@ -40,7 +40,7 @@ func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
 // clienset for the discovery.smh.solo.io/v1alpha2 APIs
 type Clientset interface {
 	// clienset for the discovery.smh.solo.io/v1alpha2/v1alpha2 APIs
-	MeshServices() MeshServiceClient
+	TrafficTargets() TrafficTargetClient
 	// clienset for the discovery.smh.solo.io/v1alpha2/v1alpha2 APIs
 	MeshWorkloads() MeshWorkloadClient
 	// clienset for the discovery.smh.solo.io/v1alpha2/v1alpha2 APIs
@@ -70,8 +70,8 @@ func NewClientset(client client.Client) Clientset {
 }
 
 // clienset for the discovery.smh.solo.io/v1alpha2/v1alpha2 APIs
-func (c *clientSet) MeshServices() MeshServiceClient {
-	return NewMeshServiceClient(c.client)
+func (c *clientSet) TrafficTargets() TrafficTargetClient {
+	return NewTrafficTargetClient(c.client)
 }
 
 // clienset for the discovery.smh.solo.io/v1alpha2/v1alpha2 APIs
@@ -84,109 +84,109 @@ func (c *clientSet) Meshes() MeshClient {
 	return NewMeshClient(c.client)
 }
 
-// Reader knows how to read and list MeshServices.
-type MeshServiceReader interface {
-	// Get retrieves a MeshService for the given object key
-	GetMeshService(ctx context.Context, key client.ObjectKey) (*MeshService, error)
+// Reader knows how to read and list TrafficTargets.
+type TrafficTargetReader interface {
+	// Get retrieves a TrafficTarget for the given object key
+	GetTrafficTarget(ctx context.Context, key client.ObjectKey) (*TrafficTarget, error)
 
-	// List retrieves list of MeshServices for a given namespace and list options.
-	ListMeshService(ctx context.Context, opts ...client.ListOption) (*MeshServiceList, error)
+	// List retrieves list of TrafficTargets for a given namespace and list options.
+	ListTrafficTarget(ctx context.Context, opts ...client.ListOption) (*TrafficTargetList, error)
 }
 
-// MeshServiceTransitionFunction instructs the MeshServiceWriter how to transition between an existing
-// MeshService object and a desired on an Upsert
-type MeshServiceTransitionFunction func(existing, desired *MeshService) error
+// TrafficTargetTransitionFunction instructs the TrafficTargetWriter how to transition between an existing
+// TrafficTarget object and a desired on an Upsert
+type TrafficTargetTransitionFunction func(existing, desired *TrafficTarget) error
 
-// Writer knows how to create, delete, and update MeshServices.
-type MeshServiceWriter interface {
-	// Create saves the MeshService object.
-	CreateMeshService(ctx context.Context, obj *MeshService, opts ...client.CreateOption) error
+// Writer knows how to create, delete, and update TrafficTargets.
+type TrafficTargetWriter interface {
+	// Create saves the TrafficTarget object.
+	CreateTrafficTarget(ctx context.Context, obj *TrafficTarget, opts ...client.CreateOption) error
 
-	// Delete deletes the MeshService object.
-	DeleteMeshService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	// Delete deletes the TrafficTarget object.
+	DeleteTrafficTarget(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
-	// Update updates the given MeshService object.
-	UpdateMeshService(ctx context.Context, obj *MeshService, opts ...client.UpdateOption) error
+	// Update updates the given TrafficTarget object.
+	UpdateTrafficTarget(ctx context.Context, obj *TrafficTarget, opts ...client.UpdateOption) error
 
-	// Patch patches the given MeshService object.
-	PatchMeshService(ctx context.Context, obj *MeshService, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given TrafficTarget object.
+	PatchTrafficTarget(ctx context.Context, obj *TrafficTarget, patch client.Patch, opts ...client.PatchOption) error
 
-	// DeleteAllOf deletes all MeshService objects matching the given options.
-	DeleteAllOfMeshService(ctx context.Context, opts ...client.DeleteAllOfOption) error
+	// DeleteAllOf deletes all TrafficTarget objects matching the given options.
+	DeleteAllOfTrafficTarget(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
-	// Create or Update the MeshService object.
-	UpsertMeshService(ctx context.Context, obj *MeshService, transitionFuncs ...MeshServiceTransitionFunction) error
+	// Create or Update the TrafficTarget object.
+	UpsertTrafficTarget(ctx context.Context, obj *TrafficTarget, transitionFuncs ...TrafficTargetTransitionFunction) error
 }
 
-// StatusWriter knows how to update status subresource of a MeshService object.
-type MeshServiceStatusWriter interface {
+// StatusWriter knows how to update status subresource of a TrafficTarget object.
+type TrafficTargetStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
-	// given MeshService object.
-	UpdateMeshServiceStatus(ctx context.Context, obj *MeshService, opts ...client.UpdateOption) error
+	// given TrafficTarget object.
+	UpdateTrafficTargetStatus(ctx context.Context, obj *TrafficTarget, opts ...client.UpdateOption) error
 
-	// Patch patches the given MeshService object's subresource.
-	PatchMeshServiceStatus(ctx context.Context, obj *MeshService, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given TrafficTarget object's subresource.
+	PatchTrafficTargetStatus(ctx context.Context, obj *TrafficTarget, patch client.Patch, opts ...client.PatchOption) error
 }
 
-// Client knows how to perform CRUD operations on MeshServices.
-type MeshServiceClient interface {
-	MeshServiceReader
-	MeshServiceWriter
-	MeshServiceStatusWriter
+// Client knows how to perform CRUD operations on TrafficTargets.
+type TrafficTargetClient interface {
+	TrafficTargetReader
+	TrafficTargetWriter
+	TrafficTargetStatusWriter
 }
 
-type meshServiceClient struct {
+type trafficTargetClient struct {
 	client client.Client
 }
 
-func NewMeshServiceClient(client client.Client) *meshServiceClient {
-	return &meshServiceClient{client: client}
+func NewTrafficTargetClient(client client.Client) *trafficTargetClient {
+	return &trafficTargetClient{client: client}
 }
 
-func (c *meshServiceClient) GetMeshService(ctx context.Context, key client.ObjectKey) (*MeshService, error) {
-	obj := &MeshService{}
+func (c *trafficTargetClient) GetTrafficTarget(ctx context.Context, key client.ObjectKey) (*TrafficTarget, error) {
+	obj := &TrafficTarget{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (c *meshServiceClient) ListMeshService(ctx context.Context, opts ...client.ListOption) (*MeshServiceList, error) {
-	list := &MeshServiceList{}
+func (c *trafficTargetClient) ListTrafficTarget(ctx context.Context, opts ...client.ListOption) (*TrafficTargetList, error) {
+	list := &TrafficTargetList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
 	return list, nil
 }
 
-func (c *meshServiceClient) CreateMeshService(ctx context.Context, obj *MeshService, opts ...client.CreateOption) error {
+func (c *trafficTargetClient) CreateTrafficTarget(ctx context.Context, obj *TrafficTarget, opts ...client.CreateOption) error {
 	return c.client.Create(ctx, obj, opts...)
 }
 
-func (c *meshServiceClient) DeleteMeshService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &MeshService{}
+func (c *trafficTargetClient) DeleteTrafficTarget(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &TrafficTarget{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
-func (c *meshServiceClient) UpdateMeshService(ctx context.Context, obj *MeshService, opts ...client.UpdateOption) error {
+func (c *trafficTargetClient) UpdateTrafficTarget(ctx context.Context, obj *TrafficTarget, opts ...client.UpdateOption) error {
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *meshServiceClient) PatchMeshService(ctx context.Context, obj *MeshService, patch client.Patch, opts ...client.PatchOption) error {
+func (c *trafficTargetClient) PatchTrafficTarget(ctx context.Context, obj *TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
-func (c *meshServiceClient) DeleteAllOfMeshService(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &MeshService{}
+func (c *trafficTargetClient) DeleteAllOfTrafficTarget(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &TrafficTarget{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *meshServiceClient) UpsertMeshService(ctx context.Context, obj *MeshService, transitionFuncs ...MeshServiceTransitionFunction) error {
+func (c *trafficTargetClient) UpsertTrafficTarget(ctx context.Context, obj *TrafficTarget, transitionFuncs ...TrafficTargetTransitionFunction) error {
 	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*MeshService), desired.(*MeshService)); err != nil {
+			if err := txFunc(existing.(*TrafficTarget), desired.(*TrafficTarget)); err != nil {
 				return err
 			}
 		}
@@ -196,34 +196,34 @@ func (c *meshServiceClient) UpsertMeshService(ctx context.Context, obj *MeshServ
 	return err
 }
 
-func (c *meshServiceClient) UpdateMeshServiceStatus(ctx context.Context, obj *MeshService, opts ...client.UpdateOption) error {
+func (c *trafficTargetClient) UpdateTrafficTargetStatus(ctx context.Context, obj *TrafficTarget, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *meshServiceClient) PatchMeshServiceStatus(ctx context.Context, obj *MeshService, patch client.Patch, opts ...client.PatchOption) error {
+func (c *trafficTargetClient) PatchTrafficTargetStatus(ctx context.Context, obj *TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
-// Provides MeshServiceClients for multiple clusters.
-type MulticlusterMeshServiceClient interface {
-	// Cluster returns a MeshServiceClient for the given cluster
-	Cluster(cluster string) (MeshServiceClient, error)
+// Provides TrafficTargetClients for multiple clusters.
+type MulticlusterTrafficTargetClient interface {
+	// Cluster returns a TrafficTargetClient for the given cluster
+	Cluster(cluster string) (TrafficTargetClient, error)
 }
 
-type multiclusterMeshServiceClient struct {
+type multiclusterTrafficTargetClient struct {
 	client multicluster.Client
 }
 
-func NewMulticlusterMeshServiceClient(client multicluster.Client) MulticlusterMeshServiceClient {
-	return &multiclusterMeshServiceClient{client: client}
+func NewMulticlusterTrafficTargetClient(client multicluster.Client) MulticlusterTrafficTargetClient {
+	return &multiclusterTrafficTargetClient{client: client}
 }
 
-func (m *multiclusterMeshServiceClient) Cluster(cluster string) (MeshServiceClient, error) {
+func (m *multiclusterTrafficTargetClient) Cluster(cluster string) (TrafficTargetClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
 	}
-	return NewMeshServiceClient(client), nil
+	return NewTrafficTargetClient(client), nil
 }
 
 // Reader knows how to read and list MeshWorkloads.

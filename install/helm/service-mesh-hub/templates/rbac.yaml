@@ -33,7 +33,7 @@ rules:
   resources:
   - meshes
   - meshworkloads
-  - meshservices
+  - traffictargets
   verbs:
   - '*'
 
@@ -93,7 +93,7 @@ rules:
   resources:
   - meshes
   - meshworkloads
-  - meshservices
+  - traffictargets
   verbs:
   - get
   - list
@@ -129,7 +129,7 @@ rules:
   resources:
   - meshes/status
   - meshworkloads/status
-  - meshservices/status
+  - traffictargets/status
   verbs:
   - get
   - update

@@ -287,7 +287,7 @@ service/reviews-v3 created
 ```
 
 Once the injected application is deployed, we should be able to see a corresponding 
-[`MeshService` CR]({{< versioned_link_path fromRoot="/reference/api/mesh_service/">}}) created by `mesh-discovery`:
+[`TrafficTarget` CR]({{< versioned_link_path fromRoot="/reference/api/mesh_service/">}}) created by `mesh-discovery`:
 
 
 {{< tabs >}}
@@ -365,7 +365,7 @@ Kubernetes Mesh Services:
 +---------------------------------+-----------------+-----------+--------------+
 {{< /tab >}}
 {{< tab name="kubectl" codelang="shell" >}}
-kubectl get meshservice -n service-mesh-hub
+kubectl get traffictarget -n service-mesh-hub
 
 NAME                                             AGE
 details-bookinfo-linkerd-cluster                 15m
@@ -453,4 +453,3 @@ Great! We've successfully discovered and configured our Linkerd mesh with Servic
 
 Traffic Shifting is not the only option available for configuring mesh traffic. We recommend checking out the [reference documentation]({{< versioned_link_path fromRoot="/reference/">}}) for a full description of what's possible with Service Mesh Hub. 
 
- 

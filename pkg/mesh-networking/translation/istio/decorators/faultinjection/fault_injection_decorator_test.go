@@ -28,7 +28,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
 					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Abort_{
@@ -60,7 +60,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
 					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay_{
@@ -94,7 +94,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
 					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay_{
@@ -129,7 +129,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
 					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay_{
@@ -156,7 +156,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
 					Percentage: 50,

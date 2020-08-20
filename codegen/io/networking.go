@@ -17,7 +17,7 @@ var (
 		}: {
 			"Mesh",
 			"MeshWorkload",
-			"MeshService",
+			"TrafficTarget",
 		},
 		schema.GroupVersion{
 			Group:   "networking." + constants.ServiceMeshHubApiGroupSuffix,

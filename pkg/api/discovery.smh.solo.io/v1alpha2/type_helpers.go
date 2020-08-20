@@ -3,8 +3,8 @@
 // Definitions for the Kubernetes types
 package v1alpha2
 
-// MeshServiceSlice represents a slice of *MeshService
-type MeshServiceSlice []*MeshService
+// TrafficTargetSlice represents a slice of *TrafficTarget
+type TrafficTargetSlice []*TrafficTarget
 
 // MeshWorkloadSlice represents a slice of *MeshWorkload
 type MeshWorkloadSlice []*MeshWorkload

@@ -14,110 +14,110 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockMeshServiceEventHandler is a mock of MeshServiceEventHandler interface
-type MockMeshServiceEventHandler struct {
+// MockTrafficTargetEventHandler is a mock of TrafficTargetEventHandler interface
+type MockTrafficTargetEventHandler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceEventHandlerMockRecorder
+	recorder *MockTrafficTargetEventHandlerMockRecorder
 }
 
-// MockMeshServiceEventHandlerMockRecorder is the mock recorder for MockMeshServiceEventHandler
-type MockMeshServiceEventHandlerMockRecorder struct {
-	mock *MockMeshServiceEventHandler
+// MockTrafficTargetEventHandlerMockRecorder is the mock recorder for MockTrafficTargetEventHandler
+type MockTrafficTargetEventHandlerMockRecorder struct {
+	mock *MockTrafficTargetEventHandler
 }
 
-// NewMockMeshServiceEventHandler creates a new mock instance
-func NewMockMeshServiceEventHandler(ctrl *gomock.Controller) *MockMeshServiceEventHandler {
-	mock := &MockMeshServiceEventHandler{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceEventHandlerMockRecorder{mock}
+// NewMockTrafficTargetEventHandler creates a new mock instance
+func NewMockTrafficTargetEventHandler(ctrl *gomock.Controller) *MockTrafficTargetEventHandler {
+	mock := &MockTrafficTargetEventHandler{ctrl: ctrl}
+	mock.recorder = &MockTrafficTargetEventHandlerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshServiceEventHandler) EXPECT() *MockMeshServiceEventHandlerMockRecorder {
+func (m *MockTrafficTargetEventHandler) EXPECT() *MockTrafficTargetEventHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateMeshService mocks base method
-func (m *MockMeshServiceEventHandler) CreateMeshService(obj *v1alpha2.MeshService) error {
+// CreateTrafficTarget mocks base method
+func (m *MockTrafficTargetEventHandler) CreateTrafficTarget(obj *v1alpha2.TrafficTarget) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateMeshService", obj)
+	ret := m.ctrl.Call(m, "CreateTrafficTarget", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshService indicates an expected call of CreateMeshService
-func (mr *MockMeshServiceEventHandlerMockRecorder) CreateMeshService(obj interface{}) *gomock.Call {
+// CreateTrafficTarget indicates an expected call of CreateTrafficTarget
+func (mr *MockTrafficTargetEventHandlerMockRecorder) CreateTrafficTarget(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshService", reflect.TypeOf((*MockMeshServiceEventHandler)(nil).CreateMeshService), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTrafficTarget", reflect.TypeOf((*MockTrafficTargetEventHandler)(nil).CreateTrafficTarget), obj)
 }
 
-// UpdateMeshService mocks base method
-func (m *MockMeshServiceEventHandler) UpdateMeshService(old, new *v1alpha2.MeshService) error {
+// UpdateTrafficTarget mocks base method
+func (m *MockTrafficTargetEventHandler) UpdateTrafficTarget(old, new *v1alpha2.TrafficTarget) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateMeshService", old, new)
+	ret := m.ctrl.Call(m, "UpdateTrafficTarget", old, new)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateMeshService indicates an expected call of UpdateMeshService
-func (mr *MockMeshServiceEventHandlerMockRecorder) UpdateMeshService(old, new interface{}) *gomock.Call {
+// UpdateTrafficTarget indicates an expected call of UpdateTrafficTarget
+func (mr *MockTrafficTargetEventHandlerMockRecorder) UpdateTrafficTarget(old, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshService", reflect.TypeOf((*MockMeshServiceEventHandler)(nil).UpdateMeshService), old, new)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficTarget", reflect.TypeOf((*MockTrafficTargetEventHandler)(nil).UpdateTrafficTarget), old, new)
 }
 
-// DeleteMeshService mocks base method
-func (m *MockMeshServiceEventHandler) DeleteMeshService(obj *v1alpha2.MeshService) error {
+// DeleteTrafficTarget mocks base method
+func (m *MockTrafficTargetEventHandler) DeleteTrafficTarget(obj *v1alpha2.TrafficTarget) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteMeshService", obj)
+	ret := m.ctrl.Call(m, "DeleteTrafficTarget", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteMeshService indicates an expected call of DeleteMeshService
-func (mr *MockMeshServiceEventHandlerMockRecorder) DeleteMeshService(obj interface{}) *gomock.Call {
+// DeleteTrafficTarget indicates an expected call of DeleteTrafficTarget
+func (mr *MockTrafficTargetEventHandlerMockRecorder) DeleteTrafficTarget(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMeshService", reflect.TypeOf((*MockMeshServiceEventHandler)(nil).DeleteMeshService), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTrafficTarget", reflect.TypeOf((*MockTrafficTargetEventHandler)(nil).DeleteTrafficTarget), obj)
 }
 
-// GenericMeshService mocks base method
-func (m *MockMeshServiceEventHandler) GenericMeshService(obj *v1alpha2.MeshService) error {
+// GenericTrafficTarget mocks base method
+func (m *MockTrafficTargetEventHandler) GenericTrafficTarget(obj *v1alpha2.TrafficTarget) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenericMeshService", obj)
+	ret := m.ctrl.Call(m, "GenericTrafficTarget", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GenericMeshService indicates an expected call of GenericMeshService
-func (mr *MockMeshServiceEventHandlerMockRecorder) GenericMeshService(obj interface{}) *gomock.Call {
+// GenericTrafficTarget indicates an expected call of GenericTrafficTarget
+func (mr *MockTrafficTargetEventHandlerMockRecorder) GenericTrafficTarget(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericMeshService", reflect.TypeOf((*MockMeshServiceEventHandler)(nil).GenericMeshService), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericTrafficTarget", reflect.TypeOf((*MockTrafficTargetEventHandler)(nil).GenericTrafficTarget), obj)
 }
 
-// MockMeshServiceEventWatcher is a mock of MeshServiceEventWatcher interface
-type MockMeshServiceEventWatcher struct {
+// MockTrafficTargetEventWatcher is a mock of TrafficTargetEventWatcher interface
+type MockTrafficTargetEventWatcher struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceEventWatcherMockRecorder
+	recorder *MockTrafficTargetEventWatcherMockRecorder
 }
 
-// MockMeshServiceEventWatcherMockRecorder is the mock recorder for MockMeshServiceEventWatcher
-type MockMeshServiceEventWatcherMockRecorder struct {
-	mock *MockMeshServiceEventWatcher
+// MockTrafficTargetEventWatcherMockRecorder is the mock recorder for MockTrafficTargetEventWatcher
+type MockTrafficTargetEventWatcherMockRecorder struct {
+	mock *MockTrafficTargetEventWatcher
 }
 
-// NewMockMeshServiceEventWatcher creates a new mock instance
-func NewMockMeshServiceEventWatcher(ctrl *gomock.Controller) *MockMeshServiceEventWatcher {
-	mock := &MockMeshServiceEventWatcher{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceEventWatcherMockRecorder{mock}
+// NewMockTrafficTargetEventWatcher creates a new mock instance
+func NewMockTrafficTargetEventWatcher(ctrl *gomock.Controller) *MockTrafficTargetEventWatcher {
+	mock := &MockTrafficTargetEventWatcher{ctrl: ctrl}
+	mock.recorder = &MockTrafficTargetEventWatcherMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshServiceEventWatcher) EXPECT() *MockMeshServiceEventWatcherMockRecorder {
+func (m *MockTrafficTargetEventWatcher) EXPECT() *MockTrafficTargetEventWatcherMockRecorder {
 	return m.recorder
 }
 
 // AddEventHandler mocks base method
-func (m *MockMeshServiceEventWatcher) AddEventHandler(ctx context.Context, h controller.MeshServiceEventHandler, predicates ...predicate.Predicate) error {
+func (m *MockTrafficTargetEventWatcher) AddEventHandler(ctx context.Context, h controller.TrafficTargetEventHandler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, h}
 	for _, a := range predicates {
@@ -129,10 +129,10 @@ func (m *MockMeshServiceEventWatcher) AddEventHandler(ctx context.Context, h con
 }
 
 // AddEventHandler indicates an expected call of AddEventHandler
-func (mr *MockMeshServiceEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
+func (mr *MockTrafficTargetEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, h}, predicates...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockMeshServiceEventWatcher)(nil).AddEventHandler), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockTrafficTargetEventWatcher)(nil).AddEventHandler), varargs...)
 }
 
 // MockMeshWorkloadEventHandler is a mock of MeshWorkloadEventHandler interface

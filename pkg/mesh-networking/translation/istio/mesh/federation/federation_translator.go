@@ -19,9 +19,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/protoutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/traffictargetutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -62,11 +62,11 @@ type Translator interface {
 type translator struct {
 	ctx            context.Context
 	clusterDomains hostutils.ClusterDomainRegistry
-	meshServices   discoveryv1alpha2sets.MeshServiceSet
+	trafficTargets discoveryv1alpha2sets.TrafficTargetSet
 }
 
-func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRegistry, meshServices discoveryv1alpha2sets.MeshServiceSet) Translator {
-	return &translator{ctx: ctx, clusterDomains: clusterDomains, meshServices: meshServices}
+func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRegistry, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) Translator {
+	return &translator{ctx: ctx, clusterDomains: clusterDomains, trafficTargets: trafficTargets}
 }
 
 // translate the appropriate resources for the given Mesh.
@@ -94,9 +94,9 @@ func (t *translator) Translate(
 	// Currently, we just default to using the first one in the list.
 	ingressGateway := istioMesh.IngressGateways[0]
 
-	meshServices := servicesForMesh(mesh, in.MeshServices())
+	trafficTargets := servicesForMesh(mesh, in.TrafficTargets())
 
-	if len(meshServices) == 0 {
+	if len(trafficTargets) == 0 {
 		contextutils.LoggerFrom(t.ctx).Debugf("no services found in istio mesh %v", sets.Key(mesh))
 		return
 	}
@@ -125,15 +125,15 @@ func (t *translator) Translate(
 		return
 	}
 
-	for _, meshService := range meshServices {
-		meshKubeService := meshService.Spec.GetKubeService()
+	for _, trafficTarget := range trafficTargets {
+		meshKubeService := trafficTarget.Spec.GetKubeService()
 		if meshKubeService == nil {
 			// should never happen
 			contextutils.LoggerFrom(t.ctx).Debugf("skipping mesh service %v (only kube types supported)", err)
 			continue
 		}
 
-		serviceEntryIp, err := meshserviceutils.ConstructUniqueIpForKubeService(meshKubeService.Ref)
+		serviceEntryIp, err := traffictargetutils.ConstructUniqueIpForKubeService(meshKubeService.Ref)
 		if err != nil {
 			// should never happen
 			contextutils.LoggerFrom(t.ctx).Errorf("unexpected error: failed to generate service entry ip: %v", err)
@@ -143,7 +143,7 @@ func (t *translator) Translate(
 
 		endpointPorts := make(map[string]uint32)
 		var ports []*networkingv1alpha3spec.Port
-		for _, port := range meshService.Spec.GetKubeService().GetPorts() {
+		for _, port := range trafficTarget.Spec.GetKubeService().GetPorts() {
 			ports = append(ports, &networkingv1alpha3spec.Port{
 				Number:   port.Port,
 				Protocol: port.Protocol,
@@ -154,7 +154,7 @@ func (t *translator) Translate(
 
 		// NOTE(ilackarms): we use these labels to support federated subsets.
 		// the values don't actually matter; but the subset names should
-		// match those on the DestinationRule for the MeshService in the
+		// match those on the DestinationRule for the TrafficTarget in the
 		// remote cluster.
 		// based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
 		clusterLabels := map[string]string{
@@ -204,8 +204,8 @@ func (t *translator) Translate(
 			// which contain all the matching subset names for the remote destination rule.
 			// the labels for the subsets must match the labels on the ServiceEntry Endpoint(s).
 			federatedSubsets := trafficshift.MakeDestinationRuleSubsets(
-				meshService,
-				t.meshServices,
+				trafficTarget,
+				t.trafficTargets,
 			)
 			for _, subset := range federatedSubsets {
 				// only the name of the subset matters here.
@@ -304,9 +304,9 @@ func (t *translator) Translate(
 
 func servicesForMesh(
 	mesh *discoveryv1alpha2.Mesh,
-	allMeshServices discoveryv1alpha2sets.MeshServiceSet,
-) []*discoveryv1alpha2.MeshService {
-	return allMeshServices.List(func(service *discoveryv1alpha2.MeshService) bool {
+	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+) []*discoveryv1alpha2.TrafficTarget {
+	return allTrafficTargets.List(func(service *discoveryv1alpha2.TrafficTarget) bool {
 		return !ezkube.RefsMatch(service.Spec.Mesh, mesh)
 	})
 }

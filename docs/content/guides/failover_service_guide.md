@@ -62,7 +62,7 @@ into mesh-specific config:
 
 ```yaml
 status:
-  meshServices:
+  trafficTargets:
     reviews-default-management-plane.service-mesh-hub.:
       state: ACCEPTED
     reviews-default-new-remote-cluster.service-mesh-hub.:

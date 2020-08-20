@@ -28,7 +28,7 @@ var _ = Describe("RetriesDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				Retries: &v1alpha2.TrafficPolicySpec_RetryPolicy{
 					Attempts:      5,
@@ -55,7 +55,7 @@ var _ = Describe("RetriesDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				Retries: &v1alpha2.TrafficPolicySpec_RetryPolicy{
 					Attempts:      5,

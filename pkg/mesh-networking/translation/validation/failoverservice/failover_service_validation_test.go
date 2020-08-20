@@ -33,9 +33,9 @@ var _ = Describe("Validation", func() {
 		ctrl.Finish()
 	})
 
-	var meshServiceStatusWithOutlierDetection = func() discoveryv1alpha2.MeshServiceStatus {
-		return discoveryv1alpha2.MeshServiceStatus{
-			AppliedTrafficPolicies: []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+	var trafficTargetStatusWithOutlierDetection = func() discoveryv1alpha2.TrafficTargetStatus {
+		return discoveryv1alpha2.TrafficTargetStatus{
+			AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 				{
 
 					Spec: &networkingv1alpha2.TrafficPolicySpec{
@@ -49,16 +49,16 @@ var _ = Describe("Validation", func() {
 	// Snapshot with valid FailoverService.
 	var validInputs = func() (failoverservice.Inputs, *networkingv1alpha2.FailoverServiceSpec) {
 		return failoverservice.Inputs{
-				MeshServices: discoveryv1alpha2sets.NewMeshServiceSet(
-					&discoveryv1alpha2.MeshService{
+				TrafficTargets: discoveryv1alpha2sets.NewTrafficTargetSet(
+					&discoveryv1alpha2.TrafficTarget{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:        "meshservice1",
+							Name:        "traffictarget1",
 							Namespace:   "namespace1",
 							ClusterName: "cluster2",
 						},
-						Spec: discoveryv1alpha2.MeshServiceSpec{
-							Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-								KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+						Spec: discoveryv1alpha2.TrafficTargetSpec{
+							Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+								KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 									Ref: &corev1.ClusterObjectRef{
 										Name:        "service1",
 										Namespace:   "namespace1",
@@ -71,7 +71,7 @@ var _ = Describe("Validation", func() {
 								Namespace: "namespace1",
 							},
 						},
-						Status: meshServiceStatusWithOutlierDetection(),
+						Status: trafficTargetStatusWithOutlierDetection(),
 					},
 				),
 				KubeClusters: multiclusterv1alpha1sets.NewKubernetesClusterSet(
@@ -174,16 +174,16 @@ var _ = Describe("Validation", func() {
 	// Snapshot with valid FailoverService in a single mesh.
 	var validInputSnapshotSingleMesh = func() (failoverservice.Inputs, *networkingv1alpha2.FailoverServiceSpec) {
 		return failoverservice.Inputs{
-				MeshServices: discoveryv1alpha2sets.NewMeshServiceSet(
-					&discoveryv1alpha2.MeshService{
+				TrafficTargets: discoveryv1alpha2sets.NewTrafficTargetSet(
+					&discoveryv1alpha2.TrafficTarget{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:        "meshservice1",
+							Name:        "traffictarget1",
 							Namespace:   "namespace1",
 							ClusterName: "cluster1",
 						},
-						Spec: discoveryv1alpha2.MeshServiceSpec{
-							Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-								KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+						Spec: discoveryv1alpha2.TrafficTargetSpec{
+							Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+								KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 									Ref: &corev1.ClusterObjectRef{
 										Name:        "service1",
 										Namespace:   "namespace1",
@@ -196,17 +196,17 @@ var _ = Describe("Validation", func() {
 								Namespace: "namespace1",
 							},
 						},
-						Status: meshServiceStatusWithOutlierDetection(),
+						Status: trafficTargetStatusWithOutlierDetection(),
 					},
-					&discoveryv1alpha2.MeshService{
+					&discoveryv1alpha2.TrafficTarget{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:        "meshservice1",
+							Name:        "traffictarget1",
 							Namespace:   "namespace1",
 							ClusterName: "cluster2",
 						},
-						Spec: discoveryv1alpha2.MeshServiceSpec{
-							Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-								KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+						Spec: discoveryv1alpha2.TrafficTargetSpec{
+							Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+								KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 									Ref: &corev1.ClusterObjectRef{
 										Name:        "service1",
 										Namespace:   "namespace1",
@@ -219,7 +219,7 @@ var _ = Describe("Validation", func() {
 								Namespace: "namespace1",
 							},
 						},
-						Status: meshServiceStatusWithOutlierDetection(),
+						Status: trafficTargetStatusWithOutlierDetection(),
 					},
 				),
 				KubeClusters: multiclusterv1alpha1sets.NewKubernetesClusterSet(
@@ -273,16 +273,16 @@ var _ = Describe("Validation", func() {
 	// Snapshot with invalid FailoverService.
 	var invalidInputSnapshot = func() (failoverservice.Inputs, *networkingv1alpha2.FailoverServiceSpec) {
 		return failoverservice.Inputs{
-				MeshServices: discoveryv1alpha2sets.NewMeshServiceSet(
-					&discoveryv1alpha2.MeshService{
+				TrafficTargets: discoveryv1alpha2sets.NewTrafficTargetSet(
+					&discoveryv1alpha2.TrafficTarget{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:        "meshservice1",
+							Name:        "traffictarget1",
 							Namespace:   "namespace1",
 							ClusterName: "cluster1",
 						},
-						Spec: discoveryv1alpha2.MeshServiceSpec{
-							Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-								KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+						Spec: discoveryv1alpha2.TrafficTargetSpec{
+							Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+								KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 									Ref: &corev1.ClusterObjectRef{
 										Name:        "service1",
 										Namespace:   "namespace1",
@@ -295,17 +295,17 @@ var _ = Describe("Validation", func() {
 								Namespace: "namespace1",
 							},
 						},
-						Status: meshServiceStatusWithOutlierDetection(),
+						Status: trafficTargetStatusWithOutlierDetection(),
 					},
-					&discoveryv1alpha2.MeshService{
+					&discoveryv1alpha2.TrafficTarget{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:        "meshservice1",
+							Name:        "traffictarget1",
 							Namespace:   "namespace1",
 							ClusterName: "cluster2",
 						},
-						Spec: discoveryv1alpha2.MeshServiceSpec{
-							Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-								KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+						Spec: discoveryv1alpha2.TrafficTargetSpec{
+							Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+								KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 									Ref: &corev1.ClusterObjectRef{
 										Name:        "service1",
 										Namespace:   "namespace1",
@@ -318,17 +318,17 @@ var _ = Describe("Validation", func() {
 								Namespace: "namespace1",
 							},
 						},
-						Status: meshServiceStatusWithOutlierDetection(),
+						Status: trafficTargetStatusWithOutlierDetection(),
 					},
-					&discoveryv1alpha2.MeshService{
+					&discoveryv1alpha2.TrafficTarget{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:        "meshservice1",
+							Name:        "traffictarget1",
 							Namespace:   "namespace1",
 							ClusterName: "cluster3",
 						},
-						Spec: discoveryv1alpha2.MeshServiceSpec{
-							Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-								KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+						Spec: discoveryv1alpha2.TrafficTargetSpec{
+							Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+								KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 									Ref: &corev1.ClusterObjectRef{
 										Name:        "service1",
 										Namespace:   "namespace1",
@@ -341,17 +341,17 @@ var _ = Describe("Validation", func() {
 								Namespace: "namespace1",
 							},
 						},
-						Status: meshServiceStatusWithOutlierDetection(),
+						Status: trafficTargetStatusWithOutlierDetection(),
 					},
-					&discoveryv1alpha2.MeshService{
+					&discoveryv1alpha2.TrafficTarget{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:        "meshservice1",
+							Name:        "traffictarget1",
 							Namespace:   "namespace1",
 							ClusterName: "cluster4",
 						},
-						Spec: discoveryv1alpha2.MeshServiceSpec{
-							Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-								KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+						Spec: discoveryv1alpha2.TrafficTargetSpec{
+							Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+								KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 									Ref: &corev1.ClusterObjectRef{
 										Name:        "service1",
 										Namespace:   "namespace1",
@@ -364,8 +364,8 @@ var _ = Describe("Validation", func() {
 								Namespace: "namespace1",
 							},
 						},
-						Status: discoveryv1alpha2.MeshServiceStatus{
-							AppliedTrafficPolicies: []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+						Status: discoveryv1alpha2.TrafficTargetStatus{
+							AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 								{
 									// Missing OutlierDetection
 									Spec: &networkingv1alpha2.TrafficPolicySpec{},
@@ -546,7 +546,7 @@ var _ = Describe("Validation", func() {
 		// Invalid DNS hostname
 		Expect(containsErrorString(errs, "a DNS-1123 subdomain must consist of lower case alphanumeric characters")).To(BeTrue())
 		// Service without OutlierDetection
-		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.MissingOutlierDetection(inputSnapshot.MeshServices.List()[3]))))
+		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.MissingOutlierDetection(inputSnapshot.TrafficTargets.List()[3]))))
 		// Mesh without parent VirtualMesh
 		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(
 			failoverservice.MeshWithoutParentVM(inputSnapshot.Meshes.List()[2]))))

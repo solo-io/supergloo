@@ -19,7 +19,7 @@ var SMHGroups = []model.Group{
 	//	{kind: "Settings", noStatus: true},
 	//}),
 	makeGroup("discovery", v1alpha2Version, []resourceToGenerate{
-		{kind: "MeshService"},
+		{kind: "TrafficTarget"},
 		{kind: "MeshWorkload"},
 		{kind: "Mesh"},
 	}),

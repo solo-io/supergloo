@@ -6,14 +6,14 @@ metadata:
   labels:
     app: service-mesh-hub
     app.kubernetes.io/name: service-mesh-hub
-  name: meshservices.discovery.smh.solo.io
+  name: traffictargets.discovery.smh.solo.io
 spec:
   group: discovery.smh.solo.io
   names:
-    kind: MeshService
-    listKind: MeshServiceList
-    plural: meshservices
-    singular: meshservice
+    kind: TrafficTarget
+    listKind: TrafficTargetList
+    plural: traffictargets
+    singular: traffictarget
   scope: Namespaced
   subresources:
     status: {}

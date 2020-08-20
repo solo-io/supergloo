@@ -40,18 +40,18 @@ func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
 }
 
-// MeshServices mocks base method
-func (m *MockSnapshot) MeshServices() []output.LabeledMeshServiceSet {
+// TrafficTargets mocks base method
+func (m *MockSnapshot) TrafficTargets() []output.LabeledTrafficTargetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MeshServices")
-	ret0, _ := ret[0].([]output.LabeledMeshServiceSet)
+	ret := m.ctrl.Call(m, "TrafficTargets")
+	ret0, _ := ret[0].([]output.LabeledTrafficTargetSet)
 	return ret0
 }
 
-// MeshServices indicates an expected call of MeshServices
-func (mr *MockSnapshotMockRecorder) MeshServices() *gomock.Call {
+// TrafficTargets indicates an expected call of TrafficTargets
+func (mr *MockSnapshotMockRecorder) TrafficTargets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshServices", reflect.TypeOf((*MockSnapshot)(nil).MeshServices))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficTargets", reflect.TypeOf((*MockSnapshot)(nil).TrafficTargets))
 }
 
 // MeshWorkloads mocks base method
@@ -121,31 +121,31 @@ func (mr *MockSnapshotMockRecorder) MarshalJSON() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarshalJSON", reflect.TypeOf((*MockSnapshot)(nil).MarshalJSON))
 }
 
-// MockLabeledMeshServiceSet is a mock of LabeledMeshServiceSet interface
-type MockLabeledMeshServiceSet struct {
+// MockLabeledTrafficTargetSet is a mock of LabeledTrafficTargetSet interface
+type MockLabeledTrafficTargetSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockLabeledMeshServiceSetMockRecorder
+	recorder *MockLabeledTrafficTargetSetMockRecorder
 }
 
-// MockLabeledMeshServiceSetMockRecorder is the mock recorder for MockLabeledMeshServiceSet
-type MockLabeledMeshServiceSetMockRecorder struct {
-	mock *MockLabeledMeshServiceSet
+// MockLabeledTrafficTargetSetMockRecorder is the mock recorder for MockLabeledTrafficTargetSet
+type MockLabeledTrafficTargetSetMockRecorder struct {
+	mock *MockLabeledTrafficTargetSet
 }
 
-// NewMockLabeledMeshServiceSet creates a new mock instance
-func NewMockLabeledMeshServiceSet(ctrl *gomock.Controller) *MockLabeledMeshServiceSet {
-	mock := &MockLabeledMeshServiceSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledMeshServiceSetMockRecorder{mock}
+// NewMockLabeledTrafficTargetSet creates a new mock instance
+func NewMockLabeledTrafficTargetSet(ctrl *gomock.Controller) *MockLabeledTrafficTargetSet {
+	mock := &MockLabeledTrafficTargetSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledTrafficTargetSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledMeshServiceSet) EXPECT() *MockLabeledMeshServiceSetMockRecorder {
+func (m *MockLabeledTrafficTargetSet) EXPECT() *MockLabeledTrafficTargetSetMockRecorder {
 	return m.recorder
 }
 
 // Labels mocks base method
-func (m *MockLabeledMeshServiceSet) Labels() map[string]string {
+func (m *MockLabeledTrafficTargetSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
 	ret0, _ := ret[0].(map[string]string)
@@ -153,27 +153,27 @@ func (m *MockLabeledMeshServiceSet) Labels() map[string]string {
 }
 
 // Labels indicates an expected call of Labels
-func (mr *MockLabeledMeshServiceSetMockRecorder) Labels() *gomock.Call {
+func (mr *MockLabeledTrafficTargetSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledMeshServiceSet)(nil).Labels))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledTrafficTargetSet)(nil).Labels))
 }
 
 // Set mocks base method
-func (m *MockLabeledMeshServiceSet) Set() v1alpha2sets.MeshServiceSet {
+func (m *MockLabeledTrafficTargetSet) Set() v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
-	ret0, _ := ret[0].(v1alpha2sets.MeshServiceSet)
+	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
 // Set indicates an expected call of Set
-func (mr *MockLabeledMeshServiceSetMockRecorder) Set() *gomock.Call {
+func (mr *MockLabeledTrafficTargetSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledMeshServiceSet)(nil).Set))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledTrafficTargetSet)(nil).Set))
 }
 
 // Generic mocks base method
-func (m *MockLabeledMeshServiceSet) Generic() output0.ResourceList {
+func (m *MockLabeledTrafficTargetSet) Generic() output0.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(output0.ResourceList)
@@ -181,9 +181,9 @@ func (m *MockLabeledMeshServiceSet) Generic() output0.ResourceList {
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockLabeledMeshServiceSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockLabeledTrafficTargetSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledMeshServiceSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledTrafficTargetSet)(nil).Generic))
 }
 
 // MockLabeledMeshWorkloadSet is a mock of LabeledMeshWorkloadSet interface
@@ -339,34 +339,34 @@ func (m *MockBuilder) EXPECT() *MockBuilderMockRecorder {
 	return m.recorder
 }
 
-// AddMeshServices mocks base method
-func (m *MockBuilder) AddMeshServices(meshServices ...*v1alpha2.MeshService) {
+// AddTrafficTargets mocks base method
+func (m *MockBuilder) AddTrafficTargets(trafficTargets ...*v1alpha2.TrafficTarget) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range meshServices {
+	for _, a := range trafficTargets {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddMeshServices", varargs...)
+	m.ctrl.Call(m, "AddTrafficTargets", varargs...)
 }
 
-// AddMeshServices indicates an expected call of AddMeshServices
-func (mr *MockBuilderMockRecorder) AddMeshServices(meshServices ...interface{}) *gomock.Call {
+// AddTrafficTargets indicates an expected call of AddTrafficTargets
+func (mr *MockBuilderMockRecorder) AddTrafficTargets(trafficTargets ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMeshServices", reflect.TypeOf((*MockBuilder)(nil).AddMeshServices), meshServices...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTrafficTargets", reflect.TypeOf((*MockBuilder)(nil).AddTrafficTargets), trafficTargets...)
 }
 
-// GetMeshServices mocks base method
-func (m *MockBuilder) GetMeshServices() v1alpha2sets.MeshServiceSet {
+// GetTrafficTargets mocks base method
+func (m *MockBuilder) GetTrafficTargets() v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMeshServices")
-	ret0, _ := ret[0].(v1alpha2sets.MeshServiceSet)
+	ret := m.ctrl.Call(m, "GetTrafficTargets")
+	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
-// GetMeshServices indicates an expected call of GetMeshServices
-func (mr *MockBuilderMockRecorder) GetMeshServices() *gomock.Call {
+// GetTrafficTargets indicates an expected call of GetTrafficTargets
+func (mr *MockBuilderMockRecorder) GetTrafficTargets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshServices", reflect.TypeOf((*MockBuilder)(nil).GetMeshServices))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrafficTargets", reflect.TypeOf((*MockBuilder)(nil).GetTrafficTargets))
 }
 
 // AddMeshWorkloads mocks base method

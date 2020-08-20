@@ -35,8 +35,8 @@ func (d *timeoutDecorator) DecoratorName() string {
 }
 
 func (d *timeoutDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
-	_ *discoveryv1alpha2.MeshService,
+	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+	_ *discoveryv1alpha2.TrafficTarget,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {

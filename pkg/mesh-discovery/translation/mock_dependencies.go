@@ -11,8 +11,8 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh"
-	meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshservice"
 	meshworkload "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload"
+	traffictarget "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget"
 )
 
 // MockdependencyFactory is a mock of dependencyFactory interface
@@ -66,16 +66,16 @@ func (mr *MockdependencyFactoryMockRecorder) makeMeshWorkloadTranslator(ctx, in 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeMeshWorkloadTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeMeshWorkloadTranslator), ctx, in)
 }
 
-// makeMeshServiceTranslator mocks base method
-func (m *MockdependencyFactory) makeMeshServiceTranslator(ctx context.Context) meshservice.Translator {
+// makeTrafficTargetTranslator mocks base method
+func (m *MockdependencyFactory) makeTrafficTargetTranslator(ctx context.Context) traffictarget.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "makeMeshServiceTranslator", ctx)
-	ret0, _ := ret[0].(meshservice.Translator)
+	ret := m.ctrl.Call(m, "makeTrafficTargetTranslator", ctx)
+	ret0, _ := ret[0].(traffictarget.Translator)
 	return ret0
 }
 
-// makeMeshServiceTranslator indicates an expected call of makeMeshServiceTranslator
-func (mr *MockdependencyFactoryMockRecorder) makeMeshServiceTranslator(ctx interface{}) *gomock.Call {
+// makeTrafficTargetTranslator indicates an expected call of makeTrafficTargetTranslator
+func (mr *MockdependencyFactoryMockRecorder) makeTrafficTargetTranslator(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeMeshServiceTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeMeshServiceTranslator), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeTrafficTargetTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeTrafficTargetTranslator), ctx)
 }

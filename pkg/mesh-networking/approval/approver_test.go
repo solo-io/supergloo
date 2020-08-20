@@ -27,7 +27,7 @@ import (
 var _ = Describe("Approver", func() {
 	Context("approved traffic policies", func() {
 		var (
-			meshService = &discoveryv1alpha2.MeshService{
+			trafficTarget = &discoveryv1alpha2.TrafficTarget{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ms1",
 					Namespace: "ns",
@@ -55,8 +55,8 @@ var _ = Describe("Approver", func() {
 			}
 
 			snap = input.NewSnapshot("",
-				discoveryv1alpha2sets.NewMeshServiceSet(discoveryv1alpha2.MeshServiceSlice{
-					meshService,
+				discoveryv1alpha2sets.NewTrafficTargetSet(discoveryv1alpha2.TrafficTargetSlice{
+					trafficTarget,
 				}...),
 				discoveryv1alpha2sets.NewMeshWorkloadSet(),
 				discoveryv1alpha2sets.NewMeshSet(),
@@ -81,29 +81,29 @@ var _ = Describe("Approver", func() {
 
 		})
 		It("updates status on input traffic policies", func() {
-			Expect(trafficPolicy1.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy1.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ApprovalStatus{
+			Expect(trafficPolicy1.Status.TrafficTargets).To(HaveKey(sets.Key(trafficTarget)))
+			Expect(trafficPolicy1.Status.TrafficTargets[sets.Key(trafficTarget)]).To(Equal(&v1alpha2.ApprovalStatus{
 				AcceptanceOrder: 0,
 				State:           v1alpha2.ApprovalState_ACCEPTED,
 			}))
-			Expect(trafficPolicy2.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy2.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ApprovalStatus{
+			Expect(trafficPolicy2.Status.TrafficTargets).To(HaveKey(sets.Key(trafficTarget)))
+			Expect(trafficPolicy2.Status.TrafficTargets[sets.Key(trafficTarget)]).To(Equal(&v1alpha2.ApprovalStatus{
 				AcceptanceOrder: 1,
 				State:           v1alpha2.ApprovalState_ACCEPTED,
 			}))
 
 		})
 		It("updates status on input mesh services policies", func() {
-			Expect(meshService.Status.AppliedTrafficPolicies).To(HaveLen(2))
-			Expect(meshService.Status.AppliedTrafficPolicies[0].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy1)))
-			Expect(meshService.Status.AppliedTrafficPolicies[0].Spec).To(Equal(&trafficPolicy1.Spec))
-			Expect(meshService.Status.AppliedTrafficPolicies[1].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy2)))
-			Expect(meshService.Status.AppliedTrafficPolicies[1].Spec).To(Equal(&trafficPolicy2.Spec))
+			Expect(trafficTarget.Status.AppliedTrafficPolicies).To(HaveLen(2))
+			Expect(trafficTarget.Status.AppliedTrafficPolicies[0].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy1)))
+			Expect(trafficTarget.Status.AppliedTrafficPolicies[0].Spec).To(Equal(&trafficPolicy1.Spec))
+			Expect(trafficTarget.Status.AppliedTrafficPolicies[1].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy2)))
+			Expect(trafficTarget.Status.AppliedTrafficPolicies[1].Spec).To(Equal(&trafficPolicy2.Spec))
 		})
 	})
 	Context("invalid traffic policies", func() {
 		var (
-			meshService = &discoveryv1alpha2.MeshService{
+			trafficTarget = &discoveryv1alpha2.TrafficTarget{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ms1",
 					Namespace: "ns",
@@ -117,8 +117,8 @@ var _ = Describe("Approver", func() {
 			}
 
 			snap = input.NewSnapshot("",
-				discoveryv1alpha2sets.NewMeshServiceSet(discoveryv1alpha2.MeshServiceSlice{
-					meshService,
+				discoveryv1alpha2sets.NewTrafficTargetSet(discoveryv1alpha2.TrafficTargetSlice{
+					trafficTarget,
 				}...),
 				discoveryv1alpha2sets.NewMeshWorkloadSet(),
 				discoveryv1alpha2sets.NewMeshSet(),
@@ -136,22 +136,22 @@ var _ = Describe("Approver", func() {
 		BeforeEach(func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// report = reject
-				reporter.ReportTrafficPolicyToMeshService(meshService, trafficPolicy, errors.New("did an oopsie"))
+				reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, trafficPolicy, errors.New("did an oopsie"))
 			}}
 			approver := NewApprover(translator)
 			approver.Approve(context.TODO(), snap)
 
 		})
 		It("updates status on input traffic policies", func() {
-			Expect(trafficPolicy.Status.MeshServices).To(HaveKey(sets.Key(meshService)))
-			Expect(trafficPolicy.Status.MeshServices[sets.Key(meshService)]).To(Equal(&v1alpha2.ApprovalStatus{
+			Expect(trafficPolicy.Status.TrafficTargets).To(HaveKey(sets.Key(trafficTarget)))
+			Expect(trafficPolicy.Status.TrafficTargets[sets.Key(trafficTarget)]).To(Equal(&v1alpha2.ApprovalStatus{
 				AcceptanceOrder: 0,
 				State:           v1alpha2.ApprovalState_INVALID,
 				Errors:          []string{"did an oopsie"},
 			}))
 		})
 		It("does not add the policy to the mesh service status", func() {
-			Expect(meshService.Status.AppliedTrafficPolicies).To(HaveLen(0))
+			Expect(trafficTarget.Status.AppliedTrafficPolicies).To(HaveLen(0))
 		})
 	})
 
@@ -236,7 +236,7 @@ var _ = Describe("Approver", func() {
 				},
 			}
 			snap = input.NewSnapshot("",
-				discoveryv1alpha2sets.NewMeshServiceSet(),
+				discoveryv1alpha2sets.NewTrafficTargetSet(),
 				discoveryv1alpha2sets.NewMeshWorkloadSet(),
 				discoveryv1alpha2sets.NewMeshSet(),
 				v1alpha2sets.NewTrafficPolicySet(),

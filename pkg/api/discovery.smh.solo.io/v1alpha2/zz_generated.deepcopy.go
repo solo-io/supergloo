@@ -8,9 +8,9 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-// Generated Deepcopy methods for MeshService
+// Generated Deepcopy methods for TrafficTarget
 
-func (in *MeshService) DeepCopyInto(out *MeshService) {
+func (in *TrafficTarget) DeepCopyInto(out *TrafficTarget) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
@@ -19,29 +19,29 @@ func (in *MeshService) DeepCopyInto(out *MeshService) {
 	return
 }
 
-func (in *MeshService) DeepCopy() *MeshService {
+func (in *TrafficTarget) DeepCopy() *TrafficTarget {
 	if in == nil {
 		return nil
 	}
-	out := new(MeshService)
+	out := new(TrafficTarget)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *MeshService) DeepCopyObject() runtime.Object {
+func (in *TrafficTarget) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
 }
 
-func (in *MeshServiceList) DeepCopyInto(out *MeshServiceList) {
+func (in *TrafficTargetList) DeepCopyInto(out *TrafficTargetList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
-		*out = make([]MeshService, len(*in))
+		*out = make([]TrafficTarget, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -49,16 +49,16 @@ func (in *MeshServiceList) DeepCopyInto(out *MeshServiceList) {
 	return
 }
 
-func (in *MeshServiceList) DeepCopy() *MeshServiceList {
+func (in *TrafficTargetList) DeepCopy() *TrafficTargetList {
 	if in == nil {
 		return nil
 	}
-	out := new(MeshServiceList)
+	out := new(TrafficTargetList)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *MeshServiceList) DeepCopyObject() runtime.Object {
+func (in *TrafficTargetList) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}

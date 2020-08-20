@@ -49,7 +49,7 @@ func (f *factory) MakeDecorators(params Parameters) []Decorator {
 	return makeDecorators(params)
 }
 
-// Decorators modify the output VirtualService corresponding to the input MeshService.
+// Decorators modify the output VirtualService corresponding to the input TrafficTarget.
 type Decorator interface {
 	// unique identifier for decorator
 	DecoratorName() string
@@ -62,25 +62,25 @@ type RegisterField func(fieldPtr, val interface{}) error
 	decorate a given output resource.
 */
 
-// a VirtualMeshDestinationRuleDecorator modifies the DestinationRule based on a VirtualMesh which applies to the MeshService.
+// a VirtualMeshDestinationRuleDecorator modifies the DestinationRule based on a VirtualMesh which applies to the TrafficTarget.
 type VirtualMeshDestinationRuleDecorator interface {
 	Decorator
 
 	ApplyVirtualMeshToDestinationRule(
 		appliedVirtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh,
-		service *v1alpha2.MeshService,
+		service *v1alpha2.TrafficTarget,
 		output *networkingv1alpha3spec.DestinationRule,
 		registerField RegisterField,
 	) error
 }
 
-// a VirtualMeshServiceEntryDecorator modifies the ServiceEntry based on a VirtualMesh which applies to the MeshService.
-type VirtualMeshServiceEntryDecorator interface {
+// a VirtualTrafficTargetEntryDecorator modifies the ServiceEntry based on a VirtualMesh which applies to the TrafficTarget.
+type VirtualTrafficTargetEntryDecorator interface {
 	Decorator
 
 	ApplyVirtualMeshToServiceEntry(
 		appliedVirtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh,
-		service *v1alpha2.MeshService,
+		service *v1alpha2.TrafficTarget,
 		output *networkingv1alpha3spec.ServiceEntry,
 		registerField RegisterField,
 	) error
@@ -91,25 +91,25 @@ type VirtualMeshServiceEntryDecorator interface {
 	decorate a given output resource.
 */
 
-// a TrafficPolicyDestinationRuleDecorator modifies the DestinationRule based on a TrafficPolicy which applies to the MeshService.
+// a TrafficPolicyDestinationRuleDecorator modifies the DestinationRule based on a TrafficPolicy which applies to the TrafficTarget.
 type TrafficPolicyDestinationRuleDecorator interface {
 	Decorator
 
 	ApplyTrafficPolicyToDestinationRule(
-		appliedPolicy *v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
-		service *v1alpha2.MeshService,
+		appliedPolicy *v1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+		service *v1alpha2.TrafficTarget,
 		output *networkingv1alpha3spec.DestinationRule,
 		registerField RegisterField,
 	) error
 }
 
-// a TrafficPolicyVirtualServiceDecorator modifies the VirtualService based on a TrafficPolicy which applies to the MeshService.
+// a TrafficPolicyVirtualServiceDecorator modifies the VirtualService based on a TrafficPolicy which applies to the TrafficTarget.
 type TrafficPolicyVirtualServiceDecorator interface {
 	Decorator
 
 	ApplyTrafficPolicyToVirtualService(
-		appliedPolicy *v1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
-		service *v1alpha2.MeshService,
+		appliedPolicy *v1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+		service *v1alpha2.TrafficTarget,
 		output *networkingv1alpha3spec.HTTPRoute,
 		registerField RegisterField,
 	) error

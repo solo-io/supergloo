@@ -31,17 +31,17 @@ var _ = Describe("MirrorDecorator", func() {
 	})
 
 	It("should decorate mirror", func() {
-		meshServices := v1alpha2sets.NewMeshServiceSet(
-			&discoveryv1alpha2.MeshService{
-				Spec: discoveryv1alpha2.MeshServiceSpec{
-					Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-						KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+		trafficTargets := v1alpha2sets.NewTrafficTargetSet(
+			&discoveryv1alpha2.TrafficTarget{
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 							Ref: &v1.ClusterObjectRef{
 								Name:        "mirror",
 								Namespace:   "namespace",
 								ClusterName: "local-cluster",
 							},
-							Ports: []*discoveryv1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -52,11 +52,11 @@ var _ = Describe("MirrorDecorator", func() {
 					},
 				},
 			})
-		mirrorDecorator = mirror.NewMirrorDecorator(mockClusterDomainRegistry, meshServices)
-		originalService := &discoveryv1alpha2.MeshService{
-			Spec: discoveryv1alpha2.MeshServiceSpec{
-				Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+		mirrorDecorator = mirror.NewMirrorDecorator(mockClusterDomainRegistry, trafficTargets)
+		originalService := &discoveryv1alpha2.TrafficTarget{
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							ClusterName: "local-cluster",
 						},
@@ -67,7 +67,7 @@ var _ = Describe("MirrorDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				Mirror: &v1alpha2.TrafficPolicySpec_Mirror{
 					DestinationType: &v1alpha2.TrafficPolicySpec_Mirror_KubeService{
@@ -108,17 +108,17 @@ var _ = Describe("MirrorDecorator", func() {
 	})
 
 	It("should throw error if mirror destination has multiple ports but port is not specified in TrafficPolicy", func() {
-		meshServices := v1alpha2sets.NewMeshServiceSet(
-			&discoveryv1alpha2.MeshService{
-				Spec: discoveryv1alpha2.MeshServiceSpec{
-					Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-						KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+		trafficTargets := v1alpha2sets.NewTrafficTargetSet(
+			&discoveryv1alpha2.TrafficTarget{
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 							Ref: &v1.ClusterObjectRef{
 								Name:        "mirror",
 								Namespace:   "namespace",
 								ClusterName: "local-cluster",
 							},
-							Ports: []*discoveryv1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -134,11 +134,11 @@ var _ = Describe("MirrorDecorator", func() {
 					},
 				},
 			})
-		mirrorDecorator = mirror.NewMirrorDecorator(mockClusterDomainRegistry, meshServices)
-		originalService := &discoveryv1alpha2.MeshService{
-			Spec: discoveryv1alpha2.MeshServiceSpec{
-				Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+		mirrorDecorator = mirror.NewMirrorDecorator(mockClusterDomainRegistry, trafficTargets)
+		originalService := &discoveryv1alpha2.TrafficTarget{
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							ClusterName: "local-cluster",
 						},
@@ -149,7 +149,7 @@ var _ = Describe("MirrorDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicyMissingPort := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicyMissingPort := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				Mirror: &v1alpha2.TrafficPolicySpec_Mirror{
 					DestinationType: &v1alpha2.TrafficPolicySpec_Mirror_KubeService{
@@ -164,7 +164,7 @@ var _ = Describe("MirrorDecorator", func() {
 				},
 			},
 		}
-		appliedPolicyNonexistentPort := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicyNonexistentPort := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				Mirror: &v1alpha2.TrafficPolicySpec_Mirror{
 					DestinationType: &v1alpha2.TrafficPolicySpec_Mirror_KubeService{
@@ -209,17 +209,17 @@ var _ = Describe("MirrorDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		meshServices := v1alpha2sets.NewMeshServiceSet(
-			&discoveryv1alpha2.MeshService{
-				Spec: discoveryv1alpha2.MeshServiceSpec{
-					Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-						KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+		trafficTargets := v1alpha2sets.NewTrafficTargetSet(
+			&discoveryv1alpha2.TrafficTarget{
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 							Ref: &v1.ClusterObjectRef{
 								Name:        "mirror",
 								Namespace:   "namespace",
 								ClusterName: "local-cluster",
 							},
-							Ports: []*discoveryv1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -230,11 +230,11 @@ var _ = Describe("MirrorDecorator", func() {
 					},
 				},
 			})
-		mirrorDecorator = mirror.NewMirrorDecorator(mockClusterDomainRegistry, meshServices)
-		originalService := &discoveryv1alpha2.MeshService{
-			Spec: discoveryv1alpha2.MeshServiceSpec{
-				Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+		mirrorDecorator = mirror.NewMirrorDecorator(mockClusterDomainRegistry, trafficTargets)
+		originalService := &discoveryv1alpha2.TrafficTarget{
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							ClusterName: "local-cluster",
 						},
@@ -242,7 +242,7 @@ var _ = Describe("MirrorDecorator", func() {
 				},
 			},
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				Mirror: &v1alpha2.TrafficPolicySpec_Mirror{
 					DestinationType: &v1alpha2.TrafficPolicySpec_Mirror_KubeService{

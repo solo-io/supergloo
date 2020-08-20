@@ -14,5 +14,5 @@ type Options struct {
 
 func (o *Options) AddToFlags(flags *pflag.FlagSet) {
 	utils.AddManagementKubeconfigFlags(&o.Kubeconfig, &o.Kubecontext, flags)
-	flags.StringVar(&o.Namespace, "namespace", defaults.DefaultPodNamespace, "namespace that Service MeshService Hub is installed in")
+	flags.StringVar(&o.Namespace, "namespace", defaults.DefaultPodNamespace, "namespace that Service TrafficTarget Hub is installed in")
 }

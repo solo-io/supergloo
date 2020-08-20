@@ -38,19 +38,19 @@ func (m *MockmultiClusterReconciler) EXPECT() *MockmultiClusterReconcilerMockRec
 	return m.recorder
 }
 
-// ReconcileMeshService mocks base method
-func (m *MockmultiClusterReconciler) ReconcileMeshService(clusterName string, obj *v1alpha2.MeshService) (reconcile.Result, error) {
+// ReconcileTrafficTarget mocks base method
+func (m *MockmultiClusterReconciler) ReconcileTrafficTarget(clusterName string, obj *v1alpha2.TrafficTarget) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileMeshService", clusterName, obj)
+	ret := m.ctrl.Call(m, "ReconcileTrafficTarget", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileMeshService indicates an expected call of ReconcileMeshService
-func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileMeshService(clusterName, obj interface{}) *gomock.Call {
+// ReconcileTrafficTarget indicates an expected call of ReconcileTrafficTarget
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileTrafficTarget(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMeshService", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileMeshService), clusterName, obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileTrafficTarget", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileTrafficTarget), clusterName, obj)
 }
 
 // ReconcileMeshWorkload mocks base method
@@ -196,19 +196,19 @@ func (m *MocksingleClusterReconciler) EXPECT() *MocksingleClusterReconcilerMockR
 	return m.recorder
 }
 
-// ReconcileMeshService mocks base method
-func (m *MocksingleClusterReconciler) ReconcileMeshService(obj *v1alpha2.MeshService) (reconcile.Result, error) {
+// ReconcileTrafficTarget mocks base method
+func (m *MocksingleClusterReconciler) ReconcileTrafficTarget(obj *v1alpha2.TrafficTarget) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileMeshService", obj)
+	ret := m.ctrl.Call(m, "ReconcileTrafficTarget", obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileMeshService indicates an expected call of ReconcileMeshService
-func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileMeshService(obj interface{}) *gomock.Call {
+// ReconcileTrafficTarget indicates an expected call of ReconcileTrafficTarget
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileTrafficTarget(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMeshService", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileMeshService), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileTrafficTarget", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileTrafficTarget), obj)
 }
 
 // ReconcileMeshWorkload mocks base method

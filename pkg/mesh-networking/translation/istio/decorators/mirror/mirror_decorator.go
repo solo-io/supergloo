@@ -7,8 +7,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/trafficpolicyutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/traffictargetutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
@@ -22,24 +22,24 @@ func init() {
 }
 
 func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
-	return NewMirrorDecorator(params.ClusterDomains, params.Snapshot.MeshServices())
+	return NewMirrorDecorator(params.ClusterDomains, params.Snapshot.TrafficTargets())
 }
 
 // handles setting Mirror on a VirtualService
 type mirrorDecorator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
-	meshServices   discoveryv1alpha2sets.MeshServiceSet
+	trafficTargets discoveryv1alpha2sets.TrafficTargetSet
 }
 
 var _ decorators.TrafficPolicyVirtualServiceDecorator = &mirrorDecorator{}
 
 func NewMirrorDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
-	meshServices discoveryv1alpha2sets.MeshServiceSet,
+	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 ) *mirrorDecorator {
 	return &mirrorDecorator{
 		clusterDomains: clusterDomains,
-		meshServices:   meshServices,
+		trafficTargets: trafficTargets,
 	}
 }
 
@@ -48,8 +48,8 @@ func (d *mirrorDecorator) DecoratorName() string {
 }
 
 func (d *mirrorDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
-	service *discoveryv1alpha2.MeshService,
+	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+	service *discoveryv1alpha2.TrafficTarget,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
@@ -68,7 +68,7 @@ func (d *mirrorDecorator) ApplyTrafficPolicyToVirtualService(
 }
 
 func (d *mirrorDecorator) translateMirror(
-	meshService *discoveryv1alpha2.MeshService,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
 ) (*networkingv1alpha3spec.Destination, *networkingv1alpha3spec.Percent, error) {
 	mirror := trafficPolicy.Mirror
@@ -86,7 +86,7 @@ func (d *mirrorDecorator) translateMirror(
 		translatedMirror, err = d.makeKubeDestinationMirror(
 			destinationType,
 			mirror.Port,
-			meshService,
+			trafficTarget,
 		)
 		if err != nil {
 			return nil, nil, err
@@ -103,16 +103,16 @@ func (d *mirrorDecorator) translateMirror(
 func (d *mirrorDecorator) makeKubeDestinationMirror(
 	destination *v1alpha2.TrafficPolicySpec_Mirror_KubeService,
 	port uint32,
-	originalService *discoveryv1alpha2.MeshService,
+	originalService *discoveryv1alpha2.TrafficTarget,
 ) (*networkingv1alpha3spec.Destination, error) {
 	destinationRef := destination.KubeService
-	mirrorService, err := meshserviceutils.FindMeshServiceForKubeService(d.meshServices.List(), destinationRef)
+	mirrorService, err := traffictargetutils.FindTrafficTargetForKubeService(d.trafficTargets.List(), destinationRef)
 	if err != nil {
 		return nil, eris.Wrapf(err, "invalid mirror destination")
 	}
 	mirrorKubeService := mirrorService.Spec.GetKubeService()
 
-	// TODO(ilackarms): support other types of MeshService destinations, e.g. via ServiceEntries
+	// TODO(ilackarms): support other types of TrafficTarget destinations, e.g. via ServiceEntries
 	localCluster := originalService.Spec.GetKubeService().GetRef().GetClusterName()
 	destinationHostname := d.clusterDomains.GetDestinationServiceFQDN(
 		localCluster,

@@ -37,8 +37,8 @@ func (d *outlierDetectionDecorator) DecoratorName() string {
 }
 
 func (d *outlierDetectionDecorator) ApplyTrafficPolicyToDestinationRule(
-	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
-	_ *discoveryv1alpha2.MeshService,
+	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+	_ *discoveryv1alpha2.TrafficTarget,
 	output *networkingv1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {

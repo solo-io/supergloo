@@ -156,7 +156,7 @@ reviews-v3-bookinfo-remote-cluster-deployment                   2m
 Similarly for the `bookinfo` services:
 
 ```shell
-kubectl -n service-mesh-hub get meshservices
+kubectl -n service-mesh-hub get traffictargets
 ```
 
 ```

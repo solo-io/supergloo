@@ -13,169 +13,169 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type MeshServiceSet interface {
+type TrafficTargetSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.MeshService) bool) []*discovery_smh_solo_io_v1alpha2.MeshService
+	List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.TrafficTarget) bool) []*discovery_smh_solo_io_v1alpha2.TrafficTarget
 	// Return the Set as a map of key to resource.
-	Map() map[string]*discovery_smh_solo_io_v1alpha2.MeshService
+	Map() map[string]*discovery_smh_solo_io_v1alpha2.TrafficTarget
 	// Insert a resource into the set.
-	Insert(meshService ...*discovery_smh_solo_io_v1alpha2.MeshService)
+	Insert(trafficTarget ...*discovery_smh_solo_io_v1alpha2.TrafficTarget)
 	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(meshServiceSet MeshServiceSet) bool
+	Equal(trafficTargetSet TrafficTargetSet) bool
 	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(meshService ezkube.ResourceId) bool
+	Has(trafficTarget ezkube.ResourceId) bool
 	// Delete the key matching the resource
-	Delete(meshService ezkube.ResourceId)
+	Delete(trafficTarget ezkube.ResourceId)
 	// Return the union with the provided set
-	Union(set MeshServiceSet) MeshServiceSet
+	Union(set TrafficTargetSet) TrafficTargetSet
 	// Return the difference with the provided set
-	Difference(set MeshServiceSet) MeshServiceSet
+	Difference(set TrafficTargetSet) TrafficTargetSet
 	// Return the intersection with the provided set
-	Intersection(set MeshServiceSet) MeshServiceSet
+	Intersection(set TrafficTargetSet) TrafficTargetSet
 	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.MeshService, error)
+	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.TrafficTarget, error)
 	// Get the length of the set
 	Length() int
 }
 
-func makeGenericMeshServiceSet(meshServiceList []*discovery_smh_solo_io_v1alpha2.MeshService) sksets.ResourceSet {
+func makeGenericTrafficTargetSet(trafficTargetList []*discovery_smh_solo_io_v1alpha2.TrafficTarget) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
-	for _, obj := range meshServiceList {
+	for _, obj := range trafficTargetList {
 		genericResources = append(genericResources, obj)
 	}
 	return sksets.NewResourceSet(genericResources...)
 }
 
-type meshServiceSet struct {
+type trafficTargetSet struct {
 	set sksets.ResourceSet
 }
 
-func NewMeshServiceSet(meshServiceList ...*discovery_smh_solo_io_v1alpha2.MeshService) MeshServiceSet {
-	return &meshServiceSet{set: makeGenericMeshServiceSet(meshServiceList)}
+func NewTrafficTargetSet(trafficTargetList ...*discovery_smh_solo_io_v1alpha2.TrafficTarget) TrafficTargetSet {
+	return &trafficTargetSet{set: makeGenericTrafficTargetSet(trafficTargetList)}
 }
 
-func NewMeshServiceSetFromList(meshServiceList *discovery_smh_solo_io_v1alpha2.MeshServiceList) MeshServiceSet {
-	list := make([]*discovery_smh_solo_io_v1alpha2.MeshService, 0, len(meshServiceList.Items))
-	for idx := range meshServiceList.Items {
-		list = append(list, &meshServiceList.Items[idx])
+func NewTrafficTargetSetFromList(trafficTargetList *discovery_smh_solo_io_v1alpha2.TrafficTargetList) TrafficTargetSet {
+	list := make([]*discovery_smh_solo_io_v1alpha2.TrafficTarget, 0, len(trafficTargetList.Items))
+	for idx := range trafficTargetList.Items {
+		list = append(list, &trafficTargetList.Items[idx])
 	}
-	return &meshServiceSet{set: makeGenericMeshServiceSet(list)}
+	return &trafficTargetSet{set: makeGenericTrafficTargetSet(list)}
 }
 
-func (s *meshServiceSet) Keys() sets.String {
+func (s *trafficTargetSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
 	return s.set.Keys()
 }
 
-func (s *meshServiceSet) List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.MeshService) bool) []*discovery_smh_solo_io_v1alpha2.MeshService {
+func (s *trafficTargetSet) List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.TrafficTarget) bool) []*discovery_smh_solo_io_v1alpha2.TrafficTarget {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*discovery_smh_solo_io_v1alpha2.MeshService))
+			return filter(obj.(*discovery_smh_solo_io_v1alpha2.TrafficTarget))
 		})
 	}
 
-	var meshServiceList []*discovery_smh_solo_io_v1alpha2.MeshService
+	var trafficTargetList []*discovery_smh_solo_io_v1alpha2.TrafficTarget
 	for _, obj := range s.set.List(genericFilters...) {
-		meshServiceList = append(meshServiceList, obj.(*discovery_smh_solo_io_v1alpha2.MeshService))
+		trafficTargetList = append(trafficTargetList, obj.(*discovery_smh_solo_io_v1alpha2.TrafficTarget))
 	}
-	return meshServiceList
+	return trafficTargetList
 }
 
-func (s *meshServiceSet) Map() map[string]*discovery_smh_solo_io_v1alpha2.MeshService {
+func (s *trafficTargetSet) Map() map[string]*discovery_smh_solo_io_v1alpha2.TrafficTarget {
 	if s == nil {
 		return nil
 	}
 
-	newMap := map[string]*discovery_smh_solo_io_v1alpha2.MeshService{}
+	newMap := map[string]*discovery_smh_solo_io_v1alpha2.TrafficTarget{}
 	for k, v := range s.set.Map() {
-		newMap[k] = v.(*discovery_smh_solo_io_v1alpha2.MeshService)
+		newMap[k] = v.(*discovery_smh_solo_io_v1alpha2.TrafficTarget)
 	}
 	return newMap
 }
 
-func (s *meshServiceSet) Insert(
-	meshServiceList ...*discovery_smh_solo_io_v1alpha2.MeshService,
+func (s *trafficTargetSet) Insert(
+	trafficTargetList ...*discovery_smh_solo_io_v1alpha2.TrafficTarget,
 ) {
 	if s == nil {
 		panic("cannot insert into nil set")
 	}
 
-	for _, obj := range meshServiceList {
+	for _, obj := range trafficTargetList {
 		s.set.Insert(obj)
 	}
 }
 
-func (s *meshServiceSet) Has(meshService ezkube.ResourceId) bool {
+func (s *trafficTargetSet) Has(trafficTarget ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(meshService)
+	return s.set.Has(trafficTarget)
 }
 
-func (s *meshServiceSet) Equal(
-	meshServiceSet MeshServiceSet,
+func (s *trafficTargetSet) Equal(
+	trafficTargetSet TrafficTargetSet,
 ) bool {
 	if s == nil {
-		return meshServiceSet == nil
+		return trafficTargetSet == nil
 	}
-	return s.set.Equal(makeGenericMeshServiceSet(meshServiceSet.List()))
+	return s.set.Equal(makeGenericTrafficTargetSet(trafficTargetSet.List()))
 }
 
-func (s *meshServiceSet) Delete(MeshService ezkube.ResourceId) {
+func (s *trafficTargetSet) Delete(TrafficTarget ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(MeshService)
+	s.set.Delete(TrafficTarget)
 }
 
-func (s *meshServiceSet) Union(set MeshServiceSet) MeshServiceSet {
+func (s *trafficTargetSet) Union(set TrafficTargetSet) TrafficTargetSet {
 	if s == nil {
 		return set
 	}
-	return NewMeshServiceSet(append(s.List(), set.List()...)...)
+	return NewTrafficTargetSet(append(s.List(), set.List()...)...)
 }
 
-func (s *meshServiceSet) Difference(set MeshServiceSet) MeshServiceSet {
+func (s *trafficTargetSet) Difference(set TrafficTargetSet) TrafficTargetSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericMeshServiceSet(set.List()))
-	return &meshServiceSet{set: newSet}
+	newSet := s.set.Difference(makeGenericTrafficTargetSet(set.List()))
+	return &trafficTargetSet{set: newSet}
 }
 
-func (s *meshServiceSet) Intersection(set MeshServiceSet) MeshServiceSet {
+func (s *trafficTargetSet) Intersection(set TrafficTargetSet) TrafficTargetSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericMeshServiceSet(set.List()))
-	var meshServiceList []*discovery_smh_solo_io_v1alpha2.MeshService
+	newSet := s.set.Intersection(makeGenericTrafficTargetSet(set.List()))
+	var trafficTargetList []*discovery_smh_solo_io_v1alpha2.TrafficTarget
 	for _, obj := range newSet.List() {
-		meshServiceList = append(meshServiceList, obj.(*discovery_smh_solo_io_v1alpha2.MeshService))
+		trafficTargetList = append(trafficTargetList, obj.(*discovery_smh_solo_io_v1alpha2.TrafficTarget))
 	}
-	return NewMeshServiceSet(meshServiceList...)
+	return NewTrafficTargetSet(trafficTargetList...)
 }
 
-func (s *meshServiceSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.MeshService, error) {
+func (s *trafficTargetSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.TrafficTarget, error) {
 	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find MeshService %v", sksets.Key(id))
+		return nil, eris.Errorf("empty set, cannot find TrafficTarget %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha2.MeshService{}, id)
+	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha2.TrafficTarget{}, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return obj.(*discovery_smh_solo_io_v1alpha2.MeshService), nil
+	return obj.(*discovery_smh_solo_io_v1alpha2.TrafficTarget), nil
 }
 
-func (s *meshServiceSet) Length() int {
+func (s *trafficTargetSet) Length() int {
 	if s == nil {
 		return 0
 	}

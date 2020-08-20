@@ -22,9 +22,9 @@ import (
 type InputSnapshotManualBuilder struct {
 	name string
 
-	meshServices  discovery_smh_solo_io_v1alpha2_sets.MeshServiceSet
-	meshWorkloads discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
-	meshes        discovery_smh_solo_io_v1alpha2_sets.MeshSet
+	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet
+	meshWorkloads  discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
+	meshes         discovery_smh_solo_io_v1alpha2_sets.MeshSet
 
 	trafficPolicies  networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet
 	accessPolicies   networking_smh_solo_io_v1alpha2_sets.AccessPolicySet
@@ -40,9 +40,9 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 	return &InputSnapshotManualBuilder{
 		name: name,
 
-		meshServices:  discovery_smh_solo_io_v1alpha2_sets.NewMeshServiceSet(),
-		meshWorkloads: discovery_smh_solo_io_v1alpha2_sets.NewMeshWorkloadSet(),
-		meshes:        discovery_smh_solo_io_v1alpha2_sets.NewMeshSet(),
+		trafficTargets: discovery_smh_solo_io_v1alpha2_sets.NewTrafficTargetSet(),
+		meshWorkloads:  discovery_smh_solo_io_v1alpha2_sets.NewMeshWorkloadSet(),
+		meshes:         discovery_smh_solo_io_v1alpha2_sets.NewMeshSet(),
 
 		trafficPolicies:  networking_smh_solo_io_v1alpha2_sets.NewTrafficPolicySet(),
 		accessPolicies:   networking_smh_solo_io_v1alpha2_sets.NewAccessPolicySet(),
@@ -59,7 +59,7 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 	return NewSnapshot(
 		i.name,
 
-		i.meshServices,
+		i.trafficTargets,
 		i.meshWorkloads,
 		i.meshes,
 
@@ -73,8 +73,8 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.kubernetesClusters,
 	)
 }
-func (i *InputSnapshotManualBuilder) AddMeshServices(meshServices []*discovery_smh_solo_io_v1alpha2.MeshService) *InputSnapshotManualBuilder {
-	i.meshServices.Insert(meshServices...)
+func (i *InputSnapshotManualBuilder) AddTrafficTargets(trafficTargets []*discovery_smh_solo_io_v1alpha2.TrafficTarget) *InputSnapshotManualBuilder {
+	i.trafficTargets.Insert(trafficTargets...)
 	return i
 }
 func (i *InputSnapshotManualBuilder) AddMeshWorkloads(meshWorkloads []*discovery_smh_solo_io_v1alpha2.MeshWorkload) *InputSnapshotManualBuilder {

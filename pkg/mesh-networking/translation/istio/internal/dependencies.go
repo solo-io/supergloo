@@ -15,7 +15,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/access"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/federation"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 )
@@ -26,8 +26,8 @@ import (
 // NOTE(ilackarms): private interface used here as it's not expected we'll need to
 // define our DependencyFactory anywhere else
 type DependencyFactory interface {
-	MakeMeshServiceTranslator(clusters skv1alpha1sets.KubernetesClusterSet, meshServices discoveryv1alpha2sets.MeshServiceSet) meshservice.Translator
-	MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet, meshServices discoveryv1alpha2sets.MeshServiceSet) mesh.Translator
+	MakeTrafficTargetTranslator(clusters skv1alpha1sets.KubernetesClusterSet, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) traffictarget.Translator
+	MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) mesh.Translator
 }
 
 type dependencyFactoryImpl struct{}
@@ -36,16 +36,16 @@ func NewDependencyFactory() DependencyFactory {
 	return dependencyFactoryImpl{}
 }
 
-func (d dependencyFactoryImpl) MakeMeshServiceTranslator(clusters skv1alpha1sets.KubernetesClusterSet, meshServices discoveryv1alpha2sets.MeshServiceSet) meshservice.Translator {
+func (d dependencyFactoryImpl) MakeTrafficTargetTranslator(clusters skv1alpha1sets.KubernetesClusterSet, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) traffictarget.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	decoratorFactory := decorators.NewFactory()
 
-	return meshservice.NewTranslator(clusterDomains, decoratorFactory, meshServices)
+	return traffictarget.NewTranslator(clusterDomains, decoratorFactory, trafficTargets)
 }
 
-func (d dependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet, meshServices discoveryv1alpha2sets.MeshServiceSet) mesh.Translator {
+func (d dependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) mesh.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
-	federationTranslator := federation.NewTranslator(ctx, clusterDomains, meshServices)
+	federationTranslator := federation.NewTranslator(ctx, clusterDomains, trafficTargets)
 	mtlsTranslator := mtls.NewTranslator(ctx, secrets, meshWorkloads)
 	accessTranslator := access.NewTranslator()
 	failoverServiceTranslator := failoverservice.NewTranslator(ctx, clusterDomains)

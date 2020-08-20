@@ -78,8 +78,8 @@ var _ = Describe("FederationTranslator", func() {
 		meshRef := ezkube.MakeObjectRef(mesh)
 		clientMeshRef := ezkube.MakeObjectRef(clientMesh)
 
-		makeTrafficSplit := func(backingService *v1.ClusterObjectRef, subset map[string]string) *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy {
-			return &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{Spec: &data.RemoteTrafficShiftPolicy(
+		makeTrafficSplit := func(backingService *v1.ClusterObjectRef, subset map[string]string) *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy {
+			return &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{Spec: &data.RemoteTrafficShiftPolicy(
 				"",
 				"",
 				backingService,
@@ -95,12 +95,12 @@ var _ = Describe("FederationTranslator", func() {
 			Namespace:   "some-ns",
 			ClusterName: clusterName,
 		}
-		meshService1 := &discoveryv1alpha2.MeshService{
+		trafficTarget1 := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec: discoveryv1alpha2.MeshServiceSpec{
-				Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 					Ref: backingService,
-					Ports: []*discoveryv1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
+					Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 						{
 							Port:     1234,
 							Name:     "http",
@@ -116,8 +116,8 @@ var _ = Describe("FederationTranslator", func() {
 				Mesh: meshRef,
 			},
 			// include some applied subsets
-			Status: discoveryv1alpha2.MeshServiceStatus{
-				AppliedTrafficPolicies: []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 					makeTrafficSplit(backingService, map[string]string{"foo": "bar"}),
 					makeTrafficSplit(backingService, map[string]string{"foo": "baz"}),
 					makeTrafficSplit(backingService, map[string]string{"bar": "qux"}),
@@ -147,7 +147,7 @@ var _ = Describe("FederationTranslator", func() {
 
 		in := input.NewSnapshot(
 			"ignored",
-			discoveryv1alpha2sets.NewMeshServiceSet(meshService1), discoveryv1alpha2sets.NewMeshWorkloadSet(), discoveryv1alpha2sets.NewMeshSet(mesh, clientMesh),
+			discoveryv1alpha2sets.NewTrafficTargetSet(trafficTarget1), discoveryv1alpha2sets.NewMeshWorkloadSet(), discoveryv1alpha2sets.NewMeshSet(mesh, clientMesh),
 
 			v1alpha2sets.NewTrafficPolicySet(),
 			v1alpha2sets.NewAccessPolicySet(),
@@ -157,7 +157,7 @@ var _ = Describe("FederationTranslator", func() {
 			skv1alpha1sets.NewKubernetesClusterSet(kubeCluster),
 		)
 
-		t := NewTranslator(ctx, clusterDomains, in.MeshServices())
+		t := NewTranslator(ctx, clusterDomains, in.TrafficTargets())
 		outputs := output.NewBuilder(context.TODO(), "")
 		t.Translate(
 			in,

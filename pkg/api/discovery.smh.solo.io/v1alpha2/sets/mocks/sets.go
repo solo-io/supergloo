@@ -14,31 +14,31 @@ import (
 	sets "k8s.io/apimachinery/pkg/util/sets"
 )
 
-// MockMeshServiceSet is a mock of MeshServiceSet interface
-type MockMeshServiceSet struct {
+// MockTrafficTargetSet is a mock of TrafficTargetSet interface
+type MockTrafficTargetSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceSetMockRecorder
+	recorder *MockTrafficTargetSetMockRecorder
 }
 
-// MockMeshServiceSetMockRecorder is the mock recorder for MockMeshServiceSet
-type MockMeshServiceSetMockRecorder struct {
-	mock *MockMeshServiceSet
+// MockTrafficTargetSetMockRecorder is the mock recorder for MockTrafficTargetSet
+type MockTrafficTargetSetMockRecorder struct {
+	mock *MockTrafficTargetSet
 }
 
-// NewMockMeshServiceSet creates a new mock instance
-func NewMockMeshServiceSet(ctrl *gomock.Controller) *MockMeshServiceSet {
-	mock := &MockMeshServiceSet{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceSetMockRecorder{mock}
+// NewMockTrafficTargetSet creates a new mock instance
+func NewMockTrafficTargetSet(ctrl *gomock.Controller) *MockTrafficTargetSet {
+	mock := &MockTrafficTargetSet{ctrl: ctrl}
+	mock.recorder = &MockTrafficTargetSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshServiceSet) EXPECT() *MockMeshServiceSetMockRecorder {
+func (m *MockTrafficTargetSet) EXPECT() *MockTrafficTargetSetMockRecorder {
 	return m.recorder
 }
 
 // Keys mocks base method
-func (m *MockMeshServiceSet) Keys() sets.String {
+func (m *MockTrafficTargetSet) Keys() sets.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
 	ret0, _ := ret[0].(sets.String)
@@ -46,158 +46,158 @@ func (m *MockMeshServiceSet) Keys() sets.String {
 }
 
 // Keys indicates an expected call of Keys
-func (mr *MockMeshServiceSetMockRecorder) Keys() *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockMeshServiceSet)(nil).Keys))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockTrafficTargetSet)(nil).Keys))
 }
 
 // List mocks base method
-func (m *MockMeshServiceSet) List(filterResource ...func(*v1alpha2.MeshService) bool) []*v1alpha2.MeshService {
+func (m *MockTrafficTargetSet) List(filterResource ...func(*v1alpha2.TrafficTarget) bool) []*v1alpha2.TrafficTarget {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range filterResource {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "List", varargs...)
-	ret0, _ := ret[0].([]*v1alpha2.MeshService)
+	ret0, _ := ret[0].([]*v1alpha2.TrafficTarget)
 	return ret0
 }
 
 // List indicates an expected call of List
-func (mr *MockMeshServiceSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshServiceSet)(nil).List), filterResource...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockTrafficTargetSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method
-func (m *MockMeshServiceSet) Map() map[string]*v1alpha2.MeshService {
+func (m *MockTrafficTargetSet) Map() map[string]*v1alpha2.TrafficTarget {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Map")
-	ret0, _ := ret[0].(map[string]*v1alpha2.MeshService)
+	ret0, _ := ret[0].(map[string]*v1alpha2.TrafficTarget)
 	return ret0
 }
 
 // Map indicates an expected call of Map
-func (mr *MockMeshServiceSetMockRecorder) Map() *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) Map() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockMeshServiceSet)(nil).Map))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockTrafficTargetSet)(nil).Map))
 }
 
 // Insert mocks base method
-func (m *MockMeshServiceSet) Insert(meshService ...*v1alpha2.MeshService) {
+func (m *MockTrafficTargetSet) Insert(trafficTarget ...*v1alpha2.TrafficTarget) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range meshService {
+	for _, a := range trafficTarget {
 		varargs = append(varargs, a)
 	}
 	m.ctrl.Call(m, "Insert", varargs...)
 }
 
 // Insert indicates an expected call of Insert
-func (mr *MockMeshServiceSetMockRecorder) Insert(meshService ...interface{}) *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) Insert(trafficTarget ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockMeshServiceSet)(nil).Insert), meshService...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockTrafficTargetSet)(nil).Insert), trafficTarget...)
 }
 
 // Equal mocks base method
-func (m *MockMeshServiceSet) Equal(meshServiceSet v1alpha2sets.MeshServiceSet) bool {
+func (m *MockTrafficTargetSet) Equal(trafficTargetSet v1alpha2sets.TrafficTargetSet) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Equal", meshServiceSet)
+	ret := m.ctrl.Call(m, "Equal", trafficTargetSet)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // Equal indicates an expected call of Equal
-func (mr *MockMeshServiceSetMockRecorder) Equal(meshServiceSet interface{}) *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) Equal(trafficTargetSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockMeshServiceSet)(nil).Equal), meshServiceSet)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockTrafficTargetSet)(nil).Equal), trafficTargetSet)
 }
 
 // Has mocks base method
-func (m *MockMeshServiceSet) Has(meshService ezkube.ResourceId) bool {
+func (m *MockTrafficTargetSet) Has(trafficTarget ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Has", meshService)
+	ret := m.ctrl.Call(m, "Has", trafficTarget)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // Has indicates an expected call of Has
-func (mr *MockMeshServiceSetMockRecorder) Has(meshService interface{}) *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) Has(trafficTarget interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockMeshServiceSet)(nil).Has), meshService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockTrafficTargetSet)(nil).Has), trafficTarget)
 }
 
 // Delete mocks base method
-func (m *MockMeshServiceSet) Delete(meshService ezkube.ResourceId) {
+func (m *MockTrafficTargetSet) Delete(trafficTarget ezkube.ResourceId) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Delete", meshService)
+	m.ctrl.Call(m, "Delete", trafficTarget)
 }
 
 // Delete indicates an expected call of Delete
-func (mr *MockMeshServiceSetMockRecorder) Delete(meshService interface{}) *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) Delete(trafficTarget interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshServiceSet)(nil).Delete), meshService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockTrafficTargetSet)(nil).Delete), trafficTarget)
 }
 
 // Union mocks base method
-func (m *MockMeshServiceSet) Union(set v1alpha2sets.MeshServiceSet) v1alpha2sets.MeshServiceSet {
+func (m *MockTrafficTargetSet) Union(set v1alpha2sets.TrafficTargetSet) v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Union", set)
-	ret0, _ := ret[0].(v1alpha2sets.MeshServiceSet)
+	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
 // Union indicates an expected call of Union
-func (mr *MockMeshServiceSetMockRecorder) Union(set interface{}) *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) Union(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockMeshServiceSet)(nil).Union), set)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockTrafficTargetSet)(nil).Union), set)
 }
 
 // Difference mocks base method
-func (m *MockMeshServiceSet) Difference(set v1alpha2sets.MeshServiceSet) v1alpha2sets.MeshServiceSet {
+func (m *MockTrafficTargetSet) Difference(set v1alpha2sets.TrafficTargetSet) v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Difference", set)
-	ret0, _ := ret[0].(v1alpha2sets.MeshServiceSet)
+	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
 // Difference indicates an expected call of Difference
-func (mr *MockMeshServiceSetMockRecorder) Difference(set interface{}) *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) Difference(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockMeshServiceSet)(nil).Difference), set)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockTrafficTargetSet)(nil).Difference), set)
 }
 
 // Intersection mocks base method
-func (m *MockMeshServiceSet) Intersection(set v1alpha2sets.MeshServiceSet) v1alpha2sets.MeshServiceSet {
+func (m *MockTrafficTargetSet) Intersection(set v1alpha2sets.TrafficTargetSet) v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Intersection", set)
-	ret0, _ := ret[0].(v1alpha2sets.MeshServiceSet)
+	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
 // Intersection indicates an expected call of Intersection
-func (mr *MockMeshServiceSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockMeshServiceSet)(nil).Intersection), set)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockTrafficTargetSet)(nil).Intersection), set)
 }
 
 // Find mocks base method
-func (m *MockMeshServiceSet) Find(id ezkube.ResourceId) (*v1alpha2.MeshService, error) {
+func (m *MockTrafficTargetSet) Find(id ezkube.ResourceId) (*v1alpha2.TrafficTarget, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", id)
-	ret0, _ := ret[0].(*v1alpha2.MeshService)
+	ret0, _ := ret[0].(*v1alpha2.TrafficTarget)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Find indicates an expected call of Find
-func (mr *MockMeshServiceSetMockRecorder) Find(id interface{}) *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockMeshServiceSet)(nil).Find), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockTrafficTargetSet)(nil).Find), id)
 }
 
 // Length mocks base method
-func (m *MockMeshServiceSet) Length() int {
+func (m *MockTrafficTargetSet) Length() int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Length")
 	ret0, _ := ret[0].(int)
@@ -205,9 +205,9 @@ func (m *MockMeshServiceSet) Length() int {
 }
 
 // Length indicates an expected call of Length
-func (mr *MockMeshServiceSetMockRecorder) Length() *gomock.Call {
+func (mr *MockTrafficTargetSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockMeshServiceSet)(nil).Length))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockTrafficTargetSet)(nil).Length))
 }
 
 // MockMeshWorkloadSet is a mock of MeshWorkloadSet interface
