@@ -75,7 +75,7 @@ message AccessPolicyStatus {
     // applied to all target meshes.
     ApprovalState state = 2;
 
-    // The status of the AccessPolicy for each MeshService to which it has been applied.
-    // An AccessPolicy may be Accepted for some MeshServices and rejected for others.
+    // The status of the AccessPolicy for each TrafficTarget to which it has been applied.
+    // An AccessPolicy may be Accepted for some TrafficTargets and rejected for others.
     map<string, ApprovalStatus> mesh_services = 3;
 }

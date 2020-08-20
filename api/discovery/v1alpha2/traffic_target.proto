@@ -10,13 +10,13 @@ import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 /**
-    The MeshService is an abstraction for a traffic target which we have discovered to be part of a
+    The TrafficTarget is an abstraction for a traffic target which we have discovered to be part of a
     given mesh.
 */
-message MeshServiceSpec {
-    // The type of traffic target backing the MeshService.
+message TrafficTargetSpec {
+    // The type of traffic target backing the TrafficTarget.
     oneof type {
-        // Metadata about the kube-native traffic target backing this MeshService.
+        // Metadata about the kube-native traffic target backing this TrafficTarget.
         KubeService kube_service = 1;
     }
 
@@ -31,7 +31,7 @@ message MeshServiceSpec {
             string protocol = 3;
         }
 
-        // A reference to the kube-native traffic target that this MeshService represents.
+        // A reference to the kube-native traffic target that this TrafficTarget represents.
         .core.skv2.solo.io.ClusterObjectRef ref = 1;
 
         // Selectors for the set of pods targeted by the k8s Service.
@@ -55,20 +55,20 @@ message MeshServiceSpec {
 
 }
 
-message MeshServiceStatus {
+message TrafficTargetStatus {
 
     // The most recent generation observed in the the TrafficPolicy metadata.
     // if the observedGeneration does not match generation, the controller has not received the most
     // recent version of this resource.
     int64 observed_generation = 1;
 
-    // The set of Traffic Policies that have been applied to this MeshService
+    // The set of Traffic Policies that have been applied to this TrafficTarget
     repeated AppliedTrafficPolicy applied_traffic_policies = 3;
 
-    // The set of Access Policies that have been applied to this MeshService
+    // The set of Access Policies that have been applied to this TrafficTarget
     repeated AppliedAccessPolicy applied_access_policies = 4;
 
-    // AppliedTrafficPolicy represents a traffic policy that has been applied to the MeshService.
+    // AppliedTrafficPolicy represents a traffic policy that has been applied to the TrafficTarget.
     // if an existing Traffic Policy becomes invalid, the last applied policy will be used
     message AppliedTrafficPolicy {
         // reference to the traffic policy
@@ -81,7 +81,7 @@ message MeshServiceStatus {
         .networking.smh.solo.io.TrafficPolicySpec spec = 3;
     }
 
-    // AppliedAccessPolicy represents a access policy that has been applied to the MeshService.
+    // AppliedAccessPolicy represents a access policy that has been applied to the TrafficTarget.
     // if an existing Access Policy becomes invalid, the last applied policy will be used
     message AppliedAccessPolicy {
         // reference to the access policy
@@ -94,7 +94,7 @@ message MeshServiceStatus {
         .networking.smh.solo.io.AccessPolicySpec spec = 3;
     }
 
-    // Federation policy applied to this MeshService, allowing access
+    // Federation policy applied to this TrafficTarget, allowing access
     // to the traffic target from other meshes/clusters.
     message AppliedFederation {
         /**
