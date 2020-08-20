@@ -4,7 +4,7 @@
 
 // The Input Snapshot contains the set of all:
 // * TrafficTargets
-// * MeshWorkloads
+// * Workloads
 // * Meshes
 // * TrafficPolicies
 // * AccessPolicies
@@ -49,8 +49,8 @@ type Snapshot interface {
 
 	// return the set of input TrafficTargets
 	TrafficTargets() discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet
-	// return the set of input MeshWorkloads
-	MeshWorkloads() discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
+	// return the set of input Workloads
+	Workloads() discovery_smh_solo_io_v1alpha2_sets.WorkloadSet
 	// return the set of input Meshes
 	Meshes() discovery_smh_solo_io_v1alpha2_sets.MeshSet
 
@@ -83,7 +83,7 @@ type snapshot struct {
 	name string
 
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet
-	meshWorkloads  discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
+	workloads      discovery_smh_solo_io_v1alpha2_sets.WorkloadSet
 	meshes         discovery_smh_solo_io_v1alpha2_sets.MeshSet
 
 	trafficPolicies  networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet
@@ -100,7 +100,7 @@ func NewSnapshot(
 	name string,
 
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet,
-	meshWorkloads discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet,
+	workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
 
 	trafficPolicies networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet,
@@ -117,7 +117,7 @@ func NewSnapshot(
 		name: name,
 
 		trafficTargets:     trafficTargets,
-		meshWorkloads:      meshWorkloads,
+		workloads:          workloads,
 		meshes:             meshes,
 		trafficPolicies:    trafficPolicies,
 		accessPolicies:     accessPolicies,
@@ -132,8 +132,8 @@ func (s snapshot) TrafficTargets() discovery_smh_solo_io_v1alpha2_sets.TrafficTa
 	return s.trafficTargets
 }
 
-func (s snapshot) MeshWorkloads() discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet {
-	return s.meshWorkloads
+func (s snapshot) Workloads() discovery_smh_solo_io_v1alpha2_sets.WorkloadSet {
+	return s.workloads
 }
 
 func (s snapshot) Meshes() discovery_smh_solo_io_v1alpha2_sets.MeshSet {
@@ -170,7 +170,7 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 			return err
 		}
 	}
-	for _, obj := range s.MeshWorkloads().List() {
+	for _, obj := range s.Workloads().List() {
 		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 			return err
 		}
@@ -221,7 +221,7 @@ func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicl
 			return err
 		}
 	}
-	for _, obj := range s.MeshWorkloads().List() {
+	for _, obj := range s.Workloads().List() {
 		clusterClient, err := mcClient.Cluster(obj.ClusterName)
 		if err != nil {
 			return err
@@ -293,7 +293,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
 	snapshotMap["trafficTargets"] = s.trafficTargets.List()
-	snapshotMap["meshWorkloads"] = s.meshWorkloads.List()
+	snapshotMap["workloads"] = s.workloads.List()
 	snapshotMap["meshes"] = s.meshes.List()
 	snapshotMap["trafficPolicies"] = s.trafficPolicies.List()
 	snapshotMap["accessPolicies"] = s.accessPolicies.List()
@@ -317,8 +317,8 @@ type BuildOptions struct {
 
 	// List options for composing a snapshot from TrafficTargets
 	TrafficTargets []client.ListOption
-	// List options for composing a snapshot from MeshWorkloads
-	MeshWorkloads []client.ListOption
+	// List options for composing a snapshot from Workloads
+	Workloads []client.ListOption
 	// List options for composing a snapshot from Meshes
 	Meshes []client.ListOption
 
@@ -343,7 +343,7 @@ type multiClusterBuilder struct {
 	clusters multicluster.ClusterSet
 
 	trafficTargets discovery_smh_solo_io_v1alpha2.MulticlusterTrafficTargetClient
-	meshWorkloads  discovery_smh_solo_io_v1alpha2.MulticlusterMeshWorkloadClient
+	workloads      discovery_smh_solo_io_v1alpha2.MulticlusterWorkloadClient
 	meshes         discovery_smh_solo_io_v1alpha2.MulticlusterMeshClient
 
 	trafficPolicies  networking_smh_solo_io_v1alpha2.MulticlusterTrafficPolicyClient
@@ -365,7 +365,7 @@ func NewMultiClusterBuilder(
 		clusters: clusters,
 
 		trafficTargets: discovery_smh_solo_io_v1alpha2.NewMulticlusterTrafficTargetClient(client),
-		meshWorkloads:  discovery_smh_solo_io_v1alpha2.NewMulticlusterMeshWorkloadClient(client),
+		workloads:      discovery_smh_solo_io_v1alpha2.NewMulticlusterWorkloadClient(client),
 		meshes:         discovery_smh_solo_io_v1alpha2.NewMulticlusterMeshClient(client),
 
 		trafficPolicies:  networking_smh_solo_io_v1alpha2.NewMulticlusterTrafficPolicyClient(client),
@@ -382,7 +382,7 @@ func NewMultiClusterBuilder(
 func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
 	trafficTargets := discovery_smh_solo_io_v1alpha2_sets.NewTrafficTargetSet()
-	meshWorkloads := discovery_smh_solo_io_v1alpha2_sets.NewMeshWorkloadSet()
+	workloads := discovery_smh_solo_io_v1alpha2_sets.NewWorkloadSet()
 	meshes := discovery_smh_solo_io_v1alpha2_sets.NewMeshSet()
 
 	trafficPolicies := networking_smh_solo_io_v1alpha2_sets.NewTrafficPolicySet()
@@ -401,7 +401,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		if err := b.insertTrafficTargetsFromCluster(ctx, cluster, trafficTargets, opts.TrafficTargets...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertMeshWorkloadsFromCluster(ctx, cluster, meshWorkloads, opts.MeshWorkloads...); err != nil {
+		if err := b.insertWorkloadsFromCluster(ctx, cluster, workloads, opts.Workloads...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes...); err != nil {
@@ -432,7 +432,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		name,
 
 		trafficTargets,
-		meshWorkloads,
+		workloads,
 		meshes,
 		trafficPolicies,
 		accessPolicies,
@@ -464,21 +464,21 @@ func (b *multiClusterBuilder) insertTrafficTargetsFromCluster(ctx context.Contex
 
 	return nil
 }
-func (b *multiClusterBuilder) insertMeshWorkloadsFromCluster(ctx context.Context, cluster string, meshWorkloads discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet, opts ...client.ListOption) error {
-	meshWorkloadClient, err := b.meshWorkloads.Cluster(cluster)
+func (b *multiClusterBuilder) insertWorkloadsFromCluster(ctx context.Context, cluster string, workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet, opts ...client.ListOption) error {
+	workloadClient, err := b.workloads.Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	meshWorkloadList, err := meshWorkloadClient.ListMeshWorkload(ctx, opts...)
+	workloadList, err := workloadClient.ListWorkload(ctx, opts...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range meshWorkloadList.Items {
+	for _, item := range workloadList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		meshWorkloads.Insert(&item)
+		workloads.Insert(&item)
 	}
 
 	return nil
@@ -623,7 +623,7 @@ func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Co
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
 	trafficTargets discovery_smh_solo_io_v1alpha2.TrafficTargetClient
-	meshWorkloads  discovery_smh_solo_io_v1alpha2.MeshWorkloadClient
+	workloads      discovery_smh_solo_io_v1alpha2.WorkloadClient
 	meshes         discovery_smh_solo_io_v1alpha2.MeshClient
 
 	trafficPolicies  networking_smh_solo_io_v1alpha2.TrafficPolicyClient
@@ -643,7 +643,7 @@ func NewSingleClusterBuilder(
 	return &singleClusterBuilder{
 
 		trafficTargets: discovery_smh_solo_io_v1alpha2.NewTrafficTargetClient(client),
-		meshWorkloads:  discovery_smh_solo_io_v1alpha2.NewMeshWorkloadClient(client),
+		workloads:      discovery_smh_solo_io_v1alpha2.NewWorkloadClient(client),
 		meshes:         discovery_smh_solo_io_v1alpha2.NewMeshClient(client),
 
 		trafficPolicies:  networking_smh_solo_io_v1alpha2.NewTrafficPolicyClient(client),
@@ -660,7 +660,7 @@ func NewSingleClusterBuilder(
 func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
 	trafficTargets := discovery_smh_solo_io_v1alpha2_sets.NewTrafficTargetSet()
-	meshWorkloads := discovery_smh_solo_io_v1alpha2_sets.NewMeshWorkloadSet()
+	workloads := discovery_smh_solo_io_v1alpha2_sets.NewWorkloadSet()
 	meshes := discovery_smh_solo_io_v1alpha2_sets.NewMeshSet()
 
 	trafficPolicies := networking_smh_solo_io_v1alpha2_sets.NewTrafficPolicySet()
@@ -677,7 +677,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	if err := b.insertTrafficTargets(ctx, trafficTargets, opts.TrafficTargets...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertMeshWorkloads(ctx, meshWorkloads, opts.MeshWorkloads...); err != nil {
+	if err := b.insertWorkloads(ctx, workloads, opts.Workloads...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertMeshes(ctx, meshes, opts.Meshes...); err != nil {
@@ -706,7 +706,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		name,
 
 		trafficTargets,
-		meshWorkloads,
+		workloads,
 		meshes,
 		trafficPolicies,
 		accessPolicies,
@@ -732,15 +732,15 @@ func (b *singleClusterBuilder) insertTrafficTargets(ctx context.Context, traffic
 
 	return nil
 }
-func (b *singleClusterBuilder) insertMeshWorkloads(ctx context.Context, meshWorkloads discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet, opts ...client.ListOption) error {
-	meshWorkloadList, err := b.meshWorkloads.ListMeshWorkload(ctx, opts...)
+func (b *singleClusterBuilder) insertWorkloads(ctx context.Context, workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet, opts ...client.ListOption) error {
+	workloadList, err := b.workloads.ListWorkload(ctx, opts...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range meshWorkloadList.Items {
+	for _, item := range workloadList.Items {
 		item := item // pike
-		meshWorkloads.Insert(&item)
+		workloads.Insert(&item)
 	}
 
 	return nil

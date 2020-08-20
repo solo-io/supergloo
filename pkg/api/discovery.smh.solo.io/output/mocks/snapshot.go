@@ -54,18 +54,18 @@ func (mr *MockSnapshotMockRecorder) TrafficTargets() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficTargets", reflect.TypeOf((*MockSnapshot)(nil).TrafficTargets))
 }
 
-// MeshWorkloads mocks base method
-func (m *MockSnapshot) MeshWorkloads() []output.LabeledMeshWorkloadSet {
+// Workloads mocks base method
+func (m *MockSnapshot) Workloads() []output.LabeledWorkloadSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MeshWorkloads")
-	ret0, _ := ret[0].([]output.LabeledMeshWorkloadSet)
+	ret := m.ctrl.Call(m, "Workloads")
+	ret0, _ := ret[0].([]output.LabeledWorkloadSet)
 	return ret0
 }
 
-// MeshWorkloads indicates an expected call of MeshWorkloads
-func (mr *MockSnapshotMockRecorder) MeshWorkloads() *gomock.Call {
+// Workloads indicates an expected call of Workloads
+func (mr *MockSnapshotMockRecorder) Workloads() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshWorkloads", reflect.TypeOf((*MockSnapshot)(nil).MeshWorkloads))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Workloads", reflect.TypeOf((*MockSnapshot)(nil).Workloads))
 }
 
 // Meshes mocks base method
@@ -186,31 +186,31 @@ func (mr *MockLabeledTrafficTargetSetMockRecorder) Generic() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledTrafficTargetSet)(nil).Generic))
 }
 
-// MockLabeledMeshWorkloadSet is a mock of LabeledMeshWorkloadSet interface
-type MockLabeledMeshWorkloadSet struct {
+// MockLabeledWorkloadSet is a mock of LabeledWorkloadSet interface
+type MockLabeledWorkloadSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockLabeledMeshWorkloadSetMockRecorder
+	recorder *MockLabeledWorkloadSetMockRecorder
 }
 
-// MockLabeledMeshWorkloadSetMockRecorder is the mock recorder for MockLabeledMeshWorkloadSet
-type MockLabeledMeshWorkloadSetMockRecorder struct {
-	mock *MockLabeledMeshWorkloadSet
+// MockLabeledWorkloadSetMockRecorder is the mock recorder for MockLabeledWorkloadSet
+type MockLabeledWorkloadSetMockRecorder struct {
+	mock *MockLabeledWorkloadSet
 }
 
-// NewMockLabeledMeshWorkloadSet creates a new mock instance
-func NewMockLabeledMeshWorkloadSet(ctrl *gomock.Controller) *MockLabeledMeshWorkloadSet {
-	mock := &MockLabeledMeshWorkloadSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledMeshWorkloadSetMockRecorder{mock}
+// NewMockLabeledWorkloadSet creates a new mock instance
+func NewMockLabeledWorkloadSet(ctrl *gomock.Controller) *MockLabeledWorkloadSet {
+	mock := &MockLabeledWorkloadSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledWorkloadSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledMeshWorkloadSet) EXPECT() *MockLabeledMeshWorkloadSetMockRecorder {
+func (m *MockLabeledWorkloadSet) EXPECT() *MockLabeledWorkloadSetMockRecorder {
 	return m.recorder
 }
 
 // Labels mocks base method
-func (m *MockLabeledMeshWorkloadSet) Labels() map[string]string {
+func (m *MockLabeledWorkloadSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
 	ret0, _ := ret[0].(map[string]string)
@@ -218,27 +218,27 @@ func (m *MockLabeledMeshWorkloadSet) Labels() map[string]string {
 }
 
 // Labels indicates an expected call of Labels
-func (mr *MockLabeledMeshWorkloadSetMockRecorder) Labels() *gomock.Call {
+func (mr *MockLabeledWorkloadSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledMeshWorkloadSet)(nil).Labels))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledWorkloadSet)(nil).Labels))
 }
 
 // Set mocks base method
-func (m *MockLabeledMeshWorkloadSet) Set() v1alpha2sets.MeshWorkloadSet {
+func (m *MockLabeledWorkloadSet) Set() v1alpha2sets.WorkloadSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
-	ret0, _ := ret[0].(v1alpha2sets.MeshWorkloadSet)
+	ret0, _ := ret[0].(v1alpha2sets.WorkloadSet)
 	return ret0
 }
 
 // Set indicates an expected call of Set
-func (mr *MockLabeledMeshWorkloadSetMockRecorder) Set() *gomock.Call {
+func (mr *MockLabeledWorkloadSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledMeshWorkloadSet)(nil).Set))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledWorkloadSet)(nil).Set))
 }
 
 // Generic mocks base method
-func (m *MockLabeledMeshWorkloadSet) Generic() output0.ResourceList {
+func (m *MockLabeledWorkloadSet) Generic() output0.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(output0.ResourceList)
@@ -246,9 +246,9 @@ func (m *MockLabeledMeshWorkloadSet) Generic() output0.ResourceList {
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockLabeledMeshWorkloadSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockLabeledWorkloadSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledMeshWorkloadSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledWorkloadSet)(nil).Generic))
 }
 
 // MockLabeledMeshSet is a mock of LabeledMeshSet interface
@@ -369,34 +369,34 @@ func (mr *MockBuilderMockRecorder) GetTrafficTargets() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrafficTargets", reflect.TypeOf((*MockBuilder)(nil).GetTrafficTargets))
 }
 
-// AddMeshWorkloads mocks base method
-func (m *MockBuilder) AddMeshWorkloads(meshWorkloads ...*v1alpha2.MeshWorkload) {
+// AddWorkloads mocks base method
+func (m *MockBuilder) AddWorkloads(workloads ...*v1alpha2.Workload) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range meshWorkloads {
+	for _, a := range workloads {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddMeshWorkloads", varargs...)
+	m.ctrl.Call(m, "AddWorkloads", varargs...)
 }
 
-// AddMeshWorkloads indicates an expected call of AddMeshWorkloads
-func (mr *MockBuilderMockRecorder) AddMeshWorkloads(meshWorkloads ...interface{}) *gomock.Call {
+// AddWorkloads indicates an expected call of AddWorkloads
+func (mr *MockBuilderMockRecorder) AddWorkloads(workloads ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMeshWorkloads", reflect.TypeOf((*MockBuilder)(nil).AddMeshWorkloads), meshWorkloads...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWorkloads", reflect.TypeOf((*MockBuilder)(nil).AddWorkloads), workloads...)
 }
 
-// GetMeshWorkloads mocks base method
-func (m *MockBuilder) GetMeshWorkloads() v1alpha2sets.MeshWorkloadSet {
+// GetWorkloads mocks base method
+func (m *MockBuilder) GetWorkloads() v1alpha2sets.WorkloadSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMeshWorkloads")
-	ret0, _ := ret[0].(v1alpha2sets.MeshWorkloadSet)
+	ret := m.ctrl.Call(m, "GetWorkloads")
+	ret0, _ := ret[0].(v1alpha2sets.WorkloadSet)
 	return ret0
 }
 
-// GetMeshWorkloads indicates an expected call of GetMeshWorkloads
-func (mr *MockBuilderMockRecorder) GetMeshWorkloads() *gomock.Call {
+// GetWorkloads indicates an expected call of GetWorkloads
+func (mr *MockBuilderMockRecorder) GetWorkloads() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshWorkloads", reflect.TypeOf((*MockBuilder)(nil).GetMeshWorkloads))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkloads", reflect.TypeOf((*MockBuilder)(nil).GetWorkloads))
 }
 
 // AddMeshes mocks base method

@@ -462,7 +462,7 @@ func (m *TrafficTargetStatus_AppliedAccessPolicy) GetSpec() *v1alpha2.AccessPoli
 // to the traffic target from other meshes/clusters.
 type TrafficTargetStatus_AppliedFederation struct {
 	//*
-	//For any workload that this traffic target has federated to (i.e., any MeshWorkload whose ref appears in `federated_to_workloads`),
+	//For any workload that this traffic target has federated to (i.e., any Workload whose ref appears in `federated_to_workloads`),
 	//a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than
 	//the one hosting this service.
 	MulticlusterDnsName string `protobuf:"bytes,1,opt,name=multicluster_dns_name,json=multiclusterDnsName,proto3" json:"multicluster_dns_name,omitempty"`

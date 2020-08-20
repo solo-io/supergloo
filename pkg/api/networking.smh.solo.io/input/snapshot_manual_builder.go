@@ -23,7 +23,7 @@ type InputSnapshotManualBuilder struct {
 	name string
 
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet
-	meshWorkloads  discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
+	workloads      discovery_smh_solo_io_v1alpha2_sets.WorkloadSet
 	meshes         discovery_smh_solo_io_v1alpha2_sets.MeshSet
 
 	trafficPolicies  networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet
@@ -41,7 +41,7 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 		name: name,
 
 		trafficTargets: discovery_smh_solo_io_v1alpha2_sets.NewTrafficTargetSet(),
-		meshWorkloads:  discovery_smh_solo_io_v1alpha2_sets.NewMeshWorkloadSet(),
+		workloads:      discovery_smh_solo_io_v1alpha2_sets.NewWorkloadSet(),
 		meshes:         discovery_smh_solo_io_v1alpha2_sets.NewMeshSet(),
 
 		trafficPolicies:  networking_smh_solo_io_v1alpha2_sets.NewTrafficPolicySet(),
@@ -60,7 +60,7 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.name,
 
 		i.trafficTargets,
-		i.meshWorkloads,
+		i.workloads,
 		i.meshes,
 
 		i.trafficPolicies,
@@ -77,8 +77,8 @@ func (i *InputSnapshotManualBuilder) AddTrafficTargets(trafficTargets []*discove
 	i.trafficTargets.Insert(trafficTargets...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddMeshWorkloads(meshWorkloads []*discovery_smh_solo_io_v1alpha2.MeshWorkload) *InputSnapshotManualBuilder {
-	i.meshWorkloads.Insert(meshWorkloads...)
+func (i *InputSnapshotManualBuilder) AddWorkloads(workloads []*discovery_smh_solo_io_v1alpha2.Workload) *InputSnapshotManualBuilder {
+	i.workloads.Insert(workloads...)
 	return i
 }
 func (i *InputSnapshotManualBuilder) AddMeshes(meshes []*discovery_smh_solo_io_v1alpha2.Mesh) *InputSnapshotManualBuilder {

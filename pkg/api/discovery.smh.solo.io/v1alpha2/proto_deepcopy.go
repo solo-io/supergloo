@@ -20,15 +20,15 @@ func (in *TrafficTargetStatus) DeepCopyInto(out *TrafficTargetStatus) {
 	*out = *p
 }
 
-// DeepCopyInto for the MeshWorkload.Spec
-func (in *MeshWorkloadSpec) DeepCopyInto(out *MeshWorkloadSpec) {
-	p := proto.Clone(in).(*MeshWorkloadSpec)
+// DeepCopyInto for the Workload.Spec
+func (in *WorkloadSpec) DeepCopyInto(out *WorkloadSpec) {
+	p := proto.Clone(in).(*WorkloadSpec)
 	*out = *p
 }
 
-// DeepCopyInto for the MeshWorkload.Status
-func (in *MeshWorkloadStatus) DeepCopyInto(out *MeshWorkloadStatus) {
-	p := proto.Clone(in).(*MeshWorkloadStatus)
+// DeepCopyInto for the Workload.Status
+func (in *WorkloadStatus) DeepCopyInto(out *WorkloadStatus) {
+	p := proto.Clone(in).(*WorkloadStatus)
 	*out = *p
 }
 

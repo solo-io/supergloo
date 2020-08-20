@@ -11,8 +11,8 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh"
-	meshworkload "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload"
 	traffictarget "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget"
+	workload "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload"
 )
 
 // MockdependencyFactory is a mock of dependencyFactory interface
@@ -52,18 +52,18 @@ func (mr *MockdependencyFactoryMockRecorder) makeMeshTranslator(ctx, in interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeMeshTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeMeshTranslator), ctx, in)
 }
 
-// makeMeshWorkloadTranslator mocks base method
-func (m *MockdependencyFactory) makeMeshWorkloadTranslator(ctx context.Context, in input.Snapshot) meshworkload.Translator {
+// makeWorkloadTranslator mocks base method
+func (m *MockdependencyFactory) makeWorkloadTranslator(ctx context.Context, in input.Snapshot) workload.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "makeMeshWorkloadTranslator", ctx, in)
-	ret0, _ := ret[0].(meshworkload.Translator)
+	ret := m.ctrl.Call(m, "makeWorkloadTranslator", ctx, in)
+	ret0, _ := ret[0].(workload.Translator)
 	return ret0
 }
 
-// makeMeshWorkloadTranslator indicates an expected call of makeMeshWorkloadTranslator
-func (mr *MockdependencyFactoryMockRecorder) makeMeshWorkloadTranslator(ctx, in interface{}) *gomock.Call {
+// makeWorkloadTranslator indicates an expected call of makeWorkloadTranslator
+func (mr *MockdependencyFactoryMockRecorder) makeWorkloadTranslator(ctx, in interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeMeshWorkloadTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeMeshWorkloadTranslator), ctx, in)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "makeWorkloadTranslator", reflect.TypeOf((*MockdependencyFactory)(nil).makeWorkloadTranslator), ctx, in)
 }
 
 // makeTrafficTargetTranslator mocks base method

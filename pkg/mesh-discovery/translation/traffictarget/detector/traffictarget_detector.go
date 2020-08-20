@@ -21,7 +21,7 @@ var (
 // whose backing pods are injected with a Mesh sidecar.
 // If no Mesh is detected, nil is returned
 type TrafficTargetDetector interface {
-	DetectTrafficTarget(service *corev1.Service, meshWorkloads v1alpha2sets.MeshWorkloadSet) *v1alpha2.TrafficTarget
+	DetectTrafficTarget(service *corev1.Service, workloads v1alpha2sets.WorkloadSet) *v1alpha2.TrafficTarget
 }
 
 type trafficTargetDetector struct{}
@@ -30,8 +30,8 @@ func NewTrafficTargetDetector() TrafficTargetDetector {
 	return &trafficTargetDetector{}
 }
 
-func (d trafficTargetDetector) DetectTrafficTarget(service *corev1.Service, meshWorkloads v1alpha2sets.MeshWorkloadSet) *v1alpha2.TrafficTarget {
-	backingWorkloads := d.findBackingMeshWorkloads(service, meshWorkloads)
+func (d trafficTargetDetector) DetectTrafficTarget(service *corev1.Service, workloads v1alpha2sets.WorkloadSet) *v1alpha2.TrafficTarget {
+	backingWorkloads := d.findBackingWorkloads(service, workloads)
 	if len(backingWorkloads) == 0 {
 		// TODO(ilackarms): we currently only create mesh services for services with backing workloads; this may be problematic when working with external services (not contained inside the mesh)
 		return nil
@@ -60,20 +60,20 @@ func (d trafficTargetDetector) DetectTrafficTarget(service *corev1.Service, mesh
 	}
 }
 
-func (d trafficTargetDetector) findBackingMeshWorkloads(service *corev1.Service, meshWorkloads v1alpha2sets.MeshWorkloadSet) v1alpha2.MeshWorkloadSlice {
-	var backingMeshWorkloads v1alpha2.MeshWorkloadSlice
+func (d trafficTargetDetector) findBackingWorkloads(service *corev1.Service, workloads v1alpha2sets.WorkloadSet) v1alpha2.WorkloadSlice {
+	var backingWorkloads v1alpha2.WorkloadSlice
 
-	for _, workload := range meshWorkloads.List() {
+	for _, workload := range workloads.List() {
 		// TODO(ilackarms): refactor this to support more than just k8s workloads
 		// should probably go with a platform-based traffictarget detector (e.g. one for k8s, one for vm, etc.)
 		if isBackingKubeWorkload(service, workload.Spec.GetKubernetes()) {
-			backingMeshWorkloads = append(backingMeshWorkloads, workload)
+			backingWorkloads = append(backingWorkloads, workload)
 		}
 	}
-	return backingMeshWorkloads
+	return backingWorkloads
 }
 
-func isBackingKubeWorkload(service *corev1.Service, kubeWorkload *v1alpha2.MeshWorkloadSpec_KubernertesWorkload) bool {
+func isBackingKubeWorkload(service *corev1.Service, kubeWorkload *v1alpha2.WorkloadSpec_KubernertesWorkload) bool {
 	if kubeWorkload == nil {
 		return false
 	}
@@ -95,7 +95,7 @@ func isBackingKubeWorkload(service *corev1.Service, kubeWorkload *v1alpha2.MeshW
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for
-func findSubsets(backingWorkloads v1alpha2.MeshWorkloadSlice) map[string]*v1alpha2.TrafficTargetSpec_KubeService_Subset {
+func findSubsets(backingWorkloads v1alpha2.WorkloadSlice) map[string]*v1alpha2.TrafficTargetSpec_KubeService_Subset {
 	uniqueLabels := make(map[string]sets.String)
 	for _, backingWorkload := range backingWorkloads {
 		for key, val := range backingWorkload.Spec.GetKubernetes().GetPodLabels() {

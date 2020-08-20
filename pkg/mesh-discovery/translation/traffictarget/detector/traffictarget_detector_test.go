@@ -33,19 +33,19 @@ var _ = Describe("TrafficTargetDetector", func() {
 		Namespace: "any",
 	}
 
-	makeWorkload := func(subset string) *v1alpha2.MeshWorkload {
+	makeWorkload := func(subset string) *v1alpha2.Workload {
 		labels := map[string]string{
 			"select": "me",
 			"subset": subset,
 		}
-		return &v1alpha2.MeshWorkload{
+		return &v1alpha2.Workload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "some-workload-" + subset,
 				Namespace: serviceNs,
 			},
-			Spec: v1alpha2.MeshWorkloadSpec{
-				WorkloadType: &v1alpha2.MeshWorkloadSpec_Kubernetes{
-					Kubernetes: &v1alpha2.MeshWorkloadSpec_KubernertesWorkload{
+			Spec: v1alpha2.WorkloadSpec{
+				WorkloadType: &v1alpha2.WorkloadSpec_Kubernetes{
+					Kubernetes: &v1alpha2.WorkloadSpec_KubernertesWorkload{
 						Controller:         deployment,
 						PodLabels:          labels,
 						ServiceAccountName: "any",
@@ -90,8 +90,8 @@ var _ = Describe("TrafficTargetDetector", func() {
 		}
 	}
 
-	It("translates a service with a backing meshworkload to a traffictarget", func() {
-		workloads := v1alpha2sets.NewMeshWorkloadSet(
+	It("translates a service with a backing workload to a traffictarget", func() {
+		workloads := v1alpha2sets.NewWorkloadSet(
 			makeWorkload("v1"),
 			makeWorkload("v2"),
 		)

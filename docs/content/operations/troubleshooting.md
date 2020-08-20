@@ -32,7 +32,7 @@ NOTE: all of the Service Mesh Hub CRs have a `status` field that give you an ind
 Knowing how to get logs from the Service Mesh Hub components is crucial for getting feedback about what's happening. Service Mesh Hub has three core components:
 
 * `csr-agent` - responsible for creating certificate/key pairs and issuing a Certificate Signing Request for a particular mesh -- this is used in Mesh identity federation; this component is not available in the default install, only when a cluster is registered
-* `mesh-discovery` - responsible for discovering Meshes, periodically querying clusters and control planes for their `TrafficTarget`s and `MeshWorkload`s. 
+* `mesh-discovery` - responsible for discovering Meshes, periodically querying clusters and control planes for their `TrafficTarget`s and `Workload`s. 
 * `mesh-networking` - responsible for orchestrating federation events, traffic policy updates, and access-control policy rules
 
 When troubleshooting various parts of the Service Mesh Hub functionality, you will likely want to see the logs for some of these components. For example, when creating a new `VirtualMesh` and you see something like `PROCESSING_ERROR` in the `federation` status, check the logs for the `mesh-networking` component like this:

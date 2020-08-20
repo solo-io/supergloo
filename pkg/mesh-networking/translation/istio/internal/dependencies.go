@@ -27,7 +27,7 @@ import (
 // define our DependencyFactory anywhere else
 type DependencyFactory interface {
 	MakeTrafficTargetTranslator(clusters skv1alpha1sets.KubernetesClusterSet, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) traffictarget.Translator
-	MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) mesh.Translator
+	MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, workloads discoveryv1alpha2sets.WorkloadSet, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) mesh.Translator
 }
 
 type dependencyFactoryImpl struct{}
@@ -43,10 +43,10 @@ func (d dependencyFactoryImpl) MakeTrafficTargetTranslator(clusters skv1alpha1se
 	return traffictarget.NewTranslator(clusterDomains, decoratorFactory, trafficTargets)
 }
 
-func (d dependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) mesh.Translator {
+func (d dependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, clusters skv1alpha1sets.KubernetesClusterSet, secrets corev1sets.SecretSet, workloads discoveryv1alpha2sets.WorkloadSet, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) mesh.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	federationTranslator := federation.NewTranslator(ctx, clusterDomains, trafficTargets)
-	mtlsTranslator := mtls.NewTranslator(ctx, secrets, meshWorkloads)
+	mtlsTranslator := mtls.NewTranslator(ctx, secrets, workloads)
 	accessTranslator := access.NewTranslator()
 	failoverServiceTranslator := failoverservice.NewTranslator(ctx, clusterDomains)
 

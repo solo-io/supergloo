@@ -52,7 +52,7 @@ func (t *istioTranslator) Translate(
 		trafficTargetTranslator.Translate(in, trafficTarget, outputs, reporter)
 	}
 
-	meshTranslator := t.dependencies.MakeMeshTranslator(ctx, in.KubernetesClusters(), in.Secrets(), in.MeshWorkloads(), in.TrafficTargets())
+	meshTranslator := t.dependencies.MakeMeshTranslator(ctx, in.KubernetesClusters(), in.Secrets(), in.Workloads(), in.TrafficTargets())
 	for _, mesh := range in.Meshes().List() {
 		meshTranslator.Translate(in, mesh, outputs, reporter)
 	}

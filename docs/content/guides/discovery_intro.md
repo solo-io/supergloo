@@ -14,11 +14,11 @@ talk to its Kubernetes API server
     - *note*: this resource is created by `meshctl` at cluster registration time
 2. **Meshes**
     - Representation of a service mesh control plane that has been discovered 
-3. **Mesh Workloads**
+3. **Workloads**
     - Representation of a pod that is a member of a service mesh; this is often determined by the presence of
 an injected proxy sidecar
 4. **Mesh Services**
-    - Representation of a Kubernetes service that is backed by Mesh Workload pods, e.g.
+    - Representation of a Kubernetes service that is backed by Workload pods, e.g.
 pods that are a member of the service mesh
 
 
@@ -129,9 +129,9 @@ status:
 
 {{< /highlight >}}
 
-### Discover Mesh Workloads
+### Discover Workloads
 
-Check to see that the `bookinfo` pods have been correctly identified as Mesh Workloads:
+Check to see that the `bookinfo` pods have been correctly identified as Workloads:
 
 ```shell
 kubectl -n service-mesh-hub get workloads

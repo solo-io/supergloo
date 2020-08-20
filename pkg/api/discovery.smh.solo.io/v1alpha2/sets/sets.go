@@ -182,169 +182,169 @@ func (s *trafficTargetSet) Length() int {
 	return s.set.Length()
 }
 
-type MeshWorkloadSet interface {
+type WorkloadSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.MeshWorkload) bool) []*discovery_smh_solo_io_v1alpha2.MeshWorkload
+	List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.Workload) bool) []*discovery_smh_solo_io_v1alpha2.Workload
 	// Return the Set as a map of key to resource.
-	Map() map[string]*discovery_smh_solo_io_v1alpha2.MeshWorkload
+	Map() map[string]*discovery_smh_solo_io_v1alpha2.Workload
 	// Insert a resource into the set.
-	Insert(meshWorkload ...*discovery_smh_solo_io_v1alpha2.MeshWorkload)
+	Insert(workload ...*discovery_smh_solo_io_v1alpha2.Workload)
 	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(meshWorkloadSet MeshWorkloadSet) bool
+	Equal(workloadSet WorkloadSet) bool
 	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(meshWorkload ezkube.ResourceId) bool
+	Has(workload ezkube.ResourceId) bool
 	// Delete the key matching the resource
-	Delete(meshWorkload ezkube.ResourceId)
+	Delete(workload ezkube.ResourceId)
 	// Return the union with the provided set
-	Union(set MeshWorkloadSet) MeshWorkloadSet
+	Union(set WorkloadSet) WorkloadSet
 	// Return the difference with the provided set
-	Difference(set MeshWorkloadSet) MeshWorkloadSet
+	Difference(set WorkloadSet) WorkloadSet
 	// Return the intersection with the provided set
-	Intersection(set MeshWorkloadSet) MeshWorkloadSet
+	Intersection(set WorkloadSet) WorkloadSet
 	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.MeshWorkload, error)
+	Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.Workload, error)
 	// Get the length of the set
 	Length() int
 }
 
-func makeGenericMeshWorkloadSet(meshWorkloadList []*discovery_smh_solo_io_v1alpha2.MeshWorkload) sksets.ResourceSet {
+func makeGenericWorkloadSet(workloadList []*discovery_smh_solo_io_v1alpha2.Workload) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
-	for _, obj := range meshWorkloadList {
+	for _, obj := range workloadList {
 		genericResources = append(genericResources, obj)
 	}
 	return sksets.NewResourceSet(genericResources...)
 }
 
-type meshWorkloadSet struct {
+type workloadSet struct {
 	set sksets.ResourceSet
 }
 
-func NewMeshWorkloadSet(meshWorkloadList ...*discovery_smh_solo_io_v1alpha2.MeshWorkload) MeshWorkloadSet {
-	return &meshWorkloadSet{set: makeGenericMeshWorkloadSet(meshWorkloadList)}
+func NewWorkloadSet(workloadList ...*discovery_smh_solo_io_v1alpha2.Workload) WorkloadSet {
+	return &workloadSet{set: makeGenericWorkloadSet(workloadList)}
 }
 
-func NewMeshWorkloadSetFromList(meshWorkloadList *discovery_smh_solo_io_v1alpha2.MeshWorkloadList) MeshWorkloadSet {
-	list := make([]*discovery_smh_solo_io_v1alpha2.MeshWorkload, 0, len(meshWorkloadList.Items))
-	for idx := range meshWorkloadList.Items {
-		list = append(list, &meshWorkloadList.Items[idx])
+func NewWorkloadSetFromList(workloadList *discovery_smh_solo_io_v1alpha2.WorkloadList) WorkloadSet {
+	list := make([]*discovery_smh_solo_io_v1alpha2.Workload, 0, len(workloadList.Items))
+	for idx := range workloadList.Items {
+		list = append(list, &workloadList.Items[idx])
 	}
-	return &meshWorkloadSet{set: makeGenericMeshWorkloadSet(list)}
+	return &workloadSet{set: makeGenericWorkloadSet(list)}
 }
 
-func (s *meshWorkloadSet) Keys() sets.String {
+func (s *workloadSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
 	return s.set.Keys()
 }
 
-func (s *meshWorkloadSet) List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.MeshWorkload) bool) []*discovery_smh_solo_io_v1alpha2.MeshWorkload {
+func (s *workloadSet) List(filterResource ...func(*discovery_smh_solo_io_v1alpha2.Workload) bool) []*discovery_smh_solo_io_v1alpha2.Workload {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*discovery_smh_solo_io_v1alpha2.MeshWorkload))
+			return filter(obj.(*discovery_smh_solo_io_v1alpha2.Workload))
 		})
 	}
 
-	var meshWorkloadList []*discovery_smh_solo_io_v1alpha2.MeshWorkload
+	var workloadList []*discovery_smh_solo_io_v1alpha2.Workload
 	for _, obj := range s.set.List(genericFilters...) {
-		meshWorkloadList = append(meshWorkloadList, obj.(*discovery_smh_solo_io_v1alpha2.MeshWorkload))
+		workloadList = append(workloadList, obj.(*discovery_smh_solo_io_v1alpha2.Workload))
 	}
-	return meshWorkloadList
+	return workloadList
 }
 
-func (s *meshWorkloadSet) Map() map[string]*discovery_smh_solo_io_v1alpha2.MeshWorkload {
+func (s *workloadSet) Map() map[string]*discovery_smh_solo_io_v1alpha2.Workload {
 	if s == nil {
 		return nil
 	}
 
-	newMap := map[string]*discovery_smh_solo_io_v1alpha2.MeshWorkload{}
+	newMap := map[string]*discovery_smh_solo_io_v1alpha2.Workload{}
 	for k, v := range s.set.Map() {
-		newMap[k] = v.(*discovery_smh_solo_io_v1alpha2.MeshWorkload)
+		newMap[k] = v.(*discovery_smh_solo_io_v1alpha2.Workload)
 	}
 	return newMap
 }
 
-func (s *meshWorkloadSet) Insert(
-	meshWorkloadList ...*discovery_smh_solo_io_v1alpha2.MeshWorkload,
+func (s *workloadSet) Insert(
+	workloadList ...*discovery_smh_solo_io_v1alpha2.Workload,
 ) {
 	if s == nil {
 		panic("cannot insert into nil set")
 	}
 
-	for _, obj := range meshWorkloadList {
+	for _, obj := range workloadList {
 		s.set.Insert(obj)
 	}
 }
 
-func (s *meshWorkloadSet) Has(meshWorkload ezkube.ResourceId) bool {
+func (s *workloadSet) Has(workload ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(meshWorkload)
+	return s.set.Has(workload)
 }
 
-func (s *meshWorkloadSet) Equal(
-	meshWorkloadSet MeshWorkloadSet,
+func (s *workloadSet) Equal(
+	workloadSet WorkloadSet,
 ) bool {
 	if s == nil {
-		return meshWorkloadSet == nil
+		return workloadSet == nil
 	}
-	return s.set.Equal(makeGenericMeshWorkloadSet(meshWorkloadSet.List()))
+	return s.set.Equal(makeGenericWorkloadSet(workloadSet.List()))
 }
 
-func (s *meshWorkloadSet) Delete(MeshWorkload ezkube.ResourceId) {
+func (s *workloadSet) Delete(Workload ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(MeshWorkload)
+	s.set.Delete(Workload)
 }
 
-func (s *meshWorkloadSet) Union(set MeshWorkloadSet) MeshWorkloadSet {
+func (s *workloadSet) Union(set WorkloadSet) WorkloadSet {
 	if s == nil {
 		return set
 	}
-	return NewMeshWorkloadSet(append(s.List(), set.List()...)...)
+	return NewWorkloadSet(append(s.List(), set.List()...)...)
 }
 
-func (s *meshWorkloadSet) Difference(set MeshWorkloadSet) MeshWorkloadSet {
+func (s *workloadSet) Difference(set WorkloadSet) WorkloadSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericMeshWorkloadSet(set.List()))
-	return &meshWorkloadSet{set: newSet}
+	newSet := s.set.Difference(makeGenericWorkloadSet(set.List()))
+	return &workloadSet{set: newSet}
 }
 
-func (s *meshWorkloadSet) Intersection(set MeshWorkloadSet) MeshWorkloadSet {
+func (s *workloadSet) Intersection(set WorkloadSet) WorkloadSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericMeshWorkloadSet(set.List()))
-	var meshWorkloadList []*discovery_smh_solo_io_v1alpha2.MeshWorkload
+	newSet := s.set.Intersection(makeGenericWorkloadSet(set.List()))
+	var workloadList []*discovery_smh_solo_io_v1alpha2.Workload
 	for _, obj := range newSet.List() {
-		meshWorkloadList = append(meshWorkloadList, obj.(*discovery_smh_solo_io_v1alpha2.MeshWorkload))
+		workloadList = append(workloadList, obj.(*discovery_smh_solo_io_v1alpha2.Workload))
 	}
-	return NewMeshWorkloadSet(meshWorkloadList...)
+	return NewWorkloadSet(workloadList...)
 }
 
-func (s *meshWorkloadSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.MeshWorkload, error) {
+func (s *workloadSet) Find(id ezkube.ResourceId) (*discovery_smh_solo_io_v1alpha2.Workload, error) {
 	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find MeshWorkload %v", sksets.Key(id))
+		return nil, eris.Errorf("empty set, cannot find Workload %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha2.MeshWorkload{}, id)
+	obj, err := s.set.Find(&discovery_smh_solo_io_v1alpha2.Workload{}, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return obj.(*discovery_smh_solo_io_v1alpha2.MeshWorkload), nil
+	return obj.(*discovery_smh_solo_io_v1alpha2.Workload), nil
 }
 
-func (s *meshWorkloadSet) Length() int {
+func (s *workloadSet) Length() int {
 	if s == nil {
 		return 0
 	}

@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector/istio"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/istio"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -63,24 +63,24 @@ var _ = Describe("IstioSidecarDetector", func() {
 
 		meshes := istioMeshes(clusterName)
 
-		meshWorkload := detector.DetectMeshSidecar(pod, meshes)
-		Expect(meshWorkload).To(Equal(meshes.List()[0]))
+		workload := detector.DetectMeshSidecar(pod, meshes)
+		Expect(workload).To(Equal(meshes.List()[0]))
 	})
 	It("does not detect workload when sidecar mesh is of different cluster", func() {
 		pod := pod()
 
 		meshes := istioMeshes("different-" + clusterName)
 
-		meshWorkload := detector.DetectMeshSidecar(pod, meshes)
-		Expect(meshWorkload).To(BeNil())
+		workload := detector.DetectMeshSidecar(pod, meshes)
+		Expect(workload).To(BeNil())
 	})
 	It("does not detect workload when sidecar mesh is not present", func() {
 		pod := pod()
 
 		meshes := v1alpha2sets.NewMeshSet()
 
-		meshWorkload := detector.DetectMeshSidecar(pod, meshes)
-		Expect(meshWorkload).To(BeNil())
+		workload := detector.DetectMeshSidecar(pod, meshes)
+		Expect(workload).To(BeNil())
 	})
 	It("does not detect workload when sidecar is not present", func() {
 		pod := &corev1.Pod{
@@ -100,8 +100,8 @@ var _ = Describe("IstioSidecarDetector", func() {
 
 		meshes := istioMeshes(clusterName)
 
-		meshWorkload := detector.DetectMeshSidecar(pod, meshes)
-		Expect(meshWorkload).To(BeNil())
+		workload := detector.DetectMeshSidecar(pod, meshes)
+		Expect(workload).To(BeNil())
 	})
 
 })

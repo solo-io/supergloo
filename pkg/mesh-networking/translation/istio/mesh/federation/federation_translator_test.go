@@ -147,7 +147,7 @@ var _ = Describe("FederationTranslator", func() {
 
 		in := input.NewSnapshot(
 			"ignored",
-			discoveryv1alpha2sets.NewTrafficTargetSet(trafficTarget1), discoveryv1alpha2sets.NewMeshWorkloadSet(), discoveryv1alpha2sets.NewMeshSet(mesh, clientMesh),
+			discoveryv1alpha2sets.NewTrafficTargetSet(trafficTarget1), discoveryv1alpha2sets.NewWorkloadSet(), discoveryv1alpha2sets.NewMeshSet(mesh, clientMesh),
 
 			v1alpha2sets.NewTrafficPolicySet(),
 			v1alpha2sets.NewAccessPolicySet(),

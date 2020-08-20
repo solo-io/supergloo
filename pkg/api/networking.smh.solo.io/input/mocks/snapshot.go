@@ -55,18 +55,18 @@ func (mr *MockSnapshotMockRecorder) TrafficTargets() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficTargets", reflect.TypeOf((*MockSnapshot)(nil).TrafficTargets))
 }
 
-// MeshWorkloads mocks base method
-func (m *MockSnapshot) MeshWorkloads() v1alpha2sets.MeshWorkloadSet {
+// Workloads mocks base method
+func (m *MockSnapshot) Workloads() v1alpha2sets.WorkloadSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MeshWorkloads")
-	ret0, _ := ret[0].(v1alpha2sets.MeshWorkloadSet)
+	ret := m.ctrl.Call(m, "Workloads")
+	ret0, _ := ret[0].(v1alpha2sets.WorkloadSet)
 	return ret0
 }
 
-// MeshWorkloads indicates an expected call of MeshWorkloads
-func (mr *MockSnapshotMockRecorder) MeshWorkloads() *gomock.Call {
+// Workloads indicates an expected call of Workloads
+func (mr *MockSnapshotMockRecorder) Workloads() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshWorkloads", reflect.TypeOf((*MockSnapshot)(nil).MeshWorkloads))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Workloads", reflect.TypeOf((*MockSnapshot)(nil).Workloads))
 }
 
 // Meshes mocks base method

@@ -35,22 +35,22 @@ type TrafficTargetList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
-// MeshWorkload is the Schema for the meshWorkload API
-type MeshWorkload struct {
+// Workload is the Schema for the workload API
+type Workload struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MeshWorkloadSpec   `json:"spec,omitempty"`
-	Status MeshWorkloadStatus `json:"status,omitempty"`
+	Spec   WorkloadSpec   `json:"spec,omitempty"`
+	Status WorkloadStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// MeshWorkloadList contains a list of MeshWorkload
-type MeshWorkloadList struct {
+// WorkloadList contains a list of Workload
+type WorkloadList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []MeshWorkload `json:"items"`
+	Items           []Workload `json:"items"`
 }
 
 // +genclient
@@ -78,6 +78,6 @@ type MeshList struct {
 
 func init() {
 	SchemeBuilder.Register(&TrafficTarget{}, &TrafficTargetList{})
-	SchemeBuilder.Register(&MeshWorkload{}, &MeshWorkloadList{})
+	SchemeBuilder.Register(&Workload{}, &WorkloadList{})
 	SchemeBuilder.Register(&Mesh{}, &MeshList{})
 }

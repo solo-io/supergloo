@@ -191,7 +191,7 @@ Federation policy applied to this TrafficTarget, allowing access to the traffic 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| multiclusterDnsName | [string](#string) |  | For any workload that this traffic target has federated to (i.e., any MeshWorkload whose ref appears in `federated_to_workloads`), a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than the one hosting this service. |
+| multiclusterDnsName | [string](#string) |  | For any workload that this traffic target has federated to (i.e., any Workload whose ref appears in `federated_to_workloads`), a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than the one hosting this service. |
 | federatedToMeshes | [][core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) | repeated | The list of Meshes which are able to resolve this service's `multicluster_dns_name`. |
 
 

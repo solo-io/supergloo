@@ -34,8 +34,8 @@ type Snapshot interface {
 
 	// return the set of TrafficTargets with a given set of labels
 	TrafficTargets() []LabeledTrafficTargetSet
-	// return the set of MeshWorkloads with a given set of labels
-	MeshWorkloads() []LabeledMeshWorkloadSet
+	// return the set of Workloads with a given set of labels
+	Workloads() []LabeledWorkloadSet
 	// return the set of Meshes with a given set of labels
 	Meshes() []LabeledMeshSet
 
@@ -53,7 +53,7 @@ type snapshot struct {
 	name string
 
 	trafficTargets []LabeledTrafficTargetSet
-	meshWorkloads  []LabeledMeshWorkloadSet
+	workloads      []LabeledWorkloadSet
 	meshes         []LabeledMeshSet
 }
 
@@ -61,7 +61,7 @@ func NewSnapshot(
 	name string,
 
 	trafficTargets []LabeledTrafficTargetSet,
-	meshWorkloads []LabeledMeshWorkloadSet,
+	workloads []LabeledWorkloadSet,
 	meshes []LabeledMeshSet,
 
 ) Snapshot {
@@ -69,7 +69,7 @@ func NewSnapshot(
 		name: name,
 
 		trafficTargets: trafficTargets,
-		meshWorkloads:  meshWorkloads,
+		workloads:      workloads,
 		meshes:         meshes,
 	}
 }
@@ -81,7 +81,7 @@ func NewLabelPartitionedSnapshot(
 	labelKey string, // the key by which to partition the resources
 
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet,
-	meshWorkloads discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet,
+	workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
 
 ) (Snapshot, error) {
@@ -90,7 +90,7 @@ func NewLabelPartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
-	partitionedMeshWorkloads, err := partitionMeshWorkloadsByLabel(labelKey, meshWorkloads)
+	partitionedWorkloads, err := partitionWorkloadsByLabel(labelKey, workloads)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func NewLabelPartitionedSnapshot(
 		name,
 
 		partitionedTrafficTargets,
-		partitionedMeshWorkloads,
+		partitionedWorkloads,
 		partitionedMeshes,
 	), nil
 }
@@ -115,7 +115,7 @@ func NewSinglePartitionedSnapshot(
 	snapshotLabels map[string]string, // a single set of labels shared by all resources
 
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet,
-	meshWorkloads discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet,
+	workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
 
 ) (Snapshot, error) {
@@ -124,7 +124,7 @@ func NewSinglePartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
-	labeledMeshWorkloads, err := NewLabeledMeshWorkloadSet(meshWorkloads, snapshotLabels)
+	labeledWorkloads, err := NewLabeledWorkloadSet(workloads, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func NewSinglePartitionedSnapshot(
 		name,
 
 		[]LabeledTrafficTargetSet{labeledTrafficTargets},
-		[]LabeledMeshWorkloadSet{labeledMeshWorkloads},
+		[]LabeledWorkloadSet{labeledWorkloads},
 		[]LabeledMeshSet{labeledMeshes},
 	), nil
 }
@@ -149,7 +149,7 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 	for _, outputSet := range s.trafficTargets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.meshWorkloads {
+	for _, outputSet := range s.workloads {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.meshes {
@@ -169,7 +169,7 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	for _, outputSet := range s.trafficTargets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.meshWorkloads {
+	for _, outputSet := range s.workloads {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.meshes {
@@ -226,48 +226,48 @@ func partitionTrafficTargetsByLabel(labelKey string, set discovery_smh_solo_io_v
 	return partitionedTrafficTargets, nil
 }
 
-func partitionMeshWorkloadsByLabel(labelKey string, set discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet) ([]LabeledMeshWorkloadSet, error) {
-	setsByLabel := map[string]discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet{}
+func partitionWorkloadsByLabel(labelKey string, set discovery_smh_solo_io_v1alpha2_sets.WorkloadSet) ([]LabeledWorkloadSet, error) {
+	setsByLabel := map[string]discovery_smh_solo_io_v1alpha2_sets.WorkloadSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "MeshWorkload", obj)
+			return nil, MissingRequiredLabelError(labelKey, "Workload", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "MeshWorkload", obj)
+			return nil, MissingRequiredLabelError(labelKey, "Workload", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
 		if !ok {
-			setForValue = discovery_smh_solo_io_v1alpha2_sets.NewMeshWorkloadSet()
+			setForValue = discovery_smh_solo_io_v1alpha2_sets.NewWorkloadSet()
 			setsByLabel[labelValue] = setForValue
 		}
 		setForValue.Insert(obj)
 	}
 
 	// partition by label key
-	var partitionedMeshWorkloads []LabeledMeshWorkloadSet
+	var partitionedWorkloads []LabeledWorkloadSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledMeshWorkloadSet(setForValue, labels)
+		partitionedSet, err := NewLabeledWorkloadSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedMeshWorkloads = append(partitionedMeshWorkloads, partitionedSet)
+		partitionedWorkloads = append(partitionedWorkloads, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedMeshWorkloads, func(i, j int) bool {
-		leftLabelValue := partitionedMeshWorkloads[i].Labels()[labelKey]
-		rightLabelValue := partitionedMeshWorkloads[j].Labels()[labelKey]
+	sort.SliceStable(partitionedWorkloads, func(i, j int) bool {
+		leftLabelValue := partitionedWorkloads[i].Labels()[labelKey]
+		rightLabelValue := partitionedWorkloads[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedMeshWorkloads, nil
+	return partitionedWorkloads, nil
 }
 
 func partitionMeshesByLabel(labelKey string, set discovery_smh_solo_io_v1alpha2_sets.MeshSet) ([]LabeledMeshSet, error) {
@@ -318,8 +318,8 @@ func (s snapshot) TrafficTargets() []LabeledTrafficTargetSet {
 	return s.trafficTargets
 }
 
-func (s snapshot) MeshWorkloads() []LabeledMeshWorkloadSet {
-	return s.meshWorkloads
+func (s snapshot) Workloads() []LabeledWorkloadSet {
+	return s.workloads
 }
 
 func (s snapshot) Meshes() []LabeledMeshSet {
@@ -334,11 +334,11 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 		trafficTargetSet = trafficTargetSet.Union(set.Set())
 	}
 	snapshotMap["trafficTargets"] = trafficTargetSet.List()
-	meshWorkloadSet := discovery_smh_solo_io_v1alpha2_sets.NewMeshWorkloadSet()
-	for _, set := range s.meshWorkloads {
-		meshWorkloadSet = meshWorkloadSet.Union(set.Set())
+	workloadSet := discovery_smh_solo_io_v1alpha2_sets.NewWorkloadSet()
+	for _, set := range s.workloads {
+		workloadSet = workloadSet.Union(set.Set())
 	}
-	snapshotMap["meshWorkloads"] = meshWorkloadSet.List()
+	snapshotMap["workloads"] = workloadSet.List()
 	meshSet := discovery_smh_solo_io_v1alpha2_sets.NewMeshSet()
 	for _, set := range s.meshes {
 		meshSet = meshSet.Union(set.Set())
@@ -416,48 +416,48 @@ func (l labeledTrafficTargetSet) Generic() output.ResourceList {
 	}
 }
 
-// LabeledMeshWorkloadSet represents a set of meshWorkloads
+// LabeledWorkloadSet represents a set of workloads
 // which share a common set of labels.
-// These labels are used to find diffs between MeshWorkloadSets.
-type LabeledMeshWorkloadSet interface {
-	// returns the set of Labels shared by this MeshWorkloadSet
+// These labels are used to find diffs between WorkloadSets.
+type LabeledWorkloadSet interface {
+	// returns the set of Labels shared by this WorkloadSet
 	Labels() map[string]string
 
-	// returns the set of MeshWorkloades with the given labels
-	Set() discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
+	// returns the set of Workloades with the given labels
+	Set() discovery_smh_solo_io_v1alpha2_sets.WorkloadSet
 
 	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
 	Generic() output.ResourceList
 }
 
-type labeledMeshWorkloadSet struct {
-	set    discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
+type labeledWorkloadSet struct {
+	set    discovery_smh_solo_io_v1alpha2_sets.WorkloadSet
 	labels map[string]string
 }
 
-func NewLabeledMeshWorkloadSet(set discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet, labels map[string]string) (LabeledMeshWorkloadSet, error) {
-	// validate that each MeshWorkload contains the labels, else this is not a valid LabeledMeshWorkloadSet
+func NewLabeledWorkloadSet(set discovery_smh_solo_io_v1alpha2_sets.WorkloadSet, labels map[string]string) (LabeledWorkloadSet, error) {
+	// validate that each Workload contains the labels, else this is not a valid LabeledWorkloadSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on MeshWorkload %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on Workload %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledMeshWorkloadSet{set: set, labels: labels}, nil
+	return &labeledWorkloadSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledMeshWorkloadSet) Labels() map[string]string {
+func (l *labeledWorkloadSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledMeshWorkloadSet) Set() discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet {
+func (l *labeledWorkloadSet) Set() discovery_smh_solo_io_v1alpha2_sets.WorkloadSet {
 	return l.set
 }
 
-func (l labeledMeshWorkloadSet) Generic() output.ResourceList {
+func (l labeledWorkloadSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -465,7 +465,7 @@ func (l labeledMeshWorkloadSet) Generic() output.ResourceList {
 
 	// enable list func for garbage collection
 	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list discovery_smh_solo_io_v1alpha2.MeshWorkloadList
+		var list discovery_smh_solo_io_v1alpha2.WorkloadList
 		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
 			return nil, err
 		}
@@ -480,7 +480,7 @@ func (l labeledMeshWorkloadSet) Generic() output.ResourceList {
 	return output.ResourceList{
 		Resources:    desiredResources,
 		ListFunc:     listFunc,
-		ResourceKind: "MeshWorkload",
+		ResourceKind: "Workload",
 	}
 }
 
@@ -557,7 +557,7 @@ type builder struct {
 	name string
 
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet
-	meshWorkloads  discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
+	workloads      discovery_smh_solo_io_v1alpha2_sets.WorkloadSet
 	meshes         discovery_smh_solo_io_v1alpha2_sets.MeshSet
 }
 
@@ -567,7 +567,7 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		name: name,
 
 		trafficTargets: discovery_smh_solo_io_v1alpha2_sets.NewTrafficTargetSet(),
-		meshWorkloads:  discovery_smh_solo_io_v1alpha2_sets.NewMeshWorkloadSet(),
+		workloads:      discovery_smh_solo_io_v1alpha2_sets.NewWorkloadSet(),
 		meshes:         discovery_smh_solo_io_v1alpha2_sets.NewMeshSet(),
 	}
 }
@@ -582,11 +582,11 @@ type Builder interface {
 	// get the collected TrafficTargets
 	GetTrafficTargets() discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet
 
-	// add MeshWorkloads to the collected outputs
-	AddMeshWorkloads(meshWorkloads ...*discovery_smh_solo_io_v1alpha2.MeshWorkload)
+	// add Workloads to the collected outputs
+	AddWorkloads(workloads ...*discovery_smh_solo_io_v1alpha2.Workload)
 
-	// get the collected MeshWorkloads
-	GetMeshWorkloads() discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
+	// get the collected Workloads
+	GetWorkloads() discovery_smh_solo_io_v1alpha2_sets.WorkloadSet
 
 	// add Meshes to the collected outputs
 	AddMeshes(meshes ...*discovery_smh_solo_io_v1alpha2.Mesh)
@@ -610,13 +610,13 @@ func (b *builder) AddTrafficTargets(trafficTargets ...*discovery_smh_solo_io_v1a
 		b.trafficTargets.Insert(obj)
 	}
 }
-func (b *builder) AddMeshWorkloads(meshWorkloads ...*discovery_smh_solo_io_v1alpha2.MeshWorkload) {
-	for _, obj := range meshWorkloads {
+func (b *builder) AddWorkloads(workloads ...*discovery_smh_solo_io_v1alpha2.Workload) {
+	for _, obj := range workloads {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output MeshWorkload %v", sets.Key(obj))
-		b.meshWorkloads.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output Workload %v", sets.Key(obj))
+		b.workloads.Insert(obj)
 	}
 }
 func (b *builder) AddMeshes(meshes ...*discovery_smh_solo_io_v1alpha2.Mesh) {
@@ -632,8 +632,8 @@ func (b *builder) AddMeshes(meshes ...*discovery_smh_solo_io_v1alpha2.Mesh) {
 func (b *builder) GetTrafficTargets() discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet {
 	return b.trafficTargets
 }
-func (b *builder) GetMeshWorkloads() discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet {
-	return b.meshWorkloads
+func (b *builder) GetWorkloads() discovery_smh_solo_io_v1alpha2_sets.WorkloadSet {
+	return b.workloads
 }
 func (b *builder) GetMeshes() discovery_smh_solo_io_v1alpha2_sets.MeshSet {
 	return b.meshes
@@ -645,7 +645,7 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		labelKey,
 
 		b.trafficTargets,
-		b.meshWorkloads,
+		b.workloads,
 		b.meshes,
 	)
 }
@@ -656,7 +656,7 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		snapshotLabels,
 
 		b.trafficTargets,
-		b.meshWorkloads,
+		b.workloads,
 		b.meshes,
 	)
 }

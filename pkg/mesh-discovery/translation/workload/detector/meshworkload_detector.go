@@ -11,19 +11,19 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/types"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/types"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// the MeshWorkloadDetector detects MeshWorkloads from workloads
+// the WorkloadDetector detects Workloads from workloads
 // whose backing pods are injected with a Mesh sidecar.
 // If no mesh is detected for the workload, nil is returned
-type MeshWorkloadDetector interface {
-	DetectMeshWorkload(workload types.Workload, meshes v1alpha2sets.MeshSet) *v1alpha2.MeshWorkload
+type WorkloadDetector interface {
+	DetectWorkload(workload types.Workload, meshes v1alpha2sets.MeshSet) *v1alpha2.Workload
 }
 
 const (
@@ -32,21 +32,21 @@ const (
 )
 
 // detects a workload
-type meshWorkloadDetector struct {
+type workloadDetector struct {
 	ctx         context.Context
 	pods        corev1sets.PodSet
 	replicaSets appsv1sets.ReplicaSetSet
 	detector    SidecarDetector
 }
 
-func NewMeshWorkloadDetector(
+func NewWorkloadDetector(
 	ctx context.Context,
 	pods corev1sets.PodSet,
 	replicaSets appsv1sets.ReplicaSetSet,
 	detector SidecarDetector,
-) MeshWorkloadDetector {
+) WorkloadDetector {
 	ctx = contextutils.WithLogger(ctx, "mesh-workload-detector")
-	return &meshWorkloadDetector{
+	return &workloadDetector{
 		ctx:         ctx,
 		pods:        pods,
 		replicaSets: replicaSets,
@@ -54,7 +54,7 @@ func NewMeshWorkloadDetector(
 	}
 }
 
-func (d meshWorkloadDetector) DetectMeshWorkload(workload types.Workload, meshes v1alpha2sets.MeshSet) *v1alpha2.MeshWorkload {
+func (d workloadDetector) DetectWorkload(workload types.Workload, meshes v1alpha2sets.MeshSet) *v1alpha2.Workload {
 	podsForWorkload := d.getPodsForWorkload(workload)
 
 	mesh := d.getMeshForPods(podsForWorkload, meshes)
@@ -72,11 +72,11 @@ func (d meshWorkloadDetector) DetectMeshWorkload(workload types.Workload, meshes
 	// append workload kind for uniqueness
 	outputMeta.Name += "-" + strings.ToLower(workload.Kind())
 
-	return &v1alpha2.MeshWorkload{
+	return &v1alpha2.Workload{
 		ObjectMeta: outputMeta,
-		Spec: v1alpha2.MeshWorkloadSpec{
-			WorkloadType: &v1alpha2.MeshWorkloadSpec_Kubernetes{
-				Kubernetes: &v1alpha2.MeshWorkloadSpec_KubernertesWorkload{
+		Spec: v1alpha2.WorkloadSpec{
+			WorkloadType: &v1alpha2.WorkloadSpec_Kubernetes{
+				Kubernetes: &v1alpha2.WorkloadSpec_KubernertesWorkload{
 					Controller:         controllerRef,
 					PodLabels:          labels,
 					ServiceAccountName: serviceAccount,
@@ -87,7 +87,7 @@ func (d meshWorkloadDetector) DetectMeshWorkload(workload types.Workload, meshes
 	}
 }
 
-func (d meshWorkloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+func (d workloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
 	// as long as one pod is detected for a mesh, consider the set owned by that mesh.
 	for _, pod := range pods.List() {
 		if mesh := d.detector.DetectMeshSidecar(pod, meshes); mesh != nil {
@@ -97,7 +97,7 @@ func (d meshWorkloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1al
 	return nil
 }
 
-func (d meshWorkloadDetector) getPodsForWorkload(workload types.Workload) corev1sets.PodSet {
+func (d workloadDetector) getPodsForWorkload(workload types.Workload) corev1sets.PodSet {
 	podsForWorkload := corev1sets.NewPodSet()
 
 	for _, pod := range d.pods.List() {
@@ -110,7 +110,7 @@ func (d meshWorkloadDetector) getPodsForWorkload(workload types.Workload) corev1
 	return podsForWorkload
 }
 
-func (d meshWorkloadDetector) podIsOwnedOwnedByWorkload(pod *corev1.Pod, workload types.Workload) bool {
+func (d workloadDetector) podIsOwnedOwnedByWorkload(pod *corev1.Pod, workload types.Workload) bool {
 	if pod.Namespace != workload.GetNamespace() || pod.ClusterName != workload.GetClusterName() {
 		return false
 	}

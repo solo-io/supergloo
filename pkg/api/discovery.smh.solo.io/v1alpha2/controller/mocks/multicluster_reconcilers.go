@@ -130,119 +130,119 @@ func (mr *MockMulticlusterTrafficTargetReconcileLoopMockRecorder) AddMulticluste
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterTrafficTargetReconciler", reflect.TypeOf((*MockMulticlusterTrafficTargetReconcileLoop)(nil).AddMulticlusterTrafficTargetReconciler), varargs...)
 }
 
-// MockMulticlusterMeshWorkloadReconciler is a mock of MulticlusterMeshWorkloadReconciler interface
-type MockMulticlusterMeshWorkloadReconciler struct {
+// MockMulticlusterWorkloadReconciler is a mock of MulticlusterWorkloadReconciler interface
+type MockMulticlusterWorkloadReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterMeshWorkloadReconcilerMockRecorder
+	recorder *MockMulticlusterWorkloadReconcilerMockRecorder
 }
 
-// MockMulticlusterMeshWorkloadReconcilerMockRecorder is the mock recorder for MockMulticlusterMeshWorkloadReconciler
-type MockMulticlusterMeshWorkloadReconcilerMockRecorder struct {
-	mock *MockMulticlusterMeshWorkloadReconciler
+// MockMulticlusterWorkloadReconcilerMockRecorder is the mock recorder for MockMulticlusterWorkloadReconciler
+type MockMulticlusterWorkloadReconcilerMockRecorder struct {
+	mock *MockMulticlusterWorkloadReconciler
 }
 
-// NewMockMulticlusterMeshWorkloadReconciler creates a new mock instance
-func NewMockMulticlusterMeshWorkloadReconciler(ctrl *gomock.Controller) *MockMulticlusterMeshWorkloadReconciler {
-	mock := &MockMulticlusterMeshWorkloadReconciler{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterMeshWorkloadReconcilerMockRecorder{mock}
+// NewMockMulticlusterWorkloadReconciler creates a new mock instance
+func NewMockMulticlusterWorkloadReconciler(ctrl *gomock.Controller) *MockMulticlusterWorkloadReconciler {
+	mock := &MockMulticlusterWorkloadReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterWorkloadReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMulticlusterMeshWorkloadReconciler) EXPECT() *MockMulticlusterMeshWorkloadReconcilerMockRecorder {
+func (m *MockMulticlusterWorkloadReconciler) EXPECT() *MockMulticlusterWorkloadReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileMeshWorkload mocks base method
-func (m *MockMulticlusterMeshWorkloadReconciler) ReconcileMeshWorkload(clusterName string, obj *v1alpha2.MeshWorkload) (reconcile.Result, error) {
+// ReconcileWorkload mocks base method
+func (m *MockMulticlusterWorkloadReconciler) ReconcileWorkload(clusterName string, obj *v1alpha2.Workload) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileMeshWorkload", clusterName, obj)
+	ret := m.ctrl.Call(m, "ReconcileWorkload", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileMeshWorkload indicates an expected call of ReconcileMeshWorkload
-func (mr *MockMulticlusterMeshWorkloadReconcilerMockRecorder) ReconcileMeshWorkload(clusterName, obj interface{}) *gomock.Call {
+// ReconcileWorkload indicates an expected call of ReconcileWorkload
+func (mr *MockMulticlusterWorkloadReconcilerMockRecorder) ReconcileWorkload(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMeshWorkload", reflect.TypeOf((*MockMulticlusterMeshWorkloadReconciler)(nil).ReconcileMeshWorkload), clusterName, obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileWorkload", reflect.TypeOf((*MockMulticlusterWorkloadReconciler)(nil).ReconcileWorkload), clusterName, obj)
 }
 
-// MockMulticlusterMeshWorkloadDeletionReconciler is a mock of MulticlusterMeshWorkloadDeletionReconciler interface
-type MockMulticlusterMeshWorkloadDeletionReconciler struct {
+// MockMulticlusterWorkloadDeletionReconciler is a mock of MulticlusterWorkloadDeletionReconciler interface
+type MockMulticlusterWorkloadDeletionReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterMeshWorkloadDeletionReconcilerMockRecorder
+	recorder *MockMulticlusterWorkloadDeletionReconcilerMockRecorder
 }
 
-// MockMulticlusterMeshWorkloadDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterMeshWorkloadDeletionReconciler
-type MockMulticlusterMeshWorkloadDeletionReconcilerMockRecorder struct {
-	mock *MockMulticlusterMeshWorkloadDeletionReconciler
+// MockMulticlusterWorkloadDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterWorkloadDeletionReconciler
+type MockMulticlusterWorkloadDeletionReconcilerMockRecorder struct {
+	mock *MockMulticlusterWorkloadDeletionReconciler
 }
 
-// NewMockMulticlusterMeshWorkloadDeletionReconciler creates a new mock instance
-func NewMockMulticlusterMeshWorkloadDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterMeshWorkloadDeletionReconciler {
-	mock := &MockMulticlusterMeshWorkloadDeletionReconciler{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterMeshWorkloadDeletionReconcilerMockRecorder{mock}
+// NewMockMulticlusterWorkloadDeletionReconciler creates a new mock instance
+func NewMockMulticlusterWorkloadDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterWorkloadDeletionReconciler {
+	mock := &MockMulticlusterWorkloadDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterWorkloadDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMulticlusterMeshWorkloadDeletionReconciler) EXPECT() *MockMulticlusterMeshWorkloadDeletionReconcilerMockRecorder {
+func (m *MockMulticlusterWorkloadDeletionReconciler) EXPECT() *MockMulticlusterWorkloadDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileMeshWorkloadDeletion mocks base method
-func (m *MockMulticlusterMeshWorkloadDeletionReconciler) ReconcileMeshWorkloadDeletion(clusterName string, req reconcile.Request) error {
+// ReconcileWorkloadDeletion mocks base method
+func (m *MockMulticlusterWorkloadDeletionReconciler) ReconcileWorkloadDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileMeshWorkloadDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileWorkloadDeletion", clusterName, req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ReconcileMeshWorkloadDeletion indicates an expected call of ReconcileMeshWorkloadDeletion
-func (mr *MockMulticlusterMeshWorkloadDeletionReconcilerMockRecorder) ReconcileMeshWorkloadDeletion(clusterName, req interface{}) *gomock.Call {
+// ReconcileWorkloadDeletion indicates an expected call of ReconcileWorkloadDeletion
+func (mr *MockMulticlusterWorkloadDeletionReconcilerMockRecorder) ReconcileWorkloadDeletion(clusterName, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMeshWorkloadDeletion", reflect.TypeOf((*MockMulticlusterMeshWorkloadDeletionReconciler)(nil).ReconcileMeshWorkloadDeletion), clusterName, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileWorkloadDeletion", reflect.TypeOf((*MockMulticlusterWorkloadDeletionReconciler)(nil).ReconcileWorkloadDeletion), clusterName, req)
 }
 
-// MockMulticlusterMeshWorkloadReconcileLoop is a mock of MulticlusterMeshWorkloadReconcileLoop interface
-type MockMulticlusterMeshWorkloadReconcileLoop struct {
+// MockMulticlusterWorkloadReconcileLoop is a mock of MulticlusterWorkloadReconcileLoop interface
+type MockMulticlusterWorkloadReconcileLoop struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterMeshWorkloadReconcileLoopMockRecorder
+	recorder *MockMulticlusterWorkloadReconcileLoopMockRecorder
 }
 
-// MockMulticlusterMeshWorkloadReconcileLoopMockRecorder is the mock recorder for MockMulticlusterMeshWorkloadReconcileLoop
-type MockMulticlusterMeshWorkloadReconcileLoopMockRecorder struct {
-	mock *MockMulticlusterMeshWorkloadReconcileLoop
+// MockMulticlusterWorkloadReconcileLoopMockRecorder is the mock recorder for MockMulticlusterWorkloadReconcileLoop
+type MockMulticlusterWorkloadReconcileLoopMockRecorder struct {
+	mock *MockMulticlusterWorkloadReconcileLoop
 }
 
-// NewMockMulticlusterMeshWorkloadReconcileLoop creates a new mock instance
-func NewMockMulticlusterMeshWorkloadReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterMeshWorkloadReconcileLoop {
-	mock := &MockMulticlusterMeshWorkloadReconcileLoop{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterMeshWorkloadReconcileLoopMockRecorder{mock}
+// NewMockMulticlusterWorkloadReconcileLoop creates a new mock instance
+func NewMockMulticlusterWorkloadReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterWorkloadReconcileLoop {
+	mock := &MockMulticlusterWorkloadReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterWorkloadReconcileLoopMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMulticlusterMeshWorkloadReconcileLoop) EXPECT() *MockMulticlusterMeshWorkloadReconcileLoopMockRecorder {
+func (m *MockMulticlusterWorkloadReconcileLoop) EXPECT() *MockMulticlusterWorkloadReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// AddMulticlusterMeshWorkloadReconciler mocks base method
-func (m *MockMulticlusterMeshWorkloadReconcileLoop) AddMulticlusterMeshWorkloadReconciler(ctx context.Context, rec controller.MulticlusterMeshWorkloadReconciler, predicates ...predicate.Predicate) {
+// AddMulticlusterWorkloadReconciler mocks base method
+func (m *MockMulticlusterWorkloadReconcileLoop) AddMulticlusterWorkloadReconciler(ctx context.Context, rec controller.MulticlusterWorkloadReconciler, predicates ...predicate.Predicate) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
 	for _, a := range predicates {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddMulticlusterMeshWorkloadReconciler", varargs...)
+	m.ctrl.Call(m, "AddMulticlusterWorkloadReconciler", varargs...)
 }
 
-// AddMulticlusterMeshWorkloadReconciler indicates an expected call of AddMulticlusterMeshWorkloadReconciler
-func (mr *MockMulticlusterMeshWorkloadReconcileLoopMockRecorder) AddMulticlusterMeshWorkloadReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+// AddMulticlusterWorkloadReconciler indicates an expected call of AddMulticlusterWorkloadReconciler
+func (mr *MockMulticlusterWorkloadReconcileLoopMockRecorder) AddMulticlusterWorkloadReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterMeshWorkloadReconciler", reflect.TypeOf((*MockMulticlusterMeshWorkloadReconcileLoop)(nil).AddMulticlusterMeshWorkloadReconciler), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterWorkloadReconciler", reflect.TypeOf((*MockMulticlusterWorkloadReconcileLoop)(nil).AddMulticlusterWorkloadReconciler), varargs...)
 }
 
 // MockMulticlusterMeshReconciler is a mock of MulticlusterMeshReconciler interface

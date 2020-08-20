@@ -42,7 +42,7 @@ type Clientset interface {
 	// clienset for the discovery.smh.solo.io/v1alpha2/v1alpha2 APIs
 	TrafficTargets() TrafficTargetClient
 	// clienset for the discovery.smh.solo.io/v1alpha2/v1alpha2 APIs
-	MeshWorkloads() MeshWorkloadClient
+	Workloads() WorkloadClient
 	// clienset for the discovery.smh.solo.io/v1alpha2/v1alpha2 APIs
 	Meshes() MeshClient
 }
@@ -75,8 +75,8 @@ func (c *clientSet) TrafficTargets() TrafficTargetClient {
 }
 
 // clienset for the discovery.smh.solo.io/v1alpha2/v1alpha2 APIs
-func (c *clientSet) MeshWorkloads() MeshWorkloadClient {
-	return NewMeshWorkloadClient(c.client)
+func (c *clientSet) Workloads() WorkloadClient {
+	return NewWorkloadClient(c.client)
 }
 
 // clienset for the discovery.smh.solo.io/v1alpha2/v1alpha2 APIs
@@ -226,109 +226,109 @@ func (m *multiclusterTrafficTargetClient) Cluster(cluster string) (TrafficTarget
 	return NewTrafficTargetClient(client), nil
 }
 
-// Reader knows how to read and list MeshWorkloads.
-type MeshWorkloadReader interface {
-	// Get retrieves a MeshWorkload for the given object key
-	GetMeshWorkload(ctx context.Context, key client.ObjectKey) (*MeshWorkload, error)
+// Reader knows how to read and list Workloads.
+type WorkloadReader interface {
+	// Get retrieves a Workload for the given object key
+	GetWorkload(ctx context.Context, key client.ObjectKey) (*Workload, error)
 
-	// List retrieves list of MeshWorkloads for a given namespace and list options.
-	ListMeshWorkload(ctx context.Context, opts ...client.ListOption) (*MeshWorkloadList, error)
+	// List retrieves list of Workloads for a given namespace and list options.
+	ListWorkload(ctx context.Context, opts ...client.ListOption) (*WorkloadList, error)
 }
 
-// MeshWorkloadTransitionFunction instructs the MeshWorkloadWriter how to transition between an existing
-// MeshWorkload object and a desired on an Upsert
-type MeshWorkloadTransitionFunction func(existing, desired *MeshWorkload) error
+// WorkloadTransitionFunction instructs the WorkloadWriter how to transition between an existing
+// Workload object and a desired on an Upsert
+type WorkloadTransitionFunction func(existing, desired *Workload) error
 
-// Writer knows how to create, delete, and update MeshWorkloads.
-type MeshWorkloadWriter interface {
-	// Create saves the MeshWorkload object.
-	CreateMeshWorkload(ctx context.Context, obj *MeshWorkload, opts ...client.CreateOption) error
+// Writer knows how to create, delete, and update Workloads.
+type WorkloadWriter interface {
+	// Create saves the Workload object.
+	CreateWorkload(ctx context.Context, obj *Workload, opts ...client.CreateOption) error
 
-	// Delete deletes the MeshWorkload object.
-	DeleteMeshWorkload(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	// Delete deletes the Workload object.
+	DeleteWorkload(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
-	// Update updates the given MeshWorkload object.
-	UpdateMeshWorkload(ctx context.Context, obj *MeshWorkload, opts ...client.UpdateOption) error
+	// Update updates the given Workload object.
+	UpdateWorkload(ctx context.Context, obj *Workload, opts ...client.UpdateOption) error
 
-	// Patch patches the given MeshWorkload object.
-	PatchMeshWorkload(ctx context.Context, obj *MeshWorkload, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given Workload object.
+	PatchWorkload(ctx context.Context, obj *Workload, patch client.Patch, opts ...client.PatchOption) error
 
-	// DeleteAllOf deletes all MeshWorkload objects matching the given options.
-	DeleteAllOfMeshWorkload(ctx context.Context, opts ...client.DeleteAllOfOption) error
+	// DeleteAllOf deletes all Workload objects matching the given options.
+	DeleteAllOfWorkload(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
-	// Create or Update the MeshWorkload object.
-	UpsertMeshWorkload(ctx context.Context, obj *MeshWorkload, transitionFuncs ...MeshWorkloadTransitionFunction) error
+	// Create or Update the Workload object.
+	UpsertWorkload(ctx context.Context, obj *Workload, transitionFuncs ...WorkloadTransitionFunction) error
 }
 
-// StatusWriter knows how to update status subresource of a MeshWorkload object.
-type MeshWorkloadStatusWriter interface {
+// StatusWriter knows how to update status subresource of a Workload object.
+type WorkloadStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
-	// given MeshWorkload object.
-	UpdateMeshWorkloadStatus(ctx context.Context, obj *MeshWorkload, opts ...client.UpdateOption) error
+	// given Workload object.
+	UpdateWorkloadStatus(ctx context.Context, obj *Workload, opts ...client.UpdateOption) error
 
-	// Patch patches the given MeshWorkload object's subresource.
-	PatchMeshWorkloadStatus(ctx context.Context, obj *MeshWorkload, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given Workload object's subresource.
+	PatchWorkloadStatus(ctx context.Context, obj *Workload, patch client.Patch, opts ...client.PatchOption) error
 }
 
-// Client knows how to perform CRUD operations on MeshWorkloads.
-type MeshWorkloadClient interface {
-	MeshWorkloadReader
-	MeshWorkloadWriter
-	MeshWorkloadStatusWriter
+// Client knows how to perform CRUD operations on Workloads.
+type WorkloadClient interface {
+	WorkloadReader
+	WorkloadWriter
+	WorkloadStatusWriter
 }
 
-type meshWorkloadClient struct {
+type workloadClient struct {
 	client client.Client
 }
 
-func NewMeshWorkloadClient(client client.Client) *meshWorkloadClient {
-	return &meshWorkloadClient{client: client}
+func NewWorkloadClient(client client.Client) *workloadClient {
+	return &workloadClient{client: client}
 }
 
-func (c *meshWorkloadClient) GetMeshWorkload(ctx context.Context, key client.ObjectKey) (*MeshWorkload, error) {
-	obj := &MeshWorkload{}
+func (c *workloadClient) GetWorkload(ctx context.Context, key client.ObjectKey) (*Workload, error) {
+	obj := &Workload{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (c *meshWorkloadClient) ListMeshWorkload(ctx context.Context, opts ...client.ListOption) (*MeshWorkloadList, error) {
-	list := &MeshWorkloadList{}
+func (c *workloadClient) ListWorkload(ctx context.Context, opts ...client.ListOption) (*WorkloadList, error) {
+	list := &WorkloadList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
 	return list, nil
 }
 
-func (c *meshWorkloadClient) CreateMeshWorkload(ctx context.Context, obj *MeshWorkload, opts ...client.CreateOption) error {
+func (c *workloadClient) CreateWorkload(ctx context.Context, obj *Workload, opts ...client.CreateOption) error {
 	return c.client.Create(ctx, obj, opts...)
 }
 
-func (c *meshWorkloadClient) DeleteMeshWorkload(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &MeshWorkload{}
+func (c *workloadClient) DeleteWorkload(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &Workload{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
-func (c *meshWorkloadClient) UpdateMeshWorkload(ctx context.Context, obj *MeshWorkload, opts ...client.UpdateOption) error {
+func (c *workloadClient) UpdateWorkload(ctx context.Context, obj *Workload, opts ...client.UpdateOption) error {
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *meshWorkloadClient) PatchMeshWorkload(ctx context.Context, obj *MeshWorkload, patch client.Patch, opts ...client.PatchOption) error {
+func (c *workloadClient) PatchWorkload(ctx context.Context, obj *Workload, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
-func (c *meshWorkloadClient) DeleteAllOfMeshWorkload(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &MeshWorkload{}
+func (c *workloadClient) DeleteAllOfWorkload(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &Workload{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *meshWorkloadClient) UpsertMeshWorkload(ctx context.Context, obj *MeshWorkload, transitionFuncs ...MeshWorkloadTransitionFunction) error {
+func (c *workloadClient) UpsertWorkload(ctx context.Context, obj *Workload, transitionFuncs ...WorkloadTransitionFunction) error {
 	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*MeshWorkload), desired.(*MeshWorkload)); err != nil {
+			if err := txFunc(existing.(*Workload), desired.(*Workload)); err != nil {
 				return err
 			}
 		}
@@ -338,34 +338,34 @@ func (c *meshWorkloadClient) UpsertMeshWorkload(ctx context.Context, obj *MeshWo
 	return err
 }
 
-func (c *meshWorkloadClient) UpdateMeshWorkloadStatus(ctx context.Context, obj *MeshWorkload, opts ...client.UpdateOption) error {
+func (c *workloadClient) UpdateWorkloadStatus(ctx context.Context, obj *Workload, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *meshWorkloadClient) PatchMeshWorkloadStatus(ctx context.Context, obj *MeshWorkload, patch client.Patch, opts ...client.PatchOption) error {
+func (c *workloadClient) PatchWorkloadStatus(ctx context.Context, obj *Workload, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
-// Provides MeshWorkloadClients for multiple clusters.
-type MulticlusterMeshWorkloadClient interface {
-	// Cluster returns a MeshWorkloadClient for the given cluster
-	Cluster(cluster string) (MeshWorkloadClient, error)
+// Provides WorkloadClients for multiple clusters.
+type MulticlusterWorkloadClient interface {
+	// Cluster returns a WorkloadClient for the given cluster
+	Cluster(cluster string) (WorkloadClient, error)
 }
 
-type multiclusterMeshWorkloadClient struct {
+type multiclusterWorkloadClient struct {
 	client multicluster.Client
 }
 
-func NewMulticlusterMeshWorkloadClient(client multicluster.Client) MulticlusterMeshWorkloadClient {
-	return &multiclusterMeshWorkloadClient{client: client}
+func NewMulticlusterWorkloadClient(client multicluster.Client) MulticlusterWorkloadClient {
+	return &multiclusterWorkloadClient{client: client}
 }
 
-func (m *multiclusterMeshWorkloadClient) Cluster(cluster string) (MeshWorkloadClient, error) {
+func (m *multiclusterWorkloadClient) Cluster(cluster string) (WorkloadClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
 	}
-	return NewMeshWorkloadClient(client), nil
+	return NewWorkloadClient(client), nil
 }
 
 // Reader knows how to read and list Meshs.

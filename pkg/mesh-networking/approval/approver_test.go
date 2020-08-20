@@ -58,7 +58,7 @@ var _ = Describe("Approver", func() {
 				discoveryv1alpha2sets.NewTrafficTargetSet(discoveryv1alpha2.TrafficTargetSlice{
 					trafficTarget,
 				}...),
-				discoveryv1alpha2sets.NewMeshWorkloadSet(),
+				discoveryv1alpha2sets.NewWorkloadSet(),
 				discoveryv1alpha2sets.NewMeshSet(),
 				v1alpha2sets.NewTrafficPolicySet(v1alpha2.TrafficPolicySlice{
 					trafficPolicy1,
@@ -120,7 +120,7 @@ var _ = Describe("Approver", func() {
 				discoveryv1alpha2sets.NewTrafficTargetSet(discoveryv1alpha2.TrafficTargetSlice{
 					trafficTarget,
 				}...),
-				discoveryv1alpha2sets.NewMeshWorkloadSet(),
+				discoveryv1alpha2sets.NewWorkloadSet(),
 				discoveryv1alpha2sets.NewMeshSet(),
 				v1alpha2sets.NewTrafficPolicySet(v1alpha2.TrafficPolicySlice{
 					trafficPolicy,
@@ -237,7 +237,7 @@ var _ = Describe("Approver", func() {
 			}
 			snap = input.NewSnapshot("",
 				discoveryv1alpha2sets.NewTrafficTargetSet(),
-				discoveryv1alpha2sets.NewMeshWorkloadSet(),
+				discoveryv1alpha2sets.NewWorkloadSet(),
 				discoveryv1alpha2sets.NewMeshSet(),
 				v1alpha2sets.NewTrafficPolicySet(),
 				v1alpha2sets.NewAccessPolicySet(),

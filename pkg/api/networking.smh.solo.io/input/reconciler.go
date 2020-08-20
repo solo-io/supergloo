@@ -5,7 +5,7 @@
 // The Input Reconciler calls a simple func() error whenever a
 // storage event is received for any of:
 // * TrafficTargets
-// * MeshWorkloads
+// * Workloads
 // * Meshes
 // * TrafficPolicies
 // * AccessPolicies
@@ -47,7 +47,7 @@ import (
 // the multiClusterReconciler reconciles events for input resources across clusters
 type multiClusterReconciler interface {
 	discovery_smh_solo_io_v1alpha2_controllers.MulticlusterTrafficTargetReconciler
-	discovery_smh_solo_io_v1alpha2_controllers.MulticlusterMeshWorkloadReconciler
+	discovery_smh_solo_io_v1alpha2_controllers.MulticlusterWorkloadReconciler
 	discovery_smh_solo_io_v1alpha2_controllers.MulticlusterMeshReconciler
 
 	networking_smh_solo_io_v1alpha2_controllers.MulticlusterTrafficPolicyReconciler
@@ -90,7 +90,7 @@ func RegisterMultiClusterReconciler(
 	// initialize reconcile loops
 
 	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterTrafficTargetReconcileLoop("TrafficTarget", clusters).AddMulticlusterTrafficTargetReconciler(ctx, r, predicates...)
-	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterMeshWorkloadReconcileLoop("MeshWorkload", clusters).AddMulticlusterMeshWorkloadReconciler(ctx, r, predicates...)
+	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterWorkloadReconcileLoop("Workload", clusters).AddMulticlusterWorkloadReconciler(ctx, r, predicates...)
 	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters).AddMulticlusterMeshReconciler(ctx, r, predicates...)
 
 	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterTrafficPolicyReconcileLoop("TrafficPolicy", clusters).AddMulticlusterTrafficPolicyReconciler(ctx, r, predicates...)
@@ -119,12 +119,12 @@ func (r *multiClusterReconcilerImpl) ReconcileTrafficTargetDeletion(clusterName 
 	return err
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileMeshWorkload(clusterName string, obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) (reconcile.Result, error) {
+func (r *multiClusterReconcilerImpl) ReconcileWorkload(clusterName string, obj *discovery_smh_solo_io_v1alpha2.Workload) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileClusterGeneric(obj)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileMeshWorkloadDeletion(clusterName string, obj reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileWorkloadDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -242,7 +242,7 @@ func (r *multiClusterReconcilerImpl) ReconcileKubernetesClusterDeletion(clusterN
 // the singleClusterReconciler reconciles events for input resources across clusters
 type singleClusterReconciler interface {
 	discovery_smh_solo_io_v1alpha2_controllers.TrafficTargetReconciler
-	discovery_smh_solo_io_v1alpha2_controllers.MeshWorkloadReconciler
+	discovery_smh_solo_io_v1alpha2_controllers.WorkloadReconciler
 	discovery_smh_solo_io_v1alpha2_controllers.MeshReconciler
 
 	networking_smh_solo_io_v1alpha2_controllers.TrafficPolicyReconciler
@@ -287,7 +287,7 @@ func RegisterSingleClusterReconciler(
 	if err := discovery_smh_solo_io_v1alpha2_controllers.NewTrafficTargetReconcileLoop("TrafficTarget", mgr, reconcile.Options{}).RunTrafficTargetReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := discovery_smh_solo_io_v1alpha2_controllers.NewMeshWorkloadReconcileLoop("MeshWorkload", mgr, reconcile.Options{}).RunMeshWorkloadReconciler(ctx, r, predicates...); err != nil {
+	if err := discovery_smh_solo_io_v1alpha2_controllers.NewWorkloadReconcileLoop("Workload", mgr, reconcile.Options{}).RunWorkloadReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
 	if err := discovery_smh_solo_io_v1alpha2_controllers.NewMeshReconcileLoop("Mesh", mgr, reconcile.Options{}).RunMeshReconciler(ctx, r, predicates...); err != nil {
@@ -331,11 +331,11 @@ func (r *singleClusterReconcilerImpl) ReconcileTrafficTargetDeletion(obj reconci
 	return err
 }
 
-func (r *singleClusterReconcilerImpl) ReconcileMeshWorkload(obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) (reconcile.Result, error) {
+func (r *singleClusterReconcilerImpl) ReconcileWorkload(obj *discovery_smh_solo_io_v1alpha2.Workload) (reconcile.Result, error) {
 	return r.base.ReconcileGeneric(obj)
 }
 
-func (r *singleClusterReconcilerImpl) ReconcileMeshWorkloadDeletion(obj reconcile.Request) error {
+func (r *singleClusterReconcilerImpl) ReconcileWorkloadDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

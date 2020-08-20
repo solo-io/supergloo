@@ -45,31 +45,31 @@ func TrafficTargetClientFromConfigFactoryProvider() TrafficTargetClientFromConfi
 	}
 }
 
-// Provider for MeshWorkloadClient from Clientset
-func MeshWorkloadClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha2.Clientset) discovery_smh_solo_io_v1alpha2.MeshWorkloadClient {
-	return clients.MeshWorkloads()
+// Provider for WorkloadClient from Clientset
+func WorkloadClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha2.Clientset) discovery_smh_solo_io_v1alpha2.WorkloadClient {
+	return clients.Workloads()
 }
 
-// Provider for MeshWorkload Client from Client
-func MeshWorkloadClientProvider(client client.Client) discovery_smh_solo_io_v1alpha2.MeshWorkloadClient {
-	return discovery_smh_solo_io_v1alpha2.NewMeshWorkloadClient(client)
+// Provider for Workload Client from Client
+func WorkloadClientProvider(client client.Client) discovery_smh_solo_io_v1alpha2.WorkloadClient {
+	return discovery_smh_solo_io_v1alpha2.NewWorkloadClient(client)
 }
 
-type MeshWorkloadClientFactory func(client client.Client) discovery_smh_solo_io_v1alpha2.MeshWorkloadClient
+type WorkloadClientFactory func(client client.Client) discovery_smh_solo_io_v1alpha2.WorkloadClient
 
-func MeshWorkloadClientFactoryProvider() MeshWorkloadClientFactory {
-	return MeshWorkloadClientProvider
+func WorkloadClientFactoryProvider() WorkloadClientFactory {
+	return WorkloadClientProvider
 }
 
-type MeshWorkloadClientFromConfigFactory func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.MeshWorkloadClient, error)
+type WorkloadClientFromConfigFactory func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.WorkloadClient, error)
 
-func MeshWorkloadClientFromConfigFactoryProvider() MeshWorkloadClientFromConfigFactory {
-	return func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.MeshWorkloadClient, error) {
+func WorkloadClientFromConfigFactoryProvider() WorkloadClientFromConfigFactory {
+	return func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.WorkloadClient, error) {
 		clients, err := discovery_smh_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
 		if err != nil {
 			return nil, err
 		}
-		return clients.MeshWorkloads(), nil
+		return clients.Workloads(), nil
 	}
 }
 

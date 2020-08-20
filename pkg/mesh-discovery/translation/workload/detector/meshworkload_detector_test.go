@@ -12,10 +12,10 @@ import (
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector"
-	mock_detector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/types"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector"
+	mock_detector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/types"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-var _ = Describe("MeshworkloadDetector", func() {
+var _ = Describe("WorkloadDetector", func() {
 
 	var (
 		ctrl                *gomock.Controller
@@ -102,7 +102,7 @@ var _ = Describe("MeshworkloadDetector", func() {
 		},
 	}
 
-	It("translates a deployment with a detected sidecar to a meshworkload", func() {
+	It("translates a deployment with a detected sidecar to a workload", func() {
 
 		deployment := makeDeployment()
 		rs := makeReplicaSet(deployment)
@@ -110,7 +110,7 @@ var _ = Describe("MeshworkloadDetector", func() {
 
 		pods := corev1sets.NewPodSet(pod)
 		replicaSets := appsv1sets.NewReplicaSetSet(rs)
-		detector := NewMeshWorkloadDetector(
+		detector := NewWorkloadDetector(
 			context.TODO(),
 			pods,
 			replicaSets,
@@ -121,17 +121,17 @@ var _ = Describe("MeshworkloadDetector", func() {
 
 		mockSidecarDetector.EXPECT().DetectMeshSidecar(pod, meshes).Return(mesh)
 
-		meshWorkload := detector.DetectMeshWorkload(types.ToWorkload(deployment), meshes)
+		workload := detector.DetectWorkload(types.ToWorkload(deployment), meshes)
 
 		outputMeta := utils.DiscoveredObjectMeta(deployment)
 		// expect appended workload kind
 		outputMeta.Name += "-deployment"
 
-		Expect(meshWorkload).To(Equal(&v1alpha2.MeshWorkload{
+		Expect(workload).To(Equal(&v1alpha2.Workload{
 			ObjectMeta: outputMeta,
-			Spec: v1alpha2.MeshWorkloadSpec{
-				WorkloadType: &v1alpha2.MeshWorkloadSpec_Kubernetes{
-					Kubernetes: &v1alpha2.MeshWorkloadSpec_KubernertesWorkload{
+			Spec: v1alpha2.WorkloadSpec{
+				WorkloadType: &v1alpha2.WorkloadSpec_Kubernetes{
+					Kubernetes: &v1alpha2.WorkloadSpec_KubernertesWorkload{
 						Controller:         ezkube.MakeClusterObjectRef(deployment),
 						PodLabels:          podLabels,
 						ServiceAccountName: serviceAccountName,

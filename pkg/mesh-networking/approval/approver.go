@@ -109,7 +109,7 @@ func (v *approver) Approve(ctx context.Context, input input.Snapshot) {
 		mesh.Status.AppliedVirtualMesh = validateAndReturnVirtualMesh(ctx, input, reporter, mesh)
 	}
 
-	// TODO(ilackarms): validate meshworkloads
+	// TODO(ilackarms): validate workloads
 }
 
 // this function both validates the status of TrafficPolicies (sets error or accepted state)

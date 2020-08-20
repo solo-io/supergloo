@@ -13,8 +13,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	mock_mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/mocks"
-	mock_meshworkload "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/mocks"
 	mock_traffictarget "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget/mocks"
+	mock_workload "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/labelutils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -29,7 +29,7 @@ var _ = Describe("Translator", func() {
 
 		mockDependencyFactory       *MockdependencyFactory
 		mockMeshTranslator          *mock_mesh.MockTranslator
-		mockMeshworkloadTranslator  *mock_meshworkload.MockTranslator
+		mockWorkloadTranslator      *mock_workload.MockTranslator
 		mockTrafficTargetTranslator *mock_traffictarget.MockTranslator
 	)
 
@@ -38,7 +38,7 @@ var _ = Describe("Translator", func() {
 		ctx = context.TODO()
 		mockDependencyFactory = NewMockdependencyFactory(ctl)
 		mockMeshTranslator = mock_mesh.NewMockTranslator(ctl)
-		mockMeshworkloadTranslator = mock_meshworkload.NewMockTranslator(ctl)
+		mockWorkloadTranslator = mock_workload.NewMockTranslator(ctl)
 		mockTrafficTargetTranslator = mock_traffictarget.NewMockTranslator(ctl)
 	})
 
@@ -71,18 +71,18 @@ var _ = Describe("Translator", func() {
 		)
 
 		mockDependencyFactory.EXPECT().makeMeshTranslator(ctx, in).Return(mockMeshTranslator)
-		mockDependencyFactory.EXPECT().makeMeshWorkloadTranslator(ctx, in).Return(mockMeshworkloadTranslator)
+		mockDependencyFactory.EXPECT().makeWorkloadTranslator(ctx, in).Return(mockWorkloadTranslator)
 		mockDependencyFactory.EXPECT().makeTrafficTargetTranslator(ctx).Return(mockTrafficTargetTranslator)
 
 		labeledMeta := metav1.ObjectMeta{Labels: labelutils.ClusterLabels("cluster")}
 
 		meshes := v1alpha2sets.NewMeshSet(&v1alpha2.Mesh{ObjectMeta: labeledMeta})
-		meshWorkloads := v1alpha2sets.NewMeshWorkloadSet(&v1alpha2.MeshWorkload{ObjectMeta: labeledMeta})
+		workloads := v1alpha2sets.NewWorkloadSet(&v1alpha2.Workload{ObjectMeta: labeledMeta})
 		trafficTargets := v1alpha2sets.NewTrafficTargetSet(&v1alpha2.TrafficTarget{ObjectMeta: labeledMeta})
 
 		mockMeshTranslator.EXPECT().TranslateMeshes(deployments).Return(meshes)
-		mockMeshworkloadTranslator.EXPECT().TranslateMeshWorkloads(deployments, daemonSets, statefulSets, meshes).Return(meshWorkloads)
-		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(services, meshWorkloads).Return(trafficTargets)
+		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)
+		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(services, workloads).Return(trafficTargets)
 
 		out, err := t.Translate(ctx, in)
 		Expect(err).NotTo(HaveOccurred())
@@ -91,7 +91,7 @@ var _ = Describe("Translator", func() {
 			"mesh-discovery-1",
 			labelutils.OwnershipLabels(),
 			trafficTargets,
-			meshWorkloads,
+			workloads,
 			meshes,
 		)
 		Expect(err).NotTo(HaveOccurred())

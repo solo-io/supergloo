@@ -29,14 +29,14 @@ metadata:
   labels:
     app: service-mesh-hub
     app.kubernetes.io/name: service-mesh-hub
-  name: meshworkloads.discovery.smh.solo.io
+  name: workloads.discovery.smh.solo.io
 spec:
   group: discovery.smh.solo.io
   names:
-    kind: MeshWorkload
-    listKind: MeshWorkloadList
-    plural: meshworkloads
-    singular: meshworkload
+    kind: Workload
+    listKind: WorkloadList
+    plural: workloads
+    singular: workload
   scope: Namespaced
   subresources:
     status: {}
