@@ -68,6 +68,9 @@ func (t *translator) Translate(
 		return
 	}
 
+	// add mesh installation cluster to outputs
+	outputs.AddCluster(istioMesh.Installation.GetCluster())
+
 	appliedVirtualMesh := mesh.Status.AppliedVirtualMesh
 	if appliedVirtualMesh != nil {
 		t.mtlsTranslator.Translate(mesh, appliedVirtualMesh, outputs, reporter)
