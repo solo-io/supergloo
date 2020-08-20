@@ -33,7 +33,7 @@ var _ = Describe("TrafficPolicy", func() {
 			trafficShiftReviewsV2 := data.LocalTrafficShiftPolicy("bookinfo-policy", BookinfoNamespace, &v1.ClusterObjectRef{
 				Name:        "reviews",
 				Namespace:   BookinfoNamespace,
-				ClusterName: masterClusterName,
+				ClusterName: mgmtClusterName,
 			}, map[string]string{"version": "v2"}, 9080)
 
 			err = manifest.AppendResources(trafficShiftReviewsV2)
