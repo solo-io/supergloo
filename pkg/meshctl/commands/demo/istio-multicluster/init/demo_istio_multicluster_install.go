@@ -243,14 +243,12 @@ func registerCluster(ctx context.Context, masterCluster string, cluster string, 
 func getApiAddress(cluster string, box packr.Box) (string, error) {
 	script, err := box.FindString("get_api_address.sh")
 	if err != nil {
-		fmt.Printf("Error loading script: %v\n", err)
-		return "", err
+		return "", eris.Wrap(err, "Error loading script")
 	}
 	cmd := exec.Command("bash", "-c", script, cluster)
 	bytes, err := cmd.Output()
 	if err != nil {
-		fmt.Printf("Error getting API server address: %v\n", err)
-		return "", err
+		return "", eris.Wrap(err, "Error getting API server address")
 	}
 
 	return string(bytes), nil
