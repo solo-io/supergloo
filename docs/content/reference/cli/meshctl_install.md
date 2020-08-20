@@ -26,8 +26,8 @@ meshctl install [flags]
       --cluster-name string              Name with which to register the cluster running Service Mesh Hub, only applies if --register is also set (default "management-cluster")
   -d, --dry-run                          Output installation manifest
   -h, --help                             help for install
-      --kubeconfig string                path to the kubeconfig from which the master cluster will be accessed
-      --kubecontext string               name of the kubeconfig context to use for the master cluster
+      --kubeconfig string                path to the kubeconfig from which the management cluster will be accessed
+      --kubecontext string               name of the kubeconfig context to use for the management cluster
       --namespace string                 namespace in which to install Service Mesh Hub (default "service-mesh-hub")
   -r, --register                         Register the cluster running Service Mesh Hub
       --release-name string              Helm release name (default "service-mesh-hub")

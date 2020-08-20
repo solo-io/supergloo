@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	masterCluster = "master-cluster"
-	remoteCluster = "remote-cluster"
+	managementCluster = "management-cluster"
+	remoteCluster     = "remote-cluster"
 )
 
 func Command(ctx context.Context) *cobra.Command {
@@ -20,8 +20,8 @@ func Command(ctx context.Context) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		istio_init.Command(ctx, masterCluster, remoteCluster),
-		cleanup.Command(ctx, masterCluster, remoteCluster),
+		istio_init.Command(ctx, managementCluster, remoteCluster),
+		cleanup.Command(managementCluster, remoteCluster),
 	)
 
 	return cmd
