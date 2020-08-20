@@ -1,4 +1,4 @@
-package approval_test
+package apply_test
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestValidation(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Approver Suite")
+	RunSpecs(t, "Applier Suite")
 }

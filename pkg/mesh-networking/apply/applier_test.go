@@ -1,4 +1,4 @@
-package approval_test
+package apply_test
 
 import (
 	"context"
@@ -21,11 +21,11 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
 )
 
-var _ = Describe("Approver", func() {
-	Context("approved traffic policies", func() {
+var _ = Describe("Applier", func() {
+	Context("applied traffic policies", func() {
 		var (
 			trafficTarget = &discoveryv1alpha2.TrafficTarget{
 				ObjectMeta: metav1.ObjectMeta{
@@ -76,8 +76,8 @@ var _ = Describe("Approver", func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
 			}}
-			approver := NewApprover(translator)
-			approver.Approve(context.TODO(), snap)
+			applier := NewApplier(translator)
+			applier.Apply(context.TODO(), snap)
 
 		})
 		It("updates status on input traffic policies", func() {
@@ -138,8 +138,8 @@ var _ = Describe("Approver", func() {
 				// report = reject
 				reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, trafficPolicy, errors.New("did an oopsie"))
 			}}
-			approver := NewApprover(translator)
-			approver.Approve(context.TODO(), snap)
+			applier := NewApplier(translator)
+			applier.Apply(context.TODO(), snap)
 
 		})
 		It("updates status on input traffic policies", func() {
@@ -253,8 +253,8 @@ var _ = Describe("Approver", func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				return
 			}}
-			approver := NewApprover(translator)
-			approver.Approve(context.TODO(), snap)
+			applier := NewApplier(translator)
+			applier.Apply(context.TODO(), snap)
 		})
 		It("vm1 should render vm2 invalid, which should permit vm3", func() {
 			Expect(vm2.Status.State).To(Equal(v1alpha2.ApprovalState_INVALID))
