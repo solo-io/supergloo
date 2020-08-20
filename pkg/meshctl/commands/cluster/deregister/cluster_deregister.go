@@ -21,6 +21,7 @@ func Command(ctx context.Context) *cobra.Command {
 		},
 	}
 	deregistrationOpts.addToFlags(cmd.Flags())
+	cmd.SilenceUsage = true
 	return cmd
 }
 

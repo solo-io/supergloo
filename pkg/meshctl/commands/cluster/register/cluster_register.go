@@ -20,6 +20,7 @@ func Command(ctx context.Context) *cobra.Command {
 		},
 	}
 	registrationOpts.addToFlags(cmd.Flags())
+	cmd.SilenceUsage = true
 	return cmd
 }
 

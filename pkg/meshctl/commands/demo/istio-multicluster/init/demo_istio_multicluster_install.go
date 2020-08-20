@@ -33,6 +33,7 @@ management-plane as well as Istio, and the other will just run Istio.
 			return initCmd(ctx, masterCluster, remoteCluster)
 		},
 	}
+	cmd.SilenceUsage = true
 	return cmd
 }
 

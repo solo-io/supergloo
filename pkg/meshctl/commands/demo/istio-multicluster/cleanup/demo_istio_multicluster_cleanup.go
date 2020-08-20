@@ -21,6 +21,7 @@ func Command(ctx context.Context, masterCluster string, remoteCluster string) *c
 		},
 	}
 
+	cmd.SilenceUsage = true
 	return cmd
 }
 
