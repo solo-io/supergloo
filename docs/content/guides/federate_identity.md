@@ -194,11 +194,12 @@ kubectl --context $REMOTE_CONTEXT -n bookinfo delete po --all
 
 Creating this resource will instruct Service Mesh to establish a shared root identity across the clusters in the Virtual Mesh as well as federate the services. The next sections of this document help you understand some of the pieces of how this works.
 
-## Understanding the shared root process
+## Understanding the Shared Root Process
 
-When we create the VirtualMesh CR, set the trust model to `shared`, and configure the Root CA parameters, Service Mesh Hub will kick off the process to unify the identity to a shared root. First, Service Mesh Hub will either create the Root CA specified (if `builtin` is used). 
+When we create the VirtualMesh CR, set the trust model to `shared`, and configure the Root CA parameters, Service Mesh Hub will kick off the process to unify the identity to a shared root. First, Service Mesh Hub will either create the Root CA specified (if `generated` is used). 
 
-Then Service Mesh Hub will use a Certificate Signing Request (CSR) agent on each of the affected clusters to create a new key/cert pair that will form an intermediate CA used by the mesh on that cluster. It will then create a Certificate Signing Request, represented by the [VirtualMeshCertificateSigningRequest]() CR. Service Mesh Hub will sign the certificate with the Root CA specified in the VirtualMesh. At that point, we will want the mesh (Istio in this case) to pick up the new intermediate CA and start using that for its workloads.
+Then Service Mesh Hub will use a Certificate Request (CR) agent on each of the affected clusters to create a new key/cert pair that will form an intermediate CA used by the mesh on that cluster. It will then create a Certificate Request, represented by the [CertificateRequest]({{% versioned_link_path fromRoot="/reference/api/certificate_request/" %}}) CR.
+ Service Mesh Hub will sign the certificate with the Root CA specified in the VirtualMesh. At that point, we will want the mesh (Istio in this case) to pick up the new intermediate CA and start using that for its workloads.
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-csr.png" %}})
 
