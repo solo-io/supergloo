@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/rotisserie/eris"
+
 	"github.com/gobuffalo/packr"
 	"github.com/spf13/cobra"
 )
@@ -28,7 +30,7 @@ func cleanup(ctx context.Context, masterCluster string, remoteCluster string) er
 	box := packr.NewBox("./scripts")
 	script, err := box.FindString("delete_clusters.sh")
 	if err != nil {
-		return err
+		return eris.Wrap(err, "Error loading script")
 	}
 
 	cmd := exec.Command("bash", "-c", script, masterCluster, remoteCluster)

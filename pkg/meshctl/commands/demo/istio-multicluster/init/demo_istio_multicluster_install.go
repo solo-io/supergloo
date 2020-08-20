@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/rotisserie/eris"
+
 	"github.com/gobuffalo/packr"
 	"github.com/solo-io/service-mesh-hub/codegen/helm"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
@@ -45,8 +47,7 @@ func initCmd(ctx context.Context, masterCluster string, remoteCluster string) er
 	box := packr.NewBox("./scripts")
 	projectRoot, err := os.Getwd()
 	if err != nil {
-		fmt.Printf("Unable to get working directory: %v\n", err)
-		return err
+		return eris.Wrap(err, "Unable to get working directory")
 	}
 	fmt.Printf("Using project root %s\n", projectRoot)
 
@@ -93,8 +94,7 @@ func createKindCluster(cluster string, port string, box packr.Box) error {
 
 	script, err := box.FindString("create_kind_cluster.sh")
 	if err != nil {
-		fmt.Printf("Error loading script: %v\n", err)
-		return err
+		return eris.Wrap(err, "Error loading script")
 	}
 
 	cmd := exec.Command("bash", "-c", script, cluster, port, kindImage)
@@ -102,8 +102,7 @@ func createKindCluster(cluster string, port string, box packr.Box) error {
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		fmt.Printf("Error creating cluster %s: %v\n", cluster, err)
-		return err
+		return eris.Wrapf(err, "Error creating cluster %s", cluster)
 	}
 
 	fmt.Printf("Successfully created cluster %s\n", cluster)
@@ -115,16 +114,14 @@ func installIstio(cluster string, port string, box packr.Box) error {
 
 	script, err := box.FindString("install_istio.sh")
 	if err != nil {
-		fmt.Printf("Error loading script: %v\n", err)
-		return err
+		return eris.Wrap(err, "Error loading script")
 	}
 	cmd := exec.Command("bash", "-c", script, cluster, port)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		fmt.Printf("Error installing Istio on cluster %s: %v\n", cluster, err)
-		return err
+		return eris.Wrapf(err, "Error installing Istio on cluster %s", cluster)
 	}
 
 	fmt.Printf("Successfully installed Istio on cluster %s\n", cluster)
@@ -159,8 +156,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 		ctx,
 	)
 	if err != nil {
-		fmt.Printf("Error installing Service Mesh Hub: %v\n", err)
-		return err
+		return eris.Wrap(err, "Error installing Service Mesh Hub")
 	}
 
 	registrantOpts := &registration.RegistrantOptions{
@@ -183,14 +179,12 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 
 	err = registration.NewRegistrant(registrantOpts).RegisterCluster(ctx)
 	if err != nil {
-		fmt.Printf("Error registering cluster %s: %v\n", cluster, err)
-		return err
+		return eris.Wrapf(err, "Error registering cluster %s", cluster)
 	}
 
 	script, err := box.FindString("post_install_smh.sh")
 	if err != nil {
-		fmt.Printf("Error loading script: %v\n", err)
-		return err
+		return eris.Wrap(err, "Error loading script")
 	}
 
 	cmd := exec.Command("bash", "-c", script, cluster)
@@ -198,8 +192,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		fmt.Printf("Error running post-install script: %v\n", err)
-		return err
+		return eris.Wrap(err, "Error running post-install script")
 	}
 
 	fmt.Printf("Successfully set up Service Mesh Hub on cluster %s\n", cluster)
@@ -239,8 +232,7 @@ func registerCluster(ctx context.Context, masterCluster string, cluster string, 
 
 	err = registration.NewRegistrant(registrantOpts).RegisterCluster(ctx)
 	if err != nil {
-		fmt.Printf("Error registering cluster %s: %v\n", cluster, err)
-		return err
+		return eris.Wrapf(err, "Error registering cluster %s", cluster)
 	}
 
 	fmt.Printf("Successfully registered cluster %s\n", cluster)
@@ -273,8 +265,7 @@ func switchContext(cluster string, box packr.Box) error {
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		fmt.Printf("Could not switch context to %s: %v\n", fmt.Sprintf("kind-%s", cluster), err)
-		return err
+		return eris.Wrapf(err, "Could not switch context to %s", fmt.Sprintf("kind-%s", cluster))
 	}
 	return nil
 }
