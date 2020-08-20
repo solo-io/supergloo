@@ -23,30 +23,14 @@ var _ = Describe("AccessPolicy", func() {
 		manifest, err = utils.NewManifest("access_policy_test_manifest.yaml")
 		Expect(err).ToNot(HaveOccurred())
 
-		By("restricting connectivity when VirtualMesh with enforcement enabled is created", func() {
-			virtualMesh := &networkingv1alpha2.VirtualMesh{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "VirtualMesh",
-					APIVersion: networkingv1alpha2.SchemeGroupVersion.String(),
-				},
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "enforcement-enabled",
-					Namespace: BookinfoNamespace,
-				},
-				Spec: networkingv1alpha2.VirtualMeshSpec{
-					Meshes: []*skv2core.ObjectRef{
-						{
-							Name:      "istiod-istio-system-master-cluster",
-							Namespace: "service-mesh-hub",
-						},
-					},
-					GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_ENABLED,
-				},
-			}
-			err := manifest.AppendResources(virtualMesh)
+		By("restricting connectivity when global access policy enforcement is enabled", func() {
+			VirtualMesh.Spec.GlobalAccessPolicy = networkingv1alpha2.VirtualMeshSpec_ENABLED
+			VirtualMeshManifest.CreateOrTruncate()
+			err := VirtualMeshManifest.AppendResources(VirtualMesh)
 			Expect(err).NotTo(HaveOccurred())
-			err = manifest.KubeApply(BookinfoNamespace)
+			err = VirtualMeshManifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
+
 			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring("403 Forbidden"))
 		})
 
@@ -97,8 +81,15 @@ var _ = Describe("AccessPolicy", func() {
 			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 
-		By("restoring connectivity to all services when VirtualMesh is deleted", func() {
-			err := manifest.KubeDelete(BookinfoNamespace)
+		By("restoring connectivity to all services when global access policy enforcement is disabled", func() {
+			VirtualMesh.Spec.GlobalAccessPolicy = networkingv1alpha2.VirtualMeshSpec_DISABLED
+			VirtualMeshManifest.CreateOrTruncate()
+			err := VirtualMeshManifest.AppendResources(VirtualMesh)
+			Expect(err).NotTo(HaveOccurred())
+			err = VirtualMeshManifest.KubeApply(BookinfoNamespace)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = manifest.KubeDelete(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(curlRatings, "1m", "1s").Should(ContainSubstring("200 OK"))

@@ -3,13 +3,10 @@ package mesh_discovery
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
+	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/reconciliation"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation"
-	"github.com/solo-io/skv2/pkg/multicluster"
 )
 
 // the mesh-discovery controller is the Kubernetes Controller/Operator
@@ -21,14 +18,17 @@ func Start(ctx context.Context, opts bootstrap.Options) error {
 
 // start the main reconcile loop
 func startReconciler(
-	ctx context.Context,
-	masterManager manager.Manager,
-	mcClient multicluster.Client,
-	clusters multicluster.ClusterSet,
-	mcWatcher multicluster.ClusterWatcher,
+	parameters bootstrap.StartParameters,
 ) error {
-	snapshotBuilder := input.NewMultiClusterBuilder(clusters, mcClient)
+	snapshotBuilder := input.NewMultiClusterBuilder(parameters.Clusters, parameters.McClient)
 	translator := translation.NewTranslator()
-	reconciliation.Start(ctx, snapshotBuilder, translator, masterManager.GetClient(), mcWatcher)
+	reconciliation.Start(
+		parameters.Ctx,
+		snapshotBuilder,
+		translator,
+		parameters.MasterManager.GetClient(),
+		parameters.ClusterWatcher,
+		parameters.SnapshotHistory,
+	)
 	return nil
 }

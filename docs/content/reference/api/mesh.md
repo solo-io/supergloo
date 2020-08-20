@@ -230,8 +230,8 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | [int64](#int64) |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that mesh-networking has reconciled the latest version of the Mesh. |
-| appliedVirtualMeshes | [][MeshStatus.AppliedVirtualMesh](#discovery.smh.solo.io.MeshStatus.AppliedVirtualMesh) | repeated | The VirtualMesh, if any, which contains this mesh. |
-| appliedFailoverServices | [][MeshStatus.AppliedFailoverService](#discovery.smh.solo.io.MeshStatus.AppliedFailoverService) | repeated | FailoverServices, if any, which applies to this mesh. |
+| appliedVirtualMesh | [MeshStatus.AppliedVirtualMesh](#discovery.smh.solo.io.MeshStatus.AppliedVirtualMesh) |  | The VirtualMesh, if any, which contains this mesh. |
+| appliedFailoverServices | [][MeshStatus.AppliedFailoverService](#discovery.smh.solo.io.MeshStatus.AppliedFailoverService) | repeated | The FailoverServices, if any, which applies to this mesh. |
 
 
 

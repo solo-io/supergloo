@@ -69,23 +69,21 @@ var _ = Describe("IstioMeshTranslator", func() {
 				AppliedFailoverServices: []*discoveryv1alpha2.MeshStatus_AppliedFailoverService{
 					{},
 				},
-				AppliedVirtualMeshes: []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
-					{},
-				},
+				AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{},
 			},
 		}
 
 		mockMtlsTranslator.
 			EXPECT().
-			Translate(istioMesh, istioMesh.Status.AppliedVirtualMeshes[0], outputs, mockReporter)
+			Translate(istioMesh, istioMesh.Status.AppliedVirtualMesh, outputs, mockReporter)
 
 		mockFederationTranslator.
 			EXPECT().
-			Translate(in, istioMesh, istioMesh.Status.AppliedVirtualMeshes[0], outputs, mockReporter)
+			Translate(in, istioMesh, istioMesh.Status.AppliedVirtualMesh, outputs, mockReporter)
 
 		mockAccessTranslator.
 			EXPECT().
-			Translate(istioMesh, istioMesh.Status.AppliedVirtualMeshes[0], outputs)
+			Translate(istioMesh, istioMesh.Status.AppliedVirtualMesh, outputs)
 
 		mockFailoverServiceTranslator.
 			EXPECT().

@@ -35,6 +35,7 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 		},
 	}
 
+	cmd.SilenceUsage = true
 	return cmd
 }
 
@@ -52,14 +53,14 @@ func describeMeshes(ctx context.Context, c client.Client) (string, error) {
 
 	buf := new(bytes.Buffer)
 	table := tablewriter.NewWriter(buf)
-	table.SetHeader([]string{"Metadata", "Virtual_Meshes", "Failover_Services"})
+	table.SetHeader([]string{"Metadata", "Virtual_Mesh", "Failover_Services"})
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
 
 	for _, description := range meshDescriptions {
 		table.Append([]string{
 			description.Metadata.string(),
-			printing.FormattedObjectRefs(description.VirtualMeshes),
+			printing.FormattedObjectRef(description.VirtualMesh),
 			printing.FormattedObjectRefs(description.FailoverServices),
 		})
 	}
@@ -83,7 +84,7 @@ func (m meshMetadata) string() string {
 
 type meshDescription struct {
 	Metadata         *meshMetadata
-	VirtualMeshes    []*v1.ObjectRef
+	VirtualMesh      *v1.ObjectRef
 	FailoverServices []*v1.ObjectRef
 }
 
@@ -101,11 +102,6 @@ type meshMetadata struct {
 func describeMesh(mesh *discoveryv1alpha2.Mesh) meshDescription {
 	meshMeta := getMeshMetadata(mesh)
 
-	var virtualMeshes []*v1.ObjectRef
-	for _, vm := range mesh.Status.AppliedVirtualMeshes {
-		virtualMeshes = append(virtualMeshes, vm.Ref)
-	}
-
 	var failoverServices []*v1.ObjectRef
 	for _, fs := range mesh.Status.AppliedFailoverServices {
 		failoverServices = append(failoverServices, fs.Ref)
@@ -113,7 +109,7 @@ func describeMesh(mesh *discoveryv1alpha2.Mesh) meshDescription {
 
 	return meshDescription{
 		Metadata:         &meshMeta,
-		VirtualMeshes:    virtualMeshes,
+		VirtualMesh:      mesh.Status.GetAppliedVirtualMesh().GetRef(),
 		FailoverServices: failoverServices,
 	}
 }

@@ -9,6 +9,7 @@ import (
 	gogotypes "github.com/gogo/protobuf/types"
 	golangjsonpb "github.com/golang/protobuf/jsonpb"
 	golangproto "github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes/any"
 	pstruct "github.com/golang/protobuf/ptypes/struct"
 	"github.com/rotisserie/eris"
 )
@@ -52,4 +53,18 @@ func GolangMessageToGogoStruct(msg golangproto.Message) (*gogotypes.Struct, erro
 		return nil, err
 	}
 	return pbs, nil
+}
+
+// MessageToAnyWithError converts from proto message to proto Any
+func MessageToAnyWithError(msg golangproto.Message) (*any.Any, error) {
+	b := golangproto.NewBuffer(nil)
+	b.SetDeterministic(true)
+	err := b.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+	return &any.Any{
+		TypeUrl: "type.googleapis.com/" + golangproto.MessageName(msg),
+		Value:   b.Bytes(),
+	}, nil
 }

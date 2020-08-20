@@ -2,7 +2,7 @@ syntax = "proto3";
 package discovery.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2";
 
-import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "skv2/api/core/v1/core.proto";
 import "service-mesh-hub/api/networking/v1alpha2/virtual_mesh.proto";
 import "service-mesh-hub/api/networking/v1alpha2/failover_service.proto";
 import "google/protobuf/wrappers.proto";
@@ -145,9 +145,9 @@ message MeshStatus {
     int64 observed_generation = 1;
 
     // The VirtualMesh, if any, which contains this mesh.
-    repeated AppliedVirtualMesh applied_virtual_meshes = 2;
+    AppliedVirtualMesh applied_virtual_mesh = 2;
 
-    // FailoverServices, if any, which applies to this mesh.
+    // The FailoverServices, if any, which applies to this mesh.
     repeated AppliedFailoverService applied_failover_services = 3;
 
     // AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh.

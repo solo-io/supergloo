@@ -94,12 +94,10 @@ var _ = Describe("Validation", func() {
 							},
 						},
 						Status: discoveryv1alpha2.MeshStatus{
-							AppliedVirtualMeshes: []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
-								{
-									Ref: &corev1.ObjectRef{
-										Name:      "virtual-mesh1",
-										Namespace: "namespace1",
-									},
+							AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
+								Ref: &corev1.ObjectRef{
+									Name:      "virtual-mesh1",
+									Namespace: "namespace1",
 								},
 							},
 						},
@@ -119,12 +117,10 @@ var _ = Describe("Validation", func() {
 							},
 						},
 						Status: discoveryv1alpha2.MeshStatus{
-							AppliedVirtualMeshes: []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
-								{
-									Ref: &corev1.ObjectRef{
-										Name:      "virtual-mesh1",
-										Namespace: "namespace1",
-									},
+							AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
+								Ref: &corev1.ObjectRef{
+									Name:      "virtual-mesh1",
+									Namespace: "namespace1",
 								},
 							},
 						},
@@ -395,12 +391,10 @@ var _ = Describe("Validation", func() {
 							},
 						},
 						Status: discoveryv1alpha2.MeshStatus{
-							AppliedVirtualMeshes: []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
-								{
-									Ref: &corev1.ObjectRef{
-										Name:      "vm1",
-										Namespace: "namespace1",
-									},
+							AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
+								Ref: &corev1.ObjectRef{
+									Name:      "vm1",
+									Namespace: "namespace1",
 								},
 							},
 						},
@@ -420,12 +414,10 @@ var _ = Describe("Validation", func() {
 							},
 						},
 						Status: discoveryv1alpha2.MeshStatus{
-							AppliedVirtualMeshes: []*discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
-								{
-									Ref: &corev1.ObjectRef{
-										Name:      "vm2",
-										Namespace: "namespace1",
-									},
+							AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
+								Ref: &corev1.ObjectRef{
+									Name:      "vm2",
+									Namespace: "namespace1",
 								},
 							},
 						},

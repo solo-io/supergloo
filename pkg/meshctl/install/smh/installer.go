@@ -10,7 +10,7 @@ import (
 
 const (
 	ServiceMeshHubChartUriTemplate = "https://storage.googleapis.com/service-mesh-hub/service-mesh-hub/service-mesh-hub-%s.tgz"
-	certAgentChartUriTemplate      = "https://storage.googleapis.com/service-mesh-hub/cert-agent/cert-agent-%s.tgz"
+	CertAgentChartUriTemplate      = "https://storage.googleapis.com/service-mesh-hub/cert-agent/cert-agent-%s.tgz"
 	certAgentReleaseName           = "cert-agent"
 	serviceMeshHubReleaseName      = "service-mesh-hub"
 )
@@ -35,7 +35,7 @@ func (i Installer) InstallServiceMeshHub(
 func (i Installer) InstallCertAgent(
 	ctx context.Context,
 ) error {
-	return i.install(ctx, certAgentChartUriTemplate, certAgentReleaseName)
+	return i.install(ctx, CertAgentChartUriTemplate, certAgentReleaseName)
 }
 
 func (i Installer) install(

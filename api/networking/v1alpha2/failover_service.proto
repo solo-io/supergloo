@@ -2,7 +2,7 @@ syntax = "proto3";
 package networking.smh.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2";
 
-import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "skv2/api/core/v1/core.proto";
 import "service-mesh-hub/api/networking/v1alpha2/validation_state.proto";
 
 import "gogoproto/gogo.proto";
