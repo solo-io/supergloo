@@ -1,0 +1,131 @@
+steps:
+# Setup SSH
+# These are required before dep
+- name: gcr.io/cloud-builders/gcloud
+  args:
+  - kms
+  - decrypt
+  - --ciphertext-file=ci/id_rsa.enc
+  - --plaintext-file=/root/.ssh/id_rsa
+  - --location=global
+  - --keyring=buildkey
+  - --key=buildkey
+  id: 'get-ssh-key'
+- name: 'gcr.io/cloud-builders/git'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    chmod 600 /root/.ssh/id_rsa
+    cat <<EOF >/root/.ssh/config
+    Hostname github.com
+    IdentityFile /root/.ssh/id_rsa
+    EOF
+    mv ./ci/github_known_hosts /root/.ssh/known_hosts
+    git config --global url."ssh://git@github.com/solo-io".insteadOf https://github.com/solo-io
+  id: 'configure-git'
+
+# This is required to instruct go not to use it's standard sumdb for pulling these deps
+- name: "golang:1.13.4"
+  args: ["go", "env", "-w", "GOPRIVATE=github.com/solo-io"]
+  id: "set-private"
+
+
+- name: gcr.io/cloud-builders/gsutil
+  entrypoint: "bash"
+  args:
+    [
+      "-c",
+      "mkdir -p /go/pkg && cd /go/pkg && gsutil cat gs://$PROJECT_ID-cache/service-mesh-hub/service-mesh-hub-mod.tar.gz | tar -xzf -",
+    ]
+  id: "untar-mod-cache"
+  waitFor: ["-"]
+
+# Using prepare-workspace container from github.com/solo-io/cloud-builders/prepare-go-workspace
+# This copies files into the proper workspace layout and so must be run before other tasks
+- name: "gcr.io/$PROJECT_ID/prepare-go-workspace:0.3.0"
+  args:
+  - "--repo-name"
+  - "$REPO_NAME"
+  - "--repo-sha"
+  - "$COMMIT_SHA"
+  - "--repo-output-dir"
+  - "."
+  - "--use-ssh"
+  env:
+  - "PROJECT_ROOT=github.com/solo-io/service-mesh-hub"
+  id: "prepare-workspace"
+
+# Helm setup steps
+- name: gcr.io/cloud-builders/gsutil
+  entrypoint: mkdir
+  args: ['-p', './_output/helm']
+  dir: &dir "/workspace/service-mesh-hub"
+  waitFor: ['prepare-workspace']
+  id: 'make-helm-dir'
+
+- name: 'gcr.io/$PROJECT_ID/go-mod-ginkgo:0.2.6'
+  args: ['-r', '-p', '-failFast', '-trace', '-progress', '-race', '-compilers=4', '-failOnPending',  '-noColor', '-randomizeAllSpecs', '-randomizeSuites']
+  env:
+  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+  - 'TAGGED_VERSION=$TAG_NAME'
+  - 'HELM_HOME=/root/.helm'
+  secretEnv: ["GITHUB_TOKEN"]
+  dir: *dir
+  waitFor: ['docker']
+  id: 'test'
+
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args: ['-c', 'docker login --username soloiobot --password $$CI_ADMIN_DOCKER_HUB_PASSWORD']
+  secretEnv: ['CI_ADMIN_DOCKER_HUB_PASSWORD']
+  id: 'docker-login'
+  waitFor: ['test']
+
+  # 1) Upload Docker images
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
+  args: ['push-all-images']
+  env:
+    - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+    - 'TAGGED_VERSION=$TAG_NAME'
+    - 'HELM_HOME=/root/.helm'
+  dir: *dir
+  id: 'push-all-images'
+  waitFor: ['docker-login']
+  # 2) upload github release assets (i.e. meshctl binaries)
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
+  args: ['upload-github-release-assets']
+  env:
+  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+  - 'TAGGED_VERSION=$TAG_NAME'
+  - 'HELM_HOME=/root/.helm'
+  - 'RELEASE=true'
+  dir: *dir
+  waitFor: ['docker-login']
+  secretEnv: ['GITHUB_TOKEN', 'CI_ADMIN_DOCKER_HUB_PASSWORD']
+  id: 'upload-github-release-assets'
+  # 3) Publish Helm charts to GCS
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
+  args: ['publish-chart']
+  env:
+    - 'TAGGED_VERSION=$TAG_NAME'
+    - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+    - 'HELM_HOME=/root/.helm' # tell helm where to find data
+    - 'RELEASE=true'
+  dir: *dir
+  id: 'publish-chart'
+
+secrets:
+- kmsKeyName: projects/service-mesh-hub/locations/global/keyRings/buildkey/cryptoKeys/buildkey
+  secretEnv:
+    GITHUB_TOKEN: CiQAKyB5I9fr8p5nvPXPUGM9XiM+33WlWIsqpaTJv3+dHRnWwrcSUQCNH9Xw2VlfjBBwejOc6gsrxSpCBywVSl17DPIJ+D7a1ZUnqWftDabLyMCelzmVFYTZ/HMVycLntO+09UlXmpWKNR/Aly39oumqCMJkd1xTog==
+    CI_ADMIN_DOCKER_HUB_PASSWORD: CiQAKyB5I2PPyxO8/dSDcJ2U3hjdxEZVdCDtXf2JvOD9+A2yl/ASTQCxdIW/67DDP9kEQrslrYKu7CNPOv428R/2maFvnInr/3nzW/NGDVvTC3Rnd8Vijozt94qW2tVhpwvtcQplz/cDGUlvQxksboM1c00q
+timeout: 1800s
+tags: ['service-mesh-hub']
+options:
+  machineType: 'N1_HIGHCPU_32'
+  volumes:
+  - name: "gopath"
+    path: "/go"
+  - name: "ssh"
+    path: /root/.ssh

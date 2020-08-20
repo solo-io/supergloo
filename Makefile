@@ -120,7 +120,7 @@ service-mesh-hub-image: service-mesh-hub-linux-amd64
 	rm build/service-mesh-hub/service-mesh-hub-linux-amd64
 
 .PHONY: service-mesh-hub-image-push
-service-mesh-hub-image-push:
+service-mesh-hub-image-push: service-mesh-hub-image
 	docker push $(SMH_IMAGE):$(VERSION)
 
 #----------------------------------------------------------------------------------
@@ -147,7 +147,7 @@ cert-agent-image: cert-agent-linux-amd64
 	rm build/cert-agent/cert-agent-linux-amd64
 
 .PHONY: cert-agent-image-push
-cert-agent-image-push:
+cert-agent-image-push: cert-agent-image
 	docker push $(CA_IMAGE):$(VERSION)
 
 #----------------------------------------------------------------------------------
@@ -181,7 +181,7 @@ install-cli:
 #----------------------------------------------------------------------------------
 
 .PHONY: push-all-images
-push-all-images: service-mesh-hub-image-push
+push-all-images: service-mesh-hub-image-push cert-agent-image-push
 
 #----------------------------------------------------------------------------------
 # Helm chart
@@ -220,24 +220,15 @@ run-tests:
 .PHONY: test-everything
 test-everything: clean-generated-code generated-code manifest-gen run-tests
 
-# TODO(ilackarms): release docs, github assets, and chart
 ##----------------------------------------------------------------------------------
 ## Release
 ##----------------------------------------------------------------------------------
-#
-#.PHONY: upload-github-release-assets
-#upload-github-release-assets: build-cli
-#ifeq ($(RELEASE),"true")
-#	go run ci/upload_github_release_assets.go
-#endif
-#
-#.PHONY: publish-docs
-#publish-docs:
-#ifeq ($(RELEASE),"true")
-#	make -C docs latest \
-#		VERSION=$(VERSION) \
-#		RELEASE=$(RELEASE)
-#endif
+
+.PHONY: upload-github-release-assets
+upload-github-release-assets: build-cli
+ifeq ($(RELEASE),"true")
+	go run ci/upload_github_release_assets.go
+endif
 
 #----------------------------------------------------------------------------------
 # Clean
