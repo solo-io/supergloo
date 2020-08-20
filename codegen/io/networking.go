@@ -16,7 +16,7 @@ var (
 			Version: "v1alpha2",
 		}: {
 			"Mesh",
-			"MeshWorkload",
+			"Workload",
 			"TrafficTarget",
 		},
 		schema.GroupVersion{
