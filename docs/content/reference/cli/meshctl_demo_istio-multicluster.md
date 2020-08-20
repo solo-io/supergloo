@@ -4,11 +4,16 @@ weight: 5
 ---
 ## meshctl demo istio-multicluster
 
-Demo Service Mesh Hub functionality with two Istio control planes deployed on separate k8s clusters. Requires kubectl, kind, docker, and istioctl < v1.7.0.
+Demo Service Mesh Hub functionality with two Istio control planes deployed on separate k8s clusters
 
 ### Synopsis
 
-Demo Service Mesh Hub functionality with two Istio control planes deployed on separate k8s clusters. Requires kubectl, kind, docker, and istioctl < v1.7.0.
+
+Demo Service Mesh Hub functionality with two Istio control planes deployed on separate k8s clusters.
+
+Requires kubectl >= v1.18.8, kind >= v0.8.1, istioctl < v1.7.0, and docker.
+We recommend allocating at least 8GB of RAM for Docker.
+
 
 ### Options
 

@@ -22,5 +22,5 @@ meshctl demo istio-multicluster cleanup [flags]
 
 ### SEE ALSO
 
-* [meshctl demo istio-multicluster](../meshctl_demo_istio-multicluster)	 - Demo Service Mesh Hub functionality with two Istio control planes deployed on separate k8s clusters. Requires kubectl, kind, docker, and istioctl < v1.7.0.
+* [meshctl demo istio-multicluster](../meshctl_demo_istio-multicluster)	 - Demo Service Mesh Hub functionality with two Istio control planes deployed on separate k8s clusters
 
