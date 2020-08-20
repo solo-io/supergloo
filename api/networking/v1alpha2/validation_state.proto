@@ -10,10 +10,10 @@ option (gogoproto.equal_all) = true;
 // The approval status of a policy that has been applied to a discovery resource.
 message ApprovalStatus {
 
-    // acceptanceOrder represents the order in which the Policy
+    // AcceptanceOrder represents the order in which the Policy
     // was accepted and applied to a discovery resource. The first accepted policy
-    // will have an acceptance_order of zero, the second 1, etc.
-    // when conflicts are detected in the system,
+    // will have an acceptance_order of 0, the second 1, etc.
+    // When conflicts are detected in the system,
     // the Policy with the lowest acceptance_order
     // will be chosen (and all other conflicting policies will be rejected).
     uint32 acceptance_order = 1;
@@ -29,7 +29,7 @@ message ApprovalStatus {
 
 // State of a Policy resource reflected in the status by Service Mesh Hub while processing a resource.
 enum ApprovalState {
-    // Resources are in a Pending state before they have been processed by Service Mesh Hub
+    // Resources are in a Pending state before they have been processed by Service Mesh Hub.
     PENDING = 0;
 
     // Resources are in a Accepted state when they are valid and have been applied successfully to

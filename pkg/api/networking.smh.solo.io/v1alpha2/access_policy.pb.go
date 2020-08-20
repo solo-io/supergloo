@@ -25,29 +25,28 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //
-//access control policies apply ALLOW policies to communication in a mesh
-//access control policies specify the following:
-//ALLOW those requests:
-//- originating from from **source pods**
-//- sent to **destination pods**
-//- matching the indicated request criteria (allowed_paths, allowed_methods, allowed_ports)
-//if no access control policies are present, all traffic in the mesh will be set to ALLOW
+//Access control policies apply ALLOW policies to communication in a mesh.
+//Access control policies specify the following:
+//ALLOW those requests that: originate from from **source workload**, target the **destination target**,
+//and match the indicated request criteria (allowed_paths, allowed_methods, allowed_ports).
+//Enforcement of access control is determined by the
+//[VirtualMesh's GlobalAccessPolicy]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/#networking.smh.solo.io.VirtualMeshSpec.GlobalAccessPolicy" %}})
 type AccessPolicySpec struct {
 	//
-	//requests originating from these pods will have the rule applied
-	//leave empty to have all pods in the mesh apply these policies
+	//Requests originating from these pods will have the rule applied.
+	//Leave empty to have all pods in the mesh apply these policies.
 	//
-	//note that access control policies are mapped to source pods by their
-	//service account. if other pods share the same service account,
+	//Note that access control policies are mapped to source pods by their
+	//service account. If other pods share the same service account,
 	//this access control rule will apply to those pods as well.
 	//
-	//for fine-grained access control policies, ensure that your
+	//For fine-grained access control policies, ensure that your
 	//service accounts properly reflect the desired
-	//boundary for your access control policies
+	//boundary for your access control policies.
 	SourceSelector []*IdentitySelector `protobuf:"bytes,2,rep,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
 	//
-	//requests destined for these pods will have the rule applied
-	//leave empty to apply to all destination pods in the mesh
+	//Requests destined for these pods will have the rule applied.
+	//Leave empty to apply to all destination pods in the mesh.
 	DestinationSelector []*ServiceSelector `protobuf:"bytes,3,rep,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
 	//
 	//Optional. A list of HTTP paths or gRPC methods to allow.
@@ -55,9 +54,9 @@ type AccessPolicySpec struct {
 	//"/packageName.serviceName/methodName" and are case sensitive.
 	//Exact match, prefix match, and suffix match are supported for paths.
 	//For example, the path "/books/review" matches
-	//"/books/review" (exact match), "*books/" (suffix match), or "/books*" (prefix match),
+	//"/books/review" (exact match), "*books/" (suffix match), or "/books*" (prefix match).
 	//
-	//If not specified, it allows to any path.
+	//If not specified, allow any path.
 	AllowedPaths []string `protobuf:"bytes,4,rep,name=allowed_paths,json=allowedPaths,proto3" json:"allowed_paths,omitempty"`
 	//
 	//Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
@@ -65,8 +64,8 @@ type AccessPolicySpec struct {
 	//If not specified, allows any method.
 	AllowedMethods []types.HttpMethodValue `protobuf:"varint,5,rep,packed,name=allowed_methods,json=allowedMethods,proto3,enum=networking.smh.solo.io.HttpMethodValue" json:"allowed_methods,omitempty"`
 	//
-	//Optional. A list of ports which to allow
-	//if not set any port is allowed
+	//Optional. A list of ports which to allow.
+	//If not set any port is allowed.
 	AllowedPorts         []uint32 `protobuf:"varint,6,rep,packed,name=allowed_ports,json=allowedPorts,proto3" json:"allowed_ports,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -134,11 +133,11 @@ func (m *AccessPolicySpec) GetAllowedPorts() []uint32 {
 
 type AccessPolicyStatus struct {
 	// The most recent generation observed in the the AccessPolicy metadata.
-	// if the observedGeneration does not match generation, the controller has not received the most
+	// If the observedGeneration does not match generation, the controller has not received the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
-	// the state of the overall resource.
-	// will only show accepted if it has been successfully
+	// The state of the overall resource.
+	// It will only show accepted if it has been successfully
 	// applied to all target meshes.
 	State ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.smh.solo.io.ApprovalState" json:"state,omitempty"`
 	// The status of the AccessPolicy for each MeshService to which it has been applied.

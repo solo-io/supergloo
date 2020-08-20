@@ -59,21 +59,21 @@ func (VirtualMeshSpec_GlobalAccessPolicy) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_d8ec20aa69a8d951, []int{0, 0}
 }
 
-// A VirtualMesh represents a logical grouping of meshes for
-// shared configuration and cross-mesh interoperability.
 //
-// VirtualMeshes are used to configure things like shared trust roots (for mTLS)
-// and federation of services (for cross-cluster networking).
+//A VirtualMesh represents a logical grouping of meshes for
+//shared configuration and cross-mesh interoperability.
 //
-// Currently, VirtualMeshes can only be constructed from Istio
-// meshes.
+//VirtualMeshes are used to configure things like shared trust roots (for mTLS)
+//and federation of traffic targets (for cross-cluster networking).
+//
+//Currently, VirtualMeshes can only be constructed from Istio meshes.
 type VirtualMeshSpec struct {
 	// The meshes contained in this virtual mesh.
 	Meshes []*v1.ObjectRef `protobuf:"bytes,1,rep,name=meshes,proto3" json:"meshes,omitempty"`
 	// Configuration options for managing Mutual-TLS mTLS in a virtual mesh.Sets
 	// a shared Certificate Authority across the defined meshes.
 	MtlsConfig *VirtualMeshSpec_MTLSConfig `protobuf:"bytes,2,opt,name=mtls_config,json=mtlsConfig,proto3" json:"mtls_config,omitempty"`
-	// Determine how to expose services to cross-mesh traffic using Service Federation.
+	// Determine how to expose traffic targets to cross-mesh traffic using Service Federation.
 	Federation *VirtualMeshSpec_Federation `protobuf:"bytes,3,opt,name=federation,proto3" json:"federation,omitempty"`
 	// Sets an Access Policy for the whole mesh.
 	GlobalAccessPolicy   VirtualMeshSpec_GlobalAccessPolicy `protobuf:"varint,4,opt,name=global_access_policy,json=globalAccessPolicy,proto3,enum=networking.smh.solo.io.VirtualMeshSpec_GlobalAccessPolicy" json:"global_access_policy,omitempty"`
@@ -410,13 +410,13 @@ func (*VirtualMeshSpec_RootCertificateAuthority) XXX_OneofWrappers() []interface
 
 //
 //Configuration for generating a self-signed root certificate.
-//Uses the X.509 format, RFC5280
+//Uses the X.509 format, RFC5280.
 type VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert struct {
 	// Number of days before root cert expires. Defaults to 365.
 	TtlDays uint32 `protobuf:"varint,1,opt,name=ttl_days,json=ttlDays,proto3" json:"ttl_days,omitempty"`
-	// Size in bytes of the root cert's private key. Defaults to 4096
+	// Size in bytes of the root cert's private key. Defaults to 4096.
 	RsaKeySizeBytes uint32 `protobuf:"varint,2,opt,name=rsa_key_size_bytes,json=rsaKeySizeBytes,proto3" json:"rsa_key_size_bytes,omitempty"`
-	// Root cert organization name. Defaults to "service-mesh-hub"
+	// Root cert organization name. Defaults to "service-mesh-hub".
 	OrgName              string   `protobuf:"bytes,3,opt,name=org_name,json=orgName,proto3" json:"org_name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -472,12 +472,12 @@ func (m *VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert) GetOrgName() s
 	return ""
 }
 
-// In Service Mesh Hub, Federation refers to the ability
-// to expose services on with a global DNS name
-// for traffic originating from any service within the
+// In Service Mesh Hub, "federation" refers to the ability
+// to expose traffic targets with a global DNS name
+// for traffic originating from any workload within the
 // virtual mesh.
 type VirtualMeshSpec_Federation struct {
-	// The "mode" in which to federate services within this virtual mesh.
+	// The "mode" in which to federate traffic targets within this virtual mesh.
 	//
 	// Types that are valid to be assigned to Mode:
 	//	*VirtualMeshSpec_Federation_Permissive
@@ -545,11 +545,11 @@ func (*VirtualMeshSpec_Federation) XXX_OneofWrappers() []interface{} {
 
 type VirtualMeshStatus struct {
 	// The most recent generation observed in the the TrafficPolicy metadata.
-	// if the observedGeneration does not match generation, the controller has not received the most
+	// If the observedGeneration does not match generation, the controller has not received the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
-	// the state of the overall resource.
-	// will only show accepted if it has been successfully
+	// The state of the overall resource.
+	// It will only show accepted if it has been successfully
 	// applied to all target meshes.
 	State ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.smh.solo.io.ApprovalState" json:"state,omitempty"`
 	// The status of the VirtualMesh for each Mesh to which it has been applied.

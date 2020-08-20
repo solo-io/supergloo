@@ -37,13 +37,13 @@ title: "mesh_service.proto"
 <a name="discovery.smh.solo.io.MeshServiceSpec"></a>
 
 ### MeshServiceSpec
-The MeshService is an abstraction for a service which we have discovered to be part of a given mesh. The Mesh object has references to the MeshServices which belong to it.
+The MeshService is an abstraction for a traffic target which we have discovered to be part of a given mesh.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | [MeshServiceSpec.KubeService](#discovery.smh.solo.io.MeshServiceSpec.KubeService) |  | Metadata about the kube-native service backing this MeshService. |
-| mesh | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | The mesh with which this service is associated. |
+| kubeService | [MeshServiceSpec.KubeService](#discovery.smh.solo.io.MeshServiceSpec.KubeService) |  | Metadata about the kube-native traffic target backing this MeshService. |
+| mesh | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | The mesh with which this traffic target is associated. |
 
 
 
@@ -58,7 +58,7 @@ The MeshService is an abstraction for a service which we have discovered to be p
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | [core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) |  | A reference to the kube-native service that this MeshService represents. |
+| ref | [core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) |  | A reference to the kube-native traffic target that this MeshService represents. |
 | workloadSelectorLabels | [][MeshServiceSpec.KubeService.WorkloadSelectorLabelsEntry](#discovery.smh.solo.io.MeshServiceSpec.KubeService.WorkloadSelectorLabelsEntry) | repeated | Selectors for the set of pods targeted by the k8s Service. |
 | labels | [][MeshServiceSpec.KubeService.LabelsEntry](#discovery.smh.solo.io.MeshServiceSpec.KubeService.LabelsEntry) | repeated | Labels on the underlying k8s Service itself. |
 | ports | [][MeshServiceSpec.KubeService.KubeServicePort](#discovery.smh.solo.io.MeshServiceSpec.KubeService.KubeServicePort) | repeated | The ports exposed by the underlying service. |
@@ -77,7 +77,7 @@ The MeshService is an abstraction for a service which we have discovered to be p
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| port | [uint32](#uint32) |  | external-facing port for this service (i.e., NOT the service's target port on the backing pods) |
+| port | [uint32](#uint32) |  | External-facing port for this k8s service (NOT the service's target port on the backing pods). |
 | name | [string](#string) |  |  |
 | protocol | [string](#string) |  |  |
 
@@ -105,7 +105,7 @@ The MeshService is an abstraction for a service which we have discovered to be p
 <a name="discovery.smh.solo.io.MeshServiceSpec.KubeService.Subset"></a>
 
 ### MeshServiceSpec.KubeService.Subset
-
+Subsets for routing, based on labels.
 
 
 | Field | Type | Label | Description |
@@ -186,12 +186,12 @@ AppliedAccessPolicy represents a access policy that has been applied to the Mesh
 <a name="discovery.smh.solo.io.MeshServiceStatus.AppliedFederation"></a>
 
 ### MeshServiceStatus.AppliedFederation
-Federation policy applied to this MeshService, allowing access to the service from other meshes/clusters.
+Federation policy applied to this MeshService, allowing access to the traffic target from other meshes/clusters.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| multiclusterDnsName | [string](#string) |  | For any workload that this service has federated to (i.e., any MeshWorkload whose ref appears in `federated_to_workloads`), a client in that workload will be able to reach this service at this DNS name. This includes workloads on clusters other than the one hosting this service. |
+| multiclusterDnsName | [string](#string) |  | For any workload that this traffic target has federated to (i.e., any MeshWorkload whose ref appears in `federated_to_workloads`), a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than the one hosting this service. |
 | federatedToMeshes | [][core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) | repeated | The list of Meshes which are able to resolve this service's `multicluster_dns_name`. |
 
 

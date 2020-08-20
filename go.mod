@@ -50,6 +50,7 @@ require (
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
+	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/onsi/ginkgo v1.12.0
@@ -57,9 +58,13 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.2.1
 	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/pseudomuto/protoc-gen-doc v1.3.2
+	github.com/pseudomuto/protokit v0.2.0
 	github.com/rotisserie/eris v0.4.0
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/sirupsen/logrus v1.6.0
+	github.com/solo-io/anyvendor v0.0.1
+	github.com/solo-io/autopilot v0.1.0
 	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0
 	github.com/solo-io/skv2 v0.8.2-0.20200807160507-ee9fe7883a34

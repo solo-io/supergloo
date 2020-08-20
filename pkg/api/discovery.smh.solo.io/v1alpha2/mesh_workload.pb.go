@@ -27,16 +27,15 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 //*
 //The MeshWorkload is an abstraction for a workload/client which mesh-discovery has discovered to be part of a
 //given mesh (i.e. its traffic is managed by an in-mesh sidecar).
-//The Mesh object has references to the MeshWorkloads which belong to it.
 type MeshWorkloadSpec struct {
-	// workload_type specifies configuration to the specific type of workload
+	// Specifies the underlying type of workload that this MeshWorkload is abstracting.
 	//
 	// Types that are valid to be assigned to WorkloadType:
 	//	*MeshWorkloadSpec_Kubernetes
 	WorkloadType isMeshWorkloadSpec_WorkloadType `protobuf_oneof:"workload_type"`
-	// The mesh with which this workload is associated
+	// The mesh with which this workload is associated.
 	Mesh *v1.ObjectRef `protobuf:"bytes,4,opt,name=mesh,proto3" json:"mesh,omitempty"`
-	// Appmesh specific metadata
+	// Appmesh specific metadata.
 	AppMesh              *MeshWorkloadSpec_AppMesh `protobuf:"bytes,5,opt,name=app_mesh,json=appMesh,proto3" json:"app_mesh,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
 	XXX_unrecognized     []byte                    `json:"-"`
@@ -113,20 +112,19 @@ func (*MeshWorkloadSpec) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-// information describing a Kubernetes-based workload (e.g. a Deployment or DaemonSet)
+// Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonSet).
 type MeshWorkloadSpec_KubernertesWorkload struct {
 	//*
 	//Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads.
 	//It has the generic name controller as it can represent a deployment, daemonset, or statefulset.
 	Controller *v1.ClusterObjectRef `protobuf:"bytes,1,opt,name=controller,proto3" json:"controller,omitempty"`
 	//*
-	//these are the labels directly from the pods that this controller owns
+	//These are the labels directly from the pods that this controller owns.
 	//NB: these labels are read directly from the pod template metadata.labels
 	//defined in the workload spec.
-	//We need these to determine which services are backed by this workload, and
-	//the service backing is determined by the pod labels.
+	//We need these to determine which services are backed by this workload.
 	PodLabels map[string]string `protobuf:"bytes,2,rep,name=pod_labels,json=podLabels,proto3" json:"pod_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Service account attached to the pods owned by this controller
+	// Service account attached to the pods owned by this controller.
 	ServiceAccountName   string   `protobuf:"bytes,3,opt,name=service_account_name,json=serviceAccountName,proto3" json:"service_account_name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -178,11 +176,11 @@ func (m *MeshWorkloadSpec_KubernertesWorkload) GetServiceAccountName() string {
 	return ""
 }
 
-// information relevant to AppMesh-injected workloads
+// Information relevant to AppMesh-injected workloads.
 type MeshWorkloadSpec_AppMesh struct {
-	// The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container
+	// The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container.
 	VirtualNodeName string `protobuf:"bytes,1,opt,name=virtual_node_name,json=virtualNodeName,proto3" json:"virtual_node_name,omitempty"`
-	// Needed for declaring Appmesh VirtualNode listeners
+	// Needed for declaring Appmesh VirtualNode listeners.
 	Ports                []*MeshWorkloadSpec_AppMesh_ContainerPort `protobuf:"bytes,2,rep,name=ports,proto3" json:"ports,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                  `json:"-"`
 	XXX_unrecognized     []byte                                    `json:"-"`
@@ -227,7 +225,7 @@ func (m *MeshWorkloadSpec_AppMesh) GetPorts() []*MeshWorkloadSpec_AppMesh_Contai
 	return nil
 }
 
-// k8s application container ports
+// k8s application container ports.
 type MeshWorkloadSpec_AppMesh_ContainerPort struct {
 	Port                 uint32   `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
 	Protocol             string   `protobuf:"bytes,2,opt,name=protocol,proto3" json:"protocol,omitempty"`
@@ -278,7 +276,7 @@ func (m *MeshWorkloadSpec_AppMesh_ContainerPort) GetProtocol() string {
 
 type MeshWorkloadStatus struct {
 	// The observed generation of the MeshWorkload.
-	// When this matches the MeshWorkload's metadata.generation, it indicates that mesh-networking
+	// When this matches the MeshWorkload's metadata.generation it indicates that mesh-networking
 	// has reconciled the latest version of the MeshWorkload.
 	ObservedGeneration   int64    `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`

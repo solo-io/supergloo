@@ -17,14 +17,9 @@ option (gogoproto.equal_all) = true;
 /*
     A Traffic Policy applies some L7 routing features to an existing mesh.
     Traffic Policies specify the following for all requests:
-    - originating from from **source pods**
-    - sent to **destination services**
+    - originating from from **source workload**
+    - sent to **destination targets**
     - matching one or more **request matcher**
-    apply the specified TrafficPolicySpec
-    the routing configuration that will be applied to the mesh(es)
-
-    Throughout the documentation below, the term "destination" or "destination service" refers to
-    the underlying Kubernetes service that is represented in Service Mesh Hub as a MeshService.
 
     NB: If any additional TrafficPolicy action fields (i.e. non selection related fields) are added,
     the TrafficPolicy Merger's "AreTrafficPolicyActionsEqual" method must be updated to reflect the new field.
@@ -53,15 +48,11 @@ message TrafficPolicySpec {
         If specified, this rule will only apply to http requests matching these conditions.
         Within a single matcher, all conditions must be satisfied for a match to occur.
         Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply.
-        NB: Linkerd only supports matching on Request Path and Method
+        NB: Linkerd only supports matching on Request Path and Method.
     */
     repeated HttpMatcher http_request_matchers = 3;
 
     /*
-        A routing rule can have one of several types.
-        Note: types imported from Istio will be replaced with our own
-        simpler types, this is just a place to start from.
-
         Enables traffic shifting, i.e. to reroute requests to a different service,
         to a subset of pods based on their label, and/or split traffic between multiple services.
     */
@@ -96,13 +87,13 @@ message TrafficPolicySpec {
     OutlierDetection outlier_detection = 11;
 
     /*
-    RetryPolicy contains mesh-specific retry configuration
-    Different meshes support different Retry features
-    Service Mesh Hub's RetryPolicy exposes config for multiple meshes simultaneously,
-    Allowing the same TrafficPolicy to apply retries to different mesh types
-    The configuration applied to the target mesh will use the corresponding
-    config for each type, while other config types will be ignored
-*/
+        RetryPolicy contains mesh-specific retry configuration.
+        Different meshes support different Retry features.
+        Service Mesh Hub's RetryPolicy exposes config for multiple meshes simultaneously,
+        allowing the same TrafficPolicy to apply retries to different mesh types.
+        The configuration applied to the target mesh will use the corresponding
+        config for each type, while other config types will be ignored.
+    */
     message RetryPolicy {
         // Number of retries for a given request
         int32 attempts = 1;
@@ -114,27 +105,27 @@ message TrafficPolicySpec {
     message MultiDestination {
         message WeightedDestination {
 
-            // a traffic shift destination which lives in kubernetes
+            // A traffic shift destination which lives in kubernetes.
             message KubeDestination {
-                // name of the destination service
+                // The name of the destination service.
                 string name = 1;
 
-                // namespace of the destination service
+                // The namespace of the destination service.
                 string namespace = 2;
 
-                // cluster of the destination service (as it is registered with Service Mesh Hub)
+                // The cluster of the destination k8s service (as it is registered with Service Mesh Hub).
                 string cluster_name = 3;
 
                 // Subset routing is currently only supported on Istio.
                 map<string, string> subset = 4;
 
-                // Port on the destination service to receive traffic. Required if the service exposes more than one port.
+                // Port on the destination k8s service to receive traffic. Required if the service exposes more than one port.
                 uint32 port = 5;
             }
 
-            // different destination types can be selected for a traffic shift
+            // The different destination types can be selected for a traffic shift.
             oneof destination_type {
-                // use kubeService to shift traffic a Kubernetes Service/subset.
+                // The use kubeService to shift traffic a Kubernetes Service/subset.
                 KubeDestination kube_service = 1;
             }
 
@@ -143,6 +134,7 @@ message TrafficPolicySpec {
 
         }
 
+        // A traffic shift destination.
         repeated WeightedDestination destinations = 1;
     }
 
@@ -367,7 +359,7 @@ message TrafficPolicySpec {
     }
 
     message Mirror {
-        // different destination types can be selected mirroring traffic.
+        // Different destination types can be selected mirroring traffic.
         oneof destination_type {
             // Name/namespace/cluster of a kubernetes service.
             .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
@@ -378,7 +370,7 @@ message TrafficPolicySpec {
             Values range between 0 and 100
         */
         double percentage = 2;
-        // Port on the destination service to receive traffic. If multiple are found, and none are specified,
+        // Port on the destination k8s service to receive traffic. If multiple are found, and none are specified,
         // then the configuration will be considered invalid.
         uint32 port = 3;
     }
@@ -411,8 +403,8 @@ message TrafficPolicyStatus {
     // recent version of this resource.
     int64 observed_generation = 1;
 
-    // the state of the overall resource.
-    // will only show accepted if it has been successfully
+    // The state of the overall resource.
+    // It will only show accepted if it has been successfully
     // applied to all target meshes.
     ApprovalState state = 2;
 

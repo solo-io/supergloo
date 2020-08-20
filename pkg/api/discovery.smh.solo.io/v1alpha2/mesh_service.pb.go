@@ -26,15 +26,15 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //*
-//The MeshService is an abstraction for a service which we have discovered to be part of a
-//given mesh. The Mesh object has references to the MeshServices which belong to it.
+//The MeshService is an abstraction for a traffic target which we have discovered to be part of a
+//given mesh.
 type MeshServiceSpec struct {
-	// the type of service backing the MeshService
+	// The type of traffic target backing the MeshService.
 	//
 	// Types that are valid to be assigned to Type:
 	//	*MeshServiceSpec_KubeService_
 	Type isMeshServiceSpec_Type `protobuf_oneof:"type"`
-	// The mesh with which this service is associated.
+	// The mesh with which this traffic target is associated.
 	Mesh                 *v1.ObjectRef `protobuf:"bytes,2,opt,name=mesh,proto3" json:"mesh,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
 	XXX_unrecognized     []byte        `json:"-"`
@@ -105,7 +105,7 @@ func (*MeshServiceSpec) XXX_OneofWrappers() []interface{} {
 }
 
 type MeshServiceSpec_KubeService struct {
-	// A reference to the kube-native service that this MeshService represents.
+	// A reference to the kube-native traffic target that this MeshService represents.
 	Ref *v1.ClusterObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
 	// Selectors for the set of pods targeted by the k8s Service.
 	WorkloadSelectorLabels map[string]string `protobuf:"bytes,2,rep,name=workload_selector_labels,json=workloadSelectorLabels,proto3" json:"workload_selector_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
@@ -180,7 +180,7 @@ func (m *MeshServiceSpec_KubeService) GetSubsets() map[string]*MeshServiceSpec_K
 }
 
 type MeshServiceSpec_KubeService_KubeServicePort struct {
-	// external-facing port for this service (i.e., NOT the service's target port on the backing pods)
+	// External-facing port for this k8s service (NOT the service's target port on the backing pods).
 	Port                 uint32   `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
 	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Protocol             string   `protobuf:"bytes,3,opt,name=protocol,proto3" json:"protocol,omitempty"`
@@ -238,6 +238,7 @@ func (m *MeshServiceSpec_KubeService_KubeServicePort) GetProtocol() string {
 	return ""
 }
 
+// Subsets for routing, based on labels.
 type MeshServiceSpec_KubeService_Subset struct {
 	Values               []string `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -456,11 +457,11 @@ func (m *MeshServiceStatus_AppliedAccessPolicy) GetSpec() *v1alpha2.AccessPolicy
 }
 
 // Federation policy applied to this MeshService, allowing access
-// to the service from other meshes/clusters.
+// to the traffic target from other meshes/clusters.
 type MeshServiceStatus_AppliedFederation struct {
 	//*
-	//For any workload that this service has federated to (i.e., any MeshWorkload whose ref appears in `federated_to_workloads`),
-	//a client in that workload will be able to reach this service at this DNS name. This includes workloads on clusters other than
+	//For any workload that this traffic target has federated to (i.e., any MeshWorkload whose ref appears in `federated_to_workloads`),
+	//a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than
 	//the one hosting this service.
 	MulticlusterDnsName string `protobuf:"bytes,1,opt,name=multicluster_dns_name,json=multiclusterDnsName,proto3" json:"multicluster_dns_name,omitempty"`
 	// The list of Meshes which are able to resolve this service's `multicluster_dns_name`.
