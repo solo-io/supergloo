@@ -44,6 +44,9 @@ require (
 	github.com/envoyproxy/go-control-plane v0.9.4
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/zapr v0.1.1
+	github.com/gobuffalo/envy v1.9.0 // indirect
+	github.com/gobuffalo/packd v1.0.0 // indirect
+	github.com/gobuffalo/packr v1.30.1
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.3.5
@@ -58,6 +61,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.2.1
 	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/rotisserie/eris v0.4.0
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/sirupsen/logrus v1.6.0
@@ -69,7 +73,9 @@ require (
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/multierr v1.5.0 // indirect
 	go.uber.org/zap v1.13.0
-	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975 // indirect
+	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de // indirect
+	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 // indirect
+	golang.org/x/sys v0.0.0-20200812155832-6a926be9bd1d // indirect
 	helm.sh/helm/v3 v3.0.0
 	istio.io/api v0.0.0-20200723170824-3c2193e74947
 	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938
