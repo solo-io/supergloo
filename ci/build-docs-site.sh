@@ -67,9 +67,9 @@ for version in "${versions[@]}"
 do
   echo "Generating site for version $version"
   cd $repoDir
-  if [[ "$version" == "master" ]]
+  if [[ "$version" == "main" ]]
   then
-    git checkout master
+    git checkout main
   else
     git checkout tags/v"$version"
   fi
@@ -78,11 +78,11 @@ do
   then
     version="latest"
   fi
-  go run codegen/docs/docsgen.go
+  go run docs/docsgen.go
   cd docs
   # Generate data/Solo.yaml file with version info populated.
   generateHugoVersionsYaml $version
-  # Use nav bar as defined in master, not the checked out temp repo.
+  # Use nav bar as defined in main, not the checked out temp repo.
   cp -f $workingDir/docs/layouts/partials/versionnavigation.html layouts/partials/versionnavigation.html
   # Generate the versioned static site.
   make site-release

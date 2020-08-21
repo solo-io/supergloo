@@ -33,7 +33,7 @@ jobs:
 
     - name: Update deps
       run: |
-        make update-deps
+        make install-go-tools
 
     - name: Generate versioned docs site
       run: ./ci/build-docs-site.sh
