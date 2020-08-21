@@ -86,7 +86,7 @@ operator-gen:
 # Generate Reference documentation
 .PHONY: generated-reference-docs
 generated-reference-docs:
-	go run docs/docsgen.go
+	go run codegen/docs/docsgen.go
 
 #----------------------------------------------------------------------------------
 # Build
