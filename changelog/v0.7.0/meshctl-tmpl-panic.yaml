@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Remove imports to offending github.com/skv2/contrib package. 
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/887
