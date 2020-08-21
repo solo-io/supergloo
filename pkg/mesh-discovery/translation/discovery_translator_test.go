@@ -29,7 +29,7 @@ var _ = Describe("Translator", func() {
 		ctl *gomock.Controller
 		ctx context.Context
 
-		mockDependencyFactory      *mock_translator_internal.MockDependencyFactory
+		mockDependencyFactory       *mock_translator_internal.MockDependencyFactory
 		mockMeshTranslator          *mock_mesh.MockTranslator
 		mockWorkloadTranslator      *mock_workload.MockTranslator
 		mockTrafficTargetTranslator *mock_traffictarget.MockTranslator

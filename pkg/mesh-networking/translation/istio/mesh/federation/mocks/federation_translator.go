@@ -5,12 +5,13 @@
 package mock_federation
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	istio "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface

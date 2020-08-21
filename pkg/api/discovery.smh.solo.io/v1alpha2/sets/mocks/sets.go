@@ -5,12 +5,13 @@
 package mock_v1alpha2sets
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	sets "k8s.io/apimachinery/pkg/util/sets"
-	reflect "reflect"
 )
 
 // MockTrafficTargetSet is a mock of TrafficTargetSet interface
