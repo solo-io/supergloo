@@ -34,7 +34,10 @@ Your actual context names will likely be different.
 To verify you're running the following commands in the correct context, run:
 
 ```shell
-kubectl config use-context management-plane-context
+MGMT_CONTEXT=your_management_plane_context
+REMOTE_CONTEXT=your_remote_context
+
+kubectl config use-context $MGMT_CONTEXT
 ```
 
 ### Using Kind
@@ -243,7 +246,7 @@ Successfully wrote service account to remote cluster...
 Successfully wrote kube config secret to master cluster...
 Successfully set up CSR agent...
 
-Cluster new-remote-cluster is now registered in your Service Mesh Hub installation
+Cluster remote-cluster is now registered in your Service Mesh Hub installation
 ```
 
 #### Register the management cluster

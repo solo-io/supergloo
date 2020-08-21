@@ -28,7 +28,7 @@ This will NOT install Istio suitable for a multi-cluster installation. For a cor
 
 ## Istio quick install (multi cluster)
 
-For following some of the other Service Mesh Hub guides, we assume two clusters with Istio installed for multi-cluster communication across both of them. 
+For following some of the Service Mesh Hub guides, we assume two clusters with Istio installed for multi-cluster communication across both of them. 
 
 We will install Istio with a suitable configuration for a multi-cluster demonstration by overriding some of the Istio Operator values.
 
@@ -180,6 +180,76 @@ NAME                                    READY   STATUS    RESTARTS   AGE
 istio-ingressgateway-746d597f7c-g6whv   1/1     Running   0          5d23h
 istiocoredns-7ffc9b7fcf-crhr2           2/2     Running   0          5d23h
 istiod-7795ccf9dc-vr4cq                 1/1     Running   0          5d22h
+```
+
+We also have to enable Istio DNS for the `.global` stub domain for when we want to use multicluster communication. The following two blocks will enable Istio DNS for both clusters.
+
+```shell
+ISTIO_COREDNS=$(kubectl --context kind-management-plane -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
+kubectl --context kind-management-plane apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           upstream
+           fallthrough in-addr.arpa ip6.arpa
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+    global:53 {
+        errors
+        cache 30
+        forward . ${ISTIO_COREDNS}:53
+    }
+EOF
+```
+
+```shell
+ISTIO_COREDNS=$(kubectl --context kind-remote-cluster -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
+kubectl --context kind-remote-cluster apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           upstream
+           fallthrough in-addr.arpa ip6.arpa
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+    global:53 {
+        errors
+        cache 30
+        forward . ${ISTIO_COREDNS}:53
+    }
+EOF
 ```
 
 ## Next steps
