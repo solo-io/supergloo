@@ -3,8 +3,7 @@ name: pull_request
 on:
   push:
     branches:
-      - 'master'
-      - 'merge-repos' #TODO(ilackarms): remove when refactor merges to master
+      - 'main'
   pull_request: {}
 
 jobs:
