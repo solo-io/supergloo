@@ -25,25 +25,24 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// possible states in which an IssuedCertificate can exist
+// Possible states in which an IssuedCertificate can exist.
 type IssuedCertificateStatus_State int32
 
 const (
-	// the IssuedCertificate has yet to be picked up by the agent.
+	// The IssuedCertificate has yet to be picked up by the agent.
 	IssuedCertificateStatus_PENDING IssuedCertificateStatus_State = 0
-	// the agent has created a local private key
+	// The agent has created a local private key
 	// and a CertificateRequest for the IssuedCertificate.
-	// in this state, the agent is waiting for the Issuer
+	// In this state, the agent is waiting for the Issuer
 	// to issue certificates for the CertificateRequest before proceeding.
 	IssuedCertificateStatus_REQUESTED IssuedCertificateStatus_State = 1
-	// the certificate has been issued. if any pods require being restarted,
-	// they'll be restarted at this point.
+	// The certificate has been issued. Any pods that require restarting will be restarted at this point.
 	IssuedCertificateStatus_ISSUED IssuedCertificateStatus_State = 2
-	// the reply from the Issuer has been process and
+	// The reply from the Issuer has been processed and
 	// the agent has placed the final certificate secret
 	// in the target location specified by the IssuedCertificate.
 	IssuedCertificateStatus_FINISHED IssuedCertificateStatus_State = 3
-	// processing the certificate workflow failed.
+	// Processing the certificate workflow failed.
 	IssuedCertificateStatus_FAILED IssuedCertificateStatus_State = 4
 )
 
@@ -87,23 +86,23 @@ func (IssuedCertificateStatus_State) EnumDescriptor() ([]byte, []int) {
 //private keys to ever leave the node.
 type IssuedCertificateSpec struct {
 	//
-	//list of hostnames and IPs to generate a certificate for.
+	//A list of hostnames and IPs to generate a certificate for.
 	//This can also be set to the identity running the workload,
-	//like kubernetes service account.
+	//e.g. a Kubernetes service account.
 	//
 	//Generally for an Istio CA this will take the form `spiffe://cluster.local/ns/istio-system/sa/citadel`.
 	//
 	//"cluster.local" may be replaced by the root of trust domain for the mesh.
 	Hosts []string `protobuf:"bytes,1,rep,name=hosts,proto3" json:"hosts,omitempty"`
-	// Organization for this certificate.
+	// The organization for this certificate.
 	Org string `protobuf:"bytes,2,opt,name=org,proto3" json:"org,omitempty"`
-	// the secret containing the root SSL certificate used to sign this IssuedCertificate (located in the Certificate Issuer's cluster)
+	// The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the Certificate Issuer's cluster).
 	SigningCertificateSecret *v1.ObjectRef `protobuf:"bytes,3,opt,name=signing_certificate_secret,json=signingCertificateSecret,proto3" json:"signing_certificate_secret,omitempty"`
-	// the secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster)
+	// The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster).
 	IssuedCertificateSecret *v1.ObjectRef `protobuf:"bytes,4,opt,name=issued_certificate_secret,json=issuedCertificateSecret,proto3" json:"issued_certificate_secret,omitempty"`
-	// a list of k8s pods to bounce (delete and cause a restart)
+	// A list of k8s pods to bounce (delete and cause a restart)
 	// when the certificate is issued.
-	// this will include the control plane pods as well as any pods
+	// This will include the control plane pods as well as any pods
 	// which share a data plane with the target mesh.
 	PodsToBounce         []*IssuedCertificateSpec_PodSelector `protobuf:"bytes,5,rep,name=pods_to_bounce,json=podsToBounce,proto3" json:"pods_to_bounce,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                             `json:"-"`
@@ -170,11 +169,11 @@ func (m *IssuedCertificateSpec) GetPodsToBounce() []*IssuedCertificateSpec_PodSe
 	return nil
 }
 
-// select pods for deletion
+// Pods that will be restarted.
 type IssuedCertificateSpec_PodSelector struct {
-	// namespace in which the pods live
+	// The namespace in which the pods live.
 	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// labels shared by the pods
+	// Any labels shared by the pods.
 	Labels               map[string]string `protobuf:"bytes,2,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
 	XXX_unrecognized     []byte            `json:"-"`
@@ -219,17 +218,16 @@ func (m *IssuedCertificateSpec_PodSelector) GetLabels() map[string]string {
 	return nil
 }
 
-// the IssuedCertificate status is written by the CertificateRequesting agent
+// The IssuedCertificate status is written by the CertificateRequesting agent.
 type IssuedCertificateStatus struct {
 	// The most recent generation observed in the the IssuedCertificate metadata.
-	// if the observedGeneration does not match generation, the Certificate Requesting Agent has not processed the most
+	// If the observedGeneration does not match generation, the Certificate Requesting Agent has not processed the most
 	// recent version of this IssuedCertificate.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
-	// any error observed which prevented the CertificateRequest from being processed.
-	// if the error is empty, the request has been processed successfully
+	// Any error observed which prevented the CertificateRequest from being processed.
+	// If the error is empty, the request has been processed successfully.
 	Error string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
-	// the current state of the IssuedCertificate workflow,
-	// reported by the agent.
+	// The current state of the IssuedCertificate workflow, reported by the agent.
 	State                IssuedCertificateStatus_State `protobuf:"varint,3,opt,name=state,proto3,enum=certificates.smh.solo.io.IssuedCertificateStatus_State" json:"state,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
 	XXX_unrecognized     []byte                        `json:"-"`

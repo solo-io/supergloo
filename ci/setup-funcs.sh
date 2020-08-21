@@ -300,7 +300,7 @@ function register_cluster() {
 
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
-    --master-context "kind-${masterCluster}" \
+    --mgmt-context "kind-${mgmtCluster}" \
     --remote-context "kind-${cluster}" \
     --api-server-address "${apiServerAddress}" \
     --cert-agent-chart-file "${AGENT_CHART}"
@@ -316,7 +316,7 @@ function install_smh() {
 #### START SCRIPT
 
 # Note(ilackarms): these names are hard-coded in test/e2e/env.go
-masterCluster=master-cluster
+mgmtCluster=mgmt-cluster
 remoteCluster=remote-cluster
 
 ### DEBUG FUNCS

@@ -9,7 +9,7 @@ import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 /*
-    Select Kubernetes services
+    Select Kubernetes services.
 
     Only one of (labels + namespaces + cluster) or (resource refs) may be provided. If all four are provided, it will be
     considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.
@@ -83,7 +83,7 @@ option (gogoproto.equal_all) = true;
 */
 message ServiceSelector {
 
-    // a KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well
+    // A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well
     // as the provided labels.
     KubeServiceMatcher kube_service_matcher = 1;
 

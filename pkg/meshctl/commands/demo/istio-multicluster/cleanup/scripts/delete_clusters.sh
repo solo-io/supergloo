@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
-masterCluster=$0
+managementCluster=$0
 remoteCluster=$1
 
-kind delete cluster --name $masterCluster
+kind delete cluster --name $managementCluster
 kind delete cluster --name $remoteCluster

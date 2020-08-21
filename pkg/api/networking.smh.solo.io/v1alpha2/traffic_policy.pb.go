@@ -29,14 +29,9 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 //
 //A Traffic Policy applies some L7 routing features to an existing mesh.
 //Traffic Policies specify the following for all requests:
-//- originating from from **source pods**
-//- sent to **destination services**
+//- originating from from **source workload**
+//- sent to **destination targets**
 //- matching one or more **request matcher**
-//apply the specified TrafficPolicySpec
-//the routing configuration that will be applied to the mesh(es)
-//
-//Throughout the documentation below, the term "destination" or "destination service" refers to
-//the underlying Kubernetes service that is represented in Service Mesh Hub as a MeshService.
 //
 //NB: If any additional TrafficPolicy action fields (i.e. non selection related fields) are added,
 //the TrafficPolicy Merger's "AreTrafficPolicyActionsEqual" method must be updated to reflect the new field.
@@ -59,12 +54,8 @@ type TrafficPolicySpec struct {
 	//If specified, this rule will only apply to http requests matching these conditions.
 	//Within a single matcher, all conditions must be satisfied for a match to occur.
 	//Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply.
-	//NB: Linkerd only supports matching on Request Path and Method
+	//NB: Linkerd only supports matching on Request Path and Method.
 	HttpRequestMatchers []*TrafficPolicySpec_HttpMatcher `protobuf:"bytes,3,rep,name=http_request_matchers,json=httpRequestMatchers,proto3" json:"http_request_matchers,omitempty"`
-	//
-	//A routing rule can have one of several types.
-	//Note: types imported from Istio will be replaced with our own
-	//simpler types, this is just a place to start from.
 	//
 	//Enables traffic shifting, i.e. to reroute requests to a different service,
 	//to a subset of pods based on their label, and/or split traffic between multiple services.
@@ -195,12 +186,12 @@ func (m *TrafficPolicySpec) GetOutlierDetection() *TrafficPolicySpec_OutlierDete
 }
 
 //
-//RetryPolicy contains mesh-specific retry configuration
-//Different meshes support different Retry features
+//RetryPolicy contains mesh-specific retry configuration.
+//Different meshes support different Retry features.
 //Service Mesh Hub's RetryPolicy exposes config for multiple meshes simultaneously,
-//Allowing the same TrafficPolicy to apply retries to different mesh types
+//allowing the same TrafficPolicy to apply retries to different mesh types.
 //The configuration applied to the target mesh will use the corresponding
-//config for each type, while other config types will be ignored
+//config for each type, while other config types will be ignored.
 type TrafficPolicySpec_RetryPolicy struct {
 	// Number of retries for a given request
 	Attempts int32 `protobuf:"varint,1,opt,name=attempts,proto3" json:"attempts,omitempty"`
@@ -250,6 +241,7 @@ func (m *TrafficPolicySpec_RetryPolicy) GetPerTryTimeout() *types.Duration {
 }
 
 type TrafficPolicySpec_MultiDestination struct {
+	// A traffic shift destination.
 	Destinations         []*TrafficPolicySpec_MultiDestination_WeightedDestination `protobuf:"bytes,1,rep,name=destinations,proto3" json:"destinations,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                                  `json:"-"`
 	XXX_unrecognized     []byte                                                    `json:"-"`
@@ -288,7 +280,7 @@ func (m *TrafficPolicySpec_MultiDestination) GetDestinations() []*TrafficPolicyS
 }
 
 type TrafficPolicySpec_MultiDestination_WeightedDestination struct {
-	// different destination types can be selected for a traffic shift
+	// The different destination types can be selected for a traffic shift.
 	//
 	// Types that are valid to be assigned to DestinationType:
 	//	*TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService
@@ -368,17 +360,17 @@ func (*TrafficPolicySpec_MultiDestination_WeightedDestination) XXX_OneofWrappers
 	}
 }
 
-// a traffic shift destination which lives in kubernetes
+// A traffic shift destination which lives in kubernetes.
 type TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination struct {
-	// name of the destination service
+	// The name of the destination service.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// namespace of the destination service
+	// The namespace of the destination service.
 	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// cluster of the destination service (as it is registered with Service Mesh Hub)
+	// The cluster of the destination k8s service (as it is registered with Service Mesh Hub).
 	ClusterName string `protobuf:"bytes,3,opt,name=cluster_name,json=clusterName,proto3" json:"cluster_name,omitempty"`
 	// Subset routing is currently only supported on Istio.
 	Subset map[string]string `protobuf:"bytes,4,rep,name=subset,proto3" json:"subset,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Port on the destination service to receive traffic. Required if the service exposes more than one port.
+	// Port on the destination k8s service to receive traffic. Required if the service exposes more than one port.
 	Port                 uint32   `protobuf:"varint,5,opt,name=port,proto3" json:"port,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -1227,7 +1219,7 @@ func (m *TrafficPolicySpec_QueryParameterMatcher) GetRegex() bool {
 }
 
 type TrafficPolicySpec_Mirror struct {
-	// different destination types can be selected mirroring traffic.
+	// Different destination types can be selected mirroring traffic.
 	//
 	// Types that are valid to be assigned to DestinationType:
 	//	*TrafficPolicySpec_Mirror_KubeService
@@ -1236,7 +1228,7 @@ type TrafficPolicySpec_Mirror struct {
 	//Percentage of traffic to mirror. If absent, 100% will be mirrored.
 	//Values range between 0 and 100
 	Percentage float64 `protobuf:"fixed64,2,opt,name=percentage,proto3" json:"percentage,omitempty"`
-	// Port on the destination service to receive traffic. If multiple are found, and none are specified,
+	// Port on the destination k8s service to receive traffic. If multiple are found, and none are specified,
 	// then the configuration will be considered invalid.
 	Port                 uint32   `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -1418,8 +1410,8 @@ type TrafficPolicyStatus struct {
 	// if the observedGeneration does not match generation, the controller has not received the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
-	// the state of the overall resource.
-	// will only show accepted if it has been successfully
+	// The state of the overall resource.
+	// It will only show accepted if it has been successfully
 	// applied to all target meshes.
 	State ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.smh.solo.io.ApprovalState" json:"state,omitempty"`
 	// The status of the TrafficPolicy for each MeshService to which it has been applied.
