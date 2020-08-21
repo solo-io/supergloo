@@ -296,9 +296,9 @@ function install_osm() {
 
   ${ROLLOUT} -n osm-system osm-controller
 
-  for i in bookstore bookbuyer bookthief bookwarehouse; do ${K} create ns $i; done
+  for i in bookstore bookthief bookwarehouse; do ${K} create ns $i; done
 
-  for i in bookstore bookbuyer bookthief bookwarehouse; do osm namespace add $i; done
+  for i in bookstore bookthief bookwarehouse; do osm namespace add $i; done
 
   ${K} apply -f ${PROJECT_ROOT}/ci/osm-demo.yaml
 
@@ -306,7 +306,6 @@ function install_osm() {
   ${ROLLOUT} -n bookstore bookstore-v2
   ${ROLLOUT} -n bookthief bookthief
   ${ROLLOUT} -n bookwarehouse bookwarehouse
-  ${ROLLOUT} -n bookbuyer bookbuyer
 }
 
 function get_api_address() {

@@ -20,21 +20,25 @@ import (
 
 var _ = Describe("MeshserviceDetector", func() {
 
-	serviceName := "name"
-	serviceNs := "namespace"
-	serviceCluster := "cluster"
-	selectorLabels := map[string]string{"select": "me"}
-	serviceLabels := map[string]string{"app": "coolapp"}
+	var (
+		ctx context.Context
 
-	deployment := &skv1.ClusterObjectRef{
-		Name:        "deployment",
-		Namespace:   serviceNs,
-		ClusterName: serviceCluster,
-	}
-	mesh := &skv1.ObjectRef{
-		Name:      "mesh",
-		Namespace: "any",
-	}
+		serviceName    = "name"
+		serviceNs      = "namespace"
+		serviceCluster = "cluster"
+		selectorLabels = map[string]string{"select": "me"}
+		serviceLabels  = map[string]string{"app": "coolapp"}
+
+		deployment = &skv1.ClusterObjectRef{
+			Name:        "deployment",
+			Namespace:   serviceNs,
+			ClusterName: serviceCluster,
+		}
+		mesh = &skv1.ObjectRef{
+			Name:      "mesh",
+			Namespace: "any",
+		}
+	)
 
 	makeWorkload := func(subset string) *v1alpha2.MeshWorkload {
 		labels := map[string]string{
@@ -93,6 +97,10 @@ var _ = Describe("MeshserviceDetector", func() {
 		}
 	}
 
+	BeforeEach(func() {
+		ctx = context.Background()
+	})
+
 	It("translates a service with a backing meshworkload to a meshservice", func() {
 		workloads := v1alpha2sets.NewMeshWorkloadSet(
 			makeWorkload("v1"),
@@ -101,9 +109,9 @@ var _ = Describe("MeshserviceDetector", func() {
 		meshes := v1alpha2sets.NewMeshSet()
 		svc := makeService()
 
-		detector := NewMeshServiceDetector()
+		detector := NewMeshServiceDetector(ctx)
 
-		meshService := detector.DetectMeshService(context.Background(), svc, workloads, meshes)
+		meshService := detector.DetectMeshService(svc, workloads, meshes)
 
 		Expect(meshService).To(Equal(&v1alpha2.MeshService{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
@@ -150,9 +158,9 @@ var _ = Describe("MeshserviceDetector", func() {
 			DiscoveryMeshNameAnnotation: "hello",
 		}
 
-		detector := NewMeshServiceDetector()
+		detector := NewMeshServiceDetector(ctx)
 
-		meshService := detector.DetectMeshService(context.Background(), svc, workloads, meshes)
+		meshService := detector.DetectMeshService(svc, workloads, meshes)
 
 		Expect(meshService).To(Equal(&v1alpha2.MeshService{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),

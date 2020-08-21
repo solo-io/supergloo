@@ -110,7 +110,7 @@ require (
 	github.com/softlayer/softlayer-go v0.0.0-20180806151055-260589d94c7d // indirect
 	github.com/solo-io/external-apis v0.0.6
 	github.com/solo-io/go-utils v0.17.0
-	github.com/solo-io/skv2 v0.8.1
+	github.com/solo-io/skv2 v0.10.0
 	github.com/solo-io/solo-kit v0.14.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
