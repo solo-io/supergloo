@@ -42,6 +42,10 @@ func (i Installer) InstallCertAgent(
 		helmChartOverride = fmt.Sprintf(certAgentChartUriTemplate, version.Version)
 	}
 
+	if kubeConfig == "" {
+		kubeConfig = clientcmd.RecommendedHomeFile
+	}
+
 	if err := ensureNamespace(ctx, kubeConfig, kubeContext, namespace); err != nil {
 		return err
 	}
@@ -58,10 +62,6 @@ func (i Installer) InstallCertAgent(
 }
 
 func ensureNamespace(ctx context.Context, kubeConfig, kubeContext, namespace string) error {
-	if kubeConfig != "" {
-		kubeConfig = clientcmd.RecommendedHomeFile
-	}
-
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 	loadingRules.ExplicitPath = kubeConfig
 	configOverrides := &clientcmd.ConfigOverrides{CurrentContext: kubeContext}

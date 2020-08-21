@@ -26,7 +26,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //
-//Select Kubernetes services
+//Select Kubernetes services.
 //
 //Only one of (labels + namespaces + cluster) or (resource refs) may be provided. If all four are provided, it will be
 //considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.
@@ -98,7 +98,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 //
 //
 type ServiceSelector struct {
-	// a KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well
+	// A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well
 	// as the provided labels.
 	KubeServiceMatcher *ServiceSelector_KubeServiceMatcher `protobuf:"bytes,1,opt,name=kube_service_matcher,json=kubeServiceMatcher,proto3" json:"kube_service_matcher,omitempty"`
 	// Match individual k8s Services by direct reference.

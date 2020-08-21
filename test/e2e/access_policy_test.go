@@ -52,7 +52,7 @@ var _ = Describe("AccessPolicy", func() {
 									{
 										Name:        "bookinfo-productpage",
 										Namespace:   BookinfoNamespace,
-										ClusterName: masterClusterName,
+										ClusterName: mgmtClusterName,
 									},
 								},
 							},
@@ -65,7 +65,7 @@ var _ = Describe("AccessPolicy", func() {
 									{
 										Name:        "reviews",
 										Namespace:   BookinfoNamespace,
-										ClusterName: masterClusterName,
+										ClusterName: mgmtClusterName,
 									},
 								},
 							},

@@ -44,6 +44,9 @@ require (
 	github.com/envoyproxy/go-control-plane v0.9.4
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-logr/zapr v0.1.1
+	github.com/gobuffalo/envy v1.9.0 // indirect
+	github.com/gobuffalo/packd v1.0.0 // indirect
+	github.com/gobuffalo/packr v1.30.1
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.3.5
@@ -51,6 +54,7 @@ require (
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
+	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/onsi/ginkgo v1.12.0
@@ -58,18 +62,25 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.2.1
 	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/pseudomuto/protoc-gen-doc v1.3.2
+	github.com/pseudomuto/protokit v0.2.0
+	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/rotisserie/eris v0.4.0
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/sirupsen/logrus v1.6.0
+	github.com/solo-io/anyvendor v0.0.1
+	github.com/solo-io/autopilot v0.1.0
 	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0
-	github.com/solo-io/skv2 v0.8.2-0.20200814160410-397370b8b828
+	github.com/solo-io/skv2 v0.9.0
 	github.com/solo-io/solo-kit v0.13.8
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/multierr v1.5.0 // indirect
 	go.uber.org/zap v1.13.0
-	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975 // indirect
+	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de // indirect
+	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 // indirect
+	golang.org/x/sys v0.0.0-20200812155832-6a926be9bd1d // indirect
 	helm.sh/helm/v3 v3.0.0
 	istio.io/api v0.0.0-20200723170824-3c2193e74947
 	istio.io/client-go v0.0.0-20200610222318-1cfead1f1938

@@ -83,11 +83,10 @@ operator-gen:
 # Docs Code Generation
 #----------------------------------------------------------------------------------
 
-# TODO(ilackarms): broken, fix
 # Generate Reference documentation
 .PHONY: generated-reference-docs
 generated-reference-docs:
-#	go run docs/generate_reference_docs.go
+	go run docs/docsgen.go
 
 #----------------------------------------------------------------------------------
 # Build

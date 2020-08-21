@@ -29,8 +29,8 @@ var (
 			Version: "v1alpha2",
 		}: {
 			"Mesh",
-			"MeshWorkload",
-			"MeshService",
+			"Workload",
+			"TrafficTarget",
 		},
 	}
 )

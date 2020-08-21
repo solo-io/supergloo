@@ -20,6 +20,7 @@ func Command(ctx context.Context) *cobra.Command {
 		},
 	}
 	registrationOpts.addToFlags(cmd.Flags())
+	cmd.SilenceUsage = true
 	return cmd
 }
 
@@ -29,7 +30,7 @@ type registrationOptions registration.RegistrantOptions
 func (opts *registrationOptions) addToFlags(set *pflag.FlagSet) {
 	set.StringVar(&opts.ClusterName, "cluster-name", "", "name of the cluster to register")
 	set.StringVar(&opts.KubeCfgPath, "kubeconfig", "", "path to the kubeconfig from which the registered cluster will be accessed")
-	set.StringVar(&opts.KubeContext, "master-context", "", "name of the kubeconfig context to use for the master cluster")
+	set.StringVar(&opts.KubeContext, "mgmt-context", "", "name of the kubeconfig context to use for the management cluster")
 	set.StringVar(&opts.RemoteKubeContext, "remote-context", "", "name of the kubeconfig context to use for the remote cluster")
 	set.StringVar(&opts.Namespace, "federation-namespace", defaults.DefaultPodNamespace, "namespace of the Service-Mesh-Hub control plane in which the secret for the registered cluster will be created")
 	set.StringVar(&opts.RemoteNamespace, "remote-namespace", defaults.DefaultPodNamespace, "namespace in the target cluster where a service account enabling remote access will be created. If the namespace does not exist it will be created.")

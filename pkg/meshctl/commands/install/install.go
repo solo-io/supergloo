@@ -26,7 +26,7 @@ func Command(ctx context.Context) *cobra.Command {
 		},
 	}
 	opts.addToFlags(cmd.Flags())
-
+	cmd.SilenceUsage = true
 	return cmd
 }
 
@@ -54,8 +54,8 @@ type registrationOptions struct {
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.BoolVarP(&o.dryRun, "dry-run", "d", false, "Output installation manifest")
-	flags.StringVar(&o.kubeCfgPath, "kubeconfig", "", "path to the kubeconfig from which the master cluster will be accessed")
-	flags.StringVar(&o.kubeContext, "kubecontext", "", "name of the kubeconfig context to use for the master cluster")
+	flags.StringVar(&o.kubeCfgPath, "kubeconfig", "", "path to the kubeconfig from which the management cluster will be accessed")
+	flags.StringVar(&o.kubeContext, "kubecontext", "", "name of the kubeconfig context to use for the management cluster")
 	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to install Service Mesh Hub")
 	flags.StringVar(&o.chartPath, "chart-file", "", "Path to a local Helm chart for installing Service Mesh Hub. If unset, this command will install Service Mesh Hub from the publicly released Helm chart.")
 	flags.StringVarP(&o.chartValuesFile, "chart-values-file", "", "", "File containing value overrides for the Service Mesh Hub Helm chart")

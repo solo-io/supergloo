@@ -32,8 +32,8 @@ rules:
   - discovery.smh.solo.io
   resources:
   - meshes
-  - meshworkloads
-  - meshservices
+  - workloads
+  - traffictargets
   verbs:
   - '*'
 
@@ -92,8 +92,8 @@ rules:
   - discovery.smh.solo.io
   resources:
   - meshes
-  - meshworkloads
-  - meshservices
+  - workloads
+  - traffictargets
   verbs:
   - get
   - list
@@ -128,8 +128,8 @@ rules:
   - discovery.smh.solo.io
   resources:
   - meshes/status
-  - meshworkloads/status
-  - meshservices/status
+  - workloads/status
+  - traffictargets/status
   verbs:
   - get
   - update

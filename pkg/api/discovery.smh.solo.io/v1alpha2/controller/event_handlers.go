@@ -17,218 +17,218 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// Handle events for the MeshService Resource
+// Handle events for the TrafficTarget Resource
 // DEPRECATED: Prefer reconciler pattern.
-type MeshServiceEventHandler interface {
-	CreateMeshService(obj *discovery_smh_solo_io_v1alpha2.MeshService) error
-	UpdateMeshService(old, new *discovery_smh_solo_io_v1alpha2.MeshService) error
-	DeleteMeshService(obj *discovery_smh_solo_io_v1alpha2.MeshService) error
-	GenericMeshService(obj *discovery_smh_solo_io_v1alpha2.MeshService) error
+type TrafficTargetEventHandler interface {
+	CreateTrafficTarget(obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) error
+	UpdateTrafficTarget(old, new *discovery_smh_solo_io_v1alpha2.TrafficTarget) error
+	DeleteTrafficTarget(obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) error
+	GenericTrafficTarget(obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) error
 }
 
-type MeshServiceEventHandlerFuncs struct {
-	OnCreate  func(obj *discovery_smh_solo_io_v1alpha2.MeshService) error
-	OnUpdate  func(old, new *discovery_smh_solo_io_v1alpha2.MeshService) error
-	OnDelete  func(obj *discovery_smh_solo_io_v1alpha2.MeshService) error
-	OnGeneric func(obj *discovery_smh_solo_io_v1alpha2.MeshService) error
+type TrafficTargetEventHandlerFuncs struct {
+	OnCreate  func(obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) error
+	OnUpdate  func(old, new *discovery_smh_solo_io_v1alpha2.TrafficTarget) error
+	OnDelete  func(obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) error
+	OnGeneric func(obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) error
 }
 
-func (f *MeshServiceEventHandlerFuncs) CreateMeshService(obj *discovery_smh_solo_io_v1alpha2.MeshService) error {
+func (f *TrafficTargetEventHandlerFuncs) CreateTrafficTarget(obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *MeshServiceEventHandlerFuncs) DeleteMeshService(obj *discovery_smh_solo_io_v1alpha2.MeshService) error {
+func (f *TrafficTargetEventHandlerFuncs) DeleteTrafficTarget(obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *MeshServiceEventHandlerFuncs) UpdateMeshService(objOld, objNew *discovery_smh_solo_io_v1alpha2.MeshService) error {
+func (f *TrafficTargetEventHandlerFuncs) UpdateTrafficTarget(objOld, objNew *discovery_smh_solo_io_v1alpha2.TrafficTarget) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *MeshServiceEventHandlerFuncs) GenericMeshService(obj *discovery_smh_solo_io_v1alpha2.MeshService) error {
+func (f *TrafficTargetEventHandlerFuncs) GenericTrafficTarget(obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
 	return f.OnGeneric(obj)
 }
 
-type MeshServiceEventWatcher interface {
-	AddEventHandler(ctx context.Context, h MeshServiceEventHandler, predicates ...predicate.Predicate) error
+type TrafficTargetEventWatcher interface {
+	AddEventHandler(ctx context.Context, h TrafficTargetEventHandler, predicates ...predicate.Predicate) error
 }
 
-type meshServiceEventWatcher struct {
+type trafficTargetEventWatcher struct {
 	watcher events.EventWatcher
 }
 
-func NewMeshServiceEventWatcher(name string, mgr manager.Manager) MeshServiceEventWatcher {
-	return &meshServiceEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &discovery_smh_solo_io_v1alpha2.MeshService{}),
+func NewTrafficTargetEventWatcher(name string, mgr manager.Manager) TrafficTargetEventWatcher {
+	return &trafficTargetEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &discovery_smh_solo_io_v1alpha2.TrafficTarget{}),
 	}
 }
 
-func (c *meshServiceEventWatcher) AddEventHandler(ctx context.Context, h MeshServiceEventHandler, predicates ...predicate.Predicate) error {
-	handler := genericMeshServiceHandler{handler: h}
+func (c *trafficTargetEventWatcher) AddEventHandler(ctx context.Context, h TrafficTargetEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericTrafficTargetHandler{handler: h}
 	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
 }
 
-// genericMeshServiceHandler implements a generic events.EventHandler
-type genericMeshServiceHandler struct {
-	handler MeshServiceEventHandler
+// genericTrafficTargetHandler implements a generic events.EventHandler
+type genericTrafficTargetHandler struct {
+	handler TrafficTargetEventHandler
 }
 
-func (h genericMeshServiceHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.MeshService)
+func (h genericTrafficTargetHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.TrafficTarget)
 	if !ok {
-		return errors.Errorf("internal error: MeshService handler received event for %T", object)
+		return errors.Errorf("internal error: TrafficTarget handler received event for %T", object)
 	}
-	return h.handler.CreateMeshService(obj)
+	return h.handler.CreateTrafficTarget(obj)
 }
 
-func (h genericMeshServiceHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.MeshService)
+func (h genericTrafficTargetHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.TrafficTarget)
 	if !ok {
-		return errors.Errorf("internal error: MeshService handler received event for %T", object)
+		return errors.Errorf("internal error: TrafficTarget handler received event for %T", object)
 	}
-	return h.handler.DeleteMeshService(obj)
+	return h.handler.DeleteTrafficTarget(obj)
 }
 
-func (h genericMeshServiceHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*discovery_smh_solo_io_v1alpha2.MeshService)
+func (h genericTrafficTargetHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*discovery_smh_solo_io_v1alpha2.TrafficTarget)
 	if !ok {
-		return errors.Errorf("internal error: MeshService handler received event for %T", old)
+		return errors.Errorf("internal error: TrafficTarget handler received event for %T", old)
 	}
-	objNew, ok := new.(*discovery_smh_solo_io_v1alpha2.MeshService)
+	objNew, ok := new.(*discovery_smh_solo_io_v1alpha2.TrafficTarget)
 	if !ok {
-		return errors.Errorf("internal error: MeshService handler received event for %T", new)
+		return errors.Errorf("internal error: TrafficTarget handler received event for %T", new)
 	}
-	return h.handler.UpdateMeshService(objOld, objNew)
+	return h.handler.UpdateTrafficTarget(objOld, objNew)
 }
 
-func (h genericMeshServiceHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.MeshService)
+func (h genericTrafficTargetHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.TrafficTarget)
 	if !ok {
-		return errors.Errorf("internal error: MeshService handler received event for %T", object)
+		return errors.Errorf("internal error: TrafficTarget handler received event for %T", object)
 	}
-	return h.handler.GenericMeshService(obj)
+	return h.handler.GenericTrafficTarget(obj)
 }
 
-// Handle events for the MeshWorkload Resource
+// Handle events for the Workload Resource
 // DEPRECATED: Prefer reconciler pattern.
-type MeshWorkloadEventHandler interface {
-	CreateMeshWorkload(obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) error
-	UpdateMeshWorkload(old, new *discovery_smh_solo_io_v1alpha2.MeshWorkload) error
-	DeleteMeshWorkload(obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) error
-	GenericMeshWorkload(obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) error
+type WorkloadEventHandler interface {
+	CreateWorkload(obj *discovery_smh_solo_io_v1alpha2.Workload) error
+	UpdateWorkload(old, new *discovery_smh_solo_io_v1alpha2.Workload) error
+	DeleteWorkload(obj *discovery_smh_solo_io_v1alpha2.Workload) error
+	GenericWorkload(obj *discovery_smh_solo_io_v1alpha2.Workload) error
 }
 
-type MeshWorkloadEventHandlerFuncs struct {
-	OnCreate  func(obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) error
-	OnUpdate  func(old, new *discovery_smh_solo_io_v1alpha2.MeshWorkload) error
-	OnDelete  func(obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) error
-	OnGeneric func(obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) error
+type WorkloadEventHandlerFuncs struct {
+	OnCreate  func(obj *discovery_smh_solo_io_v1alpha2.Workload) error
+	OnUpdate  func(old, new *discovery_smh_solo_io_v1alpha2.Workload) error
+	OnDelete  func(obj *discovery_smh_solo_io_v1alpha2.Workload) error
+	OnGeneric func(obj *discovery_smh_solo_io_v1alpha2.Workload) error
 }
 
-func (f *MeshWorkloadEventHandlerFuncs) CreateMeshWorkload(obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) error {
+func (f *WorkloadEventHandlerFuncs) CreateWorkload(obj *discovery_smh_solo_io_v1alpha2.Workload) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *MeshWorkloadEventHandlerFuncs) DeleteMeshWorkload(obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) error {
+func (f *WorkloadEventHandlerFuncs) DeleteWorkload(obj *discovery_smh_solo_io_v1alpha2.Workload) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *MeshWorkloadEventHandlerFuncs) UpdateMeshWorkload(objOld, objNew *discovery_smh_solo_io_v1alpha2.MeshWorkload) error {
+func (f *WorkloadEventHandlerFuncs) UpdateWorkload(objOld, objNew *discovery_smh_solo_io_v1alpha2.Workload) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *MeshWorkloadEventHandlerFuncs) GenericMeshWorkload(obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) error {
+func (f *WorkloadEventHandlerFuncs) GenericWorkload(obj *discovery_smh_solo_io_v1alpha2.Workload) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
 	return f.OnGeneric(obj)
 }
 
-type MeshWorkloadEventWatcher interface {
-	AddEventHandler(ctx context.Context, h MeshWorkloadEventHandler, predicates ...predicate.Predicate) error
+type WorkloadEventWatcher interface {
+	AddEventHandler(ctx context.Context, h WorkloadEventHandler, predicates ...predicate.Predicate) error
 }
 
-type meshWorkloadEventWatcher struct {
+type workloadEventWatcher struct {
 	watcher events.EventWatcher
 }
 
-func NewMeshWorkloadEventWatcher(name string, mgr manager.Manager) MeshWorkloadEventWatcher {
-	return &meshWorkloadEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &discovery_smh_solo_io_v1alpha2.MeshWorkload{}),
+func NewWorkloadEventWatcher(name string, mgr manager.Manager) WorkloadEventWatcher {
+	return &workloadEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &discovery_smh_solo_io_v1alpha2.Workload{}),
 	}
 }
 
-func (c *meshWorkloadEventWatcher) AddEventHandler(ctx context.Context, h MeshWorkloadEventHandler, predicates ...predicate.Predicate) error {
-	handler := genericMeshWorkloadHandler{handler: h}
+func (c *workloadEventWatcher) AddEventHandler(ctx context.Context, h WorkloadEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericWorkloadHandler{handler: h}
 	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
 }
 
-// genericMeshWorkloadHandler implements a generic events.EventHandler
-type genericMeshWorkloadHandler struct {
-	handler MeshWorkloadEventHandler
+// genericWorkloadHandler implements a generic events.EventHandler
+type genericWorkloadHandler struct {
+	handler WorkloadEventHandler
 }
 
-func (h genericMeshWorkloadHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.MeshWorkload)
+func (h genericWorkloadHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.Workload)
 	if !ok {
-		return errors.Errorf("internal error: MeshWorkload handler received event for %T", object)
+		return errors.Errorf("internal error: Workload handler received event for %T", object)
 	}
-	return h.handler.CreateMeshWorkload(obj)
+	return h.handler.CreateWorkload(obj)
 }
 
-func (h genericMeshWorkloadHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.MeshWorkload)
+func (h genericWorkloadHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.Workload)
 	if !ok {
-		return errors.Errorf("internal error: MeshWorkload handler received event for %T", object)
+		return errors.Errorf("internal error: Workload handler received event for %T", object)
 	}
-	return h.handler.DeleteMeshWorkload(obj)
+	return h.handler.DeleteWorkload(obj)
 }
 
-func (h genericMeshWorkloadHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*discovery_smh_solo_io_v1alpha2.MeshWorkload)
+func (h genericWorkloadHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*discovery_smh_solo_io_v1alpha2.Workload)
 	if !ok {
-		return errors.Errorf("internal error: MeshWorkload handler received event for %T", old)
+		return errors.Errorf("internal error: Workload handler received event for %T", old)
 	}
-	objNew, ok := new.(*discovery_smh_solo_io_v1alpha2.MeshWorkload)
+	objNew, ok := new.(*discovery_smh_solo_io_v1alpha2.Workload)
 	if !ok {
-		return errors.Errorf("internal error: MeshWorkload handler received event for %T", new)
+		return errors.Errorf("internal error: Workload handler received event for %T", new)
 	}
-	return h.handler.UpdateMeshWorkload(objOld, objNew)
+	return h.handler.UpdateWorkload(objOld, objNew)
 }
 
-func (h genericMeshWorkloadHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.MeshWorkload)
+func (h genericWorkloadHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.Workload)
 	if !ok {
-		return errors.Errorf("internal error: MeshWorkload handler received event for %T", object)
+		return errors.Errorf("internal error: Workload handler received event for %T", object)
 	}
-	return h.handler.GenericMeshWorkload(obj)
+	return h.handler.GenericWorkload(obj)
 }
 
 // Handle events for the Mesh Resource

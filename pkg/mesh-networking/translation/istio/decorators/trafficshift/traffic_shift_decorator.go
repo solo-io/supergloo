@@ -12,8 +12,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/trafficpolicyutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/traffictargetutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -28,24 +28,24 @@ func init() {
 }
 
 func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
-	return NewTrafficShiftDecorator(params.ClusterDomains, params.Snapshot.MeshServices())
+	return NewTrafficShiftDecorator(params.ClusterDomains, params.Snapshot.TrafficTargets())
 }
 
 // handles setting Weighted Destinations on a VirtualService
 type trafficShiftDecorator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
-	meshServices   discoveryv1alpha2sets.MeshServiceSet
+	trafficTargets discoveryv1alpha2sets.TrafficTargetSet
 }
 
 var _ decorators.TrafficPolicyVirtualServiceDecorator = &trafficShiftDecorator{}
 
 func NewTrafficShiftDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
-	meshServices discoveryv1alpha2sets.MeshServiceSet,
+	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 ) *trafficShiftDecorator {
 	return &trafficShiftDecorator{
 		clusterDomains: clusterDomains,
-		meshServices:   meshServices,
+		trafficTargets: trafficTargets,
 	}
 }
 
@@ -54,8 +54,8 @@ func (d *trafficShiftDecorator) DecoratorName() string {
 }
 
 func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy,
-	service *discoveryv1alpha2.MeshService,
+	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+	service *discoveryv1alpha2.TrafficTarget,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
@@ -73,7 +73,7 @@ func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
 }
 
 func (d *trafficShiftDecorator) translateTrafficShift(
-	meshService *discoveryv1alpha2.MeshService,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
 ) ([]*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	trafficShift := trafficPolicy.GetTrafficShift()
@@ -92,7 +92,7 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 			var err error
 			trafficShiftDestination, err = d.buildKubeTrafficShiftDestination(
 				destinationType.KubeService,
-				meshService,
+				trafficTarget,
 				destination.Weight,
 			)
 			if err != nil {
@@ -110,13 +110,13 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 
 func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	kubeDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination,
-	originalService *discoveryv1alpha2.MeshService,
+	originalService *discoveryv1alpha2.TrafficTarget,
 	weight uint32,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	originalKubeService := originalService.Spec.GetKubeService()
 
 	if originalKubeService == nil {
-		return nil, eris.Errorf("traffic shift only supported for kube mesh services")
+		return nil, eris.Errorf("traffic shift only supported for kube traffic targets")
 	}
 	if kubeDest == nil {
 		return nil, eris.Errorf("nil kube destination on traffic shift")
@@ -128,8 +128,8 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 		ClusterName: kubeDest.ClusterName,
 	}
 
-	// validate destination service is a known meshservice
-	trafficShiftService, err := meshserviceutils.FindMeshServiceForKubeService(d.meshServices.List(), svcRef)
+	// validate destination service is a known traffictarget
+	trafficShiftService, err := traffictargetutils.FindTrafficTargetForKubeService(d.trafficTargets.List(), svcRef)
 	if err != nil {
 		return nil, eris.Wrapf(err, "invalid traffic shift destination %s", sets.Key(svcRef))
 	}
@@ -147,7 +147,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 			Number: port,
 		}
 	} else {
-		// validate that mesh service only has one port
+		// validate that traffic target only has one port
 		if numPorts := len(trafficShiftKubeService.Ports); numPorts > 1 {
 			return nil, eris.Errorf("must provide port for traffic shift destination service %v with multiple ports (%v) defined", sets.Key(trafficShiftKubeService.Ref), numPorts)
 		}
@@ -169,11 +169,11 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	return httpRouteDestination, nil
 }
 
-// make all the necessary subsets for the destination rule for the given meshservice.
+// make all the necessary subsets for the destination rule for the given traffictarget.
 // traverses all the applied traffic policies to find subsets matching this meshervice
 func MakeDestinationRuleSubsets(
-	meshService *discoveryv1alpha2.MeshService,
-	allMeshServices discoveryv1alpha2sets.MeshServiceSet,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
 	appendUniqueSubset := func(subsetLabels map[string]string) {
@@ -188,13 +188,13 @@ func MakeDestinationRuleSubsets(
 		uniqueSubsets = append(uniqueSubsets, subsetLabels)
 	}
 
-	allMeshServices.List(func(service *discoveryv1alpha2.MeshService) bool {
+	allTrafficTargets.List(func(service *discoveryv1alpha2.TrafficTarget) bool {
 		for _, policy := range service.Status.AppliedTrafficPolicies {
 			trafficShiftDestinations := policy.Spec.GetTrafficShift().GetDestinations()
 			for _, dest := range trafficShiftDestinations {
 				switch destType := dest.DestinationType.(type) {
 				case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
-					if meshserviceutils.IsMeshServiceForKubeService(meshService, destType.KubeService) {
+					if traffictargetutils.IsTrafficTargetForKubeService(trafficTarget, destType.KubeService) {
 						appendUniqueSubset(destType.KubeService.Subset)
 					}
 				}

@@ -19,7 +19,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -33,7 +33,7 @@ import (
 type networkingReconciler struct {
 	ctx                context.Context
 	builder            input.Builder
-	approver           approval.Approver
+	applier            apply.Applier
 	reporter           reporting.Reporter
 	translator         translation.Translator
 	masterClient       client.Client
@@ -45,7 +45,7 @@ type networkingReconciler struct {
 func Start(
 	ctx context.Context,
 	builder input.Builder,
-	validator approval.Approver,
+	validator apply.Applier,
 	reporter reporting.Reporter,
 	translator translation.Translator,
 	multiClusterClient multicluster.Client,
@@ -55,7 +55,7 @@ func Start(
 	d := &networkingReconciler{
 		ctx:                ctx,
 		builder:            builder,
-		approver:           validator,
+		applier:            validator,
 		reporter:           reporter,
 		translator:         translator,
 		masterClient:       mgr.GetClient(),
@@ -86,7 +86,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		return false, err
 	}
 
-	r.approver.Approve(ctx, inputSnap)
+	r.applier.Apply(ctx, inputSnap)
 
 	var errs error
 

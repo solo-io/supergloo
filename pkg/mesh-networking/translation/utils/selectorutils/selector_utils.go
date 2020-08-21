@@ -8,7 +8,7 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
-func SelectorMatchesService(selectors []*v1alpha2.ServiceSelector, service *discoveryv1alpha2.MeshService) bool {
+func SelectorMatchesService(selectors []*v1alpha2.ServiceSelector, service *discoveryv1alpha2.TrafficTarget) bool {
 	if len(selectors) == 0 {
 		return true
 	}
@@ -49,7 +49,7 @@ func kubeServiceMatches(
 	labels map[string]string,
 	namespaces []string,
 	clusters []string,
-	kubeService *discoveryv1alpha2.MeshServiceSpec_KubeService,
+	kubeService *discoveryv1alpha2.TrafficTargetSpec_KubeService,
 ) bool {
 	if len(namespaces) > 0 && !stringutils.ContainsString(kubeService.GetRef().GetNamespace(), namespaces) {
 		return false

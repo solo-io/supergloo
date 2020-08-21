@@ -30,28 +30,28 @@ func (t translator) Translate(ctx context.Context, in input.Snapshot) (output.Sn
 
 	meshTranslator := t.dependencies.makeMeshTranslator(ctx, in)
 
-	meshWorkloadTranslator := t.dependencies.makeMeshWorkloadTranslator(ctx, in)
+	workloadTranslator := t.dependencies.makeWorkloadTranslator(ctx, in)
 
-	meshServiceTranslator := t.dependencies.makeMeshServiceTranslator(ctx)
+	trafficTargetTranslator := t.dependencies.makeTrafficTargetTranslator(ctx)
 
 	meshes := meshTranslator.TranslateMeshes(in.Deployments())
 
-	meshWorkloads := meshWorkloadTranslator.TranslateMeshWorkloads(
+	workloads := workloadTranslator.TranslateWorkloads(
 		in.Deployments(),
 		in.DaemonSets(),
 		in.StatefulSets(),
 		meshes,
 	)
 
-	meshServices := meshServiceTranslator.TranslateMeshServices(in.Services(), meshWorkloads)
+	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.Services(), workloads)
 
 	t.totalTranslates++
 
 	return output.NewSinglePartitionedSnapshot(
 		fmt.Sprintf("mesh-discovery-%v", t.totalTranslates),
 		labelutils.OwnershipLabels(),
-		meshServices,
-		meshWorkloads,
+		trafficTargets,
+		workloads,
 		meshes,
 	)
 }

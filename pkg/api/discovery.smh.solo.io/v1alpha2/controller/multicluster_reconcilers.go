@@ -18,146 +18,146 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// Reconcile Upsert events for the MeshService Resource across clusters.
+// Reconcile Upsert events for the TrafficTarget Resource across clusters.
 // implemented by the user
-type MulticlusterMeshServiceReconciler interface {
-	ReconcileMeshService(clusterName string, obj *discovery_smh_solo_io_v1alpha2.MeshService) (reconcile.Result, error)
+type MulticlusterTrafficTargetReconciler interface {
+	ReconcileTrafficTarget(clusterName string, obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) (reconcile.Result, error)
 }
 
-// Reconcile deletion events for the MeshService Resource across clusters.
+// Reconcile deletion events for the TrafficTarget Resource across clusters.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
-type MulticlusterMeshServiceDeletionReconciler interface {
-	ReconcileMeshServiceDeletion(clusterName string, req reconcile.Request) error
+type MulticlusterTrafficTargetDeletionReconciler interface {
+	ReconcileTrafficTargetDeletion(clusterName string, req reconcile.Request) error
 }
 
-type MulticlusterMeshServiceReconcilerFuncs struct {
-	OnReconcileMeshService         func(clusterName string, obj *discovery_smh_solo_io_v1alpha2.MeshService) (reconcile.Result, error)
-	OnReconcileMeshServiceDeletion func(clusterName string, req reconcile.Request) error
+type MulticlusterTrafficTargetReconcilerFuncs struct {
+	OnReconcileTrafficTarget         func(clusterName string, obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) (reconcile.Result, error)
+	OnReconcileTrafficTargetDeletion func(clusterName string, req reconcile.Request) error
 }
 
-func (f *MulticlusterMeshServiceReconcilerFuncs) ReconcileMeshService(clusterName string, obj *discovery_smh_solo_io_v1alpha2.MeshService) (reconcile.Result, error) {
-	if f.OnReconcileMeshService == nil {
+func (f *MulticlusterTrafficTargetReconcilerFuncs) ReconcileTrafficTarget(clusterName string, obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) (reconcile.Result, error) {
+	if f.OnReconcileTrafficTarget == nil {
 		return reconcile.Result{}, nil
 	}
-	return f.OnReconcileMeshService(clusterName, obj)
+	return f.OnReconcileTrafficTarget(clusterName, obj)
 }
 
-func (f *MulticlusterMeshServiceReconcilerFuncs) ReconcileMeshServiceDeletion(clusterName string, req reconcile.Request) error {
-	if f.OnReconcileMeshServiceDeletion == nil {
+func (f *MulticlusterTrafficTargetReconcilerFuncs) ReconcileTrafficTargetDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileTrafficTargetDeletion == nil {
 		return nil
 	}
-	return f.OnReconcileMeshServiceDeletion(clusterName, req)
+	return f.OnReconcileTrafficTargetDeletion(clusterName, req)
 }
 
-type MulticlusterMeshServiceReconcileLoop interface {
-	// AddMulticlusterMeshServiceReconciler adds a MulticlusterMeshServiceReconciler to the MulticlusterMeshServiceReconcileLoop.
-	AddMulticlusterMeshServiceReconciler(ctx context.Context, rec MulticlusterMeshServiceReconciler, predicates ...predicate.Predicate)
+type MulticlusterTrafficTargetReconcileLoop interface {
+	// AddMulticlusterTrafficTargetReconciler adds a MulticlusterTrafficTargetReconciler to the MulticlusterTrafficTargetReconcileLoop.
+	AddMulticlusterTrafficTargetReconciler(ctx context.Context, rec MulticlusterTrafficTargetReconciler, predicates ...predicate.Predicate)
 }
 
-type multiclusterMeshServiceReconcileLoop struct {
+type multiclusterTrafficTargetReconcileLoop struct {
 	loop multicluster.Loop
 }
 
-func (m *multiclusterMeshServiceReconcileLoop) AddMulticlusterMeshServiceReconciler(ctx context.Context, rec MulticlusterMeshServiceReconciler, predicates ...predicate.Predicate) {
-	genericReconciler := genericMeshServiceMulticlusterReconciler{reconciler: rec}
+func (m *multiclusterTrafficTargetReconcileLoop) AddMulticlusterTrafficTargetReconciler(ctx context.Context, rec MulticlusterTrafficTargetReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericTrafficTargetMulticlusterReconciler{reconciler: rec}
 
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterMeshServiceReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterMeshServiceReconcileLoop {
-	return &multiclusterMeshServiceReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_smh_solo_io_v1alpha2.MeshService{})}
+func NewMulticlusterTrafficTargetReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterTrafficTargetReconcileLoop {
+	return &multiclusterTrafficTargetReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_smh_solo_io_v1alpha2.TrafficTarget{})}
 }
 
-type genericMeshServiceMulticlusterReconciler struct {
-	reconciler MulticlusterMeshServiceReconciler
+type genericTrafficTargetMulticlusterReconciler struct {
+	reconciler MulticlusterTrafficTargetReconciler
 }
 
-func (g genericMeshServiceMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
-	if deletionReconciler, ok := g.reconciler.(MulticlusterMeshServiceDeletionReconciler); ok {
-		return deletionReconciler.ReconcileMeshServiceDeletion(cluster, req)
+func (g genericTrafficTargetMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterTrafficTargetDeletionReconciler); ok {
+		return deletionReconciler.ReconcileTrafficTargetDeletion(cluster, req)
 	}
 	return nil
 }
 
-func (g genericMeshServiceMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.MeshService)
+func (g genericTrafficTargetMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.TrafficTarget)
 	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: MeshService handler received event for %T", object)
+		return reconcile.Result{}, errors.Errorf("internal error: TrafficTarget handler received event for %T", object)
 	}
-	return g.reconciler.ReconcileMeshService(cluster, obj)
+	return g.reconciler.ReconcileTrafficTarget(cluster, obj)
 }
 
-// Reconcile Upsert events for the MeshWorkload Resource across clusters.
+// Reconcile Upsert events for the Workload Resource across clusters.
 // implemented by the user
-type MulticlusterMeshWorkloadReconciler interface {
-	ReconcileMeshWorkload(clusterName string, obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) (reconcile.Result, error)
+type MulticlusterWorkloadReconciler interface {
+	ReconcileWorkload(clusterName string, obj *discovery_smh_solo_io_v1alpha2.Workload) (reconcile.Result, error)
 }
 
-// Reconcile deletion events for the MeshWorkload Resource across clusters.
+// Reconcile deletion events for the Workload Resource across clusters.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
-type MulticlusterMeshWorkloadDeletionReconciler interface {
-	ReconcileMeshWorkloadDeletion(clusterName string, req reconcile.Request) error
+type MulticlusterWorkloadDeletionReconciler interface {
+	ReconcileWorkloadDeletion(clusterName string, req reconcile.Request) error
 }
 
-type MulticlusterMeshWorkloadReconcilerFuncs struct {
-	OnReconcileMeshWorkload         func(clusterName string, obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) (reconcile.Result, error)
-	OnReconcileMeshWorkloadDeletion func(clusterName string, req reconcile.Request) error
+type MulticlusterWorkloadReconcilerFuncs struct {
+	OnReconcileWorkload         func(clusterName string, obj *discovery_smh_solo_io_v1alpha2.Workload) (reconcile.Result, error)
+	OnReconcileWorkloadDeletion func(clusterName string, req reconcile.Request) error
 }
 
-func (f *MulticlusterMeshWorkloadReconcilerFuncs) ReconcileMeshWorkload(clusterName string, obj *discovery_smh_solo_io_v1alpha2.MeshWorkload) (reconcile.Result, error) {
-	if f.OnReconcileMeshWorkload == nil {
+func (f *MulticlusterWorkloadReconcilerFuncs) ReconcileWorkload(clusterName string, obj *discovery_smh_solo_io_v1alpha2.Workload) (reconcile.Result, error) {
+	if f.OnReconcileWorkload == nil {
 		return reconcile.Result{}, nil
 	}
-	return f.OnReconcileMeshWorkload(clusterName, obj)
+	return f.OnReconcileWorkload(clusterName, obj)
 }
 
-func (f *MulticlusterMeshWorkloadReconcilerFuncs) ReconcileMeshWorkloadDeletion(clusterName string, req reconcile.Request) error {
-	if f.OnReconcileMeshWorkloadDeletion == nil {
+func (f *MulticlusterWorkloadReconcilerFuncs) ReconcileWorkloadDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileWorkloadDeletion == nil {
 		return nil
 	}
-	return f.OnReconcileMeshWorkloadDeletion(clusterName, req)
+	return f.OnReconcileWorkloadDeletion(clusterName, req)
 }
 
-type MulticlusterMeshWorkloadReconcileLoop interface {
-	// AddMulticlusterMeshWorkloadReconciler adds a MulticlusterMeshWorkloadReconciler to the MulticlusterMeshWorkloadReconcileLoop.
-	AddMulticlusterMeshWorkloadReconciler(ctx context.Context, rec MulticlusterMeshWorkloadReconciler, predicates ...predicate.Predicate)
+type MulticlusterWorkloadReconcileLoop interface {
+	// AddMulticlusterWorkloadReconciler adds a MulticlusterWorkloadReconciler to the MulticlusterWorkloadReconcileLoop.
+	AddMulticlusterWorkloadReconciler(ctx context.Context, rec MulticlusterWorkloadReconciler, predicates ...predicate.Predicate)
 }
 
-type multiclusterMeshWorkloadReconcileLoop struct {
+type multiclusterWorkloadReconcileLoop struct {
 	loop multicluster.Loop
 }
 
-func (m *multiclusterMeshWorkloadReconcileLoop) AddMulticlusterMeshWorkloadReconciler(ctx context.Context, rec MulticlusterMeshWorkloadReconciler, predicates ...predicate.Predicate) {
-	genericReconciler := genericMeshWorkloadMulticlusterReconciler{reconciler: rec}
+func (m *multiclusterWorkloadReconcileLoop) AddMulticlusterWorkloadReconciler(ctx context.Context, rec MulticlusterWorkloadReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericWorkloadMulticlusterReconciler{reconciler: rec}
 
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterMeshWorkloadReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterMeshWorkloadReconcileLoop {
-	return &multiclusterMeshWorkloadReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_smh_solo_io_v1alpha2.MeshWorkload{})}
+func NewMulticlusterWorkloadReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterWorkloadReconcileLoop {
+	return &multiclusterWorkloadReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_smh_solo_io_v1alpha2.Workload{})}
 }
 
-type genericMeshWorkloadMulticlusterReconciler struct {
-	reconciler MulticlusterMeshWorkloadReconciler
+type genericWorkloadMulticlusterReconciler struct {
+	reconciler MulticlusterWorkloadReconciler
 }
 
-func (g genericMeshWorkloadMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
-	if deletionReconciler, ok := g.reconciler.(MulticlusterMeshWorkloadDeletionReconciler); ok {
-		return deletionReconciler.ReconcileMeshWorkloadDeletion(cluster, req)
+func (g genericWorkloadMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterWorkloadDeletionReconciler); ok {
+		return deletionReconciler.ReconcileWorkloadDeletion(cluster, req)
 	}
 	return nil
 }
 
-func (g genericMeshWorkloadMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.MeshWorkload)
+func (g genericWorkloadMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*discovery_smh_solo_io_v1alpha2.Workload)
 	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: MeshWorkload handler received event for %T", object)
+		return reconcile.Result{}, errors.Errorf("internal error: Workload handler received event for %T", object)
 	}
-	return g.reconciler.ReconcileMeshWorkload(cluster, obj)
+	return g.reconciler.ReconcileWorkload(cluster, obj)
 }
 
 // Reconcile Upsert events for the Mesh Resource across clusters.

@@ -28,7 +28,7 @@ var _ = Describe("CorsDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				CorsPolicy: &v1alpha2.TrafficPolicySpec_CorsPolicy{
 					AllowOrigins: []*v1alpha2.TrafficPolicySpec_StringMatch{
@@ -71,7 +71,7 @@ var _ = Describe("CorsDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				CorsPolicy: &v1alpha2.TrafficPolicySpec_CorsPolicy{},
 			},

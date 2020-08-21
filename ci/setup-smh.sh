@@ -15,7 +15,7 @@ apiServerAddress=$5
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/.."
 
 if [ "${cluster}" == "" ]; then
-  cluster=master-cluster
+  cluster=mgmt-cluster
 fi
 
 K="kubectl --context kind-${cluster}"
