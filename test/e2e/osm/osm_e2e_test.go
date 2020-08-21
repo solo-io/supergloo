@@ -32,14 +32,14 @@ var (
 
 
 var _ = Describe("OsmE2e", func() {
-
-	var (
-		ctx context.Context
-	)
-
-	BeforeEach(func() {
-		ctx = context.Background()
-	})
+	//
+	// var (
+	// 	ctx context.Context
+	// )
+	//
+	// BeforeEach(func() {
+	// 	ctx = context.Background()
+	// })
 
 	It("is good", func() {
 

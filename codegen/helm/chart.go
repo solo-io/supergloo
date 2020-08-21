@@ -116,9 +116,12 @@ func networkingOperator() model.Operator {
 	var rbacPolicies []rbacv1.PolicyRule
 
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
-	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesWatch()...)
-	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesUpdateStatus()...)
-	rbacPolicies = append(rbacPolicies, io.NetworkingOutputTypes.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.IstioNetworkingInputTypes.RbacPoliciesWatch()...)
+	rbacPolicies = append(rbacPolicies, io.IstioNetworkingInputTypes.RbacPoliciesUpdateStatus()...)
+	rbacPolicies = append(rbacPolicies, io.IstioNetworkingOutputTypes.RbacPoliciesWrite()...)
+	// rbacPolicies = append(rbacPolicies, io.SmiNetworkingInputTypes.RbacPoliciesWatch()...)
+	// rbacPolicies = append(rbacPolicies, io.SmiNetworkingInputTypes.RbacPoliciesUpdateStatus()...)
+	rbacPolicies = append(rbacPolicies, io.SmiNetworkingOutputTypes.RbacPoliciesWrite()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesUpdateStatus()...)
 

@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	NetworkingInputTypes = Snapshot{
+	IstioNetworkingInputTypes = Snapshot{
 		schema.GroupVersion{
 			Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
 			Version: "v1alpha2",
@@ -39,7 +39,7 @@ var (
 		},
 	}
 
-	NetworkingOutputTypes = Snapshot{
+	IstioNetworkingOutputTypes = Snapshot{
 		istionetworkingv1alpha3.SchemeGroupVersion: {
 			"DestinationRule",
 			"VirtualService",
@@ -59,6 +59,29 @@ var (
 		corev1.SchemeGroupVersion: {
 			"Secret",
 		},
+	}
+
+
+	SmiNetworkingInputTypes = Snapshot{
+		schema.GroupVersion{
+			Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
+			Version: "v1alpha2",
+		}: {
+			"Mesh",
+			"MeshWorkload",
+			"MeshService",
+		},
+		schema.GroupVersion{
+			Group:   "networking." + constants.ServiceMeshHubApiGroupSuffix,
+			Version: "v1alpha2",
+		}: {
+			"TrafficPolicy",
+			"AccessPolicy",
+			"VirtualMesh",
+		},
+	}
+
+	SmiNetworkingOutputTypes = Snapshot{
 		smislpitv1alpha2.SchemeGroupVersion: {
 			"TrafficSplit",
 		},

@@ -86,11 +86,17 @@ var (
 			inputResources:    io.DiscoveryInputTypes,
 			outputResources:   io.DiscoveryOutputTypes,
 		},
-		// networking component
+		// istio networking snapshot
 		{
-			generatedCodeRoot: "pkg/api/networking.smh.solo.io",
-			inputResources:    io.NetworkingInputTypes,
-			outputResources:   io.NetworkingOutputTypes,
+			generatedCodeRoot: "pkg/api/networking.smh.solo.io/istio",
+			inputResources:    io.IstioNetworkingInputTypes,
+			outputResources:   io.IstioNetworkingOutputTypes,
+		},
+		// smi networking snapshot
+		{
+			generatedCodeRoot: "pkg/api/networking.smh.solo.io/smi",
+			inputResources:    io.SmiNetworkingInputTypes,
+			outputResources:   io.SmiNetworkingOutputTypes,
 		},
 		// certificate issuer component
 		{

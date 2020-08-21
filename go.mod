@@ -143,6 +143,4 @@ require (
 	sigs.k8s.io/testing_frameworks v0.1.2 // indirect
 )
 
-replace github.com/solo-io/skv2 => ../skv2
-
 replace github.com/solo-io/external-apis => ../external-apis

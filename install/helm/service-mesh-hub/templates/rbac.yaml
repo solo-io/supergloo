@@ -157,12 +157,6 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - access.smi-spec.io
-  resources:
-  - traffictargets
-  verbs:
-  - '*'
-- apiGroups:
   - certificates.smh.solo.io
   resources:
   - issuedcertificates
@@ -182,6 +176,12 @@ rules:
   - security.istio.io
   resources:
   - authorizationpolicies
+  verbs:
+  - '*'
+- apiGroups:
+  - access.smi-spec.io
+  resources:
+  - traffictargets
   verbs:
   - '*'
 - apiGroups:
