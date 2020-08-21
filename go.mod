@@ -72,7 +72,7 @@ require (
 	github.com/solo-io/autopilot v0.1.0
 	github.com/solo-io/external-apis v0.0.6-0.20200720194038-a2aeb8f22528
 	github.com/solo-io/go-utils v0.16.0
-	github.com/solo-io/skv2 v0.8.2-0.20200814160410-397370b8b828
+	github.com/solo-io/skv2 v0.9.0
 	github.com/solo-io/solo-kit v0.13.8
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5

@@ -4,29 +4,26 @@ menuTitle: Mesh Discovery
 weight: 20
 ---
 
-Service Mesh Hub, when appropriate clusters are registered, can automatically discover service mesh installations (based on control plane and sidecar discovery), as well as workloads and services exposed through the service mesh.
+Service Mesh Hub can automatically discover service mesh installations on registered clusters using control plane and sidecar discovery, as well as workloads and services exposed through the service mesh.
 
-In this guide we will learn about the four main discovery capabilities:
+In this guide we will learn about the four main discovery capabilities in the context of Kubernetes as the compute platform:
 
 1. **Kubernetes Clusters**
-    - Representation of a cluster that Service Mesh Hub is aware of and is authorized to
-talk to its Kubernetes API server
+    - Representation of a cluster that Service Mesh Hub is aware of and is authorized to talk to its Kubernetes API server
     - *note*: this resource is created by `meshctl` at cluster registration time
 2. **Meshes**
     - Representation of a service mesh control plane that has been discovered 
 3. **Workloads**
-    - Representation of a pod that is a member of a service mesh; this is often determined by the presence of
-an injected proxy sidecar
-4. **Mesh Services**
-    - Representation of a Kubernetes service that is backed by Workload pods, e.g.
-pods that are a member of the service mesh
+    - Representation of a pod that is a member of a service mesh; this is often determined by the presence of an injected proxy sidecar
+4. **TrafficTargets**
+    - Representation of a Kubernetes service that is backed by Workload pods, e.g. pods that are a member of the service mesh
 
 
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
 * Service Mesh Hub is [installed and running on the `management-plane-context`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
-* Istio is [installed on both `management-plane-context` and `remote-cluster-context`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* Istio is [installed on both the `management-plane-context` and `remote-cluster-context`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * Both `management-plane-context` and `remote-cluster-context` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
@@ -173,7 +170,8 @@ reviews-bookinfo-remote-cluster                      2m29s
 
 ## See it in action
 
-Check out "Part One" of the ["Dive into Service Mesh Hub" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK):
+Check out "Part One" of the ["Dive into Service Mesh Hub" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK)
+(note that the video content reflects Service Mesh Hub <b>v0.6.1</b>):
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/4sWikVELr5M" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 

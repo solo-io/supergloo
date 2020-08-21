@@ -16,7 +16,12 @@ Mesh Hub is engineered with a focus on its utility as an operational management
 tool, providing both graphical and command line UIs, observability features, and 
 debugging tools.
 
-![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-diagram.png" %}})
+
+<figure>
+    <img src="{{% versioned_link_path fromRoot="/img/smh-diagram.png" %}}"/>
+    <figcaption style="text-align: center"> Note: diagram reflects Service Mesh Hub <b>v0.6.1</b></figcaption>
+</figure>
+
 
 ### Getting to know Service Mesh Hub
 

@@ -19,5 +19,5 @@ Bootstrap environments for various demos demonstrating Service Mesh Hub function
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Service Mesh Hub.
-* [meshctl demo istio-multicluster](../meshctl_demo_istio-multicluster)	 - Demo Service Mesh Hub functionality with two Istio control planes deployed on separate k8s clusters. Requires kubectl, kind, docker, and istioctl < v1.7.0.
+* [meshctl demo istio-multicluster](../meshctl_demo_istio-multicluster)	 - Demo Service Mesh Hub functionality with two Istio control planes deployed on separate k8s clusters
 

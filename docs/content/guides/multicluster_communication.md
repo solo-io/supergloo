@@ -10,9 +10,9 @@ In the [previous guides]({{% versioned_link_path fromRoot="/guides/federate_iden
 To illustrate these concepts, we will assume that:
 
 * Service Mesh Hub is [installed and running on the `management-plane-context`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
-* Istio is [installed on both `management-plane-context` and `remote-cluster-context`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
+* Istio is [installed on both the `management-plane-context` and `remote-cluster-context`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
 * Both `management-plane-context` and `remote-cluster-context` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
-* The `bookinfo` app is [installed into two Istio clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
+* The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
 {{% notice note %}}
@@ -36,31 +36,31 @@ spec:
       services:
         - clusterName: management-plane
           name: reviews
-          namespace: default
+          namespace: bookinfo
   trafficShift:
     destinations:
       - kubeService:
           clusterName: new-remote-cluster
           name: reviews
-          namespace: default
+          namespace: bookinfo
         weight: 75
       - kubeService:
           clusterName: management-plane
           name: reviews
-          namespace: default
+          namespace: bookinfo
           subset:
             version: v1
         weight: 15
       - kubeService:
           clusterName: management-plane
           name: reviews
-          namespace: default
+          namespace: bookinfo
           subset:
             version: v2
         weight: 10
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
-kubectl apply --context management-plane-context -f - << EOF
+kubectl apply --context $MGMT_CONTEXT -f - << EOF
 apiVersion: networking.smh.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
@@ -72,25 +72,25 @@ spec:
       services:
         - clusterName: management-plane
           name: reviews
-          namespace: default
+          namespace: bookinfo
   trafficShift:
     destinations:
       - kubeService:
           clusterName: new-remote-cluster
           name: reviews
-          namespace: default
+          namespace: bookinfo
         weight: 75
       - kubeService:
           clusterName: management-plane
           name: reviews
-          namespace: default
+          namespace: bookinfo
           subset:
             version: v1
         weight: 15
       - kubeService:
           clusterName: management-plane
           name: reviews
-          namespace: default
+          namespace: bookinfo
           subset:
             version: v2
         weight: 10
@@ -102,21 +102,18 @@ Once you apply this resource to the `management-plane-context` cluster, you shou
 
 To go into slightly more detail here: The above TrafficPolicy says that:
 
-* Any traffic destined for the *reviews service* in the *management plane cluster*
-* Should be split across several different destinations
-* 25% of traffic gets split between the v1 and v2 instances of the reviews service in the management plane cluster
-* 75% of traffic gets sent to the v3 instance of the reviews service on the remote cluster
+* Any traffic destined for the *reviews service* in the *management plane cluster* should be split across several different destinations
+  * 25% of traffic gets split between the v1 and v2 instances of the reviews service in the management plane cluster
+  * 75% of traffic gets sent to the v3 instance of the reviews service on the remote cluster
 
-We have successfully set up multi-cluster traffic across our application! Note that this has been done transparently to the application. The application can continue talking to what it believes is the local instance of the service, but, behind the scenes, we have instead routed that traffic to an entirely different cluster. 
+We have successfully set up multi-cluster traffic across our application! Note that this has been done transparently to the application. The application can continue talking to what it believes is the local instance of the service. Behind the scenes we have instead routed that traffic to an entirely different cluster. 
 
-Note that this is interesting in its own right, that we have easily
-achieved multi-cluster communication, but also in other scenarios like in fast disaster recovery: We can quickly route traffic to healthy instances of a service in an entirely different data center.
-
+Note that this is interesting in its own right, that we have easily achieved multi-cluster communication, but also in other scenarios like in fast disaster recovery: We can quickly route traffic to healthy instances of a service in an entirely different data center.
 
 ## See it in action
 
-Check out "Part Four" of the ["Dive into Service Mesh Hub" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK):
+Check out "Part Four" of the ["Dive into Service Mesh Hub" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK)
+(note that the video content reflects Service Mesh Hub <b>v0.6.1</b>):
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/HAr1Mw1bxB4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
 

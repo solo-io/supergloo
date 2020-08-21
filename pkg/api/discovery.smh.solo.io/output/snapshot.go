@@ -55,6 +55,7 @@ type snapshot struct {
 	trafficTargets []LabeledTrafficTargetSet
 	workloads      []LabeledWorkloadSet
 	meshes         []LabeledMeshSet
+	clusters      []string
 }
 
 func NewSnapshot(
@@ -63,7 +64,7 @@ func NewSnapshot(
 	trafficTargets []LabeledTrafficTargetSet,
 	workloads []LabeledWorkloadSet,
 	meshes []LabeledMeshSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
 		name: name,
@@ -71,6 +72,7 @@ func NewSnapshot(
 		trafficTargets: trafficTargets,
 		workloads:      workloads,
 		meshes:         meshes,
+		clusters:      clusters,
 	}
 }
 
@@ -83,7 +85,7 @@ func NewLabelPartitionedSnapshot(
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet,
 	workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
 	partitionedTrafficTargets, err := partitionTrafficTargetsByLabel(labelKey, trafficTargets)
@@ -105,6 +107,7 @@ func NewLabelPartitionedSnapshot(
 		partitionedTrafficTargets,
 		partitionedWorkloads,
 		partitionedMeshes,
+		clusters...,
 	), nil
 }
 
@@ -117,7 +120,7 @@ func NewSinglePartitionedSnapshot(
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet,
 	workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
 	labeledTrafficTargets, err := NewLabeledTrafficTargetSet(trafficTargets, snapshotLabels)
@@ -139,6 +142,7 @@ func NewSinglePartitionedSnapshot(
 		[]LabeledTrafficTargetSet{labeledTrafficTargets},
 		[]LabeledWorkloadSet{labeledWorkloads},
 		[]LabeledMeshSet{labeledMeshes},
+		clusters...,
 	), nil
 }
 
@@ -178,6 +182,7 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 
 	output.Snapshot{
 		Name:        s.name,
+		Clusters:    s.clusters,
 		ListsToSync: genericLists,
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
@@ -553,8 +558,9 @@ func (l labeledMeshSet) Generic() output.ResourceList {
 }
 
 type builder struct {
-	ctx  context.Context
-	name string
+	ctx      context.Context
+	name     string
+	clusters []string
 
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet
 	workloads      discovery_smh_solo_io_v1alpha2_sets.WorkloadSet
@@ -599,6 +605,10 @@ type Builder interface {
 
 	// build the collected outputs into a snapshot with a single partition
 	BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error)
+
+	// add a cluster to the collected clusters.
+	// this can be used to collect clusters for use with MultiCluster snapshots.
+	AddCluster(cluster string)
 }
 
 func (b *builder) AddTrafficTargets(trafficTargets ...*discovery_smh_solo_io_v1alpha2.TrafficTarget) {
@@ -647,6 +657,7 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.trafficTargets,
 		b.workloads,
 		b.meshes,
+		b.clusters...,
 	)
 }
 
@@ -658,5 +669,10 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.trafficTargets,
 		b.workloads,
 		b.meshes,
+		b.clusters...,
 	)
+}
+
+func (b *builder) AddCluster(cluster string) {
+	b.clusters = append(b.clusters, cluster)
 }

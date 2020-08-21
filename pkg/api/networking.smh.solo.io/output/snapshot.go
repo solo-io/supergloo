@@ -79,6 +79,7 @@ type snapshot struct {
 	virtualServices       []LabeledVirtualServiceSet
 	authorizationPolicies []LabeledAuthorizationPolicySet
 	secrets               []LabeledSecretSet
+	clusters              []string
 }
 
 func NewSnapshot(
@@ -92,7 +93,7 @@ func NewSnapshot(
 	virtualServices []LabeledVirtualServiceSet,
 	authorizationPolicies []LabeledAuthorizationPolicySet,
 	secrets []LabeledSecretSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
 		name: name,
@@ -105,6 +106,7 @@ func NewSnapshot(
 		virtualServices:       virtualServices,
 		authorizationPolicies: authorizationPolicies,
 		secrets:               secrets,
+		clusters:              clusters,
 	}
 }
 
@@ -125,7 +127,7 @@ func NewLabelPartitionedSnapshot(
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
 	secrets v1_sets.SecretSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
 	partitionedIssuedCertificates, err := partitionIssuedCertificatesByLabel(labelKey, issuedCertificates)
@@ -172,6 +174,7 @@ func NewLabelPartitionedSnapshot(
 		partitionedVirtualServices,
 		partitionedAuthorizationPolicies,
 		partitionedSecrets,
+		clusters...,
 	), nil
 }
 
@@ -192,7 +195,7 @@ func NewSinglePartitionedSnapshot(
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
 	secrets v1_sets.SecretSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
 	labeledIssuedCertificates, err := NewLabeledIssuedCertificateSet(issuedCertificates, snapshotLabels)
@@ -239,6 +242,7 @@ func NewSinglePartitionedSnapshot(
 		[]LabeledVirtualServiceSet{labeledVirtualServices},
 		[]LabeledAuthorizationPolicySet{labeledAuthorizationPolicies},
 		[]LabeledSecretSet{labeledSecrets},
+		clusters...,
 	), nil
 }
 
@@ -308,6 +312,7 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 
 	output.Snapshot{
 		Name:        s.name,
+		Clusters:    s.clusters,
 		ListsToSync: genericLists,
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
@@ -1291,8 +1296,9 @@ func (l labeledSecretSet) Generic() output.ResourceList {
 }
 
 type builder struct {
-	ctx  context.Context
-	name string
+	ctx      context.Context
+	name     string
+	clusters []string
 
 	issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
 
@@ -1383,6 +1389,10 @@ type Builder interface {
 
 	// build the collected outputs into a snapshot with a single partition
 	BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error)
+
+	// add a cluster to the collected clusters.
+	// this can be used to collect clusters for use with MultiCluster snapshots.
+	AddCluster(cluster string)
 }
 
 func (b *builder) AddIssuedCertificates(issuedCertificates ...*certificates_smh_solo_io_v1alpha2.IssuedCertificate) {
@@ -1502,6 +1512,7 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.authorizationPolicies,
 
 		b.secrets,
+		b.clusters...,
 	)
 }
 
@@ -1521,5 +1532,10 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.authorizationPolicies,
 
 		b.secrets,
+		b.clusters...,
 	)
+}
+
+func (b *builder) AddCluster(cluster string) {
+	b.clusters = append(b.clusters, cluster)
 }

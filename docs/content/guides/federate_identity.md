@@ -167,13 +167,14 @@ Note that the name/namespace of the provided root cert cannot be `cacerts/istio-
 that unifies the trust root between Meshes in the VirtualMesh.
 
 ##### Applying VirtualMesh
+
 If you saved this VirtualMesh CR to a file named `demo-virtual-mesh.yaml`, you can apply it like this:
 
 ```shell
 kubectl --context $MGMT_CONTEXT apply -f demo-virtual-mesh.yaml
 ```
 
-Notice the `autoRestartPods: true` in the mtlsConfig stanza. This instructs Service Mesh Hub to restart the istio pods in the relevant clusters. 
+Notice the `autoRestartPods: true` in the mtlsConfig stanza. This instructs Service Mesh Hub to restart the Istio pods in the relevant clusters. 
 
 This is due to a limitation of Istio. The Istio control plane picks up the CA for Citadel and does not rotate it often enough. This is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993). 
 
@@ -187,7 +188,7 @@ meshctl mesh restart --mesh-name istiod-istio-system-management-plane
 Note, after you bounce the control plane, it may still take time for the workload certs to get re-issued with the new CA. You can force the workloads to re-load by bouncing them. For example, for the bookinfo sample running in the `bookinfo` namespace:
 
 ```shell
-kubectl --context $MGMT_CONTEXT-n bookinfo delete po --all
+kubectl --context $MGMT_CONTEXT -n bookinfo delete po --all
 kubectl --context $REMOTE_CONTEXT -n bookinfo delete po --all
 ```
 {{% /notice %}}
@@ -196,9 +197,10 @@ Creating this resource will instruct Service Mesh to establish a shared root ide
 
 ## Understanding the Shared Root Process
 
-When we create the VirtualMesh CR, set the trust model to `shared`, and configure the Root CA parameters, Service Mesh Hub will kick off the process to unify the identity to a shared root. First, Service Mesh Hub will either create the Root CA specified (if `generated` is used). 
+When we create the VirtualMesh CR, set the trust model to `shared`, and configure the Root CA parameters, Service Mesh Hub will kick off the process to unify the identity to a shared root. First, Service Mesh Hub will either create the Root CA specified (if `generated` is used) or use the supplied CA information. 
 
 Then Service Mesh Hub will use a Certificate Request (CR) agent on each of the affected clusters to create a new key/cert pair that will form an intermediate CA used by the mesh on that cluster. It will then create a Certificate Request, represented by the [CertificateRequest]({{% versioned_link_path fromRoot="/reference/api/certificate_request/" %}}) CR.
+
  Service Mesh Hub will sign the certificate with the Root CA specified in the VirtualMesh. At that point, we will want the mesh (Istio in this case) to pick up the new intermediate CA and start using that for its workloads.
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-csr.png" %}})
@@ -246,7 +248,7 @@ For example, you can see what Istio `ServiceEntry` objects were created. On the 
 
 ```shell
 kubectl --context $MGMT_CONTEXT \
-get serviceentry -n istio-system
+  get serviceentry -n istio-system
 ```
 
 ```shell
@@ -274,7 +276,8 @@ reviews.bookinfo.svc.management-plane.global                    [reviews.bookinf
 
 ## See it in action
 
-Check out "Part Two" of the ["Dive into Service Mesh Hub" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK):
+Check out "Part Two" of the ["Dive into Service Mesh Hub" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK)
+(note that the video content reflects Service Mesh Hub <b>v0.6.1</b>):
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/djcDaIsqIl8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
