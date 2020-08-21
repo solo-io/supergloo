@@ -287,7 +287,7 @@ service/reviews-v3 created
 ```
 
 Once the injected application is deployed, we should be able to see a corresponding 
-[`TrafficTarget` CR]({{< versioned_link_path fromRoot="/reference/api/mesh_service/">}}) created by `mesh-discovery`:
+[`MeshService` CR]({{< versioned_link_path fromRoot="/reference/api/mesh_service/">}}) created by `mesh-discovery`:
 
 
 {{< tabs >}}
@@ -295,7 +295,7 @@ Once the injected application is deployed, we should be able to see a correspond
 meshctl get services
 
 
-Kubernetes Traffic Targets:
+Kubernetes Mesh Services:
 +---------------------------------+--------------------------------+------------------------------------------------------+
 |              MESH               |        SERVICE + PORTS         |                   LABELS + SUBSETS                   |
 +---------------------------------+--------------------------------+------------------------------------------------------+
@@ -365,7 +365,7 @@ Kubernetes Traffic Targets:
 +---------------------------------+-----------------+-----------+--------------+
 {{< /tab >}}
 {{< tab name="kubectl" codelang="shell" >}}
-kubectl get traffictarget -n service-mesh-hub
+kubectl get meshservice -n service-mesh-hub
 
 NAME                                             AGE
 details-bookinfo-linkerd-cluster                 15m

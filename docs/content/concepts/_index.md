@@ -32,7 +32,7 @@ Service Mesh Hub consists of a set of components that run on a single cluster, o
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-components.png" %}})
 
-Once a cluster is registered with Service Mesh Hub, it can start managing that cluster - discovering service workloads, pushing out configurations, unifying the trust model, scraping metrics, and more. 
+Once a cluster is registered with Service Mesh Hub, it can start managing that cluster - discovering workloads, pushing out configurations, unifying the trust model, scraping metrics, and more. 
 
 In this document, we take a look at the concepts and components that comprise Service Mesh Hub.
 
@@ -72,7 +72,7 @@ The discovery process is initiated by Service Mesh Hub running on the management
 
 The first task of discovery is to find any service meshes that are installed on the cluster. When it finds a control plane for a service mesh, discovery will write a [`Mesh`]({{% versioned_link_path fromRoot="/reference/api/mesh/" %}}) resource to the management plane cluster, linked to the `KubernetesCluster` resource that was written during cluster registration. Currently, Service Mesh Hub discovers and manages [Istio](https://istio.io) meshes, with plans to support more in the near future.
 
-`Discovery` then looks for workloads that are associated with the mesh, such as a deployment that has created a pod injected with the sidecar proxy for that mesh. It will write a [`Workload`]({{% versioned_link_path fromRoot="/reference/api/Workload/" %}}) resource to the management plane cluster representing this workload. 
+`Discovery` then looks for workloads that are associated with the mesh, such as a deployment that has created a pod injected with the sidecar proxy for that mesh. It will write a [`Workload`]({{% versioned_link_path fromRoot="/reference/api/workload/" %}}) resource to the management plane cluster representing this workload. 
 
 Finally, discovery looks for services exposing the workloads of a mesh and writes a [`TrafficTarget`]({{% versioned_link_path fromRoot="/reference/api/mesh_service/" %}}) resource to the management plane cluster. 
 
