@@ -120,7 +120,9 @@ service-mesh-hub-image: service-mesh-hub-linux-amd64
 
 .PHONY: service-mesh-hub-image-push
 service-mesh-hub-image-push: service-mesh-hub-image
+ifeq ($(RELEASE),"true")
 	docker push $(SMH_IMAGE):$(VERSION)
+endif
 
 #----------------------------------------------------------------------------------
 # Build cert-agent + image
@@ -147,7 +149,9 @@ cert-agent-image: cert-agent-linux-amd64
 
 .PHONY: cert-agent-image-push
 cert-agent-image-push: cert-agent-image
+ifeq ($(RELEASE),"true")
 	docker push $(CA_IMAGE):$(VERSION)
+endif
 
 #----------------------------------------------------------------------------------
 # Build service-mesh-hub cli (meshctl)
