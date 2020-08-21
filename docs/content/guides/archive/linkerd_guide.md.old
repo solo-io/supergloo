@@ -295,7 +295,7 @@ Once the injected application is deployed, we should be able to see a correspond
 meshctl get services
 
 
-Kubernetes Mesh Services:
+Kubernetes Traffic Targets:
 +---------------------------------+--------------------------------+------------------------------------------------------+
 |              MESH               |        SERVICE + PORTS         |                   LABELS + SUBSETS                   |
 +---------------------------------+--------------------------------+------------------------------------------------------+

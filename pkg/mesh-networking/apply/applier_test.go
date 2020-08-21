@@ -93,7 +93,7 @@ var _ = Describe("Applier", func() {
 			}))
 
 		})
-		It("updates status on input mesh services policies", func() {
+		It("updates status on input traffic target policies", func() {
 			Expect(trafficTarget.Status.AppliedTrafficPolicies).To(HaveLen(2))
 			Expect(trafficTarget.Status.AppliedTrafficPolicies[0].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy1)))
 			Expect(trafficTarget.Status.AppliedTrafficPolicies[0].Spec).To(Equal(&trafficPolicy1.Spec))
@@ -150,7 +150,7 @@ var _ = Describe("Applier", func() {
 				Errors:          []string{"did an oopsie"},
 			}))
 		})
-		It("does not add the policy to the mesh service status", func() {
+		It("does not add the policy to the traffic target status", func() {
 			Expect(trafficTarget.Status.AppliedTrafficPolicies).To(HaveLen(0))
 		})
 	})

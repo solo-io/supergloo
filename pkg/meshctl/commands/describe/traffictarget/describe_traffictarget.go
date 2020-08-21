@@ -19,7 +19,7 @@ import (
 func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "traffictarget",
-		Short:   "Description of managed mesh services",
+		Short:   "Description of managed traffic targets",
 		Aliases: []string{"traffictargets"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := utils.BuildClient(opts.Kubeconfig, opts.Kubecontext)

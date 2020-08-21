@@ -116,7 +116,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	originalKubeService := originalService.Spec.GetKubeService()
 
 	if originalKubeService == nil {
-		return nil, eris.Errorf("traffic shift only supported for kube mesh services")
+		return nil, eris.Errorf("traffic shift only supported for kube traffic targets")
 	}
 	if kubeDest == nil {
 		return nil, eris.Errorf("nil kube destination on traffic shift")
@@ -147,7 +147,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 			Number: port,
 		}
 	} else {
-		// validate that mesh service only has one port
+		// validate that traffic target only has one port
 		if numPorts := len(trafficShiftKubeService.Ports); numPorts > 1 {
 			return nil, eris.Errorf("must provide port for traffic shift destination service %v with multiple ports (%v) defined", sets.Key(trafficShiftKubeService.Ref), numPorts)
 		}

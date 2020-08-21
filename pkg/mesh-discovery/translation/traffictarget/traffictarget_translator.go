@@ -35,7 +35,7 @@ func (t *translator) TranslateTrafficTargets(services corev1sets.ServiceSet, wor
 		if trafficTarget == nil {
 			continue
 		}
-		contextutils.LoggerFrom(t.ctx).Debugf("detected mesh service %v", sets.Key(trafficTarget))
+		contextutils.LoggerFrom(t.ctx).Debugf("detected traffic target %v", sets.Key(trafficTarget))
 		trafficTargetSet.Insert(trafficTarget)
 	}
 	return trafficTargetSet

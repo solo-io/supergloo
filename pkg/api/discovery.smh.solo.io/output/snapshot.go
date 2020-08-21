@@ -55,7 +55,7 @@ type snapshot struct {
 	trafficTargets []LabeledTrafficTargetSet
 	workloads      []LabeledWorkloadSet
 	meshes         []LabeledMeshSet
-	clusters      []string
+	clusters       []string
 }
 
 func NewSnapshot(
@@ -72,7 +72,7 @@ func NewSnapshot(
 		trafficTargets: trafficTargets,
 		workloads:      workloads,
 		meshes:         meshes,
-		clusters:      clusters,
+		clusters:       clusters,
 	}
 }
 

@@ -148,7 +148,7 @@ reviews-v2-bookinfo-management-plane-deployment                 3m53s
 reviews-v3-bookinfo-remote-cluster-deployment                   2m
 ```
 
-### Discover Mesh Services
+### Discover Traffic Targets
 
 Similarly for the `bookinfo` services:
 

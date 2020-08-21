@@ -112,7 +112,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 }
 
 // this function both validates the status of TrafficPolicies (sets error or accepted state)
-// as well as returns a list of accepted traffic policies for the mesh service status
+// as well as returns a list of accepted traffic policies for the traffic target status
 func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.Snapshot, reporter *applyReporter, trafficTarget *discoveryv1alpha2.TrafficTarget) []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy {
 	var validatedTrafficPolicies []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy
 
@@ -152,7 +152,7 @@ func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.S
 }
 
 // this function both validates the status of AccessPolicies (sets error or accepted state)
-// as well as returns a list of accepted AccessPolicies for the mesh service status
+// as well as returns a list of accepted AccessPolicies for the traffic target status
 func validateAndReturnApprovedAccessPolicies(
 	ctx context.Context,
 	input input.Snapshot,
@@ -458,7 +458,7 @@ func sortTrafficPoliciesByAcceptedDate(trafficTarget *discoveryv1alpha2.TrafficT
 		status2 := tp2.Status.TrafficTargets[sets.Key(trafficTarget)]
 
 		if status2 == nil {
-			// if status is not set, the traffic policy is "pending" for this mesh service
+			// if status is not set, the traffic policy is "pending" for this traffic target
 			// and should get sorted after an accepted status.
 			return status1 != nil
 		} else if status1 == nil {

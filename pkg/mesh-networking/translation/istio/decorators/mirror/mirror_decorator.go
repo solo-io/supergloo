@@ -131,7 +131,7 @@ func (d *mirrorDecorator) makeKubeDestinationMirror(
 			Number: port,
 		}
 	} else {
-		// validate that mesh service only has one port
+		// validate that traffic target only has one port
 		if numPorts := len(mirrorKubeService.GetPorts()); numPorts > 1 {
 			return nil, eris.Errorf("must provide port for mirror destination service %v with multiple ports (%v) defined", sets.Key(mirrorKubeService.GetRef()), numPorts)
 		}

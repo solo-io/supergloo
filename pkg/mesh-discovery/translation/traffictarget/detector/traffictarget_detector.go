@@ -33,7 +33,7 @@ func NewTrafficTargetDetector() TrafficTargetDetector {
 func (d trafficTargetDetector) DetectTrafficTarget(service *corev1.Service, workloads v1alpha2sets.WorkloadSet) *v1alpha2.TrafficTarget {
 	backingWorkloads := d.findBackingWorkloads(service, workloads)
 	if len(backingWorkloads) == 0 {
-		// TODO(ilackarms): we currently only create mesh services for services with backing workloads; this may be problematic when working with external services (not contained inside the mesh)
+		// TODO(ilackarms): we currently only create traffic targets for services with backing workloads; this may be problematic when working with external services (not contained inside the mesh)
 		return nil
 	}
 

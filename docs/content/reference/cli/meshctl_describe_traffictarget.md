@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl describe traffictarget
 
-Description of managed mesh services
+Description of managed traffic targets
 
 ### Synopsis
 
-Description of managed mesh services
+Description of managed traffic targets
 
 ```
 meshctl describe traffictarget [flags]

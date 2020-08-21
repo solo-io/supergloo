@@ -23,5 +23,5 @@ Human readable description of discovered resources and applicable configuration
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Service Mesh Hub.
 * [meshctl describe mesh](../meshctl_describe_mesh)	 - Description of managed meshes
-* [meshctl describe traffictarget](../meshctl_describe_traffictarget)	 - Description of managed mesh services
+* [meshctl describe traffictarget](../meshctl_describe_traffictarget)	 - Description of managed traffic targets
 

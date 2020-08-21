@@ -129,7 +129,7 @@ func (t *translator) Translate(
 		meshKubeService := trafficTarget.Spec.GetKubeService()
 		if meshKubeService == nil {
 			// should never happen
-			contextutils.LoggerFrom(t.ctx).Debugf("skipping mesh service %v (only kube types supported)", err)
+			contextutils.LoggerFrom(t.ctx).Debugf("skipping traffic target %v (only kube types supported)", err)
 			continue
 		}
 
