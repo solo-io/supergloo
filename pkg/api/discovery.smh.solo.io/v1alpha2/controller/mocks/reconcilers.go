@@ -15,370 +15,370 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockMeshServiceReconciler is a mock of MeshServiceReconciler interface
-type MockMeshServiceReconciler struct {
+// MockTrafficTargetReconciler is a mock of TrafficTargetReconciler interface
+type MockTrafficTargetReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceReconcilerMockRecorder
+	recorder *MockTrafficTargetReconcilerMockRecorder
 }
 
-// MockMeshServiceReconcilerMockRecorder is the mock recorder for MockMeshServiceReconciler
-type MockMeshServiceReconcilerMockRecorder struct {
-	mock *MockMeshServiceReconciler
+// MockTrafficTargetReconcilerMockRecorder is the mock recorder for MockTrafficTargetReconciler
+type MockTrafficTargetReconcilerMockRecorder struct {
+	mock *MockTrafficTargetReconciler
 }
 
-// NewMockMeshServiceReconciler creates a new mock instance
-func NewMockMeshServiceReconciler(ctrl *gomock.Controller) *MockMeshServiceReconciler {
-	mock := &MockMeshServiceReconciler{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceReconcilerMockRecorder{mock}
+// NewMockTrafficTargetReconciler creates a new mock instance
+func NewMockTrafficTargetReconciler(ctrl *gomock.Controller) *MockTrafficTargetReconciler {
+	mock := &MockTrafficTargetReconciler{ctrl: ctrl}
+	mock.recorder = &MockTrafficTargetReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshServiceReconciler) EXPECT() *MockMeshServiceReconcilerMockRecorder {
+func (m *MockTrafficTargetReconciler) EXPECT() *MockTrafficTargetReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileMeshService mocks base method
-func (m *MockMeshServiceReconciler) ReconcileMeshService(obj *v1alpha2.MeshService) (reconcile.Result, error) {
+// ReconcileTrafficTarget mocks base method
+func (m *MockTrafficTargetReconciler) ReconcileTrafficTarget(obj *v1alpha2.TrafficTarget) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileMeshService", obj)
+	ret := m.ctrl.Call(m, "ReconcileTrafficTarget", obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileMeshService indicates an expected call of ReconcileMeshService
-func (mr *MockMeshServiceReconcilerMockRecorder) ReconcileMeshService(obj interface{}) *gomock.Call {
+// ReconcileTrafficTarget indicates an expected call of ReconcileTrafficTarget
+func (mr *MockTrafficTargetReconcilerMockRecorder) ReconcileTrafficTarget(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMeshService", reflect.TypeOf((*MockMeshServiceReconciler)(nil).ReconcileMeshService), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileTrafficTarget", reflect.TypeOf((*MockTrafficTargetReconciler)(nil).ReconcileTrafficTarget), obj)
 }
 
-// MockMeshServiceDeletionReconciler is a mock of MeshServiceDeletionReconciler interface
-type MockMeshServiceDeletionReconciler struct {
+// MockTrafficTargetDeletionReconciler is a mock of TrafficTargetDeletionReconciler interface
+type MockTrafficTargetDeletionReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceDeletionReconcilerMockRecorder
+	recorder *MockTrafficTargetDeletionReconcilerMockRecorder
 }
 
-// MockMeshServiceDeletionReconcilerMockRecorder is the mock recorder for MockMeshServiceDeletionReconciler
-type MockMeshServiceDeletionReconcilerMockRecorder struct {
-	mock *MockMeshServiceDeletionReconciler
+// MockTrafficTargetDeletionReconcilerMockRecorder is the mock recorder for MockTrafficTargetDeletionReconciler
+type MockTrafficTargetDeletionReconcilerMockRecorder struct {
+	mock *MockTrafficTargetDeletionReconciler
 }
 
-// NewMockMeshServiceDeletionReconciler creates a new mock instance
-func NewMockMeshServiceDeletionReconciler(ctrl *gomock.Controller) *MockMeshServiceDeletionReconciler {
-	mock := &MockMeshServiceDeletionReconciler{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceDeletionReconcilerMockRecorder{mock}
+// NewMockTrafficTargetDeletionReconciler creates a new mock instance
+func NewMockTrafficTargetDeletionReconciler(ctrl *gomock.Controller) *MockTrafficTargetDeletionReconciler {
+	mock := &MockTrafficTargetDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockTrafficTargetDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshServiceDeletionReconciler) EXPECT() *MockMeshServiceDeletionReconcilerMockRecorder {
+func (m *MockTrafficTargetDeletionReconciler) EXPECT() *MockTrafficTargetDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileMeshServiceDeletion mocks base method
-func (m *MockMeshServiceDeletionReconciler) ReconcileMeshServiceDeletion(req reconcile.Request) error {
+// ReconcileTrafficTargetDeletion mocks base method
+func (m *MockTrafficTargetDeletionReconciler) ReconcileTrafficTargetDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileMeshServiceDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileTrafficTargetDeletion", req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ReconcileMeshServiceDeletion indicates an expected call of ReconcileMeshServiceDeletion
-func (mr *MockMeshServiceDeletionReconcilerMockRecorder) ReconcileMeshServiceDeletion(req interface{}) *gomock.Call {
+// ReconcileTrafficTargetDeletion indicates an expected call of ReconcileTrafficTargetDeletion
+func (mr *MockTrafficTargetDeletionReconcilerMockRecorder) ReconcileTrafficTargetDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMeshServiceDeletion", reflect.TypeOf((*MockMeshServiceDeletionReconciler)(nil).ReconcileMeshServiceDeletion), req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileTrafficTargetDeletion", reflect.TypeOf((*MockTrafficTargetDeletionReconciler)(nil).ReconcileTrafficTargetDeletion), req)
 }
 
-// MockMeshServiceFinalizer is a mock of MeshServiceFinalizer interface
-type MockMeshServiceFinalizer struct {
+// MockTrafficTargetFinalizer is a mock of TrafficTargetFinalizer interface
+type MockTrafficTargetFinalizer struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceFinalizerMockRecorder
+	recorder *MockTrafficTargetFinalizerMockRecorder
 }
 
-// MockMeshServiceFinalizerMockRecorder is the mock recorder for MockMeshServiceFinalizer
-type MockMeshServiceFinalizerMockRecorder struct {
-	mock *MockMeshServiceFinalizer
+// MockTrafficTargetFinalizerMockRecorder is the mock recorder for MockTrafficTargetFinalizer
+type MockTrafficTargetFinalizerMockRecorder struct {
+	mock *MockTrafficTargetFinalizer
 }
 
-// NewMockMeshServiceFinalizer creates a new mock instance
-func NewMockMeshServiceFinalizer(ctrl *gomock.Controller) *MockMeshServiceFinalizer {
-	mock := &MockMeshServiceFinalizer{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceFinalizerMockRecorder{mock}
+// NewMockTrafficTargetFinalizer creates a new mock instance
+func NewMockTrafficTargetFinalizer(ctrl *gomock.Controller) *MockTrafficTargetFinalizer {
+	mock := &MockTrafficTargetFinalizer{ctrl: ctrl}
+	mock.recorder = &MockTrafficTargetFinalizerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshServiceFinalizer) EXPECT() *MockMeshServiceFinalizerMockRecorder {
+func (m *MockTrafficTargetFinalizer) EXPECT() *MockTrafficTargetFinalizerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileMeshService mocks base method
-func (m *MockMeshServiceFinalizer) ReconcileMeshService(obj *v1alpha2.MeshService) (reconcile.Result, error) {
+// ReconcileTrafficTarget mocks base method
+func (m *MockTrafficTargetFinalizer) ReconcileTrafficTarget(obj *v1alpha2.TrafficTarget) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileMeshService", obj)
+	ret := m.ctrl.Call(m, "ReconcileTrafficTarget", obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileMeshService indicates an expected call of ReconcileMeshService
-func (mr *MockMeshServiceFinalizerMockRecorder) ReconcileMeshService(obj interface{}) *gomock.Call {
+// ReconcileTrafficTarget indicates an expected call of ReconcileTrafficTarget
+func (mr *MockTrafficTargetFinalizerMockRecorder) ReconcileTrafficTarget(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMeshService", reflect.TypeOf((*MockMeshServiceFinalizer)(nil).ReconcileMeshService), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileTrafficTarget", reflect.TypeOf((*MockTrafficTargetFinalizer)(nil).ReconcileTrafficTarget), obj)
 }
 
-// MeshServiceFinalizerName mocks base method
-func (m *MockMeshServiceFinalizer) MeshServiceFinalizerName() string {
+// TrafficTargetFinalizerName mocks base method
+func (m *MockTrafficTargetFinalizer) TrafficTargetFinalizerName() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MeshServiceFinalizerName")
+	ret := m.ctrl.Call(m, "TrafficTargetFinalizerName")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// MeshServiceFinalizerName indicates an expected call of MeshServiceFinalizerName
-func (mr *MockMeshServiceFinalizerMockRecorder) MeshServiceFinalizerName() *gomock.Call {
+// TrafficTargetFinalizerName indicates an expected call of TrafficTargetFinalizerName
+func (mr *MockTrafficTargetFinalizerMockRecorder) TrafficTargetFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshServiceFinalizerName", reflect.TypeOf((*MockMeshServiceFinalizer)(nil).MeshServiceFinalizerName))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficTargetFinalizerName", reflect.TypeOf((*MockTrafficTargetFinalizer)(nil).TrafficTargetFinalizerName))
 }
 
-// FinalizeMeshService mocks base method
-func (m *MockMeshServiceFinalizer) FinalizeMeshService(obj *v1alpha2.MeshService) error {
+// FinalizeTrafficTarget mocks base method
+func (m *MockTrafficTargetFinalizer) FinalizeTrafficTarget(obj *v1alpha2.TrafficTarget) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinalizeMeshService", obj)
+	ret := m.ctrl.Call(m, "FinalizeTrafficTarget", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// FinalizeMeshService indicates an expected call of FinalizeMeshService
-func (mr *MockMeshServiceFinalizerMockRecorder) FinalizeMeshService(obj interface{}) *gomock.Call {
+// FinalizeTrafficTarget indicates an expected call of FinalizeTrafficTarget
+func (mr *MockTrafficTargetFinalizerMockRecorder) FinalizeTrafficTarget(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeMeshService", reflect.TypeOf((*MockMeshServiceFinalizer)(nil).FinalizeMeshService), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeTrafficTarget", reflect.TypeOf((*MockTrafficTargetFinalizer)(nil).FinalizeTrafficTarget), obj)
 }
 
-// MockMeshServiceReconcileLoop is a mock of MeshServiceReconcileLoop interface
-type MockMeshServiceReconcileLoop struct {
+// MockTrafficTargetReconcileLoop is a mock of TrafficTargetReconcileLoop interface
+type MockTrafficTargetReconcileLoop struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceReconcileLoopMockRecorder
+	recorder *MockTrafficTargetReconcileLoopMockRecorder
 }
 
-// MockMeshServiceReconcileLoopMockRecorder is the mock recorder for MockMeshServiceReconcileLoop
-type MockMeshServiceReconcileLoopMockRecorder struct {
-	mock *MockMeshServiceReconcileLoop
+// MockTrafficTargetReconcileLoopMockRecorder is the mock recorder for MockTrafficTargetReconcileLoop
+type MockTrafficTargetReconcileLoopMockRecorder struct {
+	mock *MockTrafficTargetReconcileLoop
 }
 
-// NewMockMeshServiceReconcileLoop creates a new mock instance
-func NewMockMeshServiceReconcileLoop(ctrl *gomock.Controller) *MockMeshServiceReconcileLoop {
-	mock := &MockMeshServiceReconcileLoop{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceReconcileLoopMockRecorder{mock}
+// NewMockTrafficTargetReconcileLoop creates a new mock instance
+func NewMockTrafficTargetReconcileLoop(ctrl *gomock.Controller) *MockTrafficTargetReconcileLoop {
+	mock := &MockTrafficTargetReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockTrafficTargetReconcileLoopMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshServiceReconcileLoop) EXPECT() *MockMeshServiceReconcileLoopMockRecorder {
+func (m *MockTrafficTargetReconcileLoop) EXPECT() *MockTrafficTargetReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunMeshServiceReconciler mocks base method
-func (m *MockMeshServiceReconcileLoop) RunMeshServiceReconciler(ctx context.Context, rec controller.MeshServiceReconciler, predicates ...predicate.Predicate) error {
+// RunTrafficTargetReconciler mocks base method
+func (m *MockTrafficTargetReconcileLoop) RunTrafficTargetReconciler(ctx context.Context, rec controller.TrafficTargetReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
 	for _, a := range predicates {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "RunMeshServiceReconciler", varargs...)
+	ret := m.ctrl.Call(m, "RunTrafficTargetReconciler", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RunMeshServiceReconciler indicates an expected call of RunMeshServiceReconciler
-func (mr *MockMeshServiceReconcileLoopMockRecorder) RunMeshServiceReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+// RunTrafficTargetReconciler indicates an expected call of RunTrafficTargetReconciler
+func (mr *MockTrafficTargetReconcileLoopMockRecorder) RunTrafficTargetReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunMeshServiceReconciler", reflect.TypeOf((*MockMeshServiceReconcileLoop)(nil).RunMeshServiceReconciler), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunTrafficTargetReconciler", reflect.TypeOf((*MockTrafficTargetReconcileLoop)(nil).RunTrafficTargetReconciler), varargs...)
 }
 
-// MockMeshWorkloadReconciler is a mock of MeshWorkloadReconciler interface
-type MockMeshWorkloadReconciler struct {
+// MockWorkloadReconciler is a mock of WorkloadReconciler interface
+type MockWorkloadReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshWorkloadReconcilerMockRecorder
+	recorder *MockWorkloadReconcilerMockRecorder
 }
 
-// MockMeshWorkloadReconcilerMockRecorder is the mock recorder for MockMeshWorkloadReconciler
-type MockMeshWorkloadReconcilerMockRecorder struct {
-	mock *MockMeshWorkloadReconciler
+// MockWorkloadReconcilerMockRecorder is the mock recorder for MockWorkloadReconciler
+type MockWorkloadReconcilerMockRecorder struct {
+	mock *MockWorkloadReconciler
 }
 
-// NewMockMeshWorkloadReconciler creates a new mock instance
-func NewMockMeshWorkloadReconciler(ctrl *gomock.Controller) *MockMeshWorkloadReconciler {
-	mock := &MockMeshWorkloadReconciler{ctrl: ctrl}
-	mock.recorder = &MockMeshWorkloadReconcilerMockRecorder{mock}
+// NewMockWorkloadReconciler creates a new mock instance
+func NewMockWorkloadReconciler(ctrl *gomock.Controller) *MockWorkloadReconciler {
+	mock := &MockWorkloadReconciler{ctrl: ctrl}
+	mock.recorder = &MockWorkloadReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshWorkloadReconciler) EXPECT() *MockMeshWorkloadReconcilerMockRecorder {
+func (m *MockWorkloadReconciler) EXPECT() *MockWorkloadReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileMeshWorkload mocks base method
-func (m *MockMeshWorkloadReconciler) ReconcileMeshWorkload(obj *v1alpha2.MeshWorkload) (reconcile.Result, error) {
+// ReconcileWorkload mocks base method
+func (m *MockWorkloadReconciler) ReconcileWorkload(obj *v1alpha2.Workload) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileMeshWorkload", obj)
+	ret := m.ctrl.Call(m, "ReconcileWorkload", obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileMeshWorkload indicates an expected call of ReconcileMeshWorkload
-func (mr *MockMeshWorkloadReconcilerMockRecorder) ReconcileMeshWorkload(obj interface{}) *gomock.Call {
+// ReconcileWorkload indicates an expected call of ReconcileWorkload
+func (mr *MockWorkloadReconcilerMockRecorder) ReconcileWorkload(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMeshWorkload", reflect.TypeOf((*MockMeshWorkloadReconciler)(nil).ReconcileMeshWorkload), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileWorkload", reflect.TypeOf((*MockWorkloadReconciler)(nil).ReconcileWorkload), obj)
 }
 
-// MockMeshWorkloadDeletionReconciler is a mock of MeshWorkloadDeletionReconciler interface
-type MockMeshWorkloadDeletionReconciler struct {
+// MockWorkloadDeletionReconciler is a mock of WorkloadDeletionReconciler interface
+type MockWorkloadDeletionReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshWorkloadDeletionReconcilerMockRecorder
+	recorder *MockWorkloadDeletionReconcilerMockRecorder
 }
 
-// MockMeshWorkloadDeletionReconcilerMockRecorder is the mock recorder for MockMeshWorkloadDeletionReconciler
-type MockMeshWorkloadDeletionReconcilerMockRecorder struct {
-	mock *MockMeshWorkloadDeletionReconciler
+// MockWorkloadDeletionReconcilerMockRecorder is the mock recorder for MockWorkloadDeletionReconciler
+type MockWorkloadDeletionReconcilerMockRecorder struct {
+	mock *MockWorkloadDeletionReconciler
 }
 
-// NewMockMeshWorkloadDeletionReconciler creates a new mock instance
-func NewMockMeshWorkloadDeletionReconciler(ctrl *gomock.Controller) *MockMeshWorkloadDeletionReconciler {
-	mock := &MockMeshWorkloadDeletionReconciler{ctrl: ctrl}
-	mock.recorder = &MockMeshWorkloadDeletionReconcilerMockRecorder{mock}
+// NewMockWorkloadDeletionReconciler creates a new mock instance
+func NewMockWorkloadDeletionReconciler(ctrl *gomock.Controller) *MockWorkloadDeletionReconciler {
+	mock := &MockWorkloadDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockWorkloadDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshWorkloadDeletionReconciler) EXPECT() *MockMeshWorkloadDeletionReconcilerMockRecorder {
+func (m *MockWorkloadDeletionReconciler) EXPECT() *MockWorkloadDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileMeshWorkloadDeletion mocks base method
-func (m *MockMeshWorkloadDeletionReconciler) ReconcileMeshWorkloadDeletion(req reconcile.Request) error {
+// ReconcileWorkloadDeletion mocks base method
+func (m *MockWorkloadDeletionReconciler) ReconcileWorkloadDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileMeshWorkloadDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileWorkloadDeletion", req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ReconcileMeshWorkloadDeletion indicates an expected call of ReconcileMeshWorkloadDeletion
-func (mr *MockMeshWorkloadDeletionReconcilerMockRecorder) ReconcileMeshWorkloadDeletion(req interface{}) *gomock.Call {
+// ReconcileWorkloadDeletion indicates an expected call of ReconcileWorkloadDeletion
+func (mr *MockWorkloadDeletionReconcilerMockRecorder) ReconcileWorkloadDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMeshWorkloadDeletion", reflect.TypeOf((*MockMeshWorkloadDeletionReconciler)(nil).ReconcileMeshWorkloadDeletion), req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileWorkloadDeletion", reflect.TypeOf((*MockWorkloadDeletionReconciler)(nil).ReconcileWorkloadDeletion), req)
 }
 
-// MockMeshWorkloadFinalizer is a mock of MeshWorkloadFinalizer interface
-type MockMeshWorkloadFinalizer struct {
+// MockWorkloadFinalizer is a mock of WorkloadFinalizer interface
+type MockWorkloadFinalizer struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshWorkloadFinalizerMockRecorder
+	recorder *MockWorkloadFinalizerMockRecorder
 }
 
-// MockMeshWorkloadFinalizerMockRecorder is the mock recorder for MockMeshWorkloadFinalizer
-type MockMeshWorkloadFinalizerMockRecorder struct {
-	mock *MockMeshWorkloadFinalizer
+// MockWorkloadFinalizerMockRecorder is the mock recorder for MockWorkloadFinalizer
+type MockWorkloadFinalizerMockRecorder struct {
+	mock *MockWorkloadFinalizer
 }
 
-// NewMockMeshWorkloadFinalizer creates a new mock instance
-func NewMockMeshWorkloadFinalizer(ctrl *gomock.Controller) *MockMeshWorkloadFinalizer {
-	mock := &MockMeshWorkloadFinalizer{ctrl: ctrl}
-	mock.recorder = &MockMeshWorkloadFinalizerMockRecorder{mock}
+// NewMockWorkloadFinalizer creates a new mock instance
+func NewMockWorkloadFinalizer(ctrl *gomock.Controller) *MockWorkloadFinalizer {
+	mock := &MockWorkloadFinalizer{ctrl: ctrl}
+	mock.recorder = &MockWorkloadFinalizerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshWorkloadFinalizer) EXPECT() *MockMeshWorkloadFinalizerMockRecorder {
+func (m *MockWorkloadFinalizer) EXPECT() *MockWorkloadFinalizerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileMeshWorkload mocks base method
-func (m *MockMeshWorkloadFinalizer) ReconcileMeshWorkload(obj *v1alpha2.MeshWorkload) (reconcile.Result, error) {
+// ReconcileWorkload mocks base method
+func (m *MockWorkloadFinalizer) ReconcileWorkload(obj *v1alpha2.Workload) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileMeshWorkload", obj)
+	ret := m.ctrl.Call(m, "ReconcileWorkload", obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileMeshWorkload indicates an expected call of ReconcileMeshWorkload
-func (mr *MockMeshWorkloadFinalizerMockRecorder) ReconcileMeshWorkload(obj interface{}) *gomock.Call {
+// ReconcileWorkload indicates an expected call of ReconcileWorkload
+func (mr *MockWorkloadFinalizerMockRecorder) ReconcileWorkload(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMeshWorkload", reflect.TypeOf((*MockMeshWorkloadFinalizer)(nil).ReconcileMeshWorkload), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileWorkload", reflect.TypeOf((*MockWorkloadFinalizer)(nil).ReconcileWorkload), obj)
 }
 
-// MeshWorkloadFinalizerName mocks base method
-func (m *MockMeshWorkloadFinalizer) MeshWorkloadFinalizerName() string {
+// WorkloadFinalizerName mocks base method
+func (m *MockWorkloadFinalizer) WorkloadFinalizerName() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MeshWorkloadFinalizerName")
+	ret := m.ctrl.Call(m, "WorkloadFinalizerName")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// MeshWorkloadFinalizerName indicates an expected call of MeshWorkloadFinalizerName
-func (mr *MockMeshWorkloadFinalizerMockRecorder) MeshWorkloadFinalizerName() *gomock.Call {
+// WorkloadFinalizerName indicates an expected call of WorkloadFinalizerName
+func (mr *MockWorkloadFinalizerMockRecorder) WorkloadFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshWorkloadFinalizerName", reflect.TypeOf((*MockMeshWorkloadFinalizer)(nil).MeshWorkloadFinalizerName))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WorkloadFinalizerName", reflect.TypeOf((*MockWorkloadFinalizer)(nil).WorkloadFinalizerName))
 }
 
-// FinalizeMeshWorkload mocks base method
-func (m *MockMeshWorkloadFinalizer) FinalizeMeshWorkload(obj *v1alpha2.MeshWorkload) error {
+// FinalizeWorkload mocks base method
+func (m *MockWorkloadFinalizer) FinalizeWorkload(obj *v1alpha2.Workload) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinalizeMeshWorkload", obj)
+	ret := m.ctrl.Call(m, "FinalizeWorkload", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// FinalizeMeshWorkload indicates an expected call of FinalizeMeshWorkload
-func (mr *MockMeshWorkloadFinalizerMockRecorder) FinalizeMeshWorkload(obj interface{}) *gomock.Call {
+// FinalizeWorkload indicates an expected call of FinalizeWorkload
+func (mr *MockWorkloadFinalizerMockRecorder) FinalizeWorkload(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeMeshWorkload", reflect.TypeOf((*MockMeshWorkloadFinalizer)(nil).FinalizeMeshWorkload), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeWorkload", reflect.TypeOf((*MockWorkloadFinalizer)(nil).FinalizeWorkload), obj)
 }
 
-// MockMeshWorkloadReconcileLoop is a mock of MeshWorkloadReconcileLoop interface
-type MockMeshWorkloadReconcileLoop struct {
+// MockWorkloadReconcileLoop is a mock of WorkloadReconcileLoop interface
+type MockWorkloadReconcileLoop struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshWorkloadReconcileLoopMockRecorder
+	recorder *MockWorkloadReconcileLoopMockRecorder
 }
 
-// MockMeshWorkloadReconcileLoopMockRecorder is the mock recorder for MockMeshWorkloadReconcileLoop
-type MockMeshWorkloadReconcileLoopMockRecorder struct {
-	mock *MockMeshWorkloadReconcileLoop
+// MockWorkloadReconcileLoopMockRecorder is the mock recorder for MockWorkloadReconcileLoop
+type MockWorkloadReconcileLoopMockRecorder struct {
+	mock *MockWorkloadReconcileLoop
 }
 
-// NewMockMeshWorkloadReconcileLoop creates a new mock instance
-func NewMockMeshWorkloadReconcileLoop(ctrl *gomock.Controller) *MockMeshWorkloadReconcileLoop {
-	mock := &MockMeshWorkloadReconcileLoop{ctrl: ctrl}
-	mock.recorder = &MockMeshWorkloadReconcileLoopMockRecorder{mock}
+// NewMockWorkloadReconcileLoop creates a new mock instance
+func NewMockWorkloadReconcileLoop(ctrl *gomock.Controller) *MockWorkloadReconcileLoop {
+	mock := &MockWorkloadReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockWorkloadReconcileLoopMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshWorkloadReconcileLoop) EXPECT() *MockMeshWorkloadReconcileLoopMockRecorder {
+func (m *MockWorkloadReconcileLoop) EXPECT() *MockWorkloadReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunMeshWorkloadReconciler mocks base method
-func (m *MockMeshWorkloadReconcileLoop) RunMeshWorkloadReconciler(ctx context.Context, rec controller.MeshWorkloadReconciler, predicates ...predicate.Predicate) error {
+// RunWorkloadReconciler mocks base method
+func (m *MockWorkloadReconcileLoop) RunWorkloadReconciler(ctx context.Context, rec controller.WorkloadReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
 	for _, a := range predicates {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "RunMeshWorkloadReconciler", varargs...)
+	ret := m.ctrl.Call(m, "RunWorkloadReconciler", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RunMeshWorkloadReconciler indicates an expected call of RunMeshWorkloadReconciler
-func (mr *MockMeshWorkloadReconcileLoopMockRecorder) RunMeshWorkloadReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+// RunWorkloadReconciler indicates an expected call of RunWorkloadReconciler
+func (mr *MockWorkloadReconcileLoopMockRecorder) RunWorkloadReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunMeshWorkloadReconciler", reflect.TypeOf((*MockMeshWorkloadReconcileLoop)(nil).RunMeshWorkloadReconciler), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunWorkloadReconciler", reflect.TypeOf((*MockWorkloadReconcileLoop)(nil).RunWorkloadReconciler), varargs...)
 }
 
 // MockMeshReconciler is a mock of MeshReconciler interface

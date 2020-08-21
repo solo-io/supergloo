@@ -32,7 +32,7 @@ Service Mesh Hub consists of a set of components that run on a single cluster, o
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-components.png" %}})
 
-Once a cluster is registered with Service Mesh Hub, it can start managing that cluster - discovering service mesh workloads, pushing out configurations, unifying the trust model, scraping metrics, and more. 
+Once a cluster is registered with Service Mesh Hub, it can start managing that cluster - discovering workloads, pushing out configurations, unifying the trust model, scraping metrics, and more. 
 
 In this document, we take a look at the concepts and components that comprise Service Mesh Hub.
 
@@ -50,7 +50,7 @@ Once trust has been established, Service Mesh Hub will start federating services
 
 Service Mesh Hub enables users to write simple configuration objects to the management plane to enact traffic and access policies between services. It was designed to be translated into the underlying mesh config, while abstracting away the mesh-specific complexity from the user. 
 
-A [`TrafficPolicy`]({{% versioned_link_path fromRoot="/reference/api/traffic_policy/" %}}) applies between a set of sources (mesh workloads) and destinations (mesh services), and is used to describe rules like "when A sends POST requests to B, add a header and set the timeout to 10 seconds". Or "for every request to services on cluster C, increase the timeout and add retries". As of this release, traffic policies support timeouts, retries, CORS, traffic shifting, header manipulation, fault injection, subset routing, weighted destinations, and more. Note that some meshes don’t support all of these features; Service Mesh Hub will translate as best it can into the underlying mesh configuration, or report an error back to the user. 
+A [`TrafficPolicy`]({{% versioned_link_path fromRoot="/reference/api/traffic_policy/" %}}) applies between a set of sources (workloads) and destinations (traffic targets), and is used to describe rules like "when A sends POST requests to B, add a header and set the timeout to 10 seconds". Or "for every request to services on cluster C, increase the timeout and add retries". As of this release, traffic policies support timeouts, retries, CORS, traffic shifting, header manipulation, fault injection, subset routing, weighted destinations, and more. Note that some meshes don’t support all of these features; Service Mesh Hub will translate as best it can into the underlying mesh configuration, or report an error back to the user. 
 
 An [`AccessControlPolicy`]({{% versioned_link_path fromRoot="/reference/api/access_control_policy/" %}}) also applies between sources (this time representing identities) and destinations, and is used to finely control which services are allowed to communicate. On the virtual mesh, a user can specify a global policy to restrict access, and require users to specify access policies in order to enable communication to services. 
 
@@ -62,7 +62,7 @@ Service Mesh Hub is tackling really hard problems related to multi-cluster netwo
 
 ## Components
 
-The components that comprise Service Mesh Hub can be categorized as `mesh-discovery` and `mesh-networking` components. These components work together to discover meshes, mesh services, and unify them using a `VirtualMesh` (see above). These components will write all of the necessary service-mesh-specific resources to the various clusters/meshes under management. For example, Service Mesh Hub would write all of the `ServiceEntry`, `VirtualService` and `DestinationRule` resources if managing Istio. Let's take a closer look at the components.
+The components that comprise Service Mesh Hub can be categorized as `mesh-discovery` and `mesh-networking` components. These components work together to discover meshes, traffic targets, and unify them using a `VirtualMesh` (see above). These components will write all of the necessary service-mesh-specific resources to the various clusters/meshes under management. For example, Service Mesh Hub would write all of the `ServiceEntry`, `VirtualService` and `DestinationRule` resources if managing Istio. Let's take a closer look at the components.
  
 ##### Mesh Discovery
 
@@ -72,7 +72,7 @@ The discovery process is initiated by Service Mesh Hub running on the management
 
 The first task of discovery is to find any service meshes that are installed on the cluster. When it finds a control plane for a service mesh, discovery will write a [`Mesh`]({{% versioned_link_path fromRoot="/reference/api/mesh/" %}}) resource to the management plane cluster, linked to the `KubernetesCluster` resource that was written during cluster registration. Currently, Service Mesh Hub discovers and manages [Istio](https://istio.io) meshes, with plans to support more in the near future.
 
-`Discovery` then looks for workloads that are associated with the mesh, such as a deployment that has created a pod injected with the sidecar proxy for that mesh. It will write a [`Workload`]({{% versioned_link_path fromRoot="/reference/api/mesh_workload/" %}}) resource to the management plane cluster representing this workload. 
+`Discovery` then looks for workloads that are associated with the mesh, such as a deployment that has created a pod injected with the sidecar proxy for that mesh. It will write a [`Workload`]({{% versioned_link_path fromRoot="/reference/api/workload/" %}}) resource to the management plane cluster representing this workload. 
 
 Finally, discovery looks for services exposing the workloads of a mesh and writes a [`TrafficTarget`]({{% versioned_link_path fromRoot="/reference/api/mesh_service/" %}}) resource to the management plane cluster. 
 

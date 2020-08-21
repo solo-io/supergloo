@@ -11,8 +11,8 @@ kubectl --context kind-$remoteCluster get pod -A
 kubectl --context kind-$mgmtCluster describe pod -A
 kubectl --context kind-$remoteCluster describe pod -A
 kubectl --context kind-$mgmtCluster get mesh -A
-kubectl --context kind-$mgmtCluster get meshworkloads -A
-kubectl --context kind-$mgmtCluster get meshservices -A
+kubectl --context kind-$mgmtCluster get workloads -A
+kubectl --context kind-$mgmtCluster get traffictargets -A
 kubectl --context kind-$mgmtCluster get trafficpolicies -A -o yaml
 kubectl --context kind-$mgmtCluster get accesspolicies -A -o yaml
 kubectl --context kind-$mgmtCluster get virtualmesh -A -o yaml

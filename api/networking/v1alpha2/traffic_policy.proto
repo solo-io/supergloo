@@ -408,7 +408,7 @@ message TrafficPolicyStatus {
     // applied to all target meshes.
     ApprovalState state = 2;
 
-    // The status of the TrafficPolicy for each MeshService to which it has been applied.
-    // A TrafficPolicy may be Accepted for some MeshServices and rejected for others.
-    map<string, ApprovalStatus> mesh_services = 3;
+    // The status of the TrafficPolicy for each TrafficTarget to which it has been applied.
+    // A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others.
+    map<string, ApprovalStatus> traffic_targets = 3;
 }

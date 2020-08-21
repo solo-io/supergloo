@@ -17,59 +17,59 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
-// Provider for MeshServiceClient from Clientset
-func MeshServiceClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha2.Clientset) discovery_smh_solo_io_v1alpha2.MeshServiceClient {
-	return clients.MeshServices()
+// Provider for TrafficTargetClient from Clientset
+func TrafficTargetClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha2.Clientset) discovery_smh_solo_io_v1alpha2.TrafficTargetClient {
+	return clients.TrafficTargets()
 }
 
-// Provider for MeshService Client from Client
-func MeshServiceClientProvider(client client.Client) discovery_smh_solo_io_v1alpha2.MeshServiceClient {
-	return discovery_smh_solo_io_v1alpha2.NewMeshServiceClient(client)
+// Provider for TrafficTarget Client from Client
+func TrafficTargetClientProvider(client client.Client) discovery_smh_solo_io_v1alpha2.TrafficTargetClient {
+	return discovery_smh_solo_io_v1alpha2.NewTrafficTargetClient(client)
 }
 
-type MeshServiceClientFactory func(client client.Client) discovery_smh_solo_io_v1alpha2.MeshServiceClient
+type TrafficTargetClientFactory func(client client.Client) discovery_smh_solo_io_v1alpha2.TrafficTargetClient
 
-func MeshServiceClientFactoryProvider() MeshServiceClientFactory {
-	return MeshServiceClientProvider
+func TrafficTargetClientFactoryProvider() TrafficTargetClientFactory {
+	return TrafficTargetClientProvider
 }
 
-type MeshServiceClientFromConfigFactory func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.MeshServiceClient, error)
+type TrafficTargetClientFromConfigFactory func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.TrafficTargetClient, error)
 
-func MeshServiceClientFromConfigFactoryProvider() MeshServiceClientFromConfigFactory {
-	return func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.MeshServiceClient, error) {
+func TrafficTargetClientFromConfigFactoryProvider() TrafficTargetClientFromConfigFactory {
+	return func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.TrafficTargetClient, error) {
 		clients, err := discovery_smh_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
 		if err != nil {
 			return nil, err
 		}
-		return clients.MeshServices(), nil
+		return clients.TrafficTargets(), nil
 	}
 }
 
-// Provider for MeshWorkloadClient from Clientset
-func MeshWorkloadClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha2.Clientset) discovery_smh_solo_io_v1alpha2.MeshWorkloadClient {
-	return clients.MeshWorkloads()
+// Provider for WorkloadClient from Clientset
+func WorkloadClientFromClientsetProvider(clients discovery_smh_solo_io_v1alpha2.Clientset) discovery_smh_solo_io_v1alpha2.WorkloadClient {
+	return clients.Workloads()
 }
 
-// Provider for MeshWorkload Client from Client
-func MeshWorkloadClientProvider(client client.Client) discovery_smh_solo_io_v1alpha2.MeshWorkloadClient {
-	return discovery_smh_solo_io_v1alpha2.NewMeshWorkloadClient(client)
+// Provider for Workload Client from Client
+func WorkloadClientProvider(client client.Client) discovery_smh_solo_io_v1alpha2.WorkloadClient {
+	return discovery_smh_solo_io_v1alpha2.NewWorkloadClient(client)
 }
 
-type MeshWorkloadClientFactory func(client client.Client) discovery_smh_solo_io_v1alpha2.MeshWorkloadClient
+type WorkloadClientFactory func(client client.Client) discovery_smh_solo_io_v1alpha2.WorkloadClient
 
-func MeshWorkloadClientFactoryProvider() MeshWorkloadClientFactory {
-	return MeshWorkloadClientProvider
+func WorkloadClientFactoryProvider() WorkloadClientFactory {
+	return WorkloadClientProvider
 }
 
-type MeshWorkloadClientFromConfigFactory func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.MeshWorkloadClient, error)
+type WorkloadClientFromConfigFactory func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.WorkloadClient, error)
 
-func MeshWorkloadClientFromConfigFactoryProvider() MeshWorkloadClientFromConfigFactory {
-	return func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.MeshWorkloadClient, error) {
+func WorkloadClientFromConfigFactoryProvider() WorkloadClientFromConfigFactory {
+	return func(cfg *rest.Config) (discovery_smh_solo_io_v1alpha2.WorkloadClient, error) {
 		clients, err := discovery_smh_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
 		if err != nil {
 			return nil, err
 		}
-		return clients.MeshWorkloads(), nil
+		return clients.Workloads(), nil
 	}
 }
 

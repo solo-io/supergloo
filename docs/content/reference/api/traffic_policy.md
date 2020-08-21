@@ -37,7 +37,7 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.RetryPolicy](#networking.smh.solo.io.TrafficPolicySpec.RetryPolicy)
   - [TrafficPolicySpec.StringMatch](#networking.smh.solo.io.TrafficPolicySpec.StringMatch)
   - [TrafficPolicyStatus](#networking.smh.solo.io.TrafficPolicyStatus)
-  - [TrafficPolicyStatus.MeshServicesEntry](#networking.smh.solo.io.TrafficPolicyStatus.MeshServicesEntry)
+  - [TrafficPolicyStatus.TrafficTargetsEntry](#networking.smh.solo.io.TrafficPolicyStatus.TrafficTargetsEntry)
 
 
 
@@ -401,16 +401,16 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | [int64](#int64) |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
 | state | [ApprovalState](#networking.smh.solo.io.ApprovalState) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
-| meshServices | [][TrafficPolicyStatus.MeshServicesEntry](#networking.smh.solo.io.TrafficPolicyStatus.MeshServicesEntry) | repeated | The status of the TrafficPolicy for each MeshService to which it has been applied. A TrafficPolicy may be Accepted for some MeshServices and rejected for others. |
+| trafficTargets | [][TrafficPolicyStatus.TrafficTargetsEntry](#networking.smh.solo.io.TrafficPolicyStatus.TrafficTargetsEntry) | repeated | The status of the TrafficPolicy for each TrafficTarget to which it has been applied. A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others. |
 
 
 
 
 
 
-<a name="networking.smh.solo.io.TrafficPolicyStatus.MeshServicesEntry"></a>
+<a name="networking.smh.solo.io.TrafficPolicyStatus.TrafficTargetsEntry"></a>
 
-### TrafficPolicyStatus.MeshServicesEntry
+### TrafficPolicyStatus.TrafficTargetsEntry
 
 
 

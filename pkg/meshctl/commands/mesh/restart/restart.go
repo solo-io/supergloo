@@ -36,17 +36,17 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 
 func restartPods(ctx context.Context, c client.Client, meshRef *skcorev1.ObjectRef) error {
 	podClient := corev1.NewPodClient(c)
-	meshWorkloadClient := v1alpha2.NewMeshWorkloadClient(c)
-	meshWorkloadList, err := meshWorkloadClient.ListMeshWorkload(ctx)
+	workloadClient := v1alpha2.NewWorkloadClient(c)
+	workloadList, err := workloadClient.ListWorkload(ctx)
 	if err != nil {
 		return err
 	}
-	for _, meshWorkload := range meshWorkloadList.Items {
+	for _, workload := range workloadList.Items {
 		// currently only supports restarting k8s workloads
-		if !ezkube.RefsMatch(meshWorkload.Spec.Mesh, meshRef) || meshWorkload.Spec.GetKubernetes() == nil {
+		if !ezkube.RefsMatch(workload.Spec.Mesh, meshRef) || workload.Spec.GetKubernetes() == nil {
 			continue
 		}
-		podLabels := meshWorkload.Spec.GetKubernetes().PodLabels
+		podLabels := workload.Spec.GetKubernetes().PodLabels
 		// ignore if no workload selectors populated to avoid restarting all pods
 		if len(podLabels) < 1 {
 			continue

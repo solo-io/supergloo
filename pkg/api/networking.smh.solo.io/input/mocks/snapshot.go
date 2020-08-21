@@ -41,32 +41,32 @@ func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
 }
 
-// MeshServices mocks base method
-func (m *MockSnapshot) MeshServices() v1alpha2sets.MeshServiceSet {
+// TrafficTargets mocks base method
+func (m *MockSnapshot) TrafficTargets() v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MeshServices")
-	ret0, _ := ret[0].(v1alpha2sets.MeshServiceSet)
+	ret := m.ctrl.Call(m, "TrafficTargets")
+	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
-// MeshServices indicates an expected call of MeshServices
-func (mr *MockSnapshotMockRecorder) MeshServices() *gomock.Call {
+// TrafficTargets indicates an expected call of TrafficTargets
+func (mr *MockSnapshotMockRecorder) TrafficTargets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshServices", reflect.TypeOf((*MockSnapshot)(nil).MeshServices))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficTargets", reflect.TypeOf((*MockSnapshot)(nil).TrafficTargets))
 }
 
-// MeshWorkloads mocks base method
-func (m *MockSnapshot) MeshWorkloads() v1alpha2sets.MeshWorkloadSet {
+// Workloads mocks base method
+func (m *MockSnapshot) Workloads() v1alpha2sets.WorkloadSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MeshWorkloads")
-	ret0, _ := ret[0].(v1alpha2sets.MeshWorkloadSet)
+	ret := m.ctrl.Call(m, "Workloads")
+	ret0, _ := ret[0].(v1alpha2sets.WorkloadSet)
 	return ret0
 }
 
-// MeshWorkloads indicates an expected call of MeshWorkloads
-func (mr *MockSnapshotMockRecorder) MeshWorkloads() *gomock.Call {
+// Workloads indicates an expected call of Workloads
+func (mr *MockSnapshotMockRecorder) Workloads() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshWorkloads", reflect.TypeOf((*MockSnapshot)(nil).MeshWorkloads))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Workloads", reflect.TypeOf((*MockSnapshot)(nil).Workloads))
 }
 
 // Meshes mocks base method

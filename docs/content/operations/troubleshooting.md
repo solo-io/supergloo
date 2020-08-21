@@ -17,7 +17,7 @@ One of the first places to always start is `meshctl check`. This command is your
 * Checking the [minimum supported Kubernetes minor version](https://github.com/solo-io/service-mesh-hub/blob/master/pkg/version/version.go#L13)
 * Checking that the `install` [namespace exists (default, `service-mesh-hub`)](https://github.com/solo-io/service-mesh-hub/blob/master/cli/pkg/tree/check/healthcheck/internal/install_namespace_existence.go#L23)
 * Verifying the Service Mesh Hub components [are installed and running](https://github.com/solo-io/service-mesh-hub/blob/master/cli/pkg/tree/check/healthcheck/internal/smh_components_health.go#L36)
-* Verify none of the `MeshServices` have [any federation errors](https://github.com/solo-io/service-mesh-hub/blob/master/cli/pkg/tree/check/healthcheck/internal/federation_decision_check.go#L43)
+* Verify none of the `TrafficTargets` have [any federation errors](https://github.com/solo-io/service-mesh-hub/blob/master/cli/pkg/tree/check/healthcheck/internal/federation_decision_check.go#L43)
 
 The last bullet in the list, checking federation status, is likely the most helpful especially after you've tried to apply a `VirtualMesh`. Often it's best to check the `VirtualMesh` CR `status` field to make sure it doesn't see any issues:
 
@@ -31,8 +31,8 @@ NOTE: all of the Service Mesh Hub CRs have a `status` field that give you an ind
 
 Knowing how to get logs from the Service Mesh Hub components is crucial for getting feedback about what's happening. Service Mesh Hub has three core components:
 
-* `csr-agent` - responsible for creating certificate/key pairs and issuing a Certificate Signing Request for a particular mesh -- this is used in Mesh identity federation; this component is not available in the default install, only when a cluster is registered
-* `mesh-discovery` - responsible for discovering Meshes, periodically querying clusters and control planes for their `MeshService`s and `MeshWorkload`s. 
+* `cert-agent` - responsible for creating certificate/key pairs and issuing a Certificate Signing Request for a particular mesh -- this is used in Mesh identity federation; this component is not available in the default install, only when a cluster is registered
+* `mesh-discovery` - responsible for discovering Meshes, periodically querying clusters and control planes for their `TrafficTarget`s and `Workload`s. 
 * `mesh-networking` - responsible for orchestrating federation events, traffic policy updates, and access-control policy rules
 
 When troubleshooting various parts of the Service Mesh Hub functionality, you will likely want to see the logs for some of these components. For example, when creating a new `VirtualMesh` and you see something like `PROCESSING_ERROR` in the `federation` status, check the logs for the `mesh-networking` component like this:
@@ -127,6 +127,6 @@ https://discuss.istio.io/t/istio-upgrade-from-1-4-6-1-5-0-throws-istiod-errors-r
 
 ##### Found something else?
 
-If you've run into something else, please reach out the `@ceposta`,  `@Graham Goudeau` or `@Harvey Xia` on the [Solo.io Slack](https://slack.solo.io) in the #service-mesh-hub channel
+If you've run into something else, please reach out the `@ceposta`, `@Joe Kelly`, or `@Harvey Xia` on the [Solo.io Slack](https://slack.solo.io) in the #service-mesh-hub channel
 
 If you see an error like `resource version conflict` please chime in on [https://github.com/solo-io/service-mesh-hub/issues/635](https://github.com/solo-io/service-mesh-hub/issues/635)

@@ -25,7 +25,7 @@ meshctl describe mesh [flags]
 ```
       --kubeconfig string    path to the kubeconfig from which the management cluster will be accessed
       --kubecontext string   name of the kubeconfig context to use for the management cluster
-      --namespace string     namespace that Service MeshService Hub is installed in (default "service-mesh-hub")
+      --namespace string     namespace that Service TrafficTarget Hub is installed in (default "service-mesh-hub")
 ```
 
 ### SEE ALSO

@@ -6,17 +6,17 @@ weight: 20
 
 Service Mesh Hub can automatically discover service mesh installations on registered clusters using control plane and sidecar discovery, as well as workloads and services exposed through the service mesh.
 
-In this guide we will learn about the four main discovery capabilities:
+In this guide we will learn about the four main discovery capabilities in the context of Kubernetes as the compute platform:
 
 1. **Kubernetes Clusters**
     - Representation of a cluster that Service Mesh Hub is aware of and is authorized to talk to its Kubernetes API server
     - *note*: this resource is created by `meshctl` at cluster registration time
 2. **Meshes**
     - Representation of a service mesh control plane that has been discovered 
-3. **Mesh Workloads**
+3. **Workloads**
     - Representation of a pod that is a member of a service mesh; this is often determined by the presence of an injected proxy sidecar
-4. **Mesh Services**
-    - Representation of a Kubernetes service that is backed by Mesh Workload pods, e.g. pods that are a member of the service mesh
+4. **TrafficTargets**
+    - Representation of a Kubernetes service that is backed by Workload pods, e.g. pods that are a member of the service mesh
 
 
 ## Before you begin
@@ -126,9 +126,9 @@ status:
 
 {{< /highlight >}}
 
-### Discover Mesh Workloads
+### Discover Workloads
 
-Check to see that the `bookinfo` pods have been correctly identified as Mesh Workloads:
+Check to see that the `bookinfo` pods have been correctly identified as Workloads:
 
 ```shell
 kubectl -n service-mesh-hub get workloads
@@ -148,12 +148,12 @@ reviews-v2-bookinfo-management-plane-deployment                 3m53s
 reviews-v3-bookinfo-remote-cluster-deployment                   2m
 ```
 
-### Discover Mesh Services
+### Discover Traffic Targets
 
 Similarly for the `bookinfo` services:
 
 ```shell
-kubectl -n service-mesh-hub get meshservices
+kubectl -n service-mesh-hub get traffictargets
 ```
 
 ```

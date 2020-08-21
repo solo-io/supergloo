@@ -453,4 +453,3 @@ Great! We've successfully discovered and configured our Linkerd mesh with Servic
 
 Traffic Shifting is not the only option available for configuring mesh traffic. We recommend checking out the [reference documentation]({{< versioned_link_path fromRoot="/reference/">}}) for a full description of what's possible with Service Mesh Hub. 
 
- 
