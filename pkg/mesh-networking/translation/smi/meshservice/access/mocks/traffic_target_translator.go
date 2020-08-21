@@ -12,7 +12,7 @@ import (
 	v1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	v1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
 	v1alpha20 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/input"
 	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 )
 

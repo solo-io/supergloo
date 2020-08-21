@@ -9,7 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/output"
 )
 
 // MockTranslator is a mock of Translator interface

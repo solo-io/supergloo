@@ -5,22 +5,34 @@ import (
 	"fmt"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	istioinput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/input"
+	istiooutput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/output"
+	smiinput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/smi/input"
+	smioutput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/smi/output"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 )
 
-// the networking translator translates an input networking snapshot to an output snapshot of mesh config resources
+type Inputs struct {
+	Istio istioinput.Snapshot
+	Smi   smiinput.Snapshot
+}
+
+type Outputs struct {
+	Istio istiooutput.Snapshot
+	Smi   smioutput.Snapshot
+}
+
+// the networking translator translates an istio input networking snapshot to an istiooutput snapshot of mesh config resources
 type Translator interface {
 	// errors reflect an internal translation error and should never happen
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		in Inputs,
 		reporter reporting.Reporter,
-	) (output.Snapshot, error)
+	) (Outputs, error)
 }
 
 type translator struct {
@@ -41,17 +53,24 @@ func NewTranslator(
 
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	in Inputs,
 	reporter reporting.Reporter,
-) (output.Snapshot, error) {
+) (Outputs, error) {
 	t.totalTranslates++
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("translation-%v", t.totalTranslates))
 
-	outputs := output.NewBuilder(ctx, fmt.Sprintf("networking-%v", t.totalTranslates))
+	istioOutputs := istiooutput.NewBuilder(ctx, fmt.Sprintf("networking-%v", t.totalTranslates))
 
-	t.istioTranslator.Translate(ctx, in, outputs, reporter)
+	t.istioTranslator.Translate(ctx, in.Istio, istioOutputs, reporter)
 
-	t.smiTranslator.Translate(ctx, in, outputs, reporter)
+	t.smiTranslator.Translate(ctx, in, istioOutputs, reporter)
 
-	return outputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
+	buildIstioSnapshot, err := istioOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
+	if err != nil {
+		return Outputs{}, err
+	}
+
+	return Outputs{
+		Istio: buildIstioSnapshot,
+	}, nil
 }
