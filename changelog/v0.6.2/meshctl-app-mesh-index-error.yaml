@@ -1,4 +1,0 @@
-changelog:
-  - type: FIX
-    description: Updated appmesh table printing for meshctl get meshes
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/835

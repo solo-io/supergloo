@@ -1,4 +1,0 @@
-changelog:
-  - type: FIX
-    description: Add the missing step of registering AWS credentials with Service Mesh Hub.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/832
