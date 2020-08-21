@@ -14,7 +14,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/output"
 	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/agent/utils"
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/common/secrets"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
@@ -110,7 +109,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	inputSecrets corev1sets.SecretSet,
 	inputPods corev1sets.PodSet,
 	inputCertificateRequests v1alpha2sets.CertificateRequestSet,
-	outputs istio.Builder,
+	outputs output.Builder,
 ) error {
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
 	if issuedCertificate.Status.ObservedGeneration != issuedCertificate.Generation {

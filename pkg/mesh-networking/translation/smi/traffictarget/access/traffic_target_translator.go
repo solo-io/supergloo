@@ -23,28 +23,28 @@ import (
 
 //go:generate mockgen -source ./traffic_target_translator.go -destination mocks/traffic_target_translator.go
 
-// the SMI Access translator translates a MeshService into sets of SMI access resources.
+// the SMI Access translator translates a TrafficTarget into sets of SMI access resources.
 type Translator interface {
-	// Translate translates the appropriate TrafficTargets and HTTPRoutesGroups for the given MeshService.
+	// Translate translates the appropriate TrafficTargets and HTTPRoutesGroups for the given TrafficTarget.
 	// returns empty lists if none are required
 	//
 	// Errors caused by invalid user config will be reported using the Reporter.
 	//
-	// Note that the input snapshot TrafficTargetSet contains the given MeshService.
+	// Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
-		meshService *discoveryv1alpha2.MeshService,
+		meshService *discoveryv1alpha2.TrafficTarget,
 		reporter reporting.Reporter,
 	) ([]*smiaccessv1alpha2.TrafficTarget, []*smispecsv1alpha3.HTTPRouteGroup)
 }
 
 var (
-	NoServiceAccountError = eris.New("Could not determine ServiceAccount target for MeshService as no backing" +
+	NoServiceAccountError = eris.New("Could not determine ServiceAccount target for TrafficTarget as no backing" +
 		" workloads exist")
 
 	CouldNotDetermineServiceAccountError = func(total int) error {
-		return eris.Errorf("Could not determine ServiceAccount target for MeshService as workloads belong to "+
+		return eris.Errorf("Could not determine ServiceAccount target for TrafficTarget as workloads belong to "+
 			"%d service accounts", total)
 	}
 )
@@ -58,26 +58,26 @@ type translator struct{}
 func (t *translator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
-	meshService *discoveryv1alpha2.MeshService,
+	target *discoveryv1alpha2.TrafficTarget,
 	reporter reporting.Reporter,
 ) ([]*smiaccessv1alpha2.TrafficTarget, []*smispecsv1alpha3.HTTPRouteGroup) {
 	logger := contextutils.LoggerFrom(ctx).With(zap.String("translator", "access"))
-	kubeService := meshService.Spec.GetKubeService()
+	kubeService := target.Spec.GetKubeService()
 
 	if kubeService == nil {
-		logger.Debugf("non kubernetes mesh service %s found, skipping", sksets.TypedKey(meshService))
+		logger.Debugf("non kubernetes mesh service %s found, skipping", sksets.TypedKey(target))
 		return nil, nil
 	}
 
 	var trafficTargets []*smiaccessv1alpha2.TrafficTarget
 	var httpRouteGroups []*smispecsv1alpha3.HTTPRouteGroup
 
-	backingWorkloads := workloadutils.FindBackingWorkloads(meshService.Spec.GetKubeService(), in.MeshWorkloads())
-	for _, ap := range meshService.Status.GetAppliedAccessPolicies() {
+	backingWorkloads := workloadutils.FindBackingWorkloads(target.Spec.GetKubeService(), in.Workloads())
+	for _, ap := range target.Status.GetAppliedAccessPolicies() {
 
 		if len(backingWorkloads) == 0 {
-			reporter.ReportAccessPolicyToMeshService(
-				meshService,
+			reporter.ReportAccessPolicyToTrafficTarget(
+				target,
 				ap.GetRef(),
 				NoServiceAccountError,
 			)
@@ -95,8 +95,8 @@ func (t *translator) Translate(
 		}
 
 		if serviceAccounts.Len() > 1 {
-			reporter.ReportAccessPolicyToMeshService(
-				meshService,
+			reporter.ReportAccessPolicyToTrafficTarget(
+				target,
 				ap.GetRef(),
 				CouldNotDetermineServiceAccountError(serviceAccounts.Len()),
 			)
@@ -108,8 +108,8 @@ func (t *translator) Translate(
 		backingWorkload := backingWorkloads[0]
 		trafficTarget := &smiaccessv1alpha2.TrafficTarget{
 			ObjectMeta: metautils.TranslatedObjectMeta(
-				meshService.Spec.GetKubeService().Ref,
-				meshService.Annotations,
+				target.Spec.GetKubeService().Ref,
+				target.Annotations,
 			),
 			Spec: smiaccessv1alpha2.TrafficTargetSpec{
 				Destination: smiaccessv1alpha2.IdentityBindingSubject{
@@ -122,8 +122,8 @@ func (t *translator) Translate(
 
 		for _, sourceSelector := range ap.GetSpec().GetSourceSelector() {
 			if sourceSelector.GetKubeIdentityMatcher() != nil {
-				reporter.ReportAccessPolicyToMeshService(
-					meshService,
+				reporter.ReportAccessPolicyToTrafficTarget(
+					target,
 					ap.GetRef(),
 					eris.New("SMI does not support KubeIdentityMatcher for IdentitySelectors"),
 				)
@@ -131,8 +131,8 @@ func (t *translator) Translate(
 
 			for _, ref := range sourceSelector.GetKubeServiceAccountRefs().GetServiceAccounts() {
 				if ref.GetClusterName() != kubeService.GetRef().GetClusterName() {
-					reporter.ReportAccessPolicyToMeshService(
-						meshService,
+					reporter.ReportAccessPolicyToTrafficTarget(
+						target,
 						ap.GetRef(),
 						eris.New("SMI identity sources cannot be multi cluster"),
 					)
@@ -188,8 +188,8 @@ func (t *translator) Translate(
 
 		routeGroup := &smispecsv1alpha3.HTTPRouteGroup{
 			ObjectMeta: metautils.TranslatedObjectMeta(
-				meshService.Spec.GetKubeService().Ref,
-				meshService.Annotations,
+				target.Spec.GetKubeService().Ref,
+				target.Annotations,
 			),
 			Spec: smispecsv1alpha3.HTTPRouteGroupSpec{
 				Matches: httpMatches,

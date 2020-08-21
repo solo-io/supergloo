@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice/split"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/split"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

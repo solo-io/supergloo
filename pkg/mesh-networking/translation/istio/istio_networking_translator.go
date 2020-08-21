@@ -43,7 +43,7 @@ func (t *istioTranslator) Translate(
 ) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translator-%v", t.totalTranslates))
 
-	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(ctx, in.KubernetesClusters(), in.Meshes(), in.TrafficTargets())
+	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(ctx, in.KubernetesClusters(), in.TrafficTargets())
 
 	for _, trafficTarget := range in.TrafficTargets().List() {
 		trafficTarget := trafficTarget // pike

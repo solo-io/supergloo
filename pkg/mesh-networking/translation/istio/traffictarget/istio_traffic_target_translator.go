@@ -35,7 +35,6 @@ type Translator interface {
 
 type translator struct {
 	ctx                   context.Context
-	allMeshes             v1alpha2sets.MeshSet
 	destinationRules      destinationrule.Translator
 	virtualServices       virtualservice.Translator
 	authorizationPolicies authorizationpolicy.Translator
@@ -43,14 +42,12 @@ type translator struct {
 
 func NewTranslator(
 	ctx context.Context,
-	allMeshes v1alpha2sets.MeshSet,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 	trafficTargets v1alpha2sets.TrafficTargetSet,
 ) Translator {
 	return &translator{
 		ctx:                   ctx,
-		allMeshes:             allMeshes,
 		destinationRules:      destinationrule.NewTranslator(clusterDomains, decoratorFactory, trafficTargets),
 		virtualServices:       virtualservice.NewTranslator(clusterDomains, decoratorFactory),
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
@@ -65,7 +62,7 @@ func (t *translator) Translate(
 	reporter reporting.Reporter,
 ) {
 	// only translate istio meshServices
-	if !t.isIstioMeshService(t.ctx, trafficTarget, t.allMeshes) {
+	if !t.isIstioMeshService(t.ctx, trafficTarget, in.Meshes()) {
 		return
 	}
 

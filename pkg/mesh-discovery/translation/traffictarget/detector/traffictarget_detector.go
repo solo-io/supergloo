@@ -108,7 +108,7 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for
-func (m *trafficTargetDetector) findSubsets(backingWorkloads v1alpha2.WorkloadSlice) map[string]*v1alpha2.TrafficTargetSpec_KubeService_Subset {
+func (t *trafficTargetDetector) findSubsets(backingWorkloads v1alpha2.WorkloadSlice) map[string]*v1alpha2.TrafficTargetSpec_KubeService_Subset {
 	uniqueLabels := make(map[string]sets.String)
 	for _, backingWorkload := range backingWorkloads {
 		for key, val := range backingWorkload.Spec.GetKubernetes().GetPodLabels() {

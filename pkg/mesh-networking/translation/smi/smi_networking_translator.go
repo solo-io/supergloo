@@ -45,12 +45,12 @@ func (s *smiTranslator) Translate(
 ) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("smi-translator-%v", s.totalTranslates))
 
-	meshServiceTranslator := s.dependencies.MakeMeshServiceTranslator()
+	trafficTargetTranslator := s.dependencies.MakeTrafficTargetTranslator()
 
-	for _, meshService := range in.MeshServices().List() {
-		meshService := meshService // pike
+	for _, trafficTarget := range in.TrafficTargets().List() {
+		trafficTarget := trafficTarget // pike
 
-		meshServiceTranslator.Translate(ctx, in, meshService, outputs, reporter)
+		trafficTargetTranslator.Translate(ctx, in, trafficTarget, outputs, reporter)
 	}
 
 	s.totalTranslates++

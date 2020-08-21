@@ -11,7 +11,7 @@ import (
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi"
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/internal/mocks"
-	mock_meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice/mocks"
+	mock_meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -22,7 +22,7 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 		ctx                       context.Context
 		mockReporter              *mock_reporting.MockReporter
 		mockOutputs               *mock_output.MockBuilder
-		mockMeshServiceTranslator *mock_meshservice.MockTranslator
+		mockTrafficTargetTranslator *mock_meshservice.MockTranslator
 		mockDependencyFactory     *MockDependencyFactory
 		translator                Translator
 	)
@@ -31,7 +31,7 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		mockMeshServiceTranslator = mock_meshservice.NewMockTranslator(ctrl)
+		mockTrafficTargetTranslator = mock_meshservice.NewMockTranslator(ctrl)
 		mockDependencyFactory = NewMockDependencyFactory(ctrl)
 		mockOutputs = mock_output.NewMockBuilder(ctrl)
 		translator = NewSmiTranslator(mockDependencyFactory)
@@ -43,7 +43,7 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 
 	It("should translate", func() {
 		in := input.NewInputSnapshotManualBuilder("").
-			AddMeshServices([]*discoveryv1alpha2.MeshService{
+			AddTrafficTargets([]*discoveryv1alpha2.TrafficTarget{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:   "mesh-service-1",
@@ -60,12 +60,12 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 
 		mockDependencyFactory.
 			EXPECT().
-			MakeMeshServiceTranslator().
-			Return(mockMeshServiceTranslator)
-		for i := range in.MeshServices().List() {
-			mockMeshServiceTranslator.
+			MakeTrafficTargetTranslator().
+			Return(mockTrafficTargetTranslator)
+		for i := range in.TrafficTargets().List() {
+			mockTrafficTargetTranslator.
 				EXPECT().
-				Translate(gomock.Any(), in, in.MeshServices().List()[i], mockOutputs, mockReporter)
+				Translate(gomock.Any(), in, in.TrafficTargets().List()[i], mockOutputs, mockReporter)
 		}
 
 		translator.Translate(ctx, in, mockOutputs, mockReporter)

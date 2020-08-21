@@ -1,4 +1,4 @@
-package meshservice_test
+package traffictarget_test
 
 import (
 	"context"
@@ -12,14 +12,14 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	mock_output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/smi/mocks"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice"
-	mock_access "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice/access/mocks"
-	mock_split "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice/split/mocks"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget"
+	mock_access "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/access/mocks"
+	mock_split "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/split/mocks"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("SmiMeshServiceTranslator", func() {
+var _ = Describe("SmiTrafficTargetTranslator", func() {
 	var (
 		ctx                      context.Context
 		ctrl                     *gomock.Controller
@@ -27,7 +27,7 @@ var _ = Describe("SmiMeshServiceTranslator", func() {
 		mockReporter             *mock_reporting.MockReporter
 		mockSplitTranslator      *mock_split.MockTranslator
 		mockAccessTranslator     *mock_access.MockTranslator
-		smiMeshServiceTranslator Translator
+		smiTrafficTargetTranslator Translator
 	)
 
 	BeforeEach(func() {
@@ -36,7 +36,7 @@ var _ = Describe("SmiMeshServiceTranslator", func() {
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockSplitTranslator = mock_split.NewMockTranslator(ctrl)
 		mockAccessTranslator = mock_access.NewMockTranslator(ctrl)
-		smiMeshServiceTranslator = NewTranslator(mockSplitTranslator, mockAccessTranslator)
+		smiTrafficTargetTranslator = NewTranslator(mockSplitTranslator, mockAccessTranslator)
 	})
 
 	AfterEach(func() {
@@ -45,14 +45,14 @@ var _ = Describe("SmiMeshServiceTranslator", func() {
 
 	It("should not translate when not an smi mesh service", func() {
 		in := input.NewInputSnapshotManualBuilder("").Build()
-		meshService := &v1alpha2.MeshService{}
+		meshService := &v1alpha2.TrafficTarget{}
 
-		smiMeshServiceTranslator.Translate(ctx, in, meshService, mockOutputs, mockReporter)
+		smiTrafficTargetTranslator.Translate(ctx, in, meshService, mockOutputs, mockReporter)
 	})
 
 	It("should translate when an smi mesh service", func() {
-		meshService := &v1alpha2.MeshService{
-			Spec: v1alpha2.MeshServiceSpec{
+		meshService := &v1alpha2.TrafficTarget{
+			Spec: v1alpha2.TrafficTargetSpec{
 				Mesh: &v1.ObjectRef{
 					Name:      "hello",
 					Namespace: "world",
@@ -99,6 +99,6 @@ var _ = Describe("SmiMeshServiceTranslator", func() {
 			EXPECT().
 			AddHTTPRouteGroups(hrg)
 
-		smiMeshServiceTranslator.Translate(ctx, in, meshService, mockOutputs, mockReporter)
+		smiTrafficTargetTranslator.Translate(ctx, in, meshService, mockOutputs, mockReporter)
 	})
 })

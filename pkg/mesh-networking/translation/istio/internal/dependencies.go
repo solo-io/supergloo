@@ -29,7 +29,6 @@ type DependencyFactory interface {
 	MakeTrafficTargetTranslator(
 		ctx context.Context,
 		clusters skv1alpha1sets.KubernetesClusterSet,
-		meshes discoveryv1alpha2sets.MeshSet,
 		trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	) traffictarget.Translator
 	MakeMeshTranslator(
@@ -50,13 +49,12 @@ func NewDependencyFactory() DependencyFactory {
 func (d dependencyFactoryImpl) MakeTrafficTargetTranslator(
 	ctx context.Context,
 	clusters skv1alpha1sets.KubernetesClusterSet,
-	meshes discoveryv1alpha2sets.MeshSet,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 ) traffictarget.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	decoratorFactory := decorators.NewFactory()
 
-	return traffictarget.NewTranslator(ctx, meshes, clusterDomains, decoratorFactory, trafficTargets)
+	return traffictarget.NewTranslator(ctx, clusterDomains, decoratorFactory, trafficTargets)
 }
 
 func (d dependencyFactoryImpl) MakeMeshTranslator(

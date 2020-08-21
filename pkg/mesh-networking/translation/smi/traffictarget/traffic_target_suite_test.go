@@ -1,4 +1,4 @@
-package meshservice_test
+package traffictarget_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestMeshservice(t *testing.T) {
+func TestTrafficTarget(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Meshservice Suite")
+	RunSpecs(t, "TrafficTarget Suite")
 }

@@ -255,7 +255,7 @@ func ClearSingleClusterEnv(ctx context.Context) error {
 func StartSingleClusterEnv(ctx context.Context) SingleClusterEnv {
 
 	if useExisting := os.Getenv("USE_EXISTING"); useExisting == "1" {
-		return newSingleClusterEnv(masterContext)
+		return newSingleClusterEnv(mgmtContext)
 	}
 
 	// TODO: don't hardcode osm installation here
@@ -269,7 +269,7 @@ func StartSingleClusterEnv(ctx context.Context) SingleClusterEnv {
 	}
 	Expect(err).NotTo(HaveOccurred())
 
-	return newSingleClusterEnv(masterContext)
+	return newSingleClusterEnv(mgmtContext)
 }
 
 func dumpState() {

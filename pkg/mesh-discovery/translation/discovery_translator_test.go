@@ -72,8 +72,8 @@ var _ = Describe("Translator", func() {
 		)
 
 		mockDependencyFactory.EXPECT().MakeMeshTranslator(ctx, in).Return(mockMeshTranslator)
-		mockDependencyFactory.EXPECT().MakeWorkloadTranslator(ctx, in).Return(mockMeshworkloadTranslator)
-		mockDependencyFactory.EXPECT().MakeTrafficTargetTranslator(ctx).Return(mockMeshserviceTranslator)
+		mockDependencyFactory.EXPECT().MakeWorkloadTranslator(ctx, in).Return(mockWorkloadTranslator)
+		mockDependencyFactory.EXPECT().MakeTrafficTargetTranslator(ctx).Return(mockTrafficTargetTranslator)
 
 		labeledMeta := metav1.ObjectMeta{Labels: labelutils.ClusterLabels("cluster")}
 
@@ -83,7 +83,7 @@ var _ = Describe("Translator", func() {
 
 		mockMeshTranslator.EXPECT().TranslateMeshes(deployments).Return(meshes)
 		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)
-		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(services, workloads).Return(trafficTargets)
+		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(services, workloads, meshes).Return(trafficTargets)
 
 		out, err := t.Translate(ctx, in)
 		Expect(err).NotTo(HaveOccurred())

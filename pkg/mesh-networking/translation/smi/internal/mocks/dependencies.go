@@ -5,10 +5,9 @@
 package mock_internal
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
-	meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice"
+	traffictarget "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget"
+	reflect "reflect"
 )
 
 // MockDependencyFactory is a mock of DependencyFactory interface
@@ -34,16 +33,16 @@ func (m *MockDependencyFactory) EXPECT() *MockDependencyFactoryMockRecorder {
 	return m.recorder
 }
 
-// MakeMeshServiceTranslator mocks base method
-func (m *MockDependencyFactory) MakeMeshServiceTranslator() meshservice.Translator {
+// MakeTrafficTargetTranslator mocks base method
+func (m *MockDependencyFactory) MakeTrafficTargetTranslator() traffictarget.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeMeshServiceTranslator")
-	ret0, _ := ret[0].(meshservice.Translator)
+	ret := m.ctrl.Call(m, "MakeTrafficTargetTranslator")
+	ret0, _ := ret[0].(traffictarget.Translator)
 	return ret0
 }
 
-// MakeMeshServiceTranslator indicates an expected call of MakeMeshServiceTranslator
-func (mr *MockDependencyFactoryMockRecorder) MakeMeshServiceTranslator() *gomock.Call {
+// MakeTrafficTargetTranslator indicates an expected call of MakeTrafficTargetTranslator
+func (mr *MockDependencyFactoryMockRecorder) MakeTrafficTargetTranslator() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshServiceTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshServiceTranslator))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeTrafficTargetTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeTrafficTargetTranslator))
 }

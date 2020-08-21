@@ -6,14 +6,13 @@ package mock_access
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	v1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
 	v1alpha20 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -40,7 +39,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, meshService *v1alpha20.MeshService, reporter reporting.Reporter) ([]*v1alpha2.TrafficTarget, []*v1alpha3.HTTPRouteGroup) {
+func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, meshService *v1alpha20.TrafficTarget, reporter reporting.Reporter) ([]*v1alpha2.TrafficTarget, []*v1alpha3.HTTPRouteGroup) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", ctx, in, meshService, reporter)
 	ret0, _ := ret[0].([]*v1alpha2.TrafficTarget)
