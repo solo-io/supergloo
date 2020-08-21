@@ -35,8 +35,8 @@ steps:
   entrypoint: "bash"
   args:
     [
-      "-c",
-      "mkdir -p /go/pkg && cd /go/pkg && gsutil cat gs://$PROJECT_ID-cache/service-mesh-hub/service-mesh-hub-mod.tar.gz | tar -xzf -",
+        "-c",
+        "mkdir -p /go/pkg && cd /go/pkg && gsutil cat gs://$PROJECT_ID-cache/service-mesh-hub/service-mesh-hub-mod.tar.gz | tar -xzf -",
     ]
   id: "untar-mod-cache"
   waitFor: ["-"]
@@ -72,7 +72,6 @@ steps:
   - 'HELM_HOME=/root/.helm'
   secretEnv: ["GITHUB_TOKEN"]
   dir: *dir
-  waitFor: ['docker']
   id: 'test'
 
 - name: 'gcr.io/cloud-builders/docker'
@@ -82,38 +81,35 @@ steps:
   id: 'docker-login'
   waitFor: ['test']
 
-  # 1) Upload Docker images
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['push-all-images']
   env:
-    - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
-    - 'TAGGED_VERSION=$TAG_NAME'
-    - 'HELM_HOME=/root/.helm'
+  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+  - 'TAGGED_VERSION=$TAG_NAME'
+  - 'HELM_HOME=/root/.helm'
   dir: *dir
-  id: 'push-all-images'
+  id: 'docker-push'
   waitFor: ['docker-login']
-  # 2) upload github release assets (i.e. meshctl binaries)
+
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['upload-github-release-assets']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'HELM_HOME=/root/.helm'
-  - 'RELEASE=true'
   dir: *dir
   waitFor: ['docker-login']
   secretEnv: ['GITHUB_TOKEN', 'CI_ADMIN_DOCKER_HUB_PASSWORD']
-  id: 'upload-github-release-assets'
-  # 3) Publish Helm charts to GCS
+  id: 'release'
+  # 2) Publish Helm charts to GCS
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['publish-chart']
   env:
-    - 'TAGGED_VERSION=$TAG_NAME'
-    - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
-    - 'HELM_HOME=/root/.helm' # tell helm where to find data
-    - 'RELEASE=true'
+  - 'TAGGED_VERSION=$TAG_NAME'
+  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+  - 'HELM_HOME=/root/.helm' # tell helm where to find data
   dir: *dir
-  id: 'publish-chart'
+  id: 'release-helm'
 
 secrets:
 - kmsKeyName: projects/service-mesh-hub/locations/global/keyRings/buildkey/cryptoKeys/buildkey
