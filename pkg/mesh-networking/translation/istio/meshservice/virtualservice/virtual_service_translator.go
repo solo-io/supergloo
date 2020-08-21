@@ -1,6 +1,8 @@
 package virtualservice
 
 import (
+	"sort"
+
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/skv2/pkg/ezkube"
 
@@ -93,7 +95,7 @@ func (t *translator) Translate(
 		// required because Istio needs the destination port for every route
 		routesPerPort := duplicateRouteForEachPort(baseRoute, kubeService.Ports)
 
-		// split routes with multiple HTTP matchers for easier route sorting later on
+		// split routes with multiple HTTP matchers into one matcher per route for easier route sorting later on
 		var routesWithSingleMatcher []*networkingv1alpha3spec.HTTPRoute
 		for _, route := range routesPerPort {
 			splitRoutes := splitRouteByMatchers(route)
@@ -102,6 +104,8 @@ func (t *translator) Translate(
 
 		virtualService.Spec.Http = append(virtualService.Spec.Http, routesWithSingleMatcher...)
 	}
+
+	sort.Sort(RoutesBySpecificity(virtualService.Spec.Http))
 
 	if len(virtualService.Spec.Http) == 0 {
 		// no need to create this VirtualService as it has no effect

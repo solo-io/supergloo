@@ -155,9 +155,9 @@ message MeshStatus {
     int64 observed_generation = 1;
 
     // The VirtualMesh, if any, which contains this mesh.
-    repeated AppliedVirtualMesh applied_virtual_meshes = 2;
+    AppliedVirtualMesh applied_virtual_mesh = 2;
 
-    // The FailoverService, if any, which applies to this mesh.
+    // The FailoverServices, if any, which applies to this mesh.
     repeated AppliedFailoverService applied_failover_services = 3;
 
     // AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh.

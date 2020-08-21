@@ -246,17 +246,17 @@ func (f *failoverServiceValidator) validateFederation(
 	}
 	// Compute referenced VirtualMeshes
 	for _, mesh := range referencedMeshes.List() {
-		if len(mesh.Status.AppliedVirtualMeshes) < 1 {
+		appliedVirtualMesh := mesh.Status.AppliedVirtualMesh
+		if appliedVirtualMesh == nil {
 			missingParentVMErrors = append(missingParentVMErrors, MeshWithoutParentVM(mesh))
+			continue
 		}
-		for _, appliedVM := range mesh.Status.AppliedVirtualMeshes {
-			vm, err := allVirtualMeshes.Find(appliedVM.Ref)
-			if err != nil {
-				errs = append(errs, err)
-				continue
-			}
-			referencedVMs.Insert(vm)
+		vm, err := allVirtualMeshes.Find(appliedVirtualMesh.Ref)
+		if err != nil {
+			errs = append(errs, err)
+			continue
 		}
+		referencedVMs.Insert(vm)
 	}
 	// Approve that there's only one common parent mesh, else that there's only a single common parent VirtualMesh
 	if len(referencedMeshes.List()) > 1 {

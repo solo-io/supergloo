@@ -1342,3 +1342,15 @@ func (mr *MockBuilderMockRecorder) BuildSinglePartitionedSnapshot(snapshotLabels
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildSinglePartitionedSnapshot", reflect.TypeOf((*MockBuilder)(nil).BuildSinglePartitionedSnapshot), snapshotLabels)
 }
+
+// AddCluster mocks base method
+func (m *MockBuilder) AddCluster(cluster string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "AddCluster", cluster)
+}
+
+// AddCluster indicates an expected call of AddCluster
+func (mr *MockBuilderMockRecorder) AddCluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCluster", reflect.TypeOf((*MockBuilder)(nil).AddCluster), cluster)
+}

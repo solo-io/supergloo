@@ -8,8 +8,8 @@ on:
   pull_request: {}
 
 jobs:
-  unit-tests:
-    name: unit-tests
+  check-code-gen:
+    name: check-code-gen
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -32,6 +32,28 @@ jobs:
       - name: Check code gen
         run: |
           ./ci/check-code-gen.sh
+
+  unit-tests:
+    name: unit-tests
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          git fetch --prune --unshallow
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Install Protoc
+        uses: solo-io/setup-protoc@master
+        with:
+          version: '3.6.1'
       - name: Unit Tests
         run: |
           go test ./...

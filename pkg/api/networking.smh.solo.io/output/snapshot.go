@@ -97,6 +97,7 @@ type snapshot struct {
 	trafficSplits         []LabeledTrafficSplitSet
 	trafficTargets        []LabeledTrafficTargetSet
 	hTTPRouteGroups       []LabeledHTTPRouteGroupSet
+	clusters              []string
 }
 
 func NewSnapshot(
@@ -113,7 +114,7 @@ func NewSnapshot(
 	trafficSplits []LabeledTrafficSplitSet,
 	trafficTargets []LabeledTrafficTargetSet,
 	hTTPRouteGroups []LabeledHTTPRouteGroupSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
 		name: name,
@@ -129,6 +130,7 @@ func NewSnapshot(
 		trafficSplits:         trafficSplits,
 		trafficTargets:        trafficTargets,
 		hTTPRouteGroups:       hTTPRouteGroups,
+		clusters:              clusters,
 	}
 }
 
@@ -155,7 +157,7 @@ func NewLabelPartitionedSnapshot(
 	trafficTargets access_smi_spec_io_v1alpha2_sets.TrafficTargetSet,
 
 	hTTPRouteGroups specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
 	partitionedIssuedCertificates, err := partitionIssuedCertificatesByLabel(labelKey, issuedCertificates)
@@ -217,6 +219,7 @@ func NewLabelPartitionedSnapshot(
 		partitionedTrafficSplits,
 		partitionedTrafficTargets,
 		partitionedHTTPRouteGroups,
+		clusters...,
 	), nil
 }
 
@@ -243,7 +246,7 @@ func NewSinglePartitionedSnapshot(
 	trafficTargets access_smi_spec_io_v1alpha2_sets.TrafficTargetSet,
 
 	hTTPRouteGroups specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
 	labeledIssuedCertificates, err := NewLabeledIssuedCertificateSet(issuedCertificates, snapshotLabels)
@@ -305,6 +308,7 @@ func NewSinglePartitionedSnapshot(
 		[]LabeledTrafficSplitSet{labeledTrafficSplits},
 		[]LabeledTrafficTargetSet{labeledTrafficTargets},
 		[]LabeledHTTPRouteGroupSet{labeledHTTPRouteGroups},
+		clusters...,
 	), nil
 }
 
@@ -392,6 +396,7 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 
 	output.Snapshot{
 		Name:        s.name,
+		Clusters:    s.clusters,
 		ListsToSync: genericLists,
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
@@ -1741,8 +1746,9 @@ func (l labeledHTTPRouteGroupSet) Generic() output.ResourceList {
 }
 
 type builder struct {
-	ctx  context.Context
-	name string
+	ctx      context.Context
+	name     string
+	clusters []string
 
 	issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
 
@@ -1863,6 +1869,10 @@ type Builder interface {
 
 	// build the collected outputs into a snapshot with a single partition
 	BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error)
+
+	// add a cluster to the collected clusters.
+	// this can be used to collect clusters for use with MultiCluster snapshots.
+	AddCluster(cluster string)
 }
 
 func (b *builder) AddIssuedCertificates(issuedCertificates ...*certificates_smh_solo_io_v1alpha2.IssuedCertificate) {
@@ -2027,6 +2037,7 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.trafficTargets,
 
 		b.hTTPRouteGroups,
+		b.clusters...,
 	)
 }
 
@@ -2052,5 +2063,10 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.trafficTargets,
 
 		b.hTTPRouteGroups,
+		b.clusters...,
 	)
+}
+
+func (b *builder) AddCluster(cluster string) {
+	b.clusters = append(b.clusters, cluster)
 }

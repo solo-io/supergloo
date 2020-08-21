@@ -55,6 +55,7 @@ type snapshot struct {
 	meshServices  []LabeledMeshServiceSet
 	meshWorkloads []LabeledMeshWorkloadSet
 	meshes        []LabeledMeshSet
+	clusters      []string
 }
 
 func NewSnapshot(
@@ -63,7 +64,7 @@ func NewSnapshot(
 	meshServices []LabeledMeshServiceSet,
 	meshWorkloads []LabeledMeshWorkloadSet,
 	meshes []LabeledMeshSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
 		name: name,
@@ -71,6 +72,7 @@ func NewSnapshot(
 		meshServices:  meshServices,
 		meshWorkloads: meshWorkloads,
 		meshes:        meshes,
+		clusters:      clusters,
 	}
 }
 
@@ -83,7 +85,7 @@ func NewLabelPartitionedSnapshot(
 	meshServices discovery_smh_solo_io_v1alpha2_sets.MeshServiceSet,
 	meshWorkloads discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
 	partitionedMeshServices, err := partitionMeshServicesByLabel(labelKey, meshServices)
@@ -105,6 +107,7 @@ func NewLabelPartitionedSnapshot(
 		partitionedMeshServices,
 		partitionedMeshWorkloads,
 		partitionedMeshes,
+		clusters...,
 	), nil
 }
 
@@ -117,7 +120,7 @@ func NewSinglePartitionedSnapshot(
 	meshServices discovery_smh_solo_io_v1alpha2_sets.MeshServiceSet,
 	meshWorkloads discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet,
 	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
-
+	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
 	labeledMeshServices, err := NewLabeledMeshServiceSet(meshServices, snapshotLabels)
@@ -139,6 +142,7 @@ func NewSinglePartitionedSnapshot(
 		[]LabeledMeshServiceSet{labeledMeshServices},
 		[]LabeledMeshWorkloadSet{labeledMeshWorkloads},
 		[]LabeledMeshSet{labeledMeshes},
+		clusters...,
 	), nil
 }
 
@@ -178,6 +182,7 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 
 	output.Snapshot{
 		Name:        s.name,
+		Clusters:    s.clusters,
 		ListsToSync: genericLists,
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
@@ -553,8 +558,9 @@ func (l labeledMeshSet) Generic() output.ResourceList {
 }
 
 type builder struct {
-	ctx  context.Context
-	name string
+	ctx      context.Context
+	name     string
+	clusters []string
 
 	meshServices  discovery_smh_solo_io_v1alpha2_sets.MeshServiceSet
 	meshWorkloads discovery_smh_solo_io_v1alpha2_sets.MeshWorkloadSet
@@ -599,6 +605,10 @@ type Builder interface {
 
 	// build the collected outputs into a snapshot with a single partition
 	BuildSinglePartitionedSnapshot(snapshotLabels map[string]string) (Snapshot, error)
+
+	// add a cluster to the collected clusters.
+	// this can be used to collect clusters for use with MultiCluster snapshots.
+	AddCluster(cluster string)
 }
 
 func (b *builder) AddMeshServices(meshServices ...*discovery_smh_solo_io_v1alpha2.MeshService) {
@@ -647,6 +657,7 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.meshServices,
 		b.meshWorkloads,
 		b.meshes,
+		b.clusters...,
 	)
 }
 
@@ -658,5 +669,10 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.meshServices,
 		b.meshWorkloads,
 		b.meshes,
+		b.clusters...,
 	)
+}
+
+func (b *builder) AddCluster(cluster string) {
+	b.clusters = append(b.clusters, cluster)
 }

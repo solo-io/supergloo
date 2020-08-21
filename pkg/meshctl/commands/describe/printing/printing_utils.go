@@ -14,6 +14,13 @@ func FormattedField(key, value string) string {
 	return fmt.Sprintf("%s: %s\n", key, value)
 }
 
+func FormattedObjectRef(ref *v1.ObjectRef) string {
+	if ref == nil {
+		return ""
+	}
+	return FormattedObjectRefs([]*v1.ObjectRef{ref})
+}
+
 func FormattedObjectRefs(refs []*v1.ObjectRef) string {
 	if len(refs) < 1 {
 		return ""
