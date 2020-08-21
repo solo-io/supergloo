@@ -5,11 +5,10 @@
 package mock_validation
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	failoverservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/validation/failoverservice"
+	reflect "reflect"
 )
 
 // MockFailoverServiceValidator is a mock of FailoverServiceValidator interface

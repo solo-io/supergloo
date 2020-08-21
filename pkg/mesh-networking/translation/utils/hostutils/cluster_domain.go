@@ -75,10 +75,10 @@ func (c *clusterDomainRegistry) GetServiceGlobalFQDN(serviceRef ezkube.ClusterRe
 
 func (c *clusterDomainRegistry) GetDestinationServiceFQDN(originatingCluster string, destination ezkube.ClusterResourceId) string {
 	if destination.GetClusterName() == originatingCluster {
-		// hostname will use the cluster local domain if the destination is in the same cluster as the target MeshService
+		// hostname will use the cluster local domain if the destination is in the same cluster as the target TrafficTarget
 		return c.GetServiceLocalFQDN(destination)
 	} else {
-		// hostname will use the cross-cluster domain if the destination is in a different cluster than the target MeshService
+		// hostname will use the cross-cluster domain if the destination is in a different cluster than the target TrafficTarget
 		return c.GetServiceGlobalFQDN(destination)
 	}
 }

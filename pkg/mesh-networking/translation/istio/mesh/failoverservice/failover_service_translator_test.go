@@ -94,21 +94,21 @@ var _ = Describe("FailoverServiceTranslator", func() {
 				},
 			},
 		}
-		allMeshServices := []*discoveryv1alpha2.MeshService{
+		allTrafficTargets := []*discoveryv1alpha2.TrafficTarget{
 			{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "mesh-service-1",
 					Namespace: "default",
 				},
-				Spec: discoveryv1alpha2.MeshServiceSpec{
-					Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-						KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 							Ref: &v1.ClusterObjectRef{
 								Name:        "service-name-1",
 								Namespace:   "service-namespace-1",
 								ClusterName: "cluster-1",
 							},
-							Ports: []*discoveryv1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "service1.port1",
@@ -124,15 +124,15 @@ var _ = Describe("FailoverServiceTranslator", func() {
 					Name:      "mesh-service-2",
 					Namespace: "default",
 				},
-				Spec: discoveryv1alpha2.MeshServiceSpec{
-					Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-						KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 							Ref: &v1.ClusterObjectRef{
 								Name:        "service-name-2",
 								Namespace:   "service-namespace-2",
 								ClusterName: "cluster-2",
 							},
-							Ports: []*discoveryv1alpha2.MeshServiceSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "service2.port1",
@@ -180,22 +180,22 @@ var _ = Describe("FailoverServiceTranslator", func() {
 		}
 
 		in := input.NewInputSnapshotManualBuilder("").
-			AddMeshServices(allMeshServices).
+			AddTrafficTargets(allTrafficTargets).
 			AddMeshes(allMeshes).
 			AddKubernetesClusters([]*v1alpha1.KubernetesCluster{{ObjectMeta: metav1.ObjectMeta{Name: "kube-cluster"}}}).
 			AddVirtualMeshes([]*networkingv1alpha2.VirtualMesh{{ObjectMeta: metav1.ObjectMeta{Name: "virtual-mesh"}}}).
 			Build()
 
 		mockValidator.EXPECT().Validate(failoverservice.Inputs{
-			MeshServices:  in.MeshServices(),
-			KubeClusters:  in.KubernetesClusters(),
-			Meshes:        in.Meshes(),
-			VirtualMeshes: in.VirtualMeshes(),
+			TrafficTargets: in.TrafficTargets(),
+			KubeClusters:   in.KubernetesClusters(),
+			Meshes:         in.Meshes(),
+			VirtualMeshes:  in.VirtualMeshes(),
 		}, failoverService.Spec).Return(nil)
 
-		for _, meshService := range allMeshServices {
-			mockClusterDomainRegistry.EXPECT().GetServiceLocalFQDN(meshService).Return(meshService.Name + "." + meshService.Namespace)
-			mockClusterDomainRegistry.EXPECT().GetServiceGlobalFQDN(meshService.Spec.GetKubeService().Ref).Return(meshService.Name + "." + meshService.Namespace + ".global")
+		for _, trafficTarget := range allTrafficTargets {
+			mockClusterDomainRegistry.EXPECT().GetServiceLocalFQDN(trafficTarget).Return(trafficTarget.Name + "." + trafficTarget.Namespace)
+			mockClusterDomainRegistry.EXPECT().GetServiceGlobalFQDN(trafficTarget.Spec.GetKubeService().Ref).Return(trafficTarget.Name + "." + trafficTarget.Namespace + ".global")
 		}
 
 		outputs := output.NewBuilder(context.TODO(), "")

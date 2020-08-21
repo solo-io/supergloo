@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add cluster tenancy finder for AppMesh, which scans pods for AppMesh injection and updates the relevant Mesh CRD with the cluster.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/630

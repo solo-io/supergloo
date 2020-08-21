@@ -1,0 +1,5 @@
+changelog:
+- type: NON_USER_FACING
+  description: Remove mockgen code that no one is using
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/51
+

@@ -26,9 +26,9 @@ option (gogoproto.equal_all) = true;
 */
 message IssuedCertificateSpec {
     /*
-         list of hostnames and IPs to generate a certificate for.
+         A list of hostnames and IPs to generate a certificate for.
          This can also be set to the identity running the workload,
-         like kubernetes service account.
+         e.g. a Kubernetes service account.
 
          Generally for an Istio CA this will take the form `spiffe://cluster.local/ns/istio-system/sa/citadel`.
 
@@ -36,68 +36,66 @@ message IssuedCertificateSpec {
      */
     repeated string hosts = 1;
 
-    // Organization for this certificate.
+    // The organization for this certificate.
     string org = 2;
 
-    // the secret containing the root SSL certificate used to sign this IssuedCertificate (located in the Certificate Issuer's cluster)
+    // The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the Certificate Issuer's cluster).
     .core.skv2.solo.io.ObjectRef signing_certificate_secret = 3;
 
-    // the secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster)
+    // The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster).
     .core.skv2.solo.io.ObjectRef issued_certificate_secret = 4;
 
-    // a list of k8s pods to bounce (delete and cause a restart)
+    // A list of k8s pods to bounce (delete and cause a restart)
     // when the certificate is issued.
-    // this will include the control plane pods as well as any pods
+    // This will include the control plane pods as well as any pods
     // which share a data plane with the target mesh.
     repeated PodSelector pods_to_bounce = 5;
 
-    // select pods for deletion
+    // Pods that will be restarted.
     message PodSelector {
-        // namespace in which the pods live
+        // The namespace in which the pods live.
         string namespace = 1;
 
-        // labels shared by the pods
+        // Any labels shared by the pods.
         map<string, string> labels = 2;
     }
 }
 
-// the IssuedCertificate status is written by the CertificateRequesting agent
+// The IssuedCertificate status is written by the CertificateRequesting agent.
 message IssuedCertificateStatus {
 
     // The most recent generation observed in the the IssuedCertificate metadata.
-    // if the observedGeneration does not match generation, the Certificate Requesting Agent has not processed the most
+    // If the observedGeneration does not match generation, the Certificate Requesting Agent has not processed the most
     // recent version of this IssuedCertificate.
     int64 observed_generation = 1;
 
-    // any error observed which prevented the CertificateRequest from being processed.
-    // if the error is empty, the request has been processed successfully
+    // Any error observed which prevented the CertificateRequest from being processed.
+    // If the error is empty, the request has been processed successfully.
     string error = 2;
 
-    // the current state of the IssuedCertificate workflow,
-    // reported by the agent.
+    // The current state of the IssuedCertificate workflow, reported by the agent.
     State state = 3;
 
-    // possible states in which an IssuedCertificate can exist
+    // Possible states in which an IssuedCertificate can exist.
     enum State {
-        // the IssuedCertificate has yet to be picked up by the agent.
+        // The IssuedCertificate has yet to be picked up by the agent.
         PENDING = 0;
 
-        // the agent has created a local private key
+        // The agent has created a local private key
         // and a CertificateRequest for the IssuedCertificate.
-        // in this state, the agent is waiting for the Issuer
+        // In this state, the agent is waiting for the Issuer
         // to issue certificates for the CertificateRequest before proceeding.
         REQUESTED = 1;
 
-        // the certificate has been issued. if any pods require being restarted,
-        // they'll be restarted at this point.
+        // The certificate has been issued. Any pods that require restarting will be restarted at this point.
         ISSUED = 2;
 
-        // the reply from the Issuer has been process and
+        // The reply from the Issuer has been processed and
         // the agent has placed the final certificate secret
         // in the target location specified by the IssuedCertificate.
         FINISHED = 3;
 
-        // processing the certificate workflow failed.
+        // Processing the certificate workflow failed.
         FAILED = 4;
     }
 }

@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Distinguish workloads with same name in different namespaces.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/758

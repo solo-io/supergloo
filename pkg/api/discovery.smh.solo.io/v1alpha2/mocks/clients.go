@@ -6,10 +6,9 @@ package mock_v1alpha2
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -74,32 +73,32 @@ func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 	return m.recorder
 }
 
-// MeshServices mocks base method
-func (m *MockClientset) MeshServices() v1alpha2.MeshServiceClient {
+// TrafficTargets mocks base method
+func (m *MockClientset) TrafficTargets() v1alpha2.TrafficTargetClient {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MeshServices")
-	ret0, _ := ret[0].(v1alpha2.MeshServiceClient)
+	ret := m.ctrl.Call(m, "TrafficTargets")
+	ret0, _ := ret[0].(v1alpha2.TrafficTargetClient)
 	return ret0
 }
 
-// MeshServices indicates an expected call of MeshServices
-func (mr *MockClientsetMockRecorder) MeshServices() *gomock.Call {
+// TrafficTargets indicates an expected call of TrafficTargets
+func (mr *MockClientsetMockRecorder) TrafficTargets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshServices", reflect.TypeOf((*MockClientset)(nil).MeshServices))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficTargets", reflect.TypeOf((*MockClientset)(nil).TrafficTargets))
 }
 
-// MeshWorkloads mocks base method
-func (m *MockClientset) MeshWorkloads() v1alpha2.MeshWorkloadClient {
+// Workloads mocks base method
+func (m *MockClientset) Workloads() v1alpha2.WorkloadClient {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MeshWorkloads")
-	ret0, _ := ret[0].(v1alpha2.MeshWorkloadClient)
+	ret := m.ctrl.Call(m, "Workloads")
+	ret0, _ := ret[0].(v1alpha2.WorkloadClient)
 	return ret0
 }
 
-// MeshWorkloads indicates an expected call of MeshWorkloads
-func (mr *MockClientsetMockRecorder) MeshWorkloads() *gomock.Call {
+// Workloads indicates an expected call of Workloads
+func (mr *MockClientsetMockRecorder) Workloads() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshWorkloads", reflect.TypeOf((*MockClientset)(nil).MeshWorkloads))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Workloads", reflect.TypeOf((*MockClientset)(nil).Workloads))
 }
 
 // Meshes mocks base method
@@ -116,1012 +115,1012 @@ func (mr *MockClientsetMockRecorder) Meshes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockClientset)(nil).Meshes))
 }
 
-// MockMeshServiceReader is a mock of MeshServiceReader interface
-type MockMeshServiceReader struct {
+// MockTrafficTargetReader is a mock of TrafficTargetReader interface
+type MockTrafficTargetReader struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceReaderMockRecorder
+	recorder *MockTrafficTargetReaderMockRecorder
 }
 
-// MockMeshServiceReaderMockRecorder is the mock recorder for MockMeshServiceReader
-type MockMeshServiceReaderMockRecorder struct {
-	mock *MockMeshServiceReader
+// MockTrafficTargetReaderMockRecorder is the mock recorder for MockTrafficTargetReader
+type MockTrafficTargetReaderMockRecorder struct {
+	mock *MockTrafficTargetReader
 }
 
-// NewMockMeshServiceReader creates a new mock instance
-func NewMockMeshServiceReader(ctrl *gomock.Controller) *MockMeshServiceReader {
-	mock := &MockMeshServiceReader{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceReaderMockRecorder{mock}
+// NewMockTrafficTargetReader creates a new mock instance
+func NewMockTrafficTargetReader(ctrl *gomock.Controller) *MockTrafficTargetReader {
+	mock := &MockTrafficTargetReader{ctrl: ctrl}
+	mock.recorder = &MockTrafficTargetReaderMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshServiceReader) EXPECT() *MockMeshServiceReaderMockRecorder {
+func (m *MockTrafficTargetReader) EXPECT() *MockTrafficTargetReaderMockRecorder {
 	return m.recorder
 }
 
-// GetMeshService mocks base method
-func (m *MockMeshServiceReader) GetMeshService(ctx context.Context, key client.ObjectKey) (*v1alpha2.MeshService, error) {
+// GetTrafficTarget mocks base method
+func (m *MockTrafficTargetReader) GetTrafficTarget(ctx context.Context, key client.ObjectKey) (*v1alpha2.TrafficTarget, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMeshService", ctx, key)
-	ret0, _ := ret[0].(*v1alpha2.MeshService)
+	ret := m.ctrl.Call(m, "GetTrafficTarget", ctx, key)
+	ret0, _ := ret[0].(*v1alpha2.TrafficTarget)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetMeshService indicates an expected call of GetMeshService
-func (mr *MockMeshServiceReaderMockRecorder) GetMeshService(ctx, key interface{}) *gomock.Call {
+// GetTrafficTarget indicates an expected call of GetTrafficTarget
+func (mr *MockTrafficTargetReaderMockRecorder) GetTrafficTarget(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshService", reflect.TypeOf((*MockMeshServiceReader)(nil).GetMeshService), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrafficTarget", reflect.TypeOf((*MockTrafficTargetReader)(nil).GetTrafficTarget), ctx, key)
 }
 
-// ListMeshService mocks base method
-func (m *MockMeshServiceReader) ListMeshService(ctx context.Context, opts ...client.ListOption) (*v1alpha2.MeshServiceList, error) {
+// ListTrafficTarget mocks base method
+func (m *MockTrafficTargetReader) ListTrafficTarget(ctx context.Context, opts ...client.ListOption) (*v1alpha2.TrafficTargetList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListMeshService", varargs...)
-	ret0, _ := ret[0].(*v1alpha2.MeshServiceList)
+	ret := m.ctrl.Call(m, "ListTrafficTarget", varargs...)
+	ret0, _ := ret[0].(*v1alpha2.TrafficTargetList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListMeshService indicates an expected call of ListMeshService
-func (mr *MockMeshServiceReaderMockRecorder) ListMeshService(ctx interface{}, opts ...interface{}) *gomock.Call {
+// ListTrafficTarget indicates an expected call of ListTrafficTarget
+func (mr *MockTrafficTargetReaderMockRecorder) ListTrafficTarget(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMeshService", reflect.TypeOf((*MockMeshServiceReader)(nil).ListMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTrafficTarget", reflect.TypeOf((*MockTrafficTargetReader)(nil).ListTrafficTarget), varargs...)
 }
 
-// MockMeshServiceWriter is a mock of MeshServiceWriter interface
-type MockMeshServiceWriter struct {
+// MockTrafficTargetWriter is a mock of TrafficTargetWriter interface
+type MockTrafficTargetWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceWriterMockRecorder
+	recorder *MockTrafficTargetWriterMockRecorder
 }
 
-// MockMeshServiceWriterMockRecorder is the mock recorder for MockMeshServiceWriter
-type MockMeshServiceWriterMockRecorder struct {
-	mock *MockMeshServiceWriter
+// MockTrafficTargetWriterMockRecorder is the mock recorder for MockTrafficTargetWriter
+type MockTrafficTargetWriterMockRecorder struct {
+	mock *MockTrafficTargetWriter
 }
 
-// NewMockMeshServiceWriter creates a new mock instance
-func NewMockMeshServiceWriter(ctrl *gomock.Controller) *MockMeshServiceWriter {
-	mock := &MockMeshServiceWriter{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceWriterMockRecorder{mock}
+// NewMockTrafficTargetWriter creates a new mock instance
+func NewMockTrafficTargetWriter(ctrl *gomock.Controller) *MockTrafficTargetWriter {
+	mock := &MockTrafficTargetWriter{ctrl: ctrl}
+	mock.recorder = &MockTrafficTargetWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshServiceWriter) EXPECT() *MockMeshServiceWriterMockRecorder {
+func (m *MockTrafficTargetWriter) EXPECT() *MockTrafficTargetWriterMockRecorder {
 	return m.recorder
 }
 
-// CreateMeshService mocks base method
-func (m *MockMeshServiceWriter) CreateMeshService(ctx context.Context, obj *v1alpha2.MeshService, opts ...client.CreateOption) error {
+// CreateTrafficTarget mocks base method
+func (m *MockTrafficTargetWriter) CreateTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateMeshService", varargs...)
+	ret := m.ctrl.Call(m, "CreateTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshService indicates an expected call of CreateMeshService
-func (mr *MockMeshServiceWriterMockRecorder) CreateMeshService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// CreateTrafficTarget indicates an expected call of CreateTrafficTarget
+func (mr *MockTrafficTargetWriterMockRecorder) CreateTrafficTarget(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshService", reflect.TypeOf((*MockMeshServiceWriter)(nil).CreateMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).CreateTrafficTarget), varargs...)
 }
 
-// DeleteMeshService mocks base method
-func (m *MockMeshServiceWriter) DeleteMeshService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+// DeleteTrafficTarget mocks base method
+func (m *MockTrafficTargetWriter) DeleteTrafficTarget(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteMeshService", varargs...)
+	ret := m.ctrl.Call(m, "DeleteTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteMeshService indicates an expected call of DeleteMeshService
-func (mr *MockMeshServiceWriterMockRecorder) DeleteMeshService(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+// DeleteTrafficTarget indicates an expected call of DeleteTrafficTarget
+func (mr *MockTrafficTargetWriterMockRecorder) DeleteTrafficTarget(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMeshService", reflect.TypeOf((*MockMeshServiceWriter)(nil).DeleteMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).DeleteTrafficTarget), varargs...)
 }
 
-// UpdateMeshService mocks base method
-func (m *MockMeshServiceWriter) UpdateMeshService(ctx context.Context, obj *v1alpha2.MeshService, opts ...client.UpdateOption) error {
+// UpdateTrafficTarget mocks base method
+func (m *MockTrafficTargetWriter) UpdateTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateMeshService", varargs...)
+	ret := m.ctrl.Call(m, "UpdateTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateMeshService indicates an expected call of UpdateMeshService
-func (mr *MockMeshServiceWriterMockRecorder) UpdateMeshService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateTrafficTarget indicates an expected call of UpdateTrafficTarget
+func (mr *MockTrafficTargetWriterMockRecorder) UpdateTrafficTarget(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshService", reflect.TypeOf((*MockMeshServiceWriter)(nil).UpdateMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).UpdateTrafficTarget), varargs...)
 }
 
-// PatchMeshService mocks base method
-func (m *MockMeshServiceWriter) PatchMeshService(ctx context.Context, obj *v1alpha2.MeshService, patch client.Patch, opts ...client.PatchOption) error {
+// PatchTrafficTarget mocks base method
+func (m *MockTrafficTargetWriter) PatchTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchMeshService", varargs...)
+	ret := m.ctrl.Call(m, "PatchTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchMeshService indicates an expected call of PatchMeshService
-func (mr *MockMeshServiceWriterMockRecorder) PatchMeshService(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchTrafficTarget indicates an expected call of PatchTrafficTarget
+func (mr *MockTrafficTargetWriterMockRecorder) PatchTrafficTarget(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshService", reflect.TypeOf((*MockMeshServiceWriter)(nil).PatchMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).PatchTrafficTarget), varargs...)
 }
 
-// DeleteAllOfMeshService mocks base method
-func (m *MockMeshServiceWriter) DeleteAllOfMeshService(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+// DeleteAllOfTrafficTarget mocks base method
+func (m *MockTrafficTargetWriter) DeleteAllOfTrafficTarget(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAllOfMeshService", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAllOfTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAllOfMeshService indicates an expected call of DeleteAllOfMeshService
-func (mr *MockMeshServiceWriterMockRecorder) DeleteAllOfMeshService(ctx interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAllOfTrafficTarget indicates an expected call of DeleteAllOfTrafficTarget
+func (mr *MockTrafficTargetWriterMockRecorder) DeleteAllOfTrafficTarget(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfMeshService", reflect.TypeOf((*MockMeshServiceWriter)(nil).DeleteAllOfMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).DeleteAllOfTrafficTarget), varargs...)
 }
 
-// UpsertMeshService mocks base method
-func (m *MockMeshServiceWriter) UpsertMeshService(ctx context.Context, obj *v1alpha2.MeshService, transitionFuncs ...v1alpha2.MeshServiceTransitionFunction) error {
+// UpsertTrafficTarget mocks base method
+func (m *MockTrafficTargetWriter) UpsertTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, transitionFuncs ...v1alpha2.TrafficTargetTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range transitionFuncs {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertMeshService", varargs...)
+	ret := m.ctrl.Call(m, "UpsertTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertMeshService indicates an expected call of UpsertMeshService
-func (mr *MockMeshServiceWriterMockRecorder) UpsertMeshService(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+// UpsertTrafficTarget indicates an expected call of UpsertTrafficTarget
+func (mr *MockTrafficTargetWriterMockRecorder) UpsertTrafficTarget(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertMeshService", reflect.TypeOf((*MockMeshServiceWriter)(nil).UpsertMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).UpsertTrafficTarget), varargs...)
 }
 
-// MockMeshServiceStatusWriter is a mock of MeshServiceStatusWriter interface
-type MockMeshServiceStatusWriter struct {
+// MockTrafficTargetStatusWriter is a mock of TrafficTargetStatusWriter interface
+type MockTrafficTargetStatusWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceStatusWriterMockRecorder
+	recorder *MockTrafficTargetStatusWriterMockRecorder
 }
 
-// MockMeshServiceStatusWriterMockRecorder is the mock recorder for MockMeshServiceStatusWriter
-type MockMeshServiceStatusWriterMockRecorder struct {
-	mock *MockMeshServiceStatusWriter
+// MockTrafficTargetStatusWriterMockRecorder is the mock recorder for MockTrafficTargetStatusWriter
+type MockTrafficTargetStatusWriterMockRecorder struct {
+	mock *MockTrafficTargetStatusWriter
 }
 
-// NewMockMeshServiceStatusWriter creates a new mock instance
-func NewMockMeshServiceStatusWriter(ctrl *gomock.Controller) *MockMeshServiceStatusWriter {
-	mock := &MockMeshServiceStatusWriter{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceStatusWriterMockRecorder{mock}
+// NewMockTrafficTargetStatusWriter creates a new mock instance
+func NewMockTrafficTargetStatusWriter(ctrl *gomock.Controller) *MockTrafficTargetStatusWriter {
+	mock := &MockTrafficTargetStatusWriter{ctrl: ctrl}
+	mock.recorder = &MockTrafficTargetStatusWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshServiceStatusWriter) EXPECT() *MockMeshServiceStatusWriterMockRecorder {
+func (m *MockTrafficTargetStatusWriter) EXPECT() *MockTrafficTargetStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// UpdateMeshServiceStatus mocks base method
-func (m *MockMeshServiceStatusWriter) UpdateMeshServiceStatus(ctx context.Context, obj *v1alpha2.MeshService, opts ...client.UpdateOption) error {
+// UpdateTrafficTargetStatus mocks base method
+func (m *MockTrafficTargetStatusWriter) UpdateTrafficTargetStatus(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateMeshServiceStatus", varargs...)
+	ret := m.ctrl.Call(m, "UpdateTrafficTargetStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateMeshServiceStatus indicates an expected call of UpdateMeshServiceStatus
-func (mr *MockMeshServiceStatusWriterMockRecorder) UpdateMeshServiceStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateTrafficTargetStatus indicates an expected call of UpdateTrafficTargetStatus
+func (mr *MockTrafficTargetStatusWriterMockRecorder) UpdateTrafficTargetStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshServiceStatus", reflect.TypeOf((*MockMeshServiceStatusWriter)(nil).UpdateMeshServiceStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficTargetStatus", reflect.TypeOf((*MockTrafficTargetStatusWriter)(nil).UpdateTrafficTargetStatus), varargs...)
 }
 
-// PatchMeshServiceStatus mocks base method
-func (m *MockMeshServiceStatusWriter) PatchMeshServiceStatus(ctx context.Context, obj *v1alpha2.MeshService, patch client.Patch, opts ...client.PatchOption) error {
+// PatchTrafficTargetStatus mocks base method
+func (m *MockTrafficTargetStatusWriter) PatchTrafficTargetStatus(ctx context.Context, obj *v1alpha2.TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchMeshServiceStatus", varargs...)
+	ret := m.ctrl.Call(m, "PatchTrafficTargetStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchMeshServiceStatus indicates an expected call of PatchMeshServiceStatus
-func (mr *MockMeshServiceStatusWriterMockRecorder) PatchMeshServiceStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchTrafficTargetStatus indicates an expected call of PatchTrafficTargetStatus
+func (mr *MockTrafficTargetStatusWriterMockRecorder) PatchTrafficTargetStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshServiceStatus", reflect.TypeOf((*MockMeshServiceStatusWriter)(nil).PatchMeshServiceStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficTargetStatus", reflect.TypeOf((*MockTrafficTargetStatusWriter)(nil).PatchTrafficTargetStatus), varargs...)
 }
 
-// MockMeshServiceClient is a mock of MeshServiceClient interface
-type MockMeshServiceClient struct {
+// MockTrafficTargetClient is a mock of TrafficTargetClient interface
+type MockTrafficTargetClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceClientMockRecorder
+	recorder *MockTrafficTargetClientMockRecorder
 }
 
-// MockMeshServiceClientMockRecorder is the mock recorder for MockMeshServiceClient
-type MockMeshServiceClientMockRecorder struct {
-	mock *MockMeshServiceClient
+// MockTrafficTargetClientMockRecorder is the mock recorder for MockTrafficTargetClient
+type MockTrafficTargetClientMockRecorder struct {
+	mock *MockTrafficTargetClient
 }
 
-// NewMockMeshServiceClient creates a new mock instance
-func NewMockMeshServiceClient(ctrl *gomock.Controller) *MockMeshServiceClient {
-	mock := &MockMeshServiceClient{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceClientMockRecorder{mock}
+// NewMockTrafficTargetClient creates a new mock instance
+func NewMockTrafficTargetClient(ctrl *gomock.Controller) *MockTrafficTargetClient {
+	mock := &MockTrafficTargetClient{ctrl: ctrl}
+	mock.recorder = &MockTrafficTargetClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshServiceClient) EXPECT() *MockMeshServiceClientMockRecorder {
+func (m *MockTrafficTargetClient) EXPECT() *MockTrafficTargetClientMockRecorder {
 	return m.recorder
 }
 
-// GetMeshService mocks base method
-func (m *MockMeshServiceClient) GetMeshService(ctx context.Context, key client.ObjectKey) (*v1alpha2.MeshService, error) {
+// GetTrafficTarget mocks base method
+func (m *MockTrafficTargetClient) GetTrafficTarget(ctx context.Context, key client.ObjectKey) (*v1alpha2.TrafficTarget, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMeshService", ctx, key)
-	ret0, _ := ret[0].(*v1alpha2.MeshService)
+	ret := m.ctrl.Call(m, "GetTrafficTarget", ctx, key)
+	ret0, _ := ret[0].(*v1alpha2.TrafficTarget)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetMeshService indicates an expected call of GetMeshService
-func (mr *MockMeshServiceClientMockRecorder) GetMeshService(ctx, key interface{}) *gomock.Call {
+// GetTrafficTarget indicates an expected call of GetTrafficTarget
+func (mr *MockTrafficTargetClientMockRecorder) GetTrafficTarget(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshService", reflect.TypeOf((*MockMeshServiceClient)(nil).GetMeshService), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).GetTrafficTarget), ctx, key)
 }
 
-// ListMeshService mocks base method
-func (m *MockMeshServiceClient) ListMeshService(ctx context.Context, opts ...client.ListOption) (*v1alpha2.MeshServiceList, error) {
+// ListTrafficTarget mocks base method
+func (m *MockTrafficTargetClient) ListTrafficTarget(ctx context.Context, opts ...client.ListOption) (*v1alpha2.TrafficTargetList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListMeshService", varargs...)
-	ret0, _ := ret[0].(*v1alpha2.MeshServiceList)
+	ret := m.ctrl.Call(m, "ListTrafficTarget", varargs...)
+	ret0, _ := ret[0].(*v1alpha2.TrafficTargetList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListMeshService indicates an expected call of ListMeshService
-func (mr *MockMeshServiceClientMockRecorder) ListMeshService(ctx interface{}, opts ...interface{}) *gomock.Call {
+// ListTrafficTarget indicates an expected call of ListTrafficTarget
+func (mr *MockTrafficTargetClientMockRecorder) ListTrafficTarget(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMeshService", reflect.TypeOf((*MockMeshServiceClient)(nil).ListMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).ListTrafficTarget), varargs...)
 }
 
-// CreateMeshService mocks base method
-func (m *MockMeshServiceClient) CreateMeshService(ctx context.Context, obj *v1alpha2.MeshService, opts ...client.CreateOption) error {
+// CreateTrafficTarget mocks base method
+func (m *MockTrafficTargetClient) CreateTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateMeshService", varargs...)
+	ret := m.ctrl.Call(m, "CreateTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshService indicates an expected call of CreateMeshService
-func (mr *MockMeshServiceClientMockRecorder) CreateMeshService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// CreateTrafficTarget indicates an expected call of CreateTrafficTarget
+func (mr *MockTrafficTargetClientMockRecorder) CreateTrafficTarget(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshService", reflect.TypeOf((*MockMeshServiceClient)(nil).CreateMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).CreateTrafficTarget), varargs...)
 }
 
-// DeleteMeshService mocks base method
-func (m *MockMeshServiceClient) DeleteMeshService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+// DeleteTrafficTarget mocks base method
+func (m *MockTrafficTargetClient) DeleteTrafficTarget(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteMeshService", varargs...)
+	ret := m.ctrl.Call(m, "DeleteTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteMeshService indicates an expected call of DeleteMeshService
-func (mr *MockMeshServiceClientMockRecorder) DeleteMeshService(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+// DeleteTrafficTarget indicates an expected call of DeleteTrafficTarget
+func (mr *MockTrafficTargetClientMockRecorder) DeleteTrafficTarget(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMeshService", reflect.TypeOf((*MockMeshServiceClient)(nil).DeleteMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).DeleteTrafficTarget), varargs...)
 }
 
-// UpdateMeshService mocks base method
-func (m *MockMeshServiceClient) UpdateMeshService(ctx context.Context, obj *v1alpha2.MeshService, opts ...client.UpdateOption) error {
+// UpdateTrafficTarget mocks base method
+func (m *MockTrafficTargetClient) UpdateTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateMeshService", varargs...)
+	ret := m.ctrl.Call(m, "UpdateTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateMeshService indicates an expected call of UpdateMeshService
-func (mr *MockMeshServiceClientMockRecorder) UpdateMeshService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateTrafficTarget indicates an expected call of UpdateTrafficTarget
+func (mr *MockTrafficTargetClientMockRecorder) UpdateTrafficTarget(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshService", reflect.TypeOf((*MockMeshServiceClient)(nil).UpdateMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).UpdateTrafficTarget), varargs...)
 }
 
-// PatchMeshService mocks base method
-func (m *MockMeshServiceClient) PatchMeshService(ctx context.Context, obj *v1alpha2.MeshService, patch client.Patch, opts ...client.PatchOption) error {
+// PatchTrafficTarget mocks base method
+func (m *MockTrafficTargetClient) PatchTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchMeshService", varargs...)
+	ret := m.ctrl.Call(m, "PatchTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchMeshService indicates an expected call of PatchMeshService
-func (mr *MockMeshServiceClientMockRecorder) PatchMeshService(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchTrafficTarget indicates an expected call of PatchTrafficTarget
+func (mr *MockTrafficTargetClientMockRecorder) PatchTrafficTarget(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshService", reflect.TypeOf((*MockMeshServiceClient)(nil).PatchMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).PatchTrafficTarget), varargs...)
 }
 
-// DeleteAllOfMeshService mocks base method
-func (m *MockMeshServiceClient) DeleteAllOfMeshService(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+// DeleteAllOfTrafficTarget mocks base method
+func (m *MockTrafficTargetClient) DeleteAllOfTrafficTarget(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAllOfMeshService", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAllOfTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAllOfMeshService indicates an expected call of DeleteAllOfMeshService
-func (mr *MockMeshServiceClientMockRecorder) DeleteAllOfMeshService(ctx interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAllOfTrafficTarget indicates an expected call of DeleteAllOfTrafficTarget
+func (mr *MockTrafficTargetClientMockRecorder) DeleteAllOfTrafficTarget(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfMeshService", reflect.TypeOf((*MockMeshServiceClient)(nil).DeleteAllOfMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).DeleteAllOfTrafficTarget), varargs...)
 }
 
-// UpsertMeshService mocks base method
-func (m *MockMeshServiceClient) UpsertMeshService(ctx context.Context, obj *v1alpha2.MeshService, transitionFuncs ...v1alpha2.MeshServiceTransitionFunction) error {
+// UpsertTrafficTarget mocks base method
+func (m *MockTrafficTargetClient) UpsertTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, transitionFuncs ...v1alpha2.TrafficTargetTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range transitionFuncs {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertMeshService", varargs...)
+	ret := m.ctrl.Call(m, "UpsertTrafficTarget", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertMeshService indicates an expected call of UpsertMeshService
-func (mr *MockMeshServiceClientMockRecorder) UpsertMeshService(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+// UpsertTrafficTarget indicates an expected call of UpsertTrafficTarget
+func (mr *MockTrafficTargetClientMockRecorder) UpsertTrafficTarget(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertMeshService", reflect.TypeOf((*MockMeshServiceClient)(nil).UpsertMeshService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).UpsertTrafficTarget), varargs...)
 }
 
-// UpdateMeshServiceStatus mocks base method
-func (m *MockMeshServiceClient) UpdateMeshServiceStatus(ctx context.Context, obj *v1alpha2.MeshService, opts ...client.UpdateOption) error {
+// UpdateTrafficTargetStatus mocks base method
+func (m *MockTrafficTargetClient) UpdateTrafficTargetStatus(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateMeshServiceStatus", varargs...)
+	ret := m.ctrl.Call(m, "UpdateTrafficTargetStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateMeshServiceStatus indicates an expected call of UpdateMeshServiceStatus
-func (mr *MockMeshServiceClientMockRecorder) UpdateMeshServiceStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateTrafficTargetStatus indicates an expected call of UpdateTrafficTargetStatus
+func (mr *MockTrafficTargetClientMockRecorder) UpdateTrafficTargetStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshServiceStatus", reflect.TypeOf((*MockMeshServiceClient)(nil).UpdateMeshServiceStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficTargetStatus", reflect.TypeOf((*MockTrafficTargetClient)(nil).UpdateTrafficTargetStatus), varargs...)
 }
 
-// PatchMeshServiceStatus mocks base method
-func (m *MockMeshServiceClient) PatchMeshServiceStatus(ctx context.Context, obj *v1alpha2.MeshService, patch client.Patch, opts ...client.PatchOption) error {
+// PatchTrafficTargetStatus mocks base method
+func (m *MockTrafficTargetClient) PatchTrafficTargetStatus(ctx context.Context, obj *v1alpha2.TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchMeshServiceStatus", varargs...)
+	ret := m.ctrl.Call(m, "PatchTrafficTargetStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchMeshServiceStatus indicates an expected call of PatchMeshServiceStatus
-func (mr *MockMeshServiceClientMockRecorder) PatchMeshServiceStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchTrafficTargetStatus indicates an expected call of PatchTrafficTargetStatus
+func (mr *MockTrafficTargetClientMockRecorder) PatchTrafficTargetStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshServiceStatus", reflect.TypeOf((*MockMeshServiceClient)(nil).PatchMeshServiceStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficTargetStatus", reflect.TypeOf((*MockTrafficTargetClient)(nil).PatchTrafficTargetStatus), varargs...)
 }
 
-// MockMulticlusterMeshServiceClient is a mock of MulticlusterMeshServiceClient interface
-type MockMulticlusterMeshServiceClient struct {
+// MockMulticlusterTrafficTargetClient is a mock of MulticlusterTrafficTargetClient interface
+type MockMulticlusterTrafficTargetClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterMeshServiceClientMockRecorder
+	recorder *MockMulticlusterTrafficTargetClientMockRecorder
 }
 
-// MockMulticlusterMeshServiceClientMockRecorder is the mock recorder for MockMulticlusterMeshServiceClient
-type MockMulticlusterMeshServiceClientMockRecorder struct {
-	mock *MockMulticlusterMeshServiceClient
+// MockMulticlusterTrafficTargetClientMockRecorder is the mock recorder for MockMulticlusterTrafficTargetClient
+type MockMulticlusterTrafficTargetClientMockRecorder struct {
+	mock *MockMulticlusterTrafficTargetClient
 }
 
-// NewMockMulticlusterMeshServiceClient creates a new mock instance
-func NewMockMulticlusterMeshServiceClient(ctrl *gomock.Controller) *MockMulticlusterMeshServiceClient {
-	mock := &MockMulticlusterMeshServiceClient{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterMeshServiceClientMockRecorder{mock}
+// NewMockMulticlusterTrafficTargetClient creates a new mock instance
+func NewMockMulticlusterTrafficTargetClient(ctrl *gomock.Controller) *MockMulticlusterTrafficTargetClient {
+	mock := &MockMulticlusterTrafficTargetClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterTrafficTargetClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMulticlusterMeshServiceClient) EXPECT() *MockMulticlusterMeshServiceClientMockRecorder {
+func (m *MockMulticlusterTrafficTargetClient) EXPECT() *MockMulticlusterTrafficTargetClientMockRecorder {
 	return m.recorder
 }
 
 // Cluster mocks base method
-func (m *MockMulticlusterMeshServiceClient) Cluster(cluster string) (v1alpha2.MeshServiceClient, error) {
+func (m *MockMulticlusterTrafficTargetClient) Cluster(cluster string) (v1alpha2.TrafficTargetClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
-	ret0, _ := ret[0].(v1alpha2.MeshServiceClient)
+	ret0, _ := ret[0].(v1alpha2.TrafficTargetClient)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Cluster indicates an expected call of Cluster
-func (mr *MockMulticlusterMeshServiceClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+func (mr *MockMulticlusterTrafficTargetClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterMeshServiceClient)(nil).Cluster), cluster)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterTrafficTargetClient)(nil).Cluster), cluster)
 }
 
-// MockMeshWorkloadReader is a mock of MeshWorkloadReader interface
-type MockMeshWorkloadReader struct {
+// MockWorkloadReader is a mock of WorkloadReader interface
+type MockWorkloadReader struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshWorkloadReaderMockRecorder
+	recorder *MockWorkloadReaderMockRecorder
 }
 
-// MockMeshWorkloadReaderMockRecorder is the mock recorder for MockMeshWorkloadReader
-type MockMeshWorkloadReaderMockRecorder struct {
-	mock *MockMeshWorkloadReader
+// MockWorkloadReaderMockRecorder is the mock recorder for MockWorkloadReader
+type MockWorkloadReaderMockRecorder struct {
+	mock *MockWorkloadReader
 }
 
-// NewMockMeshWorkloadReader creates a new mock instance
-func NewMockMeshWorkloadReader(ctrl *gomock.Controller) *MockMeshWorkloadReader {
-	mock := &MockMeshWorkloadReader{ctrl: ctrl}
-	mock.recorder = &MockMeshWorkloadReaderMockRecorder{mock}
+// NewMockWorkloadReader creates a new mock instance
+func NewMockWorkloadReader(ctrl *gomock.Controller) *MockWorkloadReader {
+	mock := &MockWorkloadReader{ctrl: ctrl}
+	mock.recorder = &MockWorkloadReaderMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshWorkloadReader) EXPECT() *MockMeshWorkloadReaderMockRecorder {
+func (m *MockWorkloadReader) EXPECT() *MockWorkloadReaderMockRecorder {
 	return m.recorder
 }
 
-// GetMeshWorkload mocks base method
-func (m *MockMeshWorkloadReader) GetMeshWorkload(ctx context.Context, key client.ObjectKey) (*v1alpha2.MeshWorkload, error) {
+// GetWorkload mocks base method
+func (m *MockWorkloadReader) GetWorkload(ctx context.Context, key client.ObjectKey) (*v1alpha2.Workload, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMeshWorkload", ctx, key)
-	ret0, _ := ret[0].(*v1alpha2.MeshWorkload)
+	ret := m.ctrl.Call(m, "GetWorkload", ctx, key)
+	ret0, _ := ret[0].(*v1alpha2.Workload)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetMeshWorkload indicates an expected call of GetMeshWorkload
-func (mr *MockMeshWorkloadReaderMockRecorder) GetMeshWorkload(ctx, key interface{}) *gomock.Call {
+// GetWorkload indicates an expected call of GetWorkload
+func (mr *MockWorkloadReaderMockRecorder) GetWorkload(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshWorkload", reflect.TypeOf((*MockMeshWorkloadReader)(nil).GetMeshWorkload), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkload", reflect.TypeOf((*MockWorkloadReader)(nil).GetWorkload), ctx, key)
 }
 
-// ListMeshWorkload mocks base method
-func (m *MockMeshWorkloadReader) ListMeshWorkload(ctx context.Context, opts ...client.ListOption) (*v1alpha2.MeshWorkloadList, error) {
+// ListWorkload mocks base method
+func (m *MockWorkloadReader) ListWorkload(ctx context.Context, opts ...client.ListOption) (*v1alpha2.WorkloadList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListMeshWorkload", varargs...)
-	ret0, _ := ret[0].(*v1alpha2.MeshWorkloadList)
+	ret := m.ctrl.Call(m, "ListWorkload", varargs...)
+	ret0, _ := ret[0].(*v1alpha2.WorkloadList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListMeshWorkload indicates an expected call of ListMeshWorkload
-func (mr *MockMeshWorkloadReaderMockRecorder) ListMeshWorkload(ctx interface{}, opts ...interface{}) *gomock.Call {
+// ListWorkload indicates an expected call of ListWorkload
+func (mr *MockWorkloadReaderMockRecorder) ListWorkload(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMeshWorkload", reflect.TypeOf((*MockMeshWorkloadReader)(nil).ListMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWorkload", reflect.TypeOf((*MockWorkloadReader)(nil).ListWorkload), varargs...)
 }
 
-// MockMeshWorkloadWriter is a mock of MeshWorkloadWriter interface
-type MockMeshWorkloadWriter struct {
+// MockWorkloadWriter is a mock of WorkloadWriter interface
+type MockWorkloadWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshWorkloadWriterMockRecorder
+	recorder *MockWorkloadWriterMockRecorder
 }
 
-// MockMeshWorkloadWriterMockRecorder is the mock recorder for MockMeshWorkloadWriter
-type MockMeshWorkloadWriterMockRecorder struct {
-	mock *MockMeshWorkloadWriter
+// MockWorkloadWriterMockRecorder is the mock recorder for MockWorkloadWriter
+type MockWorkloadWriterMockRecorder struct {
+	mock *MockWorkloadWriter
 }
 
-// NewMockMeshWorkloadWriter creates a new mock instance
-func NewMockMeshWorkloadWriter(ctrl *gomock.Controller) *MockMeshWorkloadWriter {
-	mock := &MockMeshWorkloadWriter{ctrl: ctrl}
-	mock.recorder = &MockMeshWorkloadWriterMockRecorder{mock}
+// NewMockWorkloadWriter creates a new mock instance
+func NewMockWorkloadWriter(ctrl *gomock.Controller) *MockWorkloadWriter {
+	mock := &MockWorkloadWriter{ctrl: ctrl}
+	mock.recorder = &MockWorkloadWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshWorkloadWriter) EXPECT() *MockMeshWorkloadWriterMockRecorder {
+func (m *MockWorkloadWriter) EXPECT() *MockWorkloadWriterMockRecorder {
 	return m.recorder
 }
 
-// CreateMeshWorkload mocks base method
-func (m *MockMeshWorkloadWriter) CreateMeshWorkload(ctx context.Context, obj *v1alpha2.MeshWorkload, opts ...client.CreateOption) error {
+// CreateWorkload mocks base method
+func (m *MockWorkloadWriter) CreateWorkload(ctx context.Context, obj *v1alpha2.Workload, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "CreateWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshWorkload indicates an expected call of CreateMeshWorkload
-func (mr *MockMeshWorkloadWriterMockRecorder) CreateMeshWorkload(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// CreateWorkload indicates an expected call of CreateWorkload
+func (mr *MockWorkloadWriterMockRecorder) CreateWorkload(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockMeshWorkloadWriter)(nil).CreateMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkload", reflect.TypeOf((*MockWorkloadWriter)(nil).CreateWorkload), varargs...)
 }
 
-// DeleteMeshWorkload mocks base method
-func (m *MockMeshWorkloadWriter) DeleteMeshWorkload(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+// DeleteWorkload mocks base method
+func (m *MockWorkloadWriter) DeleteWorkload(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "DeleteWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteMeshWorkload indicates an expected call of DeleteMeshWorkload
-func (mr *MockMeshWorkloadWriterMockRecorder) DeleteMeshWorkload(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+// DeleteWorkload indicates an expected call of DeleteWorkload
+func (mr *MockWorkloadWriterMockRecorder) DeleteWorkload(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMeshWorkload", reflect.TypeOf((*MockMeshWorkloadWriter)(nil).DeleteMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWorkload", reflect.TypeOf((*MockWorkloadWriter)(nil).DeleteWorkload), varargs...)
 }
 
-// UpdateMeshWorkload mocks base method
-func (m *MockMeshWorkloadWriter) UpdateMeshWorkload(ctx context.Context, obj *v1alpha2.MeshWorkload, opts ...client.UpdateOption) error {
+// UpdateWorkload mocks base method
+func (m *MockWorkloadWriter) UpdateWorkload(ctx context.Context, obj *v1alpha2.Workload, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "UpdateWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateMeshWorkload indicates an expected call of UpdateMeshWorkload
-func (mr *MockMeshWorkloadWriterMockRecorder) UpdateMeshWorkload(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateWorkload indicates an expected call of UpdateWorkload
+func (mr *MockWorkloadWriterMockRecorder) UpdateWorkload(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshWorkload", reflect.TypeOf((*MockMeshWorkloadWriter)(nil).UpdateMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkload", reflect.TypeOf((*MockWorkloadWriter)(nil).UpdateWorkload), varargs...)
 }
 
-// PatchMeshWorkload mocks base method
-func (m *MockMeshWorkloadWriter) PatchMeshWorkload(ctx context.Context, obj *v1alpha2.MeshWorkload, patch client.Patch, opts ...client.PatchOption) error {
+// PatchWorkload mocks base method
+func (m *MockWorkloadWriter) PatchWorkload(ctx context.Context, obj *v1alpha2.Workload, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "PatchWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchMeshWorkload indicates an expected call of PatchMeshWorkload
-func (mr *MockMeshWorkloadWriterMockRecorder) PatchMeshWorkload(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchWorkload indicates an expected call of PatchWorkload
+func (mr *MockWorkloadWriterMockRecorder) PatchWorkload(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshWorkload", reflect.TypeOf((*MockMeshWorkloadWriter)(nil).PatchMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchWorkload", reflect.TypeOf((*MockWorkloadWriter)(nil).PatchWorkload), varargs...)
 }
 
-// DeleteAllOfMeshWorkload mocks base method
-func (m *MockMeshWorkloadWriter) DeleteAllOfMeshWorkload(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+// DeleteAllOfWorkload mocks base method
+func (m *MockWorkloadWriter) DeleteAllOfWorkload(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAllOfMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAllOfWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAllOfMeshWorkload indicates an expected call of DeleteAllOfMeshWorkload
-func (mr *MockMeshWorkloadWriterMockRecorder) DeleteAllOfMeshWorkload(ctx interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAllOfWorkload indicates an expected call of DeleteAllOfWorkload
+func (mr *MockWorkloadWriterMockRecorder) DeleteAllOfWorkload(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfMeshWorkload", reflect.TypeOf((*MockMeshWorkloadWriter)(nil).DeleteAllOfMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfWorkload", reflect.TypeOf((*MockWorkloadWriter)(nil).DeleteAllOfWorkload), varargs...)
 }
 
-// UpsertMeshWorkload mocks base method
-func (m *MockMeshWorkloadWriter) UpsertMeshWorkload(ctx context.Context, obj *v1alpha2.MeshWorkload, transitionFuncs ...v1alpha2.MeshWorkloadTransitionFunction) error {
+// UpsertWorkload mocks base method
+func (m *MockWorkloadWriter) UpsertWorkload(ctx context.Context, obj *v1alpha2.Workload, transitionFuncs ...v1alpha2.WorkloadTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range transitionFuncs {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "UpsertWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertMeshWorkload indicates an expected call of UpsertMeshWorkload
-func (mr *MockMeshWorkloadWriterMockRecorder) UpsertMeshWorkload(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+// UpsertWorkload indicates an expected call of UpsertWorkload
+func (mr *MockWorkloadWriterMockRecorder) UpsertWorkload(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertMeshWorkload", reflect.TypeOf((*MockMeshWorkloadWriter)(nil).UpsertMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertWorkload", reflect.TypeOf((*MockWorkloadWriter)(nil).UpsertWorkload), varargs...)
 }
 
-// MockMeshWorkloadStatusWriter is a mock of MeshWorkloadStatusWriter interface
-type MockMeshWorkloadStatusWriter struct {
+// MockWorkloadStatusWriter is a mock of WorkloadStatusWriter interface
+type MockWorkloadStatusWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshWorkloadStatusWriterMockRecorder
+	recorder *MockWorkloadStatusWriterMockRecorder
 }
 
-// MockMeshWorkloadStatusWriterMockRecorder is the mock recorder for MockMeshWorkloadStatusWriter
-type MockMeshWorkloadStatusWriterMockRecorder struct {
-	mock *MockMeshWorkloadStatusWriter
+// MockWorkloadStatusWriterMockRecorder is the mock recorder for MockWorkloadStatusWriter
+type MockWorkloadStatusWriterMockRecorder struct {
+	mock *MockWorkloadStatusWriter
 }
 
-// NewMockMeshWorkloadStatusWriter creates a new mock instance
-func NewMockMeshWorkloadStatusWriter(ctrl *gomock.Controller) *MockMeshWorkloadStatusWriter {
-	mock := &MockMeshWorkloadStatusWriter{ctrl: ctrl}
-	mock.recorder = &MockMeshWorkloadStatusWriterMockRecorder{mock}
+// NewMockWorkloadStatusWriter creates a new mock instance
+func NewMockWorkloadStatusWriter(ctrl *gomock.Controller) *MockWorkloadStatusWriter {
+	mock := &MockWorkloadStatusWriter{ctrl: ctrl}
+	mock.recorder = &MockWorkloadStatusWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshWorkloadStatusWriter) EXPECT() *MockMeshWorkloadStatusWriterMockRecorder {
+func (m *MockWorkloadStatusWriter) EXPECT() *MockWorkloadStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// UpdateMeshWorkloadStatus mocks base method
-func (m *MockMeshWorkloadStatusWriter) UpdateMeshWorkloadStatus(ctx context.Context, obj *v1alpha2.MeshWorkload, opts ...client.UpdateOption) error {
+// UpdateWorkloadStatus mocks base method
+func (m *MockWorkloadStatusWriter) UpdateWorkloadStatus(ctx context.Context, obj *v1alpha2.Workload, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateMeshWorkloadStatus", varargs...)
+	ret := m.ctrl.Call(m, "UpdateWorkloadStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateMeshWorkloadStatus indicates an expected call of UpdateMeshWorkloadStatus
-func (mr *MockMeshWorkloadStatusWriterMockRecorder) UpdateMeshWorkloadStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateWorkloadStatus indicates an expected call of UpdateWorkloadStatus
+func (mr *MockWorkloadStatusWriterMockRecorder) UpdateWorkloadStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshWorkloadStatus", reflect.TypeOf((*MockMeshWorkloadStatusWriter)(nil).UpdateMeshWorkloadStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkloadStatus", reflect.TypeOf((*MockWorkloadStatusWriter)(nil).UpdateWorkloadStatus), varargs...)
 }
 
-// PatchMeshWorkloadStatus mocks base method
-func (m *MockMeshWorkloadStatusWriter) PatchMeshWorkloadStatus(ctx context.Context, obj *v1alpha2.MeshWorkload, patch client.Patch, opts ...client.PatchOption) error {
+// PatchWorkloadStatus mocks base method
+func (m *MockWorkloadStatusWriter) PatchWorkloadStatus(ctx context.Context, obj *v1alpha2.Workload, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchMeshWorkloadStatus", varargs...)
+	ret := m.ctrl.Call(m, "PatchWorkloadStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchMeshWorkloadStatus indicates an expected call of PatchMeshWorkloadStatus
-func (mr *MockMeshWorkloadStatusWriterMockRecorder) PatchMeshWorkloadStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchWorkloadStatus indicates an expected call of PatchWorkloadStatus
+func (mr *MockWorkloadStatusWriterMockRecorder) PatchWorkloadStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshWorkloadStatus", reflect.TypeOf((*MockMeshWorkloadStatusWriter)(nil).PatchMeshWorkloadStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchWorkloadStatus", reflect.TypeOf((*MockWorkloadStatusWriter)(nil).PatchWorkloadStatus), varargs...)
 }
 
-// MockMeshWorkloadClient is a mock of MeshWorkloadClient interface
-type MockMeshWorkloadClient struct {
+// MockWorkloadClient is a mock of WorkloadClient interface
+type MockWorkloadClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshWorkloadClientMockRecorder
+	recorder *MockWorkloadClientMockRecorder
 }
 
-// MockMeshWorkloadClientMockRecorder is the mock recorder for MockMeshWorkloadClient
-type MockMeshWorkloadClientMockRecorder struct {
-	mock *MockMeshWorkloadClient
+// MockWorkloadClientMockRecorder is the mock recorder for MockWorkloadClient
+type MockWorkloadClientMockRecorder struct {
+	mock *MockWorkloadClient
 }
 
-// NewMockMeshWorkloadClient creates a new mock instance
-func NewMockMeshWorkloadClient(ctrl *gomock.Controller) *MockMeshWorkloadClient {
-	mock := &MockMeshWorkloadClient{ctrl: ctrl}
-	mock.recorder = &MockMeshWorkloadClientMockRecorder{mock}
+// NewMockWorkloadClient creates a new mock instance
+func NewMockWorkloadClient(ctrl *gomock.Controller) *MockWorkloadClient {
+	mock := &MockWorkloadClient{ctrl: ctrl}
+	mock.recorder = &MockWorkloadClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshWorkloadClient) EXPECT() *MockMeshWorkloadClientMockRecorder {
+func (m *MockWorkloadClient) EXPECT() *MockWorkloadClientMockRecorder {
 	return m.recorder
 }
 
-// GetMeshWorkload mocks base method
-func (m *MockMeshWorkloadClient) GetMeshWorkload(ctx context.Context, key client.ObjectKey) (*v1alpha2.MeshWorkload, error) {
+// GetWorkload mocks base method
+func (m *MockWorkloadClient) GetWorkload(ctx context.Context, key client.ObjectKey) (*v1alpha2.Workload, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMeshWorkload", ctx, key)
-	ret0, _ := ret[0].(*v1alpha2.MeshWorkload)
+	ret := m.ctrl.Call(m, "GetWorkload", ctx, key)
+	ret0, _ := ret[0].(*v1alpha2.Workload)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetMeshWorkload indicates an expected call of GetMeshWorkload
-func (mr *MockMeshWorkloadClientMockRecorder) GetMeshWorkload(ctx, key interface{}) *gomock.Call {
+// GetWorkload indicates an expected call of GetWorkload
+func (mr *MockWorkloadClientMockRecorder) GetWorkload(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshWorkload", reflect.TypeOf((*MockMeshWorkloadClient)(nil).GetMeshWorkload), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkload", reflect.TypeOf((*MockWorkloadClient)(nil).GetWorkload), ctx, key)
 }
 
-// ListMeshWorkload mocks base method
-func (m *MockMeshWorkloadClient) ListMeshWorkload(ctx context.Context, opts ...client.ListOption) (*v1alpha2.MeshWorkloadList, error) {
+// ListWorkload mocks base method
+func (m *MockWorkloadClient) ListWorkload(ctx context.Context, opts ...client.ListOption) (*v1alpha2.WorkloadList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListMeshWorkload", varargs...)
-	ret0, _ := ret[0].(*v1alpha2.MeshWorkloadList)
+	ret := m.ctrl.Call(m, "ListWorkload", varargs...)
+	ret0, _ := ret[0].(*v1alpha2.WorkloadList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListMeshWorkload indicates an expected call of ListMeshWorkload
-func (mr *MockMeshWorkloadClientMockRecorder) ListMeshWorkload(ctx interface{}, opts ...interface{}) *gomock.Call {
+// ListWorkload indicates an expected call of ListWorkload
+func (mr *MockWorkloadClientMockRecorder) ListWorkload(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMeshWorkload", reflect.TypeOf((*MockMeshWorkloadClient)(nil).ListMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWorkload", reflect.TypeOf((*MockWorkloadClient)(nil).ListWorkload), varargs...)
 }
 
-// CreateMeshWorkload mocks base method
-func (m *MockMeshWorkloadClient) CreateMeshWorkload(ctx context.Context, obj *v1alpha2.MeshWorkload, opts ...client.CreateOption) error {
+// CreateWorkload mocks base method
+func (m *MockWorkloadClient) CreateWorkload(ctx context.Context, obj *v1alpha2.Workload, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "CreateWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshWorkload indicates an expected call of CreateMeshWorkload
-func (mr *MockMeshWorkloadClientMockRecorder) CreateMeshWorkload(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// CreateWorkload indicates an expected call of CreateWorkload
+func (mr *MockWorkloadClientMockRecorder) CreateWorkload(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockMeshWorkloadClient)(nil).CreateMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkload", reflect.TypeOf((*MockWorkloadClient)(nil).CreateWorkload), varargs...)
 }
 
-// DeleteMeshWorkload mocks base method
-func (m *MockMeshWorkloadClient) DeleteMeshWorkload(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+// DeleteWorkload mocks base method
+func (m *MockWorkloadClient) DeleteWorkload(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "DeleteWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteMeshWorkload indicates an expected call of DeleteMeshWorkload
-func (mr *MockMeshWorkloadClientMockRecorder) DeleteMeshWorkload(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+// DeleteWorkload indicates an expected call of DeleteWorkload
+func (mr *MockWorkloadClientMockRecorder) DeleteWorkload(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMeshWorkload", reflect.TypeOf((*MockMeshWorkloadClient)(nil).DeleteMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWorkload", reflect.TypeOf((*MockWorkloadClient)(nil).DeleteWorkload), varargs...)
 }
 
-// UpdateMeshWorkload mocks base method
-func (m *MockMeshWorkloadClient) UpdateMeshWorkload(ctx context.Context, obj *v1alpha2.MeshWorkload, opts ...client.UpdateOption) error {
+// UpdateWorkload mocks base method
+func (m *MockWorkloadClient) UpdateWorkload(ctx context.Context, obj *v1alpha2.Workload, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "UpdateWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateMeshWorkload indicates an expected call of UpdateMeshWorkload
-func (mr *MockMeshWorkloadClientMockRecorder) UpdateMeshWorkload(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateWorkload indicates an expected call of UpdateWorkload
+func (mr *MockWorkloadClientMockRecorder) UpdateWorkload(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshWorkload", reflect.TypeOf((*MockMeshWorkloadClient)(nil).UpdateMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkload", reflect.TypeOf((*MockWorkloadClient)(nil).UpdateWorkload), varargs...)
 }
 
-// PatchMeshWorkload mocks base method
-func (m *MockMeshWorkloadClient) PatchMeshWorkload(ctx context.Context, obj *v1alpha2.MeshWorkload, patch client.Patch, opts ...client.PatchOption) error {
+// PatchWorkload mocks base method
+func (m *MockWorkloadClient) PatchWorkload(ctx context.Context, obj *v1alpha2.Workload, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "PatchWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchMeshWorkload indicates an expected call of PatchMeshWorkload
-func (mr *MockMeshWorkloadClientMockRecorder) PatchMeshWorkload(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchWorkload indicates an expected call of PatchWorkload
+func (mr *MockWorkloadClientMockRecorder) PatchWorkload(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshWorkload", reflect.TypeOf((*MockMeshWorkloadClient)(nil).PatchMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchWorkload", reflect.TypeOf((*MockWorkloadClient)(nil).PatchWorkload), varargs...)
 }
 
-// DeleteAllOfMeshWorkload mocks base method
-func (m *MockMeshWorkloadClient) DeleteAllOfMeshWorkload(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+// DeleteAllOfWorkload mocks base method
+func (m *MockWorkloadClient) DeleteAllOfWorkload(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAllOfMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAllOfWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAllOfMeshWorkload indicates an expected call of DeleteAllOfMeshWorkload
-func (mr *MockMeshWorkloadClientMockRecorder) DeleteAllOfMeshWorkload(ctx interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAllOfWorkload indicates an expected call of DeleteAllOfWorkload
+func (mr *MockWorkloadClientMockRecorder) DeleteAllOfWorkload(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfMeshWorkload", reflect.TypeOf((*MockMeshWorkloadClient)(nil).DeleteAllOfMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfWorkload", reflect.TypeOf((*MockWorkloadClient)(nil).DeleteAllOfWorkload), varargs...)
 }
 
-// UpsertMeshWorkload mocks base method
-func (m *MockMeshWorkloadClient) UpsertMeshWorkload(ctx context.Context, obj *v1alpha2.MeshWorkload, transitionFuncs ...v1alpha2.MeshWorkloadTransitionFunction) error {
+// UpsertWorkload mocks base method
+func (m *MockWorkloadClient) UpsertWorkload(ctx context.Context, obj *v1alpha2.Workload, transitionFuncs ...v1alpha2.WorkloadTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range transitionFuncs {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "UpsertWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertMeshWorkload indicates an expected call of UpsertMeshWorkload
-func (mr *MockMeshWorkloadClientMockRecorder) UpsertMeshWorkload(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+// UpsertWorkload indicates an expected call of UpsertWorkload
+func (mr *MockWorkloadClientMockRecorder) UpsertWorkload(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertMeshWorkload", reflect.TypeOf((*MockMeshWorkloadClient)(nil).UpsertMeshWorkload), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertWorkload", reflect.TypeOf((*MockWorkloadClient)(nil).UpsertWorkload), varargs...)
 }
 
-// UpdateMeshWorkloadStatus mocks base method
-func (m *MockMeshWorkloadClient) UpdateMeshWorkloadStatus(ctx context.Context, obj *v1alpha2.MeshWorkload, opts ...client.UpdateOption) error {
+// UpdateWorkloadStatus mocks base method
+func (m *MockWorkloadClient) UpdateWorkloadStatus(ctx context.Context, obj *v1alpha2.Workload, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateMeshWorkloadStatus", varargs...)
+	ret := m.ctrl.Call(m, "UpdateWorkloadStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateMeshWorkloadStatus indicates an expected call of UpdateMeshWorkloadStatus
-func (mr *MockMeshWorkloadClientMockRecorder) UpdateMeshWorkloadStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateWorkloadStatus indicates an expected call of UpdateWorkloadStatus
+func (mr *MockWorkloadClientMockRecorder) UpdateWorkloadStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMeshWorkloadStatus", reflect.TypeOf((*MockMeshWorkloadClient)(nil).UpdateMeshWorkloadStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkloadStatus", reflect.TypeOf((*MockWorkloadClient)(nil).UpdateWorkloadStatus), varargs...)
 }
 
-// PatchMeshWorkloadStatus mocks base method
-func (m *MockMeshWorkloadClient) PatchMeshWorkloadStatus(ctx context.Context, obj *v1alpha2.MeshWorkload, patch client.Patch, opts ...client.PatchOption) error {
+// PatchWorkloadStatus mocks base method
+func (m *MockWorkloadClient) PatchWorkloadStatus(ctx context.Context, obj *v1alpha2.Workload, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchMeshWorkloadStatus", varargs...)
+	ret := m.ctrl.Call(m, "PatchWorkloadStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchMeshWorkloadStatus indicates an expected call of PatchMeshWorkloadStatus
-func (mr *MockMeshWorkloadClientMockRecorder) PatchMeshWorkloadStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchWorkloadStatus indicates an expected call of PatchWorkloadStatus
+func (mr *MockWorkloadClientMockRecorder) PatchWorkloadStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshWorkloadStatus", reflect.TypeOf((*MockMeshWorkloadClient)(nil).PatchMeshWorkloadStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchWorkloadStatus", reflect.TypeOf((*MockWorkloadClient)(nil).PatchWorkloadStatus), varargs...)
 }
 
-// MockMulticlusterMeshWorkloadClient is a mock of MulticlusterMeshWorkloadClient interface
-type MockMulticlusterMeshWorkloadClient struct {
+// MockMulticlusterWorkloadClient is a mock of MulticlusterWorkloadClient interface
+type MockMulticlusterWorkloadClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterMeshWorkloadClientMockRecorder
+	recorder *MockMulticlusterWorkloadClientMockRecorder
 }
 
-// MockMulticlusterMeshWorkloadClientMockRecorder is the mock recorder for MockMulticlusterMeshWorkloadClient
-type MockMulticlusterMeshWorkloadClientMockRecorder struct {
-	mock *MockMulticlusterMeshWorkloadClient
+// MockMulticlusterWorkloadClientMockRecorder is the mock recorder for MockMulticlusterWorkloadClient
+type MockMulticlusterWorkloadClientMockRecorder struct {
+	mock *MockMulticlusterWorkloadClient
 }
 
-// NewMockMulticlusterMeshWorkloadClient creates a new mock instance
-func NewMockMulticlusterMeshWorkloadClient(ctrl *gomock.Controller) *MockMulticlusterMeshWorkloadClient {
-	mock := &MockMulticlusterMeshWorkloadClient{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterMeshWorkloadClientMockRecorder{mock}
+// NewMockMulticlusterWorkloadClient creates a new mock instance
+func NewMockMulticlusterWorkloadClient(ctrl *gomock.Controller) *MockMulticlusterWorkloadClient {
+	mock := &MockMulticlusterWorkloadClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterWorkloadClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMulticlusterMeshWorkloadClient) EXPECT() *MockMulticlusterMeshWorkloadClientMockRecorder {
+func (m *MockMulticlusterWorkloadClient) EXPECT() *MockMulticlusterWorkloadClientMockRecorder {
 	return m.recorder
 }
 
 // Cluster mocks base method
-func (m *MockMulticlusterMeshWorkloadClient) Cluster(cluster string) (v1alpha2.MeshWorkloadClient, error) {
+func (m *MockMulticlusterWorkloadClient) Cluster(cluster string) (v1alpha2.WorkloadClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
-	ret0, _ := ret[0].(v1alpha2.MeshWorkloadClient)
+	ret0, _ := ret[0].(v1alpha2.WorkloadClient)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Cluster indicates an expected call of Cluster
-func (mr *MockMulticlusterMeshWorkloadClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+func (mr *MockMulticlusterWorkloadClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterMeshWorkloadClient)(nil).Cluster), cluster)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterWorkloadClient)(nil).Cluster), cluster)
 }
 
 // MockMeshReader is a mock of MeshReader interface

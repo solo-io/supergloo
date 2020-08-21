@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func Command(ctx context.Context, masterCluster string, remoteCluster string) *cobra.Command {
+func Command(ctx context.Context, managementCluster string, remoteCluster string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Bootstrap a multicluster Istio demo with Service Mesh Hub",
@@ -33,7 +33,7 @@ This command will bootstrap 2 clusters, one of which will run the Service Mesh H
 management-plane as well as Istio, and the other will just run Istio.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return initCmd(ctx, masterCluster, remoteCluster)
+			return initCmd(ctx, managementCluster, remoteCluster)
 		},
 	}
 	cmd.SilenceUsage = true
@@ -42,12 +42,12 @@ management-plane as well as Istio, and the other will just run Istio.
 
 const (
 	// The default version of k8s under Linux is 1.18 https://github.com/solo-io/service-mesh-hub/issues/700
-	kindImage  = "kindest/node:v1.17.5"
-	masterPort = "32001"
-	remotePort = "32000"
+	kindImage      = "kindest/node:v1.17.5"
+	managementPort = "32001"
+	remotePort     = "32000"
 )
 
-func initCmd(ctx context.Context, masterCluster string, remoteCluster string) error {
+func initCmd(ctx context.Context, managementCluster string, remoteCluster string) error {
 	box := packr.NewBox("./scripts")
 	projectRoot, err := os.Getwd()
 	if err != nil {
@@ -55,12 +55,12 @@ func initCmd(ctx context.Context, masterCluster string, remoteCluster string) er
 	}
 	fmt.Printf("Using project root %s\n", projectRoot)
 
-	// master cluster
-	err = createKindCluster(masterCluster, masterPort, box)
+	// management cluster
+	err = createKindCluster(managementCluster, managementPort, box)
 	if err != nil {
 		return err
 	}
-	err = installIstio(masterCluster, masterPort, box)
+	err = installIstio(managementCluster, managementPort, box)
 	if err != nil {
 		return err
 	}
@@ -75,20 +75,20 @@ func initCmd(ctx context.Context, masterCluster string, remoteCluster string) er
 		return err
 	}
 
-	// install SMH to master cluster
-	err = installServiceMeshHub(ctx, masterCluster, box)
+	// install SMH to management cluster
+	err = installServiceMeshHub(ctx, managementCluster, box)
 	if err != nil {
 		return err
 	}
 
 	// register remote cluster
-	err = registerCluster(ctx, masterCluster, remoteCluster, box)
+	err = registerCluster(ctx, managementCluster, remoteCluster, box)
 	if err != nil {
 		return err
 	}
 
-	// set context to master cluster
-	err = switchContext(masterCluster, box)
+	// set context to management cluster
+	err = switchContext(managementCluster, box)
 
 	return err
 }
@@ -203,7 +203,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	return nil
 }
 
-func registerCluster(ctx context.Context, masterCluster string, cluster string, box packr.Box) error {
+func registerCluster(ctx context.Context, managementCluster string, cluster string, box packr.Box) error {
 	fmt.Printf("Registering cluster %s with cert-agent image\n", cluster)
 
 	apiServerAddress, err := getApiAddress(cluster, box)
@@ -211,7 +211,7 @@ func registerCluster(ctx context.Context, masterCluster string, cluster string, 
 		return err
 	}
 
-	kubeContext := fmt.Sprintf("kind-%s", masterCluster)
+	kubeContext := fmt.Sprintf("kind-%s", managementCluster)
 	remoteKubeContext := fmt.Sprintf("kind-%s", cluster)
 	namespace := defaults.DefaultPodNamespace
 	certAgentChartUri := fmt.Sprintf(smh.CertAgentChartUriTemplate, version.Version)

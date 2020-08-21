@@ -12,7 +12,7 @@ import (
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
 	mock_istio "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/internal/mocks"
 	mock_mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mocks"
-	mock_meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/mocks"
+	mock_traffictarget "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	multiclusterv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,15 +20,15 @@ import (
 
 var _ = Describe("IstioNetworkingTranslator", func() {
 	var (
-		ctrl                      *gomock.Controller
-		ctx                       context.Context
-		ctxWithValue              context.Context
-		mockReporter              *mock_reporting.MockReporter
-		mockOutputs               *mock_output.MockBuilder
-		mockMeshServiceTranslator *mock_meshservice.MockTranslator
-		mockMeshTranslator        *mock_mesh.MockTranslator
-		mockDependencyFactory     *mock_istio.MockDependencyFactory
-		translator                Translator
+		ctrl                        *gomock.Controller
+		ctx                         context.Context
+		ctxWithValue                context.Context
+		mockReporter                *mock_reporting.MockReporter
+		mockOutputs                 *mock_output.MockBuilder
+		mockTrafficTargetTranslator *mock_traffictarget.MockTranslator
+		mockMeshTranslator          *mock_mesh.MockTranslator
+		mockDependencyFactory       *mock_istio.MockDependencyFactory
+		translator                  Translator
 	)
 
 	BeforeEach(func() {
@@ -36,7 +36,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		ctx = context.TODO()
 		ctxWithValue = contextutils.WithLogger(context.TODO(), "istio-translator-0")
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		mockMeshServiceTranslator = mock_meshservice.NewMockTranslator(ctrl)
+		mockTrafficTargetTranslator = mock_traffictarget.NewMockTranslator(ctrl)
 		mockMeshTranslator = mock_mesh.NewMockTranslator(ctrl)
 		mockDependencyFactory = mock_istio.NewMockDependencyFactory(ctrl)
 		mockOutputs = mock_output.NewMockBuilder(ctrl)
@@ -69,7 +69,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 					},
 				},
 			}).
-			AddMeshServices([]*discoveryv1alpha2.MeshService{
+			AddTrafficTargets([]*discoveryv1alpha2.TrafficTarget{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:   "mesh-service-1",
@@ -86,17 +86,17 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 
 		mockDependencyFactory.
 			EXPECT().
-			MakeMeshServiceTranslator(ctxWithValue, in.KubernetesClusters(), in.Meshes(), in.MeshServices()).
-			Return(mockMeshServiceTranslator)
-		for i := range in.MeshServices().List() {
-			mockMeshServiceTranslator.
+			MakeTrafficTargetTranslator(in.KubernetesClusters(), in.TrafficTargets()).
+			Return(mockTrafficTargetTranslator)
+		for i := range in.TrafficTargets().List() {
+			mockTrafficTargetTranslator.
 				EXPECT().
-				Translate(in, in.MeshServices().List()[i], mockOutputs, mockReporter)
+				Translate(in, in.TrafficTargets().List()[i], mockOutputs, mockReporter)
 		}
 
 		mockDependencyFactory.
 			EXPECT().
-			MakeMeshTranslator(ctxWithValue, in.KubernetesClusters(), in.Secrets(), in.MeshWorkloads(), in.MeshServices()).
+			MakeMeshTranslator(ctxWithValue, in.KubernetesClusters(), in.Secrets(), in.Workloads(), in.TrafficTargets()).
 			Return(mockMeshTranslator)
 		for i := range in.Meshes().List() {
 			mockMeshTranslator.

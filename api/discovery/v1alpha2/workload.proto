@@ -1,0 +1,74 @@
+syntax = "proto3";
+package discovery.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2";
+
+import "skv2/api/core/v1/core.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+/**
+    The Workload is an abstraction for a workload/client which mesh-discovery has discovered to be part of a
+    given mesh (i.e. its traffic is managed by an in-mesh sidecar).
+*/
+message WorkloadSpec {
+
+    // Specifies the underlying type of workload that this Workload is abstracting.
+    oneof workload_type {
+        // Information describing workloads backed by Kubernetes Pods.
+        KubernertesWorkload kubernetes = 1;
+    }
+
+    // The mesh with which this workload is associated.
+    .core.skv2.solo.io.ObjectRef mesh = 4;
+
+    // Appmesh specific metadata.
+    AppMesh app_mesh = 5;
+
+    // Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonSet).
+    message KubernertesWorkload {
+        /**
+           Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads.
+           It has the generic name controller as it can represent a deployment, daemonset, or statefulset.
+        */
+        .core.skv2.solo.io.ClusterObjectRef controller = 1;
+
+        /**
+            These are the labels directly from the pods that this controller owns.
+            NB: these labels are read directly from the pod template metadata.labels
+            defined in the workload spec.
+            We need these to determine which services are backed by this workload.
+        */
+        map<string, string> pod_labels = 2;
+
+        // Service account attached to the pods owned by this controller.
+        string service_account_name = 3;
+    }
+
+
+    // Information relevant to AppMesh-injected workloads.
+    message AppMesh {
+        // The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container.
+        string virtual_node_name = 1;
+
+        // Needed for declaring Appmesh VirtualNode listeners.
+        repeated ContainerPort ports = 2;
+
+        // k8s application container ports.
+        message ContainerPort {
+            uint32 port = 1;
+            string protocol = 2;
+        }
+
+    }
+
+}
+
+message WorkloadStatus {
+
+    // The observed generation of the Workload.
+    // When this matches the Workload's metadata.generation it indicates that mesh-networking
+    // has reconciled the latest version of the Workload.
+    int64 observed_generation = 1;
+
+}

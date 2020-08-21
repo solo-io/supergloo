@@ -6,12 +6,12 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-func FindBackingMeshWorkloads(
-	service *v1alpha2.MeshServiceSpec_KubeService,
-	meshWorkloads v1alpha2sets.MeshWorkloadSet,
-) v1alpha2.MeshWorkloadSlice {
+func FindBackingWorkloads(
+	service *v1alpha2.TrafficTargetSpec_KubeService,
+	meshWorkloads v1alpha2sets.WorkloadSet,
+) v1alpha2.WorkloadSlice {
 
-	var result []*v1alpha2.MeshWorkload
+	var result []*v1alpha2.Workload
 
 	for _, workload := range meshWorkloads.List() {
 		// TODO(ilackarms): refactor this to support more than just k8s workloads
@@ -24,8 +24,8 @@ func FindBackingMeshWorkloads(
 }
 
 func isBackingKubeWorkload(
-	service *v1alpha2.MeshServiceSpec_KubeService,
-	kubeWorkload *v1alpha2.MeshWorkloadSpec_KubernertesWorkload,
+	service *v1alpha2.TrafficTargetSpec_KubeService,
+	kubeWorkload *v1alpha2.WorkloadSpec_KubernertesWorkload,
 ) bool {
 	if kubeWorkload == nil {
 		return false

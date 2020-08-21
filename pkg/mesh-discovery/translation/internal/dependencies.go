@@ -1,4 +1,4 @@
-package translator_internal
+package translation
 
 import (
 	"context"
@@ -8,12 +8,12 @@ import (
 	meshdetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/osm"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshservice"
-	meshservicedetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshservice/detector"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload"
-	meshworkloaddetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector"
-	istiosidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector/istio"
-	osmsidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/meshworkload/detector/osm"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget"
+	traffictargetdetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget/detector"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload"
+	workloaddetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector"
+	istiosidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/istio"
+	osmsidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/osm"
 )
 
 // we must generate in the same package because the interface is private
@@ -28,12 +28,12 @@ type DependencyFactory interface {
 		in input.Snapshot,
 	) mesh.Translator
 
-	MakeMeshWorkloadTranslator(
+	MakeWorkloadTranslator(
 		ctx context.Context,
 		in input.Snapshot,
-	) meshworkload.Translator
+	) workload.Translator
 
-	MakeMeshServiceTranslator(ctx context.Context) meshservice.Translator
+	MakeTrafficTargetTranslator(ctx context.Context) traffictarget.Translator
 }
 
 type DependencyFactoryImpl struct{}
@@ -60,27 +60,27 @@ func (d DependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, in input.
 	return mesh.NewTranslator(ctx, detectors)
 }
 
-func (d DependencyFactoryImpl) MakeMeshWorkloadTranslator(
+func (d DependencyFactoryImpl) MakeWorkloadTranslator(
 	ctx context.Context,
 	in input.Snapshot,
-) meshworkload.Translator {
-	sidecarDetectors := meshworkloaddetector.SidecarDetectors{
+) workload.Translator {
+	sidecarDetectors := workloaddetector.SidecarDetectors{
 		istiosidecar.NewSidecarDetector(ctx),
 		// TODO: Uncomment to re-enable linkerd discovery
 		// linkerdsidecar.NewSidecarDetector(ctx),
 		osmsidecar.NewSidecarDetector(ctx),
 	}
 
-	workloadDetector := meshworkloaddetector.NewMeshWorkloadDetector(
+	workloadDetector := workloaddetector.NewWorkloadDetector(
 		ctx,
 		in.Pods(),
 		in.ReplicaSets(),
 		sidecarDetectors,
 	)
-	return meshworkload.NewTranslator(ctx, workloadDetector)
+	return workload.NewTranslator(ctx, workloadDetector)
 }
 
-func (d DependencyFactoryImpl) MakeMeshServiceTranslator(ctx context.Context) meshservice.Translator {
-	return meshservice.NewTranslator(ctx, meshservicedetector.NewMeshServiceDetector(ctx))
+func (d DependencyFactoryImpl) MakeTrafficTargetTranslator(ctx context.Context) traffictarget.Translator {
+	return traffictarget.NewTranslator(ctx, traffictargetdetector.NewTrafficTargetDetector(ctx))
 
 }

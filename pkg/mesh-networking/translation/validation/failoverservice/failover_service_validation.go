@@ -26,7 +26,7 @@ A valid FailoverService must satisfy the following constraints:
 3. All declared failover services must exist.
 4. All declared failover services must be owned by a supported Mesh type (currently only Istio).
 5. All declared failover services must exist in the same VirtualMesh, or belong to a common parent Mesh.
-6. All declared failover services must have OutlierDetection settings declared in a TP (grab this from the MeshService status).
+6. All declared failover services must have OutlierDetection settings declared in a TP (grab this from the TrafficTarget status).
 7. All targeted Meshes must be of a supported type.
 */
 type FailoverServiceValidator interface {
@@ -35,7 +35,7 @@ type FailoverServiceValidator interface {
 }
 
 type Inputs struct {
-	MeshServices discoveryv1alpha2sets.MeshServiceSet
+	TrafficTargets discoveryv1alpha2sets.TrafficTargetSet
 	// For validation
 	KubeClusters  v1alpha1sets.KubernetesClusterSet
 	Meshes        discoveryv1alpha2sets.MeshSet
@@ -77,11 +77,11 @@ var (
 		}
 		return eris.Errorf("Services belong to multiple different parent VirtualMeshes: [%s]", strings.Join(virtualMeshNames, ", "))
 	}
-	MissingOutlierDetection = func(meshService *discoveryv1alpha2.MeshService) error {
+	MissingOutlierDetection = func(trafficTarget *discoveryv1alpha2.TrafficTarget) error {
 		return eris.Errorf("Service %s.%s.%s does not have any TrafficPolicies that apply OutlierDetection settings.",
-			meshService.Spec.GetKubeService().GetRef().GetName(),
-			meshService.Spec.GetKubeService().GetRef().GetNamespace(),
-			meshService.Spec.GetKubeService().GetRef().GetClusterName())
+			trafficTarget.Spec.GetKubeService().GetRef().GetName(),
+			trafficTarget.Spec.GetKubeService().GetRef().GetNamespace(),
+			trafficTarget.Spec.GetKubeService().GetRef().GetClusterName())
 	}
 )
 
@@ -100,10 +100,10 @@ func (f *failoverServiceValidator) Validate(inputs Inputs, failoverService *netw
 	if portErrs := f.validatePort(failoverService); portErrs != nil {
 		errs = append(errs, portErrs...)
 	}
-	if serviceErrs := f.validateServices(failoverService, inputs.MeshServices.List(), inputs.Meshes); serviceErrs != nil {
+	if serviceErrs := f.validateServices(failoverService, inputs.TrafficTargets.List(), inputs.Meshes); serviceErrs != nil {
 		errs = append(errs, serviceErrs...)
 	}
-	if federationErrs := f.validateFederation(failoverService, inputs.MeshServices.List(), inputs.Meshes, inputs.VirtualMeshes); federationErrs != nil {
+	if federationErrs := f.validateFederation(failoverService, inputs.TrafficTargets.List(), inputs.Meshes, inputs.VirtualMeshes); federationErrs != nil {
 		errs = append(errs, federationErrs...)
 	}
 	if meshErrs := f.validateMeshes(failoverService, inputs.Meshes); meshErrs != nil {
@@ -131,7 +131,7 @@ func (f *failoverServiceValidator) validateMeshes(
 
 func (f *failoverServiceValidator) validateServices(
 	failoverService *networkingv1alpha2.FailoverServiceSpec,
-	allMeshServices []*discoveryv1alpha2.MeshService,
+	allTrafficTargets []*discoveryv1alpha2.TrafficTarget,
 	meshes discoveryv1alpha2sets.MeshSet,
 ) []error {
 	var errs []error
@@ -145,20 +145,20 @@ func (f *failoverServiceValidator) validateServices(
 			continue
 		}
 		serviceRef := typedServiceRef.GetKubeService()
-		meshService, err := f.findMeshService(serviceRef, allMeshServices)
+		trafficTarget, err := f.findTrafficTarget(serviceRef, allTrafficTargets)
 		if err != nil {
-			// Corresponding MeshService not found.
+			// Corresponding TrafficTarget not found.
 			errs = append(errs, BackingServiceNotFound(serviceRef))
 			continue
 		}
-		if err := f.validateServiceOutlierDetection(meshService); err != nil {
+		if err := f.validateServiceOutlierDetection(trafficTarget); err != nil {
 			errs = append(errs, err)
 		}
-		meshRef := meshService.Spec.GetMesh()
-		// Approve that mesh exists
-		parentMesh, err := meshes.Find(meshService.Spec.GetMesh())
+		meshRef := trafficTarget.Spec.GetMesh()
+		// Apply that mesh exists
+		parentMesh, err := meshes.Find(trafficTarget.Spec.GetMesh())
 		if err != nil {
-			errs = append(errs, MeshNotFound(meshRef, meshService.Spec.GetKubeService().GetRef()))
+			errs = append(errs, MeshNotFound(meshRef, trafficTarget.Spec.GetKubeService().GetRef()))
 			continue
 		}
 		if err := f.validateMesh(parentMesh); err != nil {
@@ -168,25 +168,25 @@ func (f *failoverServiceValidator) validateServices(
 	return errs
 }
 
-func (f *failoverServiceValidator) findMeshService(
+func (f *failoverServiceValidator) findTrafficTarget(
 	serviceRef *skv2core.ClusterObjectRef,
-	allMeshServices []*discoveryv1alpha2.MeshService,
-) (*discoveryv1alpha2.MeshService, error) {
-	for _, meshService := range allMeshServices {
-		if ezkube.ClusterRefsMatch(serviceRef, meshService.Spec.GetKubeService().GetRef()) {
-			return meshService, nil
+	allTrafficTargets []*discoveryv1alpha2.TrafficTarget,
+) (*discoveryv1alpha2.TrafficTarget, error) {
+	for _, trafficTarget := range allTrafficTargets {
+		if ezkube.ClusterRefsMatch(serviceRef, trafficTarget.Spec.GetKubeService().GetRef()) {
+			return trafficTarget, nil
 		}
 	}
 	return nil, BackingServiceNotFound(serviceRef)
 }
 
-func (f *failoverServiceValidator) validateServiceOutlierDetection(meshService *discoveryv1alpha2.MeshService) error {
-	for _, tp := range meshService.Status.GetAppliedTrafficPolicies() {
+func (f *failoverServiceValidator) validateServiceOutlierDetection(trafficTarget *discoveryv1alpha2.TrafficTarget) error {
+	for _, tp := range trafficTarget.Status.GetAppliedTrafficPolicies() {
 		if tp.GetSpec().GetOutlierDetection() != nil {
 			return nil
 		}
 	}
-	return MissingOutlierDetection(meshService)
+	return MissingOutlierDetection(trafficTarget)
 }
 
 func (f *failoverServiceValidator) validateMesh(
@@ -204,7 +204,7 @@ func (f *failoverServiceValidator) validateMesh(
 // a common mesh, or to meshes grouped under a common VirtualMesh.
 func (f *failoverServiceValidator) validateFederation(
 	failoverService *networkingv1alpha2.FailoverServiceSpec,
-	allMeshServices []*discoveryv1alpha2.MeshService,
+	allTrafficTargets []*discoveryv1alpha2.TrafficTarget,
 	allMeshes discoveryv1alpha2sets.MeshSet,
 	allVirtualMeshes networkingv1alpha2sets.VirtualMeshSet,
 ) []error {
@@ -232,12 +232,12 @@ func (f *failoverServiceValidator) validateFederation(
 			continue
 		}
 		serviceRef := typedServiceRef.GetKubeService()
-		meshService, err := f.findMeshService(serviceRef, allMeshServices)
+		trafficTarget, err := f.findTrafficTarget(serviceRef, allTrafficTargets)
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
-		mesh, err := allMeshes.Find(meshService.Spec.Mesh)
+		mesh, err := allMeshes.Find(trafficTarget.Spec.Mesh)
 		if err != nil {
 			errs = append(errs, err)
 			continue
@@ -258,7 +258,7 @@ func (f *failoverServiceValidator) validateFederation(
 		}
 		referencedVMs.Insert(vm)
 	}
-	// Approve that there's only one common parent mesh, else that there's only a single common parent VirtualMesh
+	// Apply that there's only one common parent mesh, else that there's only a single common parent VirtualMesh
 	if len(referencedMeshes.List()) > 1 {
 		// Surface meshes without parent meshes as errors
 		for _, err := range missingParentVMErrors {

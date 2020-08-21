@@ -1,0 +1,7 @@
+changelog:
+- type: NON_USER_FACING
+  description: Setup CI.
+- type: NON_USER_FACING
+  description: Add istio protos.
+- type: NON_USER_FACING
+  description: Add mesh bridge CRD.

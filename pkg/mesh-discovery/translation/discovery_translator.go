@@ -10,6 +10,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/labelutils"
 )
 
+var DefaultDependencyFactory = translator_internal.DependencyFactoryImpl{}
+
 // the translator "reconciles the entire state of the world"
 type Translator interface {
 	// translates the Input Snapshot to an Output Snapshot
@@ -21,9 +23,9 @@ type translator struct {
 	dependencies    translator_internal.DependencyFactory
 }
 
-func NewTranslator() Translator {
+func NewTranslator(dependencyFactory translator_internal.DependencyFactory) Translator {
 	return &translator{
-		dependencies: translator_internal.DependencyFactoryImpl{},
+		dependencies: dependencyFactory,
 	}
 }
 
@@ -31,28 +33,28 @@ func (t translator) Translate(ctx context.Context, in input.Snapshot) (output.Sn
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(ctx, in)
 
-	meshWorkloadTranslator := t.dependencies.MakeMeshWorkloadTranslator(ctx, in)
+	workloadTranslator := t.dependencies.MakeWorkloadTranslator(ctx, in)
 
-	meshServiceTranslator := t.dependencies.MakeMeshServiceTranslator(ctx)
+	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(ctx)
 
 	meshes := meshTranslator.TranslateMeshes(in.Deployments())
 
-	meshWorkloads := meshWorkloadTranslator.TranslateMeshWorkloads(
+	workloads := workloadTranslator.TranslateWorkloads(
 		in.Deployments(),
 		in.DaemonSets(),
 		in.StatefulSets(),
 		meshes,
 	)
 
-	meshServices := meshServiceTranslator.TranslateMeshServices(in.Services(), meshWorkloads, meshes)
+	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.Services(), workloads, meshes)
 
 	t.totalTranslates++
 
 	return output.NewSinglePartitionedSnapshot(
 		fmt.Sprintf("mesh-discovery-%v", t.totalTranslates),
 		labelutils.OwnershipLabels(),
-		meshServices,
-		meshWorkloads,
+		trafficTargets,
+		workloads,
 		meshes,
 	)
 }

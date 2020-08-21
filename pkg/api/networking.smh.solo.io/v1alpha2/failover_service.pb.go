@@ -6,11 +6,10 @@ package v1alpha2
 import (
 	bytes "bytes"
 	fmt "fmt"
-	math "math"
-
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -26,21 +25,21 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //
 //A FailoverService creates a new hostname to which services can send requests.
-//Requests will be routed based on a list of backing services ordered by
-//decreasing priority. When outlier detection detects that a service in the list is
+//Requests will be routed based on a list of backing traffic targets ordered by
+//decreasing priority. When outlier detection detects that a traffic target in the list is
 //in an unhealthy state, requests sent to the FailoverService will be routed
-//to the next healthy service in the list. For each service referenced in the
-//failover services list, outlier detection must be configured using a TrafficPolicy.
+//to the next healthy traffic target in the list. For each traffic target referenced in the
+//FailoverService's BackingServices list, outlier detection must be configured using a TrafficPolicy.
 //
 //Currently this feature only supports Services backed by Istio.
 type FailoverServiceSpec struct {
 	//
-	//The DNS name of the failover service. Must be unique within the service mesh instance
+	//The DNS name of the FailoverService. Must be unique within the service mesh instance
 	//since it is used as the hostname with which clients communicate.
 	Hostname string `protobuf:"bytes,1,opt,name=hostname,proto3" json:"hostname,omitempty"`
-	// The port on which the failover service listens.
+	// The port on which the FailoverService listens.
 	Port *FailoverServiceSpec_Port `protobuf:"bytes,2,opt,name=port,proto3" json:"port,omitempty"`
-	// The meshes that this failover service will be visible to.
+	// The meshes that this FailoverService will be visible to.
 	Meshes []*v1.ObjectRef `protobuf:"bytes,3,rep,name=meshes,proto3" json:"meshes,omitempty"`
 	//
 	//The list of services backing the FailoverService, ordered by decreasing priority.
@@ -104,11 +103,11 @@ func (m *FailoverServiceSpec) GetBackingServices() []*FailoverServiceSpec_Backin
 	return nil
 }
 
-// The port on which the failover service listens.
+// The port on which the FailoverService listens.
 type FailoverServiceSpec_Port struct {
 	// Port number.
 	Number uint32 `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
-	// Protocol of the requests sent to the failover service, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
+	// Protocol of the requests sent to the FailoverService, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
 	Protocol             string   `protobuf:"bytes,2,opt,name=protocol,proto3" json:"protocol,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -153,8 +152,9 @@ func (m *FailoverServiceSpec_Port) GetProtocol() string {
 	return ""
 }
 
+// The traffic targets that comprise the FailoverService.
 type FailoverServiceSpec_BackingService struct {
-	// different service types can be selected as component services.
+	// Different traffic target types can be selected as backing services.
 	//
 	// Types that are valid to be assigned to BackingServiceType:
 	//	*FailoverServiceSpec_BackingService_KubeService
@@ -233,7 +233,7 @@ type FailoverServiceStatus struct {
 	State ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.smh.solo.io.ApprovalState" json:"state,omitempty"`
 	// The status of the FailoverService for each Mesh to which it has been applied.
 	Meshes map[string]*ApprovalStatus `protobuf:"bytes,3,rep,name=meshes,proto3" json:"meshes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// any errors observed which prevented the resource from being Accepted.
+	// Any errors observed which prevented the resource from being Accepted.
 	ValidationErrors     []string `protobuf:"bytes,4,rep,name=validation_errors,json=validationErrors,proto3" json:"validation_errors,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

@@ -30,7 +30,7 @@ type Translator interface {
 	//
 	// Errors caused by invalid user config will be reported using the Reporter.
 	//
-	// Note that the input snapshot MeshServiceSet contains the given MeshService.
+	// Note that the input snapshot TrafficTargetSet contains the given MeshService.
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
@@ -72,7 +72,7 @@ func (t *translator) Translate(
 	var trafficTargets []*smiaccessv1alpha2.TrafficTarget
 	var httpRouteGroups []*smispecsv1alpha3.HTTPRouteGroup
 
-	backingWorkloads := workloadutils.FindBackingMeshWorkloads(meshService.Spec.GetKubeService(), in.MeshWorkloads())
+	backingWorkloads := workloadutils.FindBackingWorkloads(meshService.Spec.GetKubeService(), in.MeshWorkloads())
 	for _, ap := range meshService.Status.GetAppliedAccessPolicies() {
 
 		if len(backingWorkloads) == 0 {

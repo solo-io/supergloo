@@ -25,7 +25,7 @@ type Translator interface {
 	//
 	// Errors caused by invalid user config will be reported using the Reporter.
 	//
-	// Note that the input snapshot MeshServiceSet contains the given MeshService.
+	// Note that the input snapshot TrafficTargetSet contains the given MeshService.
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,

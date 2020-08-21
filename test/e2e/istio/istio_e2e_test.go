@@ -16,11 +16,11 @@ import (
 var (
 	BookinfoNamespace = "bookinfo"
 
-	masterClusterName = "master-cluster"
+	mgmtClusterName   = "mgmt-cluster"
 	remoteClusterName = "remote-cluster"
 
 	masterMesh = &v1.ObjectRef{
-		Name:      "istiod-istio-system-master-cluster",
+		Name:      "istiod-istio-system-mgmt-cluster",
 		Namespace: "service-mesh-hub",
 	}
 

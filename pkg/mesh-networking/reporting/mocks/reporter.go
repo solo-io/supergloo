@@ -5,11 +5,10 @@
 package mock_reporting
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
+	reflect "reflect"
 )
 
 // MockReporter is a mock of Reporter interface
@@ -35,28 +34,28 @@ func (m *MockReporter) EXPECT() *MockReporterMockRecorder {
 	return m.recorder
 }
 
-// ReportTrafficPolicyToMeshService mocks base method
-func (m *MockReporter) ReportTrafficPolicyToMeshService(meshService *v1alpha2.MeshService, trafficPolicy ezkube.ResourceId, err error) {
+// ReportTrafficPolicyToTrafficTarget mocks base method
+func (m *MockReporter) ReportTrafficPolicyToTrafficTarget(trafficTarget *v1alpha2.TrafficTarget, trafficPolicy ezkube.ResourceId, err error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReportTrafficPolicyToMeshService", meshService, trafficPolicy, err)
+	m.ctrl.Call(m, "ReportTrafficPolicyToTrafficTarget", trafficTarget, trafficPolicy, err)
 }
 
-// ReportTrafficPolicyToMeshService indicates an expected call of ReportTrafficPolicyToMeshService
-func (mr *MockReporterMockRecorder) ReportTrafficPolicyToMeshService(meshService, trafficPolicy, err interface{}) *gomock.Call {
+// ReportTrafficPolicyToTrafficTarget indicates an expected call of ReportTrafficPolicyToTrafficTarget
+func (mr *MockReporterMockRecorder) ReportTrafficPolicyToTrafficTarget(trafficTarget, trafficPolicy, err interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportTrafficPolicyToMeshService", reflect.TypeOf((*MockReporter)(nil).ReportTrafficPolicyToMeshService), meshService, trafficPolicy, err)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportTrafficPolicyToTrafficTarget", reflect.TypeOf((*MockReporter)(nil).ReportTrafficPolicyToTrafficTarget), trafficTarget, trafficPolicy, err)
 }
 
-// ReportAccessPolicyToMeshService mocks base method
-func (m *MockReporter) ReportAccessPolicyToMeshService(meshService *v1alpha2.MeshService, accessPolicy ezkube.ResourceId, err error) {
+// ReportAccessPolicyToTrafficTarget mocks base method
+func (m *MockReporter) ReportAccessPolicyToTrafficTarget(trafficTarget *v1alpha2.TrafficTarget, accessPolicy ezkube.ResourceId, err error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReportAccessPolicyToMeshService", meshService, accessPolicy, err)
+	m.ctrl.Call(m, "ReportAccessPolicyToTrafficTarget", trafficTarget, accessPolicy, err)
 }
 
-// ReportAccessPolicyToMeshService indicates an expected call of ReportAccessPolicyToMeshService
-func (mr *MockReporterMockRecorder) ReportAccessPolicyToMeshService(meshService, accessPolicy, err interface{}) *gomock.Call {
+// ReportAccessPolicyToTrafficTarget indicates an expected call of ReportAccessPolicyToTrafficTarget
+func (mr *MockReporterMockRecorder) ReportAccessPolicyToTrafficTarget(trafficTarget, accessPolicy, err interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportAccessPolicyToMeshService", reflect.TypeOf((*MockReporter)(nil).ReportAccessPolicyToMeshService), meshService, accessPolicy, err)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportAccessPolicyToTrafficTarget", reflect.TypeOf((*MockReporter)(nil).ReportAccessPolicyToTrafficTarget), trafficTarget, accessPolicy, err)
 }
 
 // ReportVirtualMeshToMesh mocks base method

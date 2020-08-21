@@ -6,13 +6,12 @@ package v1alpha2
 import (
 	bytes "bytes"
 	fmt "fmt"
-	math "math"
-
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/gogo/protobuf/types"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -29,7 +28,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 //
 //Meshes represent a currently registered service mesh.
 type MeshSpec struct {
-	// the mesh type indicates information specific to the particular type of
+	// The mesh type indicates information specific to the particular type of
 	// Mesh represented by this Mesh resource.
 	//
 	// Types that are valid to be assigned to MeshType:
@@ -39,7 +38,7 @@ type MeshSpec struct {
 	//	*MeshSpec_ConsulConnect
 	//	*MeshSpec_Osm
 	MeshType isMeshSpec_MeshType `protobuf_oneof:"mesh_type"`
-	// information about the SMH certificate agent, if it has been installed to the remote cluster.
+	// Information about the SMH certificate agent if it has been installed to the remote cluster.
 	AgentInfo *MeshSpec_AgentInfo `protobuf:"bytes,5,opt,name=agent_info,json=agentInfo,proto3" json:"agent_info,omitempty"`
 	// translate to SMI resources for this mesh
 	SmiEnabled           bool     `protobuf:"varint,7,opt,name=smi_enabled,json=smiEnabled,proto3" json:"smi_enabled,omitempty"`
@@ -168,11 +167,11 @@ func (*MeshSpec) XXX_OneofWrappers() []interface{} {
 
 // Mesh object representing an installed Istio control plane
 type MeshSpec_Istio struct {
-	// where istio control plane components are installed.
+	// Configuration metadata about the istio control plane installation.
 	Installation *MeshSpec_MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
-	// configuration for Istio Citadel, Istio's security component.
+	// Configuration metadata for Istio Citadel (Istio's security component).
 	CitadelInfo *MeshSpec_Istio_CitadelInfo `protobuf:"bytes,2,opt,name=citadel_info,json=citadelInfo,proto3" json:"citadel_info,omitempty"`
-	// configuration for Istio IngressGateway, the Istio Ingress
+	// Configuration metadata for Istio IngressGateway (the Istio Ingress).
 	IngressGateways      []*MeshSpec_Istio_IngressGatewayInfo `protobuf:"bytes,3,rep,name=ingress_gateways,json=ingressGateways,proto3" json:"ingress_gateways,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                             `json:"-"`
 	XXX_unrecognized     []byte                               `json:"-"`
@@ -224,17 +223,18 @@ func (m *MeshSpec_Istio) GetIngressGateways() []*MeshSpec_Istio_IngressGatewayIn
 	return nil
 }
 
+// Configuration metadata for Istio Citadel (Istio's security component).
 type MeshSpec_Istio_CitadelInfo struct {
 	//
 	//Istio trust domain used for https/spiffe identity.
 	//https://spiffe.io/spiffe/concepts/#trust-domain
 	//https://istio.io/docs/reference/glossary/#identity
 	//
-	//If empty will default to "cluster.local"
+	//If empty will default to "cluster.local".
 	TrustDomain string `protobuf:"bytes,1,opt,name=trust_domain,json=trustDomain,proto3" json:"trust_domain,omitempty"`
 	//
 	//istio-citadel service account, used to determine identity for the Istio CA cert.
-	//If empty will default to "istio-citadel"
+	//If empty will default to "istio-citadel".
 	CitadelServiceAccount string   `protobuf:"bytes,2,opt,name=citadel_service_account,json=citadelServiceAccount,proto3" json:"citadel_service_account,omitempty"`
 	XXX_NoUnkeyedLiteral  struct{} `json:"-"`
 	XXX_unrecognized      []byte   `json:"-"`
@@ -280,20 +280,20 @@ func (m *MeshSpec_Istio_CitadelInfo) GetCitadelServiceAccount() string {
 }
 
 type MeshSpec_Istio_IngressGatewayInfo struct {
-	// labels matching the workload which backs the gateway,
-	// defaults to {"istio": "ingressgateway"}
+	// Labels matching the workload which backs the gateway,
+	// defaults to `{"istio": "ingressgateway"}`.
 	WorkloadLabels map[string]string `protobuf:"bytes,1,rep,name=workload_labels,json=workloadLabels,proto3" json:"workload_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// the externally-reachable address on which the gateway is listening for TLS connections.
-	// this will be the address used for cross-cluster connectivity.
-	// defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type)
+	// The externally-reachable address on which the gateway is listening for TLS connections.
+	// This will be the address used for cross-cluster connectivity.
+	// Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type).
 	ExternalAddress string `protobuf:"bytes,2,opt,name=external_address,json=externalAddress,proto3" json:"external_address,omitempty"`
-	// the externally-reachable port on which the gateway is listening for TLS connections.
-	// this will be the port used for cross-cluster connectivity.
-	// List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio
-	// Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type)
+	// The externally-reachable port on which the gateway is listening for TLS connections.
+	// This will be the port used for cross-cluster connectivity.
+	// List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio.
+	// Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type).
 	ExternalTlsPort uint32 `protobuf:"varint,3,opt,name=external_tls_port,json=externalTlsPort,proto3" json:"external_tls_port,omitempty"`
-	// container port on which the gateway is listening for TLS connections.
-	// Defaults to 15443
+	// Container port on which the gateway is listening for TLS connections.
+	// Defaults to 15443.
 	TlsContainerPort     uint32   `protobuf:"varint,4,opt,name=tls_container_port,json=tlsContainerPort,proto3" json:"tls_container_port,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -352,7 +352,7 @@ func (m *MeshSpec_Istio_IngressGatewayInfo) GetTlsContainerPort() uint32 {
 	return 0
 }
 
-// Mesh object representing AWS AppMesh
+// Mesh object representing AWS AppMesh.
 type MeshSpec_AwsAppMesh struct {
 	// AWS name for the AppMesh instance, must be unique across the AWS account.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -419,11 +419,11 @@ func (m *MeshSpec_AwsAppMesh) GetClusters() []string {
 	return nil
 }
 
-// Mesh object representing an installed Linkerd control plane
+// Mesh object representing an installed Linkerd control plane.
 type MeshSpec_LinkerdMesh struct {
 	Installation *MeshSpec_MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
 	// The cluster domain suffix this Linkerd mesh is configured with.
-	// See https://linkerd.io/2/tasks/using-custom-domain/ for info
+	// See https://linkerd.io/2/tasks/using-custom-domain/ for info.
 	ClusterDomain        string   `protobuf:"bytes,2,opt,name=cluster_domain,json=clusterDomain,proto3" json:"cluster_domain,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -468,6 +468,7 @@ func (m *MeshSpec_LinkerdMesh) GetClusterDomain() string {
 	return ""
 }
 
+// Mesh object representing an installed ConsulConnect control plane.
 type MeshSpec_ConsulConnectMesh struct {
 	Installation         *MeshSpec_MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
@@ -719,13 +720,13 @@ func (m *MeshStatus) GetAppliedFailoverServices() []*MeshStatus_AppliedFailoverS
 }
 
 // AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh.
-// if an existing VirtualMesh becomes invalid, the last applied VirtualMesh will be used
+// If an existing VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
 type MeshStatus_AppliedVirtualMesh struct {
-	// reference to the VirtualMesh
+	// Reference to the VirtualMesh.
 	Ref *v1.ObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
-	// the observed generation of the accepted VirtualMesh
+	// The observed generation of the accepted VirtualMesh.
 	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
-	// the last known valid spec of the VirtualMesh
+	// The last known valid spec of the VirtualMesh.
 	Spec                 *v1alpha2.VirtualMeshSpec `protobuf:"bytes,3,opt,name=spec,proto3" json:"spec,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
 	XXX_unrecognized     []byte                    `json:"-"`
@@ -778,13 +779,13 @@ func (m *MeshStatus_AppliedVirtualMesh) GetSpec() *v1alpha2.VirtualMeshSpec {
 }
 
 // AppliedFailoverService represents a FailoverService that has been applied to this Mesh.
-// if an existing FailoverService becomes invalid, the last applied FailoverService will be used.
+// If an existing FailoverService becomes invalid the last applied FailoverService will be used.
 type MeshStatus_AppliedFailoverService struct {
-	// reference to the FailoverService
+	// Reference to the FailoverService.
 	Ref *v1.ObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
-	// the observed generation of the accepted FailoverService
+	// The observed generation of the accepted FailoverService.
 	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
-	// the last known valid spec of the FailoverService
+	// The last known valid spec of the FailoverService.
 	Spec                 *v1alpha2.FailoverServiceSpec `protobuf:"bytes,3,opt,name=spec,proto3" json:"spec,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
 	XXX_unrecognized     []byte                        `json:"-"`

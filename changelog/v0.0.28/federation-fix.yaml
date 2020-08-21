@@ -1,0 +1,10 @@
+changelog:
+- type: FIX
+  description: Stop mesh-networking from logging errors indefinitely.
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/292
+- type: NEW_FEATURE
+  description: Populate ServiceEntry with all possible ports on remote services.
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/290
+- type: NEW_FEATURE
+  description: Allow users to specify ports in their destination objects, such as traffic shifts and mirrors.
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/316

@@ -13,11 +13,11 @@ import (
 
 // the reporter reports status errors on user configuration objects
 type Reporter interface {
-	// report an error on a traffic policy that has been applied to a MeshService
-	ReportTrafficPolicyToMeshService(meshService *discoveryv1alpha2.MeshService, trafficPolicy ezkube.ResourceId, err error)
+	// report an error on a traffic policy that has been applied to a TrafficTarget
+	ReportTrafficPolicyToTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicy ezkube.ResourceId, err error)
 
-	// report an error on an access policy that has been applied to a MeshService
-	ReportAccessPolicyToMeshService(meshService *discoveryv1alpha2.MeshService, accessPolicy ezkube.ResourceId, err error)
+	// report an error on an access policy that has been applied to a TrafficTarget
+	ReportAccessPolicyToTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, accessPolicy ezkube.ResourceId, err error)
 
 	// report an error on a virtual mesh that has been applied to a Mesh
 	ReportVirtualMeshToMesh(mesh *discoveryv1alpha2.Mesh, virtualMesh ezkube.ResourceId, err error)
@@ -40,20 +40,20 @@ func NewPanickingReporter(ctx context.Context) Reporter {
 	return &panickingReporter{ctx: ctx}
 }
 
-func (p *panickingReporter) ReportTrafficPolicyToMeshService(meshService *discoveryv1alpha2.MeshService, trafficPolicy ezkube.ResourceId, err error) {
+func (p *panickingReporter) ReportTrafficPolicyToTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicy ezkube.ResourceId, err error) {
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw(
 			"internal error: error reported on TrafficPolicy which should have been caught by validation!",
 			"policy", sets.Key(trafficPolicy),
-			"mesh-service", sets.Key(meshService),
+			"mesh-service", sets.Key(trafficTarget),
 			"error", err)
 }
 
-func (p *panickingReporter) ReportAccessPolicyToMeshService(meshService *discoveryv1alpha2.MeshService, accessPolicy ezkube.ResourceId, err error) {
+func (p *panickingReporter) ReportAccessPolicyToTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, accessPolicy ezkube.ResourceId, err error) {
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw("internal error: error reported on AccessPolicy which should have been caught by validation!",
 			"policy", sets.Key(accessPolicy),
-			"mesh-service", sets.Key(meshService),
+			"mesh-service", sets.Key(trafficTarget),
 			"error", err)
 }
 

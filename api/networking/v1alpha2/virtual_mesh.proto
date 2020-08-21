@@ -10,14 +10,15 @@ import "google/protobuf/wrappers.proto";
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
-// A VirtualMesh represents a logical grouping of meshes for
-// shared configuration and cross-mesh interoperability.
-//
-// VirtualMeshes are used to configure things like shared trust roots (for mTLS)
-// and federation of services (for cross-cluster networking).
-//
-// Currently, VirtualMeshes can only be constructed from Istio
-// meshes.
+/*
+    A VirtualMesh represents a logical grouping of meshes for
+    shared configuration and cross-mesh interoperability.
+
+    VirtualMeshes are used to configure things like shared trust roots (for mTLS)
+    and federation of traffic targets (for cross-cluster networking).
+
+    Currently, VirtualMeshes can only be constructed from Istio meshes.
+*/
 message VirtualMeshSpec {
 
     // The meshes contained in this virtual mesh.
@@ -27,7 +28,7 @@ message VirtualMeshSpec {
     // a shared Certificate Authority across the defined meshes.
     MTLSConfig mtls_config = 2;
 
-    // Determine how to expose services to cross-mesh traffic using Service Federation.
+    // Determine how to expose traffic targets to cross-mesh traffic using Service Federation.
     Federation federation = 3;
 
     // Sets an Access Policy for the whole mesh.
@@ -40,8 +41,9 @@ message VirtualMeshSpec {
 
         // Select a trust model in order to establish trust between mTLS-secured meshes.
         oneof trust_model {
-            // Shared trust
+            // Shared trust (allow communication between any workloads and traffic targets in the grouped Meshes).
             SharedTrust shared = 1;
+            // Limited trust (selectively allow communication between workloads and traffic targets in the grouped Meshes).
             LimitedTrust limited = 2;
         }
 
@@ -99,26 +101,26 @@ message VirtualMeshSpec {
 
         /*
             Configuration for generating a self-signed root certificate.
-            Uses the X.509 format, RFC5280
+            Uses the X.509 format, RFC5280.
         */
         message SelfSignedCert {
             // Number of days before root cert expires. Defaults to 365.
             uint32 ttl_days = 1;
-            // Size in bytes of the root cert's private key. Defaults to 4096
+            // Size in bytes of the root cert's private key. Defaults to 4096.
             uint32 rsa_key_size_bytes = 2;
-            // Root cert organization name. Defaults to "service-mesh-hub"
+            // Root cert organization name. Defaults to "service-mesh-hub".
             string org_name = 3;
         }
     }
 
-    // In Service Mesh Hub, Federation refers to the ability
-    // to expose services on with a global DNS name
-    // for traffic originating from any service within the
+    // In Service Mesh Hub, "federation" refers to the ability
+    // to expose traffic targets with a global DNS name
+    // for traffic originating from any workload within the
     // virtual mesh.
     message Federation {
-        // The "mode" in which to federate services within this virtual mesh.
+        // The "mode" in which to federate traffic targets within this virtual mesh.
         oneof mode {
-            // Select permissive mode to expose all services in a
+            // Select permissive mode to expose all traffic targets in a
             // VirtualMesh to cross-cluster traffic from all workloads
             // in that Virtual Mesh.
             .google.protobuf.Empty permissive = 1;
@@ -147,7 +149,7 @@ message VirtualMeshStatus {
     // recent version of this resource.
     int64 observed_generation = 1;
 
-    // The status of the overall resource. It will only show accepted if it has been successfully
+    // The state of the overall resource. It will only show accepted if it has been successfully
     // applied to all target meshes.
     ApprovalState state = 2;
 
@@ -157,16 +159,4 @@ message VirtualMeshStatus {
     // The status of the VirtualMesh for each Mesh to which it has been applied.
     // A VirtualMesh may be Accepted for some Meshes and rejected for others.
     map<string, ApprovalStatus> meshes = 4;
-
-    //    // Status of the process writing federation decision metadata onto MeshServices.
-    //    core.smh.solo.io.Status federation_status = 1;
-    //
-    //    // Status of the process signing CSRs.
-    //    core.smh.solo.io.Status certificate_status = 2;
-    //
-    //    // Overall validation status of this VirtualMesh.
-    //    core.smh.solo.io.Status config_status = 3;
-    //
-    //    // Status of ensuring that access control is enforced within this VirtualMesh.
-    //    core.smh.solo.io.Status access_control_enforcement_status = 4;
 }

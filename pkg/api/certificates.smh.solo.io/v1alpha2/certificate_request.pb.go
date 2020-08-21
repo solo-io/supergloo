@@ -6,12 +6,11 @@ package v1alpha2
 import (
 	bytes "bytes"
 	fmt "fmt"
-	math "math"
-
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/gogo/protobuf/types"
 	_ "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -25,16 +24,16 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// possible states in which a CertificateRequest can exist
+// Possible states in which a CertificateRequest can exist.
 type CertificateRequestStatus_State int32
 
 const (
-	// the CertificateRequest has yet to be picked up by the issuer.
+	// The CertificateRequest has yet to be picked up by the issuer.
 	CertificateRequestStatus_PENDING CertificateRequestStatus_State = 0
-	// the Issuer has replied to the request and the signedCertificate and SigningRootCa
+	// The Issuer has replied to the request and the signedCertificate and SigningRootCa
 	// status fields will be populated.
 	CertificateRequestStatus_FINISHED CertificateRequestStatus_State = 1
-	// processing the certificate workflow failed.
+	// Processing the certificate workflow failed.
 	CertificateRequestStatus_FAILED CertificateRequestStatus_State = 2
 )
 
@@ -67,11 +66,11 @@ func (CertificateRequestStatus_State) EnumDescriptor() ([]byte, []int) {
 //will generate a CertificateRequest corresponding to it.
 //
 //Service Mesh Hub will then process the Certificate Signing Request contained in the
-//CertificateRequestSpec, and write the signed SSL certificate back as a secret in the managed cluster,
-//and the CertificateRequest Status to point to that secret.
+//CertificateRequestSpec and write the signed SSL certificate back as a secret in the managed cluster,
+//and update the CertificateRequest Status to point to that secret.
 type CertificateRequestSpec struct {
 	// Base64-encoded data for the PKCS#10 Certificate Signing Request issued
-	// by the CertificateRequesting Agent living in the managed cluster, corresponding
+	// by the CertificateRequesting Agent deployed in the managed cluster, corresponding
 	// to the IssuedRequest received by the CertificateRequesting Agent.
 	CertificateSigningRequest []byte   `protobuf:"bytes,1,opt,name=certificate_signing_request,json=certificateSigningRequest,proto3" json:"certificate_signing_request,omitempty"`
 	XXX_NoUnkeyedLiteral      struct{} `json:"-"`
@@ -112,18 +111,17 @@ func (m *CertificateRequestSpec) GetCertificateSigningRequest() []byte {
 
 type CertificateRequestStatus struct {
 	// The most recent generation observed in the the CertificateRequest metadata.
-	// if the observedGeneration does not match generation, the CA has not processed the most
+	// If the observedGeneration does not match generation, the CA has not processed the most
 	// recent version of this request.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
-	// any error observed which prevented the CertificateRequest from being processed.
-	// if the error is empty, the request has been processed successfully
+	// Any error observed which prevented the CertificateRequest from being processed.
+	// If the error is empty, the request has been processed successfully
 	Error string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
-	// the current state of the CertificateRequest workflow,
-	// reported by the Issuer.
+	// The current state of the CertificateRequest workflow reported by the Issuer.
 	State CertificateRequestStatus_State `protobuf:"varint,3,opt,name=state,proto3,enum=certificates.smh.solo.io.CertificateRequestStatus_State" json:"state,omitempty"`
-	// the signed intermediate certificate issued by the CA
+	// The signed intermediate certificate issued by the CA.
 	SignedCertificate []byte `protobuf:"bytes,4,opt,name=signed_certificate,json=signedCertificate,proto3" json:"signed_certificate,omitempty"`
-	// the root CA used by the CA to sign the certificate
+	// The root CA used by the CA to sign the certificate.
 	SigningRootCa        []byte   `protobuf:"bytes,5,opt,name=signing_root_ca,json=signingRootCa,proto3" json:"signing_root_ca,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

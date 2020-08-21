@@ -60,7 +60,7 @@ var _ = Describe("FailoverService", func() {
 									{
 										Name:        "reviews",
 										Namespace:   BookinfoNamespace,
-										ClusterName: masterClusterName,
+										ClusterName: mgmtClusterName,
 									},
 									{
 										Name:        "reviews",
@@ -100,7 +100,7 @@ var _ = Describe("FailoverService", func() {
 								KubeService: &v1.ClusterObjectRef{
 									Name:        "reviews",
 									Namespace:   BookinfoNamespace,
-									ClusterName: masterClusterName,
+									ClusterName: mgmtClusterName,
 								},
 							},
 						},

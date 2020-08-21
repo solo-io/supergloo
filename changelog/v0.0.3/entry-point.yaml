@@ -1,0 +1,8 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Setup helm chart and automation.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/13
+  - type: NEW_FEATURE
+    description: Translate Mesh Bridge into istio service entry.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/20
+

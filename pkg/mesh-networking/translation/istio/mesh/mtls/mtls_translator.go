@@ -65,16 +65,16 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx           context.Context
-	secrets       corev1sets.SecretSet
-	meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet
+	ctx       context.Context
+	secrets   corev1sets.SecretSet
+	workloads discoveryv1alpha2sets.WorkloadSet
 }
 
-func NewTranslator(ctx context.Context, secrets corev1sets.SecretSet, meshWorkloads discoveryv1alpha2sets.MeshWorkloadSet) Translator {
+func NewTranslator(ctx context.Context, secrets corev1sets.SecretSet, workloads discoveryv1alpha2sets.WorkloadSet) Translator {
 	return &translator{
-		ctx:           ctx,
-		secrets:       secrets,
-		meshWorkloads: meshWorkloads,
+		ctx:       ctx,
+		secrets:   secrets,
+		workloads: workloads,
 	}
 }
 
@@ -166,7 +166,7 @@ func (t *translator) Translate(
 	}
 
 	// get the pods that need to be bounced for this mesh
-	podsToBounce := getPodsToBounce(mesh, t.meshWorkloads, mtlsConfig.AutoRestartPods)
+	podsToBounce := getPodsToBounce(mesh, t.workloads, mtlsConfig.AutoRestartPods)
 
 	// issue a certificate to the mesh agent
 	issuedCertificate := &certificatesv1alpha2.IssuedCertificate{
@@ -235,7 +235,7 @@ func buildSpiffeURI(trustDomain, namespace, serviceAccount string) string {
 }
 
 // get selectors for all the pods in a mesh; they need to be bounced (including the mesh control plane itself)
-func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allMeshWorkloads discoveryv1alpha2sets.MeshWorkloadSet, autoRestartPods bool) []*certificatesv1alpha2.IssuedCertificateSpec_PodSelector {
+func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha2sets.WorkloadSet, autoRestartPods bool) []*certificatesv1alpha2.IssuedCertificateSpec_PodSelector {
 	// if autoRestartPods is false, we rely on the user to manually restart their pods
 	if !autoRestartPods {
 		return nil
@@ -260,7 +260,7 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allMeshWorkloads discoveryv1a
 	}
 
 	// collect selectors from workloads matching this mesh
-	allMeshWorkloads.List(func(workload *discoveryv1alpha2.MeshWorkload) bool {
+	allWorkloads.List(func(workload *discoveryv1alpha2.Workload) bool {
 		kubeWorkload := workload.Spec.GetKubernetes()
 
 		if kubeWorkload != nil && ezkube.RefsMatch(workload.Spec.Mesh, mesh) {

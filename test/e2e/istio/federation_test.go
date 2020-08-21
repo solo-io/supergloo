@@ -29,7 +29,7 @@ var _ = Describe("Federation", func() {
 			trafficShiftReviewsV3 := data.RemoteTrafficShiftPolicy("bookinfo-policy", BookinfoNamespace, &v1.ClusterObjectRef{
 				Name:        "reviews",
 				Namespace:   BookinfoNamespace,
-				ClusterName: masterClusterName,
+				ClusterName: mgmtClusterName,
 			}, remoteClusterName, map[string]string{"version": "v3"}, 9080)
 
 			err = manifest.AppendResources(trafficShiftReviewsV3)

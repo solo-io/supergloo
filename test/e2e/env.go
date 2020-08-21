@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	masterContext = "kind-master-cluster"
+	mgmtContext   = "kind-mgmt-cluster"
 	remoteContext = "kind-remote-cluster"
 )
 
@@ -202,7 +202,7 @@ func ClearEnv(ctx context.Context) error {
 func StartEnv(ctx context.Context) Env {
 
 	if useExisting := os.Getenv("USE_EXISTING"); useExisting == "1" {
-		mgmt := "kind-master-cluster"
+		mgmt := "kind-mgmt-cluster"
 		remote := "kind-remote-cluster"
 		if fields := strings.Split(useExisting, ","); len(fields) == 2 {
 			mgmt = fields[0]
@@ -221,7 +221,7 @@ func StartEnv(ctx context.Context) Env {
 	}
 	Expect(err).NotTo(HaveOccurred())
 
-	return newEnv(masterContext, remoteContext)
+	return newEnv(mgmtContext, remoteContext)
 }
 
 var (

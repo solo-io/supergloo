@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Refactor the solo-kit code generation used in Service Mesh Hub. Use clients from https://github.com/solo-io/external-apis/ instead of generating clients for external APIs.

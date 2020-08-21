@@ -1,0 +1,4 @@
+changelog:
+- type: FIX
+  description: Fix bug where remote service accounts are created in the wrong namespace
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/160

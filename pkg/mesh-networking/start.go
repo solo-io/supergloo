@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi"
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -37,7 +37,7 @@ func startReconciler(
 		istio.NewIstioTranslator(),
 		smi.NewSmiTranslator(smi.DefaultDependencyFactory),
 	)
-	validator := approval.NewApprover(translator)
+	validator := apply.NewApplier(translator)
 
 	startCertIssuer(
 		parameters.Ctx,

@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Fix the deprecatd setup-protoc Github Action in the docs build.

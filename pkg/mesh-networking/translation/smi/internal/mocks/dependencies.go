@@ -5,10 +5,9 @@
 package mock_internal
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	meshservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice"
+	reflect "reflect"
 )
 
 // MockDependencyFactory is a mock of DependencyFactory interface

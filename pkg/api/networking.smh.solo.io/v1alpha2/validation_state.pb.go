@@ -6,11 +6,10 @@ package v1alpha2
 import (
 	bytes "bytes"
 	fmt "fmt"
-	math "math"
-
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -28,7 +27,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type ApprovalState int32
 
 const (
-	// Resources are in a Pending state before they have been processed by Service Mesh Hub
+	// Resources are in a Pending state before they have been processed by Service Mesh Hub.
 	ApprovalState_PENDING ApprovalState = 0
 	// Resources are in a Accepted state when they are valid and have been applied successfully to
 	// the Service Mesh Hub configuration.
@@ -68,10 +67,10 @@ func (ApprovalState) EnumDescriptor() ([]byte, []int) {
 
 // The approval status of a policy that has been applied to a discovery resource.
 type ApprovalStatus struct {
-	// acceptanceOrder represents the order in which the Policy
+	// AcceptanceOrder represents the order in which the Policy
 	// was accepted and applied to a discovery resource. The first accepted policy
-	// will have an acceptance_order of zero, the second 1, etc.
-	// when conflicts are detected in the system,
+	// will have an acceptance_order of 0, the second 1, etc.
+	// When conflicts are detected in the system,
 	// the Policy with the lowest acceptance_order
 	// will be chosen (and all other conflicting policies will be rejected).
 	AcceptanceOrder uint32 `protobuf:"varint,1,opt,name=acceptance_order,json=acceptanceOrder,proto3" json:"acceptance_order,omitempty"`

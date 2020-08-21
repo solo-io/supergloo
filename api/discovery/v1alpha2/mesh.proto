@@ -15,7 +15,7 @@ option (gogoproto.equal_all) = true;
 */
 message MeshSpec {
 
-    // the mesh type indicates information specific to the particular type of
+    // The mesh type indicates information specific to the particular type of
     // Mesh represented by this Mesh resource.
     oneof mesh_type {
         Istio istio = 1;
@@ -25,7 +25,7 @@ message MeshSpec {
         OpenServiceMesh osm = 6;
     }
 
-    // information about the SMH certificate agent, if it has been installed to the remote cluster.
+    // Information about the SMH certificate agent if it has been installed to the remote cluster.
     AgentInfo agent_info = 5;
 
     // translate to SMI resources for this mesh
@@ -34,57 +34,58 @@ message MeshSpec {
     // Mesh object representing an installed Istio control plane
     message Istio {
 
-        // where istio control plane components are installed.
+        // Configuration metadata about the istio control plane installation.
         MeshInstallation installation = 1;
 
-        // configuration for Istio Citadel, Istio's security component.
+        // Configuration metadata for Istio Citadel (Istio's security component).
         CitadelInfo citadel_info = 2;
 
-        // configuration for Istio IngressGateway, the Istio Ingress
+        // Configuration metadata for Istio IngressGateway (the Istio Ingress).
         repeated IngressGatewayInfo ingress_gateways = 3;
 
+        // Configuration metadata for Istio Citadel (Istio's security component).
         message CitadelInfo {
             /*
                 Istio trust domain used for https/spiffe identity.
                 https://spiffe.io/spiffe/concepts/#trust-domain
                 https://istio.io/docs/reference/glossary/#identity
 
-                If empty will default to "cluster.local"
+                If empty will default to "cluster.local".
             */
             string trust_domain = 1;
 
             /*
                 istio-citadel service account, used to determine identity for the Istio CA cert.
-                If empty will default to "istio-citadel"
+                If empty will default to "istio-citadel".
             */
             string citadel_service_account = 2;
         }
 
         message IngressGatewayInfo {
 
-            // labels matching the workload which backs the gateway,
-            // defaults to {"istio": "ingressgateway"}
+            // Labels matching the workload which backs the gateway,
+            // defaults to `{"istio": "ingressgateway"}`.
             map<string, string> workload_labels = 1;
 
-            // the externally-reachable address on which the gateway is listening for TLS connections.
-            // this will be the address used for cross-cluster connectivity.
-            // defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type)
+            // The externally-reachable address on which the gateway is listening for TLS connections.
+            // This will be the address used for cross-cluster connectivity.
+            // Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type).
             string external_address = 2;
 
-            // the externally-reachable port on which the gateway is listening for TLS connections.
-            // this will be the port used for cross-cluster connectivity.
-            // List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio
-            // Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type)
+            // The externally-reachable port on which the gateway is listening for TLS connections.
+            // This will be the port used for cross-cluster connectivity.
+            // List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio.
+            // Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type).
             uint32 external_tls_port = 3;
 
-            // container port on which the gateway is listening for TLS connections.
-            // Defaults to 15443
+            // Container port on which the gateway is listening for TLS connections.
+            // Defaults to 15443.
             uint32 tls_container_port = 4;
 
         }
     }
 
-    // Mesh object representing AWS AppMesh
+    // Mesh object representing AWS AppMesh.
     message AwsAppMesh {
         // AWS name for the AppMesh instance, must be unique across the AWS account.
         string name = 1;
@@ -96,15 +97,16 @@ message MeshSpec {
         repeated string clusters = 4;
     }
 
-    // Mesh object representing an installed Linkerd control plane
+    // Mesh object representing an installed Linkerd control plane.
     message LinkerdMesh {
         MeshInstallation installation = 1;
 
         // The cluster domain suffix this Linkerd mesh is configured with.
-        // See https://linkerd.io/2/tasks/using-custom-domain/ for info
+        // See https://linkerd.io/2/tasks/using-custom-domain/ for info.
         string cluster_domain = 2;
     }
 
+    // Mesh object representing an installed ConsulConnect control plane.
     message ConsulConnectMesh {
         MeshInstallation installation = 1;
     }
@@ -161,28 +163,28 @@ message MeshStatus {
     repeated AppliedFailoverService applied_failover_services = 3;
 
     // AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh.
-    // if an existing VirtualMesh becomes invalid, the last applied VirtualMesh will be used
+    // If an existing VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
     message AppliedVirtualMesh {
-        // reference to the VirtualMesh
+        // Reference to the VirtualMesh.
         .core.skv2.solo.io.ObjectRef ref = 1;
 
-        // the observed generation of the accepted VirtualMesh
+        // The observed generation of the accepted VirtualMesh.
         int64 observedGeneration = 2;
 
-        // the last known valid spec of the VirtualMesh
+        // The last known valid spec of the VirtualMesh.
         .networking.smh.solo.io.VirtualMeshSpec spec = 3;
     }
 
     // AppliedFailoverService represents a FailoverService that has been applied to this Mesh.
-    // if an existing FailoverService becomes invalid, the last applied FailoverService will be used.
+    // If an existing FailoverService becomes invalid the last applied FailoverService will be used.
     message AppliedFailoverService {
-        // reference to the FailoverService
+        // Reference to the FailoverService.
         .core.skv2.solo.io.ObjectRef ref = 1;
 
-        // the observed generation of the accepted FailoverService
+        // The observed generation of the accepted FailoverService.
         int64 observedGeneration = 2;
 
-        // the last known valid spec of the FailoverService
+        // The last known valid spec of the FailoverService.
         .networking.smh.solo.io.FailoverServiceSpec spec = 3;
     }
 }

@@ -1,0 +1,7 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Rename mesh-platform to compute-target.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/653
+  - type: NON_USER_FACING
+    description: Move mesh-service specific secret handling logic to mesh-discovery from services/common.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/654

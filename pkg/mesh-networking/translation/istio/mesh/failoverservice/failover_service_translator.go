@@ -23,8 +23,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/meshserviceutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/protoutils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/traffictargetutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/validation/failoverservice"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -78,16 +78,16 @@ func (t *translator) Translate(
 
 	// If validation fails, report the errors to the Meshes and do not translate.
 	validationErrors := t.validator.Validate(failoverservice.Inputs{
-		MeshServices:  in.MeshServices(),
-		KubeClusters:  in.KubernetesClusters(),
-		Meshes:        in.Meshes(),
-		VirtualMeshes: in.VirtualMeshes(),
+		TrafficTargets: in.TrafficTargets(),
+		KubeClusters:   in.KubernetesClusters(),
+		Meshes:         in.Meshes(),
+		VirtualMeshes:  in.VirtualMeshes(),
 	}, failoverService.Spec)
 	if validationErrors != nil {
 		reporter.ReportFailoverService(failoverService.Ref, validationErrors)
 	}
 
-	serviceEntries, envoyFilters, err := t.translate(failoverService, in.MeshServices().List(), in.Meshes(), reporter)
+	serviceEntries, envoyFilters, err := t.translate(failoverService, in.TrafficTargets().List(), in.Meshes(), reporter)
 	if err != nil {
 		reportErrorsToMeshes(failoverService, in.Meshes(), err, reporter)
 	} else {
@@ -114,19 +114,19 @@ func reportErrorsToMeshes(
 // Translate FailoverService into ServiceEntry and EnvoyFilter.
 func (t *translator) translate(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
-	allMeshServices []*discoveryv1alpha2.MeshService,
+	allTrafficTargets []*discoveryv1alpha2.TrafficTarget,
 	allMeshes v1alpha2sets.MeshSet,
 	reporter reporting.Reporter,
 ) ([]*networkingv1alpha3.ServiceEntry, []*networkingv1alpha3.EnvoyFilter, error) {
 	var serviceEntries []*networkingv1alpha3.ServiceEntry
 	var envoyFilters []*networkingv1alpha3.EnvoyFilter
-	prioritizedMeshServices, err := t.collectMeshServicesForFailoverService(failoverService.Spec, allMeshServices)
+	prioritizedTrafficTargets, err := t.collectTrafficTargetsForFailoverService(failoverService.Spec, allTrafficTargets)
 	if err != nil {
 		return nil, nil, err
 	}
 	var multierr *multierror.Error
-	if len(prioritizedMeshServices) < 1 {
-		return nil, nil, eris.New("FailoverService has fewer than one MeshService.")
+	if len(prioritizedTrafficTargets) < 1 {
+		return nil, nil, eris.New("FailoverService has fewer than one TrafficTarget.")
 	}
 	for _, meshRef := range failoverService.Spec.Meshes {
 		mesh, err := allMeshes.Find(meshRef)
@@ -140,7 +140,7 @@ func (t *translator) translate(
 		if err != nil {
 			errsForMesh = multierror.Append(errsForMesh, err)
 		}
-		envoyFilter, err := t.translateEnvoyFilters(failoverService, mesh, prioritizedMeshServices)
+		envoyFilter, err := t.translateEnvoyFilters(failoverService, mesh, prioritizedTrafficTargets)
 		if err != nil {
 			errsForMesh = multierror.Append(errsForMesh, err)
 		}
@@ -156,39 +156,39 @@ func (t *translator) translate(
 }
 
 /*
-	Collect, in priority order as declared in the FailoverService, the relevant MeshServices.
-	The first MeshService is guaranteed to be the FailoverService's target service.
-	If a MeshService cannot be found, return an error
+	Collect, in priority order as declared in the FailoverService, the relevant TrafficTargets.
+	The first TrafficTarget is guaranteed to be the FailoverService's target service.
+	If a TrafficTarget cannot be found, return an error
 */
-func (t *translator) collectMeshServicesForFailoverService(
+func (t *translator) collectTrafficTargetsForFailoverService(
 	failoverServiceSpec *v1alpha2.FailoverServiceSpec,
-	allMeshServices []*discoveryv1alpha2.MeshService,
-) ([]*discoveryv1alpha2.MeshService, error) {
-	var prioritizedMeshServices []*discoveryv1alpha2.MeshService
+	allTrafficTargets []*discoveryv1alpha2.TrafficTarget,
+) ([]*discoveryv1alpha2.TrafficTarget, error) {
+	var prioritizedTrafficTargets []*discoveryv1alpha2.TrafficTarget
 	for _, typedServiceRef := range failoverServiceSpec.BackingServices {
 		// TODO(harveyxia) add support for non-k8s services
 		serviceRef := typedServiceRef.GetKubeService()
-		var matchingMeshService *discoveryv1alpha2.MeshService
-		for _, meshService := range allMeshServices {
-			if !ezkube.ClusterRefsMatch(serviceRef, meshService.Spec.GetKubeService().Ref) {
+		var matchingTrafficTarget *discoveryv1alpha2.TrafficTarget
+		for _, trafficTarget := range allTrafficTargets {
+			if !ezkube.ClusterRefsMatch(serviceRef, trafficTarget.Spec.GetKubeService().Ref) {
 				continue
 			}
-			matchingMeshService = meshService
+			matchingTrafficTarget = trafficTarget
 		}
-		if matchingMeshService == nil {
+		if matchingTrafficTarget == nil {
 			// Should never happen because it would be caught in validation.
 			return nil, failoverservice.BackingServiceNotFound(serviceRef)
 		}
-		prioritizedMeshServices = append(prioritizedMeshServices, matchingMeshService)
+		prioritizedTrafficTargets = append(prioritizedTrafficTargets, matchingTrafficTarget)
 	}
-	return prioritizedMeshServices, nil
+	return prioritizedTrafficTargets, nil
 }
 
 func (t *translator) translateServiceEntries(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 	mesh *discoveryv1alpha2.Mesh,
 ) (*networkingv1alpha3.ServiceEntry, error) {
-	ip, err := meshserviceutils.ConstructUniqueIpForFailoverService(failoverService.Ref)
+	ip, err := traffictargetutils.ConstructUniqueIpForFailoverService(failoverService.Ref)
 	if err != nil {
 		return nil, err
 	}
@@ -222,9 +222,9 @@ func (t *translator) translateServiceEntries(
 func (t *translator) translateEnvoyFilters(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 	mesh *discoveryv1alpha2.Mesh,
-	prioritizedMeshServices []*discoveryv1alpha2.MeshService,
+	prioritizedTrafficTargets []*discoveryv1alpha2.TrafficTarget,
 ) (*networkingv1alpha3.EnvoyFilter, error) {
-	patches, err := t.buildFailoverEnvoyPatches(failoverService, prioritizedMeshServices, mesh)
+	patches, err := t.buildFailoverEnvoyPatches(failoverService, prioritizedTrafficTargets, mesh)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (t *translator) translateEnvoyFilters(
 
 func (t *translator) buildFailoverEnvoyPatches(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
-	prioritizedServices []*discoveryv1alpha2.MeshService,
+	prioritizedServices []*discoveryv1alpha2.TrafficTarget,
 	mesh *discoveryv1alpha2.Mesh,
 ) ([]*networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectPatch, error) {
 	var failoverAggregateClusterPatches []*networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectPatch
@@ -296,7 +296,7 @@ func (t *translator) buildFailoverEnvoyPatches(
 func (t *translator) buildEnvoyFailoverPatch(
 	failoverServiceEnvoyClusterName string,
 	failoverServiceCluster string,
-	prioritizedServices []*discoveryv1alpha2.MeshService,
+	prioritizedServices []*discoveryv1alpha2.TrafficTarget,
 ) (*networkingv1alpha3spec.EnvoyFilter_Patch, error) {
 	aggregateClusterConfig := t.buildEnvoyAggregateClusterConfig(prioritizedServices, failoverServiceCluster)
 	aggregateClusterConfigStruct, err := conversion.MessageToStruct(aggregateClusterConfig)
@@ -334,20 +334,20 @@ func (t *translator) buildEnvoyFailoverPatch(
 	}, nil
 }
 
-// Convert list of MeshServices corresponding to FailoverService.Spec.services to
+// Convert list of TrafficTargets corresponding to FailoverService.Spec.services to
 // an envoy ClusterConfig consisting of the list of Envoy cluster strings.
 func (t *translator) buildEnvoyAggregateClusterConfig(
-	meshServices []*discoveryv1alpha2.MeshService,
+	trafficTargets []*discoveryv1alpha2.TrafficTarget,
 	failoverServiceClusterName string,
 ) *envoy_config_cluster_aggregate_v2alpha.ClusterConfig {
 	var orderedFailoverList []string
-	for _, meshService := range meshServices {
-		kubeService := meshService.Spec.GetKubeService()
+	for _, trafficTarget := range trafficTargets {
+		kubeService := trafficTarget.Spec.GetKubeService()
 		for _, port := range kubeService.Ports {
 			var hostname string
 			if kubeService.Ref.ClusterName == failoverServiceClusterName {
 				// Local k8s DNS
-				hostname = t.clusterDomains.GetServiceLocalFQDN(meshService)
+				hostname = t.clusterDomains.GetServiceLocalFQDN(trafficTarget)
 			} else {
 				// Multicluster global DNS
 				hostname = t.clusterDomains.GetServiceGlobalFQDN(kubeService.Ref)

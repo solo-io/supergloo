@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Refactor the structure of Service Mesh Hub's Go packages.

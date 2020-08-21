@@ -12,22 +12,22 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
-// MeshService is the Schema for the meshService API
-type MeshService struct {
+// TrafficTarget is the Schema for the trafficTarget API
+type TrafficTarget struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MeshServiceSpec   `json:"spec,omitempty"`
-	Status MeshServiceStatus `json:"status,omitempty"`
+	Spec   TrafficTargetSpec   `json:"spec,omitempty"`
+	Status TrafficTargetStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// MeshServiceList contains a list of MeshService
-type MeshServiceList struct {
+// TrafficTargetList contains a list of TrafficTarget
+type TrafficTargetList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []MeshService `json:"items"`
+	Items           []TrafficTarget `json:"items"`
 }
 
 // +genclient
@@ -35,22 +35,22 @@ type MeshServiceList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
-// MeshWorkload is the Schema for the meshWorkload API
-type MeshWorkload struct {
+// Workload is the Schema for the workload API
+type Workload struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MeshWorkloadSpec   `json:"spec,omitempty"`
-	Status MeshWorkloadStatus `json:"status,omitempty"`
+	Spec   WorkloadSpec   `json:"spec,omitempty"`
+	Status WorkloadStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// MeshWorkloadList contains a list of MeshWorkload
-type MeshWorkloadList struct {
+// WorkloadList contains a list of Workload
+type WorkloadList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []MeshWorkload `json:"items"`
+	Items           []Workload `json:"items"`
 }
 
 // +genclient
@@ -77,7 +77,7 @@ type MeshList struct {
 }
 
 func init() {
-	SchemeBuilder.Register(&MeshService{}, &MeshServiceList{})
-	SchemeBuilder.Register(&MeshWorkload{}, &MeshWorkloadList{})
+	SchemeBuilder.Register(&TrafficTarget{}, &TrafficTargetList{})
+	SchemeBuilder.Register(&Workload{}, &WorkloadList{})
 	SchemeBuilder.Register(&Mesh{}, &MeshList{})
 }
