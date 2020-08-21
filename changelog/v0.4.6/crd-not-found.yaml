@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix bug where `meshctl uninstall` can report that a CRD was not found when the management plane cluster is registered.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/565

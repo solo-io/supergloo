@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Implement discovery of Istio citadel/istiod information.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/252

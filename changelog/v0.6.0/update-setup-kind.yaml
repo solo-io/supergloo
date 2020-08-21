@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Update setup-kind.sh is used to solve the problem of default King image running failure (istiod error)
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/718

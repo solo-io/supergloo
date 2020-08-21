@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Output the server version when executing `meshctl version`
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/96

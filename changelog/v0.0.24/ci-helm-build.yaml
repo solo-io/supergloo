@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add Helm package and deployment to CI.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/142

@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add CLI `install` command to install SMH with Helm
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/100

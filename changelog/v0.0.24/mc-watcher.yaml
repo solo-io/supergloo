@@ -1,0 +1,8 @@
+changelog:
+- type: NON_USER_FACING
+  description: Generate code for all new API types
+- type: NON_USER_FACING
+  description: Create boilerplate for multi cluster with autopilot
+
+
+
