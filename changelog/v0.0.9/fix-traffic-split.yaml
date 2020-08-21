@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Add status to traffic split so it can be an input resource.

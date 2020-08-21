@@ -1,0 +1,4 @@
+changelog:
+- type: NON_USER_FACING
+  description: remove metadata from ClusterResourceRefs to make them keyable
+

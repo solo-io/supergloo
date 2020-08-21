@@ -1,0 +1,4 @@
+changelog:
+- type: NEW_FEATURE
+  description: Bootstrap mesh group operator
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/69

@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Implement enforcement of global access control (enabled or disabled).
+    issueLink:  https://github.com/solo-io/service-mesh-hub/issues/250

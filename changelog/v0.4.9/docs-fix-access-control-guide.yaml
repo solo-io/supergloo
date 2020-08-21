@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix the AccessControl guide.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/605

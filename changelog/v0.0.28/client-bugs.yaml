@@ -1,0 +1,4 @@
+changelog:
+- type: FIX
+  description: Fix bugs in two client list implementations
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/303

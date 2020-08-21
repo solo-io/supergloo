@@ -1,0 +1,5 @@
+changelog:
+- type: FIX
+  description: Delete old API protos, as well as generated code and docs
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/102
+  resolvesIssue: false

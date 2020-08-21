@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Actually add CRD's to controller-runtime manager scheme.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/187
