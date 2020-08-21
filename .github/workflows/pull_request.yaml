@@ -28,6 +28,7 @@ jobs:
         uses: solo-io/setup-protoc@master
         with:
           version: '3.6.1'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check code gen
         run: |
           ./ci/check-code-gen.sh
@@ -53,6 +54,7 @@ jobs:
         uses: solo-io/setup-protoc@master
         with:
           version: '3.6.1'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Unit Tests
         run: |
           go test ./...
@@ -84,6 +86,7 @@ jobs:
         uses: solo-io/setup-protoc@master
         with:
           version: '3.6.1'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: azure/setup-kubectl@v1
         with:
           version: 'v1.18.0'
