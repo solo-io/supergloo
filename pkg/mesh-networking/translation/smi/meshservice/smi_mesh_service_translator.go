@@ -6,8 +6,8 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/smi"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice/access"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/meshservice/split"
@@ -20,13 +20,13 @@ import (
 type Translator interface {
 	// Translate translates the appropriate VirtualService and DestinationRule for the given MeshService.
 	// returns nil if no VirtualService or DestinationRule is required for the MeshService (i.e. if no VirtualService/DestinationRule features are required, such as subsets).
-	// Output resources will be added to the output.Builder
+	// Output resources will be added to the smi
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
 		meshService *discoveryv1alpha2.MeshService,
-		outputs output.Builder,
+		outputs smi.Builder,
 		reporter reporting.Reporter,
 	)
 }
@@ -48,7 +48,7 @@ func (t *translator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
 	meshService *discoveryv1alpha2.MeshService,
-	outputs output.Builder,
+	outputs smi.Builder,
 	reporter reporting.Reporter,
 ) {
 	// only translate istio meshServices

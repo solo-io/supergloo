@@ -30,7 +30,6 @@ var (
 	}
 )
 
-
 var _ = Describe("OsmE2e", func() {
 	//
 	// var (

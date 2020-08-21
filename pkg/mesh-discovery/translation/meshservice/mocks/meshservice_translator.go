@@ -36,15 +36,15 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateMeshServices mocks base method
-func (m *MockTranslator) TranslateMeshServices(services v1sets.ServiceSet, meshWorkloads v1alpha2sets.MeshWorkloadSet) v1alpha2sets.MeshServiceSet {
+func (m *MockTranslator) TranslateMeshServices(services v1sets.ServiceSet, meshWorkloads v1alpha2sets.MeshWorkloadSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.MeshServiceSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranslateMeshServices", services, meshWorkloads)
+	ret := m.ctrl.Call(m, "TranslateMeshServices", services, meshWorkloads, meshes)
 	ret0, _ := ret[0].(v1alpha2sets.MeshServiceSet)
 	return ret0
 }
 
 // TranslateMeshServices indicates an expected call of TranslateMeshServices
-func (mr *MockTranslatorMockRecorder) TranslateMeshServices(services, meshWorkloads interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) TranslateMeshServices(services, meshWorkloads, meshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateMeshServices", reflect.TypeOf((*MockTranslator)(nil).TranslateMeshServices), services, meshWorkloads)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateMeshServices", reflect.TypeOf((*MockTranslator)(nil).TranslateMeshServices), services, meshWorkloads, meshes)
 }

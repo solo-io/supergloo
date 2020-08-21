@@ -39,7 +39,6 @@ func TestIstio(t *testing.T) {
 	RunSpecs(t, "E2e Suite")
 }
 
-
 // Before running tests, federate the two clusters by creating a VirtualMesh with mTLS enabled.
 var _ = BeforeSuite(func() {
 	VirtualMeshManifest, err = utils.NewManifest("virtualmesh.yaml")

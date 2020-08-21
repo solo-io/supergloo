@@ -11,7 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
 	v1alpha20 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/input"
+	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 )
 

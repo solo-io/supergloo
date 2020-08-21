@@ -14,7 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reconciliation"
 	"github.com/solo-io/skv2/pkg/multicluster"
 )

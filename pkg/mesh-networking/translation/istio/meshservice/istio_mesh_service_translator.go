@@ -6,8 +6,8 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/meshservice/authorizationpolicy"
@@ -28,7 +28,7 @@ type Translator interface {
 	Translate(
 		in input.Snapshot,
 		meshService *discoveryv1alpha2.MeshService,
-		outputs output.Builder,
+		outputs istio.Builder,
 		reporter reporting.Reporter,
 	)
 }
@@ -55,7 +55,7 @@ func NewTranslator(ctx context.Context, allMeshes v1alpha2sets.MeshSet, clusterD
 func (t *translator) Translate(
 	in input.Snapshot,
 	meshService *discoveryv1alpha2.MeshService,
-	outputs output.Builder,
+	outputs istio.Builder,
 	reporter reporting.Reporter,
 ) {
 	// only translate istio meshServices

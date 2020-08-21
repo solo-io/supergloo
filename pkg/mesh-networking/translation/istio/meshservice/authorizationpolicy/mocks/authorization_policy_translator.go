@@ -9,7 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/input"
+	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 )

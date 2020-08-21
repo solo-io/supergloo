@@ -17,7 +17,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/errhandlers"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/approval"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
@@ -115,7 +115,7 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Sn
 	outputSnap.ApplyLocalCluster(ctx, r.masterClient, errHandler)
 
 	r.history.SetInput(in)
-	r.history.SetOutput(outputSnap)
+	// r.history.SetOutput(outputSnap)
 
 	return errHandler.Errors()
 }

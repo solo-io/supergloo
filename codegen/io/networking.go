@@ -61,26 +61,6 @@ var (
 		},
 	}
 
-
-	SmiNetworkingInputTypes = Snapshot{
-		schema.GroupVersion{
-			Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"Mesh",
-			"MeshWorkload",
-			"MeshService",
-		},
-		schema.GroupVersion{
-			Group:   "networking." + constants.ServiceMeshHubApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"TrafficPolicy",
-			"AccessPolicy",
-			"VirtualMesh",
-		},
-	}
-
 	SmiNetworkingOutputTypes = Snapshot{
 		smislpitv1alpha2.SchemeGroupVersion: {
 			"TrafficSplit",

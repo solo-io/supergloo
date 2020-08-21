@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/istio/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/internal"
 )
@@ -15,12 +15,12 @@ import (
 // the istio translator translates an input networking snapshot to an output snapshot of Istio resources
 type Translator interface {
 	// Translate translates the appropriate resources to apply input configuration resources for all Istio meshes contained in the input snapshot.
-	// Output resources will be added to the output.Builder
+	// Output resources will be added to the istio
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
-		outputs output.Builder,
+		outputs istio.Builder,
 		reporter reporting.Reporter,
 	)
 }
@@ -39,7 +39,7 @@ func NewIstioTranslator() Translator {
 func (t *istioTranslator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
-	outputs output.Builder,
+	outputs istio.Builder,
 	reporter reporting.Reporter,
 ) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translator-%v", t.totalTranslates))

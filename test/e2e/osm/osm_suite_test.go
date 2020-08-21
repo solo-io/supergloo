@@ -29,7 +29,6 @@ func TestOsm(t *testing.T) {
 	RunSpecs(t, "E2e Suite")
 }
 
-
 // Before running tests, federate the two clusters by creating a VirtualMesh with mTLS enabled.
 var _ = BeforeSuite(func() {
 
@@ -48,7 +47,6 @@ var _ = AfterSuite(func() {
 	}
 	_ = ClearSingleClusterEnv(ctx)
 })
-
 
 func ensureWorkingDirectory() {
 	// ensure we are in proper directory
