@@ -51,7 +51,7 @@ func (i Installer) InstallChart(ctx context.Context) error {
 	verbose := i.Verbose
 	dryRun := i.DryRun
 
-	if kubeConfig != "" {
+	if kubeConfig == "" {
 		kubeConfig = clientcmd.RecommendedHomeFile
 	}
 
