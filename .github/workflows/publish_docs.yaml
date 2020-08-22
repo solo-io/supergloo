@@ -3,7 +3,7 @@ name: Docs
 on:
   push:
     branches:
-    - 'master'
+    - 'main'
   release:
     types:
     - created
@@ -22,7 +22,7 @@ jobs:
       uses: solo-io/setup-protoc@master
       with:
         version: '3.6.1'
-
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Setup Hugo
       uses: peaceiris/actions-hugo@v2
       with:
@@ -33,7 +33,7 @@ jobs:
 
     - name: Update deps
       run: |
-        make update-deps
+        make install-go-tools
 
     - name: Generate versioned docs site
       run: ./ci/build-docs-site.sh
