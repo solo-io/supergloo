@@ -18,13 +18,13 @@ import (
 
 var _ = Describe("SmiNetworkingTranslator", func() {
 	var (
-		ctrl                      *gomock.Controller
-		ctx                       context.Context
-		mockReporter              *mock_reporting.MockReporter
-		mockOutputs               *mock_output.MockBuilder
+		ctrl                        *gomock.Controller
+		ctx                         context.Context
+		mockReporter                *mock_reporting.MockReporter
+		mockOutputs                 *mock_output.MockBuilder
 		mockTrafficTargetTranslator *mock_meshservice.MockTranslator
-		mockDependencyFactory     *MockDependencyFactory
-		translator                Translator
+		mockDependencyFactory       *MockDependencyFactory
+		translator                  Translator
 	)
 
 	BeforeEach(func() {

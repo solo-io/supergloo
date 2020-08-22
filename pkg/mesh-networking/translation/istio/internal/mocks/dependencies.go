@@ -40,17 +40,17 @@ func (m *MockDependencyFactory) EXPECT() *MockDependencyFactoryMockRecorder {
 }
 
 // MakeTrafficTargetTranslator mocks base method
-func (m *MockDependencyFactory) MakeTrafficTargetTranslator(ctx context.Context, clusters v1alpha1sets.KubernetesClusterSet, meshes v1alpha2sets.MeshSet, trafficTargets v1alpha2sets.TrafficTargetSet) traffictarget.Translator {
+func (m *MockDependencyFactory) MakeTrafficTargetTranslator(ctx context.Context, clusters v1alpha1sets.KubernetesClusterSet, trafficTargets v1alpha2sets.TrafficTargetSet) traffictarget.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeTrafficTargetTranslator", ctx, clusters, meshes, trafficTargets)
+	ret := m.ctrl.Call(m, "MakeTrafficTargetTranslator", ctx, clusters, trafficTargets)
 	ret0, _ := ret[0].(traffictarget.Translator)
 	return ret0
 }
 
 // MakeTrafficTargetTranslator indicates an expected call of MakeTrafficTargetTranslator
-func (mr *MockDependencyFactoryMockRecorder) MakeTrafficTargetTranslator(ctx, clusters, meshes, trafficTargets interface{}) *gomock.Call {
+func (mr *MockDependencyFactoryMockRecorder) MakeTrafficTargetTranslator(ctx, clusters, trafficTargets interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeTrafficTargetTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeTrafficTargetTranslator), ctx, clusters, meshes, trafficTargets)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeTrafficTargetTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeTrafficTargetTranslator), ctx, clusters, trafficTargets)
 }
 
 // MakeMeshTranslator mocks base method

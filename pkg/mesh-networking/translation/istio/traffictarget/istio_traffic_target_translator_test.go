@@ -47,10 +47,10 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 
 	It("should translate", func() {
 		trafficTarget := &v1alpha2.TrafficTarget{
-			Spec:       v1alpha2.TrafficTargetSpec{
+			Spec: v1alpha2.TrafficTargetSpec{
 				Mesh: &v1.ObjectRef{
-					Name:                 "hello",
-					Namespace:            "world",
+					Name:      "hello",
+					Namespace: "world",
 				},
 			},
 		}
@@ -59,7 +59,7 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 			AddMeshes([]*v1alpha2.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: trafficTarget.Spec.GetMesh().GetName(),
+						Name:      trafficTarget.Spec.GetMesh().GetName(),
 						Namespace: trafficTarget.Spec.GetMesh().GetNamespace(),
 					},
 					Spec: v1alpha2.MeshSpec{

@@ -27,7 +27,7 @@ title: "mesh.proto"
   - [MeshSpec.LinkerdMesh](#discovery.smh.solo.io.MeshSpec.LinkerdMesh)
   - [MeshSpec.MeshInstallation](#discovery.smh.solo.io.MeshSpec.MeshInstallation)
   - [MeshSpec.MeshInstallation.PodLabelsEntry](#discovery.smh.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry)
-  - [MeshSpec.OpenServiceMesh](#discovery.smh.solo.io.MeshSpec.OpenServiceMesh)
+  - [MeshSpec.OSM](#discovery.smh.solo.io.MeshSpec.OSM)
   - [MeshStatus](#discovery.smh.solo.io.MeshStatus)
   - [MeshStatus.AppliedFailoverService](#discovery.smh.solo.io.MeshStatus.AppliedFailoverService)
   - [MeshStatus.AppliedVirtualMesh](#discovery.smh.solo.io.MeshStatus.AppliedVirtualMesh)
@@ -50,7 +50,7 @@ Meshes represent a currently registered service mesh.
 | awsAppMesh | [MeshSpec.AwsAppMesh](#discovery.smh.solo.io.MeshSpec.AwsAppMesh) |  |  |
 | linkerd | [MeshSpec.LinkerdMesh](#discovery.smh.solo.io.MeshSpec.LinkerdMesh) |  |  |
 | consulConnect | [MeshSpec.ConsulConnectMesh](#discovery.smh.solo.io.MeshSpec.ConsulConnectMesh) |  |  |
-| osm | [MeshSpec.OpenServiceMesh](#discovery.smh.solo.io.MeshSpec.OpenServiceMesh) |  |  |
+| osm | [MeshSpec.OSM](#discovery.smh.solo.io.MeshSpec.OSM) |  |  |
 | agentInfo | [MeshSpec.AgentInfo](#discovery.smh.solo.io.MeshSpec.AgentInfo) |  | Information about the SMH certificate agent if it has been installed to the remote cluster. |
 | smiEnabled | [bool](#bool) |  | translate to SMI resources for this mesh |
 
@@ -224,9 +224,9 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.OpenServiceMesh"></a>
+<a name="discovery.smh.solo.io.MeshSpec.OSM"></a>
 
-### MeshSpec.OpenServiceMesh
+### MeshSpec.OSM
 https://github.com/openservicemesh/osm
 
 

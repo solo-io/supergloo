@@ -21,12 +21,12 @@ import (
 
 var _ = Describe("SmiTrafficTargetTranslator", func() {
 	var (
-		ctx                      context.Context
-		ctrl                     *gomock.Controller
-		mockOutputs              *mock_output.MockBuilder
-		mockReporter             *mock_reporting.MockReporter
-		mockSplitTranslator      *mock_split.MockTranslator
-		mockAccessTranslator     *mock_access.MockTranslator
+		ctx                        context.Context
+		ctrl                       *gomock.Controller
+		mockOutputs                *mock_output.MockBuilder
+		mockReporter               *mock_reporting.MockReporter
+		mockSplitTranslator        *mock_split.MockTranslator
+		mockAccessTranslator       *mock_access.MockTranslator
 		smiTrafficTargetTranslator Translator
 	)
 

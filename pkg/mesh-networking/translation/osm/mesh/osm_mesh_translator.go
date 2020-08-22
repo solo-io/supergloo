@@ -29,8 +29,7 @@ type translator struct {
 	ctx context.Context
 }
 
-func NewTranslator(
-) Translator {
+func NewTranslator() Translator {
 	return &translator{}
 }
 
@@ -47,7 +46,6 @@ func (t *translator) Translate(
 	if osmMesh == nil {
 		return
 	}
-
 
 	if !mesh.Spec.GetSmiEnabled() {
 		return

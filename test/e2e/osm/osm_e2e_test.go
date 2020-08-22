@@ -151,7 +151,6 @@ var _ = Describe("OsmE2e", func() {
 		err = manifest.KubeApply("service-mesh-hub")
 		Expect(err).NotTo(HaveOccurred())
 
-
 		// check basic success
 		Eventually(curlBookstore, "5m", "1s").Should(ContainSubstring("200 OK"))
 		// check v1
