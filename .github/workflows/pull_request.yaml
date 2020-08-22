@@ -113,3 +113,56 @@ jobs:
           istioctl version
 
           make run-tests TEST_PKG=test/e2e/istio RUN_E2E=1 GINKGOFLAGS=-v
+  e2e-osm:
+    name: end-to-end-osm
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+        osm-binary: [
+          'https://github.com/openservicemesh/osm/releases/download/v0.3.0/osm-v0.3.0-linux-amd64.tar.gz',
+        ]
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          git fetch --prune --unshallow
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+      - uses: engineerd/setup-kind@v0.4.0
+        with:
+          skipClusterCreation: "true"
+          version: v0.8.0
+      - name: Install Protoc
+        uses: solo-io/setup-protoc@master
+        with:
+          version: '3.6.1'
+      - uses: azure/setup-kubectl@v1
+        with:
+          version: 'v1.18.0'
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Clean
+        run: make clean || true
+      - name: e2e Tests
+        env:
+          RUN_E2E: "1"
+          OSM_BINARY: ${{ matrix.osm-binary }}
+        run: |
+          make print-version manifest-gen
+
+          go install github.com/onsi/ginkgo/ginkgo
+
+          ISTIO_VERSION=istio-$(echo $OSM_BINARY | grep -o "download/.*/" | sed 's/\bdownload\b//g' |  sed 's/[\/]//g')
+          curl -sSL $OSM_BINARY | tar -xzf - $ISTIO_VERSION/bin/istioctl
+          # move istio binary to _output, which is gitignored, to avoid `-dirty` suffix when computing version in subsequent makefile invocations
+          mkdir _output && mv $ISTIO_VERSION _output/$ISTIO_VERSION
+          export PATH=$PWD/_output/$ISTIO_VERSION/bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
+          istioctl version
+
+          make run-tests TEST_PKG=test/e2e/istio RUN_E2E=1 GINKGOFLAGS=-v

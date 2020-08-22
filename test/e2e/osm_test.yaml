@@ -1,0 +1,53 @@
+apiVersion: networking.smh.solo.io/v1alpha2
+kind: TrafficPolicy
+metadata:
+  labels:
+    app: bookinfo-policies
+    app.kubernetes.io/name: bookinfo-policies
+  name: test-policy
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: mgmt-cluster
+        name: bookstore
+        namespace: bookstore
+  trafficShift:
+    destinations:
+    - kubeService:
+        clusterName: mgmt-cluster
+        name: bookstore-v1
+        namespace: bookstore
+      weight: 50
+    - kubeService:
+        clusterName: mgmt-cluster
+        name: bookstore-v2
+        namespace: bookstore
+      weight: 50
+
+---
+apiVersion: networking.smh.solo.io/v1alpha2
+kind: AccessPolicy
+metadata:
+  labels:
+    app: bookinfo-policies
+    app.kubernetes.io/name: bookinfo-policies
+  name: test-policy
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: mgmt-cluster
+        name: bookstore-v1
+        namespace: bookstore
+      - clusterName: mgmt-cluster
+        name: bookstore-v2
+        namespace: bookstore
+  sourceSelector:
+  - kubeServiceAccountRefs:
+      serviceAccounts:
+      - clusterName: mgmt-cluster
+        name: bookthief
+        namespace: bookthief
+
+---
