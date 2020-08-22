@@ -3,6 +3,7 @@ package federation_test
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	"github.com/solo-io/service-mesh-hub/test/data"
 
 	"github.com/gogo/protobuf/types"
@@ -10,7 +11,6 @@ import (
 	. "github.com/onsi/gomega"
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
@@ -158,7 +158,7 @@ var _ = Describe("FederationTranslator", func() {
 		)
 
 		t := NewTranslator(ctx, clusterDomains, in.TrafficTargets())
-		outputs := output.NewBuilder(context.TODO(), "")
+		outputs := istio.NewBuilder(context.TODO(), "")
 		t.Translate(
 			in,
 			mesh,

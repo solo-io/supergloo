@@ -3,11 +3,11 @@ package mesh_test
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	mock_mtls "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls/mocks"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
@@ -48,7 +48,7 @@ var _ = Describe("IstioMeshTranslator", func() {
 	})
 
 	It("should translate", func() {
-		outputs := output.NewBuilder(context.TODO(), "")
+		outputs := istio.NewBuilder(context.TODO(), "")
 
 		istioMesh := &discoveryv1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
