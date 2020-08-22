@@ -165,4 +165,6 @@ jobs:
           export PATH=$PWD/_output/.bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
           osm version
 
+          git status
+          
           make run-tests TEST_PKG=test/e2e/osm RUN_E2E=1 GINKGOFLAGS=-v

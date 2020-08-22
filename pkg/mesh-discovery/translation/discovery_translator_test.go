@@ -48,7 +48,7 @@ var _ = Describe("Translator", func() {
 		ctl.Finish()
 	})
 	It("translates", func() {
-		t := NewTranslator(DefaultDependencyFactory)
+		t := NewTranslator(mockDependencyFactory)
 
 		configMaps := corev1sets.NewConfigMapSet(&corev1.ConfigMap{})
 		services := corev1sets.NewServiceSet(&corev1.Service{})
