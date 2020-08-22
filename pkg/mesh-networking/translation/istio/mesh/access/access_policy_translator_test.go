@@ -6,8 +6,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/access"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
@@ -109,7 +109,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 				Spec: securityv1beta1spec.AuthorizationPolicy{},
 			},
 		)
-		outputs := output.NewBuilder(context.TODO(), "")
+		outputs := istio.NewBuilder(context.TODO(), "")
 		translator.Translate(mesh, mesh.Status.AppliedVirtualMesh, outputs)
 		Expect(outputs.GetAuthorizationPolicies()).To(Equal(expectedAuthPolicies))
 	})
@@ -133,7 +133,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 				},
 			},
 		}
-		outputs := output.NewBuilder(context.TODO(), "")
+		outputs := istio.NewBuilder(context.TODO(), "")
 		translator.Translate(mesh, mesh.Status.AppliedVirtualMesh, outputs)
 		Expect(outputs.GetAuthorizationPolicies().Length()).To(Equal(0))
 	})

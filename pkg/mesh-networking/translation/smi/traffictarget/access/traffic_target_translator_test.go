@@ -40,15 +40,15 @@ var _ = Describe("TrafficTargetTranslator", func() {
 	It("will report an error if no backing workloads exist", func() {
 		in := input.NewInputSnapshotManualBuilder("").Build()
 
-		meshService := &discoveryv1alpha2.MeshService{
+		meshService := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec: discoveryv1alpha2.MeshServiceSpec{
-				Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{},
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{},
 				},
 			},
-			Status: discoveryv1alpha2.MeshServiceStatus{
-				AppliedAccessPolicies: []*discoveryv1alpha2.MeshServiceStatus_AppliedAccessPolicy{
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedAccessPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedAccessPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "hello",
@@ -61,7 +61,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 
 		reporter.
 			EXPECT().
-			ReportAccessPolicyToMeshService(
+			ReportAccessPolicyToTrafficTarget(
 				meshService,
 				meshService.Status.AppliedAccessPolicies[0].Ref,
 				NoServiceAccountError,
@@ -77,14 +77,14 @@ var _ = Describe("TrafficTargetTranslator", func() {
 		ns := "default"
 		podLabels := map[string]string{"we": "match"}
 		in := input.NewInputSnapshotManualBuilder("").
-			AddMeshWorkloads([]*discoveryv1alpha2.MeshWorkload{
+			AddWorkloads([]*discoveryv1alpha2.Workload{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "one",
 					},
-					Spec: discoveryv1alpha2.MeshWorkloadSpec{
-						WorkloadType: &discoveryv1alpha2.MeshWorkloadSpec_Kubernetes{
-							Kubernetes: &discoveryv1alpha2.MeshWorkloadSpec_KubernertesWorkload{
+					Spec: discoveryv1alpha2.WorkloadSpec{
+						WorkloadType: &discoveryv1alpha2.WorkloadSpec_Kubernetes{
+							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernertesWorkload{
 								Controller: &v1.ClusterObjectRef{
 									Namespace: ns,
 								},
@@ -98,9 +98,9 @@ var _ = Describe("TrafficTargetTranslator", func() {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "two",
 					},
-					Spec: discoveryv1alpha2.MeshWorkloadSpec{
-						WorkloadType: &discoveryv1alpha2.MeshWorkloadSpec_Kubernetes{
-							Kubernetes: &discoveryv1alpha2.MeshWorkloadSpec_KubernertesWorkload{
+					Spec: discoveryv1alpha2.WorkloadSpec{
+						WorkloadType: &discoveryv1alpha2.WorkloadSpec_Kubernetes{
+							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernertesWorkload{
 								Controller: &v1.ClusterObjectRef{
 									Namespace: ns,
 								},
@@ -113,11 +113,11 @@ var _ = Describe("TrafficTargetTranslator", func() {
 			}).
 			Build()
 
-		meshService := &discoveryv1alpha2.MeshService{
+		meshService := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec: discoveryv1alpha2.MeshServiceSpec{
-				Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Namespace: ns,
 						},
@@ -125,8 +125,8 @@ var _ = Describe("TrafficTargetTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.MeshServiceStatus{
-				AppliedAccessPolicies: []*discoveryv1alpha2.MeshServiceStatus_AppliedAccessPolicy{
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedAccessPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedAccessPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "hello",
@@ -139,7 +139,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 
 		reporter.
 			EXPECT().
-			ReportAccessPolicyToMeshService(
+			ReportAccessPolicyToTrafficTarget(
 				meshService,
 				meshService.Status.AppliedAccessPolicies[0].Ref,
 				matchers.MatchesError(CouldNotDetermineServiceAccountError(2)),
@@ -154,14 +154,14 @@ var _ = Describe("TrafficTargetTranslator", func() {
 		ns := "default"
 		podLabels := map[string]string{"we": "match"}
 		in := input.NewInputSnapshotManualBuilder("").
-			AddMeshWorkloads([]*discoveryv1alpha2.MeshWorkload{
+			AddWorkloads([]*discoveryv1alpha2.Workload{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "one",
 					},
-					Spec: discoveryv1alpha2.MeshWorkloadSpec{
-						WorkloadType: &discoveryv1alpha2.MeshWorkloadSpec_Kubernetes{
-							Kubernetes: &discoveryv1alpha2.MeshWorkloadSpec_KubernertesWorkload{
+					Spec: discoveryv1alpha2.WorkloadSpec{
+						WorkloadType: &discoveryv1alpha2.WorkloadSpec_Kubernetes{
+							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernertesWorkload{
 								Controller: &v1.ClusterObjectRef{
 									Namespace: ns,
 								},
@@ -174,14 +174,14 @@ var _ = Describe("TrafficTargetTranslator", func() {
 			}).
 			Build()
 
-		meshService := &discoveryv1alpha2.MeshService{
+		meshService := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: ns,
 			},
-			Spec: discoveryv1alpha2.MeshServiceSpec{
-				Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Name:      "name",
 							Namespace: ns,
@@ -190,8 +190,8 @@ var _ = Describe("TrafficTargetTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.MeshServiceStatus{
-				AppliedAccessPolicies: []*discoveryv1alpha2.MeshServiceStatus_AppliedAccessPolicy{
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedAccessPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedAccessPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "hello",

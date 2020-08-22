@@ -31,7 +31,7 @@ var _ = Describe("TrafficSplitTranslator", func() {
 
 	It("will return nothing if no traffic policies are applied", func() {
 		in := input.NewInputSnapshotManualBuilder("").Build()
-		meshService := &discoveryv1alpha2.MeshService{}
+		meshService := &discoveryv1alpha2.TrafficTarget{}
 
 		ts := NewTrafficSplitTranslator().Translate(ctx, in, meshService, mockReporter)
 		Expect(ts).To(BeNil())
@@ -40,11 +40,11 @@ var _ = Describe("TrafficSplitTranslator", func() {
 	It("can build a proper traffic shift", func() {
 		ns := "default"
 		in := input.NewInputSnapshotManualBuilder("").Build()
-		meshService := &discoveryv1alpha2.MeshService{
+		meshService := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec: discoveryv1alpha2.MeshServiceSpec{
-				Type: &discoveryv1alpha2.MeshServiceSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.MeshServiceSpec_KubeService{
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Name:      "service",
 							Namespace: ns,
@@ -52,8 +52,8 @@ var _ = Describe("TrafficSplitTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.MeshServiceStatus{
-				AppliedTrafficPolicies: []*discoveryv1alpha2.MeshServiceStatus_AppliedTrafficPolicy{
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "tt",
