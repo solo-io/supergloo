@@ -57,7 +57,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Unit Tests
         run: |
-          go test ./...
+          make run-tets
 
   e2e-istio:
     name: end-to-end-istio
