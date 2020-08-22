@@ -34,30 +34,29 @@ jobs:
           ./ci/check-code-gen.sh
 
   unit-tests:
-    name: unit-tests
+    name: Publish Artifacts
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2
-      - run: |
-          git fetch --prune --unshallow
       - name: Set up Go 1.14
         uses: actions/setup-go@v1
         with:
           go-version: 1.14
-      - uses: actions/cache@v1
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - name: Install Protoc
-        uses: solo-io/setup-protoc@master
-        with:
-          version: '3.6.1'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Unit Tests
+        id: go
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+        ref: refs/tags/v0.7.0
+      - name: Set Release Tag
+        run: echo ::set-env name=TAGGED_VERSION::${GITHUB_REF#refs/*/}
+      - name: Upload Release Assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: make upload-github-release-assets
+      - name: Push Docker Images
         run: |
-          go test ./...
+          echo ${{ secrets.CI_ADMIN_DOCKER_HUB_PASSWORD }} | docker login -u soloiobot --password-stdin
+          make push-all-images
+      - name: Publish Helm Charts
+        run: make publish-chart
 
   e2e-istio:
     name: end-to-end-istio

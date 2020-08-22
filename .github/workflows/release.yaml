@@ -8,7 +8,7 @@ on:
       - prereleased
 
 jobs:
-  build:
+  publish-artifacts:
     name: Publish Artifacts
     runs-on: ubuntu-18.04
     steps:
