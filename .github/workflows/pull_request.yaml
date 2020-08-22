@@ -157,7 +157,9 @@ jobs:
           OSM_BINARY: ${{ matrix.osm-binary }}
           OSM_VERSION: linux-amd64/osm
         run: |
-          make install-go-tools print-version manifest-gen
+          make print-version manifest-gen
+
+          go install github.com/onsi/ginkgo/ginkgo
 
           curl -sSL $OSM_BINARY | tar -xzf - $OSM_VERSION
           # move istio binary to _output, which is gitignored, to avoid `-dirty` suffix when computing version in subsequent makefile invocations
@@ -165,6 +167,4 @@ jobs:
           export PATH=$PWD/_output/.bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
           osm version
 
-          git status
-          
           make run-tests TEST_PKG=test/e2e/osm RUN_E2E=1 GINKGOFLAGS=-v

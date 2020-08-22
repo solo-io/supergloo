@@ -5,11 +5,11 @@ import (
 	"errors"
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
 	corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
@@ -272,7 +272,7 @@ type testIstioTranslator struct {
 	callReporter func(reporter reporting.Reporter)
 }
 
-func (t testIstioTranslator) Translate(ctx context.Context, in input.Snapshot, reporter reporting.Reporter) (output.Snapshot, error) {
+func (t testIstioTranslator) Translate(ctx context.Context, in input.Snapshot, reporter reporting.Reporter) (translation.TranslationResult, error) {
 	t.callReporter(reporter)
-	return nil, nil
+	return translation.TranslationResult{}, nil
 }
