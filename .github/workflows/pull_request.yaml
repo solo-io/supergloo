@@ -162,7 +162,7 @@ jobs:
           curl -sSL $OSM_BINARY | tar -xzf - $OSM_VERSION
           # move istio binary to _output, which is gitignored, to avoid `-dirty` suffix when computing version in subsequent makefile invocations
           mv $OSM_VERSION _output/.bin
-          export PATH=$PWD/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
+          export PATH=$PWD/_output/.bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
           osm version
 
           make run-tests TEST_PKG=test/e2e/osm RUN_E2E=1 GINKGOFLAGS=-v
