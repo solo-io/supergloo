@@ -52,6 +52,7 @@ install-go-tools: mod-download
 	go install github.com/golang/mock/mockgen
 	go install golang.org/x/tools/cmd/goimports
 	go install github.com/onsi/ginkgo/ginkgo
+	go install github.com/gobuffalo/packr/packr
 
 # Call all generated code targets
 .PHONY: generated-code
@@ -160,24 +161,24 @@ endif
 .PHONY: meshctl-linux-amd64
 meshctl-linux-amd64: $(OUTDIR)/meshctl-linux-amd64
 $(OUTDIR)/meshctl-linux-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
 
 .PHONY: meshctl-darwin-amd64
 meshctl-darwin-amd64: $(OUTDIR)/meshctl-darwin-amd64
 $(OUTDIR)/meshctl-darwin-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
 
 .PHONY: meshctl-windows-amd64
 meshctl-windows-amd64: $(OUTDIR)/meshctl-windows-amd64.exe
 $(OUTDIR)/meshctl-windows-amd64.exe: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
 
 .PHONY: build-cli
-build-cli: meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64
+build-cli: install-go-tools meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64
 
 .PHONY: install-cli
 install-cli:
-	go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o ${GOPATH}/bin/meshctl cmd/meshctl/main.go
+	packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o ${GOPATH}/bin/meshctl cmd/meshctl/main.go
 
 #----------------------------------------------------------------------------------
 # Push images
