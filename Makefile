@@ -34,6 +34,11 @@ print-info:
 #----------------------------------------------------------------------------------
 # Code Generation
 #----------------------------------------------------------------------------------
+
+DEPSGOBIN=$(shell pwd)/$(OUTDIR)/.bin
+export PATH:=$(DEPSGOBIN):$(PATH)
+export GOBIN:=$(DEPSGOBIN)
+
 .PHONY: fmt
 fmt:
 	goimports -w $(shell ls -d */ | grep -v vendor)
@@ -45,6 +50,7 @@ mod-download:
 # Dependencies for code generation
 .PHONY: install-go-tools
 install-go-tools: mod-download
+	mkdir -p $(DEPSGOBIN)
 	go install istio.io/tools/cmd/protoc-gen-jsonshim
 	go install github.com/gogo/protobuf/protoc-gen-gogo
 	go install github.com/golang/protobuf/protoc-gen-go

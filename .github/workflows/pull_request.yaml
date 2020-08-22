@@ -155,16 +155,14 @@ jobs:
         env:
           RUN_E2E: "1"
           OSM_BINARY: ${{ matrix.osm-binary }}
+          OSM_VERSION: linux-amd64/osm
         run: |
-          make print-version manifest-gen
+          make install-go-tools print-version manifest-gen
 
-          go install github.com/onsi/ginkgo/ginkgo
-
-          ISTIO_VERSION=istio-$(echo $OSM_BINARY | grep -o "download/.*/" | sed 's/\bdownload\b//g' |  sed 's/[\/]//g')
-          curl -sSL $OSM_BINARY | tar -xzf - $ISTIO_VERSION/bin/istioctl
+          curl -sSL $OSM_BINARY | tar -xzf - $OSM_VERSION
           # move istio binary to _output, which is gitignored, to avoid `-dirty` suffix when computing version in subsequent makefile invocations
-          mkdir _output && mv $ISTIO_VERSION _output/$ISTIO_VERSION
-          export PATH=$PWD/_output/$ISTIO_VERSION/bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
-          istioctl version
+          mkdir _output && mv $OSM_VERSION _output/.bin/$OSM_VERSION
+          export PATH=$PWD/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
+          osm version
 
-          make run-tests TEST_PKG=test/e2e/istio RUN_E2E=1 GINKGOFLAGS=-v
+          make run-tests TEST_PKG=test/e2e/osm RUN_E2E=1 GINKGOFLAGS=-v
