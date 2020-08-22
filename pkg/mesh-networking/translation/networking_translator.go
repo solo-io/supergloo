@@ -10,6 +10,7 @@ import (
 	smioutput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/smi"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/output"
@@ -35,7 +36,6 @@ func (r TranslationResult) ApplyLocalCluster(ctx context.Context, clusterClient 
 func (r TranslationResult) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler) {
 	r.Istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 	r.SMI.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
-
 }
 
 // the networking translator translates an istio input networking snapshot to an istiooutput snapshot of mesh config resources
@@ -52,15 +52,18 @@ type translator struct {
 	totalTranslates int // TODO(ilackarms): metric
 	istioTranslator istio.Translator
 	smiTranslator   smi.Translator
+	osmTranslator   osm.Translator
 }
 
 func NewTranslator(
 	istioTranslator istio.Translator,
 	smiTranslator smi.Translator,
+	osmTranslator osm.Translator,
 ) Translator {
 	return &translator{
 		istioTranslator: istioTranslator,
 		smiTranslator:   smiTranslator,
+		osmTranslator:   osmTranslator,
 	}
 }
 
@@ -79,12 +82,20 @@ func (t *translator) Translate(
 
 	t.smiTranslator.Translate(ctx, in, smiOutputs, reporter)
 
-	buildIstioSnapshot, err := istioOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
+	t.osmTranslator.Translate(ctx, in, smiOutputs, reporter)
+
+	istioSnapshot, err := istioOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
+	if err != nil {
+		return TranslationResult{}, err
+	}
+
+	smiSnapshot, err := smiOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
 	if err != nil {
 		return TranslationResult{}, err
 	}
 
 	return TranslationResult{
-		Istio: buildIstioSnapshot,
+		Istio: istioSnapshot,
+		SMI:   smiSnapshot,
 	}, nil
 }

@@ -61,6 +61,18 @@ var (
 		},
 	}
 
+	LocalNetworkingOutputTypes = Snapshot{
+		schema.GroupVersion{
+			Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
+			Version: "v1alpha2",
+		}: {
+			"IssuedCertificate",
+		},
+		corev1.SchemeGroupVersion: {
+			"Secret",
+		},
+	}
+
 	SmiNetworkingOutputTypes = Snapshot{
 		smislpitv1alpha2.SchemeGroupVersion: {
 			"TrafficSplit",

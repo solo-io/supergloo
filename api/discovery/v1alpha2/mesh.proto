@@ -22,7 +22,7 @@ message MeshSpec {
         AwsAppMesh aws_app_mesh = 2;
         LinkerdMesh linkerd = 3;
         ConsulConnectMesh consul_connect = 4;
-        OpenServiceMesh osm = 6;
+        OSM osm = 6;
     }
 
     // Information about the SMH certificate agent if it has been installed to the remote cluster.
@@ -114,7 +114,7 @@ message MeshSpec {
     /*
         https://github.com/openservicemesh/osm
     */
-    message OpenServiceMesh {
+    message OSM {
 
         MeshInstallation installation = 1;
     }

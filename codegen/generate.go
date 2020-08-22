@@ -111,6 +111,10 @@ var (
 					name:     "smi",
 					snapshot: io.SmiNetworkingOutputTypes,
 				},
+				// {
+				// 	name: "local",
+				// 	snapshot: io.LocalNetworkingOutputTypes,
+				// },
 			},
 		},
 		// certificate issuer component
