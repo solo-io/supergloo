@@ -28,12 +28,13 @@ type TranslationResult struct {
 	SMI   smioutput.Snapshot
 }
 
-func (r TranslationResult) ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler) {
+func (r TranslationResult) Apply(
+	ctx context.Context,
+	clusterClient client.Client,
+	multiClusterClient multicluster.Client,
+	errHandler output.ErrorHandler,
+) {
 	r.Istio.ApplyLocalCluster(ctx, clusterClient, errHandler)
-	r.SMI.ApplyLocalCluster(ctx, clusterClient, errHandler)
-}
-
-func (r TranslationResult) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler) {
 	r.Istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 	r.SMI.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 }
