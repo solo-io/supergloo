@@ -1,6 +1,7 @@
 package cleanup
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,12 +12,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func Command(managementCluster string, remoteCluster string) *cobra.Command {
+func Command(ctx context.Context, clusters ...string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cleanup",
 		Short: "Clean up bootstrapped local resources",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return cleanup(managementCluster, remoteCluster)
+			return cleanup(ctx, clusters...)
 		},
 	}
 
@@ -24,7 +25,7 @@ func Command(managementCluster string, remoteCluster string) *cobra.Command {
 	return cmd
 }
 
-func cleanup(managementCluster string, remoteCluster string) error {
+func cleanup(ctx context.Context, clusters ...string) error {
 	fmt.Println("Cleaning up clusters")
 
 	box := packr.NewBox("./scripts")
@@ -33,7 +34,9 @@ func cleanup(managementCluster string, remoteCluster string) error {
 		return eris.Wrap(err, "Error loading script")
 	}
 
-	cmd := exec.Command("bash", "-c", script, managementCluster, remoteCluster)
+	args := []string{"-c", script}
+	args = append(args, clusters...)
+	cmd := exec.CommandContext(ctx, "bash", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()

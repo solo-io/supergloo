@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func Command(ctx context.Context, managementCluster string, remoteCluster string) *cobra.Command {
+func Command(ctx context.Context, mgmtCluster string, remoteCluster string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Bootstrap a multicluster Istio demo with Service Mesh Hub",
@@ -33,7 +33,7 @@ This command will bootstrap 2 clusters, one of which will run the Service Mesh H
 management-plane as well as Istio, and the other will just run Istio.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return initCmd(ctx, managementCluster, remoteCluster)
+			return initCmd(ctx, mgmtCluster, remoteCluster)
 		},
 	}
 	cmd.SilenceUsage = true
@@ -47,7 +47,7 @@ const (
 	remotePort     = "32000"
 )
 
-func initCmd(ctx context.Context, managementCluster string, remoteCluster string) error {
+func initCmd(ctx context.Context, mgmtCluster string, remoteCluster string) error {
 	box := packr.NewBox("./scripts")
 	projectRoot, err := os.Getwd()
 	if err != nil {
@@ -56,11 +56,11 @@ func initCmd(ctx context.Context, managementCluster string, remoteCluster string
 	fmt.Printf("Using project root %s\n", projectRoot)
 
 	// management cluster
-	err = createKindCluster(managementCluster, managementPort, box)
+	err = createKindCluster(mgmtCluster, managementPort, box)
 	if err != nil {
 		return err
 	}
-	err = installIstio(managementCluster, managementPort, box)
+	err = installIstio(mgmtCluster, managementPort, box)
 	if err != nil {
 		return err
 	}
@@ -76,19 +76,19 @@ func initCmd(ctx context.Context, managementCluster string, remoteCluster string
 	}
 
 	// install SMH to management cluster
-	err = installServiceMeshHub(ctx, managementCluster, box)
+	err = installServiceMeshHub(ctx, mgmtCluster, box)
 	if err != nil {
 		return err
 	}
 
 	// register remote cluster
-	err = registerCluster(ctx, managementCluster, remoteCluster, box)
+	err = registerCluster(ctx, mgmtCluster, remoteCluster, box)
 	if err != nil {
 		return err
 	}
 
 	// set context to management cluster
-	err = switchContext(managementCluster, box)
+	err = switchContext(mgmtCluster, box)
 
 	return err
 }
@@ -203,7 +203,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	return nil
 }
 
-func registerCluster(ctx context.Context, managementCluster string, cluster string, box packr.Box) error {
+func registerCluster(ctx context.Context, mgmtCluster string, cluster string, box packr.Box) error {
 	fmt.Printf("Registering cluster %s with cert-agent image\n", cluster)
 
 	apiServerAddress, err := getApiAddress(cluster, box)
@@ -211,7 +211,7 @@ func registerCluster(ctx context.Context, managementCluster string, cluster stri
 		return err
 	}
 
-	kubeContext := fmt.Sprintf("kind-%s", managementCluster)
+	kubeContext := fmt.Sprintf("kind-%s", mgmtCluster)
 	remoteKubeContext := fmt.Sprintf("kind-%s", cluster)
 	namespace := defaults.DefaultPodNamespace
 	certAgentChartUri := fmt.Sprintf(smh.CertAgentChartUriTemplate, version.Version)
