@@ -43,7 +43,6 @@ func createKindCluster(cluster string, port string, box packr.Box) error {
 	return nil
 }
 
-
 func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) error {
 	fmt.Printf("Deploying Service Mesh Hub to %s from images\n", cluster)
 

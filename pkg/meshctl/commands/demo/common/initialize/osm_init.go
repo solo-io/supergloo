@@ -50,8 +50,6 @@ func initOSMCmd(ctx context.Context, mgmtCluster string) error {
 	return switchContext(mgmtCluster, box)
 }
 
-
-
 func installOSM(cluster string, box packr.Box) error {
 	fmt.Printf("Installing OSM to cluster %s\n", cluster)
 
@@ -70,4 +68,3 @@ func installOSM(cluster string, box packr.Box) error {
 	fmt.Printf("Successfully installed OSM on cluster %s\n", cluster)
 	return nil
 }
-
