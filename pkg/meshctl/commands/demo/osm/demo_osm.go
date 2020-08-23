@@ -3,7 +3,8 @@ package osm
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/cleanup"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/common/cleanup"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/common/initialize"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +25,7 @@ We recommend allocating at least 8GB of RAM for Docker.
 	}
 
 	cmd.AddCommand(
-		// istio_init.Command(ctx, mgmtCluster, remoteCluster),
+		initialize.OsmCommand(ctx, mgmtCluster),
 		cleanup.Command(ctx, mgmtCluster),
 	)
 

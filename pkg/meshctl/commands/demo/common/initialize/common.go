@@ -1,4 +1,4 @@
-package init
+package initialize
 
 import (
 	"context"
@@ -6,39 +6,15 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/rotisserie/eris"
-
 	"github.com/gobuffalo/packr"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/codegen/helm"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
-	"github.com/spf13/cobra"
 )
-
-func Command(ctx context.Context, mgmtCluster string, remoteCluster string) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "init",
-		Short: "Bootstrap a multicluster Istio demo with Service Mesh Hub",
-		Long: `
-Bootstrap a multicluster Istio demo with Service Mesh Hub.
-
-Running the Service Mesh Hub demo setup locally requires 4 tools to be installed and 
-accessible via your PATH: kubectl >= v1.18.8, kind >= v0.8.1, istioctl < v1.7.0, and docker.
-We recommend allocating at least 8GB of RAM for Docker.
-
-This command will bootstrap 2 clusters, one of which will run the Service Mesh Hub
-management-plane as well as Istio, and the other will just run Istio.
-`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return initCmd(ctx, mgmtCluster, remoteCluster)
-		},
-	}
-	cmd.SilenceUsage = true
-	return cmd
-}
 
 const (
 	// The default version of k8s under Linux is 1.18 https://github.com/solo-io/service-mesh-hub/issues/700
@@ -46,52 +22,6 @@ const (
 	managementPort = "32001"
 	remotePort     = "32000"
 )
-
-func initCmd(ctx context.Context, mgmtCluster string, remoteCluster string) error {
-	box := packr.NewBox("./scripts")
-	projectRoot, err := os.Getwd()
-	if err != nil {
-		return eris.Wrap(err, "Unable to get working directory")
-	}
-	fmt.Printf("Using project root %s\n", projectRoot)
-
-	// management cluster
-	err = createKindCluster(mgmtCluster, managementPort, box)
-	if err != nil {
-		return err
-	}
-	err = installIstio(mgmtCluster, managementPort, box)
-	if err != nil {
-		return err
-	}
-
-	// remote cluster
-	err = createKindCluster(remoteCluster, remotePort, box)
-	if err != nil {
-		return err
-	}
-	err = installIstio(remoteCluster, remotePort, box)
-	if err != nil {
-		return err
-	}
-
-	// install SMH to management cluster
-	err = installServiceMeshHub(ctx, mgmtCluster, box)
-	if err != nil {
-		return err
-	}
-
-	// register remote cluster
-	err = registerCluster(ctx, mgmtCluster, remoteCluster, box)
-	if err != nil {
-		return err
-	}
-
-	// set context to management cluster
-	err = switchContext(mgmtCluster, box)
-
-	return err
-}
 
 func createKindCluster(cluster string, port string, box packr.Box) error {
 	fmt.Printf("Creating cluster %s with ingress port %s\n", cluster, port)
@@ -113,24 +43,6 @@ func createKindCluster(cluster string, port string, box packr.Box) error {
 	return nil
 }
 
-func installIstio(cluster string, port string, box packr.Box) error {
-	fmt.Printf("Installing Istio to cluster %s\n", cluster)
-
-	script, err := box.FindString("install_istio.sh")
-	if err != nil {
-		return eris.Wrap(err, "Error loading script")
-	}
-	cmd := exec.Command("bash", "-c", script, cluster, port)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return eris.Wrapf(err, "Error installing Istio on cluster %s", cluster)
-	}
-
-	fmt.Printf("Successfully installed Istio on cluster %s\n", cluster)
-	return nil
-}
 
 func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) error {
 	fmt.Printf("Deploying Service Mesh Hub to %s from images\n", cluster)

@@ -3,8 +3,8 @@ package istio_multicluster
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/cleanup"
-	istio_init "github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/istio-multicluster/init"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/common/cleanup"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/common/initialize"
 	"github.com/spf13/cobra"
 )
 
@@ -26,9 +26,9 @@ We recommend allocating at least 8GB of RAM for Docker.
 	}
 
 	cmd.AddCommand(
-		istio_init.Command(ctx, mgmtCluster, remoteCluster),
+		initialize.IstioCommand(ctx, mgmtCluster, remoteCluster),
 		cleanup.Command(ctx, mgmtCluster, remoteCluster),
-)
+	)
 
 	return cmd
 }
