@@ -18,7 +18,7 @@ import (
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget/detector"
 )
 
-var _ = Describe("MeshserviceDetector", func() {
+var _ = Describe("TrafficTargetDetector", func() {
 
 	var (
 		ctx context.Context
@@ -111,9 +111,9 @@ var _ = Describe("MeshserviceDetector", func() {
 
 		detector := NewTrafficTargetDetector(ctx)
 
-		meshService := detector.DetectTrafficTarget(svc, workloads, meshes)
+		trafficTarget := detector.DetectTrafficTarget(svc, workloads, meshes)
 
-		Expect(meshService).To(Equal(&v1alpha2.TrafficTarget{
+		Expect(trafficTarget).To(Equal(&v1alpha2.TrafficTarget{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
 			Spec: v1alpha2.TrafficTargetSpec{
 				Type: &v1alpha2.TrafficTargetSpec_KubeService_{

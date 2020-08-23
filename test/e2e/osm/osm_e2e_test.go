@@ -21,11 +21,6 @@ var (
 
 	mgmtClusterName = "mgmt-cluster"
 
-	// mainMesh = &v1.ObjectRef{
-	// 	Name:      "osm-controller-osm-system-mgmt-cluster",
-	// 	Namespace: "service-mesh-hub",
-	// }
-
 	curlBookstore = func() string {
 		return curlFromBookthief("http://bookstore.bookstore")
 	}
@@ -41,14 +36,6 @@ var (
 )
 
 var _ = Describe("OsmE2e", func() {
-
-	// var (
-	// 	ctx context.Context
-	// )
-	//
-	// BeforeEach(func() {
-	// 	ctx = context.Background()
-	// })
 
 	It("works", func() {
 		manifest, err := utils.NewManifest("osm_test.yaml")

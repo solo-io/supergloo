@@ -1,6 +1,7 @@
 package translation
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 
@@ -28,15 +29,27 @@ type TranslationResult struct {
 	SMI   smioutput.Snapshot
 }
 
-func (r TranslationResult) Apply(
+func (t TranslationResult) MarshalJSON() ([]byte, error) {
+	istioByt, err := t.Istio.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	smiByt, err := t.SMI.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return bytes.Join([][]byte{istioByt, smiByt}, []byte("\n")), nil
+}
+
+func (t TranslationResult) Apply(
 	ctx context.Context,
 	clusterClient client.Client,
 	multiClusterClient multicluster.Client,
 	errHandler output.ErrorHandler,
 ) {
-	r.Istio.ApplyLocalCluster(ctx, clusterClient, errHandler)
-	r.Istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
-	r.SMI.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	t.Istio.ApplyLocalCluster(ctx, clusterClient, errHandler)
+	t.Istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	t.SMI.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
 // the networking translator translates an istio input networking snapshot to an istiooutput snapshot of mesh config resources

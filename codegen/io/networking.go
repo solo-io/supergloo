@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	IstioNetworkingInputTypes = Snapshot{
+	NetworkingInputTypes = Snapshot{
 		schema.GroupVersion{
 			Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
 			Version: "v1alpha2",

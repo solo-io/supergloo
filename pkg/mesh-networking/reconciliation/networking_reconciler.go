@@ -113,7 +113,7 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Sn
 	outputSnap.Apply(ctx, r.mgmtClient, r.multiClusterClient, errHandler)
 
 	r.history.SetInput(in)
-	// r.history.SetOutput(outputSnap)
+	r.history.SetOutput(outputSnap)
 
 	return errHandler.Errors()
 }

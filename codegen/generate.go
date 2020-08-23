@@ -98,10 +98,10 @@ var (
 			inputResources:    io.DiscoveryInputTypes,
 			outputResources:   []NamedSnapshot{{snapshot: io.DiscoveryOutputTypes}},
 		},
-		// istio networking snapshot
+		// networking snapshot
 		{
 			generatedCodeRoot: "pkg/api/networking.smh.solo.io",
-			inputResources:    io.IstioNetworkingInputTypes,
+			inputResources:    io.NetworkingInputTypes,
 			outputResources: []NamedSnapshot{
 				{
 					name:     "istio",
