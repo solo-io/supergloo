@@ -15,8 +15,8 @@ var DefaultDependencyFactory = internal.NewDependencyFactory()
 
 // the smi translator translates an input networking snapshot to an output snapshot of SMI resources
 type Translator interface {
-	// Translate translates the appropriate resources to apply input configuration resources for all Istio meshes contained in the input snapshot.
-	// Output resources will be added to the smi
+	// Translate translates the appropriate resources to apply input configuration resources for all OSM meshes contained in the input snapshot.
+	// Output resources will be added to the smi.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,

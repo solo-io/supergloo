@@ -145,7 +145,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 		}))
 	})
 
-	It("translates a service with a discovery annotation to a meshservice", func() {
+	It("translates a service with a discovery annotation to a trafficTarget", func() {
 		workloads := v1alpha2sets.NewWorkloadSet()
 		meshes := v1alpha2sets.NewMeshSet(&v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
@@ -160,9 +160,9 @@ var _ = Describe("TrafficTargetDetector", func() {
 
 		detector := NewTrafficTargetDetector(ctx)
 
-		meshService := detector.DetectTrafficTarget(svc, workloads, meshes)
+		trafficTarget := detector.DetectTrafficTarget(svc, workloads, meshes)
 
-		Expect(meshService).To(Equal(&v1alpha2.TrafficTarget{
+		Expect(trafficTarget).To(Equal(&v1alpha2.TrafficTarget{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
 			Spec: v1alpha2.TrafficTargetSpec{
 				Type: &v1alpha2.TrafficTargetSpec_KubeService_{

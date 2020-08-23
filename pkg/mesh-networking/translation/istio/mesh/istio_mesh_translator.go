@@ -21,7 +21,7 @@ import (
 // the VirtualService translator translates a Mesh into a VirtualService.
 type Translator interface {
 	// Translate translates the appropriate resources to apply the VirtualMesh to the given Mesh.
-	// Output resources will be added to the istio
+	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.Snapshot,

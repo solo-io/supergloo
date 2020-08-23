@@ -17,7 +17,8 @@ type Translator interface {
 	TranslateTrafficTargets(
 		services corev1sets.ServiceSet,
 		workloads v1alpha2sets.WorkloadSet,
-		meshes v1alpha2sets.MeshSet) v1alpha2sets.TrafficTargetSet
+		meshes v1alpha2sets.MeshSet,
+	) v1alpha2sets.TrafficTargetSet
 }
 
 type translator struct {
