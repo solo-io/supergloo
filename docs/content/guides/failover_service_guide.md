@@ -84,23 +84,23 @@ apiVersion: networking.smh.solo.io/v1alpha2
 kind: FailoverService
 metadata:
   name: reviews-failover
-  namespace: default
+  namespace: service-mesh-hub
 spec:
-  hostname: reviews-failover.default.global
+  hostname: reviews-failover.bookinfo.global
   port:
     number: 9080
     protocol: http
   meshes:
-    - name: istio-istio-system-management-plane-cluster
+    - name: istiod-istio-system-management-plane-cluster
       namespace: service-mesh-hub
   backingServices:
   - kubeService:
-    - name: reviews
-      namespace: default
+      name: reviews
+      namespace: bookinfo
       clusterName: management-plane
   - kubeService:
-    - name: reviews
-      namespace: default
+      name: reviews
+      namespace: bookinfo
       clusterName: new-remote-cluster
 ```
 
@@ -119,7 +119,7 @@ If multiple meshes are listed, they must be grouped under a common VirtualMesh.
 Once applied, run the following
 
 ```shell
-kubectl -n default get failoverservice/reviews-failover -oyaml
+kubectl -n service-mesh-hub get failoverservice/reviews-failover -oyaml
 ```
 
 and you should see the following status:
@@ -155,14 +155,14 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: reviews-failover
-  namespace: default
+  namespace: bookinfo
 spec:
   hosts:
   - reviews
   http:
   - route:
     - destination:
-        host: reviews-failover.default.global
+        host: reviews-failover.bookinfo.global
         port:
           number: 9080
 ```
@@ -171,7 +171,7 @@ Port forward the productpage pod with the following command and open your web br
 [localhost:9080](http://localhost:9080/productpage?u=normal).
 
 ```shell
-kubectl -n default port-forward deployments/productpage-v1 9080
+kubectl -n bookinfo port-forward deployments/productpage-v1 9080
 ```
 
 Reloading the page a few times should show the "Book Reviews" section showing either
@@ -186,11 +186,11 @@ Now, to trigger the failover, we'll modify the `reviews-v1` and `reviews-v2` dep
 to disable the web server. Run the following commands:
 
 ```shell
-kubectl -n default patch deploy reviews-v1 --patch '{"spec": {"template": {"spec": {"containers": [{"name": "reviews","command": ["sleep", "20h"]}]}}}}'
+kubectl -n bookinfo patch deploy reviews-v1 --patch '{"spec": {"template": {"spec": {"containers": [{"name": "reviews","command": ["sleep", "20h"]}]}}}}'
 ```
 
 ```shell
-kubectl -n default patch deploy reviews-v2 --patch '{"spec": {"template": {"spec": {"containers": [{"name": "reviews","command": ["sleep", "20h"]}]}}}}'
+kubectl -n bookinfo patch deploy reviews-v2 --patch '{"spec": {"template": {"spec": {"containers": [{"name": "reviews","command": ["sleep", "20h"]}]}}}}'
 ```
 
 Once the modified deployment has rolled out, refresh the productpage and you should see
@@ -200,11 +200,11 @@ demonstrating that the requests are indeed failing over to the second service in
 To restore the disabled `reviews-v1` and `reviews-v2`, run the following:
 
 ```shell
-kubectl -n default patch deployment reviews-v1  --type json   -p '[{"op": "remove", "path": "/spec/template/spec/containers/0/command"}]'
+kubectl -n bookinfo patch deployment reviews-v1  --type json   -p '[{"op": "remove", "path": "/spec/template/spec/containers/0/command"}]'
 ```
 
 ```shell
-kubectl -n default patch deployment reviews-v2  --type json   -p '[{"op": "remove", "path": "/spec/template/spec/containers/0/command"}]'
+kubectl -n bookinfo patch deployment reviews-v2  --type json   -p '[{"op": "remove", "path": "/spec/template/spec/containers/0/command"}]'
 ```
 
 Once the deployment has rolled out, reloading the productpage should show reviews with no stars or black stars, indicating that
