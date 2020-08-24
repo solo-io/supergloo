@@ -79,5 +79,10 @@ func (t *translator) isSmiTrafficTarget(
 		contextutils.LoggerFrom(ctx).Errorf("internal error: could not find mesh %v for meshService %v", sets.Key(meshRef), sets.Key(meshService))
 		return false
 	}
-	return mesh.Spec.GetSmiEnabled()
+
+	switch typedMesh := mesh.Spec.GetMeshType().(type) {
+	case *discoveryv1alpha2.MeshSpec_Osm:
+		return typedMesh.Osm.GetSmiEnabled()
+	}
+	return false
 }

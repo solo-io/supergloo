@@ -86,9 +86,9 @@ var _ = Describe("OsmMeshDetector", func() {
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
 			Spec: v1alpha2.MeshSpec{
-				SmiEnabled: true,
 				MeshType: &v1alpha2.MeshSpec_Osm{
 					Osm: &v1alpha2.MeshSpec_OSM{
+						SmiEnabled: true,
 						Installation: &v1alpha2.MeshSpec_MeshInstallation{
 							Namespace: meshNs,
 							Cluster:   clusterName,

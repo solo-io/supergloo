@@ -67,7 +67,11 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 						Namespace: meshService.Spec.GetMesh().GetNamespace(),
 					},
 					Spec: v1alpha2.MeshSpec{
-						SmiEnabled: true,
+						MeshType: &v1alpha2.MeshSpec_Osm{
+							Osm: &v1alpha2.MeshSpec_OSM{
+								SmiEnabled: true,
+							},
+						},
 					},
 				},
 			}).

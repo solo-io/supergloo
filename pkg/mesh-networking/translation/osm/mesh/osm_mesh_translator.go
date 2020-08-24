@@ -47,9 +47,10 @@ func (t *translator) Translate(
 		return
 	}
 
-	if !mesh.Spec.GetSmiEnabled() {
-		return
+	switch typedMesh := mesh.Spec.GetMeshType().(type) {
+	case *discoveryv1alpha2.MeshSpec_Osm:
+		if typedMesh.Osm.GetSmiEnabled() {
+			outputs.AddCluster(osmMesh.GetInstallation().GetCluster())
+		}
 	}
-
-	outputs.AddCluster(osmMesh.GetInstallation().GetCluster())
 }
