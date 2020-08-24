@@ -34,7 +34,7 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
-		meshService *discoveryv1alpha2.TrafficTarget,
+		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		reporter reporting.Reporter,
 	) ([]*smiaccessv1alpha2.TrafficTarget, []*smispecsv1alpha3.HTTPRouteGroup)
 }
