@@ -5,7 +5,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/osm"
@@ -66,7 +65,6 @@ var _ = Describe("OsmMeshDetector", func() {
 
 		detector := NewMeshDetector(
 			ctx,
-			v1sets.NewConfigMapSet(),
 		)
 
 		mesh, err := detector.DetectMesh(deployment)
@@ -78,7 +76,6 @@ var _ = Describe("OsmMeshDetector", func() {
 
 		detector := NewMeshDetector(
 			ctx,
-			v1sets.NewConfigMapSet(),
 		)
 
 		deployment := osmController("osm-controller")

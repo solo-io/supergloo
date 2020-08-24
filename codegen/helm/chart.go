@@ -118,6 +118,7 @@ func networkingOperator() model.Operator {
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesUpdateStatus()...)
+	rbacPolicies = append(rbacPolicies, io.LocalNetworkingOutputTypes.RbacPoliciesWrite()...)
 	rbacPolicies = append(rbacPolicies, io.IstioNetworkingOutputTypes.RbacPoliciesWrite()...)
 	rbacPolicies = append(rbacPolicies, io.SmiNetworkingOutputTypes.RbacPoliciesWrite()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)

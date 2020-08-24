@@ -54,7 +54,7 @@ func (d DependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, in input.
 		// linkerd.NewMeshDetector(
 		// 	in.ConfigMaps(),
 		// ),
-		osm.NewMeshDetector(ctx, in.ConfigMaps()),
+		osm.NewMeshDetector(ctx),
 	}
 
 	return mesh.NewTranslator(ctx, detectors)

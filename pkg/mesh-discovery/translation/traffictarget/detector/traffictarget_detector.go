@@ -6,9 +6,9 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/workloadutils"
+	sets2 "github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
@@ -16,8 +16,10 @@ import (
 )
 
 const (
-	DiscoveryMeshNameAnnotation      = "discovery.smh.solo.io/mesh-name"
-	DiscoveryMeshNamespaceAnnotation = "discovery.smh.solo.io/mesh-namespace"
+	// TODO: allow for specifying specific meshes.
+	// Currently this annotation assumes that there is only one mesh per cluster, and therefore the corresponding
+	// TrafficTarget will be associated with that mesh.
+	DiscoveryMeshAnnotation = "discovery.smh.solo.io/enabled"
 )
 
 var (
@@ -62,23 +64,30 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 	var validMesh *v1.ObjectRef
 
 	// TODO: support subsets from services which have been discovered via the annotation
-	meshName, ok := service.Annotations[DiscoveryMeshNameAnnotation]
-	if ok {
-		// If no mesh namespace has been set via annotation, use default
-		meshNamespace, ok := service.Annotations[DiscoveryMeshNamespaceAnnotation]
-		if !ok {
-			meshNamespace = defaults.GetPodNamespace()
+	discoveryEnabled, ok := service.Annotations[DiscoveryMeshAnnotation]
+	if ok && discoveryEnabled == "true" {
+
+		// Search for mesh which exists on the same cluster as the annotated service
+		for _, mesh := range meshes.List() {
+			mesh := mesh
+			switch typedMesh := mesh.Spec.GetMeshType().(type) {
+			case *v1alpha2.MeshSpec_Osm:
+				if typedMesh.Osm.GetInstallation().GetCluster() == service.GetClusterName() {
+					validMesh = ezkube.MakeObjectRef(mesh)
+					break
+				}
+			case *v1alpha2.MeshSpec_Istio_:
+				if typedMesh.Istio.GetInstallation().GetCluster() == service.GetClusterName() {
+					validMesh = ezkube.MakeObjectRef(mesh)
+					break
+				}
+			}
 		}
-		possibleMeshRef := &v1.ObjectRef{
-			Name:      meshName,
-			Namespace: meshNamespace,
-		}
-		_, err := meshes.Find(possibleMeshRef)
-		if err != nil {
-			contextutils.LoggerFrom(t.ctx).Errorf("mesh %s could not be found in ns %s", meshName, meshNamespace)
-		} else {
-			validMesh = possibleMeshRef
-		}
+
+		contextutils.LoggerFrom(t.ctx).Errorf(
+			"mesh could not be found for annotateed service %s",
+			sets2.TypedKey(service),
+		)
 	}
 
 	// if no mesh was found from the annotation, check the workloads

@@ -27,9 +27,6 @@ import (
 
 	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
-
-	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	v1 "k8s.io/api/core/v1"
 )
 
 // this error can occur if constructing a Partitioned Snapshot from a resource
@@ -55,8 +52,6 @@ type Snapshot interface {
 	VirtualServices() []LabeledVirtualServiceSet
 	// return the set of AuthorizationPolicies with a given set of labels
 	AuthorizationPolicies() []LabeledAuthorizationPolicySet
-	// return the set of Secrets with a given set of labels
-	Secrets() []LabeledSecretSet
 
 	// apply the snapshot to the local cluster, garbage collecting stale resources
 	ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -78,7 +73,6 @@ type snapshot struct {
 	serviceEntries        []LabeledServiceEntrySet
 	virtualServices       []LabeledVirtualServiceSet
 	authorizationPolicies []LabeledAuthorizationPolicySet
-	secrets               []LabeledSecretSet
 	clusters              []string
 }
 
@@ -92,7 +86,6 @@ func NewSnapshot(
 	serviceEntries []LabeledServiceEntrySet,
 	virtualServices []LabeledVirtualServiceSet,
 	authorizationPolicies []LabeledAuthorizationPolicySet,
-	secrets []LabeledSecretSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
@@ -105,7 +98,6 @@ func NewSnapshot(
 		serviceEntries:        serviceEntries,
 		virtualServices:       virtualServices,
 		authorizationPolicies: authorizationPolicies,
-		secrets:               secrets,
 		clusters:              clusters,
 	}
 }
@@ -125,8 +117,6 @@ func NewLabelPartitionedSnapshot(
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
-
-	secrets v1_sets.SecretSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
@@ -158,10 +148,6 @@ func NewLabelPartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
-	partitionedSecrets, err := partitionSecretsByLabel(labelKey, secrets)
-	if err != nil {
-		return nil, err
-	}
 
 	return NewSnapshot(
 		name,
@@ -173,7 +159,6 @@ func NewLabelPartitionedSnapshot(
 		partitionedServiceEntries,
 		partitionedVirtualServices,
 		partitionedAuthorizationPolicies,
-		partitionedSecrets,
 		clusters...,
 	), nil
 }
@@ -193,8 +178,6 @@ func NewSinglePartitionedSnapshot(
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
-
-	secrets v1_sets.SecretSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
@@ -226,10 +209,6 @@ func NewSinglePartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
-	labeledSecrets, err := NewLabeledSecretSet(secrets, snapshotLabels)
-	if err != nil {
-		return nil, err
-	}
 
 	return NewSnapshot(
 		name,
@@ -241,7 +220,6 @@ func NewSinglePartitionedSnapshot(
 		[]LabeledServiceEntrySet{labeledServiceEntries},
 		[]LabeledVirtualServiceSet{labeledVirtualServices},
 		[]LabeledAuthorizationPolicySet{labeledAuthorizationPolicies},
-		[]LabeledSecretSet{labeledSecrets},
 		clusters...,
 	), nil
 }
@@ -269,9 +247,6 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.authorizationPolicies {
-		genericLists = append(genericLists, outputSet.Generic())
-	}
-	for _, outputSet := range s.secrets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -304,9 +279,6 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.authorizationPolicies {
-		genericLists = append(genericLists, outputSet.Generic())
-	}
-	for _, outputSet := range s.secrets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -625,50 +597,6 @@ func partitionAuthorizationPoliciesByLabel(labelKey string, set security_istio_i
 	return partitionedAuthorizationPolicies, nil
 }
 
-func partitionSecretsByLabel(labelKey string, set v1_sets.SecretSet) ([]LabeledSecretSet, error) {
-	setsByLabel := map[string]v1_sets.SecretSet{}
-
-	for _, obj := range set.List() {
-		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "Secret", obj)
-		}
-		labelValue := obj.Labels[labelKey]
-		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "Secret", obj)
-		}
-
-		setForValue, ok := setsByLabel[labelValue]
-		if !ok {
-			setForValue = v1_sets.NewSecretSet()
-			setsByLabel[labelValue] = setForValue
-		}
-		setForValue.Insert(obj)
-	}
-
-	// partition by label key
-	var partitionedSecrets []LabeledSecretSet
-
-	for labelValue, setForValue := range setsByLabel {
-		labels := map[string]string{labelKey: labelValue}
-
-		partitionedSet, err := NewLabeledSecretSet(setForValue, labels)
-		if err != nil {
-			return nil, err
-		}
-
-		partitionedSecrets = append(partitionedSecrets, partitionedSet)
-	}
-
-	// sort for idempotency
-	sort.SliceStable(partitionedSecrets, func(i, j int) bool {
-		leftLabelValue := partitionedSecrets[i].Labels()[labelKey]
-		rightLabelValue := partitionedSecrets[j].Labels()[labelKey]
-		return leftLabelValue < rightLabelValue
-	})
-
-	return partitionedSecrets, nil
-}
-
 func (s snapshot) IssuedCertificates() []LabeledIssuedCertificateSet {
 	return s.issuedCertificates
 }
@@ -695,10 +623,6 @@ func (s snapshot) VirtualServices() []LabeledVirtualServiceSet {
 
 func (s snapshot) AuthorizationPolicies() []LabeledAuthorizationPolicySet {
 	return s.authorizationPolicies
-}
-
-func (s snapshot) Secrets() []LabeledSecretSet {
-	return s.secrets
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
@@ -741,12 +665,6 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 		authorizationPolicySet = authorizationPolicySet.Union(set.Set())
 	}
 	snapshotMap["authorizationPolicies"] = authorizationPolicySet.List()
-
-	secretSet := v1_sets.NewSecretSet()
-	for _, set := range s.secrets {
-		secretSet = secretSet.Union(set.Set())
-	}
-	snapshotMap["secrets"] = secretSet.List()
 
 	return json.Marshal(snapshotMap)
 }
@@ -1227,74 +1145,6 @@ func (l labeledAuthorizationPolicySet) Generic() output.ResourceList {
 	}
 }
 
-// LabeledSecretSet represents a set of secrets
-// which share a common set of labels.
-// These labels are used to find diffs between SecretSets.
-type LabeledSecretSet interface {
-	// returns the set of Labels shared by this SecretSet
-	Labels() map[string]string
-
-	// returns the set of Secretes with the given labels
-	Set() v1_sets.SecretSet
-
-	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
-	Generic() output.ResourceList
-}
-
-type labeledSecretSet struct {
-	set    v1_sets.SecretSet
-	labels map[string]string
-}
-
-func NewLabeledSecretSet(set v1_sets.SecretSet, labels map[string]string) (LabeledSecretSet, error) {
-	// validate that each Secret contains the labels, else this is not a valid LabeledSecretSet
-	for _, item := range set.List() {
-		for k, v := range labels {
-			// k=v must be present in the item
-			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on Secret %v", k, v, item.Name)
-			}
-		}
-	}
-
-	return &labeledSecretSet{set: set, labels: labels}, nil
-}
-
-func (l *labeledSecretSet) Labels() map[string]string {
-	return l.labels
-}
-
-func (l *labeledSecretSet) Set() v1_sets.SecretSet {
-	return l.set
-}
-
-func (l labeledSecretSet) Generic() output.ResourceList {
-	var desiredResources []ezkube.Object
-	for _, desired := range l.set.List() {
-		desiredResources = append(desiredResources, desired)
-	}
-
-	// enable list func for garbage collection
-	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list v1.SecretList
-		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
-			return nil, err
-		}
-		var items []ezkube.Object
-		for _, item := range list.Items {
-			item := item // pike
-			items = append(items, &item)
-		}
-		return items, nil
-	}
-
-	return output.ResourceList{
-		Resources:    desiredResources,
-		ListFunc:     listFunc,
-		ResourceKind: "Secret",
-	}
-}
-
 type builder struct {
 	ctx      context.Context
 	name     string
@@ -1309,8 +1159,6 @@ type builder struct {
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
-
-	secrets v1_sets.SecretSet
 }
 
 func NewBuilder(ctx context.Context, name string) *builder {
@@ -1327,8 +1175,6 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		virtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
 
 		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
-
-		secrets: v1_sets.NewSecretSet(),
 	}
 }
 
@@ -1377,12 +1223,6 @@ type Builder interface {
 
 	// get the collected AuthorizationPolicies
 	GetAuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
-
-	// add Secrets to the collected outputs
-	AddSecrets(secrets ...*v1.Secret)
-
-	// get the collected Secrets
-	GetSecrets() v1_sets.SecretSet
 
 	// build the collected outputs into a label-partitioned snapshot
 	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
@@ -1458,15 +1298,6 @@ func (b *builder) AddAuthorizationPolicies(authorizationPolicies ...*security_is
 		b.authorizationPolicies.Insert(obj)
 	}
 }
-func (b *builder) AddSecrets(secrets ...*v1.Secret) {
-	for _, obj := range secrets {
-		if obj == nil {
-			continue
-		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output Secret %v", sets.Key(obj))
-		b.secrets.Insert(obj)
-	}
-}
 
 func (b *builder) GetIssuedCertificates() certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet {
 	return b.issuedCertificates
@@ -1492,10 +1323,6 @@ func (b *builder) GetAuthorizationPolicies() security_istio_io_v1beta1_sets.Auth
 	return b.authorizationPolicies
 }
 
-func (b *builder) GetSecrets() v1_sets.SecretSet {
-	return b.secrets
-}
-
 func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
 	return NewLabelPartitionedSnapshot(
 		b.name,
@@ -1510,8 +1337,6 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.virtualServices,
 
 		b.authorizationPolicies,
-
-		b.secrets,
 		b.clusters...,
 	)
 }
@@ -1530,8 +1355,6 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.virtualServices,
 
 		b.authorizationPolicies,
-
-		b.secrets,
 		b.clusters...,
 	)
 }
