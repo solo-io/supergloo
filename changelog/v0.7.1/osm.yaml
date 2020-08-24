@@ -1,4 +1,0 @@
-changelog:
-- type: NEW_FEATURE
-  description: Support Open Service Mesh
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/893
