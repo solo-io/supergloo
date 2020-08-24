@@ -86,7 +86,7 @@ metadata:
   name: reviews-failover
   namespace: service-mesh-hub
 spec:
-  hostname: reviews-failover.default.global
+  hostname: reviews-failover.bookinfo.global
   port:
     number: 9080
     protocol: http
@@ -155,14 +155,14 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: reviews-failover
-  namespace: default
+  namespace: bookinfo
 spec:
   hosts:
   - reviews
   http:
   - route:
     - destination:
-        host: reviews-failover.default.global
+        host: reviews-failover.bookinfo.global
         port:
           number: 9080
 ```
