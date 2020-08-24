@@ -76,7 +76,7 @@ func (m *meshDetector) getOsmControllerVersion(deployment *appsv1.Deployment) (s
 	return "", nil
 }
 
-// Return true if deployment is inferred to be an Istiod deployment
+// Return true if deployment is inferred to be an OSM deployment
 func isOsmController(deployment *appsv1.Deployment, container *corev1.Container) bool {
 	return deployment.GetName() == osmControlPlaneDeploymentName &&
 		strings.Contains(container.Image, osmControlPlaneDeploymentName)
