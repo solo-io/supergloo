@@ -48,8 +48,10 @@ func (t OutputSnapshots) Apply(
 	multiClusterClient multicluster.Client,
 	errHandler output.ErrorHandler,
 ) {
+	// Apply istio and smi resources to registered clusters
 	t.Istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 	t.SMI.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	// Apply local resources only to management cluster
 	t.Local.ApplyLocalCluster(ctx, clusterClient, errHandler)
 }
 
