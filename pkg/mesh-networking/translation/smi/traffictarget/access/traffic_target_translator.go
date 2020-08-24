@@ -65,7 +65,7 @@ func (t *translator) Translate(
 	kubeService := target.Spec.GetKubeService()
 
 	if kubeService == nil {
-		logger.Debugf("non kubernetes mesh service %s found, skipping", sksets.TypedKey(target))
+		logger.Debugf("non kubernetes traffic target %s found, skipping", sksets.TypedKey(target))
 		return nil, nil
 	}
 
