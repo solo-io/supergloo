@@ -5,12 +5,12 @@
 package mock_mtls
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	istio "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	local "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
 	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -37,13 +37,13 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(mesh *v1alpha2.Mesh, virtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh, outputs istio.Builder, reporter reporting.Reporter) {
+func (m *MockTranslator) Translate(mesh *v1alpha2.Mesh, virtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh, istioOutputs istio.Builder, localOutputs local.Builder, reporter reporting.Reporter) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Translate", mesh, virtualMesh, outputs, reporter)
+	m.ctrl.Call(m, "Translate", mesh, virtualMesh, istioOutputs, localOutputs, reporter)
 }
 
 // Translate indicates an expected call of Translate
-func (mr *MockTranslatorMockRecorder) Translate(mesh, virtualMesh, outputs, reporter interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) Translate(mesh, virtualMesh, istioOutputs, localOutputs, reporter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), mesh, virtualMesh, outputs, reporter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), mesh, virtualMesh, istioOutputs, localOutputs, reporter)
 }

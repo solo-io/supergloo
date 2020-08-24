@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -26,7 +27,8 @@ type Translator interface {
 	Translate(
 		in input.Snapshot,
 		mesh *discoveryv1alpha2.Mesh,
-		outputs istio.Builder,
+		istioOutputs istio.Builder,
+		localOutputs local.Builder,
 		reporter reporting.Reporter,
 	)
 }
@@ -59,7 +61,8 @@ func NewTranslator(
 func (t *translator) Translate(
 	in input.Snapshot,
 	mesh *discoveryv1alpha2.Mesh,
-	outputs istio.Builder,
+	istioOutputs istio.Builder,
+	localOutputs local.Builder,
 	reporter reporting.Reporter,
 ) {
 	istioMesh := mesh.Spec.GetIstio()
@@ -69,16 +72,16 @@ func (t *translator) Translate(
 	}
 
 	// add mesh installation cluster to outputs
-	outputs.AddCluster(istioMesh.Installation.GetCluster())
+	istioOutputs.AddCluster(istioMesh.Installation.GetCluster())
 
 	appliedVirtualMesh := mesh.Status.AppliedVirtualMesh
 	if appliedVirtualMesh != nil {
-		t.mtlsTranslator.Translate(mesh, appliedVirtualMesh, outputs, reporter)
-		t.federationTranslator.Translate(in, mesh, appliedVirtualMesh, outputs, reporter)
-		t.accessTranslator.Translate(mesh, appliedVirtualMesh, outputs)
+		t.mtlsTranslator.Translate(mesh, appliedVirtualMesh, istioOutputs, localOutputs, reporter)
+		t.federationTranslator.Translate(in, mesh, appliedVirtualMesh, istioOutputs, reporter)
+		t.accessTranslator.Translate(mesh, appliedVirtualMesh, istioOutputs)
 	}
 
 	for _, failoverService := range mesh.Status.AppliedFailoverServices {
-		t.failoverServiceTranslator.Translate(in, mesh, failoverService, outputs, reporter)
+		t.failoverServiceTranslator.Translate(in, mesh, failoverService, istioOutputs, reporter)
 	}
 }

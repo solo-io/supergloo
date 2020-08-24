@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/internal"
 )
@@ -19,7 +20,8 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
-		outputs istio.Builder,
+		istioOutputs istio.Builder,
+		localOutputs local.Builder,
 		reporter reporting.Reporter,
 	)
 }
@@ -38,7 +40,8 @@ func NewIstioTranslator() Translator {
 func (t *istioTranslator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
-	outputs istio.Builder,
+	istioOutputs istio.Builder,
+	localOutputs local.Builder,
 	reporter reporting.Reporter,
 ) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translator-%v", t.totalTranslates))
@@ -48,12 +51,12 @@ func (t *istioTranslator) Translate(
 	for _, trafficTarget := range in.TrafficTargets().List() {
 		trafficTarget := trafficTarget // pike
 
-		trafficTargetTranslator.Translate(in, trafficTarget, outputs, reporter)
+		trafficTargetTranslator.Translate(in, trafficTarget, istioOutputs, reporter)
 	}
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(ctx, in.KubernetesClusters(), in.Secrets(), in.Workloads(), in.TrafficTargets())
 	for _, mesh := range in.Meshes().List() {
-		meshTranslator.Translate(in, mesh, outputs, reporter)
+		meshTranslator.Translate(in, mesh, istioOutputs, localOutputs, reporter)
 	}
 
 	t.totalTranslates++

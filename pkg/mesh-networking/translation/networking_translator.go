@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	istiooutput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	localoutput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
 	smioutput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/smi"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
@@ -19,17 +20,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type Outputs struct {
-	Istio istiooutput.Snapshot
-	Smi   smioutput.Snapshot
-}
-
-type TranslationResult struct {
+type OutputSnapshots struct {
 	Istio istiooutput.Snapshot
 	SMI   smioutput.Snapshot
+	Local localoutput.Snapshot
 }
 
-func (t TranslationResult) MarshalJSON() ([]byte, error) {
+func (t OutputSnapshots) MarshalJSON() ([]byte, error) {
 	istioByt, err := t.Istio.MarshalJSON()
 	if err != nil {
 		return nil, err
@@ -38,18 +35,22 @@ func (t TranslationResult) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return bytes.Join([][]byte{istioByt, smiByt}, []byte("\n")), nil
+	localByt, err := t.Local.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return bytes.Join([][]byte{istioByt, smiByt, localByt}, []byte("\n")), nil
 }
 
-func (t TranslationResult) Apply(
+func (t OutputSnapshots) Apply(
 	ctx context.Context,
 	clusterClient client.Client,
 	multiClusterClient multicluster.Client,
 	errHandler output.ErrorHandler,
 ) {
-	t.Istio.ApplyLocalCluster(ctx, clusterClient, errHandler)
 	t.Istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 	t.SMI.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	t.Local.ApplyLocalCluster(ctx, clusterClient, errHandler)
 }
 
 // the networking translator translates an istio input networking snapshot to an istiooutput snapshot of mesh config resources
@@ -59,7 +60,7 @@ type Translator interface {
 		ctx context.Context,
 		in input.Snapshot,
 		reporter reporting.Reporter,
-	) (TranslationResult, error)
+	) (OutputSnapshots, error)
 }
 
 type translator struct {
@@ -85,14 +86,15 @@ func (t *translator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
 	reporter reporting.Reporter,
-) (TranslationResult, error) {
+) (OutputSnapshots, error) {
 	t.totalTranslates++
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("translation-%v", t.totalTranslates))
 
 	istioOutputs := istiooutput.NewBuilder(ctx, fmt.Sprintf("networking-istio-%v", t.totalTranslates))
 	smiOutputs := smioutput.NewBuilder(ctx, fmt.Sprintf("networking-smi-%v", t.totalTranslates))
+	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", t.totalTranslates))
 
-	t.istioTranslator.Translate(ctx, in, istioOutputs, reporter)
+	t.istioTranslator.Translate(ctx, in, istioOutputs, localOutputs, reporter)
 
 	t.smiTranslator.Translate(ctx, in, smiOutputs, reporter)
 
@@ -100,16 +102,22 @@ func (t *translator) Translate(
 
 	istioSnapshot, err := istioOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
 	if err != nil {
-		return TranslationResult{}, err
+		return OutputSnapshots{}, err
 	}
 
 	smiSnapshot, err := smiOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
 	if err != nil {
-		return TranslationResult{}, err
+		return OutputSnapshots{}, err
 	}
 
-	return TranslationResult{
+	localSnapshot, err := localOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
+	if err != nil {
+		return OutputSnapshots{}, err
+	}
+
+	return OutputSnapshots{
 		Istio: istioSnapshot,
 		SMI:   smiSnapshot,
+		Local: localSnapshot,
 	}, nil
 }

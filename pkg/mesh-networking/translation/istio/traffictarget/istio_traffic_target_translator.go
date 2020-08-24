@@ -61,8 +61,8 @@ func (t *translator) Translate(
 	outputs istio.Builder,
 	reporter reporting.Reporter,
 ) {
-	// only translate istio meshServices
-	if !t.isIstioMeshService(t.ctx, trafficTarget, in.Meshes()) {
+	// only translate istio trafficTargets
+	if !t.isIstioTrafficTarget(t.ctx, trafficTarget, in.Meshes()) {
 		return
 	}
 
@@ -75,19 +75,19 @@ func (t *translator) Translate(
 	outputs.AddAuthorizationPolicies(ap)
 }
 
-func (t *translator) isIstioMeshService(
+func (t *translator) isIstioTrafficTarget(
 	ctx context.Context,
-	meshService *discoveryv1alpha2.TrafficTarget,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	allMeshes v1alpha2sets.MeshSet,
 ) bool {
-	meshRef := meshService.Spec.Mesh
+	meshRef := trafficTarget.Spec.Mesh
 	if meshRef == nil {
-		contextutils.LoggerFrom(ctx).Errorf("internal error: meshService %v missing mesh ref", sets.Key(meshService))
+		contextutils.LoggerFrom(ctx).Errorf("internal error: trafficTarget %v missing mesh ref", sets.Key(trafficTarget))
 		return false
 	}
 	mesh, err := allMeshes.Find(meshRef)
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Errorf("internal error: could not find mesh %v for meshService %v", sets.Key(meshRef), sets.Key(meshService))
+		contextutils.LoggerFrom(ctx).Errorf("internal error: could not find mesh %v for trafficTarget %v", sets.Key(meshRef), sets.Key(trafficTarget))
 		return false
 	}
 	return mesh.Spec.GetIstio() != nil

@@ -100,7 +100,7 @@ metadata:
     app: bookstore
   annotations:
     # annotation for mesh service discovery
-    "discovery.smh.solo.io/mesh-name": osm-controller-osm-system-mgmt-cluster
+    "discovery.smh.solo.io/enabled": "true"
 spec:
   ports:
   - port: 80

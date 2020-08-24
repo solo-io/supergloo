@@ -28,7 +28,10 @@ message MeshSpec {
     // Information about the SMH certificate agent if it has been installed to the remote cluster.
     AgentInfo agent_info = 5;
 
-    // translate to SMI resources for this mesh
+    // Indicates whether or not the mesh suppots the SMI spec https://smi-spec.io/
+    // If smi_enabled is set to true, the rules associated with this mesh will be
+    // translated into SMI resources: traffictargets, httproutegroups, trafficsplits, etc...
+    // This field will automatically be set to true for discovered OSM meshes
     bool smi_enabled = 7;
 
     // Mesh object representing an installed Istio control plane

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
 	"github.com/solo-io/skv2/pkg/ezkube"
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
@@ -59,7 +60,8 @@ type Translator interface {
 	Translate(
 		mesh *discoveryv1alpha2.Mesh,
 		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
-		outputs istio.Builder,
+		istioOutputs istio.Builder,
+		localOutputs local.Builder,
 		reporter reporting.Reporter,
 	)
 }
@@ -82,7 +84,8 @@ func NewTranslator(ctx context.Context, secrets corev1sets.SecretSet, workloads 
 func (t *translator) Translate(
 	mesh *discoveryv1alpha2.Mesh,
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
-	outputs istio.Builder,
+	istioOutputs istio.Builder,
+	localOutputs local.Builder,
 	reporter reporting.Reporter,
 ) {
 	istioMesh := mesh.Spec.GetIstio()
@@ -140,7 +143,7 @@ func (t *translator) Translate(
 				Type: signingCertSecretType,
 			}
 		}
-		outputs.AddSecrets(selfSignedCertSecret)
+		localOutputs.AddSecrets(selfSignedCertSecret)
 	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Secret:
 		rootCaSecret = caType.Secret
 	}
@@ -186,7 +189,7 @@ func (t *translator) Translate(
 			PodsToBounce:             podsToBounce,
 		},
 	}
-	outputs.AddIssuedCertificates(issuedCertificate)
+	istioOutputs.AddIssuedCertificates(issuedCertificate)
 }
 
 const (

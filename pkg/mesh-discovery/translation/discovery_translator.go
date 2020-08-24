@@ -6,11 +6,11 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output"
-	translator_internal "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/internal"
+	internal "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/internal"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/labelutils"
 )
 
-var DefaultDependencyFactory = translator_internal.DependencyFactoryImpl{}
+var DefaultDependencyFactory = internal.DependencyFactoryImpl{}
 
 // the translator "reconciles the entire state of the world"
 type Translator interface {
@@ -20,10 +20,10 @@ type Translator interface {
 
 type translator struct {
 	totalTranslates int // TODO(ilackarms): metric
-	dependencies    translator_internal.DependencyFactory
+	dependencies    internal.DependencyFactory
 }
 
-func NewTranslator(dependencyFactory translator_internal.DependencyFactory) Translator {
+func NewTranslator(dependencyFactory internal.DependencyFactory) Translator {
 	return &translator{
 		dependencies: dependencyFactory,
 	}

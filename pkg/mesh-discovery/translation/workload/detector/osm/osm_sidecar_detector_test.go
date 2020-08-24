@@ -70,8 +70,8 @@ var _ = Describe("OsmSidecarDetector", func() {
 
 		meshes := osmMeshes(clusterName)
 
-		meshWorkload := detector.DetectMeshSidecar(pod, meshes)
-		Expect(meshWorkload).To(Equal(meshes.List()[0]))
+		workload := detector.DetectMeshSidecar(pod, meshes)
+		Expect(workload).To(Equal(meshes.List()[0]))
 	})
 
 	It("does not detect workload when sidecar mesh is of different cluster", func() {
@@ -79,8 +79,8 @@ var _ = Describe("OsmSidecarDetector", func() {
 
 		meshes := osmMeshes("different-" + clusterName)
 
-		meshWorkload := detector.DetectMeshSidecar(pod, meshes)
-		Expect(meshWorkload).To(BeNil())
+		workload := detector.DetectMeshSidecar(pod, meshes)
+		Expect(workload).To(BeNil())
 	})
 
 	It("does not detect workload when sidecar mesh is not present", func() {
@@ -88,8 +88,8 @@ var _ = Describe("OsmSidecarDetector", func() {
 
 		meshes := v1alpha2sets.NewMeshSet()
 
-		meshWorkload := detector.DetectMeshSidecar(pod, meshes)
-		Expect(meshWorkload).To(BeNil())
+		workload := detector.DetectMeshSidecar(pod, meshes)
+		Expect(workload).To(BeNil())
 	})
 
 	It("does not detect workload when sidecar is not present", func() {
@@ -98,8 +98,8 @@ var _ = Describe("OsmSidecarDetector", func() {
 
 		meshes := osmMeshes(clusterName)
 
-		meshWorkload := detector.DetectMeshSidecar(pod, meshes)
-		Expect(meshWorkload).To(BeNil())
+		workload := detector.DetectMeshSidecar(pod, meshes)
+		Expect(workload).To(BeNil())
 	})
 
 	It("does not detect workload when sidecar is not present", func() {
@@ -108,8 +108,8 @@ var _ = Describe("OsmSidecarDetector", func() {
 
 		meshes := osmMeshes(clusterName)
 
-		meshWorkload := detector.DetectMeshSidecar(pod, meshes)
-		Expect(meshWorkload).To(BeNil())
+		workload := detector.DetectMeshSidecar(pod, meshes)
+		Expect(workload).To(BeNil())
 	})
 
 })

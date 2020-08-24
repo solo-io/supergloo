@@ -272,7 +272,7 @@ type testIstioTranslator struct {
 	callReporter func(reporter reporting.Reporter)
 }
 
-func (t testIstioTranslator) Translate(ctx context.Context, in input.Snapshot, reporter reporting.Reporter) (translation.TranslationResult, error) {
+func (t testIstioTranslator) Translate(ctx context.Context, in input.Snapshot, reporter reporting.Reporter) (translation.OutputSnapshots, error) {
 	t.callReporter(reporter)
-	return translation.TranslationResult{}, nil
+	return translation.OutputSnapshots{}, nil
 }

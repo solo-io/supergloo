@@ -58,7 +58,7 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		Ref:                    ezkube.MakeClusterObjectRef(service),
 		WorkloadSelectorLabels: service.Spec.Selector,
 		Labels:                 service.Labels,
-		Ports:                  t.convertPorts(service),
+		Ports:                  convertPorts(service),
 	}
 
 	var validMesh *v1.ObjectRef
@@ -84,10 +84,12 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 			}
 		}
 
-		contextutils.LoggerFrom(t.ctx).Errorf(
-			"mesh could not be found for annotateed service %s",
-			sets2.TypedKey(service),
-		)
+		if validMesh == nil {
+			contextutils.LoggerFrom(t.ctx).Errorf(
+				"mesh could not be found for annotateed service %s",
+				sets2.TypedKey(service),
+			)
+		}
 	}
 
 	// if no mesh was found from the annotation, check the workloads
@@ -102,7 +104,7 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		validMesh = backingWorkloads[0].Spec.Mesh
 
 		// derive subsets from backing workloads
-		kubeService.Subsets = t.findSubsets(backingWorkloads)
+		kubeService.Subsets = findSubsets(backingWorkloads)
 	}
 
 	return &v1alpha2.TrafficTarget{
@@ -117,7 +119,7 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for
-func (t *trafficTargetDetector) findSubsets(backingWorkloads v1alpha2.WorkloadSlice) map[string]*v1alpha2.TrafficTargetSpec_KubeService_Subset {
+func findSubsets(backingWorkloads v1alpha2.WorkloadSlice) map[string]*v1alpha2.TrafficTargetSpec_KubeService_Subset {
 	uniqueLabels := make(map[string]sets.String)
 	for _, backingWorkload := range backingWorkloads {
 		for key, val := range backingWorkload.Spec.GetKubernetes().GetPodLabels() {
@@ -154,7 +156,7 @@ func (t *trafficTargetDetector) findSubsets(backingWorkloads v1alpha2.WorkloadSl
 	return subsets
 }
 
-func (t *trafficTargetDetector) convertPorts(service *corev1.Service) (ports []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) {
+func convertPorts(service *corev1.Service) (ports []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) {
 	for _, kubePort := range service.Spec.Ports {
 		ports = append(ports, &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 			Port:     uint32(kubePort.Port),
