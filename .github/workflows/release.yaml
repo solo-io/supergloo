@@ -1,8 +1,6 @@
 name: Release
 
 on:
-  # TODO remove after testing
-  pull_request: {}
   release:
     types:
       - prereleased
@@ -24,9 +22,7 @@ jobs:
       - name: Set Release Tag
         run: |
           echo $GITHUB_REF
-          # TODO remove after testing
-          echo ::set-env name=TAGGED_VERSION::v0.7.0
-#          echo ::set-env name=TAGGED_VERSION::${GITHUB_REF#refs/*/}
+          echo ::set-env name=TAGGED_VERSION::${GITHUB_REF#refs/*/}
 
       - name: Upload Release Assets
         env:
