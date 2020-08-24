@@ -47,6 +47,10 @@ fmt:
 mod-download:
 	go mod download
 
+.PHONY: clear-vendor-any
+clear-vendor-any:
+	rm -rf vendor_any
+
 # Dependencies for code generation
 .PHONY: install-go-tools
 install-go-tools: mod-download
@@ -83,8 +87,7 @@ go-generate:
 
 # Generate Operator Code
 .PHONY: operator-gen
-operator-gen:
-	rm -rf vendor_any
+operator-gen: clear-vendor-any
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go
 
 #----------------------------------------------------------------------------------
@@ -93,7 +96,7 @@ operator-gen:
 
 # Generate Reference documentation
 .PHONY: generated-reference-docs
-generated-reference-docs:
+generated-reference-docs: clear-vendor-any
 	go run codegen/docs/docsgen.go
 
 #----------------------------------------------------------------------------------
@@ -203,7 +206,7 @@ include install/helm/helm.mk
 
 # Generate Manifests from Helm Chart
 .PHONY: chart-gen
-chart-gen:
+chart-gen: clear-vendor-any
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
 
 .PHONY: manifest-gen
