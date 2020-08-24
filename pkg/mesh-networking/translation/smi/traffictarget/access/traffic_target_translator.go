@@ -34,7 +34,7 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
-		meshService *discoveryv1alpha2.TrafficTarget,
+		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		reporter reporting.Reporter,
 	) ([]*smiaccessv1alpha2.TrafficTarget, []*smispecsv1alpha3.HTTPRouteGroup)
 }
@@ -65,7 +65,7 @@ func (t *translator) Translate(
 	kubeService := target.Spec.GetKubeService()
 
 	if kubeService == nil {
-		logger.Debugf("non kubernetes mesh service %s found, skipping", sksets.TypedKey(target))
+		logger.Debugf("non kubernetes traffic target %s found, skipping", sksets.TypedKey(target))
 		return nil, nil
 	}
 

@@ -15,7 +15,7 @@ func FindBackingWorkloads(
 
 	for _, workload := range meshWorkloads.List() {
 		// TODO(ilackarms): refactor this to support more than just k8s workloads
-		// should probably go with a platform-based meshservice detector (e.g. one for k8s, one for vm, etc.)
+		// should probably go with a platform-based traffictarget detector (e.g. one for k8s, one for vm, etc.)
 		if isBackingKubeWorkload(service, workload.Spec.GetKubernetes()) {
 			result = append(result, workload)
 		}
