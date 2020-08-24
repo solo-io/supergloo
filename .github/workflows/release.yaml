@@ -3,7 +3,7 @@ name: Release
 on:
   release:
     types:
-      - prereleased
+      - created
 
 jobs:
   publish-artifacts:
