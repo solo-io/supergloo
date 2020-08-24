@@ -6,7 +6,7 @@ weight: 10
 ---
 
 [Open Service Mesh (OSM)](https://openservicemesh.io/) is the brand new Open Source envoy proxy based 
-service mesh from the folks at microsoft.
+service mesh from Microsoft.
 
 OSM comes with a new API and a new set of usage patterns which Service Mesh Hub can translate and manage.
 
