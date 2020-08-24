@@ -33,7 +33,7 @@ var (
 type TrafficTargetDetector interface {
 	DetectTrafficTarget(
 		service *corev1.Service,
-		meshWorkloads v1alpha2sets.WorkloadSet,
+		workloads v1alpha2sets.WorkloadSet,
 		meshes v1alpha2sets.MeshSet,
 	) *v1alpha2.TrafficTarget
 }
