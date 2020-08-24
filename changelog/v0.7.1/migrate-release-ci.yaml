@@ -1,4 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Migrate release CI from Google Cloudbuild to Github Workflows.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/884
