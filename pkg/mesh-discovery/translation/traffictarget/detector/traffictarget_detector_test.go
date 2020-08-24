@@ -152,10 +152,19 @@ var _ = Describe("TrafficTargetDetector", func() {
 				Name:      "hello",
 				Namespace: defaults.GetPodNamespace(),
 			},
+			Spec: v1alpha2.MeshSpec{
+				MeshType: &v1alpha2.MeshSpec_Osm{
+					Osm: &v1alpha2.MeshSpec_OSM{
+						Installation: &v1alpha2.MeshSpec_MeshInstallation{
+							Cluster: serviceCluster,
+						},
+					},
+				},
+			},
 		})
 		svc := makeService()
 		svc.Annotations = map[string]string{
-			DiscoveryMeshNameAnnotation: "hello",
+			DiscoveryMeshAnnotation: "true",
 		}
 
 		detector := NewTrafficTargetDetector(ctx)
