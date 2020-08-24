@@ -40,16 +40,16 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, meshService *v1alpha20.TrafficTarget, reporter reporting.Reporter) ([]*v1alpha2.TrafficTarget, []*v1alpha3.HTTPRouteGroup) {
+func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, trafficTarget *v1alpha20.TrafficTarget, reporter reporting.Reporter) ([]*v1alpha2.TrafficTarget, []*v1alpha3.HTTPRouteGroup) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Translate", ctx, in, meshService, reporter)
+	ret := m.ctrl.Call(m, "Translate", ctx, in, trafficTarget, reporter)
 	ret0, _ := ret[0].([]*v1alpha2.TrafficTarget)
 	ret1, _ := ret[1].([]*v1alpha3.HTTPRouteGroup)
 	return ret0, ret1
 }
 
 // Translate indicates an expected call of Translate
-func (mr *MockTranslatorMockRecorder) Translate(ctx, in, meshService, reporter interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) Translate(ctx, in, trafficTarget, reporter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), ctx, in, meshService, reporter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), ctx, in, trafficTarget, reporter)
 }

@@ -18,14 +18,14 @@ const (
 )
 
 type meshDetector struct {
-	ctx        context.Context
+	ctx context.Context
 }
 
 func NewMeshDetector(
 	ctx context.Context,
 ) detector.MeshDetector {
 	return &meshDetector{
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 

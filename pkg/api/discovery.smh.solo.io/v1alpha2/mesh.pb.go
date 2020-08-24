@@ -6,12 +6,13 @@ package v1alpha2
 import (
 	bytes "bytes"
 	fmt "fmt"
+	math "math"
+
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/gogo/protobuf/types"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -40,7 +41,10 @@ type MeshSpec struct {
 	MeshType isMeshSpec_MeshType `protobuf_oneof:"mesh_type"`
 	// Information about the SMH certificate agent if it has been installed to the remote cluster.
 	AgentInfo *MeshSpec_AgentInfo `protobuf:"bytes,5,opt,name=agent_info,json=agentInfo,proto3" json:"agent_info,omitempty"`
-	// translate to SMI resources for this mesh
+	// Indicates whether or not the mesh suppots the SMI spec https://smi-spec.io/
+	// If smi_enabled is set to true, the rules associated with this mesh will be
+	// translated into SMI resources: traffictargets, httproutegroups, trafficsplits, etc...
+	// This field will automatically be set to true for discovered OSM meshes
 	SmiEnabled           bool     `protobuf:"varint,7,opt,name=smi_enabled,json=smiEnabled,proto3" json:"smi_enabled,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

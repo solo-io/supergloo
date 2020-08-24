@@ -112,7 +112,7 @@ var (
 					snapshot: io.SmiNetworkingOutputTypes,
 				},
 				{
-					name: "local",
+					name:     "local",
 					snapshot: io.LocalNetworkingOutputTypes,
 				},
 			},

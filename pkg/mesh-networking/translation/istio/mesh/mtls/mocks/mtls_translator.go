@@ -5,12 +5,13 @@
 package mock_mtls
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	istio "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	local "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
 	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface

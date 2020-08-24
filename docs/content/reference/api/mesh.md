@@ -52,7 +52,7 @@ Meshes represent a currently registered service mesh.
 | consulConnect | [MeshSpec.ConsulConnectMesh](#discovery.smh.solo.io.MeshSpec.ConsulConnectMesh) |  |  |
 | osm | [MeshSpec.OSM](#discovery.smh.solo.io.MeshSpec.OSM) |  |  |
 | agentInfo | [MeshSpec.AgentInfo](#discovery.smh.solo.io.MeshSpec.AgentInfo) |  | Information about the SMH certificate agent if it has been installed to the remote cluster. |
-| smiEnabled | [bool](#bool) |  | translate to SMI resources for this mesh |
+| smiEnabled | [bool](#bool) |  | Indicates whether or not the mesh suppots the SMI spec https://smi-spec.io/ If smi_enabled is set to true, the rules associated with this mesh will be translated into SMI resources: traffictargets, httproutegroups, trafficsplits, etc... This field will automatically be set to true for discovered OSM meshes |
 
 
 

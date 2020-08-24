@@ -11,7 +11,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
-	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
 	istio "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
@@ -19,7 +18,6 @@ import (
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
-	v1 "k8s.io/api/core/v1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -142,20 +140,6 @@ func (m *MockSnapshot) AuthorizationPolicies() []istio.LabeledAuthorizationPolic
 func (mr *MockSnapshotMockRecorder) AuthorizationPolicies() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthorizationPolicies", reflect.TypeOf((*MockSnapshot)(nil).AuthorizationPolicies))
-}
-
-// Secrets mocks base method
-func (m *MockSnapshot) Secrets() []istio.LabeledSecretSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Secrets")
-	ret0, _ := ret[0].([]istio.LabeledSecretSet)
-	return ret0
-}
-
-// Secrets indicates an expected call of Secrets
-func (mr *MockSnapshotMockRecorder) Secrets() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secrets", reflect.TypeOf((*MockSnapshot)(nil).Secrets))
 }
 
 // ApplyLocalCluster mocks base method
@@ -652,71 +636,6 @@ func (mr *MockLabeledAuthorizationPolicySetMockRecorder) Generic() *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledAuthorizationPolicySet)(nil).Generic))
 }
 
-// MockLabeledSecretSet is a mock of LabeledSecretSet interface
-type MockLabeledSecretSet struct {
-	ctrl     *gomock.Controller
-	recorder *MockLabeledSecretSetMockRecorder
-}
-
-// MockLabeledSecretSetMockRecorder is the mock recorder for MockLabeledSecretSet
-type MockLabeledSecretSetMockRecorder struct {
-	mock *MockLabeledSecretSet
-}
-
-// NewMockLabeledSecretSet creates a new mock instance
-func NewMockLabeledSecretSet(ctrl *gomock.Controller) *MockLabeledSecretSet {
-	mock := &MockLabeledSecretSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledSecretSetMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledSecretSet) EXPECT() *MockLabeledSecretSetMockRecorder {
-	return m.recorder
-}
-
-// Labels mocks base method
-func (m *MockLabeledSecretSet) Labels() map[string]string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Labels")
-	ret0, _ := ret[0].(map[string]string)
-	return ret0
-}
-
-// Labels indicates an expected call of Labels
-func (mr *MockLabeledSecretSetMockRecorder) Labels() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledSecretSet)(nil).Labels))
-}
-
-// Set mocks base method
-func (m *MockLabeledSecretSet) Set() v1sets.SecretSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set")
-	ret0, _ := ret[0].(v1sets.SecretSet)
-	return ret0
-}
-
-// Set indicates an expected call of Set
-func (mr *MockLabeledSecretSetMockRecorder) Set() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledSecretSet)(nil).Set))
-}
-
-// Generic mocks base method
-func (m *MockLabeledSecretSet) Generic() output.ResourceList {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generic")
-	ret0, _ := ret[0].(output.ResourceList)
-	return ret0
-}
-
-// Generic indicates an expected call of Generic
-func (mr *MockLabeledSecretSetMockRecorder) Generic() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledSecretSet)(nil).Generic))
-}
-
 // MockBuilder is a mock of Builder interface
 type MockBuilder struct {
 	ctrl     *gomock.Controller
@@ -948,36 +867,6 @@ func (m *MockBuilder) GetAuthorizationPolicies() v1beta1sets.AuthorizationPolicy
 func (mr *MockBuilderMockRecorder) GetAuthorizationPolicies() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthorizationPolicies", reflect.TypeOf((*MockBuilder)(nil).GetAuthorizationPolicies))
-}
-
-// AddSecrets mocks base method
-func (m *MockBuilder) AddSecrets(secrets ...*v1.Secret) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{}
-	for _, a := range secrets {
-		varargs = append(varargs, a)
-	}
-	m.ctrl.Call(m, "AddSecrets", varargs...)
-}
-
-// AddSecrets indicates an expected call of AddSecrets
-func (mr *MockBuilderMockRecorder) AddSecrets(secrets ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSecrets", reflect.TypeOf((*MockBuilder)(nil).AddSecrets), secrets...)
-}
-
-// GetSecrets mocks base method
-func (m *MockBuilder) GetSecrets() v1sets.SecretSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSecrets")
-	ret0, _ := ret[0].(v1sets.SecretSet)
-	return ret0
-}
-
-// GetSecrets indicates an expected call of GetSecrets
-func (mr *MockBuilderMockRecorder) GetSecrets() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecrets", reflect.TypeOf((*MockBuilder)(nil).GetSecrets))
 }
 
 // BuildLabelPartitionedSnapshot mocks base method
