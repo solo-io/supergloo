@@ -95,11 +95,11 @@ spec:
       namespace: service-mesh-hub
   backingServices:
   - kubeService:
-    - name: reviews
+      name: reviews
       namespace: default
       clusterName: management-plane
   - kubeService:
-    - name: reviews
+      name: reviews
       namespace: default
       clusterName: new-remote-cluster
 ```
