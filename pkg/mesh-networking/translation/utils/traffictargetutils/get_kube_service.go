@@ -22,5 +22,5 @@ func IsTrafficTargetForKubeService(trafficTarget *v1alpha2.TrafficTarget, kubeSe
 		// not a kube service
 		return false
 	}
-	return ezkube.RefsMatch(ref, kubeService)
+	return ezkube.ClusterRefsMatch(ref, kubeService)
 }
