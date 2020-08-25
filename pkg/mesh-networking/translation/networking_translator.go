@@ -20,7 +20,7 @@ import (
 )
 
 type OutputSnapshots struct {
-	istio  istiooutput.Snapshot
+	istio istiooutput.Snapshot
 	smi   smioutput.Snapshot
 	local localoutput.Snapshot
 }
