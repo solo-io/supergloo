@@ -16,7 +16,7 @@ accessible via your PATH: kubectl >= v1.18.8, kind >= v0.8.1, istioctl < v1.7.0,
 We recommend allocating at least 8GB of RAM for Docker.
 
 This command will bootstrap 2 clusters, one of which will run the Service Mesh Hub
-management-cluster as well as Istio, and the other will just run Istio.
+management-plane as well as Istio, and the other will just run Istio.
 
 
 ```
