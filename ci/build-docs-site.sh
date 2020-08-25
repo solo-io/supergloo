@@ -47,6 +47,8 @@ echo $firebaseJson > $docsSiteDir/firebase.json
 
 git clone https://github.com/solo-io/service-mesh-hub.git $repoDir
 
+export PATH=_output/.bin:$PATH
+
 # install go tools to sub-repo
 make -C $repoDir install-go-tools
 
@@ -81,7 +83,7 @@ do
   then
     version="latest"
   fi
-  make generated-reference-docs
+  go run codegen/docs/docsgen.go
   cd docs
   # Generate data/Solo.yaml file with version info populated.
   generateHugoVersionsYaml $version
