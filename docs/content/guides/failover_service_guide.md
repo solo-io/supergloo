@@ -13,10 +13,10 @@ services next in the priority order. Currently this feature is only supported fo
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `management-plane-context`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
-* Istio is [installed on both `management-plane-context` and `remote-cluster-context`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both `management-plane-context` and `remote-cluster-context` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
-under the names `management-plane` and `new-remote-cluster` respectively
+* Service Mesh Hub is [installed and running on the `management-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Istio is [installed on both `management-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
+* Both `management-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+under the names `management-cluster` and `remote-cluster` respectively
 * The `bookinfo` app is [installed into two Istio clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
@@ -28,7 +28,7 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 
 The services composing a FailoverService must be configured with outlier detection, 
 which is done through the [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/traffic_policy" >}}).
-Apply the following config on the `management-plane` cluster:
+Apply the following config on the `management-cluster` cluster:
 
 {{< highlight yaml "hl_lines=16-19" >}}
 apiVersion: networking.smh.solo.io/v1alpha2
@@ -42,7 +42,7 @@ spec:
       services:
       - name: reviews
         namespace: default
-        clusterName: management-plane
+        clusterName: management-cluster
       - name: reviews
         namespace: default
         clusterName: new-remote-cluster
@@ -63,7 +63,7 @@ into mesh-specific config:
 ```yaml
 status:
   trafficTargets:
-    reviews-default-management-plane.service-mesh-hub.:
+    reviews-default-management-cluster.service-mesh-hub.:
       state: ACCEPTED
     reviews-default-new-remote-cluster.service-mesh-hub.:
       state: ACCEPTED
@@ -74,10 +74,10 @@ status:
 ## Create the FailoverService
 
 Now we will create the FailoverService for the `reviews` service, composed of the 
-reviews service on the `management-plane` cluster in first priority and on `new-remote-cluster`
-in second priority. If the `reviews` service on the `management-plane` cluster is unhealthy,
+reviews service on the `management-cluster` cluster in first priority and on `new-remote-cluster`
+in second priority. If the `reviews` service on the `management-cluster` cluster is unhealthy,
  requests will automatically be shifted over to the service on `new-remote-cluster`.
- Apply the following config to the `management-plane` cluster:
+ Apply the following config to the `management-cluster` cluster:
  
 ```yaml
 apiVersion: networking.smh.solo.io/v1alpha2
@@ -91,13 +91,13 @@ spec:
     number: 9080
     protocol: http
   meshes:
-    - name: istiod-istio-system-management-plane-cluster
+    - name: istiod-istio-system-management-cluster-cluster
       namespace: service-mesh-hub
   backingServices:
   - kubeService:
       name: reviews
       namespace: bookinfo
-      clusterName: management-plane
+      clusterName: management-cluster
   - kubeService:
       name: reviews
       namespace: bookinfo
@@ -127,7 +127,7 @@ and you should see the following status:
 ```yaml
 status:
     meshes:
-      istiod-istio-system-management-plane.service-mesh-hub.:
+      istiod-istio-system-management-cluster.service-mesh-hub.:
         state: ACCEPTED
     observedGeneration: "1"
     state: ACCEPTED
@@ -179,7 +179,7 @@ no stars (for requests routed to the `reviews-v1` pod) and black stars
 (for requests routed to the `reviews-v2` pod). This shows that the productpage is routing
 to the first service listed in the reviews-failover FailoverService. Recall from the
 [multicluster setup guide]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
-that `reviews-v1` and `reviews-v1` only exist on `management-plane` and `reviews-v3` only
+that `reviews-v1` and `reviews-v1` only exist on `management-cluster` and `reviews-v3` only
 exists on `new-remote-cluster`, which we'll use to distinguish requests routing to either cluster.
 
 Now, to trigger the failover, we'll modify the `reviews-v1` and `reviews-v2` deployment
@@ -208,4 +208,4 @@ kubectl -n bookinfo patch deployment reviews-v2  --type json   -p '[{"op": "remo
 ```
 
 Once the deployment has rolled out, reloading the productpage should show reviews with no stars or black stars, indicating that
-the failover service is routing requests to the first listed service in the `management-plane`.
+the failover service is routing requests to the first listed service in the `management-cluster`.
