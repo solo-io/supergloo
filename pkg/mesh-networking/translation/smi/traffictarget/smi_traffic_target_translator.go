@@ -80,9 +80,9 @@ func (t *translator) isSmiTrafficTarget(
 		return false
 	}
 
-	switch typedMesh := mesh.Spec.GetMeshType().(type) {
+	switch mesh.Spec.GetMeshType().(type) {
 	case *discoveryv1alpha2.MeshSpec_Osm:
-		return typedMesh.Osm.GetSmiEnabled()
+		return true
 	}
 	return false
 }

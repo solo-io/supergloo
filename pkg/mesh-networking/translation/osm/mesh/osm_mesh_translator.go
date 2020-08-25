@@ -47,7 +47,5 @@ func (t *translator) Translate(
 		return
 	}
 
-	if osmMesh.GetSmiEnabled() {
-		outputs.AddCluster(osmMesh.GetInstallation().GetCluster())
-	}
+	outputs.AddCluster(osmMesh.GetInstallation().GetCluster())
 }

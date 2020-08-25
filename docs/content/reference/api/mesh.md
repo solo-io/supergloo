@@ -232,7 +232,6 @@ https://github.com/openservicemesh/osm
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | installation | [MeshSpec.MeshInstallation](#discovery.smh.solo.io.MeshSpec.MeshInstallation) |  |  |
-| smiEnabled | [bool](#bool) |  | Indicates whether or not SMI support is enabled https://smi-spec.io/ If smi_enabled is set to true, the rules associated with this mesh will be translated into SMI resources: traffictargets, httproutegroups, trafficsplits, etc... This field will automatically be set to true for discovered OSM meshes |
 
 
 

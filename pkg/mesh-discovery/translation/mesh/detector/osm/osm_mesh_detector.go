@@ -42,7 +42,6 @@ func (m *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 		Spec: v1alpha2.MeshSpec{
 			MeshType: &v1alpha2.MeshSpec_Osm{
 				Osm: &v1alpha2.MeshSpec_OSM{
-					SmiEnabled: true,
 					Installation: &v1alpha2.MeshSpec_MeshInstallation{
 						Namespace: deployment.Namespace,
 						Cluster:   deployment.ClusterName,

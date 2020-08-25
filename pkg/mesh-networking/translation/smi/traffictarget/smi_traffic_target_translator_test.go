@@ -68,9 +68,7 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 					},
 					Spec: v1alpha2.MeshSpec{
 						MeshType: &v1alpha2.MeshSpec_Osm{
-							Osm: &v1alpha2.MeshSpec_OSM{
-								SmiEnabled: true,
-							},
+							Osm: &v1alpha2.MeshSpec_OSM{},
 						},
 					},
 				},

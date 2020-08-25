@@ -114,12 +114,6 @@ message MeshSpec {
     message OSM {
 
         MeshInstallation installation = 1;
-
-        // Indicates whether or not SMI support is enabled https://smi-spec.io/
-        // If smi_enabled is set to true, the rules associated with this mesh will be
-        // translated into SMI resources: traffictargets, httproutegroups, trafficsplits, etc...
-        // This field will automatically be set to true for discovered OSM meshes
-        bool smi_enabled = 2;
     }
 
     /*
