@@ -31,12 +31,12 @@ We will assume in this guide that you have access to two clusters and the follow
 
 Your actual context names will likely be different.
 
-* `management-plane-context`
+* `management-cluster-context`
     - kubeconfig context pointing to a cluster where we will install and operate Service Mesh Hub
 * `remote-cluster-context`
     - kubeconfig context pointing to a cluster where we will install and manage a service mesh using Service Mesh Hub 
 
-We assume you've [installed Service Mesh Hub]({{% versioned_link_path fromRoot="/setup/#installing-with-meshctl" %}}) into the cluster represented by the context `management-plane-context`.
+We assume you've [installed Service Mesh Hub]({{% versioned_link_path fromRoot="/setup/#installing-with-meshctl" %}}) into the cluster represented by the context `management-cluster-context`.
 
 
 #### Two registered clusters
@@ -45,8 +45,8 @@ We also assume you've [registered]({{% versioned_link_path fromRoot="/setup/#reg
 
 ```shell
 meshctl cluster register \
-  --remote-cluster-name management-plane \
-  --remote-context management-plane-context
+  --remote-cluster-name management-cluster \
+  --remote-context management-cluster-context
 ```
 
 ```shell
@@ -55,7 +55,7 @@ meshctl cluster register \
   --remote-context remote-cluster-context
 ```
 
-At this point we have two clusters, `management-plane-context` and `remote-cluster-context` both registered with Service Mesh Hub which happens to be installed on the `management-plane-context` cluster.
+At this point we have two clusters, `management-cluster-context` and `remote-cluster-context` both registered with Service Mesh Hub which happens to be installed on the `management-cluster-context` cluster.
 
 ## Using Kind
 
@@ -69,8 +69,8 @@ meshctl demo init
 
 The command will do the following:
 
-* Create two kind clusters: management-plane and remote-cluster
-* Install Service Mesh Hub on the management-plane cluster
+* Create two kind clusters: management-cluster and remote-cluster
+* Install Service Mesh Hub on the management plane cluster
 * Install Istio on both clusters
 * Register both clusters with Service Mesh Hub
 
@@ -86,10 +86,10 @@ You'll want to first have [Istio installed for multi-cluster]({{% versioned_link
 
 The core components, including reviews-v1 and reviews-v2, are deployed to the management plane cluster, while `reviews-v3` is deployed on the remote cluster.
 
-Deploy part of the bookinfo application to the `management-plane-context` cluster:
+Deploy part of the bookinfo application to the `management-cluster-context` cluster:
 
 {{% notice note %}}
-Be sure to switch the `kubeconfig` context to the `management-plane-context`
+Be sure to switch the `kubeconfig` context to the `management-cluster-context`
 {{% /notice %}}
 
 ```shell
@@ -102,7 +102,7 @@ kubectl config use-context $MGMT_CONTEXT
 kubectl create ns bookinfo
 kubectl label namespace bookinfo istio-injection=enabled
 ​
-# we deploy everything except reviews-v3 to the management-plane cluster
+# we deploy everything except reviews-v3 to the management plane cluster
 kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version notin (v3)'
 kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account'
 ```
