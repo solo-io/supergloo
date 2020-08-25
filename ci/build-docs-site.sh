@@ -78,7 +78,7 @@ do
   then
     version="latest"
   fi
-  go run codegen/docs/docsgen.go
+  make generated-reference-docs
   cd docs
   # Generate data/Solo.yaml file with version info populated.
   generateHugoVersionsYaml $version
