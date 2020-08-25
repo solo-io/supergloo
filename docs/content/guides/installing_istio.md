@@ -4,7 +4,7 @@ menuTitle: Introductory Guides
 weight: 10
 ---
 
-We can use `istioctl` CLI to easily install Istio in our registered cluster. You can find `istioctl` on the [Getting Started page](https://istio.io/latest/docs/setup/getting-started/) of the Istio site. Currently, Service Mesh Hub supports Istio versions 1.5 and 1.6.
+We can use `istioctl` CLI to easily install Istio in our registered cluster. You can find `istioctl` on the [Getting Started page](https://istio.io/latest/docs/setup/getting-started/) of the Istio site. Currently, Service Mesh Hub supports Istio versions 1.5, 1.6, and 1.7.
 
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document. If you used the `meshctl demo init` command, Istio has already been installed for you.
