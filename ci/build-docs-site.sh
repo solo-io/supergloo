@@ -47,7 +47,7 @@ echo $firebaseJson > $docsSiteDir/firebase.json
 
 git clone https://github.com/solo-io/service-mesh-hub.git $repoDir
 
-export PATH=_output/.bin:$PATH
+export PATH=$workingDir/_output/.bin:$PATH
 
 # install go tools to sub-repo
 make -C $repoDir install-go-tools
