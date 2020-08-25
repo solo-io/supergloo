@@ -20,21 +20,21 @@ import (
 )
 
 type OutputSnapshots struct {
-	Istio istiooutput.Snapshot
-	SMI   smioutput.Snapshot
-	Local localoutput.Snapshot
+	istio  istiooutput.Snapshot
+	smi   smioutput.Snapshot
+	local localoutput.Snapshot
 }
 
 func (t OutputSnapshots) MarshalJSON() ([]byte, error) {
-	istioByt, err := t.Istio.MarshalJSON()
+	istioByt, err := t.istio.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
-	smiByt, err := t.SMI.MarshalJSON()
+	smiByt, err := t.smi.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
-	localByt, err := t.Local.MarshalJSON()
+	localByt, err := t.local.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
@@ -48,10 +48,10 @@ func (t OutputSnapshots) Apply(
 	errHandler output.ErrorHandler,
 ) {
 	// Apply istio and smi resources to registered clusters
-	t.Istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
-	t.SMI.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	t.istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	t.smi.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 	// Apply local resources only to management cluster
-	t.Local.ApplyLocalCluster(ctx, clusterClient, errHandler)
+	t.local.ApplyLocalCluster(ctx, clusterClient, errHandler)
 }
 
 // the networking translator translates an istio input networking snapshot to an istiooutput snapshot of mesh config resources
@@ -112,8 +112,8 @@ func (t *translator) Translate(
 	}
 
 	return OutputSnapshots{
-		Istio: istioSnapshot,
-		SMI:   smiSnapshot,
-		Local: localSnapshot,
+		istio: istioSnapshot,
+		smi:   smiSnapshot,
+		local: localSnapshot,
 	}, nil
 }
