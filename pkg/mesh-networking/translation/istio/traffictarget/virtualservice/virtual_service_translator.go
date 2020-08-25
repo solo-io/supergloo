@@ -86,6 +86,11 @@ func (t *translator) Translate(
 			}
 		}
 
+		// Avoid appending an HttpRoute that will have no affect, which occurs if no decorators mutate the baseRoute with any non-match config.
+		if equalityutils.Equals(initializeBaseRoute(policy.Spec), baseRoute) {
+			continue
+		}
+
 		// set a default destination for the route (to the target traffictarget)
 		// if a decorator has not already set it
 		t.setDefaultDestination(baseRoute, trafficTarget)
