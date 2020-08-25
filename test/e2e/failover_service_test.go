@@ -3,8 +3,6 @@ package e2e_test
 import (
 	"context"
 	"fmt"
-	"strings"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,9 +15,13 @@ import (
 
 var _ = Describe("FailoverService", func() {
 	var (
-		err      error
-		manifest utils.Manifest
-		ctx      = context.Background()
+		err                    error
+		manifest               utils.Manifest
+		ctx                    = context.Background()
+		failoverServiceObjMeta = metav1.ObjectMeta{
+			Name:      "reviews-failover",
+			Namespace: BookinfoNamespace,
+		}
 	)
 
 	AfterEach(func() {
@@ -32,7 +34,7 @@ var _ = Describe("FailoverService", func() {
 		env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
 	})
 
-	It("should create a failover service", func() {
+	FIt("should create a failover service", func() {
 		manifest, err = utils.NewManifest("failover_service_test_manifest.yaml")
 		Expect(err).ToNot(HaveOccurred())
 		env := e2e.GetEnv()
@@ -81,10 +83,7 @@ var _ = Describe("FailoverService", func() {
 					Kind:       "FailoverService",
 					APIVersion: networkingv1alpha2.SchemeGroupVersion.String(),
 				},
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "reviews-failover",
-					Namespace: BookinfoNamespace,
-				},
+				ObjectMeta: failoverServiceObjMeta,
 				Spec: networkingv1alpha2.FailoverServiceSpec{
 					Hostname: failoverServiceHostname,
 					Port: &networkingv1alpha2.FailoverServiceSpec_Port{
@@ -138,16 +137,53 @@ var _ = Describe("FailoverService", func() {
 
 			// first check that we have a response to reduce flakiness
 			Eventually(curlFailoverService, "1m", "1s").Should(ContainSubstring("200 OK"))
-			// now check that it is consistent 10 times in a row
-			Eventually(func() bool {
-				for i := 0; i < 5; i++ {
-					if !strings.Contains(curlFailoverService(), "200 OK") {
-						return false
-					}
-					time.Sleep(2 * time.Second)
-				}
-				return true
-			}, "5m", "2s").Should(BeTrue())
+		})
+
+		By("setting a TrafficShift to redirect traffic to the FailoverService", func() {
+			trafficPolicy := &networkingv1alpha2.TrafficPolicy{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "TrafficPolicy",
+					APIVersion: networkingv1alpha2.SchemeGroupVersion.String(),
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "reviews-shift-failover",
+					Namespace: BookinfoNamespace,
+				},
+				Spec: networkingv1alpha2.TrafficPolicySpec{
+					DestinationSelector: []*networkingv1alpha2.ServiceSelector{
+						{
+							KubeServiceRefs: &networkingv1alpha2.ServiceSelector_KubeServiceRefs{
+								Services: []*v1.ClusterObjectRef{
+									{
+										Name:        "reviews",
+										Namespace:   BookinfoNamespace,
+										ClusterName: mgmtClusterName,
+									},
+								},
+							},
+						},
+					},
+					TrafficShift: &networkingv1alpha2.TrafficPolicySpec_MultiDestination{
+						Destinations: []*networkingv1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
+							{
+								DestinationType: &networkingv1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceRef{
+									FailoverServiceRef: &v1.ObjectRef{
+										Name:      failoverServiceObjMeta.Name,
+										Namespace: failoverServiceObjMeta.Namespace,
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			err := manifest.AppendResources(trafficPolicy)
+			Expect(err).NotTo(HaveOccurred())
+			err = manifest.KubeApply(BookinfoNamespace)
+			Expect(err).NotTo(HaveOccurred())
+			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+
+			Consistently(curlReviews, "5s", "0.2s").Should(ContainSubstring(`"color": "red"`))
 		})
 
 		By("re-enable management-plane reviews deployments", func() {
