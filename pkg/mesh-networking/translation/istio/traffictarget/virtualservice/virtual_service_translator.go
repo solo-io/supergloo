@@ -1,12 +1,11 @@
 package virtualservice
 
 import (
+	"reflect"
 	"sort"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/skv2/pkg/ezkube"
-
-	"reflect"
 
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
