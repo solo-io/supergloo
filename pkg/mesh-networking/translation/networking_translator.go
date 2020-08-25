@@ -13,7 +13,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -68,18 +67,15 @@ type Translator interface {
 type translator struct {
 	totalTranslates int // TODO(ilackarms): metric
 	istioTranslator istio.Translator
-	smiTranslator   smi.Translator
 	osmTranslator   osm.Translator
 }
 
 func NewTranslator(
 	istioTranslator istio.Translator,
-	smiTranslator smi.Translator,
 	osmTranslator osm.Translator,
 ) Translator {
 	return &translator{
 		istioTranslator: istioTranslator,
-		smiTranslator:   smiTranslator,
 		osmTranslator:   osmTranslator,
 	}
 }
@@ -97,8 +93,6 @@ func (t *translator) Translate(
 	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", t.totalTranslates))
 
 	t.istioTranslator.Translate(ctx, in, istioOutputs, localOutputs, reporter)
-
-	t.smiTranslator.Translate(ctx, in, smiOutputs, reporter)
 
 	t.osmTranslator.Translate(ctx, in, smiOutputs, reporter)
 

@@ -1,4 +1,4 @@
-package smi_test
+package traffictarget_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestIstio(t *testing.T) {
+func TestTrafficTarget(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Istio Suite")
+	RunSpecs(t, "TrafficTarget Suite")
 }

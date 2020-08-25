@@ -16,7 +16,6 @@ import (
 	mock_access "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/access/mocks"
 	mock_split "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/split/mocks"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("SmiTrafficTargetTranslator", func() {
@@ -43,15 +42,8 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 		ctrl.Finish()
 	})
 
-	It("should not translate when not an smi mesh service", func() {
-		in := input.NewInputSnapshotManualBuilder("").Build()
-		meshService := &v1alpha2.TrafficTarget{}
-
-		smiTrafficTargetTranslator.Translate(ctx, in, meshService, mockOutputs, mockReporter)
-	})
-
-	It("should translate when an smi mesh service", func() {
-		meshService := &v1alpha2.TrafficTarget{
+	It("should translate when an smi traffic target", func() {
+		trafficTarget := &v1alpha2.TrafficTarget{
 			Spec: v1alpha2.TrafficTargetSpec{
 				Mesh: &v1.ObjectRef{
 					Name:      "hello",
@@ -59,27 +51,13 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 				},
 			},
 		}
-		in := input.NewInputSnapshotManualBuilder("").
-			AddMeshes([]*v1alpha2.Mesh{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      meshService.Spec.GetMesh().GetName(),
-						Namespace: meshService.Spec.GetMesh().GetNamespace(),
-					},
-					Spec: v1alpha2.MeshSpec{
-						MeshType: &v1alpha2.MeshSpec_Osm{
-							Osm: &v1alpha2.MeshSpec_OSM{},
-						},
-					},
-				},
-			}).
-			Build()
+		in := input.NewInputSnapshotManualBuilder("").Build()
 
 		ts := &smisplitv1alpha2.TrafficSplit{}
 
 		mockSplitTranslator.
 			EXPECT().
-			Translate(gomock.AssignableToTypeOf(ctx), in, meshService, mockReporter).
+			Translate(gomock.AssignableToTypeOf(ctx), in, trafficTarget, mockReporter).
 			Return(ts)
 
 		mockOutputs.
@@ -90,7 +68,7 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 		hrg := &smispecsv1alpha3.HTTPRouteGroup{}
 		mockAccessTranslator.
 			EXPECT().
-			Translate(gomock.AssignableToTypeOf(ctx), in, meshService, mockReporter).
+			Translate(gomock.AssignableToTypeOf(ctx), in, trafficTarget, mockReporter).
 			Return([]*smiaccessv1alpha2.TrafficTarget{tt}, []*smispecsv1alpha3.HTTPRouteGroup{hrg})
 
 		mockOutputs.
@@ -101,6 +79,6 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 			EXPECT().
 			AddHTTPRouteGroups(hrg)
 
-		smiTrafficTargetTranslator.Translate(ctx, in, meshService, mockOutputs, mockReporter)
+		smiTrafficTargetTranslator.Translate(ctx, in, trafficTarget, mockOutputs, mockReporter)
 	})
 })

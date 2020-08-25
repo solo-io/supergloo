@@ -31,16 +31,16 @@ var _ = Describe("TrafficSplitTranslator", func() {
 
 	It("will return nothing if no traffic policies are applied", func() {
 		in := input.NewInputSnapshotManualBuilder("").Build()
-		meshService := &discoveryv1alpha2.TrafficTarget{}
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{}
 
-		ts := NewTrafficSplitTranslator().Translate(ctx, in, meshService, mockReporter)
+		ts := NewTranslator().Translate(ctx, in, trafficTarget, mockReporter)
 		Expect(ts).To(BeNil())
 	})
 
 	It("can build a proper traffic shift", func() {
 		ns := "default"
 		in := input.NewInputSnapshotManualBuilder("").Build()
-		meshService := &discoveryv1alpha2.TrafficTarget{
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
@@ -90,8 +90,8 @@ var _ = Describe("TrafficSplitTranslator", func() {
 
 		expectedTT := &smislpitv1alpha2.TrafficSplit{
 			ObjectMeta: metautils.TranslatedObjectMeta(
-				meshService.Spec.GetKubeService().Ref,
-				meshService.Annotations,
+				trafficTarget.Spec.GetKubeService().Ref,
+				trafficTarget.Annotations,
 			),
 			Spec: smislpitv1alpha2.TrafficSplitSpec{
 				Service: "service.default",
@@ -108,7 +108,7 @@ var _ = Describe("TrafficSplitTranslator", func() {
 			},
 		}
 
-		ts := NewTrafficSplitTranslator().Translate(ctx, in, meshService, mockReporter)
+		ts := NewTranslator().Translate(ctx, in, trafficTarget, mockReporter)
 		Expect(ts).To(Equal(expectedTT))
 	})
 
