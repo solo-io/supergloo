@@ -34,7 +34,7 @@ var _ = Describe("FailoverService", func() {
 		env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
 	})
 
-	FIt("should create a failover service", func() {
+	It("should create a failover service", func() {
 		manifest, err = utils.NewManifest("failover_service_test_manifest.yaml")
 		Expect(err).ToNot(HaveOccurred())
 		env := e2e.GetEnv()
