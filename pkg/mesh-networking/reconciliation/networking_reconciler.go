@@ -36,7 +36,7 @@ type networkingReconciler struct {
 	applier            apply.Applier
 	reporter           reporting.Reporter
 	translator         translation.Translator
-	masterClient       client.Client
+	mgmtClient         client.Client
 	multiClusterClient multicluster.Client
 	history            *stats.SnapshotHistory
 	totalReconciles    int
@@ -58,7 +58,7 @@ func Start(
 		applier:            validator,
 		reporter:           reporter,
 		translator:         translator,
-		masterClient:       mgr.GetClient(),
+		mgmtClient:         mgr.GetClient(),
 		multiClusterClient: multiClusterClient,
 		history:            history,
 	}
@@ -94,7 +94,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		errs = multierror.Append(errs, err)
 	}
 
-	if err := inputSnap.SyncStatuses(ctx, r.masterClient); err != nil {
+	if err := inputSnap.SyncStatuses(ctx, r.mgmtClient); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -110,9 +110,7 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Sn
 
 	errHandler := errhandlers.AppendingErrHandler{}
 
-	outputSnap.ApplyMultiCluster(ctx, r.multiClusterClient, errHandler)
-
-	outputSnap.ApplyLocalCluster(ctx, r.masterClient, errHandler)
+	outputSnap.Apply(ctx, r.mgmtClient, r.multiClusterClient, errHandler)
 
 	r.history.SetInput(in)
 	r.history.SetOutput(outputSnap)

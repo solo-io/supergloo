@@ -1,16 +1,20 @@
 package traffictarget
 
 import (
+	"context"
+
+	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/authorizationpolicy"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
 //go:generate mockgen -source ./istio_traffic_target_translator.go -destination mocks/istio_traffic_target_translator.go
@@ -24,19 +28,26 @@ type Translator interface {
 	Translate(
 		in input.Snapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
-		outputs output.Builder,
+		outputs istio.Builder,
 		reporter reporting.Reporter,
 	)
 }
 
 type translator struct {
+	ctx                   context.Context
 	destinationRules      destinationrule.Translator
 	virtualServices       virtualservice.Translator
 	authorizationPolicies authorizationpolicy.Translator
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) Translator {
+func NewTranslator(
+	ctx context.Context,
+	clusterDomains hostutils.ClusterDomainRegistry,
+	decoratorFactory decorators.Factory,
+	trafficTargets v1alpha2sets.TrafficTargetSet,
+) Translator {
 	return &translator{
+		ctx:                   ctx,
 		destinationRules:      destinationrule.NewTranslator(clusterDomains, decoratorFactory, trafficTargets),
 		virtualServices:       virtualservice.NewTranslator(clusterDomains, decoratorFactory),
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
@@ -47,9 +58,13 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFact
 func (t *translator) Translate(
 	in input.Snapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	outputs output.Builder,
+	outputs istio.Builder,
 	reporter reporting.Reporter,
 ) {
+	// only translate istio trafficTargets
+	if !t.isIstioTrafficTarget(t.ctx, trafficTarget, in.Meshes()) {
+		return
+	}
 
 	vs := t.virtualServices.Translate(in, trafficTarget, reporter)
 	dr := t.destinationRules.Translate(in, trafficTarget, reporter)
@@ -58,4 +73,22 @@ func (t *translator) Translate(
 	outputs.AddVirtualServices(vs)
 	outputs.AddDestinationRules(dr)
 	outputs.AddAuthorizationPolicies(ap)
+}
+
+func (t *translator) isIstioTrafficTarget(
+	ctx context.Context,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	allMeshes v1alpha2sets.MeshSet,
+) bool {
+	meshRef := trafficTarget.Spec.Mesh
+	if meshRef == nil {
+		contextutils.LoggerFrom(ctx).Errorf("internal error: trafficTarget %v missing mesh ref", sets.Key(trafficTarget))
+		return false
+	}
+	mesh, err := allMeshes.Find(meshRef)
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Errorf("internal error: could not find mesh %v for trafficTarget %v", sets.Key(meshRef), sets.Key(trafficTarget))
+		return false
+	}
+	return mesh.Spec.GetIstio() != nil
 }

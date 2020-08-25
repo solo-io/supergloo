@@ -22,12 +22,13 @@ message MeshSpec {
         AwsAppMesh aws_app_mesh = 2;
         LinkerdMesh linkerd = 3;
         ConsulConnectMesh consul_connect = 4;
+        OSM osm = 6;
     }
 
     // Information about the SMH certificate agent if it has been installed to the remote cluster.
     AgentInfo agent_info = 5;
 
-    // Mesh object representing an installed Istio control plane.
+    // Mesh object representing an installed Istio control plane
     message Istio {
 
         // Configuration metadata about the istio control plane installation.
@@ -104,6 +105,14 @@ message MeshSpec {
 
     // Mesh object representing an installed ConsulConnect control plane.
     message ConsulConnectMesh {
+        MeshInstallation installation = 1;
+    }
+
+    /*
+        https://github.com/openservicemesh/osm
+    */
+    message OSM {
+
         MeshInstallation installation = 1;
     }
 

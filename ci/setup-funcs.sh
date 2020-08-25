@@ -267,6 +267,32 @@ EOF
 
 }
 
+function install_osm() {
+  cluster=$1
+  port=$2
+  K="kubectl --context=kind-${cluster}"
+
+  echo "installing osm to ${cluster}..."
+  ROLLOUT="${K} rollout status deployment --timeout 300s"
+
+  # install in permissive mode for testing
+  osm install --enable-metrics-stack=false --deploy-zipkin=false
+
+  ${ROLLOUT} -n osm-system osm-controller
+
+  for i in bookstore bookthief bookwarehouse bookbuyer; do ${K} create ns $i; done
+
+  for i in bookstore bookthief bookwarehouse bookbuyer; do osm namespace add $i; done
+
+  ${K} apply -f ${PROJECT_ROOT}/ci/osm-demo.yaml
+
+  ${ROLLOUT} -n bookstore bookstore-v1
+  ${ROLLOUT} -n bookstore bookstore-v2
+  ${ROLLOUT} -n bookthief bookthief
+  ${ROLLOUT} -n bookwarehouse bookwarehouse
+  ${ROLLOUT} -n bookbuyer bookbuyer
+}
+
 function get_api_address() {
   cluster=$1
   case $(uname) in
