@@ -43,47 +43,48 @@ If you prefer to use an existing Kubernetes cluster, check out our [Setup Guide]
 To spin up two Kubernetes clusters with Kind, run:
 
 ```shell
-meshctl demo init
+meshctl demo istio-multicluster init
 ```
-This will spin up two Kubernetes clusters in Docker with Istio installed on each. Additionally, this will install Service Mesh Hub on one of the clusters. Both clusters will be **registered** with Service Mesh Hub under the names `management-plane` and `remote-cluster`, which will be used throughout the documentation.
+This will spin up two Kubernetes clusters in Docker with Istio installed on each. Additionally, this will install Service Mesh Hub on one of the clusters. Both clusters will be **registered** with Service Mesh Hub under the names `management-cluster` and `remote-cluster`, which will be used throughout the documentation.
 
 ```shell
-Creating cluster "management-plane-bdefd91b0749a8854b3af6d7e44a1f53" ...
- ✓ Ensuring node image (kindest/node:v1.17.0) 🖼
- ✓ Preparing nodes 📦  
- ✓ Writing configuration 📜 
- ✓ Starting control-plane 🕹️ 
- ✓ Installing CNI 🔌 
- ✓ Installing StorageClass 💾 
-Set kubectl context to "kind-management-plane-bdefd91b0749a8854b3af6d7e44a1f53"
+Creating cluster management-cluster with ingress port 32001
+Creating cluster "management-cluster" ...
+ ✓ Ensuring node image (kindest/node:v1.17.5) �
+ ✓ Preparing nodes ��
+ ✓ Writing configuration ��
+ ✓ Starting control-plane 🕹
+ ✓ Installing CNI ��
+ ✓ Installing StorageClass ��
+Set kubectl context to "kind-management-cluster"
 You can now use your cluster with:
 
-kubectl cluster-info --context kind-management-plane-bdefd91b0749a8854b3af6d7e44a1f53
+kubectl cluster-info --context kind-management-cluster
 
-Thanks for using kind! 😊
-Creating cluster "remote-cluster-88c93dcb26cfed3408ee0e64579a70cb" ...
- ✓ Ensuring node image (kindest/node:v1.17.0) 🖼
- ✓ Preparing nodes 📦  
- ✓ Writing configuration 📜 
- ✓ Starting control-plane 🕹️ 
- ✓ Installing CNI 🔌 
- ✓ Installing StorageClass 💾 
-Set kubectl context to "kind-remote-cluster-88c93dcb26cfed3408ee0e64579a70cb"
+...
+
+Creating cluster remote-cluster with ingress port 32000
+Creating cluster "remote-cluster" ...
+ ✓ Ensuring node image (kindest/node:v1.17.5) �
+ ✓ Preparing nodes ��
+ ✓ Writing configuration ��
+ ✓ Starting control-plane 🕹
+ ✓ Installing CNI ��
+ ✓ Installing StorageClass ��
+Set kubectl context to "kind-remote-cluster"
 You can now use your cluster with:
 
-kubectl cluster-info --context kind-remote-cluster-88c93dcb26cfed3408ee0e64579a70cb
-
-Have a nice day! 👋
+kubectl cluster-info --context kind-remote-cluster
 ```
 
 To connect to each of the clusters, run the following:
 
 ```shell
-export MGMT_PLANE_CTX=kind-management-plane
+export MGMT_PLANE_CTX=kind-management-cluster
 export REMOTE_CTX=kind-remote-cluster
 ```
 
-Then you can run the following to connect to the management-plane cluster:
+Then you can run the following to connect to the management-cluster cluster:
 
 ```shell
 kubectl --context $MGMT_PLANE_CTX get po -n service-mesh-hub
@@ -132,7 +133,7 @@ You should be ready to run the steps in the rest of the [Guides]({{% versioned_l
 Cleaning up this demo environment is as simple as running the following:
 
 ```shell
-meshctl demo cleanup
+meshctl demo istio-multicluster cleanup
 ```
 
 ## Next steps
