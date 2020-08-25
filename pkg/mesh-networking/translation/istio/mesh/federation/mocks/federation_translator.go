@@ -10,7 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	istio "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 )
 
@@ -38,7 +38,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(in input.Snapshot, mesh *v1alpha2.Mesh, virtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh, outputs output.Builder, reporter reporting.Reporter) {
+func (m *MockTranslator) Translate(in input.Snapshot, mesh *v1alpha2.Mesh, virtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh, outputs istio.Builder, reporter reporting.Reporter) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Translate", in, mesh, virtualMesh, outputs, reporter)
 }

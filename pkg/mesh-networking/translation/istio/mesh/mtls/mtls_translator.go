@@ -6,6 +6,7 @@ import (
 	"time"
 
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
 	"github.com/solo-io/skv2/pkg/ezkube"
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
@@ -13,7 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/common/secrets"
 	"istio.io/istio/pkg/spiffe"
@@ -54,12 +55,13 @@ func IsSigningCert(secret *corev1.Secret) bool {
 type Translator interface {
 	// Translate translates the appropriate VirtualService and DestinationRule for the given Mesh.
 	// returns nil if no VirtualService or DestinationRule is required for the Mesh (i.e. if no VirtualService/DestinationRule features are required, such as subsets).
-	// Output resources will be added to the output.Builder
+	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		mesh *discoveryv1alpha2.Mesh,
 		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
-		outputs output.Builder,
+		istioOutputs istio.Builder,
+		localOutputs local.Builder,
 		reporter reporting.Reporter,
 	)
 }
@@ -82,7 +84,8 @@ func NewTranslator(ctx context.Context, secrets corev1sets.SecretSet, workloads 
 func (t *translator) Translate(
 	mesh *discoveryv1alpha2.Mesh,
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
-	outputs output.Builder,
+	istioOutputs istio.Builder,
+	localOutputs local.Builder,
 	reporter reporting.Reporter,
 ) {
 	istioMesh := mesh.Spec.GetIstio()
@@ -140,7 +143,7 @@ func (t *translator) Translate(
 				Type: signingCertSecretType,
 			}
 		}
-		outputs.AddSecrets(selfSignedCertSecret)
+		localOutputs.AddSecrets(selfSignedCertSecret)
 	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Secret:
 		rootCaSecret = caType.Secret
 	}
@@ -186,7 +189,7 @@ func (t *translator) Translate(
 			PodsToBounce:             podsToBounce,
 		},
 	}
-	outputs.AddIssuedCertificates(issuedCertificate)
+	istioOutputs.AddIssuedCertificates(issuedCertificate)
 }
 
 const (

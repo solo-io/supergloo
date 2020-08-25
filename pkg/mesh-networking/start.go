@@ -6,6 +6,8 @@ import (
 	certissuerinput "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/issuer/input"
 	certissuerreconciliation "github.com/solo-io/service-mesh-hub/pkg/certificates/issuer/reconciliation"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi"
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
@@ -34,6 +36,8 @@ func startReconciler(
 	reporter := reporting.NewPanickingReporter(parameters.Ctx)
 	translator := translation.NewTranslator(
 		istio.NewIstioTranslator(),
+		smi.NewSmiTranslator(smi.DefaultDependencyFactory),
+		osm.NewOSMTranslator(osm.DefaultDependencyFactory),
 	)
 	validator := apply.NewApplier(translator)
 

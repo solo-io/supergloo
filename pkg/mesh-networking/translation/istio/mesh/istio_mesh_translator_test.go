@@ -3,7 +3,8 @@ package mesh_test
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
 	mock_mtls "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls/mocks"
 
 	"github.com/golang/mock/gomock"
@@ -48,7 +49,8 @@ var _ = Describe("IstioMeshTranslator", func() {
 	})
 
 	It("should translate", func() {
-		outputs := output.NewBuilder(context.TODO(), "")
+		outputs := istio.NewBuilder(context.TODO(), "")
+		localOutputs := local.NewBuilder(context.TODO(), "")
 
 		istioMesh := &discoveryv1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
@@ -75,7 +77,7 @@ var _ = Describe("IstioMeshTranslator", func() {
 
 		mockMtlsTranslator.
 			EXPECT().
-			Translate(istioMesh, istioMesh.Status.AppliedVirtualMesh, outputs, mockReporter)
+			Translate(istioMesh, istioMesh.Status.AppliedVirtualMesh, outputs, localOutputs, mockReporter)
 
 		mockFederationTranslator.
 			EXPECT().
@@ -89,6 +91,6 @@ var _ = Describe("IstioMeshTranslator", func() {
 			EXPECT().
 			Translate(in, istioMesh, istioMesh.Status.AppliedFailoverServices[0], outputs, mockReporter)
 
-		istioMeshTranslator.Translate(in, istioMesh, outputs, mockReporter)
+		istioMeshTranslator.Translate(in, istioMesh, outputs, localOutputs, mockReporter)
 	})
 })
