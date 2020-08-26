@@ -3,7 +3,8 @@ package mesh
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -21,12 +22,13 @@ import (
 // the VirtualService translator translates a Mesh into a VirtualService.
 type Translator interface {
 	// Translate translates the appropriate resources to apply the VirtualMesh to the given Mesh.
-	// Output resources will be added to the output.Builder
+	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.Snapshot,
 		mesh *discoveryv1alpha2.Mesh,
-		outputs output.Builder,
+		istioOutputs istio.Builder,
+		localOutputs local.Builder,
 		reporter reporting.Reporter,
 	)
 }
@@ -59,7 +61,8 @@ func NewTranslator(
 func (t *translator) Translate(
 	in input.Snapshot,
 	mesh *discoveryv1alpha2.Mesh,
-	outputs output.Builder,
+	istioOutputs istio.Builder,
+	localOutputs local.Builder,
 	reporter reporting.Reporter,
 ) {
 	istioMesh := mesh.Spec.GetIstio()
@@ -69,16 +72,16 @@ func (t *translator) Translate(
 	}
 
 	// add mesh installation cluster to outputs
-	outputs.AddCluster(istioMesh.Installation.GetCluster())
+	istioOutputs.AddCluster(istioMesh.Installation.GetCluster())
 
 	appliedVirtualMesh := mesh.Status.AppliedVirtualMesh
 	if appliedVirtualMesh != nil {
-		t.mtlsTranslator.Translate(mesh, appliedVirtualMesh, outputs, reporter)
-		t.federationTranslator.Translate(in, mesh, appliedVirtualMesh, outputs, reporter)
-		t.accessTranslator.Translate(mesh, appliedVirtualMesh, outputs)
+		t.mtlsTranslator.Translate(mesh, appliedVirtualMesh, istioOutputs, localOutputs, reporter)
+		t.federationTranslator.Translate(in, mesh, appliedVirtualMesh, istioOutputs, reporter)
+		t.accessTranslator.Translate(mesh, appliedVirtualMesh, istioOutputs)
 	}
 
 	for _, failoverService := range mesh.Status.AppliedFailoverServices {
-		t.failoverServiceTranslator.Translate(in, mesh, failoverService, outputs, reporter)
+		t.failoverServiceTranslator.Translate(in, mesh, failoverService, istioOutputs, reporter)
 	}
 }

@@ -57,7 +57,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Unit Tests
         run: |
-          go test ./...
+          make install-go-tools run-tests
 
   e2e-istio:
     name: end-to-end-istio
@@ -114,4 +114,57 @@ jobs:
           export PATH=$PWD/_output/$ISTIO_VERSION/bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
           istioctl version
 
-          make run-tests TEST_PKG=test/e2e RUN_E2E=1 GINKGOFLAGS=-v
+          make run-tests TEST_PKG=test/e2e/istio RUN_E2E=1 GINKGOFLAGS=-v
+  e2e-osm:
+    name: end-to-end-osm
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+        osm-binary: [
+          'https://github.com/openservicemesh/osm/releases/download/v0.3.0/osm-v0.3.0-linux-amd64.tar.gz',
+        ]
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          git fetch --prune --unshallow
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+      - uses: engineerd/setup-kind@v0.4.0
+        with:
+          skipClusterCreation: "true"
+          version: v0.8.0
+      - name: Install Protoc
+        uses: solo-io/setup-protoc@master
+        with:
+          version: '3.6.1'
+      - uses: azure/setup-kubectl@v1
+        with:
+          version: 'v1.18.0'
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Clean
+        run: make clean || true
+      - name: e2e Tests
+        env:
+          RUN_E2E: "1"
+          OSM_BINARY: ${{ matrix.osm-binary }}
+          OSM_VERSION: linux-amd64/osm
+        run: |
+          make print-version manifest-gen
+
+          go install github.com/onsi/ginkgo/ginkgo
+
+          curl -sSL $OSM_BINARY | tar -xzf - $OSM_VERSION
+          # move istio binary to _output, which is gitignored, to avoid `-dirty` suffix when computing version in subsequent makefile invocations
+          mkdir -p _output/.bin && mv $OSM_VERSION _output/.bin
+          export PATH=$PWD/_output/.bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
+          osm version
+
+          make run-tests TEST_PKG=test/e2e/osm RUN_E2E=1 GINKGOFLAGS=-v

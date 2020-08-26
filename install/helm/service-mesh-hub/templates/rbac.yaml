@@ -179,6 +179,24 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - access.smi-spec.io
+  resources:
+  - traffictargets
+  verbs:
+  - '*'
+- apiGroups:
+  - specs.smi-spec.io
+  resources:
+  - httproutegroups
+  verbs:
+  - '*'
+- apiGroups:
+  - split.smi-spec.io
+  resources:
+  - trafficsplits
+  verbs:
+  - '*'
+- apiGroups:
   - certificates.smh.solo.io
   resources:
   - issuedcertificates

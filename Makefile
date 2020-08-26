@@ -34,6 +34,11 @@ print-info:
 #----------------------------------------------------------------------------------
 # Code Generation
 #----------------------------------------------------------------------------------
+
+DEPSGOBIN=$(shell pwd)/$(OUTDIR)/.bin
+export PATH:=$(DEPSGOBIN):$(PATH)
+export GOBIN:=$(DEPSGOBIN)
+
 .PHONY: fmt
 fmt:
 	goimports -w $(shell ls -d */ | grep -v vendor)
@@ -42,9 +47,14 @@ fmt:
 mod-download:
 	go mod download
 
+.PHONY: clear-vendor-any
+clear-vendor-any:
+	rm -rf vendor_any
+
 # Dependencies for code generation
 .PHONY: install-go-tools
 install-go-tools: mod-download
+	mkdir -p $(DEPSGOBIN)
 	go install istio.io/tools/cmd/protoc-gen-jsonshim
 	go install github.com/gogo/protobuf/protoc-gen-gogo
 	go install github.com/golang/protobuf/protoc-gen-go
@@ -77,7 +87,7 @@ go-generate:
 
 # Generate Operator Code
 .PHONY: operator-gen
-operator-gen:
+operator-gen: clear-vendor-any
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go
 
 #----------------------------------------------------------------------------------
@@ -86,7 +96,7 @@ operator-gen:
 
 # Generate Reference documentation
 .PHONY: generated-reference-docs
-generated-reference-docs:
+generated-reference-docs: clear-vendor-any
 	go run codegen/docs/docsgen.go
 
 #----------------------------------------------------------------------------------
@@ -196,7 +206,7 @@ include install/helm/helm.mk
 
 # Generate Manifests from Helm Chart
 .PHONY: chart-gen
-chart-gen:
+chart-gen: clear-vendor-any
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
 
 .PHONY: manifest-gen

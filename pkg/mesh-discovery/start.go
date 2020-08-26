@@ -21,7 +21,7 @@ func startReconciler(
 	parameters bootstrap.StartParameters,
 ) error {
 	snapshotBuilder := input.NewMultiClusterBuilder(parameters.Clusters, parameters.McClient)
-	translator := translation.NewTranslator()
+	translator := translation.NewTranslator(translation.DefaultDependencyFactory)
 	reconciliation.Start(
 		parameters.Ctx,
 		snapshotBuilder,

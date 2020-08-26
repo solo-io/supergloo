@@ -22,9 +22,9 @@ In this guide we will learn about the four main discovery capabilities in the co
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `management-plane-context`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
-* Istio is [installed on both the `management-plane-context` and `remote-cluster-context`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
-* Both `management-plane-context` and `remote-cluster-context` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* Service Mesh Hub is [installed and running on the `management-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Istio is [installed on both the `management-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* Both `management-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
@@ -49,9 +49,9 @@ kubectl get kubernetesclusters -n service-mesh-hub
 ```
 
 ```shell
-NAME               AGE
-management-plane   23h
-remote-cluster     23h
+NAME                 AGE
+management-cluster   23h
+remote-cluster       23h
 ```
 
 ### Discover Meshes
@@ -63,21 +63,21 @@ meshctl describe mesh
 ```
 
 ```
-+---------------------------+----------------+-------------------+
-|          METADATA         | VIRTUAL MESHES | FAILOVER SERVICES |
-+---------------------------+----------------+-------------------+
-| Namespace: istio-system   |                |                   |
-| Cluster: management-plane |                |                   |
-| Type: istio               |                |                   |
-| Version: 1.5.2            |                |                   |
-|                           |                |                   |
-+---------------------------+----------------+-------------------+
-| Namespace: istio-system   |                |                   |
-| Cluster: remote-cluster   |                |                   |
-| Type: istio               |                |                   |
-| Version: 1.5.2            |                |                   |
-|                           |                |                   |
-+---------------------------+----------------+-------------------+
++-----------------------------+----------------+-------------------+
+|           METADATA          | VIRTUAL MESHES | FAILOVER SERVICES |
++-----------------------------+----------------+-------------------+
+| Namespace: istio-system     |                |                   |
+| Cluster: management-cluster |                |                   |
+| Type: istio                 |                |                   |
+| Version: 1.5.2              |                |                   |
+|                             |                |                   |
++-----------------------------+----------------+-------------------+
+| Namespace: istio-system     |                |                   |
+| Cluster: remote-cluster     |                |                   |
+| Type: istio                 |                |                   |
+| Version: 1.5.2              |                |                   |
+|                             |                |                   |
++-----------------------------+----------------+-------------------+
 ```
 
 We can print it in YAML form to see all the information we discovered:
@@ -137,14 +137,14 @@ kubectl -n service-mesh-hub get workloads
 ```
 NAME                                                            AGE
 NAME                                                            AGE
-details-v1-bookinfo-management-plane-deployment                 3m54s
-istio-ingressgateway-istio-system-management-plane-deployment   23h
+details-v1-bookinfo-management-cluster-deployment                 3m54s
+istio-ingressgateway-istio-system-management-cluster-deployment   23h
 istio-ingressgateway-istio-system-remote-cluster-deployment     23h
-productpage-v1-bookinfo-management-plane-deployment             3m54s
-ratings-v1-bookinfo-management-plane-deployment                 3m53s
+productpage-v1-bookinfo-management-cluster-deployment             3m54s
+ratings-v1-bookinfo-management-cluster-deployment                 3m53s
 ratings-v1-bookinfo-remote-cluster-deployment                   3m25s
-reviews-v1-bookinfo-management-plane-deployment                 3m53s
-reviews-v2-bookinfo-management-plane-deployment                 3m53s
+reviews-v1-bookinfo-management-cluster-deployment                 3m53s
+reviews-v2-bookinfo-management-cluster-deployment                 3m53s
 reviews-v3-bookinfo-remote-cluster-deployment                   2m
 ```
 
@@ -158,13 +158,13 @@ kubectl -n service-mesh-hub get traffictargets
 
 ```
 NAME                                                 AGE
-details-bookinfo-management-plane                    4m23s
-istio-ingressgateway-istio-system-management-plane   23h
+details-bookinfo-management-cluster                    4m23s
+istio-ingressgateway-istio-system-management-cluster   23h
 istio-ingressgateway-istio-system-remote-cluster     23h
-productpage-bookinfo-management-plane                4m23s
-ratings-bookinfo-management-plane                    4m22s
+productpage-bookinfo-management-cluster                4m23s
+ratings-bookinfo-management-cluster                    4m22s
 ratings-bookinfo-remote-cluster                      3m54s
-reviews-bookinfo-management-plane                    4m22s
+reviews-bookinfo-management-cluster                    4m22s
 reviews-bookinfo-remote-cluster                      2m29s
 ```
 

@@ -8,7 +8,8 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	mock_output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/mocks"
+	mock_istio_output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio/mocks"
+	mock_local_output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local/mocks"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
 	mock_istio "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/internal/mocks"
 	mock_mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mocks"
@@ -24,7 +25,8 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		ctx                         context.Context
 		ctxWithValue                context.Context
 		mockReporter                *mock_reporting.MockReporter
-		mockOutputs                 *mock_output.MockBuilder
+		mockIstioOutputs            *mock_istio_output.MockBuilder
+		mockLocalOutputs            *mock_local_output.MockBuilder
 		mockTrafficTargetTranslator *mock_traffictarget.MockTranslator
 		mockMeshTranslator          *mock_mesh.MockTranslator
 		mockDependencyFactory       *mock_istio.MockDependencyFactory
@@ -39,7 +41,8 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		mockTrafficTargetTranslator = mock_traffictarget.NewMockTranslator(ctrl)
 		mockMeshTranslator = mock_mesh.NewMockTranslator(ctrl)
 		mockDependencyFactory = mock_istio.NewMockDependencyFactory(ctrl)
-		mockOutputs = mock_output.NewMockBuilder(ctrl)
+		mockIstioOutputs = mock_istio_output.NewMockBuilder(ctrl)
+		mockLocalOutputs = mock_local_output.NewMockBuilder(ctrl)
 		translator = &istioTranslator{dependencies: mockDependencyFactory}
 	})
 
@@ -86,12 +89,12 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 
 		mockDependencyFactory.
 			EXPECT().
-			MakeTrafficTargetTranslator(in.KubernetesClusters(), in.TrafficTargets()).
+			MakeTrafficTargetTranslator(gomock.Any(), in.KubernetesClusters(), in.TrafficTargets()).
 			Return(mockTrafficTargetTranslator)
 		for i := range in.TrafficTargets().List() {
 			mockTrafficTargetTranslator.
 				EXPECT().
-				Translate(in, in.TrafficTargets().List()[i], mockOutputs, mockReporter)
+				Translate(in, in.TrafficTargets().List()[i], mockIstioOutputs, mockReporter)
 		}
 
 		mockDependencyFactory.
@@ -101,9 +104,9 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		for i := range in.Meshes().List() {
 			mockMeshTranslator.
 				EXPECT().
-				Translate(in, in.Meshes().List()[i], mockOutputs, mockReporter)
+				Translate(in, in.Meshes().List()[i], mockIstioOutputs, mockLocalOutputs, mockReporter)
 		}
 
-		translator.Translate(ctx, in, mockOutputs, mockReporter)
+		translator.Translate(ctx, in, mockIstioOutputs, mockLocalOutputs, mockReporter)
 	})
 })
