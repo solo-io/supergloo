@@ -178,7 +178,7 @@ spec:
     timeout: 0.100s
 ```
 
-As we can see above, the proper retry and timeout settings have been applied to the VirtualService from the Service Mesh Hub TrafficPolicy. This feature can be extended to configure many services across multiple service meshes and clusters.
+As we can see above, the proper retry and timeout settings have been applied to the VirtualService from the Service Mesh Hub TrafficPolicy. This feature can be extended to configure many services across multiple service meshes and clusters. Many other features can be configured through the traffic policy as well, including fault injection and traffic mirroring. The [`TrafficPolicySpec`]({{% versioned_link_path fromRoot="/reference/api/traffic_policy" %}}) in our API provides more information on using traffic policies.
 
 ## Next Steps
 
