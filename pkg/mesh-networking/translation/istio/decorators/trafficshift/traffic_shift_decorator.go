@@ -10,6 +10,7 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/trafficpolicyutils"
@@ -28,13 +29,18 @@ func init() {
 }
 
 func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
-	return NewTrafficShiftDecorator(params.ClusterDomains, params.Snapshot.TrafficTargets())
+	return NewTrafficShiftDecorator(
+		params.ClusterDomains,
+		params.Snapshot.TrafficTargets(),
+		params.Snapshot.FailoverServices(),
+	)
 }
 
 // handles setting Weighted Destinations on a VirtualService
 type trafficShiftDecorator struct {
-	clusterDomains hostutils.ClusterDomainRegistry
-	trafficTargets discoveryv1alpha2sets.TrafficTargetSet
+	clusterDomains   hostutils.ClusterDomainRegistry
+	trafficTargets   discoveryv1alpha2sets.TrafficTargetSet
+	failoverServices v1alpha2sets.FailoverServiceSet
 }
 
 var _ decorators.TrafficPolicyVirtualServiceDecorator = &trafficShiftDecorator{}
@@ -42,10 +48,12 @@ var _ decorators.TrafficPolicyVirtualServiceDecorator = &trafficShiftDecorator{}
 func NewTrafficShiftDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	failoverServices v1alpha2sets.FailoverServiceSet,
 ) *trafficShiftDecorator {
 	return &trafficShiftDecorator{
-		clusterDomains: clusterDomains,
-		trafficTargets: trafficTargets,
+		clusterDomains:   clusterDomains,
+		trafficTargets:   trafficTargets,
+		failoverServices: failoverServices,
 	}
 }
 
@@ -93,6 +101,15 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 			trafficShiftDestination, err = d.buildKubeTrafficShiftDestination(
 				destinationType.KubeService,
 				trafficTarget,
+				destination.Weight,
+			)
+			if err != nil {
+				return nil, err
+			}
+		case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceRef:
+			var err error
+			trafficShiftDestination, err = d.buildFailoverServiceDestination(
+				destinationType.FailoverServiceRef,
 				destination.Weight,
 			)
 			if err != nil {
@@ -164,6 +181,28 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	if kubeDest.Subset != nil {
 		// Use the canonical SMH unique name for this subset.
 		httpRouteDestination.Destination.Subset = subsetName(kubeDest.Subset)
+	}
+
+	return httpRouteDestination, nil
+}
+
+func (d *trafficShiftDecorator) buildFailoverServiceDestination(
+	failoverServiceRef *v1.ObjectRef,
+	weight uint32,
+) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
+	failoverService, err := d.failoverServices.Find(failoverServiceRef)
+	if err != nil {
+		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, FailoverService not found", sets.Key(failoverServiceRef))
+	}
+
+	httpRouteDestination := &networkingv1alpha3spec.HTTPRouteDestination{
+		Destination: &networkingv1alpha3spec.Destination{
+			Host: failoverService.Spec.Hostname,
+			Port: &networkingv1alpha3spec.PortSelector{
+				Number: failoverService.Spec.Port.Number,
+			},
+		},
+		Weight: int32(weight),
 	}
 
 	return httpRouteDestination, nil
