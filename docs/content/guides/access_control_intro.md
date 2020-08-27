@@ -10,9 +10,9 @@ In the [previous guide]({{% versioned_link_path fromRoot="/guides/federate_ident
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `management-plane-context`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
-* Istio is [installed on both `management-plane-context` and `remote-cluster-context`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both `management-plane-context` and `remote-cluster-context` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* Service Mesh Hub is [installed and running on the `management-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Istio is [installed on both `management-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
+* Both `management-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
@@ -61,7 +61,7 @@ spec:
   federation: {}
   globalAccessPolicy: ENABLED
   meshes:
-  - name: istiod-istio-system-management-plane
+  - name: istiod-istio-system-management-cluster
     namespace: service-mesh-hub
   - name: istiod-istio-system-remote-cluster
     namespace: service-mesh-hub
@@ -82,7 +82,7 @@ spec:
   federation: {}
   globalAccessPolicy: ENABLED
   meshes:
-  - name: istiod-istio-system-management-plane
+  - name: istiod-istio-system-management-cluster
     namespace: service-mesh-hub
   - name: istiod-istio-system-remote-cluster
     namespace: service-mesh-hub
@@ -132,7 +132,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-productpage
           namespace: bookinfo
-          clusterName: management-plane
+          clusterName: management-cluster
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:
@@ -152,7 +152,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-productpage
           namespace: bookinfo
-          clusterName: management-plane
+          clusterName: management-cluster
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:
@@ -184,7 +184,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-reviews
           namespace: bookinfo
-          clusterName: management-plane
+          clusterName: management-cluster
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:
@@ -205,7 +205,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-reviews
           namespace: bookinfo
-          clusterName: management-plane
+          clusterName: management-cluster
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:
