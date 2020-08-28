@@ -135,36 +135,30 @@ status:
 
 ## Demonstrating Failover Functionality
 
-To demonstrate failover functionality, we configure a traffic shift such that all requests
+To demonstrate failover functionality, we will configure a traffic shift such that all requests
 targeting the `reviews` service will instead be routed to the reviews FailoverService
 we created above.
 
-{{% notice note %}}
-
-As of Service Mesh Hub version v0.6.0, TrafficPolicies are unable to reference FailoverServices in their destination selector. 
-
-We're currently working on extending the TrafficPolicy to enable this functionality.
- 
-For purposes of illustration, we'll manually create an Istio VirtualService to achieve the traffic shift.
-{{% /notice %}}
-
-Apply the following Istio VirtualService:
+Apply the following TrafficPolicy:
 
 ```yaml
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
+apiVersion: networking.smh.solo.io/v1alpha2
+kind: TrafficPolicy
 metadata:
-  name: reviews-failover
+  name: reviews-shift-failover
   namespace: bookinfo
 spec:
-  hosts:
-  - reviews
-  http:
-  - route:
-    - destination:
-        host: reviews-failover.bookinfo.global
-        port:
-          number: 9080
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: management-cluster
+        name: reviews
+        namespace: bookinfo
+  trafficShift:
+    destinations:
+    - failoverServiceRef:
+        name: reviews-failover
+        namespace: service-mesh-hub
 ```
 
 Port forward the productpage pod with the following command and open your web browser to

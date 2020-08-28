@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Allow selecting FailoverServices as traffic shift destinations in the TrafficPolicy CRD.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/899
