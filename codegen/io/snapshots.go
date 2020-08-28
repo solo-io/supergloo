@@ -13,6 +13,13 @@ import (
 // a Snapshot is a group of individual resources from one or more GroupVersions
 type Snapshot map[schema.GroupVersion][]string
 
+type OutputSnapshot struct {
+	// Snapshot to be used as an output snapshot
+	Snapshot Snapshot
+	// Name to be used for placing this builder in a subdirectory
+	Name string
+}
+
 // get the rbac policies needed to watch the snapshot
 func (s Snapshot) RbacPoliciesWatch() []rbacv1.PolicyRule {
 	return s.rbacPolicies(

@@ -41,7 +41,7 @@ type DependencyFactoryImpl struct{}
 func (d DependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, in input.Snapshot) mesh.Translator {
 
 	detectors := meshdetector.MeshDetectors{
-		// TODO: Uncomment to re-enable consul discovery
+		// TODO(EItanya): Uncomment to re-enable consul discovery
 		// consul.NewMeshDetector(),
 		istio.NewMeshDetector(
 			ctx,
@@ -50,7 +50,7 @@ func (d DependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, in input.
 			in.Pods(),
 			in.Nodes(),
 		),
-		// TODO: Uncomment to re-enable linkerd discovery
+		// TODO(EItanya): Uncomment to re-enable linkerd discovery
 		// linkerd.NewMeshDetector(
 		// 	in.ConfigMaps(),
 		// ),
@@ -66,7 +66,7 @@ func (d DependencyFactoryImpl) MakeWorkloadTranslator(
 ) workload.Translator {
 	sidecarDetectors := workloaddetector.SidecarDetectors{
 		istiosidecar.NewSidecarDetector(ctx),
-		// TODO: Uncomment to re-enable linkerd discovery
+		// TODO(EItanya): Uncomment to re-enable linkerd discovery
 		// linkerdsidecar.NewSidecarDetector(ctx),
 		osmsidecar.NewSidecarDetector(ctx),
 	}

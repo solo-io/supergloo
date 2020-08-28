@@ -1,6 +1,6 @@
 package linkerd
 
-// TODO: Uncomment to re-enable linkerd discovery
+// TODO(EItanya): Uncomment to re-enable linkerd discovery
 // Currently commented out because of dependency issues
 //
 // import (

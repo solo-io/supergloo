@@ -39,40 +39,49 @@ var (
 		},
 	}
 
-	IstioNetworkingOutputTypes = Snapshot{
-		istionetworkingv1alpha3.SchemeGroupVersion: {
-			"DestinationRule",
-			"VirtualService",
-			"EnvoyFilter",
-			"ServiceEntry",
-			"Gateway",
-		},
-		istiosecurityv1beta1.SchemeGroupVersion: {
-			"AuthorizationPolicy",
-		},
-		schema.GroupVersion{
-			Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"IssuedCertificate",
-		},
-	}
-
-	LocalNetworkingOutputTypes = Snapshot{
-		corev1.SchemeGroupVersion: {
-			"Secret",
+	IstioNetworkingOutputTypes = OutputSnapshot{
+		Name: "istio",
+		Snapshot: Snapshot{
+			istionetworkingv1alpha3.SchemeGroupVersion: {
+				"DestinationRule",
+				"VirtualService",
+				"EnvoyFilter",
+				"ServiceEntry",
+				"Gateway",
+			},
+			istiosecurityv1beta1.SchemeGroupVersion: {
+				"AuthorizationPolicy",
+			},
+			schema.GroupVersion{
+				Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
+				Version: "v1alpha2",
+			}: {
+				"IssuedCertificate",
+			},
 		},
 	}
 
-	SmiNetworkingOutputTypes = Snapshot{
-		smislpitv1alpha2.SchemeGroupVersion: {
-			"TrafficSplit",
+	LocalNetworkingOutputTypes = OutputSnapshot{
+		Name: "local",
+		Snapshot: Snapshot{
+			corev1.SchemeGroupVersion: {
+				"Secret",
+			},
 		},
-		smiaccessv1alpha2.SchemeGroupVersion: {
-			"TrafficTarget",
-		},
-		smispecsv1alpha3.SchemeGroupVersion: {
-			"HTTPRouteGroup",
+	}
+
+	SmiNetworkingOutputTypes = OutputSnapshot{
+		Name: "smi",
+		Snapshot: Snapshot{
+			smislpitv1alpha2.SchemeGroupVersion: {
+				"TrafficSplit",
+			},
+			smiaccessv1alpha2.SchemeGroupVersion: {
+				"TrafficTarget",
+			},
+			smispecsv1alpha3.SchemeGroupVersion: {
+				"HTTPRouteGroup",
+			},
 		},
 	}
 )

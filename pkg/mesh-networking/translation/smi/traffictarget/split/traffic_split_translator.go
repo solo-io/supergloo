@@ -29,7 +29,7 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
-		meshService *discoveryv1alpha2.TrafficTarget,
+		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		reporter reporting.Reporter,
 	) *smislpitv1alpha2.TrafficSplit
 }
@@ -58,118 +58,130 @@ func (u *UnsupportedFeatureError) Error() string {
 	)
 }
 
-func NewTrafficSplitTranslator() Translator {
+func NewTranslator() Translator {
 	return &translator{}
 }
 
-type translator struct {
-}
+type translator struct{}
 
 func (t *translator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
-	meshService *discoveryv1alpha2.TrafficTarget,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	reporter reporting.Reporter,
 ) *smislpitv1alpha2.TrafficSplit {
-	kubeService := meshService.Spec.GetKubeService()
+	kubeService := trafficTarget.Spec.GetKubeService()
 
 	if kubeService == nil {
 		// TODO(ilackarms): non kube services currently unsupported
 		return nil
 	}
 
-	var trafficSplit *smislpitv1alpha2.TrafficSplit
+	var appliedTrafficPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy
 
-	for _, tp := range meshService.Status.GetAppliedTrafficPolicies() {
-
-		trafficSplit = &smislpitv1alpha2.TrafficSplit{
-			ObjectMeta: metautils.TranslatedObjectMeta(
-				meshService.Spec.GetKubeService().Ref,
-				meshService.Annotations,
-			),
-			Spec: smislpitv1alpha2.TrafficSplitSpec{
-				// TODO: Fix this key
-				Service:  fmt.Sprintf("%s.%s", kubeService.GetRef().GetName(), kubeService.GetRef().GetNamespace()),
-				Backends: nil,
-			},
-		}
-
-		if tp.GetSpec().GetCorsPolicy() != nil {
-			reporter.ReportTrafficPolicyToTrafficTarget(meshService, tp.GetRef(), NewUnsupportedFeatureError(
-				tp.GetRef(),
-				"CorsPolicy",
-				"Smi does not support cors policy",
-			))
-		}
-		if tp.GetSpec().GetFaultInjection() != nil {
-			reporter.ReportTrafficPolicyToTrafficTarget(meshService, tp.GetRef(), NewUnsupportedFeatureError(
-				tp.GetRef(),
-				"FaultInjection",
-				"Smi does not support fault injection",
-			))
-		}
-		if tp.GetSpec().GetHeaderManipulation() != nil {
-			reporter.ReportTrafficPolicyToTrafficTarget(meshService, tp.GetRef(), NewUnsupportedFeatureError(
-				tp.GetRef(),
-				"HeaderManipulation",
-				"Smi does not support header manipulation",
-			))
-		}
-		if tp.GetSpec().GetMirror() != nil {
-			reporter.ReportTrafficPolicyToTrafficTarget(meshService, tp.GetRef(), NewUnsupportedFeatureError(
-				tp.GetRef(),
-				"Mirror",
-				"Smi does not support request mirroring",
-			))
-		}
-		if tp.GetSpec().GetRetries() != nil {
-			reporter.ReportTrafficPolicyToTrafficTarget(meshService, tp.GetRef(), NewUnsupportedFeatureError(
-				tp.GetRef(),
-				"Retries",
-				"Smi does not support retries",
-			))
-		}
-		if tp.GetSpec().GetRequestTimeout() != nil {
-			reporter.ReportTrafficPolicyToTrafficTarget(meshService, tp.GetRef(), NewUnsupportedFeatureError(
-				tp.GetRef(),
-				"RequestTimeout",
-				"Smi does not support request timeout",
-			))
-		}
-		if tp.GetSpec().GetSourceSelector() != nil {
-			reporter.ReportTrafficPolicyToTrafficTarget(meshService, tp.GetRef(), NewUnsupportedFeatureError(
-				tp.GetRef(),
-				"SourceSelector",
-				"Smi does not support source selectors for traffic policies",
-			))
-		}
+	for _, tp := range trafficTarget.Status.GetAppliedTrafficPolicies() {
+		validate(tp, trafficTarget, reporter)
 
 		// If there is no traffic shifting, skip the rest of the translation
 		if len(tp.GetSpec().GetTrafficShift().GetDestinations()) == 0 {
 			continue
-		} else if len(trafficSplit.Spec.Backends) != 0 {
-			// Each smi mesh service can only have a single applied traffic policy
+		} else if appliedTrafficPolicy != nil {
+			// Each smi traffic target can only have a single applied traffic policy
 			reporter.ReportTrafficPolicyToTrafficTarget(
-				meshService,
+				trafficTarget,
 				tp.GetRef(),
 				eris.New("SMI only supports one TrafficSplit per service, multiple found"),
 			)
 			continue
 		}
 
-		backends, err := t.buildBackends(tp.GetRef(), tp.Spec.GetTrafficShift(), kubeService)
-		if err != nil {
-			reporter.ReportTrafficPolicyToTrafficTarget(meshService, tp.GetRef(), err)
-		}
-
-		trafficSplit.Spec.Backends = backends
-
+		appliedTrafficPolicy = tp
 	}
+
+	// If no traffic policy has been applied, return nil
+	if appliedTrafficPolicy == nil {
+		return nil
+	}
+
+	trafficSplit := &smislpitv1alpha2.TrafficSplit{
+		ObjectMeta: metautils.TranslatedObjectMeta(
+			trafficTarget.Spec.GetKubeService().Ref,
+			trafficTarget.Annotations,
+		),
+		Spec: smislpitv1alpha2.TrafficSplitSpec{
+			// SMI expects this to be <namespace>.<name> of the target service
+			Service: fmt.Sprintf("%s.%s", kubeService.GetRef().GetName(), kubeService.GetRef().GetNamespace()),
+			// Will populate this late
+			Backends: nil,
+		},
+	}
+	backends, err := buildBackends(appliedTrafficPolicy.GetRef(), appliedTrafficPolicy.Spec.GetTrafficShift(), kubeService)
+	if err != nil {
+		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, appliedTrafficPolicy.GetRef(), err)
+	}
+
+	trafficSplit.Spec.Backends = backends
 
 	return trafficSplit
 }
 
-func (t *translator) buildBackends(
+func validate(
+	tp *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	reporter reporting.Reporter,
+) {
+	if tp.GetSpec().GetCorsPolicy() != nil {
+		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), NewUnsupportedFeatureError(
+			tp.GetRef(),
+			"CorsPolicy",
+			"SMI does not support cors policy",
+		))
+	}
+	if tp.GetSpec().GetFaultInjection() != nil {
+		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), NewUnsupportedFeatureError(
+			tp.GetRef(),
+			"FaultInjection",
+			"SMI does not support fault injection",
+		))
+	}
+	if tp.GetSpec().GetHeaderManipulation() != nil {
+		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), NewUnsupportedFeatureError(
+			tp.GetRef(),
+			"HeaderManipulation",
+			"SMI does not support header manipulation",
+		))
+	}
+	if tp.GetSpec().GetMirror() != nil {
+		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), NewUnsupportedFeatureError(
+			tp.GetRef(),
+			"Mirror",
+			"SMI does not support request mirroring",
+		))
+	}
+	if tp.GetSpec().GetRetries() != nil {
+		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), NewUnsupportedFeatureError(
+			tp.GetRef(),
+			"Retries",
+			"SMI does not support retries",
+		))
+	}
+	if tp.GetSpec().GetRequestTimeout() != nil {
+		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), NewUnsupportedFeatureError(
+			tp.GetRef(),
+			"RequestTimeout",
+			"SMI does not support request timeout",
+		))
+	}
+	if tp.GetSpec().GetSourceSelector() != nil {
+		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), NewUnsupportedFeatureError(
+			tp.GetRef(),
+			"SourceSelector",
+			"SMI does not support source selectors for traffic policies",
+		))
+	}
+}
+
+func buildBackends(
 	tp *v1.ObjectRef,
 	multiDest *v1alpha2.TrafficPolicySpec_MultiDestination,
 	meshKubeService *discoveryv1alpha2.TrafficTargetSpec_KubeService,
@@ -181,14 +193,14 @@ func (t *translator) buildBackends(
 		}
 		kubeService := dest.GetKubeService()
 		if kubeService == nil {
-			return nil, eris.Errorf("Smi traffic split only supports Kube destinations, found %T", dest.GetDestinationType())
+			return nil, eris.Errorf("SMI traffic split only supports Kube destinations, found %T", dest.GetDestinationType())
 		}
 
 		if len(kubeService.GetSubset()) != 0 {
 			return nil, NewUnsupportedFeatureError(
 				tp,
 				fmt.Sprintf("TrafficShift.Destination[%d].Subest", idx),
-				"Smi does not support subset routing",
+				"SMI does not support subset routing",
 			)
 		}
 
@@ -196,7 +208,7 @@ func (t *translator) buildBackends(
 			return nil, NewUnsupportedFeatureError(
 				tp,
 				fmt.Sprintf("TrafficShift.Destination[%d].Port", idx),
-				"Smi does not support specifying a service port for traffic shifting",
+				"SMI does not support specifying a service port for traffic shifting",
 			)
 		}
 
@@ -204,7 +216,7 @@ func (t *translator) buildBackends(
 			return nil, NewUnsupportedFeatureError(
 				tp,
 				fmt.Sprintf("TrafficShift.Destination[%d].Cluster", idx),
-				"Smi does not currently support multi cluster traffic shifting",
+				"SMI does not currently support multi cluster traffic shifting",
 			)
 		}
 
