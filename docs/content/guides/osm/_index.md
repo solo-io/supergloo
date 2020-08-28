@@ -37,7 +37,7 @@ This command will create a local Kind cluster, install OSM, install Service Mesh
 If you prefer to install the components yourself, first you will need to install OSM using the `osm` CLI tool.
 
 ```shell
-osm install --enable-metrics-stack=false --deploy-zipkin=false
+osm install
 kubectl rollout status deployment --timeout 300s -n osm-system osm-controller
 ```
 
@@ -62,6 +62,11 @@ kubectl create ns bookstore
 kubectl create ns bookthief 
 kubectl create ns bookwarehouse 
 kubectl create ns bookbuyer
+
+osm namespace add bookstore
+osm namespace add bookthief 
+osm namespace add bookwarehouse 
+osm namespace add bookbuyer
 
 kubectl apply -f https://github.com/solo-io/service-mesh-hub/blob/main/ci/osm-demo.yaml
 
@@ -124,12 +129,6 @@ spec:
       - cluster_name: mgmt-cluster
         name: bookthief
         namespace: bookthief
-      - cluster_name: mgmt-cluster
-        name: bookstore-v1
-        namespace: bookstore
-      - cluster_name: mgmt-cluster
-        name: bookstore-v2
-        namespace: bookstore
 
 ---
 
