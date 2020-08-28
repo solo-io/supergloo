@@ -43,6 +43,10 @@ func NewRegistrant(opts *RegistrantOptions) *Registrant {
 			Rules: smhRbacRequirements,
 		},
 	}
+	// Use management kubeconfig for remote cluster if unset.
+	if registrant.RemoteKubeCfgPath == "" {
+		registrant.RemoteKubeCfgPath = registrant.KubeCfgPath
+	}
 	return registrant
 }
 
@@ -74,7 +78,7 @@ func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 }
 
 func (r *Registrant) registerCluster(ctx context.Context) error {
-	logrus.Debugf("registering cluster with opts %+v", r)
+	logrus.Debugf("registering cluster with opts %+v\n", r.RegistrationOptions)
 
 	if err := r.RegistrationOptions.RegisterCluster(ctx); err != nil {
 		return err
@@ -88,7 +92,7 @@ func (r *Registrant) installCertAgent(ctx context.Context) error {
 	return smh.Installer{
 		HelmChartPath:  r.CertAgentInstallOptions.ChartPath,
 		HelmValuesPath: r.CertAgentInstallOptions.ChartValues,
-		KubeConfig:     r.RemoteKubeCfgPath,
+		KubeConfig:     r.KubeCfgPath,
 		KubeContext:    r.RemoteKubeContext,
 		Namespace:      r.RemoteNamespace,
 		Verbose:        r.Verbose,
@@ -99,7 +103,7 @@ func (r *Registrant) installCertAgent(ctx context.Context) error {
 
 func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
 	return smh.Uninstaller{
-		KubeConfig:  r.RemoteKubeCfgPath,
+		KubeConfig:  r.KubeCfgPath,
 		KubeContext: r.RemoteKubeContext,
 		Namespace:   r.RemoteNamespace,
 		Verbose:     r.Verbose,
