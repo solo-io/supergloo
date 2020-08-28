@@ -42,8 +42,15 @@ type Inputs struct {
 	VirtualMeshes networkingv1alpha2sets.VirtualMeshSet
 }
 
+const (
+	GlobalDnsSuffix = ".global"
+)
+
 var (
-	MissingHostname        = eris.New("Missing required field \"hostname\".")
+	MissingHostname             = eris.New("Missing required field \"hostname\".")
+	HostnameMissingGlobalSuffix = func(hostname string) error {
+		return eris.Errorf("Provided hostname %s is missing required suffix \"%s\".", hostname, GlobalDnsSuffix)
+	}
 	MissingPort            = eris.New("Missing required field \"port\".")
 	MissingMeshes          = eris.New("Missing required field \"meshes\".")
 	MissingServices        = eris.New("There must be at least one service declared for the FailoverService.")
@@ -94,8 +101,8 @@ func NewFailoverServiceValidator() FailoverServiceValidator {
 
 func (f *failoverServiceValidator) Validate(inputs Inputs, failoverService *networkingv1alpha2.FailoverServiceSpec) []error {
 	var errs []error
-	if err := f.validateHostname(failoverService); err != nil {
-		errs = append(errs, err)
+	if hostnameErrs := f.validateHostname(failoverService); hostnameErrs != nil {
+		errs = append(errs, hostnameErrs...)
 	}
 	if portErrs := f.validatePort(failoverService); portErrs != nil {
 		errs = append(errs, portErrs...)
@@ -271,16 +278,20 @@ func (f *failoverServiceValidator) validateFederation(
 	return errs
 }
 
-func (f *failoverServiceValidator) validateHostname(failoverService *networkingv1alpha2.FailoverServiceSpec) error {
+func (f *failoverServiceValidator) validateHostname(failoverService *networkingv1alpha2.FailoverServiceSpec) []error {
 	hostname := failoverService.GetHostname()
+	var errs []error
 	if hostname == "" {
-		return MissingHostname
+		return []error{MissingHostname}
+	}
+	if !strings.HasSuffix(hostname, GlobalDnsSuffix) {
+		errs = append(errs, HostnameMissingGlobalSuffix(hostname))
 	}
 	errStrings := validation.IsDNS1123Subdomain(hostname)
 	if len(errStrings) > 0 {
-		return eris.New(strings.Join(errStrings, ", "))
+		errs = append(errs, eris.New(strings.Join(errStrings, ", ")))
 	}
-	return nil
+	return errs
 }
 
 func (f *failoverServiceValidator) validatePort(failoverService *networkingv1alpha2.FailoverServiceSpec) []error {

@@ -103,9 +103,7 @@ message ServiceSelector {
         // Match k8s Services by direct reference.
         repeated .core.skv2.solo.io.ClusterObjectRef services = 1;
     }
-
 }
-
 
 /*
     Select Kubernetes workloads directly using label and/or namespace criteria. See comments on the fields for
@@ -118,7 +116,6 @@ message WorkloadSelector {
     // If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace.
     repeated string namespaces = 2;
 }
-
 
 /*
     Selector capable of selecting specific service identities. Useful for binding policy rules.
