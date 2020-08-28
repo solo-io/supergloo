@@ -78,7 +78,7 @@ func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 }
 
 func (r *Registrant) registerCluster(ctx context.Context) error {
-	logrus.Debugf("registering cluster with opts %+v", r)
+	logrus.Debugf("registering cluster with opts %+v\n", r.RegistrationOptions)
 
 	if err := r.RegistrationOptions.RegisterCluster(ctx); err != nil {
 		return err
