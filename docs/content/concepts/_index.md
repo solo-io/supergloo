@@ -52,7 +52,7 @@ Service Mesh Hub enables users to write simple configuration objects to the mana
 
 A [`TrafficPolicy`]({{% versioned_link_path fromRoot="/reference/api/traffic_policy/" %}}) applies between a set of sources (workloads) and destinations (traffic targets), and is used to describe rules like "when A sends POST requests to B, add a header and set the timeout to 10 seconds". Or "for every request to services on cluster C, increase the timeout and add retries". As of this release, traffic policies support timeouts, retries, CORS, traffic shifting, header manipulation, fault injection, subset routing, weighted destinations, and more. Note that some meshes don’t support all of these features; Service Mesh Hub will translate as best it can into the underlying mesh configuration, or report an error back to the user. 
 
-An [`AccessControlPolicy`]({{% versioned_link_path fromRoot="/reference/api/access_control_policy/" %}}) also applies between sources (this time representing identities) and destinations, and is used to finely control which services are allowed to communicate. On the virtual mesh, a user can specify a global policy to restrict access, and require users to specify access policies in order to enable communication to services. 
+An [`AccessPolicy`]({{% versioned_link_path fromRoot="/reference/api/access_policy/" %}}) also applies between sources (this time representing identities) and destinations, and is used to finely control which services are allowed to communicate. On the virtual mesh, a user can specify a global policy to restrict access, and require users to specify access policies in order to enable communication to services. 
 
 With traffic and access policies, Service Mesh Hub gives users a powerful language to dictate how services should communicate, even within complex multi-cluster, multi-mesh applications. 
 
@@ -86,7 +86,7 @@ While the `mesh-discovery` components discover the resources in registred cluste
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/mesh-networking.png" %}})
 
-If users create a `TrafficPolicy` or `AccessControlPolicy` for Service Mesh Hub, the `mesh-networking` component will automatically translate those to the underlying mesh-specific resources. Again, for Istio, this would be `VirtualService`, `DesttinationRule`, and `AuthorizationPolicy` resources.
+If users create a `TrafficPolicy` or `AccessPolicy` for Service Mesh Hub, the `mesh-networking` component will automatically translate those to the underlying mesh-specific resources. Again, for Istio, this would be `VirtualService`, `DesttinationRule`, and `AuthorizationPolicy` resources.
 
 As opposed to the pull model of the mesh-discovery components, the mesh-networking components of Service Mesh Hub push changes down to the managed service meshes in each registered cluster. The configuration used by the control plane of each service mesh will be updated in real-time as changes are pushed from Service Mesh Hub. Many service mesh proxies, like Envoy, rely on a polling mechanism between the control plane and the proxy instances. Therefore, any changes pushed from Service Mesh Hub will be contingent on the polling cycle for the service mesh proxy instances.
 
