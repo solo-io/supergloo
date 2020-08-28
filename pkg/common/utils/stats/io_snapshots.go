@@ -26,10 +26,6 @@ func (h *SnapshotHistory) SetInput(latestInput json.Marshaler) {
 func (h *SnapshotHistory) GetInput() ([]byte, error) {
 	h.lock.RLock()
 	defer h.lock.RUnlock()
-	// Deal with the race that this endpoint gets invoked before translation starts
-	if h.latestInput == nil {
-		return nil, nil
-	}
 	return h.latestInput.MarshalJSON()
 }
 
@@ -42,10 +38,6 @@ func (h *SnapshotHistory) SetOutput(latestOutput json.Marshaler) {
 func (h *SnapshotHistory) GetOutput() ([]byte, error) {
 	h.lock.RLock()
 	defer h.lock.RUnlock()
-	// Deal with the race that this endpoint gets invoked before translation starts
-	if h.latestOutput == nil {
-		return nil, nil
-	}
 	return h.latestOutput.MarshalJSON()
 }
 
