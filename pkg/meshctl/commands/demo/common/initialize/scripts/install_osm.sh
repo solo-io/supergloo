@@ -8,7 +8,7 @@ echo "installing osm to ${cluster}..."
 ROLLOUT="${K} rollout status deployment --timeout 300s"
 
 # install in permissive mode for testing
-osm install --enable-metrics-stack=false --deploy-zipkin=false
+osm install
 
 ${ROLLOUT} -n osm-system osm-controller
 
@@ -99,7 +99,7 @@ metadata:
   labels:
     app: bookstore
   annotations:
-    # annotation for mesh service discovery
+    # annotation for traffic target discovery
     "discovery.smh.solo.io/enabled": "true"
 spec:
   ports:

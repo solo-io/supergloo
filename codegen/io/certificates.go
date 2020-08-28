@@ -31,15 +31,18 @@ var (
 		},
 	}
 
-	CertificateAgentOutputTypes = Snapshot{
-		schema.GroupVersion{
-			Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"CertificateRequest",
-		},
-		corev1.SchemeGroupVersion: {
-			"Secret",
+	CertificateAgentOutputTypes = OutputSnapshot{
+		Name: "certagent",
+		Snapshot: Snapshot{
+			schema.GroupVersion{
+				Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
+				Version: "v1alpha2",
+			}: {
+				"CertificateRequest",
+			},
+			corev1.SchemeGroupVersion: {
+				"Secret",
+			},
 		},
 	}
 )

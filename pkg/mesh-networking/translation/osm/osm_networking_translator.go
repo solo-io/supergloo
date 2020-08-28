@@ -26,18 +26,18 @@ type Translator interface {
 	)
 }
 
-type smiTranslator struct {
+type osmTranslator struct {
 	totalTranslates int // TODO(ilackarms): metric
 	dependencies    internal.DependencyFactory
 }
 
-func NewOSMTranslator(deps internal.DependencyFactory) Translator {
-	return &smiTranslator{
-		dependencies: deps,
+func NewOSMTranslator() Translator {
+	return &osmTranslator{
+		dependencies: internal.NewDependencyFactory(),
 	}
 }
 
-func (s *smiTranslator) Translate(
+func (s *osmTranslator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
 	outputs smi.Builder,
@@ -51,6 +51,14 @@ func (s *smiTranslator) Translate(
 		mesh := mesh
 
 		meshTranslator.Translate(ctx, in, mesh, outputs, reporter)
+	}
+
+	trafficTargetTranslator := s.dependencies.MakeTrafficTargetTranslator()
+
+	for _, trafficTarget := range in.TrafficTargets().List() {
+		trafficTarget := trafficTarget
+
+		trafficTargetTranslator.Translate(ctx, in, trafficTarget, outputs, reporter)
 	}
 
 	s.totalTranslates++

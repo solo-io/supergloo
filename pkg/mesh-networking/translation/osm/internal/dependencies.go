@@ -2,6 +2,10 @@ package internal
 
 import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm/mesh"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm/traffictarget"
+	smitraffictarget "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/access"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/split"
 )
 
 //go:generate mockgen -source ./dependencies.go -destination mocks/dependencies.go
@@ -11,6 +15,7 @@ import (
 // define our DependencyFactory anywhere else
 type DependencyFactory interface {
 	MakeMeshTranslator() mesh.Translator
+	MakeTrafficTargetTranslator() traffictarget.Translator
 }
 
 type dependencyFactoryImpl struct{}
@@ -21,4 +26,11 @@ func NewDependencyFactory() DependencyFactory {
 
 func (d dependencyFactoryImpl) MakeMeshTranslator() mesh.Translator {
 	return mesh.NewTranslator()
+}
+
+func (d dependencyFactoryImpl) MakeTrafficTargetTranslator() traffictarget.Translator {
+	splitTranslator := split.NewTranslator()
+	accessTranslator := access.NewTranslator()
+	trafficTargetTranslator := smitraffictarget.NewTranslator(splitTranslator, accessTranslator)
+	return traffictarget.NewTranslator(trafficTargetTranslator)
 }

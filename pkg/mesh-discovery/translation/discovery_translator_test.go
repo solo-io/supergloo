@@ -9,7 +9,7 @@ import (
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation"
@@ -88,7 +88,7 @@ var _ = Describe("Translator", func() {
 		out, err := t.Translate(ctx, in)
 		Expect(err).NotTo(HaveOccurred())
 
-		expectedOut, err := output.NewSinglePartitionedSnapshot(
+		expectedOut, err := discovery.NewSinglePartitionedSnapshot(
 			"mesh-discovery-1",
 			labelutils.OwnershipLabels(),
 			trafficTargets,
