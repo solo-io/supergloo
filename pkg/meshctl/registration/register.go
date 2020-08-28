@@ -43,6 +43,10 @@ func NewRegistrant(opts *RegistrantOptions) *Registrant {
 			Rules: smhRbacRequirements,
 		},
 	}
+	// Use management kubeconfig for remote cluster if unset.
+	if registrant.RemoteKubeCfgPath == "" {
+		registrant.RemoteKubeCfgPath = registrant.KubeCfgPath
+	}
 	return registrant
 }
 
