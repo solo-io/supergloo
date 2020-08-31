@@ -21,8 +21,10 @@ jobs:
 
       - name: Set Release Tag
         run: |
-          echo $GITHUB_REF
+          # Reference for Github workflow environment variables:
+          # https://docs.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables#about-environment-variables
           # Bash syntax for extracting tag from github tag ref: https://stackoverflow.com/a/58178121/2255272
+          echo $GITHUB_REF
           echo ::set-env name=TAGGED_VERSION::${GITHUB_REF#refs/*/}
 
       - name: Upload Release Assets
