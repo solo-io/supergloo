@@ -72,7 +72,7 @@ The discovery process is initiated by Service Mesh Hub running on the management
 
 The first task of discovery is to create an `Input Snapshot` and begin the tranlation of the service meshes and services on the cluster to create an `Output Snapshot` that creates custom resources to the management plane cluster. 
 
-`MeshTranslator` looks for installed service mesh control planes and then will add them to the `Output Snapshot` for a   [`Mesh`]({{% versioned_link_path fromRoot="/reference/api/mesh/" %}}) resource to be written to the management plane cluster, linked to the `KubernetesCluster` resource that was written during cluster registration. Currently, Service Mesh Hub discovers and manages [Istio](https://istio.io) meshes, with plans to support more in the near future.
+`MeshTranslator` looks for installed service mesh control planes and then will add them to the `Output Snapshot` for a   [`Mesh`]({{% versioned_link_path fromRoot="/reference/api/mesh/" %}}) resource to be written to the management plane cluster, linked to the `KubernetesCluster` resource that was written during cluster registration. Currently, Service Mesh Hub discovers and manages both [Istio](https://istio.io) and [Open Service Mesh](https://openservicemesh.io/) meshes, with plans to support more in the near future.
 
 `WorkloadTranslator` then looks for workloads that are associated with the mesh, such as a deployment that has created a pod injected with the sidecar proxy for that mesh. It adds them to the `Output Snapshot` which will write a [`Workload`]({{% versioned_link_path fromRoot="/reference/api/workload/" %}}) resource to the management plane cluster representing this workload. 
 
@@ -84,16 +84,16 @@ At this point, the management plane has a complete view of the meshes, workloads
 
 ##### Mesh Networking
 
-While the `mesh-discovery` components discover the resources in registred clusters, the `mesh-networking` components make decisions about federating the various clusters and meshes. The `VirtualMesh` concept helps to drive the federation behavior. When you create a `VirtualMesh` resource, you define what federation and trust model to use. `Mesh-Networking` performs translation at the mesh level for a group of meshes with the`VirtulMeshTranslator` and at the service level with `TrafficTargetTranslator` which will then decide which services federate to which workloads and handle building the correct service-discovery mechanisms. For example, with Istio, Service Mesh Hub will create the appropriate `ServiceEntry` and `DestinationRule` resources to enable cross-cluster/mesh communication.
+While the `mesh-discovery` components discover the resources in registered clusters, the `mesh-networking` components make decisions about federating the various clusters and meshes. The `VirtualMesh` concept helps to drive the federation behavior. When you create a `VirtualMesh` resource, you define what federation and trust model to use. `Mesh-Networking` performs translation at the mesh level for a group of meshes with the`VirtulMeshTranslator` and at the service level with `TrafficTargetTranslator` which will then decide which services federate to which workloads and handle building the correct service-discovery mechanisms. For example, with Istio, Service Mesh Hub will create the appropriate `ServiceEntry` and `DestinationRule` resources to enable cross-cluster/mesh communication.
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/mesh-networking.png" %}})
 
-The `FederationTranslator`, `FailoverTranslator`, and `mTLSTranslator` are grouped within the VirtulMeshTranslator to handle mesh level configuration and networking.
- * `FederationTranslator` handles global DNS resolution and routing for services in remote clusters for each federated traffic target
- * `FailoverTranslator`FailoverTranslator re-routes traffic to targets in remote clusters when local targets are unhealthy.
+The `FederationTranslator`, `FailoverTranslator`, and `mTLSTranslator` are grouped within the `VirtulMeshTranslator` to handle mesh level configuration and networking.
+ * `FederationTranslator` handles global DNS resolution and routing for services in remote clusters for each federated traffic target.
+ * `FailoverTranslator` re-routes traffic to targets in remote clusters when local targets are unhealthy.
  * `mTLSTranslator` controls mesh-level settings for performing mTLS, including issuing & rotating root certificates used by each mesh.
 
-The `TrafficTargetTranslator` handles the translation and policy configuration at the TrafficTarget (service) level. 
+The `TrafficTargetTranslator` handles the translation and policy configuration at the `TrafficTarget` (service) level. 
  * `TrafficPolicyTranslator` creates the `VirtualService` and `DestinationRule` for routing.
  * `AccessPolicyTranslator` creates the `AuthPolicy` for access control.
 
