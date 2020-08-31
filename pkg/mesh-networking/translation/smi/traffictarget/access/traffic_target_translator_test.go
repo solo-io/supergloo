@@ -40,7 +40,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 	It("will report an error if no backing workloads exist", func() {
 		in := input.NewInputSnapshotManualBuilder("").Build()
 
-		meshService := &discoveryv1alpha2.TrafficTarget{
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
@@ -62,12 +62,12 @@ var _ = Describe("TrafficTargetTranslator", func() {
 		reporter.
 			EXPECT().
 			ReportAccessPolicyToTrafficTarget(
-				meshService,
-				meshService.Status.AppliedAccessPolicies[0].Ref,
+				trafficTarget,
+				trafficTarget.Status.AppliedAccessPolicies[0].Ref,
 				NoServiceAccountError,
 			)
 
-		tt, hrg := NewTranslator().Translate(ctx, in, meshService, reporter)
+		tt, hrg := NewTranslator().Translate(ctx, in, trafficTarget, reporter)
 		Expect(tt).To(HaveLen(0))
 		Expect(hrg).To(HaveLen(0))
 
@@ -113,7 +113,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 			}).
 			Build()
 
-		meshService := &discoveryv1alpha2.TrafficTarget{
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
@@ -140,12 +140,12 @@ var _ = Describe("TrafficTargetTranslator", func() {
 		reporter.
 			EXPECT().
 			ReportAccessPolicyToTrafficTarget(
-				meshService,
-				meshService.Status.AppliedAccessPolicies[0].Ref,
+				trafficTarget,
+				trafficTarget.Status.AppliedAccessPolicies[0].Ref,
 				matchers.MatchesError(CouldNotDetermineServiceAccountError(2)),
 			)
 
-		tt, hrg := NewTranslator().Translate(ctx, in, meshService, reporter)
+		tt, hrg := NewTranslator().Translate(ctx, in, trafficTarget, reporter)
 		Expect(tt).To(HaveLen(0))
 		Expect(hrg).To(HaveLen(0))
 	})
@@ -174,7 +174,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 			}).
 			Build()
 
-		meshService := &discoveryv1alpha2.TrafficTarget{
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: ns,
@@ -216,13 +216,13 @@ var _ = Describe("TrafficTargetTranslator", func() {
 			},
 		}
 
-		apRef := meshService.Status.GetAppliedAccessPolicies()[0].GetRef()
+		apRef := trafficTarget.Status.GetAppliedAccessPolicies()[0].GetRef()
 		refernceString := fmt.Sprintf("%s.%s", apRef.GetName(), apRef.GetNamespace())
 
 		expectedHRG := &v1alpha3.HTTPRouteGroup{
 			ObjectMeta: metautils.TranslatedObjectMeta(
-				meshService.Spec.GetKubeService().Ref,
-				meshService.Annotations,
+				trafficTarget.Spec.GetKubeService().Ref,
+				trafficTarget.Annotations,
 			),
 			Spec: v1alpha3.HTTPRouteGroupSpec{
 				Matches: []v1alpha3.HTTPMatch{
@@ -238,8 +238,8 @@ var _ = Describe("TrafficTargetTranslator", func() {
 
 		expectedTT := &v1alpha2.TrafficTarget{
 			ObjectMeta: metautils.TranslatedObjectMeta(
-				meshService.Spec.GetKubeService().Ref,
-				meshService.Annotations,
+				trafficTarget.Spec.GetKubeService().Ref,
+				trafficTarget.Annotations,
 			),
 			Spec: v1alpha2.TrafficTargetSpec{
 				Destination: v1alpha2.IdentityBindingSubject{
@@ -265,7 +265,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 		}
 		expectedTT.Name += "." + refernceString
 
-		tt, hrg := NewTranslator().Translate(ctx, in, meshService, reporter)
+		tt, hrg := NewTranslator().Translate(ctx, in, trafficTarget, reporter)
 		Expect(tt).To(HaveLen(1))
 		Expect(tt[0]).To(Equal(expectedTT))
 		Expect(hrg).To(HaveLen(1))

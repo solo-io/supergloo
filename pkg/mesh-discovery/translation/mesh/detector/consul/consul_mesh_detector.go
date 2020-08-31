@@ -1,6 +1,6 @@
 package consul
 
-// TODO: Uncomment to re-enable consul discovery
+// TODO(EItanya): Uncomment to re-enable consul discovery
 // Currently commented out because of dependency issues
 //
 // import (

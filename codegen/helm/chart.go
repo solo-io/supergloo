@@ -70,7 +70,7 @@ func discoveryOperator() model.Operator {
 	var rbacPolicies []rbacv1.PolicyRule
 
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
-	rbacPolicies = append(rbacPolicies, io.DiscoveryOutputTypes.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.DiscoveryOutputTypes.Snapshot.RbacPoliciesWrite()...)
 
 	return model.Operator{
 		Name: "discovery",
@@ -118,9 +118,9 @@ func networkingOperator() model.Operator {
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesUpdateStatus()...)
-	rbacPolicies = append(rbacPolicies, io.LocalNetworkingOutputTypes.RbacPoliciesWrite()...)
-	rbacPolicies = append(rbacPolicies, io.IstioNetworkingOutputTypes.RbacPoliciesWrite()...)
-	rbacPolicies = append(rbacPolicies, io.SmiNetworkingOutputTypes.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.LocalNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.IstioNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesUpdateStatus()...)
 
@@ -169,7 +169,7 @@ func certAgentOperator() model.Operator {
 
 	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.RbacPoliciesUpdateStatus()...)
-	rbacPolicies = append(rbacPolicies, io.CertificateAgentOutputTypes.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.CertificateAgentOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	// ability to bounce pods
 	rbacPolicies = append(rbacPolicies, rbacv1.PolicyRule{
 		Verbs:     []string{"*"},

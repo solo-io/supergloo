@@ -502,6 +502,7 @@ func (m *MeshSpec_ConsulConnectMesh) GetInstallation() *MeshSpec_MeshInstallatio
 //
 //https://github.com/openservicemesh/osm
 type MeshSpec_OSM struct {
+	// Information about where OSM is installed in a managed Kubernetes Cluster.
 	Installation         *MeshSpec_MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
 	XXX_unrecognized     []byte                     `json:"-"`

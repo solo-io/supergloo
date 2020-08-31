@@ -3,15 +3,17 @@ package traffictarget
 import (
 	"context"
 
+	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/smi"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/access"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/split"
+	smitraffictarget "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
-//go:generate mockgen -source ./smi_traffic_target_translator.go -destination mocks/smi_traffic_target_translator.go
+//go:generate mockgen -source ./osm_traffic_target_translator.go -destination mocks/osm_traffic_target_translator.go
 
 // the VirtualService translator translates a TrafficTarget into a VirtualService.
 type Translator interface {
@@ -29,14 +31,12 @@ type Translator interface {
 }
 
 type translator struct {
-	trafficSplit  split.Translator
-	trafficTarget access.Translator
+	smiTranslator smitraffictarget.Translator
 }
 
-func NewTranslator(tsTranslator split.Translator, ttTranslator access.Translator) Translator {
+func NewTranslator(smiTranslator smitraffictarget.Translator) Translator {
 	return &translator{
-		trafficSplit:  tsTranslator,
-		trafficTarget: ttTranslator,
+		smiTranslator: smiTranslator,
 	}
 }
 
@@ -48,10 +48,29 @@ func (t *translator) Translate(
 	outputs smi.Builder,
 	reporter reporting.Reporter,
 ) {
-	trafficSplit := t.trafficSplit.Translate(ctx, in, trafficTarget, reporter)
-	outputs.AddTrafficSplits(trafficSplit)
+	// only translate osm trafficTargets
+	if !t.isOSMTrafficTarget(ctx, trafficTarget, in.Meshes()) {
+		return
+	}
 
-	trafficTargets, httpRouteGroups := t.trafficTarget.Translate(ctx, in, trafficTarget, reporter)
-	outputs.AddTrafficTargets(trafficTargets...)
-	outputs.AddHTTPRouteGroups(httpRouteGroups...)
+	t.smiTranslator.Translate(ctx, in, trafficTarget, outputs, reporter)
+}
+
+func (t *translator) isOSMTrafficTarget(
+	ctx context.Context,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	allMeshes v1alpha2sets.MeshSet,
+) bool {
+	meshRef := trafficTarget.Spec.Mesh
+	if meshRef == nil {
+		contextutils.LoggerFrom(ctx).Errorf("internal error: trafficTarget %v missing mesh ref", sets.Key(trafficTarget))
+		return false
+	}
+	mesh, err := allMeshes.Find(meshRef)
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Errorf("internal error: could not find mesh %v for trafficTarget %v", sets.Key(meshRef), sets.Key(trafficTarget))
+		return false
+	}
+
+	return mesh.Spec.GetOsm() != nil
 }

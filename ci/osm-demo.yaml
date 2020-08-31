@@ -80,7 +80,7 @@ metadata:
   labels:
     app: bookstore
   annotations:
-    # annotation for mesh service discovery
+    # annotation for traffic target discovery
     "discovery.smh.solo.io/enabled": "true"
 spec:
   ports:
