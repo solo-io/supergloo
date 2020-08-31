@@ -5,34 +5,37 @@ import (
 	"fmt"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output/discovery"
+	internal "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/internal"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/labelutils"
 )
+
+var DefaultDependencyFactory = internal.DependencyFactoryImpl{}
 
 // the translator "reconciles the entire state of the world"
 type Translator interface {
 	// translates the Input Snapshot to an Output Snapshot
-	Translate(ctx context.Context, in input.Snapshot) (output.Snapshot, error)
+	Translate(ctx context.Context, in input.Snapshot) (discovery.Snapshot, error)
 }
 
 type translator struct {
 	totalTranslates int // TODO(ilackarms): metric
-	dependencies    dependencyFactory
+	dependencies    internal.DependencyFactory
 }
 
-func NewTranslator() Translator {
+func NewTranslator(dependencyFactory internal.DependencyFactory) Translator {
 	return &translator{
-		dependencies: dependencyFactoryImpl{},
+		dependencies: dependencyFactory,
 	}
 }
 
-func (t translator) Translate(ctx context.Context, in input.Snapshot) (output.Snapshot, error) {
+func (t translator) Translate(ctx context.Context, in input.Snapshot) (discovery.Snapshot, error) {
 
-	meshTranslator := t.dependencies.makeMeshTranslator(ctx, in)
+	meshTranslator := t.dependencies.MakeMeshTranslator(ctx, in)
 
-	workloadTranslator := t.dependencies.makeWorkloadTranslator(ctx, in)
+	workloadTranslator := t.dependencies.MakeWorkloadTranslator(ctx, in)
 
-	trafficTargetTranslator := t.dependencies.makeTrafficTargetTranslator(ctx)
+	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(ctx)
 
 	meshes := meshTranslator.TranslateMeshes(in.Deployments())
 
@@ -43,11 +46,11 @@ func (t translator) Translate(ctx context.Context, in input.Snapshot) (output.Sn
 		meshes,
 	)
 
-	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.Services(), workloads)
+	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.Services(), workloads, meshes)
 
 	t.totalTranslates++
 
-	return output.NewSinglePartitionedSnapshot(
+	return discovery.NewSinglePartitionedSnapshot(
 		fmt.Sprintf("mesh-discovery-%v", t.totalTranslates),
 		labelutils.OwnershipLabels(),
 		trafficTargets,

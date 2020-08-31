@@ -23,14 +23,17 @@ var (
 		},
 	}
 
-	DiscoveryOutputTypes = Snapshot{
-		schema.GroupVersion{
-			Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"Mesh",
-			"Workload",
-			"TrafficTarget",
+	DiscoveryOutputTypes = OutputSnapshot{
+		Name: "discovery",
+		Snapshot: Snapshot{
+			schema.GroupVersion{
+				Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
+				Version: "v1alpha2",
+			}: {
+				"Mesh",
+				"Workload",
+				"TrafficTarget",
+			},
 		},
 	}
 )

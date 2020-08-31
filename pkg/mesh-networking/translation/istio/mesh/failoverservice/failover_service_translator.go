@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 
 	udpa_type_v1 "github.com/cncf/udpa/go/udpa/type/v1"
@@ -38,13 +38,13 @@ import (
 // The FailoverService translator translates a FailoverService for a single Mesh.
 type Translator interface {
 	// Translate translates the FailoverService into a ServiceEntry representing the new service and an accompanying EnvoyFilter.
-	// Output resources will be added to the output.Builder
+	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.Snapshot,
 		mesh *discoveryv1alpha2.Mesh,
 		failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
-		outputs output.Builder,
+		outputs istio.Builder,
 		reporter reporting.Reporter,
 	)
 }
@@ -67,7 +67,7 @@ func (t *translator) Translate(
 	in input.Snapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
-	outputs output.Builder,
+	outputs istio.Builder,
 	reporter reporting.Reporter,
 ) {
 	istioMesh := mesh.Spec.GetIstio()

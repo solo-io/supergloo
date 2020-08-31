@@ -34,6 +34,11 @@ print-info:
 #----------------------------------------------------------------------------------
 # Code Generation
 #----------------------------------------------------------------------------------
+
+DEPSGOBIN=$(shell pwd)/$(OUTDIR)/.bin
+export PATH:=$(DEPSGOBIN):$(PATH)
+export GOBIN:=$(DEPSGOBIN)
+
 .PHONY: fmt
 fmt:
 	goimports -w $(shell ls -d */ | grep -v vendor)
@@ -42,9 +47,14 @@ fmt:
 mod-download:
 	go mod download
 
+.PHONY: clear-vendor-any
+clear-vendor-any:
+	rm -rf vendor_any
+
 # Dependencies for code generation
 .PHONY: install-go-tools
 install-go-tools: mod-download
+	mkdir -p $(DEPSGOBIN)
 	go install istio.io/tools/cmd/protoc-gen-jsonshim
 	go install github.com/gogo/protobuf/protoc-gen-gogo
 	go install github.com/golang/protobuf/protoc-gen-go
@@ -52,6 +62,7 @@ install-go-tools: mod-download
 	go install github.com/golang/mock/mockgen
 	go install golang.org/x/tools/cmd/goimports
 	go install github.com/onsi/ginkgo/ginkgo
+	go install github.com/gobuffalo/packr/packr
 
 # Call all generated code targets
 .PHONY: generated-code
@@ -76,7 +87,7 @@ go-generate:
 
 # Generate Operator Code
 .PHONY: operator-gen
-operator-gen:
+operator-gen: clear-vendor-any
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go
 
 #----------------------------------------------------------------------------------
@@ -85,7 +96,7 @@ operator-gen:
 
 # Generate Reference documentation
 .PHONY: generated-reference-docs
-generated-reference-docs:
+generated-reference-docs: clear-vendor-any
 	go run codegen/docs/docsgen.go
 
 #----------------------------------------------------------------------------------
@@ -160,24 +171,24 @@ endif
 .PHONY: meshctl-linux-amd64
 meshctl-linux-amd64: $(OUTDIR)/meshctl-linux-amd64
 $(OUTDIR)/meshctl-linux-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
 
 .PHONY: meshctl-darwin-amd64
 meshctl-darwin-amd64: $(OUTDIR)/meshctl-darwin-amd64
 $(OUTDIR)/meshctl-darwin-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
 
 .PHONY: meshctl-windows-amd64
 meshctl-windows-amd64: $(OUTDIR)/meshctl-windows-amd64.exe
 $(OUTDIR)/meshctl-windows-amd64.exe: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
 
 .PHONY: build-cli
-build-cli: meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64
+build-cli: install-go-tools meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64
 
 .PHONY: install-cli
 install-cli:
-	go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o ${GOPATH}/bin/meshctl cmd/meshctl/main.go
+	packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o ${GOPATH}/bin/meshctl cmd/meshctl/main.go
 
 #----------------------------------------------------------------------------------
 # Push images
@@ -195,7 +206,7 @@ include install/helm/helm.mk
 
 # Generate Manifests from Helm Chart
 .PHONY: chart-gen
-chart-gen:
+chart-gen: clear-vendor-any
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
 
 .PHONY: manifest-gen

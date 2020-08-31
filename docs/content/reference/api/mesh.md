@@ -27,6 +27,7 @@ title: "mesh.proto"
   - [MeshSpec.LinkerdMesh](#discovery.smh.solo.io.MeshSpec.LinkerdMesh)
   - [MeshSpec.MeshInstallation](#discovery.smh.solo.io.MeshSpec.MeshInstallation)
   - [MeshSpec.MeshInstallation.PodLabelsEntry](#discovery.smh.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry)
+  - [MeshSpec.OSM](#discovery.smh.solo.io.MeshSpec.OSM)
   - [MeshStatus](#discovery.smh.solo.io.MeshStatus)
   - [MeshStatus.AppliedFailoverService](#discovery.smh.solo.io.MeshStatus.AppliedFailoverService)
   - [MeshStatus.AppliedVirtualMesh](#discovery.smh.solo.io.MeshStatus.AppliedVirtualMesh)
@@ -49,6 +50,7 @@ Meshes represent a currently registered service mesh.
 | awsAppMesh | [MeshSpec.AwsAppMesh](#discovery.smh.solo.io.MeshSpec.AwsAppMesh) |  |  |
 | linkerd | [MeshSpec.LinkerdMesh](#discovery.smh.solo.io.MeshSpec.LinkerdMesh) |  |  |
 | consulConnect | [MeshSpec.ConsulConnectMesh](#discovery.smh.solo.io.MeshSpec.ConsulConnectMesh) |  |  |
+| osm | [MeshSpec.OSM](#discovery.smh.solo.io.MeshSpec.OSM) |  |  |
 | agentInfo | [MeshSpec.AgentInfo](#discovery.smh.solo.io.MeshSpec.AgentInfo) |  | Information about the SMH certificate agent if it has been installed to the remote cluster. |
 
 
@@ -107,7 +109,7 @@ Mesh object representing an installed ConsulConnect control plane.
 <a name="discovery.smh.solo.io.MeshSpec.Istio"></a>
 
 ### MeshSpec.Istio
-Mesh object representing an installed Istio control plane.
+Mesh object representing an installed Istio control plane
 
 
 | Field | Type | Label | Description |
@@ -215,6 +217,21 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
 | ----- | ---- | ----- | ----------- |
 | key | [string](#string) |  |  |
 | value | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="discovery.smh.solo.io.MeshSpec.OSM"></a>
+
+### MeshSpec.OSM
+https://github.com/openservicemesh/osm
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| installation | [MeshSpec.MeshInstallation](#discovery.smh.solo.io.MeshSpec.MeshInstallation) |  | Information about where OSM is installed in a managed Kubernetes Cluster. |
 
 
 

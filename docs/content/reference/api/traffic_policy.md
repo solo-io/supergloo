@@ -282,6 +282,7 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | kubeService | [TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination) |  | The use kubeService to shift traffic a Kubernetes Service/subset. |
+| failoverServiceRef | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | A traffic shift destination targeting a FailoverService. |
 | weight | [uint32](#uint32) |  | Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100. |
 
 

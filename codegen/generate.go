@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 
@@ -38,7 +39,7 @@ type topLevelComponent struct {
 	inputResources io.Snapshot
 
 	// the set of output resources for which to generate a snapshot
-	outputResources io.Snapshot
+	outputResources []io.OutputSnapshot
 }
 
 func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
@@ -65,11 +66,12 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 
 	}
 
-	if len(t.outputResources) > 0 {
+	for _, outputResources := range t.outputResources {
+		filePath := filepath.Join(t.generatedCodeRoot, "output", outputResources.Name, "snapshot.go")
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.OutputSnapshot,
-			t.generatedCodeRoot+"/output/snapshot.go",
-			t.outputResources,
+			filePath,
+			outputResources.Snapshot,
 		))
 	}
 
@@ -84,13 +86,17 @@ var (
 		{
 			generatedCodeRoot: "pkg/api/discovery.smh.solo.io",
 			inputResources:    io.DiscoveryInputTypes,
-			outputResources:   io.DiscoveryOutputTypes,
+			outputResources:   []io.OutputSnapshot{io.DiscoveryOutputTypes},
 		},
-		// networking component
+		// networking snapshot
 		{
 			generatedCodeRoot: "pkg/api/networking.smh.solo.io",
 			inputResources:    io.NetworkingInputTypes,
-			outputResources:   io.NetworkingOutputTypes,
+			outputResources: []io.OutputSnapshot{
+				io.IstioNetworkingOutputTypes,
+				io.SmiNetworkingOutputTypes,
+				io.LocalNetworkingOutputTypes,
+			},
 		},
 		// certificate issuer component
 		{
@@ -101,7 +107,7 @@ var (
 		{
 			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/agent",
 			inputResources:    io.CertificateAgentInputTypes,
-			outputResources:   io.CertificateAgentOutputTypes,
+			outputResources:   []io.OutputSnapshot{io.CertificateAgentOutputTypes},
 		},
 	}
 

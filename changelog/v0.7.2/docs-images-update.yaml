@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    description: Update the images on the concepts page to reflect v0.7.x.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/922
+  - type: FIX
+    description: Update the 2 cluster image on the setup and installing Istio pages.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/921
