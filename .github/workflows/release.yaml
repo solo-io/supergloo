@@ -22,6 +22,7 @@ jobs:
       - name: Set Release Tag
         run: |
           echo $GITHUB_REF
+          # Bash syntax for extracting tag from github tag ref: https://stackoverflow.com/a/58178121/2255272
           echo ::set-env name=TAGGED_VERSION::${GITHUB_REF#refs/*/}
 
       - name: Upload Release Assets
