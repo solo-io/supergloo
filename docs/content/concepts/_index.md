@@ -30,7 +30,7 @@ Managing a service mesh deployment that is consistent and secure across multiple
 
 Service Mesh Hub consists of a set of components that run on a single cluster, often referred to as your *management plane cluster*. The management plane components are stateless and rely exclusively on declarative CRDs.  Each service mesh installation that spans a deployment footprint often has its own control plane. You can think of Service Mesh Hub as a management plane for multiple control planes.
 
-![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-components.png" %}})
+![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/concepts-smh-components.png" %}})
 
 Once a cluster is registered with Service Mesh Hub, it can start managing that cluster - discovering workloads, pushing out configurations, unifying the trust model, scraping metrics, and more. 
 
@@ -76,7 +76,7 @@ The first task of discovery is to find any service meshes that are installed on 
 
 Finally, discovery looks for services exposing the workloads of a mesh and writes a [`TrafficTarget`]({{% versioned_link_path fromRoot="/reference/api/mesh_service/" %}}) resource to the management plane cluster. 
 
-![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/mesh-discovery.png" %}})
+![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/concepts-smh-discovery.png" %}})
 
 At this point, the management plane has a complete view of the meshes, services, and workloads across your multi-cluster, multi-mesh environment. 
 
@@ -84,7 +84,7 @@ At this point, the management plane has a complete view of the meshes, services,
 
 While the `mesh-discovery` components discover the resources in registred clusters, the `mesh-networking` components make decisions about federating the various clusters and meshes. The `VirtualMesh` concept helps to drive the federation behavior. When you create a `VirtualMesh` resource, you define what federation and trust model to use. The `mesh-networking` component will then decide which services federate to which workloads and handle building the correct service-discovery mechanisms. For example, with Istio, Service Mesh Hub will create the appropriate `ServiceEntry` and `DestinationRule` resources to enable cross-cluster/mesh communication.
 
-![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/mesh-networking.png" %}})
+![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/concepts-smh-networking.png" %}})
 
 If users create a `TrafficPolicy` or `AccessPolicy` for Service Mesh Hub, the `mesh-networking` component will automatically translate those to the underlying mesh-specific resources. Again, for Istio, this would be `VirtualService`, `DesttinationRule`, and `AuthorizationPolicy` resources.
 
