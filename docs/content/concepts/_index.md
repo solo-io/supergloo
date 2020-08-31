@@ -13,11 +13,11 @@ Service Mesh Hub is a management plane that simplifies operations and workflows 
 
 A service mesh provides powerful service-to-service communication capabilities like request routing, traffic observability, transport security, policy enforcement and more. A service mesh brings its highest value when many services (as many as possible) take advantage of its traffic control capabilities. In today's modern cloud deployments, both on-premises and in a public cloud, the expectation is that more, smaller clusters or deployment targets are preferred for the following reasons:
 
-* fault tolerance
-* compliance and data access
-* disaster recovery
-* scaling needs
-* geographic needs
+* Fault tolerance
+* Compliance and data access
+* Disaster recovery
+* Scaling needs
+* Geographic needs
 
 Managing a service mesh deployment that is consistent and secure across multiple clusters is tedious and error prone at best. Service Mesh Hub provides a single unified pane of glass driven by a declarative API (CRDs in Kubernetes) that orchestrates and simplifies the operation of a multi-cluster service mesh including the following concerns:
 
@@ -68,23 +68,34 @@ The components that comprise Service Mesh Hub can be categorized as `mesh-discov
 
 A cluster is registered using the CLI `meshctl cluster register` command. During registration, Service Mesh Hub authenticates to the target cluster using the user-provided kubeconfig credentials, creates a `ServiceAccount` on that cluster for Service Mesh Hub and builds a kubeconfig granting access to the target cluster which is stored as a `secret` on the management-plane cluster. This kubeconfig is then used by Service Mesh Hub for all communication to that target cluster. For instance, discovery uses this kubeconfig to connect to the target cluster and start discovery. 
 
-The discovery process is initiated by Service Mesh Hub running on the management-cluster and pulling information from the registered target clusters. Discovery of a target cluster is performed when the cluster is first registered and then periodically to discover any newly added meshes, workloads, and services.
+The discovery process is initiated by Service Mesh Hub running on the management-cluster, pulling and translating information from the registered target clusters. Discovery of a target cluster is performed when the cluster is first registered and then periodically to discover and translate any newly added meshes, workloads, and traffic targets.
 
-The first task of discovery is to find any service meshes that are installed on the cluster. When it finds a control plane for a service mesh, discovery will write a [`Mesh`]({{% versioned_link_path fromRoot="/reference/api/mesh/" %}}) resource to the management plane cluster, linked to the `KubernetesCluster` resource that was written during cluster registration. Currently, Service Mesh Hub discovers and manages [Istio](https://istio.io) meshes, with plans to support more in the near future.
+The first task of discovery is to create an `Input Snapshot` and begin the tranlation of the service meshes and services on the cluster to create an `Output Snapshot` that creates custom resources to the management plane cluster. 
 
-`Discovery` then looks for workloads that are associated with the mesh, such as a deployment that has created a pod injected with the sidecar proxy for that mesh. It will write a [`Workload`]({{% versioned_link_path fromRoot="/reference/api/workload/" %}}) resource to the management plane cluster representing this workload. 
+`MeshTranslator` looks for installed service mesh control planes and then will add them to the `Output Snapshot` for a   [`Mesh`]({{% versioned_link_path fromRoot="/reference/api/mesh/" %}}) resource to be written to the management plane cluster, linked to the `KubernetesCluster` resource that was written during cluster registration. Currently, Service Mesh Hub discovers and manages both [Istio](https://istio.io) and [Open Service Mesh](https://openservicemesh.io/) meshes, with plans to support more in the near future.
 
-Finally, discovery looks for services exposing the workloads of a mesh and writes a [`TrafficTarget`]({{% versioned_link_path fromRoot="/reference/api/mesh_service/" %}}) resource to the management plane cluster. 
+`WorkloadTranslator` then looks for workloads that are associated with the mesh, such as a deployment that has created a pod injected with the sidecar proxy for that mesh. It adds them to the `Output Snapshot` which will write a [`Workload`]({{% versioned_link_path fromRoot="/reference/api/workload/" %}}) resource to the management plane cluster representing this workload. 
+
+Finally, `TrafficTargetTranslator`  looks for services exposing the workloads of a mesh and adds them to the `Output Snapshot` which then writes a [`TrafficTarget`]({{% versioned_link_path fromRoot="/reference/api/mesh_service/" %}}) resource to the management plane cluster. 
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/concepts-smh-discovery.png" %}})
 
-At this point, the management plane has a complete view of the meshes, services, and workloads across your multi-cluster, multi-mesh environment. 
+At this point, the management plane has a complete view of the meshes, workloads, and traffic targets across your multi-cluster, multi-mesh environment. 
 
 ##### Mesh Networking
 
-While the `mesh-discovery` components discover the resources in registred clusters, the `mesh-networking` components make decisions about federating the various clusters and meshes. The `VirtualMesh` concept helps to drive the federation behavior. When you create a `VirtualMesh` resource, you define what federation and trust model to use. The `mesh-networking` component will then decide which services federate to which workloads and handle building the correct service-discovery mechanisms. For example, with Istio, Service Mesh Hub will create the appropriate `ServiceEntry` and `DestinationRule` resources to enable cross-cluster/mesh communication.
+While the `mesh-discovery` components discover the resources in registered clusters, the `mesh-networking` components make decisions about federating the various clusters and meshes. The `VirtualMesh` concept helps to drive the federation behavior. When you create a `VirtualMesh` resource, you define what federation and trust model to use. `Mesh-Networking` performs translation at the mesh level for a group of meshes with the`VirtulMeshTranslator` and at the service level with `TrafficTargetTranslator` which will then decide which services federate to which workloads and handle building the correct service-discovery mechanisms. For example, with Istio, Service Mesh Hub will create the appropriate `ServiceEntry` and `DestinationRule` resources to enable cross-cluster/mesh communication.
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/concepts-smh-networking.png" %}})
+
+The `FederationTranslator`, `FailoverTranslator`, and `mTLSTranslator` are grouped within the `VirtulMeshTranslator` to handle mesh level configuration and networking.
+ * `FederationTranslator` handles global DNS resolution and routing for services in remote clusters for each federated traffic target.
+ * `FailoverTranslator` re-routes traffic to targets in remote clusters when local targets are unhealthy.
+ * `mTLSTranslator` controls mesh-level settings for performing mTLS, including issuing & rotating root certificates used by each mesh.
+
+The `TrafficTargetTranslator` handles the translation and policy configuration at the `TrafficTarget` (service) level. 
+ * `TrafficPolicyTranslator` creates the `VirtualService` and `DestinationRule` for routing.
+ * `AccessPolicyTranslator` creates the `AuthPolicy` for access control.
 
 If users create a `TrafficPolicy` or `AccessPolicy` for Service Mesh Hub, the `mesh-networking` component will automatically translate those to the underlying mesh-specific resources. Again, for Istio, this would be `VirtualService`, `DesttinationRule`, and `AuthorizationPolicy` resources.
 
