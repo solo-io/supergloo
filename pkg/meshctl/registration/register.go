@@ -14,9 +14,9 @@ import (
 var smhRbacRequirements = func() []rbacv1.PolicyRule {
 	var policyRules []rbacv1.PolicyRule
 	policyRules = append(policyRules, io.DiscoveryInputTypes.RbacPoliciesWatch()...)
-	policyRules = append(policyRules, io.LocalNetworkingOutputTypes.RbacPoliciesWrite()...)
-	policyRules = append(policyRules, io.IstioNetworkingOutputTypes.RbacPoliciesWrite()...)
-	policyRules = append(policyRules, io.SmiNetworkingOutputTypes.RbacPoliciesWrite()...)
+	policyRules = append(policyRules, io.LocalNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
+	policyRules = append(policyRules, io.IstioNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
+	policyRules = append(policyRules, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)
 	policyRules = append(policyRules, io.CertificateIssuerInputTypes.RbacPoliciesUpdateStatus()...)
 	return policyRules
@@ -42,6 +42,10 @@ func NewRegistrant(opts *RegistrantOptions) *Registrant {
 			},
 			Rules: smhRbacRequirements,
 		},
+	}
+	// Use management kubeconfig for remote cluster if unset.
+	if registrant.RemoteKubeCfgPath == "" {
+		registrant.RemoteKubeCfgPath = registrant.KubeCfgPath
 	}
 	return registrant
 }
@@ -74,7 +78,7 @@ func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 }
 
 func (r *Registrant) registerCluster(ctx context.Context) error {
-	logrus.Debugf("registering cluster with opts %+v", r)
+	logrus.Debugf("registering cluster with opts %+v\n", r.RegistrationOptions)
 
 	if err := r.RegistrationOptions.RegisterCluster(ctx); err != nil {
 		return err
@@ -88,7 +92,7 @@ func (r *Registrant) installCertAgent(ctx context.Context) error {
 	return smh.Installer{
 		HelmChartPath:  r.CertAgentInstallOptions.ChartPath,
 		HelmValuesPath: r.CertAgentInstallOptions.ChartValues,
-		KubeConfig:     r.RemoteKubeCfgPath,
+		KubeConfig:     r.KubeCfgPath,
 		KubeContext:    r.RemoteKubeContext,
 		Namespace:      r.RemoteNamespace,
 		Verbose:        r.Verbose,
@@ -99,7 +103,7 @@ func (r *Registrant) installCertAgent(ctx context.Context) error {
 
 func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
 	return smh.Uninstaller{
-		KubeConfig:  r.RemoteKubeCfgPath,
+		KubeConfig:  r.KubeCfgPath,
 		KubeContext: r.RemoteKubeContext,
 		Namespace:   r.RemoteNamespace,
 		Verbose:     r.Verbose,

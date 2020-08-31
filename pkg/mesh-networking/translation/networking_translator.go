@@ -13,7 +13,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -21,21 +20,21 @@ import (
 )
 
 type OutputSnapshots struct {
-	Istio istiooutput.Snapshot
-	SMI   smioutput.Snapshot
-	Local localoutput.Snapshot
+	istio istiooutput.Snapshot
+	smi   smioutput.Snapshot
+	local localoutput.Snapshot
 }
 
 func (t OutputSnapshots) MarshalJSON() ([]byte, error) {
-	istioByt, err := t.Istio.MarshalJSON()
+	istioByt, err := t.istio.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
-	smiByt, err := t.SMI.MarshalJSON()
+	smiByt, err := t.smi.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
-	localByt, err := t.Local.MarshalJSON()
+	localByt, err := t.local.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
@@ -49,10 +48,10 @@ func (t OutputSnapshots) Apply(
 	errHandler output.ErrorHandler,
 ) {
 	// Apply istio and smi resources to registered clusters
-	t.Istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
-	t.SMI.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	t.istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	t.smi.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 	// Apply local resources only to management cluster
-	t.Local.ApplyLocalCluster(ctx, clusterClient, errHandler)
+	t.local.ApplyLocalCluster(ctx, clusterClient, errHandler)
 }
 
 // the networking translator translates an istio input networking snapshot to an istiooutput snapshot of mesh config resources
@@ -68,18 +67,15 @@ type Translator interface {
 type translator struct {
 	totalTranslates int // TODO(ilackarms): metric
 	istioTranslator istio.Translator
-	smiTranslator   smi.Translator
 	osmTranslator   osm.Translator
 }
 
 func NewTranslator(
 	istioTranslator istio.Translator,
-	smiTranslator smi.Translator,
 	osmTranslator osm.Translator,
 ) Translator {
 	return &translator{
 		istioTranslator: istioTranslator,
-		smiTranslator:   smiTranslator,
 		osmTranslator:   osmTranslator,
 	}
 }
@@ -97,8 +93,6 @@ func (t *translator) Translate(
 	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", t.totalTranslates))
 
 	t.istioTranslator.Translate(ctx, in, istioOutputs, localOutputs, reporter)
-
-	t.smiTranslator.Translate(ctx, in, smiOutputs, reporter)
 
 	t.osmTranslator.Translate(ctx, in, smiOutputs, reporter)
 
@@ -118,8 +112,8 @@ func (t *translator) Translate(
 	}
 
 	return OutputSnapshots{
-		Istio: istioSnapshot,
-		SMI:   smiSnapshot,
-		Local: localSnapshot,
+		istio: istioSnapshot,
+		smi:   smiSnapshot,
+		local: localSnapshot,
 	}, nil
 }
