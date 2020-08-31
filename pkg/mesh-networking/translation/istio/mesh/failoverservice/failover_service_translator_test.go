@@ -3,7 +3,7 @@ package failoverservice
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 
 	"github.com/golang/mock/gomock"
@@ -198,7 +198,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 			mockClusterDomainRegistry.EXPECT().GetServiceGlobalFQDN(trafficTarget.Spec.GetKubeService().Ref).Return(trafficTarget.Name + "." + trafficTarget.Namespace + ".global")
 		}
 
-		outputs := output.NewBuilder(context.TODO(), "")
+		outputs := istio.NewBuilder(context.TODO(), "")
 		failoverServiceTranslator.Translate(
 			in,
 			&discoveryv1alpha2.Mesh{

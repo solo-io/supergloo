@@ -1,12 +1,11 @@
 package virtualservice
 
 import (
+	"reflect"
 	"sort"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/skv2/pkg/ezkube"
-
-	"reflect"
 
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
@@ -85,6 +84,11 @@ func (t *translator) Translate(
 					reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
 				}
 			}
+		}
+
+		// Avoid appending an HttpRoute that will have no affect, which occurs if no decorators mutate the baseRoute with any non-match config.
+		if equalityutils.Equals(initializeBaseRoute(policy.Spec), baseRoute) {
+			continue
 		}
 
 		// set a default destination for the route (to the target traffictarget)

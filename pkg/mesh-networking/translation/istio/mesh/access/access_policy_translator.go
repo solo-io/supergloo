@@ -3,7 +3,7 @@ package access
 import (
 	"github.com/solo-io/go-utils/kubeutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
@@ -17,12 +17,12 @@ import (
 // The access control translator translates a VirtualMesh EnforcementPolicy into Istio AuthorizationPolicies.
 type Translator interface {
 	// Returns nil if no AuthorizationPolicies are required for the mesh (i.e. because access policy enforcement is disabled).
-	// Output resources will be added to the output.Builder
+	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		mesh *discoveryv1alpha2.Mesh,
 		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
-		outputs output.Builder,
+		outputs istio.Builder,
 	)
 }
 
@@ -40,7 +40,7 @@ func NewTranslator() Translator {
 func (t *translator) Translate(
 	mesh *discoveryv1alpha2.Mesh,
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
-	outputs output.Builder,
+	outputs istio.Builder,
 ) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {

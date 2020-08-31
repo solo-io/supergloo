@@ -1,6 +1,9 @@
 package io
 
 import (
+	smiaccessv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
+	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
+	smislpitv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/codegen/constants"
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -36,25 +39,49 @@ var (
 		},
 	}
 
-	NetworkingOutputTypes = Snapshot{
-		istionetworkingv1alpha3.SchemeGroupVersion: {
-			"DestinationRule",
-			"VirtualService",
-			"EnvoyFilter",
-			"ServiceEntry",
-			"Gateway",
+	IstioNetworkingOutputTypes = OutputSnapshot{
+		Name: "istio",
+		Snapshot: Snapshot{
+			istionetworkingv1alpha3.SchemeGroupVersion: {
+				"DestinationRule",
+				"VirtualService",
+				"EnvoyFilter",
+				"ServiceEntry",
+				"Gateway",
+			},
+			istiosecurityv1beta1.SchemeGroupVersion: {
+				"AuthorizationPolicy",
+			},
+			schema.GroupVersion{
+				Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
+				Version: "v1alpha2",
+			}: {
+				"IssuedCertificate",
+			},
 		},
-		istiosecurityv1beta1.SchemeGroupVersion: {
-			"AuthorizationPolicy",
+	}
+
+	LocalNetworkingOutputTypes = OutputSnapshot{
+		Name: "local",
+		Snapshot: Snapshot{
+			corev1.SchemeGroupVersion: {
+				"Secret",
+			},
 		},
-		schema.GroupVersion{
-			Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"IssuedCertificate",
-		},
-		corev1.SchemeGroupVersion: {
-			"Secret",
+	}
+
+	SmiNetworkingOutputTypes = OutputSnapshot{
+		Name: "smi",
+		Snapshot: Snapshot{
+			smislpitv1alpha2.SchemeGroupVersion: {
+				"TrafficSplit",
+			},
+			smiaccessv1alpha2.SchemeGroupVersion: {
+				"TrafficTarget",
+			},
+			smispecsv1alpha3.SchemeGroupVersion: {
+				"HTTPRouteGroup",
+			},
 		},
 	}
 )

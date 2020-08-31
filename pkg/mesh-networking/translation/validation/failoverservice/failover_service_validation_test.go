@@ -146,7 +146,7 @@ var _ = Describe("Validation", func() {
 					},
 				),
 			}, &networkingv1alpha2.FailoverServiceSpec{
-				Hostname: "service1.namespace1.cluster1",
+				Hostname: "service1.namespace1.cluster1.global",
 				Port: &networkingv1alpha2.FailoverServiceSpec_Port{
 					Number:   9080,
 					Protocol: "http",
@@ -245,7 +245,7 @@ var _ = Describe("Validation", func() {
 				),
 				VirtualMeshes: networkingv1alpha2sets.NewVirtualMeshSet(),
 			}, &networkingv1alpha2.FailoverServiceSpec{
-				Hostname: "service1.namespace1.cluster1",
+				Hostname: "service1.namespace1.cluster1.global",
 				Port: &networkingv1alpha2.FailoverServiceSpec_Port{
 					Number:   9080,
 					Protocol: "http",
@@ -546,6 +546,7 @@ var _ = Describe("Validation", func() {
 		// Invalid DNS hostname
 		Expect(containsErrorString(errs, "a DNS-1123 subdomain must consist of lower case alphanumeric characters")).To(BeTrue())
 		// Service without OutlierDetection
+		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.HostnameMissingGlobalSuffix(failoverServiceSpec.Hostname))))
 		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.MissingOutlierDetection(inputSnapshot.TrafficTargets.List()[3]))))
 		// Mesh without parent VirtualMesh
 		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(

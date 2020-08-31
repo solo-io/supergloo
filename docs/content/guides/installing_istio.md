@@ -4,7 +4,7 @@ menuTitle: Introductory Guides
 weight: 10
 ---
 
-We can use `istioctl` CLI to easily install Istio in our registered cluster. You can find `istioctl` on the [Getting Started page](https://istio.io/latest/docs/setup/getting-started/) of the Istio site. Currently, Service Mesh Hub supports Istio versions 1.5 and 1.6.
+We can use `istioctl` CLI to easily install Istio in our registered cluster. You can find `istioctl` on the [Getting Started page](https://istio.io/latest/docs/setup/getting-started/) of the Istio site. Currently, Service Mesh Hub supports Istio versions 1.5, 1.6, and 1.7.
 
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document. If you used the `meshctl demo init` command, Istio has already been installed for you.
@@ -32,10 +32,10 @@ For following some of the Service Mesh Hub guides, we assume two clusters with I
 
 We will install Istio with a suitable configuration for a multi-cluster demonstration by overriding some of the Istio Operator values.
 
-Let's install Istio into both the management plane **AND** the remote cluster. The configuration below assumes that you are using the Kind clusters created in the Setup guide. The contexts for those clusters should be `kind-management-plane` and `kind-remote-cluster`. Both clusters are using a NodePort to expose the ingress gateway for Istio. If you are deploying Istio on different cluster setup, update your context and gateway settings accordingly.
+Let's install Istio into both the management plane **AND** the remote cluster. The configuration below assumes that you are using the Kind clusters created in the Setup guide. The contexts for those clusters should be `kind-management-cluster` and `kind-remote-cluster`. Both clusters are using a NodePort to expose the ingress gateway for Istio. If you are deploying Istio on different cluster setup, update your context and gateway settings accordingly.
 
 ```shell
-cat << EOF | istioctl manifest apply --context kind-management-plane -f -
+cat << EOF | istioctl manifest apply --context kind-management-cluster -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -166,7 +166,7 @@ spec:
 EOF
 ```
 
-With Service Mesh Hub and Istio installed into the `management-plane-context`, and Istio installed into `remote-cluster-context`, we have an architecture that looks like this:
+With Service Mesh Hub and Istio installed into the `management-cluster`, and Istio installed into `remote-cluster`, we have an architecture that looks like this:
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-2clusters.png" %}})
 
@@ -185,8 +185,8 @@ istiod-7795ccf9dc-vr4cq                 1/1     Running   0          5d22h
 We also have to enable Istio DNS for the `.global` stub domain for when we want to use multicluster communication. The following two blocks will enable Istio DNS for both clusters.
 
 ```shell
-ISTIO_COREDNS=$(kubectl --context kind-management-plane -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
-kubectl --context kind-management-plane apply -f - <<EOF
+ISTIO_COREDNS=$(kubectl --context kind-management-cluster -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
+kubectl --context kind-management-cluster apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:

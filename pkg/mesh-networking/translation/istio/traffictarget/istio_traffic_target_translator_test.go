@@ -5,13 +5,15 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	mock_output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/mocks"
+	mock_output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio/mocks"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
 	mock_authorizationpolicy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/authorizationpolicy/mocks"
 	mock_destinationrule "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/destinationrule/mocks"
 	mock_virtualservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/virtualservice/mocks"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/security/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("IstioTrafficTargetTranslator", func() {
@@ -22,7 +24,6 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 		mockAuthorizationPolicyTranslator *mock_authorizationpolicy.MockTranslator
 		mockOutputs                       *mock_output.MockBuilder
 		mockReporter                      *mock_reporting.MockReporter
-		in                                input.Snapshot
 		istioTrafficTargetTranslator      Translator
 	)
 
@@ -33,7 +34,6 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 		mockAuthorizationPolicyTranslator = mock_authorizationpolicy.NewMockTranslator(ctrl)
 		mockOutputs = mock_output.NewMockBuilder(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		in = input.NewInputSnapshotManualBuilder("").Build()
 		istioTrafficTargetTranslator = &translator{
 			destinationRules:      mockDestinationRuleTranslator,
 			virtualServices:       mockVirtualServiceTranslator,
@@ -46,7 +46,30 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 	})
 
 	It("should translate", func() {
-		trafficTarget := &v1alpha2.TrafficTarget{}
+		trafficTarget := &v1alpha2.TrafficTarget{
+			Spec: v1alpha2.TrafficTargetSpec{
+				Mesh: &v1.ObjectRef{
+					Name:      "hello",
+					Namespace: "world",
+				},
+			},
+		}
+
+		in := input.NewInputSnapshotManualBuilder("").
+			AddMeshes([]*v1alpha2.Mesh{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      trafficTarget.Spec.GetMesh().GetName(),
+						Namespace: trafficTarget.Spec.GetMesh().GetNamespace(),
+					},
+					Spec: v1alpha2.MeshSpec{
+						MeshType: &v1alpha2.MeshSpec_Istio_{
+							Istio: &v1alpha2.MeshSpec_Istio{},
+						},
+					},
+				},
+			}).
+			Build()
 
 		vs := &v1alpha3.VirtualService{}
 		dr := &v1alpha3.DestinationRule{}

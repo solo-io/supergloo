@@ -2,7 +2,9 @@ package schemes
 
 import (
 	linkerdconfig "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
-	smiconfig "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
+	smiaccess1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
+	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
+	smisplitv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
 	certificates "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
 	smhdiscovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	smhnetworking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
@@ -26,7 +28,9 @@ var SchemeBuilder = runtime.SchemeBuilder{
 	istiosecurityv1beta1.AddToScheme,
 	istionetworkingv1alpha3.AddToScheme,
 	linkerdconfig.AddToScheme,
-	smiconfig.AddToScheme,
+	smisplitv1alpha2.AddToScheme,
+	smispecsv1alpha3.AddToScheme,
+	smiaccess1alpha2.AddToScheme,
 
 	// sk types
 	skv1alpha1.AddToScheme,
