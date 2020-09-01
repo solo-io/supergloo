@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    description: Update management-cluster to mgmt-cluster for consistency
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/915
+  - type: NON_USER_FACING
+    description: Update the failover guide
