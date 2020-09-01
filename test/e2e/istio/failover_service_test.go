@@ -183,6 +183,8 @@ var _ = Describe("FailoverService", func() {
 			Expect(err).NotTo(HaveOccurred())
 			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
 
+			// first check that we have a response to reduce flakiness
+			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
 			Consistently(curlReviews, "5s", "0.2s").Should(ContainSubstring(`"color": "red"`))
 		})
 
