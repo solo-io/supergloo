@@ -55,7 +55,7 @@ meshctl cluster register \
   --remote-context remote-cluster-context
 ```
 
-At this point we have two clusters, `mgmt-cluster` and `remote-cluster` both registered with Service Mesh Hub which happens to be installed on the `mgmt-cluster-context` cluster.
+At this point we have two clusters, `mgmt-cluster` and `remote-cluster` both registered with Service Mesh Hub which happens to be installed on the `mgmt-cluster` cluster.
 
 ## Using Kind
 
