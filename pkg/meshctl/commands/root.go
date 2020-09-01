@@ -14,6 +14,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/version"
 
 	"github.com/spf13/cobra"
+
+	// required import to enable kube client-go auth plugins
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 func RootCommand(ctx context.Context) *cobra.Command {
