@@ -194,8 +194,9 @@ var _ = Describe("FailoverServiceTranslator", func() {
 		}, failoverService.Spec).Return(nil)
 
 		for _, trafficTarget := range allTrafficTargets {
-			mockClusterDomainRegistry.EXPECT().GetServiceLocalFQDN(trafficTarget).Return(trafficTarget.Name + "." + trafficTarget.Namespace)
-			mockClusterDomainRegistry.EXPECT().GetServiceGlobalFQDN(trafficTarget.Spec.GetKubeService().Ref).Return(trafficTarget.Name + "." + trafficTarget.Namespace + ".global")
+			kubeService := trafficTarget.Spec.GetKubeService()
+			mockClusterDomainRegistry.EXPECT().GetServiceLocalFQDN(kubeService.Ref).Return(trafficTarget.Name + "." + trafficTarget.Namespace)
+			mockClusterDomainRegistry.EXPECT().GetServiceGlobalFQDN(kubeService.Ref).Return(trafficTarget.Name + "." + trafficTarget.Namespace + ".global")
 		}
 
 		outputs := istio.NewBuilder(context.TODO(), "")
