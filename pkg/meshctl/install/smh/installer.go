@@ -6,6 +6,7 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/helm"
+	"github.com/solo-io/skv2/pkg/multicluster/register"
 )
 
 const (
@@ -18,8 +19,7 @@ const (
 type Installer struct {
 	HelmChartPath  string
 	HelmValuesPath string
-	KubeConfig     string
-	KubeContext    string
+	KubeConfig     *register.KubeCfg
 	Namespace      string
 	ReleaseName    string
 	Verbose        bool
@@ -55,7 +55,6 @@ func (i Installer) install(
 
 	return helm.Installer{
 		KubeConfig:  i.KubeConfig,
-		KubeContext: i.KubeContext,
 		ChartUri:    helmChartOverride,
 		Namespace:   i.Namespace,
 		ReleaseName: releaseName,

@@ -11,6 +11,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/helm/internal"
+	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/cli/values"
@@ -31,8 +33,7 @@ const (
 )
 
 type Installer struct {
-	KubeConfig  string
-	KubeContext string
+	KubeConfig  *register.KubeCfg
 	ChartUri    string
 	Namespace   string
 	ReleaseName string
@@ -43,7 +44,6 @@ type Installer struct {
 
 func (i Installer) InstallChart(ctx context.Context) error {
 	kubeConfig := i.KubeConfig
-	kubeContext := i.KubeContext
 	chartUri := i.ChartUri
 	namespace := i.Namespace
 	releaseName := i.ReleaseName
@@ -51,22 +51,16 @@ func (i Installer) InstallChart(ctx context.Context) error {
 	verbose := i.Verbose
 	dryRun := i.DryRun
 
-	if kubeConfig == "" {
-		kubeConfig = clientcmd.RecommendedHomeFile
-	}
-
-	err := ensureNamespace(ctx, kubeConfig, kubeContext, namespace)
+	err := ensureNamespace(ctx, kubeConfig, namespace)
 	if err != nil {
 		return eris.Wrapf(err, "creating namespace")
 	}
 
-	actionConfig, settings, err := newActionConfig(kubeConfig, kubeContext, namespace)
+	actionConfig, settings, err := newActionConfig(kubeConfig, namespace)
 	if err != nil {
 		return eris.Wrapf(err, "creating helm config")
 	}
 	settings.Debug = verbose
-	settings.KubeConfig = kubeConfig
-	settings.KubeContext = kubeContext
 
 	chartObj, err := downloadChart(chartUri)
 	if err != nil {
@@ -115,12 +109,8 @@ func (i Installer) InstallChart(ctx context.Context) error {
 	return nil
 }
 
-func ensureNamespace(ctx context.Context, kubeConfig, kubeContext, namespace string) error {
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	loadingRules.ExplicitPath = kubeConfig
-	configOverrides := &clientcmd.ConfigOverrides{CurrentContext: kubeContext}
-
-	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ClientConfig()
+func ensureNamespace(ctx context.Context, kubeConfig *register.KubeCfg, namespace string) error {
+	cfg, err := kubeConfig.ConstructRestConfig()
 	if err != nil {
 		return err
 	}
@@ -139,12 +129,40 @@ func ensureNamespace(ctx context.Context, kubeConfig, kubeContext, namespace str
 
 // Returns an action configuration that can be used to create Helm actions and the Helm env settings.
 // We currently get the Helm storage driver from the standard HELM_DRIVER env (defaults to 'secret').
-func newActionConfig(kubeConfig, kubeContext, namespace string) (*action.Configuration, *cli.EnvSettings, error) {
+func newActionConfig(
+	kubeConfig *register.KubeCfg,
+	namespace string,
+) (*action.Configuration, *cli.EnvSettings, error) {
+	if kubeConfig.GetKubeCfgDisk() != nil {
+		kubeCfgDisk := kubeConfig.GetKubeCfgDisk()
+		return newActionConfigFromDisk(kubeCfgDisk.KubeConfigPath, kubeCfgDisk.KubeContext, namespace)
+	} else if kubeConfig.GetClientConfig() != nil {
+		return newActionConfigFromMemory(kubeConfig.GetClientConfig(), namespace)
+	}
+	return nil, nil, eris.New("KubeCfg must be provided as on-disk Kubeconfig or clientConfig")
+}
+
+// Returns an action configuration from a kubeconfig on disk.
+func newActionConfigFromDisk(kubeConfigPath, kubeContext, namespace string) (*action.Configuration, *cli.EnvSettings, error) {
 	actionConfig := new(action.Configuration)
 
-	settings := newCLISettings(kubeConfig, kubeContext, namespace)
+	settings := newCLISettings(kubeConfigPath, kubeContext, namespace)
 
 	if err := actionConfig.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), logrus.Debugf); err != nil {
+		return nil, nil, err
+	}
+	settings.KubeConfig = kubeConfigPath
+	settings.KubeContext = kubeContext
+	return actionConfig, settings, nil
+}
+
+// Return an action configuration from an in-memory kubeconfig
+func newActionConfigFromMemory(config clientcmd.ClientConfig, namespace string) (*action.Configuration, *cli.EnvSettings, error) {
+	var noOpDebugLog = func(_ string, _ ...interface{}) {}
+	settings := newCLISettings("", "", namespace)
+	restClientGetter := internal.NewInMemoryRESTClientGetter(config)
+	actionConfig := new(action.Configuration)
+	if err := actionConfig.Init(restClientGetter, namespace, os.Getenv("HELM_DRIVER"), noOpDebugLog); err != nil {
 		return nil, nil, err
 	}
 	return actionConfig, settings, nil

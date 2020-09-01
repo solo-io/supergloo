@@ -51,13 +51,13 @@ func (i Installer) InstallCertAgent(
 	}
 
 	return helm.Installer{
-		KubeConfig:  kubeConfig,
-		KubeContext: kubeContext,
-		ChartUri:    helmChartOverride,
-		Namespace:   namespace,
-		ReleaseName: "cert-agent",
-		ValuesFile:  helmValuesPath,
-		Verbose:     verbose,
+		KubeConfigPath: kubeConfig,
+		KubeContext:    kubeContext,
+		ChartUri:       helmChartOverride,
+		Namespace:      namespace,
+		ReleaseName:    "cert-agent",
+		ValuesFile:     helmValuesPath,
+		Verbose:        verbose,
 	}.InstallChart(ctx)
 }
 

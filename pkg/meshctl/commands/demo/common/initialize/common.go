@@ -61,7 +61,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	err = smh.Installer{
 		HelmChartPath:  smhChartUri,
 		HelmValuesPath: "",
-		KubeConfig:     kubeConfigPath,
+		KubeConfigPath: kubeConfigPath,
 		KubeContext:    kubeContext,
 		Namespace:      namespace,
 		ReleaseName:    helm.Chart.Data.Name,

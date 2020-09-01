@@ -86,7 +86,7 @@ func install(ctx context.Context, opts *options) error {
 	err := smh.Installer{
 		HelmChartPath:  smhChartUri,
 		HelmValuesPath: opts.chartValuesFile,
-		KubeConfig:     opts.kubeCfgPath,
+		KubeConfigPath: opts.kubeCfgPath,
 		KubeContext:    opts.kubeContext,
 		Namespace:      opts.namespace,
 		ReleaseName:    opts.releaseName,

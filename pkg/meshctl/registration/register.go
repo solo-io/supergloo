@@ -44,8 +44,8 @@ func NewRegistrant(opts *RegistrantOptions) *Registrant {
 		},
 	}
 	// Use management kubeconfig for remote cluster if unset.
-	if registrant.RemoteKubeCfgPath == "" {
-		registrant.RemoteKubeCfgPath = registrant.KubeCfgPath
+	if registrant.RemoteKubeCfg == nil {
+		registrant.RemoteKubeCfg = registrant.KubeCfg
 	}
 	return registrant
 }
@@ -92,8 +92,7 @@ func (r *Registrant) installCertAgent(ctx context.Context) error {
 	return smh.Installer{
 		HelmChartPath:  r.CertAgentInstallOptions.ChartPath,
 		HelmValuesPath: r.CertAgentInstallOptions.ChartValues,
-		KubeConfig:     r.KubeCfgPath,
-		KubeContext:    r.RemoteKubeContext,
+		KubeConfig:     r.KubeCfg,
 		Namespace:      r.RemoteNamespace,
 		Verbose:        r.Verbose,
 	}.InstallCertAgent(
@@ -103,10 +102,9 @@ func (r *Registrant) installCertAgent(ctx context.Context) error {
 
 func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
 	return smh.Uninstaller{
-		KubeConfig:  r.KubeCfgPath,
-		KubeContext: r.RemoteKubeContext,
-		Namespace:   r.RemoteNamespace,
-		Verbose:     r.Verbose,
+		KubeConfig: r.KubeCfg,
+		Namespace:  r.RemoteNamespace,
+		Verbose:    r.Verbose,
 	}.UninstallCertAgent(
 		ctx,
 	)

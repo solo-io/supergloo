@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/helm"
+	"github.com/solo-io/skv2/pkg/multicluster/register"
 )
 
 type Uninstaller struct {
-	KubeConfig  string
+	KubeConfig  *register.KubeCfg
 	KubeContext string
 	Namespace   string
 	ReleaseName string
@@ -37,7 +38,6 @@ func (i Uninstaller) uninstall(
 
 	return helm.Uninstaller{
 		KubeConfig:  i.KubeConfig,
-		KubeContext: i.KubeContext,
 		Namespace:   i.Namespace,
 		ReleaseName: releaseName,
 		Verbose:     i.Verbose,
