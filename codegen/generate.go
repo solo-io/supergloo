@@ -25,11 +25,6 @@ func main() {
 	}
 }
 
-type NamedSnapshot struct {
-	snapshot io.Snapshot
-	name     string
-}
-
 // generates an input snapshot, input reconciler, and output snapshot for each
 // top-level component. top-level components are defined
 // by mapping a given set of inputs to outputs.
@@ -44,7 +39,7 @@ type topLevelComponent struct {
 	inputResources io.Snapshot
 
 	// the set of output resources for which to generate a snapshot
-	outputResources []NamedSnapshot
+	outputResources []io.OutputSnapshot
 }
 
 func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
@@ -71,18 +66,13 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 
 	}
 
-	if len(t.outputResources) > 0 {
-		for _, outputResources := range t.outputResources {
-			filePath := filepath.Join(t.generatedCodeRoot, "output/snapshot.go")
-			if outputResources.name != "" {
-				filePath = filepath.Join(t.generatedCodeRoot, "output", outputResources.name, "snapshot.go")
-			}
-			topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
-				contrib.OutputSnapshot,
-				filePath,
-				outputResources.snapshot,
-			))
-		}
+	for _, outputResources := range t.outputResources {
+		filePath := filepath.Join(t.generatedCodeRoot, "output", outputResources.Name, "snapshot.go")
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.OutputSnapshot,
+			filePath,
+			outputResources.Snapshot,
+		))
 	}
 
 	return topLevelTemplates
@@ -96,25 +86,16 @@ var (
 		{
 			generatedCodeRoot: "pkg/api/discovery.smh.solo.io",
 			inputResources:    io.DiscoveryInputTypes,
-			outputResources:   []NamedSnapshot{{snapshot: io.DiscoveryOutputTypes}},
+			outputResources:   []io.OutputSnapshot{io.DiscoveryOutputTypes},
 		},
 		// networking snapshot
 		{
 			generatedCodeRoot: "pkg/api/networking.smh.solo.io",
 			inputResources:    io.NetworkingInputTypes,
-			outputResources: []NamedSnapshot{
-				{
-					name:     "istio",
-					snapshot: io.IstioNetworkingOutputTypes,
-				},
-				{
-					name:     "smi",
-					snapshot: io.SmiNetworkingOutputTypes,
-				},
-				{
-					name:     "local",
-					snapshot: io.LocalNetworkingOutputTypes,
-				},
+			outputResources: []io.OutputSnapshot{
+				io.IstioNetworkingOutputTypes,
+				io.SmiNetworkingOutputTypes,
+				io.LocalNetworkingOutputTypes,
 			},
 		},
 		// certificate issuer component
@@ -126,7 +107,7 @@ var (
 		{
 			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/agent",
 			inputResources:    io.CertificateAgentInputTypes,
-			outputResources:   []NamedSnapshot{{snapshot: io.CertificateAgentOutputTypes}},
+			outputResources:   []io.OutputSnapshot{io.CertificateAgentOutputTypes},
 		},
 	}
 

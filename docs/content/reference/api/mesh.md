@@ -231,7 +231,7 @@ https://github.com/openservicemesh/osm
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [MeshSpec.MeshInstallation](#discovery.smh.solo.io.MeshSpec.MeshInstallation) |  |  |
+| installation | [MeshSpec.MeshInstallation](#discovery.smh.solo.io.MeshSpec.MeshInstallation) |  | Information about where OSM is installed in a managed Kubernetes Cluster. |
 
 
 

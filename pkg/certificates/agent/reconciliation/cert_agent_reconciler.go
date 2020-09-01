@@ -11,7 +11,7 @@ import (
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/output"
+	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/agent/output/certagent"
 	"github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/agent/utils"
@@ -73,7 +73,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 		return false, err
 	}
 
-	outputs := output.NewBuilder(r.ctx, "agent")
+	outputs := certagent.NewBuilder(r.ctx, "agent")
 
 	// process issued certificates
 	for _, issuedCertificate := range inputSnap.IssuedCertificates().List() {
@@ -109,7 +109,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	inputSecrets corev1sets.SecretSet,
 	inputPods corev1sets.PodSet,
 	inputCertificateRequests v1alpha2sets.CertificateRequestSet,
-	outputs output.Builder,
+	outputs certagent.Builder,
 ) error {
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
 	if issuedCertificate.Status.ObservedGeneration != issuedCertificate.Generation {

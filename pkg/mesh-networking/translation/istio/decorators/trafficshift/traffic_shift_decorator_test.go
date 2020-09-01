@@ -9,11 +9,13 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	v1alpha2sets2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	mock_hostutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/api/networking/v1alpha3"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("TrafficShiftDecorator", func() {
@@ -57,7 +59,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 					},
 				},
 			})
-		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets)
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil)
 		originalService := &discoveryv1alpha2.TrafficTarget{
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
@@ -152,7 +154,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 					},
 				},
 			})
-		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets)
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil)
 		originalService := &discoveryv1alpha2.TrafficTarget{
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
@@ -260,7 +262,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 					},
 				},
 			})
-		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets)
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil)
 		originalService := &discoveryv1alpha2.TrafficTarget{
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
@@ -316,5 +318,61 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		)
 
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
+	})
+
+	It("should decorate traffic shift targeting a FailoverService", func() {
+		failoverServices := v1alpha2sets2.NewFailoverServiceSet(
+			&v1alpha2.FailoverService{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "fs-1",
+					Namespace: "fs-ns-1",
+				},
+				Spec: v1alpha2.FailoverServiceSpec{
+					Hostname: "failoverservice.foo.bar.global",
+					Port: &v1alpha2.FailoverServiceSpec_Port{
+						Number: 9080,
+					},
+				},
+			})
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, nil, failoverServices)
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+			Spec: &v1alpha2.TrafficPolicySpec{
+				TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
+					Destinations: []*v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
+						{
+							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceRef{
+								FailoverServiceRef: &v1.ObjectRef{
+									Name:      "fs-1",
+									Namespace: "fs-ns-1",
+								},
+							},
+							Weight: 50,
+						},
+					},
+				},
+			},
+		}
+		registerField := func(fieldPtr, val interface{}) error {
+			return nil
+		}
+		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
+			appliedPolicy,
+			nil,
+			output,
+			registerField,
+		)
+		expectedRoute := []*v1alpha3.HTTPRouteDestination{
+			{
+				Destination: &v1alpha3.Destination{
+					Host: "failoverservice.foo.bar.global",
+					Port: &v1alpha3.PortSelector{
+						Number: 9080,
+					},
+				},
+				Weight: 50,
+			},
+		}
+		Expect(err).ToNot(HaveOccurred())
+		Expect(output.Route).To(Equal(expectedRoute))
 	})
 })

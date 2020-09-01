@@ -127,34 +127,27 @@ status:
 
 To demonstrate failover functionality, we configure a traffic shift such that all requests targeting the `reviews` service will instead be routed to the reviews FailoverService we created above.
 
-{{% notice note %}}
-
-As of Service Mesh Hub version v0.6.0, TrafficPolicies are unable to reference FailoverServices in their destination selector. 
-
-We're currently working on extending the TrafficPolicy to enable this functionality.
- 
-For purposes of illustration, we'll manually create an Istio VirtualService to achieve the traffic shift.
-{{% /notice %}}
-
-Apply the following Istio VirtualService:
+Apply the following TrafficPolicy:
 
 ```yaml
 kubectl apply -f - << EOF
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
+apiVersion: networking.smh.solo.io/v1alpha2
+kind: TrafficPolicy
 metadata:
-  name: reviews-failover
+  name: reviews-shift-failover
   namespace: bookinfo
 spec:
-  hosts:
-  - reviews
-  http:
-  - route:
-    - destination:
-        host: reviews-failover.bookinfo.global
-        port:
-          number: 9080
-
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: mgmt-cluster
+        name: reviews
+        namespace: bookinfo
+  trafficShift:
+    destinations:
+    - failoverServiceRef:
+        name: reviews-failover
+        namespace: service-mesh-hub
 EOF
 ```
 
@@ -164,8 +157,7 @@ Port forward the `productpage` pod with the following command and open your web 
 kubectl -n bookinfo port-forward deployments/productpage-v1 9080
 ```
 
-Reloading the page a few times should show the "Book Reviews" section showing either no stars (for requests routed to the `reviews-v1` pod) and black stars (for requests routed to the `reviews-v2` pod). This shows that the `productpage` is routing to the first service listed in the reviews-failover FailoverService. Recall from the [multicluster setup guide]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}) that `reviews-v1` and `reviews-v2` only exist on the `mgmt-cluster` and `reviews-v3` only
-exists on the `remote-cluster`, which we'll use to distinguish requests routing to either cluster.
+Reloading the page a few times should show the "Book Reviews" section showing either no stars (for requests routed to the `reviews-v1` pod) and black stars (for requests routed to the `reviews-v2` pod). This shows that the `productpage` is routing to the first service listed in the reviews-failover FailoverService. Recall from the [multicluster setup guide]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}) that `reviews-v1` and `reviews-v2` only exist on the `mgmt-cluster` and `reviews-v3` only exists on the `remote-cluster`, which we'll use to distinguish requests routing to either cluster.
 
 Now, to trigger the failover, we'll modify the `reviews-v1` and `reviews-v2` deployment to disable the web servers. 
 
@@ -185,5 +177,4 @@ kubectl -n bookinfo patch deployment reviews-v1  --type json   -p '[{"op": "remo
 kubectl -n bookinfo patch deployment reviews-v2  --type json   -p '[{"op": "remove", "path": "/spec/template/spec/containers/0/command"}]'
 ```
 
-Once the deployment has rolled out, reloading the `productpage` should show reviews with no stars or black stars, indicating that
-the failover service is routing requests to the first listed service in the `mgmt-cluster`.
+Once the deployment has rolled out, reloading the `productpage` should show reviews with no stars or black stars, indicating that the failover service is routing requests to the first listed service in the `mgmt-cluster`.
