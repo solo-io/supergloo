@@ -15,7 +15,7 @@ To illustrate these concepts, we will assume that:
 * Istio is [installed on both the `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
 * Both the `mgmt-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}) under the names `mgmt-cluster` and `remote-cluster` respectively
 * The `bookinfo` app is [installed into both clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
-* You have run through the guides for [Federated Trust and Identity]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}), [Access Control]({{% versioned_link_path fromRoot="/guides/access_control_intro/" %}}), and [Multi-cluster Traffic]({{% versioned_link_path fromRoot="/guides/multicluster_communication/" %}}).
+* You have run through the guides for [Federated Trust and Identity]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}) and [Access Control]({{% versioned_link_path fromRoot="/guides/access_control_intro/" %}}).
 
 
 {{% notice note %}}
@@ -45,7 +45,6 @@ spec:
         clusterName: remote-cluster
   outlierDetection:
     consecutiveErrors: 1
-
 EOF
 {{< /highlight >}}
 
@@ -61,7 +60,12 @@ You should see the following status indicating that the TrafficPolicy is valid a
 status:
   observedGeneration: "1"
   state: ACCEPTED
-  trafficTargets: {}
+  trafficTargets:
+    reviews-bookinfo-mgmt-cluster.service-mesh-hub.:
+      acceptanceOrder: 1
+      state: ACCEPTED
+    reviews-bookinfo-remote-cluster.service-mesh-hub.:
+      state: ACCEPTED
 ```
 
 ## Create the FailoverService
@@ -94,7 +98,6 @@ spec:
       name: reviews
       namespace: bookinfo
       clusterName: remote-cluster
-
 EOF
 ```
 
@@ -178,3 +181,6 @@ kubectl -n bookinfo patch deployment reviews-v2  --type json   -p '[{"op": "remo
 ```
 
 Once the deployment has rolled out, reloading the `productpage` should show reviews with no stars or black stars, indicating that the failover service is routing requests to the first listed service in the `mgmt-cluster`.
+
+## Next Steps
+In this guide, you successfully configured cross-cluster failover using a VirtualMesh and Traffic Policies. To explore more about Service Mesh Hub, we recommend checking out the [concepts section]({{% versioned_link_path fromRoot="/concepts" %}}) of the docs.

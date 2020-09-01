@@ -82,7 +82,7 @@ s2rL2u8nTerM5bjlurn1Z58=
 -----END CERTIFICATE-----
 {{< /highlight >}}
 
-Run the same thing in the `remote-cluster-context` and explore the output and compare. For the `reviews` service running in the `remote-cluster-context` cluster, we have to use `deploy/reviews-v3` as `reviews-v1` which we used in the previous command doesn't exist on that cluster:
+Run the same thing in the `remote-cluster` and explore the output and compare. For the `reviews` service running in the `remote-cluster` cluster, we have to use `deploy/reviews-v3` as `reviews-v1` which we used in the previous command doesn't exist on that cluster:
 
 
 ```shell

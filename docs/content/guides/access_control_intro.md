@@ -103,12 +103,12 @@ It may take a few moments for the access policy / authorizations propagate to th
 {{% /notice %}}
 
 With the `globalAccessPolicy` setting `ENABLED` and with no other `AccessControlPolicies`, we should see a `deny-all` access posture. 
+
 Try going back to [http://localhost:9080](http://localhost:9080) and refresh the bookinfo sample and you should see the `details` and `reviews` services blocked.
 
 For Istio, global access control is enforced using an AuthorizationPolicy with an empty spec, placed in Istio's root namespace (usually `istio-system`). More details can be found in the [Istio AuthorizationPolicy documentation](https://istio.io/latest/docs/reference/config/security/authorization-policy/#AuthorizationPolicy).
 
-Note that Service Mesh Hub will also create additional AuthorizationPolicies in order to allow all traffic through ingress gateways 
-so that federated traffic can continue working as expected.
+Note that Service Mesh Hub will also create additional AuthorizationPolicies in order to allow all traffic through ingress gateways so that federated traffic can continue working as expected.
 
 ## Using `AccessPolicy`
 
