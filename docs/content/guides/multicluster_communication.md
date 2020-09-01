@@ -40,7 +40,7 @@ spec:
   trafficShift:
     destinations:
       - kubeService:
-          clusterName: new-remote-cluster
+          clusterName: remote-cluster
           name: reviews
           namespace: bookinfo
         weight: 75
@@ -76,7 +76,7 @@ spec:
   trafficShift:
     destinations:
       - kubeService:
-          clusterName: new-remote-cluster
+          clusterName: remote-cluster
           name: reviews
           namespace: bookinfo
         weight: 75
