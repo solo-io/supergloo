@@ -1,7 +1,7 @@
 ---
-title: FailoverService
-menuTitle: FailoverService
-weight: 25
+title: Failover Service
+menuTitle: Failover Service
+weight: 78
 ---
 
 Service Mesh Hub provides the ability to configure a *FailoverService*. A FailoverService is a virtual traffic destination that is composed of a list of services ordered in decreasing priority. The composing services are configured with outlier detection, the ability of the system to detect unresponsive services, [read more here](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier).Traffic will automatically be shifted over to services next in the priority order. Currently this feature is only supported for Istio meshes.
@@ -15,7 +15,7 @@ To illustrate these concepts, we will assume that:
 * Istio is [installed on both the `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
 * Both the `mgmt-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}) under the names `mgmt-cluster` and `remote-cluster` respectively
 * The `bookinfo` app is [installed into both clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
-* You have run through the guides for Federated Trust and Identity, Access Control, and Multi-cluster Traffic.
+* You have run through the guides for [Federated Trust and Identity]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}), [Access Control]({{% versioned_link_path fromRoot="/guides/access_control_intro/" %}}), and [Multi-cluster Traffic]({{% versioned_link_path fromRoot="/guides/multicluster_communication/" %}}).
 
 
 {{% notice note %}}

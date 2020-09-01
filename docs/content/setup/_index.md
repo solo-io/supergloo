@@ -26,7 +26,7 @@ We will assume in this guide that we have access to two clusters and the followi
 
 Your actual context names will likely be different.
 
-* `management-cluster-context`
+* `mgmt-cluster-context`
     - kubeconfig context pointing to a cluster where we will install and operate Service Mesh Hub
 * `remote-cluster-context`
     - kubeconfig context pointing to a cluster where we will install and manage a service mesh using Service Mesh Hub 
@@ -42,12 +42,12 @@ kubectl config use-context $MGMT_CONTEXT
 
 ### Using Kind
 
-If you do not have access to two Kubernetes clusters, you can easily create two on your local workstation using Kind. Simply run the following commands to create the management-cluster and remote-cluster clusters.
+If you do not have access to two Kubernetes clusters, you can easily create two on your local workstation using Kind. Simply run the following commands to create the mgmt-cluster and remote-cluster clusters.
 
 ```bash
 #Set version, cluster name, and port
 kindImage=kindest/node:v1.17.5
-cluster=management-cluster
+cluster=mgmt-cluster
 port=32001
 
 cat <<EOF | kind create cluster --name "${cluster}" --image $kindImage --config=-
@@ -99,8 +99,8 @@ kubeadmConfigPatches:
       authorization-mode: "AlwaysAllow"
 EOF
 
-#Switch to the management-cluster context
-kubectl config use-context kind-management-cluster
+#Switch to the mgmt-cluster context
+kubectl config use-context kind-mgmt-cluster
 ```
 
 ## Install Service Mesh Hub
@@ -119,17 +119,17 @@ You can also quickly install like this:
 curl -sL https://run.solo.io/meshctl/install | sh
 ```
 
-Once you have the `meshctl` tool, you can install Service Mesh Hub onto a cluster acting as the `management-cluster` like this:
+Once you have the `meshctl` tool, you can install Service Mesh Hub onto a cluster acting as the `mgmt-cluster` like this:
 
 
 ```shell
 meshctl install
 ```
 
-If you're not using the context for the `management-cluster`, you can explicitly specify it like this:
+If you're not using the context for the `mgmt-cluster`, you can explicitly specify it like this:
 
 ```shell
-meshctl install --kubecontext management-cluster-context
+meshctl install --kubecontext mgmt-cluster-context
 ```
 
 You should see output similar to this:
@@ -254,16 +254,16 @@ Cluster remote-cluster is now registered in your Service Mesh Hub installation
 You can automatically register the cluster on which you deploy Service Mesh Hub (for example, if you have a mesh running there as well) with the `--register` CLI flag when you're first installing with `meshctl`:
 
 ```shell
-meshctl install --register --context management-cluster-context
+meshctl install --register --context mgmt-cluster-context
 ```
 
-By default, when you register like this, the cluster name will be `management-cluster`. If you run the following, you should see the cluster registered:
+By default, when you register like this, the cluster name will be `mgmt-cluster`. If you run the following, you should see the cluster registered:
 
 ```shell
 kubectl get kubernetescluster -n service-mesh-hub
 
 NAMESPACE          NAME               AGE
-service-mesh-hub   management-cluster   10s
+service-mesh-hub   mgmt-cluster       10s
 ```
 
 ## What happened?

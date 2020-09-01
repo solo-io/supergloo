@@ -63,7 +63,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.version, "version", "", "Version to install, defaults to latest if omitted")
 
 	flags.BoolVarP(&o.register, "register", "r", false, "Register the cluster running Service Mesh Hub")
-	flags.StringVar(&o.clusterName, "cluster-name", "management-cluster",
+	flags.StringVar(&o.clusterName, "cluster-name", "mgmt-cluster",
 		"Name with which to register the cluster running Service Mesh Hub, only applies if --register is also set")
 	flags.StringVar(&o.apiServerAddress, "api-server-address", "", "Swap out the address of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Service Mesh Hub is different than that specified in the local kubeconfig.")
 	flags.StringVar(&o.clusterDomain, "cluster-domain", "", "The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'. Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/")
