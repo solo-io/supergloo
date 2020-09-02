@@ -9,7 +9,6 @@ import (
 
 type Uninstaller struct {
 	KubeConfig  *register.KubeCfg
-	KubeContext string
 	Namespace   string
 	ReleaseName string
 	Verbose     bool

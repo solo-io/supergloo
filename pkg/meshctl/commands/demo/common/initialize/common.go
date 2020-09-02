@@ -47,12 +47,11 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	fmt.Printf("Deploying Service Mesh Hub to %s from images\n", cluster)
 
 	apiServerAddress, err := getApiAddress(cluster, box)
+
 	if err != nil {
 		return err
 	}
-
-	kubeContext := fmt.Sprintf("kind-%s", cluster)
-	kubeConfigPath := ""
+	kubeConfig := register.NewDiskKubeCfg("", fmt.Sprintf("kind-%s", cluster))
 	namespace := defaults.DefaultPodNamespace
 	verbose := true
 	smhChartUri := fmt.Sprintf(smh.ServiceMeshHubChartUriTemplate, version.Version)
@@ -61,8 +60,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	err = smh.Installer{
 		HelmChartPath:  smhChartUri,
 		HelmValuesPath: "",
-		KubeConfigPath: kubeConfigPath,
-		KubeContext:    kubeContext,
+		KubeConfig:     kubeConfig,
 		Namespace:      namespace,
 		ReleaseName:    helm.Chart.Data.Name,
 		Verbose:        verbose,
@@ -76,14 +74,13 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 
 	registrantOpts := &registration.RegistrantOptions{
 		RegistrationOptions: register.RegistrationOptions{
-			ClusterName:       cluster,
-			KubeCfgPath:       kubeConfigPath,
-			KubeContext:       kubeContext,
-			RemoteKubeContext: kubeContext,
-			Namespace:         namespace,
-			RemoteNamespace:   namespace,
-			APIServerAddress:  apiServerAddress,
-			ClusterDomain:     "",
+			ClusterName:      cluster,
+			KubeCfg:          kubeConfig,
+			RemoteKubeCfg:    kubeConfig,
+			Namespace:        namespace,
+			RemoteNamespace:  namespace,
+			APIServerAddress: apiServerAddress,
+			ClusterDomain:    "",
 		},
 		CertAgentInstallOptions: registration.CertAgentInstallOptions{
 			ChartPath:   certAgentChartUri,
@@ -122,21 +119,20 @@ func registerCluster(ctx context.Context, mgmtCluster string, cluster string, bo
 		return err
 	}
 
-	kubeContext := fmt.Sprintf("kind-%s", mgmtCluster)
-	remoteKubeContext := fmt.Sprintf("kind-%s", cluster)
+	kubeConfig := register.NewDiskKubeCfg("", fmt.Sprintf("kind-%s", mgmtCluster))
+	remoteKubeConfig := register.NewDiskKubeCfg("", fmt.Sprintf("kind-%s", cluster))
 	namespace := defaults.DefaultPodNamespace
 	certAgentChartUri := fmt.Sprintf(smh.CertAgentChartUriTemplate, version.Version)
 
 	registrantOpts := &registration.RegistrantOptions{
 		RegistrationOptions: register.RegistrationOptions{
-			ClusterName:       cluster,
-			KubeCfgPath:       "",
-			KubeContext:       kubeContext,
-			RemoteKubeContext: remoteKubeContext,
-			Namespace:         namespace,
-			RemoteNamespace:   namespace,
-			APIServerAddress:  apiServerAddress,
-			ClusterDomain:     "",
+			ClusterName:      cluster,
+			KubeCfg:          kubeConfig,
+			RemoteKubeCfg:    remoteKubeConfig,
+			Namespace:        namespace,
+			RemoteNamespace:  namespace,
+			APIServerAddress: apiServerAddress,
+			ClusterDomain:    "",
 		},
 		CertAgentInstallOptions: registration.CertAgentInstallOptions{
 			ChartPath:   certAgentChartUri,

@@ -10,11 +10,11 @@ import (
 )
 
 type Uninstaller struct {
-	KubeConfig     *register.KubeCfg
-	Namespace      string
-	ReleaseName    string
-	Verbose        bool
-	DryRun         bool
+	KubeConfig  *register.KubeCfg
+	Namespace   string
+	ReleaseName string
+	Verbose     bool
+	DryRun      bool
 }
 
 func (i Uninstaller) UninstallChart(ctx context.Context) error {

@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
+	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -52,9 +53,9 @@ func uninstall(ctx context.Context, opts *options) error {
 }
 
 func uninstallServiceMeshHub(ctx context.Context, opts *options) error {
+	kubeCfg := register.NewDiskKubeCfg(opts.kubeconfig, opts.kubecontext)
 	return smh.Uninstaller{
-		KubeConfig:  opts.kubeconfig,
-		KubeContext: opts.kubecontext,
+		KubeConfig:  kubeCfg,
 		Namespace:   opts.namespace,
 		ReleaseName: opts.releaseName,
 		Verbose:     opts.verbose,
