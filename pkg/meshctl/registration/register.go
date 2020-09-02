@@ -78,7 +78,9 @@ func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 }
 
 func (r *Registrant) registerCluster(ctx context.Context) error {
-	logrus.Debugf("registering cluster with opts %+v\n", r.RegistrationOptions)
+	//logrus.Debugf("registering cluster with kubeConfig %+v\n", r.RegistrationOptions.KubeCfg)
+	//logrus.Debugf("registering cluster with remote kubeConfig %+v\n", r.RegistrationOptions.RemoteKubeCfg)
+	//logrus.Debugf("registering cluster with opts %+v\n", r.RegistrationOptions)
 
 	if err := r.RegistrationOptions.RegisterCluster(ctx); err != nil {
 		return err
