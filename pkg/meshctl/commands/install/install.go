@@ -112,6 +112,7 @@ func install(ctx context.Context, opts *options) error {
 				ClusterName:      opts.clusterName,
 				KubeCfg:          kubeCfg,
 				RemoteKubeCfg:    kubeCfg,
+				RemoteCtx:        opts.kubeContext,
 				Namespace:        opts.namespace,
 				RemoteNamespace:  opts.namespace,
 				APIServerAddress: opts.apiServerAddress,

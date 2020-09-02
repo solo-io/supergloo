@@ -53,7 +53,8 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 		return err
 	}
 
-	kubeConfig, err := kubeconfig.NewKubeLoader(5*time.Second).GetClientConfigForContext("", fmt.Sprintf("kind-%s", cluster))
+	kubeContext := fmt.Sprintf("kind-%s", cluster)
+	kubeConfig, err := kubeconfig.NewKubeLoader(5*time.Second).GetClientConfigForContext("", kubeContext)
 	if err != nil {
 		return err
 	}
@@ -83,6 +84,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 			ClusterName:      cluster,
 			KubeCfg:          kubeConfig,
 			RemoteKubeCfg:    kubeConfig,
+			RemoteCtx:        kubeContext,
 			Namespace:        namespace,
 			RemoteNamespace:  namespace,
 			APIServerAddress: apiServerAddress,
@@ -131,7 +133,8 @@ func registerCluster(ctx context.Context, mgmtCluster string, cluster string, bo
 		return err
 	}
 
-	remoteKubeConfig, err := kubeLoader.GetClientConfigForContext("", fmt.Sprintf("kind-%s", cluster))
+	remoteKubeContext := fmt.Sprintf("kind-%s", cluster)
+	remoteKubeConfig, err := kubeLoader.GetClientConfigForContext("", remoteKubeContext)
 	if err != nil {
 		return err
 	}
@@ -144,6 +147,7 @@ func registerCluster(ctx context.Context, mgmtCluster string, cluster string, bo
 			ClusterName:      cluster,
 			KubeCfg:          kubeConfig,
 			RemoteKubeCfg:    remoteKubeConfig,
+			RemoteCtx:        remoteKubeContext,
 			Namespace:        namespace,
 			RemoteNamespace:  namespace,
 			APIServerAddress: apiServerAddress,

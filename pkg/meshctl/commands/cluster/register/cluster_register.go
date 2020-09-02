@@ -23,6 +23,7 @@ func Command(ctx context.Context) *cobra.Command {
 			}
 			registrationOpts.KubeCfg = mgmtKubeCfg
 			registrationOpts.RemoteKubeCfg = remoteKubeCfg
+			registrationOpts.RemoteCtx = kubeConfigOptions.RemoteContext
 			options := registration.RegistrantOptions(registrationOpts)
 			return registration.NewRegistrant(&options).RegisterCluster(ctx)
 		},

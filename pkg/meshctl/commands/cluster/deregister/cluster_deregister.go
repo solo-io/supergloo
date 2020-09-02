@@ -23,6 +23,7 @@ func Command(ctx context.Context) *cobra.Command {
 			}
 			deregistrationOpts.KubeCfg = mgmtKubeCfg
 			deregistrationOpts.RemoteKubeCfg = remoteKubeCfg
+			deregistrationOpts.RemoteCtx = kubeConfigOptions.RemoteContext
 			options := registration.RegistrantOptions(deregistrationOpts)
 			return registration.NewRegistrant(&options).DeregisterCluster(ctx)
 		},

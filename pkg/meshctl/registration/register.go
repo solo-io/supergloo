@@ -92,7 +92,7 @@ func (r *Registrant) installCertAgent(ctx context.Context) error {
 	return smh.Installer{
 		HelmChartPath:  r.CertAgentInstallOptions.ChartPath,
 		HelmValuesPath: r.CertAgentInstallOptions.ChartValues,
-		KubeConfig:     r.KubeCfg,
+		KubeConfig:     r.RemoteKubeCfg,
 		Namespace:      r.RemoteNamespace,
 		Verbose:        r.Verbose,
 	}.InstallCertAgent(
