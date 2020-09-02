@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix EnvoyFilter incorrect cluster string when translated for local k8s service.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/933
