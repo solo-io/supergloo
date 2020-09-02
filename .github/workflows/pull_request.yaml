@@ -68,7 +68,7 @@ jobs:
         istioctl-binary: [
           'https://github.com/istio/istio/releases/download/1.5.2/istio-1.5.2-linux.tar.gz',
           'https://github.com/istio/istio/releases/download/1.6.8/istio-1.6.8-linux-amd64.tar.gz',
-          'https://github.com/istio/istio/releases/download/1.7.0-rc.1/istio-1.7.0-rc.1-linux-amd64.tar.gz',
+          'https://github.com/istio/istio/releases/download/1.7.0/istio-1.7.0-linux-amd64.tar.gz',
         ]
     steps:
       - uses: actions/checkout@v2

@@ -183,7 +183,8 @@ var _ = Describe("FailoverService", func() {
 			Expect(err).NotTo(HaveOccurred())
 			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
 
-			Consistently(curlReviews, "5s", "0.2s").Should(ContainSubstring(`"color": "red"`))
+			// reviews-v3 is only deployed on remote cluster, so receiving a response proves that the FailoverService is working
+			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
 		})
 
 		By("re-enable management-plane reviews deployments", func() {
