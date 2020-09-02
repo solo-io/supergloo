@@ -13,12 +13,12 @@ replace (
 	github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane v0.9.5
 
 	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
-
-	k8s.io/client-go => k8s.io/client-go v0.18.6
 
 	// TODO(harveyxia) depend on release before merging
 	github.com/solo-io/skv2 => /Users/harvey/skv2
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
+
+	k8s.io/client-go => k8s.io/client-go v0.18.6
 )
 
 require (
