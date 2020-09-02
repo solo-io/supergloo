@@ -6,7 +6,7 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/helm"
-	"github.com/solo-io/skv2/pkg/multicluster/register"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 const (
@@ -19,7 +19,7 @@ const (
 type Installer struct {
 	HelmChartPath  string
 	HelmValuesPath string
-	KubeConfig     *register.KubeCfg
+	KubeConfig     clientcmd.ClientConfig
 	Namespace      string
 	ReleaseName    string
 	Verbose        bool

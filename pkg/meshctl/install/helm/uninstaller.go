@@ -5,12 +5,12 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
-	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"helm.sh/helm/v3/pkg/action"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type Uninstaller struct {
-	KubeConfig  *register.KubeCfg
+	KubeConfig  clientcmd.ClientConfig
 	Namespace   string
 	ReleaseName string
 	Verbose     bool

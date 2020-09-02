@@ -17,7 +17,10 @@ func Command(ctx context.Context) *cobra.Command {
 		Use:   "deregister",
 		Short: "Deregister a Kubernetes cluster from Service Mesh Hub, cleaning up any associated resources",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			mgmtKubeCfg, remoteKubeCfg := kubeConfigOptions.ConstructDiskKubeCfg()
+			mgmtKubeCfg, remoteKubeCfg, err := kubeConfigOptions.ConstructClientConfigs()
+			if err != nil {
+				return err
+			}
 			deregistrationOpts.KubeCfg = mgmtKubeCfg
 			deregistrationOpts.RemoteKubeCfg = remoteKubeCfg
 			options := registration.RegistrantOptions(deregistrationOpts)

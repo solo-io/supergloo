@@ -3,6 +3,7 @@ package install
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/codegen/helm"
@@ -11,6 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
+	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -83,12 +85,15 @@ func install(ctx context.Context, opts *options) error {
 		smhChartUri = fmt.Sprintf(smh.ServiceMeshHubChartUriTemplate, smhVersion)
 	}
 
-	kubeConfig := register.NewDiskKubeCfg(opts.kubeCfgPath, opts.kubeContext)
+	kubeCfg, err := kubeconfig.NewKubeLoader(5*time.Second).GetClientConfigForContext(opts.kubeCfgPath, opts.kubeContext)
+	if err != nil {
+		return err
+	}
 
-	err := smh.Installer{
+	err = smh.Installer{
 		HelmChartPath:  smhChartUri,
 		HelmValuesPath: opts.chartValuesFile,
-		KubeConfig:     kubeConfig,
+		KubeConfig:     kubeCfg,
 		Namespace:      opts.namespace,
 		ReleaseName:    opts.releaseName,
 		Verbose:        opts.verbose,
@@ -105,8 +110,8 @@ func install(ctx context.Context, opts *options) error {
 		registrantOpts := &registration.RegistrantOptions{
 			RegistrationOptions: register.RegistrationOptions{
 				ClusterName:      opts.clusterName,
-				KubeCfg:          kubeConfig,
-				RemoteKubeCfg:    kubeConfig,
+				KubeCfg:          kubeCfg,
+				RemoteKubeCfg:    kubeCfg,
 				Namespace:        opts.namespace,
 				RemoteNamespace:  opts.namespace,
 				APIServerAddress: opts.apiServerAddress,

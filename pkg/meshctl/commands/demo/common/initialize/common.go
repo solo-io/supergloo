@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/gobuffalo/packr"
 	"github.com/rotisserie/eris"
@@ -13,6 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
+	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 )
 
@@ -47,11 +49,15 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	fmt.Printf("Deploying Service Mesh Hub to %s from images\n", cluster)
 
 	apiServerAddress, err := getApiAddress(cluster, box)
-
 	if err != nil {
 		return err
 	}
-	kubeConfig := register.NewDiskKubeCfg("", fmt.Sprintf("kind-%s", cluster))
+
+	kubeConfig, err := kubeconfig.NewKubeLoader(5*time.Second).GetClientConfigForContext("", fmt.Sprintf("kind-%s", cluster))
+	if err != nil {
+		return err
+	}
+
 	namespace := defaults.DefaultPodNamespace
 	verbose := true
 	smhChartUri := fmt.Sprintf(smh.ServiceMeshHubChartUriTemplate, version.Version)
@@ -119,8 +125,17 @@ func registerCluster(ctx context.Context, mgmtCluster string, cluster string, bo
 		return err
 	}
 
-	kubeConfig := register.NewDiskKubeCfg("", fmt.Sprintf("kind-%s", mgmtCluster))
-	remoteKubeConfig := register.NewDiskKubeCfg("", fmt.Sprintf("kind-%s", cluster))
+	kubeLoader := kubeconfig.NewKubeLoader(5 * time.Second)
+	kubeConfig, err := kubeLoader.GetClientConfigForContext("", fmt.Sprintf("kind-%s", mgmtCluster))
+	if err != nil {
+		return err
+	}
+
+	remoteKubeConfig, err := kubeLoader.GetClientConfigForContext("", fmt.Sprintf("kind-%s", cluster))
+	if err != nil {
+		return err
+	}
+
 	namespace := defaults.DefaultPodNamespace
 	certAgentChartUri := fmt.Sprintf(smh.CertAgentChartUriTemplate, version.Version)
 

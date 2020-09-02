@@ -1,8 +1,11 @@
 package utils
 
 import (
-	"github.com/solo-io/skv2/pkg/multicluster/register"
+	"time"
+
+	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/spf13/pflag"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 func AddManagementKubeconfigFlags(kubeconfig, kubecontext *string, flags *pflag.FlagSet) {
@@ -16,10 +19,17 @@ type MgmtRemoteKubeConfigOptions struct {
 	remoteContext  string
 }
 
-func (m *MgmtRemoteKubeConfigOptions) ConstructDiskKubeCfg() (mgmtKubeCfg *register.KubeCfg, remoteKubeCfg *register.KubeCfg) {
-	mgmtKubeCfg = register.NewDiskKubeCfg(m.kubeConfigPath, m.mgmtContext)
-	remoteKubeCfg = register.NewDiskKubeCfg(m.kubeConfigPath, m.remoteContext)
-	return mgmtKubeCfg, remoteKubeCfg
+func (m *MgmtRemoteKubeConfigOptions) ConstructClientConfigs() (mgmtKubeCfg clientcmd.ClientConfig, remoteKubeCfg clientcmd.ClientConfig, err error) {
+	loader := kubeconfig.NewKubeLoader(5 * time.Second)
+	mgmtKubeCfg, err = loader.GetClientConfigForContext(m.kubeConfigPath, m.mgmtContext)
+	if err != nil {
+		return nil, nil, err
+	}
+	remoteKubeCfg, err = loader.GetClientConfigForContext(m.kubeConfigPath, m.remoteContext)
+	if err != nil {
+		return nil, nil, err
+	}
+	return mgmtKubeCfg, remoteKubeCfg, nil
 }
 
 func AddMgmtRemoteKubeConfigFlags(kubeConfigOptions *MgmtRemoteKubeConfigOptions, flags *pflag.FlagSet) {

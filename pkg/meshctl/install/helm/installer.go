@@ -12,7 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/helm/internal"
-	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/cli/values"
@@ -33,7 +32,7 @@ const (
 )
 
 type Installer struct {
-	KubeConfig  *register.KubeCfg
+	KubeConfig  clientcmd.ClientConfig
 	ChartUri    string
 	Namespace   string
 	ReleaseName string
@@ -109,8 +108,8 @@ func (i Installer) InstallChart(ctx context.Context) error {
 	return nil
 }
 
-func ensureNamespace(ctx context.Context, kubeConfig *register.KubeCfg, namespace string) error {
-	cfg, err := kubeConfig.ConstructRestConfig()
+func ensureNamespace(ctx context.Context, kubeConfig clientcmd.ClientConfig, namespace string) error {
+	cfg, err := kubeConfig.ClientConfig()
 	if err != nil {
 		return err
 	}
@@ -129,35 +128,7 @@ func ensureNamespace(ctx context.Context, kubeConfig *register.KubeCfg, namespac
 
 // Returns an action configuration that can be used to create Helm actions and the Helm env settings.
 // We currently get the Helm storage driver from the standard HELM_DRIVER env (defaults to 'secret').
-func newActionConfig(
-	kubeConfig *register.KubeCfg,
-	namespace string,
-) (*action.Configuration, *cli.EnvSettings, error) {
-	if kubeConfig.GetKubeCfgDisk() != nil {
-		kubeCfgDisk := kubeConfig.GetKubeCfgDisk()
-		return newActionConfigFromDisk(kubeCfgDisk.KubeConfigPath, kubeCfgDisk.KubeContext, namespace)
-	} else if kubeConfig.GetClientConfig() != nil {
-		return newActionConfigFromMemory(kubeConfig.GetClientConfig(), namespace)
-	}
-	return nil, nil, eris.New("KubeCfg must be provided as on-disk Kubeconfig or clientConfig")
-}
-
-// Returns an action configuration from a kubeconfig on disk.
-func newActionConfigFromDisk(kubeConfigPath, kubeContext, namespace string) (*action.Configuration, *cli.EnvSettings, error) {
-	actionConfig := new(action.Configuration)
-
-	settings := newCLISettings(kubeConfigPath, kubeContext, namespace)
-
-	if err := actionConfig.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), logrus.Debugf); err != nil {
-		return nil, nil, err
-	}
-	settings.KubeConfig = kubeConfigPath
-	settings.KubeContext = kubeContext
-	return actionConfig, settings, nil
-}
-
-// Return an action configuration from an in-memory kubeconfig
-func newActionConfigFromMemory(config clientcmd.ClientConfig, namespace string) (*action.Configuration, *cli.EnvSettings, error) {
+func newActionConfig(config clientcmd.ClientConfig, namespace string) (*action.Configuration, *cli.EnvSettings, error) {
 	var noOpDebugLog = func(_ string, _ ...interface{}) {}
 	settings := newCLISettings("", "", namespace)
 	restClientGetter := internal.NewInMemoryRESTClientGetter(config)

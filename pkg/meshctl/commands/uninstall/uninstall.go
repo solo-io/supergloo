@@ -2,13 +2,14 @@ package uninstall
 
 import (
 	"context"
+	"time"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/codegen/helm"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
-	"github.com/solo-io/skv2/pkg/multicluster/register"
+	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -53,7 +54,10 @@ func uninstall(ctx context.Context, opts *options) error {
 }
 
 func uninstallServiceMeshHub(ctx context.Context, opts *options) error {
-	kubeCfg := register.NewDiskKubeCfg(opts.kubeconfig, opts.kubecontext)
+	kubeCfg, err := kubeconfig.NewKubeLoader(5*time.Second).GetClientConfigForContext(opts.kubeconfig, opts.kubecontext)
+	if err != nil {
+		return err
+	}
 	return smh.Uninstaller{
 		KubeConfig:  kubeCfg,
 		Namespace:   opts.namespace,

@@ -17,7 +17,10 @@ func Command(ctx context.Context) *cobra.Command {
 		Use:   "register",
 		Short: "Register a Kubernetes cluster with Service Mesh Hub",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			mgmtKubeCfg, remoteKubeCfg := kubeConfigOptions.ConstructDiskKubeCfg()
+			mgmtKubeCfg, remoteKubeCfg, err := kubeConfigOptions.ConstructClientConfigs()
+			if err != nil {
+				return err
+			}
 			registrationOpts.KubeCfg = mgmtKubeCfg
 			registrationOpts.RemoteKubeCfg = remoteKubeCfg
 			options := registration.RegistrantOptions(registrationOpts)

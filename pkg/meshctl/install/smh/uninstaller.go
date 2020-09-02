@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/helm"
-	"github.com/solo-io/skv2/pkg/multicluster/register"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type Uninstaller struct {
-	KubeConfig  *register.KubeCfg
+	KubeConfig  clientcmd.ClientConfig
 	Namespace   string
 	ReleaseName string
 	Verbose     bool
