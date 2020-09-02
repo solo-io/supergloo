@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/solo-io/service-mesh-hub/codegen/custom/appmesh"
+
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 
 	externalapis "github.com/solo-io/external-apis/codegen"
@@ -111,6 +113,13 @@ var (
 		},
 	}
 
+	appmeshResources = []string{
+		"VirtualNode",
+		"VirtualRouter",
+		"Route",
+		"VirtualService",
+	}
+
 	smhManifestRoot       = "install/helm/service-mesh-hub"
 	certAgentManifestRoot = "install/helm/cert-agent/"
 
@@ -128,6 +137,9 @@ var (
 		for _, component := range topLevelComponents {
 			allTemplates = append(allTemplates, component.makeCodegenTemplates()...)
 		}
+
+		allTemplates = append(allTemplates, appmesh.MakeTemplates(appmeshResources))
+
 		return allTemplates
 	}()
 

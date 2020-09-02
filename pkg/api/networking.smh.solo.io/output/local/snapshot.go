@@ -198,6 +198,8 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	}
 	snapshotMap["secrets"] = secretSet.List()
 
+	snapshotMap["clusters"] = s.clusters
+
 	return json.Marshal(snapshotMap)
 }
 

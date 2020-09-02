@@ -1,0 +1,174 @@
+{{/* NOTE: ensure source code comment remains up-to-date */}}
+// source: codegen/custom/appmesh/appmesh_client.gotmpl
+
+package appmesh
+
+import (
+    "context"
+
+    "github.com/aws/aws-app-mesh-controller-for-k8s/pkg/aws/services"
+    "github.com/aws/aws-app-mesh-controller-for-k8s/pkg/equality"
+    "github.com/google/go-cmp/cmp"
+    "github.com/google/go-cmp/cmp/cmpopts"
+    "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.aws.solo.io/v1alpha1"
+    "github.com/solo-io/go-utils/contextutils"
+    "github.com/solo-io/skv2/contrib/pkg/output"
+    sksets "github.com/solo-io/skv2/contrib/pkg/sets"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+    "github.com/aws/aws-sdk-go/aws"
+    appmeshsdk "github.com/aws/aws-sdk-go/service/appmesh"
+    "k8s.io/apimachinery/pkg/util/sets"
+)
+
+type Client interface {
+{{- range $resource := appmesh_resources }}
+{{- $lowercaseResource := lower_camel $resource }}
+    Upsert{{ $resource }}s(ctx context.Context, mesh string, existing{{ $resource }}s sets.String, desired{{ $resource }}s []*v1alpha1.{{ $resource }}, errHandler output.ErrorHandler)
+    Delete{{ $resource }}s(ctx context.Context, mesh string, stale{{ $resource }}s sets.String, errHandler output.ErrorHandler)
+    List{{ $resource }}s(ctx context.Context, meshName string) (sets.String, error)
+{{- end}}
+}
+
+type client struct {
+    accountId string
+    appMesh   services.AppMesh
+}
+
+func NewClient(accountId string, appMesh services.AppMesh) Client {
+    return &client{accountId: accountId, appMesh: appMesh}
+}
+
+{{- range $resource := appmesh_resources }}
+{{- $lowercaseResource := lower_camel $resource }}
+
+func (c *client) Upsert{{ $resource }}s(ctx context.Context, mesh string, existing{{ $resource }}s sets.String, desired{{ $resource }}s []*v1alpha1.{{ $resource }}, errHandler output.ErrorHandler) {
+    for _, {{ $lowercaseResource }} := range desired{{ $resource }}s {
+        {{ $lowercaseResource }} := {{ $lowercaseResource }} // pike
+
+        if {{ $lowercaseResource }}.Namespace != mesh {
+            // use Namespace to represent Mesh
+            continue
+        }
+
+        if err := c.upsert{{ $resource }}(ctx, mesh, existing{{ $resource }}s, {{ $lowercaseResource }}); err != nil {
+            errHandler.HandleWriteError({{ $lowercaseResource }}, err)
+            continue
+        }
+
+        // ensure {{ $resource }} will not be garbage collected
+        existing{{ $resource }}s.Delete({{ $lowercaseResource }}.Name)
+    }
+}
+
+func (c *client) upsert{{ $resource }}(ctx context.Context, mesh string, existing{{ $resource }}s sets.String, {{ $lowercaseResource }} *v1alpha1.{{ $resource }}) error {
+
+    if existing{{ $resource }}s.Has({{ $lowercaseResource }}.Name) {
+        aws{{ $resource }}, err := c.appMesh.Describe{{ $resource }}WithContext(ctx, &appmeshsdk.Describe{{ $resource }}Input{
+            MeshName:        aws.String(mesh),
+            MeshOwner:       aws.String(c.accountId),
+            {{ $resource }}Name: nil,
+        })
+        if err != nil {
+            return err
+        }
+
+        existingVnSpec := aws{{ $resource }}.{{ $resource }}.Spec
+        desiredSpec := &{{ $lowercaseResource }}.Spec
+
+        opts := {{ comparison_options $resource }}()
+        if cmp.Equal(desiredSpec, existingVnSpec, opts) {
+            return nil
+        }
+
+        diff := cmp.Diff(desiredSpec, existingVnSpec, opts)
+        contextutils.LoggerFrom(ctx).Debugw("{{ $lowercaseResource }}Spec changed",
+            "{{ $lowercaseResource }}", sksets.Key({{ $lowercaseResource }}),
+            "existingVnSpec", existingVnSpec,
+            "desiredSpec", desiredSpec,
+            "diff", diff,
+        )
+
+        if _, err := c.appMesh.Update{{ $resource }}WithContext(ctx, &appmeshsdk.Update{{ $resource }}Input{
+            MeshName:        aws.String(mesh),
+            MeshOwner:       aws.String(c.accountId),
+            Spec:            desiredSpec,
+            {{ $resource }}Name: aws.String({{ $lowercaseResource }}.Name),
+        }); err != nil {
+            return err
+        }
+
+    }
+
+    contextutils.LoggerFrom(ctx).Debugw("creating virtual node",
+        "{{ $lowercaseResource }}", sksets.Key({{ $lowercaseResource }}),
+        "spec", {{ $lowercaseResource }}.Spec,
+    )
+
+    if _, err := c.appMesh.Create{{ $resource }}(&appmeshsdk.Create{{ $resource }}Input{
+        MeshName:        aws.String(mesh),
+        MeshOwner:       aws.String(c.accountId),
+        Spec:            &{{ $lowercaseResource }}.Spec,
+        Tags:            ConvertLabelsToTags({{ $lowercaseResource }}.Labels),
+        {{ $resource }}Name: aws.String({{ $lowercaseResource }}.Name),
+    }); err != nil {
+        return err
+    }
+
+    return nil
+}
+
+func (c *client) Delete{{ $resource }}s(ctx context.Context, mesh string, stale{{ $resource }}s sets.String, errHandler output.ErrorHandler) {
+    for _, existing{{ $resource }} := range stale{{ $resource }}s.List() {
+        if err := c.delete{{ $resource }}(ctx, mesh, existing{{ $resource }}); err != nil {
+            errHandler.HandleDeleteError(&v1alpha1.{{ $resource }}{ObjectMeta: metav1.ObjectMeta{
+                Name:      existing{{ $resource }},
+                Namespace: mesh,
+            }}, err)
+        }
+    }
+}
+
+func (c *client) delete{{ $resource }}(ctx context.Context, mesh, {{ $lowercaseResource }}Name string) error {
+    _, err := c.appMesh.Delete{{ $resource }}WithContext(ctx, &appmeshsdk.Delete{{ $resource }}Input{
+        MeshName:        aws.String(mesh),
+        MeshOwner:       aws.String(c.accountId),
+        {{ $resource }}Name: aws.String({{ $lowercaseResource }}Name),
+    })
+    return err
+}
+
+func (c *client) List{{ $resource }}s(ctx context.Context, meshName string) (sets.String, error) {
+    {{ $lowercaseResource }}Names := sets.NewString()
+    err := c.appMesh.List{{ $resource }}sPagesWithContext(
+        ctx,
+        &appmeshsdk.List{{ $resource }}sInput{
+            MeshName: aws.String(meshName),
+        },
+        func(page *appmeshsdk.List{{ $resource }}sOutput, isLast bool) bool {
+            if page != nil {
+                for _, {{ $lowercaseResource }} := range page.{{ $resource }}s {
+                    {{ $lowercaseResource }}Names.Insert(aws.StringValue({{ $lowercaseResource }}.{{ $resource }}Name))
+                }
+            }
+            return !isLast
+        },
+    )
+    if err != nil {
+        return nil, err
+    }
+    return {{ $lowercaseResource }}Names, nil
+}
+
+{{- end}}
+
+func ConvertLabelsToTags(labels map[string]string) []*appmeshsdk.TagRef {
+    var tags []*appmeshsdk.TagRef
+    for k, v := range labels {
+        tags = append(tags, &appmeshsdk.TagRef{
+            Key:   aws.String(k),
+            Value: aws.String(v),
+        })
+    }
+    return tags
+}

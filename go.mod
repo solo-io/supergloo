@@ -22,6 +22,8 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.8.3 // indirect
 	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
+	github.com/aws/aws-app-mesh-controller-for-k8s v1.1.1
+	github.com/aws/aws-sdk-go v1.33.11
 	github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.7-0.20200811182123-112a4904c4b0
@@ -33,6 +35,7 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
+	github.com/google/go-cmp v0.5.1
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
@@ -51,9 +54,9 @@ require (
 	github.com/servicemeshinterface/smi-sdk-go v0.4.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/anyvendor v0.0.1
-	github.com/solo-io/external-apis v0.1.0
+	github.com/solo-io/external-apis v0.1.1-0.20200902141920-5a1dc76781e8
 	github.com/solo-io/go-utils v0.17.0
-	github.com/solo-io/skv2 v0.10.0
+	github.com/solo-io/skv2 v0.10.1-0.20200902141428-e4b62ba3e6ee
 	github.com/solo-io/solo-kit v0.14.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
