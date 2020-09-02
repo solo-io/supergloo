@@ -102,7 +102,7 @@ func (r *Registrant) installCertAgent(ctx context.Context) error {
 
 func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
 	return smh.Uninstaller{
-		KubeConfig: r.KubeCfg,
+		KubeConfig: r.RemoteKubeCfg,
 		Namespace:  r.RemoteNamespace,
 		Verbose:    r.Verbose,
 	}.UninstallCertAgent(
